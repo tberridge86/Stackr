@@ -1,10 +1,10 @@
 {
   "schemaVersion": "stackr-owner-artwork-production-evidence-v1",
   "inventoryId": "STACKR-ARTWORK-20261012",
-  "updatedAt": "2026-10-13T22:22:11.687Z",
+  "updatedAt": "2026-10-13T22:30:55.827Z",
   "scope": "Exact saved artwork list; original identities retained; actual production verification required",
   "summary": {
-    "checkedAt": "2026-10-13T22:21:05.536Z",
+    "checkedAt": "2026-10-13T22:30:26.981Z",
     "totalTasks": 2944,
     "totalBatches": 161,
     "newlyPublishedFronts": 414,
@@ -31,13 +31,13 @@
         "items": 2
       }
     ],
-    "sourceLeadTargets": 331,
+    "sourceLeadTargets": 391,
     "scope": "Fixed saved list, retaining original identities; completion requires actual production API and image verification. Source gathering alone is not completion.",
-    "queuedItems": 0,
-    "queuedBatches": 0,
-    "frontTasksNotYetGathered": 1617,
+    "queuedItems": 60,
+    "queuedBatches": 5,
+    "frontTasksNotYetGathered": 1557,
     "smallOriginalCandidates": 14,
-    "frontTasksNotYetPrepared": 1631,
+    "frontTasksNotYetPrepared": 1571,
     "contentHeldOriginalCandidates": 0
   },
   "ownerAuthority": {
@@ -51,10 +51,10 @@
     "extraPermissionPromptRequired": false,
     "sourceLicenceFacts": "Existing source facts retained; owner queue direction does not invent vendor licence metadata."
   },
-  "preparedOriginals": 317,
-  "preparedDerivatives": 951,
+  "preparedOriginals": 377,
+  "preparedDerivatives": 1131,
   "publishedVerifiedOriginals": 317,
-  "queuedItems": 0,
+  "queuedItems": 60,
   "pendingRun": null,
   "packages": [
     {
@@ -96,6 +96,11 @@
       "releaseAssetId": 638364582,
       "byteSize": 50267364,
       "sha256": "940d42afa6d371dd94da7cc42a0276f40f50f3297f6556174d2e68fc6a0c4656"
+    },
+    {
+      "releaseAssetId": 638434423,
+      "byteSize": 56995023,
+      "sha256": "1f06df02a94f68cdd71115f0144809a95ea05e869a6f556a5f4d7d07d94c87a2"
     }
   ],
   "holds": [
@@ -22829,6 +22834,3426 @@
         "priceChanges": 0,
         "ownershipChanges": 0
       }
+    },
+    {
+      "batchId": "EN-CARDS-032",
+      "itemId": "card:0579f81f-8c1a-42c6-bdf3-3c5638233efc",
+      "printingId": "0579f81f-8c1a-42c6-bdf3-3c5638233efc",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "13",
+      "cardName": "Goldeen",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-13",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/goldeen/tk9a-13",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-13/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "7b67805076cb894a2735294b851300bb9c932d06929f1f8c2f8649d42e24e641",
+        "byteSize": 1075674,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/f3afeb8977b4c217420790e649fb7c2b6aa19f53f0fd43fd49da2c93a25bc58c/card-grid.webp",
+          "sha256": "f3afeb8977b4c217420790e649fb7c2b6aa19f53f0fd43fd49da2c93a25bc58c",
+          "byte_size": 19186,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/c62632dcf90c5d168916f0f1c734a9e37bb723c47d1b3a9adae808c8eb7775eb/search-result.webp",
+          "sha256": "c62632dcf90c5d168916f0f1c734a9e37bb723c47d1b3a9adae808c8eb7775eb",
+          "byte_size": 3926,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/1c8536b76774516be40afe67fdf9f73bc5296a2ddc5af6f0446964321f561246/detail-page.webp",
+          "sha256": "1c8536b76774516be40afe67fdf9f73bc5296a2ddc5af6f0446964321f561246",
+          "byte_size": 107718,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-034",
+      "itemId": "card:078742cd-6333-46ff-84f6-310ed0c6abd0",
+      "printingId": "078742cd-6333-46ff-84f6-310ed0c6abd0",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "18",
+      "cardName": "Fairy Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-18",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/fairy-energy/tk6a-18",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-18/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "db3d2e5e0a170201bb76421f29c2ef4cd575e8174eaea6141df3c876eff79e08",
+        "byteSize": 522640,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/7a9549794759c10276d741c2c2291cb05b7ddcaf8c1ce98b5ba2048e660c473c/card-grid.webp",
+          "sha256": "7a9549794759c10276d741c2c2291cb05b7ddcaf8c1ce98b5ba2048e660c473c",
+          "byte_size": 7926,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/f9f11c361037863444e409349dbbbe2272782d4abc8723652010c04c4bbd93b2/search-result.webp",
+          "sha256": "f9f11c361037863444e409349dbbbe2272782d4abc8723652010c04c4bbd93b2",
+          "byte_size": 2394,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/43a7aa57e02ee33c2d878f303c5981caf7e76077a79e7837f0740eaac579ad69/detail-page.webp",
+          "sha256": "43a7aa57e02ee33c2d878f303c5981caf7e76077a79e7837f0740eaac579ad69",
+          "byte_size": 38072,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-034",
+      "itemId": "card:0e9298bd-74c5-48f8-8323-5c0a4911a0af",
+      "printingId": "0e9298bd-74c5-48f8-8323-5c0a4911a0af",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "21",
+      "cardName": "Eevee",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-21",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/eevee/tk6a-21",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-21/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "c1cb1eb90cb92747cf54a4f1372453345524fa79ad59fc2d134bc447df058d2a",
+        "byteSize": 1005112,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/2319177013a6f3efaf5af0f275aa6e0c237760b0730cff5ed5ebf0916b734db4/card-grid.webp",
+          "sha256": "2319177013a6f3efaf5af0f275aa6e0c237760b0730cff5ed5ebf0916b734db4",
+          "byte_size": 15640,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/3dc88eed12ed0a748a08266900551276eab4d6e94af6dde6dff7807c1739f028/search-result.webp",
+          "sha256": "3dc88eed12ed0a748a08266900551276eab4d6e94af6dde6dff7807c1739f028",
+          "byte_size": 3042,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/a48be24fb54e26c2d789cb202e6a85703c004e30712845acc7caef1e38b5db7f/detail-page.webp",
+          "sha256": "a48be24fb54e26c2d789cb202e6a85703c004e30712845acc7caef1e38b5db7f",
+          "byte_size": 124718,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-034",
+      "itemId": "card:150d0ee5-9429-4cf0-8707-7ffe266b8b0f",
+      "printingId": "150d0ee5-9429-4cf0-8707-7ffe266b8b0f",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "9",
+      "cardName": "Fairy Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-9",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/fairy-energy/tk6a-9",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-9/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "866484e125f65a3257e6408b05b229de9a737c573c14b2faa376df72ee96720c",
+        "byteSize": 522090,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/3cdbe80bbbcff391f0661b3a96202c46bcc4a8d5a6c9ed5cfe75d02b8a4037e4/card-grid.webp",
+          "sha256": "3cdbe80bbbcff391f0661b3a96202c46bcc4a8d5a6c9ed5cfe75d02b8a4037e4",
+          "byte_size": 7914,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/e795a1b55b647f1500569d8abdf6c20aa2c4dde12f77aa39c03a450d3e268d59/search-result.webp",
+          "sha256": "e795a1b55b647f1500569d8abdf6c20aa2c4dde12f77aa39c03a450d3e268d59",
+          "byte_size": 2410,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/3e81e1f966908cfea24de5a951d4d588e4245b27744c014a159dac34eb98c8ee/detail-page.webp",
+          "sha256": "3e81e1f966908cfea24de5a951d4d588e4245b27744c014a159dac34eb98c8ee",
+          "byte_size": 37958,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-033",
+      "itemId": "card:15587724-107d-43da-9e1a-33d6b4b2f993",
+      "printingId": "15587724-107d-43da-9e1a-33d6b4b2f993",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "28",
+      "cardName": "Water Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-28",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/water-energy/tk9a-28",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-28/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "678e7c452cf81c7da60c1c43074450192a5e42313096fce609268d0d3eb0fca8",
+        "byteSize": 489026,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/5196287b2968481add1eac6fe5239a7f64bd47587f7a6bb0905c945ecdf199cb/card-grid.webp",
+          "sha256": "5196287b2968481add1eac6fe5239a7f64bd47587f7a6bb0905c945ecdf199cb",
+          "byte_size": 7434,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/ff457aa127b2c11d0e6c597aaa42d7a3eae788cdd7fc0fb40c0349db2532b0b2/search-result.webp",
+          "sha256": "ff457aa127b2c11d0e6c597aaa42d7a3eae788cdd7fc0fb40c0349db2532b0b2",
+          "byte_size": 2294,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/b7465350a6b739fc60a61eadef66b57705c2fabb2ec7bd10e3c4130bacc34f48/detail-page.webp",
+          "sha256": "b7465350a6b739fc60a61eadef66b57705c2fabb2ec7bd10e3c4130bacc34f48",
+          "byte_size": 35022,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-034",
+      "itemId": "card:18949c4f-ed23-4ab9-96be-9e945c5797ee",
+      "printingId": "18949c4f-ed23-4ab9-96be-9e945c5797ee",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "5",
+      "cardName": "Fairy Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-5",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/fairy-energy/tk6a-5",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-5/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "fd393c703724cc42fdb20f0776481fd3acce6077902a640085595260bd0b8aaf",
+        "byteSize": 522020,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/6a9a0c227f5dceb92b07b09b4131b7c37d41e7554ae27a1b5ed6c23a05d96ce1/card-grid.webp",
+          "sha256": "6a9a0c227f5dceb92b07b09b4131b7c37d41e7554ae27a1b5ed6c23a05d96ce1",
+          "byte_size": 7894,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/5bc41d4244636bd3f08fab582056523b3e8bc3b949cc87b25c8f7c9aab8fc9f8/search-result.webp",
+          "sha256": "5bc41d4244636bd3f08fab582056523b3e8bc3b949cc87b25c8f7c9aab8fc9f8",
+          "byte_size": 2410,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/4b9edce3e9695a623c736f66244f62ed16c43d34f8eb3591833dd251fa64fc80/detail-page.webp",
+          "sha256": "4b9edce3e9695a623c736f66244f62ed16c43d34f8eb3591833dd251fa64fc80",
+          "byte_size": 37960,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-032",
+      "itemId": "card:1d70b9d0-2c26-4b26-8de2-e1e5962f2ebf",
+      "printingId": "1d70b9d0-2c26-4b26-8de2-e1e5962f2ebf",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "19",
+      "cardName": "Water Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-19",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/water-energy/tk9a-19",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-19/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "bb5b115e2824bd466ae1559f76cf0e5227b716a435e873f0b9ccf12309c46229",
+        "byteSize": 488840,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/65bed7bb4500408e34b23bedce63416e18f3bfefb25bb93db6a06bc7effd90fb/card-grid.webp",
+          "sha256": "65bed7bb4500408e34b23bedce63416e18f3bfefb25bb93db6a06bc7effd90fb",
+          "byte_size": 7436,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/aca8147abc4152bd3f05437b88b1c6265945e7616ebaa954681afee8e9616713/search-result.webp",
+          "sha256": "aca8147abc4152bd3f05437b88b1c6265945e7616ebaa954681afee8e9616713",
+          "byte_size": 2288,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/ac77e7dad63fe4e159fe7b3692c41595e7aa42485fe0b5e23fe6af871c1f31a1/detail-page.webp",
+          "sha256": "ac77e7dad63fe4e159fe7b3692c41595e7aa42485fe0b5e23fe6af871c1f31a1",
+          "byte_size": 34990,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-032",
+      "itemId": "card:1ff39e29-941d-4a63-af95-d355bbf568dc",
+      "printingId": "1ff39e29-941d-4a63-af95-d355bbf568dc",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "6",
+      "cardName": "Frogadier",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-6",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/frogadier/tk9a-6",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-6/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "21d6e115129220e42503006b2f9004d0b000e293ca37f7ad8da1bae650a6033b",
+        "byteSize": 1184688,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/d8f6cf1cb33abcefd8bd218577ffc22b7920aaca88412a9011631a129bae28e5/card-grid.webp",
+          "sha256": "d8f6cf1cb33abcefd8bd218577ffc22b7920aaca88412a9011631a129bae28e5",
+          "byte_size": 21580,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/014f67722c0dc743d6ced5d22f18c2089d2b3858c3cfd95a410833f366019fb9/search-result.webp",
+          "sha256": "014f67722c0dc743d6ced5d22f18c2089d2b3858c3cfd95a410833f366019fb9",
+          "byte_size": 4380,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/a3b12c41e0aa5480977e28228416fbdd826442ebf809a4b920726b83aeaff559/detail-page.webp",
+          "sha256": "a3b12c41e0aa5480977e28228416fbdd826442ebf809a4b920726b83aeaff559",
+          "byte_size": 130496,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-032",
+      "itemId": "card:324d943c-a813-4107-ab04-c2d61f12b06f",
+      "printingId": "324d943c-a813-4107-ab04-c2d61f12b06f",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "17",
+      "cardName": "Water Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-17",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/water-energy/tk9a-17",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-17/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "ce01ff75e82f7fdc3448eee768cda5bb843af2043d40b09514b6b4a927ca26b4",
+        "byteSize": 488896,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/135b52c6314eb0469f6b912bd5377fb31ac2adc2e8918cb5d27d0f25bdc66189/card-grid.webp",
+          "sha256": "135b52c6314eb0469f6b912bd5377fb31ac2adc2e8918cb5d27d0f25bdc66189",
+          "byte_size": 7472,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/cbb12d879871a9ba95e6205ec9f1cf9accab40116c4db786fa1ece176fd1318a/search-result.webp",
+          "sha256": "cbb12d879871a9ba95e6205ec9f1cf9accab40116c4db786fa1ece176fd1318a",
+          "byte_size": 2288,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/0e75f92eef36407b936b8c037cace5b64ddfd9e9b47dd7c1dab7b8aa393d76fb/detail-page.webp",
+          "sha256": "0e75f92eef36407b936b8c037cace5b64ddfd9e9b47dd7c1dab7b8aa393d76fb",
+          "byte_size": 34998,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-032",
+      "itemId": "card:3429c3d6-cffc-4cc3-b71f-c1914a1a3619",
+      "printingId": "3429c3d6-cffc-4cc3-b71f-c1914a1a3619",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "11",
+      "cardName": "Froakie",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-11",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/froakie/tk9a-11",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-11/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "557e3f538dfd0299f75adbbf176367c2c1ab1765373406fef81f7aec23d6adcc",
+        "byteSize": 1206371,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/142a6b4945c2123c5f9726d24fadf871fe5ee2fc0e8d3cc9aab9434e449e3ec7/card-grid.webp",
+          "sha256": "142a6b4945c2123c5f9726d24fadf871fe5ee2fc0e8d3cc9aab9434e449e3ec7",
+          "byte_size": 22162,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/a24fcce7015e18c0f84d044798cae4498f0f5e8941a89ec2ad244fbf8923796b/search-result.webp",
+          "sha256": "a24fcce7015e18c0f84d044798cae4498f0f5e8941a89ec2ad244fbf8923796b",
+          "byte_size": 4352,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/1f26c3949119e16f6916c1a5a930e13d8c3e9673566fc4d09f1ea08745fa8bf7/detail-page.webp",
+          "sha256": "1f26c3949119e16f6916c1a5a930e13d8c3e9673566fc4d09f1ea08745fa8bf7",
+          "byte_size": 136654,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-032",
+      "itemId": "card:3810e52c-e820-49de-9f0a-c19d66fadad7",
+      "printingId": "3810e52c-e820-49de-9f0a-c19d66fadad7",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "20",
+      "cardName": "Tierno",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-20",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/tierno/tk9a-20",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-20/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "c5db14f261f2b1a3bbf3ed9235a38b70bbae6c84785de1f93276d83918f301ff",
+        "byteSize": 960744,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/59e7e1014bd58d5f2f286914ece4f55d02deb85098da49e200281732f8ca06a5/card-grid.webp",
+          "sha256": "59e7e1014bd58d5f2f286914ece4f55d02deb85098da49e200281732f8ca06a5",
+          "byte_size": 16354,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/5845b52250968fddb250bbf77712b3b43cf852ba22290190a380814daecbb95d/search-result.webp",
+          "sha256": "5845b52250968fddb250bbf77712b3b43cf852ba22290190a380814daecbb95d",
+          "byte_size": 3438,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/7f03b6e8036de379523d800cab00875dd1b5ef2289baa4288f63237a043e0e28/detail-page.webp",
+          "sha256": "7f03b6e8036de379523d800cab00875dd1b5ef2289baa4288f63237a043e0e28",
+          "byte_size": 113484,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-032",
+      "itemId": "card:4012dc15-cb5a-4ad8-9340-7711d2da7f86",
+      "printingId": "4012dc15-cb5a-4ad8-9340-7711d2da7f86",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "5",
+      "cardName": "Water Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-5",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/water-energy/tk9a-5",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-5/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "32d3c667191a0d11fac8328789cc4537a38f23ee2a4034230e5bbd060909fdab",
+        "byteSize": 488416,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/853cde900d343508240a5ffd860b9679dce91a8dd8aa82690d90e65179d449a6/card-grid.webp",
+          "sha256": "853cde900d343508240a5ffd860b9679dce91a8dd8aa82690d90e65179d449a6",
+          "byte_size": 7426,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/5a3780f97223cf7f9f80dd998e9f19ba2ae9a460823d47c3a73384481e2c3600/search-result.webp",
+          "sha256": "5a3780f97223cf7f9f80dd998e9f19ba2ae9a460823d47c3a73384481e2c3600",
+          "byte_size": 2282,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/56058a7159a122aeff56ed31ab1f16d36446b2fcef746a2faa9d3801a68a1179/detail-page.webp",
+          "sha256": "56058a7159a122aeff56ed31ab1f16d36446b2fcef746a2faa9d3801a68a1179",
+          "byte_size": 34914,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-034",
+      "itemId": "card:4139bd95-c582-40cf-a021-1b268d80318d",
+      "printingId": "4139bd95-c582-40cf-a021-1b268d80318d",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "6",
+      "cardName": "Fairy Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-6",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/fairy-energy/tk6a-6",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-6/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "0566fe08a8c94bab18a6582a916d4f13ca2479c88b92d61ec0b7c2f592c146b0",
+        "byteSize": 522068,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/afda2eb5ee2b3c600d95aff35cc79661dfab96d2bfb1aab2616877118a28fa83/card-grid.webp",
+          "sha256": "afda2eb5ee2b3c600d95aff35cc79661dfab96d2bfb1aab2616877118a28fa83",
+          "byte_size": 7918,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/037e8c88e547288a6cd05fd655cee9e0f65b36ce290d891d3a278cc0afbd519e/search-result.webp",
+          "sha256": "037e8c88e547288a6cd05fd655cee9e0f65b36ce290d891d3a278cc0afbd519e",
+          "byte_size": 2414,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/80b299c89cb81825545d7cb06f0ec48058774718ebb31144715068c65f30bbde/detail-page.webp",
+          "sha256": "80b299c89cb81825545d7cb06f0ec48058774718ebb31144715068c65f30bbde",
+          "byte_size": 37964,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-033",
+      "itemId": "card:4294d508-52c8-4284-ad8e-0d03660cb845",
+      "printingId": "4294d508-52c8-4284-ad8e-0d03660cb845",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "27",
+      "cardName": "Swanna",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-27",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/swanna/tk9a-27",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-27/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "ee3214980ffd0a196eb9955d7f927e2a78a79e63648225c08a6a809e9462a6c5",
+        "byteSize": 1080318,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/80f39f1aece107940ead8cb0391a764950d6291d536325f8a368dec2623e0407/card-grid.webp",
+          "sha256": "80f39f1aece107940ead8cb0391a764950d6291d536325f8a368dec2623e0407",
+          "byte_size": 17824,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/01a718db3edbb38058d22c00977b2589a742a71ac6e2ff78f68a83dd8f3b4b55/search-result.webp",
+          "sha256": "01a718db3edbb38058d22c00977b2589a742a71ac6e2ff78f68a83dd8f3b4b55",
+          "byte_size": 3754,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/6a941eafe1f39398ae3f9b20625742402579412b33ceeb8aff27879f7b2996d3/detail-page.webp",
+          "sha256": "6a941eafe1f39398ae3f9b20625742402579412b33ceeb8aff27879f7b2996d3",
+          "byte_size": 110346,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-034",
+      "itemId": "card:42c5e484-f71a-4a36-a064-e9bc7def1b12",
+      "printingId": "42c5e484-f71a-4a36-a064-e9bc7def1b12",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "1",
+      "cardName": "Fletchling",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-1",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/fletchling/tk6a-1",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-1/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "d0c702bed9adffd24db67e36cb127ea125bd66f4576409d6be843c34605747a7",
+        "byteSize": 1077775,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/abb088aa67e301d2e1a47d6230e1cca05ee712d2ee4854c77794e49d0a13ad06/card-grid.webp",
+          "sha256": "abb088aa67e301d2e1a47d6230e1cca05ee712d2ee4854c77794e49d0a13ad06",
+          "byte_size": 17218,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/9b223e8c0e365073157cf479351bbab3b2760387818025b391d0170441fa8982/search-result.webp",
+          "sha256": "9b223e8c0e365073157cf479351bbab3b2760387818025b391d0170441fa8982",
+          "byte_size": 3288,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/b87fc6ef73d575a2709a56eee1968fdd4a1a2822b2e7c5c2930cc4f4e1d73872/detail-page.webp",
+          "sha256": "b87fc6ef73d575a2709a56eee1968fdd4a1a2822b2e7c5c2930cc4f4e1d73872",
+          "byte_size": 143598,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-034",
+      "itemId": "card:43045c37-839d-4e3b-9554-f5cdb55a8b20",
+      "printingId": "43045c37-839d-4e3b-9554-f5cdb55a8b20",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "20",
+      "cardName": "Potion",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-20",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/potion/tk6a-20",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-20/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "37f390643883494e97202620ee64c44f1c673fbe3c90e72bec8eda00fce2fa7f",
+        "byteSize": 872687,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/42a0fbe5415a6413061048b77f4d713b75615cc4915bbf9fe06766f1d468da23/card-grid.webp",
+          "sha256": "42a0fbe5415a6413061048b77f4d713b75615cc4915bbf9fe06766f1d468da23",
+          "byte_size": 14186,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/c876d012739096075a55b7637f0fef017a05b2b2caee345210d29865477df67a/search-result.webp",
+          "sha256": "c876d012739096075a55b7637f0fef017a05b2b2caee345210d29865477df67a",
+          "byte_size": 3140,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/d7b2b10134e7ca8e6e22644cfac1c2f847b657b6b9d991882c890714978ac4a8/detail-page.webp",
+          "sha256": "d7b2b10134e7ca8e6e22644cfac1c2f847b657b6b9d991882c890714978ac4a8",
+          "byte_size": 93250,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-032",
+      "itemId": "card:434cc7ae-9a89-4997-a8fb-037c640ab485",
+      "printingId": "434cc7ae-9a89-4997-a8fb-037c640ab485",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "7",
+      "cardName": "Ducklett",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-7",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/ducklett/tk9a-7",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-7/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "fd9cf03c5fc8e63f3542940a6155126de9f24768eb7ee598d675c6ac10680d39",
+        "byteSize": 1095313,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/598c87f01b24b9334e652ccbb6df76d39162f6fcac67f9256cd4e84c8664915d/card-grid.webp",
+          "sha256": "598c87f01b24b9334e652ccbb6df76d39162f6fcac67f9256cd4e84c8664915d",
+          "byte_size": 19436,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/0a1062bbce1ff5233823d958abf9be57e3cc3efd49d20bd9fac67754bf9904e9/search-result.webp",
+          "sha256": "0a1062bbce1ff5233823d958abf9be57e3cc3efd49d20bd9fac67754bf9904e9",
+          "byte_size": 4024,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/bab877288598d19d978519efc3108b721ed97ba6f2c6594e3c89fcd6ee9229b7/detail-page.webp",
+          "sha256": "bab877288598d19d978519efc3108b721ed97ba6f2c6594e3c89fcd6ee9229b7",
+          "byte_size": 110662,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-032",
+      "itemId": "card:4437be74-8eca-45e9-b26b-566aa21ea490",
+      "printingId": "4437be74-8eca-45e9-b26b-566aa21ea490",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "9",
+      "cardName": "Water Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-9",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/water-energy/tk9a-9",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-9/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "d7c5a2b15f90f47329433c6c19bde5e88afd01b1093287eb24b1579657f7b1f6",
+        "byteSize": 488360,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/68bd8658be76fb0b2b21a2b92a37b2595337ef711b5d616dcb574a9dade0e63a/card-grid.webp",
+          "sha256": "68bd8658be76fb0b2b21a2b92a37b2595337ef711b5d616dcb574a9dade0e63a",
+          "byte_size": 7422,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/c55559b8e0f7f0cb3516b558714b278ab036cf2eb6ca62d617a920d67fc05b82/search-result.webp",
+          "sha256": "c55559b8e0f7f0cb3516b558714b278ab036cf2eb6ca62d617a920d67fc05b82",
+          "byte_size": 2284,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/06c215f1def4c749de35f6672d43f9d0be02d5542b690ac46c20cdbb7cd6eea2/detail-page.webp",
+          "sha256": "06c215f1def4c749de35f6672d43f9d0be02d5542b690ac46c20cdbb7cd6eea2",
+          "byte_size": 34928,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-034",
+      "itemId": "card:464f4750-2b3c-42e1-8448-7f3da93cf893",
+      "printingId": "464f4750-2b3c-42e1-8448-7f3da93cf893",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "26",
+      "cardName": "Poké Ball",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-26",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/poke-ball/tk6a-26",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-26/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "dffa38e9d01cbceb67fffe83ed90c079bfef6a19b0c304671fb3c41d2a2bc971",
+        "byteSize": 963601,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/77c739a16beb671119fca6822a259623a4ea280becf9f2806a09e498ff4d8ee7/card-grid.webp",
+          "sha256": "77c739a16beb671119fca6822a259623a4ea280becf9f2806a09e498ff4d8ee7",
+          "byte_size": 16548,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/4b142d5666654ed3c130fb647da54aa3117ad67c3732d6201ff75f43aa553e67/search-result.webp",
+          "sha256": "4b142d5666654ed3c130fb647da54aa3117ad67c3732d6201ff75f43aa553e67",
+          "byte_size": 3668,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/e9219a61cb883b2a6f712da9e0eba936f5b4cd686e4c0c189790fc66d500316b/detail-page.webp",
+          "sha256": "e9219a61cb883b2a6f712da9e0eba936f5b4cd686e4c0c189790fc66d500316b",
+          "byte_size": 108292,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-035",
+      "itemId": "card:46f3d410-0617-40ed-bbc5-08587d95c90e",
+      "printingId": "46f3d410-0617-40ed-bbc5-08587d95c90e",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "27",
+      "cardName": "Snubbull",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-27",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/snubbull/tk6a-27",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-27/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "4ac38da7220cda8b70f457b436290a1063e72926f5324dc4fd838f0c251ab7ee",
+        "byteSize": 1178258,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/9d3f1c00603f444236f63e4e9a99c4219cf843ba837cc7add783b36751a4c504/card-grid.webp",
+          "sha256": "9d3f1c00603f444236f63e4e9a99c4219cf843ba837cc7add783b36751a4c504",
+          "byte_size": 17558,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/e2dbf523db2336e30432203607d39bf1980c2b3a7e63c10cea51e4dd4037bff2/search-result.webp",
+          "sha256": "e2dbf523db2336e30432203607d39bf1980c2b3a7e63c10cea51e4dd4037bff2",
+          "byte_size": 3428,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/d89d422ec0b5a7c82e3d9833b9b947723ef860d6a7620a49b49a636497fd1282/detail-page.webp",
+          "sha256": "d89d422ec0b5a7c82e3d9833b9b947723ef860d6a7620a49b49a636497fd1282",
+          "byte_size": 129416,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-032",
+      "itemId": "card:48c5dd4a-25ae-4271-a42a-b0603a92e3de",
+      "printingId": "48c5dd4a-25ae-4271-a42a-b0603a92e3de",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "16",
+      "cardName": "Piplup",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-16",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/piplup/tk9a-16",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-16/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "a35f20873ee9f7fe1a08c132395ba408e4035d263e22bb00b0f852f347326ab1",
+        "byteSize": 1081460,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/845397f6f3f64baf26a8388fb55005ffb28854d4dfda60373d0b58167ec23c85/card-grid.webp",
+          "sha256": "845397f6f3f64baf26a8388fb55005ffb28854d4dfda60373d0b58167ec23c85",
+          "byte_size": 19474,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/e6418aa99058af440123b77c232365a43288a7362a30eb8b1f72090591eb87d9/search-result.webp",
+          "sha256": "e6418aa99058af440123b77c232365a43288a7362a30eb8b1f72090591eb87d9",
+          "byte_size": 4068,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/2c105cd43b313c18e41e7c315585af1cf1655abbc01437ec5534856d8e88d608/detail-page.webp",
+          "sha256": "2c105cd43b313c18e41e7c315585af1cf1655abbc01437ec5534856d8e88d608",
+          "byte_size": 114662,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-034",
+      "itemId": "card:4b139f27-b3a8-4819-b214-65fb59ed0dc5",
+      "printingId": "4b139f27-b3a8-4819-b214-65fb59ed0dc5",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "25",
+      "cardName": "Fairy Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-25",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/fairy-energy/tk6a-25",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-25/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "6e8f2de03930f46796c4eef2d54f26dca73aa47a6cb80fbc2b43e03821c16f67",
+        "byteSize": 522752,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/4e8510944c5485d4ace671712492dc265da88262c93194487cd29a3721932212/card-grid.webp",
+          "sha256": "4e8510944c5485d4ace671712492dc265da88262c93194487cd29a3721932212",
+          "byte_size": 7936,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/aa3b51d64ab2b850e15f5ce2998a530046bddc7daedf62967b428e242d12a9a8/search-result.webp",
+          "sha256": "aa3b51d64ab2b850e15f5ce2998a530046bddc7daedf62967b428e242d12a9a8",
+          "byte_size": 2394,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/5a27adf3bad1dbcf61d3a3daaf74e283a87cd0ee058cd26616aaf39c117428f4/detail-page.webp",
+          "sha256": "5a27adf3bad1dbcf61d3a3daaf74e283a87cd0ee058cd26616aaf39c117428f4",
+          "byte_size": 38094,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-032",
+      "itemId": "card:4dc036f6-343c-42d3-aae5-da0ffa007503",
+      "printingId": "4dc036f6-343c-42d3-aae5-da0ffa007503",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "25",
+      "cardName": "Seaking",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-25",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/seaking/tk9a-25",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-25/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "44d85f4b104054832fe4dfb63c6af0e95746d00e397754db56e380292e6acfb0",
+        "byteSize": 1126786,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/547ab4cedb6c3f30ba28fd232950db0f7e7c2efbb30094650b466693d4c4d180/card-grid.webp",
+          "sha256": "547ab4cedb6c3f30ba28fd232950db0f7e7c2efbb30094650b466693d4c4d180",
+          "byte_size": 22842,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/7558454038126f0e8ad70f7d060512dce487e9e15842238ec47146d45482c238/search-result.webp",
+          "sha256": "7558454038126f0e8ad70f7d060512dce487e9e15842238ec47146d45482c238",
+          "byte_size": 4590,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/ff8c00f4909539860cb7b6f2115d4c349c170d72b0e8203943d7dcbac742f8f9/detail-page.webp",
+          "sha256": "ff8c00f4909539860cb7b6f2115d4c349c170d72b0e8203943d7dcbac742f8f9",
+          "byte_size": 129674,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-034",
+      "itemId": "card:575ca6d6-620b-4131-88e9-5fea7097d96c",
+      "printingId": "575ca6d6-620b-4131-88e9-5fea7097d96c",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "19",
+      "cardName": "Fletchling",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-19",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/fletchling/tk6a-19",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-19/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "01ab28aea77ac78430c7fb60efbbca5f36aed733b9aa3544b7966f57e3ebf2b9",
+        "byteSize": 1077866,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/5158b03a886de3cf705bceecf4fc509bc014a9251fda9703fb4abf17bd3c7e88/card-grid.webp",
+          "sha256": "5158b03a886de3cf705bceecf4fc509bc014a9251fda9703fb4abf17bd3c7e88",
+          "byte_size": 17202,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/84d3e154b3755786e4277d137ea58bfe90bbe6633ef6677367241423d1a9a71f/search-result.webp",
+          "sha256": "84d3e154b3755786e4277d137ea58bfe90bbe6633ef6677367241423d1a9a71f",
+          "byte_size": 3290,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/fbc2eaec61369ef876efd220e597da9f057250b8a6446ab98a114d7feb681488/detail-page.webp",
+          "sha256": "fbc2eaec61369ef876efd220e597da9f057250b8a6446ab98a114d7feb681488",
+          "byte_size": 143626,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-032",
+      "itemId": "card:5c19952c-b579-4053-b507-845ac1279fba",
+      "printingId": "5c19952c-b579-4053-b507-845ac1279fba",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "8",
+      "cardName": "Water Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-8",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/water-energy/tk9a-8",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-8/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "64539279fbdfe99e79ffc81df2f2ba32c07e4649d09cb376e172b8d4f01281dc",
+        "byteSize": 488454,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/8e8cafcf9660e5a4f4dd25c44a4fb91ca28bf1f0f42e60125afd7e425aa00f09/card-grid.webp",
+          "sha256": "8e8cafcf9660e5a4f4dd25c44a4fb91ca28bf1f0f42e60125afd7e425aa00f09",
+          "byte_size": 7464,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/627b94d2eb22f3bdfc0ad899faba2ce7159863fa4920e2beefbf82ebab844ee7/search-result.webp",
+          "sha256": "627b94d2eb22f3bdfc0ad899faba2ce7159863fa4920e2beefbf82ebab844ee7",
+          "byte_size": 2282,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/9a95ea1729cb977060e18ec919b288dd6bd5feb2bdb0805682f4eebf41da4088/detail-page.webp",
+          "sha256": "9a95ea1729cb977060e18ec919b288dd6bd5feb2bdb0805682f4eebf41da4088",
+          "byte_size": 34936,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-034",
+      "itemId": "card:5db233df-ba25-40e9-b4a6-663ed2120ec3",
+      "printingId": "5db233df-ba25-40e9-b4a6-663ed2120ec3",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "22",
+      "cardName": "Furfrou",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-22",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/furfrou/tk6a-22",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-22/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "0395973a60b06f99aa3a0cd6821f999080c1820ff5b72813df251936a02851c2",
+        "byteSize": 1032482,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/4bbb81263f48f75b8ff5bdd578938d0281537fcd2070380530967a99d79637d3/card-grid.webp",
+          "sha256": "4bbb81263f48f75b8ff5bdd578938d0281537fcd2070380530967a99d79637d3",
+          "byte_size": 17180,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/359d4693daf743af8a1c345c17fb4e2815adb51d1280d4b4f53230ce09c834bb/search-result.webp",
+          "sha256": "359d4693daf743af8a1c345c17fb4e2815adb51d1280d4b4f53230ce09c834bb",
+          "byte_size": 3396,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/ba9b550961c82062d1f1a4cdd57db625c0a9da053bd02058ccc8aa8dfcbb4b9f/detail-page.webp",
+          "sha256": "ba9b550961c82062d1f1a4cdd57db625c0a9da053bd02058ccc8aa8dfcbb4b9f",
+          "byte_size": 137584,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-035",
+      "itemId": "card:5ee5fd0e-f801-437b-8a2b-5e3228e397de",
+      "printingId": "5ee5fd0e-f801-437b-8a2b-5e3228e397de",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "29",
+      "cardName": "Granbull",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-29",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/granbull/tk6a-29",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-29/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "660664e83470bc76780bab36f978522deb3bc65620ded389d84729cbc3f25e7b",
+        "byteSize": 1248403,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/84868db23280336a145dbd000d8283b572957b34b418a36b400b810c669afcd6/card-grid.webp",
+          "sha256": "84868db23280336a145dbd000d8283b572957b34b418a36b400b810c669afcd6",
+          "byte_size": 19546,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/02626181b969db28c4358b13be5b28c2dac1d13665ba42d1289bc1279ef7d992/search-result.webp",
+          "sha256": "02626181b969db28c4358b13be5b28c2dac1d13665ba42d1289bc1279ef7d992",
+          "byte_size": 3744,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/db939012d70d7fb3e9720a392ae0f46ab81c6936ad258dc3c352ffda9021e831/detail-page.webp",
+          "sha256": "db939012d70d7fb3e9720a392ae0f46ab81c6936ad258dc3c352ffda9021e831",
+          "byte_size": 142666,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-032",
+      "itemId": "card:6a9e1f9a-f50f-4d1c-ade3-7befbcd70842",
+      "printingId": "6a9e1f9a-f50f-4d1c-ade3-7befbcd70842",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "4",
+      "cardName": "Eevee",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-4",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/eevee/tk9a-4",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-4/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "8e1bd2e0e45618e4960df9ca55922c2a1d37cabeeb6de1a493d695a5ad925c1d",
+        "byteSize": 1112224,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/83866b7fab8c56bbc547c83cc6fba1e0b53b8e256ac1c3d714334ef4d7113719/card-grid.webp",
+          "sha256": "83866b7fab8c56bbc547c83cc6fba1e0b53b8e256ac1c3d714334ef4d7113719",
+          "byte_size": 17996,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/81227876ebbeb83e606c6b41b8e8b74dbad1b3e7c97751f4b6cea570534f780d/search-result.webp",
+          "sha256": "81227876ebbeb83e606c6b41b8e8b74dbad1b3e7c97751f4b6cea570534f780d",
+          "byte_size": 3534,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/597580452263c12f4835d26176d7a46ba543ef4d57a456de98af7791ca90255f/detail-page.webp",
+          "sha256": "597580452263c12f4835d26176d7a46ba543ef4d57a456de98af7791ca90255f",
+          "byte_size": 142216,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-034",
+      "itemId": "card:6c9284da-425a-4105-a62e-8ccdb5581423",
+      "printingId": "6c9284da-425a-4105-a62e-8ccdb5581423",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "4",
+      "cardName": "Switch",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-4",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/switch/tk6a-4",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-4/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "c98f3113b3c33b9084740a1b45433ed89d2ccc9f2f89d14054c3742a765be5b4",
+        "byteSize": 965352,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/e652b27566a847e113e5063b5182c0c9ccebe99d7a46e8e3fb06239e146e3648/card-grid.webp",
+          "sha256": "e652b27566a847e113e5063b5182c0c9ccebe99d7a46e8e3fb06239e146e3648",
+          "byte_size": 16126,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/3b9b6fd406a29ce73e8471c556fe3e695f03f215dee60f86e889f97c0c6fdd4c/search-result.webp",
+          "sha256": "3b9b6fd406a29ce73e8471c556fe3e695f03f215dee60f86e889f97c0c6fdd4c",
+          "byte_size": 3406,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/d080bbac9205fd9c42485872bd50cec379da10c001338063779eaf61a0ca9e54/detail-page.webp",
+          "sha256": "d080bbac9205fd9c42485872bd50cec379da10c001338063779eaf61a0ca9e54",
+          "byte_size": 109970,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-034",
+      "itemId": "card:76b24fef-d692-40af-8a3f-82bb564c379d",
+      "printingId": "76b24fef-d692-40af-8a3f-82bb564c379d",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "10",
+      "cardName": "Fairy Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-10",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/fairy-energy/tk6a-10",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-10/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "5fce3f1909c8db6a94958190bac08c9f185555b48804a1058454d4e88f6510b7",
+        "byteSize": 522576,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/f414ff78a5f9081b66f784bd21291f9a98044533356e7316f7510af085e1837b/card-grid.webp",
+          "sha256": "f414ff78a5f9081b66f784bd21291f9a98044533356e7316f7510af085e1837b",
+          "byte_size": 7928,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/14e78f22c92c0fa0e882326e806dbd35ecc721582304f9475ec7f79f1689ddb5/search-result.webp",
+          "sha256": "14e78f22c92c0fa0e882326e806dbd35ecc721582304f9475ec7f79f1689ddb5",
+          "byte_size": 2420,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/a908a6c30629f4b8b5bd23c7492e11239782b5b30fa698b3638b977e5ec9da1d/detail-page.webp",
+          "sha256": "a908a6c30629f4b8b5bd23c7492e11239782b5b30fa698b3638b977e5ec9da1d",
+          "byte_size": 38054,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-034",
+      "itemId": "card:7a64fa6a-93d2-4011-85f6-cc972e5c917c",
+      "printingId": "7a64fa6a-93d2-4011-85f6-cc972e5c917c",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "11",
+      "cardName": "Snubbull",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-11",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/snubbull/tk6a-11",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-11/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "3cb5ab74baa89a9bad46496e8bc1313e8748f7649dc8340068f9221959eff139",
+        "byteSize": 1178163,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/719d589007785917c28307d960a1d98b025ce5d38db61aa0604cedcb96cd4af5/card-grid.webp",
+          "sha256": "719d589007785917c28307d960a1d98b025ce5d38db61aa0604cedcb96cd4af5",
+          "byte_size": 17552,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/17d0bc47364484b605f5e6de36fd8eca275040f69ca5963af45bbe8dbbd38ff4/search-result.webp",
+          "sha256": "17d0bc47364484b605f5e6de36fd8eca275040f69ca5963af45bbe8dbbd38ff4",
+          "byte_size": 3430,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/bb7090d27fb04cda8c5cc18ae9ecd5f618a8bbe0282f2097dd9ed8b352a40ba8/detail-page.webp",
+          "sha256": "bb7090d27fb04cda8c5cc18ae9ecd5f618a8bbe0282f2097dd9ed8b352a40ba8",
+          "byte_size": 129388,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-034",
+      "itemId": "card:80b33abd-9bf7-411f-984e-28d5c4c45d68",
+      "printingId": "80b33abd-9bf7-411f-984e-28d5c4c45d68",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "17",
+      "cardName": "Fairy Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-17",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/fairy-energy/tk6a-17",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-17/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "3e899cbe600119762f4bdaadbdea9aa2fe2e97164ebb934718cb538fdbf27007",
+        "byteSize": 522558,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/826b85d418b970adbda36dcfda43e2db11542913d1aab2a9c8b15d3ab63f92a8/card-grid.webp",
+          "sha256": "826b85d418b970adbda36dcfda43e2db11542913d1aab2a9c8b15d3ab63f92a8",
+          "byte_size": 7926,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/ef70e851d5a0e83a21ad1b0475caf743bc01b1f636b7aa3573c3000a0d25d5e5/search-result.webp",
+          "sha256": "ef70e851d5a0e83a21ad1b0475caf743bc01b1f636b7aa3573c3000a0d25d5e5",
+          "byte_size": 2394,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/b3f648015b1bbd7677ac4541ce2f7215f3dd6edaaf0c7d69f6ddac9ee4854e46/detail-page.webp",
+          "sha256": "b3f648015b1bbd7677ac4541ce2f7215f3dd6edaaf0c7d69f6ddac9ee4854e46",
+          "byte_size": 38020,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-034",
+      "itemId": "card:85833469-4229-448d-adfb-a3c068702aae",
+      "printingId": "85833469-4229-448d-adfb-a3c068702aae",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "7",
+      "cardName": "Fairy Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-7",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/fairy-energy/tk6a-7",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-7/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "3a9d937fb3eb89b95392abf187a081547fed08df50768a1f7978198b443d2e70",
+        "byteSize": 521928,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/942ba2dc4636800d219b45ce9b899fa65cd1f243f2b3acd3d2e2148880241a66/card-grid.webp",
+          "sha256": "942ba2dc4636800d219b45ce9b899fa65cd1f243f2b3acd3d2e2148880241a66",
+          "byte_size": 7888,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/e9a6deb5ab27330290951dcee0e0834e8ea3352e72f761cf62324e86c716639e/search-result.webp",
+          "sha256": "e9a6deb5ab27330290951dcee0e0834e8ea3352e72f761cf62324e86c716639e",
+          "byte_size": 2412,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/625bd51f255f3d9a6dbde89d023bb0de971a83847f34d22a07f65dfd01ff7c8e/detail-page.webp",
+          "sha256": "625bd51f255f3d9a6dbde89d023bb0de971a83847f34d22a07f65dfd01ff7c8e",
+          "byte_size": 37942,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-033",
+      "itemId": "card:8a78048d-e33c-4fa9-8579-8198d2ed8be3",
+      "printingId": "8a78048d-e33c-4fa9-8579-8198d2ed8be3",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "29",
+      "cardName": "Tierno",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-29",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/tierno/tk9a-29",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-29/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "bb97bbefb485ff93798203a603b089eef822abf8106186f409c571232e56eb9c",
+        "byteSize": 960683,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/e82806fcf8f4bed7b069666e31cc846c32494de215f2aac1b853bca217b81bc9/card-grid.webp",
+          "sha256": "e82806fcf8f4bed7b069666e31cc846c32494de215f2aac1b853bca217b81bc9",
+          "byte_size": 16354,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/ca214cc354129c9a1bbc68abad25c0a21c6227d8a47eea7c2c09c4d8e9020d6d/search-result.webp",
+          "sha256": "ca214cc354129c9a1bbc68abad25c0a21c6227d8a47eea7c2c09c4d8e9020d6d",
+          "byte_size": 3452,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/2d80452ab9ff737d4fd4955c6d62ace8eaf5075f9caf651dabe37a6f4b7dbbf2/detail-page.webp",
+          "sha256": "2d80452ab9ff737d4fd4955c6d62ace8eaf5075f9caf651dabe37a6f4b7dbbf2",
+          "byte_size": 113492,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-032",
+      "itemId": "card:91323421-73e3-409c-8c67-b0d7f2f9d55e",
+      "printingId": "91323421-73e3-409c-8c67-b0d7f2f9d55e",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "3",
+      "cardName": "Water Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-3",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/water-energy/tk9a-3",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-3/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "7ea6f6cad5ed05d59337a898a47585b0db9e2b413e9b397c2bfacad312a16031",
+        "byteSize": 488412,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/c5da06176375580bada5e6d8123a67737ec24571bbe070d09fb8ef999f18b3e9/card-grid.webp",
+          "sha256": "c5da06176375580bada5e6d8123a67737ec24571bbe070d09fb8ef999f18b3e9",
+          "byte_size": 7422,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/5a3780f97223cf7f9f80dd998e9f19ba2ae9a460823d47c3a73384481e2c3600/search-result.webp",
+          "sha256": "5a3780f97223cf7f9f80dd998e9f19ba2ae9a460823d47c3a73384481e2c3600",
+          "byte_size": 2282,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/0ae368ec1e47b4d46a33467978fc79616bcab8ff1448a71e5aec5f9ffe288c1a/detail-page.webp",
+          "sha256": "0ae368ec1e47b4d46a33467978fc79616bcab8ff1448a71e5aec5f9ffe288c1a",
+          "byte_size": 34936,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-032",
+      "itemId": "card:97ebc468-d31e-4547-8470-c1a0acad7ae5",
+      "printingId": "97ebc468-d31e-4547-8470-c1a0acad7ae5",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "10",
+      "cardName": "Water Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-10",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/water-energy/tk9a-10",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-10/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "9c0f7331074655958a49937986687aed9fa84b863be7ea13106a0b1185333daf",
+        "byteSize": 488873,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/60b7a973608ce3502bb230d93a4b801c84b39de798c84416ce58d63c73e4c33d/card-grid.webp",
+          "sha256": "60b7a973608ce3502bb230d93a4b801c84b39de798c84416ce58d63c73e4c33d",
+          "byte_size": 7480,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/609e703bbb30c6a000832e9e7f06151a9498e22bc6cd98c0e1ab935c49788931/search-result.webp",
+          "sha256": "609e703bbb30c6a000832e9e7f06151a9498e22bc6cd98c0e1ab935c49788931",
+          "byte_size": 2288,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/20c595f54e04f2d279ba8e4b2febf30d6a58c80718af08e21906b5038e6279a9/detail-page.webp",
+          "sha256": "20c595f54e04f2d279ba8e4b2febf30d6a58c80718af08e21906b5038e6279a9",
+          "byte_size": 34984,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-032",
+      "itemId": "card:9b8133b7-ad14-42cb-b914-f5cbdb5e8c0b",
+      "printingId": "9b8133b7-ad14-42cb-b914-f5cbdb5e8c0b",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "12",
+      "cardName": "Seaking",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-12",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/seaking/tk9a-12",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-12/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "d31d6f5467be594c626df9b5dd44018674a7fe50d0df3f1e0cc8d1f3fe15141d",
+        "byteSize": 1126698,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/08b12c6cf1019380c2caf0ba132b287364c929d6a32011ba5d1fd886ca881111/card-grid.webp",
+          "sha256": "08b12c6cf1019380c2caf0ba132b287364c929d6a32011ba5d1fd886ca881111",
+          "byte_size": 22842,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/487bdbb1b47845e30ae901e6f7315031efc825626407674fb8b09867c49167f6/search-result.webp",
+          "sha256": "487bdbb1b47845e30ae901e6f7315031efc825626407674fb8b09867c49167f6",
+          "byte_size": 4592,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/906f14dc2058d4ea3529b365c62e21cbf75b9c03e7f0f1bf6aacc873831b4bf4/detail-page.webp",
+          "sha256": "906f14dc2058d4ea3529b365c62e21cbf75b9c03e7f0f1bf6aacc873831b4bf4",
+          "byte_size": 128706,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-035",
+      "itemId": "card:9d00655f-8fda-4d30-a011-c0229a9e9029",
+      "printingId": "9d00655f-8fda-4d30-a011-c0229a9e9029",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "28",
+      "cardName": "Professor’s Letter",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-28",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/professors-letter/tk6a-28",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-28/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "912e9f49125666d188ab2cb2e4548339e95ecbac0694403251e3bbddecbd269b",
+        "byteSize": 858090,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/419fc68eb2e173125416d10a5cd95d9b3289a7a1cba4564cffe66222ddcc9f81/card-grid.webp",
+          "sha256": "419fc68eb2e173125416d10a5cd95d9b3289a7a1cba4564cffe66222ddcc9f81",
+          "byte_size": 14068,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/fb1df63e5a48a96b703e87f4b3465f6199bf757cb5983fa6be09a3c44f98908c/search-result.webp",
+          "sha256": "fb1df63e5a48a96b703e87f4b3465f6199bf757cb5983fa6be09a3c44f98908c",
+          "byte_size": 2974,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/868de67e6c21e54bc401296d15ecff4e6a8f6d85d8d6281900541d00c2735983/detail-page.webp",
+          "sha256": "868de67e6c21e54bc401296d15ecff4e6a8f6d85d8d6281900541d00c2735983",
+          "byte_size": 96510,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-034",
+      "itemId": "card:9dedf489-bc99-4e83-944e-a06f68d3aa3e",
+      "printingId": "9dedf489-bc99-4e83-944e-a06f68d3aa3e",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "15",
+      "cardName": "Sylveon",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-15",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/sylveon/tk6a-15",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-15/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "b09a78e14346cdb2e456c3db70319c115c8ec158cc796e5d75641a589abfa713",
+        "byteSize": 1187762,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/8e5e7eca865a339a13ba401016ba14baec16f9d354935990067a3e17b8012186/card-grid.webp",
+          "sha256": "8e5e7eca865a339a13ba401016ba14baec16f9d354935990067a3e17b8012186",
+          "byte_size": 17062,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/43088cdab88eeecc405c764e7012525dc489c38b7a8681682f1566360f133207/search-result.webp",
+          "sha256": "43088cdab88eeecc405c764e7012525dc489c38b7a8681682f1566360f133207",
+          "byte_size": 3546,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/08fb8f843ed7a8b6a56b4573343579b33c827c3ef3445b04e190b3bd413b7cc8/detail-page.webp",
+          "sha256": "08fb8f843ed7a8b6a56b4573343579b33c827c3ef3445b04e190b3bd413b7cc8",
+          "byte_size": 125960,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-033",
+      "itemId": "card:a25422c1-7f25-47b8-ac38-684f031ab6f6",
+      "printingId": "a25422c1-7f25-47b8-ac38-684f031ab6f6",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "26",
+      "cardName": "Goldeen",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-26",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/goldeen/tk9a-26",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-26/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "4c41a9b8a2b4c8991a6a962548b19abb09da3384b0d4c90bde5e16b16058c5cd",
+        "byteSize": 1075834,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/c7eb13aba7570d0c4b59fd174f6d8605a693848f4feb832d1bfc8f82d48e0516/card-grid.webp",
+          "sha256": "c7eb13aba7570d0c4b59fd174f6d8605a693848f4feb832d1bfc8f82d48e0516",
+          "byte_size": 19192,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/d55947d327521333fba43686aab678efdc03c11e06e0484b43ae27f25e27943f/search-result.webp",
+          "sha256": "d55947d327521333fba43686aab678efdc03c11e06e0484b43ae27f25e27943f",
+          "byte_size": 3926,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/2b16e9d9d6f63fc6c5b34a36e6a029f10fcbf8ea4ea63c40b301392a9b427d8f/detail-page.webp",
+          "sha256": "2b16e9d9d6f63fc6c5b34a36e6a029f10fcbf8ea4ea63c40b301392a9b427d8f",
+          "byte_size": 107752,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-034",
+      "itemId": "card:a9a92fa2-c116-45bc-a2e6-c58307fe7dcf",
+      "printingId": "a9a92fa2-c116-45bc-a2e6-c58307fe7dcf",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "2",
+      "cardName": "Fairy Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-2",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/fairy-energy/tk6a-2",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-2/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "59cace0fa6aed9c842754e2a2767d9d57cb0276c03b6c6a343c78e81c3f1ec29",
+        "byteSize": 522034,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/af98b6e4bd9521a90e5df4c647c26f327374fdefd49438ccf72e0af078bcd4c9/card-grid.webp",
+          "sha256": "af98b6e4bd9521a90e5df4c647c26f327374fdefd49438ccf72e0af078bcd4c9",
+          "byte_size": 7886,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/33e31bd4ec40a8cdc94d165ff1a9bf5b67c4e2edbc217e2d6987b79e65c37069/search-result.webp",
+          "sha256": "33e31bd4ec40a8cdc94d165ff1a9bf5b67c4e2edbc217e2d6987b79e65c37069",
+          "byte_size": 2410,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/8a6836b62ba30b551c9fb6490efdb0416adc23d4c5f94db61b031cf227c2d5a4/detail-page.webp",
+          "sha256": "8a6836b62ba30b551c9fb6490efdb0416adc23d4c5f94db61b031cf227c2d5a4",
+          "byte_size": 37968,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-034",
+      "itemId": "card:aa5afff2-f878-4b12-bc44-7c2501865dd4",
+      "printingId": "aa5afff2-f878-4b12-bc44-7c2501865dd4",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "12",
+      "cardName": "Fairy Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-12",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/fairy-energy/tk6a-12",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-12/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "7a37c11d137bf9f445d69da6e0e65e77bfaf2285b11821310692292ec6ed4b2e",
+        "byteSize": 522564,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/6f0c1ed2fe1e9ea8eab49485089ba856c0a99b64487ec6e4ec9085c80143c9bd/card-grid.webp",
+          "sha256": "6f0c1ed2fe1e9ea8eab49485089ba856c0a99b64487ec6e4ec9085c80143c9bd",
+          "byte_size": 7928,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/a78683ec9b5885cc2d8fd016c582ecc91ba6a0b566e072309bca8cd870536245/search-result.webp",
+          "sha256": "a78683ec9b5885cc2d8fd016c582ecc91ba6a0b566e072309bca8cd870536245",
+          "byte_size": 2400,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/5da37c9f6f9dc5ff0b2d07894390347c843f118ccfcd21e851449d77d00f789b/detail-page.webp",
+          "sha256": "5da37c9f6f9dc5ff0b2d07894390347c843f118ccfcd21e851449d77d00f789b",
+          "byte_size": 38050,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-032",
+      "itemId": "card:abccea61-8dba-447d-b446-0bd20f36f4ba",
+      "printingId": "abccea61-8dba-447d-b446-0bd20f36f4ba",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "1",
+      "cardName": "Water Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-1",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/water-energy/tk9a-1",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-1/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "2cb444080512e86037452ec3cf6ed61527790061e4f2ef64e691f58dcafc5bdd",
+        "byteSize": 488272,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/9e29f16063ba6a2f46e75b039ac551ecad51459d8097eab49bed837dad758420/card-grid.webp",
+          "sha256": "9e29f16063ba6a2f46e75b039ac551ecad51459d8097eab49bed837dad758420",
+          "byte_size": 7418,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/43d4189e407215ab3a3ad0aec381ed85a1f1b830cb9f39d6f02d17f64c4f1526/search-result.webp",
+          "sha256": "43d4189e407215ab3a3ad0aec381ed85a1f1b830cb9f39d6f02d17f64c4f1526",
+          "byte_size": 2282,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/e586dc6240be9ed5535e41bfdd5fa2d8eb0f45662bc7d8ea35234fefe331b7bb/detail-page.webp",
+          "sha256": "e586dc6240be9ed5535e41bfdd5fa2d8eb0f45662bc7d8ea35234fefe331b7bb",
+          "byte_size": 34914,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-031",
+      "itemId": "card:b2db7f0f-bea6-4133-870d-74e8de0e998a",
+      "printingId": "b2db7f0f-bea6-4133-870d-74e8de0e998a",
+      "setId": "2611a280-4fe7-4cd2-9728-fad2d5537150",
+      "setCode": "tk-xy-p",
+      "languageCode": "en",
+      "collectorReference": "27",
+      "cardName": "Glameow",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9b-27",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/glameow/tk9b-27",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9b-27/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "5c385c4e8654094f52b59cd743c6b1bc92b37ead26787eec2fad3738d0122c41",
+        "byteSize": 1145470,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/a20ef2531fc94d74db53d2a71509ac2170d7bcbced701a069bafc418b44e820b/card-grid.webp",
+          "sha256": "a20ef2531fc94d74db53d2a71509ac2170d7bcbced701a069bafc418b44e820b",
+          "byte_size": 19496,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/5b4b3d8e4c39168ea7893731f86aa9cdf62d8817590b8c9c49506c2f9ba996a2/search-result.webp",
+          "sha256": "5b4b3d8e4c39168ea7893731f86aa9cdf62d8817590b8c9c49506c2f9ba996a2",
+          "byte_size": 3690,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/43690687aca395c4902bedff760972ea28783c9dfca7b1f99e27c6f24dc0f5a7/detail-page.webp",
+          "sha256": "43690687aca395c4902bedff760972ea28783c9dfca7b1f99e27c6f24dc0f5a7",
+          "byte_size": 148970,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-032",
+      "itemId": "card:b3de6315-03db-49a3-8227-8ccd8a0ce10d",
+      "printingId": "b3de6315-03db-49a3-8227-8ccd8a0ce10d",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "15",
+      "cardName": "Potion",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-15",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/potion/tk9a-15",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-15/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "7021e66001e51b57630d87a7a41d5c29a6db9528aa7dc462ef379eabadf10bb4",
+        "byteSize": 875210,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/f5ea907c4622c7ad0b211140c6525cbe035d19cdc179b28e299901e0a4289177/card-grid.webp",
+          "sha256": "f5ea907c4622c7ad0b211140c6525cbe035d19cdc179b28e299901e0a4289177",
+          "byte_size": 14202,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/810284db99784ccdb820685fb10ee942fe5709f377ed39954570c827e8182185/search-result.webp",
+          "sha256": "810284db99784ccdb820685fb10ee942fe5709f377ed39954570c827e8182185",
+          "byte_size": 3120,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/af198693621e14c84bb17937f7f34ebba073339bea25af97f2ba8f5a261d7a60/detail-page.webp",
+          "sha256": "af198693621e14c84bb17937f7f34ebba073339bea25af97f2ba8f5a261d7a60",
+          "byte_size": 93848,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-032",
+      "itemId": "card:b836a658-1cb8-4ce0-a19d-33e584158ec6",
+      "printingId": "b836a658-1cb8-4ce0-a19d-33e584158ec6",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "18",
+      "cardName": "Swanna",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-18",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/swanna/tk9a-18",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-18/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "f7d27be6da3377d4b971fd19cfcad46d279d0d6186fba16b979f371468901e7e",
+        "byteSize": 1080313,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/a7bb794eb6b87078e1907a5819461ce9ac4924215a20666f94ba659cf01bceea/card-grid.webp",
+          "sha256": "a7bb794eb6b87078e1907a5819461ce9ac4924215a20666f94ba659cf01bceea",
+          "byte_size": 17820,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/c2b808276efa5a526f020ea4aa8496bbda67e37296b21fb4973feadf58712b72/search-result.webp",
+          "sha256": "c2b808276efa5a526f020ea4aa8496bbda67e37296b21fb4973feadf58712b72",
+          "byte_size": 3758,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/14249f25fefbed654413d27eebf10592cf35fae420281b4fa08c392aa780befa/detail-page.webp",
+          "sha256": "14249f25fefbed654413d27eebf10592cf35fae420281b4fa08c392aa780befa",
+          "byte_size": 110354,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-034",
+      "itemId": "card:bd25b1df-e903-4c31-8f9a-4f7365d51bc8",
+      "printingId": "bd25b1df-e903-4c31-8f9a-4f7365d51bc8",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "8",
+      "cardName": "Fairy Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-8",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/fairy-energy/tk6a-8",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-8/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "38236f35ebbd2845e3bcdbdc665495182ca88e655fb700cee8f3bc7c3fa37ef9",
+        "byteSize": 522175,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/c2afc786957c88121982f4b89f78567205727db23101149b6ed8d4726cf1a877/card-grid.webp",
+          "sha256": "c2afc786957c88121982f4b89f78567205727db23101149b6ed8d4726cf1a877",
+          "byte_size": 7890,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/9fdaaf5b763854ef3653dd6a934f30fa75562654a10a74ca952325b11070fc6a/search-result.webp",
+          "sha256": "9fdaaf5b763854ef3653dd6a934f30fa75562654a10a74ca952325b11070fc6a",
+          "byte_size": 2414,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/4ae9c95006082221e59806017d5cb8e404bac3b3a65e6e816a383e39adb7abdc/detail-page.webp",
+          "sha256": "4ae9c95006082221e59806017d5cb8e404bac3b3a65e6e816a383e39adb7abdc",
+          "byte_size": 37968,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-031",
+      "itemId": "card:bdc5dc0d-673d-42d2-a82c-b74f20fe5f7e",
+      "printingId": "bdc5dc0d-673d-42d2-a82c-b74f20fe5f7e",
+      "setId": "2611a280-4fe7-4cd2-9728-fad2d5537150",
+      "setCode": "tk-xy-p",
+      "languageCode": "en",
+      "collectorReference": "28",
+      "cardName": "Electrike",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9b-28",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/electrike/tk9b-28",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9b-28/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "895f0f966f60622cc55517a6c648ec4cab30c853d7301c78556817fdcbdd0118",
+        "byteSize": 1192494,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/54dc123c0d3204216d4b0ef69f4300e53495f8f319100454e681ddb0e03de98a/card-grid.webp",
+          "sha256": "54dc123c0d3204216d4b0ef69f4300e53495f8f319100454e681ddb0e03de98a",
+          "byte_size": 17568,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/d3c9c74f833b7e88ec5b5846e561097753f6586a771db648b6f6ac3292fbdc9c/search-result.webp",
+          "sha256": "d3c9c74f833b7e88ec5b5846e561097753f6586a771db648b6f6ac3292fbdc9c",
+          "byte_size": 3332,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/6867b2624f94e56e28862a49238313d1b9841cb7cd749dc930096163d3be58d8/detail-page.webp",
+          "sha256": "6867b2624f94e56e28862a49238313d1b9841cb7cd749dc930096163d3be58d8",
+          "byte_size": 132604,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-032",
+      "itemId": "card:c38ee5dc-5594-4561-aea3-9754b2af6208",
+      "printingId": "c38ee5dc-5594-4561-aea3-9754b2af6208",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "23",
+      "cardName": "Froakie",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-23",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/froakie/tk9a-23",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-23/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "6d1d3d70ce45ed3d55ab540447ae083493aac648e87500d18eda7b11164f4845",
+        "byteSize": 1206445,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/2ea77dec5c144e2e589585089f8b108520f6455e49b8e71495a599283196f826/card-grid.webp",
+          "sha256": "2ea77dec5c144e2e589585089f8b108520f6455e49b8e71495a599283196f826",
+          "byte_size": 22160,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/f3628b4cb72ed281031dfe786eaf786830bf0377909157c71f118e23c850842f/search-result.webp",
+          "sha256": "f3628b4cb72ed281031dfe786eaf786830bf0377909157c71f118e23c850842f",
+          "byte_size": 4350,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/6998e12f957d80f1f39221c71edab0571edbdd7916e357e494e37e74f9f98cb7/detail-page.webp",
+          "sha256": "6998e12f957d80f1f39221c71edab0571edbdd7916e357e494e37e74f9f98cb7",
+          "byte_size": 136666,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-034",
+      "itemId": "card:cae84be4-5560-4e32-9544-a62e4254e452",
+      "printingId": "cae84be4-5560-4e32-9544-a62e4254e452",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "16",
+      "cardName": "Furfrou",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-16",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/furfrou/tk6a-16",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-16/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "a80f6a6c019cabbc22322f48cf88693290a50f84d97395f4463a217fc80a4e07",
+        "byteSize": 1032452,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/0394e22a150e42f566b40caf30eb42d25fa66493b535918b2d080e9f5a66773d/card-grid.webp",
+          "sha256": "0394e22a150e42f566b40caf30eb42d25fa66493b535918b2d080e9f5a66773d",
+          "byte_size": 17178,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/2c4b4fd88bc4a725fe61cfbdf1776061f9bb01b701f56a5b865828b65e64d6f7/search-result.webp",
+          "sha256": "2c4b4fd88bc4a725fe61cfbdf1776061f9bb01b701f56a5b865828b65e64d6f7",
+          "byte_size": 3396,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/347be54605e1c0cb151122328ccc61ba0604f64605000526fafdb36cc9789d70/detail-page.webp",
+          "sha256": "347be54605e1c0cb151122328ccc61ba0604f64605000526fafdb36cc9789d70",
+          "byte_size": 137582,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-032",
+      "itemId": "card:cb9cf895-ee72-445a-9402-282046ca3e59",
+      "printingId": "cb9cf895-ee72-445a-9402-282046ca3e59",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "22",
+      "cardName": "Water Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-22",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/water-energy/tk9a-22",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-22/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "a41e5ab13ad080fd6adffe3d7d80e69b843ded201dedfb1e81db53e887f09bf3",
+        "byteSize": 488965,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/fa5d5c580236424f0bc3fb5baab85fe5fbe3be3021b17cc917a21ffdfbceb59f/card-grid.webp",
+          "sha256": "fa5d5c580236424f0bc3fb5baab85fe5fbe3be3021b17cc917a21ffdfbceb59f",
+          "byte_size": 7438,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/0f6ecc9b2fdc50d2ef6181f54d16f9f896a5180acaf3cf847ebb0c93ba6a5155/search-result.webp",
+          "sha256": "0f6ecc9b2fdc50d2ef6181f54d16f9f896a5180acaf3cf847ebb0c93ba6a5155",
+          "byte_size": 2294,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/5144f09b5dbd0889f922ef15ff97f5881e8889227b40e43ca95a3032195ff03d/detail-page.webp",
+          "sha256": "5144f09b5dbd0889f922ef15ff97f5881e8889227b40e43ca95a3032195ff03d",
+          "byte_size": 34998,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-032",
+      "itemId": "card:d4767396-f6b5-4918-94d6-73295df5391d",
+      "printingId": "d4767396-f6b5-4918-94d6-73295df5391d",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "2",
+      "cardName": "Water Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-2",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/water-energy/tk9a-2",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-2/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "de8701155a6334a5c7738e7613754264b74c087f987546d00d94eb15702c4cd9",
+        "byteSize": 488349,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/e2ff8c9d5c43a8d2a025027e48e29739f5b7a36df28f60fde23714e7612c2e64/card-grid.webp",
+          "sha256": "e2ff8c9d5c43a8d2a025027e48e29739f5b7a36df28f60fde23714e7612c2e64",
+          "byte_size": 7456,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/be7c75aaba6f79d5f9897930a4c66bdc7750f6d31b71e3193415d8703309f3f9/search-result.webp",
+          "sha256": "be7c75aaba6f79d5f9897930a4c66bdc7750f6d31b71e3193415d8703309f3f9",
+          "byte_size": 2284,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/796e480e4bdd2efed50ce987e5a9c1d3aa8541baf717b975c8b09b73cab49e00/detail-page.webp",
+          "sha256": "796e480e4bdd2efed50ce987e5a9c1d3aa8541baf717b975c8b09b73cab49e00",
+          "byte_size": 34924,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-032",
+      "itemId": "card:d476fe6f-f616-482d-a274-2a0c35a5a066",
+      "printingId": "d476fe6f-f616-482d-a274-2a0c35a5a066",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "21",
+      "cardName": "Frogadier",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-21",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/frogadier/tk9a-21",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-21/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "3ceb217dc636a21fa203cf8a3df59d04abcadc526ba094ee69a16eea2dfff676",
+        "byteSize": 1184999,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/e3fd8b9987011bc27a2a740e218a392594f3f3f3dc4a5fd6ace0501a0a731eb2/card-grid.webp",
+          "sha256": "e3fd8b9987011bc27a2a740e218a392594f3f3f3dc4a5fd6ace0501a0a731eb2",
+          "byte_size": 21556,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/40bcc0c5c51898fed25d4b4c334c6d1e85e8188c9839ccb409ecd552e4fdcbe1/search-result.webp",
+          "sha256": "40bcc0c5c51898fed25d4b4c334c6d1e85e8188c9839ccb409ecd552e4fdcbe1",
+          "byte_size": 4356,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/f4f0c17e8b3351b2051b5ed00ce06151d744d45b89aad160b08e390d695cffd9/detail-page.webp",
+          "sha256": "f4f0c17e8b3351b2051b5ed00ce06151d744d45b89aad160b08e390d695cffd9",
+          "byte_size": 130870,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-032",
+      "itemId": "card:d49f2a24-ae5c-4ff4-92c1-de90bd1e491e",
+      "printingId": "d49f2a24-ae5c-4ff4-92c1-de90bd1e491e",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "14",
+      "cardName": "Suicune",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-14",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/suicune/tk9a-14",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-14/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "1536334f3a6afbe84f7e27576399d10d38f4b3e3a45e31123c05fdd3a6b1aaa4",
+        "byteSize": 1135688,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/24d00ff9d735a42c349b1a66b9802e3cebf2f6dc94b506cce755da3a214d63b9/card-grid.webp",
+          "sha256": "24d00ff9d735a42c349b1a66b9802e3cebf2f6dc94b506cce755da3a214d63b9",
+          "byte_size": 19362,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/115b16a81af78239e6a6ff911b4d788bfc7faf6c2e4b96a3f27cbda540cfaf79/search-result.webp",
+          "sha256": "115b16a81af78239e6a6ff911b4d788bfc7faf6c2e4b96a3f27cbda540cfaf79",
+          "byte_size": 3892,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/9694d91d0103a25b998a98e2b36aa11141c3fb91d10f500ab8308ce1bdff056d/detail-page.webp",
+          "sha256": "9694d91d0103a25b998a98e2b36aa11141c3fb91d10f500ab8308ce1bdff056d",
+          "byte_size": 119400,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-034",
+      "itemId": "card:d657bf06-8d28-470e-b568-408797733d39",
+      "printingId": "d657bf06-8d28-470e-b568-408797733d39",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "24",
+      "cardName": "Potion",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-24",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/potion/tk6a-24",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-24/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "457a12f29aa0e80a33b991c6cbcd94867bb545ac6512f20a70f90104ff5a9950",
+        "byteSize": 872660,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/7c40836fa0663b05d9cad8711aa17b73fd46e382ede1086a8274c387023cfd27/card-grid.webp",
+          "sha256": "7c40836fa0663b05d9cad8711aa17b73fd46e382ede1086a8274c387023cfd27",
+          "byte_size": 14184,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/f9bf9df142ea563f42fc72a8a5f3ffd662571abffdb7c9c1ce28373e9db1c9bc/search-result.webp",
+          "sha256": "f9bf9df142ea563f42fc72a8a5f3ffd662571abffdb7c9c1ce28373e9db1c9bc",
+          "byte_size": 3140,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/b9881d469464c56cba303dcd0347cea8cccf97cbaf080c3449953395ab4f1ce6/detail-page.webp",
+          "sha256": "b9881d469464c56cba303dcd0347cea8cccf97cbaf080c3449953395ab4f1ce6",
+          "byte_size": 93260,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-034",
+      "itemId": "card:df6e1241-8607-4545-b748-d67c6eb6e78f",
+      "printingId": "df6e1241-8607-4545-b748-d67c6eb6e78f",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "13",
+      "cardName": "Eevee",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-13",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/eevee/tk6a-13",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-13/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "282a778fac05ddfb9e3816cf0119d96d183878d00673cbbcdb816b30899ac261",
+        "byteSize": 1005165,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/ad395b8a22e44228827a263bb446bad8c5953490182475f4ae4be796346d009f/card-grid.webp",
+          "sha256": "ad395b8a22e44228827a263bb446bad8c5953490182475f4ae4be796346d009f",
+          "byte_size": 15642,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/cace9762e9c5759d12ee82581ad17b335ac30ded5091c5902e31d93d63477d69/search-result.webp",
+          "sha256": "cace9762e9c5759d12ee82581ad17b335ac30ded5091c5902e31d93d63477d69",
+          "byte_size": 3044,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/53a70e392b706a40b6fdce32e5f824a70feb8345356614470578e56817807fbf/detail-page.webp",
+          "sha256": "53a70e392b706a40b6fdce32e5f824a70feb8345356614470578e56817807fbf",
+          "byte_size": 124818,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-031",
+      "itemId": "card:e2aba3d6-b018-4103-9258-92dfdc4b7832",
+      "printingId": "e2aba3d6-b018-4103-9258-92dfdc4b7832",
+      "setId": "2611a280-4fe7-4cd2-9728-fad2d5537150",
+      "setCode": "tk-xy-p",
+      "languageCode": "en",
+      "collectorReference": "29",
+      "cardName": "Lightning Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9b-29",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/lightning-energy/tk9b-29",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9b-29/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "4a9b221fa34cf16fd1ec59e9af17283545e64802e3e51dff2b04e3e77b42cefc",
+        "byteSize": 452763,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/be94ba80d386f97c6563f706105bb7668d264457ef67731e88b40f7949bbe1b8/card-grid.webp",
+          "sha256": "be94ba80d386f97c6563f706105bb7668d264457ef67731e88b40f7949bbe1b8",
+          "byte_size": 6856,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/fbaa9cb88557df632545b9bb82cffa5aa495fae80f361e11f812f5b45f962414/search-result.webp",
+          "sha256": "fbaa9cb88557df632545b9bb82cffa5aa495fae80f361e11f812f5b45f962414",
+          "byte_size": 2034,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/48f31043150765b1c36e93d5e4faa15b73fbc9099822eb2cb39ecb56fe060a87/detail-page.webp",
+          "sha256": "48f31043150765b1c36e93d5e4faa15b73fbc9099822eb2cb39ecb56fe060a87",
+          "byte_size": 31654,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-034",
+      "itemId": "card:e95cfd43-49a0-4ee1-9b1c-2d54c05bd0aa",
+      "printingId": "e95cfd43-49a0-4ee1-9b1c-2d54c05bd0aa",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "3",
+      "cardName": "Fairy Energy",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-3",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/fairy-energy/tk6a-3",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-3/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "bb36af72d14345d44a7bb9940cdcfadcb25396a088c9b02893b2fb7caa80fe3c",
+        "byteSize": 522019,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/07ff5c5d5a39f09cb8bfc7e7e438bff9a1ca65f9547a9ffcbc943939201c2f19/card-grid.webp",
+          "sha256": "07ff5c5d5a39f09cb8bfc7e7e438bff9a1ca65f9547a9ffcbc943939201c2f19",
+          "byte_size": 7914,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/f8da4808e865781d70c15e1205ff804ccb75507ee36d70217eb3a075263ee353/search-result.webp",
+          "sha256": "f8da4808e865781d70c15e1205ff804ccb75507ee36d70217eb3a075263ee353",
+          "byte_size": 2410,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/a537cff357a67a338de39570e6e12ac61e6762e39a1bde16f6b016de91206d7c/detail-page.webp",
+          "sha256": "a537cff357a67a338de39570e6e12ac61e6762e39a1bde16f6b016de91206d7c",
+          "byte_size": 37964,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-034",
+      "itemId": "card:eea25be7-dbfb-417b-9a7b-e14e4c05da62",
+      "printingId": "eea25be7-dbfb-417b-9a7b-e14e4c05da62",
+      "setId": "459b58d7-001d-4653-9e26-5e0f164a710f",
+      "setCode": "tk-xy-sy",
+      "languageCode": "en",
+      "collectorReference": "23",
+      "cardName": "Pokémon Catcher",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk6a-23",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/pokemon-catcher/tk6a-23",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk6a-23/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "f7247f717559bd6877d802249830b0cb940905364f24c333aa069df365937cc8",
+        "byteSize": 1014718,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/6c71a575fdb8f254ec5389ce3957c09f85886aeb9c5d2de97e15c66e5cbc6098/card-grid.webp",
+          "sha256": "6c71a575fdb8f254ec5389ce3957c09f85886aeb9c5d2de97e15c66e5cbc6098",
+          "byte_size": 18006,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/206a5f1418d4bad0ffb9d2ada32d7071908f8283346b79bac93cb7b08a3f6d56/search-result.webp",
+          "sha256": "206a5f1418d4bad0ffb9d2ada32d7071908f8283346b79bac93cb7b08a3f6d56",
+          "byte_size": 3856,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/af5f1a35d1d821731f34aa953a7a9817a8773f36df6915b415633b99dee01407/detail-page.webp",
+          "sha256": "af5f1a35d1d821731f34aa953a7a9817a8773f36df6915b415633b99dee01407",
+          "byte_size": 116962,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-032",
+      "itemId": "card:fc101e0f-4c38-42cd-a8b9-de4f837e7673",
+      "printingId": "fc101e0f-4c38-42cd-a8b9-de4f837e7673",
+      "setId": "f96f987b-5997-4089-ab84-34879d0428dc",
+      "setCode": "tk-xy-su",
+      "languageCode": "en",
+      "collectorReference": "24",
+      "cardName": "Ducklett",
+      "sourceCode": "scrydex",
+      "providerCardId": "tk9a-24",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/ducklett/tk9a-24",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/tk9a-24/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "3b46ab1c74914677f8d5388e4864fa183ed9216b9f21ef85c64878de7e278e6e",
+        "byteSize": 1095701,
+        "width": 728,
+        "height": 1018,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/9704b07cd867f97c288ee781328208e97a55957a06d5c1cb9b07e4befd4d6cdb/card-grid.webp",
+          "sha256": "9704b07cd867f97c288ee781328208e97a55957a06d5c1cb9b07e4befd4d6cdb",
+          "byte_size": 19452,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/91be43ffe16585eab4322393e2a746a6c4e3606a6eae3cee85281010bd3ceaad/search-result.webp",
+          "sha256": "91be43ffe16585eab4322393e2a746a6c4e3606a6eae3cee85281010bd3ceaad",
+          "byte_size": 4026,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/3f04ac28e902469d87b5f95ab0d8d698c84f90b98550161737e61233633cb46a/detail-page.webp",
+          "sha256": "3f04ac28e902469d87b5f95ab0d8d698c84f90b98550161737e61233633cb46a",
+          "byte_size": 110768,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
     }
   ]
 }
