@@ -1,0 +1,255 @@
+{
+  "checked_at": "2026-10-13T21:29:06.832Z",
+  "status": "local_validation_passed_not_published",
+  "source_revision": "e98ced4cfe70b6e5fc34cb4980585009b81e5067",
+  "queue_id": "STACKR-EN-FRONTS-20261013-LAT032",
+  "cohort_sha256": "3c5a18af706b5c1ecd63f8134e5ebfe5b6787d12c6529b06cebfab1d970463c8",
+  "approval_sha256": "a11e2841aee044bb18f79810b5a1f79a4418773d2e2e26a2cc185221d90e0365",
+  "identity_table_sha256": "4ec45168147b60e183b82a66e7bc7ad335f1c8af67414a69e68118f1c004985f",
+  "inspection_correction_sha256": "7b4c198e1ee6230aaa362b25e814b652a3a9d1820961fb8658e461d83eeb93b5",
+  "source_manifest_sha256": "0586b2e6be2499063729d2701669182bd74eef4bf6fce10d320b7522a9fc5ce8",
+  "checked_handoff_sha256": "336deb8eefd5905851170ef7100c6a7d1474ad3da5d2897589542c209e97ec72",
+  "correction_addendum_sha256": "92bb2a309f8d6472486f26fcace9ffbfddfcdf9beae08a59f795d2149e6b849e",
+  "delivery_scope": {
+    "original_saved_targets": 32,
+    "eligible_fronts": 32,
+    "excluded_targets": 0,
+    "whole_batch_completion_asserted": false
+  },
+  "superseded_unpublished_cohort": {
+    "queue_id": "STACKR-EN-FRONTS-20261013-LAT030",
+    "cohort_sha256": "a4372e05b71f9f154e6d66cf22ff40ab3fe64941e3cb4824c07234470fe4e580",
+    "archive_id": 638278124,
+    "published": false,
+    "complete_route_backup_retained": true,
+    "old_source_receipts_unchanged": true,
+    "reason": "Two blank-damage observations were reading mistakes; independent original inspection confirms Take Down40."
+  },
+  "corrected_printing_ids": [
+    "c4c82782-0817-4304-815b-bcc0bba3db9b",
+    "2edf6f8d-8922-4d4c-9e4c-b1cca68b08a6"
+  ],
+  "corrected_original_hashes_unchanged": true,
+  "physical_printing_error_established": false,
+  "provider_metadata_error_established": false,
+  "earlier_real_named_holds_outside_route": 15,
+  "archive": {
+    "id": 638295433,
+    "bytes": 32934150,
+    "sha256": "a28ae10ef8979f2bdf8ba6b2221e4dc856d5a1df10fdd13c111e71214fb5f203",
+    "exact_members": 130,
+    "unique_image_members": 127,
+    "unique_originals": 32,
+    "unique_derivative_members": 95,
+    "per_printing_object_references": 128,
+    "derivative_references": 96,
+    "github_metadata_verified_by_coordinator": true
+  },
+  "shared_search_thumbnail": {
+    "source_provider_ids": [
+      "tk8a-6",
+      "tk8a-9"
+    ],
+    "card_name": "Fighting Energy",
+    "sha256": "7b8c56ed5dc51f4cf44c328f84e07b8d0788521fead649d81cad1944c951d6cc",
+    "width": 96,
+    "height": 134,
+    "original_and_detail_hashes_remain_distinct": true,
+    "originals_reused": false,
+    "images_altered_for_uniqueness": false
+  },
+  "scope_before_counts": {
+    "production": {
+      "assets": 4,
+      "links": 6,
+      "names": 64,
+      "printings": 32,
+      "sets": 2,
+      "variants": 32
+    },
+    "staging": {
+      "assets": 2,
+      "links": 4,
+      "names": 64,
+      "printings": 32,
+      "sets": 2,
+      "variants": 32
+    }
+  },
+  "checks": [
+    {
+      "command": "node --test tools/artwork-latios-trainer-kit-push-20261013/publish.test.mjs tools/artwork-trainer-kit-push-20261013/publish.test.mjs",
+      "passed": 25,
+      "failed": 0,
+      "new_Latios_tests": 15,
+      "exit_code": 0,
+      "checkout_revision": "e98ced4cfe70b6e5fc34cb4980585009b81e5067"
+    },
+    {
+      "command": "python tools/artwork-latios-trainer-kit-push-20261013/download-package.test.py",
+      "passed": 3,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "python tools/artwork-latios-trainer-kit-push-20261013/download-package.py <private-local-packages> --archive <new32-frozen-local-zip>",
+      "status": "verified_and_extracted",
+      "exact_members": 130,
+      "exit_code": 0
+    },
+    {
+      "command": "node tools/artwork-latios-trainer-kit-push-20261013/verify-packages.mjs <private-local-packages>",
+      "status": "all_frozen_files_fully_decoded",
+      "fronts": 32,
+      "derivative_references": 96,
+      "per_printing_object_references": 128,
+      "unique_image_members": 127,
+      "exit_code": 0
+    }
+  ],
+  "database_requests": 0,
+  "provider_requests": 0,
+  "github_release_metadata_reads": 0,
+  "storage_writes": 0,
+  "production_source_insertions": 0,
+  "published": false,
+  "independent_review": "pending_coordinator",
+  "raw_private_snapshots_included": false,
+  "private_paths_in_public_plan": false,
+  "physical_finish_certified": false,
+  "independent_vendor_licence_verified": false,
+  "file_hashes": [
+    {
+      "file": ".gitattributes",
+      "bytes": 54,
+      "sha256": "5a4ffa8f62276e5e43264106e04022e901f0c4c5d4818000f800366bb43f2f30"
+    },
+    {
+      "file": ".gitignore",
+      "bytes": 19,
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793"
+    },
+    {
+      "file": "README.md",
+      "bytes": 7450,
+      "sha256": "772a0241ddb5e548204e764228c459baa7b8b59b24ccab7b5e0a3352c8c834d1"
+    },
+    {
+      "file": "approval.json",
+      "bytes": 1604,
+      "sha256": "a11e2841aee044bb18f79810b5a1f79a4418773d2e2e26a2cc185221d90e0365"
+    },
+    {
+      "file": "before-query.sql",
+      "bytes": 3094,
+      "sha256": "529e37246da557d93099b3ebdc0c11faa7cf269f1ab076a5f6ca56f73faa9b56"
+    },
+    {
+      "file": "download-package.py",
+      "bytes": 5489,
+      "sha256": "53f1114f25bd995b4f05d9b2d3adad7ae2dadc85b4b13f038a84bcc5e7d6b09f"
+    },
+    {
+      "file": "download-package.test.py",
+      "bytes": 2891,
+      "sha256": "4b4c24587d704f832d572f176426d0034c24dab4de814238f72222974f8192f1"
+    },
+    {
+      "file": "freeze-inputs.json",
+      "bytes": 906,
+      "sha256": "5d5ee0a5485c432a63e66b5c6bcf996fa5f518cfd68f690abb484e7b7ac11c5c"
+    },
+    {
+      "file": "freeze-local.mjs",
+      "bytes": 16956,
+      "sha256": "d8ed9aa98fede004263b546cd096bbed982657850decb1202fbec55cf558e31e"
+    },
+    {
+      "file": "frozen.mjs",
+      "bytes": 15024,
+      "sha256": "1d168e5407a5bdc6e027f58991de58a0664576d7c917d5b219fa13f9af4a1d0a"
+    },
+    {
+      "file": "identity-table.json",
+      "bytes": 41559,
+      "sha256": "4ec45168147b60e183b82a66e7bc7ad335f1c8af67414a69e68118f1c004985f"
+    },
+    {
+      "file": "inspection-correction.json",
+      "bytes": 2224,
+      "sha256": "7b4c198e1ee6230aaa362b25e814b652a3a9d1820961fb8658e461d83eeb93b5"
+    },
+    {
+      "file": "plan.json",
+      "bytes": 193655,
+      "sha256": "3c5a18af706b5c1ecd63f8134e5ebfe5b6787d12c6529b06cebfab1d970463c8"
+    },
+    {
+      "file": "publish.mjs",
+      "bytes": 4899,
+      "sha256": "550888cd3a76159fca5e78a9d4e049d0c05cf954c14e5b2110efd22c533733a2"
+    },
+    {
+      "file": "publish.test.mjs",
+      "bytes": 20372,
+      "sha256": "b6becb458d9983899e5a4447d9e670bffa42a942ebb17ffa11ebd37c0266b731"
+    },
+    {
+      "file": "saved-targets.json",
+      "bytes": 14298,
+      "sha256": "3da25244e5301a11c4ca139305a28f556d6d89e07de4d2f5ef27c9c9519e7625"
+    },
+    {
+      "file": "verify-packages.mjs",
+      "bytes": 1520,
+      "sha256": "e2aaafe263a23532cbfc1d8e8901625350687dc72539065f71ed4dd809c249aa"
+    }
+  ],
+  "reused_dependency_hashes": [
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 9031,
+      "sha256": "5524305ba4bd6a0f3867ea2c097c57fb0d610e27ef1d9d64529b64e9c67249de"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/metadata-guard.mjs",
+      "bytes": 4018,
+      "sha256": "cca5354822fe11c007308f7d22ebf84649d2374619e0dd049c7347a9db9e116f"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/publish.mjs",
+      "bytes": 5885,
+      "sha256": "8451746bb6e188f56c5be31064742eaeecdc2f2c6d6e27cb31ab5c7227af6d1f"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "tools/artwork-next-push-20261013/frozen.mjs",
+      "bytes": 7732,
+      "sha256": "3e14eb76a012116492075328c50e6c5907f712004da02d4d3dae541d2617a95b"
+    },
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 30117,
+      "sha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24425,
+      "sha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "source_manifest_file": "latios-trainer-kit32-source-manifest.json",
+  "source_manifest_sha256": "0586b2e6be2499063729d2701669182bd74eef4bf6fce10d320b7522a9fc5ce8",
+  "checked_handoff_file": "source-batches/receipts/en025-en027-corrected32-checked-handoff-20261013T212225684430Z.json",
+  "checked_handoff_sha256": "336deb8eefd5905851170ef7100c6a7d1474ad3da5d2897589542c209e97ec72",
+  "correction_addendum_file": "source-batches/receipts/en025-en027-rhyhorn-correction-20261013T212225684430Z.json",
+  "correction_addendum_sha256": "92bb2a309f8d6472486f26fcace9ffbfddfcdf9beae08a59f795d2149e6b849e",
+  "eligible_fronts": 32,
+  "binding_prefix": "xykit32",
+  "archive": {
+    "id": 638295433,
+    "kind": "github_release_asset",
+    "artifact_directory": "638295433",
+    "sha256": "a28ae10ef8979f2bdf8ba6b2221e4dc856d5a1df10fdd13c111e71214fb5f203",
+    "byte_size": 32934150,
+    "file_count": 130
+  }
+}

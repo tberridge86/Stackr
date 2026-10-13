@@ -1,0 +1,55 @@
+{
+  "addendum_sha256": "92bb2a309f8d6472486f26fcace9ffbfddfcdf9beae08a59f795d2149e6b849e",
+  "checked_handoff_sha256": "336deb8eefd5905851170ef7100c6a7d1474ad3da5d2897589542c209e97ec72",
+  "superseded_observation_receipt_sha256": "ed842aa232e667a5c2322991870c5dc7a7451f42304109bb10319e65843ed3c7",
+  "corrections": [
+    {
+      "printing_id": "c4c82782-0817-4304-815b-bcc0bba3db9b",
+      "sha256": "9e889b833a77cf604a696616dbd6942879b292be92f9119380642e7ca356457f",
+      "variant_id": "4db27107-a95a-4201-883e-5546e4fa520c",
+      "set_code": "tk-xy-latio",
+      "collector_number": "15",
+      "provider_id": "tk8a-15",
+      "width": 728,
+      "height": 1018,
+      "previous_damage_observation": null,
+      "observed_attack_damage": "40",
+      "observed_attack_cost": [
+        "Fighting",
+        "Fighting"
+      ],
+      "observed_attack_text": "This Pokemon does 10 damage to itself.",
+      "source_attack_damage": "40",
+      "reading_error_corrected": true,
+      "provider_metadata_error_established": false,
+      "physical_printing_error_established": false,
+      "original_pixels_modified": false,
+      "canonical_metadata_changed": false,
+      "pixel_identity_sha256": "6c1273a2e36ce3119f33c2dc09f766cb1f0b7e56d3695f91df0b0550cf0c0c64"
+    },
+    {
+      "printing_id": "2edf6f8d-8922-4d4c-9e4c-b1cca68b08a6",
+      "sha256": "6a8f7935c9ac6710b3d48c167b2ab610f08048d10009f06283a314d828560702",
+      "variant_id": "9e23aaee-e76e-4509-a3f6-afdafeed7732",
+      "set_code": "tk-xy-latio",
+      "collector_number": "23",
+      "provider_id": "tk8a-23",
+      "width": 728,
+      "height": 1018,
+      "previous_damage_observation": null,
+      "observed_attack_damage": "40",
+      "observed_attack_cost": [
+        "Fighting",
+        "Fighting"
+      ],
+      "observed_attack_text": "This Pokemon does 10 damage to itself.",
+      "source_attack_damage": "40",
+      "reading_error_corrected": true,
+      "provider_metadata_error_established": false,
+      "physical_printing_error_established": false,
+      "original_pixels_modified": false,
+      "canonical_metadata_changed": false,
+      "pixel_identity_sha256": "f3624a466d09e610a43244f4520a21b360c1819759217cd58a82999d86f3c3f8"
+    }
+  ]
+}
