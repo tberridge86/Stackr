@@ -1,22 +1,22 @@
 {
   "schemaVersion": "stackr-owner-artwork-production-evidence-v1",
   "inventoryId": "STACKR-ARTWORK-20261012",
-  "updatedAt": "2026-10-13T22:44:35.148Z",
+  "updatedAt": "2026-10-13T23:04:11.140Z",
   "scope": "Exact saved artwork list; original identities retained; actual production verification required",
   "summary": {
-    "checkedAt": "2026-10-13T22:40:06.951Z",
+    "checkedAt": "2026-10-13T23:04:00.588Z",
     "totalTasks": 2944,
     "totalBatches": 161,
-    "newlyPublishedFronts": 414,
+    "newlyPublishedFronts": 474,
     "previouslyCorrectedCasesVerified": 605,
-    "liveVerifiedTasks": 1019,
-    "completedBatches": 51,
-    "remainingTasks": 1925,
-    "remainingBatches": 110,
+    "liveVerifiedTasks": 1079,
+    "completedBatches": 54,
+    "remainingTasks": 1865,
+    "remainingBatches": 107,
     "remainingGroups": [
       {
         "task": "Find permitted exact card fronts",
-        "items": 1631
+        "items": 1571
       },
       {
         "task": "Find permitted Traditional Chinese set logos",
@@ -31,13 +31,13 @@
         "items": 2
       }
     ],
-    "sourceLeadTargets": 419,
+    "sourceLeadTargets": 421,
     "scope": "Fixed saved list, retaining original identities; completion requires actual production API and image verification. Source gathering alone is not completion.",
-    "queuedItems": 88,
-    "queuedBatches": 7,
-    "frontTasksNotYetGathered": 1529,
+    "queuedItems": 30,
+    "queuedBatches": 3,
+    "frontTasksNotYetGathered": 1527,
     "smallOriginalCandidates": 14,
-    "frontTasksNotYetPrepared": 1543,
+    "frontTasksNotYetPrepared": 1541,
     "contentHeldOriginalCandidates": 0
   },
   "ownerAuthority": {
@@ -51,18 +51,18 @@
     "extraPermissionPromptRequired": false,
     "sourceLicenceFacts": "Existing source facts retained; owner queue direction does not invent vendor licence metadata."
   },
-  "preparedOriginals": 405,
-  "preparedDerivatives": 1215,
-  "publishedVerifiedOriginals": 317,
-  "queuedItems": 88,
+  "preparedOriginals": 407,
+  "preparedDerivatives": 1221,
+  "publishedVerifiedOriginals": 377,
+  "queuedItems": 30,
   "pendingRun": {
-    "id": 38479703766,
-    "url": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
-    "queueId": "STACKR-EN-FRONTS-20261013-SS060",
-    "expectedMainSHA": "892b239334151f978b1327218baa3809a9e745c4",
-    "fronts": 60,
-    "printingCount": 60,
-    "state": "Protected production job dispatched; publication and independent API verification pending"
+    "id": 38481691805,
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/38481691805",
+    "fronts": 28,
+    "printingCount": 28,
+    "queueId": "STACKR-EN-FRONTS-20261013-WIG028",
+    "expectedMainSha": "ed3e4fb114d23bdf2c1cb38323c5b20038a492a0",
+    "state": "Dispatched; protected production gate pending"
   },
   "packages": [
     {
@@ -126,6 +126,12 @@
       "releaseAssetId": 638452571,
       "byteSize": 28775194,
       "sha256": "505f413ba82ae242d25bbb108114c25c82617e88a3d646b35629318d3ad6a1b0"
+    },
+    {
+      "queueId": "STACKR-EN-FRONTS-20261013-ALT002",
+      "releaseAssetId": 638504756,
+      "byteSize": 1250882,
+      "sha256": "da73a211f009a3ee5f3bb61bbcccdc765744c66159c0480aca9c9301ac2cc21c"
     }
   ],
   "holds": [
@@ -22921,11 +22927,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "0579f81f-8c1a-42c6-bdf3-3c5638233efc",
+        "assetId": "artwork-recovered-20260928:0579f81f-8c1a-42c6-bdf3-3c5638233efc:7b67805076cb894a2735294b851300bb9c932d06929f1f8c2f8649d42e24e641",
+        "contentSha256": "7b67805076cb894a2735294b851300bb9c932d06929f1f8c2f8649d42e24e641",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/0579f81f-8c1a-42c6-bdf3-3c5638233efc/7b67805076cb894a2735294b851300bb9c932d06929f1f8c2f8649d42e24e641/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-034",
@@ -22978,11 +22998,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "078742cd-6333-46ff-84f6-310ed0c6abd0",
+        "assetId": "artwork-recovered-20260928:078742cd-6333-46ff-84f6-310ed0c6abd0:db3d2e5e0a170201bb76421f29c2ef4cd575e8174eaea6141df3c876eff79e08",
+        "contentSha256": "db3d2e5e0a170201bb76421f29c2ef4cd575e8174eaea6141df3c876eff79e08",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/078742cd-6333-46ff-84f6-310ed0c6abd0/db3d2e5e0a170201bb76421f29c2ef4cd575e8174eaea6141df3c876eff79e08/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-034",
@@ -23035,11 +23069,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "0e9298bd-74c5-48f8-8323-5c0a4911a0af",
+        "assetId": "artwork-recovered-20260928:0e9298bd-74c5-48f8-8323-5c0a4911a0af:c1cb1eb90cb92747cf54a4f1372453345524fa79ad59fc2d134bc447df058d2a",
+        "contentSha256": "c1cb1eb90cb92747cf54a4f1372453345524fa79ad59fc2d134bc447df058d2a",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/0e9298bd-74c5-48f8-8323-5c0a4911a0af/c1cb1eb90cb92747cf54a4f1372453345524fa79ad59fc2d134bc447df058d2a/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-034",
@@ -23092,11 +23140,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "150d0ee5-9429-4cf0-8707-7ffe266b8b0f",
+        "assetId": "artwork-recovered-20260928:150d0ee5-9429-4cf0-8707-7ffe266b8b0f:866484e125f65a3257e6408b05b229de9a737c573c14b2faa376df72ee96720c",
+        "contentSha256": "866484e125f65a3257e6408b05b229de9a737c573c14b2faa376df72ee96720c",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/150d0ee5-9429-4cf0-8707-7ffe266b8b0f/866484e125f65a3257e6408b05b229de9a737c573c14b2faa376df72ee96720c/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-033",
@@ -23149,11 +23211,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "15587724-107d-43da-9e1a-33d6b4b2f993",
+        "assetId": "artwork-recovered-20260928:15587724-107d-43da-9e1a-33d6b4b2f993:678e7c452cf81c7da60c1c43074450192a5e42313096fce609268d0d3eb0fca8",
+        "contentSha256": "678e7c452cf81c7da60c1c43074450192a5e42313096fce609268d0d3eb0fca8",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/15587724-107d-43da-9e1a-33d6b4b2f993/678e7c452cf81c7da60c1c43074450192a5e42313096fce609268d0d3eb0fca8/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-034",
@@ -23206,11 +23282,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "18949c4f-ed23-4ab9-96be-9e945c5797ee",
+        "assetId": "artwork-recovered-20260928:18949c4f-ed23-4ab9-96be-9e945c5797ee:fd393c703724cc42fdb20f0776481fd3acce6077902a640085595260bd0b8aaf",
+        "contentSha256": "fd393c703724cc42fdb20f0776481fd3acce6077902a640085595260bd0b8aaf",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/18949c4f-ed23-4ab9-96be-9e945c5797ee/fd393c703724cc42fdb20f0776481fd3acce6077902a640085595260bd0b8aaf/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-032",
@@ -23263,11 +23353,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "1d70b9d0-2c26-4b26-8de2-e1e5962f2ebf",
+        "assetId": "artwork-recovered-20260928:1d70b9d0-2c26-4b26-8de2-e1e5962f2ebf:bb5b115e2824bd466ae1559f76cf0e5227b716a435e873f0b9ccf12309c46229",
+        "contentSha256": "bb5b115e2824bd466ae1559f76cf0e5227b716a435e873f0b9ccf12309c46229",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/1d70b9d0-2c26-4b26-8de2-e1e5962f2ebf/bb5b115e2824bd466ae1559f76cf0e5227b716a435e873f0b9ccf12309c46229/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-032",
@@ -23320,11 +23424,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "1ff39e29-941d-4a63-af95-d355bbf568dc",
+        "assetId": "artwork-recovered-20260928:1ff39e29-941d-4a63-af95-d355bbf568dc:21d6e115129220e42503006b2f9004d0b000e293ca37f7ad8da1bae650a6033b",
+        "contentSha256": "21d6e115129220e42503006b2f9004d0b000e293ca37f7ad8da1bae650a6033b",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/1ff39e29-941d-4a63-af95-d355bbf568dc/21d6e115129220e42503006b2f9004d0b000e293ca37f7ad8da1bae650a6033b/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-032",
@@ -23377,11 +23495,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "324d943c-a813-4107-ab04-c2d61f12b06f",
+        "assetId": "artwork-recovered-20260928:324d943c-a813-4107-ab04-c2d61f12b06f:ce01ff75e82f7fdc3448eee768cda5bb843af2043d40b09514b6b4a927ca26b4",
+        "contentSha256": "ce01ff75e82f7fdc3448eee768cda5bb843af2043d40b09514b6b4a927ca26b4",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/324d943c-a813-4107-ab04-c2d61f12b06f/ce01ff75e82f7fdc3448eee768cda5bb843af2043d40b09514b6b4a927ca26b4/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-032",
@@ -23434,11 +23566,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "3429c3d6-cffc-4cc3-b71f-c1914a1a3619",
+        "assetId": "artwork-recovered-20260928:3429c3d6-cffc-4cc3-b71f-c1914a1a3619:557e3f538dfd0299f75adbbf176367c2c1ab1765373406fef81f7aec23d6adcc",
+        "contentSha256": "557e3f538dfd0299f75adbbf176367c2c1ab1765373406fef81f7aec23d6adcc",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/3429c3d6-cffc-4cc3-b71f-c1914a1a3619/557e3f538dfd0299f75adbbf176367c2c1ab1765373406fef81f7aec23d6adcc/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-032",
@@ -23491,11 +23637,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "3810e52c-e820-49de-9f0a-c19d66fadad7",
+        "assetId": "artwork-recovered-20260928:3810e52c-e820-49de-9f0a-c19d66fadad7:c5db14f261f2b1a3bbf3ed9235a38b70bbae6c84785de1f93276d83918f301ff",
+        "contentSha256": "c5db14f261f2b1a3bbf3ed9235a38b70bbae6c84785de1f93276d83918f301ff",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/3810e52c-e820-49de-9f0a-c19d66fadad7/c5db14f261f2b1a3bbf3ed9235a38b70bbae6c84785de1f93276d83918f301ff/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-032",
@@ -23548,11 +23708,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "4012dc15-cb5a-4ad8-9340-7711d2da7f86",
+        "assetId": "artwork-recovered-20260928:4012dc15-cb5a-4ad8-9340-7711d2da7f86:32d3c667191a0d11fac8328789cc4537a38f23ee2a4034230e5bbd060909fdab",
+        "contentSha256": "32d3c667191a0d11fac8328789cc4537a38f23ee2a4034230e5bbd060909fdab",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/4012dc15-cb5a-4ad8-9340-7711d2da7f86/32d3c667191a0d11fac8328789cc4537a38f23ee2a4034230e5bbd060909fdab/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-034",
@@ -23605,11 +23779,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "4139bd95-c582-40cf-a021-1b268d80318d",
+        "assetId": "artwork-recovered-20260928:4139bd95-c582-40cf-a021-1b268d80318d:0566fe08a8c94bab18a6582a916d4f13ca2479c88b92d61ec0b7c2f592c146b0",
+        "contentSha256": "0566fe08a8c94bab18a6582a916d4f13ca2479c88b92d61ec0b7c2f592c146b0",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/4139bd95-c582-40cf-a021-1b268d80318d/0566fe08a8c94bab18a6582a916d4f13ca2479c88b92d61ec0b7c2f592c146b0/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-033",
@@ -23662,11 +23850,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "4294d508-52c8-4284-ad8e-0d03660cb845",
+        "assetId": "artwork-recovered-20260928:4294d508-52c8-4284-ad8e-0d03660cb845:ee3214980ffd0a196eb9955d7f927e2a78a79e63648225c08a6a809e9462a6c5",
+        "contentSha256": "ee3214980ffd0a196eb9955d7f927e2a78a79e63648225c08a6a809e9462a6c5",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/4294d508-52c8-4284-ad8e-0d03660cb845/ee3214980ffd0a196eb9955d7f927e2a78a79e63648225c08a6a809e9462a6c5/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-034",
@@ -23719,11 +23921,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "42c5e484-f71a-4a36-a064-e9bc7def1b12",
+        "assetId": "artwork-recovered-20260928:42c5e484-f71a-4a36-a064-e9bc7def1b12:d0c702bed9adffd24db67e36cb127ea125bd66f4576409d6be843c34605747a7",
+        "contentSha256": "d0c702bed9adffd24db67e36cb127ea125bd66f4576409d6be843c34605747a7",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/42c5e484-f71a-4a36-a064-e9bc7def1b12/d0c702bed9adffd24db67e36cb127ea125bd66f4576409d6be843c34605747a7/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-034",
@@ -23776,11 +23992,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "43045c37-839d-4e3b-9554-f5cdb55a8b20",
+        "assetId": "artwork-recovered-20260928:43045c37-839d-4e3b-9554-f5cdb55a8b20:37f390643883494e97202620ee64c44f1c673fbe3c90e72bec8eda00fce2fa7f",
+        "contentSha256": "37f390643883494e97202620ee64c44f1c673fbe3c90e72bec8eda00fce2fa7f",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/43045c37-839d-4e3b-9554-f5cdb55a8b20/37f390643883494e97202620ee64c44f1c673fbe3c90e72bec8eda00fce2fa7f/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-032",
@@ -23833,11 +24063,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "434cc7ae-9a89-4997-a8fb-037c640ab485",
+        "assetId": "artwork-recovered-20260928:434cc7ae-9a89-4997-a8fb-037c640ab485:fd9cf03c5fc8e63f3542940a6155126de9f24768eb7ee598d675c6ac10680d39",
+        "contentSha256": "fd9cf03c5fc8e63f3542940a6155126de9f24768eb7ee598d675c6ac10680d39",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/434cc7ae-9a89-4997-a8fb-037c640ab485/fd9cf03c5fc8e63f3542940a6155126de9f24768eb7ee598d675c6ac10680d39/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-032",
@@ -23890,11 +24134,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "4437be74-8eca-45e9-b26b-566aa21ea490",
+        "assetId": "artwork-recovered-20260928:4437be74-8eca-45e9-b26b-566aa21ea490:d7c5a2b15f90f47329433c6c19bde5e88afd01b1093287eb24b1579657f7b1f6",
+        "contentSha256": "d7c5a2b15f90f47329433c6c19bde5e88afd01b1093287eb24b1579657f7b1f6",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/4437be74-8eca-45e9-b26b-566aa21ea490/d7c5a2b15f90f47329433c6c19bde5e88afd01b1093287eb24b1579657f7b1f6/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-034",
@@ -23947,11 +24205,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "464f4750-2b3c-42e1-8448-7f3da93cf893",
+        "assetId": "artwork-recovered-20260928:464f4750-2b3c-42e1-8448-7f3da93cf893:dffa38e9d01cbceb67fffe83ed90c079bfef6a19b0c304671fb3c41d2a2bc971",
+        "contentSha256": "dffa38e9d01cbceb67fffe83ed90c079bfef6a19b0c304671fb3c41d2a2bc971",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/464f4750-2b3c-42e1-8448-7f3da93cf893/dffa38e9d01cbceb67fffe83ed90c079bfef6a19b0c304671fb3c41d2a2bc971/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-035",
@@ -24004,11 +24276,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "46f3d410-0617-40ed-bbc5-08587d95c90e",
+        "assetId": "artwork-recovered-20260928:46f3d410-0617-40ed-bbc5-08587d95c90e:4ac38da7220cda8b70f457b436290a1063e72926f5324dc4fd838f0c251ab7ee",
+        "contentSha256": "4ac38da7220cda8b70f457b436290a1063e72926f5324dc4fd838f0c251ab7ee",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/46f3d410-0617-40ed-bbc5-08587d95c90e/4ac38da7220cda8b70f457b436290a1063e72926f5324dc4fd838f0c251ab7ee/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-032",
@@ -24061,11 +24347,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "48c5dd4a-25ae-4271-a42a-b0603a92e3de",
+        "assetId": "artwork-recovered-20260928:48c5dd4a-25ae-4271-a42a-b0603a92e3de:a35f20873ee9f7fe1a08c132395ba408e4035d263e22bb00b0f852f347326ab1",
+        "contentSha256": "a35f20873ee9f7fe1a08c132395ba408e4035d263e22bb00b0f852f347326ab1",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/48c5dd4a-25ae-4271-a42a-b0603a92e3de/a35f20873ee9f7fe1a08c132395ba408e4035d263e22bb00b0f852f347326ab1/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-034",
@@ -24118,11 +24418,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "4b139f27-b3a8-4819-b214-65fb59ed0dc5",
+        "assetId": "artwork-recovered-20260928:4b139f27-b3a8-4819-b214-65fb59ed0dc5:6e8f2de03930f46796c4eef2d54f26dca73aa47a6cb80fbc2b43e03821c16f67",
+        "contentSha256": "6e8f2de03930f46796c4eef2d54f26dca73aa47a6cb80fbc2b43e03821c16f67",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/4b139f27-b3a8-4819-b214-65fb59ed0dc5/6e8f2de03930f46796c4eef2d54f26dca73aa47a6cb80fbc2b43e03821c16f67/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-032",
@@ -24175,11 +24489,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "4dc036f6-343c-42d3-aae5-da0ffa007503",
+        "assetId": "artwork-recovered-20260928:4dc036f6-343c-42d3-aae5-da0ffa007503:44d85f4b104054832fe4dfb63c6af0e95746d00e397754db56e380292e6acfb0",
+        "contentSha256": "44d85f4b104054832fe4dfb63c6af0e95746d00e397754db56e380292e6acfb0",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/4dc036f6-343c-42d3-aae5-da0ffa007503/44d85f4b104054832fe4dfb63c6af0e95746d00e397754db56e380292e6acfb0/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-034",
@@ -24232,11 +24560,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "575ca6d6-620b-4131-88e9-5fea7097d96c",
+        "assetId": "artwork-recovered-20260928:575ca6d6-620b-4131-88e9-5fea7097d96c:01ab28aea77ac78430c7fb60efbbca5f36aed733b9aa3544b7966f57e3ebf2b9",
+        "contentSha256": "01ab28aea77ac78430c7fb60efbbca5f36aed733b9aa3544b7966f57e3ebf2b9",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/575ca6d6-620b-4131-88e9-5fea7097d96c/01ab28aea77ac78430c7fb60efbbca5f36aed733b9aa3544b7966f57e3ebf2b9/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-032",
@@ -24289,11 +24631,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "5c19952c-b579-4053-b507-845ac1279fba",
+        "assetId": "artwork-recovered-20260928:5c19952c-b579-4053-b507-845ac1279fba:64539279fbdfe99e79ffc81df2f2ba32c07e4649d09cb376e172b8d4f01281dc",
+        "contentSha256": "64539279fbdfe99e79ffc81df2f2ba32c07e4649d09cb376e172b8d4f01281dc",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/5c19952c-b579-4053-b507-845ac1279fba/64539279fbdfe99e79ffc81df2f2ba32c07e4649d09cb376e172b8d4f01281dc/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-034",
@@ -24346,11 +24702,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "5db233df-ba25-40e9-b4a6-663ed2120ec3",
+        "assetId": "artwork-recovered-20260928:5db233df-ba25-40e9-b4a6-663ed2120ec3:0395973a60b06f99aa3a0cd6821f999080c1820ff5b72813df251936a02851c2",
+        "contentSha256": "0395973a60b06f99aa3a0cd6821f999080c1820ff5b72813df251936a02851c2",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/5db233df-ba25-40e9-b4a6-663ed2120ec3/0395973a60b06f99aa3a0cd6821f999080c1820ff5b72813df251936a02851c2/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-035",
@@ -24403,11 +24773,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "5ee5fd0e-f801-437b-8a2b-5e3228e397de",
+        "assetId": "artwork-recovered-20260928:5ee5fd0e-f801-437b-8a2b-5e3228e397de:660664e83470bc76780bab36f978522deb3bc65620ded389d84729cbc3f25e7b",
+        "contentSha256": "660664e83470bc76780bab36f978522deb3bc65620ded389d84729cbc3f25e7b",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/5ee5fd0e-f801-437b-8a2b-5e3228e397de/660664e83470bc76780bab36f978522deb3bc65620ded389d84729cbc3f25e7b/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-032",
@@ -24460,11 +24844,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "6a9e1f9a-f50f-4d1c-ade3-7befbcd70842",
+        "assetId": "artwork-recovered-20260928:6a9e1f9a-f50f-4d1c-ade3-7befbcd70842:8e1bd2e0e45618e4960df9ca55922c2a1d37cabeeb6de1a493d695a5ad925c1d",
+        "contentSha256": "8e1bd2e0e45618e4960df9ca55922c2a1d37cabeeb6de1a493d695a5ad925c1d",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/6a9e1f9a-f50f-4d1c-ade3-7befbcd70842/8e1bd2e0e45618e4960df9ca55922c2a1d37cabeeb6de1a493d695a5ad925c1d/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-034",
@@ -24517,11 +24915,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "6c9284da-425a-4105-a62e-8ccdb5581423",
+        "assetId": "artwork-recovered-20260928:6c9284da-425a-4105-a62e-8ccdb5581423:c98f3113b3c33b9084740a1b45433ed89d2ccc9f2f89d14054c3742a765be5b4",
+        "contentSha256": "c98f3113b3c33b9084740a1b45433ed89d2ccc9f2f89d14054c3742a765be5b4",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/6c9284da-425a-4105-a62e-8ccdb5581423/c98f3113b3c33b9084740a1b45433ed89d2ccc9f2f89d14054c3742a765be5b4/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-034",
@@ -24574,11 +24986,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "76b24fef-d692-40af-8a3f-82bb564c379d",
+        "assetId": "artwork-recovered-20260928:76b24fef-d692-40af-8a3f-82bb564c379d:5fce3f1909c8db6a94958190bac08c9f185555b48804a1058454d4e88f6510b7",
+        "contentSha256": "5fce3f1909c8db6a94958190bac08c9f185555b48804a1058454d4e88f6510b7",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/76b24fef-d692-40af-8a3f-82bb564c379d/5fce3f1909c8db6a94958190bac08c9f185555b48804a1058454d4e88f6510b7/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-034",
@@ -24631,11 +25057,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "7a64fa6a-93d2-4011-85f6-cc972e5c917c",
+        "assetId": "artwork-recovered-20260928:7a64fa6a-93d2-4011-85f6-cc972e5c917c:3cb5ab74baa89a9bad46496e8bc1313e8748f7649dc8340068f9221959eff139",
+        "contentSha256": "3cb5ab74baa89a9bad46496e8bc1313e8748f7649dc8340068f9221959eff139",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/7a64fa6a-93d2-4011-85f6-cc972e5c917c/3cb5ab74baa89a9bad46496e8bc1313e8748f7649dc8340068f9221959eff139/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-034",
@@ -24688,11 +25128,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "80b33abd-9bf7-411f-984e-28d5c4c45d68",
+        "assetId": "artwork-recovered-20260928:80b33abd-9bf7-411f-984e-28d5c4c45d68:3e899cbe600119762f4bdaadbdea9aa2fe2e97164ebb934718cb538fdbf27007",
+        "contentSha256": "3e899cbe600119762f4bdaadbdea9aa2fe2e97164ebb934718cb538fdbf27007",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/80b33abd-9bf7-411f-984e-28d5c4c45d68/3e899cbe600119762f4bdaadbdea9aa2fe2e97164ebb934718cb538fdbf27007/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-034",
@@ -24745,11 +25199,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "85833469-4229-448d-adfb-a3c068702aae",
+        "assetId": "artwork-recovered-20260928:85833469-4229-448d-adfb-a3c068702aae:3a9d937fb3eb89b95392abf187a081547fed08df50768a1f7978198b443d2e70",
+        "contentSha256": "3a9d937fb3eb89b95392abf187a081547fed08df50768a1f7978198b443d2e70",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/85833469-4229-448d-adfb-a3c068702aae/3a9d937fb3eb89b95392abf187a081547fed08df50768a1f7978198b443d2e70/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-033",
@@ -24802,11 +25270,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "8a78048d-e33c-4fa9-8579-8198d2ed8be3",
+        "assetId": "artwork-recovered-20260928:8a78048d-e33c-4fa9-8579-8198d2ed8be3:bb97bbefb485ff93798203a603b089eef822abf8106186f409c571232e56eb9c",
+        "contentSha256": "bb97bbefb485ff93798203a603b089eef822abf8106186f409c571232e56eb9c",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/8a78048d-e33c-4fa9-8579-8198d2ed8be3/bb97bbefb485ff93798203a603b089eef822abf8106186f409c571232e56eb9c/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-032",
@@ -24859,11 +25341,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "91323421-73e3-409c-8c67-b0d7f2f9d55e",
+        "assetId": "artwork-recovered-20260928:91323421-73e3-409c-8c67-b0d7f2f9d55e:7ea6f6cad5ed05d59337a898a47585b0db9e2b413e9b397c2bfacad312a16031",
+        "contentSha256": "7ea6f6cad5ed05d59337a898a47585b0db9e2b413e9b397c2bfacad312a16031",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/91323421-73e3-409c-8c67-b0d7f2f9d55e/7ea6f6cad5ed05d59337a898a47585b0db9e2b413e9b397c2bfacad312a16031/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-032",
@@ -24916,11 +25412,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "97ebc468-d31e-4547-8470-c1a0acad7ae5",
+        "assetId": "artwork-recovered-20260928:97ebc468-d31e-4547-8470-c1a0acad7ae5:9c0f7331074655958a49937986687aed9fa84b863be7ea13106a0b1185333daf",
+        "contentSha256": "9c0f7331074655958a49937986687aed9fa84b863be7ea13106a0b1185333daf",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/97ebc468-d31e-4547-8470-c1a0acad7ae5/9c0f7331074655958a49937986687aed9fa84b863be7ea13106a0b1185333daf/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-032",
@@ -24973,11 +25483,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "9b8133b7-ad14-42cb-b914-f5cbdb5e8c0b",
+        "assetId": "artwork-recovered-20260928:9b8133b7-ad14-42cb-b914-f5cbdb5e8c0b:d31d6f5467be594c626df9b5dd44018674a7fe50d0df3f1e0cc8d1f3fe15141d",
+        "contentSha256": "d31d6f5467be594c626df9b5dd44018674a7fe50d0df3f1e0cc8d1f3fe15141d",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/9b8133b7-ad14-42cb-b914-f5cbdb5e8c0b/d31d6f5467be594c626df9b5dd44018674a7fe50d0df3f1e0cc8d1f3fe15141d/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-035",
@@ -25030,11 +25554,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "9d00655f-8fda-4d30-a011-c0229a9e9029",
+        "assetId": "artwork-recovered-20260928:9d00655f-8fda-4d30-a011-c0229a9e9029:912e9f49125666d188ab2cb2e4548339e95ecbac0694403251e3bbddecbd269b",
+        "contentSha256": "912e9f49125666d188ab2cb2e4548339e95ecbac0694403251e3bbddecbd269b",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/9d00655f-8fda-4d30-a011-c0229a9e9029/912e9f49125666d188ab2cb2e4548339e95ecbac0694403251e3bbddecbd269b/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-034",
@@ -25087,11 +25625,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "9dedf489-bc99-4e83-944e-a06f68d3aa3e",
+        "assetId": "artwork-recovered-20260928:9dedf489-bc99-4e83-944e-a06f68d3aa3e:b09a78e14346cdb2e456c3db70319c115c8ec158cc796e5d75641a589abfa713",
+        "contentSha256": "b09a78e14346cdb2e456c3db70319c115c8ec158cc796e5d75641a589abfa713",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/9dedf489-bc99-4e83-944e-a06f68d3aa3e/b09a78e14346cdb2e456c3db70319c115c8ec158cc796e5d75641a589abfa713/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-033",
@@ -25144,11 +25696,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "a25422c1-7f25-47b8-ac38-684f031ab6f6",
+        "assetId": "artwork-recovered-20260928:a25422c1-7f25-47b8-ac38-684f031ab6f6:4c41a9b8a2b4c8991a6a962548b19abb09da3384b0d4c90bde5e16b16058c5cd",
+        "contentSha256": "4c41a9b8a2b4c8991a6a962548b19abb09da3384b0d4c90bde5e16b16058c5cd",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/a25422c1-7f25-47b8-ac38-684f031ab6f6/4c41a9b8a2b4c8991a6a962548b19abb09da3384b0d4c90bde5e16b16058c5cd/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-034",
@@ -25201,11 +25767,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "a9a92fa2-c116-45bc-a2e6-c58307fe7dcf",
+        "assetId": "artwork-recovered-20260928:a9a92fa2-c116-45bc-a2e6-c58307fe7dcf:59cace0fa6aed9c842754e2a2767d9d57cb0276c03b6c6a343c78e81c3f1ec29",
+        "contentSha256": "59cace0fa6aed9c842754e2a2767d9d57cb0276c03b6c6a343c78e81c3f1ec29",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/a9a92fa2-c116-45bc-a2e6-c58307fe7dcf/59cace0fa6aed9c842754e2a2767d9d57cb0276c03b6c6a343c78e81c3f1ec29/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-034",
@@ -25258,11 +25838,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "aa5afff2-f878-4b12-bc44-7c2501865dd4",
+        "assetId": "artwork-recovered-20260928:aa5afff2-f878-4b12-bc44-7c2501865dd4:7a37c11d137bf9f445d69da6e0e65e77bfaf2285b11821310692292ec6ed4b2e",
+        "contentSha256": "7a37c11d137bf9f445d69da6e0e65e77bfaf2285b11821310692292ec6ed4b2e",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/aa5afff2-f878-4b12-bc44-7c2501865dd4/7a37c11d137bf9f445d69da6e0e65e77bfaf2285b11821310692292ec6ed4b2e/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-032",
@@ -25315,11 +25909,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "abccea61-8dba-447d-b446-0bd20f36f4ba",
+        "assetId": "artwork-recovered-20260928:abccea61-8dba-447d-b446-0bd20f36f4ba:2cb444080512e86037452ec3cf6ed61527790061e4f2ef64e691f58dcafc5bdd",
+        "contentSha256": "2cb444080512e86037452ec3cf6ed61527790061e4f2ef64e691f58dcafc5bdd",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/abccea61-8dba-447d-b446-0bd20f36f4ba/2cb444080512e86037452ec3cf6ed61527790061e4f2ef64e691f58dcafc5bdd/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-031",
@@ -25372,11 +25980,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "b2db7f0f-bea6-4133-870d-74e8de0e998a",
+        "assetId": "artwork-recovered-20260928:b2db7f0f-bea6-4133-870d-74e8de0e998a:5c385c4e8654094f52b59cd743c6b1bc92b37ead26787eec2fad3738d0122c41",
+        "contentSha256": "5c385c4e8654094f52b59cd743c6b1bc92b37ead26787eec2fad3738d0122c41",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/b2db7f0f-bea6-4133-870d-74e8de0e998a/5c385c4e8654094f52b59cd743c6b1bc92b37ead26787eec2fad3738d0122c41/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-032",
@@ -25429,11 +26051,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "b3de6315-03db-49a3-8227-8ccd8a0ce10d",
+        "assetId": "artwork-recovered-20260928:b3de6315-03db-49a3-8227-8ccd8a0ce10d:7021e66001e51b57630d87a7a41d5c29a6db9528aa7dc462ef379eabadf10bb4",
+        "contentSha256": "7021e66001e51b57630d87a7a41d5c29a6db9528aa7dc462ef379eabadf10bb4",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/b3de6315-03db-49a3-8227-8ccd8a0ce10d/7021e66001e51b57630d87a7a41d5c29a6db9528aa7dc462ef379eabadf10bb4/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-032",
@@ -25486,11 +26122,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "b836a658-1cb8-4ce0-a19d-33e584158ec6",
+        "assetId": "artwork-recovered-20260928:b836a658-1cb8-4ce0-a19d-33e584158ec6:f7d27be6da3377d4b971fd19cfcad46d279d0d6186fba16b979f371468901e7e",
+        "contentSha256": "f7d27be6da3377d4b971fd19cfcad46d279d0d6186fba16b979f371468901e7e",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/b836a658-1cb8-4ce0-a19d-33e584158ec6/f7d27be6da3377d4b971fd19cfcad46d279d0d6186fba16b979f371468901e7e/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-034",
@@ -25543,11 +26193,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "bd25b1df-e903-4c31-8f9a-4f7365d51bc8",
+        "assetId": "artwork-recovered-20260928:bd25b1df-e903-4c31-8f9a-4f7365d51bc8:38236f35ebbd2845e3bcdbdc665495182ca88e655fb700cee8f3bc7c3fa37ef9",
+        "contentSha256": "38236f35ebbd2845e3bcdbdc665495182ca88e655fb700cee8f3bc7c3fa37ef9",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/bd25b1df-e903-4c31-8f9a-4f7365d51bc8/38236f35ebbd2845e3bcdbdc665495182ca88e655fb700cee8f3bc7c3fa37ef9/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-031",
@@ -25600,11 +26264,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "bdc5dc0d-673d-42d2-a82c-b74f20fe5f7e",
+        "assetId": "artwork-recovered-20260928:bdc5dc0d-673d-42d2-a82c-b74f20fe5f7e:895f0f966f60622cc55517a6c648ec4cab30c853d7301c78556817fdcbdd0118",
+        "contentSha256": "895f0f966f60622cc55517a6c648ec4cab30c853d7301c78556817fdcbdd0118",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/bdc5dc0d-673d-42d2-a82c-b74f20fe5f7e/895f0f966f60622cc55517a6c648ec4cab30c853d7301c78556817fdcbdd0118/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-032",
@@ -25657,11 +26335,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "c38ee5dc-5594-4561-aea3-9754b2af6208",
+        "assetId": "artwork-recovered-20260928:c38ee5dc-5594-4561-aea3-9754b2af6208:6d1d3d70ce45ed3d55ab540447ae083493aac648e87500d18eda7b11164f4845",
+        "contentSha256": "6d1d3d70ce45ed3d55ab540447ae083493aac648e87500d18eda7b11164f4845",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/c38ee5dc-5594-4561-aea3-9754b2af6208/6d1d3d70ce45ed3d55ab540447ae083493aac648e87500d18eda7b11164f4845/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-034",
@@ -25714,11 +26406,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "cae84be4-5560-4e32-9544-a62e4254e452",
+        "assetId": "artwork-recovered-20260928:cae84be4-5560-4e32-9544-a62e4254e452:a80f6a6c019cabbc22322f48cf88693290a50f84d97395f4463a217fc80a4e07",
+        "contentSha256": "a80f6a6c019cabbc22322f48cf88693290a50f84d97395f4463a217fc80a4e07",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/cae84be4-5560-4e32-9544-a62e4254e452/a80f6a6c019cabbc22322f48cf88693290a50f84d97395f4463a217fc80a4e07/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-032",
@@ -25771,11 +26477,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "cb9cf895-ee72-445a-9402-282046ca3e59",
+        "assetId": "artwork-recovered-20260928:cb9cf895-ee72-445a-9402-282046ca3e59:a41e5ab13ad080fd6adffe3d7d80e69b843ded201dedfb1e81db53e887f09bf3",
+        "contentSha256": "a41e5ab13ad080fd6adffe3d7d80e69b843ded201dedfb1e81db53e887f09bf3",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/cb9cf895-ee72-445a-9402-282046ca3e59/a41e5ab13ad080fd6adffe3d7d80e69b843ded201dedfb1e81db53e887f09bf3/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-032",
@@ -25828,11 +26548,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "d4767396-f6b5-4918-94d6-73295df5391d",
+        "assetId": "artwork-recovered-20260928:d4767396-f6b5-4918-94d6-73295df5391d:de8701155a6334a5c7738e7613754264b74c087f987546d00d94eb15702c4cd9",
+        "contentSha256": "de8701155a6334a5c7738e7613754264b74c087f987546d00d94eb15702c4cd9",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/d4767396-f6b5-4918-94d6-73295df5391d/de8701155a6334a5c7738e7613754264b74c087f987546d00d94eb15702c4cd9/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-032",
@@ -25885,11 +26619,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "d476fe6f-f616-482d-a274-2a0c35a5a066",
+        "assetId": "artwork-recovered-20260928:d476fe6f-f616-482d-a274-2a0c35a5a066:3ceb217dc636a21fa203cf8a3df59d04abcadc526ba094ee69a16eea2dfff676",
+        "contentSha256": "3ceb217dc636a21fa203cf8a3df59d04abcadc526ba094ee69a16eea2dfff676",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/d476fe6f-f616-482d-a274-2a0c35a5a066/3ceb217dc636a21fa203cf8a3df59d04abcadc526ba094ee69a16eea2dfff676/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-032",
@@ -25942,11 +26690,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "d49f2a24-ae5c-4ff4-92c1-de90bd1e491e",
+        "assetId": "artwork-recovered-20260928:d49f2a24-ae5c-4ff4-92c1-de90bd1e491e:1536334f3a6afbe84f7e27576399d10d38f4b3e3a45e31123c05fdd3a6b1aaa4",
+        "contentSha256": "1536334f3a6afbe84f7e27576399d10d38f4b3e3a45e31123c05fdd3a6b1aaa4",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/d49f2a24-ae5c-4ff4-92c1-de90bd1e491e/1536334f3a6afbe84f7e27576399d10d38f4b3e3a45e31123c05fdd3a6b1aaa4/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-034",
@@ -25999,11 +26761,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "d657bf06-8d28-470e-b568-408797733d39",
+        "assetId": "artwork-recovered-20260928:d657bf06-8d28-470e-b568-408797733d39:457a12f29aa0e80a33b991c6cbcd94867bb545ac6512f20a70f90104ff5a9950",
+        "contentSha256": "457a12f29aa0e80a33b991c6cbcd94867bb545ac6512f20a70f90104ff5a9950",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/d657bf06-8d28-470e-b568-408797733d39/457a12f29aa0e80a33b991c6cbcd94867bb545ac6512f20a70f90104ff5a9950/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-034",
@@ -26056,11 +26832,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "df6e1241-8607-4545-b748-d67c6eb6e78f",
+        "assetId": "artwork-recovered-20260928:df6e1241-8607-4545-b748-d67c6eb6e78f:282a778fac05ddfb9e3816cf0119d96d183878d00673cbbcdb816b30899ac261",
+        "contentSha256": "282a778fac05ddfb9e3816cf0119d96d183878d00673cbbcdb816b30899ac261",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/df6e1241-8607-4545-b748-d67c6eb6e78f/282a778fac05ddfb9e3816cf0119d96d183878d00673cbbcdb816b30899ac261/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-031",
@@ -26113,11 +26903,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "e2aba3d6-b018-4103-9258-92dfdc4b7832",
+        "assetId": "artwork-recovered-20260928:e2aba3d6-b018-4103-9258-92dfdc4b7832:4a9b221fa34cf16fd1ec59e9af17283545e64802e3e51dff2b04e3e77b42cefc",
+        "contentSha256": "4a9b221fa34cf16fd1ec59e9af17283545e64802e3e51dff2b04e3e77b42cefc",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/e2aba3d6-b018-4103-9258-92dfdc4b7832/4a9b221fa34cf16fd1ec59e9af17283545e64802e3e51dff2b04e3e77b42cefc/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-034",
@@ -26170,11 +26974,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "e95cfd43-49a0-4ee1-9b1c-2d54c05bd0aa",
+        "assetId": "artwork-recovered-20260928:e95cfd43-49a0-4ee1-9b1c-2d54c05bd0aa:bb36af72d14345d44a7bb9940cdcfadcb25396a088c9b02893b2fb7caa80fe3c",
+        "contentSha256": "bb36af72d14345d44a7bb9940cdcfadcb25396a088c9b02893b2fb7caa80fe3c",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/e95cfd43-49a0-4ee1-9b1c-2d54c05bd0aa/bb36af72d14345d44a7bb9940cdcfadcb25396a088c9b02893b2fb7caa80fe3c/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-034",
@@ -26227,11 +27045,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "eea25be7-dbfb-417b-9a7b-e14e4c05da62",
+        "assetId": "artwork-recovered-20260928:eea25be7-dbfb-417b-9a7b-e14e4c05da62:f7247f717559bd6877d802249830b0cb940905364f24c333aa069df365937cc8",
+        "contentSha256": "f7247f717559bd6877d802249830b0cb940905364f24c333aa069df365937cc8",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/eea25be7-dbfb-417b-9a7b-e14e4c05da62/f7247f717559bd6877d802249830b0cb940905364f24c333aa069df365937cc8/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-032",
@@ -26284,11 +27116,25 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-13T23:01:59.977Z",
+        "productionRun": 38479703766,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38479703766",
+        "publicationReceiptSha256": "0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb",
+        "printingId": "fc101e0f-4c38-42cd-a8b9-de4f837e7673",
+        "assetId": "artwork-recovered-20260928:fc101e0f-4c38-42cd-a8b9-de4f837e7673:3b46ab1c74914677f8d5388e4864fa183ed9216b9f21ef85c64878de7e278e6e",
+        "contentSha256": "3b46ab1c74914677f8d5388e4864fa183ed9216b9f21ef85c64878de7e278e6e",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/fc101e0f-4c38-42cd-a8b9-de4f837e7673/3b46ab1c74914677f8d5388e4864fa183ed9216b9f21ef85c64878de7e278e6e/original.png",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "EN-CARDS-036",
@@ -27877,6 +28723,120 @@
           "byte_size": 160754,
           "width": 720,
           "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-038",
+      "itemId": "card:8a4dd5f6-ed5a-4d09-babf-85572f6eea0a",
+      "printingId": "8a4dd5f6-ed5a-4d09-babf-85572f6eea0a",
+      "setId": "b9ec08c9-c68e-4bd0-9b7b-1bc84203d8f7",
+      "setCode": "xya",
+      "languageCode": "en",
+      "collectorReference": "107a",
+      "cardName": "Professor Sycamore",
+      "sourceCode": "scrydex",
+      "providerCardId": "xy9-107a",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/professor-sycamore/xy9-107a?variant=normal",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/xy9-107a/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "c9e23430bf2395b23c5e7ca788e962dacd79fd0e410b6d9c1a60621e37f167ae",
+        "byteSize": 436570,
+        "width": 734,
+        "height": 1024,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/def224bb5f1696503b6964ebd15c32eb79637deadc305de61112041185a1b852/card-grid.webp",
+          "sha256": "def224bb5f1696503b6964ebd15c32eb79637deadc305de61112041185a1b852",
+          "byte_size": 18088,
+          "width": 240,
+          "height": 335,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/79f80990222d72deed8f799ce41633ccb76c53467ded1aee610378de68403b61/search-result.webp",
+          "sha256": "79f80990222d72deed8f799ce41633ccb76c53467ded1aee610378de68403b61",
+          "byte_size": 3624,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/d02b85880c0070db3531020ac11d9a3f154a843dbcf501bb76ae583407e2d06d/detail-page.webp",
+          "sha256": "d02b85880c0070db3531020ac11d9a3f154a843dbcf501bb76ae583407e2d06d",
+          "byte_size": 123666,
+          "width": 720,
+          "height": 1004,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Prepared and queued for production",
+      "publishedAndVerified": false,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "currentDelivery": null
+    },
+    {
+      "batchId": "EN-CARDS-038",
+      "itemId": "card:f4c6af1e-70c0-48fe-b3a1-1d04059b1051",
+      "printingId": "f4c6af1e-70c0-48fe-b3a1-1d04059b1051",
+      "setId": "b9ec08c9-c68e-4bd0-9b7b-1bc84203d8f7",
+      "setCode": "xya",
+      "languageCode": "en",
+      "collectorReference": "92a",
+      "cardName": "Trainers’ Mail",
+      "sourceCode": "scrydex",
+      "providerCardId": "xy6-92a",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/trainers-mail/xy6-92a?variant=normal",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/xy6-92a/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": "No independently issued vendor licence asserted; existing inactive under_review source policy retained",
+      "original": {
+        "sha256": "42eb1038f4dc1c60fe6930fec3771312e5404c4779f149e58662ae61c98038e0",
+        "byteSize": 513086,
+        "width": 734,
+        "height": 1024,
+        "mimeType": "image/png"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/e5e28e7d5b8627ed7f53ae21ad550383075dedfd558334075ae0f985b7dacd35/card-grid.webp",
+          "sha256": "e5e28e7d5b8627ed7f53ae21ad550383075dedfd558334075ae0f985b7dacd35",
+          "byte_size": 19234,
+          "width": 240,
+          "height": 335,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/8c4fd8f79c0db64dbb1c3bc15de2f412883f481312189894cd68dda464636530/search-result.webp",
+          "sha256": "8c4fd8f79c0db64dbb1c3bc15de2f412883f481312189894cd68dda464636530",
+          "byte_size": 3794,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/b9454db21cb239ca433b498bc5db4a35b8944a7f0fa7d279bb6e813624b8e945/detail-page.webp",
+          "sha256": "b9454db21cb239ca433b498bc5db4a35b8944a7f0fa7d279bb6e813624b8e945",
+          "byte_size": 136248,
+          "width": 720,
+          "height": 1004,
           "mime_type": "image/webp"
         }
       ],
