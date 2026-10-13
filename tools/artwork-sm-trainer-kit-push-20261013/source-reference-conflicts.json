@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "kind": "derived_source_reference_groups",
+  "checked_source_receipt": "en019-en021-checked-handoff-20261013T201955054258Z.json",
+  "checked_source_receipt_sha256": "1cd8914f65fa318d2401d3ea7a7b1e448996b53ef72157d4372af313185ef180",
+  "used_for_identity": false,
+  "pricing_changes": 0,
+  "records": [
+    {
+      "provider": "tcgplayer",
+      "product_id": "152842",
+      "rows": [
+        {
+          "printing_id": "a1535139-0734-400d-a86e-0e0facdc3ba9",
+          "provider_id": "tk10a-19",
+          "set_code": "tk-sm-l",
+          "collector_number": "19",
+          "name": "Hau",
+          "production_ready": true
+        },
+        {
+          "printing_id": "1d38e69c-aa2d-4a8c-8235-0f7db66e48e3",
+          "provider_id": "tk10b-19",
+          "set_code": "tk-sm-r",
+          "collector_number": "19",
+          "name": "Hau",
+          "production_ready": true
+        }
+      ],
+      "used_for_identity": false
+    },
+    {
+      "provider": "tcgplayer",
+      "product_id": "152846",
+      "rows": [
+        {
+          "printing_id": "bd3c50db-e4cf-4ed9-8ba6-88cf98a57d69",
+          "provider_id": "tk10a-21",
+          "set_code": "tk-sm-l",
+          "collector_number": "21",
+          "name": "Great Ball",
+          "production_ready": true
+        },
+        {
+          "printing_id": "61cba4cc-b89e-41b3-bbc2-2d948586d70f",
+          "provider_id": "tk10b-21",
+          "set_code": "tk-sm-r",
+          "collector_number": "21",
+          "name": "Great Ball",
+          "production_ready": true
+        }
+      ],
+      "used_for_identity": false
+    },
+    {
+      "provider": "tcgplayer",
+      "product_id": "152843",
+      "rows": [
+        {
+          "printing_id": "4cd3c46b-1955-4ccf-a759-f824c1720279",
+          "provider_id": "tk10a-23",
+          "set_code": "tk-sm-l",
+          "collector_number": "23",
+          "name": "Hau",
+          "production_ready": true
+        },
+        {
+          "printing_id": "bee1c1f4-ad97-4dbe-abc8-0fab0baf2ddb",
+          "provider_id": "tk10b-23",
+          "set_code": "tk-sm-r",
+          "collector_number": "23",
+          "name": "Hau",
+          "production_ready": true
+        }
+      ],
+      "used_for_identity": false
+    },
+    {
+      "provider": "tcgplayer",
+      "product_id": "152847",
+      "rows": [
+        {
+          "printing_id": "4b351e1b-d0f1-44c8-889c-1f79859063a6",
+          "provider_id": "tk10a-25",
+          "set_code": "tk-sm-l",
+          "collector_number": "25",
+          "name": "Great Ball",
+          "production_ready": true
+        },
+        {
+          "printing_id": "9f38714a-4735-4ac5-9e15-29dfbeccd73f",
+          "provider_id": "tk10b-25",
+          "set_code": "tk-sm-r",
+          "collector_number": "25",
+          "name": "Great Ball",
+          "production_ready": true
+        }
+      ],
+      "used_for_identity": false
+    }
+  ]
+}

@@ -1,0 +1,184 @@
+{
+  "checked_at": "2026-10-13T20:35:44.729Z",
+  "status": "local_validation_passed_not_published",
+  "source_revision": "83ff15604e8893c05f722a592aab5786fc05eb6a",
+  "cohort_sha256": "92df998eae88050520a202f3c68a45c28158dae12e27886ca1464c7d97d856ed",
+  "approval_sha256": "8ea05cf12cee82b546dcfe4e39afc685c547af56471004a68a8f6fa413d161f9",
+  "identity_table_sha256": "c979669f074cd5d3e51a0dc60807bf7a68621e638c82ba70e343a8828b907324",
+  "source_reference_conflicts_sha256": "cd3d440ecdaa2b201d48f156c6030a26e90419212d450bd5a5bdd8d9bbfefb1c",
+  "delivery_scope": {
+    "original_saved_targets": 44,
+    "eligible_HD_fronts": 30,
+    "excluded_tiny_research_fronts": 14,
+    "whole_batch_completion_asserted": false
+  },
+  "archive": {
+    "id": 638165691,
+    "bytes": 35408502,
+    "sha256": "be73d17379657b1128eb5f01b9666c53026e0b2289e015ae324f18344d457370",
+    "exact_members": 123,
+    "github_metadata_verified": true
+  },
+  "checks": [
+    {
+      "command": "node --test tools/artwork-sm-trainer-kit-push-20261013/publish.test.mjs tools/artwork-trainer-kit-push-20261013/publish.test.mjs",
+      "passed": 21,
+      "failed": 0,
+      "new_partial_SM_tests": 11,
+      "exit_code": 0,
+      "rerun_on_final_checkout_revision": "83ff15604e8893c05f722a592aab5786fc05eb6a"
+    },
+    {
+      "command": "python tools/artwork-sm-trainer-kit-push-20261013/download-package.test.py",
+      "passed": 2,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "python tools/artwork-sm-trainer-kit-push-20261013/download-package.py <private-local-packages> --archive <frozen-local-zip>",
+      "status": "verified_and_extracted",
+      "exact_members": 123,
+      "exit_code": 0
+    },
+    {
+      "command": "node tools/artwork-sm-trainer-kit-push-20261013/verify-packages.mjs <private-local-packages>",
+      "status": "all_frozen_files_fully_decoded",
+      "fronts": 30,
+      "derivatives": 90,
+      "files": 120,
+      "exit_code": 0
+    }
+  ],
+  "database_requests": 0,
+  "provider_requests": 0,
+  "github_release_metadata_reads": 1,
+  "storage_writes": 0,
+  "production_source_insertions": 0,
+  "published": false,
+  "independent_review": "pending_coordinator",
+  "raw_private_snapshots_included": false,
+  "file_hashes": [
+    {
+      "file": ".gitattributes",
+      "bytes": 54,
+      "sha256": "5a4ffa8f62276e5e43264106e04022e901f0c4c5d4818000f800366bb43f2f30"
+    },
+    {
+      "file": ".gitignore",
+      "bytes": 19,
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793"
+    },
+    {
+      "file": "README.md",
+      "bytes": 5782,
+      "sha256": "3638f2838586471e19cfb0876ba95cb5d8a44d0b2018ead2fdfea17b45d7c8e6"
+    },
+    {
+      "file": "approval.json",
+      "bytes": 1518,
+      "sha256": "8ea05cf12cee82b546dcfe4e39afc685c547af56471004a68a8f6fa413d161f9"
+    },
+    {
+      "file": "before-query.sql",
+      "bytes": 3039,
+      "sha256": "784b1d7c546686dc1172ec6b7c1a1935906370edc8cccfb000e0e930bd2278c6"
+    },
+    {
+      "file": "download-package.py",
+      "bytes": 5211,
+      "sha256": "7dd34a1310f4aaf55e4365b7e262d608d884b357a5243804d1fe6a2b9140c8ab"
+    },
+    {
+      "file": "download-package.test.py",
+      "bytes": 1805,
+      "sha256": "102abd0bdaf4c8d433a1f914970be3a7ab7ebc396adcf6a119ef3d199ada31e4"
+    },
+    {
+      "file": "freeze-local.mjs",
+      "bytes": 9712,
+      "sha256": "8b3cc6a832ce3f30c2b8bf5b6a5804958ea85041234f83802cb080ffbecbd804"
+    },
+    {
+      "file": "frozen.mjs",
+      "bytes": 10561,
+      "sha256": "53b2958a6697a0a70656ad02046b9297150492015c8e4bc857388707b243a53d"
+    },
+    {
+      "file": "identity-table.json",
+      "bytes": 34408,
+      "sha256": "c979669f074cd5d3e51a0dc60807bf7a68621e638c82ba70e343a8828b907324"
+    },
+    {
+      "file": "plan.json",
+      "bytes": 348744,
+      "sha256": "92df998eae88050520a202f3c68a45c28158dae12e27886ca1464c7d97d856ed"
+    },
+    {
+      "file": "publish.mjs",
+      "bytes": 4864,
+      "sha256": "6abc31f5add8dc632eb3f74582da65c166ba6202104bd729e2d614d43f641ebb"
+    },
+    {
+      "file": "publish.test.mjs",
+      "bytes": 15350,
+      "sha256": "5f15764a9aea0bcb4304dc03248d102bad238b16ecd9844c7bf629ea61ea378f"
+    },
+    {
+      "file": "source-reference-conflicts.json",
+      "bytes": 2901,
+      "sha256": "cd3d440ecdaa2b201d48f156c6030a26e90419212d450bd5a5bdd8d9bbfefb1c"
+    },
+    {
+      "file": "verify-packages.mjs",
+      "bytes": 1335,
+      "sha256": "207316fe2d27e4f99219eefa95ced24d64583521c1dd4625d7023baa43bb6500"
+    }
+  ],
+  "reused_dependency_hashes": [
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 9031,
+      "sha256": "5524305ba4bd6a0f3867ea2c097c57fb0d610e27ef1d9d64529b64e9c67249de"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/metadata-guard.mjs",
+      "bytes": 4018,
+      "sha256": "cca5354822fe11c007308f7d22ebf84649d2374619e0dd049c7347a9db9e116f"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/publish.mjs",
+      "bytes": 5885,
+      "sha256": "8451746bb6e188f56c5be31064742eaeecdc2f2c6d6e27cb31ab5c7227af6d1f"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "tools/artwork-next-push-20261013/frozen.mjs",
+      "bytes": 7732,
+      "sha256": "3e14eb76a012116492075328c50e6c5907f712004da02d4d3dae541d2617a95b"
+    },
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 30117,
+      "sha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24425,
+      "sha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d"
+    }
+  ]
+}
