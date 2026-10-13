@@ -1,9 +1,9 @@
 # Stackr artwork production handoff
 
-Updated 2026-10-13T21:57:41.986Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
+Updated 2026-10-13T22:22:11.488Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
 
-967 tasks / 49 batches complete; 1977 tasks / 112 batches remain.
-317 English originals and 951 display files gathered: 265 originals live, 52 prepared and queued.
+1019 tasks / 51 batches complete; 1925 tasks / 110 batches remain.
+317 English originals and 951 display files gathered: 317 originals live, 0 prepared and queued.
 
 Owner standing approval covers exact artwork sourcing, publication and verification without another owner batch review. Independently verified vendor licence and physical edition/finish facts are not invented. Keep previous immutable objects and receipt-bound rollback.
 
@@ -18,12 +18,10 @@ Owner standing approval covers exact artwork sourcing, publication and verificat
 - English 30, run 38465700113, EN-CARDS-019, EN-CARDS-020, EN-CARDS-021: all 30 normal card responses / all 120 decoded/hash/dimension-matched files independently verified. Receipt SHA 64dbe01105e0db827321107e3042d88b2f763b99f47e102efe40a9207ec7f9ac. Rollback prepared, not executed.
 - English 53, run 38470021525, EN-CARDS-022, EN-CARDS-023, EN-CARDS-024: all 53 normal card responses / all 212 decoded/hash/dimension-matched files independently verified. Receipt SHA 366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5. Rollback prepared, not executed.
 - English 32, run 38472167695, EN-CARDS-025, EN-CARDS-026, EN-CARDS-027: all 32 normal card responses / all 128 decoded/hash/dimension-matched files independently verified. Receipt SHA d7c66449276f1485bac3692df60ddc6862ea0349b48bf1dd1003a4df9488fe64. Rollback prepared, not executed.
+- English 52, run 38475698781, EN-CARDS-028, EN-CARDS-029, EN-CARDS-030: all 52 normal card responses / all 208 decoded/hash/dimension-matched files independently verified. Receipt SHA 7b677b41d9578ebf67d397dfec3d4e0e9a6567cef0015f29f2431f1cf481825d. Rollback prepared, not executed.
 
 ## Prepared work
 
-- EN-CARDS-028: 25 prepared fronts; actual production checks pending.
-- EN-CARDS-029: 2 prepared fronts; actual production checks pending.
-- EN-CARDS-030: 25 prepared fronts; actual production checks pending.
 - No unverified current production run.
 - Frozen package asset 638042830, 53091723 bytes, SHA af5cd84113f391caffa0383aab60163820cbc06c56d7bad02f4cadfca015dcaa. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset 638073079, 42961975 bytes, SHA ef56173edc2e4a097b9115d0a76284393b1f07a0c9e7f81d18e5ef116a920471. Individual delivery state controls completion; an archive alone does not.
@@ -36,7 +34,7 @@ Owner standing approval covers exact artwork sourcing, publication and verificat
 
 ## Explicit remaining holds
 
-14 exact originals still need larger, readable pictures; 2 source version matches remain unresolved; 0 pictures need another exact card-text comparison. These are unfinished tasks and are excluded from publication.
+14 exact originals still need larger, readable pictures; 4 source version matches remain unresolved; 0 pictures need another exact card-text comparison. These are unfinished tasks and are excluded from publication.
 
 224 old Simplified Chinese cases have Traditional Chinese counterparts but still need an evidenced identity repair. No silent retagging. The fixed list also retains256language/card/version checks,36Traditional Chinese logos and2sharper Japanese originals. Flat reference fronts do not certify physical material/finish.
 
@@ -73,14 +71,14 @@ No native/OTA/backend/gateway delivery or installed-phone acceptance is claimed 
 | EN-CARDS-025 | 3/3 | Live and verified | Complete; delivery evidence saved |
 | EN-CARDS-026 | 25/25 | Live and verified | Complete; delivery evidence saved |
 | EN-CARDS-027 | 4/4 | Live and verified | Complete; delivery evidence saved |
-| EN-CARDS-028 | 0/25 | Prepared and queued for production | Actual production publication and API/image verification pending |
-| EN-CARDS-029 | 0/3 | 2 pictures prepared and queued; remaining open | Actual production publication and API/image verification pending; 1 exact source version match remains unresolved |
-| EN-CARDS-030 | 0/25 | Prepared and queued for production | Actual production publication and API/image verification pending |
-| EN-CARDS-031 | 0/4 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases |
+| EN-CARDS-028 | 25/25 | Live and verified | Complete; delivery evidence saved |
+| EN-CARDS-029 | 2/3 | 2 of 3 live and checked | 1 exact source version match remains unresolved |
+| EN-CARDS-030 | 25/25 | Live and verified | Complete; delivery evidence saved |
+| EN-CARDS-031 | 0/4 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases; 1 exact source version match remains unresolved |
 | EN-CARDS-032 | 0/25 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases |
 | EN-CARDS-033 | 0/4 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases |
 | EN-CARDS-034 | 0/25 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases |
-| EN-CARDS-035 | 0/4 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases |
+| EN-CARDS-035 | 0/4 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases; 1 exact source version match remains unresolved |
 | EN-CARDS-036 | 0/25 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases |
 | EN-CARDS-037 | 0/4 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases |
 | EN-CARDS-038 | 0/2 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases |
