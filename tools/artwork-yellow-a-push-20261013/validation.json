@@ -1,0 +1,297 @@
+{
+  "checked_at": "2026-10-13T23:11:51.414Z",
+  "status": "local_validation_passed_not_published",
+  "source_revision": "ed3e4fb114d23bdf2c1cb38323c5b20038a492a0",
+  "queue_id": "STACKR-EN-FRONTS-20261013-ALT002",
+  "cohort_sha256": "bcc86498342436261c52c7d9dafdeac6b8cb110b039183b85c8aefd597b66832",
+  "approval_sha256": "ff7eabd3a9d87d051e6fcba76e34adb7e1881bc4e13f6ba72e89bccf71fb268c",
+  "identity_table_sha256": "920c7867fa8ed59488f72d5c9446e504024fb160ce578b0898ce6fa2fce9f075",
+  "source_manifest_sha256": "4af5f1c029bc07dd4b1e2ee9e912d7ae8ebe216af00b989e077d3bc9101289f7",
+  "checked_handoff_sha256": "df6995add5dca9a7172051f5f899ccf8fcd5b4fb27183e13d934d27ea31e4067",
+  "exact_target_receipt_sha256": "0f9c19913730cbdb07f3739c7c5984a813486abede167302517339e402670a57",
+  "combined_canonical_binding_sha256": "89ef634099dbd89e1cc9b54926fa0989c55f23991719e648ba040d1ce6e41509",
+  "delivery_scope": {
+    "original_saved_targets": 2,
+    "eligible_fronts": 2,
+    "excluded_targets": 0,
+    "whole_batch_completion_asserted": false
+  },
+  "current_variant_count": 2,
+  "canonical_group": "xya",
+  "actual_source_scope": [
+    {
+      "printing_id": "8a4dd5f6-ed5a-4d09-babf-85572f6eea0a",
+      "collector_number": "107a",
+      "provider_id": "xy9-107a",
+      "printed_footer": "107a/122",
+      "parent_expansion": "BREAKpoint",
+      "actual_copyright_year": 2017,
+      "yellow_a_marker_observed": true
+    },
+    {
+      "printing_id": "f4c6af1e-70c0-48fe-b3a1-1d04059b1051",
+      "collector_number": "92a",
+      "provider_id": "xy6-92a",
+      "printed_footer": "92a/108",
+      "parent_expansion": "Roaring Skies",
+      "actual_copyright_year": 2017,
+      "yellow_a_marker_observed": true
+    }
+  ],
+  "real_named_holds_outside_cohort": 19,
+  "source_text_discrepancies": 1,
+  "canonical_name_alias_changed": false,
+  "original_bytes": 949656,
+  "derivative_reference_bytes": 304654,
+  "archive": {
+    "id": 638504756,
+    "bytes": 1250882,
+    "sha256": "da73a211f009a3ee5f3bb61bbcccdc765744c66159c0480aca9c9301ac2cc21c",
+    "exact_members": 11,
+    "unique_image_members": 8,
+    "unique_originals": 2,
+    "unique_derivative_members": 6,
+    "per_printing_object_references": 8,
+    "derivative_references": 6,
+    "shared_image_paths": 0,
+    "github_metadata_verified_by_coordinator": true
+  },
+  "original_and_detail_hashes_remain_distinct": true,
+  "originals_reused": false,
+  "images_altered_for_uniqueness": false,
+  "scope_before_counts": {
+    "production": {
+      "assets": 1,
+      "links": 1,
+      "names": 4,
+      "printings": 2,
+      "sets": 1,
+      "variants": 2
+    },
+    "staging": {
+      "assets": 2,
+      "links": 2,
+      "names": 4,
+      "printings": 2,
+      "sets": 1,
+      "variants": 2
+    }
+  },
+  "checks": [
+    {
+      "command": "node --test tools/artwork-yellow-a-push-20261013/publish.test.mjs tools/artwork-trainer-kit-push-20261013/publish.test.mjs",
+      "passed": 27,
+      "failed": 0,
+      "new_ALT_tests": 17,
+      "exit_code": 0
+    },
+    {
+      "command": "python tools/artwork-yellow-a-push-20261013/download-package.test.py",
+      "passed": 3,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "node --test tools/artwork3303-publish-20260928/journal.integration.test.mjs",
+      "passed": 1,
+      "failed": 0,
+      "exit_code": 0,
+      "network_requests": 0
+    },
+    {
+      "command": "python tools/artwork-yellow-a-push-20261013/download-package.py <private-local-packages> --archive <frozen-local-zip>",
+      "status": "verified_and_extracted",
+      "exact_members": 11,
+      "exit_code": 0
+    },
+    {
+      "command": "node tools/artwork-yellow-a-push-20261013/verify-packages.mjs <private-local-packages>",
+      "status": "all_frozen_files_fully_decoded",
+      "fronts": 2,
+      "derivative_references": 6,
+      "per_printing_object_references": 8,
+      "unique_image_members": 8,
+      "exit_code": 0
+    },
+    {
+      "command": "existing Node yaml parser and strict workflow assertions",
+      "status": "parsed_protected_workflow_guards_passed",
+      "guard_groups": 8
+    },
+    {
+      "command": "rehash11 reused dependencies and check frozen public projections",
+      "status": "passed",
+      "unchanged_dependencies": 11,
+      "private_paths_found": 0
+    }
+  ],
+  "workflow": {
+    "file": ".github/workflows/artwork-yellow-a-production.yml",
+    "sha256": "80f3e5985cbcddafe76c457549738553595caac6a0029bed176f8cdd510f1ecb",
+    "job": "artwork_yellow_a",
+    "production_environment": true,
+    "manual_exact_main": true,
+    "shared_production_concurrency": true,
+    "token_contents_permission": "read",
+    "hosted_private_output_unset": true,
+    "secret_scan_required_before_upload": true
+  },
+  "database_requests": 0,
+  "provider_requests": 0,
+  "github_release_metadata_reads": 0,
+  "storage_writes": 0,
+  "production_source_insertions": 0,
+  "published": false,
+  "independent_review": "pending_coordinator",
+  "raw_private_snapshots_included": false,
+  "private_paths_in_public_plan": false,
+  "physical_finish_certified": false,
+  "edition_or_distribution_product_certified": false,
+  "independent_vendor_licence_verified": false,
+  "source_wide_approval": false,
+  "implementation_hash_count": 16,
+  "total_owned_tool_files_including_validation": 17,
+  "changed_scope": [
+    "tools/artwork-yellow-a-push-20261013/",
+    ".github/workflows/artwork-yellow-a-production.yml"
+  ],
+  "file_hashes": [
+    {
+      "file": ".gitattributes",
+      "bytes": 54,
+      "sha256": "5a4ffa8f62276e5e43264106e04022e901f0c4c5d4818000f800366bb43f2f30"
+    },
+    {
+      "file": ".gitignore",
+      "bytes": 19,
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793"
+    },
+    {
+      "file": "README.md",
+      "bytes": 5648,
+      "sha256": "ee1c0b13153ac49fb0b1d8933881223b7297692424990c3f04c9a497261cbfa9"
+    },
+    {
+      "file": "approval.json",
+      "bytes": 1481,
+      "sha256": "ff7eabd3a9d87d051e6fcba76e34adb7e1881bc4e13f6ba72e89bccf71fb268c"
+    },
+    {
+      "file": "before-query.sql",
+      "bytes": 1744,
+      "sha256": "b72dddeb547e3fceb07bcefd027f30078555463519a6281db2814c6437022498"
+    },
+    {
+      "file": "download-package.py",
+      "bytes": 2643,
+      "sha256": "e6f174f660587d12b91cf4c9bdd6cf7b31198e97444d04120da68d468ee09a87"
+    },
+    {
+      "file": "download-package.test.py",
+      "bytes": 2566,
+      "sha256": "6862def3c2e79a8aa3dc54f0e02259a4e4b2ee0ec1266fd9fbd767c51454d457"
+    },
+    {
+      "file": "freeze-inputs.json",
+      "bytes": 657,
+      "sha256": "7c08fbcf2d525b009a58e4ac1041a67682c253f2f3ba92e6994fa7e7a24732bc"
+    },
+    {
+      "file": "freeze-local.mjs",
+      "bytes": 14132,
+      "sha256": "7b13825ccac38faa7e27129726dd3df599d5dfb23ab1e337c204c774e34d2146"
+    },
+    {
+      "file": "frozen.mjs",
+      "bytes": 15458,
+      "sha256": "1af8f0ed85087e592dbdcf979b39a7c461866dbc0f899e9b92f002ffc634c206"
+    },
+    {
+      "file": "identity-table.json",
+      "bytes": 5951,
+      "sha256": "920c7867fa8ed59488f72d5c9446e504024fb160ce578b0898ce6fa2fce9f075"
+    },
+    {
+      "file": "plan.json",
+      "bytes": 20041,
+      "sha256": "bcc86498342436261c52c7d9dafdeac6b8cb110b039183b85c8aefd597b66832"
+    },
+    {
+      "file": "publish.mjs",
+      "bytes": 4821,
+      "sha256": "614d00b71e1e253cef1f16287486299f8b30cab357afc623959b3d0c25cc1ef6"
+    },
+    {
+      "file": "publish.test.mjs",
+      "bytes": 22438,
+      "sha256": "8b48cecc8f3c3e1820f6a3d5c46af943c155f26ae686b6d921bb4bba93c0fbd8"
+    },
+    {
+      "file": "saved-targets.json",
+      "bytes": 780,
+      "sha256": "26ccbc158ed31cb05700add5ff665b3ba2f16c8d5972a6b70a36f3db793e48f5"
+    },
+    {
+      "file": "verify-packages.mjs",
+      "bytes": 1495,
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841"
+    }
+  ],
+  "reused_dependency_hashes": [
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 9031,
+      "sha256": "5524305ba4bd6a0f3867ea2c097c57fb0d610e27ef1d9d64529b64e9c67249de"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/metadata-guard.mjs",
+      "bytes": 4018,
+      "sha256": "cca5354822fe11c007308f7d22ebf84649d2374619e0dd049c7347a9db9e116f"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/publish.mjs",
+      "bytes": 5885,
+      "sha256": "8451746bb6e188f56c5be31064742eaeecdc2f2c6d6e27cb31ab5c7227af6d1f"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "tools/artwork-next-push-20261013/frozen.mjs",
+      "bytes": 7732,
+      "sha256": "3e14eb76a012116492075328c50e6c5907f712004da02d4d3dae541d2617a95b"
+    },
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 30117,
+      "sha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24425,
+      "sha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 15024,
+      "sha256": "1d168e5407a5bdc6e027f58991de58a0664576d7c917d5b219fa13f9af4a1d0a"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/download-package.py",
+      "bytes": 5489,
+      "sha256": "53f1114f25bd995b4f05d9b2d3adad7ae2dadc85b4b13f038a84bcc5e7d6b09f"
+    }
+  ]
+}
