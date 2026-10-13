@@ -1,9 +1,9 @@
 # Stackr artwork production handoff
 
-Updated 2026-10-13T22:22:11.488Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
+Updated 2026-10-13T22:30:27.267Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
 
 1019 tasks / 51 batches complete; 1925 tasks / 110 batches remain.
-317 English originals and 951 display files gathered: 317 originals live, 0 prepared and queued.
+377 English originals and 1131 display files gathered: 317 originals live, 60 prepared and queued.
 
 Owner standing approval covers exact artwork sourcing, publication and verification without another owner batch review. Independently verified vendor licence and physical edition/finish facts are not invented. Keep previous immutable objects and receipt-bound rollback.
 
@@ -22,6 +22,11 @@ Owner standing approval covers exact artwork sourcing, publication and verificat
 
 ## Prepared work
 
+- EN-CARDS-031: 3 prepared fronts; actual production checks pending.
+- EN-CARDS-032: 25 prepared fronts; actual production checks pending.
+- EN-CARDS-033: 4 prepared fronts; actual production checks pending.
+- EN-CARDS-034: 25 prepared fronts; actual production checks pending.
+- EN-CARDS-035: 3 prepared fronts; actual production checks pending.
 - No unverified current production run.
 - Frozen package asset 638042830, 53091723 bytes, SHA af5cd84113f391caffa0383aab60163820cbc06c56d7bad02f4cadfca015dcaa. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset 638073079, 42961975 bytes, SHA ef56173edc2e4a097b9115d0a76284393b1f07a0c9e7f81d18e5ef116a920471. Individual delivery state controls completion; an archive alone does not.
@@ -31,6 +36,7 @@ Owner standing approval covers exact artwork sourcing, publication and verificat
 - Frozen package asset 638278124, 29956992 bytes, SHA 8a97049290e3f0b162c379d8320e839fcd729e15609b89054d730ebdf008582f. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset 638295433, 32934150 bytes, SHA a28ae10ef8979f2bdf8ba6b2221e4dc856d5a1df10fdd13c111e71214fb5f203. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset 638364582, 50267364 bytes, SHA 940d42afa6d371dd94da7cc42a0276f40f50f3297f6556174d2e68fc6a0c4656. Individual delivery state controls completion; an archive alone does not.
+- Frozen package asset 638434423, 56995023 bytes, SHA 1f06df02a94f68cdd71115f0144809a95ea05e869a6f556a5f4d7d07d94c87a2. Individual delivery state controls completion; an archive alone does not.
 
 ## Explicit remaining holds
 
@@ -74,11 +80,11 @@ No native/OTA/backend/gateway delivery or installed-phone acceptance is claimed 
 | EN-CARDS-028 | 25/25 | Live and verified | Complete; delivery evidence saved |
 | EN-CARDS-029 | 2/3 | 2 of 3 live and checked | 1 exact source version match remains unresolved |
 | EN-CARDS-030 | 25/25 | Live and verified | Complete; delivery evidence saved |
-| EN-CARDS-031 | 0/4 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases; 1 exact source version match remains unresolved |
-| EN-CARDS-032 | 0/25 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases |
-| EN-CARDS-033 | 0/4 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases |
-| EN-CARDS-034 | 0/25 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases |
-| EN-CARDS-035 | 0/4 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases; 1 exact source version match remains unresolved |
+| EN-CARDS-031 | 0/4 | 3 pictures prepared and queued; remaining open | Actual production publication and API/image verification pending; 1 exact source version match remains unresolved |
+| EN-CARDS-032 | 0/25 | Prepared and queued for production | Actual production publication and API/image verification pending |
+| EN-CARDS-033 | 0/4 | Prepared and queued for production | Actual production publication and API/image verification pending |
+| EN-CARDS-034 | 0/25 | Prepared and queued for production | Actual production publication and API/image verification pending |
+| EN-CARDS-035 | 0/4 | 3 pictures prepared and queued; remaining open | Actual production publication and API/image verification pending; 1 exact source version match remains unresolved |
 | EN-CARDS-036 | 0/25 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases |
 | EN-CARDS-037 | 0/4 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases |
 | EN-CARDS-038 | 0/2 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases |
