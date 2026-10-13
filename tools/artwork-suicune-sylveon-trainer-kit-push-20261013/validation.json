@@ -1,0 +1,269 @@
+{
+  "checked_at": "2026-10-13T22:35:01.589Z",
+  "status": "local_validation_passed_not_published",
+  "source_revision": "16400dc323fc0ac6d478044627df33533df3e0f0",
+  "queue_id": "STACKR-EN-FRONTS-20261013-SS060",
+  "cohort_sha256": "2a8937ffa6b164728ed295e49a6297687ac4d947a9b600d5c01d25936889b26f",
+  "approval_sha256": "366b42ddfc1eb11e200705d3c29362820a3b126bb161afa5758ecbc34e48c1f7",
+  "identity_table_sha256": "56f558754257f70c0c94356fb5019fda34fbc35fbad726be0c222d3647bc6c87",
+  "source_manifest_sha256": "def3ac20fdb222217376ae5ad52d1a1fb62bde3e386d68aa34279ae29f8d8279",
+  "checked_handoff_sha256": "fc0b7440d9cb64bf0427681ea177136f4cfe0fa0fd3b84339989c6f8e8170161",
+  "exact_target_receipt_sha256": "4b57b0a71c3a3497b52f15239460d148d74866f4a60c5cb0b25c85f084b5f61e",
+  "independent_root_original_review_sha256": "bf76e3cc1b5bed4ea2c5d2dcac8190af842124887e06fefaf4f807e2ec62d677",
+  "delivery_scope": {
+    "original_saved_targets": 62,
+    "eligible_fronts": 60,
+    "excluded_targets": 2,
+    "whole_batch_completion_asserted": false
+  },
+  "finish_holds": [
+    {
+      "printing_id": "20201198-462c-4883-97ed-e828c88a602d",
+      "provider_id": "tk9b-30",
+      "canonical_finish": "normal",
+      "available_source_finish": "holofoil",
+      "acquired": false,
+      "included_in_plan": false
+    },
+    {
+      "printing_id": "c846ec98-8db7-4532-a2a2-1e6a23eab9fc",
+      "provider_id": "tk6a-30",
+      "canonical_finish": "normal",
+      "available_source_finish": "holofoil",
+      "acquired": false,
+      "included_in_plan": false
+    }
+  ],
+  "real_named_holds_outside_cohort": 18,
+  "source_body_notes_retained": [
+    "Suicune14 Spiral Drain Pokémon accent",
+    "Suicune15 Potion provider I/no final period versus actual quantity1/final period"
+  ],
+  "archive": {
+    "id": 638434423,
+    "bytes": 56995023,
+    "sha256": "1f06df02a94f68cdd71115f0144809a95ea05e869a6f556a5f4d7d07d94c87a2",
+    "exact_members": 242,
+    "unique_image_members": 239,
+    "unique_originals": 60,
+    "unique_derivative_members": 179,
+    "per_printing_object_references": 240,
+    "derivative_references": 180,
+    "github_metadata_verified_by_coordinator": true
+  },
+  "shared_search_thumbnail": {
+    "source_provider_ids": [
+      "tk9a-3",
+      "tk9a-5"
+    ],
+    "card_name": "Water Energy",
+    "sha256": "5a3780f97223cf7f9f80dd998e9f19ba2ae9a460823d47c3a73384481e2c3600",
+    "width": 96,
+    "height": 134,
+    "bytes": 2282
+  },
+  "original_and_detail_hashes_remain_distinct": true,
+  "originals_reused": false,
+  "images_altered_for_uniqueness": false,
+  "scope_before_counts": {
+    "production": {
+      "assets": 6,
+      "links": 9,
+      "names": 120,
+      "printings": 60,
+      "sets": 3,
+      "variants": 60
+    },
+    "staging": {
+      "assets": 3,
+      "links": 6,
+      "names": 120,
+      "printings": 60,
+      "sets": 3,
+      "variants": 60
+    }
+  },
+  "checks": [
+    {
+      "command": "node --test tools/artwork-suicune-sylveon-trainer-kit-push-20261013/publish.test.mjs tools/artwork-trainer-kit-push-20261013/publish.test.mjs",
+      "passed": 27,
+      "failed": 0,
+      "new_SS_tests": 17,
+      "exit_code": 0,
+      "checkout_revision": "16400dc323fc0ac6d478044627df33533df3e0f0"
+    },
+    {
+      "command": "python tools/artwork-suicune-sylveon-trainer-kit-push-20261013/download-package.test.py",
+      "passed": 3,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "python tools/artwork-suicune-sylveon-trainer-kit-push-20261013/download-package.py <private-local-packages> --archive <frozen-local-zip>",
+      "status": "verified_and_extracted",
+      "exact_members": 242,
+      "exit_code": 0
+    },
+    {
+      "command": "node tools/artwork-suicune-sylveon-trainer-kit-push-20261013/verify-packages.mjs <private-local-packages>",
+      "status": "all_frozen_files_fully_decoded",
+      "fronts": 60,
+      "derivative_references": 180,
+      "per_printing_object_references": 240,
+      "unique_image_members": 239,
+      "exit_code": 0
+    }
+  ],
+  "database_requests": 0,
+  "provider_requests": 0,
+  "github_release_metadata_reads": 0,
+  "storage_writes": 0,
+  "production_source_insertions": 0,
+  "published": false,
+  "independent_review": "pending_coordinator",
+  "raw_private_snapshots_included": false,
+  "private_paths_in_public_plan": false,
+  "physical_finish_certified": false,
+  "independent_vendor_licence_verified": false,
+  "implementation_hash_count": 16,
+  "total_owned_files_including_validation": 17,
+  "file_hashes": [
+    {
+      "file": ".gitattributes",
+      "bytes": 54,
+      "sha256": "5a4ffa8f62276e5e43264106e04022e901f0c4c5d4818000f800366bb43f2f30"
+    },
+    {
+      "file": ".gitignore",
+      "bytes": 19,
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793"
+    },
+    {
+      "file": "README.md",
+      "bytes": 6180,
+      "sha256": "621eae0b51989a5ca5746620844238b89b9714929eb4e650c79f0d060690d275"
+    },
+    {
+      "file": "approval.json",
+      "bytes": 1425,
+      "sha256": "366b42ddfc1eb11e200705d3c29362820a3b126bb161afa5758ecbc34e48c1f7"
+    },
+    {
+      "file": "before-query.sql",
+      "bytes": 4364,
+      "sha256": "58ae5fea43c6a109bd74c86bc0286c946d98cf9d7d6b972722af7ad984a224bc"
+    },
+    {
+      "file": "download-package.py",
+      "bytes": 2666,
+      "sha256": "60d979cd71c5a23217b0fb7efe264599f20ab8b66bacb19ccfdb90681b8fd5a7"
+    },
+    {
+      "file": "download-package.test.py",
+      "bytes": 2573,
+      "sha256": "58f1a7fa6dd426b2963a78f07333465394dbcc43eadfc963e57970ee04375e99"
+    },
+    {
+      "file": "freeze-inputs.json",
+      "bytes": 671,
+      "sha256": "af61cefec82558b3892b1566214b81ee325521193056643d40cb9d1ae4819c68"
+    },
+    {
+      "file": "freeze-local.mjs",
+      "bytes": 13239,
+      "sha256": "f64755f2fda695cc81121996e19e3ae180527496fbc0796ec6cb5b0daaf172e8"
+    },
+    {
+      "file": "frozen.mjs",
+      "bytes": 13249,
+      "sha256": "eec0731cc6ba921f32fac261da9247ad4e8ef2028f9c2080bff1921f89adc3c0"
+    },
+    {
+      "file": "identity-table.json",
+      "bytes": 80650,
+      "sha256": "56f558754257f70c0c94356fb5019fda34fbc35fbad726be0c222d3647bc6c87"
+    },
+    {
+      "file": "plan.json",
+      "bytes": 373193,
+      "sha256": "2a8937ffa6b164728ed295e49a6297687ac4d947a9b600d5c01d25936889b26f"
+    },
+    {
+      "file": "publish.mjs",
+      "bytes": 4884,
+      "sha256": "3fa75264d66c0c55250fb64caf7287159e6f2f757f5f86a9c7400d2ab1969789"
+    },
+    {
+      "file": "publish.test.mjs",
+      "bytes": 21481,
+      "sha256": "2f0c706dbc736b73b2570a63913b78f7687411d96e684a4eaa88fb6b76bfd3be"
+    },
+    {
+      "file": "saved-targets.json",
+      "bytes": 27480,
+      "sha256": "0e54f3917ce7a1438cf4498f115c7ba4cf6c3e0cc40693f6d6124f5d5d7d999d"
+    },
+    {
+      "file": "verify-packages.mjs",
+      "bytes": 1495,
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841"
+    }
+  ],
+  "reused_dependency_hashes": [
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 9031,
+      "sha256": "5524305ba4bd6a0f3867ea2c097c57fb0d610e27ef1d9d64529b64e9c67249de"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/metadata-guard.mjs",
+      "bytes": 4018,
+      "sha256": "cca5354822fe11c007308f7d22ebf84649d2374619e0dd049c7347a9db9e116f"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/publish.mjs",
+      "bytes": 5885,
+      "sha256": "8451746bb6e188f56c5be31064742eaeecdc2f2c6d6e27cb31ab5c7227af6d1f"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "tools/artwork-next-push-20261013/frozen.mjs",
+      "bytes": 7732,
+      "sha256": "3e14eb76a012116492075328c50e6c5907f712004da02d4d3dae541d2617a95b"
+    },
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 30117,
+      "sha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24425,
+      "sha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 15024,
+      "sha256": "1d168e5407a5bdc6e027f58991de58a0664576d7c917d5b219fa13f9af4a1d0a"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/download-package.py",
+      "bytes": 5489,
+      "sha256": "53f1114f25bd995b4f05d9b2d3adad7ae2dadc85b4b13f038a84bcc5e7d6b09f"
+    }
+  ]
+}
