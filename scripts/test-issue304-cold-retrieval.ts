@@ -87,8 +87,10 @@ function testScreenOrdering() {
   const cacheRead = binder.indexOf('readPersistedBinderOverview(accountId)', loadStart);
   const sessionRead = binder.indexOf('supabase.auth.getSession()', loadStart);
   assert.ok(loadStart >= 0 && cacheRead > loadStart && sessionRead > cacheRead, 'binder paints the account-keyed persisted overview before the refresh auth round trip');
-  assert.match(binder, /BINDER_OVERVIEW_CACHE_PREFIX/);
-  assert.match(binder, /encodeURIComponent\(userId\)/, 'binder cache is account scoped');
+  const binderCache = fs.readFileSync('lib/binderLibraryCache.ts', 'utf8');
+  assert.match(binder, /from '\.\.\/\.\.\/lib\/binderLibraryCache'/, 'the screen reuses the shared persisted overview cache');
+  assert.match(binderCache, /BINDER_OVERVIEW_CACHE_PREFIX/);
+  assert.match(binderCache, /encodeURIComponent\(normalizeTrustedUserId\(userId\)\)/, 'binder cache is account scoped');
 
   const detail = fs.readFileSync('app/pokemon/[id].tsx', 'utf8');
   const routeIdentity = detail.indexOf('const routePokemon: PokemonData | null = routeName');

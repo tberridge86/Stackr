@@ -114,9 +114,9 @@ assert.equal(
   'legacy free-form message events must be hidden completely during Gate 0',
 );
 
-const appLayout = fs.readFileSync('app/_layout.tsx', 'utf8');
+const appLayout = fs.readFileSync('components/StackrAppShell.tsx', 'utf8');
 const stripeProviderBranch = appLayout.match(
-  /BETA_TRADE_DEMO_MODE\s*\?\s*\(\s*<AppNavigation\s*\/>\s*\)\s*:\s*\(\s*<StripeAppProvider>/s,
+  /BETA_TRADE_DEMO_MODE\s*\?\s*\(\s*<AppNavigation\s+startupVisible=\{startupVisible\}\s+onReady=\{onReady\}\s*\/>\s*\)\s*:\s*\(\s*<StripeAppProvider>/s,
 );
 assert.ok(
   stripeProviderBranch,

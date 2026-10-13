@@ -10,6 +10,7 @@ async function main() {
   let accountId: string | null = 'owner-a';
   let savedReads = 0;
   let catalogueReads = 0;
+  let paginationCount = 0;
   let releaseCatalogue!: (rows: unknown[]) => void;
   const catalogue = new Promise<unknown[]>((resolve) => { releaseCatalogue = resolve; });
   const saved = (userId: string) => ({
@@ -21,13 +22,18 @@ async function main() {
     from: (table: string) => {
       assert.equal(table, 'binders');
       let selectedUser = '';
+      let pageFrom = 0, pageTo = 999;
       const query = {
         select: () => query,
         eq: (column: string, value: string) => { assert.equal(column, 'user_id'); selectedUser = value; return query; },
         order: () => query,
+        range: (from: number, to: number) => { pageFrom = from; pageTo = to; return query; },
         then: (resolve: (value: unknown) => unknown) => {
           savedReads += 1;
-          return Promise.resolve({ data: [saved(selectedUser), saved('unrelated')], error: null }).then(resolve);
+          const rows = paginationCount
+            ? Array.from({ length: paginationCount }, (_, index) => ({ ...saved(selectedUser), id: `binder-${index}` }))
+            : [saved(selectedUser), saved('unrelated')];
+          return Promise.resolve({ data: rows.slice(pageFrom, pageTo + 1), error: null }).then(resolve);
         },
       };
       return query;
@@ -64,6 +70,14 @@ async function main() {
   assert.equal((await exports.fetchBinders({ enrich: false })).length, 0);
   releaseCatalogue([]);
   await enriched;
+  requestCache.invalidateRequestCache();
+  accountId = 'owner-a';
+  paginationCount = 1702;
+  const beforePagination = savedReads;
+  const fullLibrary = await exports.fetchBinders({ enrich: false });
+  assert.equal(fullLibrary.length, 1702, 'preloading must not silently stop at the default 1000-row server page');
+  assert.equal(new Set(fullLibrary.map((row: { id: string }) => row.id)).size, 1702, 'all fetched binder identities stay distinct');
+  assert.equal(savedReads - beforePagination, 2, 'binder-list retrieval uses bounded pages');
   console.log('Saved binder loading bypasses deferred catalogue enrichment and isolates account caches.');
 }
 

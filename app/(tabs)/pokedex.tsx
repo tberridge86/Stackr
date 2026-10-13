@@ -27,6 +27,7 @@ import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { PokemonArtworkGlow, StackrScreen } from '../../components/StackrScreen';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { usePokedexOwnership } from '../../lib/pokedexOwnershipState';
+import { readOptionalCatalogueEnrichment } from '../../lib/optionalCatalogueEnrichment';
 
 type PokemonListItem = {
   name: string;
@@ -74,6 +75,7 @@ const REGION_FILTERS: { key: RangeKey; label: string; source: ImageSourcePropTyp
 
 const POKEDEX_LIST_LIMIT = 1025;
 const POKEDEX_INITIAL_LIST_LIMIT = 151;
+const POKEDEX_CACHE_READ_TIMEOUT_MS = 25;
 const getPokedexListUrl = (offset: number, limit: number) => (
   `/pokemon?offset=${offset}&limit=${limit}`
 );
@@ -281,6 +283,7 @@ export default function PokedexScreen() {
 
   useEffect(() => {
     let active = true;
+    const cacheReadAbort = new AbortController();
 
     const publishPokemon = (mapped: PokemonEntry[]) => {
       if (!active) return;
@@ -302,7 +305,9 @@ export default function PokedexScreen() {
       }
 
       try {
-        const cached = await AsyncStorage.getItem(POKEDEX_CACHE_KEY);
+        const cached = await readOptionalCatalogueEnrichment(
+          () => AsyncStorage.getItem(POKEDEX_CACHE_KEY), cacheReadAbort.signal, POKEDEX_CACHE_READ_TIMEOUT_MS,
+        );
         if (!cached) return false;
 
         const parsed = JSON.parse(cached);
@@ -312,7 +317,7 @@ export default function PokedexScreen() {
         applyCompletePokemon(parsed);
         return true;
       } catch (error) {
-        console.log('Failed to load cached Pokédex', error);
+        if (active) console.log('Failed to load cached Pokédex', error);
         return false;
       }
     };
@@ -362,6 +367,7 @@ export default function PokedexScreen() {
 
     const loadPokemon = async () => {
       const hasCachedPokemon = await loadCachedPokemon();
+      if (!active) return;
       await loadRemotePokemon(hasCachedPokemon);
     };
 
@@ -369,6 +375,7 @@ export default function PokedexScreen() {
 
     return () => {
       active = false;
+      cacheReadAbort.abort();
     };
   }, [reloadEpoch]);
 

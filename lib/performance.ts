@@ -1,5 +1,19 @@
 type PerfMetadata = Record<string, string | number | boolean | null | undefined>;
 
+export type StartupPhase = 'root-mounted' | 'root-layout' | 'shell-layout' | 'navigation-ready' | 'overlay-removed';
+const startupPhases: Partial<Record<StartupPhase, number>> = {};
+let startupStartedAt: number | undefined;
+/** One bounded, device-local observation. Does not measure OS process creation. */
+export function markStartupPhase(phase: StartupPhase) {
+  const now = globalThis.performance?.now?.() ?? Date.now();
+  startupStartedAt ??= now;
+  startupPhases[phase] ??= Math.max(0, now - startupStartedAt);
+}
+
+export function getStartupObservation() {
+  return { origin: 'first-js-startup-mark' as const, phasesMs: { ...startupPhases } };
+}
+
 const perfStarts = new Map<string, number>();
 
 const shouldLogPerf = () => typeof __DEV__ !== 'undefined' && __DEV__;

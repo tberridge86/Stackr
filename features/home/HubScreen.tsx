@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Alert,
   Image,
+  InteractionManager,
   Linking,
   RefreshControl,
   ScrollView,
@@ -28,12 +29,14 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FeatureTipModal } from '../../components/FeatureTipModal';
 import { useAppMode } from '../../components/app-mode-context';
-import { useAuth } from '../../components/auth-context';
+import { isKnownAuthDenial, useAuth } from '../../components/auth-context';
 import { useProfile } from '../../components/profile-context';
 import { StackrProfileAvatar } from '../../components/StackrProfileAvatar';
 import { fetchBinders, fetchBinderCards, type BinderCardRecord, type BinderRecord } from '../../lib/binders';
 import type { OwnedCardRow } from '../../lib/ownership';
 import { fetchHomeSavedCollection, savedBinderCatalogueTotal } from '../../lib/homeSavedCollection';
+import { writePersistedBinderOverview } from '../../lib/binderLibraryCache';
+import { getCollectionSummaryVersion } from '../../lib/collectionSummaryInvalidation';
 import { readRecentHomeActivityRows } from '../../lib/homeActivity';
 import { supabase } from '../../lib/supabase';
 import { PRICE_API_URL } from '../../lib/config';
@@ -1007,6 +1010,17 @@ export default function HubScreen() {
   const livePricePollInFlightRef = useRef(false);
   const cachedHomeSnapshotUserIdRef = useRef<string | null>(null);
   const homeSessionUserIdRef = useRef<string | null>(null);
+  const homeSessionExpiresAtRef = useRef<number>(0);
+  const homeSessionInitializedRef = useRef(false);
+  const homeSessionGenerationRef = useRef(0);
+  const homeLiveMetadataGenerationRef = useRef(-1);
+  const homeLiveValuationGenerationRef = useRef(-1);
+  const homeCacheRestoreRef = useRef<{ generation: number; promise: Promise<boolean> } | null>(null);
+  const homeFocusedRef = useRef(false);
+  const homeFocusGenerationRef = useRef(0);
+  const homeStartupKeyRef = useRef<string | null>(null);
+  const homeSecondaryCancelRef = useRef<(() => void) | null>(null);
+  const homeBinderPreloadCancelRef = useRef<(() => void) | null>(null);
   const homeCollectionRequestRef = useRef(0);
   const homeGeneralRequestRef = useRef(0);
   const homeChaseRequestRef = useRef(0);
@@ -1158,6 +1172,7 @@ export default function HubScreen() {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
+      if (mintyInsightRequestRef.current !== requestId) return;
       const trustedUserId = user?.id ?? null;
       if (!trustedUserId) {
         setApiMintyInsight(null);
@@ -1212,7 +1227,8 @@ export default function HubScreen() {
 
       const { data: { user } } = await supabase.auth.getUser();
       const trustedUserId = user?.id ?? null;
-      homeSessionUserIdRef.current = trustedUserId;
+      if (homeGeneralRequestRef.current !== requestId
+        || homeSessionUserIdRef.current !== trustedUserId) return;
       const isCurrentRequest = () => (
         homeGeneralRequestRef.current === requestId
         && homeSessionUserIdRef.current === trustedUserId
@@ -1338,12 +1354,20 @@ export default function HubScreen() {
   // LOAD COLLECTION VALUE
   // ===============================
 
-  const applyCachedHomeCollection = useCallback(async () => {
+  const restoreCachedHomeCollection = useCallback(async () => {
+    const generation = homeSessionGenerationRef.current;
+    const cachedOwnerId = homeSessionUserIdRef.current;
+    const isCurrentRestore = () => generation === homeSessionGenerationRef.current
+      && homeSessionUserIdRef.current === cachedOwnerId
+      && homeSessionExpiresAtRef.current * 1000 > Date.now()
+      && homeLiveValuationGenerationRef.current !== generation;
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
+      // A local session selects a saved display, not permission for a live read.
+      // Server verification remains on the fresh collection and write paths.
+      const user = cachedOwnerId ? { id: cachedOwnerId } : null;
+      if (!isCurrentRestore()) return false;
 
-      await AsyncStorage.removeItem(LEGACY_HOME_COLLECTION_CACHE_KEY);
+      void AsyncStorage.removeItem(LEGACY_HOME_COLLECTION_CACHE_KEY).catch(() => {});
 
       const trustedUserId = user?.id ?? null;
       if (!trustedUserId) {
@@ -1403,7 +1427,7 @@ export default function HubScreen() {
 
       const storageKey = getHomeCollectionCacheKey(trustedUserId);
       const raw = await AsyncStorage.getItem(storageKey);
-      if (!raw) return false;
+      if (!raw || !isCurrentRestore()) return false;
 
       const snapshot = parseHomeCollectionCache<Partial<HomeCollectionCacheSnapshot>>(
         raw,
@@ -1423,28 +1447,24 @@ export default function HubScreen() {
         return false;
       }
 
-      const { data: { user: confirmedUser }, error: confirmationError } = await supabase.auth.getUser();
-      if (confirmationError) throw confirmationError;
-      if (confirmedUser?.id !== trustedUserId) {
-        hasLoadedCollectionValueRef.current = false;
-        hasSuccessfulCollectionPricingRef.current = false;
-        collectionPriceEvidenceRef.current = [];
-        legacyManualRefreshCursorRef.current = 0;
-        preparedValuationAvailableRef.current = false;
-        return false;
-      }
+      if (!isCurrentRestore() || homeSessionUserIdRef.current !== trustedUserId) return false;
       cachedHomeSnapshotUserIdRef.current = trustedUserId;
       collectionPriceEvidenceRef.current = Array.isArray(snapshot.priceEvidence) ? snapshot.priceEvidence : [];
 
       setCollectionTotal(snapshot.collectionTotal);
       setCollectionPricingSummary(snapshot.collectionPricingSummary as CollectionPricingSummary);
-      setCollectionPricingWarning(null);
+      setCollectionPricingWarning((current) => current ?? 'Showing your last successful stored-price read while current prices refresh.');
+      setCollectionValueError(null);
       setCollectionChangeAmount(Number(snapshot.collectionChangeAmount ?? 0));
       setCollectionChangePercent(Number(snapshot.collectionChangePercent ?? 0));
-      setOwnedCardCount(Number(snapshot.ownedCardCount ?? 0));
-      setActiveBinder(snapshot.activeBinder ?? null);
-      setDuplicateSummary(snapshot.duplicateSummary ?? EMPTY_DUPLICATE_SUMMARY);
-      setMissingCards(Array.isArray(snapshot.missingCards) ? snapshot.missingCards : []);
+      // Saved ownership can arrive before prices. Restore price/history then,
+      // but never replace newer binder or ownership metadata with the snapshot.
+      if (homeLiveMetadataGenerationRef.current !== generation) {
+        setOwnedCardCount(Number(snapshot.ownedCardCount ?? 0));
+        setActiveBinder(snapshot.activeBinder ?? null);
+        setDuplicateSummary(snapshot.duplicateSummary ?? EMPTY_DUPLICATE_SUMMARY);
+        setMissingCards(Array.isArray(snapshot.missingCards) ? snapshot.missingCards : []);
+      }
       setMintyDataRefreshedAt(snapshot.mintyDataRefreshedAt ?? null);
       collectionValueReadsRef.current = Array.isArray(snapshot.collectionValueReads)
         ? snapshot.collectionValueReads.slice(-MAX_COLLECTION_VALUE_READS)
@@ -1463,6 +1483,18 @@ export default function HubScreen() {
       return false;
     }
   }, []);
+
+  const applyCachedHomeCollection = useCallback(() => {
+    const generation = homeSessionGenerationRef.current;
+    const previous = homeCacheRestoreRef.current;
+    if (previous?.generation === generation) return previous.promise;
+    const promise = restoreCachedHomeCollection();
+    homeCacheRestoreRef.current = { generation, promise };
+    void promise.finally(() => {
+      if (homeCacheRestoreRef.current?.promise === promise) homeCacheRestoreRef.current = null;
+    });
+    return promise;
+  }, [restoreCachedHomeCollection]);
 
   const saveHomeCollectionCache = useCallback(async (
     trustedUserId: string,
@@ -1494,13 +1526,29 @@ export default function HubScreen() {
 
   const loadCollectionValue = useCallback(async () => {
     const requestId = ++homeCollectionRequestRef.current;
+    const generation = homeSessionGenerationRef.current;
+    const expectedUserId = homeSessionUserIdRef.current;
+    const preloadVersion = getCollectionSummaryVersion();
+    const preloadStartedAt = Date.now();
     let collectorDataLoaded = false;
+    let accountDenied = false;
+    let preloadCandidates: BinderRecord[] = [];
+    let preloadSavedCards: Map<string, BinderCardRecord[]> | undefined;
     setCollectionValueError(null);
     setCollectionPricingWarning(null);
     setHomeDataError(null);
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
+      const { data: { user }, error: userError } = await supabase.auth.getUser().catch((error) => {
+        accountDenied = isKnownAuthDenial(error);
+        throw error;
+      });
+      if (userError) {
+        accountDenied = isKnownAuthDenial(userError);
+        throw userError;
+      }
+      if (requestId !== homeCollectionRequestRef.current
+        || generation !== homeSessionGenerationRef.current
+        || (user?.id ?? null) !== expectedUserId) return;
       if (!user) {
         pendingManualPriceRefreshesRef.current.clear();
         manualPriceRefreshUserIdRef.current = null;
@@ -1514,15 +1562,21 @@ export default function HubScreen() {
         pendingManualPriceRefreshesRef.current.clear();
       }
       manualPriceRefreshUserIdRef.current = trustedUserId;
-      homeSessionUserIdRef.current = trustedUserId;
       const isCurrentRequest = () => (
         homeCollectionRequestRef.current === requestId
+        && homeSessionGenerationRef.current === generation
         && homeSessionUserIdRef.current === trustedUserId
       );
       const confirmCurrentRequest = async () => {
         if (!isCurrentRequest()) return false;
-        const { data: { user: confirmedUser }, error: confirmationError } = await supabase.auth.getUser();
-        if (confirmationError) throw confirmationError;
+        const { data: { user: confirmedUser }, error: confirmationError } = await supabase.auth.getUser().catch((error) => {
+          accountDenied = isKnownAuthDenial(error);
+          throw error;
+        });
+        if (confirmationError) {
+          accountDenied = isKnownAuthDenial(confirmationError);
+          throw confirmationError;
+        }
         return isCurrentRequest() && confirmedUser?.id === trustedUserId;
       };
       const hadLoadedCollectionValue =
@@ -1530,10 +1584,25 @@ export default function HubScreen() {
         && hasLoadedCollectionValueRef.current;
       setCollectionValueLoading(!hadLoadedCollectionValue);
       if (!hadLoadedCollectionValue) {
-        await applyCachedHomeCollection();
+        // Restore independently: slow local storage/auth confirmation must not
+        // hold up a fresh read. The restore's version guard protects live data.
+        void applyCachedHomeCollection();
       }
 
-      const { binders, ownedRows, cardsByBinder } = await fetchHomeSavedCollection(trustedUserId);
+      const { binders, ownedRows, cardsByBinder } = await fetchHomeSavedCollection(trustedUserId, {
+        onBindersReady: (savedBinders) => {
+          preloadCandidates = savedBinders;
+          // Warm the same account's library before slower card/price retrieval.
+          // A mutation or session change also invalidates queued disk writes.
+          void writePersistedBinderOverview(trustedUserId, { binders: savedBinders, customNameArtKeys: {} }, {
+            savedAt: preloadStartedAt,
+            isCurrent: () => isCurrentRequest()
+              && homeSessionExpiresAtRef.current * 1000 > Date.now()
+              && getCollectionSummaryVersion() === preloadVersion,
+          });
+        },
+      });
+      preloadSavedCards = cardsByBinder;
       const binderGroups: HomeBinderCardGroup[] = await Promise.all(
         binders.map(async (binder) => {
             const binderCards = cardsByBinder.get(binder.id) ?? [];
@@ -1572,6 +1641,7 @@ export default function HubScreen() {
       let nextMissingCards = buildMissingCards(binderGroups, nextActiveBinder);
 
       if (!await confirmCurrentRequest()) return;
+      homeLiveMetadataGenerationRef.current = generation;
       collectorDataLoaded = true;
       setActiveBinder((current) => current?.id === nextActiveBinder?.id && current && nextActiveBinder
         ? { ...nextActiveBinder, value: current.value, valueAvailable: current.valueAvailable, valueCoverageLabel: current.valueCoverageLabel }
@@ -1619,6 +1689,7 @@ export default function HubScreen() {
       const ownedUnitCount = ownedUnits.reduce((total, unit) => total + unit.quantity, 0);
       if (!await confirmCurrentRequest()) return;
       // Account and collection content can render while exact prices/history load.
+      setOwnedCardCount(ownedUnitCount);
       setCollectionValueLoading(false);
       const priceInputs = ownedUnits.map(pricingInputForHomeUnit);
       const unavailablePriceResults = () => priceInputs.map((input) => unavailableCollectionPrice(input, {
@@ -1662,6 +1733,7 @@ export default function HubScreen() {
           valueCoverageLabel: getCollectionPriceCoverageLabel(isPreparedGeneralValuation(summary)
             ? preparedGeneralPricingSummary(coverage as import('../../lib/preparedCollectionValuation').GeneralPreparedCoverage) ?? preparedPricingSummary(coverage)
             : preparedPricingSummary(coverage)) } : nextActiveBinder;
+        homeLiveValuationGenerationRef.current = generation;
         setCollectionTotal(pricing.total);
         setCollectionPricingSummary(pricing);
         setOwnedCardCount(summary.totalUnits);
@@ -1732,6 +1804,7 @@ export default function HubScreen() {
           if (!isCurrentRequest() || hasSuccessfulCollectionPricingRef.current) return;
           const partial = pricingSummaryForResults(applyLegacyResults(read.results));
           if (partial.total == null) return;
+          homeLiveValuationGenerationRef.current = generation;
           setCollectionTotal(partial.total);
           setCollectionPricingSummary(partial);
           setCollectionPricingWarning(`Reading stored prices: ${partial.pricedUnits} of ${partial.totalUnits} owned cards priced. Showing the known subtotal.`);
@@ -1753,6 +1826,7 @@ export default function HubScreen() {
             }
             const partial = pricingSummaryForResults(combined);
             if (partial.total == null) return;
+            homeLiveValuationGenerationRef.current = generation;
             setCollectionTotal(partial.total);
             setCollectionPricingSummary(partial);
             setCollectionValueLoading(false);
@@ -1844,6 +1918,7 @@ export default function HubScreen() {
       setActiveBinder(nextPricedActiveBinder);
       setDuplicateSummary(nextDuplicateSummary);
       setMissingCards(nextMissingCards);
+      homeLiveValuationGenerationRef.current = generation;
       setCollectionTotal(nextPricingSummary.total);
       setCollectionPricingSummary(nextPricingSummary);
       setCollectionPricingWarning(refreshFollowUp.warning ?? pricingWarning);
@@ -1894,6 +1969,16 @@ export default function HubScreen() {
     } catch (error) {
       console.log('Failed to calculate collection value', error);
       if (homeCollectionRequestRef.current !== requestId) return;
+      if (accountDenied) {
+        // A known server denial revokes the local preview; a transport failure
+        // only leaves an honestly labelled saved display.
+        homeSessionExpiresAtRef.current = 0;
+        cachedHomeSnapshotUserIdRef.current = null;
+        hasSuccessfulCollectionPricingRef.current = false;
+        hasLoadedCollectionValueRef.current = false;
+        collectionPriceEvidenceRef.current = [];
+        setOwnedCardCount(0);
+      }
       if (!hasSuccessfulCollectionPricingRef.current) {
         setCollectionTotal(null);
         setCollectionPricingSummary(EMPTY_COLLECTION_PRICING);
@@ -1921,6 +2006,27 @@ export default function HubScreen() {
       if (homeCollectionRequestRef.current === requestId) {
         hasLoadedCollectionValueRef.current = true;
         setCollectionValueLoading(false);
+        if (collectorDataLoaded && expectedUserId && preloadCandidates.length) {
+          homeBinderPreloadCancelRef.current?.();
+          let cancelled = false;
+          const isCurrentPreload = () => !cancelled
+            && homeCollectionRequestRef.current === requestId
+            && homeSessionGenerationRef.current === generation
+            && homeSessionUserIdRef.current === expectedUserId
+            && homeSessionExpiresAtRef.current * 1000 > Date.now()
+            && getCollectionSummaryVersion() === preloadVersion;
+          const task = InteractionManager.runAfterInteractions(() => {
+            if (!isCurrentPreload()) return;
+            // Complete binder snapshots use the existing bounded, read-only
+            // phone cache; neither this import nor warming holds first content.
+            void import('../../lib/binderReopenRuntime').then(({ preloadBinderReopenViews }) => {
+              if (isCurrentPreload()) return preloadBinderReopenViews(preloadCandidates, expectedUserId, isCurrentPreload, {
+                completeSavedCardsByBinder: preloadSavedCards,
+              });
+            }).catch(() => {});
+          });
+          homeBinderPreloadCancelRef.current = () => { cancelled = true; task.cancel?.(); };
+        }
       }
     }
   }, [applyCachedHomeCollection, chartRange, refreshMintyForMarketSignature, saveHomeCollectionCache]);
@@ -2331,17 +2437,67 @@ export default function HubScreen() {
   // EFFECTS
   // ===============================
 
+  const startHomeForCurrentFocus = useCallback(() => {
+    const userId = homeSessionUserIdRef.current;
+    if (!homeFocusedRef.current || !userId) return;
+    const generation = homeSessionGenerationRef.current;
+    const key = `${generation}:${homeFocusGenerationRef.current}`;
+    if (homeStartupKeyRef.current === key) return;
+    homeStartupKeyRef.current = key;
+    const isCurrent = () => homeFocusedRef.current
+      && homeStartupKeyRef.current === key
+      && homeSessionGenerationRef.current === generation
+      && homeSessionUserIdRef.current === userId;
+
+    // Focus and INITIAL_SESSION converge here. Cached and fresh reads run once
+    // for this account/focus, independently of secondary Home content.
+    void applyCachedHomeCollection();
+    void loadCollectionValueRef.current();
+    homeSecondaryCancelRef.current?.();
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const task = InteractionManager.runAfterInteractions(() => {
+      if (!isCurrent()) return;
+      timer = setTimeout(() => {
+        if (!isCurrent()) return;
+        void loadAll();
+        void loadChaseCards();
+        void loadRecentActivity();
+        void loadMintyPreferences(userId);
+        void loadApiMintyInsight(false);
+      }, 180);
+    });
+    homeSecondaryCancelRef.current = () => {
+      task.cancel?.();
+      if (timer) clearTimeout(timer);
+    };
+  }, [applyCachedHomeCollection, loadAll, loadApiMintyInsight, loadChaseCards, loadMintyPreferences, loadRecentActivity]);
+
   useEffect(() => {
     let mounted = true;
-    let reloadTimer: ReturnType<typeof setTimeout> | null = null;
-
-    const bindHomeSession = (nextUserId: string | null) => {
+    let authEventVersion = 0;
+    let sessionStartTimer: ReturnType<typeof setTimeout> | null = null;
+    const bindHomeSession = (nextUserId: string | null, expiresAt = 0) => {
       if (!mounted) return;
-      if (homeSessionUserIdRef.current === nextUserId) {
-        if (nextUserId) void loadMintyPreferences(nextUserId);
+      const hadValidLocalSession = homeSessionExpiresAtRef.current * 1000 > Date.now();
+      homeSessionExpiresAtRef.current = Number.isFinite(expiresAt) ? expiresAt : 0;
+      if (homeSessionInitializedRef.current && homeSessionUserIdRef.current === nextUserId) {
+        if (nextUserId && !hadValidLocalSession && homeSessionExpiresAtRef.current * 1000 > Date.now()) {
+          // A same-account renewal can make a previously expired local preview
+          // eligible without duplicating the pending live collection request.
+          if (sessionStartTimer) clearTimeout(sessionStartTimer);
+          sessionStartTimer = setTimeout(() => {
+            if (mounted) void applyCachedHomeCollection();
+          }, 0);
+        }
         return;
       }
+      homeSessionInitializedRef.current = true;
       homeSessionUserIdRef.current = nextUserId;
+      homeSessionGenerationRef.current += 1;
+      homeSecondaryCancelRef.current?.();
+      homeSecondaryCancelRef.current = null;
+      homeBinderPreloadCancelRef.current?.();
+      homeBinderPreloadCancelRef.current = null;
       homeCollectionRequestRef.current += 1;
       homeGeneralRequestRef.current += 1;
       homeChaseRequestRef.current += 1;
@@ -2384,65 +2540,73 @@ export default function HubScreen() {
       setApiMintyInsight(null);
       setMintyInsightError(null);
       setMintyInsightRefreshing(false);
+      setCollectionValueLoading(Boolean(nextUserId));
+      setChaseLoading(Boolean(nextUserId));
+      setActivityLoading(Boolean(nextUserId));
 
-      if (reloadTimer) clearTimeout(reloadTimer);
-      if (!nextUserId) return;
-      reloadTimer = setTimeout(() => {
-        if (!mounted || homeSessionUserIdRef.current !== nextUserId) return;
-        void applyCachedHomeCollection();
-        void loadCollectionValueRef.current();
-        void loadAll();
-        void loadChaseCards();
-        void loadRecentActivity();
-        void loadMintyPreferences(nextUserId);
-        void loadApiMintyInsight(false);
+      // Leave the Supabase auth callback before starting auth-dependent reads.
+      if (sessionStartTimer) clearTimeout(sessionStartTimer);
+      sessionStartTimer = setTimeout(() => {
+        if (mounted) startHomeForCurrentFocus();
       }, 0);
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      bindHomeSession(session?.user?.id ?? null);
+      authEventVersion += 1;
+      bindHomeSession(session?.user?.id ?? null, Number(session?.expires_at ?? 0));
     });
-    void supabase.auth.getUser().then(({ data, error }) => {
+    const lookupVersion = authEventVersion;
+    void supabase.auth.getSession().then(({ data, error }) => {
+      // A late cold-start lookup cannot undo a newer sign-in/out event.
+      if (!mounted || authEventVersion !== lookupVersion) return;
       if (error) {
         console.log('Home session lookup failed:', error.message);
         bindHomeSession(null);
         return;
       }
-      bindHomeSession(data.user?.id ?? null);
+      bindHomeSession(data.session?.user?.id ?? null, Number(data.session?.expires_at ?? 0));
+    }).catch((error) => {
+      if (mounted && authEventVersion === lookupVersion) {
+        console.log('Home session lookup failed:', error);
+        bindHomeSession(null);
+      }
     });
 
     return () => {
       mounted = false;
-      if (reloadTimer) clearTimeout(reloadTimer);
+      if (sessionStartTimer) clearTimeout(sessionStartTimer);
+      homeSessionGenerationRef.current += 1;
+      homeCollectionRequestRef.current += 1;
+      homeGeneralRequestRef.current += 1;
+      homeChaseRequestRef.current += 1;
+      homeChaseListingsRequestRef.current += 1;
+      homeActivityRequestRef.current += 1;
+      mintyPreferenceGenerationRef.current += 1;
+      mintyInsightRequestRef.current += 1;
+      homeSecondaryCancelRef.current?.();
+      homeSecondaryCancelRef.current = null;
+      homeBinderPreloadCancelRef.current?.();
+      homeBinderPreloadCancelRef.current = null;
       subscription.unsubscribe();
     };
-  }, [applyCachedHomeCollection, loadAll, loadApiMintyInsight, loadChaseCards, loadMintyPreferences, loadRecentActivity]);
+  }, [applyCachedHomeCollection, startHomeForCurrentFocus]);
 
   useFocusEffect(useCallback(() => {
-    let cancelled = false;
-    let secondaryTimer: ReturnType<typeof setTimeout> | null = null;
+    homeFocusedRef.current = true;
+    homeFocusGenerationRef.current += 1;
+    startHomeForCurrentFocus();
     const livePriceTimer = setInterval(() => {
       void pollLivePrices();
     }, HOME_STORED_PRICE_POLL_MS);
 
-    void (async () => {
-      await applyCachedHomeCollection();
-      if (!cancelled) void pollLivePrices();
-    })();
-    void loadAll();
-
-    secondaryTimer = setTimeout(() => {
-      if (cancelled) return;
-      void loadChaseCards();
-      void loadRecentActivity();
-    }, 180);
-
     return () => {
-      cancelled = true;
+      homeFocusedRef.current = false;
+      homeStartupKeyRef.current = null;
+      homeSecondaryCancelRef.current?.();
+      homeSecondaryCancelRef.current = null;
       clearInterval(livePriceTimer);
-      if (secondaryTimer) clearTimeout(secondaryTimer);
     };
-  }, [applyCachedHomeCollection, loadAll, loadChaseCards, loadRecentActivity, pollLivePrices]));
+  }, [startHomeForCurrentFocus, pollLivePrices]));
 
   useEffect(() => {
     if (appModeHydrated && premiumSellerAccess.allowed && !hasChosenMode) {
@@ -2452,9 +2616,6 @@ export default function HubScreen() {
     if (!appModeHydrated) return;
     checkHubTip();
   }, [appModeHydrated, checkHubTip, hasChosenMode, premiumSellerAccess.allowed]);
-  useEffect(() => {
-    loadApiMintyInsight(false);
-  }, [loadApiMintyInsight]);
   useEffect(() => {
     if (previousChartRangeRef.current === chartRange) return;
     previousChartRangeRef.current = chartRange;

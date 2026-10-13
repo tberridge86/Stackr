@@ -11,12 +11,33 @@ const languageOf = (value: unknown) => {
   if (['en', 'eng', 'english'].includes(language) || language.startsWith('en-')) return 'en';
   return language;
 };
-const byId = new Map(published.logos.map(row => [row.setId, row]));
-const byCode = new Map(published.logos.map(row => [`${row.language}:${normalize(row.setCode)}`, row]));
+// Approved published replacements override the older generated snapshot only in
+// this fallback lane. Live API marks and bundled local artwork retain their own
+// precedence. Source: #304, production manifest read 2026-10-13 06:23:48 UTC.
+// Crown Zenith's reviewed PNG is recorded as 1710 x 664. Its shared use for
+// Galarian Gallery is presentation-only; neither set identity nor membership changes.
+const reviewedLogoReplacements = [{
+  setId: '42096fc0-51f2-4805-a114-e6f2811a0c49',
+  language: 'en',
+  setCode: 'swsh12.5',
+  storageKey: 'public/set_logo/reviewed/catalogue/42096fc0-51f2-4805-a114-e6f2811a0c49/dcc01afe69d851972c3c5a05a64fb9c939d1a5df6906e8d0b4be33f682627c92/delivery.png',
+}];
+const fallbackLogos = [...published.logos, ...reviewedLogoReplacements];
+const byId = new Map(fallbackLogos.map(row => [row.setId, row]));
+const byCode = new Map(fallbackLogos.map(row => [`${row.language}:${normalize(row.setCode)}`, row]));
 const coversById = new Map(simplifiedCovers.covers.map(row => [row.setId, row]));
 // These are presentation parents, never card identities or collection merges.
-const parents: Record<string, string> = { 'en:mee': 'en:me01' };
-const parentSetIds: Record<string, string> = { '6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061': 'en:me01' };
+const parents: Record<string, string> = {
+  'en:mee': 'en:me01',
+  // Legacy/canonical spellings are verified in englishSetIdentity.ts.
+  'en:swsh12pt5': 'en:swsh12.5',
+  'en:swsh12.5gg': 'en:swsh12.5',
+  'en:swsh12pt5gg': 'en:swsh12.5',
+};
+const parentSetIds: Record<string, string> = {
+  '6f4ff21c-f7e5-42bd-9ac1-ce0212ae1061': 'en:me01',
+  '8bb033f3-6059-4f5f-a021-c363241092a1': 'en:swsh12.5',
+};
 
 /** Immutable, already-published set logos remain usable while optional API marks load. */
 export function getPublishedSetLogoFallback(input?: SetIdentity | null): string | undefined {
@@ -29,9 +50,15 @@ export function getPublishedSetLogoFallback(input?: SetIdentity | null): string 
   let row = byId.get(id);
   if (row && language && row.language !== language) return undefined;
   if (!row && language) row = byCode.get(`${language}:${normalize(input.setCode ?? id)}`);
-  if (!row) {
-    const parent = parentSetIds[id] ?? parents[`${language}:${normalize(input.setCode ?? id)}`];
-    if (parent && (!language || parent.startsWith(`${language}:`))) row = byCode.get(parent);
+  // The requested Crown Zenith parent supersedes a stale Gallery logo. Other
+  // parent links remain fallback-only. Prefer the resolved row's identity over a
+  // supplied code so conflicting metadata cannot redirect an unrelated known set.
+  const parent = parentSetIds[id] ?? parents[row
+    ? `${row.language}:${normalize(row.setCode)}`
+    : `${language}:${normalize(input.setCode ?? id)}`];
+  const replacesChildLogo = parent === 'en:swsh12.5';
+  if (parent && (!row || replacesChildLogo) && (!language || parent.startsWith(`${language}:`))) {
+    row = byCode.get(parent) ?? row;
   }
   if (!row || (language && row.language !== language)) return undefined;
   return `${STORAGE_ROOT}${row.storageKey}`;

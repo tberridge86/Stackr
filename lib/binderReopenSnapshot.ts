@@ -8,6 +8,11 @@ export type BinderReopenSnapshot = BinderReopenScope & {
   savedAt: number;
   binder: BinderRecord;
   cards: BinderCardRecord[];
+  /** Only Home's verified full private saved-card pagination may set this. */
+  customSource?: { kind: 'home-saved-cards-v1'; cardCount: number };
+};
+export type BinderReopenSaveOptions = {
+  customSource?: { kind: 'home-saved-cards-v1'; cardCount: number };
 };
 export type BinderReopenStore = {
   read(scope: BinderReopenScope, binderId: string): Promise<unknown>;
@@ -33,7 +38,7 @@ function pick<T extends object>(value: T, keys: readonly string[]): Partial<T> {
 }
 
 /** Whitelist data needed for read-only presentation; exclude prices, tokens and arbitrary raw payloads. */
-export function snapshotBinderView(scope: BinderReopenScope, binder: BinderRecord, cards: BinderCardRecord[], savedAt: number): BinderReopenSnapshot {
+export function snapshotBinderView(scope: BinderReopenScope, binder: BinderRecord, cards: BinderCardRecord[], savedAt: number, options: BinderReopenSaveOptions = {}): BinderReopenSnapshot {
   const record = pick(binder, [
     'id', 'user_id', 'name', 'color', 'gradient', 'cover_key', 'type', 'is_public', 'source_set_id', 'language', 'created_at',
     'edition', 'default_condition', 'master_set_enabled', 'card_mode', 'default_grade_company', 'default_grade',
@@ -78,7 +83,11 @@ export function snapshotBinderView(scope: BinderReopenScope, binder: BinderRecor
     }
     return result;
   });
-  return copy(stripTcgdexReferencesFromValueBeforePersistence({ ...scope, schema: 1 as const, savedAt, binder: record, cards: rows }));
+  const customSource = options.customSource?.kind === 'home-saved-cards-v1'
+    && Number.isSafeInteger(options.customSource.cardCount)
+    ? { kind: 'home-saved-cards-v1' as const, cardCount: options.customSource.cardCount }
+    : undefined;
+  return copy(stripTcgdexReferencesFromValueBeforePersistence({ ...scope, schema: 1 as const, savedAt, binder: record, cards: rows, customSource }));
 }
 
 export function isCompleteBinderSnapshot(value: unknown, scope: BinderReopenScope, binderId: string, now: number): value is BinderReopenSnapshot {
@@ -86,9 +95,20 @@ export function isCompleteBinderSnapshot(value: unknown, scope: BinderReopenScop
     const s = value as BinderReopenSnapshot;
     if (!scope.accountId || !scope.namespace || !s || s.schema !== 1 || s.namespace !== scope.namespace || s.accountId !== scope.accountId
       || !Number.isFinite(s.savedAt) || s.savedAt > now || now - s.savedAt >= BINDER_REOPEN_MAX_AGE_MS
-      || s.binder?.id !== binderId || s.binder.user_id !== scope.accountId || s.binder.type !== 'official'
-      || s.binder.catalogue_identity_status !== 'resolved' || !UUID.test(s.binder.catalogue_set_id ?? '')
+      || s.binder?.id !== binderId || !UUID.test(s.binder.id) || s.binder.user_id !== scope.accountId
       || !Array.isArray(s.cards) || s.cards.length > 2500) return false;
+    if (s.binder.type === 'custom') {
+      if (s.customSource?.kind !== 'home-saved-cards-v1' || !Number.isSafeInteger(s.customSource.cardCount)
+        || s.customSource.cardCount !== s.cards.length) return false;
+      const rows = new Set<string>();
+      for (const row of s.cards) {
+        if (!row.id || rows.has(row.id) || row.binder_id !== binderId || typeof row.owned !== 'boolean'
+          || !Number.isFinite(row.owned_quantity) || row.owned_quantity < 0 || (row.owned && row.owned_quantity < 1)) return false;
+        rows.add(row.id);
+      }
+      return true;
+    }
+    if (s.binder.type !== 'official' || s.binder.catalogue_identity_status !== 'resolved' || !UUID.test(s.binder.catalogue_set_id ?? '')) return false;
     const count = s.binder.catalogue_set_total ?? s.binder.catalogue_set_printed_total;
     if (!Number.isSafeInteger(count) || !count || count < 1 || count > 2000) return false;
     const rows = new Set<string>();
@@ -156,10 +176,10 @@ export function createBinderReopenCache(options: { store: () => Promise<BinderRe
         return copy(snapshot);
       } catch { return null; }
     },
-    save(scope: BinderReopenScope, binder: BinderRecord, cards: BinderCardRecord[], lease: number, savedAt = now()) {
+    save(scope: BinderReopenScope, binder: BinderRecord, cards: BinderCardRecord[], lease: number, savedAt = now(), saveOptions: BinderReopenSaveOptions = {}) {
       if (lease !== generation) return false;
       let snapshot: BinderReopenSnapshot;
-      try { snapshot = snapshotBinderView(scope, binder, cards, savedAt); } catch { return false; }
+      try { snapshot = snapshotBinderView(scope, binder, cards, savedAt, saveOptions); } catch { return false; }
       if (!isCompleteBinderSnapshot(snapshot, scope, binder.id, now()) || !remember(snapshot)) return false;
       enqueue(async () => {
         const store = await options.store();

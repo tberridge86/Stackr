@@ -16,9 +16,15 @@ async function main() {
   let cardReads = 0;
   let setReads = 0;
   const supabase = { from: (table: string) => {
+    let rangeStart = 0;
+    let rangeEnd = 999;
     const q: any = { select: () => q, eq: () => q, order: () => q,
+      range: (from: number, to: number) => { rangeStart = from; rangeEnd = to; return q; },
       maybeSingle: async () => ({ data: binder, error: null }),
-      then: (resolve: any) => { assert.equal(table, 'binder_cards'); return Promise.resolve({ data: saved, error: null }).then(resolve); } };
+      then: (resolve: any) => {
+        assert.equal(table, 'binder_cards');
+        return Promise.resolve({ data: saved.slice(rangeStart, rangeEnd + 1), error: null }).then(resolve);
+      } };
     return q;
   } };
   const dependencies: Record<string, unknown> = {

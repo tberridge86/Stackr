@@ -142,7 +142,7 @@ test('Home retains brand, GBP pricing and artwork while placing collection ahead
 
 test('all changed native source parses without errors and there is no replacement bottom-nav halo', () => {
   for (const file of ['app/(tabs)/binder.tsx', 'app/(tabs)/explore.tsx', 'app/(tabs)/search.tsx', 'app/_layout.tsx', 'app/binder/new.tsx', 'app/set/[id].tsx', 'components/StackrBrowseControls.tsx', 'components/PremiumUI.tsx', 'components/HomeCollectorSections.tsx', 'components/HomeCommandCenter.tsx', 'features/binder/BinderDetailScreen.tsx', 'features/home/HubScreen.tsx', 'features/market/MarketTabScreen.tsx']) assert.equal(sourceFile(file).parseDiagnostics.length, 0, file);
-  const nav = read('app/_layout.tsx'); assert.ok(!nav.includes('activeGlowColor')); assert.ok(nav.includes('StackrNavigationIcon')); assert.ok(nav.includes('useSafeAreaInsets'));
+  const nav = read('components/StackrAppShell.tsx'); assert.ok(!nav.includes('activeGlowColor')); assert.ok(nav.includes('StackrNavigationIcon')); assert.ok(nav.includes('useSafeAreaInsets'));
 });
 
 
