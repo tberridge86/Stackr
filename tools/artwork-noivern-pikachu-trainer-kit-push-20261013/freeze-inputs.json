@@ -1,0 +1,16 @@
+{
+  "source_manifest_file": "np-trainer-kit52-source-manifest.json",
+  "source_manifest_sha256": "d7d4f740e7018fe71c636c66e3eb701657c5a1150adddec020c5c2d6d8cd5a2a",
+  "checked_handoff_file": "source-batches/receipts/en028-en030-checked-handoff-20261013T215100971897Z.json",
+  "checked_handoff_sha256": "02c279a22cf014d713ec17e82f3a00a8acd5614bba8990f617a2b36a951dac67",
+  "eligible_fronts": 52,
+  "binding_prefix": "np52",
+  "archive": {
+    "id": 638364582,
+    "kind": "github_release_asset",
+    "artifact_directory": "638364582",
+    "sha256": "940d42afa6d371dd94da7cc42a0276f40f50f3297f6556174d2e68fc6a0c4656",
+    "byte_size": 50267364,
+    "file_count": 209
+  }
+}
