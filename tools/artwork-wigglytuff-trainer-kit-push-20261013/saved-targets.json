@@ -1,0 +1,408 @@
+[
+  {
+    "printing_id": "05fb22b4-1b03-436c-8995-269b78da9698",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "10",
+    "card_native_name": "Fairy Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "a10ec16c-28a0-4c57-b2b4-b6ad0cba230c"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "06115803-2387-4680-9ede-c33447a0ebf1",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "16",
+    "card_native_name": "Clefable",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "4795ea83-f5b9-43e9-a730-10b4d1c54b41"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "10d53a46-803e-47c6-877d-c6c613c9c482",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "13",
+    "card_native_name": "Clefairy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "e791ddc0-bb99-4972-bd48-18812a330b18"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "15572f14-5fe2-4292-9f91-4a8652948e80",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "1",
+    "card_native_name": "Swirlix",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "1aa97200-31e5-44aa-b7c1-af7462bdad91"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "23ff7220-0ea9-4dd2-b5b8-9c6c4ed45ed1",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "20",
+    "card_native_name": "Potion",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "57a64167-b9d9-432b-a53c-38e35a4f3bed"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "2684b389-bc21-405e-8098-be441f213b44",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "14",
+    "card_native_name": "Wigglytuff",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "c56afde0-6f93-4ae8-8112-956590dec3cd"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "2ab90434-374a-4161-81ee-b518c66c9fea",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "28",
+    "card_native_name": "Clefable",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "918d6557-2a8d-475a-a21f-388cb80ecdea"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "2d0861db-c750-425b-be9a-452a104f884d",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "30",
+    "card_native_name": "Wigglytuff",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "ce663658-cadb-422f-a080-f4295937f838"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "3efc0fe5-b47f-42b6-bc1e-1b0f7bdde21b",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "9",
+    "card_native_name": "Fairy Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "8a3a28a0-d237-4f0d-80be-3d18594a44fd"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "40f8de48-b792-4e64-a8e5-0ab5f5e3fc38",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "6",
+    "card_native_name": "Fairy Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "7798d1a0-364f-46f8-88a7-4ffb764b4dc4"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "5252cb9f-a1cf-4fea-8218-150380d6f4bd",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "27",
+    "card_native_name": "Fairy Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "c6fd41d2-9a44-477c-92d0-535fe9919df2"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "64ffb22c-ab18-4920-b276-f44ea9c5e94a",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "22",
+    "card_native_name": "Fairy Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "e93b5ad9-73b1-43c6-8360-8ab823331c2c"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "7476ae62-49c1-4329-9aa6-986b950c9d52",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "8",
+    "card_native_name": "Fairy Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "56da7807-3202-4287-980a-3e4719ffd516"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "77296c73-550e-41cf-a746-ec006a06708d",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "7",
+    "card_native_name": "Fairy Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "8ae43dc4-7830-49fa-858e-696ed4ec3dfa"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "78c83cb9-5797-4224-81c7-39647e6541e5",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "12",
+    "card_native_name": "Jigglypuff",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "0f525b9e-ed39-4909-b783-fab93689357d"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "7ba96b99-6669-4ae4-a6ed-ab02bd9355ef",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "26",
+    "card_native_name": "Tierno",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "a30cebf9-6624-479e-9f11-60696941b4a2"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "80be77e4-352f-48ac-98ac-aa4865550e4a",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "29",
+    "card_native_name": "Pidgey",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "fc333319-1249-44e2-84f5-77576ba8f8d2"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "80e8eda0-0b0e-4899-9a41-b765e9dc3cfd",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "19",
+    "card_native_name": "Clefairy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "515fcca4-d016-478e-9a18-3cba30319b30"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "84d04932-2d39-4b66-99c0-fc1e818bdf2d",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "11",
+    "card_native_name": "Pidgey",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "5f3613f8-28af-48ed-8d01-4af955b1015a"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "8664f43d-056e-437d-9251-265ffc9311a2",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "21",
+    "card_native_name": "Fairy Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "ce0445f8-1dac-4d59-903a-fd33c1b4bddb"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "8b2c29d8-78d1-45e6-83b5-efcba8b6c516",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "17",
+    "card_native_name": "Fairy Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "710a765a-4825-478a-abb1-2c6e466546fe"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "9fafc055-b666-48b4-8aed-d458481aea4f",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "5",
+    "card_native_name": "Fairy Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "12a7a9fc-90c9-4efd-af14-6ea15ca793c8"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "a4e26bd6-d017-4bfe-8a1e-bd4ebb363a9a",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "25",
+    "card_native_name": "Jigglypuff",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "ee4ef514-6556-4b90-97d6-5d84c71e3ba2"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "adba1977-2831-4895-bed3-15b7b7f9f046",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "18",
+    "card_native_name": "Swirlix",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "5c429d90-4e01-40e3-bb14-5e93bdd6da05"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "b7c81cdd-2686-459f-9379-54ae192df446",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "23",
+    "card_native_name": "Pidgeotto",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "337796ff-999b-4002-bd05-e045ce4e8b58"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "bfc146cf-e450-4a82-931e-72f968f8e295",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "15",
+    "card_native_name": "Potion",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "bd58070d-ff62-474a-8327-d0b7a61ac384"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "cfa7a818-dabf-4095-8251-90871bfc2bfc",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "4",
+    "card_native_name": "Sentret",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "e21965a2-34f5-4c26-b2b0-d36f9f42e183"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "f22f43b0-7c14-419c-8f8e-b2bcc773b71d",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "3",
+    "card_native_name": "Fairy Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "c29ce3ed-bdcb-48b0-9f48-b59c84e9ebe6"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "fadd2ece-41bd-47ca-a504-67cf4cfeb70a",
+    "set_id": "75c049f3-031f-4819-99cf-a02c6fe9c5bb",
+    "set_code": "tk-xy-w",
+    "language_code": "en",
+    "collector_number": "2",
+    "card_native_name": "Pidgeotto",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "2e31c847-892b-4137-9842-bf3c66931096"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  }
+]

@@ -1,0 +1,249 @@
+{
+  "checked_at": "2026-10-13T22:48:10.052Z",
+  "status": "local_validation_passed_not_published",
+  "source_revision": "8a630d3d2a6ad05e5b06ca04b571d19738024192",
+  "queue_id": "STACKR-EN-FRONTS-20261013-WIG028",
+  "cohort_sha256": "f0324a9caaa00da9856db0e4d37a5da32e5618c2012d9bf4e47ef9e605c68a06",
+  "approval_sha256": "6d1375876d2049bd15713f2f54c684fd61276207bc313315a6693c5ce219223a",
+  "identity_table_sha256": "4811004766bf085a063bca1545f5cdb714e07e6233801b711abf98f0d508f8f9",
+  "source_manifest_sha256": "ab2a889022801aa9d71d696fa8150abb4be3164dfd85032416dc09e6d7cbc0a4",
+  "checked_handoff_sha256": "25d18b37eab137b87dddc5ce0d1ba46ac3cd2c4ebe88976e3f32580ee6427458",
+  "exact_target_receipt_sha256": "e14425937c2c22e077d4ee978c2c3953d0cbb2419ba52a527c10eefc0f6548bc",
+  "combined_canonical_binding_sha256": "89ef634099dbd89e1cc9b54926fa0989c55f23991719e648ba040d1ce6e41509",
+  "independent_root_original_review_sha256": "2cde8804c8ced6ae0454051216587bc0d6bed93c6ebb0270171b99154083d04a",
+  "delivery_scope": {
+    "original_saved_targets": 29,
+    "eligible_fronts": 28,
+    "excluded_targets": 1,
+    "whole_batch_completion_asserted": false
+  },
+  "finish_hold": {
+    "printing_id": "2d0861db-c750-425b-be9a-452a104f884d",
+    "variant_id": "ce663658-cadb-422f-a080-f4295937f838",
+    "provider_id": "tk7a-30",
+    "canonical_finish": "normal",
+    "available_source_finish": "holofoil",
+    "acquired": false,
+    "included_in_plan": false
+  },
+  "real_named_holds_outside_cohort": 19,
+  "source_symbol_representation_retained": "Jigglypuff12/25 Heartfelt Song printed Darkness icon semantically expanded as Darkness in provider text",
+  "source_text_discrepancies": 0,
+  "archive": {
+    "id": 638452571,
+    "bytes": 28775194,
+    "sha256": "505f413ba82ae242d25bbb108114c25c82617e88a3d646b35629318d3ad6a1b0",
+    "exact_members": 115,
+    "unique_image_members": 112,
+    "unique_originals": 28,
+    "unique_derivative_members": 84,
+    "per_printing_object_references": 112,
+    "derivative_references": 84,
+    "shared_image_paths": 0,
+    "github_metadata_verified_by_coordinator": true
+  },
+  "original_and_detail_hashes_remain_distinct": true,
+  "originals_reused": false,
+  "images_altered_for_uniqueness": false,
+  "scope_before_counts": {
+    "production": {
+      "assets": 2,
+      "links": 3,
+      "names": 56,
+      "printings": 28,
+      "sets": 1,
+      "variants": 28
+    },
+    "staging": {
+      "assets": 1,
+      "links": 2,
+      "names": 56,
+      "printings": 28,
+      "sets": 1,
+      "variants": 28
+    }
+  },
+  "checks": [
+    {
+      "command": "node --test tools/artwork-wigglytuff-trainer-kit-push-20261013/publish.test.mjs tools/artwork-trainer-kit-push-20261013/publish.test.mjs",
+      "passed": 27,
+      "failed": 0,
+      "new_WIG_tests": 17,
+      "exit_code": 0,
+      "checkout_revision": "8a630d3d2a6ad05e5b06ca04b571d19738024192"
+    },
+    {
+      "command": "python tools/artwork-wigglytuff-trainer-kit-push-20261013/download-package.test.py",
+      "passed": 3,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "python tools/artwork-wigglytuff-trainer-kit-push-20261013/download-package.py <private-local-packages> --archive <frozen-local-zip>",
+      "status": "verified_and_extracted",
+      "exact_members": 115,
+      "exit_code": 0
+    },
+    {
+      "command": "node tools/artwork-wigglytuff-trainer-kit-push-20261013/verify-packages.mjs <private-local-packages>",
+      "status": "all_frozen_files_fully_decoded",
+      "fronts": 28,
+      "derivative_references": 84,
+      "per_printing_object_references": 112,
+      "unique_image_members": 112,
+      "exit_code": 0
+    }
+  ],
+  "database_requests": 0,
+  "provider_requests": 0,
+  "github_release_metadata_reads": 0,
+  "storage_writes": 0,
+  "production_source_insertions": 0,
+  "published": false,
+  "independent_review": "pending_coordinator",
+  "raw_private_snapshots_included": false,
+  "private_paths_in_public_plan": false,
+  "physical_finish_certified": false,
+  "independent_vendor_licence_verified": false,
+  "implementation_hash_count": 16,
+  "total_owned_files_including_validation": 17,
+  "file_hashes": [
+    {
+      "file": ".gitattributes",
+      "bytes": 54,
+      "sha256": "5a4ffa8f62276e5e43264106e04022e901f0c4c5d4818000f800366bb43f2f30"
+    },
+    {
+      "file": ".gitignore",
+      "bytes": 19,
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793"
+    },
+    {
+      "file": "README.md",
+      "bytes": 6162,
+      "sha256": "a59bb32fe05f98c77535580fc9ee8177629a448c7389804c20d6f866ba1e1f80"
+    },
+    {
+      "file": "approval.json",
+      "bytes": 1419,
+      "sha256": "6d1375876d2049bd15713f2f54c684fd61276207bc313315a6693c5ce219223a"
+    },
+    {
+      "file": "before-query.sql",
+      "bytes": 2918,
+      "sha256": "ae6cef7203a303ded5ec6e2f4a097bc09f1aa834ae313162496505d2ec8bc993"
+    },
+    {
+      "file": "download-package.py",
+      "bytes": 2656,
+      "sha256": "ba8bf98c9fb42a643579b480267c2795ce84fe05c507faea243520ad89ef70d1"
+    },
+    {
+      "file": "download-package.test.py",
+      "bytes": 2568,
+      "sha256": "3c361aaf6cb642d5baf794bd8999fe5170bc4d1188a9bbfe34f35af4af902f77"
+    },
+    {
+      "file": "freeze-inputs.json",
+      "bytes": 673,
+      "sha256": "b40ba53f254454c5e981a8d25f0ae1d1dd413822d966f294155bb4df3ce523fa"
+    },
+    {
+      "file": "freeze-local.mjs",
+      "bytes": 13216,
+      "sha256": "0c1de18325ee7264d718741bcaee5bc0c8a82ec073bd30991c17c13ab1bf7eef"
+    },
+    {
+      "file": "frozen.mjs",
+      "bytes": 13056,
+      "sha256": "85b19402b83147ca3909fbb9525a154cfd9390986033ba9a9e553166c0a5ada3"
+    },
+    {
+      "file": "identity-table.json",
+      "bytes": 39001,
+      "sha256": "4811004766bf085a063bca1545f5cdb714e07e6233801b711abf98f0d508f8f9"
+    },
+    {
+      "file": "plan.json",
+      "bytes": 177544,
+      "sha256": "f0324a9caaa00da9856db0e4d37a5da32e5618c2012d9bf4e47ef9e605c68a06"
+    },
+    {
+      "file": "publish.mjs",
+      "bytes": 4839,
+      "sha256": "ff55d05985475175bdfea7da3e97b78bf8cdd37db0b13ca7809701c62fc1f2f7"
+    },
+    {
+      "file": "publish.test.mjs",
+      "bytes": 20775,
+      "sha256": "fbb1688813fec6059174c5a83beb1ac1f0d2b5cebbabc5b37515fcf7f1af3cba"
+    },
+    {
+      "file": "saved-targets.json",
+      "bytes": 12824,
+      "sha256": "971eb0d46b197640d385a86a09b1bcb1c991ad1eecf41f49f8afb06eef81ac33"
+    },
+    {
+      "file": "verify-packages.mjs",
+      "bytes": 1495,
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841"
+    }
+  ],
+  "reused_dependency_hashes": [
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 9031,
+      "sha256": "5524305ba4bd6a0f3867ea2c097c57fb0d610e27ef1d9d64529b64e9c67249de"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/metadata-guard.mjs",
+      "bytes": 4018,
+      "sha256": "cca5354822fe11c007308f7d22ebf84649d2374619e0dd049c7347a9db9e116f"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/publish.mjs",
+      "bytes": 5885,
+      "sha256": "8451746bb6e188f56c5be31064742eaeecdc2f2c6d6e27cb31ab5c7227af6d1f"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "tools/artwork-next-push-20261013/frozen.mjs",
+      "bytes": 7732,
+      "sha256": "3e14eb76a012116492075328c50e6c5907f712004da02d4d3dae541d2617a95b"
+    },
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 30117,
+      "sha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24425,
+      "sha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 15024,
+      "sha256": "1d168e5407a5bdc6e027f58991de58a0664576d7c917d5b219fa13f9af4a1d0a"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/download-package.py",
+      "bytes": 5489,
+      "sha256": "53f1114f25bd995b4f05d9b2d3adad7ae2dadc85b4b13f038a84bcc5e7d6b09f"
+    }
+  ]
+}
