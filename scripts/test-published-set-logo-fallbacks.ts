@@ -59,7 +59,7 @@ for (const row of simplified.covers) {
   assert.equal(getPublishedSetCoverFallback({ id: row.setId, language: 'ja' }), undefined);
   assert.equal(getPublishedSetCoverFallback({ id: row.setId, language: 'zh-tw' }), undefined);
   assert.equal(getPublishedSetLogoFallback({ id: row.setId, language: 'zh-cn' }), undefined);
-  assert.equal(getPublishedSetCoverFallback({ id: row.setId, language: 'zh-cn' }), undefined);
+  assert.equal(getPublishedSetCoverFallback({ id: row.setCode, language: 'zh-cn' }), undefined);
   assert.match(row.storageKey, /^public\/sealed_product_image\/[a-f0-9]{2}\/[a-f0-9]{2}\/[a-f0-9]{64}\/original\.jpg$/);
 }
 console.log(`Exact Simplified Chinese cover checks passed for ${simplified.covers.length} existing assets without substituting logos or crossing languages.`);
