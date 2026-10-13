@@ -1,9 +1,9 @@
 # Stackr artwork production handoff
 
-Updated 2026-10-13T22:44:34.938Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
+Updated 2026-10-13T23:04:00.854Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
 
-1019 tasks / 51 batches complete; 1925 tasks / 110 batches remain.
-405 English originals and 1215 display versions checked: 317 originals live, 88 prepared and queued.
+1079 tasks / 54 batches complete; 1865 tasks / 107 batches remain.
+407 English originals and 1221 display versions checked: 377 originals live, 30 prepared and queued.
 
 Owner standing approval covers exact artwork sourcing, publication and verification without another owner batch review. Independently verified vendor licence and physical edition/finish facts are not invented. Keep previous immutable objects and receipt-bound rollback.
 
@@ -19,17 +19,14 @@ Owner standing approval covers exact artwork sourcing, publication and verificat
 - English 53, run 38470021525, EN-CARDS-022, EN-CARDS-023, EN-CARDS-024: all 53 normal card responses / all 212 decoded/hash/dimension-matched files independently verified. Receipt SHA 366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5. Rollback prepared, not executed.
 - English 32, run 38472167695, EN-CARDS-025, EN-CARDS-026, EN-CARDS-027: all 32 normal card responses / all 128 decoded/hash/dimension-matched files independently verified. Receipt SHA d7c66449276f1485bac3692df60ddc6862ea0349b48bf1dd1003a4df9488fe64. Rollback prepared, not executed.
 - English 52, run 38475698781, EN-CARDS-028, EN-CARDS-029, EN-CARDS-030: all 52 normal card responses / all 208 decoded/hash/dimension-matched files independently verified. Receipt SHA 7b677b41d9578ebf67d397dfec3d4e0e9a6567cef0015f29f2431f1cf481825d. Rollback prepared, not executed.
+- English 60, run 38479703766, EN-CARDS-031, EN-CARDS-032, EN-CARDS-033, EN-CARDS-034, EN-CARDS-035: all 60 normal card responses / all 240 decoded/hash/dimension-matched files independently verified. Receipt SHA 0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb. Rollback prepared, not executed.
 
 ## Prepared work
 
-- EN-CARDS-031: 3 prepared fronts; actual production checks pending.
-- EN-CARDS-032: 25 prepared fronts; actual production checks pending.
-- EN-CARDS-033: 4 prepared fronts; actual production checks pending.
-- EN-CARDS-034: 25 prepared fronts; actual production checks pending.
-- EN-CARDS-035: 3 prepared fronts; actual production checks pending.
 - EN-CARDS-036: 25 prepared fronts; actual production checks pending.
 - EN-CARDS-037: 3 prepared fronts; actual production checks pending.
-- Current run 38479703766: 60 fronts; Protected production job dispatched; publication and independent API verification pending.
+- EN-CARDS-038: 2 prepared fronts; actual production checks pending.
+- Current run 38481691805: 28 fronts; Dispatched; protected production gate pending.
 - Frozen package asset 638042830, 53091723 bytes, SHA af5cd84113f391caffa0383aab60163820cbc06c56d7bad02f4cadfca015dcaa. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset 638073079, 42961975 bytes, SHA ef56173edc2e4a097b9115d0a76284393b1f07a0c9e7f81d18e5ef116a920471. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset 638107947, 32119253 bytes, SHA 9bcc979f0ddb70dc64544c8cc592667fa19d570a12e295834600e459132ad862. Individual delivery state controls completion; an archive alone does not.
@@ -40,6 +37,7 @@ Owner standing approval covers exact artwork sourcing, publication and verificat
 - Frozen package asset 638364582, 50267364 bytes, SHA 940d42afa6d371dd94da7cc42a0276f40f50f3297f6556174d2e68fc6a0c4656. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset 638434423, 56995023 bytes, SHA 1f06df02a94f68cdd71115f0144809a95ea05e869a6f556a5f4d7d07d94c87a2. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset 638452571, 28775194 bytes, SHA 505f413ba82ae242d25bbb108114c25c82617e88a3d646b35629318d3ad6a1b0. Individual delivery state controls completion; an archive alone does not.
+- Frozen package asset 638504756, 1250882 bytes, SHA da73a211f009a3ee5f3bb61bbcccdc765744c66159c0480aca9c9301ac2cc21c. Individual delivery state controls completion; an archive alone does not.
 
 ## Explicit remaining holds
 
@@ -83,14 +81,14 @@ No native/OTA/backend/gateway delivery or installed-phone acceptance is claimed 
 | EN-CARDS-028 | 25/25 | Live and verified | Complete; delivery evidence saved |
 | EN-CARDS-029 | 2/3 | 2 of 3 live and checked | 1 exact source version match remains unresolved |
 | EN-CARDS-030 | 25/25 | Live and verified | Complete; delivery evidence saved |
-| EN-CARDS-031 | 0/4 | 3 pictures prepared and queued; remaining open | Actual production publication and API/image verification pending; 1 exact source version match remains unresolved |
-| EN-CARDS-032 | 0/25 | Prepared and queued for production | Actual production publication and API/image verification pending |
-| EN-CARDS-033 | 0/4 | Prepared and queued for production | Actual production publication and API/image verification pending |
-| EN-CARDS-034 | 0/25 | Prepared and queued for production | Actual production publication and API/image verification pending |
-| EN-CARDS-035 | 0/4 | 3 pictures prepared and queued; remaining open | Actual production publication and API/image verification pending; 1 exact source version match remains unresolved |
+| EN-CARDS-031 | 3/4 | 3 of 4 live and checked | 1 exact source version match remains unresolved |
+| EN-CARDS-032 | 25/25 | Live and verified | Complete; delivery evidence saved |
+| EN-CARDS-033 | 4/4 | Live and verified | Complete; delivery evidence saved |
+| EN-CARDS-034 | 25/25 | Live and verified | Complete; delivery evidence saved |
+| EN-CARDS-035 | 3/4 | 3 of 4 live and checked | 1 exact source version match remains unresolved |
 | EN-CARDS-036 | 0/25 | Prepared and queued for production | Actual production publication and API/image verification pending |
 | EN-CARDS-037 | 0/4 | 3 pictures prepared and queued; remaining open | Actual production publication and API/image verification pending; 1 exact source version match remains unresolved |
-| EN-CARDS-038 | 0/2 | Current source metadata reviewed; exact picture needed | Find an exact permitted front; current set metadata has no picture for these cases |
+| EN-CARDS-038 | 0/2 | Prepared and queued for production | Actual production publication and API/image verification pending |
 | JP-CARDS-001 | 0/5 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
 | JP-CARDS-002 | 0/8 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
 | JP-CARDS-003 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
