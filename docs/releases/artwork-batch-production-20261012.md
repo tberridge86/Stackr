@@ -1,9 +1,9 @@
 # Stackr artwork production handoff
 
-Updated 2026-10-13T23:09:52.201Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
+Updated 2026-10-14T17:01:11.593Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
 
-1107 tasks / 55 batches complete; 1837 tasks / 106 batches remain.
-407 English originals and 1221 display versions checked: 405 originals live, 2 prepared and queued.
+1109 tasks / 56 batches complete; 1835 tasks / 105 batches remain.
+432 sourced originals and 1296 display versions checked: 407 originals live, 25 prepared and queued.
 
 Owner standing approval covers exact artwork sourcing, publication and verification without another owner batch review. Independently verified vendor licence and physical edition/finish facts are not invented. Keep previous immutable objects and receipt-bound rollback.
 
@@ -11,20 +11,21 @@ Owner standing approval covers exact artwork sourcing, publication and verificat
 
 - Native 97, run 38306295956: 97 normal card responses and all 388 original/display files independently verified.
 - Chinese 605: existing corrections verified through old card journeys/current Traditional Chinese replacements and 605 originals; no new uploads.
-- English 10, run 38454484753, EN-CARDS-001, EN-CARDS-002, EN-CARDS-005: all 10 normal card responses / all 40 decoded/hash/dimension-matched files independently verified. Receipt SHA b1850d457a05ff9a9673e802b13c94e6628dfe96e79ecf2c6470bb3a205aa28a. Rollback prepared, not executed.
-- English 57, run 38457350386, EN-CARDS-008, EN-CARDS-009, EN-CARDS-010, EN-CARDS-011, EN-CARDS-012: all 57 normal card responses / all 228 decoded/hash/dimension-matched files independently verified. Receipt SHA e95dd3bb7f3999d96ae636320e3233a8e7506eab0ace048bf94bf51074105924. Rollback prepared, not executed.
-- English 48, run 38459157383, EN-CARDS-013, EN-CARDS-014, EN-CARDS-015: all 48 normal card responses / all 192 decoded/hash/dimension-matched files independently verified. Receipt SHA 9818b510dc82d4509573bb2b97c06edb1ca1c0540e5c90192aef084b011b16ae. Rollback prepared, not executed.
-- English 35, run 38461833773, EN-CARDS-016, EN-CARDS-017, EN-CARDS-018: all 35 normal card responses / all 140 decoded/hash/dimension-matched files independently verified. Receipt SHA cce9e043e5f302e0283b216f8d1053686754b8e60f5e795bbafbfef1e4fd6fe8. Rollback prepared, not executed.
-- English 30, run 38465700113, EN-CARDS-019, EN-CARDS-020, EN-CARDS-021: all 30 normal card responses / all 120 decoded/hash/dimension-matched files independently verified. Receipt SHA 64dbe01105e0db827321107e3042d88b2f763b99f47e102efe40a9207ec7f9ac. Rollback prepared, not executed.
-- English 53, run 38470021525, EN-CARDS-022, EN-CARDS-023, EN-CARDS-024: all 53 normal card responses / all 212 decoded/hash/dimension-matched files independently verified. Receipt SHA 366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5. Rollback prepared, not executed.
-- English 32, run 38472167695, EN-CARDS-025, EN-CARDS-026, EN-CARDS-027: all 32 normal card responses / all 128 decoded/hash/dimension-matched files independently verified. Receipt SHA d7c66449276f1485bac3692df60ddc6862ea0349b48bf1dd1003a4df9488fe64. Rollback prepared, not executed.
-- English 52, run 38475698781, EN-CARDS-028, EN-CARDS-029, EN-CARDS-030: all 52 normal card responses / all 208 decoded/hash/dimension-matched files independently verified. Receipt SHA 7b677b41d9578ebf67d397dfec3d4e0e9a6567cef0015f29f2431f1cf481825d. Rollback prepared, not executed.
-- English 60, run 38479703766, EN-CARDS-031, EN-CARDS-032, EN-CARDS-033, EN-CARDS-034, EN-CARDS-035: all 60 normal card responses / all 240 decoded/hash/dimension-matched files independently verified. Receipt SHA 0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb. Rollback prepared, not executed.
-- English 28, run 38481691805, EN-CARDS-036, EN-CARDS-037: all 28 normal card responses / all 112 decoded/hash/dimension-matched files independently verified. Receipt SHA f2daad9160eacb65b1f9d3280b522c0d20c3ffe0e25c92872824a5f5fe186ef4. Rollback prepared, not executed.
+- Sourced 10, run 38454484753, EN-CARDS-001, EN-CARDS-002, EN-CARDS-005: all 10 card responses with preserved variant identities / all 40 decoded/hash/dimension-matched files independently verified. Receipt SHA b1850d457a05ff9a9673e802b13c94e6628dfe96e79ecf2c6470bb3a205aa28a. Rollback prepared, not executed.
+- Sourced 57, run 38457350386, EN-CARDS-008, EN-CARDS-009, EN-CARDS-010, EN-CARDS-011, EN-CARDS-012: all 57 card responses with preserved variant identities / all 228 decoded/hash/dimension-matched files independently verified. Receipt SHA e95dd3bb7f3999d96ae636320e3233a8e7506eab0ace048bf94bf51074105924. Rollback prepared, not executed.
+- Sourced 48, run 38459157383, EN-CARDS-013, EN-CARDS-014, EN-CARDS-015: all 48 card responses with preserved variant identities / all 192 decoded/hash/dimension-matched files independently verified. Receipt SHA 9818b510dc82d4509573bb2b97c06edb1ca1c0540e5c90192aef084b011b16ae. Rollback prepared, not executed.
+- Sourced 35, run 38461833773, EN-CARDS-016, EN-CARDS-017, EN-CARDS-018: all 35 card responses with preserved variant identities / all 140 decoded/hash/dimension-matched files independently verified. Receipt SHA cce9e043e5f302e0283b216f8d1053686754b8e60f5e795bbafbfef1e4fd6fe8. Rollback prepared, not executed.
+- Sourced 30, run 38465700113, EN-CARDS-019, EN-CARDS-020, EN-CARDS-021: all 30 card responses with preserved variant identities / all 120 decoded/hash/dimension-matched files independently verified. Receipt SHA 64dbe01105e0db827321107e3042d88b2f763b99f47e102efe40a9207ec7f9ac. Rollback prepared, not executed.
+- Sourced 53, run 38470021525, EN-CARDS-022, EN-CARDS-023, EN-CARDS-024: all 53 card responses with preserved variant identities / all 212 decoded/hash/dimension-matched files independently verified. Receipt SHA 366bd8b1cc61deb8ed3747a42637470aa4047f87af38738b3f4e94437b97ccb5. Rollback prepared, not executed.
+- Sourced 32, run 38472167695, EN-CARDS-025, EN-CARDS-026, EN-CARDS-027: all 32 card responses with preserved variant identities / all 128 decoded/hash/dimension-matched files independently verified. Receipt SHA d7c66449276f1485bac3692df60ddc6862ea0349b48bf1dd1003a4df9488fe64. Rollback prepared, not executed.
+- Sourced 52, run 38475698781, EN-CARDS-028, EN-CARDS-029, EN-CARDS-030: all 52 card responses with preserved variant identities / all 208 decoded/hash/dimension-matched files independently verified. Receipt SHA 7b677b41d9578ebf67d397dfec3d4e0e9a6567cef0015f29f2431f1cf481825d. Rollback prepared, not executed.
+- Sourced 60, run 38479703766, EN-CARDS-031, EN-CARDS-032, EN-CARDS-033, EN-CARDS-034, EN-CARDS-035: all 60 card responses with preserved variant identities / all 240 decoded/hash/dimension-matched files independently verified. Receipt SHA 0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb. Rollback prepared, not executed.
+- Sourced 28, run 38481691805, EN-CARDS-036, EN-CARDS-037: all 28 card responses with preserved variant identities / all 112 decoded/hash/dimension-matched files independently verified. Receipt SHA f2daad9160eacb65b1f9d3280b522c0d20c3ffe0e25c92872824a5f5fe186ef4. Rollback prepared, not executed.
+- Sourced 2, run 38526814858, EN-CARDS-038: all 2 card responses with preserved variant identities / all 8 decoded/hash/dimension-matched files independently verified. Receipt SHA 713ef89476d79c2ec47216aa7b95d4b9424423cd0f540b793fde27fec9c44e98. Rollback prepared, not executed.
 
 ## Prepared work
 
-- EN-CARDS-038: 2 prepared fronts; actual production checks pending.
+- JP-CARDS-003: 25 prepared fronts; actual production checks pending.
 - No unverified current production run.
 - Frozen package asset 638042830, 53091723 bytes, SHA af5cd84113f391caffa0383aab60163820cbc06c56d7bad02f4cadfca015dcaa. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset 638073079, 42961975 bytes, SHA ef56173edc2e4a097b9115d0a76284393b1f07a0c9e7f81d18e5ef116a920471. Individual delivery state controls completion; an archive alone does not.
@@ -37,6 +38,7 @@ Owner standing approval covers exact artwork sourcing, publication and verificat
 - Frozen package asset 638434423, 56995023 bytes, SHA 1f06df02a94f68cdd71115f0144809a95ea05e869a6f556a5f4d7d07d94c87a2. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset 638452571, 28775194 bytes, SHA 505f413ba82ae242d25bbb108114c25c82617e88a3d646b35629318d3ad6a1b0. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset 638504756, 1250882 bytes, SHA da73a211f009a3ee5f3bb61bbcccdc765744c66159c0480aca9c9301ac2cc21c. Individual delivery state controls completion; an archive alone does not.
+- Frozen package asset 639568745, 21448691 bytes, SHA ee849164f5f744038105d95c3fbbfc9774068b2488e5f4678398a383bf5da5e9. Individual delivery state controls completion; an archive alone does not.
 
 ## Explicit remaining holds
 
@@ -87,10 +89,10 @@ No native/OTA/backend/gateway delivery or installed-phone acceptance is claimed 
 | EN-CARDS-035 | 3/4 | 3 of 4 live and checked | 1 exact source version match remains unresolved |
 | EN-CARDS-036 | 25/25 | Live and verified | Complete; delivery evidence saved |
 | EN-CARDS-037 | 3/4 | 3 of 4 live and checked | 1 exact source version match remains unresolved |
-| EN-CARDS-038 | 0/2 | Prepared and queued for production | Actual production publication and API/image verification pending |
+| EN-CARDS-038 | 2/2 | Live and verified | Complete; delivery evidence saved |
 | JP-CARDS-001 | 0/5 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
 | JP-CARDS-002 | 0/8 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-003 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
+| JP-CARDS-003 | 0/25 | Prepared and queued for production | Actual production publication and API/image verification pending |
 | JP-CARDS-004 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
 | JP-CARDS-005 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
 | JP-CARDS-006 | 0/21 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
