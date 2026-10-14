@@ -1,0 +1,28 @@
+[
+  {
+    "printing_id": "6ad6da5c-02cb-45e1-ab7a-2de25855dbf4",
+    "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+    "set_code": "neo3",
+    "language_code": "ja",
+    "collector_number": "051",
+    "card_native_name": "Porygon2",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "c563902f-3ed5-41c6-8289-60dbdc121a5b"
+    ],
+    "batch_id": "JP-CARDS-012"
+  },
+  {
+    "printing_id": "ab2c259c-353a-4317-b075-83f28a24fab2",
+    "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+    "set_code": "neo3",
+    "language_code": "ja",
+    "collector_number": "052",
+    "card_native_name": "ブリッシー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "c1935cc0-315e-472d-ac8d-65a2da94674c"
+    ],
+    "batch_id": "JP-CARDS-012"
+  }
+]
