@@ -1,7 +1,7 @@
 {
   "schemaVersion": "stackr-owner-artwork-production-evidence-v1",
   "inventoryId": "STACKR-ARTWORK-20261012",
-  "updatedAt": "2026-10-14T17:28:23.720Z",
+  "updatedAt": "2026-10-14T17:47:13.982Z",
   "scope": "Exact saved artwork list; original identities retained; actual production verification required",
   "summary": {
     "checkedAt": "2026-10-14T17:25:35.498Z",
@@ -40,7 +40,20 @@
     "frontTasksNotYetPrepared": 1516,
     "contentHeldOriginalCandidates": 0,
     "sourceAcquiredPendingPreparation": 24,
-    "sourceIdentityMetadataHolds": 25
+    "sourceIdentityMetadataHolds": 25,
+    "ownerSuppliedJapaneseGalleryLeads": {
+      "suppliedSets": 21,
+      "fixedBatchesCovered": 65,
+      "fixedTasksCovered": 1389,
+      "coveredTasksAlreadyLive": 25,
+      "coveredTasksRemaining": 1364,
+      "unprovidedSets": [
+        "VS1",
+        "web1"
+      ],
+      "sourceInventorySha256": "68aeb67adc1716a32e1539fc815b210e243c8f2ec15c6d5a5d059a1bbf914fe1",
+      "exactPrintingOrLicenceApprovalClaimed": false
+    }
   },
   "ownerAuthority": {
     "recordedAt": "2026-10-13T06:20:22.871Z",
