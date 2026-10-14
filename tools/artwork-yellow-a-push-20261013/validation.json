@@ -1,7 +1,7 @@
 {
-  "checked_at": "2026-10-13T23:11:51.414Z",
-  "status": "local_validation_passed_not_published",
-  "source_revision": "ed3e4fb114d23bdf2c1cb38323c5b20038a492a0",
+  "checked_at": "2026-10-14T06:27:15.713Z",
+  "status": "retry_rehearsal_fixture_locally_validated_not_published",
+  "source_revision": "07f865a18e6156de67649740dc9235f56bea42b3",
   "queue_id": "STACKR-EN-FRONTS-20261013-ALT002",
   "cohort_sha256": "bcc86498342436261c52c7d9dafdeac6b8cb110b039183b85c8aefd597b66832",
   "approval_sha256": "ff7eabd3a9d87d051e6fcba76e34adb7e1881bc4e13f6ba72e89bccf71fb268c",
@@ -80,10 +80,11 @@
   "checks": [
     {
       "command": "node --test tools/artwork-yellow-a-push-20261013/publish.test.mjs tools/artwork-trainer-kit-push-20261013/publish.test.mjs",
-      "passed": 27,
+      "passed": 42,
       "failed": 0,
       "new_ALT_tests": 17,
-      "exit_code": 0
+      "exit_code": 0,
+      "new_staging_fixture_tests": 15
     },
     {
       "command": "python tools/artwork-yellow-a-push-20261013/download-package.test.py",
@@ -123,6 +124,15 @@
       "status": "passed",
       "unchanged_dependencies": 11,
       "private_paths_found": 0
+    },
+    {
+      "command": "offline transaction simulation using exact retained private staging rows and current bindings",
+      "passed": 5,
+      "failed": 0,
+      "network_requests": 0,
+      "remote_writes": 0,
+      "final_full_state_unchanged": true,
+      "evidence_sha256": "d11445208f01af3f4b0489b3b9c0cc3f7269e771fbce931ad0f92d1fc066b74c"
     }
   ],
   "workflow": {
@@ -142,18 +152,17 @@
   "storage_writes": 0,
   "production_source_insertions": 0,
   "published": false,
-  "independent_review": "pending_coordinator",
+  "independent_review": "retry_implementation_pending",
   "raw_private_snapshots_included": false,
   "private_paths_in_public_plan": false,
   "physical_finish_certified": false,
   "edition_or_distribution_product_certified": false,
   "independent_vendor_licence_verified": false,
   "source_wide_approval": false,
-  "implementation_hash_count": 16,
-  "total_owned_tool_files_including_validation": 17,
+  "implementation_hash_count": 19,
+  "total_owned_tool_files_including_validation": 20,
   "changed_scope": [
-    "tools/artwork-yellow-a-push-20261013/",
-    ".github/workflows/artwork-yellow-a-production.yml"
+    "tools/artwork-yellow-a-push-20261013/"
   ],
   "file_hashes": [
     {
@@ -168,8 +177,8 @@
     },
     {
       "file": "README.md",
-      "bytes": 5648,
-      "sha256": "ee1c0b13153ac49fb0b1d8933881223b7297692424990c3f04c9a497261cbfa9"
+      "bytes": 7273,
+      "sha256": "54c127d70ffe64a25f7dc470309e5f7a6d058cad1ac46ca75cf8543da5860cb3"
     },
     {
       "file": "approval.json",
@@ -218,18 +227,33 @@
     },
     {
       "file": "publish.mjs",
-      "bytes": 4821,
-      "sha256": "614d00b71e1e253cef1f16287486299f8b30cab357afc623959b3d0c25cc1ef6"
+      "bytes": 4795,
+      "sha256": "dca7a6a28b4b2c8e45fd031d680c5f726ed7a65fa99c8cbd698090e5d485993d"
     },
     {
       "file": "publish.test.mjs",
-      "bytes": 22438,
-      "sha256": "8b48cecc8f3c3e1820f6a3d5c46af943c155f26ae686b6d921bb4bba93c0fbd8"
+      "bytes": 22483,
+      "sha256": "b5b4bf09cedeb7ba6c22a38eb541bba2240e07e160262f94eae0ca63ca982219"
     },
     {
       "file": "saved-targets.json",
       "bytes": 780,
       "sha256": "26ccbc158ed31cb05700add5ff665b3ba2f16c8d5972a6b70a36f3db793e48f5"
+    },
+    {
+      "file": "staging-artwork-fixture.mjs",
+      "bytes": 9295,
+      "sha256": "4c810508df508130d7bf90be6557e0f54ad59cbf911565c3d076bc5200052e29"
+    },
+    {
+      "file": "staging-artwork-fixture.test.mjs",
+      "bytes": 7971,
+      "sha256": "be95330977ae4d6c0faf426c03692e0bd03218af2d066314db2b6b4199eeab19"
+    },
+    {
+      "file": "staging-existing-artwork-fixture.json",
+      "bytes": 3215,
+      "sha256": "d04e674be1d85787e3e7ca36b944e48a531c3ba4e9b660c7b46e2d2015158ab0"
     },
     {
       "file": "verify-packages.mjs",
@@ -293,5 +317,17 @@
       "bytes": 5489,
       "sha256": "53f1114f25bd995b4f05d9b2d3adad7ae2dadc85b4b13f038a84bcc5e7d6b09f"
     }
-  ]
+  ],
+  "retry": {
+    "failed_run": 38483359973,
+    "failed_before_publication": true,
+    "failed_receipt_sha256": "7d2d29b8c254c5641716297cf714a731ccb2ff816270fe2bf322b71609eea56f",
+    "independent_failed_run_preservation_verified": true,
+    "staging_visibility_fixture_assets": 2,
+    "fixture_sha256": "d04e674be1d85787e3e7ca36b944e48a531c3ba4e9b660c7b46e2d2015158ab0",
+    "fixture_only_inside_serializable_rollback_rehearsal": true,
+    "production_visibility_fixture_allowed": false,
+    "source_plan_approval_archive_and_pixels_unchanged": true,
+    "workflow_unchanged": true
+  }
 }
