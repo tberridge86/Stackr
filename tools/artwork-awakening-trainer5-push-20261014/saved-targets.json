@@ -1,0 +1,67 @@
+[
+  {
+    "printing_id": "05ec5ae6-bfb8-41b1-a65b-acb7ce4c3585",
+    "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+    "set_code": "neo3",
+    "language_code": "ja",
+    "collector_number": "055",
+    "card_native_name": "バルーンベリー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "fc02d833-0de4-4a4d-be84-fe71a9bd0582"
+    ],
+    "batch_id": "JP-CARDS-012"
+  },
+  {
+    "printing_id": "56fc9f48-441c-40da-b1a7-29fdbd5300c4",
+    "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+    "set_code": "neo3",
+    "language_code": "ja",
+    "collector_number": "057",
+    "card_native_name": "ロケットの隠れ家",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "767914af-5fcc-4e7c-9304-de89589eb56f"
+    ],
+    "batch_id": "JP-CARDS-012"
+  },
+  {
+    "printing_id": "6196aadb-f7bc-4449-8fd3-254987e292f8",
+    "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+    "set_code": "neo3",
+    "language_code": "ja",
+    "collector_number": "056",
+    "card_native_name": "ポケモンブリーダーフィールド",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "7d0611e3-9b65-4539-8803-c7a9876f6e68"
+    ],
+    "batch_id": "JP-CARDS-012"
+  },
+  {
+    "printing_id": "ecd63564-d5d4-402d-b28d-95011e2a9107",
+    "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+    "set_code": "neo3",
+    "language_code": "ja",
+    "collector_number": "053",
+    "card_native_name": "古い棒",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "40806ca5-1d4c-4bf6-b499-cee8ff167f94"
+    ],
+    "batch_id": "JP-CARDS-012"
+  },
+  {
+    "printing_id": "f03f92e7-086a-4ec9-8281-e3c88906d13d",
+    "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+    "set_code": "neo3",
+    "language_code": "ja",
+    "collector_number": "054",
+    "card_native_name": "ヒーリングフィールド",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "eaa7573e-3860-440e-be69-cb414e6bbda5"
+    ],
+    "batch_id": "JP-CARDS-012"
+  }
+]
