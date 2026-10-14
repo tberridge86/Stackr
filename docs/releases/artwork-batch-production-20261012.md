@@ -1,9 +1,9 @@
 # Stackr artwork production handoff
 
-Updated 2026-10-14T17:01:11.593Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
+Updated 2026-10-14T17:25:36.260Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
 
-1109 tasks / 56 batches complete; 1835 tasks / 105 batches remain.
-432 sourced originals and 1296 display versions checked: 407 originals live, 25 prepared and queued.
+1134 tasks / 57 batches complete; 1810 tasks / 104 batches remain.
+432 sourced originals and 1296 display versions checked: 432 originals live, 0 prepared and queued.
 
 Owner standing approval covers exact artwork sourcing, publication and verification without another owner batch review. Independently verified vendor licence and physical edition/finish facts are not invented. Keep previous immutable objects and receipt-bound rollback.
 
@@ -22,10 +22,10 @@ Owner standing approval covers exact artwork sourcing, publication and verificat
 - Sourced 60, run 38479703766, EN-CARDS-031, EN-CARDS-032, EN-CARDS-033, EN-CARDS-034, EN-CARDS-035: all 60 card responses with preserved variant identities / all 240 decoded/hash/dimension-matched files independently verified. Receipt SHA 0a973dc02f2af1674a43d1aa2c6e4a3c3c34190a6a0c185d91287be181643bfb. Rollback prepared, not executed.
 - Sourced 28, run 38481691805, EN-CARDS-036, EN-CARDS-037: all 28 card responses with preserved variant identities / all 112 decoded/hash/dimension-matched files independently verified. Receipt SHA f2daad9160eacb65b1f9d3280b522c0d20c3ffe0e25c92872824a5f5fe186ef4. Rollback prepared, not executed.
 - Sourced 2, run 38526814858, EN-CARDS-038: all 2 card responses with preserved variant identities / all 8 decoded/hash/dimension-matched files independently verified. Receipt SHA 713ef89476d79c2ec47216aa7b95d4b9424423cd0f540b793fde27fec9c44e98. Rollback prepared, not executed.
+- Sourced 25, run 38605195635, JP-CARDS-003: all 25 card responses with preserved variant identities / all 100 decoded/hash/dimension-matched files independently verified. Receipt SHA fa33572f7435f441a180d48ff1d07743add420c00e576e46c608ddbdb7e0dc4e. Rollback prepared, not executed.
 
 ## Prepared work
 
-- JP-CARDS-003: 25 prepared fronts; actual production checks pending.
 - No unverified current production run.
 - Frozen package asset 638042830, 53091723 bytes, SHA af5cd84113f391caffa0383aab60163820cbc06c56d7bad02f4cadfca015dcaa. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset 638073079, 42961975 bytes, SHA ef56173edc2e4a097b9115d0a76284393b1f07a0c9e7f81d18e5ef116a920471. Individual delivery state controls completion; an archive alone does not.
@@ -42,7 +42,7 @@ Owner standing approval covers exact artwork sourcing, publication and verificat
 
 ## Explicit remaining holds
 
-14 exact originals still need larger, readable pictures; 5 source version matches remain unresolved; 0 pictures need another exact card-text comparison. These are unfinished tasks and are excluded from publication.
+25 exact source identities remain unresolved; 24 gathered originals still need preparation and production delivery; 14 exact originals still need larger, readable pictures; 5 source version matches remain unresolved; 0 pictures need another exact card-text comparison. These are unfinished tasks and are excluded from publication.
 
 224 old Simplified Chinese cases have Traditional Chinese counterparts but still need an evidenced identity repair. No silent retagging. The fixed list also retains256language/card/version checks,36Traditional Chinese logos and2sharper Japanese originals. Flat reference fronts do not certify physical material/finish.
 
@@ -92,10 +92,10 @@ No native/OTA/backend/gateway delivery or installed-phone acceptance is claimed 
 | EN-CARDS-038 | 2/2 | Live and verified | Complete; delivery evidence saved |
 | JP-CARDS-001 | 0/5 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
 | JP-CARDS-002 | 0/8 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-003 | 0/25 | Prepared and queued for production | Actual production publication and API/image verification pending |
-| JP-CARDS-004 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-005 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-006 | 0/21 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
+| JP-CARDS-003 | 25/25 | Live and verified | Complete; delivery evidence saved |
+| JP-CARDS-004 | 0/25 | 24 originals checked; 1 exact source matches unresolved | 24 originals need display preparation, current binding checks, publication and live verification; 1 source identity holds: preserve current catalogue until exact native-body evidence resolves them |
+| JP-CARDS-005 | 0/25 | 3 exact source matches unresolved; 22 original images still need gathering | 3 source identity holds: preserve current catalogue until exact native-body evidence resolves them; 22 metadata candidates still need actual original acquisition and pixel verification |
+| JP-CARDS-006 | 0/21 | Exact source identity remains unresolved | 21 source identity holds: preserve current catalogue until exact native-body evidence resolves them |
 | JP-CARDS-007 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
 | JP-CARDS-008 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
 | JP-CARDS-009 | 0/7 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
