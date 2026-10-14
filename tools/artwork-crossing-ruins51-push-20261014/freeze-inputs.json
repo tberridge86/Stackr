@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "source_manifest_file": "crossing-ruins51-source-manifest.json",
+  "source_manifest_sha256": "5e800bd7427f4d654ca7912423d167a8ac0c86a23a7723aa663d8e398e38ae18",
+  "package_receipt_file": "crossing-ruins51-package-receipt.json",
+  "package_receipt_sha256": "7626e5499cd30072a0de81c88df4e4b90231fad3721b73af9a329ba04c7eaff8",
+  "saved_targets_sha256": "2ef3131174e1f5188d4bdf998c666950345f9ffba1402d2fda5393a94dbf7055",
+  "source_evidence": {
+    "handoff": "f7610d61a4c2ccdeab8cba87cacd2eaca7edbe350e94c2e576228cc5a0a45ada",
+    "subset": "05c0f6681346d6b316958f30772b53c63f7fb7f167556b808a068e01854aeb22",
+    "validation": "2801854f21f2df027be70137f4e2bab4f631bcaa4c8b9d4ebc000558826d8ffc",
+    "decision": "9bff75f8339e88b45eb9b590484b4f8d876f72e355dd4293660f57684ddc47c0",
+    "unownApproval": "d1bcbe07659f0e0b71ac79d91a84cdf547dece34b4f558b7bf99c33455fd7a99",
+    "unownReceipt": "0820a366b34ae46c9667e98230651f29a7be10740f44a7e2b4299b7a15cf7153",
+    "sourceChecksums": "bab53e7c0e4dda55762b9fc60f57b146e411591d097c513f0fc8cd1f63e78ba8"
+  },
+  "before_snapshots": {
+    "production": {
+      "sha256": "1be32234601ec9a4f128359762027d945600ec11b8c55b8d33202aafdb4e6c46",
+      "rows": 213
+    },
+    "staging": {
+      "sha256": "c60573d3263c64c7b14ef7ba5dccc206765f0f4b8d7c92ab6fedae30ca644624",
+      "rows": 209
+    }
+  },
+  "bindings": {
+    "production": {
+      "sha256": "e0f0aad2854198b33b561327a4041213923c50fbf5cbc21541f128ba1464c86d",
+      "cards": 51
+    },
+    "staging": {
+      "sha256": "b1a748bd7c43a1fdf559139f1e62d664d87cc24fb1db264e748410c00db793ec",
+      "cards": 51
+    }
+  },
+  "archive": {
+    "id": 641543488,
+    "sha256": "2bbfdde7b2cb5c7619bf272b24ec6cc3b90af1c4d24abb6cd405c98c18adc492",
+    "byte_size": 27170559,
+    "file_count": 208
+  },
+  "metadata": [
+    {
+      "file": "manifest.json",
+      "sha256": "5e800bd7427f4d654ca7912423d167a8ac0c86a23a7723aa663d8e398e38ae18",
+      "byte_size": 611728
+    },
+    {
+      "file": "receipts/preparation-summary.json",
+      "sha256": "2245ba84fd54952ef1f09c907d8e7378f10e6259e89c0ffb422d1fcbde3404c1",
+      "byte_size": 1320
+    },
+    {
+      "file": "receipts/current-card-bindings.json",
+      "sha256": "cb5dbff92a96c90ab5b2376a0627049b258d635e91ca6cdb9c4309a9ff4f0647",
+      "byte_size": 53295
+    },
+    {
+      "file": "receipts/finite-decision.json",
+      "sha256": "c69f111f59b0a87302749066b2286af5fa504f3f582037d65d05f53ace6c41da",
+      "byte_size": 4305
+    }
+  ]
+}
