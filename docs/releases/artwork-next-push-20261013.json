@@ -1,22 +1,22 @@
 {
   "schemaVersion": "stackr-owner-artwork-production-evidence-v1",
   "inventoryId": "STACKR-ARTWORK-20261012",
-  "updatedAt": "2026-10-14T20:53:30.081Z",
+  "updatedAt": "2026-10-14T21:09:43.680Z",
   "scope": "Exact saved artwork list; original identities retained; actual production verification required",
   "summary": {
-    "checkedAt": "2026-10-14T20:52:08.710Z",
+    "checkedAt": "2026-10-14T21:06:26.161Z",
     "totalTasks": 2944,
     "totalBatches": 161,
-    "newlyPublishedFronts": 641,
+    "newlyPublishedFronts": 649,
     "previouslyCorrectedCasesVerified": 605,
-    "liveVerifiedTasks": 1246,
+    "liveVerifiedTasks": 1254,
     "completedBatches": 58,
-    "remainingTasks": 1698,
+    "remainingTasks": 1690,
     "remainingBatches": 103,
     "remainingGroups": [
       {
         "task": "Find permitted exact card fronts",
-        "items": 1404
+        "items": 1396
       },
       {
         "task": "Find permitted Traditional Chinese set logos",
@@ -31,15 +31,15 @@
         "items": 2
       }
     ],
-    "sourceLeadTargets": 558,
+    "sourceLeadTargets": 566,
     "scope": "Fixed saved list, retaining original identities; completion requires actual production API and image verification. Source gathering alone is not completion.",
     "queuedItems": 0,
     "queuedBatches": 0,
     "frontTasksNotYetGathered": 1382,
     "smallOriginalCandidates": 14,
-    "frontTasksNotYetPrepared": 1404,
+    "frontTasksNotYetPrepared": 1396,
     "contentHeldOriginalCandidates": 0,
-    "sourceAcquiredPendingPreparation": 8,
+    "sourceAcquiredPendingPreparation": 0,
     "sourceIdentityMetadataHolds": 25,
     "ownerSuppliedJapaneseGalleryLeads": {
       "suppliedSets": 23,
@@ -113,10 +113,10 @@
       "scopeFile": "all-owner-links-working-queue.json",
       "scopeSha256": "dce8019d6367877078b63a26bbd7ce9a52a8c4f8a8cbe7b9c20faa98ff7eb2c9",
       "uniqueCardTasks": 1572,
-      "cardTasksAlreadyLive": 137,
-      "cardTasksRemaining": 1435,
+      "cardTasksAlreadyLive": 145,
+      "cardTasksRemaining": 1427,
       "historicalLogoResearchTasks": 36,
-      "remainingCombinedWork": 1471,
+      "remainingCombinedWork": 1463,
       "remainingCombinedBatches": 90,
       "remainingOutsideBoundProvidedLinks": 227,
       "originalBatchIdsRetained": true,
@@ -168,8 +168,29 @@
       "handoffSha256": "a5c5a116c4ba70526b698f5e76a238945a3496079b941f7fd4dbf59500037cab",
       "alternateSourceResearch": "active"
     },
-    "weeklyAllowanceRemainingPercent": 44,
-    "weeklyAllowanceCheckedAt": "2026-10-14T20:40:40.027Z"
+    "weeklyAllowanceRemainingPercent": 42,
+    "weeklyAllowanceRecordedAt": "2026-10-14T21:06:57.826Z",
+    "nextJapaneseNeo3MetadataCohort": {
+      "metadataRows": 50,
+      "metadataRequests": 102,
+      "observedOriginalsAuthorized": 48,
+      "ordinaryPixelReviewCandidates": 45,
+      "comparisonOnlyAliases": [
+        "011",
+        "024",
+        "048"
+      ],
+      "sourceFinishMetadataHeldAliases": [
+        "022",
+        "023"
+      ],
+      "outsideCohortTasks": 7,
+      "status": "48 unchanged originals in bounded capture and individual actual-pixel review; no preparation approval",
+      "metadataReceiptFile": "neo3-next50-metadata-handoff-20261014.json",
+      "captureDecisionSha256": "42e406f6f11e9489eb573fa03f09f26198ebef1024728091cc04e8298f9d26c6",
+      "preparationEligible": 0,
+      "productionWrites": 0
+    }
   },
   "ownerSuppliedAdditionalSourceLeads": [
     {
@@ -911,16 +932,16 @@
     "extraPermissionPromptRequired": false,
     "sourceLicenceFacts": "Existing source facts retained; owner queue direction does not invent vendor licence metadata."
   },
-  "preparedOriginals": 544,
-  "preparedDerivatives": 1632,
-  "publishedVerifiedOriginals": 544,
+  "preparedOriginals": 552,
+  "preparedDerivatives": 1656,
+  "publishedVerifiedOriginals": 552,
   "queuedItems": 0,
   "preparedByLanguage": {
-    "en": 422,
+    "en": 430,
     "ja": 122
   },
   "publishedVerifiedByLanguage": {
-    "en": 422,
+    "en": 430,
     "ja": 122
   },
   "failedProductionRuns": [
@@ -1064,6 +1085,14 @@
       "sha256": "b73668b35e12b8687aaeaf9e30e7102215df2bdaef74b3934b2fffa9789e69e9",
       "state": "PUBLISHED_AND_CURRENT_API_VERIFIED",
       "everPublished": true
+    },
+    {
+      "queueId": "STACKR-EN-MFB-20261014-008",
+      "releaseAssetId": 641631537,
+      "byteSize": 4279822,
+      "sha256": "f5146e5d8d7f1c1213c3a0d411a6df2c80f4700a8769ff120b637dd0936bc27a",
+      "state": "PUBLISHED_AND_CURRENT_API_VERIFIED",
+      "everPublished": true
     }
   ],
   "holds": [
@@ -1075,7 +1104,7 @@
       "collectorReference": "1",
       "name": "Bulbasaur",
       "status": "exact_starting_or_deck_art_unbound",
-      "requiredAction": "Regular and blue starting-card/Energy fronts need an exact catalogue binding."
+      "requiredAction": "Regular and starting-card/Energy alternatives share published body metadata; the catalogue UUID has no regular/starting frame discriminator."
     },
     {
       "itemId": "card:4dd43adc-f53b-46eb-8903-f0d98df59b7e",
@@ -1085,7 +1114,7 @@
       "collectorReference": "6",
       "name": "Exeggutor",
       "status": "source_body_metadata_conflict",
-      "requiredAction": "Exeggutor actual HP120 conflicts with retained independent metadata HP90; exact body binding remains unresolved."
+      "requiredAction": "Exeggutor actual HP120 conflicts with both retained metadata HP90; the article only uses120 for body weight and records no errata. Exact printing/body evidence remains unresolved."
     },
     {
       "itemId": "card:9742deba-ae6c-4abb-94f3-31cf9e0c286f",
@@ -1095,7 +1124,7 @@
       "collectorReference": "8",
       "name": "Grass Energy",
       "status": "exact_starting_or_deck_art_unbound",
-      "requiredAction": "Regular and blue starting-card/Energy fronts need an exact catalogue binding."
+      "requiredAction": "Regular and starting-card/Energy alternatives share published body metadata; the catalogue UUID has no regular/starting frame discriminator."
     },
     {
       "itemId": "card:11d876b6-c51a-49b2-b41f-09e3e98e548f",
@@ -1105,7 +1134,7 @@
       "collectorReference": "9",
       "name": "Charmander",
       "status": "exact_starting_or_deck_art_unbound",
-      "requiredAction": "Regular and blue starting-card/Energy fronts need an exact catalogue binding."
+      "requiredAction": "Regular and starting-card/Energy alternatives share published body metadata; the catalogue UUID has no regular/starting frame discriminator."
     },
     {
       "itemId": "card:0cf7614b-faa8-4d0e-8403-680736af9ebe",
@@ -1115,7 +1144,7 @@
       "collectorReference": "16",
       "name": "Fire Energy",
       "status": "exact_starting_or_deck_art_unbound",
-      "requiredAction": "Regular and blue starting-card/Energy fronts need an exact catalogue binding."
+      "requiredAction": "Regular and starting-card/Energy alternatives share published body metadata; the catalogue UUID has no regular/starting frame discriminator."
     },
     {
       "itemId": "card:79afc997-8fd5-4295-bbe8-b99639dc085f",
@@ -1125,7 +1154,7 @@
       "collectorReference": "17",
       "name": "Pikachu",
       "status": "exact_starting_or_deck_art_unbound",
-      "requiredAction": "Regular and blue starting-card/Energy fronts need an exact catalogue binding."
+      "requiredAction": "Regular and starting-card/Energy alternatives share published body metadata; the catalogue UUID has no regular/starting frame discriminator."
     },
     {
       "itemId": "card:962b5b12-eea5-4f53-afb9-4e69c99beeb3",
@@ -1135,7 +1164,7 @@
       "collectorReference": "24",
       "name": "Lightning Energy",
       "status": "exact_starting_or_deck_art_unbound",
-      "requiredAction": "Regular and blue starting-card/Energy fronts need an exact catalogue binding."
+      "requiredAction": "Regular and starting-card/Energy alternatives share published body metadata; the catalogue UUID has no regular/starting frame discriminator."
     },
     {
       "itemId": "card:0020e468-586f-417e-8566-3d0d7b01085d",
@@ -1145,7 +1174,7 @@
       "collectorReference": "25",
       "name": "Squirtle",
       "status": "exact_starting_or_deck_art_unbound",
-      "requiredAction": "Regular and blue starting-card/Energy fronts need an exact catalogue binding."
+      "requiredAction": "Regular and starting-card/Energy alternatives share published body metadata; the catalogue UUID has no regular/starting frame discriminator."
     },
     {
       "itemId": "card:65264d7b-2b0c-4442-95d1-593e99c72c48",
@@ -1155,7 +1184,7 @@
       "collectorReference": "32",
       "name": "Water Energy",
       "status": "exact_starting_or_deck_art_unbound",
-      "requiredAction": "Regular and blue starting-card/Energy fronts need an exact catalogue binding."
+      "requiredAction": "Regular and starting-card/Energy alternatives share published body metadata; the catalogue UUID has no regular/starting frame discriminator."
     },
     {
       "itemId": "card:adcea7ae-9f12-467f-91d8-418eeabae8c0",
@@ -1165,7 +1194,7 @@
       "collectorReference": "33",
       "name": "Potion",
       "status": "exact_starting_or_deck_art_unbound",
-      "requiredAction": "Exact Trainer deck artwork binding is unresolved."
+      "requiredAction": "Four Trainer deck artworks share the recorded artist and body; the catalogue has no exact deck/art discriminator."
     },
     {
       "itemId": "card:7fc4afa3-6125-4e42-821d-ef9e352f60c6",
@@ -1175,7 +1204,7 @@
       "collectorReference": "34",
       "name": "Switch",
       "status": "exact_starting_or_deck_art_unbound",
-      "requiredAction": "Exact Trainer deck artwork binding is unresolved."
+      "requiredAction": "Four Trainer deck artworks share the recorded artist and body; the catalogue has no exact deck/art discriminator."
     },
     {
       "itemId": "card:3ef76b2b-ac37-4cb6-bb6a-f6d1d1a44fa7",
@@ -1718,6 +1747,26 @@
       "name": "壁を台無しにする[aerodactyl]",
       "status": "exact_wall_art_variant_unbound",
       "requiredAction": "Two canonical wall artwork variants but only one observed Scrydex image pointer. TCGdex provides no art/artist/body/image metadata for either; provider ID/order/name cannot select the Kabuto or Aerodactyl front."
+    },
+    {
+      "itemId": "card:6ae241f2-dd9d-4dfa-8702-33c7943eb8bb",
+      "printingId": "6ae241f2-dd9d-4dfa-8702-33c7943eb8bb",
+      "batchId": "JP-CARDS-010",
+      "setCode": "neo3",
+      "collectorReference": "022",
+      "name": "輝くマジカルプ",
+      "status": "metadata_source_finish_conflict",
+      "requiredAction": "Current catalogue variant is normal; the observed source metadata exposes holofoil only. Exact variant/finish evidence is unresolved."
+    },
+    {
+      "itemId": "card:cb25e9b7-2a2b-4c36-93c4-cd12d27b4371",
+      "printingId": "cb25e9b7-2a2b-4c36-93c4-cd12d27b4371",
+      "batchId": "JP-CARDS-010",
+      "setCode": "neo3",
+      "collectorReference": "023",
+      "name": "輝くギャラドス",
+      "status": "metadata_source_finish_conflict",
+      "requiredAction": "Current catalogue variant is normal; the observed source metadata exposes holofoil only. Exact variant/finish evidence is unresolved."
     }
   ],
   "entries": [
@@ -43798,6 +43847,662 @@
         "assetId": "artwork-recovered-20260928:fe81c808-6f32-4711-8487-8df4dc810493:57c6ad608105a851205b020d33e20e74805e233175ca10836dd2757cc8c0adc7",
         "contentSha256": "57c6ad608105a851205b020d33e20e74805e233175ca10836dd2757cc8c0adc7",
         "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/fe81c808-6f32-4711-8487-8df4dc810493/57c6ad608105a851205b020d33e20e74805e233175ca10836dd2757cc8c0adc7/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "EN-CARDS-007",
+      "itemId": "card:2a5d9bbe-1174-4676-9c36-4bcc24020f1e",
+      "printingId": "2a5d9bbe-1174-4676-9c36-4bcc24020f1e",
+      "setId": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+      "setCode": "mfb",
+      "languageCode": "en",
+      "collectorReference": "26",
+      "cardName": "Wartortle",
+      "sourceCode": "bulbapedia",
+      "providerCardId": "File:WartortleMyFirstBattle.jpg",
+      "sourcePageUrl": "https://bulbapedia.bulbagarden.net/wiki/Wartortle_(My_First_Battle)",
+      "sourceImageUrl": "https://archives.bulbagarden.net/media/upload/1/1a/WartortleMyFirstBattle.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "underlyingCopyrightLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false
+      },
+      "original": {
+        "sha256": "9b32817e2eb289ef9794ff3a13269377bdb1cd112339d50490b3531141a9b881",
+        "byteSize": 451136,
+        "width": 1375,
+        "height": 1920,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/7fe92604308dc33187dccac49f43f593497eb9e4a198b20e578b66ffc1e479b3/card-grid.webp",
+          "sha256": "7fe92604308dc33187dccac49f43f593497eb9e4a198b20e578b66ffc1e479b3",
+          "byte_size": 20756,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/31a7cb26c584564682f53ed41378ba0ee75979aacc64ac050c0f6af5c83b396c/search-result.webp",
+          "sha256": "31a7cb26c584564682f53ed41378ba0ee75979aacc64ac050c0f6af5c83b396c",
+          "byte_size": 3864,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/0640be22183ab0a3211ece585e561cf4d9b10525d9bcbb0dd5641756e987b4fe/detail-page.webp",
+          "sha256": "0640be22183ab0a3211ece585e561cf4d9b10525d9bcbb0dd5641756e987b4fe",
+          "byte_size": 148754,
+          "width": 720,
+          "height": 1005,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": null,
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-14T21:06:26.161Z",
+        "productionRun": 38637066091,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38637066091",
+        "publicationReceiptSha256": "a01530cce2d69614502539e4bc370ae8ead99cc4fe13856e8725a28ed7727025",
+        "printingId": "2a5d9bbe-1174-4676-9c36-4bcc24020f1e",
+        "assetId": "artwork-recovered-20260928:2a5d9bbe-1174-4676-9c36-4bcc24020f1e:9b32817e2eb289ef9794ff3a13269377bdb1cd112339d50490b3531141a9b881",
+        "contentSha256": "9b32817e2eb289ef9794ff3a13269377bdb1cd112339d50490b3531141a9b881",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/2a5d9bbe-1174-4676-9c36-4bcc24020f1e/9b32817e2eb289ef9794ff3a13269377bdb1cd112339d50490b3531141a9b881/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "EN-CARDS-007",
+      "itemId": "card:41395dbd-f317-44f6-a49e-0fa095e03e7a",
+      "printingId": "41395dbd-f317-44f6-a49e-0fa095e03e7a",
+      "setId": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+      "setCode": "mfb",
+      "languageCode": "en",
+      "collectorReference": "27",
+      "cardName": "Poliwag",
+      "sourceCode": "bulbapedia",
+      "providerCardId": "File:PoliwagMyFirstBattle.jpg",
+      "sourcePageUrl": "https://bulbapedia.bulbagarden.net/wiki/Poliwag_(My_First_Battle)",
+      "sourceImageUrl": "https://archives.bulbagarden.net/media/upload/8/86/PoliwagMyFirstBattle.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "underlyingCopyrightLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false
+      },
+      "original": {
+        "sha256": "81617fe78557295d9f49c347bbcd96a4af6aa04d7ada6c4d88c48eda1a481118",
+        "byteSize": 393580,
+        "width": 1375,
+        "height": 1920,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/a0c1d496c270eb6516ef183866ad1fb307811b17e0df09514a7f331a75a44075/card-grid.webp",
+          "sha256": "a0c1d496c270eb6516ef183866ad1fb307811b17e0df09514a7f331a75a44075",
+          "byte_size": 15468,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/b7a34922b2281726f15361ae34b8a4fe37d4ff23078150b1ba3f8f7214806bad/search-result.webp",
+          "sha256": "b7a34922b2281726f15361ae34b8a4fe37d4ff23078150b1ba3f8f7214806bad",
+          "byte_size": 3374,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/27813cf369c512a2c3ecaf7bdde26686a47eb25289703836b552215e6dbe5a07/detail-page.webp",
+          "sha256": "27813cf369c512a2c3ecaf7bdde26686a47eb25289703836b552215e6dbe5a07",
+          "byte_size": 120428,
+          "width": 720,
+          "height": 1005,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": null,
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-14T21:06:26.161Z",
+        "productionRun": 38637066091,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38637066091",
+        "publicationReceiptSha256": "a01530cce2d69614502539e4bc370ae8ead99cc4fe13856e8725a28ed7727025",
+        "printingId": "41395dbd-f317-44f6-a49e-0fa095e03e7a",
+        "assetId": "artwork-recovered-20260928:41395dbd-f317-44f6-a49e-0fa095e03e7a:81617fe78557295d9f49c347bbcd96a4af6aa04d7ada6c4d88c48eda1a481118",
+        "contentSha256": "81617fe78557295d9f49c347bbcd96a4af6aa04d7ada6c4d88c48eda1a481118",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/41395dbd-f317-44f6-a49e-0fa095e03e7a/81617fe78557295d9f49c347bbcd96a4af6aa04d7ada6c4d88c48eda1a481118/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "EN-CARDS-007",
+      "itemId": "card:44beac31-c0da-423b-9ea4-4e1359eb2bed",
+      "printingId": "44beac31-c0da-423b-9ea4-4e1359eb2bed",
+      "setId": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+      "setCode": "mfb",
+      "languageCode": "en",
+      "collectorReference": "29",
+      "cardName": "Magikarp",
+      "sourceCode": "bulbapedia",
+      "providerCardId": "File:MagikarpMyFirstBattle.jpg",
+      "sourcePageUrl": "https://bulbapedia.bulbagarden.net/wiki/Magikarp_(My_First_Battle)",
+      "sourceImageUrl": "https://archives.bulbagarden.net/media/upload/5/55/MagikarpMyFirstBattle.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "underlyingCopyrightLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false
+      },
+      "original": {
+        "sha256": "f8264864f0df481c5452e903a6b7c9d41abe7590c66fe9ce61311bbdf6ee3fe8",
+        "byteSize": 385583,
+        "width": 1375,
+        "height": 1920,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/d040a0db3e81f2701fed6d4922129de42d7c5be55c5edeeb4b5ec56e04f9441a/card-grid.webp",
+          "sha256": "d040a0db3e81f2701fed6d4922129de42d7c5be55c5edeeb4b5ec56e04f9441a",
+          "byte_size": 15280,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/63985102e8ad8c3d78e8cefb66d0fc0210ae61e66f24847701bd6548cea957aa/search-result.webp",
+          "sha256": "63985102e8ad8c3d78e8cefb66d0fc0210ae61e66f24847701bd6548cea957aa",
+          "byte_size": 3542,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/c765ff104487c4fb7cfc2b057796b656e9aa9827f74dab4f3fe8ad85972a3f18/detail-page.webp",
+          "sha256": "c765ff104487c4fb7cfc2b057796b656e9aa9827f74dab4f3fe8ad85972a3f18",
+          "byte_size": 119264,
+          "width": 720,
+          "height": 1005,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": null,
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-14T21:06:26.161Z",
+        "productionRun": 38637066091,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38637066091",
+        "publicationReceiptSha256": "a01530cce2d69614502539e4bc370ae8ead99cc4fe13856e8725a28ed7727025",
+        "printingId": "44beac31-c0da-423b-9ea4-4e1359eb2bed",
+        "assetId": "artwork-recovered-20260928:44beac31-c0da-423b-9ea4-4e1359eb2bed:f8264864f0df481c5452e903a6b7c9d41abe7590c66fe9ce61311bbdf6ee3fe8",
+        "contentSha256": "f8264864f0df481c5452e903a6b7c9d41abe7590c66fe9ce61311bbdf6ee3fe8",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/44beac31-c0da-423b-9ea4-4e1359eb2bed/f8264864f0df481c5452e903a6b7c9d41abe7590c66fe9ce61311bbdf6ee3fe8/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "EN-CARDS-006",
+      "itemId": "card:593f2452-0513-4304-964d-017756266f91",
+      "printingId": "593f2452-0513-4304-964d-017756266f91",
+      "setId": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+      "setCode": "mfb",
+      "languageCode": "en",
+      "collectorReference": "23",
+      "cardName": "Electabuzz",
+      "sourceCode": "bulbapedia",
+      "providerCardId": "File:ElectabuzzMyFirstBattle.jpg",
+      "sourcePageUrl": "https://bulbapedia.bulbagarden.net/wiki/Electabuzz_(My_First_Battle)",
+      "sourceImageUrl": "https://archives.bulbagarden.net/media/upload/5/5c/ElectabuzzMyFirstBattle.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "underlyingCopyrightLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false
+      },
+      "original": {
+        "sha256": "52656bfc23f0b82ebf9e16898a719188a669166317e5da837004a7b50941e8e4",
+        "byteSize": 343264,
+        "width": 1375,
+        "height": 1920,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/06dd617a7e4950675ac12fd791708b3138c55deda38dc855aa553dea88571f25/card-grid.webp",
+          "sha256": "06dd617a7e4950675ac12fd791708b3138c55deda38dc855aa553dea88571f25",
+          "byte_size": 17700,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/e9db109e1d72b3134914bc0bed0ec58fc6479c5c243a4e9c5b37d40ebdb7efeb/search-result.webp",
+          "sha256": "e9db109e1d72b3134914bc0bed0ec58fc6479c5c243a4e9c5b37d40ebdb7efeb",
+          "byte_size": 3874,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/bee4023243f0d44664426b79aa3f430eb892dcda0d5383806023a67d7672dd12/detail-page.webp",
+          "sha256": "bee4023243f0d44664426b79aa3f430eb892dcda0d5383806023a67d7672dd12",
+          "byte_size": 97602,
+          "width": 720,
+          "height": 1005,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": null,
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-14T21:06:26.161Z",
+        "productionRun": 38637066091,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38637066091",
+        "publicationReceiptSha256": "a01530cce2d69614502539e4bc370ae8ead99cc4fe13856e8725a28ed7727025",
+        "printingId": "593f2452-0513-4304-964d-017756266f91",
+        "assetId": "artwork-recovered-20260928:593f2452-0513-4304-964d-017756266f91:52656bfc23f0b82ebf9e16898a719188a669166317e5da837004a7b50941e8e4",
+        "contentSha256": "52656bfc23f0b82ebf9e16898a719188a669166317e5da837004a7b50941e8e4",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/593f2452-0513-4304-964d-017756266f91/52656bfc23f0b82ebf9e16898a719188a669166317e5da837004a7b50941e8e4/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "EN-CARDS-007",
+      "itemId": "card:7d7382ef-d5c9-40b8-9cb8-d37487dffaeb",
+      "printingId": "7d7382ef-d5c9-40b8-9cb8-d37487dffaeb",
+      "setId": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+      "setCode": "mfb",
+      "languageCode": "en",
+      "collectorReference": "31",
+      "cardName": "Lapras",
+      "sourceCode": "bulbapedia",
+      "providerCardId": "File:LaprasMyFirstBattle.jpg",
+      "sourcePageUrl": "https://bulbapedia.bulbagarden.net/wiki/Lapras_(My_First_Battle)",
+      "sourceImageUrl": "https://archives.bulbagarden.net/media/upload/c/c8/LaprasMyFirstBattle.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "underlyingCopyrightLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false
+      },
+      "original": {
+        "sha256": "a28354dbc1c3d65c5ae8ac1fccec627b75a4ae9c8fbc81fb5429956f6cf0a266",
+        "byteSize": 389682,
+        "width": 1375,
+        "height": 1920,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/ac337b5d25d1e62761535b24a7ce93e8770fc8044f9932bebcbde467a281fba4/card-grid.webp",
+          "sha256": "ac337b5d25d1e62761535b24a7ce93e8770fc8044f9932bebcbde467a281fba4",
+          "byte_size": 18294,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/f9c659388f85a62176db1d0c78e14382911c504f187b1ebd3b3b119eb6dbb365/search-result.webp",
+          "sha256": "f9c659388f85a62176db1d0c78e14382911c504f187b1ebd3b3b119eb6dbb365",
+          "byte_size": 3550,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/7b9557907872f1ff0e773d37587f29a86c2639fa1ff7c2e4b91960df447fb194/detail-page.webp",
+          "sha256": "7b9557907872f1ff0e773d37587f29a86c2639fa1ff7c2e4b91960df447fb194",
+          "byte_size": 137742,
+          "width": 720,
+          "height": 1005,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": null,
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-14T21:06:26.161Z",
+        "productionRun": 38637066091,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38637066091",
+        "publicationReceiptSha256": "a01530cce2d69614502539e4bc370ae8ead99cc4fe13856e8725a28ed7727025",
+        "printingId": "7d7382ef-d5c9-40b8-9cb8-d37487dffaeb",
+        "assetId": "artwork-recovered-20260928:7d7382ef-d5c9-40b8-9cb8-d37487dffaeb:a28354dbc1c3d65c5ae8ac1fccec627b75a4ae9c8fbc81fb5429956f6cf0a266",
+        "contentSha256": "a28354dbc1c3d65c5ae8ac1fccec627b75a4ae9c8fbc81fb5429956f6cf0a266",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/7d7382ef-d5c9-40b8-9cb8-d37487dffaeb/a28354dbc1c3d65c5ae8ac1fccec627b75a4ae9c8fbc81fb5429956f6cf0a266/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "EN-CARDS-006",
+      "itemId": "card:8e7ca31f-4b3d-438b-958e-c48462617a2a",
+      "printingId": "8e7ca31f-4b3d-438b-958e-c48462617a2a",
+      "setId": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+      "setCode": "mfb",
+      "languageCode": "en",
+      "collectorReference": "11",
+      "cardName": "Vulpix",
+      "sourceCode": "bulbapedia",
+      "providerCardId": "File:VulpixMyFirstBattle.jpg",
+      "sourcePageUrl": "https://bulbapedia.bulbagarden.net/wiki/Vulpix_(My_First_Battle)",
+      "sourceImageUrl": "https://archives.bulbagarden.net/media/upload/7/78/VulpixMyFirstBattle.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "underlyingCopyrightLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false
+      },
+      "original": {
+        "sha256": "f8c0b93a0ccedb0c7b2c87ed4c528bf2fcd4d87312cfe7d72b602935d0fedfb1",
+        "byteSize": 452673,
+        "width": 1375,
+        "height": 1920,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/d43ddfc2b6367b063bff4a58edfd895589f08eaab1390f5f4496fbc29923782e/card-grid.webp",
+          "sha256": "d43ddfc2b6367b063bff4a58edfd895589f08eaab1390f5f4496fbc29923782e",
+          "byte_size": 20686,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/7a80bfaf635de220bffb25c18f602604601acc0c8a437612da87bb211664139d/search-result.webp",
+          "sha256": "7a80bfaf635de220bffb25c18f602604601acc0c8a437612da87bb211664139d",
+          "byte_size": 3894,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/6cf2fc89e79710f6d0b6268b656f255d563b528633e4c1bcb4366ea7e1e1cac0/detail-page.webp",
+          "sha256": "6cf2fc89e79710f6d0b6268b656f255d563b528633e4c1bcb4366ea7e1e1cac0",
+          "byte_size": 149836,
+          "width": 720,
+          "height": 1005,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": null,
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-14T21:06:26.161Z",
+        "productionRun": 38637066091,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38637066091",
+        "publicationReceiptSha256": "a01530cce2d69614502539e4bc370ae8ead99cc4fe13856e8725a28ed7727025",
+        "printingId": "8e7ca31f-4b3d-438b-958e-c48462617a2a",
+        "assetId": "artwork-recovered-20260928:8e7ca31f-4b3d-438b-958e-c48462617a2a:f8c0b93a0ccedb0c7b2c87ed4c528bf2fcd4d87312cfe7d72b602935d0fedfb1",
+        "contentSha256": "f8c0b93a0ccedb0c7b2c87ed4c528bf2fcd4d87312cfe7d72b602935d0fedfb1",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/8e7ca31f-4b3d-438b-958e-c48462617a2a/f8c0b93a0ccedb0c7b2c87ed4c528bf2fcd4d87312cfe7d72b602935d0fedfb1/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "EN-CARDS-006",
+      "itemId": "card:9851560d-25ac-4a1c-815d-dd6793598d98",
+      "printingId": "9851560d-25ac-4a1c-815d-dd6793598d98",
+      "setId": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+      "setCode": "mfb",
+      "languageCode": "en",
+      "collectorReference": "7",
+      "cardName": "Scyther",
+      "sourceCode": "bulbapedia",
+      "providerCardId": "File:ScytherMyFirstBattle.jpg",
+      "sourcePageUrl": "https://bulbapedia.bulbagarden.net/wiki/Scyther_(My_First_Battle)",
+      "sourceImageUrl": "https://archives.bulbagarden.net/media/upload/3/31/ScytherMyFirstBattle.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "underlyingCopyrightLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false
+      },
+      "original": {
+        "sha256": "a527c4ddc9e9ff4341b761fd8db107a4aa7b7f53308183949a93544a6ab69415",
+        "byteSize": 367970,
+        "width": 1375,
+        "height": 1920,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/7be3f9a3e50f1ac07e24defeb2ea07617899af4d7b6e6a032030fcd85ec1412e/card-grid.webp",
+          "sha256": "7be3f9a3e50f1ac07e24defeb2ea07617899af4d7b6e6a032030fcd85ec1412e",
+          "byte_size": 16706,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/e7aaa5a2a2707dc5ba319ad4edc4593ef7a62ba1c405dd7bd4481df48cdd778f/search-result.webp",
+          "sha256": "e7aaa5a2a2707dc5ba319ad4edc4593ef7a62ba1c405dd7bd4481df48cdd778f",
+          "byte_size": 3352,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/0495474b8daeb8b9a71fd9a39293d2cae76590533cddc636754132fe14f613b9/detail-page.webp",
+          "sha256": "0495474b8daeb8b9a71fd9a39293d2cae76590533cddc636754132fe14f613b9",
+          "byte_size": 109058,
+          "width": 720,
+          "height": 1005,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": null,
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-14T21:06:26.161Z",
+        "productionRun": 38637066091,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38637066091",
+        "publicationReceiptSha256": "a01530cce2d69614502539e4bc370ae8ead99cc4fe13856e8725a28ed7727025",
+        "printingId": "9851560d-25ac-4a1c-815d-dd6793598d98",
+        "assetId": "artwork-recovered-20260928:9851560d-25ac-4a1c-815d-dd6793598d98:a527c4ddc9e9ff4341b761fd8db107a4aa7b7f53308183949a93544a6ab69415",
+        "contentSha256": "a527c4ddc9e9ff4341b761fd8db107a4aa7b7f53308183949a93544a6ab69415",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/9851560d-25ac-4a1c-815d-dd6793598d98/a527c4ddc9e9ff4341b761fd8db107a4aa7b7f53308183949a93544a6ab69415/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "EN-CARDS-006",
+      "itemId": "card:9bb77118-3c6d-4219-a42d-b41fdb68ca05",
+      "printingId": "9bb77118-3c6d-4219-a42d-b41fdb68ca05",
+      "setId": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+      "setCode": "mfb",
+      "languageCode": "en",
+      "collectorReference": "5",
+      "cardName": "Exeggcute",
+      "sourceCode": "bulbapedia",
+      "providerCardId": "File:ExeggcuteMyFirstBattle.jpg",
+      "sourcePageUrl": "https://bulbapedia.bulbagarden.net/wiki/Exeggcute_(My_First_Battle)",
+      "sourceImageUrl": "https://archives.bulbagarden.net/media/upload/f/fc/ExeggcuteMyFirstBattle.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "underlyingCopyrightLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false
+      },
+      "original": {
+        "sha256": "5ae547a9384c41fb6e0757be5a4ca3199587e457a319ba7ace461363b0509377",
+        "byteSize": 373439,
+        "width": 1375,
+        "height": 1920,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/04ac28ad2524ed5cf5e03a99a8d6ab1909a328bd1b435e437fc2147925e213b8/card-grid.webp",
+          "sha256": "04ac28ad2524ed5cf5e03a99a8d6ab1909a328bd1b435e437fc2147925e213b8",
+          "byte_size": 14260,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/031c59848198224c9f312ae96fbbc3de9497caa01335d09968999e67cebebeef/search-result.webp",
+          "sha256": "031c59848198224c9f312ae96fbbc3de9497caa01335d09968999e67cebebeef",
+          "byte_size": 3146,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/519f6377e68cac4931d108dfe5e88b4d2e37a3c930825685dc472da0e32c7cd0/detail-page.webp",
+          "sha256": "519f6377e68cac4931d108dfe5e88b4d2e37a3c930825685dc472da0e32c7cd0",
+          "byte_size": 110882,
+          "width": 720,
+          "height": 1005,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": null,
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-14T21:06:26.161Z",
+        "productionRun": 38637066091,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38637066091",
+        "publicationReceiptSha256": "a01530cce2d69614502539e4bc370ae8ead99cc4fe13856e8725a28ed7727025",
+        "printingId": "9bb77118-3c6d-4219-a42d-b41fdb68ca05",
+        "assetId": "artwork-recovered-20260928:9bb77118-3c6d-4219-a42d-b41fdb68ca05:5ae547a9384c41fb6e0757be5a4ca3199587e457a319ba7ace461363b0509377",
+        "contentSha256": "5ae547a9384c41fb6e0757be5a4ca3199587e457a319ba7ace461363b0509377",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/9bb77118-3c6d-4219-a42d-b41fdb68ca05/5ae547a9384c41fb6e0757be5a4ca3199587e457a319ba7ace461363b0509377/original.jpg",
         "originalAndThreeDisplayFilesVerified": true,
         "physicalFinishVerified": false,
         "canonicalChanges": 0,
