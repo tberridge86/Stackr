@@ -1,0 +1,106 @@
+[
+  {
+    "printing_id": "9bb77118-3c6d-4219-a42d-b41fdb68ca05",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "5",
+    "card_native_name": "Exeggcute",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "cca1b099-30a3-48e8-969a-b35ba450379f"
+    ],
+    "batch_id": "EN-CARDS-006"
+  },
+  {
+    "printing_id": "9851560d-25ac-4a1c-815d-dd6793598d98",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "7",
+    "card_native_name": "Scyther",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "794e4d54-a754-4a89-b42f-30b1a9a6d41c"
+    ],
+    "batch_id": "EN-CARDS-006"
+  },
+  {
+    "printing_id": "8e7ca31f-4b3d-438b-958e-c48462617a2a",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "11",
+    "card_native_name": "Vulpix",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "0d77a10f-8d23-46a5-a0f8-fc93ba2b3492"
+    ],
+    "batch_id": "EN-CARDS-006"
+  },
+  {
+    "printing_id": "593f2452-0513-4304-964d-017756266f91",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "23",
+    "card_native_name": "Electabuzz",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "6a0f530d-1148-446d-b1d6-f3d97a043f39"
+    ],
+    "batch_id": "EN-CARDS-006"
+  },
+  {
+    "printing_id": "2a5d9bbe-1174-4676-9c36-4bcc24020f1e",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "26",
+    "card_native_name": "Wartortle",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "7d7cc996-5388-47eb-820f-ec3acdf2bc6c"
+    ],
+    "batch_id": "EN-CARDS-007"
+  },
+  {
+    "printing_id": "41395dbd-f317-44f6-a49e-0fa095e03e7a",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "27",
+    "card_native_name": "Poliwag",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "d9beeafa-9972-4d97-9c31-d9100fa6a4e9"
+    ],
+    "batch_id": "EN-CARDS-007"
+  },
+  {
+    "printing_id": "44beac31-c0da-423b-9ea4-4e1359eb2bed",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "29",
+    "card_native_name": "Magikarp",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "1593d7e0-58f7-49c2-a5b7-e47b200fd131"
+    ],
+    "batch_id": "EN-CARDS-007"
+  },
+  {
+    "printing_id": "7d7382ef-d5c9-40b8-9cb8-d37487dffaeb",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "31",
+    "card_native_name": "Lapras",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "7c8f4063-caf5-453d-ac80-bcb7df971093"
+    ],
+    "batch_id": "EN-CARDS-007"
+  }
+]
