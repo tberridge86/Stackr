@@ -1,22 +1,22 @@
 {
   "schemaVersion": "stackr-owner-artwork-production-evidence-v1",
   "inventoryId": "STACKR-ARTWORK-20261012",
-  "updatedAt": "2026-10-14T22:04:30.994Z",
+  "updatedAt": "2026-10-14T22:30:14.191Z",
   "scope": "Exact saved artwork list; original identities retained; actual production verification required",
   "summary": {
-    "checkedAt": "2026-10-14T22:02:05.147Z",
+    "checkedAt": "2026-10-14T22:16:21.981Z",
     "totalTasks": 2944,
     "totalBatches": 161,
-    "newlyPublishedFronts": 697,
+    "newlyPublishedFronts": 699,
     "previouslyCorrectedCasesVerified": 605,
-    "liveVerifiedTasks": 1302,
+    "liveVerifiedTasks": 1304,
     "completedBatches": 59,
-    "remainingTasks": 1642,
+    "remainingTasks": 1640,
     "remainingBatches": 102,
     "remainingGroups": [
       {
         "task": "Find permitted exact card fronts",
-        "items": 1348
+        "items": 1346
       },
       {
         "task": "Find permitted Traditional Chinese set logos",
@@ -37,16 +37,16 @@
     "queuedBatches": 0,
     "frontTasksNotYetGathered": 1332,
     "smallOriginalCandidates": 14,
-    "frontTasksNotYetPrepared": 1348,
+    "frontTasksNotYetPrepared": 1346,
     "contentHeldOriginalCandidates": 0,
-    "sourceAcquiredPendingPreparation": 2,
+    "sourceAcquiredPendingPreparation": 0,
     "sourceIdentityMetadataHolds": 25,
     "ownerSuppliedJapaneseGalleryLeads": {
       "suppliedSets": 23,
       "fixedBatchesCovered": 69,
       "fixedTasksCovered": 1479,
-      "coveredTasksAlreadyLive": 170,
-      "coveredTasksRemaining": 1309,
+      "coveredTasksAlreadyLive": 172,
+      "coveredTasksRemaining": 1307,
       "unprovidedSets": [],
       "sourceInventorySha256": "68aeb67adc1716a32e1539fc815b210e243c8f2ec15c6d5a5d059a1bbf914fe1",
       "exactPrintingOrLicenceApprovalClaimed": false,
@@ -113,10 +113,10 @@
       "scopeFile": "all-owner-links-working-queue.json",
       "scopeSha256": "dce8019d6367877078b63a26bbd7ce9a52a8c4f8a8cbe7b9c20faa98ff7eb2c9",
       "uniqueCardTasks": 1572,
-      "cardTasksAlreadyLive": 193,
-      "cardTasksRemaining": 1379,
+      "cardTasksAlreadyLive": 195,
+      "cardTasksRemaining": 1377,
       "historicalLogoResearchTasks": 36,
-      "remainingCombinedWork": 1415,
+      "remainingCombinedWork": 1413,
       "remainingCombinedBatches": 89,
       "remainingOutsideBoundProvidedLinks": 227,
       "originalBatchIdsRetained": true,
@@ -168,8 +168,8 @@
       "handoffSha256": "a5c5a116c4ba70526b698f5e76a238945a3496079b941f7fd4dbf59500037cab",
       "alternateSourceResearch": "active"
     },
-    "weeklyAllowanceRemainingPercent": 39,
-    "weeklyAllowanceRecordedAt": "2026-10-14T22:02:22.122Z",
+    "weeklyAllowanceRemainingPercent": 38,
+    "weeklyAllowanceRecordedAt": "2026-10-14T22:16:46.359Z",
     "nextJapaneseNeo3MetadataCohort": {
       "metadataRows": 50,
       "metadataRequests": 102,
@@ -215,7 +215,7 @@
       "independentPublisherReviewSha256": "7df28fe934678b502f731d3d662ca842359a393bcc8aaf368edbeeed42b5c493"
     },
     "nextJapaneseFinal7MetadataCohort": {
-      "status": "Two exact Pokemon originals independently accepted for preparation; five Trainer originals comparison-only",
+      "status": "2/2 exact Pokemon originals and6display images verified live; five Trainer source selections remain null and held",
       "metadataRows": 7,
       "metadataRequests": 14,
       "pokemonCandidates": 2,
@@ -224,17 +224,28 @@
       "metadataReceiptSha256": "49c4b59a41aa9450c0a3ea82d0dce465545b2862fd3703644450dc11c3cd123f",
       "captureDecisionSha256": "df1038e628de13152f22e639817c53c831ccb871f84ad1a9b3b4e439ec9ba5ea",
       "preparationEligible": 2,
-      "productionWrites": 0,
+      "productionWrites": 4,
       "acquiredOriginals": 7,
       "individuallyViewed": 7,
       "quarantineTrainerComparisons": 5,
       "sourceHandoffSha256": "64a2bf59198952643cd000ce90da066b22496310a0baaf6b273e8bcfb084e736",
       "finalValidationSha256": "7ee649538102c7ad404754a1c9abeb0ab841fe9f7c6bcab695edb6e32f6cb401",
       "independentSourceAcceptanceSha256": "00755f84b8baa9de2e809bed4dccf40ef25fa53c530e2f989b8408440fa50f5f",
-      "finitePreparationDecisionSha256": "ec414f1e139f7051736aae38ae500e100cd37d9219a3286aa08cc54cb967d8c8"
+      "finitePreparationDecisionSha256": "ec414f1e139f7051736aae38ae500e100cd37d9219a3286aa08cc54cb967d8c8",
+      "preparedOriginals": 2,
+      "preparedDerivatives": 6,
+      "releaseAssetId": 641804110,
+      "publisherPullRequest": 360,
+      "publicationCompleted": true,
+      "liveVerified": 2,
+      "productionRunId": 38645967663,
+      "receiptSha256": "06804f7cf146318a880d99ed994e61620052a7c4a80b2ea4125eca358b62c6fd",
+      "rootPublicVerificationSha256": "343b3f782a3d6e9ba6db35c39c569f62f7bddf1b14da5d025300b3972f27b5af",
+      "independentPreservationSha256": "63621f36da76a7d288e8f0b219da385c3b78a3e59915a362bb14b2bc9d0db1ae",
+      "independentPublisherReviewSha256": "11a862021ab71d0e884e1dec1711754bed14c4598d2d6e662db6443cc3f5e4c6"
     },
     "nextJapaneseNeo4MetadataCohort": {
-      "status": "50 fixed metadata targets reviewed; finite47 original investigation authorized after local validation",
+      "status": "47 originals decoded and individually reviewed; independent acceptance pending for43 ordinary and4 comparison bodies",
       "metadataRows": 50,
       "metadataRequests": 101,
       "ordinaryCandidates": 43,
@@ -250,10 +261,51 @@
         "047"
       ],
       "observedOriginalsAuthorized": 47,
-      "actualOriginalsAcquired": 0,
+      "actualOriginalsAcquired": 47,
       "metadataReceiptFile": "neo4-next50-metadata-handoff-20261014.json",
       "metadataReceiptSha256": "e72d340b838ab4d4635edba18da5d30bb546e2783f5b4c63408eafb9c97e2633",
       "finiteCaptureDecisionSha256": "7273f0ebc7ca3f12f166c4d972043f0db864e378f308d0cbbd1fe7a0ec50123c",
+      "preparationEligible": 0,
+      "productionWrites": 0,
+      "originalGETs": 47,
+      "fullPILAndSharpDecodes": 47,
+      "downloadReceiptSha256": "7c61ebe62adeab001f5c598e4a73f54bdfd65cade3ac8dbe74bf20f20f90169d",
+      "individualReviewCompleted": true,
+      "individualOriginalsViewed": 47,
+      "sourceHandoffSha256": "5a12a3ce854ba800a4a2d97695ab9c0b4366cf0813fae170c2ce9a919d3c8e1e",
+      "sourceFinalValidationSha256": "0c22eb0713692dc4c23501431b28ab8b288a11209f91ff358b08461f0521af33"
+    },
+    "sourceAcquiredPendingIndependentReview": 47,
+    "nextJapaneseNeo4MiddleMetadataCohort": {
+      "status": "50 fixed metadata targets frozen;45 observed originals require bounded investigation decision",
+      "metadataRows": 50,
+      "metadataRequests": 100,
+      "ordinaryCandidates": 35,
+      "comparisonOnlyAliases": [
+        "057",
+        "058",
+        "063",
+        "065",
+        "085",
+        "088",
+        "095",
+        "099",
+        "100",
+        "101"
+      ],
+      "finishExcludedAliases": [
+        "068",
+        "080",
+        "082",
+        "084",
+        "098"
+      ],
+      "trainerComparisonOnly": 3,
+      "unownFormGuards": 10,
+      "metadataReceiptFile": "neo4-middle50-metadata-handoff-20261014.json",
+      "metadataReceiptSha256": "c5a9fbb627bf7da9c1dcb4c571c548f62d9f13607928d34e408d84bc49dbe1e0",
+      "originalGETs": 0,
+      "actualOriginalsAcquired": 0,
       "preparationEligible": 0,
       "productionWrites": 0
     }
@@ -998,17 +1050,17 @@
     "extraPermissionPromptRequired": false,
     "sourceLicenceFacts": "Existing source facts retained; owner queue direction does not invent vendor licence metadata."
   },
-  "preparedOriginals": 600,
-  "preparedDerivatives": 1800,
-  "publishedVerifiedOriginals": 600,
+  "preparedOriginals": 602,
+  "preparedDerivatives": 1806,
+  "publishedVerifiedOriginals": 602,
   "queuedItems": 0,
   "preparedByLanguage": {
     "en": 430,
-    "ja": 170
+    "ja": 172
   },
   "publishedVerifiedByLanguage": {
     "en": 430,
-    "ja": 170
+    "ja": 172
   },
   "failedProductionRuns": [
     {
@@ -1165,6 +1217,14 @@
       "releaseAssetId": 641737169,
       "byteSize": 26147290,
       "sha256": "ee73b4b0d1cde569af94fa186b2f69c7ce7cf40aa333b368e9272da2cc882f42",
+      "state": "Published and independently verified live",
+      "everPublished": true
+    },
+    {
+      "queueId": "STACKR-JA-AWAKENING-FINAL-20261014-002",
+      "releaseAssetId": 641804110,
+      "byteSize": 1084630,
+      "sha256": "c06a56a780178351698794207b4bae873240ebab274dcb4e36f6561dfb8d5264",
       "state": "Published and independently verified live",
       "everPublished": true
     }
@@ -2035,7 +2095,7 @@
       "collectorReference": "013",
       "name": "輝くセレビ",
       "status": "metadata_source_finish_conflict",
-      "requiredAction": "Current catalogue variant is normal; observed source metadata supports holofoil only. Exact version evidence unresolved."
+      "requiredAction": "Current catalogue variant is normal; observed source metadata exposes holofoil only. Exact variant/finish evidence remains unresolved."
     },
     {
       "itemId": "card:4e952bf3-ba4b-4d7e-a0fc-131104400e1b",
@@ -2145,7 +2205,7 @@
       "collectorReference": "025",
       "name": "輝くチャリザード",
       "status": "metadata_source_finish_conflict",
-      "requiredAction": "Current catalogue variant is normal; observed source metadata supports holofoil only. Exact version evidence unresolved."
+      "requiredAction": "Current catalogue variant is normal; observed source metadata exposes holofoil only. Exact variant/finish evidence remains unresolved."
     },
     {
       "itemId": "card:22b4ef22-b503-4327-a6ee-16b72b5d9356",
@@ -2365,7 +2425,7 @@
       "collectorReference": "047",
       "name": "輝くライチュ",
       "status": "metadata_source_finish_conflict",
-      "requiredAction": "Current catalogue variant is normal; observed source metadata supports holofoil only. Exact version evidence unresolved."
+      "requiredAction": "Current catalogue variant is normal; observed source metadata exposes holofoil only. Exact variant/finish evidence remains unresolved."
     },
     {
       "itemId": "card:e38914d3-de36-4bb9-b58d-17d854a747b0",
@@ -2406,6 +2466,506 @@
       "name": "s",
       "status": "metadata_body_comparison_pending",
       "requiredAction": "Actual original needed to resolve recorded HP or native body disagreement; metadata is not preparation evidence"
+    },
+    {
+      "itemId": "card:462672f2-f544-435e-92f5-3a4388934462",
+      "printingId": "462672f2-f544-435e-92f5-3a4388934462",
+      "batchId": "JP-CARDS-015",
+      "setCode": "neo4",
+      "collectorReference": "052",
+      "name": "未定のt",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:8e16b941-5157-4938-954e-208ccc12e12f",
+      "printingId": "8e16b941-5157-4938-954e-208ccc12e12f",
+      "batchId": "JP-CARDS-015",
+      "setCode": "neo4",
+      "collectorReference": "053",
+      "name": "v",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:2e75b01c-95b8-4af7-8047-b592f8f60c82",
+      "printingId": "2e75b01c-95b8-4af7-8047-b592f8f60c82",
+      "batchId": "JP-CARDS-015",
+      "setCode": "neo4",
+      "collectorReference": "054",
+      "name": "軽いスローブロ",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:3ee006fb-4dec-4375-a63f-26dca95cfc91",
+      "printingId": "3ee006fb-4dec-4375-a63f-26dca95cfc91",
+      "batchId": "JP-CARDS-015",
+      "setCode": "neo4",
+      "collectorReference": "055",
+      "name": "暗いハンター",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:7f16590a-c0f2-4a2c-a507-7d9a16c48c18",
+      "printingId": "7f16590a-c0f2-4a2c-a507-7d9a16c48c18",
+      "batchId": "JP-CARDS-015",
+      "setCode": "neo4",
+      "collectorReference": "056",
+      "name": "暗いexeggutor",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:adb670cf-5d1c-49a0-8670-f2e374da9c01",
+      "printingId": "adb670cf-5d1c-49a0-8670-f2e374da9c01",
+      "batchId": "JP-CARDS-015",
+      "setCode": "neo4",
+      "collectorReference": "057",
+      "name": "c",
+      "status": "metadata_body_comparison_pending",
+      "requiredAction": "Actual original and independent body/artwork comparison required before preparation"
+    },
+    {
+      "itemId": "card:35a270e9-9ac6-46bf-96cd-a48269efae97",
+      "printingId": "35a270e9-9ac6-46bf-96cd-a48269efae97",
+      "batchId": "JP-CARDS-015",
+      "setCode": "neo4",
+      "collectorReference": "058",
+      "name": "未定のp",
+      "status": "metadata_body_comparison_pending",
+      "requiredAction": "Actual original and independent body/artwork comparison required before preparation"
+    },
+    {
+      "itemId": "card:9cb82cff-8a30-4d1f-abc0-090c5d827cf7",
+      "printingId": "9cb82cff-8a30-4d1f-abc0-090c5d827cf7",
+      "batchId": "JP-CARDS-015",
+      "setCode": "neo4",
+      "collectorReference": "059",
+      "name": "Q",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:5d68e873-c3f1-4a4a-a500-3662e662ffb1",
+      "printingId": "5d68e873-c3f1-4a4a-a500-3662e662ffb1",
+      "batchId": "JP-CARDS-015",
+      "setCode": "neo4",
+      "collectorReference": "060",
+      "name": "ZなしZ",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:80c5425c-2fa0-4a3c-b840-a073aa1ac76d",
+      "printingId": "80c5425c-2fa0-4a3c-b840-a073aa1ac76d",
+      "batchId": "JP-CARDS-015",
+      "setCode": "neo4",
+      "collectorReference": "061",
+      "name": "暗いスローキング",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:f51a919b-a2c8-4036-b22e-b7f33e951eef",
+      "printingId": "f51a919b-a2c8-4036-b22e-b7f33e951eef",
+      "batchId": "JP-CARDS-015",
+      "setCode": "neo4",
+      "collectorReference": "062",
+      "name": "g",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:f1dbdd12-b561-46f9-a172-e3c61dde8ede",
+      "printingId": "f1dbdd12-b561-46f9-a172-e3c61dde8ede",
+      "batchId": "JP-CARDS-015",
+      "setCode": "neo4",
+      "collectorReference": "063",
+      "name": "hなしh",
+      "status": "metadata_body_comparison_pending",
+      "requiredAction": "Actual original and independent body/artwork comparison required before preparation"
+    },
+    {
+      "itemId": "card:a71aa134-7cee-475f-863c-54c0c37ed5b9",
+      "printingId": "a71aa134-7cee-475f-863c-54c0c37ed5b9",
+      "batchId": "JP-CARDS-015",
+      "setCode": "neo4",
+      "collectorReference": "064",
+      "name": "w",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:fd2bf54f-9150-4b44-a00a-bdd132c7c710",
+      "printingId": "fd2bf54f-9150-4b44-a00a-bdd132c7c710",
+      "batchId": "JP-CARDS-015",
+      "setCode": "neo4",
+      "collectorReference": "065",
+      "name": "未作たx",
+      "status": "metadata_body_comparison_pending",
+      "requiredAction": "Actual original and independent body/artwork comparison required before preparation"
+    },
+    {
+      "itemId": "card:1beb4bf9-9cde-4851-9804-ed9cce9f152e",
+      "printingId": "1beb4bf9-9cde-4851-9804-ed9cce9f152e",
+      "batchId": "JP-CARDS-015",
+      "setCode": "neo4",
+      "collectorReference": "066",
+      "name": "ダークジェンガー",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:e84ab0ae-ceb0-4211-8787-dc2708296a8f",
+      "printingId": "e84ab0ae-ceb0-4211-8787-dc2708296a8f",
+      "batchId": "JP-CARDS-015",
+      "setCode": "neo4",
+      "collectorReference": "067",
+      "name": "暗いエスペオン",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:0464cc14-2b69-40f1-a65b-819e8cddb311",
+      "printingId": "0464cc14-2b69-40f1-a65b-819e8cddb311",
+      "batchId": "JP-CARDS-015",
+      "setCode": "neo4",
+      "collectorReference": "068",
+      "name": "輝くミュウツー",
+      "status": "metadata_source_finish_conflict",
+      "requiredAction": "Current catalogue variant is normal; observed source metadata exposes holofoil only. Exact variant/finish evidence remains unresolved."
+    },
+    {
+      "itemId": "card:5f91ad11-0be9-46c2-b448-26e9d40c1f0c",
+      "printingId": "5f91ad11-0be9-46c2-b448-26e9d40c1f0c",
+      "batchId": "JP-CARDS-015",
+      "setCode": "neo4",
+      "collectorReference": "069",
+      "name": "マチョップ",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:c06efa9c-8b60-44b4-81cc-7ccff4497ece",
+      "printingId": "c06efa9c-8b60-44b4-81cc-7ccff4497ece",
+      "batchId": "JP-CARDS-015",
+      "setCode": "neo4",
+      "collectorReference": "070",
+      "name": "ヒットモンチャン",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:02ff0c1f-868f-4d7a-9070-af28c644806c",
+      "printingId": "02ff0c1f-868f-4d7a-9070-af28c644806c",
+      "batchId": "JP-CARDS-015",
+      "setCode": "neo4",
+      "collectorReference": "071",
+      "name": "グリガー",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:16db09e5-a45f-475e-808a-d6c6b9ee7ca0",
+      "printingId": "16db09e5-a45f-475e-808a-d6c6b9ee7ca0",
+      "batchId": "JP-CARDS-015",
+      "setCode": "neo4",
+      "collectorReference": "072",
+      "name": "ファンピー",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:3bf1dc02-e1af-4273-83e0-850640e41aef",
+      "printingId": "3bf1dc02-e1af-4273-83e0-850640e41aef",
+      "batchId": "JP-CARDS-015",
+      "setCode": "neo4",
+      "collectorReference": "073",
+      "name": "幼虫",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:cb737d1c-773a-46d6-8c14-63d635ff66c2",
+      "printingId": "cb737d1c-773a-46d6-8c14-63d635ff66c2",
+      "batchId": "JP-CARDS-015",
+      "setCode": "neo4",
+      "collectorReference": "074",
+      "name": "ライトマチョーク",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:1f911717-7151-4f6e-8847-226e14168741",
+      "printingId": "1f911717-7151-4f6e-8847-226e14168741",
+      "batchId": "JP-CARDS-015",
+      "setCode": "neo4",
+      "collectorReference": "075",
+      "name": "Hitmonlee",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:98fbaf55-8394-46ed-8aa8-d45f53282ff8",
+      "printingId": "98fbaf55-8394-46ed-8aa8-d45f53282ff8",
+      "batchId": "JP-CARDS-015",
+      "setCode": "neo4",
+      "collectorReference": "076",
+      "name": "ダークプリター",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:d4723085-ec9c-44af-ae8a-072d3ad18a73",
+      "printingId": "d4723085-ec9c-44af-ae8a-072d3ad18a73",
+      "batchId": "JP-CARDS-016",
+      "setCode": "neo4",
+      "collectorReference": "077",
+      "name": "軽いマチャンプ",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:3e5331dd-6de8-4a88-8311-cad5b9c2fb98",
+      "printingId": "3e5331dd-6de8-4a88-8311-cad5b9c2fb98",
+      "batchId": "JP-CARDS-016",
+      "setCode": "neo4",
+      "collectorReference": "078",
+      "name": "ダークドンファン",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:6b4eb085-272d-49b1-9637-23902f4db60d",
+      "printingId": "6b4eb085-272d-49b1-9637-23902f4db60d",
+      "batchId": "JP-CARDS-016",
+      "setCode": "neo4",
+      "collectorReference": "079",
+      "name": "ダークタイラナター",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:01f67252-c150-4653-b9d0-426c66aee027",
+      "printingId": "01f67252-c150-4653-b9d0-426c66aee027",
+      "batchId": "JP-CARDS-016",
+      "setCode": "neo4",
+      "collectorReference": "080",
+      "name": "輝くカブトップ",
+      "status": "metadata_source_finish_conflict",
+      "requiredAction": "Current catalogue variant is normal; observed source metadata exposes holofoil only. Exact variant/finish evidence remains unresolved."
+    },
+    {
+      "itemId": "card:5601f9cb-980a-4d76-bbbd-88ff23ee8ec9",
+      "printingId": "5601f9cb-980a-4d76-bbbd-88ff23ee8ec9",
+      "batchId": "JP-CARDS-016",
+      "setCode": "neo4",
+      "collectorReference": "081",
+      "name": "猟犬",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:a60cc68b-374e-46da-8caf-05264589ea9c",
+      "printingId": "a60cc68b-374e-46da-8caf-05264589ea9c",
+      "batchId": "JP-CARDS-016",
+      "setCode": "neo4",
+      "collectorReference": "082",
+      "name": "輝くタイラニター",
+      "status": "metadata_source_finish_conflict",
+      "requiredAction": "Current catalogue variant is normal; observed source metadata exposes holofoil only. Exact variant/finish evidence remains unresolved."
+    },
+    {
+      "itemId": "card:235190f9-9e87-4f98-8e23-078f57627b5a",
+      "printingId": "235190f9-9e87-4f98-8e23-078f57627b5a",
+      "batchId": "JP-CARDS-016",
+      "setCode": "neo4",
+      "collectorReference": "083",
+      "name": "ダークシゾール",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:231446a3-1542-450f-a591-51540bfdfe15",
+      "printingId": "231446a3-1542-450f-a591-51540bfdfe15",
+      "batchId": "JP-CARDS-016",
+      "setCode": "neo4",
+      "collectorReference": "084",
+      "name": "Shining Steelix",
+      "status": "metadata_source_finish_conflict",
+      "requiredAction": "Current catalogue variant is normal; observed source metadata exposes holofoil only. Exact variant/finish evidence remains unresolved."
+    },
+    {
+      "itemId": "card:f2978a3c-ad67-4e5b-bea9-a3546887e5c9",
+      "printingId": "f2978a3c-ad67-4e5b-bea9-a3546887e5c9",
+      "batchId": "JP-CARDS-016",
+      "setCode": "neo4",
+      "collectorReference": "085",
+      "name": "jigglypuff",
+      "status": "metadata_body_comparison_pending",
+      "requiredAction": "Actual original and independent body/artwork comparison required before preparation"
+    },
+    {
+      "itemId": "card:8e35f2a3-1a90-45c3-8766-bca908ce7bdb",
+      "printingId": "8e35f2a3-1a90-45c3-8766-bca908ce7bdb",
+      "batchId": "JP-CARDS-016",
+      "setCode": "neo4",
+      "collectorReference": "086",
+      "name": "ポリゴン",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:d04781e7-5e12-47cd-b670-795c18aa2ad4",
+      "printingId": "d04781e7-5e12-47cd-b670-795c18aa2ad4",
+      "batchId": "JP-CARDS-016",
+      "setCode": "neo4",
+      "collectorReference": "087",
+      "name": "ドラチーニ",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:cb5b2bca-d81e-4dd3-bb77-7485089c0366",
+      "printingId": "cb5b2bca-d81e-4dd3-bb77-7485089c0366",
+      "batchId": "JP-CARDS-016",
+      "setCode": "neo4",
+      "collectorReference": "088",
+      "name": "togepi",
+      "status": "metadata_body_comparison_pending",
+      "requiredAction": "Actual original and independent body/artwork comparison required before preparation"
+    },
+    {
+      "itemId": "card:f10aea3f-8848-4d1d-8ca4-9b442cff54d5",
+      "printingId": "f10aea3f-8848-4d1d-8ca4-9b442cff54d5",
+      "batchId": "JP-CARDS-016",
+      "setCode": "neo4",
+      "collectorReference": "089",
+      "name": "Girafarig",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:e09b03e5-6d2c-434f-9d1c-02349802641e",
+      "printingId": "e09b03e5-6d2c-434f-9d1c-02349802641e",
+      "batchId": "JP-CARDS-016",
+      "setCode": "neo4",
+      "collectorReference": "090",
+      "name": "軽いウィグリティフ",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:b0e3b4a4-d025-4c7e-a849-97a107ee24f9",
+      "printingId": "b0e3b4a4-d025-4c7e-a849-97a107ee24f9",
+      "batchId": "JP-CARDS-016",
+      "setCode": "neo4",
+      "collectorReference": "091",
+      "name": "ダークウィッグラット",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:ec558d10-fab4-4d34-922c-3635a8e97e09",
+      "printingId": "ec558d10-fab4-4d34-922c-3635a8e97e09",
+      "batchId": "JP-CARDS-016",
+      "setCode": "neo4",
+      "collectorReference": "092",
+      "name": "チャンジー",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:9b9cb940-c924-44e8-9757-464904ccb4d1",
+      "printingId": "9b9cb940-c924-44e8-9757-464904ccb4d1",
+      "batchId": "JP-CARDS-016",
+      "setCode": "neo4",
+      "collectorReference": "093",
+      "name": "ライトドラゴンエア",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:322a894a-2bde-4d8e-9af7-39328fd39108",
+      "printingId": "322a894a-2bde-4d8e-9af7-39328fd39108",
+      "batchId": "JP-CARDS-016",
+      "setCode": "neo4",
+      "collectorReference": "094",
+      "name": "軽いドラゴナイト",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:66c78deb-b48f-4c38-b3fe-3caa693b220a",
+      "printingId": "66c78deb-b48f-4c38-b3fe-3caa693b220a",
+      "batchId": "JP-CARDS-016",
+      "setCode": "neo4",
+      "collectorReference": "095",
+      "name": "光から光",
+      "status": "metadata_body_comparison_pending",
+      "requiredAction": "Actual original and independent body/artwork comparison required before preparation"
+    },
+    {
+      "itemId": "card:33b1aa83-3fd7-44b4-ab6c-c27cdba89c2a",
+      "printingId": "33b1aa83-3fd7-44b4-ab6c-c27cdba89c2a",
+      "batchId": "JP-CARDS-016",
+      "setCode": "neo4",
+      "collectorReference": "096",
+      "name": "暗いウルサリング",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:77d7edf5-3e6f-492f-8983-484fbc1be9b1",
+      "printingId": "77d7edf5-3e6f-492f-8983-484fbc1be9b1",
+      "batchId": "JP-CARDS-016",
+      "setCode": "neo4",
+      "collectorReference": "097",
+      "name": "Dark Porygon2",
+      "status": "exact_source_metadata_original_pending",
+      "requiredAction": "Exact original capture, matching and production delivery pending"
+    },
+    {
+      "itemId": "card:b5e141c0-92ff-4a00-bd86-b5efd266dbe4",
+      "printingId": "b5e141c0-92ff-4a00-bd86-b5efd266dbe4",
+      "batchId": "JP-CARDS-016",
+      "setCode": "neo4",
+      "collectorReference": "098",
+      "name": "輝くノクトウル",
+      "status": "metadata_source_finish_conflict",
+      "requiredAction": "Current catalogue variant is normal; observed source metadata exposes holofoil only. Exact variant/finish evidence remains unresolved."
+    },
+    {
+      "itemId": "card:da4fefcb-00d3-465f-965d-325e0bc98d25",
+      "printingId": "da4fefcb-00d3-465f-965d-325e0bc98d25",
+      "batchId": "JP-CARDS-016",
+      "setCode": "neo4",
+      "collectorReference": "099",
+      "name": "粉末を癒します",
+      "status": "metadata_body_comparison_pending",
+      "requiredAction": "Actual original and independent body/artwork comparison required before preparation"
+    },
+    {
+      "itemId": "card:c5413601-e5a9-4724-bcdd-aabaae49d0e6",
+      "printingId": "c5413601-e5a9-4724-bcdd-aabaae49d0e6",
+      "batchId": "JP-CARDS-016",
+      "setCode": "neo4",
+      "collectorReference": "100",
+      "name": "ビルからのメール",
+      "status": "metadata_body_comparison_pending",
+      "requiredAction": "Actual original and independent body/artwork comparison required before preparation"
+    },
+    {
+      "itemId": "card:1445e2ba-a0e9-4e39-ae07-4a4326ba4ccd",
+      "printingId": "1445e2ba-a0e9-4e39-ae07-4a4326ba4ccd",
+      "batchId": "JP-CARDS-016",
+      "setCode": "neo4",
+      "collectorReference": "101",
+      "name": "エネルギースタジアム",
+      "status": "metadata_body_comparison_pending",
+      "requiredAction": "Actual original and independent body/artwork comparison required before preparation"
     }
   ],
   "entries": [
@@ -49414,6 +49974,184 @@
         "assetId": "artwork-recovered-20260928:ffb6933d-d61b-4de4-b7f3-e1438246b2ec:1ced3dc53c619f56896824a0139e36b25db5b8289c322e96261c6252e7ff424f",
         "contentSha256": "1ced3dc53c619f56896824a0139e36b25db5b8289c322e96261c6252e7ff424f",
         "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/ffb6933d-d61b-4de4-b7f3-e1438246b2ec/1ced3dc53c619f56896824a0139e36b25db5b8289c322e96261c6252e7ff424f/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-012",
+      "itemId": "card:6ad6da5c-02cb-45e1-ab7a-2de25855dbf4",
+      "printingId": "6ad6da5c-02cb-45e1-ab7a-2de25855dbf4",
+      "setId": "a15481a7-410b-4a98-8695-3bba0db9d226",
+      "setCode": "neo3",
+      "languageCode": "ja",
+      "collectorReference": "051",
+      "cardName": "Porygon2",
+      "sourceCode": "scrydex",
+      "providerCardId": "neo3_ja-51",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/porygon2/neo3_ja-51?variant=holofoil",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/neo3_ja-51/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false
+      },
+      "original": {
+        "sha256": "64ac8b84198f0dcbf4c625edc2f2407f86cdd767d74ee0aa772971fb31bf837b",
+        "byteSize": 434350,
+        "width": 570,
+        "height": 794,
+        "mimeType": "image/webp"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/5f8bd614a17e7def35f1a6562724dc0ff504d401ba15571a5d0b518390fd0e2b/card-grid.webp",
+          "sha256": "5f8bd614a17e7def35f1a6562724dc0ff504d401ba15571a5d0b518390fd0e2b",
+          "byte_size": 19286,
+          "width": 240,
+          "height": 334,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/ef5b5916b8250abd85f0c2d7788cc8561f8409afee0c095b06ff7bce69fee55d/search-result.webp",
+          "sha256": "ef5b5916b8250abd85f0c2d7788cc8561f8409afee0c095b06ff7bce69fee55d",
+          "byte_size": 4010,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/8e4045694f43ff05dd0dfe8f4c3e70bc0fc8d2afdfd13b32df820024fed94362/detail-page.webp",
+          "sha256": "8e4045694f43ff05dd0dfe8f4c3e70bc0fc8d2afdfd13b32df820024fed94362",
+          "byte_size": 75232,
+          "width": 570,
+          "height": 794,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "051",
+        "printed_national_dex": 233,
+        "canonical_alias_is_not_printed_national_dex": true,
+        "current_native_label": "Porygon2",
+        "verified_printed_native_name": "ポリゴン2",
+        "current_native_label_not_used_for_match": true,
+        "known_native_label_defect_retained_without_write": true,
+        "form_letter": null
+      },
+      "currentVariantCode": "holo",
+      "currentFinishCode": "holo",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-14T22:16:21.981Z",
+        "productionRun": 38645967663,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38645967663",
+        "publicationReceiptSha256": "06804f7cf146318a880d99ed994e61620052a7c4a80b2ea4125eca358b62c6fd",
+        "printingId": "6ad6da5c-02cb-45e1-ab7a-2de25855dbf4",
+        "assetId": "artwork-recovered-20260928:6ad6da5c-02cb-45e1-ab7a-2de25855dbf4:64ac8b84198f0dcbf4c625edc2f2407f86cdd767d74ee0aa772971fb31bf837b",
+        "contentSha256": "64ac8b84198f0dcbf4c625edc2f2407f86cdd767d74ee0aa772971fb31bf837b",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/6ad6da5c-02cb-45e1-ab7a-2de25855dbf4/64ac8b84198f0dcbf4c625edc2f2407f86cdd767d74ee0aa772971fb31bf837b/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-012",
+      "itemId": "card:ab2c259c-353a-4317-b075-83f28a24fab2",
+      "printingId": "ab2c259c-353a-4317-b075-83f28a24fab2",
+      "setId": "a15481a7-410b-4a98-8695-3bba0db9d226",
+      "setCode": "neo3",
+      "languageCode": "ja",
+      "collectorReference": "052",
+      "cardName": "ブリッシー",
+      "sourceCode": "scrydex",
+      "providerCardId": "neo3_ja-52",
+      "sourcePageUrl": "https://scrydex.com/pokemon/cards/blissey/neo3_ja-52?variant=holofoil",
+      "sourceImageUrl": "https://images.scrydex.com/pokemon/neo3_ja-52/large",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false
+      },
+      "original": {
+        "sha256": "c94cfbe99ed1e5bac2c9464abd9e713b410fe99a00995cc1199419a355a2ff75",
+        "byteSize": 438580,
+        "width": 570,
+        "height": 799,
+        "mimeType": "image/webp"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/ece9148756d24917c984dfd43a4ac5e06866a57fe93108593fdd2f31360d0eb5/card-grid.webp",
+          "sha256": "ece9148756d24917c984dfd43a4ac5e06866a57fe93108593fdd2f31360d0eb5",
+          "byte_size": 19238,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/d228e1b776f42beee7bdec117af67f27e993fc210908477932f6900a01e42a83/search-result.webp",
+          "sha256": "d228e1b776f42beee7bdec117af67f27e993fc210908477932f6900a01e42a83",
+          "byte_size": 4202,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/aea5467509511fc21c582ae03a61d39140bbf43fad95ca649d06a6dce2d0d40e/detail-page.webp",
+          "sha256": "aea5467509511fc21c582ae03a61d39140bbf43fad95ca649d06a6dce2d0d40e",
+          "byte_size": 75146,
+          "width": 570,
+          "height": 799,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "052",
+        "printed_national_dex": 242,
+        "canonical_alias_is_not_printed_national_dex": true,
+        "current_native_label": "ブリッシー",
+        "verified_printed_native_name": "ハピナス",
+        "current_native_label_not_used_for_match": true,
+        "known_native_label_defect_retained_without_write": true,
+        "form_letter": null
+      },
+      "currentVariantCode": "holo",
+      "currentFinishCode": "holo",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-14T22:16:21.981Z",
+        "productionRun": 38645967663,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38645967663",
+        "publicationReceiptSha256": "06804f7cf146318a880d99ed994e61620052a7c4a80b2ea4125eca358b62c6fd",
+        "printingId": "ab2c259c-353a-4317-b075-83f28a24fab2",
+        "assetId": "artwork-recovered-20260928:ab2c259c-353a-4317-b075-83f28a24fab2:c94cfbe99ed1e5bac2c9464abd9e713b410fe99a00995cc1199419a355a2ff75",
+        "contentSha256": "c94cfbe99ed1e5bac2c9464abd9e713b410fe99a00995cc1199419a355a2ff75",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/ab2c259c-353a-4317-b075-83f28a24fab2/c94cfbe99ed1e5bac2c9464abd9e713b410fe99a00995cc1199419a355a2ff75/original.webp",
         "originalAndThreeDisplayFilesVerified": true,
         "physicalFinishVerified": false,
         "canonicalChanges": 0,
