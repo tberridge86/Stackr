@@ -1,9 +1,9 @@
 # Stackr artwork production handoff
 
-Updated 2026-10-14T17:47:11.928Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
+Updated 2026-10-14T18:53:55.477Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
 
-1134 tasks / 57 batches complete; 1810 tasks / 104 batches remain.
-432 sourced originals and 1296 display versions checked: 432 originals live, 0 prepared and queued.
+1158 tasks / 57 batches complete; 1786 tasks / 104 batches remain.
+456 sourced originals and 1368 display versions checked: 456 originals live, 0 prepared and queued.
 
 Owner standing approval covers exact artwork sourcing, publication and verification without another owner batch review. Independently verified vendor licence and physical edition/finish facts are not invented. Keep previous immutable objects and receipt-bound rollback.
 
@@ -23,6 +23,7 @@ Owner standing approval covers exact artwork sourcing, publication and verificat
 - Sourced 28, run 38481691805, EN-CARDS-036, EN-CARDS-037: all 28 card responses with preserved variant identities / all 112 decoded/hash/dimension-matched files independently verified. Receipt SHA f2daad9160eacb65b1f9d3280b522c0d20c3ffe0e25c92872824a5f5fe186ef4. Rollback prepared, not executed.
 - Sourced 2, run 38526814858, EN-CARDS-038: all 2 card responses with preserved variant identities / all 8 decoded/hash/dimension-matched files independently verified. Receipt SHA 713ef89476d79c2ec47216aa7b95d4b9424423cd0f540b793fde27fec9c44e98. Rollback prepared, not executed.
 - Sourced 25, run 38605195635, JP-CARDS-003: all 25 card responses with preserved variant identities / all 100 decoded/hash/dimension-matched files independently verified. Receipt SHA fa33572f7435f441a180d48ff1d07743add420c00e576e46c608ddbdb7e0dc4e. Rollback prepared, not executed.
+- Sourced 24, run 38617318945, JP-CARDS-004: all 24 card responses with preserved variant identities / all 96 decoded/hash/dimension-matched files independently verified. Receipt SHA 914b59368e1975fe9640725f73ada5a2759d6400110574f712295d1d18bf228b. Rollback prepared, not executed.
 
 ## Prepared work
 
@@ -39,10 +40,11 @@ Owner standing approval covers exact artwork sourcing, publication and verificat
 - Frozen package asset 638452571, 28775194 bytes, SHA 505f413ba82ae242d25bbb108114c25c82617e88a3d646b35629318d3ad6a1b0. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset 638504756, 1250882 bytes, SHA da73a211f009a3ee5f3bb61bbcccdc765744c66159c0480aca9c9301ac2cc21c. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset 639568745, 21448691 bytes, SHA ee849164f5f744038105d95c3fbbfc9774068b2488e5f4678398a383bf5da5e9. Individual delivery state controls completion; an archive alone does not.
+- Frozen package asset 641256222, 20461026 bytes, SHA 9918ceb7090bed46f9c9583468f9ddf016a6de2199a9a2719ed9b6b862283fc4. Individual delivery state controls completion; an archive alone does not.
 
 ## Explicit remaining holds
 
-25 exact source identities remain unresolved; 24 gathered originals still need preparation and production delivery; 14 exact originals still need larger, readable pictures; 5 source version matches remain unresolved; 0 pictures need another exact card-text comparison. These are unfinished tasks and are excluded from publication.
+25 exact source identities remain unresolved; 0 gathered originals still need preparation and production delivery; 14 exact originals still need larger, readable pictures; 5 source version matches remain unresolved; 0 pictures need another exact card-text comparison. These are unfinished tasks and are excluded from publication.
 
 224 old Simplified Chinese cases have Traditional Chinese counterparts but still need an evidenced identity repair. No silent retagging. The fixed list also retains256language/card/version checks,36Traditional Chinese logos and2sharper Japanese originals. Flat reference fronts do not certify physical material/finish.
 
@@ -93,7 +95,7 @@ No native/OTA/backend/gateway delivery or installed-phone acceptance is claimed 
 | JP-CARDS-001 | 0/5 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
 | JP-CARDS-002 | 0/8 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
 | JP-CARDS-003 | 25/25 | Live and verified | Complete; delivery evidence saved |
-| JP-CARDS-004 | 0/25 | 24 originals checked; 1 exact source matches unresolved | 24 originals need display preparation, current binding checks, publication and live verification; 1 source identity holds: preserve current catalogue until exact native-body evidence resolves them; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-004 | 24/25 | 24 of 25 live and checked; one HP identity hold | Slowpoke alias 045 remains excluded: catalogue/source HP40 versus HP50 conflicts; an exact identity match is required. |
 | JP-CARDS-005 | 0/25 | 3 exact source matches unresolved; 22 original images still need gathering | 3 source identity holds: preserve current catalogue until exact native-body evidence resolves them; 22 metadata candidates still need actual original acquisition and pixel verification; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
 | JP-CARDS-006 | 0/21 | Exact source identity remains unresolved | 21 source identity holds: preserve current catalogue until exact native-body evidence resolves them; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
 | JP-CARDS-007 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
@@ -216,7 +218,7 @@ No native/OTA/backend/gateway delivery or installed-phone acceptance is claimed 
 
 ## Owner-supplied Japanese gallery leads
 
-21 supplied sets cover 1389 fixed tasks; 25 are already live and 1364 remain. VS1 and web1 gallery links were not supplied.
+23 supplied sets cover 1479 fixed tasks; 49 are already live and 1430 remain. All 23 requested Japanese gallery entry links are supplied.
 
 Individual gallery pictures still need exact printing/language/edition/finish and source-use evidence. The MC response exceeded this reader’s size limit. Competitive format Unlimited is not physical-edition proof. Pokellector’s [terms](https://jp.pokellector.com/terms) require written permission for automated access; TCG Collector’s [terms](https://www.tcgcollector.com/legal/terms-of-service) restrict copying/mirroring. No gallery media was acquired or published in the bounded source check; existing verified originals and standing operational authority remain usable.
 
@@ -241,3 +243,58 @@ Individual gallery pictures still need exact printing/language/edition/finish an
 - PMCG4: https://jp.pokellector.com/Rocket-Gang-Expansion/ — JP-CARDS-055, JP-CARDS-056, JP-CARDS-057
 - PMCG5: https://jp.pokellector.com/Leaders-Stadium-Expansion/ — JP-CARDS-058, JP-CARDS-059, JP-CARDS-060, JP-CARDS-061
 - PMCG6: https://jp.pokellector.com/Challenge-from-the-Darkness-Expansion/ — JP-CARDS-062, JP-CARDS-063, JP-CARDS-064, JP-CARDS-065
+- VS1: https://jp.pokellector.com/Pokemon-VS-Expansion/ — JP-CARDS-066, JP-CARDS-067
+- web1: https://www.tcgcollector.com/sets/11168/pokemon-web — JP-CARDS-068, JP-CARDS-069
+
+## Owner-supplied additional artwork and identity leads
+
+Gallery entries are leads until each exact unchanged front, card identity and source-use evidence is checked. No task is completed by receiving a link. All four My First Battle deck links are supplied; 34 exact front/deck/border matches remain unresolved. Blue starting-card and regular fronts stay distinct.
+
+- EN-CARDS-003: https://www.tcgcollector.com/sets/1114/aquapolis — Do not substitute generic or a-suffix Aquapolis fronts.
+- EN-CARDS-004: https://www.pricecharting.com/game/pokemon-promo/tropical-tidal-wave-hgss18 — Artwork/version lead only. The intended Worlds stamp and edition remain unproven; price information is never identity evidence and no price refresh is authorised.
+- EN-CARDS-006: https://www.tcgcollector.com/sets/11588/my-first-battle-pikachu — Preserve deck-specific and regular-versus-blue starting-card distinctions. Catalogue aliases are not verified printed collector numbers. Source reuse and exact full-front checks remain unresolved.
+- EN-CARDS-006: https://www.tcgcollector.com/sets/11587/my-first-battle-bulbasaur — Preserve deck-specific and regular-versus-blue starting-card distinctions. Catalogue aliases are not verified printed collector numbers. Source reuse and exact full-front checks remain unresolved.
+- EN-CARDS-006: https://www.tcgcollector.com/sets/11589/my-first-battle-charmander — Preserve deck-specific and regular-versus-blue starting-card distinctions. Catalogue aliases are not verified printed collector numbers. Source reuse and exact full-front checks remain unresolved.
+- EN-CARDS-006: https://www.tcgcollector.com/sets/11590/my-first-battle-squirtle — Preserve deck-specific and regular-versus-blue starting-card distinctions. Catalogue aliases are not verified printed collector numbers. Source reuse and exact full-front checks remain unresolved.
+- EN-CARDS-007: https://www.tcgcollector.com/sets/11588/my-first-battle-pikachu — Preserve deck-specific and regular-versus-blue starting-card distinctions. Catalogue aliases are not verified printed collector numbers. Source reuse and exact full-front checks remain unresolved.
+- EN-CARDS-007: https://www.tcgcollector.com/sets/11587/my-first-battle-bulbasaur — Preserve deck-specific and regular-versus-blue starting-card distinctions. Catalogue aliases are not verified printed collector numbers. Source reuse and exact full-front checks remain unresolved.
+- EN-CARDS-007: https://www.tcgcollector.com/sets/11589/my-first-battle-charmander — Preserve deck-specific and regular-versus-blue starting-card distinctions. Catalogue aliases are not verified printed collector numbers. Source reuse and exact full-front checks remain unresolved.
+- EN-CARDS-007: https://www.tcgcollector.com/sets/11590/my-first-battle-squirtle — Preserve deck-specific and regular-versus-blue starting-card distinctions. Catalogue aliases are not verified printed collector numbers. Source reuse and exact full-front checks remain unresolved.
+- EN-CARDS-019: https://www.tcgcollector.com/cards/13471/fighting-energy-sm-trainer-kit-lycanroc-5-30 — Exact 5/30 Lycanroc target only; original quality and deck/number evidence remain required.
+- EN-CARDS-020: https://www.tcgcollector.com/sets/11127/sm-trainer-kit-alolan-raichu — Exact quality/deck/number/printing checks remain required
+- EN-CARDS-021: https://www.tcgcollector.com/sets/11127/sm-trainer-kit-alolan-raichu — Exact quality/deck/number/printing checks remain required
+- EN-CARDS-023: https://www.tcgcollector.com/cards/13341/bisharp-xy-trainer-kit-bisharp-30-30 — Normal saved-card versus source-holo version is unresolved.
+- EN-CARDS-029: https://www.tcgcollector.com/cards/7409/noivern-xy-trainer-kit-noivern-30-30 — Normal saved-card versus source-holo version is unresolved.
+- EN-CARDS-031: https://www.tcgcollector.com/cards/12667/pikachu-libre-xy-trainer-kit-pikachu-libre-30-30 — Exact source version remains unresolved.
+- EN-CARDS-035: https://www.tcgcollector.com/cards/7379/sylveon-xy-trainer-kit-sylveon-30-30 — Exact source version remains unresolved.
+- EN-CARDS-037: https://www.tcgcollector.com/cards/13318/wigglytuff-xy-trainer-kit-wigglytuff-30-30 — Exact source version remains unresolved.
+- JP-CHECK-001: https://jp.pokellector.com/The-Town-on-No-Map-Expansion/ — Exact catalogue alias and trusted individual printing cross-reference; Actual unchanged Japanese full front and readable printed details; Existing identity/finish blocker; Source reuse and acquisition evidence
+- JP-CHECK-002: https://www.tcgcollector.com/sets/11437/fusion-arts — Exact catalogue alias and trusted individual printing cross-reference; Actual unchanged Japanese full front and readable printed details; Existing identity/finish blocker; Source reuse and acquisition evidence
+- JP-CHECK-003: https://www.tcgcollector.com/sets/11211/tag-all-stars — Exact catalogue alias and trusted individual printing cross-reference; Actual unchanged Japanese full front and readable printed details; Existing identity/finish blocker; Source reuse and acquisition evidence
+- JP-CHECK-004: https://jp.pokellector.com/Black-Bolt-Expansion/ — Exact catalogue alias and trusted individual printing cross-reference; Actual unchanged Japanese full front and readable printed details; Existing identity/finish blocker; Source reuse and acquisition evidence
+- JP-CHECK-005: https://www.tcgcollector.com/sets/11653/white-flare — Exact catalogue alias and trusted individual printing cross-reference; Actual unchanged Japanese full front and readable printed details; Existing identity/finish blocker; Source reuse and acquisition evidence
+- JP-SHARP-001: https://jp.pokellector.com/Sun-Moon-Strengthening-Expansion-Expansion/Sylveon-GX-Card-57 — Reported 57/51 candidate is different from the fixed Sylveon target alias 064 with reported 64/51 candidate. Do not select or substitute this image.
+- JP-SHARP-001: https://jp.pokellector.com/Sun-Moon-Strengthening-Expansion-Expansion/Sylveon-GX-Card-64 — Actual unchanged Japanese full front and reported 64/51 printing; Measured sharper original dimensions and readable fine print; Edition, printing and finish match; Source reuse and automated acquisition evidence
+- JP-SHARP-001: https://jp.pokellector.com/Sun-Moon-Strengthening-Expansion-Expansion/Grass-Energy-Card-68 — Actual unchanged Japanese full front and printed identity; Measured sharper original dimensions and readable fine print; Edition, printing and finish match; Source reuse and automated acquisition evidence
+- TC-CARDS-001: https://www.tcgcollector.com/sets/11766/scarlet-and-violet-promos — Actual Traditional Chinese unchanged front; Exact trophy rank or Paradise Resort distribution/printing; Trusted canonical alias-to-printing cross-reference; Physical edition and finish; Source reuse and acquisition evidence
+
+## Supplied-link originals held for comparison
+
+- hgssp HGSS18: one unchanged 736 × 1038 front acquired from https://www.pricecharting.com/game/pokemon-promo/tropical-tidal-wave-hgss18. Quarantined; exact Worlds stamp binding and reuse evidence remain unresolved. No publication or price refresh.
+
+## Source access limits
+
+Pokellector automated image/data access requires written permission. TCG Collector production copying/reuse evidence is not established; one direct E1 request returned HTTP 403 and was not bypassed. This is not an observed access result for every supplied gallery. MC exceeded the normal reader size limit and the optional Firecrawl extractor had insufficient credits; no top-up was made.
+
+
+## Next Japanese metadata cohort
+
+JP-CARDS-005 has 22 unique body/Dex metadata candidates, aliases 051–072, with 18 normal and four holo catalogue variants retained. Three unbound Trainer aliases remain excluded. No original images were acquired or prepared for this new cohort. Current [Scrydex terms](https://scrydex.com/terms) require prior written authorisation for commercial redistribution/mirroring of the Services; independent provider/source-use evidence for this new cohort has not been established. The prior exact 25/24 decisions are not broadened. Standing owner sourcing authority remains recorded and no repeat owner batch review is requested.
+
+## Sharper originals and language checks
+
+Nine source links are registered for 35 saved targets: two sharper Japanese originals, four Traditional Chinese promos and 29 Japanese identity/finish checks. The supplied Sylveon 57/51 page is excluded for fixed 064; the separate 64/51 page is only a candidate. A Chinese-labelled promo gallery does not prove Traditional Chinese script, award rank or tournament edition. No new image or canonical correction was made for these leads.
+
+## Historical Chinese reference
+
+[Historical Taiwan/Hong Kong expansion list](https://bulbapedia.bulbagarden.net/wiki/User:Ruixiang95/List_of_Chinese_Pok%C3%A9mon_Trading_Card_Game_expansions) is a secondary user-space lead for 36 logo targets and the Chinese script boundary. Its actual tables end at Shiny Star V (2020); its international/Japanese navigation footer is excluded. Current regional primary evidence, exact logo artwork and source-use evidence remain outstanding.
