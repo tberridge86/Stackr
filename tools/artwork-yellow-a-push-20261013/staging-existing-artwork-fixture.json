@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "queue_id": "STACKR-EN-FRONTS-20261013-ALT002",
+  "environment": "staging",
+  "scope": "Temporary visibility fixture for two exact existing 320x446 variant pictures inside the serializable, always-rolled-back rehearsal only. Immutable originals, links and all final staging records remain preserved.",
+  "production_fixture_allowed": false,
+  "persistent_stage_publication": false,
+  "assets": [
+    {
+      "expected": {
+        "id": "a722e3ac-6ac2-4a29-a0f6-5f29f6ba8b5b",
+        "asset_id": "a722e3ac-6ac2-4a29-a0f6-5f29f6ba8b5b",
+        "asset_type": "card_image",
+        "game_code": "pokemon",
+        "set_id": "b9ec08c9-c68e-4bd0-9b7b-1bc84203d8f7",
+        "printing_id": "f4c6af1e-70c0-48fe-b3a1-1d04059b1051",
+        "variant_id": "ff44c94e-e574-4106-8e5f-8edd220d7698",
+        "content_sha256": "ecb6a66feec51ac0e2cc86c43bcb27eb75da6bacaf55d9a9e4480264179c009d",
+        "sha256": "ecb6a66feec51ac0e2cc86c43bcb27eb75da6bacaf55d9a9e4480264179c009d",
+        "width": 320,
+        "height": 446,
+        "byte_size": 326224,
+        "mime_type": "image/png",
+        "storage_provider": "supabase_storage",
+        "storage_bucket": "stackr-catalogue-public",
+        "storage_key": "public/card_image/ec/b6/ecb6a66feec51ac0e2cc86c43bcb27eb75da6bacaf55d9a9e4480264179c009d/original.png",
+        "publicly_servable": true,
+        "asset_visibility": "public_catalogue",
+        "permission_status": "approved",
+        "rights_status": "approved",
+        "acquisition_source": "user_licensed",
+        "source_id": null,
+        "deleted_at": null,
+        "deprecated_at": null,
+        "unavailable_reason": null,
+        "retention_status": "active"
+      },
+      "normalized_full_row_sha256": "6b5725cf914c5de89a7a459521d0c45a1a7cf4506967d1a3550595708d38006d"
+    },
+    {
+      "expected": {
+        "id": "cf754445-177a-4325-b88e-1bdc4a3ec026",
+        "asset_id": "cf754445-177a-4325-b88e-1bdc4a3ec026",
+        "asset_type": "card_image",
+        "game_code": "pokemon",
+        "set_id": "b9ec08c9-c68e-4bd0-9b7b-1bc84203d8f7",
+        "printing_id": "8a4dd5f6-ed5a-4d09-babf-85572f6eea0a",
+        "variant_id": "0b79891f-698e-4cc9-92e1-fc90f425dcbb",
+        "content_sha256": "af5ba1c785f333117c55bbcebe0f3ec9ce8a888f3f945193807b823f06484402",
+        "sha256": "af5ba1c785f333117c55bbcebe0f3ec9ce8a888f3f945193807b823f06484402",
+        "width": 320,
+        "height": 446,
+        "byte_size": 312549,
+        "mime_type": "image/png",
+        "storage_provider": "supabase_storage",
+        "storage_bucket": "stackr-catalogue-public",
+        "storage_key": "public/card_image/af/5b/af5ba1c785f333117c55bbcebe0f3ec9ce8a888f3f945193807b823f06484402/original.png",
+        "publicly_servable": true,
+        "asset_visibility": "public_catalogue",
+        "permission_status": "approved",
+        "rights_status": "approved",
+        "acquisition_source": "user_licensed",
+        "source_id": null,
+        "deleted_at": null,
+        "deprecated_at": null,
+        "unavailable_reason": null,
+        "retention_status": "active"
+      },
+      "normalized_full_row_sha256": "de201dfa5d5f6395dcad78a1702dc59cd768274847fd9551ef455e9f4ca58e62"
+    }
+  ]
+}

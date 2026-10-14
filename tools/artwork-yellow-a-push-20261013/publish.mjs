@@ -4,7 +4,7 @@ import { pathToFileURL } from 'node:url';
 import { check } from '../queue1-publish-20260927/publish.mjs';
 import { assetId, createTransferPolicy, publishFrozenCohort } from '../artwork3303-publish-20260928/publish.mjs';
 import { assertConfig as guardedConfig, createSourceResolver } from '../artwork-trainer-kit-push-20261013/publish.mjs';
-import { createMetadataGuard } from '../artwork-trainer-kit-push-20261013/metadata-guard.mjs';
+import { createMetadataGuard } from './staging-artwork-fixture.mjs';
 import { COHORT_SHA, APPROVAL_SHA, loadFrozen } from './frozen.mjs';
 export { createSourceResolver };
 

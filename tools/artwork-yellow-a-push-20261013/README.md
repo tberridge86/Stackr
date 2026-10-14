@@ -36,7 +36,7 @@ python tools/artwork-yellow-a-push-20261013/download-package.py <private-package
 node tools/artwork-yellow-a-push-20261013/verify-packages.mjs <private-packages>
 ```
 
-Passed: 27 Node tests (17 alternate tests and 10 accepted preservation tests), three Python archive tests and one offline persisted-failure journal test. The actual frozen ZIP was extracted and all eight images fully decoded with exact hashes, sizes and dimensions. The new workflow parsed and passed eight protected guard groups. All 11 reused dependency hashes match the previously accepted implementation; validation.json records the owned file hashes.
+Passed: 42 Node tests (17 alternate tests, 15 staging-fixture tests and 10 accepted preservation tests), three Python archive tests and one offline persisted-failure journal test. Five additional offline transaction checks used the exact private staging rows and proved full rollback. The actual frozen ZIP was extracted and all eight images fully decoded with exact hashes, sizes and dimensions. The new workflow parsed and passed eight protected guard groups. All 11 reused dependency hashes match the previously accepted implementation; validation.json records the owned file hashes.
 
 The offline freeze helper accepts only the pinned source manifest and inspected handoff. It compares their actual observations with the exact saved identities and private current binding snapshots. It writes only this tool folder’s frozen plan, identity table, approval, read-only evidence query and hash constants. Raw before images and private source paths stay outside public artifacts.
 
@@ -49,3 +49,11 @@ The reused publisher checks every current printing, name, set, normal variant, c
 A successful publisher verifies the returned asset manifest and served bytes before preparing a rollback receipt. Rollback can hide only the exact new artwork rows after checking their printing, immutable asset ID, original hash and frozen cohort. Immutable objects, old assets, links, source policies, ownership and prices remain preserved. The rollback SQL is prepared evidence, not an automatic operation.
 
 No live database or storage writes, workflow dispatches or Git operations were performed during this implementation. Publication remains pending release-owner integration and independent review.
+
+## Retry after the staging rehearsal guard
+
+Run 38483359973 failed before any upload or publication because staging already contains two older 320×446 variant pictures. Independent reads confirmed all 11 production and 13 staging rows, current bindings and source policies stayed exactly unchanged. The source originals, frozen cohort, owner decision and image package remain identical.
+
+The retry adds a Yellow-A-only staging fixture. Within the existing serializable, always-rolled-back rehearsal, it verifies the complete fingerprints of those two known staged assets and temporarily hides only their public visibility. A fresh full database snapshot permits only these two flag changes and trigger timestamps; every other existing row and field must remain unchanged. The standard preservation guard then checks the new rehearsal assets and links. Its receipt records the temporary fixture explicitly, and rollback restores all original staging rows. The production guard uses the original path and applies no visibility fixture or replacement exception.
+
+Fixture bytes: d04e674be1d85787e3e7ca36b944e48a531c3ba4e9b660c7b46e2d2015158ab0. The new tests reject missing, extra, changed-hash, wrong-variant and wrong-dimension assets, unrelated field changes, wrong environments and production fixture use. Offline checks also reject wrong transaction isolation and partial updates while proving rollback restores the complete retained baseline. No dependency or workflow changes were needed.
