@@ -1,6 +1,6 @@
 # Stackr artwork production handoff
 
-Updated 2026-10-14T17:25:36.260Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
+Updated 2026-10-14T17:47:11.928Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
 
 1134 tasks / 57 batches complete; 1810 tasks / 104 batches remain.
 432 sourced originals and 1296 display versions checked: 432 originals live, 0 prepared and queued.
@@ -90,71 +90,71 @@ No native/OTA/backend/gateway delivery or installed-phone acceptance is claimed 
 | EN-CARDS-036 | 25/25 | Live and verified | Complete; delivery evidence saved |
 | EN-CARDS-037 | 3/4 | 3 of 4 live and checked | 1 exact source version match remains unresolved |
 | EN-CARDS-038 | 2/2 | Live and verified | Complete; delivery evidence saved |
-| JP-CARDS-001 | 0/5 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-002 | 0/8 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
+| JP-CARDS-001 | 0/5 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-002 | 0/8 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
 | JP-CARDS-003 | 25/25 | Live and verified | Complete; delivery evidence saved |
-| JP-CARDS-004 | 0/25 | 24 originals checked; 1 exact source matches unresolved | 24 originals need display preparation, current binding checks, publication and live verification; 1 source identity holds: preserve current catalogue until exact native-body evidence resolves them |
-| JP-CARDS-005 | 0/25 | 3 exact source matches unresolved; 22 original images still need gathering | 3 source identity holds: preserve current catalogue until exact native-body evidence resolves them; 22 metadata candidates still need actual original acquisition and pixel verification |
-| JP-CARDS-006 | 0/21 | Exact source identity remains unresolved | 21 source identity holds: preserve current catalogue until exact native-body evidence resolves them |
-| JP-CARDS-007 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-008 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-009 | 0/7 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-010 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-011 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-012 | 0/7 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-013 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-014 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-015 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-016 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-017 | 0/13 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-018 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-019 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-020 | 0/21 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-021 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-022 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-023 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-024 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-025 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-026 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-027 | 0/5 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-028 | 0/3 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-029 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-030 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-031 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-032 | 0/11 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-033 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-034 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-035 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-036 | 0/11 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-037 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-038 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-039 | 0/2 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-040 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-041 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-042 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-043 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-044 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-045 | 0/18 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-046 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-047 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-048 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-049 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-050 | 0/2 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-051 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-052 | 0/23 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-053 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-054 | 0/23 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-055 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-056 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-057 | 0/15 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-058 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-059 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-060 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-061 | 0/21 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-062 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-063 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-064 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-065 | 0/23 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
+| JP-CARDS-004 | 0/25 | 24 originals checked; 1 exact source matches unresolved | 24 originals need display preparation, current binding checks, publication and live verification; 1 source identity holds: preserve current catalogue until exact native-body evidence resolves them; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-005 | 0/25 | 3 exact source matches unresolved; 22 original images still need gathering | 3 source identity holds: preserve current catalogue until exact native-body evidence resolves them; 22 metadata candidates still need actual original acquisition and pixel verification; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-006 | 0/21 | Exact source identity remains unresolved | 21 source identity holds: preserve current catalogue until exact native-body evidence resolves them; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-007 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-008 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-009 | 0/7 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-010 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-011 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-012 | 0/7 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-013 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-014 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-015 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-016 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-017 | 0/13 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-018 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-019 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-020 | 0/21 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-021 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-022 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-023 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-024 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-025 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-026 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-027 | 0/5 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-028 | 0/3 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-029 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-030 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-031 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-032 | 0/11 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-033 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-034 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-035 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-036 | 0/11 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-037 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-038 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-039 | 0/2 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-040 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-041 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-042 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-043 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-044 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-045 | 0/18 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-046 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-047 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-048 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-049 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-050 | 0/2 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-051 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-052 | 0/23 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-053 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-054 | 0/23 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-055 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-056 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-057 | 0/15 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-058 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-059 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-060 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-061 | 0/21 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-062 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-063 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-064 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-065 | 0/23 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
 | JP-CARDS-066 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
 | JP-CARDS-067 | 0/21 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
 | JP-CARDS-068 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
@@ -213,3 +213,31 @@ No native/OTA/backend/gateway delivery or installed-phone acceptance is claimed 
 | TC-LOGOS-002 | 0/10 | Current source metadata reviewed; exact logo needed | No exact approved local logo or current provider logo pointer for these Traditional Chinese sets |
 | TC-LOGOS-003 | 0/10 | Current source metadata reviewed; exact logo needed | No exact approved local logo or current provider logo pointer for these Traditional Chinese sets |
 | TC-LOGOS-004 | 0/6 | Current source metadata reviewed; exact logo needed | No exact approved local logo or current provider logo pointer for these Traditional Chinese sets |
+
+## Owner-supplied Japanese gallery leads
+
+21 supplied sets cover 1389 fixed tasks; 25 are already live and 1364 remain. VS1 and web1 gallery links were not supplied.
+
+Individual gallery pictures still need exact printing/language/edition/finish and source-use evidence. The MC response exceeded this reader’s size limit. Competitive format Unlimited is not physical-edition proof. Pokellector’s [terms](https://jp.pokellector.com/terms) require written permission for automated access; TCG Collector’s [terms](https://www.tcgcollector.com/legal/terms-of-service) restrict copying/mirroring. No gallery media was acquired or published in the bounded source check; existing verified originals and standing operational authority remain usable.
+
+- E1: https://www.tcgcollector.com/sets/11205/base-expansion-pack — JP-CARDS-001
+- MC: https://www.tcgcollector.com/sets/11679/start-deck-100-battle-collection — JP-CARDS-002
+- neo1: https://jp.pokellector.com/Gold-Silver-to-a-New-World-Expansion/ — JP-CARDS-003, JP-CARDS-004, JP-CARDS-005, JP-CARDS-006
+- neo2: https://jp.pokellector.com/Crossing-the-Ruins-Expansion/ — JP-CARDS-007, JP-CARDS-008, JP-CARDS-009
+- neo3: https://www.tcgcollector.com/sets/11173/awakening-legends — JP-CARDS-010, JP-CARDS-011, JP-CARDS-012
+- neo4: https://www.tcgcollector.com/sets/11252/darkness-and-to-light — JP-CARDS-013, JP-CARDS-014, JP-CARDS-015, JP-CARDS-016, JP-CARDS-017
+- PCG1: https://www.tcgcollector.com/sets/11225/flight-of-legends — JP-CARDS-018, JP-CARDS-019, JP-CARDS-020
+- PCG2: https://www.tcgcollector.com/sets/11181/clash-of-the-blue-sky — JP-CARDS-021, JP-CARDS-022, JP-CARDS-023
+- PCG3: https://www.tcgcollector.com/sets/11179/team-rocket-strikes-back — JP-CARDS-024, JP-CARDS-025, JP-CARDS-026, JP-CARDS-027
+- PCG4: https://www.tcgcollector.com/sets/11193/golden-sky-silvery-ocean — JP-CARDS-028
+- PCG5: https://www.tcgcollector.com/sets/11254/mirage-forest — JP-CARDS-029, JP-CARDS-030, JP-CARDS-031, JP-CARDS-032
+- PCG6: https://www.tcgcollector.com/sets/11186/holon-research-tower — JP-CARDS-033, JP-CARDS-034, JP-CARDS-035, JP-CARDS-036
+- PCG7: https://www.tcgcollector.com/sets/11299/holon-phantom — JP-CARDS-037, JP-CARDS-038, JP-CARDS-039
+- PCG8: https://www.tcgcollector.com/sets/11278/miracle-crystal — JP-CARDS-040, JP-CARDS-041, JP-CARDS-042
+- PCG9: https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends — JP-CARDS-043, JP-CARDS-044, JP-CARDS-045
+- PMCG1: https://jp.pokellector.com/Expansion-Pack-Expansion/ — JP-CARDS-046, JP-CARDS-047, JP-CARDS-048, JP-CARDS-049, JP-CARDS-050
+- PMCG2: https://jp.pokellector.com/Pokemon-Jungle-Expansion/ — JP-CARDS-051, JP-CARDS-052
+- PMCG3: https://jp.pokellector.com/Mystery-of-the-Fossils-Expansion/ — JP-CARDS-053, JP-CARDS-054
+- PMCG4: https://jp.pokellector.com/Rocket-Gang-Expansion/ — JP-CARDS-055, JP-CARDS-056, JP-CARDS-057
+- PMCG5: https://jp.pokellector.com/Leaders-Stadium-Expansion/ — JP-CARDS-058, JP-CARDS-059, JP-CARDS-060, JP-CARDS-061
+- PMCG6: https://jp.pokellector.com/Challenge-from-the-Darkness-Expansion/ — JP-CARDS-062, JP-CARDS-063, JP-CARDS-064, JP-CARDS-065
