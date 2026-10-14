@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "source_manifest_file": "neo-card-fronts25-source-manifest.json",
+  "source_manifest_sha256": "e7fe9b524d77b35c40dff09cd07eeeec12da07f14305d97553341da4cae8444f",
+  "package_receipt_file": "neo-card-fronts25-package-receipt.json",
+  "package_receipt_sha256": "3f34647b7ba9c1bf0992f4348b8def9721e3d55c01cbdbb5a772d9ba79d1a274",
+  "binding_prefix": "neo25",
+  "fronts": 25,
+  "saved_targets_sha256": "9d52f911d8f31d1ed395029c10df8f84bffa1fc6728daf327b18a41de8d73bc3",
+  "archive": {
+    "id": 639568745,
+    "sha256": "ee849164f5f744038105d95c3fbbfc9774068b2488e5f4678398a383bf5da5e9",
+    "byte_size": 21448691,
+    "file_count": 104
+  },
+  "metadata": [
+    {
+      "file": "manifest.json",
+      "sha256": "e7fe9b524d77b35c40dff09cd07eeeec12da07f14305d97553341da4cae8444f",
+      "byte_size": 115850
+    },
+    {
+      "file": "receipts/preparation-summary.json",
+      "sha256": "0ed2c2c861209a611f34fdf59fedf39c57c75dc0b251b979c3556cd0b105d5ea",
+      "byte_size": 1225
+    },
+    {
+      "file": "receipts/current-card-bindings.json",
+      "sha256": "8365d584c0a8aa0679cc51cf1463dfea888affd2011827046ddeb02e56c2b7f1",
+      "byte_size": 26318
+    },
+    {
+      "file": "receipts/finite-decision.json",
+      "sha256": "8bc435e06236c869950a70bd3cb07cb3475f0c01bfa3833bd1f602caa642babb",
+      "byte_size": 407
+    }
+  ]
+}

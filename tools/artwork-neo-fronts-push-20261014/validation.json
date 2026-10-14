@@ -1,0 +1,276 @@
+{
+  "schemaVersion": 1,
+  "at": "2026-10-14T17:07:14.206Z",
+  "status": "offline_validated_not_published",
+  "queue_id": "STACKR-JP-NEO1-20261014-025",
+  "fronts": 25,
+  "derivative_references": 75,
+  "object_references": 100,
+  "unique_image_members": 100,
+  "known_native_label_defects_preserved": 19,
+  "current_metadata_finishes": {
+    "normal": 20,
+    "holo": 5
+  },
+  "canonical_alias_is_not_printed_national_dex": true,
+  "copyright_date_line_visible": false,
+  "copyright_year_inferred": false,
+  "cohort_sha256": "5501a15103bd50e314ca3a1e3ec17401296975527241eec1ae95122eeba722df",
+  "approval_sha256": "78f675feaf750d88d54bdc268992242e137f99b573132935f3c4cb590a778fd4",
+  "identity_table_sha256": "d8738121ecf5e422a642274d3ed6a01288f646e3b983075e1d9e68d2a9d523b1",
+  "saved_targets_sha256": "9d52f911d8f31d1ed395029c10df8f84bffa1fc6728daf327b18a41de8d73bc3",
+  "source_manifest_sha256": "e7fe9b524d77b35c40dff09cd07eeeec12da07f14305d97553341da4cae8444f",
+  "archive": {
+    "id": 639568745,
+    "sha256": "ee849164f5f744038105d95c3fbbfc9774068b2488e5f4678398a383bf5da5e9",
+    "byte_size": 21448691,
+    "file_count": 104,
+    "exact_members": 104,
+    "unique_image_members": 100,
+    "metadata_files": 4,
+    "provider_requests": 0
+  },
+  "scope_before_counts": {
+    "production": {
+      "printings": 25,
+      "variants": 25,
+      "names": 50,
+      "sets": 1,
+      "assets": 2,
+      "links": 2
+    },
+    "staging": {
+      "printings": 25,
+      "variants": 25,
+      "names": 50,
+      "sets": 1,
+      "assets": 2,
+      "links": 0
+    }
+  },
+  "checks": [
+    {
+      "command": "node --test tools/artwork-neo-fronts-push-20261014/publish.test.mjs tools/artwork-trainer-kit-push-20261013/publish.test.mjs",
+      "passed": 26,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "node --test tools/artwork-neo-fronts-push-20261014/publish.test.mjs tools/artwork3303-publish-20260928/publish.test.mjs tools/artwork3303-publish-20260928/native-name-corrections.test.mjs",
+      "passed": 72,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "node --test tools/artwork-neo-fronts-push-20261014/publish.test.mjs",
+      "passed": 16,
+      "failed": 0,
+      "exit_code": 0,
+      "note": "Final set-symbol/link mutation fixture reverified"
+    },
+    {
+      "command": "python tools/artwork-neo-fronts-push-20261014/download-package.test.py",
+      "passed": 4,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "node --test tools/artwork3303-publish-20260928/journal.integration.test.mjs",
+      "passed": 1,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "python tools/artwork-neo-fronts-push-20261014/download-package.py <local-packages> --archive <frozen-local-zip>",
+      "status": "verified_and_extracted",
+      "exact_members": 104,
+      "exit_code": 0
+    },
+    {
+      "command": "node tools/artwork-neo-fronts-push-20261014/verify-packages.mjs <local-packages>",
+      "status": "all_frozen_files_fully_decoded",
+      "fronts": 25,
+      "object_references": 100,
+      "exit_code": 0
+    },
+    {
+      "command": "existing yaml parser and strict workflow guards",
+      "status": "parsed_protected_guards_passed"
+    },
+    {
+      "command": "node scripts/deploy/secret-scan.mjs --directory=tools/artwork-neo-fronts-push-20261014",
+      "status": "passed",
+      "exit_code": 0
+    }
+  ],
+  "workflow": {
+    "file": ".github/workflows/artwork-neo-fronts-production.yml",
+    "sha256": "361ec14a215d0b0e0613e0aedfa72ca12421ea722e00bdc62c834086e6ac24ce",
+    "job": "artwork_neo_fronts",
+    "production_environment": true,
+    "manual_exact_main": true,
+    "shared_production_concurrency": true,
+    "token_contents_permission": "read",
+    "hosted_private_output_unset": true,
+    "secret_scan_required_before_upload": true
+  },
+  "implementation_hash_count": 16,
+  "total_owned_tool_files_including_validation": 17,
+  "file_hashes": [
+    {
+      "file": ".gitattributes",
+      "bytes": 54,
+      "sha256": "fb17a974f934f241f38ca5109abdd924cdbf3c0820ac9fb9966603b8f1f26ffd"
+    },
+    {
+      "file": ".gitignore",
+      "bytes": 19,
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793"
+    },
+    {
+      "file": "README.md",
+      "bytes": 5884,
+      "sha256": "1f253d6a22d6c32e17f1346ab07c22b4f6b4b194f85e49d51420042abb99f755"
+    },
+    {
+      "file": "approval.json",
+      "bytes": 1388,
+      "sha256": "78f675feaf750d88d54bdc268992242e137f99b573132935f3c4cb590a778fd4"
+    },
+    {
+      "file": "before-query.sql",
+      "bytes": 11927,
+      "sha256": "34069b36ba232a7f4ca2922f62ac7149d36e34a086500175863eba33f55c45b1"
+    },
+    {
+      "file": "download-package.py",
+      "bytes": 5965,
+      "sha256": "1d55f5bb95bb16f919abc15ef4e91054146754855040912d6a1ae0c723fae3db"
+    },
+    {
+      "file": "download-package.test.py",
+      "bytes": 4495,
+      "sha256": "3d8de316c4b9a907bb2e4e26f893cbcc1de8aa00299d7ff296b09c763f600313"
+    },
+    {
+      "file": "freeze-inputs.json",
+      "bytes": 1352,
+      "sha256": "33fb649e8886f173e7d4d85134c82e82db4672010fc09d2fb6f919d523a5539c"
+    },
+    {
+      "file": "freeze-local.mjs",
+      "bytes": 9918,
+      "sha256": "c8df23cd8d149b2a38d6f899445fb04264dc716180c9bb9a33a89a574092dee3"
+    },
+    {
+      "file": "frozen.mjs",
+      "bytes": 22212,
+      "sha256": "3bbf9b8b7a49dc17955223535c4b2e8292a1f8496dff88bd51dce3db2ad52b03"
+    },
+    {
+      "file": "identity-table.json",
+      "bytes": 21746,
+      "sha256": "d8738121ecf5e422a642274d3ed6a01288f646e3b983075e1d9e68d2a9d523b1"
+    },
+    {
+      "file": "plan.json",
+      "bytes": 164331,
+      "sha256": "5501a15103bd50e314ca3a1e3ec17401296975527241eec1ae95122eeba722df"
+    },
+    {
+      "file": "publish.mjs",
+      "bytes": 4833,
+      "sha256": "f0b09b29e4533eeb57dad4a79c1303c77810b5894de913238b677fc9542a270f"
+    },
+    {
+      "file": "publish.test.mjs",
+      "bytes": 19873,
+      "sha256": "74bba6e43705c8479f28bccf3207b2f23089b51a314f69c3f47ea938f5d3745f"
+    },
+    {
+      "file": "saved-targets.json",
+      "bytes": 10406,
+      "sha256": "9d52f911d8f31d1ed395029c10df8f84bffa1fc6728daf327b18a41de8d73bc3"
+    },
+    {
+      "file": "verify-packages.mjs",
+      "bytes": 1495,
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841"
+    }
+  ],
+  "reused_dependency_hashes": [
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 9031,
+      "sha256": "5524305ba4bd6a0f3867ea2c097c57fb0d610e27ef1d9d64529b64e9c67249de"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/metadata-guard.mjs",
+      "bytes": 4018,
+      "sha256": "cca5354822fe11c007308f7d22ebf84649d2374619e0dd049c7347a9db9e116f"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/publish.mjs",
+      "bytes": 5885,
+      "sha256": "8451746bb6e188f56c5be31064742eaeecdc2f2c6d6e27cb31ab5c7227af6d1f"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "tools/artwork-next-push-20261013/frozen.mjs",
+      "bytes": 7732,
+      "sha256": "3e14eb76a012116492075328c50e6c5907f712004da02d4d3dae541d2617a95b"
+    },
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 30117,
+      "sha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24425,
+      "sha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 15024,
+      "sha256": "1d168e5407a5bdc6e027f58991de58a0664576d7c917d5b219fa13f9af4a1d0a"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/download-package.py",
+      "bytes": 5489,
+      "sha256": "53f1114f25bd995b4f05d9b2d3adad7ae2dadc85b4b13f038a84bcc5e7d6b09f"
+    }
+  ],
+  "unchanged_dependencies": 11,
+  "database_requests": 0,
+  "provider_requests": 0,
+  "storage_writes": 0,
+  "production_source_insertions": 0,
+  "staging_source_fixture_rollback_only": true,
+  "staging_artwork_visibility_fixture": false,
+  "metadata_changes": 0,
+  "pricing_changes": 0,
+  "ownership_changes": 0,
+  "physical_finish_certified": false,
+  "physical_edition_certified": false,
+  "independent_vendor_licence_verified": false,
+  "source_wide_approval": false,
+  "published": false,
+  "independent_review": "pending_coordinator",
+  "raw_private_snapshots_included": false,
+  "private_paths_in_public_plan": false
+}
