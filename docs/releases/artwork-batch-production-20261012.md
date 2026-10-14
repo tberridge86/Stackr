@@ -1,13 +1,13 @@
 # Stackr artwork production handoff
 
-Updated 2026-10-14T20:52:45.183Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
+Updated 2026-10-14T21:09:43.146Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
 
-1246 tasks / 58 batches complete; 1698 tasks / 103 batches remain.
-544 sourced originals and 1632 display versions checked: 544 originals live, 0 prepared and queued.
+1254 tasks / 58 batches complete; 1690 tasks / 103 batches remain.
+552 sourced originals and 1656 display versions checked: 552 originals live, 0 prepared and queued.
 
 Owner standing approval covers exact artwork sourcing, publication and verification without another owner batch review. Independently verified vendor licence and physical edition/finish facts are not invented. Keep previous immutable objects and receipt-bound rollback.
 The owner confirms supplied-link artwork permission for www.tcgcollector.com, jp.pokellector.com, www.pricecharting.com, bulbapedia.bulbagarden.net. This is owner-attested permission (receipt SHA 7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d); independently verified vendor licence and source-wide policy activation remain false. Exact identity, readable unchanged originals and actual production verification remain required.
-All supplied links cover 1572 fixed card tasks: 137 currently live and checked, 1435 open, plus 36 of 36 historical-logo research tasks still open. The frozen link scope began with 49 live cards and 1523 open cards; current counts come from the release inventory.
+All supplied links cover 1572 fixed card tasks: 145 currently live and checked, 1427 open, plus 36 of 36 historical-logo research tasks still open. The frozen link scope began with 49 live cards and 1523 open cards; current counts come from the release inventory.
 Crossing the Ruins51: 51 prepared cohort records in the current queue, 51 live and checked, 0 awaiting actual production/API verification. Queue inclusion is not completion.
 My First Battle15: 15 prepared cohort records in the current queue, 15 live and checked, 0 awaiting actual production/API verification. Queue inclusion is not completion.
 
@@ -31,6 +31,7 @@ My First Battle15: 15 prepared cohort records in the current queue, 15 live and 
 - Sourced 22, run 38627356808, JP-CARDS-005: all 22 card responses with preserved variant identities / all 88 decoded/hash/dimension-matched files independently verified. Receipt SHA 39c0a24de5417acb787f9111a0e553d743f7a291261e95e79d0dca841c716bbd. Rollback prepared, not executed.
 - Sourced 15, run 38634695225, EN-CARDS-006, EN-CARDS-007: all 15 card responses with preserved variant identities / all 60 decoded/hash/dimension-matched files independently verified. Receipt SHA 834617dfe19c3fc9c772ce4c17bea2709e64ca7dccaa92cf4654e05acad92dd1. Rollback prepared, not executed.
 - Sourced 51, run 38633787952, JP-CARDS-007, JP-CARDS-008, JP-CARDS-009: all 51 card responses with preserved variant identities / all 204 decoded/hash/dimension-matched files independently verified. Receipt SHA e741965318ace50ef4a1d11e3a11f2cad899cb604911a3498131cebe00307db1. Rollback prepared, not executed.
+- Sourced 8, run 38637066091, EN-CARDS-006, EN-CARDS-007: all 8 card responses with preserved variant identities / all 32 decoded/hash/dimension-matched files independently verified. Receipt SHA a01530cce2d69614502539e4bc370ae8ead99cc4fe13856e8725a28ed7727025. Rollback prepared, not executed.
 
 ## Prepared work
 
@@ -52,10 +53,11 @@ My First Battle15: 15 prepared cohort records in the current queue, 15 live and 
 - Frozen package asset 641545169, 6625009 bytes, SHA f85adabfe543a301d0204f1d6e7aace914c0cc7127e4164fa396f5f0c33f1c5e. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset 641543488, 27170559 bytes, SHA 2bbfdde7b2cb5c7619bf272b24ec6cc3b90af1c4d24abb6cd405c98c18adc492. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset 641581207, 6626688 bytes, SHA b73668b35e12b8687aaeaf9e30e7102215df2bdaef74b3934b2fffa9789e69e9. Individual delivery state controls completion; an archive alone does not.
+- Frozen package asset 641631537, 4279822 bytes, SHA f5146e5d8d7f1c1213c3a0d411a6df2c80f4700a8769ff120b637dd0936bc27a. Individual delivery state controls completion; an archive alone does not.
 
 ## Explicit remaining holds
 
-25 exact source identities remain unresolved; 8 gathered originals still need preparation and production delivery; 14 exact originals still need larger, readable pictures; 5 source version matches remain unresolved; 0 pictures need another exact card-text comparison. These are unfinished tasks and are excluded from publication.
+25 exact source identities remain unresolved; 0 gathered originals still need preparation and production delivery; 14 exact originals still need larger, readable pictures; 5 source version matches remain unresolved; 0 pictures need another exact card-text comparison. These are unfinished tasks and are excluded from publication.
 TCG Collector supplied 14 unchanged Energy originals at 255 × 361, 320 × 447, compared with the earlier 253 × 359 originals. 14 remain held for larger, readable detail artwork. Owner-attested permission is recorded; quality remains the delivery blocker.
 
 224 old Simplified Chinese cases have Traditional Chinese counterparts but still need an evidenced identity repair. No silent retagging. The fixed list also retains256language/card/version checks,36Traditional Chinese logos and2sharper Japanese originals. Flat reference fronts do not certify physical material/finish.
@@ -71,8 +73,8 @@ No native/OTA/backend/gateway delivery or installed-phone acceptance is claimed 
 | EN-CARDS-003 | 0/4 | Reviewed; exact Aquapolis b versions still needed | Unlettered Aquapolis source pages do not prove the separate b versions |
 | EN-CARDS-004 | 0/1 | Reviewed; Worlds stamp and card version unresolved | Confirm the intended HGSS18 Worlds stamp/version; previous generic card-back source was rejected |
 | EN-CARDS-005 | 8/8 | Live and verified | Complete; delivery evidence saved |
-| EN-CARDS-006 | 13/25 | 13 of 25 live and checked | Regular and blue starting-card/Energy fronts need an exact catalogue binding.; Exeggutor actual HP120 conflicts with retained independent metadata HP90; exact body binding remains unresolved. |
-| EN-CARDS-007 | 2/9 | 2 of 9 live and checked | Regular and blue starting-card/Energy fronts need an exact catalogue binding.; Exact Trainer deck artwork binding is unresolved. |
+| EN-CARDS-006 | 17/25 | 17 of 25 live and checked | Regular and starting-card/Energy alternatives share published body metadata; the catalogue UUID has no regular/starting frame discriminator.; Exeggutor actual HP120 conflicts with both retained metadata HP90; the article only uses120 for body weight and records no errata. Exact printing/body evidence remains unresolved. |
+| EN-CARDS-007 | 6/9 | 6 of 9 live and checked | Regular and starting-card/Energy alternatives share published body metadata; the catalogue UUID has no regular/starting frame discriminator.; Four Trainer deck artworks share the recorded artist and body; the catalogue has no exact deck/art discriminator. |
 | EN-CARDS-008 | 1/1 | Live and verified | Complete; delivery evidence saved |
 | EN-CARDS-009 | 25/25 | Live and verified | Complete; delivery evidence saved |
 | EN-CARDS-010 | 2/2 | Live and verified | Complete; delivery evidence saved |
@@ -113,8 +115,8 @@ No native/OTA/backend/gateway delivery or installed-phone acceptance is claimed 
 | JP-CARDS-007 | 25/25 | Live and verified | Complete; delivery evidence saved |
 | JP-CARDS-008 | 24/25 | 24 of 25 live and checked | Both retained Scrydex and supplied Pokellector originals show English Eevee 38/75; the target needs the Japanese standard front. |
 | JP-CARDS-009 | 2/7 | 2 of 7 live and checked | Canonical Trainer body/artwork bridge absent; complete source front/rules retained provisionally and not packaged.; Two canonical wall artwork variants but only one observed Scrydex image pointer. TCGdex provides no art/artist/body/image metadata for either; provider ID/order/name cannot select the Kabuto or Aerodactyl front. |
-| JP-CARDS-010 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
-| JP-CARDS-011 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-010 | 0/25 | Current source metadata reviewed; exact picture needed | Observed originals need completed capture, individual actual-pixel review, exact body/form/variant binding and delivery.; Aliases011,024,048 have source-body disagreements requiring actual-front comparison.; Shining aliases022/023 remain excluded: current normal variants versus holofoil source metadata. |
+| JP-CARDS-011 | 0/25 | Current source metadata reviewed; exact picture needed | Observed originals need completed capture, individual actual-pixel review, exact body/form/variant binding and delivery.; Aliases011,024,048 have source-body disagreements requiring actual-front comparison. |
 | JP-CARDS-012 | 0/7 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
 | JP-CARDS-013 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
 | JP-CARDS-014 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
@@ -260,7 +262,7 @@ Individual gallery pictures still require exact printing/language/edition/finish
 
 ## Owner-supplied additional artwork and identity leads
 
-Gallery entries remain leads until exact unchanged fronts and card identity are checked. Owner-attested supplied-site permission is recorded above; independent vendor licence facts remain explicit. No task is completed by receiving a link. All four My First Battle deck links are supplied for 34 fixed EN-CARDS-006/007 tasks: 15 live and checked, 19 open, including 0 prepared fronts awaiting actual production/API verification. 8 further verified originals await preparation/delivery; 11 other open tasks still need exact front/deck/border binding. Catalogue aliases remain internal; regular and blue starting-card fronts stay distinct.
+Gallery entries remain leads until exact unchanged fronts and card identity are checked. Owner-attested supplied-site permission is recorded above; independent vendor licence facts remain explicit. No task is completed by receiving a link. All four My First Battle deck links are supplied for 34 fixed EN-CARDS-006/007 tasks: 23 live and checked, 11 open, including 0 prepared fronts awaiting actual production/API verification. 0 further verified originals await preparation/delivery; 11 other open tasks still need exact front/deck/border binding. Catalogue aliases remain internal; regular and blue starting-card fronts stay distinct.
 
 - EN-CARDS-003: https://www.tcgcollector.com/sets/1114/aquapolis — Do not substitute generic or a-suffix Aquapolis fronts. Owner-attested supplied-link artwork permission is recorded; independent vendor licence remains unverified.
 - EN-CARDS-004: https://www.pricecharting.com/game/pokemon-promo/tropical-tidal-wave-hgss18 — Artwork/version lead only. The intended Worlds stamp and edition remain unproven; price information is never identity evidence and no price refresh is authorised. Owner-attested supplied-link artwork permission is recorded; independent vendor licence remains unverified.
