@@ -1,0 +1,107 @@
+[
+  {
+    "printing_id": "05ec5ae6-bfb8-41b1-a65b-acb7ce4c3585",
+    "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+    "set_code": "neo3",
+    "language_code": "ja",
+    "collector_number": "055",
+    "card_native_name": "バルーンベリー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "fc02d833-0de4-4a4d-be84-fe71a9bd0582"
+    ],
+    "batch_id": "JP-CARDS-012",
+    "source_code": "scrydex",
+    "provider_id": "neo3_ja-55",
+    "image_url": "https://images.scrydex.com/pokemon/neo3_ja-55/large",
+    "original_sha256": "f350108c698a80ae0fc2aaf67d694672a4de04bd016a3a098ab6ca65e6dbbfcf",
+    "original_width": 570,
+    "original_height": 792,
+    "body_sha256": "812834ca4fddabfd0ffd01a0c5cbc0aab362342051f05166aa0cc4ae8a7d79fc",
+    "evidence_sha256": "3044c81e06f63d071028603f8ed61de94a45bec60e4c93c6fdcffcb7d0e31a2b"
+  },
+  {
+    "printing_id": "56fc9f48-441c-40da-b1a7-29fdbd5300c4",
+    "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+    "set_code": "neo3",
+    "language_code": "ja",
+    "collector_number": "057",
+    "card_native_name": "ロケットの隠れ家",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "767914af-5fcc-4e7c-9304-de89589eb56f"
+    ],
+    "batch_id": "JP-CARDS-012",
+    "source_code": "scrydex",
+    "provider_id": "neo3_ja-57",
+    "image_url": "https://images.scrydex.com/pokemon/neo3_ja-57/large",
+    "original_sha256": "bcabdcf132f2d8fd1f855b4f4bb1c2e52be53f28225ae0e19f0f9310757143be",
+    "original_width": 564,
+    "original_height": 800,
+    "body_sha256": "508a2a240195afc48da173a86e64da80d32ac27ccd7e64ef8da5267f115538c0",
+    "evidence_sha256": "3558080722c6f366daba8df06278d2fdf69da4ec5f3029fe79fc8ce951d4f77c"
+  },
+  {
+    "printing_id": "6196aadb-f7bc-4449-8fd3-254987e292f8",
+    "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+    "set_code": "neo3",
+    "language_code": "ja",
+    "collector_number": "056",
+    "card_native_name": "ポケモンブリーダーフィールド",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "7d0611e3-9b65-4539-8803-c7a9876f6e68"
+    ],
+    "batch_id": "JP-CARDS-012",
+    "source_code": "scrydex",
+    "provider_id": "neo3_ja-56",
+    "image_url": "https://images.scrydex.com/pokemon/neo3_ja-56/large",
+    "original_sha256": "30f797b81043589bffd3e9c7af4ead32f97b6980d38868c90b4d0ef09207005c",
+    "original_width": 569,
+    "original_height": 800,
+    "body_sha256": "cb0344fe577068e70c62dc0c0761e929f975ddf4389311ef8ac6870da1bf493f",
+    "evidence_sha256": "23e09ccf549ee7a120a133ff74932e70c316fe4140f908932268f01ce2f8a062"
+  },
+  {
+    "printing_id": "ecd63564-d5d4-402d-b28d-95011e2a9107",
+    "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+    "set_code": "neo3",
+    "language_code": "ja",
+    "collector_number": "053",
+    "card_native_name": "古い棒",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "40806ca5-1d4c-4bf6-b499-cee8ff167f94"
+    ],
+    "batch_id": "JP-CARDS-012",
+    "source_code": "scrydex",
+    "provider_id": "neo3_ja-53",
+    "image_url": "https://images.scrydex.com/pokemon/neo3_ja-53/large",
+    "original_sha256": "8122a558912c72cef5c4b7b14591becae892a78f776ce530748b032909ce3f99",
+    "original_width": 570,
+    "original_height": 797,
+    "body_sha256": "489a1a52e410f44171d7fd623bbbabb9ed51992c12d6e6198feb2faca78ef650",
+    "evidence_sha256": "3aee7cc150df478f4bc7930bc4dc4f8392a0809346da771a63d968dc422d75a4"
+  },
+  {
+    "printing_id": "f03f92e7-086a-4ec9-8281-e3c88906d13d",
+    "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+    "set_code": "neo3",
+    "language_code": "ja",
+    "collector_number": "054",
+    "card_native_name": "ヒーリングフィールド",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "eaa7573e-3860-440e-be69-cb414e6bbda5"
+    ],
+    "batch_id": "JP-CARDS-012",
+    "source_code": "scrydex",
+    "provider_id": "neo3_ja-54",
+    "image_url": "https://images.scrydex.com/pokemon/neo3_ja-54/large",
+    "original_sha256": "3b1abb921c0e67ef8aa7de076859d1b920caa22ce4e9d962bc2639965e7af7ed",
+    "original_width": 565,
+    "original_height": 800,
+    "body_sha256": "f4d407fad5146b9f93ea2cc764e84050c72a108d826f14f552a1e3d533de2623",
+    "evidence_sha256": "2d92f3a6ad3723bf52a9c61a47e30d75d9667986fb01a3e5b5d54e30f1320f2c"
+  }
+]

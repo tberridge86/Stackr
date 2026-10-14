@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 5,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "approved_at": "2026-10-14",
+  "cohort_sha256": "1adf9a3944f5b759f0d890307698f360608146a02f91a983dd8543814a6eba4e",
+  "source_counts": {
+    "scrydex": 5
+  },
+  "source_evidence": {
+    "approvedProjection": "301f506f278d6558e8948e73b3922f7a9991d439cd8495fc31a3b3a4fce46bc9",
+    "decision": "a8611b59bf68d9a3c76107e9b7dc2bcd56f8c42858eed643208673d5d363627a",
+    "independentSelection": "468eee32291b9a36b950974671c0d8094d9d1be855fbab204a5463604d2d781d",
+    "independentAcceptance": "d5694683f9ea22b1e441b4231fc969153e3079143d1117213f85f8e534b857a8",
+    "referenceHandoff": "01da4d6d0e2ebe40d1b2225119e70b09bbb09a49516e607fa4327210fdabceaa",
+    "metadata": "f55479b730d141ecaa1af14e8dd1e2ca7eabb00c3da06cb806039d3e9d879eea",
+    "historicalHeld": "909aeadc4233f71fcd4f4c41a2fcaffbcb1aede6e5b9d0efcde960b5e0d11bad"
+  },
+  "scope": "Store, resize and display exactly five independently accepted unnumbered Japanese Awakening Trainer fronts and15 derivatives. Preserve current normal names and variants, historical null sources and missing canonical body/artist, complete Japanese actual rules, comparison-only references, private/raw versus public projection hashes and old immutable assets. No source activation, catalogue/price edits, physical edition/finish or independent licence certification."
+}
