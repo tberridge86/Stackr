@@ -1,0 +1,58 @@
+{
+  "source_manifest_file": "mfb15-source-manifest-v2.json",
+  "source_manifest_sha256": "a22455e63ed49dd421587c230682a28f616003ba8f02cefff89a14655526b4a2",
+  "package_receipt_file": "mfb15-package-receipt-v2.json",
+  "package_receipt_sha256": "e6f4a4d8d4b5bc03505f29f62ab0e06447d0c5f3edfde1b02bab790dfb70fd61",
+  "finite_decision_file": "source-batches/owner-mfb-bulbapedia-originals24-20261014/finite-publication15-decision.json",
+  "finite_decision_sha256": "777cb65189762d31cfec71d5b2026229076be3aaf2c85c2fa0e10d9f959dced3",
+  "binding_snapshots": {
+    "production": {
+      "sha256": "1345301fc2392578cc8a886cdd0a997f40df7d9893f70246b9c751baecf2719e",
+      "bytes": 9295
+    },
+    "staging": {
+      "sha256": "3700d3b49a5f770b84f9e3f19bc608922d90b5252ee0572c79b947d32e1e744a",
+      "bytes": 8686
+    }
+  },
+  "before_snapshots": {
+    "production": {
+      "sha256": "66dd6d244e9a484049ff1ae7a938514634cb01e3217967d38e55fed8b65564ab",
+      "bytes": 58294
+    },
+    "staging": {
+      "sha256": "bd28859d1da5a40516870d8e06a1d6718d7f03c3ea0f005537f8eb8b6e07357c",
+      "bytes": 51861
+    }
+  },
+  "archive": {
+    "id": 641581207,
+    "sha256": "b73668b35e12b8687aaeaf9e30e7102215df2bdaef74b3934b2fffa9789e69e9",
+    "byte_size": 6626688,
+    "file_count": 64
+  },
+  "metadata": [
+    {
+      "file": "manifest.json",
+      "sha256": "a22455e63ed49dd421587c230682a28f616003ba8f02cefff89a14655526b4a2",
+      "byte_size": 189495
+    },
+    {
+      "file": "receipts/preparation-summary.json",
+      "sha256": "61cda82835d06b00f3ff3549696f48f89a7d7831cef6dd57f74d2aba335326c9",
+      "byte_size": 1546
+    },
+    {
+      "file": "receipts/current-card-bindings.json",
+      "sha256": "df212de7a2fff6b21b39aed7ed1f8351c76c9065845ad9edd4fa1e7288b0afe4",
+      "byte_size": 15656
+    },
+    {
+      "file": "receipts/finite-decision.json",
+      "sha256": "117b0a8c3365176fcc476f46c3d5537ae3ef3a6336dcaf409649526ad9b4adf5",
+      "byte_size": 12209
+    }
+  ],
+  "observation_correction_file": "source-batches/owner-mfb-bulbapedia-originals24-20261014/root-magneton-observation-correction.json",
+  "observation_correction_sha256": "04e10cb81935fd3d440705a849e886f86a56e6fca319a84ee9fc0e7dedad2d9e"
+}
