@@ -1,0 +1,339 @@
+{
+  "schemaVersion": "stackr-darkness47-frozen-local-validation-v1",
+  "recordedAt": "2026-10-14T22:48:58.230Z",
+  "status": "offline_validated_not_published",
+  "scope": {
+    "fronts": 47,
+    "normalCurrentVariants": 41,
+    "holoCurrentVariants": 6,
+    "originals": 47,
+    "derivatives": 141,
+    "imageFiles": 188,
+    "archiveMembers": 192,
+    "fixedTasks": 50,
+    "byBatch": {
+      "JP-CARDS-013": {
+        "verified": 23,
+        "held": 2
+      },
+      "JP-CARDS-014": {
+        "verified": 24,
+        "held": 1
+      }
+    },
+    "heldAliases": [
+      "013",
+      "025",
+      "047"
+    ],
+    "completedOutsideScope": "024",
+    "wholeBatchCompletionAsserted": false
+  },
+  "archive": {
+    "id": 641915513,
+    "sha256": "94264a96aaef3170468cca55887b3cb9ae51935eda291076d09ff916c3aa9a8d",
+    "byte_size": 25305448,
+    "file_count": 192,
+    "name": "stackr-ja-artwork-darkness-fronts-20261014-v2.zip",
+    "outerShaAndSizeVerified": true,
+    "allMembersByteHashAndDimensionsVerified": true,
+    "fullPILDecodes": 188,
+    "fullSharpDecodes": 188
+  },
+  "prepublicationCorrection": {
+    "supersededAssetId": 641905158,
+    "supersededArchiveSha256": "d4ff05352e6485493c0d9b21cc99ddadb8bd5b96f2fe6229d60fbaeab657eaeb",
+    "preservedSidecars": "darkness-prepublication-v1/",
+    "changedMembers": [
+      "manifest.json",
+      "receipts/finite-decision.json"
+    ],
+    "unchangedImageMembers": 188,
+    "reason": "Held rows omit batchId; exact per-batch held counts corrected to2/1. Original three explicit exclusions and source selection were unchanged."
+  },
+  "checks": {
+    "publisherAndFailureJournalTests": {
+      "passed": 16,
+      "failed": 0
+    },
+    "archiveSafetyTests": {
+      "passed": 6,
+      "failed": 0
+    },
+    "rawToPackageProjectionRows": 47,
+    "rawToPublicProjectionRows": 47,
+    "topLevelActualQueueControlsRows": 47,
+    "prePreparationTamperRejections": 329,
+    "nodeSyntaxFiles": 10,
+    "pythonAstFiles": 3,
+    "workflowYamlAndProtectedGates": true,
+    "readOnlyExactQueryScope": true,
+    "unchangedSharedDependencies": 11,
+    "secretScanPassed": true,
+    "fullApplicationBuildRun": false
+  },
+  "pipeline": {
+    "sharp": "0.35.5",
+    "sha256": "642eb05d57c921901cfa6241e1f0d32a71da602ea3594693b8d63247a05b0bb0",
+    "enlargement": false,
+    "originalBytesChanged": false,
+    "hd720x1008Claimed": false
+  },
+  "sourceEvidence": {
+    "approvedProjection": "b5b45e75ccc71b8cab12abb9d9dd5b3a0d30e90489aaf46fdccb5fc399b19b0c",
+    "decision": "b8a6f91bc142e7e55b050eccb4de7e1e3769750d982f09f324ced5c347e1298b",
+    "handoff": "5a12a3ce854ba800a4a2d97695ab9c0b4366cf0813fae170c2ce9a919d3c8e1e",
+    "independentSelection": "97acdbd7bf4e178c843d72fda7df6d7b652c87b2371179f7b7c992d27840b06e",
+    "independentAcceptance": "3e1dc6bc37de6d3d7fc7795933620f430c873355beb327b9cc76f8983bbe7eb0"
+  },
+  "provenance": {
+    "providerMetadata": "complete unmodified sourceMetadataCapture.data",
+    "rawHtmlByteHashDistinctFromCanonicalJsonHash": true,
+    "sourceSignatureUnchanged": true,
+    "actualSignatureUnchanged": true,
+    "publicBody": "deterministic clone removing only originalObservation.path; separately pinned public body SHA",
+    "historicalComparisonAliases": [
+      "008",
+      "046",
+      "050",
+      "051"
+    ],
+    "historicalNullSelectionAliases": [
+      "050",
+      "051"
+    ],
+    "sourceRetreatDisagreements": 17,
+    "sourceAbsentRetreatWithActualZero": 7,
+    "completeArtistAliases": [
+      "009",
+      "012",
+      "030"
+    ],
+    "actualAttackLabelAliases": [
+      "020",
+      "035"
+    ],
+    "unownSCurrentGuard": "HP50; SEARCH; Psychic+Colorless20; retreat1; four-card header; own Prize look/return",
+    "historicalTwoPsychicTypoRetainedOnlyAsHistoricalEvidence": true
+  },
+  "preservation": {
+    "productionBeforeRows": 197,
+    "expectedProductionAfterRows": 291,
+    "stagingBeforeAfterRows": 193,
+    "existingSetAssets": 2,
+    "existingLinks": {
+      "production": 5,
+      "staging": 2
+    },
+    "completeSourceRowGuard": true,
+    "productionSourcePolicy": {
+      "code": "scrydex",
+      "active": false,
+      "licence_status": "under_review"
+    },
+    "productionNewSources": 0,
+    "stagingOnlySourceFixtureRolledBack": true,
+    "oldImmutableAssetsRetained": true,
+    "rollbackReceiptHidesOnlyNewAssets": true
+  },
+  "limits": {
+    "vendorLicenceVerified": false,
+    "sourcewideApproval": false,
+    "physicalEditionVerified": false,
+    "physicalFinishVerified": false,
+    "newProviderRequests": 0,
+    "databaseRequests": 0,
+    "productionWrites": 0,
+    "gitMutations": 0,
+    "independentFrozenReview": "pending release owner",
+    "hostedChecks": "pending release owner",
+    "protectedWorkflowDispatch": "not performed",
+    "configuredApiVerification": "not performed"
+  },
+  "files": [
+    {
+      "file": "tools/artwork-darkness-fronts-push-20261014/.gitattributes",
+      "bytes": 54,
+      "sha256": "fb17a974f934f241f38ca5109abdd924cdbf3c0820ac9fb9966603b8f1f26ffd"
+    },
+    {
+      "file": "tools/artwork-darkness-fronts-push-20261014/.gitignore",
+      "bytes": 19,
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793"
+    },
+    {
+      "file": "tools/artwork-darkness-fronts-push-20261014/README.md",
+      "bytes": 4147,
+      "sha256": "b4ad2fc25223d68e56c27f3809e047f0e68b78b7b05ad4c1efdfc7e611f8d0a9"
+    },
+    {
+      "file": "tools/artwork-darkness-fronts-push-20261014/approval.json",
+      "bytes": 1451,
+      "sha256": "24b284c664b95fb6bf14b6631436e6c8eb351c6cec6952eca7da65fd7b5bbf41"
+    },
+    {
+      "file": "tools/artwork-darkness-fronts-push-20261014/before-query.sql",
+      "bytes": 20939,
+      "sha256": "acedc13ea37b59f2de55f009f205a8c73585fd62261946e73e828c2f24ba5876"
+    },
+    {
+      "file": "tools/artwork-darkness-fronts-push-20261014/download-package.py",
+      "bytes": 6083,
+      "sha256": "fb5dad63b484a05360c90eff80f9dd46cae5f32a3f1feb124cb3e718bf8fc711"
+    },
+    {
+      "file": "tools/artwork-darkness-fronts-push-20261014/download-package.test.py",
+      "bytes": 6940,
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41"
+    },
+    {
+      "file": "tools/artwork-darkness-fronts-push-20261014/freeze-inputs.json",
+      "bytes": 4549,
+      "sha256": "e0ce4ef6acb79191bee8250e059fd704ae039b2279b3eb3e6c05d1bddb46e407"
+    },
+    {
+      "file": "tools/artwork-darkness-fronts-push-20261014/freeze-local.mjs",
+      "bytes": 10035,
+      "sha256": "b2153ee12e3d58747cd14a2a5ecb6fa31b4e95d142547b5ea00f103c97fe7e8f"
+    },
+    {
+      "file": "tools/artwork-darkness-fronts-push-20261014/frozen.mjs",
+      "bytes": 76978,
+      "sha256": "af8936a1686cbf095f7caddb2a8263b067c26d7f82f1e91cd79224919f7a6bb2"
+    },
+    {
+      "file": "tools/artwork-darkness-fronts-push-20261014/identity-table.json",
+      "bytes": 41262,
+      "sha256": "cb0db4de7f23633a6791f51d973c69b535eb6dc7791b45352d3782c169130015"
+    },
+    {
+      "file": "tools/artwork-darkness-fronts-push-20261014/plan.json",
+      "bytes": 1303267,
+      "sha256": "8ca7378e5cbee652878fbe2464c30831cf81149e323b0d0122e42313f6b1975d"
+    },
+    {
+      "file": "tools/artwork-darkness-fronts-push-20261014/publish.mjs",
+      "bytes": 4941,
+      "sha256": "2fa6ae47fcc35a8a04d4881b8d03f753c69a56dbed8addc5c9a09ad06c8fbe11"
+    },
+    {
+      "file": "tools/artwork-darkness-fronts-push-20261014/publish.test.mjs",
+      "bytes": 22346,
+      "sha256": "64f4d0dba6a8619921f7268992d2f5a699230ede5f9aef03c0c87547772ddc84"
+    },
+    {
+      "file": "tools/artwork-darkness-fronts-push-20261014/saved-targets.json",
+      "bytes": 19707,
+      "sha256": "eb3745d39b9dd6349201fd25b8942c90162b9743128495bed0d5c61812a62aee"
+    },
+    {
+      "file": "tools/artwork-darkness-fronts-push-20261014/source-proof.mjs",
+      "bytes": 12543,
+      "sha256": "691f8b7868acd501e45e7460251662cfa6107d8fe0e1ad7e4c7ea02f4ae53dcd"
+    },
+    {
+      "file": "tools/artwork-darkness-fronts-push-20261014/verify-packages.mjs",
+      "bytes": 1495,
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841"
+    }
+  ],
+  "workflow": {
+    "file": ".github/workflows/artwork-darkness-fronts-production.yml",
+    "bytes": 3604,
+    "sha256": "27979776b9785f929e4a2ca4ca4befd7b12dd2a5e309cf0ae3240a655137b21b"
+  },
+  "continuation": [
+    {
+      "file": "darkness-prepare-source-input.mjs",
+      "bytes": 10299,
+      "sha256": "9619bd335234ac225f2f710ccfa08bdb733b13830902d7d9eef6a54dc549be88"
+    },
+    {
+      "file": "darkness-package-fronts.mjs",
+      "bytes": 6580,
+      "sha256": "9b901d52b4cb95813bebeabe4a0553c7a72c9c7a901633572c1f78525def0f55"
+    },
+    {
+      "file": "darkness-freeze-package.py",
+      "bytes": 3056,
+      "sha256": "998b117e4f15f659092cd2acf298f0398235288c1c9b8006daeea3e603196cb4"
+    },
+    {
+      "file": "darkness-validate-source-contract.mjs",
+      "bytes": 3049,
+      "sha256": "04ec8a05d9c2516c456d048406e8c4bdc5518670b6f44d670bbf096352a449c3"
+    },
+    {
+      "file": "darkness-validate-config.mjs",
+      "bytes": 2558,
+      "sha256": "c4b88eeb69743f912833194cf5eee2357f7fa6a68838ce49b80066ad04c48ee6"
+    },
+    {
+      "file": "darkness-fronts-source-manifest.json",
+      "bytes": 1237207,
+      "sha256": "f4b948c773b872ecb0222e5c50fe61f75cb5c3a4f856605de10351a0fd5c9e81"
+    },
+    {
+      "file": "darkness-fronts-package-receipt.json",
+      "bytes": 50088,
+      "sha256": "3de85b5aa771341fbd5729baba9145571548c4980b8049c3a25daa0ad1bb34d5"
+    }
+  ],
+  "unchangedDependencies": [
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 9031,
+      "sha256": "5524305ba4bd6a0f3867ea2c097c57fb0d610e27ef1d9d64529b64e9c67249de"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/metadata-guard.mjs",
+      "bytes": 4018,
+      "sha256": "cca5354822fe11c007308f7d22ebf84649d2374619e0dd049c7347a9db9e116f"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/publish.mjs",
+      "bytes": 5885,
+      "sha256": "8451746bb6e188f56c5be31064742eaeecdc2f2c6d6e27cb31ab5c7227af6d1f"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "tools/artwork-next-push-20261013/frozen.mjs",
+      "bytes": 7732,
+      "sha256": "3e14eb76a012116492075328c50e6c5907f712004da02d4d3dae541d2617a95b"
+    },
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 30117,
+      "sha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24425,
+      "sha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 15024,
+      "sha256": "1d168e5407a5bdc6e027f58991de58a0664576d7c917d5b219fa13f9af4a1d0a"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/download-package.py",
+      "bytes": 5489,
+      "sha256": "53f1114f25bd995b4f05d9b2d3adad7ae2dadc85b4b13f038a84bcc5e7d6b09f"
+    }
+  ]
+}
