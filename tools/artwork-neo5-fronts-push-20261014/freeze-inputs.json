@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "source_manifest_file": "neo-card-fronts22-source-manifest.json",
+  "source_manifest_sha256": "fa397271f673a3318f59aa08128d16d1e81419b51e2222ada9da43516148e8eb",
+  "package_receipt_file": "neo-card-fronts22-package-receipt.json",
+  "package_receipt_sha256": "ed2eced9897276fbba57847638f6ec3e6dd6173e303898ac378647499e17690e",
+  "binding_prefix": "neo22",
+  "fronts": 22,
+  "saved_targets_sha256": "cd64bc1d994b29164cc6b070a6a3f63fb8dcb359d03565819798ef6c842fa8ac",
+  "original_handoff_sha256": "aae43f61c4ec4e402dedb589478aff839d8a700480d4b70406fa50c0876d37c9",
+  "exact_metadata_targets_sha256": "a0d6c1f043e9a2bc0a5510200fb99f352d2096ff4ff10704739708a8d3d41a5d",
+  "finite_decision_file": "source-batches/neo005-finite-decision-20261014/finite-cohort-business-decision.json",
+  "finite_decision_sha256": "f795788f88483f5be7cc8403b8a353f38e23a91416dd60d5c3f8da526f0f7e6d",
+  "root_request_scope_sha256": "6cc9a33c7b1fb871959ff97a6af1cd0a12bee7e65f93f249c7f2dfe4ba393441",
+  "reader_recovery_decision_sha256": "f4b732955ec07b9f0544cdf9cff255d1a2c01225efc72cdb50f2173a2b6d55b8",
+  "before_snapshots": {
+    "production": {
+      "sha256": "263866ec680d4c80d63e9c45b51384d6ad3af74f697b721d8fa3dfa637949dcb",
+      "rows": 94
+    },
+    "staging": {
+      "sha256": "0f80ac52c9696edce10f807b3f66537da4b0bcc6d77faf7f630802ddfd136642",
+      "rows": 91
+    }
+  },
+  "binding_snapshots": {
+    "production": {
+      "sha256": "69396c218643c050088efd4d72951fc64158e9eac1268010278575579c708913",
+      "cards": 22
+    },
+    "staging": {
+      "sha256": "8cc690f3fff8e901d1dbe97a829c80dd158945dc728464bb18ea3c5088261a1e",
+      "cards": 22
+    }
+  },
+  "archive": {
+    "id": 641447526,
+    "sha256": "748d784ec52b09b818095d8504faa1e14433a12aafdc8272efbc8ed8f17281f7",
+    "byte_size": 11890305,
+    "file_count": 92
+  },
+  "metadata": [
+    {
+      "file": "manifest.json",
+      "sha256": "fa397271f673a3318f59aa08128d16d1e81419b51e2222ada9da43516148e8eb",
+      "byte_size": 183194
+    },
+    {
+      "file": "receipts/preparation-summary.json",
+      "sha256": "7c21e8d51da64dedbf96cd55635cfaf7207e0748fbfdc720e4003071ede6ed3b",
+      "byte_size": 1318
+    },
+    {
+      "file": "receipts/current-card-bindings.json",
+      "sha256": "5ddea3314ad9d99d818a962b868dbe0d7b6badf586e2805468f0370fdd31fb03",
+      "byte_size": 23159
+    },
+    {
+      "file": "receipts/finite-decision.json",
+      "sha256": "89bfa18d1471b6cc63a2904e48018cd3e43cb076f83731ed9adf76636bb1a749",
+      "byte_size": 5879
+    }
+  ]
+}

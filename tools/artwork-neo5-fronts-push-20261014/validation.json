@@ -1,0 +1,400 @@
+{
+  "schemaVersion": 1,
+  "at": "2026-10-14T19:42:35.961084+00:00",
+  "status": "offline_validated_not_published",
+  "queue_id": "STACKR-JP-NEO1-20261014-022",
+  "fronts": 22,
+  "derivative_references": 66,
+  "object_references": 88,
+  "unique_image_members": 88,
+  "delivery_scope": {
+    "fixed_batch_id": "JP-CARDS-005",
+    "saved_batch_tasks": 25,
+    "eligible_fronts": 22,
+    "excluded_printing_ids": [
+      "60c39900-94fe-420b-b997-60e9c64f3491",
+      "56ae4a00-656c-4564-8d7a-831db2900857",
+      "331a9eb6-75c4-47f1-97c8-ad2c55884ba3"
+    ],
+    "excluded_aliases": [
+      "073",
+      "074",
+      "075"
+    ],
+    "exclusion_reason": "Three Trainer aliases lack exact canonical-to-source identity evidence",
+    "whole_batch_completion_asserted": false
+  },
+  "known_native_label_defects_preserved": 18,
+  "current_metadata_finishes": {
+    "normal": 18,
+    "holo": 4
+  },
+  "canonical_alias_is_not_printed_national_dex": true,
+  "original_format": {
+    "mime_type": "image/webp",
+    "count": 22,
+    "minimum_width": 567,
+    "maximum_width": 570,
+    "unchanged": true,
+    "hd_originals": 0
+  },
+  "actual_source_pixel_distinctions": {
+    "donphan_054_separate_damage_column": null,
+    "donphan_054_source_damage_field": "10×",
+    "donphan_054_body_formula_visible": true,
+    "cleffa_070_actual_baby_rule_box_visible": true,
+    "cleffa_070_rule_text_is_paraphrase": true,
+    "clefairy_063_source_attack_name": "おうふくびんた",
+    "clefairy_063_observed_printed_attack_name": "おうふくビンタ",
+    "holo_printed_rarity_glyph": "★",
+    "holo_provider_rarity_code": "★H",
+    "canonical_corrections": 0
+  },
+  "copyright_date_line_visible": false,
+  "copyright_year_inferred": false,
+  "cohort_sha256": "2c61460916256e54919c34f4c36a97525a3664bf3b43bc7617609e22de7c402e",
+  "approval_sha256": "cc6bd02b2b653a67bc1546c846090029019d7f9f34431c3f411562e0c609fc59",
+  "identity_table_sha256": "7f23b89ab91ae561a188a728ecb9accff8fadd4fd0425c6a8c038b2d6ae8feeb",
+  "saved_targets_sha256": "cd64bc1d994b29164cc6b070a6a3f63fb8dcb359d03565819798ef6c842fa8ac",
+  "source_manifest_sha256": "fa397271f673a3318f59aa08128d16d1e81419b51e2222ada9da43516148e8eb",
+  "original_handoff_sha256": "aae43f61c4ec4e402dedb589478aff839d8a700480d4b70406fa50c0876d37c9",
+  "exact_metadata_targets_sha256": "a0d6c1f043e9a2bc0a5510200fb99f352d2096ff4ff10704739708a8d3d41a5d",
+  "finite_decision_sha256": "f795788f88483f5be7cc8403b8a353f38e23a91416dd60d5c3f8da526f0f7e6d",
+  "root_request_scope_sha256": "6cc9a33c7b1fb871959ff97a6af1cd0a12bee7e65f93f249c7f2dfe4ba393441",
+  "reader_recovery_decision_sha256": "f4b732955ec07b9f0544cdf9cff255d1a2c01225efc72cdb50f2173a2b6d55b8",
+  "archive": {
+    "id": 641447526,
+    "sha256": "748d784ec52b09b818095d8504faa1e14433a12aafdc8272efbc8ed8f17281f7",
+    "byte_size": 11890305,
+    "file_count": 92,
+    "filename": "stackr-ja-artwork-neo-card-fronts22-20261014.zip",
+    "exact_members": 92,
+    "unique_image_members": 88,
+    "metadata_files": 4,
+    "provider_requests_during_publication": 0
+  },
+  "scope_before_counts": {
+    "production": {
+      "printings": 22,
+      "variants": 22,
+      "names": 44,
+      "sets": 1,
+      "assets": 2,
+      "links": 2,
+      "sources": 1,
+      "rows": 94
+    },
+    "staging": {
+      "printings": 22,
+      "variants": 22,
+      "names": 44,
+      "sets": 1,
+      "assets": 2,
+      "links": 0,
+      "sources": 0,
+      "rows": 91
+    }
+  },
+  "before_snapshot_hashes": {
+    "production": {
+      "sha256": "263866ec680d4c80d63e9c45b51384d6ad3af74f697b721d8fa3dfa637949dcb",
+      "rows": 94
+    },
+    "staging": {
+      "sha256": "0f80ac52c9696edce10f807b3f66537da4b0bcc6d77faf7f630802ddfd136642",
+      "rows": 91
+    }
+  },
+  "binding_snapshot_hashes": {
+    "production": {
+      "sha256": "69396c218643c050088efd4d72951fc64158e9eac1268010278575579c708913",
+      "cards": 22
+    },
+    "staging": {
+      "sha256": "8cc690f3fff8e901d1dbe97a829c80dd158945dc728464bb18ea3c5088261a1e",
+      "cards": 22
+    }
+  },
+  "checks": [
+    {
+      "command": "node prepare-neo22-source-input.mjs",
+      "status": "exact_new_source_input_verified",
+      "fronts": 22,
+      "exit_code": 0
+    },
+    {
+      "command": "accepted offline prepare-local.mjs",
+      "status": "originals_and_three_derivatives_fully_decoded",
+      "fronts": 22,
+      "derivatives": 66,
+      "sharp": "0.35.5",
+      "pipeline_sha256": "642eb05d57c921901cfa6241e1f0d32a71da602ea3594693b8d63247a05b0bb0",
+      "exit_code": 0
+    },
+    {
+      "command": "python freeze-neo-card-fronts22.py",
+      "status": "archive_member_hashes_sizes_dimensions_and_full_PIL_decodes_verified",
+      "image_files": 88,
+      "members": 92,
+      "exit_code": 0
+    },
+    {
+      "command": "node --test tools/artwork-neo5-fronts-push-20261014/publish.test.mjs tools/artwork3303-publish-20260928/publish.test.mjs tools/artwork3303-publish-20260928/native-name-corrections.test.mjs",
+      "passed": 77,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "python tools/artwork-neo5-fronts-push-20261014/download-package.test.py",
+      "passed": 4,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "node --test tools/artwork3303-publish-20260928/journal.integration.test.mjs",
+      "passed": 1,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "python tools/artwork-neo5-fronts-push-20261014/download-package.py <local-packages> --archive <frozen-local-zip>",
+      "status": "verified_and_extracted",
+      "exact_members": 92,
+      "exit_code": 0
+    },
+    {
+      "command": "node tools/artwork-neo5-fronts-push-20261014/verify-packages.mjs <local-packages>",
+      "status": "all_frozen_files_fully_decoded",
+      "fronts": 22,
+      "object_references": 88,
+      "exit_code": 0
+    },
+    {
+      "command": "existing yaml parser and strict workflow guards",
+      "status": "parsed_protected_guards_passed"
+    },
+    {
+      "command": "node scripts/deploy/secret-scan.mjs --directory=tools/artwork-neo5-fronts-push-20261014",
+      "status": "passed",
+      "exit_code": 0
+    }
+  ],
+  "workflow": {
+    "file": ".github/workflows/artwork-neo5-fronts-production.yml",
+    "sha256": "d58df0b43b3feeab189ad801938e22f505a0f06b968dee2d95650d82028d4441",
+    "job": "artwork_neo5_fronts",
+    "production_environment": true,
+    "manual_exact_main": true,
+    "shared_production_concurrency": true,
+    "token_contents_permission": "read",
+    "hosted_private_output_unset": true,
+    "secret_scan_required_before_upload": true
+  },
+  "implementation_hash_count": 16,
+  "total_owned_tool_files_including_validation": 17,
+  "file_hashes": [
+    {
+      "file": ".gitattributes",
+      "bytes": 54,
+      "sha256": "fb17a974f934f241f38ca5109abdd924cdbf3c0820ac9fb9966603b8f1f26ffd"
+    },
+    {
+      "file": ".gitignore",
+      "bytes": 19,
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793"
+    },
+    {
+      "file": "approval.json",
+      "bytes": 1627,
+      "sha256": "cc6bd02b2b653a67bc1546c846090029019d7f9f34431c3f411562e0c609fc59"
+    },
+    {
+      "file": "before-query.sql",
+      "bytes": 10712,
+      "sha256": "972de678d9d06eb160d0ceebd1a726c2a0c5b7e1e2c50fafa8603edbc177666b"
+    },
+    {
+      "file": "download-package.py",
+      "bytes": 5965,
+      "sha256": "611765c3ea51f8912341718bb4fcbb0bc22a0c84028a065c1c5e31275c91e061"
+    },
+    {
+      "file": "download-package.test.py",
+      "bytes": 4495,
+      "sha256": "3d8de316c4b9a907bb2e4e26f893cbcc1de8aa00299d7ff296b09c763f600313"
+    },
+    {
+      "file": "freeze-inputs.json",
+      "bytes": 2530,
+      "sha256": "5162bd46eee684084f5cb7cab51784d999b0ca7bd29c679173882c02912ff20b"
+    },
+    {
+      "file": "freeze-local.mjs",
+      "bytes": 13142,
+      "sha256": "615f97116b7f75b093c26ebfbbd008f2375520b926c12886f60495feabc0be4d"
+    },
+    {
+      "file": "frozen.mjs",
+      "bytes": 35107,
+      "sha256": "6df37497c711beed17ae3b1a0371c03ea4723ba634e8e344083002e7818fd45b"
+    },
+    {
+      "file": "identity-table.json",
+      "bytes": 19129,
+      "sha256": "7f23b89ab91ae561a188a728ecb9accff8fadd4fd0425c6a8c038b2d6ae8feeb"
+    },
+    {
+      "file": "plan.json",
+      "bytes": 226105,
+      "sha256": "2c61460916256e54919c34f4c36a97525a3664bf3b43bc7617609e22de7c402e"
+    },
+    {
+      "file": "publish.mjs",
+      "bytes": 4841,
+      "sha256": "146f14bc5bd76cf7640211a94df0db3b82e7f54ea64648fe423d6c6a32628df6"
+    },
+    {
+      "file": "publish.test.mjs",
+      "bytes": 26442,
+      "sha256": "fd852100769c158106fcd6df25c57138cb57d74364a01be89f6eeb154346a54c"
+    },
+    {
+      "file": "README.md",
+      "bytes": 6059,
+      "sha256": "b13c1507410813aba1686214aecc02dd809134dea471ed222a1dbe963defbb68"
+    },
+    {
+      "file": "saved-targets.json",
+      "bytes": 9151,
+      "sha256": "cd64bc1d994b29164cc6b070a6a3f63fb8dcb359d03565819798ef6c842fa8ac"
+    },
+    {
+      "file": "verify-packages.mjs",
+      "bytes": 1495,
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841"
+    }
+  ],
+  "reused_dependency_hashes": [
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 9031,
+      "sha256": "5524305ba4bd6a0f3867ea2c097c57fb0d610e27ef1d9d64529b64e9c67249de"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/metadata-guard.mjs",
+      "bytes": 4018,
+      "sha256": "cca5354822fe11c007308f7d22ebf84649d2374619e0dd049c7347a9db9e116f"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/publish.mjs",
+      "bytes": 5885,
+      "sha256": "8451746bb6e188f56c5be31064742eaeecdc2f2c6d6e27cb31ab5c7227af6d1f"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "tools/artwork-next-push-20261013/frozen.mjs",
+      "bytes": 7732,
+      "sha256": "3e14eb76a012116492075328c50e6c5907f712004da02d4d3dae541d2617a95b"
+    },
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 30117,
+      "sha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24425,
+      "sha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 15024,
+      "sha256": "1d168e5407a5bdc6e027f58991de58a0664576d7c917d5b219fa13f9af4a1d0a"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/download-package.py",
+      "bytes": 5489,
+      "sha256": "53f1114f25bd995b4f05d9b2d3adad7ae2dadc85b4b13f038a84bcc5e7d6b09f"
+    }
+  ],
+  "unchanged_dependencies": 11,
+  "preparation_script_hashes": [
+    {
+      "file": "prepare-neo22-source-input.mjs",
+      "sha256": "58462642f147120d4233d8b6b11b76b603ad4ca7e0940fdf14d11f831596ecf7"
+    },
+    {
+      "file": "package-neo-card-fronts22.mjs",
+      "sha256": "15146dc3c26a7f6d36ca2f1656e70933c2837efdaf3ac044f7d09b6801e65850"
+    },
+    {
+      "file": "freeze-neo-card-fronts22.py",
+      "sha256": "17e4716fcfabf243f63d4fd3f54845c311e50d1271addc5025345aa1823faf1e"
+    }
+  ],
+  "source_acquisition_summary": {
+    "fixedTargets": 25,
+    "acceptedFullOriginals": 22,
+    "excludedUnboundTrainerAliases": 3,
+    "identityOrPixelMismatches": 0,
+    "normalMetadataVariants": 18,
+    "holoMetadataVariants": 4,
+    "originalsUnchanged": 22,
+    "fullPILDecoded": 22,
+    "fullSharpDecoded": 22,
+    "individuallyWholeFrontInspected": 22,
+    "readableDetailOriginals": 22,
+    "hdOriginals": 0,
+    "originalMimeType": "image/webp",
+    "minimumWidth": 567,
+    "maximumWidth": 570,
+    "currentNativeLabelsRetained": 22,
+    "currentNativeLabelsDifferentFromObservedPrintedName": 18,
+    "originalReaderFailedRequestsPreserved": 9,
+    "originallyUnrequestedSingleRequests": 13,
+    "controlledTechnicalRecoverySingleRequests": 9,
+    "totalSourceImageRequests": 31,
+    "automaticNetworkRetries": 0,
+    "redirectsFollowed": 0,
+    "accessDenials": 0,
+    "rateLimits": 0,
+    "minimumActualStartGapMilliseconds": 2000,
+    "sourceConcurrency": 1,
+    "localReaderRegressionChecksPassed": 3,
+    "preparedOriginalOrDisplayFiles": 0,
+    "productionWrites": 0,
+    "catalogueEdits": 0
+  },
+  "database_requests_by_preparation": 0,
+  "provider_requests_by_preparation": 0,
+  "storage_writes_by_preparation": 0,
+  "production_source_insertions": 0,
+  "staging_source_fixture_rollback_only": true,
+  "staging_artwork_visibility_fixture": false,
+  "metadata_changes": 0,
+  "pricing_changes": 0,
+  "ownership_changes": 0,
+  "physical_finish_certified": false,
+  "physical_edition_certified": false,
+  "independent_vendor_licence_verified": false,
+  "source_wide_approval": false,
+  "newly_supplied_gallery_media_used": false,
+  "published": false,
+  "independent_review": "pending_coordinator",
+  "raw_private_snapshots_included": false,
+  "private_paths_in_public_plan": false
+}
