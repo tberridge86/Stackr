@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 2,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "approved_at": "2026-10-14",
+  "cohort_sha256": "e74ef01a7a8d11570daee9bbb6c6922dacf12d02dcc3458b074e40acef885c29",
+  "source_counts": {
+    "scrydex": 2
+  },
+  "source_evidence": {
+    "handoff": "64a2bf59198952643cd000ce90da066b22496310a0baaf6b273e8bcfb084e736",
+    "subset": "2d16d5ae7c67a1ef2501782bdd2f251991e8038fd5097ebd71830693c8666132",
+    "metadata": "f55479b730d141ecaa1af14e8dd1e2ca7eabb00c3da06cb806039d3e9d879eea",
+    "sourceQA": "3e3e639506359749c87e28320f0fc15196c39b9744cf1ee57844d97c6fb9daf0",
+    "validation": "7ee649538102c7ad404754a1c9abeb0ab841fe9f7c6bcab695edb6e32f6cb401",
+    "independentAcceptance": "00755f84b8baa9de2e809bed4dccf40ef25fa53c530e2f989b8408440fa50f5f",
+    "decision": "ec414f1e139f7051736aae38ae500e100cd37d9219a3286aa08cc54cb967d8c8",
+    "heldTrainers": "909aeadc4233f71fcd4f4c41a2fcaffbcb1aede6e5b9d0efcde960b5e0d11bad"
+  },
+  "scope": "Store, resize and display exactly two independently accepted Japanese Awakening Pokemon fronts and six derivatives. Preserve five unbound Trainer holds, the separate Shining finish holds, both current holo variants and native labels, full provider/native translation evidence, actual non-Colorless constraint and printed Blissey retreat two. No source policy activation, metadata edits, physical edition/finish or independent licence certification."
+}

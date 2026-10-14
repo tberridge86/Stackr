@@ -1,0 +1,44 @@
+[
+  {
+    "printing_id": "6ad6da5c-02cb-45e1-ab7a-2de25855dbf4",
+    "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+    "set_code": "neo3",
+    "language_code": "ja",
+    "collector_number": "051",
+    "card_native_name": "Porygon2",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "c563902f-3ed5-41c6-8289-60dbdc121a5b"
+    ],
+    "batch_id": "JP-CARDS-012",
+    "source_code": "scrydex",
+    "provider_id": "neo3_ja-51",
+    "image_url": "https://images.scrydex.com/pokemon/neo3_ja-51/large",
+    "original_sha256": "64ac8b84198f0dcbf4c625edc2f2407f86cdd767d74ee0aa772971fb31bf837b",
+    "original_width": 570,
+    "original_height": 794,
+    "body_sha256": "9bcb6d94277fbc136970978d7702335dd84e031107121d29009e5ed52a2fea32",
+    "evidence_sha256": "6159ce98022ea349f7295ca84b66477b8e6a3838bb97a0527c51ebf2f2f0daae"
+  },
+  {
+    "printing_id": "ab2c259c-353a-4317-b075-83f28a24fab2",
+    "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+    "set_code": "neo3",
+    "language_code": "ja",
+    "collector_number": "052",
+    "card_native_name": "ブリッシー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "c1935cc0-315e-472d-ac8d-65a2da94674c"
+    ],
+    "batch_id": "JP-CARDS-012",
+    "source_code": "scrydex",
+    "provider_id": "neo3_ja-52",
+    "image_url": "https://images.scrydex.com/pokemon/neo3_ja-52/large",
+    "original_sha256": "c94cfbe99ed1e5bac2c9464abd9e713b410fe99a00995cc1199419a355a2ff75",
+    "original_width": 570,
+    "original_height": 799,
+    "body_sha256": "93bbd0e86aac580124ea320b7d3401c2686492af5f6256af5aa1b8f716602cd9",
+    "evidence_sha256": "b42956c11a288f5e75db0c993fd33cce1687c78551db5dbb29cfe0f2d0855cfc"
+  }
+]
