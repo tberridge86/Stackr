@@ -1,0 +1,5232 @@
+{
+  "schemaVersion": 1,
+  "queue_id": "STACKR-JP-NEO1-20261014-024",
+  "source_manifest_sha256": "a39231f161e14967e556e9004b3bc7f9a2924ac6e39f1b01970da79e47049345",
+  "package_receipt_sha256": "b8d28f61076084ffbf21b1713a9ae7e271a4f822380b7fbd53c6a7aeafe0bffb",
+  "saved_targets_sha256": "fd226e22b0b8498114b7fc8cd84cd46b7386d82ba648fc9e1f378cdcc8f51be9",
+  "identity_table_sha256": "3415ab53334b6e572a4ae60e3d38cb2c44f3d847b21b7e1674e08ccfaa92ea8b",
+  "archive": {
+    "id": 641256222,
+    "sha256": "9918ceb7090bed46f9c9583468f9ddf016a6de2199a9a2719ed9b6b862283fc4",
+    "byte_size": 20461026,
+    "file_count": 100
+  },
+  "archive_metadata": [
+    {
+      "file": "manifest.json",
+      "sha256": "a39231f161e14967e556e9004b3bc7f9a2924ac6e39f1b01970da79e47049345",
+      "byte_size": 145933
+    },
+    {
+      "file": "receipts/preparation-summary.json",
+      "sha256": "e7e38e38438e5f20cac4a449101c84e73ab5e6f980a02de7d5d620daa62f2ec1",
+      "byte_size": 1225
+    },
+    {
+      "file": "receipts/current-card-bindings.json",
+      "sha256": "7e3f1f1de39968edb14d1fd174ec23d1816ca3a591d455f738f2d54e635d55d7",
+      "byte_size": 25213
+    },
+    {
+      "file": "receipts/finite-decision.json",
+      "sha256": "ec69f9e5cd9f79553e342dcf3e40759e7de7e2d60d29dc499496037c95f18647",
+      "byte_size": 668
+    }
+  ],
+  "rows": [
+    {
+      "printing_id": "230c774d-4c7a-46dc-95dc-1dbf227aa97a",
+      "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+      "set_code": "neo1",
+      "language_code": "ja",
+      "collector_number": "026",
+      "card_native_name": "ウーパー",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "efa3e7dd-d4d8-43d3-926c-7dd5145d11a4"
+      ],
+      "batch_id": "JP-CARDS-004",
+      "source_code": "scrydex",
+      "provider_id": "neo1_ja-26",
+      "image_url": "https://images.scrydex.com/pokemon/neo1_ja-26/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/552d9ba010f2dfa44a3a5507c94cf6ceb7b6ef378631aeef2ef5bcc51b119df6/original.png",
+          "sha256": "552d9ba010f2dfa44a3a5507c94cf6ceb7b6ef378631aeef2ef5bcc51b119df6",
+          "byte_size": 727802,
+          "width": 567,
+          "height": 800,
+          "mime_type": "image/png",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/16e21bede6f036372e9eaea3130be3d89f06a1b53e08425ef218ba8132c413bd/card-grid.webp",
+          "sha256": "16e21bede6f036372e9eaea3130be3d89f06a1b53e08425ef218ba8132c413bd",
+          "byte_size": 19072,
+          "width": 240,
+          "height": 339,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "search-result",
+          "file": "objects/15386ea735c129822aa270559a3d727ef7085288b09bcad510473407dba26dbe/search-result.webp",
+          "sha256": "15386ea735c129822aa270559a3d727ef7085288b09bcad510473407dba26dbe",
+          "byte_size": 4226,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/36c6b0ee910104a51b8484c43e1bfdfdb0819d2bae2da99067e2e54a589fae76/detail-page.webp",
+          "sha256": "36c6b0ee910104a51b8484c43e1bfdfdb0819d2bae2da99067e2e54a589fae76",
+          "byte_size": 65658,
+          "width": 567,
+          "height": 800,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo1_ja-26/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/wooper/neo1_ja-26?variant=normal",
+        "provider_id": "neo1_ja-26",
+        "source_metadata_sha256": "3f743be9a92af19fcdc0cd939ce2d6e1468928b27d7e3c32e7eabd3eff2d3c6d",
+        "source_signature": {
+          "category": "Pokemon",
+          "dex": [
+            194
+          ],
+          "hp": 50,
+          "types": [
+            "Water"
+          ],
+          "stage": "Basic",
+          "rarity": "Common",
+          "costs": [
+            [
+              "Water"
+            ],
+            [
+              "Colorless",
+              "Colorless"
+            ]
+          ]
+        },
+        "source_body": {
+          "printed_name": "ウパー",
+          "printed_dex_number": "No.194",
+          "hp": 50,
+          "artist": "Miki Tanaka",
+          "attack_costs": [
+            [
+              "水"
+            ],
+            [
+              "無",
+              "無"
+            ]
+          ],
+          "attack_damage": [
+            null,
+            "20×"
+          ],
+          "rules_or_attack_text_visible": true,
+          "rarity_mark": "●",
+          "neo_expansion_symbol_observed": true,
+          "source_variant_support": {
+            "currentFinish": "normal",
+            "providerVariant": "normal",
+            "sourceNames": [
+              "normal"
+            ],
+            "metadataLabelSupported": true,
+            "physicalProof": false
+          },
+          "metadata_attacks": [
+            {
+              "cost": [
+                "水"
+              ],
+              "converted_energy_cost": 1,
+              "name": "ドわすれ",
+              "text": "相手の対戦ポケモンの「ワザ」を1つ選ぶ。次の相手の番でその「ワザ」はつかえない。",
+              "damage": null
+            },
+            {
+              "cost": [
+                "無",
+                "無"
+              ],
+              "converted_energy_cost": 2,
+              "name": "たたきつける",
+              "text": "コインを2回投げ、オモテの数×20ダメージ。",
+              "damage": "20×"
+            }
+          ],
+          "provider_metadata_discrepancies": [
+            {
+              "field": "attack.damage",
+              "attackIndex": 2,
+              "sourceNativeAttackName": "たたきつける",
+              "sourceEnglishAttackName": "Slam",
+              "sourceDamage": "20×",
+              "tcgdexDamage": null,
+              "reason": "tcgdex_damage_omitted",
+              "pixelResolution": true,
+              "canonicalCorrection": false,
+              "pixelObservation": "Damage sign is visually readable on the inspected whole front; source omission remains recorded and no canonical text change was made."
+            }
+          ]
+        },
+        "printed_identity": {
+          "canonical_alias": "026",
+          "printed_national_dex": "No.194",
+          "canonical_alias_is_not_printed_national_dex": true,
+          "current_native_label": "ウーパー",
+          "verified_printed_native_name": "ウパー",
+          "current_native_label_not_used_for_match": true,
+          "known_native_label_defect_retained_without_write": true
+        },
+        "pixel_identity": {
+          "whole_original_inspected": true,
+          "full_frame_visible": true,
+          "name_number_and_symbol_readable": true,
+          "fine_print_readable": true,
+          "copyright_or_date_line_visible": false,
+          "copyright_year_inferred": false,
+          "edition_stamp_visible": false,
+          "edition_or_distribution_certified": false,
+          "material_foil_finish_certified": false,
+          "physical_card_or_material_not_observed": true,
+          "source_image_has_rendered_foil_like_background": false,
+          "source_image_does_not_certify_physical_finish": true
+        },
+        "identity_limits": {
+          "printed_national_dex_is_not_catalogue_alias": true,
+          "native_label_repair_proposal_retained_separately": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedNationalDexOpticallyVerified": true,
+          "canonicalAliasIsNotPrintedNationalDex": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "17982c8c-f3fe-42d4-a363-4fd7c4daf370",
+      "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+      "set_code": "neo1",
+      "language_code": "ja",
+      "collector_number": "027",
+      "card_native_name": "swinub",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "43e8251d-1330-41bf-96ba-f6f77c3751fd"
+      ],
+      "batch_id": "JP-CARDS-004",
+      "source_code": "scrydex",
+      "provider_id": "neo1_ja-27",
+      "image_url": "https://images.scrydex.com/pokemon/neo1_ja-27/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/760c44ef251c500011423533a677a979cda20730ebdaf7ca28cd17087f7e948d/original.png",
+          "sha256": "760c44ef251c500011423533a677a979cda20730ebdaf7ca28cd17087f7e948d",
+          "byte_size": 719756,
+          "width": 570,
+          "height": 797,
+          "mime_type": "image/png",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/fd8dff259cd74c2305c30c5cedfb98252ef898280c4e83c1c5baa8952f6acfdc/card-grid.webp",
+          "sha256": "fd8dff259cd74c2305c30c5cedfb98252ef898280c4e83c1c5baa8952f6acfdc",
+          "byte_size": 19514,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "search-result",
+          "file": "objects/70e92d16a9d187a7e7add78f4f922ac2e3fa4900467849135f3b30c1ea72ce6f/search-result.webp",
+          "sha256": "70e92d16a9d187a7e7add78f4f922ac2e3fa4900467849135f3b30c1ea72ce6f",
+          "byte_size": 4060,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/333f0ac8b99e49d2e62c0177e10f86006e9f770cce337e611b8177dc5095efbf/detail-page.webp",
+          "sha256": "333f0ac8b99e49d2e62c0177e10f86006e9f770cce337e611b8177dc5095efbf",
+          "byte_size": 66828,
+          "width": 570,
+          "height": 797,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo1_ja-27/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/swinub/neo1_ja-27?variant=normal",
+        "provider_id": "neo1_ja-27",
+        "source_metadata_sha256": "e5386f87f8d79510cbe5321c883feeec83d6442abb558a4e35579af7bad3ca1e",
+        "source_signature": {
+          "category": "Pokemon",
+          "dex": [
+            220
+          ],
+          "hp": 40,
+          "types": [
+            "Water"
+          ],
+          "stage": "Basic",
+          "rarity": "Common",
+          "costs": [
+            [
+              "Water"
+            ]
+          ]
+        },
+        "source_body": {
+          "printed_name": "ウリムー",
+          "printed_dex_number": "No.220",
+          "hp": 40,
+          "artist": "Ken Sugimori",
+          "attack_costs": [
+            [
+              "水"
+            ]
+          ],
+          "attack_damage": [
+            "10"
+          ],
+          "rules_or_attack_text_visible": true,
+          "rarity_mark": "●",
+          "neo_expansion_symbol_observed": true,
+          "source_variant_support": {
+            "currentFinish": "normal",
+            "providerVariant": "normal",
+            "sourceNames": [
+              "normal"
+            ],
+            "metadataLabelSupported": true,
+            "physicalProof": false
+          },
+          "metadata_attacks": [
+            {
+              "cost": [
+                "水"
+              ],
+              "converted_energy_cost": 1,
+              "name": "こなゆき",
+              "text": "相手を「ねむり」状態にする。",
+              "damage": "10"
+            }
+          ],
+          "provider_metadata_discrepancies": []
+        },
+        "printed_identity": {
+          "canonical_alias": "027",
+          "printed_national_dex": "No.220",
+          "canonical_alias_is_not_printed_national_dex": true,
+          "current_native_label": "swinub",
+          "verified_printed_native_name": "ウリムー",
+          "current_native_label_not_used_for_match": true,
+          "known_native_label_defect_retained_without_write": true
+        },
+        "pixel_identity": {
+          "whole_original_inspected": true,
+          "full_frame_visible": true,
+          "name_number_and_symbol_readable": true,
+          "fine_print_readable": true,
+          "copyright_or_date_line_visible": false,
+          "copyright_year_inferred": false,
+          "edition_stamp_visible": false,
+          "edition_or_distribution_certified": false,
+          "material_foil_finish_certified": false,
+          "physical_card_or_material_not_observed": true,
+          "source_image_has_rendered_foil_like_background": false,
+          "source_image_does_not_certify_physical_finish": true
+        },
+        "identity_limits": {
+          "printed_national_dex_is_not_catalogue_alias": true,
+          "native_label_repair_proposal_retained_separately": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedNationalDexOpticallyVerified": true,
+          "canonicalAliasIsNotPrintedNationalDex": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "a46d63d4-a792-48cc-9ca7-1e1853553ba6",
+      "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+      "set_code": "neo1",
+      "language_code": "ja",
+      "collector_number": "028",
+      "card_native_name": "マンティン",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "36c313c9-4eaf-40c9-91c8-da453346a1d4"
+      ],
+      "batch_id": "JP-CARDS-004",
+      "source_code": "scrydex",
+      "provider_id": "neo1_ja-28",
+      "image_url": "https://images.scrydex.com/pokemon/neo1_ja-28/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/f107d167dd2d0ca9268ea93c7b2c718c011d9eae46adadb7ef3121429e18396a/original.png",
+          "sha256": "f107d167dd2d0ca9268ea93c7b2c718c011d9eae46adadb7ef3121429e18396a",
+          "byte_size": 736875,
+          "width": 567,
+          "height": 800,
+          "mime_type": "image/png",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/c014f0831a1d2a1d8125f4af6a83cf25f3cf9f325ab77bbe21b0ce096b767e6d/card-grid.webp",
+          "sha256": "c014f0831a1d2a1d8125f4af6a83cf25f3cf9f325ab77bbe21b0ce096b767e6d",
+          "byte_size": 20104,
+          "width": 240,
+          "height": 339,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "search-result",
+          "file": "objects/82de79f7d5c731f81eac69d8772b5db95bf944502e392aa5e97452e2b29b32c4/search-result.webp",
+          "sha256": "82de79f7d5c731f81eac69d8772b5db95bf944502e392aa5e97452e2b29b32c4",
+          "byte_size": 4128,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/dbaf0d0d117b2dad2130cb368696057c8dadd019b01b2b607fc781a78b2d3af1/detail-page.webp",
+          "sha256": "dbaf0d0d117b2dad2130cb368696057c8dadd019b01b2b607fc781a78b2d3af1",
+          "byte_size": 69388,
+          "width": 567,
+          "height": 800,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo1_ja-28/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/mantine/neo1_ja-28?variant=normal",
+        "provider_id": "neo1_ja-28",
+        "source_metadata_sha256": "9e06ac64f1d6938efac21360ac814aa33d96feebeea71eb152cf1edc7b9e8bc3",
+        "source_signature": {
+          "category": "Pokemon",
+          "dex": [
+            226
+          ],
+          "hp": 60,
+          "types": [
+            "Water"
+          ],
+          "stage": "Basic",
+          "rarity": "Common",
+          "costs": [
+            [
+              "Water",
+              "Water"
+            ]
+          ]
+        },
+        "source_body": {
+          "printed_name": "マンタイン",
+          "printed_dex_number": "No.226",
+          "hp": 60,
+          "artist": "Ken Sugimori",
+          "attack_costs": [
+            [
+              "水",
+              "水"
+            ]
+          ],
+          "attack_damage": [
+            "20"
+          ],
+          "rules_or_attack_text_visible": true,
+          "rarity_mark": "●",
+          "neo_expansion_symbol_observed": true,
+          "source_variant_support": {
+            "currentFinish": "normal",
+            "providerVariant": "normal",
+            "sourceNames": [
+              "normal"
+            ],
+            "metadataLabelSupported": true,
+            "physicalProof": false
+          },
+          "metadata_attacks": [
+            {
+              "cost": [
+                "水",
+                "水"
+              ],
+              "converted_energy_cost": 2,
+              "name": "ゆらゆらおよぐ",
+              "text": "コインを投げて「おもて」なら、次の相手の番、このカードはワザによるダメージや効果を受けない。",
+              "damage": "20"
+            }
+          ],
+          "provider_metadata_discrepancies": []
+        },
+        "printed_identity": {
+          "canonical_alias": "028",
+          "printed_national_dex": "No.226",
+          "canonical_alias_is_not_printed_national_dex": true,
+          "current_native_label": "マンティン",
+          "verified_printed_native_name": "マンタイン",
+          "current_native_label_not_used_for_match": true,
+          "known_native_label_defect_retained_without_write": true
+        },
+        "pixel_identity": {
+          "whole_original_inspected": true,
+          "full_frame_visible": true,
+          "name_number_and_symbol_readable": true,
+          "fine_print_readable": true,
+          "copyright_or_date_line_visible": false,
+          "copyright_year_inferred": false,
+          "edition_stamp_visible": false,
+          "edition_or_distribution_certified": false,
+          "material_foil_finish_certified": false,
+          "physical_card_or_material_not_observed": true,
+          "source_image_has_rendered_foil_like_background": false,
+          "source_image_does_not_certify_physical_finish": true
+        },
+        "identity_limits": {
+          "printed_national_dex_is_not_catalogue_alias": true,
+          "native_label_repair_proposal_retained_separately": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedNationalDexOpticallyVerified": true,
+          "canonicalAliasIsNotPrintedNationalDex": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "d67e5b17-e653-4969-8f1e-c609130834ae",
+      "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+      "set_code": "neo1",
+      "language_code": "ja",
+      "collector_number": "029",
+      "card_native_name": "シードラ",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "60736520-06a9-47ed-a5c1-088f101562cc"
+      ],
+      "batch_id": "JP-CARDS-004",
+      "source_code": "scrydex",
+      "provider_id": "neo1_ja-29",
+      "image_url": "https://images.scrydex.com/pokemon/neo1_ja-29/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/f84e8bdf6fa38716cbd28fbca645c3835c8eb080897c9c37764750ddd9972be4/original.png",
+          "sha256": "f84e8bdf6fa38716cbd28fbca645c3835c8eb080897c9c37764750ddd9972be4",
+          "byte_size": 786998,
+          "width": 565,
+          "height": 800,
+          "mime_type": "image/png",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/40df97bdd5e5aeab043e44b59178edf6a5b0c0da279fcd4ed3fa14bb56d3c8c8/card-grid.webp",
+          "sha256": "40df97bdd5e5aeab043e44b59178edf6a5b0c0da279fcd4ed3fa14bb56d3c8c8",
+          "byte_size": 22674,
+          "width": 240,
+          "height": 340,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "search-result",
+          "file": "objects/486d80a51fd36a9cf8d03f256e27bb032a2559e0594d68bbb13b080b0229890f/search-result.webp",
+          "sha256": "486d80a51fd36a9cf8d03f256e27bb032a2559e0594d68bbb13b080b0229890f",
+          "byte_size": 4398,
+          "width": 96,
+          "height": 136,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/cc2356ecefab5bedb740010ed8001f65a5f7783c0837af499e998e6fb696670d/detail-page.webp",
+          "sha256": "cc2356ecefab5bedb740010ed8001f65a5f7783c0837af499e998e6fb696670d",
+          "byte_size": 79128,
+          "width": 565,
+          "height": 800,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo1_ja-29/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/seadra/neo1_ja-29?variant=normal",
+        "provider_id": "neo1_ja-29",
+        "source_metadata_sha256": "1449f4d7dd5445123cd9dc681aaaaca0ea2beaad8f2a20da7cae66bc7a941042",
+        "source_signature": {
+          "category": "Pokemon",
+          "dex": [
+            117
+          ],
+          "hp": 70,
+          "types": [
+            "Water"
+          ],
+          "stage": "Stage1",
+          "rarity": "Uncommon",
+          "costs": [
+            [
+              "Water"
+            ],
+            [
+              "Water",
+              "Water"
+            ]
+          ]
+        },
+        "source_body": {
+          "printed_name": "シードラ",
+          "printed_dex_number": "No.117",
+          "hp": 70,
+          "artist": "Shin-ichi Yoshida",
+          "attack_costs": [
+            [
+              "水"
+            ],
+            [
+              "水",
+              "水"
+            ]
+          ],
+          "attack_damage": [
+            "10",
+            "30"
+          ],
+          "rules_or_attack_text_visible": true,
+          "rarity_mark": "♦",
+          "neo_expansion_symbol_observed": true,
+          "source_variant_support": {
+            "currentFinish": "normal",
+            "providerVariant": "normal",
+            "sourceNames": [
+              "normal"
+            ],
+            "metadataLabelSupported": true,
+            "physicalProof": false
+          },
+          "metadata_attacks": [
+            {
+              "cost": [
+                "水"
+              ],
+              "converted_energy_cost": 1,
+              "name": "あわ",
+              "text": "コインを投げて「おもて」なら、相手を「マヒ」状態にする。",
+              "damage": "10"
+            },
+            {
+              "cost": [
+                "水",
+                "水"
+              ],
+              "converted_energy_cost": 2,
+              "name": "みずかけ",
+              "text": "コインを投げて「おもて」なら、相手の控えポケモンを1匹選び、そのポケモンにも、「弱点・抵抗力」に関係なく、10ダメージ。",
+              "damage": "30"
+            }
+          ],
+          "provider_metadata_discrepancies": []
+        },
+        "printed_identity": {
+          "canonical_alias": "029",
+          "printed_national_dex": "No.117",
+          "canonical_alias_is_not_printed_national_dex": true,
+          "current_native_label": "シードラ",
+          "verified_printed_native_name": "シードラ",
+          "current_native_label_not_used_for_match": true,
+          "known_native_label_defect_retained_without_write": false
+        },
+        "pixel_identity": {
+          "whole_original_inspected": true,
+          "full_frame_visible": true,
+          "name_number_and_symbol_readable": true,
+          "fine_print_readable": true,
+          "copyright_or_date_line_visible": false,
+          "copyright_year_inferred": false,
+          "edition_stamp_visible": false,
+          "edition_or_distribution_certified": false,
+          "material_foil_finish_certified": false,
+          "physical_card_or_material_not_observed": true,
+          "source_image_has_rendered_foil_like_background": false,
+          "source_image_does_not_certify_physical_finish": true
+        },
+        "identity_limits": {
+          "printed_national_dex_is_not_catalogue_alias": true,
+          "native_label_repair_proposal_retained_separately": false,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedNationalDexOpticallyVerified": true,
+          "canonicalAliasIsNotPrintedNationalDex": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "da798c7c-dbb3-4622-9f65-5801a8d98370",
+      "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+      "set_code": "neo1",
+      "language_code": "ja",
+      "collector_number": "030",
+      "card_native_name": "クロコノー",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "fc7c3882-aa1c-4992-bf08-620b15033ff8"
+      ],
+      "batch_id": "JP-CARDS-004",
+      "source_code": "scrydex",
+      "provider_id": "neo1_ja-30",
+      "image_url": "https://images.scrydex.com/pokemon/neo1_ja-30/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/6215edf26cbcf13ddc420085c281e41609492b7963557c76b0adcf2747fbc402/original.png",
+          "sha256": "6215edf26cbcf13ddc420085c281e41609492b7963557c76b0adcf2747fbc402",
+          "byte_size": 801991,
+          "width": 565,
+          "height": 800,
+          "mime_type": "image/png",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/01a908ff7bbe418302dbbd064cae952fed5ca9089d5e4afcc4805924506beaf2/card-grid.webp",
+          "sha256": "01a908ff7bbe418302dbbd064cae952fed5ca9089d5e4afcc4805924506beaf2",
+          "byte_size": 23442,
+          "width": 240,
+          "height": 340,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "search-result",
+          "file": "objects/6928d8f1c5ca411b76b63b481911e5ce6e227a874d8aad7c3a075449056b4bc0/search-result.webp",
+          "sha256": "6928d8f1c5ca411b76b63b481911e5ce6e227a874d8aad7c3a075449056b4bc0",
+          "byte_size": 4976,
+          "width": 96,
+          "height": 136,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/c5fbe17ef4cc04555038dab8e896453a9aac2cb2cc0701ec84cb09f2ad726e7c/detail-page.webp",
+          "sha256": "c5fbe17ef4cc04555038dab8e896453a9aac2cb2cc0701ec84cb09f2ad726e7c",
+          "byte_size": 79212,
+          "width": 565,
+          "height": 800,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo1_ja-30/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/croconaw/neo1_ja-30?variant=normal",
+        "provider_id": "neo1_ja-30",
+        "source_metadata_sha256": "17c333e4a5e9c2785842216d022a8d2dcab894ad68bba29a8c20208fab662aaf",
+        "source_signature": {
+          "category": "Pokemon",
+          "dex": [
+            159
+          ],
+          "hp": 70,
+          "types": [
+            "Water"
+          ],
+          "stage": "Stage1",
+          "rarity": "Uncommon",
+          "costs": [
+            [
+              "Colorless"
+            ],
+            [
+              "Colorless",
+              "Water",
+              "Water"
+            ]
+          ]
+        },
+        "source_body": {
+          "printed_name": "アリゲイツ",
+          "printed_dex_number": "No.159",
+          "hp": 70,
+          "artist": "Ken Sugimori",
+          "attack_costs": [
+            [
+              "無"
+            ],
+            [
+              "水",
+              "水",
+              "無"
+            ]
+          ],
+          "attack_damage": [
+            null,
+            "30"
+          ],
+          "rules_or_attack_text_visible": true,
+          "rarity_mark": "♦",
+          "neo_expansion_symbol_observed": true,
+          "source_variant_support": {
+            "currentFinish": "normal",
+            "providerVariant": "normal",
+            "sourceNames": [
+              "normal"
+            ],
+            "metadataLabelSupported": true,
+            "physicalProof": false
+          },
+          "metadata_attacks": [
+            {
+              "cost": [
+                "無"
+              ],
+              "converted_energy_cost": 1,
+              "name": "いやなおと",
+              "text": "次の自分の番が終わるまで、このワザを受けた相手がワザによるダメージを受けるたび、そのダメージは「+20」される。",
+              "damage": null
+            },
+            {
+              "cost": [
+                "水",
+                "水",
+                "無"
+              ],
+              "converted_energy_cost": 3,
+              "name": "くいつく",
+              "text": "次の相手の番、このワザを受けた相手は、このカードがバトル場にいるかぎり、バトル場をはなれられない。（「きぜつ」した場合をのぞく）",
+              "damage": "30"
+            }
+          ],
+          "provider_metadata_discrepancies": []
+        },
+        "printed_identity": {
+          "canonical_alias": "030",
+          "printed_national_dex": "No.159",
+          "canonical_alias_is_not_printed_national_dex": true,
+          "current_native_label": "クロコノー",
+          "verified_printed_native_name": "アリゲイツ",
+          "current_native_label_not_used_for_match": true,
+          "known_native_label_defect_retained_without_write": true
+        },
+        "pixel_identity": {
+          "whole_original_inspected": true,
+          "full_frame_visible": true,
+          "name_number_and_symbol_readable": true,
+          "fine_print_readable": true,
+          "copyright_or_date_line_visible": false,
+          "copyright_year_inferred": false,
+          "edition_stamp_visible": false,
+          "edition_or_distribution_certified": false,
+          "material_foil_finish_certified": false,
+          "physical_card_or_material_not_observed": true,
+          "source_image_has_rendered_foil_like_background": false,
+          "source_image_does_not_certify_physical_finish": true
+        },
+        "identity_limits": {
+          "printed_national_dex_is_not_catalogue_alias": true,
+          "native_label_repair_proposal_retained_separately": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedNationalDexOpticallyVerified": true,
+          "canonicalAliasIsNotPrintedNationalDex": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "06193c75-1091-42df-b759-74919a754ff3",
+      "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+      "set_code": "neo1",
+      "language_code": "ja",
+      "collector_number": "031",
+      "card_native_name": "quagsire",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "3bc908b8-dd19-4e5c-ad00-d41944253d5e"
+      ],
+      "batch_id": "JP-CARDS-004",
+      "source_code": "scrydex",
+      "provider_id": "neo1_ja-31",
+      "image_url": "https://images.scrydex.com/pokemon/neo1_ja-31/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/83a42faea924ca016ab9ee15ec7e56faa4d38b36de45c4257d3009f7d61cc440/original.png",
+          "sha256": "83a42faea924ca016ab9ee15ec7e56faa4d38b36de45c4257d3009f7d61cc440",
+          "byte_size": 718176,
+          "width": 570,
+          "height": 794,
+          "mime_type": "image/png",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/6f3a98b2cf1e08194cca5815e78abad05aafc4b80aa02f862bdc350aa627142b/card-grid.webp",
+          "sha256": "6f3a98b2cf1e08194cca5815e78abad05aafc4b80aa02f862bdc350aa627142b",
+          "byte_size": 18508,
+          "width": 240,
+          "height": 334,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "search-result",
+          "file": "objects/a4e45ac4dd85aa63fb520ab681e2cc0b920193570a0580cdb5dc4bac20b383af/search-result.webp",
+          "sha256": "a4e45ac4dd85aa63fb520ab681e2cc0b920193570a0580cdb5dc4bac20b383af",
+          "byte_size": 4098,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/024211cc75f793b64b8ec2486dce645d00adfbd26421172b3cbdc47264f4f280/detail-page.webp",
+          "sha256": "024211cc75f793b64b8ec2486dce645d00adfbd26421172b3cbdc47264f4f280",
+          "byte_size": 64188,
+          "width": 570,
+          "height": 794,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo1_ja-31/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/quagsire/neo1_ja-31?variant=normal",
+        "provider_id": "neo1_ja-31",
+        "source_metadata_sha256": "175f35351e50e84b510ceeb72d9c999f40da12a4c0f39e4fa03dddb50353aed8",
+        "source_signature": {
+          "category": "Pokemon",
+          "dex": [
+            195
+          ],
+          "hp": 70,
+          "types": [
+            "Water"
+          ],
+          "stage": "Stage1",
+          "rarity": "Uncommon",
+          "costs": [
+            [
+              "Water",
+              "Water"
+            ],
+            [
+              "Colorless",
+              "Colorless",
+              "Fighting",
+              "Fighting"
+            ]
+          ]
+        },
+        "source_body": {
+          "printed_name": "ヌオー",
+          "printed_dex_number": "No.195",
+          "hp": 70,
+          "artist": "Atsuko Nishida",
+          "attack_costs": [
+            [
+              "水",
+              "水"
+            ],
+            [
+              "闘",
+              "闘",
+              "無",
+              "無"
+            ]
+          ],
+          "attack_damage": [
+            "30",
+            "60"
+          ],
+          "rules_or_attack_text_visible": true,
+          "rarity_mark": "♦",
+          "neo_expansion_symbol_observed": true,
+          "source_variant_support": {
+            "currentFinish": "normal",
+            "providerVariant": "normal",
+            "sourceNames": [
+              "normal"
+            ],
+            "metadataLabelSupported": true,
+            "physicalProof": false
+          },
+          "metadata_attacks": [
+            {
+              "cost": [
+                "水",
+                "水"
+              ],
+              "converted_energy_cost": 2,
+              "name": "なみのり",
+              "text": "",
+              "damage": "30"
+            },
+            {
+              "cost": [
+                "闘",
+                "闘",
+                "無",
+                "無"
+              ],
+              "converted_energy_cost": 4,
+              "name": "じしん",
+              "text": "自分の控えポケモン全員にも、10ダメージ。",
+              "damage": "60"
+            }
+          ],
+          "provider_metadata_discrepancies": []
+        },
+        "printed_identity": {
+          "canonical_alias": "031",
+          "printed_national_dex": "No.195",
+          "canonical_alias_is_not_printed_national_dex": true,
+          "current_native_label": "quagsire",
+          "verified_printed_native_name": "ヌオー",
+          "current_native_label_not_used_for_match": true,
+          "known_native_label_defect_retained_without_write": true
+        },
+        "pixel_identity": {
+          "whole_original_inspected": true,
+          "full_frame_visible": true,
+          "name_number_and_symbol_readable": true,
+          "fine_print_readable": true,
+          "copyright_or_date_line_visible": false,
+          "copyright_year_inferred": false,
+          "edition_stamp_visible": false,
+          "edition_or_distribution_certified": false,
+          "material_foil_finish_certified": false,
+          "physical_card_or_material_not_observed": true,
+          "source_image_has_rendered_foil_like_background": false,
+          "source_image_does_not_certify_physical_finish": true
+        },
+        "identity_limits": {
+          "printed_national_dex_is_not_catalogue_alias": true,
+          "native_label_repair_proposal_retained_separately": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedNationalDexOpticallyVerified": true,
+          "canonicalAliasIsNotPrintedNationalDex": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "0e89b987-0853-43db-9063-1411965138bd",
+      "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+      "set_code": "neo1",
+      "language_code": "ja",
+      "collector_number": "032",
+      "card_native_name": "ピロスワイン",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "ecc0a1b2-e7c1-45d3-9d79-722a9917d57f"
+      ],
+      "batch_id": "JP-CARDS-004",
+      "source_code": "scrydex",
+      "provider_id": "neo1_ja-32",
+      "image_url": "https://images.scrydex.com/pokemon/neo1_ja-32/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/c06fb253b387b939922c24c6ca33b3eb5493394ea2da669768354871c3ad0aaf/original.png",
+          "sha256": "c06fb253b387b939922c24c6ca33b3eb5493394ea2da669768354871c3ad0aaf",
+          "byte_size": 751091,
+          "width": 570,
+          "height": 794,
+          "mime_type": "image/png",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/a3c98a63b3f987f9ef0825a91eb9873714d54f57c179b5cb227fa60a893ac856/card-grid.webp",
+          "sha256": "a3c98a63b3f987f9ef0825a91eb9873714d54f57c179b5cb227fa60a893ac856",
+          "byte_size": 20720,
+          "width": 240,
+          "height": 334,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "search-result",
+          "file": "objects/0aff3bbb5c2baee32d75b74d5cef3fee80591d8fd429c8871fc2be0a3a9aa819/search-result.webp",
+          "sha256": "0aff3bbb5c2baee32d75b74d5cef3fee80591d8fd429c8871fc2be0a3a9aa819",
+          "byte_size": 4072,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/2521f334c1b0e1ce03717d3f9f8b0f8673d9499bc80cb84d0f16c1dce0a60ba3/detail-page.webp",
+          "sha256": "2521f334c1b0e1ce03717d3f9f8b0f8673d9499bc80cb84d0f16c1dce0a60ba3",
+          "byte_size": 74566,
+          "width": 570,
+          "height": 794,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo1_ja-32/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/piloswine/neo1_ja-32?variant=normal",
+        "provider_id": "neo1_ja-32",
+        "source_metadata_sha256": "41e76ea9cc55ea2a7397dbbb82eb2bae662b75787279a95d5d5f6c678aef9228",
+        "source_signature": {
+          "category": "Pokemon",
+          "dex": [
+            221
+          ],
+          "hp": 80,
+          "types": [
+            "Water"
+          ],
+          "stage": "Stage1",
+          "rarity": "Uncommon",
+          "costs": [
+            [
+              "Water",
+              "Water"
+            ],
+            [
+              "Water",
+              "Water",
+              "Water"
+            ]
+          ]
+        },
+        "source_body": {
+          "printed_name": "イノムー",
+          "printed_dex_number": "No.221",
+          "hp": 80,
+          "artist": "Ken Sugimori",
+          "attack_costs": [
+            [
+              "水",
+              "水"
+            ],
+            [
+              "水",
+              "水",
+              "水"
+            ]
+          ],
+          "attack_damage": [
+            "10",
+            "30"
+          ],
+          "rules_or_attack_text_visible": true,
+          "rarity_mark": "♦",
+          "neo_expansion_symbol_observed": true,
+          "source_variant_support": {
+            "currentFinish": "normal",
+            "providerVariant": "normal",
+            "sourceNames": [
+              "normal"
+            ],
+            "metadataLabelSupported": true,
+            "physicalProof": false
+          },
+          "metadata_attacks": [
+            {
+              "cost": [
+                "水",
+                "水"
+              ],
+              "converted_energy_cost": 2,
+              "name": "こおりつかせる",
+              "text": "コインを投げ、「おもて」なら、以後、このワザを受けた相手は、「ワザ」を使うことができない。（相手がバトル場をはなれたとき、この効果は消える）",
+              "damage": "10"
+            },
+            {
+              "cost": [
+                "水",
+                "水",
+                "水"
+              ],
+              "converted_energy_cost": 3,
+              "name": "ふぶき",
+              "text": "コインを投げて、「おもて」なら相手の控えポケモン全員に、「うら」なら自分の控えポケモン全員に、「弱点・抵抗力」に関係なく、それぞれ10ダメージ。",
+              "damage": "30"
+            }
+          ],
+          "provider_metadata_discrepancies": []
+        },
+        "printed_identity": {
+          "canonical_alias": "032",
+          "printed_national_dex": "No.221",
+          "canonical_alias_is_not_printed_national_dex": true,
+          "current_native_label": "ピロスワイン",
+          "verified_printed_native_name": "イノムー",
+          "current_native_label_not_used_for_match": true,
+          "known_native_label_defect_retained_without_write": true
+        },
+        "pixel_identity": {
+          "whole_original_inspected": true,
+          "full_frame_visible": true,
+          "name_number_and_symbol_readable": true,
+          "fine_print_readable": true,
+          "copyright_or_date_line_visible": false,
+          "copyright_year_inferred": false,
+          "edition_stamp_visible": false,
+          "edition_or_distribution_certified": false,
+          "material_foil_finish_certified": false,
+          "physical_card_or_material_not_observed": true,
+          "source_image_has_rendered_foil_like_background": false,
+          "source_image_does_not_certify_physical_finish": true
+        },
+        "identity_limits": {
+          "printed_national_dex_is_not_catalogue_alias": true,
+          "native_label_repair_proposal_retained_separately": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedNationalDexOpticallyVerified": true,
+          "canonicalAliasIsNotPrintedNationalDex": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "ff82db98-30a8-4b05-9ea2-c6d60f1a5a10",
+      "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+      "set_code": "neo1",
+      "language_code": "ja",
+      "collector_number": "033",
+      "card_native_name": "feraligatr",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "04072ea2-9dae-4087-8984-051970a46b2c"
+      ],
+      "batch_id": "JP-CARDS-004",
+      "source_code": "scrydex",
+      "provider_id": "neo1_ja-33",
+      "image_url": "https://images.scrydex.com/pokemon/neo1_ja-33/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/76759210c8b6f0b8c728d540a99fb0dbe600446b041b3b46b01bbc222aeece7b/original.png",
+          "sha256": "76759210c8b6f0b8c728d540a99fb0dbe600446b041b3b46b01bbc222aeece7b",
+          "byte_size": 786916,
+          "width": 570,
+          "height": 797,
+          "mime_type": "image/png",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/c834c729bea6c22ef998eb0c207d68c9f97765428f637589354302308461a467/card-grid.webp",
+          "sha256": "c834c729bea6c22ef998eb0c207d68c9f97765428f637589354302308461a467",
+          "byte_size": 22428,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "search-result",
+          "file": "objects/e1f9f2805b017acc9ddb50dfb7e0174212d57321a433f4339891e8cbd6158d0a/search-result.webp",
+          "sha256": "e1f9f2805b017acc9ddb50dfb7e0174212d57321a433f4339891e8cbd6158d0a",
+          "byte_size": 4754,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/65a6b37fbd515ac4e9f3c1145e2b9de43bf2ed79f470551e62a3e298eb184f5a/detail-page.webp",
+          "sha256": "65a6b37fbd515ac4e9f3c1145e2b9de43bf2ed79f470551e62a3e298eb184f5a",
+          "byte_size": 74520,
+          "width": 570,
+          "height": 797,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo1_ja-33/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/feraligatr/neo1_ja-33?variant=holofoil",
+        "provider_id": "neo1_ja-33",
+        "source_metadata_sha256": "4be31ec6a20631babf114df7bc259d19bb1032b54bd7dcee8188e0c71e0823a6",
+        "source_signature": {
+          "category": "Pokemon",
+          "dex": [
+            160
+          ],
+          "hp": 100,
+          "types": [
+            "Water"
+          ],
+          "stage": "Stage2",
+          "rarity": "Holo Rare",
+          "costs": [
+            [
+              "Water",
+              "Water",
+              "Water",
+              "Water"
+            ]
+          ]
+        },
+        "source_body": {
+          "printed_name": "オーダイル",
+          "printed_dex_number": "No.160",
+          "hp": 100,
+          "artist": "Ken Sugimori",
+          "attack_costs": [
+            [
+              "水",
+              "水",
+              "水",
+              "水"
+            ]
+          ],
+          "attack_damage": [
+            "50+"
+          ],
+          "rules_or_attack_text_visible": true,
+          "rarity_mark": "★H",
+          "neo_expansion_symbol_observed": true,
+          "source_variant_support": {
+            "currentFinish": "holo",
+            "providerVariant": "holofoil",
+            "sourceNames": [
+              "holofoil"
+            ],
+            "metadataLabelSupported": true,
+            "physicalProof": false
+          },
+          "metadata_attacks": [
+            {
+              "cost": [
+                "水",
+                "水",
+                "水",
+                "水"
+              ],
+              "converted_energy_cost": 4,
+              "name": "いかりのキバ",
+              "text": "自分にのっているダメージカウンターの数ぶんコインを投げ、「おもて」の数×10ダメージを追加する。",
+              "damage": "50+"
+            }
+          ],
+          "provider_metadata_discrepancies": [
+            {
+              "field": "attack.damage",
+              "attackIndex": 1,
+              "sourceNativeAttackName": "いかりのキバ",
+              "sourceEnglishAttackName": "Chomp",
+              "sourceDamage": "50+",
+              "tcgdexDamage": null,
+              "reason": "tcgdex_damage_omitted",
+              "pixelResolution": true,
+              "canonicalCorrection": false,
+              "pixelObservation": "Damage sign is visually readable on the inspected whole front; source omission remains recorded and no canonical text change was made."
+            }
+          ]
+        },
+        "printed_identity": {
+          "canonical_alias": "033",
+          "printed_national_dex": "No.160",
+          "canonical_alias_is_not_printed_national_dex": true,
+          "current_native_label": "feraligatr",
+          "verified_printed_native_name": "オーダイル",
+          "current_native_label_not_used_for_match": true,
+          "known_native_label_defect_retained_without_write": true
+        },
+        "pixel_identity": {
+          "whole_original_inspected": true,
+          "full_frame_visible": true,
+          "name_number_and_symbol_readable": true,
+          "fine_print_readable": true,
+          "copyright_or_date_line_visible": false,
+          "copyright_year_inferred": false,
+          "edition_stamp_visible": false,
+          "edition_or_distribution_certified": false,
+          "material_foil_finish_certified": false,
+          "physical_card_or_material_not_observed": true,
+          "source_image_has_rendered_foil_like_background": true,
+          "source_image_does_not_certify_physical_finish": true
+        },
+        "identity_limits": {
+          "printed_national_dex_is_not_catalogue_alias": true,
+          "native_label_repair_proposal_retained_separately": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedNationalDexOpticallyVerified": true,
+          "canonicalAliasIsNotPrintedNationalDex": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "1ac901c2-f3e1-44ef-8847-cf5a010d05da",
+      "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+      "set_code": "neo1",
+      "language_code": "ja",
+      "collector_number": "034",
+      "card_native_name": "アズマリル",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "66c0e295-1531-4d42-a1ae-5cb2d33b3de5"
+      ],
+      "batch_id": "JP-CARDS-004",
+      "source_code": "scrydex",
+      "provider_id": "neo1_ja-34",
+      "image_url": "https://images.scrydex.com/pokemon/neo1_ja-34/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/ef4ab1a8f10d4abd3edbb7d8a68a8bc7f6ee2eb315b17ae0965bea89a41e50fa/original.png",
+          "sha256": "ef4ab1a8f10d4abd3edbb7d8a68a8bc7f6ee2eb315b17ae0965bea89a41e50fa",
+          "byte_size": 853425,
+          "width": 570,
+          "height": 799,
+          "mime_type": "image/png",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/fe0374f387e4fe6556701b556ead1eaaa170337dd3ee94ef01f9b566f73828e1/card-grid.webp",
+          "sha256": "fe0374f387e4fe6556701b556ead1eaaa170337dd3ee94ef01f9b566f73828e1",
+          "byte_size": 25702,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "search-result",
+          "file": "objects/ef767e74279aa43d67a0a279893f5ab3d589020e7a90d3651d74272e127d2f2f/search-result.webp",
+          "sha256": "ef767e74279aa43d67a0a279893f5ab3d589020e7a90d3651d74272e127d2f2f",
+          "byte_size": 4970,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/d56c4fb7d5c080fee4e3c34298b8336a8008f179a7019cdcb54cd9ac479e2ca0/detail-page.webp",
+          "sha256": "d56c4fb7d5c080fee4e3c34298b8336a8008f179a7019cdcb54cd9ac479e2ca0",
+          "byte_size": 89440,
+          "width": 570,
+          "height": 799,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo1_ja-34/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/azumarill/neo1_ja-34?variant=holofoil",
+        "provider_id": "neo1_ja-34",
+        "source_metadata_sha256": "a52b67a8528ad374483c67c4c04dd5f2afef80f603810cdeecc036852bde04c6",
+        "source_signature": {
+          "category": "Pokemon",
+          "dex": [
+            184
+          ],
+          "hp": 70,
+          "types": [
+            "Water"
+          ],
+          "stage": "Stage1",
+          "rarity": "Holo Rare",
+          "costs": [
+            [
+              "Colorless",
+              "Colorless"
+            ],
+            [
+              "Water",
+              "Water",
+              "Water"
+            ]
+          ]
+        },
+        "source_body": {
+          "printed_name": "マリルリ",
+          "printed_dex_number": "No.184",
+          "hp": 70,
+          "artist": "Ken Sugimori",
+          "attack_costs": [
+            [
+              "無",
+              "無"
+            ],
+            [
+              "水",
+              "水",
+              "水"
+            ]
+          ],
+          "attack_damage": [
+            "20",
+            "30"
+          ],
+          "rules_or_attack_text_visible": true,
+          "rarity_mark": "★H",
+          "neo_expansion_symbol_observed": true,
+          "source_variant_support": {
+            "currentFinish": "holo",
+            "providerVariant": "holofoil",
+            "sourceNames": [
+              "holofoil"
+            ],
+            "metadataLabelSupported": true,
+            "physicalProof": false
+          },
+          "metadata_attacks": [
+            {
+              "cost": [
+                "無",
+                "無"
+              ],
+              "converted_energy_cost": 2,
+              "name": "たいあたり",
+              "text": "",
+              "damage": "20"
+            },
+            {
+              "cost": [
+                "水",
+                "水",
+                "水"
+              ],
+              "converted_energy_cost": 3,
+              "name": "バブルシャワー",
+              "text": "コインを投げて「おもて」なら、相手を「マヒ」状態にし、相手の控えポケモン全員にも、「弱点・抵抗力」に関係なく、それぞれ10ダメージ。",
+              "damage": "30"
+            }
+          ],
+          "provider_metadata_discrepancies": []
+        },
+        "printed_identity": {
+          "canonical_alias": "034",
+          "printed_national_dex": "No.184",
+          "canonical_alias_is_not_printed_national_dex": true,
+          "current_native_label": "アズマリル",
+          "verified_printed_native_name": "マリルリ",
+          "current_native_label_not_used_for_match": true,
+          "known_native_label_defect_retained_without_write": true
+        },
+        "pixel_identity": {
+          "whole_original_inspected": true,
+          "full_frame_visible": true,
+          "name_number_and_symbol_readable": true,
+          "fine_print_readable": true,
+          "copyright_or_date_line_visible": false,
+          "copyright_year_inferred": false,
+          "edition_stamp_visible": false,
+          "edition_or_distribution_certified": false,
+          "material_foil_finish_certified": false,
+          "physical_card_or_material_not_observed": true,
+          "source_image_has_rendered_foil_like_background": true,
+          "source_image_does_not_certify_physical_finish": true
+        },
+        "identity_limits": {
+          "printed_national_dex_is_not_catalogue_alias": true,
+          "native_label_repair_proposal_retained_separately": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedNationalDexOpticallyVerified": true,
+          "canonicalAliasIsNotPrintedNationalDex": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "cbd2d3d0-b97a-4180-815f-73fd727c0ad9",
+      "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+      "set_code": "neo1",
+      "language_code": "ja",
+      "collector_number": "035",
+      "card_native_name": "キングドラ",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "aa7fa9f6-706f-42b0-9d72-758f6b9327a4"
+      ],
+      "batch_id": "JP-CARDS-004",
+      "source_code": "scrydex",
+      "provider_id": "neo1_ja-35",
+      "image_url": "https://images.scrydex.com/pokemon/neo1_ja-35/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/4318b5d954514eb1b1e54d2f62382b43e6d9804595ce9944fd2f892b1f6ce2b4/original.png",
+          "sha256": "4318b5d954514eb1b1e54d2f62382b43e6d9804595ce9944fd2f892b1f6ce2b4",
+          "byte_size": 780257,
+          "width": 570,
+          "height": 799,
+          "mime_type": "image/png",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/16b2ebeba0e8dd9549ccb2545fd3e7efcd6461a55c97f2f847d4255f2491dfa7/card-grid.webp",
+          "sha256": "16b2ebeba0e8dd9549ccb2545fd3e7efcd6461a55c97f2f847d4255f2491dfa7",
+          "byte_size": 22710,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "search-result",
+          "file": "objects/50f8084a2846baa2d1288b6471db4e2acbc9237e232fc475c5acdb68d1bfcf66/search-result.webp",
+          "sha256": "50f8084a2846baa2d1288b6471db4e2acbc9237e232fc475c5acdb68d1bfcf66",
+          "byte_size": 4700,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/476eb0917aa67ba1ddf4fa9a7da494736023d331b15368062148aa1a64bc92d1/detail-page.webp",
+          "sha256": "476eb0917aa67ba1ddf4fa9a7da494736023d331b15368062148aa1a64bc92d1",
+          "byte_size": 74864,
+          "width": 570,
+          "height": 799,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo1_ja-35/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/kingdra/neo1_ja-35?variant=holofoil",
+        "provider_id": "neo1_ja-35",
+        "source_metadata_sha256": "bea2e5387644341766650889d56d3af51ac20943e79584674e87d36100d46b82",
+        "source_signature": {
+          "category": "Pokemon",
+          "dex": [
+            230
+          ],
+          "hp": 90,
+          "types": [
+            "Water"
+          ],
+          "stage": "Stage2",
+          "rarity": "Holo Rare",
+          "costs": [
+            [
+              "Colorless",
+              "Water",
+              "Water"
+            ],
+            [
+              "Water",
+              "Water",
+              "Water",
+              "Water"
+            ]
+          ]
+        },
+        "source_body": {
+          "printed_name": "キングドラ",
+          "printed_dex_number": "No.230",
+          "hp": 90,
+          "artist": "Ken Sugimori",
+          "attack_costs": [
+            [
+              "水",
+              "水",
+              "無"
+            ],
+            [
+              "水",
+              "水",
+              "水",
+              "水"
+            ]
+          ],
+          "attack_damage": [
+            "30",
+            "50"
+          ],
+          "rules_or_attack_text_visible": true,
+          "rarity_mark": "★H",
+          "neo_expansion_symbol_observed": true,
+          "source_variant_support": {
+            "currentFinish": "holo",
+            "providerVariant": "holofoil",
+            "sourceNames": [
+              "holofoil"
+            ],
+            "metadataLabelSupported": true,
+            "physicalProof": false
+          },
+          "metadata_attacks": [
+            {
+              "cost": [
+                "水",
+                "水",
+                "無"
+              ],
+              "converted_energy_cost": 3,
+              "name": "こうそくいどう",
+              "text": "コインを投げて「おもて」なら、次の相手の番、このカードはワザによるダメージや効果を受けない。",
+              "damage": "30"
+            },
+            {
+              "cost": [
+                "水",
+                "水",
+                "水",
+                "水"
+              ],
+              "converted_energy_cost": 4,
+              "name": "りゅうのたつまき",
+              "text": "相手が「きぜつ」しなければ、相手の控えポケモンを1匹選び、相手と入れ替える。",
+              "damage": "50"
+            }
+          ],
+          "provider_metadata_discrepancies": []
+        },
+        "printed_identity": {
+          "canonical_alias": "035",
+          "printed_national_dex": "No.230",
+          "canonical_alias_is_not_printed_national_dex": true,
+          "current_native_label": "キングドラ",
+          "verified_printed_native_name": "キングドラ",
+          "current_native_label_not_used_for_match": true,
+          "known_native_label_defect_retained_without_write": false
+        },
+        "pixel_identity": {
+          "whole_original_inspected": true,
+          "full_frame_visible": true,
+          "name_number_and_symbol_readable": true,
+          "fine_print_readable": true,
+          "copyright_or_date_line_visible": false,
+          "copyright_year_inferred": false,
+          "edition_stamp_visible": false,
+          "edition_or_distribution_certified": false,
+          "material_foil_finish_certified": false,
+          "physical_card_or_material_not_observed": true,
+          "source_image_has_rendered_foil_like_background": true,
+          "source_image_does_not_certify_physical_finish": true
+        },
+        "identity_limits": {
+          "printed_national_dex_is_not_catalogue_alias": true,
+          "native_label_repair_proposal_retained_separately": false,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedNationalDexOpticallyVerified": true,
+          "canonicalAliasIsNotPrintedNationalDex": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "78846023-e099-4f64-b256-91bdbdb5286c",
+      "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+      "set_code": "neo1",
+      "language_code": "ja",
+      "collector_number": "036",
+      "card_native_name": "ピカチュウ",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "1237e4de-387e-48a0-8438-3112ec693d51"
+      ],
+      "batch_id": "JP-CARDS-004",
+      "source_code": "scrydex",
+      "provider_id": "neo1_ja-36",
+      "image_url": "https://images.scrydex.com/pokemon/neo1_ja-36/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/670a5c1142d3e4627f6a4f13ad4b8b073eba4b7cdf3a4249b8e43482efe66fc7/original.png",
+          "sha256": "670a5c1142d3e4627f6a4f13ad4b8b073eba4b7cdf3a4249b8e43482efe66fc7",
+          "byte_size": 760459,
+          "width": 564,
+          "height": 800,
+          "mime_type": "image/png",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/0bb1b58d2c05bd3bd6b782f4f36a1660b74689dd9a3fb83d0de7ecd113c383b4/card-grid.webp",
+          "sha256": "0bb1b58d2c05bd3bd6b782f4f36a1660b74689dd9a3fb83d0de7ecd113c383b4",
+          "byte_size": 20196,
+          "width": 240,
+          "height": 340,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "search-result",
+          "file": "objects/2855328f0f97b36be1fee98f72347df09090dabd970cdc929a6d5c1db92214f1/search-result.webp",
+          "sha256": "2855328f0f97b36be1fee98f72347df09090dabd970cdc929a6d5c1db92214f1",
+          "byte_size": 4368,
+          "width": 96,
+          "height": 136,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/ce48780ed81ee7f8bfd96e88aadbfa678416a8598787d0e3247456467deeeda1/detail-page.webp",
+          "sha256": "ce48780ed81ee7f8bfd96e88aadbfa678416a8598787d0e3247456467deeeda1",
+          "byte_size": 71118,
+          "width": 564,
+          "height": 800,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo1_ja-36/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/pikachu/neo1_ja-36?variant=normal",
+        "provider_id": "neo1_ja-36",
+        "source_metadata_sha256": "3538c7748d57ee75a056b198fd309f53b7b7eb6a2efbb55ec27a488dc6f04ccb",
+        "source_signature": {
+          "category": "Pokemon",
+          "dex": [
+            25
+          ],
+          "hp": 50,
+          "types": [
+            "Lightning"
+          ],
+          "stage": "Basic",
+          "rarity": "Common",
+          "costs": [
+            [
+              "Colorless"
+            ],
+            [
+              "Colorless",
+              "Lightning",
+              "Lightning"
+            ]
+          ]
+        },
+        "source_body": {
+          "printed_name": "ピカチュウ",
+          "printed_dex_number": "No.025",
+          "hp": 50,
+          "artist": "Naoyo Kimura",
+          "attack_costs": [
+            [
+              "無"
+            ],
+            [
+              "雷",
+              "雷",
+              "無"
+            ]
+          ],
+          "attack_damage": [
+            "10+",
+            "20"
+          ],
+          "rules_or_attack_text_visible": true,
+          "rarity_mark": "●",
+          "neo_expansion_symbol_observed": true,
+          "source_variant_support": {
+            "currentFinish": "normal",
+            "providerVariant": "normal",
+            "sourceNames": [
+              "normal"
+            ],
+            "metadataLabelSupported": true,
+            "physicalProof": false
+          },
+          "metadata_attacks": [
+            {
+              "cost": [
+                "無"
+              ],
+              "converted_energy_cost": 1,
+              "name": "でんこうせっか",
+              "text": "コインを投げて「おもて」なら、20ダメージを追加する。",
+              "damage": "10+"
+            },
+            {
+              "cost": [
+                "雷",
+                "雷",
+                "無"
+              ],
+              "converted_energy_cost": 3,
+              "name": "こうそくいどう",
+              "text": "コインを投げて「おもて」なら、次の相手の番、このカードはワザによるダメージや効果を受けない。",
+              "damage": "20"
+            }
+          ],
+          "provider_metadata_discrepancies": [
+            {
+              "field": "attack.damage",
+              "attackIndex": 1,
+              "sourceNativeAttackName": "でんこうせっか",
+              "sourceEnglishAttackName": "Quick Attack",
+              "sourceDamage": "10+",
+              "tcgdexDamage": null,
+              "reason": "tcgdex_damage_omitted",
+              "pixelResolution": true,
+              "canonicalCorrection": false,
+              "pixelObservation": "Damage sign is visually readable on the inspected whole front; source omission remains recorded and no canonical text change was made."
+            }
+          ]
+        },
+        "printed_identity": {
+          "canonical_alias": "036",
+          "printed_national_dex": "No.025",
+          "canonical_alias_is_not_printed_national_dex": true,
+          "current_native_label": "ピカチュウ",
+          "verified_printed_native_name": "ピカチュウ",
+          "current_native_label_not_used_for_match": true,
+          "known_native_label_defect_retained_without_write": false
+        },
+        "pixel_identity": {
+          "whole_original_inspected": true,
+          "full_frame_visible": true,
+          "name_number_and_symbol_readable": true,
+          "fine_print_readable": true,
+          "copyright_or_date_line_visible": false,
+          "copyright_year_inferred": false,
+          "edition_stamp_visible": false,
+          "edition_or_distribution_certified": false,
+          "material_foil_finish_certified": false,
+          "physical_card_or_material_not_observed": true,
+          "source_image_has_rendered_foil_like_background": false,
+          "source_image_does_not_certify_physical_finish": true
+        },
+        "identity_limits": {
+          "printed_national_dex_is_not_catalogue_alias": true,
+          "native_label_repair_proposal_retained_separately": false,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedNationalDexOpticallyVerified": true,
+          "canonicalAliasIsNotPrintedNationalDex": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "70f7b66f-3e0a-4212-8921-4a332ec95715",
+      "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+      "set_code": "neo1",
+      "language_code": "ja",
+      "collector_number": "037",
+      "card_native_name": "チンチョウ",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "d3a7c6f8-7c7c-42b2-8604-229b0910c67d"
+      ],
+      "batch_id": "JP-CARDS-004",
+      "source_code": "scrydex",
+      "provider_id": "neo1_ja-37",
+      "image_url": "https://images.scrydex.com/pokemon/neo1_ja-37/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/b5f25753f77217c5de96ca9b5d2df2d61d410f2390e8f469700d72256bf2b80a/original.png",
+          "sha256": "b5f25753f77217c5de96ca9b5d2df2d61d410f2390e8f469700d72256bf2b80a",
+          "byte_size": 709073,
+          "width": 567,
+          "height": 800,
+          "mime_type": "image/png",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/1eac867e81bb16a94076e14e68684e1e3ccf69e49c6156373be9826ef5ed6e82/card-grid.webp",
+          "sha256": "1eac867e81bb16a94076e14e68684e1e3ccf69e49c6156373be9826ef5ed6e82",
+          "byte_size": 17000,
+          "width": 240,
+          "height": 339,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "search-result",
+          "file": "objects/3da039818bda113a4861fe6d2bc346d512c700d489231c5582129d1bed22d875/search-result.webp",
+          "sha256": "3da039818bda113a4861fe6d2bc346d512c700d489231c5582129d1bed22d875",
+          "byte_size": 4016,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/e73b5ecabb8984e12fa699172ce13cdf8def2a9c968dbcda3ce49556c96b243d/detail-page.webp",
+          "sha256": "e73b5ecabb8984e12fa699172ce13cdf8def2a9c968dbcda3ce49556c96b243d",
+          "byte_size": 61148,
+          "width": 567,
+          "height": 800,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo1_ja-37/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/chinchou/neo1_ja-37?variant=normal",
+        "provider_id": "neo1_ja-37",
+        "source_metadata_sha256": "93e13481e920e408cedaf74445ede07262951d81d5e62ab82621e918d76505e9",
+        "source_signature": {
+          "category": "Pokemon",
+          "dex": [
+            170
+          ],
+          "hp": 50,
+          "types": [
+            "Lightning"
+          ],
+          "stage": "Basic",
+          "rarity": "Common",
+          "costs": [
+            [
+              "Lightning"
+            ],
+            [
+              "Water"
+            ]
+          ]
+        },
+        "source_body": {
+          "printed_name": "チョンチー",
+          "printed_dex_number": "No.170",
+          "hp": 50,
+          "artist": "Ken Sugimori",
+          "attack_costs": [
+            [
+              "雷"
+            ],
+            [
+              "水"
+            ]
+          ],
+          "attack_damage": [
+            null,
+            "10×"
+          ],
+          "rules_or_attack_text_visible": true,
+          "rarity_mark": "●",
+          "neo_expansion_symbol_observed": true,
+          "source_variant_support": {
+            "currentFinish": "normal",
+            "providerVariant": "normal",
+            "sourceNames": [
+              "normal"
+            ],
+            "metadataLabelSupported": true,
+            "physicalProof": false
+          },
+          "metadata_attacks": [
+            {
+              "cost": [
+                "雷"
+              ],
+              "converted_energy_cost": 1,
+              "name": "ちょうおんぱ",
+              "text": "コインを投げて「おもて」なら、相手を「こんらん」状態にする。",
+              "damage": null
+            },
+            {
+              "cost": [
+                "水"
+              ],
+              "converted_energy_cost": 1,
+              "name": "じたばた",
+              "text": "自分にのっているダメージカウンターの数×10のダメージ。",
+              "damage": "10×"
+            }
+          ],
+          "provider_metadata_discrepancies": [
+            {
+              "field": "attack.damage",
+              "attackIndex": 2,
+              "sourceNativeAttackName": "じたばた",
+              "sourceEnglishAttackName": "Flail",
+              "sourceDamage": "10×",
+              "tcgdexDamage": null,
+              "reason": "tcgdex_damage_omitted",
+              "pixelResolution": true,
+              "canonicalCorrection": false,
+              "pixelObservation": "Damage sign is visually readable on the inspected whole front; source omission remains recorded and no canonical text change was made."
+            }
+          ]
+        },
+        "printed_identity": {
+          "canonical_alias": "037",
+          "printed_national_dex": "No.170",
+          "canonical_alias_is_not_printed_national_dex": true,
+          "current_native_label": "チンチョウ",
+          "verified_printed_native_name": "チョンチー",
+          "current_native_label_not_used_for_match": true,
+          "known_native_label_defect_retained_without_write": true
+        },
+        "pixel_identity": {
+          "whole_original_inspected": true,
+          "full_frame_visible": true,
+          "name_number_and_symbol_readable": true,
+          "fine_print_readable": true,
+          "copyright_or_date_line_visible": false,
+          "copyright_year_inferred": false,
+          "edition_stamp_visible": false,
+          "edition_or_distribution_certified": false,
+          "material_foil_finish_certified": false,
+          "physical_card_or_material_not_observed": true,
+          "source_image_has_rendered_foil_like_background": false,
+          "source_image_does_not_certify_physical_finish": true
+        },
+        "identity_limits": {
+          "printed_national_dex_is_not_catalogue_alias": true,
+          "native_label_repair_proposal_retained_separately": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedNationalDexOpticallyVerified": true,
+          "canonicalAliasIsNotPrintedNationalDex": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "febc8290-78f1-4cbe-a5bc-218fc0fb0830",
+      "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+      "set_code": "neo1",
+      "language_code": "ja",
+      "collector_number": "038",
+      "card_native_name": "Mareep",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "b4c99ca7-04f4-4a9e-96a0-aa7aee1eae56"
+      ],
+      "batch_id": "JP-CARDS-004",
+      "source_code": "scrydex",
+      "provider_id": "neo1_ja-38",
+      "image_url": "https://images.scrydex.com/pokemon/neo1_ja-38/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/1e6992ae9ed8b952f928740bd1d49b0e86181f4b33e9f4fa0960baf8f7028e14/original.png",
+          "sha256": "1e6992ae9ed8b952f928740bd1d49b0e86181f4b33e9f4fa0960baf8f7028e14",
+          "byte_size": 759429,
+          "width": 570,
+          "height": 799,
+          "mime_type": "image/png",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/40702da9b3a9d4fae29fcbbd10f2a2a0df7aa1d525f7e0b8bdf7de9d11e28cf5/card-grid.webp",
+          "sha256": "40702da9b3a9d4fae29fcbbd10f2a2a0df7aa1d525f7e0b8bdf7de9d11e28cf5",
+          "byte_size": 19540,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "search-result",
+          "file": "objects/f17105eefa9e8d336594fa0b2db9c7bfa8511f1ccbef14b51980c48253446ec2/search-result.webp",
+          "sha256": "f17105eefa9e8d336594fa0b2db9c7bfa8511f1ccbef14b51980c48253446ec2",
+          "byte_size": 4096,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/6b8f35d91a1abf84d68a243b1f1d81780d3afd8661ecbf574174c7fe794c625b/detail-page.webp",
+          "sha256": "6b8f35d91a1abf84d68a243b1f1d81780d3afd8661ecbf574174c7fe794c625b",
+          "byte_size": 73372,
+          "width": 570,
+          "height": 799,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo1_ja-38/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/mareep/neo1_ja-38?variant=normal",
+        "provider_id": "neo1_ja-38",
+        "source_metadata_sha256": "6004565ea230d1a31616a2f4fd2081a34afee5166feff8c11fc11fb0b87bac1b",
+        "source_signature": {
+          "category": "Pokemon",
+          "dex": [
+            179
+          ],
+          "hp": 40,
+          "types": [
+            "Lightning"
+          ],
+          "stage": "Basic",
+          "rarity": "Common",
+          "costs": [
+            [
+              "Lightning"
+            ],
+            [
+              "Lightning",
+              "Lightning"
+            ]
+          ]
+        },
+        "source_body": {
+          "printed_name": "メリープ",
+          "printed_dex_number": "No.179",
+          "hp": 40,
+          "artist": "Ken Sugimori",
+          "attack_costs": [
+            [
+              "雷"
+            ],
+            [
+              "雷",
+              "雷"
+            ]
+          ],
+          "attack_damage": [
+            null,
+            "20"
+          ],
+          "rules_or_attack_text_visible": true,
+          "rarity_mark": "●",
+          "neo_expansion_symbol_observed": true,
+          "source_variant_support": {
+            "currentFinish": "normal",
+            "providerVariant": "normal",
+            "sourceNames": [
+              "normal"
+            ],
+            "metadataLabelSupported": true,
+            "physicalProof": false
+          },
+          "metadata_attacks": [
+            {
+              "cost": [
+                "雷"
+              ],
+              "converted_energy_cost": 1,
+              "name": "せいでんき",
+              "text": "おたがいの場にいる「メリープ」の数以下の「雷」エネルギーカードを自分の山札から選び出し、自分につける。その後、その山札をよく切る。",
+              "damage": null
+            },
+            {
+              "cost": [
+                "雷",
+                "雷"
+              ],
+              "converted_energy_cost": 2,
+              "name": "でんきショック",
+              "text": "コインを投げて「おもて」なら、相手を「マヒ」状態にする。",
+              "damage": "20"
+            }
+          ],
+          "provider_metadata_discrepancies": []
+        },
+        "printed_identity": {
+          "canonical_alias": "038",
+          "printed_national_dex": "No.179",
+          "canonical_alias_is_not_printed_national_dex": true,
+          "current_native_label": "Mareep",
+          "verified_printed_native_name": "メリープ",
+          "current_native_label_not_used_for_match": true,
+          "known_native_label_defect_retained_without_write": true
+        },
+        "pixel_identity": {
+          "whole_original_inspected": true,
+          "full_frame_visible": true,
+          "name_number_and_symbol_readable": true,
+          "fine_print_readable": true,
+          "copyright_or_date_line_visible": false,
+          "copyright_year_inferred": false,
+          "edition_stamp_visible": false,
+          "edition_or_distribution_certified": false,
+          "material_foil_finish_certified": false,
+          "physical_card_or_material_not_observed": true,
+          "source_image_has_rendered_foil_like_background": false,
+          "source_image_does_not_certify_physical_finish": true
+        },
+        "identity_limits": {
+          "printed_national_dex_is_not_catalogue_alias": true,
+          "native_label_repair_proposal_retained_separately": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedNationalDexOpticallyVerified": true,
+          "canonicalAliasIsNotPrintedNationalDex": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "c8e5b811-c676-4fbe-8d5d-1b0e4c74697a",
+      "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+      "set_code": "neo1",
+      "language_code": "ja",
+      "collector_number": "039",
+      "card_native_name": "Electabuzz",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "9d6a430c-c661-438e-a244-3813eac8b9d9"
+      ],
+      "batch_id": "JP-CARDS-004",
+      "source_code": "scrydex",
+      "provider_id": "neo1_ja-39",
+      "image_url": "https://images.scrydex.com/pokemon/neo1_ja-39/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/15a2088e65f428e7292404f50aa71b9f9aa3691fcfc3deaf272f49d93cb6b2cb/original.png",
+          "sha256": "15a2088e65f428e7292404f50aa71b9f9aa3691fcfc3deaf272f49d93cb6b2cb",
+          "byte_size": 694422,
+          "width": 565,
+          "height": 800,
+          "mime_type": "image/png",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/961e0c893701e3abf066178bf4f1c287df1f9e6b3286a0d850f4c39a489b47c2/card-grid.webp",
+          "sha256": "961e0c893701e3abf066178bf4f1c287df1f9e6b3286a0d850f4c39a489b47c2",
+          "byte_size": 16866,
+          "width": 240,
+          "height": 340,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "search-result",
+          "file": "objects/42cece743cd05f499fc8ce60cd2e7202ac59407956a364d34b63f99d3d99fd2b/search-result.webp",
+          "sha256": "42cece743cd05f499fc8ce60cd2e7202ac59407956a364d34b63f99d3d99fd2b",
+          "byte_size": 3992,
+          "width": 96,
+          "height": 136,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/d1afb9e328b61faf6a259c961925a64e78b16718301b72cc44804ca9a533ff6c/detail-page.webp",
+          "sha256": "d1afb9e328b61faf6a259c961925a64e78b16718301b72cc44804ca9a533ff6c",
+          "byte_size": 60196,
+          "width": 565,
+          "height": 800,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo1_ja-39/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/electabuzz/neo1_ja-39?variant=normal",
+        "provider_id": "neo1_ja-39",
+        "source_metadata_sha256": "08aed7a08321ab0760af3cf6516f591963b8907ceb26a5e859d1d2ad960df8d1",
+        "source_signature": {
+          "category": "Pokemon",
+          "dex": [
+            125
+          ],
+          "hp": 70,
+          "types": [
+            "Lightning"
+          ],
+          "stage": "Basic",
+          "rarity": "Uncommon",
+          "costs": [
+            [
+              "Colorless",
+              "Colorless"
+            ],
+            [
+              "Lightning",
+              "Lightning",
+              "Lightning"
+            ]
+          ]
+        },
+        "source_body": {
+          "printed_name": "エレブー",
+          "printed_dex_number": "No.125",
+          "hp": 70,
+          "artist": "Shin-ichi Yoshida",
+          "attack_costs": [
+            [
+              "無",
+              "無"
+            ],
+            [
+              "雷",
+              "雷",
+              "雷"
+            ]
+          ],
+          "attack_damage": [
+            "20",
+            "30"
+          ],
+          "rules_or_attack_text_visible": true,
+          "rarity_mark": "♦",
+          "neo_expansion_symbol_observed": true,
+          "source_variant_support": {
+            "currentFinish": "normal",
+            "providerVariant": "normal",
+            "sourceNames": [
+              "normal"
+            ],
+            "metadataLabelSupported": true,
+            "physicalProof": false
+          },
+          "metadata_attacks": [
+            {
+              "cost": [
+                "無",
+                "無"
+              ],
+              "converted_energy_cost": 2,
+              "name": "パンチ",
+              "text": "",
+              "damage": "20"
+            },
+            {
+              "cost": [
+                "雷",
+                "雷",
+                "雷"
+              ],
+              "converted_energy_cost": 3,
+              "name": "スピードスター",
+              "text": "このワザは、相手の「弱点・抵抗力・特殊能力・その他の効果」に関係なく、ダメージを与える。",
+              "damage": "30"
+            }
+          ],
+          "provider_metadata_discrepancies": []
+        },
+        "printed_identity": {
+          "canonical_alias": "039",
+          "printed_national_dex": "No.125",
+          "canonical_alias_is_not_printed_national_dex": true,
+          "current_native_label": "Electabuzz",
+          "verified_printed_native_name": "エレブー",
+          "current_native_label_not_used_for_match": true,
+          "known_native_label_defect_retained_without_write": true
+        },
+        "pixel_identity": {
+          "whole_original_inspected": true,
+          "full_frame_visible": true,
+          "name_number_and_symbol_readable": true,
+          "fine_print_readable": true,
+          "copyright_or_date_line_visible": false,
+          "copyright_year_inferred": false,
+          "edition_stamp_visible": false,
+          "edition_or_distribution_certified": false,
+          "material_foil_finish_certified": false,
+          "physical_card_or_material_not_observed": true,
+          "source_image_has_rendered_foil_like_background": false,
+          "source_image_does_not_certify_physical_finish": true
+        },
+        "identity_limits": {
+          "printed_national_dex_is_not_catalogue_alias": true,
+          "native_label_repair_proposal_retained_separately": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedNationalDexOpticallyVerified": true,
+          "canonicalAliasIsNotPrintedNationalDex": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "18f5deb2-2199-4cb0-bb8a-96686e4967c4",
+      "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+      "set_code": "neo1",
+      "language_code": "ja",
+      "collector_number": "040",
+      "card_native_name": "ラントン",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "ccd9244b-3e25-4647-877f-80ea62ee7714"
+      ],
+      "batch_id": "JP-CARDS-004",
+      "source_code": "scrydex",
+      "provider_id": "neo1_ja-40",
+      "image_url": "https://images.scrydex.com/pokemon/neo1_ja-40/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/4288190b92007fd50455e4b0c292cf145f6f9cfc04f78b1d500ba1a955bc7a4c/original.png",
+          "sha256": "4288190b92007fd50455e4b0c292cf145f6f9cfc04f78b1d500ba1a955bc7a4c",
+          "byte_size": 754327,
+          "width": 570,
+          "height": 799,
+          "mime_type": "image/png",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/73ae5a5741db4c7bca88e75e67914024bf763933cda5e9a4815df0dc768b279c/card-grid.webp",
+          "sha256": "73ae5a5741db4c7bca88e75e67914024bf763933cda5e9a4815df0dc768b279c",
+          "byte_size": 20456,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "search-result",
+          "file": "objects/f1592aa595613026a3396a4ed188dd83338ee48098fa40136d57f761f1d7edcb/search-result.webp",
+          "sha256": "f1592aa595613026a3396a4ed188dd83338ee48098fa40136d57f761f1d7edcb",
+          "byte_size": 4272,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/01b35291d28a8e122369b6ec0adf117cc513dc75ac6e5529bb25ac4eaf3f406b/detail-page.webp",
+          "sha256": "01b35291d28a8e122369b6ec0adf117cc513dc75ac6e5529bb25ac4eaf3f406b",
+          "byte_size": 71848,
+          "width": 570,
+          "height": 799,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo1_ja-40/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/lanturn/neo1_ja-40?variant=normal",
+        "provider_id": "neo1_ja-40",
+        "source_metadata_sha256": "ca3c71b79f1a2156c2cba299a4a12bebfd9bc68c42ea54e0f46595a97affe5ae",
+        "source_signature": {
+          "category": "Pokemon",
+          "dex": [
+            171
+          ],
+          "hp": 70,
+          "types": [
+            "Lightning"
+          ],
+          "stage": "Stage1",
+          "rarity": "Uncommon",
+          "costs": [
+            [
+              "Lightning",
+              "Lightning"
+            ]
+          ]
+        },
+        "source_body": {
+          "printed_name": "ランターン",
+          "printed_dex_number": "No.171",
+          "hp": 70,
+          "artist": "Ken Sugimori",
+          "attack_costs": [
+            [
+              "雷",
+              "雷"
+            ]
+          ],
+          "attack_damage": [
+            "20"
+          ],
+          "rules_or_attack_text_visible": true,
+          "rarity_mark": "♦",
+          "neo_expansion_symbol_observed": true,
+          "source_variant_support": {
+            "currentFinish": "normal",
+            "providerVariant": "normal",
+            "sourceNames": [
+              "normal"
+            ],
+            "metadataLabelSupported": true,
+            "physicalProof": false
+          },
+          "metadata_attacks": [
+            {
+              "cost": [
+                "雷",
+                "雷"
+              ],
+              "converted_energy_cost": 2,
+              "name": "まぶしいひかり",
+              "text": "コインを投げて「おもて」なら、相手を「マヒ」状態にする。",
+              "damage": "20"
+            }
+          ],
+          "provider_metadata_discrepancies": []
+        },
+        "printed_identity": {
+          "canonical_alias": "040",
+          "printed_national_dex": "No.171",
+          "canonical_alias_is_not_printed_national_dex": true,
+          "current_native_label": "ラントン",
+          "verified_printed_native_name": "ランターン",
+          "current_native_label_not_used_for_match": true,
+          "known_native_label_defect_retained_without_write": true
+        },
+        "pixel_identity": {
+          "whole_original_inspected": true,
+          "full_frame_visible": true,
+          "name_number_and_symbol_readable": true,
+          "fine_print_readable": true,
+          "copyright_or_date_line_visible": false,
+          "copyright_year_inferred": false,
+          "edition_stamp_visible": false,
+          "edition_or_distribution_certified": false,
+          "material_foil_finish_certified": false,
+          "physical_card_or_material_not_observed": true,
+          "source_image_has_rendered_foil_like_background": false,
+          "source_image_does_not_certify_physical_finish": true
+        },
+        "identity_limits": {
+          "printed_national_dex_is_not_catalogue_alias": true,
+          "native_label_repair_proposal_retained_separately": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedNationalDexOpticallyVerified": true,
+          "canonicalAliasIsNotPrintedNationalDex": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "eff798f3-dfdf-4de0-a85e-72d9c8f39952",
+      "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+      "set_code": "neo1",
+      "language_code": "ja",
+      "collector_number": "041",
+      "card_native_name": "フラフィー",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "99478c48-648f-41c0-9c16-06808425c851"
+      ],
+      "batch_id": "JP-CARDS-004",
+      "source_code": "scrydex",
+      "provider_id": "neo1_ja-41",
+      "image_url": "https://images.scrydex.com/pokemon/neo1_ja-41/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/9c1f97a163e3dbffa9809318b6ed370764f53f4f2da2c5091c519fec7b330038/original.png",
+          "sha256": "9c1f97a163e3dbffa9809318b6ed370764f53f4f2da2c5091c519fec7b330038",
+          "byte_size": 763570,
+          "width": 570,
+          "height": 797,
+          "mime_type": "image/png",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/89902cd5eac94822a8d5835686c8d9b1ffd857be8372db04b751790ae23089f6/card-grid.webp",
+          "sha256": "89902cd5eac94822a8d5835686c8d9b1ffd857be8372db04b751790ae23089f6",
+          "byte_size": 20356,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "search-result",
+          "file": "objects/46cf26e5319df21f01ba9e56e777b5d5ed8d4103897d04fba4824dfaa19d8418/search-result.webp",
+          "sha256": "46cf26e5319df21f01ba9e56e777b5d5ed8d4103897d04fba4824dfaa19d8418",
+          "byte_size": 4142,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/aed78df03843a73fc2c4d2e408653732fdd9f53fb9fc47db6140d83ec39eb8f7/detail-page.webp",
+          "sha256": "aed78df03843a73fc2c4d2e408653732fdd9f53fb9fc47db6140d83ec39eb8f7",
+          "byte_size": 73190,
+          "width": 570,
+          "height": 797,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo1_ja-41/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/flaaffy/neo1_ja-41?variant=normal",
+        "provider_id": "neo1_ja-41",
+        "source_metadata_sha256": "f58144a0f9b736074244252feafb284b316176cda85a9f62130d6fc3fdf38225",
+        "source_signature": {
+          "category": "Pokemon",
+          "dex": [
+            180
+          ],
+          "hp": 60,
+          "types": [
+            "Lightning"
+          ],
+          "stage": "Stage1",
+          "rarity": "Uncommon",
+          "costs": [
+            [
+              "Lightning"
+            ],
+            [
+              "Lightning",
+              "Lightning"
+            ]
+          ]
+        },
+        "source_body": {
+          "printed_name": "モココ",
+          "printed_dex_number": "No.180",
+          "hp": 60,
+          "artist": "Ken Sugimori",
+          "attack_costs": [
+            [
+              "雷"
+            ],
+            [
+              "雷",
+              "雷"
+            ]
+          ],
+          "attack_damage": [
+            "30×",
+            "20"
+          ],
+          "rules_or_attack_text_visible": true,
+          "rarity_mark": "♦",
+          "neo_expansion_symbol_observed": true,
+          "source_variant_support": {
+            "currentFinish": "normal",
+            "providerVariant": "normal",
+            "sourceNames": [
+              "normal"
+            ],
+            "metadataLabelSupported": true,
+            "physicalProof": false
+          },
+          "metadata_attacks": [
+            {
+              "cost": [
+                "雷"
+              ],
+              "converted_energy_cost": 1,
+              "name": "ほうでん",
+              "text": "自分についている「雷」エネルギーカードを、すべてトラッシュする。トラッシュした「雷」エネルギーカードの数だけコインを投げ、「おもて」の数×30のダメージ。",
+              "damage": "30×"
+            },
+            {
+              "cost": [
+                "雷",
+                "雷"
+              ],
+              "converted_energy_cost": 2,
+              "name": "デンキとばし",
+              "text": "自分についている「雷」エネルギーカードを1枚選んではがす。自分の控えポケモンを1匹選び、はがしたカードをそれにつける。(自分に控えがないとき、はがしたカードはトラッシュする)",
+              "damage": "20"
+            }
+          ],
+          "provider_metadata_discrepancies": [
+            {
+              "field": "attack.damage",
+              "attackIndex": 1,
+              "sourceNativeAttackName": "ほうでん",
+              "sourceEnglishAttackName": "Discharge",
+              "sourceDamage": "30×",
+              "tcgdexDamage": null,
+              "reason": "tcgdex_damage_omitted",
+              "pixelResolution": true,
+              "canonicalCorrection": false,
+              "pixelObservation": "Damage sign is visually readable on the inspected whole front; source omission remains recorded and no canonical text change was made."
+            }
+          ]
+        },
+        "printed_identity": {
+          "canonical_alias": "041",
+          "printed_national_dex": "No.180",
+          "canonical_alias_is_not_printed_national_dex": true,
+          "current_native_label": "フラフィー",
+          "verified_printed_native_name": "モココ",
+          "current_native_label_not_used_for_match": true,
+          "known_native_label_defect_retained_without_write": true
+        },
+        "pixel_identity": {
+          "whole_original_inspected": true,
+          "full_frame_visible": true,
+          "name_number_and_symbol_readable": true,
+          "fine_print_readable": true,
+          "copyright_or_date_line_visible": false,
+          "copyright_year_inferred": false,
+          "edition_stamp_visible": false,
+          "edition_or_distribution_certified": false,
+          "material_foil_finish_certified": false,
+          "physical_card_or_material_not_observed": true,
+          "source_image_has_rendered_foil_like_background": false,
+          "source_image_does_not_certify_physical_finish": true
+        },
+        "identity_limits": {
+          "printed_national_dex_is_not_catalogue_alias": true,
+          "native_label_repair_proposal_retained_separately": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedNationalDexOpticallyVerified": true,
+          "canonicalAliasIsNotPrintedNationalDex": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "300c5db4-c31b-4166-a7d5-9a91e3fd6db8",
+      "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+      "set_code": "neo1",
+      "language_code": "ja",
+      "collector_number": "042",
+      "card_native_name": "ピチュ",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "4b1b8105-ca71-4e8e-9a7e-e11bd76ce904"
+      ],
+      "batch_id": "JP-CARDS-004",
+      "source_code": "scrydex",
+      "provider_id": "neo1_ja-42",
+      "image_url": "https://images.scrydex.com/pokemon/neo1_ja-42/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/91585b18203707943f0e3a692505841d72134916429f356b290b583a680d69d5/original.png",
+          "sha256": "91585b18203707943f0e3a692505841d72134916429f356b290b583a680d69d5",
+          "byte_size": 742163,
+          "width": 569,
+          "height": 800,
+          "mime_type": "image/png",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/d619ced3fa70b883c2690298e7fa16204ec71611de65b7dff626aa7a306b8093/card-grid.webp",
+          "sha256": "d619ced3fa70b883c2690298e7fa16204ec71611de65b7dff626aa7a306b8093",
+          "byte_size": 19746,
+          "width": 240,
+          "height": 337,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "search-result",
+          "file": "objects/b169e53de58642e71d497c4c864d605e341371f6186392fef75290a06e4fac85/search-result.webp",
+          "sha256": "b169e53de58642e71d497c4c864d605e341371f6186392fef75290a06e4fac85",
+          "byte_size": 3830,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/cd496aa86c82ef432122e5d856c225ad7f6d0114fc2fe7bc1ce22b8e71a93720/detail-page.webp",
+          "sha256": "cd496aa86c82ef432122e5d856c225ad7f6d0114fc2fe7bc1ce22b8e71a93720",
+          "byte_size": 68102,
+          "width": 569,
+          "height": 800,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo1_ja-42/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/pichu/neo1_ja-42?variant=holofoil",
+        "provider_id": "neo1_ja-42",
+        "source_metadata_sha256": "c97b266b2a721b2d4c022c27c2db6e07943e3c375b15c35cb59e781f7e006808",
+        "source_signature": {
+          "category": "Pokemon",
+          "dex": [
+            172
+          ],
+          "hp": 30,
+          "types": [
+            "Lightning"
+          ],
+          "stage": "Baby",
+          "rarity": "Holo Rare",
+          "costs": [
+            [
+              "Colorless"
+            ]
+          ]
+        },
+        "source_body": {
+          "printed_name": "ピチュー",
+          "printed_dex_number": "No.172",
+          "hp": 30,
+          "artist": "Ken Sugimori",
+          "attack_costs": [
+            [
+              "無"
+            ]
+          ],
+          "attack_damage": [
+            null
+          ],
+          "rules_or_attack_text_visible": true,
+          "rarity_mark": "★H",
+          "neo_expansion_symbol_observed": true,
+          "source_variant_support": {
+            "currentFinish": "holo",
+            "providerVariant": "holofoil",
+            "sourceNames": [
+              "holofoil"
+            ],
+            "metadataLabelSupported": true,
+            "physicalProof": false
+          },
+          "metadata_attacks": [
+            {
+              "cost": [
+                "無"
+              ],
+              "converted_energy_cost": 1,
+              "name": "パチパチ",
+              "text": "おたがいの場の「特殊能力」を持っているポケモン全員に、「弱点・抵抗力」に関係なく、それぞれ20ダメージ。",
+              "damage": null
+            }
+          ],
+          "provider_metadata_discrepancies": []
+        },
+        "printed_identity": {
+          "canonical_alias": "042",
+          "printed_national_dex": "No.172",
+          "canonical_alias_is_not_printed_national_dex": true,
+          "current_native_label": "ピチュ",
+          "verified_printed_native_name": "ピチュー",
+          "current_native_label_not_used_for_match": true,
+          "known_native_label_defect_retained_without_write": true
+        },
+        "pixel_identity": {
+          "whole_original_inspected": true,
+          "full_frame_visible": true,
+          "name_number_and_symbol_readable": true,
+          "fine_print_readable": true,
+          "copyright_or_date_line_visible": false,
+          "copyright_year_inferred": false,
+          "edition_stamp_visible": false,
+          "edition_or_distribution_certified": false,
+          "material_foil_finish_certified": false,
+          "physical_card_or_material_not_observed": true,
+          "source_image_has_rendered_foil_like_background": true,
+          "source_image_does_not_certify_physical_finish": true
+        },
+        "identity_limits": {
+          "printed_national_dex_is_not_catalogue_alias": true,
+          "native_label_repair_proposal_retained_separately": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedNationalDexOpticallyVerified": true,
+          "canonicalAliasIsNotPrintedNationalDex": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "c4a56912-dcc2-46da-92f5-8aa2082cc9c3",
+      "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+      "set_code": "neo1",
+      "language_code": "ja",
+      "collector_number": "043",
+      "card_native_name": "アンファロス",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "25984233-9d8b-4d1d-bb11-1f5b101ebadf"
+      ],
+      "batch_id": "JP-CARDS-004",
+      "source_code": "scrydex",
+      "provider_id": "neo1_ja-43",
+      "image_url": "https://images.scrydex.com/pokemon/neo1_ja-43/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/056b9c5d4f1a43cc97b755bf996cefde1b53ba53874d263402c54bff57cf8166/original.png",
+          "sha256": "056b9c5d4f1a43cc97b755bf996cefde1b53ba53874d263402c54bff57cf8166",
+          "byte_size": 738874,
+          "width": 570,
+          "height": 797,
+          "mime_type": "image/png",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/ec3ed20e9f24ba0563ab554340c4cbda7ee30790cc9f49b9a88464fed096d903/card-grid.webp",
+          "sha256": "ec3ed20e9f24ba0563ab554340c4cbda7ee30790cc9f49b9a88464fed096d903",
+          "byte_size": 18674,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "search-result",
+          "file": "objects/88c16a87e214bece68e15c91a4db956d215eb6e8bccb0791bb97597721531b22/search-result.webp",
+          "sha256": "88c16a87e214bece68e15c91a4db956d215eb6e8bccb0791bb97597721531b22",
+          "byte_size": 3720,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/0642d203bc3d210beecae9da2f455aabf66b469048eb947c94b00db119665efa/detail-page.webp",
+          "sha256": "0642d203bc3d210beecae9da2f455aabf66b469048eb947c94b00db119665efa",
+          "byte_size": 69646,
+          "width": 570,
+          "height": 797,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo1_ja-43/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/ampharos/neo1_ja-43?variant=holofoil",
+        "provider_id": "neo1_ja-43",
+        "source_metadata_sha256": "1d099dfbf45b247ee8e1a99eac828e91bfbb503e10d9b7702199a1f282c1eb7a",
+        "source_signature": {
+          "category": "Pokemon",
+          "dex": [
+            181
+          ],
+          "hp": 80,
+          "types": [
+            "Lightning"
+          ],
+          "stage": "Stage2",
+          "rarity": "Holo Rare",
+          "costs": [
+            [
+              "Lightning",
+              "Lightning",
+              "Lightning"
+            ]
+          ]
+        },
+        "source_body": {
+          "printed_name": "デンリュウ",
+          "printed_dex_number": "No.181",
+          "hp": 80,
+          "artist": "Ken Sugimori",
+          "attack_costs": [
+            [
+              "雷",
+              "雷",
+              "雷"
+            ]
+          ],
+          "attack_damage": [
+            "40"
+          ],
+          "rules_or_attack_text_visible": true,
+          "rarity_mark": "★H",
+          "neo_expansion_symbol_observed": true,
+          "source_variant_support": {
+            "currentFinish": "holo",
+            "providerVariant": "holofoil",
+            "sourceNames": [
+              "holofoil"
+            ],
+            "metadataLabelSupported": true,
+            "physicalProof": false
+          },
+          "metadata_attacks": [
+            {
+              "cost": [
+                "雷",
+                "雷",
+                "雷"
+              ],
+              "converted_energy_cost": 3,
+              "name": "ギガショック",
+              "text": "コインを投げて「おもて」なら、相手を「マヒ」状態にし、相手の控えポケモン全員にも、「弱点・抵抗力」に関係なく、それぞれ10ダメージ。",
+              "damage": "40"
+            }
+          ],
+          "provider_metadata_discrepancies": []
+        },
+        "printed_identity": {
+          "canonical_alias": "043",
+          "printed_national_dex": "No.181",
+          "canonical_alias_is_not_printed_national_dex": true,
+          "current_native_label": "アンファロス",
+          "verified_printed_native_name": "デンリュウ",
+          "current_native_label_not_used_for_match": true,
+          "known_native_label_defect_retained_without_write": true
+        },
+        "pixel_identity": {
+          "whole_original_inspected": true,
+          "full_frame_visible": true,
+          "name_number_and_symbol_readable": true,
+          "fine_print_readable": true,
+          "copyright_or_date_line_visible": false,
+          "copyright_year_inferred": false,
+          "edition_stamp_visible": false,
+          "edition_or_distribution_certified": false,
+          "material_foil_finish_certified": false,
+          "physical_card_or_material_not_observed": true,
+          "source_image_has_rendered_foil_like_background": true,
+          "source_image_does_not_certify_physical_finish": true
+        },
+        "identity_limits": {
+          "printed_national_dex_is_not_catalogue_alias": true,
+          "native_label_repair_proposal_retained_separately": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedNationalDexOpticallyVerified": true,
+          "canonicalAliasIsNotPrintedNationalDex": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "c3b57590-535a-473f-aa8d-6cbc8b2fd9ae",
+      "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+      "set_code": "neo1",
+      "language_code": "ja",
+      "collector_number": "044",
+      "card_native_name": "Elekid",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "7e1836ad-62ed-4fed-84da-777d5bba2a43"
+      ],
+      "batch_id": "JP-CARDS-004",
+      "source_code": "scrydex",
+      "provider_id": "neo1_ja-44",
+      "image_url": "https://images.scrydex.com/pokemon/neo1_ja-44/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/dced122f236e3b08943cc1c53d49eec7d5e5dc0ef86971651b035062e3384179/original.png",
+          "sha256": "dced122f236e3b08943cc1c53d49eec7d5e5dc0ef86971651b035062e3384179",
+          "byte_size": 728069,
+          "width": 567,
+          "height": 800,
+          "mime_type": "image/png",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/8646bb45ac5033840fb5c0d9f71c2489e9318a96c98d2950dcd1f09c7960cefe/card-grid.webp",
+          "sha256": "8646bb45ac5033840fb5c0d9f71c2489e9318a96c98d2950dcd1f09c7960cefe",
+          "byte_size": 18726,
+          "width": 240,
+          "height": 339,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "search-result",
+          "file": "objects/027d34877954371d4b5cbfd3c4a977a8dfdc6bf54abf47b33af35226e9c469a4/search-result.webp",
+          "sha256": "027d34877954371d4b5cbfd3c4a977a8dfdc6bf54abf47b33af35226e9c469a4",
+          "byte_size": 4318,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/16f54f4048ceba7bdcf5caf08307be304ea0ac611e8b19f3a1a250f03045d2f6/detail-page.webp",
+          "sha256": "16f54f4048ceba7bdcf5caf08307be304ea0ac611e8b19f3a1a250f03045d2f6",
+          "byte_size": 68360,
+          "width": 567,
+          "height": 800,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo1_ja-44/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/elekid/neo1_ja-44?variant=normal",
+        "provider_id": "neo1_ja-44",
+        "source_metadata_sha256": "41ff3fa08cab18144f226549e350364cb38448804db7ef56e74ebd2068c90f0a",
+        "source_signature": {
+          "category": "Pokemon",
+          "dex": [
+            239
+          ],
+          "hp": 30,
+          "types": [
+            "Lightning"
+          ],
+          "stage": "Baby",
+          "rarity": "Rare",
+          "costs": []
+        },
+        "source_body": {
+          "printed_name": "エレキッド",
+          "printed_dex_number": "No.239",
+          "hp": 30,
+          "artist": "Miki Tanaka",
+          "attack_costs": [],
+          "attack_damage": [],
+          "rules_or_attack_text_visible": true,
+          "rarity_mark": "★",
+          "neo_expansion_symbol_observed": true,
+          "source_variant_support": {
+            "currentFinish": "normal",
+            "providerVariant": "normal",
+            "sourceNames": [
+              "normal"
+            ],
+            "metadataLabelSupported": true,
+            "physicalProof": false
+          },
+          "metadata_attacks": [],
+          "provider_metadata_discrepancies": []
+        },
+        "printed_identity": {
+          "canonical_alias": "044",
+          "printed_national_dex": "No.239",
+          "canonical_alias_is_not_printed_national_dex": true,
+          "current_native_label": "Elekid",
+          "verified_printed_native_name": "エレキッド",
+          "current_native_label_not_used_for_match": true,
+          "known_native_label_defect_retained_without_write": true
+        },
+        "pixel_identity": {
+          "whole_original_inspected": true,
+          "full_frame_visible": true,
+          "name_number_and_symbol_readable": true,
+          "fine_print_readable": true,
+          "copyright_or_date_line_visible": false,
+          "copyright_year_inferred": false,
+          "edition_stamp_visible": false,
+          "edition_or_distribution_certified": false,
+          "material_foil_finish_certified": false,
+          "physical_card_or_material_not_observed": true,
+          "source_image_has_rendered_foil_like_background": false,
+          "source_image_does_not_certify_physical_finish": true
+        },
+        "identity_limits": {
+          "printed_national_dex_is_not_catalogue_alias": true,
+          "native_label_repair_proposal_retained_separately": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedNationalDexOpticallyVerified": true,
+          "canonicalAliasIsNotPrintedNationalDex": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "cc80010d-960f-4028-b29a-f753c07585aa",
+      "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+      "set_code": "neo1",
+      "language_code": "ja",
+      "collector_number": "046",
+      "card_native_name": "natu",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "f13e2bbc-6966-4c9e-9b07-12dadfd74a89"
+      ],
+      "batch_id": "JP-CARDS-004",
+      "source_code": "scrydex",
+      "provider_id": "neo1_ja-46",
+      "image_url": "https://images.scrydex.com/pokemon/neo1_ja-46/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/e43216f663c976ec1a4c5eb5e5471a4fdce539d08dad2fb9748b7feec597c84e/original.png",
+          "sha256": "e43216f663c976ec1a4c5eb5e5471a4fdce539d08dad2fb9748b7feec597c84e",
+          "byte_size": 721333,
+          "width": 570,
+          "height": 799,
+          "mime_type": "image/png",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/8c01f8c2bc3f7e1bf3df4bfa661f7583a4a341621345f684c3096cd5a0f57abb/card-grid.webp",
+          "sha256": "8c01f8c2bc3f7e1bf3df4bfa661f7583a4a341621345f684c3096cd5a0f57abb",
+          "byte_size": 18088,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "search-result",
+          "file": "objects/b1931fe5ebdc163535821bf1a11d9e72e70c765da09efa31663eea26d312328f/search-result.webp",
+          "sha256": "b1931fe5ebdc163535821bf1a11d9e72e70c765da09efa31663eea26d312328f",
+          "byte_size": 3970,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/62320451df223f7ff0b6592f547e3c723c1f651a7cf3a6a545205c9e84c9d526/detail-page.webp",
+          "sha256": "62320451df223f7ff0b6592f547e3c723c1f651a7cf3a6a545205c9e84c9d526",
+          "byte_size": 65030,
+          "width": 570,
+          "height": 799,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo1_ja-46/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/natu/neo1_ja-46?variant=normal",
+        "provider_id": "neo1_ja-46",
+        "source_metadata_sha256": "c96de20615e1fd2c32d0daff719acb52b13b47a8be5a6a87e76cec3ae7dc6206",
+        "source_signature": {
+          "category": "Pokemon",
+          "dex": [
+            177
+          ],
+          "hp": 30,
+          "types": [
+            "Psychic"
+          ],
+          "stage": "Basic",
+          "rarity": "Common",
+          "costs": [
+            [
+              "Colorless"
+            ],
+            [
+              "Psychic",
+              "Psychic"
+            ]
+          ]
+        },
+        "source_body": {
+          "printed_name": "ネイティ",
+          "printed_dex_number": "No.177",
+          "hp": 30,
+          "artist": "Ken Sugimori",
+          "attack_costs": [
+            [
+              "無"
+            ],
+            [
+              "超",
+              "超"
+            ]
+          ],
+          "attack_damage": [
+            "10",
+            null
+          ],
+          "rules_or_attack_text_visible": true,
+          "rarity_mark": "●",
+          "neo_expansion_symbol_observed": true,
+          "source_variant_support": {
+            "currentFinish": "normal",
+            "providerVariant": "normal",
+            "sourceNames": [
+              "normal"
+            ],
+            "metadataLabelSupported": true,
+            "physicalProof": false
+          },
+          "metadata_attacks": [
+            {
+              "cost": [
+                "無"
+              ],
+              "converted_energy_cost": 1,
+              "name": "つつく",
+              "text": "",
+              "damage": "10"
+            },
+            {
+              "cost": [
+                "超",
+                "超"
+              ],
+              "converted_energy_cost": 2,
+              "name": "テレキネシス",
+              "text": "相手の場のポケモンを1匹選び、「弱点・抵抗力」に関係なく、20ダメージ。",
+              "damage": null
+            }
+          ],
+          "provider_metadata_discrepancies": []
+        },
+        "printed_identity": {
+          "canonical_alias": "046",
+          "printed_national_dex": "No.177",
+          "canonical_alias_is_not_printed_national_dex": true,
+          "current_native_label": "natu",
+          "verified_printed_native_name": "ネイティ",
+          "current_native_label_not_used_for_match": true,
+          "known_native_label_defect_retained_without_write": true
+        },
+        "pixel_identity": {
+          "whole_original_inspected": true,
+          "full_frame_visible": true,
+          "name_number_and_symbol_readable": true,
+          "fine_print_readable": true,
+          "copyright_or_date_line_visible": false,
+          "copyright_year_inferred": false,
+          "edition_stamp_visible": false,
+          "edition_or_distribution_certified": false,
+          "material_foil_finish_certified": false,
+          "physical_card_or_material_not_observed": true,
+          "source_image_has_rendered_foil_like_background": false,
+          "source_image_does_not_certify_physical_finish": true
+        },
+        "identity_limits": {
+          "printed_national_dex_is_not_catalogue_alias": true,
+          "native_label_repair_proposal_retained_separately": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedNationalDexOpticallyVerified": true,
+          "canonicalAliasIsNotPrintedNationalDex": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "2d2065ec-7bd8-4c2d-8f7d-746dbf6d58e2",
+      "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+      "set_code": "neo1",
+      "language_code": "ja",
+      "collector_number": "047",
+      "card_native_name": "Girafarig",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "12ec9765-c708-4b9f-85d6-7bb08db12d2f"
+      ],
+      "batch_id": "JP-CARDS-004",
+      "source_code": "scrydex",
+      "provider_id": "neo1_ja-47",
+      "image_url": "https://images.scrydex.com/pokemon/neo1_ja-47/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/68267b74a9b8029546e8e49dd9ff90b9399d397b357b846bd717c6914fb8db29/original.png",
+          "sha256": "68267b74a9b8029546e8e49dd9ff90b9399d397b357b846bd717c6914fb8db29",
+          "byte_size": 752109,
+          "width": 567,
+          "height": 800,
+          "mime_type": "image/png",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/4023ad453e3e96c7ec239cc2267b9c331c24ef6eba0f55c48c03b42c3f8cc735/card-grid.webp",
+          "sha256": "4023ad453e3e96c7ec239cc2267b9c331c24ef6eba0f55c48c03b42c3f8cc735",
+          "byte_size": 19862,
+          "width": 240,
+          "height": 339,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "search-result",
+          "file": "objects/a1275abfe7a183aa0bd2eedd5a2c3c96aeb45efafbf3c5993756ccf38e64b39b/search-result.webp",
+          "sha256": "a1275abfe7a183aa0bd2eedd5a2c3c96aeb45efafbf3c5993756ccf38e64b39b",
+          "byte_size": 4242,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/bf7dd23b33f58f8838e78e7107b3f8fe9c39b065ddf11b144d9d09764c74d500/detail-page.webp",
+          "sha256": "bf7dd23b33f58f8838e78e7107b3f8fe9c39b065ddf11b144d9d09764c74d500",
+          "byte_size": 69970,
+          "width": 567,
+          "height": 800,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo1_ja-47/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/girafarig/neo1_ja-47?variant=normal",
+        "provider_id": "neo1_ja-47",
+        "source_metadata_sha256": "9559d5f6f5bc4a8d153fee8419989b36a5794da05bd292478e5b3400798b975f",
+        "source_signature": {
+          "category": "Pokemon",
+          "dex": [
+            203
+          ],
+          "hp": 60,
+          "types": [
+            "Psychic"
+          ],
+          "stage": "Basic",
+          "rarity": "Common",
+          "costs": [
+            [
+              "Colorless",
+              "Colorless"
+            ],
+            [
+              "Psychic",
+              "Psychic"
+            ]
+          ]
+        },
+        "source_body": {
+          "printed_name": "キリンリキ",
+          "printed_dex_number": "No.203",
+          "hp": 60,
+          "artist": "Ken Sugimori",
+          "attack_costs": [
+            [
+              "無",
+              "無"
+            ],
+            [
+              "超",
+              "超"
+            ]
+          ],
+          "attack_damage": [
+            "10",
+            "20"
+          ],
+          "rules_or_attack_text_visible": true,
+          "rarity_mark": "●",
+          "neo_expansion_symbol_observed": true,
+          "source_variant_support": {
+            "currentFinish": "normal",
+            "providerVariant": "normal",
+            "sourceNames": [
+              "normal"
+            ],
+            "metadataLabelSupported": true,
+            "physicalProof": false
+          },
+          "metadata_attacks": [
+            {
+              "cost": [
+                "無",
+                "無"
+              ],
+              "converted_energy_cost": 2,
+              "name": "こうそくいどう",
+              "text": "コインを投げて「おもて」なら、次の相手の番、このカードはワザによるダメージや効果を受けない。",
+              "damage": "10"
+            },
+            {
+              "cost": [
+                "超",
+                "超"
+              ],
+              "converted_energy_cost": 2,
+              "name": "サイケこうせん",
+              "text": "コインを投げて「おもて」なら、相手を「こんらん」状態にする。",
+              "damage": "20"
+            }
+          ],
+          "provider_metadata_discrepancies": []
+        },
+        "printed_identity": {
+          "canonical_alias": "047",
+          "printed_national_dex": "No.203",
+          "canonical_alias_is_not_printed_national_dex": true,
+          "current_native_label": "Girafarig",
+          "verified_printed_native_name": "キリンリキ",
+          "current_native_label_not_used_for_match": true,
+          "known_native_label_defect_retained_without_write": true
+        },
+        "pixel_identity": {
+          "whole_original_inspected": true,
+          "full_frame_visible": true,
+          "name_number_and_symbol_readable": true,
+          "fine_print_readable": true,
+          "copyright_or_date_line_visible": false,
+          "copyright_year_inferred": false,
+          "edition_stamp_visible": false,
+          "edition_or_distribution_certified": false,
+          "material_foil_finish_certified": false,
+          "physical_card_or_material_not_observed": true,
+          "source_image_has_rendered_foil_like_background": false,
+          "source_image_does_not_certify_physical_finish": true
+        },
+        "identity_limits": {
+          "printed_national_dex_is_not_catalogue_alias": true,
+          "native_label_repair_proposal_retained_separately": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedNationalDexOpticallyVerified": true,
+          "canonicalAliasIsNotPrintedNationalDex": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "9162af6a-38e9-4e48-9588-2f75cf412fc7",
+      "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+      "set_code": "neo1",
+      "language_code": "ja",
+      "collector_number": "048",
+      "card_native_name": "xatu",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "187b4560-4bc3-4513-8648-ba4a3275231c"
+      ],
+      "batch_id": "JP-CARDS-004",
+      "source_code": "scrydex",
+      "provider_id": "neo1_ja-48",
+      "image_url": "https://images.scrydex.com/pokemon/neo1_ja-48/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/e9a44bfbe4eb1168d543010252f7587d592b77c5feceb2089371ad68f795e446/original.png",
+          "sha256": "e9a44bfbe4eb1168d543010252f7587d592b77c5feceb2089371ad68f795e446",
+          "byte_size": 753507,
+          "width": 570,
+          "height": 794,
+          "mime_type": "image/png",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/548642e1fab31fe2c08cb8c00e1a10fcf5d14252a6914cd77d410817dbbdf1e2/card-grid.webp",
+          "sha256": "548642e1fab31fe2c08cb8c00e1a10fcf5d14252a6914cd77d410817dbbdf1e2",
+          "byte_size": 20412,
+          "width": 240,
+          "height": 334,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "search-result",
+          "file": "objects/22f5fea330b23d37cf16eb1ec416227679fd48de9ba5a2c243820323c88b80ae/search-result.webp",
+          "sha256": "22f5fea330b23d37cf16eb1ec416227679fd48de9ba5a2c243820323c88b80ae",
+          "byte_size": 4056,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/b6a22939ba821738dddd908ab99e2df484bc914cdcbc8ade0d27d002ea8fb1f9/detail-page.webp",
+          "sha256": "b6a22939ba821738dddd908ab99e2df484bc914cdcbc8ade0d27d002ea8fb1f9",
+          "byte_size": 73060,
+          "width": 570,
+          "height": 794,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo1_ja-48/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/xatu/neo1_ja-48?variant=normal",
+        "provider_id": "neo1_ja-48",
+        "source_metadata_sha256": "c4a39b05c3c40e8916b7cf8f86a5012a413e3a4b992b8ce9c4aa729a7ac5697b",
+        "source_signature": {
+          "category": "Pokemon",
+          "dex": [
+            178
+          ],
+          "hp": 80,
+          "types": [
+            "Psychic"
+          ],
+          "stage": "Stage1",
+          "rarity": "Uncommon",
+          "costs": [
+            [
+              "Psychic"
+            ],
+            [
+              "Psychic",
+              "Psychic",
+              "Psychic"
+            ]
+          ]
+        },
+        "source_body": {
+          "printed_name": "ネイティオ",
+          "printed_dex_number": "No.178",
+          "hp": 80,
+          "artist": "Ken Sugimori",
+          "attack_costs": [
+            [
+              "超"
+            ],
+            [
+              "超",
+              "超",
+              "超"
+            ]
+          ],
+          "attack_damage": [
+            null,
+            "30"
+          ],
+          "rules_or_attack_text_visible": true,
+          "rarity_mark": "♦",
+          "neo_expansion_symbol_observed": true,
+          "source_variant_support": {
+            "currentFinish": "normal",
+            "providerVariant": "normal",
+            "sourceNames": [
+              "normal"
+            ],
+            "metadataLabelSupported": true,
+            "physicalProof": false
+          },
+          "metadata_attacks": [
+            {
+              "cost": [
+                "超"
+              ],
+              "converted_energy_cost": 1,
+              "name": "みらいよち",
+              "text": "自分または相手の山札の上からカードを3枚見て、好きな順番に入れ替えて、その山札の上にもどす。",
+              "damage": null
+            },
+            {
+              "cost": [
+                "超",
+                "超",
+                "超"
+              ],
+              "converted_energy_cost": 3,
+              "name": "あやしいひかり",
+              "text": "コインを投げて「おもて」なら、相手を「こんらん」状態にする。",
+              "damage": "30"
+            }
+          ],
+          "provider_metadata_discrepancies": []
+        },
+        "printed_identity": {
+          "canonical_alias": "048",
+          "printed_national_dex": "No.178",
+          "canonical_alias_is_not_printed_national_dex": true,
+          "current_native_label": "xatu",
+          "verified_printed_native_name": "ネイティオ",
+          "current_native_label_not_used_for_match": true,
+          "known_native_label_defect_retained_without_write": true
+        },
+        "pixel_identity": {
+          "whole_original_inspected": true,
+          "full_frame_visible": true,
+          "name_number_and_symbol_readable": true,
+          "fine_print_readable": true,
+          "copyright_or_date_line_visible": false,
+          "copyright_year_inferred": false,
+          "edition_stamp_visible": false,
+          "edition_or_distribution_certified": false,
+          "material_foil_finish_certified": false,
+          "physical_card_or_material_not_observed": true,
+          "source_image_has_rendered_foil_like_background": false,
+          "source_image_does_not_certify_physical_finish": true
+        },
+        "identity_limits": {
+          "printed_national_dex_is_not_catalogue_alias": true,
+          "native_label_repair_proposal_retained_separately": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedNationalDexOpticallyVerified": true,
+          "canonicalAliasIsNotPrintedNationalDex": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "b533c32b-4322-4681-ab61-a83f5881b9fe",
+      "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+      "set_code": "neo1",
+      "language_code": "ja",
+      "collector_number": "049",
+      "card_native_name": "スローキング",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "e3e3cc48-1e0c-4cb3-89f9-e3c0ad34f036"
+      ],
+      "batch_id": "JP-CARDS-004",
+      "source_code": "scrydex",
+      "provider_id": "neo1_ja-49",
+      "image_url": "https://images.scrydex.com/pokemon/neo1_ja-49/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/667e938e9a33e03a78d61d92f99d9f420a5675db154842b41cfcaf2a44ef369b/original.png",
+          "sha256": "667e938e9a33e03a78d61d92f99d9f420a5675db154842b41cfcaf2a44ef369b",
+          "byte_size": 783853,
+          "width": 570,
+          "height": 797,
+          "mime_type": "image/png",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/612913f4b6bfadf4e0b6c4a4926a75909b9b42ba52707a7a231c2075b52cacca/card-grid.webp",
+          "sha256": "612913f4b6bfadf4e0b6c4a4926a75909b9b42ba52707a7a231c2075b52cacca",
+          "byte_size": 21354,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "search-result",
+          "file": "objects/7a98683585500a9d3ae8bdf4971b0c1c29392d135add68a07a02b54d210c4ce4/search-result.webp",
+          "sha256": "7a98683585500a9d3ae8bdf4971b0c1c29392d135add68a07a02b54d210c4ce4",
+          "byte_size": 4222,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/0af7a36caf4c53954d362e3a990be7a96c9d857b44f702a4a53382f655ecc517/detail-page.webp",
+          "sha256": "0af7a36caf4c53954d362e3a990be7a96c9d857b44f702a4a53382f655ecc517",
+          "byte_size": 79270,
+          "width": 570,
+          "height": 797,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo1_ja-49/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/slowking/neo1_ja-49?variant=holofoil",
+        "provider_id": "neo1_ja-49",
+        "source_metadata_sha256": "303ec9565c82431f1f3bddeeabad03f6bf5be5b4a8794318da7506fe22f6b917",
+        "source_signature": {
+          "category": "Pokemon",
+          "dex": [
+            199
+          ],
+          "hp": 80,
+          "types": [
+            "Psychic"
+          ],
+          "stage": "Stage1",
+          "rarity": "Holo Rare",
+          "costs": [
+            [
+              "Psychic",
+              "Psychic",
+              "Psychic"
+            ]
+          ]
+        },
+        "source_body": {
+          "printed_name": "ヤドキング",
+          "printed_dex_number": "No.199",
+          "hp": 80,
+          "artist": "Ken Sugimori",
+          "attack_costs": [
+            [
+              "超",
+              "超",
+              "超"
+            ]
+          ],
+          "attack_damage": [
+            "20+"
+          ],
+          "rules_or_attack_text_visible": true,
+          "rarity_mark": "★H",
+          "neo_expansion_symbol_observed": true,
+          "source_variant_support": {
+            "currentFinish": "holo",
+            "providerVariant": "holofoil",
+            "sourceNames": [
+              "holofoil"
+            ],
+            "metadataLabelSupported": true,
+            "physicalProof": false
+          },
+          "metadata_attacks": [
+            {
+              "cost": [
+                "超",
+                "超",
+                "超"
+              ],
+              "converted_energy_cost": 3,
+              "name": "マッドインパクト",
+              "text": "コインを投げて「おもて」なら、10ダメージを追加して、相手を「こんらん」状態にする。",
+              "damage": "20+"
+            }
+          ],
+          "provider_metadata_discrepancies": [
+            {
+              "field": "attack.damage",
+              "attackIndex": 1,
+              "sourceNativeAttackName": "マッドインパクト",
+              "sourceEnglishAttackName": "Mind Blast",
+              "sourceDamage": "20+",
+              "tcgdexDamage": null,
+              "reason": "tcgdex_damage_omitted",
+              "pixelResolution": true,
+              "canonicalCorrection": false,
+              "pixelObservation": "Damage sign is visually readable on the inspected whole front; source omission remains recorded and no canonical text change was made."
+            }
+          ]
+        },
+        "printed_identity": {
+          "canonical_alias": "049",
+          "printed_national_dex": "No.199",
+          "canonical_alias_is_not_printed_national_dex": true,
+          "current_native_label": "スローキング",
+          "verified_printed_native_name": "ヤドキング",
+          "current_native_label_not_used_for_match": true,
+          "known_native_label_defect_retained_without_write": true
+        },
+        "pixel_identity": {
+          "whole_original_inspected": true,
+          "full_frame_visible": true,
+          "name_number_and_symbol_readable": true,
+          "fine_print_readable": true,
+          "copyright_or_date_line_visible": false,
+          "copyright_year_inferred": false,
+          "edition_stamp_visible": false,
+          "edition_or_distribution_certified": false,
+          "material_foil_finish_certified": false,
+          "physical_card_or_material_not_observed": true,
+          "source_image_has_rendered_foil_like_background": true,
+          "source_image_does_not_certify_physical_finish": true
+        },
+        "identity_limits": {
+          "printed_national_dex_is_not_catalogue_alias": true,
+          "native_label_repair_proposal_retained_separately": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedNationalDexOpticallyVerified": true,
+          "canonicalAliasIsNotPrintedNationalDex": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "fd4178cd-5b1b-4c2e-90da-e54431d2eae0",
+      "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+      "set_code": "neo1",
+      "language_code": "ja",
+      "collector_number": "050",
+      "card_native_name": "onix",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "4c92991a-c0f8-4193-b92e-5882d2719266"
+      ],
+      "batch_id": "JP-CARDS-004",
+      "source_code": "scrydex",
+      "provider_id": "neo1_ja-50",
+      "image_url": "https://images.scrydex.com/pokemon/neo1_ja-50/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/de1e7ef5e51cc71ef96faabf508d5010315046c134cfd9bf11b7afc444654e93/original.png",
+          "sha256": "de1e7ef5e51cc71ef96faabf508d5010315046c134cfd9bf11b7afc444654e93",
+          "byte_size": 786542,
+          "width": 567,
+          "height": 800,
+          "mime_type": "image/png",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/aed2c950f991fdddc851032235f5aa90da813da78de37504184987853b77cb03/card-grid.webp",
+          "sha256": "aed2c950f991fdddc851032235f5aa90da813da78de37504184987853b77cb03",
+          "byte_size": 19906,
+          "width": 240,
+          "height": 339,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "search-result",
+          "file": "objects/f9e86754e7439a432981aa7c98cca801beceef190b9b7b0d86a1e93b9fabdf27/search-result.webp",
+          "sha256": "f9e86754e7439a432981aa7c98cca801beceef190b9b7b0d86a1e93b9fabdf27",
+          "byte_size": 3718,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/5c217628d62c885b5fa031195509b0c9328a4ea86272af9ea69d959c9701646c/detail-page.webp",
+          "sha256": "5c217628d62c885b5fa031195509b0c9328a4ea86272af9ea69d959c9701646c",
+          "byte_size": 76254,
+          "width": 567,
+          "height": 800,
+          "mime_type": "image/webp",
+          "artifact_id": 641256222
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo1_ja-50/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/onix/neo1_ja-50?variant=normal",
+        "provider_id": "neo1_ja-50",
+        "source_metadata_sha256": "47b25440c62f56b19238dfc42a46be88d031d2307c50b44e7d9b1294977bd480",
+        "source_signature": {
+          "category": "Pokemon",
+          "dex": [
+            95
+          ],
+          "hp": 60,
+          "types": [
+            "Fighting"
+          ],
+          "stage": "Basic",
+          "rarity": "Common",
+          "costs": [
+            [
+              "Colorless"
+            ],
+            [
+              "Fighting",
+              "Fighting"
+            ]
+          ]
+        },
+        "source_body": {
+          "printed_name": "イワーク",
+          "printed_dex_number": "No.095",
+          "hp": 60,
+          "artist": "Mitsuhiro Arita",
+          "attack_costs": [
+            [
+              "無"
+            ],
+            [
+              "闘",
+              "闘"
+            ]
+          ],
+          "attack_damage": [
+            null,
+            "10+"
+          ],
+          "rules_or_attack_text_visible": true,
+          "rarity_mark": "●",
+          "neo_expansion_symbol_observed": true,
+          "source_variant_support": {
+            "currentFinish": "normal",
+            "providerVariant": "normal",
+            "sourceNames": [
+              "normal"
+            ],
+            "metadataLabelSupported": true,
+            "physicalProof": false
+          },
+          "metadata_attacks": [
+            {
+              "cost": [
+                "無"
+              ],
+              "converted_energy_cost": 1,
+              "name": "いやなおと",
+              "text": "次の自分の番が終わるまで、このワザを受けた相手がワザによるダメージを受けるたび、そのダメージは「+20」される。",
+              "damage": null
+            },
+            {
+              "cost": [
+                "闘",
+                "闘"
+              ],
+              "converted_energy_cost": 2,
+              "name": "いかり",
+              "text": "自分のダメージカウンター×10ダメージを追加する。",
+              "damage": "10+"
+            }
+          ],
+          "provider_metadata_discrepancies": [
+            {
+              "field": "attack.damage",
+              "attackIndex": 2,
+              "sourceNativeAttackName": "いかり",
+              "sourceEnglishAttackName": "Rage",
+              "sourceDamage": "10+",
+              "tcgdexDamage": null,
+              "reason": "tcgdex_damage_omitted",
+              "pixelResolution": true,
+              "canonicalCorrection": false,
+              "pixelObservation": "Damage sign is visually readable on the inspected whole front; source omission remains recorded and no canonical text change was made."
+            }
+          ]
+        },
+        "printed_identity": {
+          "canonical_alias": "050",
+          "printed_national_dex": "No.095",
+          "canonical_alias_is_not_printed_national_dex": true,
+          "current_native_label": "onix",
+          "verified_printed_native_name": "イワーク",
+          "current_native_label_not_used_for_match": true,
+          "known_native_label_defect_retained_without_write": true
+        },
+        "pixel_identity": {
+          "whole_original_inspected": true,
+          "full_frame_visible": true,
+          "name_number_and_symbol_readable": true,
+          "fine_print_readable": true,
+          "copyright_or_date_line_visible": false,
+          "copyright_year_inferred": false,
+          "edition_stamp_visible": false,
+          "edition_or_distribution_certified": false,
+          "material_foil_finish_certified": false,
+          "physical_card_or_material_not_observed": true,
+          "source_image_has_rendered_foil_like_background": false,
+          "source_image_does_not_certify_physical_finish": true
+        },
+        "identity_limits": {
+          "printed_national_dex_is_not_catalogue_alias": true,
+          "native_label_repair_proposal_retained_separately": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedNationalDexOpticallyVerified": true,
+          "canonicalAliasIsNotPrintedNationalDex": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    }
+  ],
+  "source_counts": {
+    "scrydex": 24
+  },
+  "delivery_scope": {
+    "fixed_batch_id": "JP-CARDS-004",
+    "saved_batch_tasks": 25,
+    "eligible_fronts": 24,
+    "excluded_printing_id": "494725ee-70bf-41d3-a6b7-2a7bb6180287",
+    "excluded_alias": "045",
+    "exclusion_reason": "Slowpoke HP 40/50 identity conflict",
+    "whole_batch_completion_asserted": false
+  },
+  "binding_expectations": {
+    "production": [
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "ff82db98-30a8-4b05-9ea2-c6d60f1a5a10",
+        "collector_number": "033",
+        "card_native_name": "feraligatr",
+        "variant_id": "04072ea2-9dae-4087-8984-051970a46b2c",
+        "variant_code": "holo",
+        "finish_code": "holo",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "78846023-e099-4f64-b256-91bdbdb5286c",
+        "collector_number": "036",
+        "card_native_name": "ピカチュウ",
+        "variant_id": "1237e4de-387e-48a0-8438-3112ec693d51",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "2d2065ec-7bd8-4c2d-8f7d-746dbf6d58e2",
+        "collector_number": "047",
+        "card_native_name": "Girafarig",
+        "variant_id": "12ec9765-c708-4b9f-85d6-7bb08db12d2f",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "9162af6a-38e9-4e48-9588-2f75cf412fc7",
+        "collector_number": "048",
+        "card_native_name": "xatu",
+        "variant_id": "187b4560-4bc3-4513-8648-ba4a3275231c",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "c4a56912-dcc2-46da-92f5-8aa2082cc9c3",
+        "collector_number": "043",
+        "card_native_name": "アンファロス",
+        "variant_id": "25984233-9d8b-4d1d-bb11-1f5b101ebadf",
+        "variant_code": "holo",
+        "finish_code": "holo",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "a46d63d4-a792-48cc-9ca7-1e1853553ba6",
+        "collector_number": "028",
+        "card_native_name": "マンティン",
+        "variant_id": "36c313c9-4eaf-40c9-91c8-da453346a1d4",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "06193c75-1091-42df-b759-74919a754ff3",
+        "collector_number": "031",
+        "card_native_name": "quagsire",
+        "variant_id": "3bc908b8-dd19-4e5c-ad00-d41944253d5e",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "17982c8c-f3fe-42d4-a363-4fd7c4daf370",
+        "collector_number": "027",
+        "card_native_name": "swinub",
+        "variant_id": "43e8251d-1330-41bf-96ba-f6f77c3751fd",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "300c5db4-c31b-4166-a7d5-9a91e3fd6db8",
+        "collector_number": "042",
+        "card_native_name": "ピチュ",
+        "variant_id": "4b1b8105-ca71-4e8e-9a7e-e11bd76ce904",
+        "variant_code": "holo",
+        "finish_code": "holo",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "fd4178cd-5b1b-4c2e-90da-e54431d2eae0",
+        "collector_number": "050",
+        "card_native_name": "onix",
+        "variant_id": "4c92991a-c0f8-4193-b92e-5882d2719266",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "d67e5b17-e653-4969-8f1e-c609130834ae",
+        "collector_number": "029",
+        "card_native_name": "シードラ",
+        "variant_id": "60736520-06a9-47ed-a5c1-088f101562cc",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "1ac901c2-f3e1-44ef-8847-cf5a010d05da",
+        "collector_number": "034",
+        "card_native_name": "アズマリル",
+        "variant_id": "66c0e295-1531-4d42-a1ae-5cb2d33b3de5",
+        "variant_code": "holo",
+        "finish_code": "holo",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "c3b57590-535a-473f-aa8d-6cbc8b2fd9ae",
+        "collector_number": "044",
+        "card_native_name": "Elekid",
+        "variant_id": "7e1836ad-62ed-4fed-84da-777d5bba2a43",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "eff798f3-dfdf-4de0-a85e-72d9c8f39952",
+        "collector_number": "041",
+        "card_native_name": "フラフィー",
+        "variant_id": "99478c48-648f-41c0-9c16-06808425c851",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "c8e5b811-c676-4fbe-8d5d-1b0e4c74697a",
+        "collector_number": "039",
+        "card_native_name": "Electabuzz",
+        "variant_id": "9d6a430c-c661-438e-a244-3813eac8b9d9",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "cbd2d3d0-b97a-4180-815f-73fd727c0ad9",
+        "collector_number": "035",
+        "card_native_name": "キングドラ",
+        "variant_id": "aa7fa9f6-706f-42b0-9d72-758f6b9327a4",
+        "variant_code": "holo",
+        "finish_code": "holo",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "febc8290-78f1-4cbe-a5bc-218fc0fb0830",
+        "collector_number": "038",
+        "card_native_name": "Mareep",
+        "variant_id": "b4c99ca7-04f4-4a9e-96a0-aa7aee1eae56",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "18f5deb2-2199-4cb0-bb8a-96686e4967c4",
+        "collector_number": "040",
+        "card_native_name": "ラントン",
+        "variant_id": "ccd9244b-3e25-4647-877f-80ea62ee7714",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "70f7b66f-3e0a-4212-8921-4a332ec95715",
+        "collector_number": "037",
+        "card_native_name": "チンチョウ",
+        "variant_id": "d3a7c6f8-7c7c-42b2-8604-229b0910c67d",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "b533c32b-4322-4681-ab61-a83f5881b9fe",
+        "collector_number": "049",
+        "card_native_name": "スローキング",
+        "variant_id": "e3e3cc48-1e0c-4cb3-89f9-e3c0ad34f036",
+        "variant_code": "holo",
+        "finish_code": "holo",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "0e89b987-0853-43db-9063-1411965138bd",
+        "collector_number": "032",
+        "card_native_name": "ピロスワイン",
+        "variant_id": "ecc0a1b2-e7c1-45d3-9d79-722a9917d57f",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "230c774d-4c7a-46dc-95dc-1dbf227aa97a",
+        "collector_number": "026",
+        "card_native_name": "ウーパー",
+        "variant_id": "efa3e7dd-d4d8-43d3-926c-7dd5145d11a4",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "cc80010d-960f-4028-b29a-f753c07585aa",
+        "collector_number": "046",
+        "card_native_name": "natu",
+        "variant_id": "f13e2bbc-6966-4c9e-9b07-12dadfd74a89",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "da798c7c-dbb3-4622-9f65-5801a8d98370",
+        "collector_number": "030",
+        "card_native_name": "クロコノー",
+        "variant_id": "fc7c3882-aa1c-4992-bf08-620b15033ff8",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      }
+    ],
+    "staging": [
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "ff82db98-30a8-4b05-9ea2-c6d60f1a5a10",
+        "collector_number": "033",
+        "card_native_name": "feraligatr",
+        "variant_id": "04072ea2-9dae-4087-8984-051970a46b2c",
+        "variant_code": "holo",
+        "finish_code": "holo",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "78846023-e099-4f64-b256-91bdbdb5286c",
+        "collector_number": "036",
+        "card_native_name": "ピカチュウ",
+        "variant_id": "1237e4de-387e-48a0-8438-3112ec693d51",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "2d2065ec-7bd8-4c2d-8f7d-746dbf6d58e2",
+        "collector_number": "047",
+        "card_native_name": "Girafarig",
+        "variant_id": "12ec9765-c708-4b9f-85d6-7bb08db12d2f",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "9162af6a-38e9-4e48-9588-2f75cf412fc7",
+        "collector_number": "048",
+        "card_native_name": "xatu",
+        "variant_id": "187b4560-4bc3-4513-8648-ba4a3275231c",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "c4a56912-dcc2-46da-92f5-8aa2082cc9c3",
+        "collector_number": "043",
+        "card_native_name": "アンファロス",
+        "variant_id": "25984233-9d8b-4d1d-bb11-1f5b101ebadf",
+        "variant_code": "holo",
+        "finish_code": "holo",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "a46d63d4-a792-48cc-9ca7-1e1853553ba6",
+        "collector_number": "028",
+        "card_native_name": "マンティン",
+        "variant_id": "36c313c9-4eaf-40c9-91c8-da453346a1d4",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "06193c75-1091-42df-b759-74919a754ff3",
+        "collector_number": "031",
+        "card_native_name": "quagsire",
+        "variant_id": "3bc908b8-dd19-4e5c-ad00-d41944253d5e",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "17982c8c-f3fe-42d4-a363-4fd7c4daf370",
+        "collector_number": "027",
+        "card_native_name": "swinub",
+        "variant_id": "43e8251d-1330-41bf-96ba-f6f77c3751fd",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "300c5db4-c31b-4166-a7d5-9a91e3fd6db8",
+        "collector_number": "042",
+        "card_native_name": "ピチュ",
+        "variant_id": "4b1b8105-ca71-4e8e-9a7e-e11bd76ce904",
+        "variant_code": "holo",
+        "finish_code": "holo",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "fd4178cd-5b1b-4c2e-90da-e54431d2eae0",
+        "collector_number": "050",
+        "card_native_name": "onix",
+        "variant_id": "4c92991a-c0f8-4193-b92e-5882d2719266",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "d67e5b17-e653-4969-8f1e-c609130834ae",
+        "collector_number": "029",
+        "card_native_name": "シードラ",
+        "variant_id": "60736520-06a9-47ed-a5c1-088f101562cc",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "1ac901c2-f3e1-44ef-8847-cf5a010d05da",
+        "collector_number": "034",
+        "card_native_name": "アズマリル",
+        "variant_id": "66c0e295-1531-4d42-a1ae-5cb2d33b3de5",
+        "variant_code": "holo",
+        "finish_code": "holo",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "c3b57590-535a-473f-aa8d-6cbc8b2fd9ae",
+        "collector_number": "044",
+        "card_native_name": "Elekid",
+        "variant_id": "7e1836ad-62ed-4fed-84da-777d5bba2a43",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "eff798f3-dfdf-4de0-a85e-72d9c8f39952",
+        "collector_number": "041",
+        "card_native_name": "フラフィー",
+        "variant_id": "99478c48-648f-41c0-9c16-06808425c851",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "c8e5b811-c676-4fbe-8d5d-1b0e4c74697a",
+        "collector_number": "039",
+        "card_native_name": "Electabuzz",
+        "variant_id": "9d6a430c-c661-438e-a244-3813eac8b9d9",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "cbd2d3d0-b97a-4180-815f-73fd727c0ad9",
+        "collector_number": "035",
+        "card_native_name": "キングドラ",
+        "variant_id": "aa7fa9f6-706f-42b0-9d72-758f6b9327a4",
+        "variant_code": "holo",
+        "finish_code": "holo",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "febc8290-78f1-4cbe-a5bc-218fc0fb0830",
+        "collector_number": "038",
+        "card_native_name": "Mareep",
+        "variant_id": "b4c99ca7-04f4-4a9e-96a0-aa7aee1eae56",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "18f5deb2-2199-4cb0-bb8a-96686e4967c4",
+        "collector_number": "040",
+        "card_native_name": "ラントン",
+        "variant_id": "ccd9244b-3e25-4647-877f-80ea62ee7714",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "70f7b66f-3e0a-4212-8921-4a332ec95715",
+        "collector_number": "037",
+        "card_native_name": "チンチョウ",
+        "variant_id": "d3a7c6f8-7c7c-42b2-8604-229b0910c67d",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "b533c32b-4322-4681-ab61-a83f5881b9fe",
+        "collector_number": "049",
+        "card_native_name": "スローキング",
+        "variant_id": "e3e3cc48-1e0c-4cb3-89f9-e3c0ad34f036",
+        "variant_code": "holo",
+        "finish_code": "holo",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "0e89b987-0853-43db-9063-1411965138bd",
+        "collector_number": "032",
+        "card_native_name": "ピロスワイン",
+        "variant_id": "ecc0a1b2-e7c1-45d3-9d79-722a9917d57f",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "230c774d-4c7a-46dc-95dc-1dbf227aa97a",
+        "collector_number": "026",
+        "card_native_name": "ウーパー",
+        "variant_id": "efa3e7dd-d4d8-43d3-926c-7dd5145d11a4",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "cc80010d-960f-4028-b29a-f753c07585aa",
+        "collector_number": "046",
+        "card_native_name": "natu",
+        "variant_id": "f13e2bbc-6966-4c9e-9b07-12dadfd74a89",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "da798c7c-dbb3-4622-9f65-5801a8d98370",
+        "collector_number": "030",
+        "card_native_name": "クロコノー",
+        "variant_id": "fc7c3882-aa1c-4992-bf08-620b15033ff8",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      }
+    ]
+  },
+  "scope_counts": {
+    "production": {
+      "printings": 24,
+      "variants": 24,
+      "names": 48,
+      "sets": 1
+    },
+    "staging": {
+      "printings": 24,
+      "variants": 24,
+      "names": 48,
+      "sets": 1
+    }
+  },
+  "source_policies": {
+    "production": [
+      {
+        "code": "scrydex",
+        "display_name": "Scrydex",
+        "source_type": "image",
+        "base_url": "https://scrydex.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Exactly 89 English MEP fronts approved by owner; catalogue/rights-evidence/mep89-scrydex-owner-confirmation.2026-09-27.json; 8c68bf3499de1e1e340b00fc03e5f1b469de7b65d259b5fba5a8b4cd31119ca9. No source-wide approval.",
+        "deprecated_at": null
+      }
+    ],
+    "staging": []
+  },
+  "new_sources": {
+    "production": [],
+    "staging": [
+      {
+        "code": "scrydex",
+        "display_name": "Scrydex",
+        "source_type": "image",
+        "base_url": "https://scrydex.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Exactly 89 English MEP fronts approved by owner; catalogue/rights-evidence/mep89-scrydex-owner-confirmation.2026-09-27.json; 8c68bf3499de1e1e340b00fc03e5f1b469de7b65d259b5fba5a8b4cd31119ca9. No source-wide approval.",
+        "deprecated_at": null
+      }
+    ]
+  }
+}
