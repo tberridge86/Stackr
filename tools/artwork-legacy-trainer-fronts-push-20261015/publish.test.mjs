@@ -168,7 +168,13 @@ function database(environment = 'production') {
       return { rows: clone(inserted) };
     }
     if (sql.startsWith('select * from catalog.assets where asset_id')) return { rows: clone(state.assets.filter(asset => parameters[0].includes(asset.asset_id))) };
-    for (const [table, scope] of [['catalog.card_printings', 'printings'], ['catalog.card_variants', 'variants'], ['catalog.card_names', 'names'], ['catalog.sets', 'sets'], ['catalog.assets', 'assets'], ['catalog.catalogue_version_assets', 'links'], ['ingest.sources', 'sources']]) if (sql.startsWith(`select * from ${table} where`)) return { rows: clone(state[scope]) };
+    for (const [table, scope] of [['catalog.card_printings', 'printings'], ['catalog.card_variants', 'variants'], ['catalog.card_names', 'names'], ['catalog.sets', 'sets'], ['catalog.assets', 'assets'], ['catalog.catalogue_version_assets', 'links'], ['ingest.sources', 'sources']]) if (sql.startsWith(`select * from ${table} where`)) {
+      const result = clone(state[scope]);
+      // Model pg's direct-column timestamp parsing so a second unsafe source
+      // reader cannot pass only because the fixture stored JSON strings.
+      if (scope === 'sources') for (const source of result) for (const key of ['created_at', 'updated_at', 'deprecated_at', 'source_updated_at']) if (source[key]) source[key] = new Date(source[key]);
+      return { rows: result };
+    }
     throw Error(`Unexpected test SQL: ${sql}`);
   } };
   return db;
@@ -185,6 +191,16 @@ test('full source JSON keeps timestamp microseconds and rejects even a one-micro
   assertSourcePolicies(plan, [source], 'production');
   const changed = clone(source); changed.created_at = '2026-09-27T14:42:49.489403+00:00';
   assert.throws(() => assertSourcePolicies(plan, [changed], 'production'), /Full17-field/);
+});
+
+test('source resolver uses the same microsecond-preserving JSON reader as snapshots', async () => {
+  const db = database();
+  const result = await createSourceResolver(plan)(db, receipt, 'production');
+  assert.equal(result.get('scrydex'), oldSource.id);
+  assert.equal(result.size, 2);
+  assert.ok(!db.calls.some(sql => sql.startsWith('select * from ingest.sources')));
+  const changed = database(); changed.state.sources[0].updated_at = '2026-09-27T14:42:49.489403+00:00';
+  await assert.rejects(createSourceResolver(plan)(changed, receipt, 'production'), /Full17-field/);
 });
 
 test('publication inserts only the eligible fronts/links and one inactive Pokellector source; every existing scoped row survives; rerun is empty', async () => {

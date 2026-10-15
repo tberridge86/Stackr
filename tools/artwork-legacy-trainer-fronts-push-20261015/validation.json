@@ -1,5 +1,5 @@
 {
-  "status": "source_timestamp_read_repaired_local_checks_passed_pending_independent_review",
+  "status": "both_source_readers_use_full_fidelity_json_pending_independent_review",
   "queueId": "STACKR-JA-LEGACY-TRAINER-FRONTS-20261015-008",
   "assetId": 644243819,
   "archiveName": "stackr-ja-artwork-legacy-trainer-fronts-20261015.zip",
@@ -13,9 +13,11 @@
   "confirmation": "PUBLISH ARTWORK LEGACY TRAINER FRONTS",
   "tests": {
     "focusedNodeTests": {
-      "passed": 15,
+      "passed": 16,
       "failed": 0,
-      "includesTimestampMicrosecondRegression": true
+      "includesTimestampMicrosecondRegression": true,
+      "includesResolverMicrosecondRegression": true,
+      "directColumnSourceFixturesModelPgDateConversion": true
     },
     "persistedFailureJournalTests": {
       "passed": 1,
@@ -164,8 +166,8 @@
     },
     {
       "file": "tools/artwork-legacy-trainer-fronts-push-20261015/metadata-guard.mjs",
-      "sha256": "252a64c0656c2b4ec1adefa4e5e1c228e4d5c994ac77572c4472064478b69417",
-      "bytes": 8895
+      "sha256": "97693b94bb1a1237fbe268292024a29c7c2bc46077802a8c5b7d530c85f266db",
+      "bytes": 9067
     },
     {
       "file": "tools/artwork-legacy-trainer-fronts-push-20261015/plan.json",
@@ -174,13 +176,13 @@
     },
     {
       "file": "tools/artwork-legacy-trainer-fronts-push-20261015/publish.mjs",
-      "sha256": "14b068ac1d674c0c1ece1e5549344a1a192d0e9b25714dd21115441bbc966f35",
-      "bytes": 6426
+      "sha256": "0afcc8e7cfa48ee3f55428bbf9aa929e5de88d90c21d051af8f0878424caa7f2",
+      "bytes": 6346
     },
     {
       "file": "tools/artwork-legacy-trainer-fronts-push-20261015/publish.test.mjs",
-      "sha256": "2ae46f57b5ba3723d362fbec4cfad51bdd367689e2050fd775eb9d0bc538ef08",
-      "bytes": 22712
+      "sha256": "87a02cd381671fafab5e8525b9aa1a02b52a16acd0cde2a640f76a09c53a2216",
+      "bytes": 23688
     },
     {
       "file": "tools/artwork-legacy-trainer-fronts-push-20261015/saved-targets.json",
@@ -235,5 +237,18 @@
     "repair": "Read all17 source fields as PostgreSQL JSON, retaining timestamp strings and microseconds. Exact source hash and all prior preservation checks remain enforced.",
     "sourceHashRelaxed": false,
     "cohortOrArchiveChanged": false
+  },
+  "secondProductionAttemptAndRepair": {
+    "failedRunId": 38763804196,
+    "receiptSha256": "9a186e4aee59ffb12f72bcc7dd2b28c39f6c041010039535ce8c0553b4268b99",
+    "status": "failed_before_publication",
+    "productionObjects": 0,
+    "productionAssets": 0,
+    "productionLinks": 0,
+    "productionAndStagingRowsUnchanged": true,
+    "cause": "Snapshot read was repaired; source resolver still read direct timestamp columns and correctly failed the unchanged full17-field hash.",
+    "repair": "Both snapshot and resolver now call one shared full-fidelity PostgreSQL JSON source reader. Direct-column test fixtures now model actual pg Date conversion.",
+    "sourceHashRelaxed": false,
+    "archiveOrScopeChanged": false
   }
 }

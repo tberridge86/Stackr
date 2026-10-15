@@ -3,8 +3,8 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { check } from '../queue1-publish-20260927/publish.mjs';
 import { assertConfig as baseConfig, assetId, createTransferPolicy, publishFrozenCohort } from '../artwork3303-publish-20260928/publish.mjs';
-import { COHORT_SHA, APPROVAL_SHA, loadFrozen, validateSourcePlan, SOURCE_CODES } from './frozen.mjs';
-import { assertSourcePolicies, createMetadataGuard } from './metadata-guard.mjs';
+import { COHORT_SHA, APPROVAL_SHA, loadFrozen, validateSourcePlan } from './frozen.mjs';
+import { assertSourcePolicies, createMetadataGuard, readSourceRows } from './metadata-guard.mjs';
 
 export function assertConfig(env) {
   check(env.GITHUB_ACTIONS === 'true' && env.GITHUB_EVENT_NAME === 'workflow_dispatch', 'Protected manual workflow required');
@@ -26,7 +26,7 @@ export function createSourceResolver(plan) {
     for (const source of plan.new_sources[environment]) {
       await db.query('insert into ingest.sources(code,display_name,source_type,base_url,licence_status,attribution_required,active,internal_notes) values($1,$2,$3,$4,$5,$6,$7,$8) on conflict(code) do nothing', [source.code, source.display_name, source.source_type, source.base_url, source.licence_status, source.attribution_required, source.active, source.internal_notes]);
     }
-    const sources = (await db.query('select * from ingest.sources where code=any($1::text[]) for share', [SOURCE_CODES])).rows;
+    const sources = await readSourceRows(db);
     assertSourcePolicies(plan, sources, environment, true);
     return new Map(sources.map(s => [s.code, s.id]));
   };
