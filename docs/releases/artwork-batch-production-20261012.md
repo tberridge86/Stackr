@@ -1,13 +1,13 @@
 # Stackr artwork production handoff
 
-Updated 2026-10-15T21:00:34.433Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
+Updated 2026-10-15T21:48:00.028Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
 
-1905 tasks / 83 batches complete; 1039 tasks / 78 batches remain.
-1203 sourced originals and 3609 display versions checked: 1203 originals live, 0 prepared and queued.
+1907 tasks / 83 batches complete; 1037 tasks / 78 batches remain.
+1205 sourced originals and 3615 display versions checked: 1205 originals live, 0 prepared and queued.
 
 Owner standing approval covers exact artwork sourcing, publication and verification without another owner batch review. Independently verified vendor licence and physical edition/finish facts are not invented. Keep previous immutable objects and receipt-bound rollback.
 The owner confirms supplied-link artwork permission for www.tcgcollector.com, jp.pokellector.com, www.pricecharting.com, bulbapedia.bulbagarden.net. This is owner-attested permission (receipt SHA 7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d); independently verified vendor licence and source-wide policy activation remain false. Exact identity, readable unchanged originals and actual production verification remain required.
-All supplied links cover 1572 fixed card tasks: 796 currently live and checked, 776 open, plus 36 of 36 historical-logo research tasks still open. The frozen link scope began with 49 live cards and 1523 open cards; current counts come from the release inventory.
+All supplied links cover 1572 fixed card tasks: 798 currently live and checked, 774 open, plus 36 of 36 historical-logo research tasks still open. The frozen link scope began with 49 live cards and 1523 open cards; current counts come from the release inventory.
 Crossing the Ruins51: 51 prepared cohort records in the current queue, 51 live and checked, 0 awaiting actual production/API verification. Queue inclusion is not completion.
 My First Battle15: 15 prepared cohort records in the current queue, 15 live and checked, 0 awaiting actual production/API verification. Queue inclusion is not completion.
 Next Japanese Neo3 cohort: 48/48 exact originals and144 display images independently verified live; two Shining finish holds retained. Current fixed-task and production queue states control delivery.
@@ -53,6 +53,7 @@ Japanese Darkness final thirteen: All13 JP-CARDS-017 originals and39 display ima
 - Sourced 3, run 38798480441, JP-CARDS-058, JP-CARDS-061: all 3 card responses with preserved variant identities / all 12 decoded/hash/dimension-matched files independently verified. Receipt SHA 6285cf195418f4e5991538aa515ba72c718d568f5c74cfc6c026f4743fac7430. Rollback prepared, not executed.
 - Sourced 100, run 38802237159, JP-CARDS-046, JP-CARDS-047, JP-CARDS-048, JP-CARDS-049, JP-CARDS-050: all 100 card responses with preserved variant identities / all 400 decoded/hash/dimension-matched files independently verified. Receipt SHA dfe5b5cb9ce4148f9987d31a75e0661485ff1a85db63e8ed9034f6a70d4c276a. Rollback prepared, not executed.
 - Sourced 8, run 38803251565, JP-CARDS-002: all 8 card responses with preserved variant identities / all 32 decoded/hash/dimension-matched files independently verified. Receipt SHA d549f4091ac9f16c24f08db42a615c8d8c563b2cd5d0c85172f7f1b6ea63438a. Rollback prepared, not executed.
+- Sourced 2, run 38809618929, EN-CARDS-003: all 2 card responses with preserved variant identities / all 8 decoded/hash/dimension-matched files independently verified. Receipt SHA c889ab87cc2aaa96b50104194d3baf3ad448654b5b8cdaa33660f4f9816a839a. Rollback prepared, not executed.
 
 ## Prepared work
 
@@ -91,10 +92,11 @@ Japanese Darkness final thirteen: All13 JP-CARDS-017 originals and39 display ima
 - Frozen package asset 644968141, 529425 bytes, SHA 8657585abf4e519b9912ded25b020f53f68427c4ca32374e1fa37bdb789ae00c. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset 645021107, 16818069 bytes, SHA e4a1db97de5e90886ca3701221f5f100985d4b960d483181c102e9b283e22050. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset 645030064, 910831 bytes, SHA 383309f90b04dfe87bb87e0e7e65c75577e06064c97954ce5e01fcc35407668f. Individual delivery state controls completion; an archive alone does not.
+- Frozen package asset 645177330, 751422 bytes, SHA 97d39c1f4ef272951456a00093fecd14e2ba7a5751bcc0d8804050d71928c4d0. Individual delivery state controls completion; an archive alone does not.
 
 ## Explicit remaining holds
 
-0 exact source identities remain unresolved; 2 gathered originals still need preparation and production delivery; 24 exact originals still need clear, complete pictures; 35 source version matches remain unresolved; 0 pictures need another exact card-text comparison. These are unfinished tasks and are excluded from publication. The current manual guide separates 415 specific follow-ups, 290 active source/release tasks and 635 further ordinary tasks.
+0 exact source identities remain unresolved; 0 gathered originals still need preparation and production delivery; 25 exact originals still need clear, complete pictures; 36 source version matches remain unresolved; 0 pictures need another exact card-text comparison. These are unfinished tasks and are excluded from publication. The current manual guide separates 415 specific follow-ups, 290 active source/release tasks and 635 further ordinary tasks.
 TCG Collector supplied 14 unchanged Energy originals at 255 × 361, 320 × 447, compared with the earlier 253 × 359 originals. 14 remain held for larger, readable detail artwork. Owner-attested permission is recorded; quality remains the delivery blocker.
 
 224 old Simplified Chinese cases have Traditional Chinese counterparts but still need an evidenced identity repair. No silent retagging. The fixed list also retains256language/card/version checks,36Traditional Chinese logos and2sharper Japanese originals. Flat reference fronts do not certify physical material/finish.
@@ -107,7 +109,7 @@ No native/OTA/backend/gateway delivery or installed-phone acceptance is claimed 
 | --- | ---: | --- | --- |
 | EN-CARDS-001 | 1/1 | Live and verified | Complete; delivery evidence saved |
 | EN-CARDS-002 | 1/1 | Live and verified | Complete; delivery evidence saved |
-| EN-CARDS-003 | 0/4 | Reviewed; exact Aquapolis b versions still needed | Unlettered Aquapolis source pages do not prove the separate b versions |
+| EN-CARDS-003 | 2/4 | 2 of 4 live and checked | 2 exact sources still need gathering and verification |
 | EN-CARDS-004 | 0/1 | Reviewed; Worlds stamp and card version unresolved | Confirm the intended HGSS18 Worlds stamp/version; previous generic card-back source was rejected |
 | EN-CARDS-005 | 8/8 | Live and verified | Complete; delivery evidence saved |
 | EN-CARDS-006 | 17/25 | 17 of 25 live and checked | Regular and starting-card/Energy alternatives share published body metadata; the catalogue UUID has no regular/starting frame discriminator.; Exeggutor actual HP120 conflicts with both retained metadata HP90; the article only uses120 for body weight and records no errata. Exact printing/body evidence remains unresolved. |
