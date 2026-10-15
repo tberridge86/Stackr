@@ -1,22 +1,22 @@
 {
   "schemaVersion": "stackr-owner-artwork-production-evidence-v1",
   "inventoryId": "STACKR-ARTWORK-20261012",
-  "updatedAt": "2026-10-15T21:48:13.659Z",
+  "updatedAt": "2026-10-15T22:08:14.027Z",
   "scope": "Exact saved artwork list; original identities retained; actual production verification required",
   "summary": {
-    "checkedAt": "2026-10-15T21:47:59.039Z",
+    "checkedAt": "2026-10-15T22:06:12.995Z",
     "totalTasks": 2944,
     "totalBatches": 161,
-    "newlyPublishedFronts": 1302,
+    "newlyPublishedFronts": 1303,
     "previouslyCorrectedCasesVerified": 605,
-    "liveVerifiedTasks": 1907,
-    "completedBatches": 83,
-    "remainingTasks": 1037,
-    "remainingBatches": 78,
+    "liveVerifiedTasks": 1908,
+    "completedBatches": 84,
+    "remainingTasks": 1036,
+    "remainingBatches": 77,
     "remainingGroups": [
       {
         "task": "Find permitted exact card fronts",
-        "items": 743
+        "items": 742
       },
       {
         "task": "Find permitted Traditional Chinese set logos",
@@ -31,22 +31,22 @@
         "items": 2
       }
     ],
-    "sourceLeadTargets": 1219,
+    "sourceLeadTargets": 1220,
     "scope": "Fixed saved list, retaining original identities; completion requires actual production API and image verification. Source gathering alone is not completion.",
     "queuedItems": 0,
     "queuedBatches": 0,
     "frontTasksNotYetGathered": 728,
     "smallOriginalCandidates": 14,
-    "frontTasksNotYetPrepared": 743,
+    "frontTasksNotYetPrepared": 742,
     "contentHeldOriginalCandidates": 0,
-    "sourceAcquiredPendingPreparation": 0,
+    "sourceAcquiredPendingPreparation": 2,
     "sourceIdentityMetadataHolds": 25,
     "ownerSuppliedJapaneseGalleryLeads": {
       "suppliedSets": 23,
       "fixedBatchesCovered": 69,
       "fixedTasksCovered": 1479,
-      "coveredTasksAlreadyLive": 773,
-      "coveredTasksRemaining": 706,
+      "coveredTasksAlreadyLive": 774,
+      "coveredTasksRemaining": 705,
       "unprovidedSets": [],
       "sourceInventorySha256": "68aeb67adc1716a32e1539fc815b210e243c8f2ec15c6d5a5d059a1bbf914fe1",
       "exactPrintingOrLicenceApprovalClaimed": false,
@@ -113,11 +113,11 @@
       "scopeFile": "all-owner-links-working-queue.json",
       "scopeSha256": "dce8019d6367877078b63a26bbd7ce9a52a8c4f8a8cbe7b9c20faa98ff7eb2c9",
       "uniqueCardTasks": 1572,
-      "cardTasksAlreadyLive": 798,
-      "cardTasksRemaining": 774,
+      "cardTasksAlreadyLive": 799,
+      "cardTasksRemaining": 773,
       "historicalLogoResearchTasks": 36,
-      "remainingCombinedWork": 810,
-      "remainingCombinedBatches": 65,
+      "remainingCombinedWork": 809,
+      "remainingCombinedBatches": 64,
       "remainingOutsideBoundProvidedLinks": 227,
       "originalBatchIdsRetained": true,
       "ownerClarification": "All missing images covered by supplied links; verified cohorts carried through actual production/API verification",
@@ -997,27 +997,27 @@
     },
     "sourceAcquiredFinishHeld": 2,
     "currentContinuationSourceCaptureTotals": {
-      "sourceMetadataGets": 663,
-      "sourceOriginalGets": 336,
-      "retainedSourceOriginalCandidates": 336,
-      "acceptedAwaitingPreparation": 0,
+      "sourceMetadataGets": 665,
+      "sourceOriginalGets": 338,
+      "retainedSourceOriginalCandidates": 338,
+      "acceptedAwaitingPreparation": 2,
       "sourceReviewPending": 0,
       "qualityOrEditionHeld": 20,
       "finishHeld": 3,
-      "prepared": 1,
-      "newLiveVerified": 303,
+      "prepared": 0,
+      "newLiveVerified": 304,
       "metadataGetCountsExcludeWebSearchAndCachedWebExtractions": true,
-      "uniqueSourcePrintingCandidates": 327,
+      "uniqueSourcePrintingCandidates": 329,
       "additionalAlternateTcGSourceCandidatesPendingReview": 0,
       "printingStatePartitionCountsStillTracksHeldOldCandidatesUntilAlternateAccepted": false,
       "totalPreparedThisContinuation": 304,
       "partition": {
-        "live": 303,
-        "prepared": 1,
-        "acceptedAwaitingPreparation": 0,
+        "live": 304,
+        "prepared": 0,
+        "acceptedAwaitingPreparation": 2,
         "qualityOrEditionHeld": 20,
         "finishHeld": 3,
-        "totalUnique": 327
+        "totalUnique": 329
       },
       "accessDeniedMetadataGets": 3,
       "alternateCandidateCount": 9
@@ -1371,7 +1371,7 @@
       "accessDenialIsNotMissingOwnerPermission": true
     },
     "nextNeo2EeveeSource": {
-      "status": "Privately prepared, uploaded and independently checked; publisher preparation next",
+      "status": "Live in production; one card response and all four image files verified",
       "printingId": "a00039a3-9121-49a7-b6d1-f2ec4a7d5608",
       "fronts": 1,
       "sourceMetadataGets": 1,
@@ -1389,7 +1389,7 @@
       "originalHD": 1,
       "plannedDetailHD": 0,
       "prepared": 1,
-      "live": 0,
+      "live": 1,
       "canonicalAlias049NotPrinted": true,
       "printedNo133IsNationalDex": true,
       "providerOptionalAbilityClauseQualified": true,
@@ -1406,7 +1406,28 @@
       "rootSourceArchiveBindingSha256": "1c86f2dc3c1d75d1132450968783257cd7e57e47c0e88ba4adbfa2a35932a5f1",
       "rootUploadReceiptSha256": "4ea17b88a682739452138cfa8da4f393a7a25735339a3d40cb294a2b66bb76d7",
       "rootPrivateValidationSha256": "3ae528187b4ec22a9511bb6329187191f872c47d6a7cfa21f113cc129fee7149",
-      "queued": 0
+      "queued": 0,
+      "pullRequest": 381,
+      "reviewedHead": "afc21260c61495d3048f651d945e7fdfc95f65e7",
+      "protectedMainSha": "c4620362ae7c4c7ac4942c74a7a14726e8717d30",
+      "productionRunId": 38813753674,
+      "independentExactHeadReviewSha256": "15505dd86334e15f69e0b84665c0f210574e6a8c142f349ebfd3107b5f14c34a",
+      "hostedChecksPassed": 8,
+      "queueIntegrationSha256": "499af0556f50e3082eb50b8d3f47768e751c1b75929cb524b68dabd50a3a641c",
+      "liveVerified": 1,
+      "actualApiVerified": true,
+      "publicationJobSucceeded": true,
+      "actualApiVerificationSha256": "4ab6d0d12662d7295f00c843acb9b40a4b223552ce2aeb72ff66d37e257e4e72",
+      "publicationReceiptSha256": "86153b3fa81b8e614b525715e12f42cfde975190f224cf5f19df5064d179564f",
+      "metadataPreservationSha256": "4c10330071d914992881a18676fd3eb2a1f4af23862c342cbea6b4366f95df5e",
+      "productionRowsBefore": 16,
+      "productionRowsAfter": 18,
+      "stagingRowsBeforeAfter": 9,
+      "canonicalAndAll4ExistingFull17SourceRowsPreserved": true,
+      "productionSourceChanges": 0,
+      "independentPostPublicationReviewSha256": "20b1f69060d36c292a6ba369f5d10cc1876d9527a037bbada6c5370757d538a1",
+      "appSharedPresentationVerified": true,
+      "appApiFullResponseSha256": "78dd92c8f2d94fcb537567a3b07ded937b029225a211a76d8a9941f9060fd82b"
     },
     "nextPCG1PriceChartingAlternates": {
       "status": "Metapod too small; Butterfree explicit Rare Holo conflicts with sole normal catalogue variant",
@@ -1435,6 +1456,42 @@
       "prepared": 0,
       "live": 0,
       "other12NotInferred": true
+    },
+    "nextSM1PlusTwoSharperFronts": {
+      "status": "Two exact readable originals accepted; private preparation in progress",
+      "printingIds": [
+        "4f5ffc62-ebdf-4768-a11c-7dd384c3c6d7",
+        "c83aac5f-eba3-49da-baab-cbef76e8bc6e"
+      ],
+      "workType": "SHARP",
+      "fronts": 2,
+      "sourceMetadataGets": 2,
+      "sourceOriginalGets": 2,
+      "handoffSha256": "461cc760a4a1a78a46c0e51bbef1762a9874d34c1a087151c425d61238041a87",
+      "independentSourceReviewSha256": "84cd8726f5847b69dacdf855ea09ebec711ea1bc5421baa5f0befa6f4fd56537",
+      "rootApprovedProjectionSha256": "9f5b4f3a6a0ad916e04ab3a5636e50d219c9a08090823208f990281e1862750a",
+      "finiteDecisionSha256": "0fd57f13f1e5683a81beb901f607a26f3c4480fe97b22c03dded22d3ed822882",
+      "dimensions": [
+        [
+          567,
+          800
+        ],
+        [
+          570,
+          800
+        ]
+      ],
+      "originalHD": 0,
+      "plannedDetailHD": 0,
+      "acceptedAwaitingPreparation": 2,
+      "prepared": 0,
+      "queued": 0,
+      "live": 0,
+      "currentApiImagesNull": true,
+      "baseline139x196IsSavedReferenceOnly": true,
+      "providerProcessingHistoryQualified": true,
+      "embeddedProviderMetadataRetainedAndExposureAccepted": true,
+      "physicalEditionOrFinishCertified": false
     }
   },
   "ownerSuppliedAdditionalSourceLeads": [
@@ -2177,17 +2234,17 @@
     "extraPermissionPromptRequired": false,
     "sourceLicenceFacts": "Existing source facts retained; owner queue direction does not invent vendor licence metadata."
   },
-  "preparedOriginals": 1205,
-  "preparedDerivatives": 3615,
-  "publishedVerifiedOriginals": 1205,
+  "preparedOriginals": 1206,
+  "preparedDerivatives": 3618,
+  "publishedVerifiedOriginals": 1206,
   "queuedItems": 0,
   "preparedByLanguage": {
     "en": 432,
-    "ja": 773
+    "ja": 774
   },
   "publishedVerifiedByLanguage": {
     "en": 432,
-    "ja": 773
+    "ja": 774
   },
   "failedProductionRuns": [
     {
@@ -2488,6 +2545,12 @@
       "releaseAssetId": 645177330,
       "byteSize": 751422,
       "sha256": "97d39c1f4ef272951456a00093fecd14e2ba7a5751bcc0d8804050d71928c4d0"
+    },
+    {
+      "queueId": "NEO2-EEVEE-001-20261015",
+      "releaseAssetId": 645254422,
+      "byteSize": 511261,
+      "sha256": "45419c6bc68dbdd851c190cba15216887fe0e11290a464476345ed808762cf6d"
     }
   ],
   "holds": [
@@ -103282,15 +103345,105 @@
         "priceChanges": 0,
         "ownershipChanges": 0
       }
+    },
+    {
+      "batchId": "JP-CARDS-008",
+      "itemId": "card:a00039a3-9121-49a7-b6d1-f2ec4a7d5608",
+      "printingId": "a00039a3-9121-49a7-b6d1-f2ec4a7d5608",
+      "setId": "e60f305b-5ad6-4964-b6c6-636788481ca5",
+      "setCode": "neo2",
+      "languageCode": "ja",
+      "collectorReference": "049",
+      "cardName": "Eevee",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:bc0b4ef727794b09acc3c376b11cacecfe8689a4722803f9408c510dd31884de",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-crossing-the-ruins/eevee-133",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/2e343a7aafdc4faf5e6687ff62f53415569f6821740f6ee1d6b770f269290aef/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false
+      },
+      "original": {
+        "sha256": "2ae17ba7ce1262dd78997956cadaac44d31f3b28b9dfdb2fe1c144829d0eda6e",
+        "byteSize": 285444,
+        "width": 978,
+        "height": 1360,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/6fe93dd825cbfa9c61ddc71d8220c7ddc2de063c64a235c25fe1373ab6b87d09/card-grid.webp",
+          "sha256": "6fe93dd825cbfa9c61ddc71d8220c7ddc2de063c64a235c25fe1373ab6b87d09",
+          "byte_size": 20174,
+          "width": 240,
+          "height": 334,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/74e79d26e325ca46153af7437bd5a1b917b91381f55cf136b02cc93ac8d3d686/search-result.webp",
+          "sha256": "74e79d26e325ca46153af7437bd5a1b917b91381f55cf136b02cc93ac8d3d686",
+          "byte_size": 3722,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/a0ad916487e1017d03cbefc90b492f0c26720d233af5bd33f5c2e8853ceaad1f/detail-page.webp",
+          "sha256": "a0ad916487e1017d03cbefc90b492f0c26720d233af5bd33f5c2e8853ceaad1f",
+          "byte_size": 192210,
+          "width": 720,
+          "height": 1001,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "049",
+        "canonical_alias_is_not_printed_national_dex": true,
+        "canonical_alias_is_internal_only": true,
+        "printed_national_dex": "No.133",
+        "printed_number_is_national_dex": true,
+        "printed_collector_number": null,
+        "canonical_native_label_preserved": "Eevee",
+        "actual_printed_japanese_name": "イーブイ"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T22:05:52.207Z",
+        "productionRun": 38813753674,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38813753674",
+        "publicationReceiptSha256": "86153b3fa81b8e614b525715e12f42cfde975190f224cf5f19df5064d179564f",
+        "printingId": "a00039a3-9121-49a7-b6d1-f2ec4a7d5608",
+        "assetId": "artwork-recovered-20260928:a00039a3-9121-49a7-b6d1-f2ec4a7d5608:2ae17ba7ce1262dd78997956cadaac44d31f3b28b9dfdb2fe1c144829d0eda6e",
+        "contentSha256": "2ae17ba7ce1262dd78997956cadaac44d31f3b28b9dfdb2fe1c144829d0eda6e",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/a00039a3-9121-49a7-b6d1-f2ec4a7d5608/2ae17ba7ce1262dd78997956cadaac44d31f3b28b9dfdb2fe1c144829d0eda6e/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     }
   ],
   "manualArtworkFollowUp": {
-    "updatedAt": "2026-10-15T21:47:59.759Z",
+    "updatedAt": "2026-10-15T22:07:27.799Z",
     "scope": "Specific follow-up details, separately from ordinary source work and active releases; current fixed inventory identities retained.",
     "collectorReferenceNote": "For older Japanese cards the Stackr reference may not be printed on the card; match its name, set, artwork and card text.",
-    "specificFollowUps": 432,
+    "specificFollowUps": 430,
     "ordinarySourceWorkStillOpen": 604,
-    "activeSourceOrPublicationWork": 1,
+    "activeSourceOrPublicationWork": 2,
     "batches": [
       {
         "batchId": "MANUAL-EN-001",
@@ -105610,34 +105763,6 @@
             "status": "known_source_identity_or_finish_hold_no_picture_pointer",
             "whatToFind": "Resolve the recorded card identity or finish detail, then locate its matching original.",
             "detail": "Retain the previous explicit source/identity/finish hold. Matching metadata fields do not settle the rejected source or finish.",
-            "providedGallery": null
-          },
-          {
-            "itemId": "card:4f5ffc62-ebdf-4768-a11c-7dd384c3c6d7",
-            "printingId": "4f5ffc62-ebdf-4768-a11c-7dd384c3c6d7",
-            "batchId": "JP-SHARP-001",
-            "languageCode": "ja",
-            "setCode": "SM1+",
-            "collectorReference": "064",
-            "name": "ニンフィアGX",
-            "artworkType": "Card front",
-            "status": "insufficient_resolution_no_better_original_pointer",
-            "whatToFind": "Find a larger original; the available scan is too small for a readable card detail view.",
-            "detail": "Retain the audited 139x196 resolution gap. No genuine better original pointer has been established.",
-            "providedGallery": null
-          },
-          {
-            "itemId": "card:c83aac5f-eba3-49da-baab-cbef76e8bc6e",
-            "printingId": "c83aac5f-eba3-49da-baab-cbef76e8bc6e",
-            "batchId": "JP-SHARP-001",
-            "languageCode": "ja",
-            "setCode": "SM1+",
-            "collectorReference": "068",
-            "name": "基本草エネルギー",
-            "artworkType": "Card front",
-            "status": "insufficient_resolution_no_better_original_pointer",
-            "whatToFind": "Find a larger original; the available scan is too small for a readable card detail view.",
-            "detail": "Retain the audited 139x196 resolution gap. No genuine better original pointer has been established.",
             "providedGallery": null
           }
         ]
