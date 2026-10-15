@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "status": "frozen_local_checks_passed_pending_independent_review_and_protected_publication",
+  "checkedAt": "2026-10-15T16:37:25.760906+00:00",
+  "fronts": 96,
+  "categoryCounts": {
+    "Pokemon": 90,
+    "Trainer": 6
+  },
+  "variantCounts": {
+    "normal": 64,
+    "holo": 32
+  },
+  "queueId": "STACKR-JA-VINTAGE-JUNGLE-FOSSIL-FRONTS-20261015-096",
+  "confirmation": "PUBLISH ARTWORK VINTAGE JUNGLE FOSSIL FRONTS",
+  "immutableArchive": {
+    "id": 644449061,
+    "sha256": "d6f1a31f1470c589429be419281d024d535349bf323314b1df0d4918ca94719d",
+    "byte_size": 16300880,
+    "file_count": 388,
+    "name": "stackr-ja-artwork-vintage96-fronts-20261015.zip"
+  },
+  "sourcePolicyCheckpointSha256": "2013e3ecdb0bf05501b2cc7a66733c73e20ba80b3a7876e5d0442f1a32eb00e9",
+  "expectedSnapshotRows": {
+    "productionBefore": 396,
+    "productionAfter": 588,
+    "stagingBefore": 388,
+    "stagingAfterRollback": 388
+  },
+  "sourcePolicy": {
+    "fullExistingSourceFieldsPerRow": 17,
+    "existingSourceCodes": [
+      "scrydex",
+      "pokellector"
+    ],
+    "allExistingSourceFieldsPreserved": true,
+    "newProductionSourceRows": 0,
+    "sourceActivationOrExistingPolicyUpdates": 0,
+    "stagingRollbackOnlyFixtureCodes": [
+      "pokellector"
+    ],
+    "snapshotAndResolverUsePostgresqlJson": true,
+    "timestampMicrosecondTamperRejected": true
+  },
+  "checks": {
+    "focusedNodeTests": 16,
+    "archiveSafetyTests": 6,
+    "actualQueueReceipts": 96,
+    "jointRawManifestTamperRejections": 28,
+    "historicalTrainerQualificationRestoreRejections": 6,
+    "missingOrForgedAuthorityRejections": 2,
+    "sourceContractActualRows": 96,
+    "sourceContractTamperRejections": 23,
+    "privateEvidenceFileHashesVerified": 481,
+    "literalPhotoHtmlPointersVerified": 96,
+    "fullySharpDecodedImages": 384,
+    "fullyPilDecodedImages": 384,
+    "allArchiveMembersVerified": 388,
+    "persistedFailureJournal": {
+      "status": "passed_on_unchanged_shared_module",
+      "tests": 1,
+      "reusedEvidence": "neo1-final21-frozen-handoff.json"
+    },
+    "unchangedSharedDependencies": 11,
+    "newTextFilesLfEqualGitLf": 20,
+    "oldFrozen21RepoFilesUnchanged": 20,
+    "oldExact21QueueHelpersUnchanged": 2,
+    "old21QueueRegression": {
+      "actualReceipts": 21,
+      "jointTamperRejections": 25,
+      "forgedAuthorityRejections": 2
+    },
+    "workflowConfig": "protected_manual_exact_main_confirmation_concurrency_actions_pins_receipt_secret_scan",
+    "publicMetadataPrivacyCommercialScan": 4,
+    "secretScan": {
+      "status": "passed",
+      "textFilesScanned": 23,
+      "findings": 0
+    },
+    "finiteApprovalScopeMatches96CategoryCounts": true
+  },
+  "files": {
+    ".github/workflows/artwork-vintage-jungle-fossil-fronts-production.yml": {
+      "sha256": "40c1c558d7cd9d1cb0eb359ce04fefa1fa176acf2a1a7e6a6bb45c70614ba530",
+      "bytes": 3838
+    },
+    "tools/artwork-vintage-jungle-fossil-fronts-push-20261015/.gitattributes": {
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+      "bytes": 14
+    },
+    "tools/artwork-vintage-jungle-fossil-fronts-push-20261015/.gitignore": {
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "bytes": 19
+    },
+    "tools/artwork-vintage-jungle-fossil-fronts-push-20261015/approval.json": {
+      "sha256": "72e222838d31f7376b1ba035ed8563096216c71db30c1f0a4e49d7eed38d3a5e",
+      "bytes": 1617
+    },
+    "tools/artwork-vintage-jungle-fossil-fronts-push-20261015/before-query.sql": {
+      "sha256": "fc02bb6bd71215a47691ee0978e0ee5a38790e06aeaefd9e275fe76d30f1aa7d",
+      "bytes": 40972
+    },
+    "tools/artwork-vintage-jungle-fossil-fronts-push-20261015/download-package.py": {
+      "sha256": "bf1cca1c05a457d5b3dbb6912f65165145317466f245844e06609745a0a521e0",
+      "bytes": 6095
+    },
+    "tools/artwork-vintage-jungle-fossil-fronts-push-20261015/download-package.test.py": {
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41",
+      "bytes": 6940
+    },
+    "tools/artwork-vintage-jungle-fossil-fronts-push-20261015/freeze-inputs.json": {
+      "sha256": "7ebe690dfac4dc6c7ae635220a3214a283e4a38984bce8fd061481894e96cc94",
+      "bytes": 5128
+    },
+    "tools/artwork-vintage-jungle-fossil-fronts-push-20261015/freeze-local.mjs": {
+      "sha256": "51868b42434da44fc63d12a41bc9d3dcfb5dc75312379e5fe09c3afb62beac1a",
+      "bytes": 10342
+    },
+    "tools/artwork-vintage-jungle-fossil-fronts-push-20261015/frozen.mjs": {
+      "sha256": "44d09b65d6dfa9542146dacf77c3a548c28ac46ba42b0242610bcf699550403e",
+      "bytes": 91043
+    },
+    "tools/artwork-vintage-jungle-fossil-fronts-push-20261015/identity-table.json": {
+      "sha256": "d317fb976632cdcca321ca8151f1828945ef057cdcc19c0a6b63fc677ac2e41d",
+      "bytes": 93700
+    },
+    "tools/artwork-vintage-jungle-fossil-fronts-push-20261015/metadata-guard.mjs": {
+      "sha256": "598405ead861610326a6f4de549a8eccca01c453b9bfdbd44186f35a1020aa9b",
+      "bytes": 9142
+    },
+    "tools/artwork-vintage-jungle-fossil-fronts-push-20261015/plan.json": {
+      "sha256": "197b66e60011af4fb2a13aa2ba2b7ba230116e2fb6fcd84c2162f0877707b495",
+      "bytes": 3106548
+    },
+    "tools/artwork-vintage-jungle-fossil-fronts-push-20261015/publish.mjs": {
+      "sha256": "f1c0caecb5a0bc98337aafd43ea6818377121e4055aaefc4bf407099054480e4",
+      "bytes": 6397
+    },
+    "tools/artwork-vintage-jungle-fossil-fronts-push-20261015/publish.test.mjs": {
+      "sha256": "30584427fc1751d68b5be6379c88112fb98d008a40255a0eae86fec19f193b26",
+      "bytes": 26359
+    },
+    "tools/artwork-vintage-jungle-fossil-fronts-push-20261015/README.md": {
+      "sha256": "9907e48590802f6383c3c8740c56f5cb07d76121b7d45f5901471c66486ab5b6",
+      "bytes": 1410
+    },
+    "tools/artwork-vintage-jungle-fossil-fronts-push-20261015/saved-targets.json": {
+      "sha256": "d09c4c6d989a45b7f5965e7d4c5a50c915fc08b3a9648458f33e593d1cdafc67",
+      "bytes": 40209
+    },
+    "tools/artwork-vintage-jungle-fossil-fronts-push-20261015/source-proof.mjs": {
+      "sha256": "78fba92dfdb94dee8f4a437526571a01b8a2b9dcb012c605ec00ea9fa08d8aa7",
+      "bytes": 163276
+    },
+    "tools/artwork-vintage-jungle-fossil-fronts-push-20261015/verify-packages.mjs": {
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841",
+      "bytes": 1495
+    }
+  },
+  "limits": {
+    "providerRequests": 0,
+    "databaseRequests": 0,
+    "queueWrites": 0,
+    "storageWrites": 0,
+    "gitMutations": 0,
+    "livePublicationPerformed": false,
+    "independentPublisherReview": "root_next_step",
+    "apiAndDeviceDelivery": "not_verified_for_this_batch"
+  }
+}
