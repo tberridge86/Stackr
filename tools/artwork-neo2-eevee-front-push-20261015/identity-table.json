@@ -1,0 +1,21 @@
+[
+  {
+    "printing_id": "a00039a3-9121-49a7-b6d1-f2ec4a7d5608",
+    "set_id": "e60f305b-5ad6-4964-b6c6-636788481ca5",
+    "set_code": "neo2",
+    "language_code": "ja",
+    "collector_number": "049",
+    "card_native_name": "Eevee",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "7699421e-d760-4251-a090-40166235602b"
+    ],
+    "batch_id": "JP-CARDS-008",
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:bc0b4ef727794b09acc3c376b11cacecfe8689a4722803f9408c510dd31884de",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/2e343a7aafdc4faf5e6687ff62f53415569f6821740f6ee1d6b770f269290aef/1600.jpg",
+    "original_sha256": "2ae17ba7ce1262dd78997956cadaac44d31f3b28b9dfdb2fe1c144829d0eda6e",
+    "body_sha256": "754a6264ff9498676c3dbc8a24f870ab7c43acff5c2c9381ec440432bfdbb4cd",
+    "evidence_sha256": "4b11ff45f5a101956c7a645be58177807dbe0eb2908b6ce9d9dadef42f0e104a"
+  }
+]
