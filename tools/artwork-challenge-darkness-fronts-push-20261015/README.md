@@ -1,0 +1,7 @@
+# Exact97 Challenge from the Darkness artwork
+
+Exactly97 approved Japanese PMCG6 fronts:74 Pokemon and23 Trainers,82 normal/15 holo. Whole072 remains held because its two current variants lack an approved exact photo mapping. Current canonical metadata is preserved. Accepted083 has the optional trigger あなたがのぞむなら;005 numeric provider artist,009 retreat,055 missing third attack,071 Persian target and080 artist discrepancies remain explicit in the separate provider and actual records.
+
+All originals are unchanged lossy WebP bytes despite literal.png URLs. Three derivatives per front use the unchanged pinned Sharp pipeline without enlargement.0HD; no native optical gain or provider-no-resize claim. Independent coverage is49 direct views (47 new+2 reused pilots) and48 record-only rows. Full verbatim/provider body agreement, physical edition/finish and vendor/source-wide certification remain false. Full private TCGdex JSON is semantic evidence, never photo provenance. Public identity projections and raw/accepted/public signatures have distinct hash contracts.
+
+Both complete17-field source policies remain inactive/under_review. Snapshot and resolver read PostgreSQL JSON to preserve timestamp microseconds. Production inserts only97 assets+97 links; staging’s absent Pokellector row is a rollback-only fixture. The exact-main manual production gate, shared deployment concurrency, immutable archive, old metadata/artwork preservation, failure journals and guarded rollback remain intact. The release owner performs live execution and API verification.
