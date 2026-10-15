@@ -1,0 +1,65 @@
+[
+  {
+    "printing_id": "58053385-0e6d-45a1-b7aa-ba11abe75091",
+    "set_id": "c24a6f11-2b12-4dbd-8d50-61f17e8e6a4f",
+    "set_code": "PMCG5",
+    "language_code": "ja",
+    "collector_number": "081",
+    "card_native_name": "マチスの交渉",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "4a752b13-fdf9-4b5a-a94b-8964e50a2ad3"
+    ],
+    "batch_id": "JP-CARDS-061",
+    "source_code": "tcgcollector",
+    "provider_id": "tcgcollector-image-url-sha256:960013b61e95f821151e7a04b8fc5b7c801f0597cb35897484bb609ad088ad31",
+    "image_url": "https://static.tcgcollector.com/content/images/97/bf/86/97bf86b62623d5298b6cfd18e975a71a06a764363ceaf86eafaa031dd9a5db76.jpg",
+    "original_sha256": "627fe0e7530b61a0fd9ef4cb53f7ec0e626034a94d8ce9fff04ed355178768b9",
+    "original_width": 593,
+    "original_height": 834,
+    "body_sha256": "ff903877289a40796615cb83f7a270c80e85c349a804b465ed40bb17295c7534",
+    "evidence_sha256": "4ad4c9905ca6f2c4f32d9daa00cdae382c4fb78fbed004cacbbb1f4d3392929e"
+  },
+  {
+    "printing_id": "99246359-6f35-43db-9f85-2ccca99bceec",
+    "set_id": "c24a6f11-2b12-4dbd-8d50-61f17e8e6a4f",
+    "set_code": "PMCG5",
+    "language_code": "ja",
+    "collector_number": "096",
+    "card_native_name": "ロケット団のワナ",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "96320f61-2e8c-4145-8fbc-7c5f43eeba5c"
+    ],
+    "batch_id": "JP-CARDS-061",
+    "source_code": "tcgcollector",
+    "provider_id": "tcgcollector-image-url-sha256:128798334e1a9e0f90343f143af152e493cc1948ff9af07703149d20aa1b4244",
+    "image_url": "https://static.tcgcollector.com/content/images/9c/ce/0d/9cce0deba604504d64afd62a6e58db4f2d429acb5194b67e37826bbee3cc9617.jpg",
+    "original_sha256": "6f6becbb06a1af7c1f9627685581ba470da630a10f096f0c855a5e04ad534d54",
+    "original_width": 593,
+    "original_height": 834,
+    "body_sha256": "f9f0608a61bc6a72a2b437a445d36f7ca54a9f14e0eb525f796d1a55e372a8b5",
+    "evidence_sha256": "8148a7ae8e6ff72841081ec710d65665d53b843eba273409f4a35ede0fa7488e"
+  },
+  {
+    "printing_id": "f732147f-deef-4c65-a092-4ed2e7bbfcad",
+    "set_id": "c24a6f11-2b12-4dbd-8d50-61f17e8e6a4f",
+    "set_code": "PMCG5",
+    "language_code": "ja",
+    "collector_number": "019",
+    "card_native_name": "タケシのキュウコン",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "41b979bb-0d07-4b9e-bf3f-04de506c2831"
+    ],
+    "batch_id": "JP-CARDS-058",
+    "source_code": "tcgcollector",
+    "provider_id": "tcgcollector-image-url-sha256:d469579f51d639ea2d9c0f378f99d73c42c84f0cdb02f23fbce49a9c68de014f",
+    "image_url": "https://static.tcgcollector.com/content/images/e0/57/44/e05744a819e0fca3d78fc10a3c1d20990b42a2f1b23e9398701ea2431805c6a7.jpg",
+    "original_sha256": "cd305a07dd316800bc7a3bb17951c7e28245c7197c22ad182198b090c115ca9b",
+    "original_width": 593,
+    "original_height": 834,
+    "body_sha256": "28ad1b54ac3ca95fc993bf4f1b1b175727f14043d5ffa536871d98438334d65c",
+    "evidence_sha256": "8f6b6a4fb2f60ba75580b79b224b7eb6e1215443ac22266673495c5369d36a68"
+  }
+]

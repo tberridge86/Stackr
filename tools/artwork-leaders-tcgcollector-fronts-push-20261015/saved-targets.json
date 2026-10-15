@@ -1,0 +1,41 @@
+[
+  {
+    "printing_id": "f732147f-deef-4c65-a092-4ed2e7bbfcad",
+    "set_id": "c24a6f11-2b12-4dbd-8d50-61f17e8e6a4f",
+    "set_code": "PMCG5",
+    "language_code": "ja",
+    "collector_number": "019",
+    "card_native_name": "タケシのキュウコン",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "41b979bb-0d07-4b9e-bf3f-04de506c2831"
+    ],
+    "batch_id": "JP-CARDS-058"
+  },
+  {
+    "printing_id": "58053385-0e6d-45a1-b7aa-ba11abe75091",
+    "set_id": "c24a6f11-2b12-4dbd-8d50-61f17e8e6a4f",
+    "set_code": "PMCG5",
+    "language_code": "ja",
+    "collector_number": "081",
+    "card_native_name": "マチスの交渉",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "4a752b13-fdf9-4b5a-a94b-8964e50a2ad3"
+    ],
+    "batch_id": "JP-CARDS-061"
+  },
+  {
+    "printing_id": "99246359-6f35-43db-9f85-2ccca99bceec",
+    "set_id": "c24a6f11-2b12-4dbd-8d50-61f17e8e6a4f",
+    "set_code": "PMCG5",
+    "language_code": "ja",
+    "collector_number": "096",
+    "card_native_name": "ロケット団のワナ",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "96320f61-2e8c-4145-8fbc-7c5f43eeba5c"
+    ],
+    "batch_id": "JP-CARDS-061"
+  }
+]
