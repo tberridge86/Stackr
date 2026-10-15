@@ -29,6 +29,12 @@ export function assertSourcePolicies(plan, sources, environment, complete = fals
   for (const source of complete ? policies : existing) check(sources.some(s => s.code === source.code), 'Required provenance source missing');
 }
 
+export async function readSourceRows(db) {
+  // Share one full-fidelity source read between snapshots and the resolver.
+  const result = await db.query('select to_jsonb(source) as payload from ingest.sources source where code=any($1::text[]) for share', [SOURCE_CODES]);
+  return result.rows.map(({ payload }) => payload);
+}
+
 export async function readSnapshot(db, rows, expected) {
   const ids = rows.map(r => r.printing_id);
   const setIds = [...new Set(rows.map(r => r.set_id))];
@@ -45,8 +51,7 @@ export async function readSnapshot(db, rows, expected) {
   // PostgreSQL JSON retains all17 fields and timestamp microseconds. Reading
   // columns directly lets pg turn timestamps into millisecond Date objects,
   // which cannot equal the immutable full-row JSON baseline.
-  const sourceResult = await db.query('select to_jsonb(source) as payload from ingest.sources source where code=any($1::text[]) for share', [SOURCE_CODES]);
-  const sources = sourceResult.rows.map(({ payload }) => ({ scope: 'sources', identity: String(payload.id), payload }));
+  const sources = (await readSourceRows(db)).map(payload => ({ scope: 'sources', identity: String(payload.id), payload }));
   check(printings.length === expected.printings && variants.length === expected.variants && names.length === expected.names && sets.length === expected.sets && assets.length <= 200 && links.length <= 200, 'Scoped snapshot counts changed');
   return ordered([...printings, ...variants, ...names, ...sets, ...assets, ...links, ...sources]);
 }
