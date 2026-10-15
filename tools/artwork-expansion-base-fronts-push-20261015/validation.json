@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "status": "focused_local_validation_passed",
+  "validatedAt": "2026-10-15T20:18:09.937Z",
+  "releaseAssetId": 645021107,
+  "archiveSha256": "e4a1db97de5e90886ca3701221f5f100985d4b960d483181c102e9b283e22050",
+  "archiveBytes": 16818069,
+  "fronts": 100,
+  "categoryCounts": {
+    "Pokemon": 67,
+    "Trainer": 26,
+    "Energy": 7
+  },
+  "finishes": {
+    "normal": 86,
+    "holo": 14
+  },
+  "heldAliases": [
+    "057",
+    "058"
+  ],
+  "checks": {
+    "publisherNodeTestsPassed": 19,
+    "existingFailureJournalIntegrationTestsPassed": 1,
+    "archiveTestsPassed": 6,
+    "actualQueueReceiptsPassed": 100,
+    "queueJointTamperRejections": 35,
+    "queueForgedAuthorityRejections": 2,
+    "previousTCG3ActualQueueReceiptsPassed": 3,
+    "previousTCG3QueueTamperRejections": 25,
+    "previousTCG3AuthorityRejections": 2,
+    "previous93And97AndTCG3RepositoryFilesUnchanged": 60,
+    "privateSourceContractRowsPassed": 100,
+    "privateSourceContractJointTamperRejections": 28,
+    "privateSourcePublicContextPrivacyRejections": 10,
+    "privateSourceAuthorityRejections": 2,
+    "archiveMembers": 404,
+    "imageMembers": 400,
+    "localInstallerAllMemberHashesPassed": true,
+    "runtimeSharpFullDecodesPassed": 400,
+    "preparationSharpFullDecodesPassed": 400,
+    "archivePILFullDecodesPassed": 400,
+    "PILSharpRGBAMatches": 400,
+    "newRepoTextFilesLFWithoutBOM": 20,
+    "newMjsSyntaxPassed": 7,
+    "newPythonSyntaxPassed": 2,
+    "newJsonSyntaxPassed": 6,
+    "auxModuleSyntaxPassed": 3,
+    "unchangedDependencyHashesPassed": 11,
+    "workflowYamlGatesAndActionPinsPassed": true,
+    "scopedSecretScanPassed": true,
+    "genericQueueUnchanged": true,
+    "proposedGenericQueueSyntaxPassed": true
+  },
+  "modeledMetadata": {
+    "productionBefore": 409,
+    "productionAfter": 609,
+    "newAssets": 100,
+    "newLinks": 100,
+    "newProductionSources": 0,
+    "stagingBefore": 402,
+    "stagingDuring": 603,
+    "stagingAfterRollback": 402,
+    "oldRowsUnchanged": true,
+    "existingProductionSourceRows": 3,
+    "all51SourceFieldsTamperProtected": true,
+    "allThreeFull17SourceRowsPreserved": true,
+    "snapshotAndResolverSharePostgresJSONTimestampReader": true,
+    "unusedTCGTimestampMicrosecondRegressionPassed": true,
+    "unknownNamedDomainAliasesSourceCountDriftRejected": true,
+    "stageSourceAbsenceBeforeFixtureRequired": true,
+    "onlyRequiredPokeFixtureCreatedInStaging": true,
+    "unusedTCGFixtureCreatedInStaging": false,
+    "existingSourcePolicyChanges": 0,
+    "canonicalOrPricingChanges": 0,
+    "productionIdempotentReplayCreatesZeroArtwork": true
+  },
+  "authority": {
+    "originalFiniteDecisionSha256": "a032908c80102ede10352d931b68f5b6e51e6b47a418a2a5539041614a2604f4",
+    "additivePreservationSupplementSha256": "f80b7b363a27aeeaa3cea2753aa2c8b2881be5dce8bc1e3b168601198a584fb7",
+    "publicationSourcePolicyCheckpointSha256": "9fed86a8de20b4229f20cd0a91b617cb8e44b7e83623fd2939a6ab068e1c9228",
+    "historicalArchiveTwoSource408BaselineUnchanged": true,
+    "private100ContractFileByteSha256": "4edffe8705cb564a241c6190992f12702831ec1510d3d340ad1dab85200e9783",
+    "sourceHashes": {
+      "pokellector": "4a2a381f7146c0bfa0201c62e91e7682f18da6597c4743f23414f3606a942a71",
+      "tcgcollector": "f1f01d1b094986ad0a9f5efcf1e98fe7388e0e1c5452d23da6cf7cab97a1ca29",
+      "scrydex": "25af5b50521e6fd0942764536f62b0c53c3e72c69c874916241af47735407929"
+    }
+  },
+  "sourceCoverage": {
+    "eligibleFirst98DirectOrOwnPilot": 42,
+    "eligibleFirst98RecordOnly": 56,
+    "last2Direct": 2,
+    "eligibleTotalDirectOrOwnPilot": 44,
+    "eligibleTotalRecordOnly": 56,
+    "all100AuthorViewsReportedAndFrozen": true,
+    "fullProviderBodyAgreementCertified": false,
+    "fullVerbatimNativeTranscriptionCertified": false,
+    "physicalEditionCertified": false,
+    "physicalFinishCertified": false,
+    "vendorLicenceCertified": false,
+    "sourcewideApproval": false,
+    "hdCount": 0,
+    "noStackrEnlargement": true,
+    "originalFormats": {
+      "PNG": 4,
+      "WEBP": 96
+    },
+    "opticallyLosslessOriginalCertified": false,
+    "providerNoResizeCertified": false,
+    "nativeOpticalGainClaimed": false
+  },
+  "finiteCategoryControls": {
+    "energyContextOnlyAliases": [
+      "096",
+      "097",
+      "098",
+      "099",
+      "100",
+      "101",
+      "102"
+    ],
+    "energyPrintedJapaneseScriptNameRuleArtistCollectorCertified": false,
+    "genericPrintedJapaneseScriptGateSatisfied": false,
+    "genericGateRelaxationAllowed": false,
+    "allExpansionPrintedSetSymbolFlagsFalse": true,
+    "sourceSetAssociationSeparate": true,
+    "strictTrainer091Hp10WithoutPokemonDex35": true,
+    "mixedSourceIdentifierContracts": {
+      "initial98": "Preserve exact independently accepted pokellector:PMCG1:<photoId>; literalURLsha256 separate",
+      "last2": "Preserve exact accepted pokellector-image-url-sha256:<literalURLsha256>"
+    }
+  },
+  "queueProposal": {
+    "baselineSha256": "360e0432baf9d677802833ce595ad4e9558d4a105e12359438c725034d6cf5f5",
+    "proposedSha256": "dedbf487bad4cfb55c33a747d568359e8198b82dd8a6f56384de3e3a2777f3f4",
+    "patchSha256": "1be2fdb0f12258bcddb627d053a46232f67e4fc733d5c5c377c26c5e07b5e6e1",
+    "addedLines": 11,
+    "removedLines": 2,
+    "proposalOnly": true,
+    "sharedGenericQueueEdited": false,
+    "allOld3And97And93AndOtherGatesPreserved": true
+  },
+  "execution": {
+    "localOnly": true,
+    "databaseRequests": 0,
+    "providerRequests": 0,
+    "storageUploads": 0,
+    "sharedQueueWrites": 0,
+    "ledgerWrites": 0,
+    "gitMutations": 0,
+    "productionPublicationVerified": false,
+    "repositoryEditsOnlyAssigned20Files": true
+  }
+}
