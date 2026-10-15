@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 1,
+  "variants": 1,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "physical_finish_verified": false,
+  "physical_edition_verified": false,
+  "cohort_sha256": "de0193dad540bd6b9d74ef78feb2a47041acc14ec77d0307c784b6c768f76556",
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "889de3fbe2bb42b0fdb95a77aa8b6cdada6c0d04a668c024784ba0694dbea789",
+    "finiteDecisionFileByteSha256": "8c4ccdbd1faa51d073ae08cb0e06e827d6ca1454a103eb7848b5f23bad83fbb4",
+    "sourceHandoffFileByteSha256": "573e50c1895bb68f6ca511d140c387dfedc7b36ee6a7c3c5eacd2219e4eace0a",
+    "independentSourceReviewFileByteSha256": "372c2aca653a7cc3889a35503415b1f5eecb009fb0024d21b10e7e3f1f77986f",
+    "rootAdditiveCorrectedObservationFileByteSha256": "409942e3ba8f4e50bee53c148950874b1ceddc81c8d39d5a63093aee6226a977",
+    "fourSourceCheckpointFileByteSha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "ea3628d86cf1ea6326e270d24d20113cf753fa086c8c6d7a279656285eea2e3a",
+    "independentPrivatePackageReviewSha256": "61a4f069fa600267298d1541867b38af2f00a89aac6684bda8cdc09f0ae68aec",
+    "rootPrivatePackageValidationSha256": "d0e3f9b163db3608bc270e4eea74b53ee7182e93069121dd9a9677037b9b1ee1",
+    "rootSourceArchiveBindingSha256": "ddbe95fd11fee21bb453c336f9b3d148a3a7f4f8d8202948717df6291398eb29",
+    "rootUploadReceiptSha256": "e3f5e4dfadd81d49251b426d2499f117051b5292882a8e38e076e0048755ef14"
+  },
+  "production_source_changes_allowed": 0,
+  "scope": "Exactly one Japanese PCG8 Celebi004/075 shared printing front for the current sole holo variant. Preserve current native label, is_defaultfalse and the already-selected API default without canonical edits. Corrected full Japanese time-travel coin/trigger/heads/discard/bottom-deck and one-Star deck clauses govern; literal Leaf Shade has no certified English energy scope. PCG8 is an association, not printed text; no Dex inference. Preserve existing PCG8 set logo/link and all four full17 production sources. No production source creation/policy updates; temporary staging Price fixture fully rolls back. No physical edition/finish, provider no-resize or native optical certificate."
+}
