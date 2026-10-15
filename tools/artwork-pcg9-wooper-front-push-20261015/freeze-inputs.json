@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "private_inputs": [
+    {
+      "file": "publish-review/wooper1-four-sources-20261015-production-before.json",
+      "sha256": "6f474e32fc70a58d213811b0f69d1321386c4a21a3340d8baba73457965d1687"
+    },
+    {
+      "file": "publish-review/wooper1-four-sources-20261015-production-bindings.json",
+      "sha256": "7543cc2a73f861a73e425ac924c5d73982ca99fc4946e59eccf449618ad5bf61"
+    },
+    {
+      "file": "publish-review/wooper1-four-sources-20261015-staging-before.json",
+      "sha256": "47641d688f1daced423cdcffeb48e0bc6afd936f5890f6494e811f2e49fc2baa"
+    },
+    {
+      "file": "publish-review/wooper1-four-sources-20261015-staging-bindings.json",
+      "sha256": "3db77f0b7c7ee0469bfe05ea6fc1859ef4182bebeb0a1fb85af611cbab2fbdab"
+    },
+    {
+      "file": "source-batches/pcg9-wooper-one-approved-front-20261015/root-approved1-source-original.json",
+      "sha256": "321fe74ede47c10e6e2e8cb0c2ac573a8e9e50032184f5bb847483df60b3ffeb"
+    },
+    {
+      "file": "source-batches/pcg9-wooper-one-approved-front-20261015/root-finite1-preparation-publication-decision.json",
+      "sha256": "0f7687c975c7e9657fdf151ee8ace4aed4fd293c86b4f6b1b1e9054408a91e80"
+    },
+    {
+      "file": "publish-review/root-four-source-policy-checkpoint-after-aquapolis2-20261015.json",
+      "sha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f"
+    },
+    {
+      "file": "publish-review/wooper1-independent-private-package-review-20261015.json",
+      "sha256": "cf274aadf4bb04fff9862582770e0d92d786d8bae0237a050f5ef49dd3fcfece"
+    },
+    {
+      "file": "publish-review/wooper1-root-private-package-validation-20261015.json",
+      "sha256": "51035ed2a16cc814428a28b735cd4c81134471076d5276ab0f5b16c190328a54"
+    },
+    {
+      "file": "wooper1-root-source-archive-binding.json",
+      "sha256": "b2111030a001c01be19efb30a14a944dcf1c341b08408665c855dbfc80f1d879"
+    },
+    {
+      "file": "wooper1-root-upload-receipt.json",
+      "sha256": "739c8614fc8081fc85db0189afa819def3b4bcfb8112dbebcd8932bba1a6b552"
+    },
+    {
+      "file": "publish-review/pcg89-six-independent-source-review-20261015.json",
+      "sha256": "fd182fccd5173f601d44153e82589c5439c02f1101f05af4c41978380ce6b198"
+    }
+  ],
+  "source_manifest_file": "wooper1-fronts-source-manifest.json",
+  "source_manifest_sha256": "fab2938b58da8fdff68dc198b28f489215e9f757c0870ff3cb7a6fa42ccba1d6",
+  "package_receipt_file": "wooper1-fronts-package-receipt.json",
+  "package_receipt_sha256": "c3f7ae2de1236e81bffd4b5fc23ed475318a94ebf6f12d1fb535031ec05b4648",
+  "archive": {
+    "id": 645501821,
+    "sha256": "ff8d88a63b1b173003e0ba264123cc4877a87b63c7b327b3799ed151f2593fca",
+    "byte_size": 394541,
+    "file_count": 8,
+    "name": "wooper1-fronts-20261015.zip"
+  },
+  "unchanged_dependencies": [
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 9031,
+      "sha256": "5524305ba4bd6a0f3867ea2c097c57fb0d610e27ef1d9d64529b64e9c67249de"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/metadata-guard.mjs",
+      "bytes": 4018,
+      "sha256": "cca5354822fe11c007308f7d22ebf84649d2374619e0dd049c7347a9db9e116f"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/publish.mjs",
+      "bytes": 5885,
+      "sha256": "8451746bb6e188f56c5be31064742eaeecdc2f2c6d6e27cb31ab5c7227af6d1f"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "tools/artwork-next-push-20261013/frozen.mjs",
+      "bytes": 7732,
+      "sha256": "3e14eb76a012116492075328c50e6c5907f712004da02d4d3dae541d2617a95b"
+    },
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 30117,
+      "sha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24425,
+      "sha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 15024,
+      "sha256": "1d168e5407a5bdc6e027f58991de58a0664576d7c917d5b219fa13f9af4a1d0a"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/download-package.py",
+      "bytes": 5489,
+      "sha256": "53f1114f25bd995b4f05d9b2d3adad7ae2dadc85b4b13f038a84bcc5e7d6b09f"
+    }
+  ],
+  "staging_fixture_policy": {
+    "code": "pricecharting",
+    "display_name": "PriceCharting (owner supplied card fronts)",
+    "source_type": "image",
+    "base_url": "https://www.pricecharting.com",
+    "licence_status": "under_review",
+    "attribution_required": true,
+    "active": false,
+    "internal_notes": "Owner-attested source use for exactly Aquapolis Mr. Mime95b and Porygon103b shared printing-front artwork in finite cohort AQUAPOLIS-SHARED-002-20261015. Independent vendor and underlying card licences are unverified. No source-wide approval; each later acquisition requires separate finite approval. Existing provenance rows and source policies must remain unchanged.",
+    "deprecated_at": null
+  },
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "321fe74ede47c10e6e2e8cb0c2ac573a8e9e50032184f5bb847483df60b3ffeb",
+    "finiteDecisionFileByteSha256": "0f7687c975c7e9657fdf151ee8ace4aed4fd293c86b4f6b1b1e9054408a91e80",
+    "sourceHandoffFileByteSha256": "a8194bb0c24792fb8798e5d3ccbbbc5afef1b52be5fcefd2a52f9559dfb462c8",
+    "independentSourceReviewFileByteSha256": "fd182fccd5173f601d44153e82589c5439c02f1101f05af4c41978380ce6b198",
+    "fourSourceCheckpointFileByteSha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "80be1f9e32ac1a8b9a183a1baa25110882c73a0c1c71e68ce1d99adddc849bdc",
+    "independentPrivatePackageReviewSha256": "cf274aadf4bb04fff9862582770e0d92d786d8bae0237a050f5ef49dd3fcfece",
+    "rootPrivatePackageValidationSha256": "51035ed2a16cc814428a28b735cd4c81134471076d5276ab0f5b16c190328a54",
+    "rootSourceArchiveBindingSha256": "b2111030a001c01be19efb30a14a944dcf1c341b08408665c855dbfc80f1d879",
+    "rootUploadReceiptSha256": "739c8614fc8081fc85db0189afa819def3b4bcfb8112dbebcd8932bba1a6b552"
+  }
+}

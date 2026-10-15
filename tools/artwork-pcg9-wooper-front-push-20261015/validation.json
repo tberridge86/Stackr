@@ -1,0 +1,194 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_FROZEN_PUBLICATION_HANDOFF_READY",
+  "confirmation": "PUBLISH ARTWORK PCG9 WOOPER FRONT",
+  "fronts": 1,
+  "fixedVariantTuplesPerEnvironment": 1,
+  "workType": "CARDS",
+  "batchId": "JP-CARDS-043",
+  "category": "Pokemon",
+  "languageCode": "ja",
+  "setCode": "PCG9",
+  "canonicalAlias": "005",
+  "printingAssetVariantId": null,
+  "sourceVariantId": null,
+  "deliveryKind": "shared",
+  "tests": {
+    "publisherNode": {
+      "passed": 17,
+      "failed": 0
+    },
+    "archiveGuardsPython": {
+      "passed": 6,
+      "failed": 0
+    },
+    "priorPublisherRegressions": [
+      {
+        "tool": "artwork-tksmr-lightning2-front-push-20261015",
+        "tests": 17,
+        "passed": 17,
+        "failed": 0
+      },
+      {
+        "tool": "artwork-pcg8-celebi-front-push-20261015",
+        "tests": 17,
+        "passed": 17,
+        "failed": 0
+      },
+      {
+        "tool": "artwork-sm1plus-sharper-fronts-push-20261015",
+        "tests": 17,
+        "passed": 17,
+        "failed": 0
+      },
+      {
+        "tool": "artwork-neo2-eevee-front-push-20261015",
+        "tests": 15,
+        "passed": 15,
+        "failed": 0
+      },
+      {
+        "tool": "artwork-aquapolis-shared-fronts-push-20261015",
+        "tests": 15,
+        "passed": 15,
+        "failed": 0
+      }
+    ],
+    "persistedFailureJournal": {
+      "tests": 1,
+      "passed": 1,
+      "failed": 0
+    },
+    "phase1FrozenSourceContract": {
+      "passed": 58,
+      "failed": 0
+    },
+    "queue": {
+      "realReceipts": 1,
+      "localImageByteObjects": 4,
+      "jointRawEntryTamperRejections": 44,
+      "forgedAuthorityRejections": 7,
+      "priorLightningSM1PlusCelebiEeveeAndAquapolisReadOnlyReceipts": 7,
+      "priorLocalImageObjects": 28,
+      "unchangedSharpMetricCases": 1,
+      "previousJapaneseCelebiSM1PlusEeveeAndAquapolisPredicatesPreserved": true,
+      "sharedQueueUnchanged": true,
+      "japanesePokemonDeltaFullFrontVerified": true,
+      "completeActualJapaneseBodyPreserved": true,
+      "historicalPhysicalEditionHoldRetained": true,
+      "providerBodyVerbatimAgreement": false,
+      "appLargeExpectedRole": "original",
+      "productionWrites": 0
+    }
+  },
+  "archiveInstaller": {
+    "assetId": 645501821,
+    "membersVerifiedAndExtracted": 8,
+    "runtimeSharpFullyDecoded": 4,
+    "privatePILSharpRgbaAgreements": 4,
+    "privacySafeJsonFiles": 4,
+    "originalHdPixelFronts": 1,
+    "derivativeHdPixelFiles": 0,
+    "noEnlargement": true,
+    "localPinnedArchiveOnly": true
+  },
+  "sourceGuard": {
+    "externalAuthorityAndBaselineFilesRehashed": 12,
+    "oldProductionSources": 4,
+    "oldFullSourceFieldsProtected": 68,
+    "productionNewSources": 0,
+    "productionPolicyChangesAllowed": 0,
+    "explicitProductionResolverHasNoInsertPath": true,
+    "missingOrDriftedAnyExistingSourceFails": true,
+    "existingPriceFinite2NotesUnchanged": true,
+    "full17MicrosecondsRetainedByBothJsonReaders": true,
+    "stagingBaselineScopedSources": 0,
+    "onlyTemporaryStagingFixture": "pricecharting",
+    "stageFull17DefaultsAndCreationReceiptChecked": true,
+    "frozenFullBeforeSnapshotsChecked": true
+  },
+  "transactionFixtures": {
+    "production": {
+      "beforeRows": 11,
+      "afterRows": 13,
+      "assetsAdded": 1,
+      "linksAdded": 1,
+      "sourcesAdded": 0
+    },
+    "staging": {
+      "beforeRows": 5,
+      "temporaryRows": 8,
+      "afterRollbackRows": 5
+    },
+    "existingPCG9SetLogoAndLinkUnchanged": true,
+    "canonicalMetadataAssetsLinksAndAllSourceRowsUnchanged": true,
+    "sourceAndLinkFailuresRollBack": true
+  },
+  "identity": {
+    "currentNativeLabelPreserved": "ウーパー（デルタ種）",
+    "actualPrintedName": "ウパー",
+    "actualPrintedForm": "δ-デルタ種",
+    "printedHP": 40,
+    "printedType": "Grass",
+    "printedStage": "たね",
+    "printedCollectorNumber": "005/068",
+    "printedArtist": "Tomokazu Komiya",
+    "completeActualJapaneseAttacksCostsEffectsAndTimingPreserved": true,
+    "printedNationalDex": null,
+    "printedSetCodeLiteral": null,
+    "photoUrlHashDistinctFromProduct3439801": true,
+    "soleDefaultNormalTuplePreservedBothEnvironments": true,
+    "wholeUnchangedOriginalAndFourCornersRetained": true,
+    "actualCurrentEditionExactMatchEstablished": false,
+    "historicalPhysicalEditionHoldRetained": true,
+    "sharedFrontEligibilityDoesNotAuthenticatePhysicalEdition": true,
+    "providerBodyVerbatimAgreement": false,
+    "providerNeverResizedCertified": false,
+    "nativeOpticalGainClaimed": false,
+    "physicalFinishCertified": false,
+    "physicalEditionCertified": false,
+    "unlimitedEditionCertified": false,
+    "materialAuthenticityCertified": false
+  },
+  "appSelection": {
+    "largeExpectedRole": "original",
+    "largeExpectedDimensions": [
+      1103,
+      1520
+    ],
+    "detailDimensions": [
+      720,
+      992
+    ],
+    "detailLongEdgeBelow1000": true,
+    "actualDefaultSharedAppSelectionStillRequiresLiveVerification": true,
+    "largeEqualsDetailMustNotBeRequired": true
+  },
+  "unchangedPriorRepositoryFilesRehashed": 200,
+  "unchangedSharedDependenciesRehashed": 11,
+  "unchangedPrivateOwnedPinsPlusHandoffRehashed": 33,
+  "unchangedSourceAuthorityPinsRehashed": 119,
+  "unchangedIndependentSourceReviewReportsRehashed": 4,
+  "workflow": {
+    "protectedProduction": true,
+    "expectedProtectedProductionEnvironmentId": 19553872513,
+    "exactMainSha": true,
+    "sharedDeploymentConcurrency": true,
+    "shaPinnedActions": 3,
+    "exact20FileSecretScanPassed": true,
+    "failureJournalAndRollbackReceipts": true
+  },
+  "planSha256": "fe3d4dbd3597ade317b904c2cbc2be41914c728bddaa16b540ec0141b415ca3c",
+  "approvalSha256": "9b85f2b35695694b4dea3ad2b099cdb767417fbfc04ee387c1dae06458e5b804",
+  "sourceManifestSha256": "fab2938b58da8fdff68dc198b28f489215e9f757c0870ff3cb7a6fa42ccba1d6",
+  "archiveSha256": "ff8d88a63b1b173003e0ba264123cc4877a87b63c7b327b3799ed151f2593fca",
+  "newProviderRequests": 0,
+  "databaseRequests": 0,
+  "gitMutations": 0,
+  "sharedQueueWrites": 0,
+  "ledgerWrites": 0,
+  "storageWrites": 0,
+  "productionWrites": 0,
+  "livePublicationVerified": false,
+  "independentExactHeadAndHostedChecksStillRequired": true
+}
