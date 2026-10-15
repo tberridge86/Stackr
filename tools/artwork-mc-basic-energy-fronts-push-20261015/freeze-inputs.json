@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 1,
+  "source_manifest_file": "mc8-fronts-source-manifest.json",
+  "source_manifest_sha256": "27408899a41956c0318d0d2b432613396e279d7e6cb3437f2d85ee5e0526d9e4",
+  "package_receipt_file": "mc8-fronts-package-receipt.json",
+  "package_receipt_sha256": "4b3f38d155436636fa8b9b032da87992e815fecb3e10547b7ee993ee3de01fee",
+  "saved_targets_sha256": "5a6458909042bcff2ffac23ac3fc2f82286a3b6cc48a0560a629046367af343c",
+  "source_evidence": {
+    "approvedProjection": "b7ca60acb2fc5fde03b0fb5107d671cd63608874a10a78305a453e68e9a06106",
+    "finitePreparationConditionalPublicationDecision": "fa01abad2bec8b61eef8110a171cae6794175a653dbaead879eeb66e9e82d5e4",
+    "independentSelection": "a9a7761bf7235ef6cd4e126a4f49efa870c6def5ed2c3f6029350d2e13563c14",
+    "independentReview": "04edfca5da2eeb2badda116555fe58a8243bd8311a93e0e9c560b10c75636c88",
+    "priorTcgSourcePolicyCanonical": "207957571711627d17ab7e1ed0ef77f6635426ee9a5972d47d316e3fcba9bd1e",
+    "ownerPermissionAttestation": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d"
+  },
+  "before_snapshots": {
+    "production": {
+      "file": "publish-review/mc8-20261015-production-before.json",
+      "sha256": "32ccc757eae67892e8729344fbccb084bd18446ad7c84f2b05e72a09cc35e5c4",
+      "rows": 39
+    },
+    "staging": {
+      "file": "publish-review/mc8-20261015-staging-before.json",
+      "sha256": "97d6d58d57a54959ca2073db8d33615d75220c9aea07e906efd61b42a2e10b4d",
+      "rows": 34
+    }
+  },
+  "bindings": {
+    "production": {
+      "file": "publish-review/mc8-20261015-production-bindings.json",
+      "sha256": "7939d4ab0171e6be7065f38cb993293a611cfac91c33e9e2c048348b72b3456f"
+    },
+    "staging": {
+      "file": "publish-review/mc8-20261015-staging-bindings.json",
+      "sha256": "28235a6594eb994245ded5c668c4834a48071bf6a60b30dcf6691ddb6faddea0"
+    }
+  },
+  "archive": {
+    "id": 645030064,
+    "sha256": "383309f90b04dfe87bb87e0e7e65c75577e06064c97954ce5e01fcc35407668f",
+    "byte_size": 910831,
+    "file_count": 36,
+    "name": "stackr-ja-artwork-mc8-fronts-20261015.zip"
+  },
+  "metadata": [
+    {
+      "file": "manifest.json",
+      "sha256": "27408899a41956c0318d0d2b432613396e279d7e6cb3437f2d85ee5e0526d9e4",
+      "byte_size": 156216
+    },
+    {
+      "file": "receipts/preparation-summary.json",
+      "sha256": "2e07c14bacf7631abb7c68e9f88eabec0cadd1f2b4e5ebf1648e27f9cdb184a6",
+      "byte_size": 1314
+    },
+    {
+      "file": "receipts/current-card-bindings.json",
+      "sha256": "9a0862b5676793d5c6f25e94ebc7ec1c7d7f1723cb1d58531c5d25d45c9958ca",
+      "byte_size": 8683
+    },
+    {
+      "file": "receipts/finite-decision.json",
+      "sha256": "76099dd41681ada70b818dcdfab8ebfb51aded2b4c66c5d56403a82049fcaec4",
+      "byte_size": 2682
+    }
+  ],
+  "unchanged_dependencies": [
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 9031,
+      "sha256": "5524305ba4bd6a0f3867ea2c097c57fb0d610e27ef1d9d64529b64e9c67249de"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/metadata-guard.mjs",
+      "bytes": 4018,
+      "sha256": "cca5354822fe11c007308f7d22ebf84649d2374619e0dd049c7347a9db9e116f"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/publish.mjs",
+      "bytes": 5885,
+      "sha256": "8451746bb6e188f56c5be31064742eaeecdc2f2c6d6e27cb31ab5c7227af6d1f"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "tools/artwork-next-push-20261013/frozen.mjs",
+      "bytes": 7732,
+      "sha256": "3e14eb76a012116492075328c50e6c5907f712004da02d4d3dae541d2617a95b"
+    },
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 30117,
+      "sha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24425,
+      "sha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 15024,
+      "sha256": "1d168e5407a5bdc6e027f58991de58a0664576d7c917d5b219fa13f9af4a1d0a"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/download-package.py",
+      "bytes": 5489,
+      "sha256": "53f1114f25bd995b4f05d9b2d3adad7ae2dadc85b4b13f038a84bcc5e7d6b09f"
+    }
+  ],
+  "private_capture_receipt_sha256": "07928e4beb38e88facf2ba794a3022d1e2dc42780d67bce340e1410267ca1107",
+  "source_checkpoint": {
+    "file": "publish-review/root-source-policy-checkpoint-after-leaders3tcg-20261015.json",
+    "sha256": "9fed86a8de20b4229f20cd0a91b617cb8e44b7e83623fd2939a6ab068e1c9228"
+  },
+  "finite_source_policy": {
+    "code": "tcgcollector",
+    "display_name": "TCGCollector (owner supplied Japanese card fronts)",
+    "source_type": "image",
+    "base_url": "https://www.tcgcollector.com",
+    "licence_status": "under_review",
+    "attribution_required": true,
+    "active": false,
+    "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly3 independently accepted Leaders Stadium fronts019/081/096. Bind the final finite preparation/publication decision and exact source selection in the publisher plan. Owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval, independently verified vendor licence or physical finish/edition certification. Finite decision SHA256 68f1af735d5e481ed26d1aabbe94e493d520575d9d4191413508f9ec90cf68ff.",
+    "deprecated_at": null
+  },
+  "publication_supplement": {
+    "file": "source-batches/mc8-tcgcollector-source-20261015/root-publication-three-source-checkpoint-supplement.json",
+    "sha256": "597c96b61f46d45dcefacde19856c5659c65465dcad1b2b0b59a075e2ccef46a"
+  }
+}

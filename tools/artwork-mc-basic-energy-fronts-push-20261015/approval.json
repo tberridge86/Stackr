@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 8,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "approved_at": "2026-10-15",
+  "cohort_sha256": "8be6a84e59101aa8a1903966c68a8882e55fd7707355539878838d7461786a83",
+  "source_counts": {
+    "tcgcollector": 8
+  },
+  "source_evidence": {
+    "approvedProjection": "b7ca60acb2fc5fde03b0fb5107d671cd63608874a10a78305a453e68e9a06106",
+    "finitePreparationConditionalPublicationDecision": "fa01abad2bec8b61eef8110a171cae6794175a653dbaead879eeb66e9e82d5e4",
+    "independentSelection": "a9a7761bf7235ef6cd4e126a4f49efa870c6def5ed2c3f6029350d2e13563c14",
+    "independentReview": "04edfca5da2eeb2badda116555fe58a8243bd8311a93e0e9c560b10c75636c88",
+    "priorTcgSourcePolicyCanonical": "207957571711627d17ab7e1ed0ef77f6635426ee9a5972d47d316e3fcba9bd1e",
+    "ownerPermissionAttestation": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d"
+  },
+  "source_policy_checkpoint_sha256": "9fed86a8de20b4229f20cd0a91b617cb8e44b7e83623fd2939a6ab068e1c9228",
+  "scope": "Exactly8 Japanese MC Basic Energy fronts,8normal. Unchanged WEBP868x1212 originals and24no-enlargement derivatives. Fresh three-source checkpoint satisfies historical conditional approval separately from immutable private archive.0new production sources; preserve all3full17 source rows and initial finite3 TCGCollector notes. Actual type-glyph titles and printed MC/type footer codes, no numeric collector/Dex/Pokemon body, physical/vendor/source-wide certification."
+}
