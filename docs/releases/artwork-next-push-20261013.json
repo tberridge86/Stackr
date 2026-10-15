@@ -1,22 +1,22 @@
 {
   "schemaVersion": "stackr-owner-artwork-production-evidence-v1",
   "inventoryId": "STACKR-ARTWORK-20261012",
-  "updatedAt": "2026-10-15T22:37:22.262Z",
+  "updatedAt": "2026-10-15T22:55:22.797Z",
   "scope": "Exact saved artwork list; original identities retained; actual production verification required",
   "summary": {
-    "checkedAt": "2026-10-15T22:35:48.389Z",
+    "checkedAt": "2026-10-15T22:53:34.603Z",
     "totalTasks": 2944,
     "totalBatches": 161,
-    "newlyPublishedFronts": 1305,
+    "newlyPublishedFronts": 1306,
     "previouslyCorrectedCasesVerified": 605,
-    "liveVerifiedTasks": 1910,
+    "liveVerifiedTasks": 1911,
     "completedBatches": 85,
-    "remainingTasks": 1034,
+    "remainingTasks": 1033,
     "remainingBatches": 76,
     "remainingGroups": [
       {
         "task": "Find permitted exact card fronts",
-        "items": 742
+        "items": 741
       },
       {
         "task": "Find permitted Traditional Chinese set logos",
@@ -31,22 +31,22 @@
         "items": 0
       }
     ],
-    "sourceLeadTargets": 1222,
+    "sourceLeadTargets": 1223,
     "scope": "Fixed saved list, retaining original identities; completion requires actual production API and image verification. Source gathering alone is not completion.",
     "queuedItems": 0,
     "queuedBatches": 0,
-    "frontTasksNotYetGathered": 728,
-    "smallOriginalCandidates": 14,
-    "frontTasksNotYetPrepared": 742,
+    "frontTasksNotYetGathered": 727,
+    "smallOriginalCandidates": 13,
+    "frontTasksNotYetPrepared": 741,
     "contentHeldOriginalCandidates": 0,
-    "sourceAcquiredPendingPreparation": 0,
+    "sourceAcquiredPendingPreparation": 1,
     "sourceIdentityMetadataHolds": 25,
     "ownerSuppliedJapaneseGalleryLeads": {
       "suppliedSets": 23,
       "fixedBatchesCovered": 69,
       "fixedTasksCovered": 1479,
-      "coveredTasksAlreadyLive": 774,
-      "coveredTasksRemaining": 705,
+      "coveredTasksAlreadyLive": 775,
+      "coveredTasksRemaining": 704,
       "unprovidedSets": [],
       "sourceInventorySha256": "68aeb67adc1716a32e1539fc815b210e243c8f2ec15c6d5a5d059a1bbf914fe1",
       "exactPrintingOrLicenceApprovalClaimed": false,
@@ -57,7 +57,7 @@
       "scope": "Exact b-variant, intended Worlds stamp, Pikachu-only My First Battle, exact small energies, and five 30/30 finish holds",
       "newImagesGathered": 0
     },
-    "suppliedSourceOriginalCandidates": 1,
+    "suppliedSourceOriginalCandidates": 2,
     "ownerSuppliedMyFirstBattleLeads": {
       "deckGalleries": 4,
       "newlyAdded": 3,
@@ -113,10 +113,10 @@
       "scopeFile": "all-owner-links-working-queue.json",
       "scopeSha256": "dce8019d6367877078b63a26bbd7ce9a52a8c4f8a8cbe7b9c20faa98ff7eb2c9",
       "uniqueCardTasks": 1572,
-      "cardTasksAlreadyLive": 801,
-      "cardTasksRemaining": 771,
+      "cardTasksAlreadyLive": 802,
+      "cardTasksRemaining": 770,
       "historicalLogoResearchTasks": 36,
-      "remainingCombinedWork": 807,
+      "remainingCombinedWork": 806,
       "remainingCombinedBatches": 63,
       "remainingOutsideBoundProvidedLinks": 227,
       "originalBatchIdsRetained": true,
@@ -155,7 +155,10 @@
       "ownerPermissionAttested": true,
       "permissionMissing": false,
       "oldOriginalsPreserved": 14,
-      "handoffSha256": "44c5297cbbd969018031a85005263e1b670b87f10448914302cb5957e7a0e02d"
+      "handoffSha256": "44c5297cbbd969018031a85005263e1b670b87f10448914302cb5957e7a0e02d",
+      "exactLargerAlternativeAccepted": 1,
+      "alternativeStillAwaitingActualProduction": 1,
+      "remainingExactTasksAfterAcceptedAlternative": 13
     },
     "ownerMFBFourPilot": {
       "originalsChecked": 4,
@@ -833,14 +836,15 @@
     "ownerArtworkUntilZeroContinuation": {
       "recordedAt": "2026-10-15T17:47:46.524Z",
       "ownerInstruction": "use whichever model is relevant to this task - please continue this activity whern we hit zero i can launch the app",
-      "status": "Active;1,905 of2,944 tasks live; all1,203 sourced originals published and checked; remaining source and identity investigation continues",
+      "status": "Active;1,911 of2,944 fixedtasks verified live;1,209preparedoriginals all live;Lightning2 privatepackage underreview;1,033tasks remain",
       "target": "Resolve every fixed artwork task that can be supported by exact source evidence; keep concrete unresolved identity, finish, language and quality questions visible",
       "providedSourcesFirst": true,
       "preserveNativeResolution": true,
       "completionRequiresActualProductionApiAndImageVerification": true,
       "noNewScheduleCreated": true,
       "noResetRedeemed": true,
-      "appLaunchAcceptanceEstablished": false
+      "appLaunchAcceptanceEstablished": false,
+      "lastUpdatedAt": "2026-10-15T22:53:33.827Z"
     },
     "activeChallengeLeadersSourcePilots": {
       "status": "Challenge97source review pending; Leaders93source accepted and preparing;019081096quality andwholeChallenge072variant holds explicit",
@@ -938,7 +942,7 @@
       "publicationReceiptSha256": "dfe5b5cb9ce4148f9987d31a75e0661485ff1a85db63e8ed9034f6a70d4c276a",
       "independentPostPublicationReviewSha256": "932af2eac11ce8dca0d70f61896e2cf3b975b46ec958b5d802cdc44887020eb7"
     },
-    "sourceAcquiredQualityHeld": 14,
+    "sourceAcquiredQualityHeld": 16,
     "nextLeadersStadium93Cohort": {
       "status": "All93actualproductioncardsand372originalderivativefilesindependentlyverified",
       "fixedTargets": 96,
@@ -997,27 +1001,27 @@
     },
     "sourceAcquiredFinishHeld": 2,
     "currentContinuationSourceCaptureTotals": {
-      "sourceMetadataGets": 675,
-      "sourceOriginalGets": 342,
-      "retainedSourceOriginalCandidates": 342,
-      "acceptedAwaitingPreparation": 0,
+      "sourceMetadataGets": 678,
+      "sourceOriginalGets": 345,
+      "retainedSourceOriginalCandidates": 345,
+      "acceptedAwaitingPreparation": 1,
       "sourceReviewPending": 0,
-      "qualityOrEditionHeld": 23,
+      "qualityOrEditionHeld": 25,
       "finishHeld": 3,
-      "prepared": 1,
-      "newLiveVerified": 306,
+      "prepared": 0,
+      "newLiveVerified": 307,
       "metadataGetCountsExcludeWebSearchAndCachedWebExtractions": true,
-      "uniqueSourcePrintingCandidates": 333,
+      "uniqueSourcePrintingCandidates": 336,
       "additionalAlternateTcGSourceCandidatesPendingReview": 0,
       "printingStatePartitionCountsStillTracksHeldOldCandidatesUntilAlternateAccepted": false,
       "totalPreparedThisContinuation": 307,
       "partition": {
-        "live": 306,
-        "prepared": 1,
-        "acceptedAwaitingPreparation": 0,
-        "qualityOrEditionHeld": 23,
+        "live": 307,
+        "prepared": 0,
+        "acceptedAwaitingPreparation": 1,
+        "qualityOrEditionHeld": 25,
         "finishHeld": 3,
-        "totalUnique": 333
+        "totalUnique": 336
       },
       "accessDeniedMetadataGets": 3,
       "alternateCandidateCount": 9
@@ -1524,10 +1528,13 @@
       "stagingRowsBeforeAfter": 10,
       "canonicalAndAll4ExistingFull17SourceRowsPreserved": true,
       "productionSourceChanges": 0,
-      "detailHD": 0
+      "detailHD": 0,
+      "independentPostPublicationReviewSha256": "91d3f580ada08050d57a266bb5d5065e667ed268017ec0fcf1a66fd130db3b6f",
+      "appDefaultAndExplicitSharedPresentationVerified": true,
+      "appHelperActualCases": 4
     },
     "nextPCGExStarThreeSource": {
-      "status": "Celebi private package prepared; independent package review pending. Two other candidates remain metadata-only unresolved.",
+      "status": "Celebi live: actual1card4files and independent appshared selection verified;two metadata-onlysourceconflicts remain",
       "targets": 3,
       "sourceMetadataGets": 3,
       "nativeMetadataGets": 1,
@@ -1549,7 +1556,7 @@
       "rootAdditiveObservationSha256": "409942e3ba8f4e50bee53c148950874b1ceddc81c8d39d5a63093aee6226a977",
       "acceptedAwaitingPreparation": 0,
       "prepared": 1,
-      "live": 0,
+      "live": 1,
       "originalHD": 0,
       "detailHD": 0,
       "dimensions": [
@@ -1569,7 +1576,32 @@
       "archiveSha256": "a7d76f3b25ad7541e1eb9a1762bc096acf83b9f14e3abb8214f49afe063a8a43",
       "archiveBytes": 164220,
       "sourceManifestSha256": "c117ca58b3490d9ebaef11ef2150cbb17478fcd967a8f062570823629d7776f1",
-      "rootPrivatePackageValidationSha256": "d0e3f9b163db3608bc270e4eea74b53ee7182e93069121dd9a9677037b9b1ee1"
+      "rootPrivatePackageValidationSha256": "d0e3f9b163db3608bc270e4eea74b53ee7182e93069121dd9a9677037b9b1ee1",
+      "releaseAssetId": 645368810,
+      "independentPrivatePackageReviewSha256": "61a4f069fa600267298d1541867b38af2f00a89aac6684bda8cdc09f0ae68aec",
+      "rootSourceArchiveBindingSha256": "ddbe95fd11fee21bb453c336f9b3d148a3a7f4f8d8202948717df6291398eb29",
+      "rootUploadReceiptSha256": "e3f5e4dfadd81d49251b426d2499f117051b5292882a8e38e076e0048755ef14",
+      "publisherHead": "d353412523d2f0b3e77535e17e1969c468e74f88",
+      "publisherPullRequest": 383,
+      "reviewedPublisherHead": "d353412523d2f0b3e77535e17e1969c468e74f88",
+      "protectedMainSha": "90e633dd70093d8c159df09319a29b880a15c233",
+      "productionRunId": 38819228807,
+      "queued": 0,
+      "independentExactHeadReviewSha256": "7dbd0cec4eecc16af8d308e2e9834991b617510601354c51874c6e25048496d8",
+      "hostedChecksPassed": 8,
+      "liveVerified": 1,
+      "actualApiVerified": true,
+      "publicationJobSucceeded": true,
+      "actualApiVerificationSha256": "b56d52a858af19a6ae642db92a762d1c93f420dbbc6add2f2de2121423f2a6c0",
+      "fullCardResponseSha256": "e37bbbae560c9c7cf7fa241f983bacf3984b78a6d381a3e9e8fb8274bffe2d50",
+      "publicationReceiptSha256": "fa3af747c979e916195ceccb1b8dd72ac59ee98d799afc6e90faf4b3cce949d4",
+      "metadataPreservationSha256": "e4ef60fae576f52723356f2c10d0e1bd35b4b9cf969122f83e445d85023a638f",
+      "independentPostPublicationReviewSha256": "b23f267528a46e76ae82dfe70d12559fd2b09fa71705e9ac8217646675c952cd",
+      "appDefaultAndExplicitSharedPresentationVerified": true,
+      "appHelperActualCases": 2,
+      "productionRowsAfter": 13,
+      "canonicalAndAll4ExistingFull17SourceRowsPreserved": true,
+      "existingSetLogoAndLinkPreserved": true
     },
     "nextPCGThreeCommonSource": {
       "status": "All three explicitly held; originals retained without selections or publication",
@@ -1588,6 +1620,26 @@
       "prepared": 0,
       "live": 0,
       "canonicalChanges": 0
+    },
+    "nextTrainerKitEnergyThreeAlternates": {
+      "status": "Lightning2 exact photograph accepted for private preparation; Psychic20 low-detail and Psychic28 uncertain outer-border holds retained",
+      "targets": 3,
+      "sourceMetadataGets": 3,
+      "sourceOriginalGets": 3,
+      "searchQueries": 6,
+      "handoffSha256": "64caff893846ecd56f6c07a01d5952675353887cb488abf31d32e4d7be2aebff",
+      "independentSourceReviewSha256": "e2b3ce3e5f9de5254c3405cd6f0665f08ff4ed91f8e052aaa78d179779b4d3d1",
+      "approvedProjectionSha256": "589fcd412e1bec60964ed2599fe10b4e4ba4c0c3f295949e96494acf10b78f27",
+      "finiteDecisionSha256": "1001c024be45d7bd8d6a5e90ca1b3c9f431724aa39ed4b4897139c96dfd0c775",
+      "acceptedAwaitingPreparation": 1,
+      "prepared": 0,
+      "live": 0,
+      "qualityHeld": 2,
+      "measuredHDOriginals": 2,
+      "acceptedOriginalHD": 1,
+      "detailHD": 0,
+      "noCanonicalChanges": true,
+      "noImageRetouchOrUpscaling": true
     }
   },
   "ownerSuppliedAdditionalSourceLeads": [
@@ -2330,17 +2382,17 @@
     "extraPermissionPromptRequired": false,
     "sourceLicenceFacts": "Existing source facts retained; owner queue direction does not invent vendor licence metadata."
   },
-  "preparedOriginals": 1208,
-  "preparedDerivatives": 3624,
-  "publishedVerifiedOriginals": 1208,
+  "preparedOriginals": 1209,
+  "preparedDerivatives": 3627,
+  "publishedVerifiedOriginals": 1209,
   "queuedItems": 0,
   "preparedByLanguage": {
     "en": 432,
-    "ja": 776
+    "ja": 777
   },
   "publishedVerifiedByLanguage": {
     "en": 432,
-    "ja": 776
+    "ja": 777
   },
   "failedProductionRuns": [
     {
@@ -2653,6 +2705,12 @@
       "releaseAssetId": 645329722,
       "byteSize": 1683207,
       "sha256": "cedc81f0fa2859ae34335db3abf5844176d760a8e76d557f85c195242fc9737e"
+    },
+    {
+      "queueId": "PCG8-CELEBI-001-20261015",
+      "releaseAssetId": 645368810,
+      "byteSize": 164220,
+      "sha256": "a7d76f3b25ad7541e1eb9a1762bc096acf83b9f14e3abb8214f49afe063a8a43"
     }
   ],
   "holds": [
@@ -2823,19 +2881,6 @@
       "contentSha256": "b72aa1c31621033cc33393d2dd3d4e8903646188ff3d7b73b24d8d585b3018d4"
     },
     {
-      "itemId": "card:d70868de-b7dc-414e-ac9f-d63055956ef0",
-      "printingId": "d70868de-b7dc-414e-ac9f-d63055956ef0",
-      "batchId": "EN-CARDS-020",
-      "setCode": "tk-sm-r",
-      "collectorReference": "2",
-      "name": "Lightning Energy",
-      "status": "exact_small_source_original_below_detail_quality",
-      "requiredAction": "Find a larger unchanged original for this exact English deck and printed reference; do not upscale or borrow another number",
-      "width": 253,
-      "height": 359,
-      "contentSha256": "47c8cbc43db0c5327341861977dfa0bd0125fd137b332809cc4a8a93b711429f"
-    },
-    {
       "itemId": "card:5f397c8a-c8b7-42b6-a585-96a0a04c373f",
       "printingId": "5f397c8a-c8b7-42b6-a585-96a0a04c373f",
       "batchId": "EN-CARDS-020",
@@ -2934,10 +2979,10 @@
       "collectorReference": "20",
       "name": "Psychic Energy",
       "status": "exact_small_source_original_below_detail_quality",
-      "requiredAction": "Find a larger unchanged original for this exact English deck and printed reference; do not upscale or borrow another number",
-      "width": 253,
-      "height": 359,
-      "contentSha256": "c9d1afb7d2fff404daa381cc2ce13a3777001a5efdf6dc1d8834ac0f9769a664"
+      "requiredAction": "Find readable larger exact20/30 original without upscaling or borrowing28/30",
+      "width": 255,
+      "height": 361,
+      "contentSha256": "03ed9ee88cbad6588b962e105bfaf0e73027eaa60d64adbda6cf1ef7aa01b330"
     },
     {
       "itemId": "card:efb50248-6955-4e03-9ca7-b4d71853e2bf",
@@ -2973,10 +3018,10 @@
       "collectorReference": "28",
       "name": "Psychic Energy",
       "status": "exact_small_source_original_below_detail_quality",
-      "requiredAction": "Find a larger unchanged original for this exact English deck and printed reference; do not upscale or borrow another number",
-      "width": 253,
-      "height": 359,
-      "contentSha256": "4a8d45f35b36cdacfed93f6bb87b5601c4cbb7504ddca5f5cdedcb8fef165792"
+      "requiredAction": "Find another exact28/30 original with clearly complete card border; retain this tight frame and scratch unchanged",
+      "width": 1146,
+      "height": 1600,
+      "contentSha256": "3d2327776d3abde0fda8eb1910dccb3d06463a22453ef211e9930b2cb3eb3ec8"
     },
     {
       "itemId": "card:ecaa0fee-22a2-4cda-82e9-278ec886c7b8",
@@ -103715,15 +103760,105 @@
         "priceChanges": 0,
         "ownershipChanges": 0
       }
+    },
+    {
+      "batchId": "JP-CARDS-040",
+      "itemId": "card:fe6b6d80-68b7-4f89-9087-7f84b760e651",
+      "printingId": "fe6b6d80-68b7-4f89-9087-7f84b760e651",
+      "setId": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+      "setCode": "PCG8",
+      "languageCode": "ja",
+      "collectorReference": "004",
+      "cardName": "セレビの星",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:8e0845a7ef2d92507055a63401a2fb458dd51478ccddee780d3993a4bbb50d33",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-miracle-crystal/celebi-gold-star-4",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/a5b43f818e44b0e7982998802ebf16d0613a04ee7f0104cc876b7b12024a8816/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false
+      },
+      "original": {
+        "sha256": "2b203f91d7b2cf65fc4959b36e0f02ffee256cb923273e015c7a66cecbfd701a",
+        "byteSize": 63097,
+        "width": 459,
+        "height": 648,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/e9ec6e1d70c996e9299a9c88ee27d57faada7c859aaf4cd22f54f56045d69ac6/card-grid.webp",
+          "sha256": "e9ec6e1d70c996e9299a9c88ee27d57faada7c859aaf4cd22f54f56045d69ac6",
+          "byte_size": 20550,
+          "width": 240,
+          "height": 339,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/3e070f8153a4ae9af663a1ddd50d5b8836c5b3d5a8e48bcd7c174b45254d7f2b/search-result.webp",
+          "sha256": "3e070f8153a4ae9af663a1ddd50d5b8836c5b3d5a8e48bcd7c174b45254d7f2b",
+          "byte_size": 4022,
+          "width": 96,
+          "height": 136,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/5e05854fb5345d6787d2255ecaf4d10ef30af2c6fa536ce59cf755e9d74f38c8/detail-page.webp",
+          "sha256": "5e05854fb5345d6787d2255ecaf4d10ef30af2c6fa536ce59cf755e9d74f38c8",
+          "byte_size": 65880,
+          "width": 459,
+          "height": 648,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "004",
+        "printed_collector_number": "004/075",
+        "catalogue_set_code": "PCG8",
+        "printed_set_code_literal": null,
+        "canonical_native_label_preserved": "セレビの星",
+        "actual_printed_japanese_name": "セレビィ☆",
+        "printed_national_dex": null,
+        "category": "Pokemon"
+      },
+      "currentVariantCode": "holo",
+      "currentFinishCode": "holo",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T22:53:34.603Z",
+        "productionRun": 38819228807,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38819228807",
+        "publicationReceiptSha256": "fa3af747c979e916195ceccb1b8dd72ac59ee98d799afc6e90faf4b3cce949d4",
+        "printingId": "fe6b6d80-68b7-4f89-9087-7f84b760e651",
+        "assetId": "artwork-recovered-20260928:fe6b6d80-68b7-4f89-9087-7f84b760e651:2b203f91d7b2cf65fc4959b36e0f02ffee256cb923273e015c7a66cecbfd701a",
+        "contentSha256": "2b203f91d7b2cf65fc4959b36e0f02ffee256cb923273e015c7a66cecbfd701a",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/fe6b6d80-68b7-4f89-9087-7f84b760e651/2b203f91d7b2cf65fc4959b36e0f02ffee256cb923273e015c7a66cecbfd701a/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     }
   ],
   "manualArtworkFollowUp": {
-    "updatedAt": "2026-10-15T22:35:57.118Z",
+    "updatedAt": "2026-10-15T22:55:03.062Z",
     "scope": "Specific follow-up details, separately from ordinary source work and active releases; current fixed inventory identities retained.",
     "collectorReferenceNote": "For older Japanese cards the Stackr reference may not be printed on the card; match its name, set, artwork and card text.",
     "specificFollowUps": 434,
     "ordinarySourceWorkStillOpen": 599,
-    "activeSourceOrPublicationWork": 1,
+    "activeSourceOrPublicationWork": 0,
     "batches": [
       {
         "batchId": "MANUAL-EN-001",
@@ -103963,7 +104098,7 @@
             "artworkType": "Card front",
             "status": "exact_small_source_original_below_detail_quality",
             "whatToFind": "Find a larger original; the saved scan is too small for readable card detail.",
-            "detail": "Find a larger unchanged original for this exact English deck and printed reference; do not upscale or borrow another number",
+            "detail": "Prepare exact unchanged full photograph with glare/perspective qualified; publish and verify actual API before completion",
             "providedGallery": null
           },
           {
@@ -104075,7 +104210,7 @@
             "artworkType": "Card front",
             "status": "exact_small_source_original_below_detail_quality",
             "whatToFind": "Find a larger original; the saved scan is too small for readable card detail.",
-            "detail": "Find a larger unchanged original for this exact English deck and printed reference; do not upscale or borrow another number",
+            "detail": "Find readable larger exact20/30 original without upscaling or borrowing28/30",
             "providedGallery": null
           }
         ]
@@ -104122,7 +104257,7 @@
             "artworkType": "Card front",
             "status": "exact_small_source_original_below_detail_quality",
             "whatToFind": "Find a larger original; the saved scan is too small for readable card detail.",
-            "detail": "Find a larger unchanged original for this exact English deck and printed reference; do not upscale or borrow another number",
+            "detail": "Find another exact28/30 original with clearly complete card border; retain this tight frame and scratch unchanged",
             "providedGallery": null
           },
           {
