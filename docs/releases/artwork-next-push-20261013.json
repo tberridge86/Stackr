@@ -1,22 +1,22 @@
 {
   "schemaVersion": "stackr-owner-artwork-production-evidence-v1",
   "inventoryId": "STACKR-ARTWORK-20261012",
-  "updatedAt": "2026-10-15T19:47:54.333Z",
+  "updatedAt": "2026-10-15T20:13:25.780Z",
   "scope": "Exact saved artwork list; original identities retained; actual production verification required",
   "summary": {
-    "checkedAt": "2026-10-15T19:45:54.108Z",
+    "checkedAt": "2026-10-15T20:04:45.942Z",
     "totalTasks": 2944,
     "totalBatches": 161,
-    "newlyPublishedFronts": 1092,
+    "newlyPublishedFronts": 1192,
     "previouslyCorrectedCasesVerified": 605,
-    "liveVerifiedTasks": 1697,
-    "completedBatches": 73,
-    "remainingTasks": 1247,
-    "remainingBatches": 88,
+    "liveVerifiedTasks": 1797,
+    "completedBatches": 78,
+    "remainingTasks": 1147,
+    "remainingBatches": 83,
     "remainingGroups": [
       {
         "task": "Find permitted exact card fronts",
-        "items": 953
+        "items": 853
       },
       {
         "task": "Find permitted Traditional Chinese set logos",
@@ -31,13 +31,13 @@
         "items": 2
       }
     ],
-    "sourceLeadTargets": 1106,
+    "sourceLeadTargets": 1109,
     "scope": "Fixed saved list, retaining original identities; completion requires actual production API and image verification. Source gathering alone is not completion.",
-    "queuedItems": 97,
-    "queuedBatches": 4,
-    "frontTasksNotYetGathered": 842,
+    "queuedItems": 0,
+    "queuedBatches": 0,
+    "frontTasksNotYetGathered": 839,
     "smallOriginalCandidates": 14,
-    "frontTasksNotYetPrepared": 856,
+    "frontTasksNotYetPrepared": 853,
     "contentHeldOriginalCandidates": 0,
     "sourceAcquiredPendingPreparation": 0,
     "sourceIdentityMetadataHolds": 25,
@@ -45,8 +45,8 @@
       "suppliedSets": 23,
       "fixedBatchesCovered": 69,
       "fixedTasksCovered": 1479,
-      "coveredTasksAlreadyLive": 565,
-      "coveredTasksRemaining": 914,
+      "coveredTasksAlreadyLive": 665,
+      "coveredTasksRemaining": 814,
       "unprovidedSets": [],
       "sourceInventorySha256": "68aeb67adc1716a32e1539fc815b210e243c8f2ec15c6d5a5d059a1bbf914fe1",
       "exactPrintingOrLicenceApprovalClaimed": false,
@@ -113,11 +113,11 @@
       "scopeFile": "all-owner-links-working-queue.json",
       "scopeSha256": "dce8019d6367877078b63a26bbd7ce9a52a8c4f8a8cbe7b9c20faa98ff7eb2c9",
       "uniqueCardTasks": 1572,
-      "cardTasksAlreadyLive": 588,
-      "cardTasksRemaining": 984,
+      "cardTasksAlreadyLive": 688,
+      "cardTasksRemaining": 884,
       "historicalLogoResearchTasks": 36,
-      "remainingCombinedWork": 1020,
-      "remainingCombinedBatches": 75,
+      "remainingCombinedWork": 920,
+      "remainingCombinedBatches": 70,
       "remainingOutsideBoundProvidedLinks": 227,
       "originalBatchIdsRetained": true,
       "ownerClarification": "All missing images covered by supplied links; verified cohorts carried through actual production/API verification",
@@ -326,7 +326,7 @@
       "rootPublicVerificationSha256": "eb3a0de28658350f3c2bad49048fe182daa821ff61bdd54b3ab736653dbb1be1",
       "independentPreservationSha256": "3386d01fe189d18a037afed3e974e247ac4a4aec307608889abfcc2690dd143d"
     },
-    "sourceAcquiredPendingIndependentReview": 96,
+    "sourceAcquiredPendingIndependentReview": 0,
     "nextJapaneseNeo4MiddleMetadataCohort": {
       "status": "45 originals and135 display images live and independently checked; JP-CARDS-01524/25 andJP-CARDS-01621/25; five finish conflicts retained",
       "metadataRows": 50,
@@ -833,7 +833,7 @@
     "ownerArtworkUntilZeroContinuation": {
       "recordedAt": "2026-10-15T17:47:46.524Z",
       "ownerInstruction": "use whichever model is relevant to this task - please continue this activity whern we hit zero i can launch the app",
-      "status": "Active;1697of2944taskslive,97publishing,threealternateoriginalspreparedandBase100independentlyreviewed",
+      "status": "Active;1797of2944taskslive;Base100andMC8prepared/currentpublisherwork",
       "target": "Resolve every fixed artwork task that can be supported by exact source evidence; keep concrete unresolved identity, finish, language and quality questions visible",
       "providedSourcesFirst": true,
       "preserveNativeResolution": true,
@@ -874,7 +874,7 @@
       "priorMetadataPacingQualified": true
     },
     "nextExpansion100SourcePilot": {
-      "status": "All100individuallyobservedanddualdecodechecked;98sourceproposed and057/058finishheld. Additional last2Energy originals separately frozen for combined100eligible-candidate review.",
+      "status": "100originalsand300derivativesprivatelyverified/uploaded;exactpublisherunderconstruction",
       "fixedTargets": 100,
       "pilotOriginals": 2,
       "pilotMetadataGets": 5,
@@ -884,7 +884,7 @@
       "energyPrintedScriptQualified": true,
       "sourceBodyAgreementCertified": false,
       "providerProcessingHistoryQualified": true,
-      "preparedOriginals": 0,
+      "preparedOriginals": 100,
       "liveVerified": 0,
       "metadataGets": 201,
       "acquiredOriginals": 100,
@@ -902,7 +902,24 @@
       "preparationApproved": false,
       "last2IndependentSourceSelectionSha256": "25fb0241a753de7bd5787301e4813312b069fd263d3bc594a82dc78ad79655aa",
       "last2IndependentSourceReviewSha256": "f4b549de6684dc88ad526d54543c162b93af6b40038b78d718b5294d9bcee799",
-      "last2SourceAcceptedContextualLanguageOnly": true
+      "last2SourceAcceptedContextualLanguageOnly": true,
+      "eligibleOriginals": 100,
+      "categoryCounts": {
+        "Pokemon": 67,
+        "Trainer": 26,
+        "Energy": 7
+      },
+      "contextOnlyEnergyCount": 7,
+      "independent98SelectionSha256": "eff21fc664c45580451a800d3a7e76425ef713dea4063efccd5c9311e65ef485",
+      "independent98ReviewSha256": "7bc51aecd0b8089edc3e2573ca04b3ac6db87f9d1140b0bcf7574a67ac888969",
+      "last2PeerSelectionSha256": "25fb0241a753de7bd5787301e4813312b069fd263d3bc594a82dc78ad79655aa",
+      "rootApprovedProjectionSha256": "731b03afd90826df571c751e23cec6f419ade3d9ebbc4939acbb69ac8cc2d147",
+      "rootFiniteDecisionSha256": "a032908c80102ede10352d931b68f5b6e51e6b47a418a2a5539041614a2604f4",
+      "preparedDerivatives": 300,
+      "releaseAssetId": 645021107,
+      "archiveSha256": "e4a1db97de5e90886ca3701221f5f100985d4b960d483181c102e9b283e22050",
+      "privatePackageHandoffSha256": "af5c620980573f1928483a00a729882cf7365da39fe3109a97376e0dcee6f2ef",
+      "rootPublicationSupplementSha256": "f80b7b363a27aeeaa3cea2753aa2c8b2881be5dce8bc1e3b168601198a584fb7"
     },
     "sourceAcquiredQualityHeld": 3,
     "nextLeadersStadium93Cohort": {
@@ -941,7 +958,8 @@
       "productionRunId": 38793899423,
       "actualApiVerificationSha256": "fdef567329e3fe1a3cb83e5701f53ebb3a191630950c7a437b0e7872bc2dd3ba",
       "metadataPreservationVerified": true,
-      "existing17FieldSourceRowsUnchanged": true
+      "existing17FieldSourceRowsUnchanged": true,
+      "historicalExcludedThreeResolvedBySeparateProductionRun": 38798480441
     },
     "nextWeb44SourcePilot": {
       "status": "Larger literal960x1341source image replaces small-candidate quality blocker; visiblefirst-edition mapping remains unresolved. Both originalfiles retained, no preparation.",
@@ -962,25 +980,25 @@
     },
     "sourceAcquiredFinishHeld": 2,
     "currentContinuationSourceCaptureTotals": {
-      "sourceMetadataGets": 601,
-      "sourceOriginalGets": 301,
-      "retainedSourceOriginalCandidates": 301,
-      "acceptedAwaitingPreparation": 4,
-      "sourceReviewPending": 96,
+      "sourceMetadataGets": 611,
+      "sourceOriginalGets": 310,
+      "retainedSourceOriginalCandidates": 310,
+      "acceptedAwaitingPreparation": 0,
+      "sourceReviewPending": 0,
       "qualityOrEditionHeld": 2,
       "finishHeld": 2,
-      "prepared": 100,
-      "newLiveVerified": 93,
+      "prepared": 108,
+      "newLiveVerified": 193,
       "metadataGetCountsExcludeWebSearchAndCachedWebExtractions": true,
-      "uniqueSourcePrintingCandidates": 297,
+      "uniqueSourcePrintingCandidates": 305,
       "additionalAlternateTcGSourceCandidatesPendingReview": 0,
       "printingStatePartitionCountsStillTracksHeldOldCandidatesUntilAlternateAccepted": false,
-      "totalPreparedThisContinuation": 193,
-      "printingStatePartitionIsLive93Prepared100Accepted4Review96Edition2Finish2": true
+      "totalPreparedThisContinuation": 301,
+      "printingStatePartitionIsLive193Prepared108Review0Accepted0Edition2Finish2": true
     },
     "sourceAcquiredEditionHeld": 1,
     "nextChallengeDarkness97Cohort": {
-      "status": "Protectedproduction97workflowdispatched;notyetliveverified",
+      "status": "All97actualproductioncardsand388originalderivativefilesindependentlyverified",
       "fixedTargets": 98,
       "eligible": 97,
       "heldPrintings": 1,
@@ -998,7 +1016,7 @@
       "rootApprovedSourceProjectionSha256": "af244b02d665d34a33f13d1b48f77bcdcd0c674bb0d0529be8f66e54ad22f1c6",
       "finiteDecisionSha256": "f9dbf5790906048d1adf05b4cdf10da42e929509bf97ddf0064cc91a93ac2f8b",
       "preparedOriginals": 97,
-      "liveVerified": 0,
+      "liveVerified": 97,
       "preparedDerivatives": 291,
       "releaseAssetId": 644915851,
       "archiveSha256": "827eaa332cb9bbfad6364d0031c23de95dcc012cc3793f3fe92974d3edfb42f3",
@@ -1009,21 +1027,34 @@
       "reviewedHead": "2c9bbb11b97e7e082df8bc8cfdc1556a631b0dde",
       "independentReviewSha256": "7b6ddc54284d4f831fee2b8e84322adab8f079b9d7f8b6e8c3edf237b326d739",
       "hostedChecksPassed": 8,
-      "queuedOriginals": 97
+      "queuedOriginals": 97,
+      "productionRunId": 38795933837,
+      "actualApiVerificationSha256": "4b25b65efe4d776ed4781dde81c8f713a422a55b7a414b24d4e44fa8c23c14e7",
+      "metadataPreservationVerified": true,
+      "existing17FieldSourceRowsUnchanged": true
     },
     "alternateLeaders3QualitySource": {
-      "status": "Threereplacementsindependentlyacceptedandprivatelyprepared;exactpublisherimplementationunderway",
+      "status": "All3alternativeoriginalsproductionliveandAPI12filesverified;oldqualityholdsretainedhistorically",
       "sourceHandoffSha256": "ee638d6076a951ed2d7f565d4db0b777a2b8abbc695d4f03b3332122328c1c11",
       "independentSelectionSha256": "eb873e66e2492671b9b0df09c6059b84457850bac1ef63f671832c24a6e1306e",
-      "independentReviewSha256": "6a1a35be6d9c9e5c8d2bbaf68c5e24293b555b7e1b7ac72e8b3e07fb7cecf3ab",
+      "independentReviewSha256": "010a49ed898996e057cac3c54eac52523915e7723883bb62db39f48ccd51b995",
       "originalsAccepted": 3,
       "preparedOriginals": 3,
-      "liveVerified": 0,
+      "liveVerified": 3,
       "newInactivePhotoProvenanceRowRequiredBeforePublication": true,
       "preparedDerivatives": 9,
       "releaseAssetId": 644968141,
       "archiveSha256": "8657585abf4e519b9912ded25b020f53f68427c4ca32374e1fa37bdb789ae00c",
-      "rootFiniteDecisionSha256": "68f1af735d5e481ed26d1aabbe94e493d520575d9d4191413508f9ec90cf68ff"
+      "rootFiniteDecisionSha256": "68f1af735d5e481ed26d1aabbe94e493d520575d9d4191413508f9ec90cf68ff",
+      "runId": 38798480441,
+      "protectedMainSha": "85a4812a2798af903ed8b73a6611a7e568666244",
+      "hostedChecksPassed": 8,
+      "queuedOriginals": 3,
+      "productionRunId": 38798480441,
+      "actualApiVerificationSha256": "3a9141c975f68335862d5cd3a466e87b9b31432feddf408bfa00980738dc8c8c",
+      "newInactiveTcgProvenanceCreated": 1,
+      "sourceFull17Sha256": "f1f01d1b094986ad0a9f5efcf1e98fe7388e0e1c5452d23da6cf7cab97a1ca29",
+      "sourcePolicyCheckpointSha256": "9fed86a8de20b4229f20cd0a91b617cb8e44b7e83623fd2939a6ab068e1c9228"
     },
     "nextPCG5SourcePilot": {
       "status": "One593x834originalclearbut1EDITIONunbound;noinferenceforother85",
@@ -1034,7 +1065,35 @@
       "metadataGets": 2,
       "originalGets": 1,
       "prepared": 0,
-      "live": 0
+      "live": 0,
+      "alternativePriceCharting": {
+        "width": 290,
+        "height": 397,
+        "status": "Belowdetailquality;currenteditionstillunknown",
+        "metadataGets": 1,
+        "originalGets": 1,
+        "evidenceSha256": "59863b3ea4c4390eefa9e1bd59fc78627299c49701926e6ce5b5746b889df6ce"
+      }
+    },
+    "nextMC8SourceCohort": {
+      "status": "8HDoriginalsand24derivativesprivatelyverified/uploaded;fresh3sourceconditionssatisfiedpublisherunderconstruction",
+      "sourceHandoffSha256": "ca76f5014e77167a55741baccc9ba58fa9335f7cf2cb90f9412f4fa9fc796ec9",
+      "sourceProposalSha256": "40e8e35d76f441fe67042cbc110730253249733daba27d9f2c945aca84555d7b",
+      "sourceMetadataGets": 9,
+      "sourceOriginalGets": 8,
+      "originalBytes": 411714,
+      "HDOriginals": 8,
+      "printedJapaneseAndMCTypeFooterObserved": true,
+      "prepared": 0,
+      "live": 0,
+      "preparedOriginals": 8,
+      "preparedDerivatives": 24,
+      "releaseAssetId": 645030064,
+      "archiveSha256": "383309f90b04dfe87bb87e0e7e65c75577e06064c97954ce5e01fcc35407668f",
+      "privatePackageHandoffSha256": "5a1057c61d1e58fd6f89de9d1aba6d23705ddf8c33346cdfb9554c81e762a356",
+      "rootPublicationSupplementSha256": "597c96b61f46d45dcefacde19856c5659c65465dcad1b2b0b59a075e2ccef46a",
+      "independentSourceSelectionSha256": "a9a7761bf7235ef6cd4e126a4f49efa870c6def5ed2c3f6029350d2e13563c14",
+      "independentSourceReviewSha256": "04edfca5da2eeb2badda116555fe58a8243bd8311a93e0e9c560b10c75636c88"
     }
   },
   "ownerSuppliedAdditionalSourceLeads": [
@@ -1777,17 +1836,17 @@
     "extraPermissionPromptRequired": false,
     "sourceLicenceFacts": "Existing source facts retained; owner queue direction does not invent vendor licence metadata."
   },
-  "preparedOriginals": 1092,
-  "preparedDerivatives": 3276,
-  "publishedVerifiedOriginals": 995,
-  "queuedItems": 97,
+  "preparedOriginals": 1095,
+  "preparedDerivatives": 3285,
+  "publishedVerifiedOriginals": 1095,
+  "queuedItems": 0,
   "preparedByLanguage": {
     "en": 430,
-    "ja": 662
+    "ja": 665
   },
   "publishedVerifiedByLanguage": {
     "en": 430,
-    "ja": 565
+    "ja": 665
   },
   "failedProductionRuns": [
     {
@@ -1836,20 +1895,7 @@
       "reason": "Second source resolver reader still used direct-column timestamp Dates; both readers now share exact PostgreSQL JSON helper."
     }
   ],
-  "pendingRun": {
-    "id": 38795933837,
-    "url": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
-    "state": "Protected exact97 artwork publication running; actualAPIverification pending",
-    "printingCount": 97,
-    "queueId": "STACKR-JA-CHALLENGE-DARKNESS-FRONTS-20261015-097",
-    "protectedMainSha": "05a73185be509ffa6ee17d4ccd46561be91243da",
-    "reviewedPublisherHead": "2c9bbb11b97e7e082df8bc8cfdc1556a631b0dde",
-    "sourceArchiveAssetId": 644915851,
-    "independentReviewSha256": "7b6ddc54284d4f831fee2b8e84322adab8f079b9d7f8b6e8c3edf237b326d739",
-    "hostedChecksPassed": 8,
-    "dispatches": 1,
-    "recordedAt": "2026-10-15T19:41:42.526Z"
-  },
+  "pendingRun": null,
   "packages": [
     {
       "queueId": null,
@@ -2073,6 +2119,12 @@
       "releaseAssetId": 644915851,
       "byteSize": 16022937,
       "sha256": "827eaa332cb9bbfad6364d0031c23de95dcc012cc3793f3fe92974d3edfb42f3"
+    },
+    {
+      "queueId": "STACKR-JA-LEADERS-STADIUM-TCGCOLLECTOR-FRONTS-20261015-003",
+      "releaseAssetId": 644968141,
+      "byteSize": 529425,
+      "sha256": "8657585abf4e519b9912ded25b020f53f68427c4ca32374e1fa37bdb789ae00c"
     }
   ],
   "holds": [
@@ -2577,36 +2629,6 @@
       "name": "ロケット団参上!",
       "status": "one_photo_two_unmapped_normal_holo_variants",
       "requiredAction": "Rocket Gang ロケット団参上! has separate normal and holo catalogue variants, but one observed source front and no same-artwork mapping. Need a normal-front and holo-front match or reliable evidence distinguishing the two."
-    },
-    {
-      "itemId": "card:f732147f-deef-4c65-a092-4ed2e7bbfcad",
-      "printingId": "f732147f-deef-4c65-a092-4ed2e7bbfcad",
-      "batchId": "JP-CARDS-058",
-      "setCode": "PMCG5",
-      "collectorReference": "019",
-      "name": "タケシのキュウコン",
-      "status": "exact_alternative_source_accepted_pending_finite_provenance_preparation",
-      "requiredAction": "Finite inactive TCGCollector provenance source creation and guarded publisher review pending."
-    },
-    {
-      "itemId": "card:58053385-0e6d-45a1-b7aa-ba11abe75091",
-      "printingId": "58053385-0e6d-45a1-b7aa-ba11abe75091",
-      "batchId": "JP-CARDS-061",
-      "setCode": "PMCG5",
-      "collectorReference": "081",
-      "name": "マチスの交渉",
-      "status": "exact_alternative_source_accepted_pending_finite_provenance_preparation",
-      "requiredAction": "Finite inactive TCGCollector provenance source creation and guarded publisher review pending."
-    },
-    {
-      "itemId": "card:99246359-6f35-43db-9f85-2ccca99bceec",
-      "printingId": "99246359-6f35-43db-9f85-2ccca99bceec",
-      "batchId": "JP-CARDS-061",
-      "setCode": "PMCG5",
-      "collectorReference": "096",
-      "name": "ロケット団のワナ",
-      "status": "exact_alternative_source_accepted_pending_finite_provenance_preparation",
-      "requiredAction": "Finite inactive TCGCollector provenance source creation and guarded publisher review pending."
     },
     {
       "itemId": "card:76ff1e1e-6b99-4c4e-ab99-584976fa89ca",
@@ -84355,8 +84377,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -84369,7 +84391,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "0486558d-eafa-4054-be3f-80c9767b5c69",
+        "assetId": "artwork-recovered-20260928:0486558d-eafa-4054-be3f-80c9767b5c69:14fcedbbbe43f561e7e31dd42b5d8f33af3b80cad6f914fcdf17d67028c71c73",
+        "contentSha256": "14fcedbbbe43f561e7e31dd42b5d8f33af3b80cad6f914fcdf17d67028c71c73",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/0486558d-eafa-4054-be3f-80c9767b5c69/14fcedbbbe43f561e7e31dd42b5d8f33af3b80cad6f914fcdf17d67028c71c73/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-062",
@@ -84428,8 +84464,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -84442,7 +84478,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "059b7a5f-55be-4d83-b68b-3ce14b733650",
+        "assetId": "artwork-recovered-20260928:059b7a5f-55be-4d83-b68b-3ce14b733650:e7cb39c9af416cbe1923bf87659d76c13cf76a6f132598784a718d6ab7bbe7d2",
+        "contentSha256": "e7cb39c9af416cbe1923bf87659d76c13cf76a6f132598784a718d6ab7bbe7d2",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/059b7a5f-55be-4d83-b68b-3ce14b733650/e7cb39c9af416cbe1923bf87659d76c13cf76a6f132598784a718d6ab7bbe7d2/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-063",
@@ -84501,8 +84551,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -84515,7 +84565,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "09707748-0f01-4f5b-a16e-60c241ba3963",
+        "assetId": "artwork-recovered-20260928:09707748-0f01-4f5b-a16e-60c241ba3963:77a1ce4b70380e38fab006dd634c6f06d99d20485faae7362ecf4c3a4d0528ef",
+        "contentSha256": "77a1ce4b70380e38fab006dd634c6f06d99d20485faae7362ecf4c3a4d0528ef",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/09707748-0f01-4f5b-a16e-60c241ba3963/77a1ce4b70380e38fab006dd634c6f06d99d20485faae7362ecf4c3a4d0528ef/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-065",
@@ -84574,8 +84638,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -84588,7 +84652,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "1280ef58-1cee-4387-8fd4-e1cb31211001",
+        "assetId": "artwork-recovered-20260928:1280ef58-1cee-4387-8fd4-e1cb31211001:29af2dbf73fa11d192cfcacdda23bc8c0164dbb4582e72954f75a5e943650929",
+        "contentSha256": "29af2dbf73fa11d192cfcacdda23bc8c0164dbb4582e72954f75a5e943650929",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/1280ef58-1cee-4387-8fd4-e1cb31211001/29af2dbf73fa11d192cfcacdda23bc8c0164dbb4582e72954f75a5e943650929/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-062",
@@ -84647,8 +84725,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -84661,7 +84739,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "13d499a3-0dee-43ab-8525-34f4e150b9c8",
+        "assetId": "artwork-recovered-20260928:13d499a3-0dee-43ab-8525-34f4e150b9c8:5b66173e2f2c81b3087b36e914591ab5b2fea8403007c214e3afd3b0b32e9acd",
+        "contentSha256": "5b66173e2f2c81b3087b36e914591ab5b2fea8403007c214e3afd3b0b32e9acd",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/13d499a3-0dee-43ab-8525-34f4e150b9c8/5b66173e2f2c81b3087b36e914591ab5b2fea8403007c214e3afd3b0b32e9acd/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-062",
@@ -84720,8 +84812,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -84734,7 +84826,21 @@
       },
       "currentVariantCode": "holo",
       "currentFinishCode": "holo",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "1a65c52b-45ae-41c1-b345-670b87abef37",
+        "assetId": "artwork-recovered-20260928:1a65c52b-45ae-41c1-b345-670b87abef37:88ba096afb1beaaeafa66f75e901d068bb5ccd2f53ee27a7f7f254c6c63907a5",
+        "contentSha256": "88ba096afb1beaaeafa66f75e901d068bb5ccd2f53ee27a7f7f254c6c63907a5",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/1a65c52b-45ae-41c1-b345-670b87abef37/88ba096afb1beaaeafa66f75e901d068bb5ccd2f53ee27a7f7f254c6c63907a5/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-064",
@@ -84793,8 +84899,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -84807,7 +84913,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "1a819544-d72d-455b-b354-78aeed05ead0",
+        "assetId": "artwork-recovered-20260928:1a819544-d72d-455b-b354-78aeed05ead0:70d046e4ecf30722e95db5030d39806db7f3f098ced2bd5938e1ef4f73adb863",
+        "contentSha256": "70d046e4ecf30722e95db5030d39806db7f3f098ced2bd5938e1ef4f73adb863",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/1a819544-d72d-455b-b354-78aeed05ead0/70d046e4ecf30722e95db5030d39806db7f3f098ced2bd5938e1ef4f73adb863/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-064",
@@ -84866,8 +84986,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -84880,7 +85000,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "1b62a283-03c2-47b7-b762-899ccc738f67",
+        "assetId": "artwork-recovered-20260928:1b62a283-03c2-47b7-b762-899ccc738f67:922a293f99370f7d7ac7ba7080192894caf2f574985e9bc23a1c6ddb9b58d69a",
+        "contentSha256": "922a293f99370f7d7ac7ba7080192894caf2f574985e9bc23a1c6ddb9b58d69a",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/1b62a283-03c2-47b7-b762-899ccc738f67/922a293f99370f7d7ac7ba7080192894caf2f574985e9bc23a1c6ddb9b58d69a/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-064",
@@ -84939,8 +85073,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -84953,7 +85087,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "1be1b9ce-c4f7-48f6-abcc-23e0ed9bbd9f",
+        "assetId": "artwork-recovered-20260928:1be1b9ce-c4f7-48f6-abcc-23e0ed9bbd9f:0471dbc854d577a29bb0bc63af9eb9677e8e7e3ff401afbbeb8010305b426473",
+        "contentSha256": "0471dbc854d577a29bb0bc63af9eb9677e8e7e3ff401afbbeb8010305b426473",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/1be1b9ce-c4f7-48f6-abcc-23e0ed9bbd9f/0471dbc854d577a29bb0bc63af9eb9677e8e7e3ff401afbbeb8010305b426473/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-062",
@@ -85012,8 +85160,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -85026,7 +85174,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "20c8cc47-8043-4de0-b3ba-e675f4237484",
+        "assetId": "artwork-recovered-20260928:20c8cc47-8043-4de0-b3ba-e675f4237484:fdf158901c4f82b4d87ba920004b42167976bdbe67ef7806c606d307df49757f",
+        "contentSha256": "fdf158901c4f82b4d87ba920004b42167976bdbe67ef7806c606d307df49757f",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/20c8cc47-8043-4de0-b3ba-e675f4237484/fdf158901c4f82b4d87ba920004b42167976bdbe67ef7806c606d307df49757f/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-065",
@@ -85085,8 +85247,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -85099,7 +85261,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "217a5850-bc61-47b6-84dd-418050711340",
+        "assetId": "artwork-recovered-20260928:217a5850-bc61-47b6-84dd-418050711340:054e5a6484c955c32932b561a016e8cf8d7f3708cd45a1f82ec2c8c85e415fb3",
+        "contentSha256": "054e5a6484c955c32932b561a016e8cf8d7f3708cd45a1f82ec2c8c85e415fb3",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/217a5850-bc61-47b6-84dd-418050711340/054e5a6484c955c32932b561a016e8cf8d7f3708cd45a1f82ec2c8c85e415fb3/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-063",
@@ -85158,8 +85334,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -85172,7 +85348,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "24221015-ce65-4b5f-9d88-2eab6f58219c",
+        "assetId": "artwork-recovered-20260928:24221015-ce65-4b5f-9d88-2eab6f58219c:2148a080c21f8d2ae5000127f3b87fcaa24d427d1f7547d471ac50b0fefa428a",
+        "contentSha256": "2148a080c21f8d2ae5000127f3b87fcaa24d427d1f7547d471ac50b0fefa428a",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/24221015-ce65-4b5f-9d88-2eab6f58219c/2148a080c21f8d2ae5000127f3b87fcaa24d427d1f7547d471ac50b0fefa428a/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-062",
@@ -85231,8 +85421,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -85245,7 +85435,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "266eb949-d0a2-429a-a113-4611428ea823",
+        "assetId": "artwork-recovered-20260928:266eb949-d0a2-429a-a113-4611428ea823:e42b88df3ada909dae6d75c6a9acc94ffc277d7daf7c758f3b8be20359640408",
+        "contentSha256": "e42b88df3ada909dae6d75c6a9acc94ffc277d7daf7c758f3b8be20359640408",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/266eb949-d0a2-429a-a113-4611428ea823/e42b88df3ada909dae6d75c6a9acc94ffc277d7daf7c758f3b8be20359640408/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-065",
@@ -85304,8 +85508,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -85318,7 +85522,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "27482aec-806f-4b08-ae47-f4b451c70c18",
+        "assetId": "artwork-recovered-20260928:27482aec-806f-4b08-ae47-f4b451c70c18:1aa5023e7eae0af43335823604677c9b45a5731afed82129a0dfa4b3ea830ea0",
+        "contentSha256": "1aa5023e7eae0af43335823604677c9b45a5731afed82129a0dfa4b3ea830ea0",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/27482aec-806f-4b08-ae47-f4b451c70c18/1aa5023e7eae0af43335823604677c9b45a5731afed82129a0dfa4b3ea830ea0/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-062",
@@ -85377,8 +85595,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -85391,7 +85609,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "281ddb47-059a-4e81-b0ad-48ac802a877b",
+        "assetId": "artwork-recovered-20260928:281ddb47-059a-4e81-b0ad-48ac802a877b:2114a36c67df44829cba40bf69951edf8787ef7dd70161a90a980ae8c6638a1b",
+        "contentSha256": "2114a36c67df44829cba40bf69951edf8787ef7dd70161a90a980ae8c6638a1b",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/281ddb47-059a-4e81-b0ad-48ac802a877b/2114a36c67df44829cba40bf69951edf8787ef7dd70161a90a980ae8c6638a1b/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-062",
@@ -85450,8 +85682,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -85464,7 +85696,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "29795d81-f98f-40d2-a97c-cb32109d059b",
+        "assetId": "artwork-recovered-20260928:29795d81-f98f-40d2-a97c-cb32109d059b:934e660ad474b447ada8f102ea6542304011ec9502b028fe278610e9d0f5d25d",
+        "contentSha256": "934e660ad474b447ada8f102ea6542304011ec9502b028fe278610e9d0f5d25d",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/29795d81-f98f-40d2-a97c-cb32109d059b/934e660ad474b447ada8f102ea6542304011ec9502b028fe278610e9d0f5d25d/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-065",
@@ -85523,8 +85769,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -85537,7 +85783,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "2bb8b2ae-a038-42b1-9362-5976d1eb00cd",
+        "assetId": "artwork-recovered-20260928:2bb8b2ae-a038-42b1-9362-5976d1eb00cd:bd07a2be6bde27e80966bd238bf4ef77185a16d93d350d34fa97eb9a3e07520c",
+        "contentSha256": "bd07a2be6bde27e80966bd238bf4ef77185a16d93d350d34fa97eb9a3e07520c",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/2bb8b2ae-a038-42b1-9362-5976d1eb00cd/bd07a2be6bde27e80966bd238bf4ef77185a16d93d350d34fa97eb9a3e07520c/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-062",
@@ -85596,8 +85856,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -85610,7 +85870,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "3225f7a9-1d5a-4db7-a56b-b094ae1340ee",
+        "assetId": "artwork-recovered-20260928:3225f7a9-1d5a-4db7-a56b-b094ae1340ee:239725489bb4b443547447a518e54075541544b51762707dc01e7cfa2a4e598f",
+        "contentSha256": "239725489bb4b443547447a518e54075541544b51762707dc01e7cfa2a4e598f",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/3225f7a9-1d5a-4db7-a56b-b094ae1340ee/239725489bb4b443547447a518e54075541544b51762707dc01e7cfa2a4e598f/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-063",
@@ -85669,8 +85943,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -85683,7 +85957,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "3752bf89-9615-4e8b-af9d-4129fd8d7ff1",
+        "assetId": "artwork-recovered-20260928:3752bf89-9615-4e8b-af9d-4129fd8d7ff1:75a2ac9f94f670ac0a17cfe16202cefde7d0a1c23f70544e2f13cdc18c778fbc",
+        "contentSha256": "75a2ac9f94f670ac0a17cfe16202cefde7d0a1c23f70544e2f13cdc18c778fbc",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/3752bf89-9615-4e8b-af9d-4129fd8d7ff1/75a2ac9f94f670ac0a17cfe16202cefde7d0a1c23f70544e2f13cdc18c778fbc/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-065",
@@ -85742,8 +86030,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -85756,7 +86044,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "3a55409f-20e8-4073-83d7-624a94598a8d",
+        "assetId": "artwork-recovered-20260928:3a55409f-20e8-4073-83d7-624a94598a8d:e1c733b770a9e234f70bc0df4bfda47da4e6aaf9fec00cda1a67145ee53a7081",
+        "contentSha256": "e1c733b770a9e234f70bc0df4bfda47da4e6aaf9fec00cda1a67145ee53a7081",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/3a55409f-20e8-4073-83d7-624a94598a8d/e1c733b770a9e234f70bc0df4bfda47da4e6aaf9fec00cda1a67145ee53a7081/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-063",
@@ -85815,8 +86117,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -85829,7 +86131,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "3b686c86-e7c7-4ddb-a993-44a3c256aaa8",
+        "assetId": "artwork-recovered-20260928:3b686c86-e7c7-4ddb-a993-44a3c256aaa8:5e25adb29933a41e0067363a17fef93b30b19a6ef7e0667fc0c0e1b0d90c732c",
+        "contentSha256": "5e25adb29933a41e0067363a17fef93b30b19a6ef7e0667fc0c0e1b0d90c732c",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/3b686c86-e7c7-4ddb-a993-44a3c256aaa8/5e25adb29933a41e0067363a17fef93b30b19a6ef7e0667fc0c0e1b0d90c732c/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-062",
@@ -85888,8 +86204,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -85902,7 +86218,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "3c062963-d4e2-45a6-b547-d1477936399f",
+        "assetId": "artwork-recovered-20260928:3c062963-d4e2-45a6-b547-d1477936399f:3a04636bd65c69c167036fd1360ff767228c6d83140f485a6336ddf6ed8d15d1",
+        "contentSha256": "3a04636bd65c69c167036fd1360ff767228c6d83140f485a6336ddf6ed8d15d1",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/3c062963-d4e2-45a6-b547-d1477936399f/3a04636bd65c69c167036fd1360ff767228c6d83140f485a6336ddf6ed8d15d1/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-063",
@@ -85961,8 +86291,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -85975,7 +86305,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "3d3e0bc1-f0d3-441c-bf37-63813f68ddbc",
+        "assetId": "artwork-recovered-20260928:3d3e0bc1-f0d3-441c-bf37-63813f68ddbc:dc686f82b44146ce91159206c980d99553dc17a00db21cb795890444f028897d",
+        "contentSha256": "dc686f82b44146ce91159206c980d99553dc17a00db21cb795890444f028897d",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/3d3e0bc1-f0d3-441c-bf37-63813f68ddbc/dc686f82b44146ce91159206c980d99553dc17a00db21cb795890444f028897d/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-063",
@@ -86034,8 +86378,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -86048,7 +86392,21 @@
       },
       "currentVariantCode": "holo",
       "currentFinishCode": "holo",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "3df791e6-fc8d-450c-9585-994a099979bd",
+        "assetId": "artwork-recovered-20260928:3df791e6-fc8d-450c-9585-994a099979bd:53bcf7de28468b4e45a96a691d74268327a3d2c94c059a3759a57f64c49cd9f6",
+        "contentSha256": "53bcf7de28468b4e45a96a691d74268327a3d2c94c059a3759a57f64c49cd9f6",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/3df791e6-fc8d-450c-9585-994a099979bd/53bcf7de28468b4e45a96a691d74268327a3d2c94c059a3759a57f64c49cd9f6/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-064",
@@ -86107,8 +86465,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -86121,7 +86479,21 @@
       },
       "currentVariantCode": "holo",
       "currentFinishCode": "holo",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "4530c74a-cbd7-4ae3-abb3-0f9c5325750e",
+        "assetId": "artwork-recovered-20260928:4530c74a-cbd7-4ae3-abb3-0f9c5325750e:cf43310e401bec16605842ac4024f12c57818fbebf864b627531704bd6f521b1",
+        "contentSha256": "cf43310e401bec16605842ac4024f12c57818fbebf864b627531704bd6f521b1",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/4530c74a-cbd7-4ae3-abb3-0f9c5325750e/cf43310e401bec16605842ac4024f12c57818fbebf864b627531704bd6f521b1/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-064",
@@ -86180,8 +86552,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -86194,7 +86566,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "46e7a285-86cd-4e6a-900a-6c609988452e",
+        "assetId": "artwork-recovered-20260928:46e7a285-86cd-4e6a-900a-6c609988452e:ffe444722d51576aa6991210b8992bd56545f447dc5df76808ad664daa01b992",
+        "contentSha256": "ffe444722d51576aa6991210b8992bd56545f447dc5df76808ad664daa01b992",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/46e7a285-86cd-4e6a-900a-6c609988452e/ffe444722d51576aa6991210b8992bd56545f447dc5df76808ad664daa01b992/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-065",
@@ -86253,8 +86639,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -86267,7 +86653,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "47cb44da-f82b-4023-b1ea-f10037bdb6fd",
+        "assetId": "artwork-recovered-20260928:47cb44da-f82b-4023-b1ea-f10037bdb6fd:501a923f402ade8ab794a0384961ed38d48b1f196054bc07ececf752e4d0d0cd",
+        "contentSha256": "501a923f402ade8ab794a0384961ed38d48b1f196054bc07ececf752e4d0d0cd",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/47cb44da-f82b-4023-b1ea-f10037bdb6fd/501a923f402ade8ab794a0384961ed38d48b1f196054bc07ececf752e4d0d0cd/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-065",
@@ -86326,8 +86726,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -86340,7 +86740,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "47ecce5a-a438-42f9-885a-b57b3454333a",
+        "assetId": "artwork-recovered-20260928:47ecce5a-a438-42f9-885a-b57b3454333a:139effba991732a59bbc9cbb7e462e2eeb7f558c45bc1b4423c7d7e4b3ab278e",
+        "contentSha256": "139effba991732a59bbc9cbb7e462e2eeb7f558c45bc1b4423c7d7e4b3ab278e",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/47ecce5a-a438-42f9-885a-b57b3454333a/139effba991732a59bbc9cbb7e462e2eeb7f558c45bc1b4423c7d7e4b3ab278e/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-062",
@@ -86399,8 +86813,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -86413,7 +86827,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "4fc9aabe-c830-4687-964d-dad70fa1151e",
+        "assetId": "artwork-recovered-20260928:4fc9aabe-c830-4687-964d-dad70fa1151e:8b7b05e1978cecd7d529b79f73a23343f5fa5e0ad06446e7f14ba0bd0f3bfb33",
+        "contentSha256": "8b7b05e1978cecd7d529b79f73a23343f5fa5e0ad06446e7f14ba0bd0f3bfb33",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/4fc9aabe-c830-4687-964d-dad70fa1151e/8b7b05e1978cecd7d529b79f73a23343f5fa5e0ad06446e7f14ba0bd0f3bfb33/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-064",
@@ -86472,8 +86900,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -86486,7 +86914,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "4fd55f78-6cb2-4963-b753-0d3de068f84b",
+        "assetId": "artwork-recovered-20260928:4fd55f78-6cb2-4963-b753-0d3de068f84b:a0150c3002733b8547290c874382d9c784875af3377bf52dc1720801618eb6c3",
+        "contentSha256": "a0150c3002733b8547290c874382d9c784875af3377bf52dc1720801618eb6c3",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/4fd55f78-6cb2-4963-b753-0d3de068f84b/a0150c3002733b8547290c874382d9c784875af3377bf52dc1720801618eb6c3/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-062",
@@ -86545,8 +86987,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -86559,7 +87001,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "52a1f770-0bdf-41fa-aa1d-ccf6bad7856c",
+        "assetId": "artwork-recovered-20260928:52a1f770-0bdf-41fa-aa1d-ccf6bad7856c:ce7c567694f467d13241d6f75c50763ad38d5d3d5043ecf6cf965fe5348591ff",
+        "contentSha256": "ce7c567694f467d13241d6f75c50763ad38d5d3d5043ecf6cf965fe5348591ff",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/52a1f770-0bdf-41fa-aa1d-ccf6bad7856c/ce7c567694f467d13241d6f75c50763ad38d5d3d5043ecf6cf965fe5348591ff/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-064",
@@ -86618,8 +87074,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -86632,7 +87088,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "5320fed2-9174-4c95-bdfb-74a2895dd93e",
+        "assetId": "artwork-recovered-20260928:5320fed2-9174-4c95-bdfb-74a2895dd93e:e95894777103aa5d3beab4625b1c01430c1a343357b456c6abe1153b3a021397",
+        "contentSha256": "e95894777103aa5d3beab4625b1c01430c1a343357b456c6abe1153b3a021397",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/5320fed2-9174-4c95-bdfb-74a2895dd93e/e95894777103aa5d3beab4625b1c01430c1a343357b456c6abe1153b3a021397/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-063",
@@ -86691,8 +87161,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -86705,7 +87175,21 @@
       },
       "currentVariantCode": "holo",
       "currentFinishCode": "holo",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "57acd256-dbc6-44aa-b210-0f2701707fe4",
+        "assetId": "artwork-recovered-20260928:57acd256-dbc6-44aa-b210-0f2701707fe4:65376e11d2d08d70de2e0df43e663a8adf9582ba65750cab746be3cc877b3b82",
+        "contentSha256": "65376e11d2d08d70de2e0df43e663a8adf9582ba65750cab746be3cc877b3b82",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/57acd256-dbc6-44aa-b210-0f2701707fe4/65376e11d2d08d70de2e0df43e663a8adf9582ba65750cab746be3cc877b3b82/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-064",
@@ -86764,8 +87248,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -86778,7 +87262,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "5961d41e-44a5-4110-8f4f-6920ae076ca4",
+        "assetId": "artwork-recovered-20260928:5961d41e-44a5-4110-8f4f-6920ae076ca4:aab1d25564f35a2fe5424944887b15bf0964837f6e205438541748092e5b022e",
+        "contentSha256": "aab1d25564f35a2fe5424944887b15bf0964837f6e205438541748092e5b022e",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/5961d41e-44a5-4110-8f4f-6920ae076ca4/aab1d25564f35a2fe5424944887b15bf0964837f6e205438541748092e5b022e/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-063",
@@ -86837,8 +87335,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -86851,7 +87349,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "59f5f7fd-a444-4184-bc24-45ece5d0e78d",
+        "assetId": "artwork-recovered-20260928:59f5f7fd-a444-4184-bc24-45ece5d0e78d:e5d55cfc8b40bc6f4638dad339ec867c33ed726f00b33ced034a027674857d91",
+        "contentSha256": "e5d55cfc8b40bc6f4638dad339ec867c33ed726f00b33ced034a027674857d91",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/59f5f7fd-a444-4184-bc24-45ece5d0e78d/e5d55cfc8b40bc6f4638dad339ec867c33ed726f00b33ced034a027674857d91/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-062",
@@ -86910,8 +87422,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -86924,7 +87436,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "5d3e542e-0c76-4a18-8085-91237446d1f2",
+        "assetId": "artwork-recovered-20260928:5d3e542e-0c76-4a18-8085-91237446d1f2:5c4b3c0b39badbae6f0c0692c7563d3b44f1207fb8a1a2ad8babc8eed0c6d591",
+        "contentSha256": "5c4b3c0b39badbae6f0c0692c7563d3b44f1207fb8a1a2ad8babc8eed0c6d591",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/5d3e542e-0c76-4a18-8085-91237446d1f2/5c4b3c0b39badbae6f0c0692c7563d3b44f1207fb8a1a2ad8babc8eed0c6d591/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-065",
@@ -86983,8 +87509,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -86997,7 +87523,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "5df959b7-dabc-463b-8774-6044673c968a",
+        "assetId": "artwork-recovered-20260928:5df959b7-dabc-463b-8774-6044673c968a:1ca2b7940e46923548b257fa1765751df8ec7d5bbfa929cd1251ca0af049fbf4",
+        "contentSha256": "1ca2b7940e46923548b257fa1765751df8ec7d5bbfa929cd1251ca0af049fbf4",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/5df959b7-dabc-463b-8774-6044673c968a/1ca2b7940e46923548b257fa1765751df8ec7d5bbfa929cd1251ca0af049fbf4/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-063",
@@ -87056,8 +87596,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -87070,7 +87610,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "5e7ef3be-4f65-4ceb-9233-f9b1c2e32cd6",
+        "assetId": "artwork-recovered-20260928:5e7ef3be-4f65-4ceb-9233-f9b1c2e32cd6:400a262d6be11e6e806679afb8f9cced828c410e904dd612c424dd8c0ff844d2",
+        "contentSha256": "400a262d6be11e6e806679afb8f9cced828c410e904dd612c424dd8c0ff844d2",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/5e7ef3be-4f65-4ceb-9233-f9b1c2e32cd6/400a262d6be11e6e806679afb8f9cced828c410e904dd612c424dd8c0ff844d2/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-063",
@@ -87129,8 +87683,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -87143,7 +87697,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "5eb1ab81-51a3-4f14-be87-891a2e87493c",
+        "assetId": "artwork-recovered-20260928:5eb1ab81-51a3-4f14-be87-891a2e87493c:9b57a3c3cb4ca9c23fd0128c5fdb6854bcd6324e8e7526037ef25f0cbe749140",
+        "contentSha256": "9b57a3c3cb4ca9c23fd0128c5fdb6854bcd6324e8e7526037ef25f0cbe749140",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/5eb1ab81-51a3-4f14-be87-891a2e87493c/9b57a3c3cb4ca9c23fd0128c5fdb6854bcd6324e8e7526037ef25f0cbe749140/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-063",
@@ -87202,8 +87770,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -87216,7 +87784,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "5ee40cc5-3333-4e3a-abe6-8b5660a6b017",
+        "assetId": "artwork-recovered-20260928:5ee40cc5-3333-4e3a-abe6-8b5660a6b017:00d7b55268ea8046caca190afab984512ec31d5199cc87199f2cfa014528456d",
+        "contentSha256": "00d7b55268ea8046caca190afab984512ec31d5199cc87199f2cfa014528456d",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/5ee40cc5-3333-4e3a-abe6-8b5660a6b017/00d7b55268ea8046caca190afab984512ec31d5199cc87199f2cfa014528456d/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-063",
@@ -87275,8 +87857,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -87289,7 +87871,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "5f82d941-5f31-47b0-985b-5336cd0ecb52",
+        "assetId": "artwork-recovered-20260928:5f82d941-5f31-47b0-985b-5336cd0ecb52:ac43c10f3119754fa63f056310541c87682960b17495af24510251906d0bb49b",
+        "contentSha256": "ac43c10f3119754fa63f056310541c87682960b17495af24510251906d0bb49b",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/5f82d941-5f31-47b0-985b-5336cd0ecb52/ac43c10f3119754fa63f056310541c87682960b17495af24510251906d0bb49b/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-063",
@@ -87348,8 +87944,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -87362,7 +87958,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "61d53320-7024-4485-ba8e-a7e6d91b8bad",
+        "assetId": "artwork-recovered-20260928:61d53320-7024-4485-ba8e-a7e6d91b8bad:80f49585bc5f4632579b406a3e888741f5cac076e7f5b6a2c2f05444284d7d2a",
+        "contentSha256": "80f49585bc5f4632579b406a3e888741f5cac076e7f5b6a2c2f05444284d7d2a",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/61d53320-7024-4485-ba8e-a7e6d91b8bad/80f49585bc5f4632579b406a3e888741f5cac076e7f5b6a2c2f05444284d7d2a/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-062",
@@ -87421,8 +88031,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -87435,7 +88045,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "6219b539-b37e-455d-9cf9-cd2d416886d9",
+        "assetId": "artwork-recovered-20260928:6219b539-b37e-455d-9cf9-cd2d416886d9:d4fc892868df17756b6a09d06a2ce5c1e991536a8249d86b6c8910228c1b9cb1",
+        "contentSha256": "d4fc892868df17756b6a09d06a2ce5c1e991536a8249d86b6c8910228c1b9cb1",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/6219b539-b37e-455d-9cf9-cd2d416886d9/d4fc892868df17756b6a09d06a2ce5c1e991536a8249d86b6c8910228c1b9cb1/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-062",
@@ -87494,8 +88118,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -87508,7 +88132,21 @@
       },
       "currentVariantCode": "holo",
       "currentFinishCode": "holo",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "64d4757e-af07-458b-8a8d-142a32c2cd6e",
+        "assetId": "artwork-recovered-20260928:64d4757e-af07-458b-8a8d-142a32c2cd6e:c2409ffeccce8a563740f9e21d70b369209e171f305e519bae01118912c7398c",
+        "contentSha256": "c2409ffeccce8a563740f9e21d70b369209e171f305e519bae01118912c7398c",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/64d4757e-af07-458b-8a8d-142a32c2cd6e/c2409ffeccce8a563740f9e21d70b369209e171f305e519bae01118912c7398c/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-062",
@@ -87567,8 +88205,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -87581,7 +88219,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "6831ba95-e2c4-41b0-baec-25a3976c7d1a",
+        "assetId": "artwork-recovered-20260928:6831ba95-e2c4-41b0-baec-25a3976c7d1a:b1f7526ff50acdd88b6ee08bc8059ffb658919bf484e436085a6b77bbbe777d6",
+        "contentSha256": "b1f7526ff50acdd88b6ee08bc8059ffb658919bf484e436085a6b77bbbe777d6",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/6831ba95-e2c4-41b0-baec-25a3976c7d1a/b1f7526ff50acdd88b6ee08bc8059ffb658919bf484e436085a6b77bbbe777d6/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-065",
@@ -87640,8 +88292,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -87654,7 +88306,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "683d0437-a7e6-4582-a17b-34b4b2e57477",
+        "assetId": "artwork-recovered-20260928:683d0437-a7e6-4582-a17b-34b4b2e57477:ae97c8e788009f2a9b9e3c518733c617f1289079b792ec452981e1fd989a45c7",
+        "contentSha256": "ae97c8e788009f2a9b9e3c518733c617f1289079b792ec452981e1fd989a45c7",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/683d0437-a7e6-4582-a17b-34b4b2e57477/ae97c8e788009f2a9b9e3c518733c617f1289079b792ec452981e1fd989a45c7/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-062",
@@ -87713,8 +88379,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -87727,7 +88393,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "6c348d8d-7992-4468-baa3-b779a74a0822",
+        "assetId": "artwork-recovered-20260928:6c348d8d-7992-4468-baa3-b779a74a0822:8f4ceed001348a774efef91ca523f745633eb6c4079cfea168c5762df1467256",
+        "contentSha256": "8f4ceed001348a774efef91ca523f745633eb6c4079cfea168c5762df1467256",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/6c348d8d-7992-4468-baa3-b779a74a0822/8f4ceed001348a774efef91ca523f745633eb6c4079cfea168c5762df1467256/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-065",
@@ -87786,8 +88466,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -87800,7 +88480,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "6ee7dc1e-90a1-428b-a058-c39e18e3458d",
+        "assetId": "artwork-recovered-20260928:6ee7dc1e-90a1-428b-a058-c39e18e3458d:6a9d0949590de16ec183c8b3e830e30e1e05b2ea186f7e06e188a1a1d676609f",
+        "contentSha256": "6a9d0949590de16ec183c8b3e830e30e1e05b2ea186f7e06e188a1a1d676609f",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/6ee7dc1e-90a1-428b-a058-c39e18e3458d/6a9d0949590de16ec183c8b3e830e30e1e05b2ea186f7e06e188a1a1d676609f/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-065",
@@ -87859,8 +88553,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -87873,7 +88567,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "71f6f1ca-3e07-4021-a5db-403320d1f59d",
+        "assetId": "artwork-recovered-20260928:71f6f1ca-3e07-4021-a5db-403320d1f59d:3432101a7f17df38da280f8308eb2128aede4d56c1095439126d40214c45d013",
+        "contentSha256": "3432101a7f17df38da280f8308eb2128aede4d56c1095439126d40214c45d013",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/71f6f1ca-3e07-4021-a5db-403320d1f59d/3432101a7f17df38da280f8308eb2128aede4d56c1095439126d40214c45d013/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-063",
@@ -87932,8 +88640,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -87946,7 +88654,21 @@
       },
       "currentVariantCode": "holo",
       "currentFinishCode": "holo",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "72c042ff-8d81-41c3-b5cd-41ece4c228af",
+        "assetId": "artwork-recovered-20260928:72c042ff-8d81-41c3-b5cd-41ece4c228af:94af787c50adfb0af0fc5772e7698ace30ca9adf8d51fe2182656bbd8a7d8848",
+        "contentSha256": "94af787c50adfb0af0fc5772e7698ace30ca9adf8d51fe2182656bbd8a7d8848",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/72c042ff-8d81-41c3-b5cd-41ece4c228af/94af787c50adfb0af0fc5772e7698ace30ca9adf8d51fe2182656bbd8a7d8848/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-063",
@@ -88005,8 +88727,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -88019,7 +88741,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "77bd9a2b-a7f7-4c99-8af9-cc9662b19907",
+        "assetId": "artwork-recovered-20260928:77bd9a2b-a7f7-4c99-8af9-cc9662b19907:53ed0809e2b5b3d00fb1625d6cff94060a3c519b54d60c5337e30a7e7489d6c5",
+        "contentSha256": "53ed0809e2b5b3d00fb1625d6cff94060a3c519b54d60c5337e30a7e7489d6c5",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/77bd9a2b-a7f7-4c99-8af9-cc9662b19907/53ed0809e2b5b3d00fb1625d6cff94060a3c519b54d60c5337e30a7e7489d6c5/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-064",
@@ -88078,8 +88814,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -88092,7 +88828,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "78897601-07e9-4157-aaa3-937f49714368",
+        "assetId": "artwork-recovered-20260928:78897601-07e9-4157-aaa3-937f49714368:a17aeb9545c3381b33d2386b43db459a7953c3196718a467a4ce2f5bb22dc2af",
+        "contentSha256": "a17aeb9545c3381b33d2386b43db459a7953c3196718a467a4ce2f5bb22dc2af",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/78897601-07e9-4157-aaa3-937f49714368/a17aeb9545c3381b33d2386b43db459a7953c3196718a467a4ce2f5bb22dc2af/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-062",
@@ -88151,8 +88901,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -88165,7 +88915,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "7988211c-feac-406e-831d-cbb268b00575",
+        "assetId": "artwork-recovered-20260928:7988211c-feac-406e-831d-cbb268b00575:ac221bf41217350245ad89c589f54c0c0b114a8e67bb775c50fdf80033c6084e",
+        "contentSha256": "ac221bf41217350245ad89c589f54c0c0b114a8e67bb775c50fdf80033c6084e",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/7988211c-feac-406e-831d-cbb268b00575/ac221bf41217350245ad89c589f54c0c0b114a8e67bb775c50fdf80033c6084e/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-064",
@@ -88224,8 +88988,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -88238,7 +89002,21 @@
       },
       "currentVariantCode": "holo",
       "currentFinishCode": "holo",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "7ae306fc-38a7-49b0-b50c-1dc514a6cac0",
+        "assetId": "artwork-recovered-20260928:7ae306fc-38a7-49b0-b50c-1dc514a6cac0:cc38df216cfa16784af7f9f224f01b860ab378c0883bd38d4b697d482a155c6d",
+        "contentSha256": "cc38df216cfa16784af7f9f224f01b860ab378c0883bd38d4b697d482a155c6d",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/7ae306fc-38a7-49b0-b50c-1dc514a6cac0/cc38df216cfa16784af7f9f224f01b860ab378c0883bd38d4b697d482a155c6d/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-062",
@@ -88297,8 +89075,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -88311,7 +89089,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "7dfe9d76-caa2-40e5-9a5c-9b4cffe8ac44",
+        "assetId": "artwork-recovered-20260928:7dfe9d76-caa2-40e5-9a5c-9b4cffe8ac44:55daabfe65541a036cf344f146ab700ca931e9b0eb72857e84467e829c1676c5",
+        "contentSha256": "55daabfe65541a036cf344f146ab700ca931e9b0eb72857e84467e829c1676c5",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/7dfe9d76-caa2-40e5-9a5c-9b4cffe8ac44/55daabfe65541a036cf344f146ab700ca931e9b0eb72857e84467e829c1676c5/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-063",
@@ -88370,8 +89162,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -88384,7 +89176,21 @@
       },
       "currentVariantCode": "holo",
       "currentFinishCode": "holo",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "7f4b8c27-fb39-43fd-a124-738b4c94a287",
+        "assetId": "artwork-recovered-20260928:7f4b8c27-fb39-43fd-a124-738b4c94a287:cd08605030bf5c52526c118db647051b375d6a1503496a2494096f5c9c90bfa0",
+        "contentSha256": "cd08605030bf5c52526c118db647051b375d6a1503496a2494096f5c9c90bfa0",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/7f4b8c27-fb39-43fd-a124-738b4c94a287/cd08605030bf5c52526c118db647051b375d6a1503496a2494096f5c9c90bfa0/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-064",
@@ -88443,8 +89249,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -88457,7 +89263,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "816804a2-c7e9-4a47-95d8-8b7e196a0353",
+        "assetId": "artwork-recovered-20260928:816804a2-c7e9-4a47-95d8-8b7e196a0353:7f0a4e9e5148ef38c504efc0088798e46f07d076c93cab82b4353a84fc6eb890",
+        "contentSha256": "7f0a4e9e5148ef38c504efc0088798e46f07d076c93cab82b4353a84fc6eb890",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/816804a2-c7e9-4a47-95d8-8b7e196a0353/7f0a4e9e5148ef38c504efc0088798e46f07d076c93cab82b4353a84fc6eb890/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-065",
@@ -88516,8 +89336,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -88530,7 +89350,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "85ee3b61-ede5-48f7-bb22-6b0484e68b23",
+        "assetId": "artwork-recovered-20260928:85ee3b61-ede5-48f7-bb22-6b0484e68b23:3d9ec72fdee7d7e3d4ad2b1b978979e5d9015f9427e94b53acc665579dd516b3",
+        "contentSha256": "3d9ec72fdee7d7e3d4ad2b1b978979e5d9015f9427e94b53acc665579dd516b3",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/85ee3b61-ede5-48f7-bb22-6b0484e68b23/3d9ec72fdee7d7e3d4ad2b1b978979e5d9015f9427e94b53acc665579dd516b3/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-065",
@@ -88589,8 +89423,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -88603,7 +89437,21 @@
       },
       "currentVariantCode": "holo",
       "currentFinishCode": "holo",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "88f9ca72-afd2-4601-af43-75fa8ff786f3",
+        "assetId": "artwork-recovered-20260928:88f9ca72-afd2-4601-af43-75fa8ff786f3:d96a25b2cd72a09fff9ff2f0f3a2c5431889b16968df195b5c5bf3a69eaac6ce",
+        "contentSha256": "d96a25b2cd72a09fff9ff2f0f3a2c5431889b16968df195b5c5bf3a69eaac6ce",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/88f9ca72-afd2-4601-af43-75fa8ff786f3/d96a25b2cd72a09fff9ff2f0f3a2c5431889b16968df195b5c5bf3a69eaac6ce/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-065",
@@ -88662,8 +89510,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -88676,7 +89524,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "8ea20297-0516-4957-848b-362354108d5b",
+        "assetId": "artwork-recovered-20260928:8ea20297-0516-4957-848b-362354108d5b:99c67720e1ee9db51fb940214e5d12809f92e80cb925d15c709716749a68079e",
+        "contentSha256": "99c67720e1ee9db51fb940214e5d12809f92e80cb925d15c709716749a68079e",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/8ea20297-0516-4957-848b-362354108d5b/99c67720e1ee9db51fb940214e5d12809f92e80cb925d15c709716749a68079e/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-064",
@@ -88735,8 +89597,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -88749,7 +89611,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "8f6c2c9d-5f97-49bf-814b-a817b759f8df",
+        "assetId": "artwork-recovered-20260928:8f6c2c9d-5f97-49bf-814b-a817b759f8df:44f9b04c119bb4035e4fb6c5c90032153e4b195350e149a4318e2109a80171a6",
+        "contentSha256": "44f9b04c119bb4035e4fb6c5c90032153e4b195350e149a4318e2109a80171a6",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/8f6c2c9d-5f97-49bf-814b-a817b759f8df/44f9b04c119bb4035e4fb6c5c90032153e4b195350e149a4318e2109a80171a6/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-063",
@@ -88808,8 +89684,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -88822,7 +89698,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "9279b708-bd74-4133-aef3-0bacd01bba51",
+        "assetId": "artwork-recovered-20260928:9279b708-bd74-4133-aef3-0bacd01bba51:cce27172cd395a96de2d7974312978cd260a567dbac965d384f336b3c78a61a3",
+        "contentSha256": "cce27172cd395a96de2d7974312978cd260a567dbac965d384f336b3c78a61a3",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/9279b708-bd74-4133-aef3-0bacd01bba51/cce27172cd395a96de2d7974312978cd260a567dbac965d384f336b3c78a61a3/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-065",
@@ -88881,8 +89771,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -88895,7 +89785,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "943c0f07-f999-4110-98c0-3ac2e11571a8",
+        "assetId": "artwork-recovered-20260928:943c0f07-f999-4110-98c0-3ac2e11571a8:99eea70ed6ce38752f625d60e8cfdffc57503630da606ba8dd39db49634f810f",
+        "contentSha256": "99eea70ed6ce38752f625d60e8cfdffc57503630da606ba8dd39db49634f810f",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/943c0f07-f999-4110-98c0-3ac2e11571a8/99eea70ed6ce38752f625d60e8cfdffc57503630da606ba8dd39db49634f810f/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-062",
@@ -88954,8 +89858,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -88968,7 +89872,21 @@
       },
       "currentVariantCode": "holo",
       "currentFinishCode": "holo",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "944a2830-a98f-4fd1-be48-6d8baed6d745",
+        "assetId": "artwork-recovered-20260928:944a2830-a98f-4fd1-be48-6d8baed6d745:f545d366d5d801369dbed35629e2cb6c9202b913b349e2e499ea4267de72a969",
+        "contentSha256": "f545d366d5d801369dbed35629e2cb6c9202b913b349e2e499ea4267de72a969",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/944a2830-a98f-4fd1-be48-6d8baed6d745/f545d366d5d801369dbed35629e2cb6c9202b913b349e2e499ea4267de72a969/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-064",
@@ -89027,8 +89945,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -89041,7 +89959,21 @@
       },
       "currentVariantCode": "holo",
       "currentFinishCode": "holo",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "96cade59-c354-400b-b16b-af4a558bc2c4",
+        "assetId": "artwork-recovered-20260928:96cade59-c354-400b-b16b-af4a558bc2c4:ae49ff59b4392d93123114064d2d20b5feac58d52392838f88fc93ffa87f7551",
+        "contentSha256": "ae49ff59b4392d93123114064d2d20b5feac58d52392838f88fc93ffa87f7551",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/96cade59-c354-400b-b16b-af4a558bc2c4/ae49ff59b4392d93123114064d2d20b5feac58d52392838f88fc93ffa87f7551/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-065",
@@ -89100,8 +90032,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -89114,7 +90046,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "98b0ac79-d4da-482b-9be0-8af41bb2d315",
+        "assetId": "artwork-recovered-20260928:98b0ac79-d4da-482b-9be0-8af41bb2d315:a90412e46984680e23da6fe1f754067d899445c74f0af6af4800740a1201000f",
+        "contentSha256": "a90412e46984680e23da6fe1f754067d899445c74f0af6af4800740a1201000f",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/98b0ac79-d4da-482b-9be0-8af41bb2d315/a90412e46984680e23da6fe1f754067d899445c74f0af6af4800740a1201000f/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-063",
@@ -89173,8 +90119,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -89187,7 +90133,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "9bceb3ae-ddeb-412a-b14a-b1655d28ed32",
+        "assetId": "artwork-recovered-20260928:9bceb3ae-ddeb-412a-b14a-b1655d28ed32:fe153bdfdc9fe715871f3f6766c18e818e3c059f3e172095693dc27bb490efd7",
+        "contentSha256": "fe153bdfdc9fe715871f3f6766c18e818e3c059f3e172095693dc27bb490efd7",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/9bceb3ae-ddeb-412a-b14a-b1655d28ed32/fe153bdfdc9fe715871f3f6766c18e818e3c059f3e172095693dc27bb490efd7/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-064",
@@ -89246,8 +90206,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -89260,7 +90220,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "9d7a827b-04a5-4db3-ac3f-772ba935097e",
+        "assetId": "artwork-recovered-20260928:9d7a827b-04a5-4db3-ac3f-772ba935097e:75967beae84438be3a84116c9114436d096f7bc9b84735836e7d00426392c548",
+        "contentSha256": "75967beae84438be3a84116c9114436d096f7bc9b84735836e7d00426392c548",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/9d7a827b-04a5-4db3-ac3f-772ba935097e/75967beae84438be3a84116c9114436d096f7bc9b84735836e7d00426392c548/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-064",
@@ -89319,8 +90293,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -89333,7 +90307,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "a205004e-28f9-489c-b1cf-dcd0e1dd22bd",
+        "assetId": "artwork-recovered-20260928:a205004e-28f9-489c-b1cf-dcd0e1dd22bd:ae8f04baa22306d4449dfa8e6efdd6bea33928cf28a79fd72b625943b7b86436",
+        "contentSha256": "ae8f04baa22306d4449dfa8e6efdd6bea33928cf28a79fd72b625943b7b86436",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/a205004e-28f9-489c-b1cf-dcd0e1dd22bd/ae8f04baa22306d4449dfa8e6efdd6bea33928cf28a79fd72b625943b7b86436/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-063",
@@ -89392,8 +90380,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -89406,7 +90394,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "ab674597-3fa9-481c-a7f7-20588a9ec295",
+        "assetId": "artwork-recovered-20260928:ab674597-3fa9-481c-a7f7-20588a9ec295:d6df5fe2d37b8a359f9f612901ab178f2be51724ffc110810d7d7515a79f6a1b",
+        "contentSha256": "d6df5fe2d37b8a359f9f612901ab178f2be51724ffc110810d7d7515a79f6a1b",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/ab674597-3fa9-481c-a7f7-20588a9ec295/d6df5fe2d37b8a359f9f612901ab178f2be51724ffc110810d7d7515a79f6a1b/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-065",
@@ -89465,8 +90467,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -89479,7 +90481,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "adb248be-30f9-4fd2-aaaf-732afe59a18e",
+        "assetId": "artwork-recovered-20260928:adb248be-30f9-4fd2-aaaf-732afe59a18e:27f30b3838a67490431b9759b29f8cae199c33e79c0aba7b84d9fe52f8fec158",
+        "contentSha256": "27f30b3838a67490431b9759b29f8cae199c33e79c0aba7b84d9fe52f8fec158",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/adb248be-30f9-4fd2-aaaf-732afe59a18e/27f30b3838a67490431b9759b29f8cae199c33e79c0aba7b84d9fe52f8fec158/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-065",
@@ -89538,8 +90554,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -89552,7 +90568,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "ade1d5b6-ac91-4fa4-a4c3-d09d102d9809",
+        "assetId": "artwork-recovered-20260928:ade1d5b6-ac91-4fa4-a4c3-d09d102d9809:ca404eada23ac032d3d0de17d2653829d52f380f47f48663f9e51c61caf55b8f",
+        "contentSha256": "ca404eada23ac032d3d0de17d2653829d52f380f47f48663f9e51c61caf55b8f",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/ade1d5b6-ac91-4fa4-a4c3-d09d102d9809/ca404eada23ac032d3d0de17d2653829d52f380f47f48663f9e51c61caf55b8f/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-062",
@@ -89611,8 +90641,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -89625,7 +90655,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "ba49152f-8595-4d5e-be90-1175baac1d79",
+        "assetId": "artwork-recovered-20260928:ba49152f-8595-4d5e-be90-1175baac1d79:139bc1d9c34ee8b94c86ea9158207e83079ebe3958ac84ece9fdc3c3b9655584",
+        "contentSha256": "139bc1d9c34ee8b94c86ea9158207e83079ebe3958ac84ece9fdc3c3b9655584",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/ba49152f-8595-4d5e-be90-1175baac1d79/139bc1d9c34ee8b94c86ea9158207e83079ebe3958ac84ece9fdc3c3b9655584/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-064",
@@ -89684,8 +90728,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -89698,7 +90742,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "bf525f90-6cd0-4461-b385-abb3f886dc24",
+        "assetId": "artwork-recovered-20260928:bf525f90-6cd0-4461-b385-abb3f886dc24:b09e2fe957867cd3bd9f2d990666945b03d02a14d9b757459a2b10bf2a27fd77",
+        "contentSha256": "b09e2fe957867cd3bd9f2d990666945b03d02a14d9b757459a2b10bf2a27fd77",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/bf525f90-6cd0-4461-b385-abb3f886dc24/b09e2fe957867cd3bd9f2d990666945b03d02a14d9b757459a2b10bf2a27fd77/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-064",
@@ -89757,8 +90815,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -89771,7 +90829,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "c0182a6a-106f-403f-864e-9ffb6d6f9a3d",
+        "assetId": "artwork-recovered-20260928:c0182a6a-106f-403f-864e-9ffb6d6f9a3d:5ed4f86859a287abbdabf826e1f93465a8b08a403afceb6626fbf27091020cee",
+        "contentSha256": "5ed4f86859a287abbdabf826e1f93465a8b08a403afceb6626fbf27091020cee",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/c0182a6a-106f-403f-864e-9ffb6d6f9a3d/5ed4f86859a287abbdabf826e1f93465a8b08a403afceb6626fbf27091020cee/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-064",
@@ -89830,8 +90902,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -89844,7 +90916,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "c4c2f0c8-169d-4cb2-ab6c-d08165a2a2e6",
+        "assetId": "artwork-recovered-20260928:c4c2f0c8-169d-4cb2-ab6c-d08165a2a2e6:3d6743473d04c5a9efd59488fc9a67a781560c14b19a0bd0979385bb22b1f16b",
+        "contentSha256": "3d6743473d04c5a9efd59488fc9a67a781560c14b19a0bd0979385bb22b1f16b",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/c4c2f0c8-169d-4cb2-ab6c-d08165a2a2e6/3d6743473d04c5a9efd59488fc9a67a781560c14b19a0bd0979385bb22b1f16b/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-064",
@@ -89903,8 +90989,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -89917,7 +91003,21 @@
       },
       "currentVariantCode": "holo",
       "currentFinishCode": "holo",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "c4f49ada-60ec-4aa6-afb1-12c437733de2",
+        "assetId": "artwork-recovered-20260928:c4f49ada-60ec-4aa6-afb1-12c437733de2:59b78d31ce7b02ee258a23357b27aa6204e49affac923bf21d7e7e694035ecc0",
+        "contentSha256": "59b78d31ce7b02ee258a23357b27aa6204e49affac923bf21d7e7e694035ecc0",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/c4f49ada-60ec-4aa6-afb1-12c437733de2/59b78d31ce7b02ee258a23357b27aa6204e49affac923bf21d7e7e694035ecc0/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-063",
@@ -89976,8 +91076,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -89990,7 +91090,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "c52acf84-d730-4ee9-b709-0024fcf4f685",
+        "assetId": "artwork-recovered-20260928:c52acf84-d730-4ee9-b709-0024fcf4f685:8b62b5c805b79e8284ea7621c593e3431fbb855af1c8ac223eb38a99ecff025f",
+        "contentSha256": "8b62b5c805b79e8284ea7621c593e3431fbb855af1c8ac223eb38a99ecff025f",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/c52acf84-d730-4ee9-b709-0024fcf4f685/8b62b5c805b79e8284ea7621c593e3431fbb855af1c8ac223eb38a99ecff025f/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-064",
@@ -90049,8 +91163,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -90063,7 +91177,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "c5e829b6-1a39-4361-a05e-d486d1dbc5e0",
+        "assetId": "artwork-recovered-20260928:c5e829b6-1a39-4361-a05e-d486d1dbc5e0:15195a1d3036dc6bc391b15bff578dc4b1806802414756e9892e278b8d18ff6b",
+        "contentSha256": "15195a1d3036dc6bc391b15bff578dc4b1806802414756e9892e278b8d18ff6b",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/c5e829b6-1a39-4361-a05e-d486d1dbc5e0/15195a1d3036dc6bc391b15bff578dc4b1806802414756e9892e278b8d18ff6b/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-064",
@@ -90122,8 +91250,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -90136,7 +91264,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "c63c8c59-a640-4d64-ab4f-f7465f412f26",
+        "assetId": "artwork-recovered-20260928:c63c8c59-a640-4d64-ab4f-f7465f412f26:3541bc30b6992bdf2c2c653225dbc714b05077377df4f9853b3a7ad8f9085bdf",
+        "contentSha256": "3541bc30b6992bdf2c2c653225dbc714b05077377df4f9853b3a7ad8f9085bdf",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/c63c8c59-a640-4d64-ab4f-f7465f412f26/3541bc30b6992bdf2c2c653225dbc714b05077377df4f9853b3a7ad8f9085bdf/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-063",
@@ -90195,8 +91337,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -90209,7 +91351,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "c6972dee-c397-4fbf-a26d-8619df458521",
+        "assetId": "artwork-recovered-20260928:c6972dee-c397-4fbf-a26d-8619df458521:b2c87f9ac519fabd88e47c05003e866da37f1e7935a37d1a157e5ab4b1b115d9",
+        "contentSha256": "b2c87f9ac519fabd88e47c05003e866da37f1e7935a37d1a157e5ab4b1b115d9",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/c6972dee-c397-4fbf-a26d-8619df458521/b2c87f9ac519fabd88e47c05003e866da37f1e7935a37d1a157e5ab4b1b115d9/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-065",
@@ -90268,8 +91424,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -90282,7 +91438,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "d1f05479-e57a-4555-81ee-d469dd89e025",
+        "assetId": "artwork-recovered-20260928:d1f05479-e57a-4555-81ee-d469dd89e025:9b2c7c8b469689eb3f8928509a006489dbff32537b8415e16d2a36b4905a3ac5",
+        "contentSha256": "9b2c7c8b469689eb3f8928509a006489dbff32537b8415e16d2a36b4905a3ac5",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/d1f05479-e57a-4555-81ee-d469dd89e025/9b2c7c8b469689eb3f8928509a006489dbff32537b8415e16d2a36b4905a3ac5/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-064",
@@ -90341,8 +91511,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -90355,7 +91525,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "d2346e51-121f-47cf-a21f-ff72c138ed49",
+        "assetId": "artwork-recovered-20260928:d2346e51-121f-47cf-a21f-ff72c138ed49:56daa641823d91967a2c7be49506760bf0002e210150bcba4158b6bcf0eb7976",
+        "contentSha256": "56daa641823d91967a2c7be49506760bf0002e210150bcba4158b6bcf0eb7976",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/d2346e51-121f-47cf-a21f-ff72c138ed49/56daa641823d91967a2c7be49506760bf0002e210150bcba4158b6bcf0eb7976/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-065",
@@ -90414,8 +91598,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -90428,7 +91612,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "d23e9f11-9412-413d-8fd5-7f999d9aa1c4",
+        "assetId": "artwork-recovered-20260928:d23e9f11-9412-413d-8fd5-7f999d9aa1c4:3e356751aa3cca7ad00655d51d14b2c68ac13cb51c4fa3d6cb4a732b82ea3781",
+        "contentSha256": "3e356751aa3cca7ad00655d51d14b2c68ac13cb51c4fa3d6cb4a732b82ea3781",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/d23e9f11-9412-413d-8fd5-7f999d9aa1c4/3e356751aa3cca7ad00655d51d14b2c68ac13cb51c4fa3d6cb4a732b82ea3781/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-065",
@@ -90487,8 +91685,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -90501,7 +91699,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "d41222b4-1ded-4a71-acbe-c596a3e048f3",
+        "assetId": "artwork-recovered-20260928:d41222b4-1ded-4a71-acbe-c596a3e048f3:89464a1d7660020f198784d7e0d22ea4eab696f504eb134eadb02154d42d131a",
+        "contentSha256": "89464a1d7660020f198784d7e0d22ea4eab696f504eb134eadb02154d42d131a",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/d41222b4-1ded-4a71-acbe-c596a3e048f3/89464a1d7660020f198784d7e0d22ea4eab696f504eb134eadb02154d42d131a/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-062",
@@ -90560,8 +91772,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -90574,7 +91786,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "d4a74184-38df-4837-86eb-7eea05d9589d",
+        "assetId": "artwork-recovered-20260928:d4a74184-38df-4837-86eb-7eea05d9589d:e5970a2d75103c81cf3273229f59d34646600c8158a11504ee6be472ebd53ee5",
+        "contentSha256": "e5970a2d75103c81cf3273229f59d34646600c8158a11504ee6be472ebd53ee5",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/d4a74184-38df-4837-86eb-7eea05d9589d/e5970a2d75103c81cf3273229f59d34646600c8158a11504ee6be472ebd53ee5/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-064",
@@ -90633,8 +91859,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -90647,7 +91873,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "da1d4af4-d593-499d-af32-c30b505f5a35",
+        "assetId": "artwork-recovered-20260928:da1d4af4-d593-499d-af32-c30b505f5a35:68923234f25422a8c5dcc427c4092ab59cef6610c5187a45511a38d4b3a9b346",
+        "contentSha256": "68923234f25422a8c5dcc427c4092ab59cef6610c5187a45511a38d4b3a9b346",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/da1d4af4-d593-499d-af32-c30b505f5a35/68923234f25422a8c5dcc427c4092ab59cef6610c5187a45511a38d4b3a9b346/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-063",
@@ -90706,8 +91946,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -90720,7 +91960,21 @@
       },
       "currentVariantCode": "holo",
       "currentFinishCode": "holo",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "e2979cee-f9ce-4659-bbfa-29d75d37db29",
+        "assetId": "artwork-recovered-20260928:e2979cee-f9ce-4659-bbfa-29d75d37db29:1c1c07f5bab8c05b5374b0294be4787a8481a89b3f57338162653a975c54ac07",
+        "contentSha256": "1c1c07f5bab8c05b5374b0294be4787a8481a89b3f57338162653a975c54ac07",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/e2979cee-f9ce-4659-bbfa-29d75d37db29/1c1c07f5bab8c05b5374b0294be4787a8481a89b3f57338162653a975c54ac07/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-063",
@@ -90779,8 +92033,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -90793,7 +92047,21 @@
       },
       "currentVariantCode": "holo",
       "currentFinishCode": "holo",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "e3b98024-e2a5-4d10-bf13-f142900aa0c2",
+        "assetId": "artwork-recovered-20260928:e3b98024-e2a5-4d10-bf13-f142900aa0c2:cb3931eff35d7b695bb8865efae0978af318b4a3eca806cb15a5a03152062281",
+        "contentSha256": "cb3931eff35d7b695bb8865efae0978af318b4a3eca806cb15a5a03152062281",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/e3b98024-e2a5-4d10-bf13-f142900aa0c2/cb3931eff35d7b695bb8865efae0978af318b4a3eca806cb15a5a03152062281/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-065",
@@ -90852,8 +92120,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -90866,7 +92134,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "e82b6a07-844a-4261-874b-b427d2d504ed",
+        "assetId": "artwork-recovered-20260928:e82b6a07-844a-4261-874b-b427d2d504ed:649c93dbc6488c0b993dd2191f127a8b80fafefe26681fa6210aad8f1d5fee2d",
+        "contentSha256": "649c93dbc6488c0b993dd2191f127a8b80fafefe26681fa6210aad8f1d5fee2d",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/e82b6a07-844a-4261-874b-b427d2d504ed/649c93dbc6488c0b993dd2191f127a8b80fafefe26681fa6210aad8f1d5fee2d/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-064",
@@ -90925,8 +92207,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -90939,7 +92221,21 @@
       },
       "currentVariantCode": "holo",
       "currentFinishCode": "holo",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "e8450844-5b54-44b8-9cdf-6783a2307dd2",
+        "assetId": "artwork-recovered-20260928:e8450844-5b54-44b8-9cdf-6783a2307dd2:ddaa4853ba2e9705cc3b913a4056b77e4ab1627efed538af822cb3abc023eb69",
+        "contentSha256": "ddaa4853ba2e9705cc3b913a4056b77e4ab1627efed538af822cb3abc023eb69",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/e8450844-5b54-44b8-9cdf-6783a2307dd2/ddaa4853ba2e9705cc3b913a4056b77e4ab1627efed538af822cb3abc023eb69/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-062",
@@ -90998,8 +92294,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -91012,7 +92308,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "e87668af-a328-45ab-9f9a-2e0588c2dada",
+        "assetId": "artwork-recovered-20260928:e87668af-a328-45ab-9f9a-2e0588c2dada:3a52d897b111f637b28049b9446bc6133b2bab5764f1752288514efc02b819ec",
+        "contentSha256": "3a52d897b111f637b28049b9446bc6133b2bab5764f1752288514efc02b819ec",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/e87668af-a328-45ab-9f9a-2e0588c2dada/3a52d897b111f637b28049b9446bc6133b2bab5764f1752288514efc02b819ec/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-063",
@@ -91071,8 +92381,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -91085,7 +92395,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "e8cb1571-4509-480a-a32e-72510bb0503c",
+        "assetId": "artwork-recovered-20260928:e8cb1571-4509-480a-a32e-72510bb0503c:5bbb3edc4bd81bd03a16a61cb5143f5470a5aae28f43dcdb0e5ac02c6d3eb4fc",
+        "contentSha256": "5bbb3edc4bd81bd03a16a61cb5143f5470a5aae28f43dcdb0e5ac02c6d3eb4fc",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/e8cb1571-4509-480a-a32e-72510bb0503c/5bbb3edc4bd81bd03a16a61cb5143f5470a5aae28f43dcdb0e5ac02c6d3eb4fc/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-062",
@@ -91144,8 +92468,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -91158,7 +92482,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "e9e5e129-d593-4e4e-a792-c62b23b3ddf3",
+        "assetId": "artwork-recovered-20260928:e9e5e129-d593-4e4e-a792-c62b23b3ddf3:04d1f6bace3e185a3b30846a95efe50413a9b52836240afea4b82f61706adcea",
+        "contentSha256": "04d1f6bace3e185a3b30846a95efe50413a9b52836240afea4b82f61706adcea",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/e9e5e129-d593-4e4e-a792-c62b23b3ddf3/04d1f6bace3e185a3b30846a95efe50413a9b52836240afea4b82f61706adcea/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-063",
@@ -91217,8 +92555,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -91231,7 +92569,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "eab047af-44de-4617-aa5c-dfa6d5111394",
+        "assetId": "artwork-recovered-20260928:eab047af-44de-4617-aa5c-dfa6d5111394:c4ac7d8d7ee9d04d14ce5aa46992db3ad1866b0f64c097d15336545879e7e757",
+        "contentSha256": "c4ac7d8d7ee9d04d14ce5aa46992db3ad1866b0f64c097d15336545879e7e757",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/eab047af-44de-4617-aa5c-dfa6d5111394/c4ac7d8d7ee9d04d14ce5aa46992db3ad1866b0f64c097d15336545879e7e757/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-065",
@@ -91290,8 +92642,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -91304,7 +92656,21 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "f677aaab-e390-4aa7-b6ad-b70c8ee8dc71",
+        "assetId": "artwork-recovered-20260928:f677aaab-e390-4aa7-b6ad-b70c8ee8dc71:7a380bdde8eb281ac4159000b4db95dfbbebbabc2deb3c9f94376edfcc864e5f",
+        "contentSha256": "7a380bdde8eb281ac4159000b4db95dfbbebbabc2deb3c9f94376edfcc864e5f",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/f677aaab-e390-4aa7-b6ad-b70c8ee8dc71/7a380bdde8eb281ac4159000b4db95dfbbebbabc2deb3c9f94376edfcc864e5f/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     },
     {
       "batchId": "JP-CARDS-062",
@@ -91363,8 +92729,8 @@
           "mime_type": "image/webp"
         }
       ],
-      "state": "Prepared and queued for production",
-      "publishedAndVerified": false,
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
       "physicalFinishVerified": false,
       "humanReviewRequired": false,
       "japanesePrintedIdentity": {
@@ -91377,16 +92743,291 @@
       },
       "currentVariantCode": "normal",
       "currentFinishCode": "normal",
-      "currentDelivery": null
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:00:15.432Z",
+        "productionRun": 38795933837,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38795933837",
+        "publicationReceiptSha256": "77bdf07b3081ad6a004dfbf5a86d9e6f63052c4af58b5b8ce257a81f07e8811c",
+        "printingId": "f6a094b3-c806-4c77-89b3-c77b92d786b4",
+        "assetId": "artwork-recovered-20260928:f6a094b3-c806-4c77-89b3-c77b92d786b4:c900e8ff6e2177f6a9ac246c7d820efc1d1a8689284ad07440ae20a0d87a6192",
+        "contentSha256": "c900e8ff6e2177f6a9ac246c7d820efc1d1a8689284ad07440ae20a0d87a6192",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/f6a094b3-c806-4c77-89b3-c77b92d786b4/c900e8ff6e2177f6a9ac246c7d820efc1d1a8689284ad07440ae20a0d87a6192/original.webp",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-061",
+      "itemId": "card:58053385-0e6d-45a1-b7aa-ba11abe75091",
+      "printingId": "58053385-0e6d-45a1-b7aa-ba11abe75091",
+      "setId": "c24a6f11-2b12-4dbd-8d50-61f17e8e6a4f",
+      "setCode": "PMCG5",
+      "languageCode": "ja",
+      "collectorReference": "081",
+      "cardName": "マチスの交渉",
+      "sourceCode": "tcgcollector",
+      "providerCardId": "tcgcollector-image-url-sha256:960013b61e95f821151e7a04b8fc5b7c801f0597cb35897484bb609ad088ad31",
+      "sourcePageUrl": "https://www.tcgcollector.com/cards/29808/lt-surges-treaty-leaders-stadium-no-081",
+      "sourceImageUrl": "https://static.tcgcollector.com/content/images/97/bf/86/97bf86b62623d5298b6cfd18e975a71a06a764363ceaf86eafaa031dd9a5db76.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false
+      },
+      "original": {
+        "sha256": "627fe0e7530b61a0fd9ef4cb53f7ec0e626034a94d8ce9fff04ed355178768b9",
+        "byteSize": 82445,
+        "width": 593,
+        "height": 834,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/4daf978aa148df1f61d90bbcb69b9ec12b639fc972501d4fd78c238013edb893/card-grid.webp",
+          "sha256": "4daf978aa148df1f61d90bbcb69b9ec12b639fc972501d4fd78c238013edb893",
+          "byte_size": 15636,
+          "width": 240,
+          "height": 338,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/7f42bd881c203f8ce3c48d9a26137f07511984bf63063eab35bae4bed87e5b55/search-result.webp",
+          "sha256": "7f42bd881c203f8ce3c48d9a26137f07511984bf63063eab35bae4bed87e5b55",
+          "byte_size": 3514,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/be4ebcd2c2f35d67912cf6da26f5b78db3e8609d86bb1cae66fb967862f0116f/detail-page.webp",
+          "sha256": "be4ebcd2c2f35d67912cf6da26f5b78db3e8609d86bb1cae66fb967862f0116f",
+          "byte_size": 68048,
+          "width": 593,
+          "height": 834,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "081",
+        "canonical_alias_is_internal_only": true,
+        "canonical_alias_is_not_printed_national_dex": true,
+        "printed_collector_number": null,
+        "printed_national_dex": null,
+        "pokemon_identity_asserted": false
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:04:45.942Z",
+        "productionRun": 38798480441,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38798480441",
+        "publicationReceiptSha256": "6285cf195418f4e5991538aa515ba72c718d568f5c74cfc6c026f4743fac7430",
+        "printingId": "58053385-0e6d-45a1-b7aa-ba11abe75091",
+        "assetId": "artwork-recovered-20260928:58053385-0e6d-45a1-b7aa-ba11abe75091:627fe0e7530b61a0fd9ef4cb53f7ec0e626034a94d8ce9fff04ed355178768b9",
+        "contentSha256": "627fe0e7530b61a0fd9ef4cb53f7ec0e626034a94d8ce9fff04ed355178768b9",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/58053385-0e6d-45a1-b7aa-ba11abe75091/627fe0e7530b61a0fd9ef4cb53f7ec0e626034a94d8ce9fff04ed355178768b9/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-061",
+      "itemId": "card:99246359-6f35-43db-9f85-2ccca99bceec",
+      "printingId": "99246359-6f35-43db-9f85-2ccca99bceec",
+      "setId": "c24a6f11-2b12-4dbd-8d50-61f17e8e6a4f",
+      "setCode": "PMCG5",
+      "languageCode": "ja",
+      "collectorReference": "096",
+      "cardName": "ロケット団のワナ",
+      "sourceCode": "tcgcollector",
+      "providerCardId": "tcgcollector-image-url-sha256:128798334e1a9e0f90343f143af152e493cc1948ff9af07703149d20aa1b4244",
+      "sourcePageUrl": "https://www.tcgcollector.com/cards/29823/the-rockets-trap-leaders-stadium-no-096",
+      "sourceImageUrl": "https://static.tcgcollector.com/content/images/9c/ce/0d/9cce0deba604504d64afd62a6e58db4f2d429acb5194b67e37826bbee3cc9617.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false
+      },
+      "original": {
+        "sha256": "6f6becbb06a1af7c1f9627685581ba470da630a10f096f0c855a5e04ad534d54",
+        "byteSize": 73131,
+        "width": 593,
+        "height": 834,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/c8f394367a645207c448160e35f77a18a21062980cae0e561104c3a2d26de083/card-grid.webp",
+          "sha256": "c8f394367a645207c448160e35f77a18a21062980cae0e561104c3a2d26de083",
+          "byte_size": 13820,
+          "width": 240,
+          "height": 338,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/42102edb717aa090897cdc1616497e8c96f9e368c4117dee6e3ea32fc7178cff/search-result.webp",
+          "sha256": "42102edb717aa090897cdc1616497e8c96f9e368c4117dee6e3ea32fc7178cff",
+          "byte_size": 3062,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/e4878e43eafddafabd1ebbd64dae7fe3b4aa901ff7810fa658e2e922496013a9/detail-page.webp",
+          "sha256": "e4878e43eafddafabd1ebbd64dae7fe3b4aa901ff7810fa658e2e922496013a9",
+          "byte_size": 57560,
+          "width": 593,
+          "height": 834,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "096",
+        "canonical_alias_is_internal_only": true,
+        "canonical_alias_is_not_printed_national_dex": true,
+        "printed_collector_number": null,
+        "printed_national_dex": null,
+        "pokemon_identity_asserted": false
+      },
+      "currentVariantCode": "holo",
+      "currentFinishCode": "holo",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:04:45.942Z",
+        "productionRun": 38798480441,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38798480441",
+        "publicationReceiptSha256": "6285cf195418f4e5991538aa515ba72c718d568f5c74cfc6c026f4743fac7430",
+        "printingId": "99246359-6f35-43db-9f85-2ccca99bceec",
+        "assetId": "artwork-recovered-20260928:99246359-6f35-43db-9f85-2ccca99bceec:6f6becbb06a1af7c1f9627685581ba470da630a10f096f0c855a5e04ad534d54",
+        "contentSha256": "6f6becbb06a1af7c1f9627685581ba470da630a10f096f0c855a5e04ad534d54",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/99246359-6f35-43db-9f85-2ccca99bceec/6f6becbb06a1af7c1f9627685581ba470da630a10f096f0c855a5e04ad534d54/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-058",
+      "itemId": "card:f732147f-deef-4c65-a092-4ed2e7bbfcad",
+      "printingId": "f732147f-deef-4c65-a092-4ed2e7bbfcad",
+      "setId": "c24a6f11-2b12-4dbd-8d50-61f17e8e6a4f",
+      "setCode": "PMCG5",
+      "languageCode": "ja",
+      "collectorReference": "019",
+      "cardName": "タケシのキュウコン",
+      "sourceCode": "tcgcollector",
+      "providerCardId": "tcgcollector-image-url-sha256:d469579f51d639ea2d9c0f378f99d73c42c84f0cdb02f23fbce49a9c68de014f",
+      "sourcePageUrl": "https://www.tcgcollector.com/cards/29746/brocks-ninetales-leaders-stadium-no-019",
+      "sourceImageUrl": "https://static.tcgcollector.com/content/images/e0/57/44/e05744a819e0fca3d78fc10a3c1d20990b42a2f1b23e9398701ea2431805c6a7.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false
+      },
+      "original": {
+        "sha256": "cd305a07dd316800bc7a3bb17951c7e28245c7197c22ad182198b090c115ca9b",
+        "byteSize": 93116,
+        "width": 593,
+        "height": 834,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/8fb7a2e9ede16c394cc7f934b7bcf2bcd2805a77e13945643afc0312c58b8ead/card-grid.webp",
+          "sha256": "8fb7a2e9ede16c394cc7f934b7bcf2bcd2805a77e13945643afc0312c58b8ead",
+          "byte_size": 18424,
+          "width": 240,
+          "height": 338,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/453480ac3f49fa447e2d93ae81c4e3d750acd5020e8c092ac9eb5f5d85b49575/search-result.webp",
+          "sha256": "453480ac3f49fa447e2d93ae81c4e3d750acd5020e8c092ac9eb5f5d85b49575",
+          "byte_size": 3708,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/484036c51a30e706169f09ef88842bc54c0b791c5fefc909160e575cad328df7/detail-page.webp",
+          "sha256": "484036c51a30e706169f09ef88842bc54c0b791c5fefc909160e575cad328df7",
+          "byte_size": 83060,
+          "width": 593,
+          "height": 834,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "019",
+        "canonical_alias_is_internal_only": true,
+        "canonical_alias_is_not_printed_national_dex": true,
+        "printed_collector_number": null,
+        "printed_national_dex": 38,
+        "pokemon_identity_asserted": true
+      },
+      "currentVariantCode": "holo",
+      "currentFinishCode": "holo",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T20:04:45.942Z",
+        "productionRun": 38798480441,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38798480441",
+        "publicationReceiptSha256": "6285cf195418f4e5991538aa515ba72c718d568f5c74cfc6c026f4743fac7430",
+        "printingId": "f732147f-deef-4c65-a092-4ed2e7bbfcad",
+        "assetId": "artwork-recovered-20260928:f732147f-deef-4c65-a092-4ed2e7bbfcad:cd305a07dd316800bc7a3bb17951c7e28245c7197c22ad182198b090c115ca9b",
+        "contentSha256": "cd305a07dd316800bc7a3bb17951c7e28245c7197c22ad182198b090c115ca9b",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/f732147f-deef-4c65-a092-4ed2e7bbfcad/cd305a07dd316800bc7a3bb17951c7e28245c7197c22ad182198b090c115ca9b/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     }
   ],
   "manualArtworkFollowUp": {
-    "updatedAt": "2026-10-15T19:46:54.268Z",
+    "updatedAt": "2026-10-15T20:11:47.028Z",
     "scope": "Specific follow-up details, separately from ordinary source work and active releases; current fixed inventory identities retained.",
     "collectorReferenceNote": "For older Japanese cards the Stackr reference may not be printed on the card; match its name, set, artwork and card text.",
     "specificFollowUps": 413,
-    "ordinarySourceWorkStillOpen": 634,
-    "activeSourceOrPublicationWork": 200,
+    "ordinarySourceWorkStillOpen": 626,
+    "activeSourceOrPublicationWork": 108,
     "batches": [
       {
         "batchId": "MANUAL-EN-001",
