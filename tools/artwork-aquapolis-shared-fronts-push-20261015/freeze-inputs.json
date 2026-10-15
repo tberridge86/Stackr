@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 1,
+  "private_inputs": [
+    {
+      "file": "publish-review/aquapolis2-four-sources-20261015-production-before.json",
+      "sha256": "cca010717b7c6c4b4d2f0b02e7118e5e8727464663c5da46a4ee91f89415f59a"
+    },
+    {
+      "file": "publish-review/aquapolis2-four-sources-20261015-production-bindings.json",
+      "sha256": "6a7fe8d6831d6305e5676e7388b257395b2eae53be256fee73b94b34ea6f9319"
+    },
+    {
+      "file": "publish-review/aquapolis2-four-sources-20261015-staging-before.json",
+      "sha256": "a1cec867be5af614765ee4a19ccbcad21876d3d89d7b2e102193c346b72bebfc"
+    },
+    {
+      "file": "publish-review/aquapolis2-four-sources-20261015-staging-bindings.json",
+      "sha256": "c7f6f382288b09914cb9ce4dc72b1713ea32e7e6bc9436ec2c2aee8d09b0f141"
+    },
+    {
+      "file": "source-batches/aquapolis-two-shared-fronts-20261015/root-approved2-source-originals.json",
+      "sha256": "6e9787984304ec8617d0f8eea2c41cb1bb13fa8f53d84169a914a70836233c58"
+    },
+    {
+      "file": "source-batches/aquapolis-two-shared-fronts-20261015/root-finite2-preparation-publication-decision.json",
+      "sha256": "825e18ab9a8fd9a8ae743052c77d4b2d47fcad7e77ecdc94e16fd1e5ac5ce9ce"
+    },
+    {
+      "file": "source-batches/aquapolis-two-shared-fronts-20261015/root-existing-three-source-checkpoint-and-pricecharting-absence.json",
+      "sha256": "fef1de93887a28ee980616ee1048a05d73fa3e7e9b065dad38d8836a48d35592"
+    },
+    {
+      "file": "source-batches/aquapolis-two-shared-fronts-20261015/root-staging-source-scope-qualification.json",
+      "sha256": "3b58bba78eae6d1c7a1df6f9c826817d7f3ad5b9d23e5de230ac8a590d2ca4d1"
+    },
+    {
+      "file": "publish-review/aquapolis2-independent-private-package-review-20261015.json",
+      "sha256": "1457e86ca80f26167d72500d599198bc19de4915e8be479ec759ed9299a7e203"
+    },
+    {
+      "file": "publish-review/aquapolis2-root-source-archive-binding-20261015.json",
+      "sha256": "6d675d94b085247e852feff10c8d435e9684ade54a4323905fcbb71c3eb4217a"
+    },
+    {
+      "file": "aquapolis2-root-upload-receipt.json",
+      "sha256": "fe394476e5f62131a9d6b5cec3018c12c0db32dd5d37adb44db8c4d022213992"
+    },
+    {
+      "file": "publish-review/aquapolis2-independent-source-authority-preflight-20261015.json",
+      "sha256": "09e8a0ef314ef02133a95faceaf447b6a89c73be802648059d8c10e16a18ceac"
+    }
+  ],
+  "source_manifest_file": "aquapolis2-fronts-source-manifest.json",
+  "source_manifest_sha256": "6a4589185a70dbe7b3745519502bafe554e976d9b8633aa8db2f3fbf33305ee6",
+  "package_receipt_file": "aquapolis2-fronts-package-receipt.json",
+  "package_receipt_sha256": "7d9df867df40356668caa2dbcb5bd1417675070698eea34a46145b341b6b7341",
+  "archive": {
+    "id": 645177330,
+    "sha256": "97d39c1f4ef272951456a00093fecd14e2ba7a5751bcc0d8804050d71928c4d0",
+    "byte_size": 751422,
+    "file_count": 12,
+    "name": "aquapolis2-fronts-20261015.zip"
+  },
+  "unchanged_dependencies": [
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 9031,
+      "sha256": "5524305ba4bd6a0f3867ea2c097c57fb0d610e27ef1d9d64529b64e9c67249de"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/metadata-guard.mjs",
+      "bytes": 4018,
+      "sha256": "cca5354822fe11c007308f7d22ebf84649d2374619e0dd049c7347a9db9e116f"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/publish.mjs",
+      "bytes": 5885,
+      "sha256": "8451746bb6e188f56c5be31064742eaeecdc2f2c6d6e27cb31ab5c7227af6d1f"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "tools/artwork-next-push-20261013/frozen.mjs",
+      "bytes": 7732,
+      "sha256": "3e14eb76a012116492075328c50e6c5907f712004da02d4d3dae541d2617a95b"
+    },
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 30117,
+      "sha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24425,
+      "sha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 15024,
+      "sha256": "1d168e5407a5bdc6e027f58991de58a0664576d7c917d5b219fa13f9af4a1d0a"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/download-package.py",
+      "bytes": 5489,
+      "sha256": "53f1114f25bd995b4f05d9b2d3adad7ae2dadc85b4b13f038a84bcc5e7d6b09f"
+    }
+  ],
+  "finite_source_policy": {
+    "code": "pricecharting",
+    "display_name": "PriceCharting (owner supplied card fronts)",
+    "source_type": "image",
+    "base_url": "https://www.pricecharting.com",
+    "licence_status": "under_review",
+    "attribution_required": true,
+    "active": false,
+    "deprecated_at": null,
+    "internal_notes": "Owner-attested source use for exactly Aquapolis Mr. Mime95b and Porygon103b shared printing-front artwork in finite cohort AQUAPOLIS-SHARED-002-20261015. Independent vendor and underlying card licences are unverified. No source-wide approval; each later acquisition requires separate finite approval. Existing provenance rows and source policies must remain unchanged."
+  },
+  "source_evidence": {
+    "rootApprovedFileByteSha256": "6e9787984304ec8617d0f8eea2c41cb1bb13fa8f53d84169a914a70836233c58",
+    "rootFiniteDecisionFileByteSha256": "825e18ab9a8fd9a8ae743052c77d4b2d47fcad7e77ecdc94e16fd1e5ac5ce9ce",
+    "eligibilityFileByteSha256": "fe5cbc6c8d97054319a8959f66e1713936c0f55edd45e63b427f4968a7b9cc3d",
+    "eligibilityProbeSha256": "52b268533df8cf63e4d80f8a5771d6cb3068b1e667f9fbea02560703714512a8",
+    "historicalSourceHandoffSha256": "cbdcffe0521f507c67384e85ecca33b6cffa431342e47aceeb6230e866cd2047",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "existingThreeSourcePolicyCheckpointSha256": "9fed86a8de20b4229f20cd0a91b617cb8e44b7e83623fd2939a6ab068e1c9228",
+    "privateSourceContractFileByteSha256": "dc1a75c84a1f63c08ae983ba5acd8e800df90a5abbfbb71ff3e387e72249345e",
+    "freshSourceCheckpointSha256": "fef1de93887a28ee980616ee1048a05d73fa3e7e9b065dad38d8836a48d35592",
+    "stagingSourceQualificationSha256": "3b58bba78eae6d1c7a1df6f9c826817d7f3ad5b9d23e5de230ac8a590d2ca4d1",
+    "independentPrivatePackageReviewSha256": "1457e86ca80f26167d72500d599198bc19de4915e8be479ec759ed9299a7e203",
+    "independentSourceAuthorityPreflightSha256": "09e8a0ef314ef02133a95faceaf447b6a89c73be802648059d8c10e16a18ceac",
+    "rootSourceArchiveBindingSha256": "6d675d94b085247e852feff10c8d435e9684ade54a4323905fcbb71c3eb4217a",
+    "rootUploadReceiptSha256": "fe394476e5f62131a9d6b5cec3018c12c0db32dd5d37adb44db8c4d022213992"
+  }
+}
