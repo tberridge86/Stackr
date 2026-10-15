@@ -40,3 +40,13 @@ device, licence, catalogue or production acceptance by this code review.
 Raw local check logs and refreshed receipts are retained under
 `D:/Stackr-recovery-artifacts-20261009/runtime-temp/magazine-openings-20261015`.
 The companion validation JSON records their hashes and the reviewed export.
+
+## Same-reviewer final follow-up
+
+The same approved reviewer subsequently checked the final mounted regressions,
+all six source hashes, eight retained log hashes, the complete 18-case browser
+matrix, and the refreshed Hermes export with 731 asset rows and all thirteen
+exact JPEGs. No new blockers were found. The earlier matrix and stale-export
+evidence gaps are resolved. Browser collection actions remain stubbed; mounted
+regressions cover focus/account behaviour. Hosted checks on the committed repair
+and installed iPhone acceptance remain separate pending evidence.

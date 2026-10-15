@@ -115,10 +115,13 @@ the original feature and the focus-lifecycle repair and found no remaining
 runtime blockers. The coordinator-recorded report is
 [`magazine-opening-review-20261015.md`](magazine-opening-review-20261015.md).
 All eight normal hosted checks passed on the original feature revision; the
-full-platform release gate was skipped. The refreshed export and complete 18-case browser matrix now cover the repair.
+full-platform release gate was skipped. The refreshed export contains the repair;
+the complete 18-case browser matrix validates the scene layouts. Browser
+collection actions are stubbed, so mounted regressions establish the focus/account
+behaviour described above.
 Checks on the repaired revision, release compatibility and the intended release
-action must be recorded before publication. The twelve missing catalogue mappings and
-actual iPhone acceptance remain unresolved and must be disclosed in any delivery.
+action must be recorded before publication. The twelve missing catalogue mappings
+and actual iPhone acceptance remain unresolved and must be disclosed in any delivery.
 
 Read-only EAS inspection confirms build 55 is production iOS 1.0.6, runtime
 1.0.6, source `0188361a1b1e278ea180f9eec5ec487af52ca8cd`, build ID
