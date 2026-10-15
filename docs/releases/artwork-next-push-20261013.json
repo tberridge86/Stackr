@@ -1,22 +1,22 @@
 {
   "schemaVersion": "stackr-owner-artwork-production-evidence-v1",
   "inventoryId": "STACKR-ARTWORK-20261012",
-  "updatedAt": "2026-10-15T21:00:35.370Z",
+  "updatedAt": "2026-10-15T21:48:13.659Z",
   "scope": "Exact saved artwork list; original identities retained; actual production verification required",
   "summary": {
-    "checkedAt": "2026-10-15T20:49:01.232Z",
+    "checkedAt": "2026-10-15T21:47:59.039Z",
     "totalTasks": 2944,
     "totalBatches": 161,
-    "newlyPublishedFronts": 1300,
+    "newlyPublishedFronts": 1302,
     "previouslyCorrectedCasesVerified": 605,
-    "liveVerifiedTasks": 1905,
+    "liveVerifiedTasks": 1907,
     "completedBatches": 83,
-    "remainingTasks": 1039,
+    "remainingTasks": 1037,
     "remainingBatches": 78,
     "remainingGroups": [
       {
         "task": "Find permitted exact card fronts",
-        "items": 745
+        "items": 743
       },
       {
         "task": "Find permitted Traditional Chinese set logos",
@@ -31,15 +31,15 @@
         "items": 2
       }
     ],
-    "sourceLeadTargets": 1217,
+    "sourceLeadTargets": 1219,
     "scope": "Fixed saved list, retaining original identities; completion requires actual production API and image verification. Source gathering alone is not completion.",
     "queuedItems": 0,
     "queuedBatches": 0,
-    "frontTasksNotYetGathered": 731,
+    "frontTasksNotYetGathered": 728,
     "smallOriginalCandidates": 14,
-    "frontTasksNotYetPrepared": 745,
+    "frontTasksNotYetPrepared": 743,
     "contentHeldOriginalCandidates": 0,
-    "sourceAcquiredPendingPreparation": 2,
+    "sourceAcquiredPendingPreparation": 0,
     "sourceIdentityMetadataHolds": 25,
     "ownerSuppliedJapaneseGalleryLeads": {
       "suppliedSets": 23,
@@ -113,10 +113,10 @@
       "scopeFile": "all-owner-links-working-queue.json",
       "scopeSha256": "dce8019d6367877078b63a26bbd7ce9a52a8c4f8a8cbe7b9c20faa98ff7eb2c9",
       "uniqueCardTasks": 1572,
-      "cardTasksAlreadyLive": 796,
-      "cardTasksRemaining": 776,
+      "cardTasksAlreadyLive": 798,
+      "cardTasksRemaining": 774,
       "historicalLogoResearchTasks": 36,
-      "remainingCombinedWork": 812,
+      "remainingCombinedWork": 810,
       "remainingCombinedBatches": 65,
       "remainingOutsideBoundProvidedLinks": 227,
       "originalBatchIdsRetained": true,
@@ -997,30 +997,30 @@
     },
     "sourceAcquiredFinishHeld": 2,
     "currentContinuationSourceCaptureTotals": {
-      "sourceMetadataGets": 657,
-      "sourceOriginalGets": 331,
-      "retainedSourceOriginalCandidates": 331,
-      "acceptedAwaitingPreparation": 2,
+      "sourceMetadataGets": 663,
+      "sourceOriginalGets": 336,
+      "retainedSourceOriginalCandidates": 336,
+      "acceptedAwaitingPreparation": 0,
       "sourceReviewPending": 0,
-      "qualityOrEditionHeld": 18,
-      "finishHeld": 2,
-      "prepared": 0,
-      "newLiveVerified": 301,
+      "qualityOrEditionHeld": 20,
+      "finishHeld": 3,
+      "prepared": 1,
+      "newLiveVerified": 303,
       "metadataGetCountsExcludeWebSearchAndCachedWebExtractions": true,
-      "uniqueSourcePrintingCandidates": 323,
+      "uniqueSourcePrintingCandidates": 327,
       "additionalAlternateTcGSourceCandidatesPendingReview": 0,
       "printingStatePartitionCountsStillTracksHeldOldCandidatesUntilAlternateAccepted": false,
-      "totalPreparedThisContinuation": 301,
+      "totalPreparedThisContinuation": 304,
       "partition": {
-        "live": 301,
-        "prepared": 0,
-        "acceptedAwaitingPreparation": 2,
-        "qualityOrEditionHeld": 18,
-        "finishHeld": 2,
-        "totalUnique": 323
+        "live": 303,
+        "prepared": 1,
+        "acceptedAwaitingPreparation": 0,
+        "qualityOrEditionHeld": 20,
+        "finishHeld": 3,
+        "totalUnique": 327
       },
-      "accessDeniedMetadataGets": 2,
-      "alternateCandidateCount": 8
+      "accessDeniedMetadataGets": 3,
+      "alternateCandidateCount": 9
     },
     "sourceAcquiredEditionHeld": 15,
     "nextChallengeDarkness97Cohort": {
@@ -1206,7 +1206,7 @@
       "live": 0
     },
     "nextAquapolisFourSourceCohort": {
-      "status": "Two exact b fronts accepted for shared printing delivery; two small originals held",
+      "status": "Two exact b fronts live as shared printing artwork; two small originals held",
       "sourceHandoffSha256": "cbdcffe0521f507c67384e85ecca33b6cffa431342e47aceeb6230e866cd2047",
       "fronts": 4,
       "sourceMetadataGets": 5,
@@ -1215,8 +1215,8 @@
       "finishBindingHeld": 0,
       "printedBSuffixCertain": 2,
       "HDOriginalCandidates": 1,
-      "prepared": 0,
-      "live": 0,
+      "prepared": 2,
+      "live": 2,
       "finishFollowup": {
         "status": "Two exact printed b fronts; no literal source-labelled reverse-holo pair links in saved pages",
         "handoffSha256": "5b78a4992ae46fb6e446299408e11e1b1e4ddf59a8e8399f0805f2745bb86b0d",
@@ -1255,7 +1255,7 @@
       "bypassAttempts": 0
     },
     "nextAquapolisTwoSharedFronts": {
-      "status": "Two independently accepted shared printing fronts; private preparation active",
+      "status": "Live in production; two card responses, four variant images and all eight files verified",
       "printingIds": [
         "9884a2e7-1d5d-4355-99c5-0fe2556c4837",
         "5a6e6094-b847-4e50-bfb5-f8dec149e07e"
@@ -1266,7 +1266,7 @@
       "approvedProjectionSha256": "6e9787984304ec8617d0f8eea2c41cb1bb13fa8f53d84169a914a70836233c58",
       "finiteDecisionSha256": "825e18ab9a8fd9a8ae743052c77d4b2d47fcad7e77ecdc94e16fd1e5ac5ce9ce",
       "backendEligibilitySha256": "fe5cbc6c8d97054319a8959f66e1713936c0f55edd45e63b427f4968a7b9cc3d",
-      "privatePackagePrepared": false,
+      "privatePackagePrepared": true,
       "sourceOriginalHDCount": 1,
       "derivativeHDCount": 0,
       "requiredAssetVariantId": null,
@@ -1275,7 +1275,35 @@
       "physicalEditionCertified": false,
       "preparationApproved": true,
       "conditionalPublicationApproved": true,
-      "actualApiVerified": false
+      "actualApiVerified": true,
+      "queued": 0,
+      "liveVerified": 2,
+      "publicationJobSucceeded": true,
+      "actualApiVerificationSha256": "b174cb97a7f2cf89752d0c6175bc6d4385f920455d453cfe932ac43e744a4bec",
+      "publicationReceiptSha256": "c889ab87cc2aaa96b50104194d3baf3ad448654b5b8cdaa33660f4f9816a839a",
+      "metadataPreservationSha256": "0ac9016bdd51e4c1a93cdf545e0c4a2da2dbff22e2a03ea42cbe216b6aad7fab",
+      "fourSourcePolicyCheckpointSha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+      "productionRowsBefore": 26,
+      "productionRowsAfter": 31,
+      "stagingRowsBeforeAfter": 22,
+      "canonicalAndExistingFull17SourceRowsPreserved": true,
+      "newInactiveSourceRows": 1,
+      "independentPostPublicationReviewSha256": "0034298c29eef3da248dca64767a6f9356afdeda8167b1fe25410ee08e594ae8",
+      "appSharedPresentationAllFourVerified": true,
+      "appApiFullResponsesSha256": "52b4abe917c5f9f6d0fc9b024870430303d3005c74be2a73974197f99b003ef5",
+      "preparedOriginals": 2,
+      "preparedDerivatives": 6,
+      "releaseAssetId": 645177330,
+      "archiveSha256": "97d39c1f4ef272951456a00093fecd14e2ba7a5751bcc0d8804050d71928c4d0",
+      "sourceManifestSha256": "6a4589185a70dbe7b3745519502bafe554e976d9b8633aa8db2f3fbf33305ee6",
+      "packageReceiptSha256": "7d9df867df40356668caa2dbcb5bd1417675070698eea34a46145b341b6b7341",
+      "privatePackageHandoffSha256": "3638d29b3d900f81994a74197731a1e53340d7b4462c8d08ced8a3bce967e6b6",
+      "rootPrivatePackageValidationSha256": "7f15b47cab2421ca3f2ff375c0865dd04233ed5870ba6a75dbff08295956674f",
+      "independentPrivatePackageReviewSha256": "1457e86ca80f26167d72500d599198bc19de4915e8be479ec759ed9299a7e203",
+      "rootSourceArchiveBindingSha256": "6d675d94b085247e852feff10c8d435e9684ade54a4323905fcbb71c3eb4217a",
+      "rootUploadReceiptSha256": "fe394476e5f62131a9d6b5cec3018c12c0db32dd5d37adb44db8c4d022213992",
+      "stageSourceScopeQualificationSha256": "3b58bba78eae6d1c7a1df6f9c826817d7f3ad5b9d23e5de230ac8a590d2ca4d1",
+      "stagingExistingScopedSourceRows": 0
     },
     "remainingEditionBoundaryAudit": {
       "status": "Read-only audit complete; exact per-target facts retained, no catalogue mutations",
@@ -1288,6 +1316,125 @@
       "aquapolisSharedFrontEligibilitySha256": "fe5cbc6c8d97054319a8959f66e1713936c0f55edd45e63b427f4968a7b9cc3d",
       "sourceImagesOfUninspectedTargetsNotInferred": true,
       "remoteWrites": 0
+    },
+    "nextAquapolisLowTwoAlternateSource": {
+      "status": "Both held after bounded search; no readable larger exact originals established",
+      "handoffSha256": "49cf6d6bd3962c11f2f455cd384be2ff874eba2557f066a141de343eee0e0355",
+      "reviewSha256": "62c1787a6303dfd7239495561e23dd728258b7cc780532d439c2c6cc821ea906",
+      "searchQueries": 2,
+      "sourceMetadataGets": 1,
+      "sourceOriginalGets": 1,
+      "newOriginalDimensions": [
+        349,
+        400
+      ],
+      "selected": 0,
+      "prepared": 0,
+      "live": 0,
+      "noRepeatedDrowzeeRequest": true
+    },
+    "nextTrainerKitFiveFinishAssessment": {
+      "status": "All five remain held after cached source and current catalogue checks",
+      "fronts": 5,
+      "cachedMetadataOnly": true,
+      "sourceMetadataGets": 0,
+      "sourceOriginalGets": 0,
+      "currentProductionRowsChecked": 5,
+      "currentStagingRowsChecked": 5,
+      "onlyNormalVariantEach": true,
+      "noHolofoilSiblings": true,
+      "handoffSha256": "41beb92bf2da29259f6333a8cd4743df99e4e5017c2e969470b2c82547ba3e8a",
+      "reviewSha256": "093f3b6a59187dfe23da5471d4965a5cd7f670263d1302d2826d791f8f8c71d3",
+      "prepared": 0,
+      "live": 0
+    },
+    "nextPCG1TwoSourcePilot": {
+      "status": "Supplied gallery returned403; finite plan stopped",
+      "fixedPilotTargets": 2,
+      "remainingSetTargetsNotInferred": 69,
+      "sourceMetadataGets": 1,
+      "sourceOriginalGets": 0,
+      "sourcePageStatus": 403,
+      "retries": 0,
+      "bypassAttempts": 0,
+      "handoffSha256": "deb8fa386bc2443e0d8b04e09e6ede6bcc187712881caf7304fd647892dd943b",
+      "reviewSha256": "5a419ffa0f50cad3f8213133e2ec152a42e73bddbcca106625fb4e0fb156f16d",
+      "selected": 0,
+      "prepared": 0,
+      "live": 0
+    },
+    "sourceAccessState": {
+      "recordedAt": "2026-10-15T21:22:57.311Z",
+      "tcgcollectorFurtherHttpPlansStoppedAfterRepeatedSuppliedGalleryDenials": true,
+      "bulbapediaHttpStoppedAfterChallenge": true,
+      "sitePermissionAttestationRetained": true,
+      "accessDenialIsNotMissingOwnerPermission": true
+    },
+    "nextNeo2EeveeSource": {
+      "status": "Privately prepared, uploaded and independently checked; publisher preparation next",
+      "printingId": "a00039a3-9121-49a7-b6d1-f2ec4a7d5608",
+      "fronts": 1,
+      "sourceMetadataGets": 1,
+      "sourceOriginalGets": 1,
+      "searchQueries": 2,
+      "handoffSha256": "d09860d1b42a10d1e9600346a99468510716f70fa185839f9c303dba89ef722b",
+      "sourceReviewSha256": "df331370cd3546d6357871203a53cbac3197a2556e59360e05a57b139181d644",
+      "independentSourceReviewSha256": "39e6be7bd41f13cdd524534095d235b8e488c972797e225f509849194dfef8bb",
+      "rootApprovedProjectionSha256": "ae3dfc347f5e33e58485cb970007b271a522cd3af46d596ec837fe937d5b68c4",
+      "finiteDecisionSha256": "494973642eefdb112edd3b8f28bf26953dab140e0a231ef48de385496f5d7218",
+      "dimensions": [
+        978,
+        1360
+      ],
+      "originalHD": 1,
+      "plannedDetailHD": 0,
+      "prepared": 1,
+      "live": 0,
+      "canonicalAlias049NotPrinted": true,
+      "printedNo133IsNationalDex": true,
+      "providerOptionalAbilityClauseQualified": true,
+      "physicalEditionOrFinishCertified": false,
+      "privatePackagePrepared": true,
+      "preparedOriginals": 1,
+      "preparedDerivatives": 3,
+      "releaseAssetId": 645254422,
+      "archiveSha256": "45419c6bc68dbdd851c190cba15216887fe0e11290a464476345ed808762cf6d",
+      "sourceManifestSha256": "f6d47bdcb9883a2be8071b1df9030e51b0e5702e986e13f5305e55391421f1bd",
+      "packageReceiptSha256": "36ceff8b471896314cf4c8300d906a87ff03cb6dc56ef35fade6dcfd83dd746f",
+      "privatePackageHandoffSha256": "bd147731bb1fd322e1c71fc4d947f05cdb659e167c8bfdd934c15a7526334164",
+      "independentPrivatePackageReviewSha256": "0056cc89fb464a7fe2da97c548f68eeb238bbcde40fc2ba9502957f6435b0479",
+      "rootSourceArchiveBindingSha256": "1c86f2dc3c1d75d1132450968783257cd7e57e47c0e88ba4adbfa2a35932a5f1",
+      "rootUploadReceiptSha256": "4ea17b88a682739452138cfa8da4f393a7a25735339a3d40cb294a2b66bb76d7",
+      "rootPrivateValidationSha256": "3ae528187b4ec22a9511bb6329187191f872c47d6a7cfa21f113cc129fee7149",
+      "queued": 0
+    },
+    "nextPCG1PriceChartingAlternates": {
+      "status": "Metapod too small; Butterfree explicit Rare Holo conflicts with sole normal catalogue variant",
+      "fixedTargets": 2,
+      "sourceMetadataGets": 2,
+      "sourceOriginalGets": 2,
+      "searchQueries": 2,
+      "handoffSha256": "7da58f2bcdbe5c745cdd4251121298d2d48d1c86c4cf280791e042407f9bf43f",
+      "reviewSha256": "018eb287a82dc241740e5b944c07bc9afe0646aad4a14d35b77d9bf73d5f77d9",
+      "qualityHeld": 1,
+      "finishHeld": 1,
+      "prepared": 0,
+      "live": 0,
+      "other69TargetsNotInferred": true
+    },
+    "nextTrainerKitEnergyTwoAlternates": {
+      "status": "Both held: one newLightningphoto remains255x361; noexactFightingpagefound",
+      "fixedTargets": 2,
+      "newPrintingCandidatesWithImagesInThisContinuation": 1,
+      "sourceMetadataGets": 1,
+      "sourceOriginalGets": 1,
+      "searchQueries": 2,
+      "handoffSha256": "99609baa4c43a7d58b1c7e4ca60c2f66a2184812ab2b7522955653651bb888c9",
+      "reviewSha256": "09e8a002dfccdd23fcb4ef92d4c6becef9eeb35780ab1868aab47171ca49be44",
+      "selected": 0,
+      "prepared": 0,
+      "live": 0,
+      "other12NotInferred": true
     }
   },
   "ownerSuppliedAdditionalSourceLeads": [
@@ -2030,16 +2177,16 @@
     "extraPermissionPromptRequired": false,
     "sourceLicenceFacts": "Existing source facts retained; owner queue direction does not invent vendor licence metadata."
   },
-  "preparedOriginals": 1203,
-  "preparedDerivatives": 3609,
-  "publishedVerifiedOriginals": 1203,
+  "preparedOriginals": 1205,
+  "preparedDerivatives": 3615,
+  "publishedVerifiedOriginals": 1205,
   "queuedItems": 0,
   "preparedByLanguage": {
-    "en": 430,
+    "en": 432,
     "ja": 773
   },
   "publishedVerifiedByLanguage": {
-    "en": 430,
+    "en": 432,
     "ja": 773
   },
   "failedProductionRuns": [
@@ -2335,6 +2482,12 @@
       "sha256": "383309f90b04dfe87bb87e0e7e65c75577e06064c97954ce5e01fcc35407668f",
       "state": "Published and independently verified in production",
       "everPublished": true
+    },
+    {
+      "queueId": "aquapolis-two-shared-fronts-20261015",
+      "releaseAssetId": 645177330,
+      "byteSize": 751422,
+      "sha256": "97d39c1f4ef272951456a00093fecd14e2ba7a5751bcc0d8804050d71928c4d0"
     }
   ],
   "holds": [
@@ -2486,7 +2639,7 @@
       "collectorReference": "5",
       "name": "Fighting Energy",
       "status": "exact_small_source_original_below_detail_quality",
-      "requiredAction": "Find a larger unchanged original for this exact English deck and printed reference; do not upscale or borrow another number",
+      "requiredAction": "No exact Fighting Energy5/30PriceChartingcard page was returned within the bounded search; existing small originals remain held.",
       "width": 253,
       "height": 359,
       "contentSha256": "c5d800309e4e3c3b43509d812eb4f39ca6998ed825d372ece59facc17adc1029"
@@ -2499,7 +2652,7 @@
       "collectorReference": "1",
       "name": "Lightning Energy",
       "status": "exact_small_source_original_below_detail_quality",
-      "requiredAction": "Find a larger unchanged original for this exact English deck and printed reference; do not upscale or borrow another number",
+      "requiredAction": "The new255x361PriceChartingphoto is the same size as the old smallTCGcopy; no useful sharper original was established.",
       "width": 253,
       "height": 359,
       "contentSha256": "b72aa1c31621033cc33393d2dd3d4e8903646188ff3d7b73b24d8d585b3018d4"
@@ -2668,7 +2821,7 @@
       "collectorReference": "30",
       "name": "Bisharp",
       "status": "source_finish_mismatch",
-      "requiredAction": "Resolve exact physical variant with current canonical/source evidence; hold acquisition and publication until supported."
+      "requiredAction": "The source lists only a holographic version; the catalogue has one ordinary-finish variant and no holographic sibling.; A literal source picture link is recorded, but the actual front, printed number, edition and image quality have not been inspected."
     },
     {
       "itemId": "card:d89afd62-12a3-4e5e-80bb-31424367afa9",
@@ -2678,7 +2831,7 @@
       "collectorReference": "30",
       "name": "Noivern",
       "status": "source_finish_mismatch",
-      "requiredAction": "Resolve exact physical variant with current canonical/source evidence; hold acquisition and publication until supported."
+      "requiredAction": "The source lists only a holographic version; the catalogue has one ordinary-finish variant and no holographic sibling.; A literal source picture link is recorded, but the actual front, printed number, edition and image quality have not been inspected."
     },
     {
       "itemId": "card:20201198-462c-4883-97ed-e828c88a602d",
@@ -2688,7 +2841,7 @@
       "collectorReference": "30",
       "name": "Pikachu Libre",
       "status": "source_finish_mismatch",
-      "requiredAction": "Resolve exact regular card version before selecting or publishing a shiny-only source"
+      "requiredAction": "The source lists only a holographic version; the catalogue has one ordinary-finish variant and no holographic sibling.; A literal source picture link is recorded, but the actual front, printed number, edition and image quality have not been inspected."
     },
     {
       "itemId": "card:c846ec98-8db7-4532-a2a2-1e6a23eab9fc",
@@ -2698,7 +2851,7 @@
       "collectorReference": "30",
       "name": "Sylveon",
       "status": "source_finish_mismatch",
-      "requiredAction": "Resolve exact regular card version before selecting or publishing a shiny-only source"
+      "requiredAction": "The source lists only a holographic version; the catalogue has one ordinary-finish variant and no holographic sibling.; A literal source picture link is recorded, but the actual front, printed number, edition and image quality have not been inspected."
     },
     {
       "itemId": "card:2d0861db-c750-425b-be9a-452a104f884d",
@@ -2708,7 +2861,7 @@
       "collectorReference": "30",
       "name": "Wigglytuff",
       "status": "source_finish_mismatch",
-      "requiredAction": "Resolve the exact regular card version before selecting or publishing a shiny-only source"
+      "requiredAction": "The source lists only a holographic version; the catalogue has one ordinary-finish variant and no holographic sibling.; A literal source picture link is recorded, but the actual front, printed number, edition and image quality have not been inspected."
     },
     {
       "itemId": "card:fb0782d9-3a64-4680-b62a-baf0c7e886d4",
@@ -2759,16 +2912,6 @@
       "name": "mewtwo",
       "status": "exact_small_source_original_below_detail_quality",
       "requiredAction": "Actual356x510 JPEG is below established minimum width360px; no enlargement or native optical gain claimed.; viper.fox is visible within artwork; source bytes retained unchanged, watermark not removed.; Actual1EDITION stamp is visible; current singleton normal/holo tuple contains no edition discriminator. Do not infer normal=unlimited or force exact edition."
-    },
-    {
-      "itemId": "card:a00039a3-9121-49a7-b6d1-f2ec4a7d5608",
-      "printingId": "a00039a3-9121-49a7-b6d1-f2ec4a7d5608",
-      "batchId": "JP-CARDS-008",
-      "setCode": "neo2",
-      "collectorReference": "049",
-      "name": "Eevee",
-      "status": "wrong_language_original_rejected",
-      "requiredAction": "Both retained Scrydex and supplied Pokellector originals show English Eevee 38/75; the target needs the Japanese standard front."
     },
     {
       "itemId": "card:6ae241f2-dd9d-4dfa-8702-33c7943eb8bb",
@@ -2869,6 +3012,26 @@
       "name": "輝くノクトウル",
       "status": "metadata_source_finish_conflict",
       "requiredAction": "Current catalogue variant is normal; observed source metadata exposes holofoil only. Exact variant/finish evidence remains unresolved."
+    },
+    {
+      "itemId": "card:40b98d9e-54ec-421a-8214-57c85a982d35",
+      "printingId": "40b98d9e-54ec-421a-8214-57c85a982d35",
+      "batchId": "JP-CARDS-018",
+      "setCode": "PCG1",
+      "collectorReference": "002",
+      "name": "メタポッド",
+      "status": "exact_small_source_original_below_detail_quality",
+      "requiredAction": "The320x450original is below detail quality; the small rules, artist and retreat detail are not sufficiently certain."
+    },
+    {
+      "itemId": "card:b3a2402f-bceb-4c49-a6b1-ea89d5dd2d00",
+      "printingId": "b3a2402f-bceb-4c49-a6b1-ea89d5dd2d00",
+      "batchId": "JP-CARDS-018",
+      "setCode": "PCG1",
+      "collectorReference": "003",
+      "name": "蝶",
+      "status": "metadata_source_finish_conflict",
+      "requiredAction": "The source explicitly says Rare Holo, while the current catalogue has one normal variant and no holo sibling."
     },
     {
       "itemId": "card:a9a9174b-4c92-4632-b449-003cc8c802b9",
@@ -102957,15 +103120,177 @@
         "priceChanges": 0,
         "ownershipChanges": 0
       }
+    },
+    {
+      "batchId": "EN-CARDS-003",
+      "itemId": "card:5a6e6094-b847-4e50-bfb5-f8dec149e07e",
+      "printingId": "5a6e6094-b847-4e50-bfb5-f8dec149e07e",
+      "setId": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+      "setCode": "ecard2",
+      "languageCode": "en",
+      "collectorReference": "103b",
+      "cardName": "Porygon",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:254b7efe813d735b1d874e847257bc384e7d0555b872e2f18f8745f60c4111d6",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-aquapolis/porygon-103b",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/97326bac8c6e3ea7000a29710bf00b50324ee16a73756a8a73b4d37be2456802/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false
+      },
+      "original": {
+        "sha256": "80ce003685a84281d52ac2aa07a65d9fb3e63dfe94d01b8e4cb419e7bdec54e0",
+        "byteSize": 259136,
+        "width": 1107,
+        "height": 1527,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/f49aff1266e706ce55e90e1865ddefddbb393ae7c89d4e65f315af0b52189734/card-grid.webp",
+          "sha256": "f49aff1266e706ce55e90e1865ddefddbb393ae7c89d4e65f315af0b52189734",
+          "byte_size": 19852,
+          "width": 240,
+          "height": 331,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/ce25094ae2538afd91ab34918528650129d830e65340b0bc43956e1f05aed815/search-result.webp",
+          "sha256": "ce25094ae2538afd91ab34918528650129d830e65340b0bc43956e1f05aed815",
+          "byte_size": 3540,
+          "width": 96,
+          "height": 132,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/84add2b197515bc50fedfa945b461c089c24a6eb1004b44380a7b693dcdbb899/detail-page.webp",
+          "sha256": "84add2b197515bc50fedfa945b461c089c24a6eb1004b44380a7b693dcdbb899",
+          "byte_size": 152712,
+          "width": 720,
+          "height": 993,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": null,
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T21:29:40.832Z",
+        "productionRun": 38809618929,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38809618929",
+        "publicationReceiptSha256": "c889ab87cc2aaa96b50104194d3baf3ad448654b5b8cdaa33660f4f9816a839a",
+        "printingId": "5a6e6094-b847-4e50-bfb5-f8dec149e07e",
+        "assetId": "artwork-recovered-20260928:5a6e6094-b847-4e50-bfb5-f8dec149e07e:80ce003685a84281d52ac2aa07a65d9fb3e63dfe94d01b8e4cb419e7bdec54e0",
+        "contentSha256": "80ce003685a84281d52ac2aa07a65d9fb3e63dfe94d01b8e4cb419e7bdec54e0",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/5a6e6094-b847-4e50-bfb5-f8dec149e07e/80ce003685a84281d52ac2aa07a65d9fb3e63dfe94d01b8e4cb419e7bdec54e0/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "EN-CARDS-003",
+      "itemId": "card:9884a2e7-1d5d-4355-99c5-0fe2556c4837",
+      "printingId": "9884a2e7-1d5d-4355-99c5-0fe2556c4837",
+      "setId": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+      "setCode": "ecard2",
+      "languageCode": "en",
+      "collectorReference": "95b",
+      "cardName": "Mr. Mime",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:1125ce624d88ae5627ad9d721a129b66798030f929ee6d6118691c2cb39dbcd3",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-aquapolis/mr-mime-95b",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/jnwylq374y25p6dz/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false
+      },
+      "original": {
+        "sha256": "5c2d2ec38eeb77868f24c058cb34ec44b05a62dda3718f7bbfe8ccff625507f9",
+        "byteSize": 130406,
+        "width": 690,
+        "height": 960,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/973b115622a19b94f2a2c76adad28f388413763c34489d8fbe857f53b780d59c/card-grid.webp",
+          "sha256": "973b115622a19b94f2a2c76adad28f388413763c34489d8fbe857f53b780d59c",
+          "byte_size": 17146,
+          "width": 240,
+          "height": 334,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/d5c884aa91fac2231c2ed7e8518d7d37261efeaed348df9013ed28455323784d/search-result.webp",
+          "sha256": "d5c884aa91fac2231c2ed7e8518d7d37261efeaed348df9013ed28455323784d",
+          "byte_size": 3216,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/3f231370574d0e98142a8b3057583ff877272305e5b8e2ea2c262567d71562c4/detail-page.webp",
+          "sha256": "3f231370574d0e98142a8b3057583ff877272305e5b8e2ea2c262567d71562c4",
+          "byte_size": 154446,
+          "width": 690,
+          "height": 960,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": null,
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-15T21:29:40.832Z",
+        "productionRun": 38809618929,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38809618929",
+        "publicationReceiptSha256": "c889ab87cc2aaa96b50104194d3baf3ad448654b5b8cdaa33660f4f9816a839a",
+        "printingId": "9884a2e7-1d5d-4355-99c5-0fe2556c4837",
+        "assetId": "artwork-recovered-20260928:9884a2e7-1d5d-4355-99c5-0fe2556c4837:5c2d2ec38eeb77868f24c058cb34ec44b05a62dda3718f7bbfe8ccff625507f9",
+        "contentSha256": "5c2d2ec38eeb77868f24c058cb34ec44b05a62dda3718f7bbfe8ccff625507f9",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/9884a2e7-1d5d-4355-99c5-0fe2556c4837/5c2d2ec38eeb77868f24c058cb34ec44b05a62dda3718f7bbfe8ccff625507f9/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     }
   ],
   "manualArtworkFollowUp": {
-    "updatedAt": "2026-10-15T21:00:34.204Z",
+    "updatedAt": "2026-10-15T21:47:59.759Z",
     "scope": "Specific follow-up details, separately from ordinary source work and active releases; current fixed inventory identities retained.",
     "collectorReferenceNote": "For older Japanese cards the Stackr reference may not be printed on the card; match its name, set, artwork and card text.",
-    "specificFollowUps": 433,
+    "specificFollowUps": 432,
     "ordinarySourceWorkStillOpen": 604,
-    "activeSourceOrPublicationWork": 2,
+    "activeSourceOrPublicationWork": 1,
     "batches": [
       {
         "batchId": "MANUAL-EN-001",
@@ -103177,7 +103502,7 @@
             "artworkType": "Card front",
             "status": "exact_small_source_original_below_detail_quality",
             "whatToFind": "Find a larger original; the saved scan is too small for readable card detail.",
-            "detail": "Find a larger unchanged original for this exact English deck and printed reference; do not upscale or borrow another number",
+            "detail": "No exact Fighting Energy5/30PriceChartingcard page was returned within the bounded search; existing small originals remain held.",
             "providedGallery": null
           },
           {
@@ -103191,7 +103516,7 @@
             "artworkType": "Card front",
             "status": "exact_small_source_original_below_detail_quality",
             "whatToFind": "Find a larger original; the saved scan is too small for readable card detail.",
-            "detail": "Find a larger unchanged original for this exact English deck and printed reference; do not upscale or borrow another number",
+            "detail": "The new255x361PriceChartingphoto is the same size as the old smallTCGcopy; no useful sharper original was established.",
             "providedGallery": null
           },
           {
@@ -103378,7 +103703,7 @@
             "artworkType": "Card front",
             "status": "source_finish_mismatch",
             "whatToFind": "Confirm the exact normal/shiny finish and find the matching front.",
-            "detail": "Resolve exact physical variant with current canonical/source evidence; hold acquisition and publication until supported.",
+            "detail": "The source lists only a holographic version; the catalogue has one ordinary-finish variant and no holographic sibling. A literal source picture link is recorded, but the actual front, printed number, edition and image quality have not been inspected.",
             "providedGallery": null
           },
           {
@@ -103392,7 +103717,7 @@
             "artworkType": "Card front",
             "status": "source_finish_mismatch",
             "whatToFind": "Confirm the exact normal/shiny finish and find the matching front.",
-            "detail": "Resolve exact physical variant with current canonical/source evidence; hold acquisition and publication until supported.",
+            "detail": "The source lists only a holographic version; the catalogue has one ordinary-finish variant and no holographic sibling. A literal source picture link is recorded, but the actual front, printed number, edition and image quality have not been inspected.",
             "providedGallery": null
           },
           {
@@ -103406,7 +103731,7 @@
             "artworkType": "Card front",
             "status": "source_finish_mismatch",
             "whatToFind": "Confirm the exact normal/shiny finish and find the matching front.",
-            "detail": "Resolve exact regular card version before selecting or publishing a shiny-only source",
+            "detail": "The source lists only a holographic version; the catalogue has one ordinary-finish variant and no holographic sibling. A literal source picture link is recorded, but the actual front, printed number, edition and image quality have not been inspected.",
             "providedGallery": null
           },
           {
@@ -103420,7 +103745,7 @@
             "artworkType": "Card front",
             "status": "source_finish_mismatch",
             "whatToFind": "Confirm the exact normal/shiny finish and find the matching front.",
-            "detail": "Resolve exact regular card version before selecting or publishing a shiny-only source",
+            "detail": "The source lists only a holographic version; the catalogue has one ordinary-finish variant and no holographic sibling. A literal source picture link is recorded, but the actual front, printed number, edition and image quality have not been inspected.",
             "providedGallery": null
           },
           {
@@ -103434,7 +103759,7 @@
             "artworkType": "Card front",
             "status": "source_finish_mismatch",
             "whatToFind": "Confirm the exact normal/shiny finish and find the matching front.",
-            "detail": "Resolve the exact regular card version before selecting or publishing a shiny-only source",
+            "detail": "The source lists only a holographic version; the catalogue has one ordinary-finish variant and no holographic sibling. A literal source picture link is recorded, but the actual front, printed number, edition and image quality have not been inspected.",
             "providedGallery": null
           }
         ]
@@ -103511,20 +103836,6 @@
             "whatToFind": "Find a larger original; the saved scan is too small for readable card detail.",
             "detail": "Actual356x510 JPEG is below established minimum width360px; no enlargement or native optical gain claimed. viper.fox is visible within artwork; source bytes retained unchanged, watermark not removed. Actual1EDITION stamp is visible; current singleton normal/holo tuple contains no edition discriminator. Do not infer normal=unlimited or force exact edition.",
             "providedGallery": "https://www.tcgcollector.com/sets/11205/base-expansion-pack"
-          },
-          {
-            "itemId": "card:a00039a3-9121-49a7-b6d1-f2ec4a7d5608",
-            "printingId": "a00039a3-9121-49a7-b6d1-f2ec4a7d5608",
-            "batchId": "JP-CARDS-008",
-            "languageCode": "ja",
-            "setCode": "neo2",
-            "collectorReference": "049",
-            "name": "Eevee",
-            "artworkType": "Card front",
-            "status": "wrong_language_original_rejected",
-            "whatToFind": "Find the requested language; the existing candidate is a different language.",
-            "detail": "Both retained Scrydex and supplied Pokellector originals show English Eevee 38/75; the target needs the Japanese standard front.",
-            "providedGallery": "https://jp.pokellector.com/Crossing-the-Ruins-Expansion/"
           },
           {
             "itemId": "card:6ae241f2-dd9d-4dfa-8702-33c7943eb8bb",
@@ -103677,7 +103988,7 @@
             "artworkType": "Card front",
             "status": "edition_and_scan_check",
             "whatToFind": "Confirm whether the saved printing needs first edition. The inspected source examples carry a first-edition stamp and overlaid lettering; a clean matching original is needed.",
-            "detail": "Find an approved exact Japanese printing front; metadata fields alone do not prove Japanese printed-language artwork.",
+            "detail": "The320x450original is below detail quality; the small rules, artist and retreat detail are not sufficiently certain.",
             "providedGallery": "https://www.tcgcollector.com/sets/11225/flight-of-legends"
           },
           {
@@ -103691,7 +104002,7 @@
             "artworkType": "Card front",
             "status": "edition_and_scan_check",
             "whatToFind": "Confirm whether the saved printing needs first edition. The inspected source examples carry a first-edition stamp and overlaid lettering; a clean matching original is needed.",
-            "detail": "Find an approved exact Japanese printing front; metadata fields alone do not prove Japanese printed-language artwork.",
+            "detail": "The source explicitly says Rare Holo, while the current catalogue has one normal variant and no holo sibling.",
             "providedGallery": "https://www.tcgcollector.com/sets/11225/flight-of-legends"
           },
           {
@@ -103791,12 +104102,7 @@
             "whatToFind": "Confirm whether the saved printing needs first edition. The inspected source examples carry a first-edition stamp and overlaid lettering; a clean matching original is needed.",
             "detail": "Find an approved exact Japanese printing front; metadata fields alone do not prove Japanese printed-language artwork.",
             "providedGallery": "https://www.tcgcollector.com/sets/11225/flight-of-legends"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-002",
-        "items": [
+          },
           {
             "itemId": "card:c65bbef7-4c32-4d12-9ec6-7f3fbf86ae13",
             "printingId": "c65bbef7-4c32-4d12-9ec6-7f3fbf86ae13",
@@ -103810,7 +104116,12 @@
             "whatToFind": "Confirm whether the saved printing needs first edition. The inspected source examples carry a first-edition stamp and overlaid lettering; a clean matching original is needed.",
             "detail": "Find an approved exact Japanese printing front; metadata fields alone do not prove Japanese printed-language artwork.",
             "providedGallery": "https://www.tcgcollector.com/sets/11225/flight-of-legends"
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-002",
+        "items": [
           {
             "itemId": "card:4aa66feb-7cd0-4ceb-a861-798c0352ed2a",
             "printingId": "4aa66feb-7cd0-4ceb-a861-798c0352ed2a",
@@ -104146,12 +104457,7 @@
             "whatToFind": "Confirm whether the saved printing needs first edition. The inspected source examples carry a first-edition stamp and overlaid lettering; a clean matching original is needed.",
             "detail": "Find an approved exact Japanese printing front; metadata fields alone do not prove Japanese printed-language artwork.",
             "providedGallery": "https://www.tcgcollector.com/sets/11225/flight-of-legends"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-003",
-        "items": [
+          },
           {
             "itemId": "card:b093e26f-4d38-4724-862c-40eac1c61269",
             "printingId": "b093e26f-4d38-4724-862c-40eac1c61269",
@@ -104165,7 +104471,12 @@
             "whatToFind": "Confirm whether the saved printing needs first edition. The inspected source examples carry a first-edition stamp and overlaid lettering; a clean matching original is needed.",
             "detail": "Find an approved exact Japanese printing front; metadata fields alone do not prove Japanese printed-language artwork.",
             "providedGallery": "https://www.tcgcollector.com/sets/11225/flight-of-legends"
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-003",
+        "items": [
           {
             "itemId": "card:f55b8655-6d71-4342-9f2e-71c5075147e2",
             "printingId": "f55b8655-6d71-4342-9f2e-71c5075147e2",
@@ -104501,12 +104812,7 @@
             "whatToFind": "Confirm whether the saved printing needs first edition. The inspected source examples carry a first-edition stamp and overlaid lettering; a clean matching original is needed.",
             "detail": "Find an approved exact Japanese printing front; metadata fields alone do not prove Japanese printed-language artwork.",
             "providedGallery": "https://www.tcgcollector.com/sets/11225/flight-of-legends"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-004",
-        "items": [
+          },
           {
             "itemId": "card:c91168d7-9465-401a-9560-eb74f9d3245c",
             "printingId": "c91168d7-9465-401a-9560-eb74f9d3245c",
@@ -104520,7 +104826,12 @@
             "whatToFind": "Confirm whether the saved printing needs first edition. The inspected source examples carry a first-edition stamp and overlaid lettering; a clean matching original is needed.",
             "detail": "Find an approved exact Japanese printing front; metadata fields alone do not prove Japanese printed-language artwork.",
             "providedGallery": "https://www.tcgcollector.com/sets/11225/flight-of-legends"
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-004",
+        "items": [
           {
             "itemId": "card:992d68a8-c839-4771-83bf-f4776593c040",
             "printingId": "992d68a8-c839-4771-83bf-f4776593c040",
@@ -104856,12 +105167,7 @@
             "whatToFind": "Find evidence for the normal and shiny versions. One source photo cannot distinguish both saved versions.",
             "detail": "Rocket Gang ロケット団参上! has separate normal and holo catalogue variants, but one observed source front and no same-artwork mapping. Need a normal-front and holo-front match or reliable evidence distinguishing the two.",
             "providedGallery": "https://jp.pokellector.com/Rocket-Gang-Expansion/"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-005",
-        "items": [
+          },
           {
             "itemId": "card:76ff1e1e-6b99-4c4e-ab99-584976fa89ca",
             "printingId": "76ff1e1e-6b99-4c4e-ab99-584976fa89ca",
@@ -104875,7 +105181,12 @@
             "whatToFind": "Find evidence for the normal and shiny versions. One source photo cannot distinguish both saved versions.",
             "detail": "Challenge from the Darkness 072 has separate normal and holo variants with no same-artwork mapping. Exact independent version evidence is still needed.",
             "providedGallery": "https://jp.pokellector.com/Challenge-from-the-Darkness-Expansion/"
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-005",
+        "items": [
           {
             "itemId": "card:9391a7cd-5a08-4140-a641-c70e4ec7d58a",
             "printingId": "9391a7cd-5a08-4140-a641-c70e4ec7d58a",
@@ -105211,12 +105522,7 @@
             "whatToFind": "Resolve the recorded card identity or finish detail, then locate its matching original.",
             "detail": "Retain the previous explicit source/identity/finish hold. Matching metadata fields do not settle the rejected source or finish.",
             "providedGallery": null
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-006",
-        "items": [
+          },
           {
             "itemId": "card:f1b703a3-4546-42a6-a88d-e037e56e5b3a",
             "printingId": "f1b703a3-4546-42a6-a88d-e037e56e5b3a",
@@ -105230,7 +105536,12 @@
             "whatToFind": "Resolve the recorded card identity or finish detail, then locate its matching original.",
             "detail": "Retain the previous explicit source/identity/finish hold. Matching metadata fields do not settle the rejected source or finish.",
             "providedGallery": null
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-006",
+        "items": [
           {
             "itemId": "card:e66f6711-356c-4268-a68a-eac2f6a7df34",
             "printingId": "e66f6711-356c-4268-a68a-eac2f6a7df34",
