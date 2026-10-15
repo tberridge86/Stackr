@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 1,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "approved_at": "2026-10-15",
+  "cohort_sha256": "07903745aea2a61fc30d18136f8d3404a01dc20a7ab310b42e27ee2374c047c9",
+  "source_counts": {
+    "pokellector": 1
+  },
+  "source_evidence": {
+    "approvedProjection": "f181911b78adce2be7ba3f8864b775d0b265cff03d43860fc3d349abe3ea0c77",
+    "finiteDecision": "97d080446d7e9d8253a212329c12d136e541bd29efd7bf48b78dea4439392261",
+    "independentSelection": "a104f67443f401fd42aa5e904b87f3d197141095a1e3a1a9d9c232a461dc415d",
+    "independentPrivateReview": "a02ff63fb0caf56f1a9baa096872681332f25e5e1363b31ef6ed843df776d231",
+    "sourcePolicyCheckpoint": "2013e3ecdb0bf05501b2cc7a66733c73e20ba80b3a7876e5d0442f1a32eb00e9"
+  },
+  "source_policy_checkpoint_sha256": "2013e3ecdb0bf05501b2cc7a66733c73e20ba80b3a7876e5d0442f1a32eb00e9",
+  "scope": "Exactly1 accepted Neo1 Slowpoke unchanged PNG570x797 plus3 unenlarged derivatives. ActualHP50/LV20/Dex79/full2nativeattacks and lawn/redfruit/drool identity resolve historicalTCG40 for source identity only. Preserve current normal tuple, all raw40/nullhold evidence, full nativeJSON privately embedded with standalonefileSHA null,322x450/JPEG PNG history and unknown provider processing. No native-resolution gain, noHD or sharper claim, no canonical edits. Both17-field source rows remain inactive/under_review; zero new production source."
+}
