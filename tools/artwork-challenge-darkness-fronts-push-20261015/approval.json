@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 97,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "approved_at": "2026-10-15",
+  "cohort_sha256": "dc48d716b7a44da26f550461a8f4921ee94d2cf3031fbddfde00ef06c83424ad",
+  "source_counts": {
+    "pokellector": 97
+  },
+  "source_evidence": {
+    "approvedProjection": "af244b02d665d34a33f13d1b48f77bcdcd0c674bb0d0529be8f66e54ad22f1c6",
+    "finiteDecision": "f9dbf5790906048d1adf05b4cdf10da42e929509bf97ddf0064cc91a93ac2f8b",
+    "independentSelection": "3cd80c2577f23b2c9fdd9471a106431e0692ec9933623c500ab910bc911ac5d6",
+    "independentReview": "d82c51ba3bb2b75db9629e9f54969fcf84dd5a261195e009e3b19500c475ed95",
+    "sourcePolicyCheckpoint": "2013e3ecdb0bf05501b2cc7a66733c73e20ba80b3a7876e5d0442f1a32eb00e9",
+    "ownerPermissionAttestation": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d"
+  },
+  "source_policy_checkpoint_sha256": "2013e3ecdb0bf05501b2cc7a66733c73e20ba80b3a7876e5d0442f1a32eb00e9",
+  "scope": "Exactly97 approved Japanese Challenge from the Darkness fronts74Pokemon23Trainer82normal15holo;whole072held2variants. Unchanged lossy WebP originals despite .png URLs and291no-enlargement derivatives;0HD/no optical gain/provider-no-resize assertion. Preserve083optional trigger and all accepted actual/provider discrepancies,49direct48record-only coverage, all17inactive source policies and current canonical bindings. No new production source."
+}
