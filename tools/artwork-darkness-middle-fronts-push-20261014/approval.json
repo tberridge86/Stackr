@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 45,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "approved_at": "2026-10-14",
+  "cohort_sha256": "a7a4a4d1c3383aa65ad2b5227aee13fb6475ba4b53196bdfe713a6d6504de2c7",
+  "source_counts": {
+    "scrydex": 45
+  },
+  "source_evidence": {
+    "approvedProjection": "96b7917908958b611e16a77449e9f4c0d02dc2bbf44467f494b7a36005bdb878",
+    "decision": "4fbf11bdd460fba47075d3ba9af1ae60fa527a589d2caeadd165e9efa37a9a45",
+    "handoff": "9031789fb820d4030f67ffd62afdd90cbd72d13577ad310c1422a09a5132b582",
+    "pokemonSelection": "ea9297bbc799ca103789c55b93f2c441a7ff4cd8b2efaf397342a685589304ee",
+    "pokemonAcceptance": "c66a500fdf6adb4f65a5c4f8bb1a19f75f10c63fb6adf9e9310595899cc53c91",
+    "trainerSelection": "2a9af4515a895e3407b576f85560e7509fc7a72586d2aacf0bdde4f9a8be2ec6",
+    "trainerAcceptance": "6310d424d16afb1fe7c4fd5bc829e95382e2bcade4a54d9af48331b4bb6d874c",
+    "metadata": "93efb6346dc23719b32ce9ce7a374aa84fd257babe2f018361bbc60eb58de5ab",
+    "sourceValidation": "58325f0c562af140d52f840e8ada8c56325f957f86d89d98e4e567228828e38b"
+  },
+  "scope": "Store, resize and display exactly45 independently accepted Japanese Darkness middle fronts and135 derivatives:42 Pokemon and3 unnumbered Trainers. Preserve five finish holds, current37 normal/8 holo labels and variants, qualified null artist086, complete Trainer native/reference body, raw historical row/signature/null selections and separate accepted witnesses. No source activation, catalogue/price edits, physical edition/finish or independent licence certification."
+}
