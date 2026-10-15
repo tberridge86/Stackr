@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "source_manifest_file": "neo1-final21-fronts-source-manifest.json",
+  "source_manifest_sha256": "4fa6a69374a60b6e9153c6848f8fdc89573cb0b8ee74ed331d050145baaebe2c",
+  "package_receipt_file": "neo1-final21-fronts-package-receipt.json",
+  "package_receipt_sha256": "b73d0f8dcec016a6ab19c622fcbefaf5505ad7101223da2d59861a47cef56687",
+  "saved_targets_sha256": "d9a048c8b176efcda01bfa84fe325683b5aeded65650d681b04c8133b73b1e93",
+  "source_evidence": {
+    "approvedProjection": "4401e4bdc1a108bad633d0fa57153458dd94425f3fab87354a499150b11ac21f",
+    "finiteDecision": "e87071af2f7c5d4e2c464b7a322205a8fc59d3cbcf47ff5e7d2301e321619ead",
+    "independentSelection": "91d78cd79d853360a829d0b6b9a20d71e4ed5772e3f93c36411f1c22ffe34084",
+    "independentPrivateReview": "6f45d674a9540615254108744af466befc4813b4cb1824afd6e8482452eeb99a"
+  },
+  "before_snapshots": {
+    "production": {
+      "file": "publish-review/neo1-final21-20261015-production-before-v2.json",
+      "sha256": "a6fd0eb9d6b29724ca47ddbfb037c4a4b847d0dc6a598fe2928dd45559e37b36",
+      "rows": 91
+    },
+    "staging": {
+      "file": "publish-review/neo1-final21-20261015-staging-before-v2.json",
+      "sha256": "6efaad68614040958f81840d0e505f0d54f27cc554abf179dfdaa7feec7f4fd1",
+      "rows": 87
+    }
+  },
+  "bindings": {
+    "production": {
+      "file": "publish-review/neo1-final21-20261015-production-bindings-v2.json",
+      "sha256": "21ea8848ad61a3f8dca19297cd024369278997e8c1a54958e5cd5b23cae77c18",
+      "cards": 21
+    },
+    "staging": {
+      "file": "publish-review/neo1-final21-20261015-staging-bindings-v2.json",
+      "sha256": "123b9db0aa1e80dc52a7096302d5a06999ed250b0e6424ea2e3643bf57c61c96",
+      "cards": 21
+    }
+  },
+  "archive": {
+    "id": 644418419,
+    "sha256": "55979f2045cd46b2edbfca1d0a6e64ffff5fd492cdf9fd8ebe95e4d3144e4200",
+    "byte_size": 11701598,
+    "file_count": 88,
+    "name": "stackr-ja-artwork-neo1-final21-fronts-20261015.zip"
+  },
+  "metadata": [
+    {
+      "file": "manifest.json",
+      "sha256": "4fa6a69374a60b6e9153c6848f8fdc89573cb0b8ee74ed331d050145baaebe2c",
+      "byte_size": 787315
+    },
+    {
+      "file": "receipts/preparation-summary.json",
+      "sha256": "d3db50126fe64a93fc362095d7596b2df4c65e3e3a4e944478104ee908f2626e",
+      "byte_size": 1318
+    },
+    {
+      "file": "receipts/current-card-bindings.json",
+      "sha256": "65f18b80526150cdb169dc15cb241481d7cb4fb318dca6c2a6dbed611f5d1016",
+      "byte_size": 22555
+    },
+    {
+      "file": "receipts/finite-decision.json",
+      "sha256": "0c8c939f41891cc9f4535e99dabf8e56979b9a7187c69d39b46475d63c42f3b1",
+      "byte_size": 1357
+    }
+  ],
+  "unchanged_dependencies": [
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 9031,
+      "sha256": "5524305ba4bd6a0f3867ea2c097c57fb0d610e27ef1d9d64529b64e9c67249de"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/metadata-guard.mjs",
+      "bytes": 4018,
+      "sha256": "cca5354822fe11c007308f7d22ebf84649d2374619e0dd049c7347a9db9e116f"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/publish.mjs",
+      "bytes": 5885,
+      "sha256": "8451746bb6e188f56c5be31064742eaeecdc2f2c6d6e27cb31ab5c7227af6d1f"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "tools/artwork-next-push-20261013/frozen.mjs",
+      "bytes": 7732,
+      "sha256": "3e14eb76a012116492075328c50e6c5907f712004da02d4d3dae541d2617a95b"
+    },
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 30117,
+      "sha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24425,
+      "sha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 15024,
+      "sha256": "1d168e5407a5bdc6e027f58991de58a0664576d7c917d5b219fa13f9af4a1d0a"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/download-package.py",
+      "bytes": 5489,
+      "sha256": "53f1114f25bd995b4f05d9b2d3adad7ae2dadc85b4b13f038a84bcc5e7d6b09f"
+    }
+  ],
+  "private_capture_receipt_sha256": "5cc48439de8f4df50491d463eeb28c2dac631a4e8322fea68951096fefeb4628",
+  "source_checkpoint": {
+    "file": "publish-review/root-source-policy-checkpoint-after-legacy8-20261015.json",
+    "sha256": "2013e3ecdb0bf05501b2cc7a66733c73e20ba80b3a7876e5d0442f1a32eb00e9"
+  }
+}
