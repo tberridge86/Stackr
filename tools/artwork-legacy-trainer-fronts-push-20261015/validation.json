@@ -1,5 +1,5 @@
 {
-  "status": "frozen_local_checks_passed_awaiting_independent_review",
+  "status": "source_timestamp_read_repaired_local_checks_passed_pending_independent_review",
   "queueId": "STACKR-JA-LEGACY-TRAINER-FRONTS-20261015-008",
   "assetId": 644243819,
   "archiveName": "stackr-ja-artwork-legacy-trainer-fronts-20261015.zip",
@@ -13,8 +13,9 @@
   "confirmation": "PUBLISH ARTWORK LEGACY TRAINER FRONTS",
   "tests": {
     "focusedNodeTests": {
-      "passed": 14,
-      "failed": 0
+      "passed": 15,
+      "failed": 0,
+      "includesTimestampMicrosecondRegression": true
     },
     "persistedFailureJournalTests": {
       "passed": 1,
@@ -163,8 +164,8 @@
     },
     {
       "file": "tools/artwork-legacy-trainer-fronts-push-20261015/metadata-guard.mjs",
-      "sha256": "28b85798558135004aabfb6c87e01fe533d43ee6f26661776422fde0c0f53320",
-      "bytes": 8526
+      "sha256": "252a64c0656c2b4ec1adefa4e5e1c228e4d5c994ac77572c4472064478b69417",
+      "bytes": 8895
     },
     {
       "file": "tools/artwork-legacy-trainer-fronts-push-20261015/plan.json",
@@ -178,8 +179,8 @@
     },
     {
       "file": "tools/artwork-legacy-trainer-fronts-push-20261015/publish.test.mjs",
-      "sha256": "51f7b9c5c8b40f82e94161c1d0d119136e9c751d40d4f5ff6abdb194d883c332",
-      "bytes": 21664
+      "sha256": "2ae46f57b5ba3723d362fbec4cfad51bdd367689e2050fd775eb9d0bc538ef08",
+      "bytes": 22712
     },
     {
       "file": "tools/artwork-legacy-trainer-fronts-push-20261015/saved-targets.json",
@@ -218,5 +219,21 @@
       "sha256": "2165ccbc7bcf355987738ff046725f3ae906304fb0f2c1f58fa7757d594dab80",
       "bytes": 25016
     }
-  ]
+  ],
+  "productionAttemptAndRepair": {
+    "failedRunId": 38761511013,
+    "failedReceiptSha256": "2b171cf8bdba3e1ee6630029764344a8f5a1f9929687525e0fe9e095f3d48356",
+    "status": "failed_before_publication",
+    "stagingRehearsalRolledBack": true,
+    "productionObjects": 0,
+    "productionAssets": 0,
+    "productionLinks": 0,
+    "newProductionSources": 0,
+    "freshProductionRowsAllUnchanged": 46,
+    "freshStagingRowsAllUnchanged": 40,
+    "cause": "Node PostgreSQL column conversion produces Date objects and loses sub-millisecond precision; the full17-field canonical hash therefore rejected the unchanged source baseline.",
+    "repair": "Read all17 source fields as PostgreSQL JSON, retaining timestamp strings and microseconds. Exact source hash and all prior preservation checks remain enforced.",
+    "sourceHashRelaxed": false,
+    "cohortOrArchiveChanged": false
+  }
 }
