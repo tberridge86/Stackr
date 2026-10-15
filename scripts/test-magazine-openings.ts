@@ -143,6 +143,22 @@ async function run() {
   await unmount(view);
   assert.equal(appListeners.size, 0);
   assert.equal(motionListeners.size, 0);
+  let allowStateUpdates = true;
+  let lateStateUpdates = 0;
+  const UnmountExperience = compile('components/MagazineOpeningExperience.tsx', {
+    ...dependencies, react: { ...React, useState: (initial: any) => {
+      const [value, setValue] = React.useState(initial);
+      return [value, (next: any) => { if (!allowStateUpdates) lateStateUpdates++; setValue(next); }];
+    } },
+  }).MagazineOpeningExperience;
+  let interrupted!: ReactTestRenderer;
+  await act(async () => { interrupted = create(React.createElement(UnmountExperience, { opening, references: record.cards })); });
+  await act(async () => button(interrupted, 'Open paper packet').props.onPress());
+  const lateAnimation = animations[animations.length - 1];
+  await unmount(interrupted);
+  allowStateUpdates = false;
+  await act(async () => lateAnimation.finish());
+  assert.equal(lateStateUpdates, 0, 'An animation finishing after unmount cannot update state');
 
   reduced = true;
   const still = await mount();
@@ -193,20 +209,37 @@ async function run() {
 
   let user: { id: string } | null = { id: 'A' };
   let epoch = 1;
+  let authLoading = false;
+  let authCalls = 0;
   let authResult: Promise<unknown> = Promise.resolve({ data: { user }, error: null });
   let draftCalls = 0;
+  let draftResult: Promise<{ id: string }> = Promise.resolve({ id: 'draft-A' });
+  let focused = true;
   const navigations: any[] = [];
   const CollectionAction = compile('components/MagazineCollectionAction.tsx', {
-    react: React, 'react-native': native, 'expo-router': { router: { push: (value: unknown) => navigations.push(value) } },
+    react: React, 'react-native': native, 'expo-router': {
+      router: { push: (value: unknown) => navigations.push(value) },
+      useFocusEffect: (callback: () => (() => void) | undefined) => {
+        const screenIsFocused = focused;
+        React.useEffect(() => screenIsFocused ? callback() : undefined, [callback, screenIsFocused]);
+      },
+    },
     '../lib/manualCollectionDraft': { createManualCollectionDraft: async (owner: string, card: unknown) => {
-      draftCalls++; assert.equal(owner, 'A'); assert.equal((card as any).cardId, mew.id); return { id: 'draft-A' };
+      draftCalls++; assert.equal(owner, 'A'); assert.equal((card as any).cardId, mew.id); return draftResult;
     } },
-    '../lib/supabase': { supabase: { auth: { getUser: () => authResult } } },
-    './auth-context': { useAuth: () => ({ user, cachedReadSession: { epoch } }) },
+    '../lib/supabase': { supabase: { auth: { getUser: () => { authCalls++; return authResult; } } } },
+    './auth-context': { useAuth: () => ({ user, loading: authLoading, cachedReadSession: { epoch } }) },
     './StackrControls': dependencies['./StackrControls'], './Text': dependencies['./Text'], './theme-context': dependencies['./theme-context'],
   }).MagazineCollectionAction;
   let collection!: ReactTestRenderer;
   await act(async () => { collection = create(React.createElement(CollectionAction, { card: mew })); });
+  authLoading = true;
+  await act(async () => collection.update(React.createElement(CollectionAction, { card: mew })));
+  assert.equal(button(collection, 'Add to collection').props.disabled, true);
+  await act(async () => button(collection, 'Add to collection').props.onPress());
+  assert.equal(authCalls, 0, 'An unresolved sign-in state cannot start a review');
+  authLoading = false;
+  await act(async () => collection.update(React.createElement(CollectionAction, { card: mew })));
   await act(async () => {
     button(collection, 'Add to collection').props.onPress();
     button(collection, 'Add to collection').props.onPress();
@@ -225,15 +258,55 @@ async function run() {
   await act(async () => resolveAuth({ data: { user: { id: 'A' } }, error: null }));
   assert.equal(draftCalls, 1, 'A→B→A cannot revive the old request');
   assert.equal(navigations.length, 1);
+  authResult = new Promise(resolve => { resolveAuth = resolve; });
+  await act(async () => button(collection, 'Add to collection').props.onPress());
+  focused = false;
+  await act(async () => collection.update(React.createElement(CollectionAction, { card: mew })));
+  assert.equal(button(collection, 'Add to collection').props.loading, false, 'Leaving the retained screen clears busy');
+  focused = true;
+  await act(async () => collection.update(React.createElement(CollectionAction, { card: mew })));
+  await act(async () => resolveAuth({ data: { user: { id: 'A' } }, error: null }));
+  assert.equal(draftCalls, 1, 'Returning cannot revive authentication from the previous screen visit');
+  assert.equal(navigations.length, 1);
+  let resolveDraft!: (value: { id: string }) => void;
+  draftResult = new Promise(resolve => { resolveDraft = resolve; });
+  authResult = Promise.resolve({ data: { user: { id: 'A' } }, error: null });
+  await act(async () => button(collection, 'Add to collection').props.onPress());
+  assert.equal(draftCalls, 2);
+  focused = false;
+  await act(async () => collection.update(React.createElement(CollectionAction, { card: mew })));
+  await act(async () => button(collection, 'Add to collection').props.onPress());
+  assert.equal(draftCalls, 2, 'An unfocused retained screen cannot start another review');
+  focused = true;
+  await act(async () => collection.update(React.createElement(CollectionAction, { card: mew })));
+  await act(async () => resolveDraft({ id: 'stale-draft-A' }));
+  assert.equal(navigations.length, 1, 'A delayed draft cannot redirect after leaving and returning');
+  draftResult = Promise.resolve({ id: 'draft-A' });
+  await act(async () => button(collection, 'Add to collection').props.onPress());
+  assert.equal(draftCalls, 3, 'A fresh deliberate action still works after returning');
+  assert.equal(navigations.length, 2);
+  draftResult = new Promise(resolve => { resolveDraft = resolve; });
+  await act(async () => button(collection, 'Add to collection').props.onPress());
+  assert.equal(draftCalls, 4);
+  user = { id: 'B' }; epoch++;
+  await act(async () => collection.update(React.createElement(CollectionAction, { card: mew })));
+  user = { id: 'A' }; epoch++;
+  await act(async () => collection.update(React.createElement(CollectionAction, { card: mew })));
+  await act(async () => resolveDraft({ id: 'old-session-draft-A' }));
+  assert.equal(navigations.length, 2, 'A→B→A cannot revive a delayed private draft');
+  authResult = Promise.resolve({ data: { user: { id: 'B' } }, error: null });
+  await act(async () => button(collection, 'Add to collection').props.onPress());
+  assert.match(text(collection), /Sign in again before adding this card/);
+  assert.equal(draftCalls, 4, 'A different authenticated account cannot create a draft');
   authResult = Promise.resolve({ data: { user: null }, error: new Error('Offline') });
   await act(async () => button(collection, 'Add to collection').props.onPress());
   assert.match(text(collection), /Check your connection or sign in again/);
-  assert.equal(draftCalls, 1, 'Auth failure does not write a review');
+  assert.equal(draftCalls, 4, 'Auth failure does not write a review');
   user = null; epoch++;
   await act(async () => collection.update(React.createElement(CollectionAction, { card: mew })));
   await act(async () => button(collection, 'Add to collection').props.onPress());
-  assert.equal(navigations[1], '/(auth)/login');
-  assert.equal(draftCalls, 1);
+  assert.equal(navigations[2], '/(auth)/login');
+  assert.equal(draftCalls, 4);
   await unmount(collection);
   console.log('Magazine openings: six researched profiles; exact insert gates; selection, replay, skip, reduced motion, interruption, unmount, identity rejection, and account-safe collection-review handoff passed.');
 }

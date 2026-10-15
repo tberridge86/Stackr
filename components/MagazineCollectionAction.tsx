@@ -1,5 +1,5 @@
-import { router } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import type { PokemonCard } from '../lib/pokemonTcg';
 import { createManualCollectionDraft } from '../lib/manualCollectionDraft';
@@ -16,6 +16,7 @@ export function MagazineCollectionAction({ card }: { card: PokemonCard }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const operation = useRef<symbol | null>(null);
+  const focus = useRef({ active: false, generation: 0 });
   const current = useRef({ userId: user?.id, epoch: cachedReadSession?.epoch, cardId: card.id });
   current.current = { userId: user?.id, epoch: cachedReadSession?.epoch, cardId: card.id };
   const mounted = useRef(true);
@@ -24,13 +25,24 @@ export function MagazineCollectionAction({ card }: { card: PokemonCard }) {
     return () => { mounted.current = false; operation.current = null; };
   }, []);
   useEffect(() => { operation.current = null; setBusy(false); setError(null); }, [user?.id, cachedReadSession?.epoch, card.id]);
+  useFocusEffect(useCallback(() => {
+    focus.current = { active: true, generation: focus.current.generation + 1 };
+    setBusy(false); setError(null);
+    return () => {
+      focus.current = { active: false, generation: focus.current.generation + 1 };
+      operation.current = null;
+      setBusy(false);
+    };
+  }, []));
 
   const add = async () => {
-    if (authLoading || operation.current || !card.set?.id || card.language !== 'ja') return;
+    if (authLoading || !focus.current.active || operation.current || !card.set?.id || card.language !== 'ja') return;
     if (!user) { router.push('/(auth)/login'); return; }
     const token = Symbol('magazine-review');
     const owner = { ...current.current };
+    const focusGeneration = focus.current.generation;
     const isCurrent = () => mounted.current && operation.current === token
+      && focus.current.active && focus.current.generation === focusGeneration
       && current.current.userId === owner.userId && current.current.epoch === owner.epoch
       && current.current.cardId === owner.cardId;
     operation.current = token; setBusy(true); setError(null);

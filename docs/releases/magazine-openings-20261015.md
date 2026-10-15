@@ -70,7 +70,12 @@ purported original insert. Source history remains linked from the gallery.
   unmount, wrong-language rejection and unmapped-card refusal.
 - The actual collection-action component's regression covers one private review
   for repeated taps, exact handoff, account A/B/A, authentication failure and
-  sign-in routing. It does not execute a live account or binder mutation.
+  sign-in routing. The independent review identified delayed navigation after
+  leaving a retained screen. Focus cleanup and a captured focus generation now
+  invalidate the operation. Regressions cover pending authentication and pending
+  drafts across leaving/returning, pending drafts across account A/B/A,
+  authentication loading, and an authenticated owner mismatch. They do not
+  execute a live account or binder mutation.
 - Existing CoroCoro archive, route mount, cover policy and curated catalogue
   checks remain required. TypeScript and lint run against this branch; inherited
   lint warnings are reported separately from errors.
@@ -89,9 +94,9 @@ Final local result: TypeScript passes. Full Expo lint passes with zero errors
 and eight inherited warnings outside the new files. The magazine regression,
 existing CoroCoro route/archive/mobile-delivery and curated catalogue checks
 pass. The corrected production-profile iOS export includes **731 asset-table
-rows** and all thirteen exact source JPEG hashes. Its 11,739,020-byte Hermes
+rows** and all thirteen exact source JPEG hashes. Its 11,739,594-byte Hermes
 bundle has SHA256
-`5a011b25fab4008c4c3f196efc639b298bb79100febaed337ac687bfed91e065`.
+`146b4d7ca27361089485b7d8949506dd479124444674f357bcca2124226926b8`.
 The existing secret scanner reports no findings in one extracted printable
 bytecode-string file; this is a bounded text/string check, not native execution.
 
@@ -104,13 +109,16 @@ change, database write, catalogue promotion, native build, merge, OTA publicatio
 or production channel change is part of these local checks.
 
 Production delivery is explicitly authorised by the current owner request. It
-is not blocked on asking for that approval again. Independent review is pending:
-the side conversation forbids sub-agents, and a narrow exception was requested
-before using one for this substantial new interaction and account handoff.
-No reviewer has been started without that exception. Hosted checks, the exact
-export receipt, release compatibility and the intended release action must be
-recorded before publication. The twelve missing catalogue mappings and actual
-iPhone acceptance remain unresolved and must be disclosed in any delivery.
+is not blocked on asking for that approval again. The owner explicitly allowed
+one independent reviewer in this side conversation. That reviewer inspected
+the original feature and the focus-lifecycle repair and found no remaining
+runtime blockers. The coordinator-recorded report is
+[`magazine-opening-review-20261015.md`](magazine-opening-review-20261015.md).
+All eight normal hosted checks passed on the original feature revision; the
+full-platform release gate was skipped. The refreshed export and complete 18-case browser matrix now cover the repair.
+Checks on the repaired revision, release compatibility and the intended release
+action must be recorded before publication. The twelve missing catalogue mappings and
+actual iPhone acceptance remain unresolved and must be disclosed in any delivery.
 
 Read-only EAS inspection confirms build 55 is production iOS 1.0.6, runtime
 1.0.6, source `0188361a1b1e278ea180f9eec5ec487af52ca8cd`, build ID
