@@ -42,7 +42,11 @@ export async function readSnapshot(db, rows, expected) {
   // omitting metadata or allowing an unbounded catalogue response.
   const assets = await read('assets', 'select * from catalog.assets where printing_id=any($1::uuid[]) or variant_id=any($2::uuid[]) or (printing_id is null and variant_id is null and set_id=any($3::uuid[])) limit 201 for share', [ids, variantIds, setIds]);
   const links = await read('links', 'select * from catalog.catalogue_version_assets where printing_id=any($1::uuid[]) or variant_id=any($2::uuid[]) or asset_id=any($3::uuid[]) or (printing_id is null and variant_id is null and set_id=any($4::uuid[])) limit 201 for share', [ids, variantIds, assets.map(r => r.payload.id), setIds], row => `${row.catalogue_version_id}:${row.asset_id}`);
-  const sources = await read('sources', 'select * from ingest.sources where code=any($1::text[]) for share', [SOURCE_CODES]);
+  // PostgreSQL JSON retains all17 fields and timestamp microseconds. Reading
+  // columns directly lets pg turn timestamps into millisecond Date objects,
+  // which cannot equal the immutable full-row JSON baseline.
+  const sourceResult = await db.query('select to_jsonb(source) as payload from ingest.sources source where code=any($1::text[]) for share', [SOURCE_CODES]);
+  const sources = sourceResult.rows.map(({ payload }) => ({ scope: 'sources', identity: String(payload.id), payload }));
   check(printings.length === expected.printings && variants.length === expected.variants && names.length === expected.names && sets.length === expected.sets && assets.length <= 200 && links.length <= 200, 'Scoped snapshot counts changed');
   return ordered([...printings, ...variants, ...names, ...sets, ...assets, ...links, ...sources]);
 }

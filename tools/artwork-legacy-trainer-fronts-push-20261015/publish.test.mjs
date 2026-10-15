@@ -4,7 +4,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import { digest } from '../queue1-publish-20260927/publish.mjs';
 import { loadFrozen, validatePlan, validateApproval, validateRows, validateSourcePlan, validateIdentityTable, validateSavedTargets, indexObjects, FRONTS, COHORT_SHA, PRODUCTION_JA, ARCHIVE_ID } from './frozen.mjs';
 import { assertConfig, createSourceResolver, rollbackReceipt, rollbackSql } from './publish.mjs';
-import { assertSourcePolicies, compareSnapshots, createMetadataGuard } from './metadata-guard.mjs';
+import { assertSourcePolicies, compareSnapshots, createMetadataGuard, readSnapshot } from './metadata-guard.mjs';
 import { assetId, writeMetadata, rehearse, bind, STAGE_JA } from '../artwork3303-publish-20260928/publish.mjs';
 import { canonicalHash, publicProjection, publicationBody, validatePublishedWitness } from './source-proof.mjs';
 const { plan, rows, approval, receipt, table, saved } = await loadFrozen();
@@ -144,6 +144,7 @@ function database(environment = 'production') {
     if (sql === 'rollback') { Object.assign(state, saved); return { rows: [] }; }
     if (sql.startsWith('set ') || sql.startsWith('select pg_advisory')) return { rows: [] };
     if (sql.startsWith('select game_code')) return { rows: clone(plan.binding_expectations[environment]) };
+    if (sql.startsWith('select to_jsonb(source) as payload from ingest.sources')) return { rows: state.sources.map(source => ({ payload: clone(source) })) };
     if (sql.startsWith('select id from catalog.catalogue_versions')) return { rows: [{ id: environment === 'staging' ? STAGE_JA : PRODUCTION_JA }] };
     if (sql.startsWith('select id from catalog.assets where asset_type')) return { rows: state.assets.filter(asset => asset.asset_type === 'card_image').map(asset => ({ id: asset.id })) };
     if (sql.startsWith('select * from api.asset_manifest')) return { rows: state.assets.filter(asset => asset.asset_type === 'card_image').map(asset => ({ ...clone(asset), asset_row_id: asset.id })) };
@@ -172,6 +173,19 @@ function database(environment = 'production') {
   } };
   return db;
 }
+
+test('full source JSON keeps timestamp microseconds and rejects even a one-microsecond source change', async () => {
+  const db = database();
+  const directColumnDriverValue = { ...clone(oldSource), created_at: new Date(oldSource.created_at), updated_at: new Date(oldSource.updated_at) };
+  assert.notEqual(canonicalHash(directColumnDriverValue), canonicalHash(oldSource));
+  const snapshot = await readSnapshot(db, rows, plan.scope_counts.production);
+  const source = snapshot.find(row => row.scope === 'sources').payload;
+  assert.deepEqual(source, oldSource);
+  assert.equal(source.created_at, '2026-09-27T14:42:49.489402+00:00');
+  assertSourcePolicies(plan, [source], 'production');
+  const changed = clone(source); changed.created_at = '2026-09-27T14:42:49.489403+00:00';
+  assert.throws(() => assertSourcePolicies(plan, [changed], 'production'), /Full17-field/);
+});
 
 test('publication inserts only the eligible fronts/links and one inactive Pokellector source; every existing scoped row survives; rerun is empty', async () => {
   const db = database(); const initial = clone(db.state); const guard = createMetadataGuard(plan); const first = journal();
