@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_FROZEN_PUBLICATION_HANDOFF_READY",
+  "confirmation": "PUBLISH ARTWORK NEO2 EEVEE FRONT",
+  "fronts": 1,
+  "fixedVariantTuplesPerEnvironment": 1,
+  "printingAssetVariantId": null,
+  "sourceVariantId": null,
+  "deliveryKind": "shared",
+  "tests": {
+    "publisherNode": {
+      "passed": 15,
+      "failed": 0
+    },
+    "archiveGuardsPython": {
+      "passed": 6,
+      "failed": 0
+    },
+    "persistedFailureJournal": {
+      "passed": 1,
+      "failed": 0
+    },
+    "priorAquapolisPublisherRegression": {
+      "passed": 15,
+      "failed": 0
+    },
+    "priorAquapolisReadOnlyQueueReceipts": 2,
+    "priorAquapolisLocalImageObjects": 8,
+    "phase1SourceContract": {
+      "passed": 23,
+      "failed": 0
+    },
+    "queue": {
+      "realReceipts": 1,
+      "localImageByteObjects": 4,
+      "jointRawEntryTamperRejections": 28,
+      "forgedAuthorityRejections": 4,
+      "previousJapaneseAndAquapolisEnglishPredicatesPreserved": true,
+      "sharedQueueUnchanged": true,
+      "productionWrites": 0
+    }
+  },
+  "archiveInstaller": {
+    "assetId": 645254422,
+    "membersVerifiedAndExtracted": 8,
+    "runtimeSharpFullyDecoded": 4,
+    "privatePILSharpRgbaAgreements": 4,
+    "privacySafeJsonFiles": 4,
+    "originalHdPixelFronts": 1,
+    "derivativeHdPixelFiles": 0,
+    "noEnlargement": true
+  },
+  "sourceGuard": {
+    "externalAuthorityAndBaselineFilesRehashed": 12,
+    "oldProductionSources": 4,
+    "oldFullSourceFieldsProtected": 68,
+    "productionNewSources": 0,
+    "productionPolicyChangesAllowed": 0,
+    "explicitProductionResolverHasNoInsertPath": true,
+    "missingOrDriftedExistingPriceFails": true,
+    "existingPriceFinite2NotesUnchanged": true,
+    "full17MicrosecondsRetainedByBothJsonReaders": true,
+    "stagingBaselineScopedSources": 0,
+    "onlyTemporaryStagingFixture": "pricecharting",
+    "stageGeneratedFull17DefaultsAndCreationReceiptChecked": true,
+    "frozenFullBeforeSnapshotsChecked": true
+  },
+  "transactionFixtures": {
+    "production": {
+      "beforeRows": 16,
+      "afterRows": 18,
+      "assetsAdded": 1,
+      "linksAdded": 1,
+      "sourcesAdded": 0
+    },
+    "staging": {
+      "beforeRows": 9,
+      "temporaryRows": 12,
+      "afterRollbackRows": 9
+    },
+    "oldCanonicalMetadataAssetsLinksAndSourcePoliciesUnchanged": true,
+    "sourceAndLinkWriteFailuresRollBack": true
+  },
+  "identity": {
+    "currentNativeLabelPreserved": "Eevee",
+    "actualPrintedName": "イーブイ",
+    "internalAlias": "049",
+    "printedNationalDex": "No.133",
+    "printedCollectorNumber": null,
+    "normalVariantId": "7699421e-d760-4251-a090-40166235602b",
+    "completeOptionalAbilityClausesPreserved": true,
+    "providerBodyVerbatimAgreement": false,
+    "editionStampAbsenceIsNotUnlimitedProof": true,
+    "physicalEditionCertified": false,
+    "physicalFinishCertified": false
+  },
+  "unchangedPriorRepositoryFilesRehashed": 120,
+  "unchangedSharedDependenciesRehashed": 11,
+  "unchangedPhase1PrivatePinsRehashed": 31,
+  "workflow": {
+    "protectedProduction": true,
+    "exactMainSha": true,
+    "sharedDeploymentConcurrency": true,
+    "shaPinnedActions": 3,
+    "exact20FileSecretScanPassed": true,
+    "failureJournalAndRollbackReceipts": true
+  },
+  "planSha256": "0ac7a38d3b021d5559edf822dcd4a2baf9bad6bb906030b40052e402cbf5df43",
+  "approvalSha256": "a08c48c4a85b1a2f691e1975fc6f0d4a9e13a63b24559f0a43257b212b3c1b5b",
+  "sourceManifestSha256": "f6d47bdcb9883a2be8071b1df9030e51b0e5702e986e13f5305e55391421f1bd",
+  "archiveSha256": "45419c6bc68dbdd851c190cba15216887fe0e11290a464476345ed808762cf6d",
+  "newProviderRequests": 0,
+  "databaseRequests": 0,
+  "gitMutations": 0,
+  "sharedQueueWrites": 0,
+  "ledgerWrites": 0,
+  "storageWrites": 0,
+  "productionWrites": 0,
+  "livePublicationVerified": false,
+  "independentExactHeadAndHostedChecksStillRequired": true
+}
