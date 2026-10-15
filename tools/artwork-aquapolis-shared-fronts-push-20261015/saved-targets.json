@@ -1,0 +1,30 @@
+[
+  {
+    "printing_id": "5a6e6094-b847-4e50-bfb5-f8dec149e07e",
+    "set_id": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+    "set_code": "ecard2",
+    "language_code": "en",
+    "collector_number": "103b",
+    "card_native_name": "Porygon",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "00dbf2d3-a5cb-4e83-83bd-4eeef011d6bc",
+      "942e0c49-1234-4c4f-9af4-53bc522bade9"
+    ],
+    "batch_id": "EN-CARDS-003"
+  },
+  {
+    "printing_id": "9884a2e7-1d5d-4355-99c5-0fe2556c4837",
+    "set_id": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+    "set_code": "ecard2",
+    "language_code": "en",
+    "collector_number": "95b",
+    "card_native_name": "Mr. Mime",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "1fc97b9f-48eb-4be8-a29c-cd1844bc2757",
+      "6a922068-873d-46d8-b5d8-5539df9ce8a1"
+    ],
+    "batch_id": "EN-CARDS-003"
+  }
+]

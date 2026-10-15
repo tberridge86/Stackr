@@ -1,0 +1,42 @@
+[
+  {
+    "printing_id": "5a6e6094-b847-4e50-bfb5-f8dec149e07e",
+    "set_id": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+    "set_code": "ecard2",
+    "language_code": "en",
+    "collector_number": "103b",
+    "card_native_name": "Porygon",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "00dbf2d3-a5cb-4e83-83bd-4eeef011d6bc",
+      "942e0c49-1234-4c4f-9af4-53bc522bade9"
+    ],
+    "batch_id": "EN-CARDS-003",
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:254b7efe813d735b1d874e847257bc384e7d0555b872e2f18f8745f60c4111d6",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/97326bac8c6e3ea7000a29710bf00b50324ee16a73756a8a73b4d37be2456802/1600.jpg",
+    "original_sha256": "80ce003685a84281d52ac2aa07a65d9fb3e63dfe94d01b8e4cb419e7bdec54e0",
+    "body_sha256": "917ef1104da63199b81738d654e8fbcf37f2d50b689ff1c38adb198e95812e71",
+    "evidence_sha256": "4616b441d8fda212af8943a4b4c19b0c11e172ca3dcfbbac0cba6d6b1f11c178"
+  },
+  {
+    "printing_id": "9884a2e7-1d5d-4355-99c5-0fe2556c4837",
+    "set_id": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+    "set_code": "ecard2",
+    "language_code": "en",
+    "collector_number": "95b",
+    "card_native_name": "Mr. Mime",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "1fc97b9f-48eb-4be8-a29c-cd1844bc2757",
+      "6a922068-873d-46d8-b5d8-5539df9ce8a1"
+    ],
+    "batch_id": "EN-CARDS-003",
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:1125ce624d88ae5627ad9d721a129b66798030f929ee6d6118691c2cb39dbcd3",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/jnwylq374y25p6dz/1600.jpg",
+    "original_sha256": "5c2d2ec38eeb77868f24c058cb34ec44b05a62dda3718f7bbfe8ccff625507f9",
+    "body_sha256": "edf32dab50d9a852e4e49697eb448a1e03814a4ecbb34d64606f9c224b1fb401",
+    "evidence_sha256": "4ad01e191e7fe7c0c368e6f5ec0bdd3cf361bc163ac0cbadbdb3314fa77dfd7e"
+  }
+]
