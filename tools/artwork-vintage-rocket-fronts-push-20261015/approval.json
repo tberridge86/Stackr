@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 64,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "approved_at": "2026-10-15",
+  "cohort_sha256": "68b4a260e25ac4e92c21c0f334c43aed58c0fedc1caaaeb409df07c37277ffd6",
+  "source_counts": {
+    "pokellector": 64
+  },
+  "source_evidence": {
+    "approvedProjection": "0f9ef24dc26337b74a4e5331237a1508c8350ac1ba045e229bef573b5eb760e8",
+    "finiteDecision": "60d9a13ac164fa46fdef9c5dd7460ef51ea41abe8f744a759aecc8212a05630c",
+    "independentSelection": "f1b766f0fd30c890cc4b8de5dab3a61b6a76be2f331e8a7a312ca222e9d3ff1c",
+    "independentPrivateReview": "5b473cc53d73887f8285915620097ffb2042b0759e40adb77263cfa485d9b1e0",
+    "sourcePolicyCheckpoint": "2013e3ecdb0bf05501b2cc7a66733c73e20ba80b3a7876e5d0442f1a32eb00e9"
+  },
+  "source_policy_checkpoint_sha256": "2013e3ecdb0bf05501b2cc7a66733c73e20ba80b3a7876e5d0442f1a32eb00e9",
+  "scope": "Exactly64 accepted Rocket fronts:53Pokemon8Trainer3Energy and192 unenlarged derivatives,48normal16holo. Whole062 printing held with both variants. Preserve all accepted actual/native/artist qualifications, private raw metadata distinction, inactive full17sources and all current canonical fields."
+}
