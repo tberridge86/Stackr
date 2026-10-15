@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 3,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "approved_at": "2026-10-15",
+  "cohort_sha256": "bbc2786b263b482444d8a2581d5fdf09bb75ee0e37c095906daef0ed8b4f1e74",
+  "source_counts": {
+    "tcgcollector": 3
+  },
+  "source_evidence": {
+    "approvedProjection": "96631c9294588374bf8c7fa58d29861fe4704fa68854cb9b7ba6fb7b3743c7ca",
+    "finiteDecision": "68f1af735d5e481ed26d1aabbe94e493d520575d9d4191413508f9ec90cf68ff",
+    "independentSelection": "eb873e66e2492671b9b0df09c6059b84457850bac1ef63f671832c24a6e1306e",
+    "independentReview": "6a1a35be6d9c9e5c8d2bbaf68c5e24293b555b7e1b7ac72e8b3e07fb7cecf3ab",
+    "sourceDesign": "898276b53dc4ee4cc29ac680d824a542bc41e2b442363889362d454cea748828",
+    "sourcePolicyCheckpoint": "2013e3ecdb0bf05501b2cc7a66733c73e20ba80b3a7876e5d0442f1a32eb00e9",
+    "ownerPermissionAttestation": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d"
+  },
+  "source_policy_checkpoint_sha256": "2013e3ecdb0bf05501b2cc7a66733c73e20ba80b3a7876e5d0442f1a32eb00e9",
+  "scope": "Exactly3 Japanese Leaders Stadium TCGCollector originals019/081/096,1Pokemon2Trainer2holo1normal. Unchanged JPEG593x834 plus9no-enlargement derivatives. New exact inactive under_review image provenance only; preserve both17-field existing sources and all canonical metadata/old artwork. Historical source-only approvals/quality holds remain separate from root finite authority.0HD/no native gain/physical/vendor/source-wide certification."
+}
