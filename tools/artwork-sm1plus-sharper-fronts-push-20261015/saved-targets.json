@@ -1,0 +1,30 @@
+[
+  {
+    "printing_id": "4f5ffc62-ebdf-4768-a11c-7dd384c3c6d7",
+    "set_id": "151b0439-551d-49d6-bd35-32c4d3a2de4f",
+    "set_code": "SM1+",
+    "language_code": "ja",
+    "collector_number": "064",
+    "card_native_name": "ニンフィアGX",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "95aea58b-127f-4b66-9906-2c4f2ad8763f"
+    ],
+    "batch_id": "JP-SHARP-001",
+    "work_type": "SHARP"
+  },
+  {
+    "printing_id": "c83aac5f-eba3-49da-baab-cbef76e8bc6e",
+    "set_id": "151b0439-551d-49d6-bd35-32c4d3a2de4f",
+    "set_code": "SM1+",
+    "language_code": "ja",
+    "collector_number": "068",
+    "card_native_name": "基本草エネルギー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "b685e065-7995-4968-bc77-67826c3245fe"
+    ],
+    "batch_id": "JP-SHARP-001",
+    "work_type": "SHARP"
+  }
+]

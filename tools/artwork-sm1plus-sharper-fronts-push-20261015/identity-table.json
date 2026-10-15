@@ -1,0 +1,42 @@
+[
+  {
+    "printing_id": "4f5ffc62-ebdf-4768-a11c-7dd384c3c6d7",
+    "set_id": "151b0439-551d-49d6-bd35-32c4d3a2de4f",
+    "set_code": "SM1+",
+    "language_code": "ja",
+    "collector_number": "064",
+    "card_native_name": "ニンフィアGX",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "95aea58b-127f-4b66-9906-2c4f2ad8763f"
+    ],
+    "batch_id": "JP-SHARP-001",
+    "work_type": "SHARP",
+    "source_code": "pokellector",
+    "provider_id": "pokellector:photo:14613",
+    "image_url": "https://den-cards.pokellector.com/200/Sylveon-GX.SM1+.64.14613.png",
+    "original_sha256": "de6eec9518fb45321efeb85563825953599523807ae05a9ab5f4c4117f92f821",
+    "body_sha256": "59f1b543ea9b5f90686fa7d4317fd5a00fd7e4951112c7d7059d44966a6f57c5",
+    "evidence_sha256": "21ac6ccf073532e9c7cc269d81e17a55e33f223dd0eaee690254a92ec9aeb800"
+  },
+  {
+    "printing_id": "c83aac5f-eba3-49da-baab-cbef76e8bc6e",
+    "set_id": "151b0439-551d-49d6-bd35-32c4d3a2de4f",
+    "set_code": "SM1+",
+    "language_code": "ja",
+    "collector_number": "068",
+    "card_native_name": "基本草エネルギー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "b685e065-7995-4968-bc77-67826c3245fe"
+    ],
+    "batch_id": "JP-SHARP-001",
+    "work_type": "SHARP",
+    "source_code": "pokellector",
+    "provider_id": "pokellector:photo:23186",
+    "image_url": "https://den-cards.pokellector.com/200/Grass-Energy.SM1+.68.23186.png",
+    "original_sha256": "2ee529ffbfc32bde464ae48193e644c8b8228f57ba05c2ca2d16207454b98289",
+    "body_sha256": "8f065dd0ab86538ed8888ccdf6c7eb35e340da798c3ef5457668d43822ad2232",
+    "evidence_sha256": "b9cb87e05b2ca8bca2c1047510064bb3b403df68eca438482e204bd063b2826e"
+  }
+]
