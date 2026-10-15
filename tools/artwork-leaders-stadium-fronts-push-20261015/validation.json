@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "status": "focused_local_validation_passed",
+  "validatedAt": "2026-10-15T19:15:20.336237+00:00",
+  "releaseAssetId": 644847675,
+  "archiveSha256": "ead3e436275a86154f4eb91bf9cf1085de4768ed9367dc22a71f651cbcbfa326",
+  "archiveBytes": 77385268,
+  "fronts": 93,
+  "categoryCounts": {
+    "pokemon": 65,
+    "trainer": 28
+  },
+  "finishes": {
+    "normal": 79,
+    "holo": 14
+  },
+  "heldAliases": [
+    "019",
+    "081",
+    "096"
+  ],
+  "checks": {
+    "nodeTestsPassed": 16,
+    "archiveTestsPassed": 6,
+    "actualQueueReceiptsPassed": 93,
+    "queueJointTamperRejections": 25,
+    "queueForgedAuthorityRejections": 2,
+    "previousSlowpokeQueueReceiptsPassed": 1,
+    "previousSlowpokeQueueTamperRejections": 26,
+    "archiveMembers": 376,
+    "imageMembers": 372,
+    "localInstallerAllMemberHashesPassed": true,
+    "runtimeSharpFullDecodesPassed": 372,
+    "preparationSharpFullDecodesPassed": 372,
+    "archivePILFullDecodesPassed": 372,
+    "newRepoTextFilesLFWithoutBOM": 20,
+    "allNewModuleSyntaxPassed": true,
+    "pythonSyntaxPassed": true,
+    "unchangedDependencyHashesPassed": 11,
+    "workflowGateAndActionPinsPassed": true,
+    "scopedSecretScanPassed": true,
+    "genericQueueUnchanged": true
+  },
+  "modeledMetadata": {
+    "productionBefore": 378,
+    "productionAfter": 564,
+    "newAssets": 93,
+    "newLinks": 93,
+    "newSources": 0,
+    "stagingBefore": 374,
+    "stagingAfterRollback": 374,
+    "oldRowsUnchanged": true,
+    "full17SourceFieldsPreserved": true,
+    "snapshotAndResolverPostgresJsonTimestampGuardsPassed": true
+  },
+  "sourceCoverage": {
+    "eligibleDirectPeerRows": 54,
+    "eligibleRecordOnlyPeerRows": 39,
+    "allEligibleAuthorViewed": true,
+    "sourceBodyFullAgreement": false,
+    "physicalEditionCertified": false,
+    "physicalFinishCertified": false,
+    "vendorLicenceCertified": false,
+    "sourceWideAuthorisation": false,
+    "hdCount": 0,
+    "noEnlargement": true
+  },
+  "execution": {
+    "localOnly": true,
+    "databaseRequests": 0,
+    "providerRequests": 0,
+    "storageWrites": 0,
+    "queueWrites": 0,
+    "gitMutations": 0,
+    "productionPublicationVerified": false
+  },
+  "validationNote": "An initial runtime verification was invoked before the local extraction directory existed. The strict offline installer then verified/extracted the immutable archive and all372 runtime Sharp decodes passed. No package bytes changed."
+}
