@@ -1,0 +1,720 @@
+{
+  "schemaVersion": 1,
+  "queue_id": "STACKR-JA-NEO1-SLOWPOKE-FRONT-20261015-001",
+  "source_manifest_sha256": "c62f57cfdf8b44aa86b7db48be7c17e7008e79ef8c52397a43d3e697d944d802",
+  "package_receipt_sha256": "24085825e1214bf210457b4ce1962a5ceb6b5e8649f3e67ba71584dfd4f0c156",
+  "saved_targets_sha256": "83a2e04c671fbcce0ea51a30fa7a7a5e3d98357ec30095a301d701dd05e0761b",
+  "identity_table_sha256": "991ba4b11e764d4ca3e9e1ca4093122a5b3a2fdbe077285e0cfe3c349c3d3a45",
+  "source_evidence": {
+    "approvedProjection": "f181911b78adce2be7ba3f8864b775d0b265cff03d43860fc3d349abe3ea0c77",
+    "finiteDecision": "97d080446d7e9d8253a212329c12d136e541bd29efd7bf48b78dea4439392261",
+    "independentSelection": "a104f67443f401fd42aa5e904b87f3d197141095a1e3a1a9d9c232a461dc415d",
+    "independentPrivateReview": "a02ff63fb0caf56f1a9baa096872681332f25e5e1363b31ef6ed843df776d231",
+    "sourcePolicyCheckpoint": "2013e3ecdb0bf05501b2cc7a66733c73e20ba80b3a7876e5d0442f1a32eb00e9"
+  },
+  "source_policy_checkpoint_sha256": "2013e3ecdb0bf05501b2cc7a66733c73e20ba80b3a7876e5d0442f1a32eb00e9",
+  "existing_source_row_hashes": {
+    "pokellector": "4a2a381f7146c0bfa0201c62e91e7682f18da6597c4743f23414f3606a942a71",
+    "scrydex": "25af5b50521e6fd0942764536f62b0c53c3e72c69c874916241af47735407929"
+  },
+  "private_capture_receipt_sha256": "4696b18ead95130de0287790a93ccaa2f393f405e320eb2a78a14022324236d5",
+  "archive": {
+    "id": 644553288,
+    "sha256": "63c693d21095a4c0fd474ce8acc3a825451f6ece6073ff3c7c4d3df20fa059a2",
+    "byte_size": 842814,
+    "file_count": 8,
+    "name": "stackr-ja-artwork-slowpoke1-fronts-20261015.zip"
+  },
+  "archive_metadata": [
+    {
+      "file": "manifest.json",
+      "sha256": "c62f57cfdf8b44aa86b7db48be7c17e7008e79ef8c52397a43d3e697d944d802",
+      "byte_size": 26310
+    },
+    {
+      "file": "receipts/preparation-summary.json",
+      "sha256": "1d42d5badd8020d68f47dc1f86469dae6870f7eea986e666f9fadb1cf0459911",
+      "byte_size": 1312
+    },
+    {
+      "file": "receipts/current-card-bindings.json",
+      "sha256": "0e16cd280a8b34b73b218e2da7abbe6f2a0e396da07f28b8ef807dc87e0323f0",
+      "byte_size": 1179
+    },
+    {
+      "file": "receipts/finite-decision.json",
+      "sha256": "8ad90968f15936caf2eec46af933bde462e598898a817c138d988f505f96c48a",
+      "byte_size": 1611
+    }
+  ],
+  "rows": [
+    {
+      "printing_id": "494725ee-70bf-41d3-a6b7-2a7bb6180287",
+      "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+      "set_code": "neo1",
+      "language_code": "ja",
+      "collector_number": "045",
+      "card_native_name": "slowpoke",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "72c0e00c-e174-4ecd-a672-2864a586af82"
+      ],
+      "batch_id": "JP-CARDS-004",
+      "source_code": "pokellector",
+      "provider_id": "pokellector-image-url-sha256:c440501050afdccbc520cba0c0b5057137d71948aac242a0558d5896d9c137cb",
+      "image_url": "https://den-cards.pokellector.com/324/Slowpoke.NEO1.45.38564.png",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/2d1170c7cac4753e519f9fe69c5179aee284f2d01be5c12f4d49af1a44e498eb/original.png",
+          "sha256": "2d1170c7cac4753e519f9fe69c5179aee284f2d01be5c12f4d49af1a44e498eb",
+          "byte_size": 738072,
+          "width": 570,
+          "height": 797,
+          "mime_type": "image/png",
+          "artifact_id": 644553288
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/e9d00ca5c5ec55b823ba03e77c63d92f51288e2590f40b85a2d2564de94bba52/card-grid.webp",
+          "sha256": "e9d00ca5c5ec55b823ba03e77c63d92f51288e2590f40b85a2d2564de94bba52",
+          "byte_size": 19746,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp",
+          "artifact_id": 644553288
+        },
+        {
+          "role": "search-result",
+          "file": "objects/a27c73eb2e09a464f20faa4a35392b05356124c294b4fa8c8d22253393c928b1/search-result.webp",
+          "sha256": "a27c73eb2e09a464f20faa4a35392b05356124c294b4fa8c8d22253393c928b1",
+          "byte_size": 4322,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp",
+          "artifact_id": 644553288
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/ba92a2904ccdad7a803a65c291a30fe90f344f2a970361fbdd971ea996c37d7a/detail-page.webp",
+          "sha256": "ba92a2904ccdad7a803a65c291a30fe90f344f2a970361fbdd971ea996c37d7a",
+          "byte_size": 70360,
+          "width": 570,
+          "height": 797,
+          "mime_type": "image/webp",
+          "artifact_id": 644553288
+        }
+      ],
+      "evidence": {
+        "source_url": "https://den-cards.pokellector.com/324/Slowpoke.NEO1.45.38564.png",
+        "source_page_url": "https://jp.pokellector.com/Gold-Silver-to-a-New-World-Expansion/Slowpoke-Card-45",
+        "provider_id": "pokellector-image-url-sha256:c440501050afdccbc520cba0c0b5057137d71948aac242a0558d5896d9c137cb",
+        "source_metadata_sha256": "37aeb192f5aa819df81fc61499a6ea03cf596fb827ed8c52e9b99401b97529a8",
+        "source_body": {
+          "contract": "stackr-ja-neo1-slowpoke1-identity-v1",
+          "accepted_category": "Pokemon",
+          "photo_source_provider": "pokellector",
+          "photo_source_identifier": "pokellector-image-url-sha256:c440501050afdccbc520cba0c0b5057137d71948aac242a0558d5896d9c137cb",
+          "photo_source_raw_html_sha256": "37aeb192f5aa819df81fc61499a6ea03cf596fb827ed8c52e9b99401b97529a8",
+          "native_semantic_metadata_provider": "scrydex",
+          "historical_semantic_metadata_provider": "tcgdex",
+          "semantic_metadata_is_photo_provenance": false,
+          "provider_metadata_identity_projection": {
+            "photoProvider": "pokellector",
+            "photoId": "38564",
+            "providedPageUrl": "https://jp.pokellector.com/Gold-Silver-to-a-New-World-Expansion/Slowpoke-Card-45",
+            "literalOriginalUrl": "https://den-cards.pokellector.com/324/Slowpoke.NEO1.45.38564.png",
+            "nativeSemanticMetadataProvider": "Scrydex",
+            "nativeCanonicalIdentityAndBody": {
+              "id": "neo1_ja-45",
+              "name": "ヤドン",
+              "supertype": "ポケモン",
+              "subtypes": [
+                "たね"
+              ],
+              "types": [
+                "超"
+              ],
+              "hp": "50",
+              "evolves_from": [],
+              "abilities": [],
+              "attacks": [
+                {
+                  "cost": [
+                    "超"
+                  ],
+                  "converted_energy_cost": 1,
+                  "name": "ねんりき",
+                  "text": "コインを投げて「おもて」なら、相手を「マヒ」状態にする。",
+                  "damage": "10"
+                },
+                {
+                  "cost": [
+                    "水"
+                  ],
+                  "converted_energy_cost": 1,
+                  "name": "みずでっぽう",
+                  "text": "ワザに必要なエネルギーよりも多く「水」エネルギーがついているとき、多い「水」エネルギー1個につき、10ダメージを追加する。ダメージ追加は2個ぶんまで。",
+                  "damage": "10+"
+                }
+              ],
+              "weaknesses": [
+                {
+                  "type": "超",
+                  "value": "×2"
+                }
+              ],
+              "resistances": [],
+              "retreat_cost": [
+                "無"
+              ],
+              "converted_retreat_cost": 1,
+              "rules": [],
+              "number": "79",
+              "printed_number": "No.079",
+              "additional_numbers": [],
+              "rarity": "通常",
+              "rarity_code": "●",
+              "artist": "Tomokazu Komiya",
+              "national_pokedex_numbers": [
+                79
+              ],
+              "regulation_mark": null,
+              "images": [
+                {
+                  "type": "front",
+                  "small": "https://images.scrydex.com/pokemon/neo1_ja-45/small",
+                  "medium": "https://images.scrydex.com/pokemon/neo1_ja-45/medium",
+                  "large": "https://images.scrydex.com/pokemon/neo1_ja-45/large"
+                }
+              ],
+              "language": "Japanese",
+              "language_code": "JA",
+              "expansion": {
+                "id": "neo1_ja",
+                "name": "金、銀、新世界へ...",
+                "series": "Neo",
+                "total": 96,
+                "printed_total": 96,
+                "language": "Japanese",
+                "language_code": "JA"
+              },
+              "variants": [
+                {
+                  "name": "normal",
+                  "images": []
+                }
+              ]
+            },
+            "historicalTCGdexSafeIdentity": {
+              "category": "Pokemon",
+              "id": "neo1-045",
+              "localId": "045",
+              "name": "slowpoke",
+              "rarity": "Common",
+              "dexId": [
+                79
+              ],
+              "hp": 40,
+              "types": [
+                "Psychic"
+              ],
+              "stage": "Basic",
+              "attacks": [
+                {
+                  "cost": [
+                    "Psychic"
+                  ],
+                  "name": "PsyShock",
+                  "effect": "コインをひっくり返します。頭の場合、防御ポケモンは麻痺しています。",
+                  "damage": 10
+                },
+                {
+                  "cost": [
+                    "Water"
+                  ],
+                  "name": "ウォーターガン",
+                  "effect": "10ダメージに加えて、スローポークに付着した水エネルギーごとに10ダメージを加えて10ダメージを与えますが、この攻撃のエネルギーコストの支払いには使用されません。この方法で20以上のダメージを追加することはできません。"
+                }
+              ],
+              "retreat": 1,
+              "variants": {
+                "firstEdition": false,
+                "holo": false,
+                "normal": true,
+                "reverse": false,
+                "wPromo": false
+              },
+              "set": {
+                "id": "neo1",
+                "name": "金、銀、新世界へ...",
+                "cardCount": {
+                  "official": 96,
+                  "total": 96
+                }
+              }
+            },
+            "actualHP50OverridesHistoricalTCGdex40ForSourceIdentityOnly": true
+          },
+          "provider_metadata_identity_projection_sha256": "737ff6aa6d683a7b09f80827b802d7bb7d7fd2f1a12f80ab37283443270a217b",
+          "native_semantic_raw_html_sha256": "5601bd27f1d2a462841a9d4f9bbcc47eebb94d5260c3a9ce1cb2201cbb8199c1",
+          "cached_native_identity_file_sha256": "bf5f14a2b0186dd2c709ce91fa70f0078e5a85fc52f7ff82d0705057c41b57c2",
+          "semantic_provider_full_captured_json_file_sha256": null,
+          "semantic_provider_full_captured_json_canonical_sha256": "ba2b6dca5cd565b20d1deef9e3e7f8321fb0d6317db59c27c16bbcfa373fb5c6",
+          "provider_capture_contract": "Full native Scrydex card is embedded only in the pinned private review after extraction from immutable HTML. No standalone full JSON file exists: its file-byte SHA stays null. Full parsed canonical hash, cached derived identity-file hash, photo HTML hash and safe identity hash are distinct. TCGdex40 and native Scrydex50 remain unmodified semantic witnesses, not photo provenance.",
+          "actual_pixel_signature": {
+            "category": "Pokemon",
+            "nativeName": "ヤドン",
+            "language": "ja",
+            "stage": "Basic",
+            "nativeStage": "たねポケモン",
+            "level": 20,
+            "hp": 50,
+            "type": "Psychic",
+            "evolvesFrom": null,
+            "printedNationalDex": 79,
+            "printedDex": "No.079",
+            "printedNumberIsNationalDex": true,
+            "printedCollectorNumber": null,
+            "printedCollectorDenominator": null,
+            "canonicalAliasIsUnprintedIndex": true,
+            "attacks": [
+              {
+                "nativeName": "ねんりき",
+                "cost": [
+                  "Psychic"
+                ],
+                "damage": "10",
+                "nativeRules": "コインを投げて「おもて」なら、相手を「マヒ」状態にする。",
+                "meaning": "Flip a coin. If heads, the opposing Pokémon is Paralyzed."
+              },
+              {
+                "nativeName": "みずでっぽう",
+                "cost": [
+                  "Water"
+                ],
+                "damage": "10+",
+                "nativeRules": "ワザに必要なエネルギーよりも多く「水」エネルギーがついているとき、多い「水」エネルギー1個につき、10ダメージを追加する。ダメージ追加は2個ぶんまで。",
+                "meaning": "Add 10 damage for each Water Energy attached beyond the Energy required for this attack, up to two additional Water Energy."
+              }
+            ],
+            "weakness": [
+              "Psychic"
+            ],
+            "printedWeaknessMultiplier": null,
+            "resistance": [],
+            "retreat": [
+              "Colorless"
+            ],
+            "artist": "Tomokazu Komiya",
+            "artistReadCertain": true,
+            "printedArtistCredit": "Illus.Tomokazu Komiya",
+            "art": "Large pink Slowpoke sprawled on green grass under a tree with red fruit; mouth open with a small blue drool puddle below.",
+            "setMark": "Neo1 starburst-like mark at right below the artwork",
+            "frame": "Yellow border and purple Psychic body",
+            "rarityMark": "black circle at lower right",
+            "fullFrontAndOuterEdgesVisible": true,
+            "visibleEditionStamp": false,
+            "visibleWatermark": false,
+            "physicalEditionCertified": false,
+            "physicalFinishCertified": false,
+            "copyrightYearCertified": false
+          },
+          "actual_pixel_signature_sha256": "a54693d29010fba757d04818df54775f93f0700065edc281bc94de330e7001fe",
+          "approved_projection_row_canonical_json_sha256": "4c1bbec4aa3852aafdc12c17642ca2b4f7cac8c51ec1b7459d6d994ea48b3a4d",
+          "independent_selection_raw_canonical_json_sha256": "c9522dc797befd73cbdd9f219e35733f00a460dbcfdd96cbb96cbeac6d69f6e2",
+          "independent_selection_public_canonical_json_sha256": "2f3f5cc26f93f5b6c08d7322723ffb0f09a4c5f79dfdf02c87260dda96fd80bd",
+          "independent_selection": {
+            "schemaVersion": 1,
+            "printingId": "494725ee-70bf-41d3-a6b7-2a7bb6180287",
+            "variantId": "72c0e00c-e174-4ecd-a672-2864a586af82",
+            "setCode": "neo1",
+            "languageCode": "ja",
+            "canonicalCollectorAlias": "045",
+            "sourceCode": "pokellector",
+            "sourcePhotoId": "38564",
+            "originalSourceIdentifier": "pokellector-image-url-sha256:c440501050afdccbc520cba0c0b5057137d71948aac242a0558d5896d9c137cb",
+            "sourcePageUrl": "https://jp.pokellector.com/Gold-Silver-to-a-New-World-Expansion/Slowpoke-Card-45",
+            "sourceImageUrl": "https://den-cards.pokellector.com/324/Slowpoke.NEO1.45.38564.png",
+            "originalSha256": "2d1170c7cac4753e519f9fe69c5179aee284f2d01be5c12f4d49af1a44e498eb",
+            "width": 570,
+            "height": 797,
+            "mimeType": "image/png",
+            "actualPixelSignature": {
+              "category": "Pokemon",
+              "nativeName": "ヤドン",
+              "language": "ja",
+              "stage": "Basic",
+              "nativeStage": "たねポケモン",
+              "level": 20,
+              "hp": 50,
+              "type": "Psychic",
+              "evolvesFrom": null,
+              "printedNationalDex": 79,
+              "printedDex": "No.079",
+              "printedNumberIsNationalDex": true,
+              "printedCollectorNumber": null,
+              "printedCollectorDenominator": null,
+              "canonicalAliasIsUnprintedIndex": true,
+              "attacks": [
+                {
+                  "nativeName": "ねんりき",
+                  "cost": [
+                    "Psychic"
+                  ],
+                  "damage": "10",
+                  "nativeRules": "コインを投げて「おもて」なら、相手を「マヒ」状態にする。",
+                  "meaning": "Flip a coin. If heads, the opposing Pokémon is Paralyzed."
+                },
+                {
+                  "nativeName": "みずでっぽう",
+                  "cost": [
+                    "Water"
+                  ],
+                  "damage": "10+",
+                  "nativeRules": "ワザに必要なエネルギーよりも多く「水」エネルギーがついているとき、多い「水」エネルギー1個につき、10ダメージを追加する。ダメージ追加は2個ぶんまで。",
+                  "meaning": "Add 10 damage for each Water Energy attached beyond the Energy required for this attack, up to two additional Water Energy."
+                }
+              ],
+              "weakness": [
+                "Psychic"
+              ],
+              "printedWeaknessMultiplier": null,
+              "resistance": [],
+              "retreat": [
+                "Colorless"
+              ],
+              "artist": "Tomokazu Komiya",
+              "artistReadCertain": true,
+              "printedArtistCredit": "Illus.Tomokazu Komiya",
+              "art": "Large pink Slowpoke sprawled on green grass under a tree with red fruit; mouth open with a small blue drool puddle below.",
+              "setMark": "Neo1 starburst-like mark at right below the artwork",
+              "frame": "Yellow border and purple Psychic body",
+              "rarityMark": "black circle at lower right",
+              "fullFrontAndOuterEdgesVisible": true,
+              "visibleEditionStamp": false,
+              "visibleWatermark": false,
+              "physicalEditionCertified": false,
+              "physicalFinishCertified": false,
+              "copyrightYearCertified": false
+            },
+            "quality": {
+              "readableDetail": true,
+              "hd": false,
+              "providerPreprocessingCertified": false,
+              "genuineNativeResolutionGainCertified": false
+            },
+            "sourceIdentityAccepted": true,
+            "rightsCertification": false,
+            "physicalEditionCertification": false,
+            "physicalFinishCertification": false
+          },
+          "historical_association": {
+            "selected_source_card_id": null,
+            "selected_metadata_candidate_source_id": null,
+            "preparation_approved": false,
+            "publication_approved": false,
+            "hold_file_sha256": "285515b04c540d3258d4962b9474d6d65d35fdd560dee27c057b91f8670fb798",
+            "observation_file_sha256": "5b98d53f7550dcb957176e03292e14159a917bcda84924ffbe020a58984d7387"
+          },
+          "pixel_observations": {
+            "wholeOriginalActuallyViewed": true,
+            "fullJapaneseFrontVisible": true,
+            "allFourOuterEdgesVisible": true,
+            "titleBodyArtSetMarkAndArtistAreaVisible": true,
+            "orderedAttacksCostsDamageAndFullNativeEffectsChecked": true,
+            "actualHP50Visible": true,
+            "printedDex79NotCollectorAlias045": true,
+            "artistReadCertain": true,
+            "setMarkChecked": true,
+            "fullPILAndSharpDecoded": true,
+            "noReviewerPixelModification": true,
+            "copyrightYearCertified": false,
+            "physicalEditionCertified": false,
+            "physicalFinishCertified": false
+          },
+          "pixel_observations_canonical_json_sha256": "9c42ae4d7159984fc0b34b52f1a38c99d2f3650c1da0876feec7612f795582d5",
+          "accepted_qualifications": [
+            {
+              "field": "historical HP conflict",
+              "historicalTCGdexHP": 40,
+              "historicalScrydexHP": 50,
+              "actualPrintedHP": 50,
+              "resolvedForSourceIdentity": true,
+              "canonicalMetadataEdited": false,
+              "rawProviderMetadataUnchanged": true
+            },
+            {
+              "field": "root visibleArt caption",
+              "historical": "edge of a pond",
+              "accepted": "green grass beneath a red-fruit tree and a drool puddle",
+              "reason": "Do not infer a pond from the small visible blue drool pool."
+            },
+            {
+              "field": "PNG processing history",
+              "retainedMetadata": {
+                "thumbnailWidth": 322,
+                "thumbnailHeight": 450,
+                "thumbnailMimeType": "image/jpeg",
+                "jpegSamplingFactor": "2x2,1x1,1x1"
+              },
+              "conclusion": "Retained stale thumbnail/JPEG history is not conclusive evidence of current PNG resizing. Provider preprocessing and genuine native-resolution gain remain unverified.",
+              "providerNoResizeCertified": false,
+              "sourceNeverUpscaledCertified": false,
+              "pngContainerDoesNotProveLosslessOpticalCapture": true
+            },
+            {
+              "field": "weakness value",
+              "providerMetadata": "×2",
+              "printedFront": "Psychic symbol only",
+              "printedMultiplierCertified": false
+            },
+            {
+              "field": "number",
+              "actual": "No.079 is National Dex",
+              "canonicalAlias": "045 is an index alias",
+              "providerPrintedTotal96IsPrintedDenominator": false
+            },
+            {
+              "field": "rights and physical status",
+              "ownerAttestationSeparate": true,
+              "vendorLicenceVerified": false,
+              "underlyingCopyrightLicenceVerified": false,
+              "physicalFinishVerified": false,
+              "physicalEditionVerified": false
+            }
+          ],
+          "provider_discrepancies_retained": [
+            {
+              "field": "historical HP conflict",
+              "historicalTCGdexHP": 40,
+              "historicalScrydexHP": 50,
+              "actualPrintedHP": 50,
+              "resolvedForSourceIdentity": true,
+              "canonicalMetadataEdited": false,
+              "rawProviderMetadataUnchanged": true
+            },
+            {
+              "field": "weakness value",
+              "providerMetadata": "×2",
+              "printedFront": "Psychic symbol only",
+              "printedMultiplierCertified": false
+            },
+            {
+              "field": "number",
+              "actual": "No.079 is National Dex",
+              "canonicalAlias": "045 is an index alias",
+              "providerPrintedTotal96IsPrintedDenominator": false
+            }
+          ],
+          "quality": {
+            "fullOriginalRead": true,
+            "fullPILDecoded": true,
+            "fullSharpDecoded": true,
+            "actualEncoding": "PNG with retained thumbnail/JPEG processing-history text metadata",
+            "detail360x504": true,
+            "hd720x1008": false,
+            "width": 570,
+            "height": 797,
+            "aspectRatio": 0.7151819322459222,
+            "aspectRatioIsReviewSignalOnly": true,
+            "fullFrontCropActuallyViewed": true,
+            "noSourcePixelModificationByReviewer": true,
+            "noUpscaleOrGenerationByReviewer": true,
+            "providerProcessingUnknown": true,
+            "providerNeverUpscaledCertified": false,
+            "genuineNativeResolutionGainCertified": false,
+            "pngDoesNotProveLosslessOpticalCapture": true,
+            "previousProductionImageCompared": false,
+            "existingTargetCardFrontAssetCount": 0,
+            "replacementQualityImprovementClaim": false,
+            "missingReadableFrontCandidate": true,
+            "retainedMetadataUnchanged": true
+          },
+          "source_variant_support": {
+            "currentSingletonMetadataCompatible": true,
+            "currentFinish": "normal",
+            "currentVariantCode": "normal",
+            "sourceScrydexVariants": [
+              {
+                "name": "normal",
+                "images": []
+              }
+            ],
+            "sourceTCGdexVariants": {
+              "firstEdition": false,
+              "holo": false,
+              "normal": true,
+              "reverse": false,
+              "wPromo": false
+            },
+            "physicalEditionCertified": false,
+            "physicalFinishCertified": false,
+            "sameArtworkLinksNotInvented": true,
+            "firstEditionFalseNotPhysicalProof": true
+          },
+          "queue_controls": {
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "name_number_and_symbol_readable": true,
+              "full_native_body_verified": true,
+              "exact_art_reference_verified": true
+            },
+            "identity_controls": {
+              "canonical_alias": "045",
+              "canonical_alias_is_internal_only": true,
+              "canonical_alias_is_not_printed_national_dex": true,
+              "printed_collector_number": null,
+              "printed_national_dex": 79,
+              "pokemon_identity_asserted": true
+            },
+            "source_qa": {
+              "actual_japanese_full_front_verified": true,
+              "actual_japanese_pokemon_front_verified": true,
+              "actual_hp50_distinct_historical_tcg40_verified": true,
+              "provider_native_resolution_gain_certified": false,
+              "provider_no_resize_certified": false,
+              "original_sha256": "2d1170c7cac4753e519f9fe69c5179aee284f2d01be5c12f4d49af1a44e498eb",
+              "actual_pixel_signature_sha256": "a54693d29010fba757d04818df54775f93f0700065edc281bc94de330e7001fe"
+            }
+          },
+          "current_acceptance": {
+            "independently_accepted": true,
+            "source_code": "pokellector",
+            "source_card_id": "pokellector-image-url-sha256:c440501050afdccbc520cba0c0b5057137d71948aac242a0558d5896d9c137cb",
+            "original_sha256": "2d1170c7cac4753e519f9fe69c5179aee284f2d01be5c12f4d49af1a44e498eb",
+            "category": "Pokemon"
+          },
+          "generic_other_rows_may_relax": false,
+          "vendor_licence_verified": false,
+          "sourcewide_approval": false,
+          "physical_edition_verified": false,
+          "physical_finish_verified": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    }
+  ],
+  "source_counts": {
+    "pokellector": 1
+  },
+  "delivery_scope": {
+    "fixed_batch_ids": [
+      "JP-CARDS-004"
+    ],
+    "saved_batch_tasks": 1,
+    "eligible_fronts": 1,
+    "by_batch": {
+      "JP-CARDS-004": {
+        "verified": 1,
+        "held": 0
+      }
+    },
+    "excluded_aliases": [],
+    "excluded": [],
+    "outside_fixed_cohort": [],
+    "whole_batch_completion_asserted": false
+  },
+  "binding_expectations": {
+    "production": [
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "494725ee-70bf-41d3-a6b7-2a7bb6180287",
+        "collector_number": "045",
+        "card_native_name": "slowpoke",
+        "variant_id": "72c0e00c-e174-4ecd-a672-2864a586af82",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      }
+    ],
+    "staging": [
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+        "set_code": "neo1",
+        "printing_id": "494725ee-70bf-41d3-a6b7-2a7bb6180287",
+        "collector_number": "045",
+        "card_native_name": "slowpoke",
+        "variant_id": "72c0e00c-e174-4ecd-a672-2864a586af82",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      }
+    ]
+  },
+  "scope_counts": {
+    "production": {
+      "printings": 1,
+      "variants": 1,
+      "names": 2,
+      "sets": 1
+    },
+    "staging": {
+      "printings": 1,
+      "variants": 1,
+      "names": 2,
+      "sets": 1
+    }
+  },
+  "source_policies": {
+    "production": [
+      {
+        "code": "pokellector",
+        "display_name": "Pokellector (owner supplied Japanese card fronts)",
+        "source_type": "image",
+        "base_url": "https://jp.pokellector.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly2 Neo2 Ruin Wall reference fronts in STACKR-JA-LEGACY-TRAINER-FRONTS-20261015-008; owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval or independently verified vendor licence.",
+        "deprecated_at": null
+      },
+      {
+        "code": "scrydex",
+        "display_name": "Scrydex",
+        "source_type": "image",
+        "base_url": "https://scrydex.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Exactly 89 English MEP fronts approved by owner; catalogue/rights-evidence/mep89-scrydex-owner-confirmation.2026-09-27.json; 8c68bf3499de1e1e340b00fc03e5f1b469de7b65d259b5fba5a8b4cd31119ca9. No source-wide approval.",
+        "deprecated_at": null
+      }
+    ],
+    "staging": []
+  },
+  "new_sources": {
+    "production": [],
+    "staging": [
+      {
+        "code": "pokellector",
+        "display_name": "Pokellector (owner supplied Japanese card fronts)",
+        "source_type": "image",
+        "base_url": "https://jp.pokellector.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly2 Neo2 Ruin Wall reference fronts in STACKR-JA-LEGACY-TRAINER-FRONTS-20261015-008; owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval or independently verified vendor licence.",
+        "deprecated_at": null
+      }
+    ]
+  }
+}

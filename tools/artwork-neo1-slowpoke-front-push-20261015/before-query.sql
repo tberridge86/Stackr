@@ -1,0 +1,11 @@
+-- Exact1 full private checkpoint. Root executes read only.
+BEGIN READ ONLY;
+SET LOCAL statement_timeout='20s';
+SELECT 'printings' AS scope,id::text AS identity,to_jsonb(t) AS payload FROM catalog.card_printings t WHERE id=any(ARRAY['494725ee-70bf-41d3-a6b7-2a7bb6180287'::uuid]::uuid[]) ORDER BY identity LIMIT 2;
+SELECT 'variants' AS scope,id::text AS identity,to_jsonb(t) AS payload FROM catalog.card_variants t WHERE printing_id=any(ARRAY['494725ee-70bf-41d3-a6b7-2a7bb6180287'::uuid]::uuid[]) ORDER BY identity LIMIT 2;
+SELECT 'names' AS scope,id::text AS identity,to_jsonb(t) AS payload FROM catalog.card_names t WHERE printing_id=any(ARRAY['494725ee-70bf-41d3-a6b7-2a7bb6180287'::uuid]::uuid[]) ORDER BY identity LIMIT 3;
+SELECT 'sets' AS scope,id::text AS identity,to_jsonb(t) AS payload FROM catalog.sets t WHERE id=any(ARRAY['769fa22e-e603-41a8-b62b-920a4abc660b'::uuid]::uuid[]) ORDER BY identity LIMIT 2;
+SELECT 'assets' AS scope,id::text AS identity,to_jsonb(t) AS payload FROM catalog.assets t WHERE printing_id=any(ARRAY['494725ee-70bf-41d3-a6b7-2a7bb6180287'::uuid]::uuid[]) OR variant_id=any(ARRAY['72c0e00c-e174-4ecd-a672-2864a586af82'::uuid]::uuid[]) OR (printing_id IS NULL AND variant_id IS NULL AND set_id=any(ARRAY['769fa22e-e603-41a8-b62b-920a4abc660b'::uuid]::uuid[])) ORDER BY identity LIMIT 201;
+SELECT 'links' AS scope,catalogue_version_id::text||':'||asset_id::text AS identity,to_jsonb(t) AS payload FROM catalog.catalogue_version_assets t WHERE (printing_id=any(ARRAY['494725ee-70bf-41d3-a6b7-2a7bb6180287'::uuid]::uuid[]) OR variant_id=any(ARRAY['72c0e00c-e174-4ecd-a672-2864a586af82'::uuid]::uuid[]) OR (printing_id IS NULL AND variant_id IS NULL AND set_id=any(ARRAY['769fa22e-e603-41a8-b62b-920a4abc660b'::uuid]::uuid[]))) OR asset_id IN (SELECT id FROM catalog.assets WHERE printing_id=any(ARRAY['494725ee-70bf-41d3-a6b7-2a7bb6180287'::uuid]::uuid[]) OR variant_id=any(ARRAY['72c0e00c-e174-4ecd-a672-2864a586af82'::uuid]::uuid[]) OR (printing_id IS NULL AND variant_id IS NULL AND set_id=any(ARRAY['769fa22e-e603-41a8-b62b-920a4abc660b'::uuid]::uuid[]))) ORDER BY identity LIMIT 201;
+SELECT 'sources' AS scope,id::text AS identity,to_jsonb(t) AS payload FROM ingest.sources t WHERE code=any(ARRAY['scrydex','pokellector']::text[]) ORDER BY identity LIMIT 3;
+ROLLBACK;
