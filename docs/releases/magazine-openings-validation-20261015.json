@@ -1,0 +1,295 @@
+{
+  "observedAt": "2026-10-15T19:58:51.395Z",
+  "sourceBase": "0b6298a826caeb7c6a35117f2d1da408d8a47e06",
+  "applicationSources": [
+    {
+      "file": "app/corocoro.tsx",
+      "sha256": "bc140649744156ec0faac842e55a68d7db6774a4dbbbc93a2e6db42d716ae565"
+    },
+    {
+      "file": "app/magazine-openings.tsx",
+      "sha256": "980355a3688a4096e59ab7145b7fd8917f893fb322720b2ee4b9564145ac933a"
+    },
+    {
+      "file": "components/MagazineOpeningExperience.tsx",
+      "sha256": "7353d48fffed6e1499402545d96d7e8e2102bd5ed724c73ec8f4d31c01df5c94"
+    },
+    {
+      "file": "components/MagazineCollectionAction.tsx",
+      "sha256": "6bfb6b6ae12644da3e475912a50e2143e20fffb699165198881b41ea33be050b"
+    },
+    {
+      "file": "lib/magazineOpenings.ts",
+      "sha256": "0c817b75e24bb14cea8149550a889b61d44147c05bf0a7c47dcd1799d308892b"
+    },
+    {
+      "file": "lib/magazineOpeningArtwork.ts",
+      "sha256": "957749c46a210b50c5eb2972135fc5fc70e9f365aea640bec827ebd5193d59ec"
+    }
+  ],
+  "typecheck": {
+    "command": "npm run typecheck",
+    "exitCode": 0
+  },
+  "lint": {
+    "command": "npm run lint",
+    "exitCode": 0,
+    "errors": 0,
+    "preExistingWarnings": 8
+  },
+  "regressions": {
+    "magazineOpenings": true,
+    "corocoroScreenRuntime": true,
+    "corocoroIssueArchive": true,
+    "corocoroMobileDelivery": true,
+    "curatedCatalogue": true,
+    "delayedAnimationAfterUnmount": true,
+    "collectionFocusInterruption": true,
+    "collectionPendingDraftAccountABA": true,
+    "authLoadingAndOwnerMismatch": true
+  },
+  "artwork": {
+    "files": 13,
+    "bytes": 1490212,
+    "fullDecode": true,
+    "sha256Match": true,
+    "newCanonicalMappings": 0
+  },
+  "iosExport": {
+    "observedAt": "2026-10-15T19:58:23.385Z",
+    "profile": "production",
+    "nativeExecution": false,
+    "assetTableRows": 731,
+    "matchingNewJpegs": 13,
+    "bundlePath": "_expo/static/js/ios/entry-37f77cf48864bc2ca8200e00673c81f6.hbc",
+    "bundleBytes": 11739594,
+    "bundleSha256": "146b4d7ca27361089485b7d8949506dd479124444674f357bcca2124226926b8",
+    "earlyIncompleteExportRejected": true
+  },
+  "secretScan": {
+    "scope": "one extracted printable Hermes string file",
+    "filesScanned": 1,
+    "findings": 0
+  },
+  "browser": {
+    "observedAt": "2026-10-15T19:57:44.703Z",
+    "surface": "Actual React Native opening component rendered through React Native Web; preview-only data/auth boundaries",
+    "profiles": 6,
+    "viewportWidths": [
+      320,
+      390,
+      820
+    ],
+    "completedProfileWidthPairs": [
+      {
+        "width": 320,
+        "profile": "Monthly CoroCoro Comic, May 2001"
+      },
+      {
+        "width": 320,
+        "profile": "Monthly CoroCoro Comic, November 1996"
+      },
+      {
+        "width": 320,
+        "profile": "Monthly CoroCoro Comic, September 1997"
+      },
+      {
+        "width": 320,
+        "profile": "Monthly CoroCoro Comic, April 1998"
+      },
+      {
+        "width": 320,
+        "profile": "Monthly CoroCoro Comic, December 1998"
+      },
+      {
+        "width": 320,
+        "profile": "Pokémon Card Fan Club, Volume 5 · June 1998"
+      },
+      {
+        "width": 390,
+        "profile": "Monthly CoroCoro Comic, May 2001"
+      },
+      {
+        "width": 390,
+        "profile": "Monthly CoroCoro Comic, November 1996"
+      },
+      {
+        "width": 390,
+        "profile": "Monthly CoroCoro Comic, September 1997"
+      },
+      {
+        "width": 390,
+        "profile": "Monthly CoroCoro Comic, April 1998"
+      },
+      {
+        "width": 390,
+        "profile": "Monthly CoroCoro Comic, December 1998"
+      },
+      {
+        "width": 390,
+        "profile": "Pokémon Card Fan Club, Volume 5 · June 1998"
+      },
+      {
+        "width": 820,
+        "profile": "Monthly CoroCoro Comic, May 2001"
+      },
+      {
+        "width": 820,
+        "profile": "Monthly CoroCoro Comic, November 1996"
+      },
+      {
+        "width": 820,
+        "profile": "Monthly CoroCoro Comic, September 1997"
+      },
+      {
+        "width": 820,
+        "profile": "Monthly CoroCoro Comic, April 1998"
+      },
+      {
+        "width": 820,
+        "profile": "Monthly CoroCoro Comic, December 1998"
+      },
+      {
+        "width": 820,
+        "profile": "Pokémon Card Fan Club, Volume 5 · June 1998"
+      }
+    ],
+    "reducedMotion": true,
+    "runtimeErrors": [],
+    "nonGetRequests": [],
+    "deviceVerification": false
+  },
+  "delivery": {
+    "independentReview": "completed-focus-repair-confirmed",
+    "hostedChecks": {
+      "originalSource": "3fbf150f243705dc7cdd131df6c371ea5bdcec84",
+      "passedNormalJobs": 8,
+      "releaseCandidateGate": "skipped",
+      "repairedRevision": "pending"
+    },
+    "merged": false,
+    "published": false,
+    "deviceVerified": false,
+    "unmappedCardReferences": 12,
+    "releaseLane": "fresh-normal-production-iOS-build-and-TestFlight-submission"
+  },
+  "priorIosExport": {
+    "profile": "production",
+    "nativeExecution": false,
+    "assetTableRows": 731,
+    "matchingNewJpegs": 13,
+    "bundleBytes": 11739020,
+    "bundleSha256": "5a011b25fab4008c4c3f196efc639b298bb79100febaed337ac687bfed91e065",
+    "earlyIncompleteExportRejected": true,
+    "status": "superseded-by-navigation-focus-repair"
+  },
+  "productionDependencyReads": {
+    "checkedAt": "2026-10-15T19:52:03.638Z",
+    "backendSource": "0188361a1b1e278ea180f9eec5ec487af52ca8cd",
+    "catalogueVersion": "en:tcgdex-796afd47e430-full-primary-2026-08-19|ja:magazine-promo-reconciliation-2026-09-27-v1|zh-cn:api-launch-2026-08-09-v1|zh-tw:tcgdex-796afd47e430-full-primary-2026-08-19|ko:api-launch-2026-08-09-v1",
+    "pokedexIndexVersion": "pokeapi-species-2026-10-11-a8e69cbfe2b9",
+    "translationRecordsSha256": "6de8551e043ced800b359a8fb952548649eb042922abf9cae7637c35933c636e",
+    "verifiedTranslationSamples": 4,
+    "reads": [
+      {
+        "path": "/health",
+        "milliseconds": 142,
+        "cache": null
+      },
+      {
+        "path": "/v1/catalog/manifest",
+        "milliseconds": 2055,
+        "cache": "MISS"
+      },
+      {
+        "path": "/v1/pokemon",
+        "milliseconds": 244,
+        "cache": "MISS"
+      },
+      {
+        "path": "/v1/pokemon",
+        "milliseconds": 233,
+        "cache": "MISS"
+      },
+      {
+        "path": "/v1/cards/c8609bab-a76b-4ca3-a86a-958aa87d2275",
+        "milliseconds": 2746,
+        "cache": "MISS"
+      },
+      {
+        "path": "/v1/cards/36fefd44-8813-450b-9490-3814f952f175",
+        "milliseconds": 621,
+        "cache": "MISS"
+      },
+      {
+        "path": "/v1/cards/6d5617ff-95fc-473e-be4b-725c66d7276c",
+        "milliseconds": 626,
+        "cache": "MISS"
+      },
+      {
+        "path": "/v1/cards/08285a8f-000e-4d95-8e87-304708eb1f32",
+        "milliseconds": 473,
+        "cache": "MISS"
+      }
+    ],
+    "activityHistory": {
+      "supabaseProjectRef": "oakdbbzdqwurpjnoqhmu",
+      "baseSchema": "verified",
+      "baseColumns": "id,user_id,type,title,subtitle,card_id,set_id,value_change,is_positive,created_at",
+      "snapshotSchema": "legacy_compatible",
+      "access": "anonymous_publishable_key",
+      "rowLimit": 0,
+      "reads": [
+        {
+          "path": "/rest/v1/activity_feed",
+          "contract": "base",
+          "limit": 0,
+          "status": 200,
+          "milliseconds": 442
+        },
+        {
+          "path": "/rest/v1/activity_feed",
+          "contract": "snapshots",
+          "limit": 0,
+          "status": 400,
+          "milliseconds": 1076
+        }
+      ]
+    }
+  },
+  "localEvidenceDirectory": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/magazine-openings-20261015",
+  "retainedLocalLogs": [
+    {
+      "file": "review-repair-regression.log",
+      "sha256": "a3c115cfc7b342c9da0a912e6ab9a680beeee045b996c9cf09fc5ebe51def39e"
+    },
+    {
+      "file": "review-repair-typecheck.log",
+      "sha256": "490d9dc5c60f3eedf9572c6c58ab4a187b9b17a2d8b1a897ffed8262f1247b31"
+    },
+    {
+      "file": "review-repair-lint.log",
+      "sha256": "8f601b54ea256adf85d6130ed4dd7d1515b3aa9e1937deda662158de2cae2074"
+    },
+    {
+      "file": "review-repair-changed-lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "review-repair-browser-matrix.log",
+      "sha256": "a7798c19c1f6118704069aea33c96f2b9351b3aa8d733903f84d8aa16349208d"
+    },
+    {
+      "file": "reviewed-ios-export.log",
+      "sha256": "e40011a1cee82141610ad2b69179a6333a67bc5a7c3173a949cba1184a39d208"
+    },
+    {
+      "file": "reviewed-secret-scan.log",
+      "sha256": "f562c65188fa27493db95aac3433c5700c60433211758977794770cbe9a6465e"
+    },
+    {
+      "file": "production-runtime-check.log",
+      "sha256": "826cb719a7157ed3bc31cf305a141f55588ee76c913a5198f8f609728759cdc9"
+    }
+  ]
+}
