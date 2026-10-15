@@ -8,6 +8,9 @@ import { CorocoroIssueCover } from '../components/CorocoroIssueCover';
 import { StackrImage } from '../components/StackrImage';
 import { Text } from '../components/Text';
 import { useTheme } from '../components/theme-context';
+import { MagazineOpeningExperience } from '../components/MagazineOpeningExperience';
+import { MagazineCollectionAction } from '../components/MagazineCollectionAction';
+import { getMagazineOpening } from '../lib/magazineOpenings';
 import {
   formatCorocoroIssueMonth as issueLabel, getCorocoroIssueGroup, getCorocoroIssuesForPublication,
   getCorocoroPublicationSummaries, type CorocoroIssueRecord,
@@ -93,7 +96,7 @@ export default function CorocoroLibraryScreen() {
         {issue && publication && <Link href={{ pathname: '/corocoro', params: { publication: publication.id } }} style={[link, styles.navAction]}>{publication.name}</Link>}
       </View>
       <Text style={styles.title}>{issue ? issueLabel(issue.issueMonth) : publication?.name ?? 'The CoroCoro library'}</Text>
-      <Text style={styles.intro}>{issue ? `${issue.publication}. Open a card pocket to explore its details.` : 'Choose a magazine, open an edition, and explore the Pokémon cards connected to that issue.'}</Text>
+      <Text style={styles.intro}>{issue ? `${issue.publication}. Explore its cards and original opening style.` : 'Choose a magazine, open an edition, and explore the Pokémon cards connected to that issue.'}</Text>
       {params.issue && !issue && <View style={[styles.notice, surface]}><Text>This edition isn’t in the library yet. Choose a publication below.</Text></View>}
       {!issue && <TextInput value={query} onChangeText={setQuery} accessibilityLabel="Search magazine issues and cards"
         placeholder="Search Shining Mew, Pikachu, 2001…" placeholderTextColor={theme.colors.textSoft}
@@ -109,6 +112,7 @@ export default function CorocoroLibraryScreen() {
           </Pressable>
         </Link>;
       })}</View>}
+      {!publication && <Link href="/magazine-openings" style={[link, styles.navAction]}>Explore magazine openings</Link>}
       {publication && !issue && <>
         <Text style={styles.muted}>{filtered.length} editions · Printed cover month</Text>
         <View style={styles.shelf}>{filtered.map((group) => <Link key={group.id} href={{ pathname: '/corocoro', params: { issue: group.id } }} asChild>
@@ -135,6 +139,8 @@ export default function CorocoroLibraryScreen() {
               <Text style={[styles.pocketName, { color: theme.colors.primary }]}>{distributionLabels[record.distributionType] ?? record.distributionType}</Text>
               {record.distributionType !== 'insert' && <Text style={styles.muted}>Associated offer; these cards were not guaranteed magazine inserts.</Text>}
               {record.confidence === 'conflicting' && <Text style={styles.dispute}>Sources disagree about this issue’s card. The association is unconfirmed.</Text>}
+              {getMagazineOpening(record) ? <MagazineOpeningExperience key={record.id} opening={getMagazineOpening(record)!}
+                references={record.cards} renderCollectionAction={(card) => <MagazineCollectionAction key={card.id} card={card} />} /> : null}
               <View style={styles.pockets}>{record.cards.map((card, index) => <CardPocket key={`${record.id}:${index}`} reference={card} disputed={record.confidence === 'conflicting'} />)}</View>
               {record.notes && <Text style={styles.notes}>{record.notes}</Text>}
               <View style={styles.navigation}>{record.sourceUrls.map((url, index) => <Link key={url} href={url as `https://${string}`} target="_blank" rel="noopener noreferrer" style={[link, styles.navAction]}>Source {index + 1} · {new URL(url).hostname.replace(/^www\./, '')}</Link>)}</View>

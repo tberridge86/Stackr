@@ -98,6 +98,7 @@ jobs:
       - run: npm run test:owner-recognition
       - run: npm run test:owner-teaching
       - run: npm run test:card-inspection
+      - run: npm run test:magazine-openings
       - run: npm run test:scanner-calibration
       - run: npm run test:scanner-pipeline
       - run: npm run test:scanner-analytics

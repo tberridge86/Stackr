@@ -1,0 +1,90 @@
+{
+  "observedAt": "2026-10-15T19:28:45.011Z",
+  "sourceBase": "0b6298a826caeb7c6a35117f2d1da408d8a47e06",
+  "applicationSources": [
+    {
+      "file": "app/corocoro.tsx",
+      "sha256": "bc140649744156ec0faac842e55a68d7db6774a4dbbbc93a2e6db42d716ae565"
+    },
+    {
+      "file": "app/magazine-openings.tsx",
+      "sha256": "980355a3688a4096e59ab7145b7fd8917f893fb322720b2ee4b9564145ac933a"
+    },
+    {
+      "file": "components/MagazineOpeningExperience.tsx",
+      "sha256": "7353d48fffed6e1499402545d96d7e8e2102bd5ed724c73ec8f4d31c01df5c94"
+    },
+    {
+      "file": "components/MagazineCollectionAction.tsx",
+      "sha256": "3d4a44a6cde175cd5d46280db220d6e0ec51e3cce7b38d1c2e963fde81e0e8c3"
+    },
+    {
+      "file": "lib/magazineOpenings.ts",
+      "sha256": "0c817b75e24bb14cea8149550a889b61d44147c05bf0a7c47dcd1799d308892b"
+    },
+    {
+      "file": "lib/magazineOpeningArtwork.ts",
+      "sha256": "957749c46a210b50c5eb2972135fc5fc70e9f365aea640bec827ebd5193d59ec"
+    }
+  ],
+  "typecheck": {
+    "command": "npm run typecheck",
+    "exitCode": 0
+  },
+  "lint": {
+    "command": "npm run lint",
+    "exitCode": 0,
+    "errors": 0,
+    "preExistingWarnings": 8
+  },
+  "regressions": {
+    "magazineOpenings": true,
+    "corocoroScreenRuntime": true,
+    "corocoroIssueArchive": true,
+    "corocoroMobileDelivery": true,
+    "curatedCatalogue": true
+  },
+  "artwork": {
+    "files": 13,
+    "bytes": 1490212,
+    "fullDecode": true,
+    "sha256Match": true,
+    "newCanonicalMappings": 0
+  },
+  "iosExport": {
+    "profile": "production",
+    "nativeExecution": false,
+    "assetTableRows": 731,
+    "matchingNewJpegs": 13,
+    "bundleBytes": 11739020,
+    "bundleSha256": "5a011b25fab4008c4c3f196efc639b298bb79100febaed337ac687bfed91e065",
+    "earlyIncompleteExportRejected": true
+  },
+  "secretScan": {
+    "scope": "one extracted printable Hermes string file",
+    "filesScanned": 1,
+    "findings": 0
+  },
+  "browser": {
+    "observedAt": "2026-10-15T19:28:15.483Z",
+    "surface": "Actual React Native opening component rendered through React Native Web; preview-only data/auth boundaries",
+    "profiles": 6,
+    "viewportWidths": [
+      320,
+      390,
+      820
+    ],
+    "reducedMotion": true,
+    "runtimeErrors": [],
+    "nonGetRequests": [],
+    "deviceVerification": false
+  },
+  "delivery": {
+    "independentReview": "pending-side-chat-exception",
+    "hostedChecks": "pending",
+    "merged": false,
+    "published": false,
+    "deviceVerified": false,
+    "unmappedCardReferences": 12
+  }
+}
