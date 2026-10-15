@@ -1,0 +1,222 @@
+{
+  "status": "frozen_local_checks_passed_awaiting_independent_review",
+  "queueId": "STACKR-JA-LEGACY-TRAINER-FRONTS-20261015-008",
+  "assetId": 644243819,
+  "archiveName": "stackr-ja-artwork-legacy-trainer-fronts-20261015.zip",
+  "archiveSha256": "eef7d4300f3c756081e18fda0a303971d59439c2f7f73f5b77613e2728808d14",
+  "archiveBytes": 3023054,
+  "archiveMembers": 36,
+  "originals": 8,
+  "derivatives": 24,
+  "sourceManifestSha256": "5933b6aea282326cb6dd25421499ccea72d3204d22f2626b761b98f71f928dc2",
+  "packageReceiptSha256": "4bc615b15763bde983a3edc7e1befaa673b2bdbdd6e1526e47a78965c53d2a7f",
+  "confirmation": "PUBLISH ARTWORK LEGACY TRAINER FRONTS",
+  "tests": {
+    "focusedNodeTests": {
+      "passed": 14,
+      "failed": 0
+    },
+    "persistedFailureJournalTests": {
+      "passed": 1,
+      "failed": 0,
+      "connectionRejectedBeforeClientConstruction": true
+    },
+    "archiveSafetyTests": {
+      "passed": 6,
+      "failed": 0,
+      "corruptTruncatedArchiveRejected": true
+    },
+    "queue": {
+      "actualReceipts": 8,
+      "jointRawManifestTamperRejections": 18,
+      "missingOrFakeAuthorityRejections": 2,
+      "localObjectsChecked": 32,
+      "privateReferencesChecked": 64,
+      "writes": 0
+    },
+    "unchangedFinal13QueueRegression": {
+      "actualReceipts": 13,
+      "receiptTamperRejections": 10,
+      "jointReceiptManifestRejections": 4,
+      "forgedAuthorityRejections": 1,
+      "writes": 0
+    },
+    "pillowFullyDecodedFiles": 32,
+    "sharpFullyDecodedFiles": 32,
+    "immutableArchiveLocalExtraction": {
+      "sha256": true,
+      "size": true,
+      "allMemberHashesAndBytes": true,
+      "imageAndMetadataCounts": true
+    },
+    "privatePythonCanonicalFullJsonHashesVerified": 6,
+    "protectedWorkflowYaml": true,
+    "exactMainGate": true,
+    "sharedProductionConcurrency": true,
+    "pinnedActions": true,
+    "receiptSecretScanBeforeArtifactUpload": true,
+    "secretScan": {
+      "ok": true,
+      "exactToolAndWorkflowFiles": 20
+    },
+    "all20WorkingTextBytesEqualGitLF": true,
+    "unchangedSharedDependencies": 11
+  },
+  "finiteProductionModel": {
+    "before": 46,
+    "after": 63,
+    "newAssets": 8,
+    "newLinks": 8,
+    "newInactivePokellectorProvenance": 1,
+    "oldScopedRowsUnchanged": true,
+    "existingScrydexFieldsPreserved": 17,
+    "sourcewideActivation": false
+  },
+  "stagingModel": {
+    "before": 40,
+    "afterRollback": 40,
+    "fixtureSources": 2
+  },
+  "retainedQualifications": {
+    "artist073": "null / readCertain false; provider spelling is separate",
+    "source074075": "Bottom-strip artefacts unchanged",
+    "pokellectorPhotos": [
+      "39645",
+      "39648"
+    ],
+    "originalFormats": {
+      "webp": 7,
+      "jpeg": 1
+    },
+    "physicalEditionVerified": false,
+    "physicalFinishVerified": false,
+    "vendorLicenceVerified": false,
+    "sourcewideApproval": false
+  },
+  "preparationPipelineSha256": "642eb05d57c921901cfa6241e1f0d32a71da602ea3594693b8d63247a05b0bb0",
+  "physicalQuality": {
+    "detailFronts": 8,
+    "hd720x1008": 0,
+    "upscaling": false,
+    "originalByteChanges": 0
+  },
+  "productionWritesByWorker": 0,
+  "stagingWritesByWorker": 0,
+  "providerRequestsByWorker": 0,
+  "queueExecuted": false,
+  "publicationAndApiVerification": "Root-owned; pending exact-head independent review, hosted checks and protected workflow.",
+  "frozenFiles": [
+    {
+      "file": "tools/artwork-legacy-trainer-fronts-push-20261015/.gitattributes",
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+      "bytes": 14
+    },
+    {
+      "file": "tools/artwork-legacy-trainer-fronts-push-20261015/.gitignore",
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "bytes": 19
+    },
+    {
+      "file": "tools/artwork-legacy-trainer-fronts-push-20261015/README.md",
+      "sha256": "6c32dbf6e1e4551246c9f99a053bd9ce0b1ed19a49378bb1549753aee96baefc",
+      "bytes": 1861
+    },
+    {
+      "file": "tools/artwork-legacy-trainer-fronts-push-20261015/approval.json",
+      "sha256": "392ab5c4a6c00b2f9e2cb3e615db85e7d18162cbf0b3441ffd8bf29b0a2a5817",
+      "bytes": 2399
+    },
+    {
+      "file": "tools/artwork-legacy-trainer-fronts-push-20261015/before-query.sql",
+      "sha256": "a2f83fe3a525b19b7905e29ae810a397c9bb8d12fb409f77fef256db9149c696",
+      "bytes": 5325
+    },
+    {
+      "file": "tools/artwork-legacy-trainer-fronts-push-20261015/download-package.py",
+      "sha256": "8f469acab2d7bbee27b510312554cc74f047afc63268ee0662c3721fdac18b09",
+      "bytes": 6087
+    },
+    {
+      "file": "tools/artwork-legacy-trainer-fronts-push-20261015/download-package.test.py",
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41",
+      "bytes": 6940
+    },
+    {
+      "file": "tools/artwork-legacy-trainer-fronts-push-20261015/freeze-inputs.json",
+      "sha256": "762aa21b647e74f79979eedca281ee3604313a5e229d4fa8a0cdfe691135e749",
+      "bytes": 6086
+    },
+    {
+      "file": "tools/artwork-legacy-trainer-fronts-push-20261015/freeze-local.mjs",
+      "sha256": "e54a343de0124bf88a32f757e11eb03e51801fd9c02212b3c42436ace5793923",
+      "bytes": 10298
+    },
+    {
+      "file": "tools/artwork-legacy-trainer-fronts-push-20261015/frozen.mjs",
+      "sha256": "aab22573290726dfc132baed42fa000d3df2f36aa8c07fd92a765ff87c41a00f",
+      "bytes": 20605
+    },
+    {
+      "file": "tools/artwork-legacy-trainer-fronts-push-20261015/identity-table.json",
+      "sha256": "892f45ca7486b6bd908a5c3757644487580f47b1d86f1b48581b8696f6ea7c3a",
+      "bytes": 7156
+    },
+    {
+      "file": "tools/artwork-legacy-trainer-fronts-push-20261015/metadata-guard.mjs",
+      "sha256": "28b85798558135004aabfb6c87e01fe533d43ee6f26661776422fde0c0f53320",
+      "bytes": 8526
+    },
+    {
+      "file": "tools/artwork-legacy-trainer-fronts-push-20261015/plan.json",
+      "sha256": "caab1bc58bc7f0f5862c88e8e82739ac28e85a108ffd57d2d21c7e55bb945257",
+      "bytes": 455279
+    },
+    {
+      "file": "tools/artwork-legacy-trainer-fronts-push-20261015/publish.mjs",
+      "sha256": "14b068ac1d674c0c1ece1e5549344a1a192d0e9b25714dd21115441bbc966f35",
+      "bytes": 6426
+    },
+    {
+      "file": "tools/artwork-legacy-trainer-fronts-push-20261015/publish.test.mjs",
+      "sha256": "51f7b9c5c8b40f82e94161c1d0d119136e9c751d40d4f5ff6abdb194d883c332",
+      "bytes": 21664
+    },
+    {
+      "file": "tools/artwork-legacy-trainer-fronts-push-20261015/saved-targets.json",
+      "sha256": "8cbfdbcad0ba05e937dc2168b14595073bdabf54430c6b8f18152d3a0bc5c311",
+      "bytes": 3417
+    },
+    {
+      "file": "tools/artwork-legacy-trainer-fronts-push-20261015/source-proof.mjs",
+      "sha256": "9932e92bc9e17d3b2db8b57c5728f825bb356206a8f54da7d67424130c6dd23a",
+      "bytes": 28646
+    },
+    {
+      "file": "tools/artwork-legacy-trainer-fronts-push-20261015/verify-packages.mjs",
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841",
+      "bytes": 1495
+    },
+    {
+      "file": ".github/workflows/artwork-legacy-trainer-fronts-production.yml",
+      "sha256": "d852ad8cee3ae1762d94cdfa0e32622fe283f1136e3aa35df5e7ea7968a407ad",
+      "bytes": 3712
+    }
+  ],
+  "continuationQueueFiles": [
+    {
+      "file": "verify-exact-legacy-trainer8-queue-source.mjs",
+      "sha256": "14abbe4f71968396a544403a3ce8211d7f4445d22463cc909f116ce2981ab544",
+      "bytes": 11123
+    },
+    {
+      "file": "test-legacy-trainer8-queue-binding.mjs",
+      "sha256": "00f55f638c7548de2394f5090fc93e15306e98a8232502aa410d3b858c03fddc",
+      "bytes": 4304
+    },
+    {
+      "file": "queue-prepared-cohort.mjs",
+      "sha256": "2165ccbc7bcf355987738ff046725f3ae906304fb0f2c1f58fa7757d594dab80",
+      "bytes": 25016
+    }
+  ]
+}

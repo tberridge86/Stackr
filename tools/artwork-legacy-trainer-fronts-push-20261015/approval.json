@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 8,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "approved_at": "2026-10-15",
+  "cohort_sha256": "caab1bc58bc7f0f5862c88e8e82739ac28e85a108ffd57d2d21c7e55bb945257",
+  "source_counts": {
+    "scrydex": 6,
+    "pokellector": 2
+  },
+  "source_evidence": {
+    "approvedProjection": "52fcc73b1a34aba96faf863a1a78251bf4e84406dcce01df118975d499bcfd17",
+    "finiteDecisionV2": "b0ef2b3ba98cb9cdf44c7d82fc97529b6832e04a8975b87a6a7c1b278cffc8f0",
+    "currentScope": "22451ac1a157a4cd661893ce35875305405f6312da0bb0b64983f5ea7a30b175",
+    "proposedSourcePolicy": "eaf14987ed8e38ded85fc868db2da07aaa3d8f828d401bc8045136e77fbb4e73",
+    "ownerPermission": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "productionBefore": "4da03fcfd3d5ac1367e11f0ccbf560c8d2752184f4f4f5a5d612bb1b1b55f2de",
+    "stagingBefore": "817ef8c74e89508b3b30e32c2e5c4ffbf9fca7f7c87daa93bda82276612d527b",
+    "productionBindings": "14f559ac0e1e1c914ca50c2998958655678b2bfc544f82334ea2bd1268bb619f",
+    "stagingBindings": "efa3615cccf30e4e56ede2791b246eb63ddba7086cb8171d4b14049b176a19a3",
+    "neo1-trainer3-independent-source-selection-20261015.json": "b7fccfaa7df76c5a8402c5ed43601667c0db239f8447b6559e0468ab14874ddb",
+    "neo1-trainer3-independent-review-20261015.json": "306ec71b1197caac25ff1a88e68ec8560ad6caeee656a0e9c2b99f5c8c70f0db",
+    "neo2-trainer5-independent-source-selection-20261015.json": "9419b9bb8040086befd94d732678e09ce3a0efb443b7e723b59a1a0744d7fe43",
+    "neo2-trainer5-independent-review-20261015.json": "1ad94dd15b4560668c74407c92db3f6a6ffecb8d5c723e9413a5d80a3f50ca48"
+  },
+  "scope": "Store, resize and display exactly8 independently accepted unnumbered Japanese Trainers and24 unenlarged derivatives. Six retained Scrydex originals plus two distinct owner-supplied Pokellector Wall photos. Preserve current labels/normal variants, qualified null artist073 and original074075 bottom artefacts. Insert exactly1 inactive under_review attribution-required Pokellector provenance row; preserve the complete existing17-field Scrydex row. No source activation, canonical/price/ownership changes or physical/licence/sourcewide certification."
+}
