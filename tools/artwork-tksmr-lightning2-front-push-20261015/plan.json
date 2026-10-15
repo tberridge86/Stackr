@@ -1,0 +1,628 @@
+{
+  "schemaVersion": 1,
+  "queue_id": "TKSMR-LIGHTNING2-001-20261015",
+  "source_manifest_sha256": "86e75232ef6edab0db64dc67e39f71f17821864eea82d6543ccf01e891352ea8",
+  "package_receipt_sha256": "19b7fcffc9a3853141ee5fa1e4b6700a2b45a8bb7084f2aec87fcc9c1a643510",
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "589fcd412e1bec60964ed2599fe10b4e4ba4c0c3f295949e96494acf10b78f27",
+    "finiteDecisionFileByteSha256": "1001c024be45d7bd8d6a5e90ca1b3c9f431724aa39ed4b4897139c96dfd0c775",
+    "sourceHandoffFileByteSha256": "64caff893846ecd56f6c07a01d5952675353887cb488abf31d32e4d7be2aebff",
+    "independentSourceReviewFileByteSha256": "e2b3ce3e5f9de5254c3405cd6f0665f08ff4ed91f8e052aaa78d179779b4d3d1",
+    "fourSourceCheckpointFileByteSha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "b2ed63f3192c7336a77941e4327de35777198dbb77034e19cb940e341cc33168",
+    "independentPrivatePackageReviewSha256": "d1924e81b936af10665ef1703597fc7fed4f3635e98f37c4f700fc2fa3b28b2f",
+    "rootPrivatePackageValidationSha256": "63514c39f8bbe8a7b9dce971c037fe851301ea4c0da2faee36a59710828affd3",
+    "rootSourceArchiveBindingSha256": "7ddde53d9b14ec80fa6762fa4dff09be8d6cf7f7532f2901c1ede09bee5dc909",
+    "rootUploadReceiptSha256": "421af3d809ce8d8306adedee951a05ce443d92fe89dad4cee73438f12ba772ae"
+  },
+  "archive": {
+    "id": 645429563,
+    "sha256": "904a6727badadcbaf9821b0c4902018ca71a7029453d7ac68fc844ba4a775b28",
+    "byte_size": 254382,
+    "file_count": 8,
+    "name": "lightning1-fronts-20261015.zip"
+  },
+  "archive_metadata": [
+    {
+      "file": "manifest.json",
+      "sha256": "86e75232ef6edab0db64dc67e39f71f17821864eea82d6543ccf01e891352ea8",
+      "byte_size": 25459
+    },
+    {
+      "file": "receipts/preparation-summary.json",
+      "sha256": "e3bf42a63a4768e4320c26715e78395957af17272f5e3cf69221f9c67bc85992",
+      "byte_size": 1312
+    },
+    {
+      "file": "receipts/current-card-bindings.json",
+      "sha256": "428a4f7ac7e064c94b42b0efc5e040ce2e51a42d921b0e4d1a9799984d8c6b7e",
+      "byte_size": 4533
+    },
+    {
+      "file": "receipts/finite-decision.json",
+      "sha256": "74832e228a1e672975fefc435359037e5da36fd095dafb6a188f636a4ab53cf6",
+      "byte_size": 3687
+    }
+  ],
+  "rows": [
+    {
+      "printing_id": "d70868de-b7dc-414e-ac9f-d63055956ef0",
+      "set_id": "6bbc266c-3ebc-4f6e-a3a5-d8a6d40427b7",
+      "set_code": "tk-sm-r",
+      "language_code": "en",
+      "collector_number": "2",
+      "card_native_name": "Lightning Energy",
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "variant_ids": [
+        "a5401eba-11c3-42f1-a05e-f76b3db9d945"
+      ],
+      "batch_id": "EN-CARDS-020",
+      "work_type": "CARDS",
+      "source_code": "pricecharting",
+      "provider_id": "pricecharting-image-url-sha256:c476992336733cd7d8945cf4bf5c2e3e6120347a96b7672fed22fa6531630df8",
+      "image_url": "https://storage.googleapis.com/images.pricecharting.com/d190a2da2b78dae7625f89adbf3ee5da3d1f7f6d276dbf813734e6f07d21f689/1600.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/aa596e1acb287f469733735faae3c4a2b9ecb614630762bed7ac31084eac1701/original.jpg",
+          "sha256": "aa596e1acb287f469733735faae3c4a2b9ecb614630762bed7ac31084eac1701",
+          "byte_size": 167616,
+          "width": 1200,
+          "height": 1600,
+          "mime_type": "image/jpeg",
+          "artifact_id": 645429563
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/f09855fb246838b6cc7c26d341c1069c96de091cbfc4d41824ded87e892ca438/card-grid.webp",
+          "sha256": "f09855fb246838b6cc7c26d341c1069c96de091cbfc4d41824ded87e892ca438",
+          "byte_size": 7076,
+          "width": 240,
+          "height": 320,
+          "mime_type": "image/webp",
+          "artifact_id": 645429563
+        },
+        {
+          "role": "search-result",
+          "file": "objects/493a2b35afe0b0a6817127080e4e515cbbbad77986171e771fd7607c791520ed/search-result.webp",
+          "sha256": "493a2b35afe0b0a6817127080e4e515cbbbad77986171e771fd7607c791520ed",
+          "byte_size": 1552,
+          "width": 96,
+          "height": 128,
+          "mime_type": "image/webp",
+          "artifact_id": 645429563
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/a8b148bbec1330f0b566a62ac86643c4f4f288b018277ced0ac7990c53097a63/detail-page.webp",
+          "sha256": "a8b148bbec1330f0b566a62ac86643c4f4f288b018277ced0ac7990c53097a63",
+          "byte_size": 69468,
+          "width": 720,
+          "height": 960,
+          "mime_type": "image/webp",
+          "artifact_id": 645429563
+        }
+      ],
+      "evidence": {
+        "source_url": "https://storage.googleapis.com/images.pricecharting.com/d190a2da2b78dae7625f89adbf3ee5da3d1f7f6d276dbf813734e6f07d21f689/1600.jpg",
+        "source_page_url": "https://www.pricecharting.com/game/pokemon-lycanroc-%26-alolan-raichu/lightning-energy-2",
+        "provider_id": "pricecharting-image-url-sha256:c476992336733cd7d8945cf4bf5c2e3e6120347a96b7672fed22fa6531630df8",
+        "source_metadata_sha256": "0d371a1d5e8aa38fae7a5a6d5c5003f72f01c6efcf96d8fd69ce7451cf84b553",
+        "source_body": {
+          "contract": "tksmr-lightning2-one-english-energy-shared-front-v1",
+          "work_type": "CARDS",
+          "accepted_category": "Energy",
+          "photo_identity_projection": {
+            "schemaVersion": 1,
+            "sourceCode": "pricecharting",
+            "sourceDetailUrl": "https://www.pricecharting.com/game/pokemon-lycanroc-%26-alolan-raichu/lightning-energy-2",
+            "literalOriginalUrl": "https://storage.googleapis.com/images.pricecharting.com/d190a2da2b78dae7625f89adbf3ee5da3d1f7f6d276dbf813734e6f07d21f689/1600.jpg",
+            "literalOriginalUrlSha256": "c476992336733cd7d8945cf4bf5c2e3e6120347a96b7672fed22fa6531630df8",
+            "sourceProductId": "6610761",
+            "canonicalPrintingId": "d70868de-b7dc-414e-ac9f-d63055956ef0",
+            "canonicalSetId": "6bbc266c-3ebc-4f6e-a3a5-d8a6d40427b7",
+            "canonicalSetCode": "tk-sm-r",
+            "languageCode": "en",
+            "canonicalAlias": "2",
+            "printedCollectorNumber": "2/30",
+            "printedSetCodeLiteral": null,
+            "sourceSetAssociation": "English Sun & Moon Trainer Kit, Alolan Raichu half",
+            "originalFileByteSha256": "aa596e1acb287f469733735faae3c4a2b9ecb614630762bed7ac31084eac1701",
+            "originalByteSize": 167616,
+            "width": 1200,
+            "height": 1600,
+            "format": "jpeg",
+            "actualPrintedTitle": "ENERGY",
+            "semanticEnergyType": "Lightning",
+            "historicalSelectedSourceCardId": null,
+            "physicalEditionCertified": false,
+            "physicalFinishCertified": false
+          },
+          "photo_identity_projection_canonical_sha256": "685a38e96ddd5a0617d4f84ea186e48655f41398e685066bfd9543574d8ff9ed",
+          "photo_raw_private_html_file_byte_sha256": "0d371a1d5e8aa38fae7a5a6d5c5003f72f01c6efcf96d8fd69ce7451cf84b553",
+          "root_approved_raw_row_canonical_sha256": "4017c7b8d2f2a7a72ab2e1a335de69903f5a012da07f1b3c31bdaf0ed53d1764",
+          "actual_pixel_signature": {
+            "printedTitle": "ENERGY",
+            "observedLanguage": "en",
+            "literalPrintedWordsLightningOrPsychicEnergyClaimed": false,
+            "semanticEnergyType": "Lightning",
+            "typeGlyph": "Black lightning bolt in a yellow orb; matching top-right bolt icon",
+            "art": "Yellow radiant field, central glowing yellow orb and black bolt, yellow card border, white ENERGY header and footer. Photograph on pale fabric.",
+            "printedCollectorNumber": "2/30",
+            "canonicalAliasNotBorrowedFromAnotherEnergy": true,
+            "trainerKitGoldMarkObserved": true,
+            "trainerKitGoldMarkDescription": "Gold Raichu-like silhouette at lower-left footer beside the exact numbered reference.",
+            "printedSetCodeLiteral": null,
+            "setAssociation": "English Sun & Moon Trainer Kit, Alolan Raichu half, supported by exact30-card footer/type/goldmark and saved source page, within fixed root canonical tuple.",
+            "copyrightYearObserved": 2017,
+            "fullCopyrightLineNotCertified": true,
+            "hp": null,
+            "nationalDex": null,
+            "stage": null,
+            "abilities": [],
+            "attacks": [],
+            "rulesBody": null,
+            "artist": null,
+            "artistCreditObserved": false,
+            "noPokemonFieldsInvented": true,
+            "allFourRoundedCornersObserved": true,
+            "fullOuterFrameVisibleCertified": true,
+            "wholeFrameQualification": "All four rounded corners and surrounding fabric visible; perspective and uneven lighting/glare remain in the unchanged photograph.",
+            "visibleExternalWatermarkOrSlabObserved": false,
+            "visibleFirstEditionStampObserved": false,
+            "noStampAbsenceUnlimitedInference": true,
+            "physicalEditionCertified": false,
+            "physicalFinishAuthenticated": false
+          },
+          "actual_pixel_signature_canonical_sha256": "0a0cf3a2742145ae2a7910771d4a7dcb441c0efb47a7a470f36f96ec10d8ca71",
+          "current_production_binding": {
+            "printing": {
+              "id": "d70868de-b7dc-414e-ac9f-d63055956ef0",
+              "set_id": "6bbc266c-3ebc-4f6e-a3a5-d8a6d40427b7",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "en",
+              "_column_presence": {
+                "printing_discriminator": true
+              },
+              "collector_number": "2",
+              "printing_discriminator": "",
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "a5401eba-11c3-42f1-a05e-f76b3db9d945",
+                "is_default": true,
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "d70868de-b7dc-414e-ac9f-d63055956ef0",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:en:6bbc266c-3ebc-4f6e-a3a5-d8a6d40427b7:2:normal",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "6bbc266c-3ebc-4f6e-a3a5-d8a6d40427b7",
+                "set_code": "tk-sm-r",
+                "variant_id": "a5401eba-11c3-42f1-a05e-f76b3db9d945",
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "d70868de-b7dc-414e-ac9f-d63055956ef0",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:en:6bbc266c-3ebc-4f6e-a3a5-d8a6d40427b7:2:normal",
+                "language_code": "en",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "2",
+                "catalogue_version": "en:tcgdex-796afd47e430-full-primary-2026-08-19",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "d70868de-b7dc-414e-ac9f-d63055956ef0"
+          },
+          "current_staging_binding": {
+            "printing": {
+              "id": "d70868de-b7dc-414e-ac9f-d63055956ef0",
+              "set_id": "6bbc266c-3ebc-4f6e-a3a5-d8a6d40427b7",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "en",
+              "_column_presence": {
+                "printing_discriminator": false
+              },
+              "collector_number": "2",
+              "printing_discriminator": null,
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "a5401eba-11c3-42f1-a05e-f76b3db9d945",
+                "is_default": true,
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "d70868de-b7dc-414e-ac9f-d63055956ef0",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:en:6bbc266c-3ebc-4f6e-a3a5-d8a6d40427b7:2:normal",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "6bbc266c-3ebc-4f6e-a3a5-d8a6d40427b7",
+                "set_code": "tk-sm-r",
+                "variant_id": "a5401eba-11c3-42f1-a05e-f76b3db9d945",
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "d70868de-b7dc-414e-ac9f-d63055956ef0",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:en:6bbc266c-3ebc-4f6e-a3a5-d8a6d40427b7:2:normal",
+                "language_code": "en",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "2",
+                "catalogue_version": "en:tcgdex-796afd47e430-full-primary-2026-08-19",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "d70868de-b7dc-414e-ac9f-d63055956ef0"
+          },
+          "required_asset_scope": {
+            "printing_id": "d70868de-b7dc-414e-ac9f-d63055956ef0",
+            "variant_id": null
+          },
+          "source_variant_id": null,
+          "required_delivery_kind": "shared",
+          "queue_controls": {
+            "identity_controls": {
+              "canonical_alias": "2",
+              "printed_collector_number": "2/30",
+              "catalogue_set_code": "tk-sm-r",
+              "printed_set_code_literal": null,
+              "canonical_native_label_preserved": "Lightning Energy",
+              "actual_printed_title": "ENERGY",
+              "semantic_energy_type": "Lightning",
+              "printed_national_dex": null,
+              "category": "Energy"
+            },
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "all_four_rounded_corners_visible": true,
+              "printed_body_language": "en",
+              "printed_energy_title_type_glyph_footer_and_raichu_mark_readable": true,
+              "no_pokemon_fields_invented": true,
+              "whole_uncropped_fabric_photograph_retained": true,
+              "glare_shadow_perspective_surface_specks_retained": true,
+              "pristine_physical_condition_certified": false,
+              "edition_stamp_observed": false,
+              "stamp_absence_does_not_certify_unlimited": true
+            },
+            "source_qa": {
+              "actual_english_energy_full_front_verified": true,
+              "original_sha256": "aa596e1acb287f469733735faae3c4a2b9ecb614630762bed7ac31084eac1701",
+              "actual_signature_canonical_sha256": "0a0cf3a2742145ae2a7910771d4a7dcb441c0efb47a7a470f36f96ec10d8ca71",
+              "source_metadata_is_sole_identity_proof": false,
+              "physical_finish_certified": false,
+              "physical_edition_certified": false
+            }
+          },
+          "historical_authority": {
+            "selected_source_card_id": null,
+            "preparation_approved": false,
+            "publication_approved": false
+          },
+          "root_finite_authority": {
+            "decision_file_byte_sha256": "1001c024be45d7bd8d6a5e90ca1b3c9f431724aa39ed4b4897139c96dfd0c775",
+            "preparation_approved": true,
+            "conditional_future_publication_approved": true,
+            "private_package_is_production_ready": false
+          },
+          "coverage": {
+            "wholeUnchangedOriginalIndividuallyViewed": true,
+            "fullPILSharpRGBAAgreement": true,
+            "completeFrameAndFourOuterCornersVisible": true,
+            "printedEnergyTitleTypeGlyphAndExactFooterReadable": true,
+            "noPokemonHPDexStageAttacksRulesOrArtistInvented": true
+          },
+          "quality_qualification": {
+            "original_width": 1200,
+            "original_height": 1600,
+            "original_HD_pixels": true,
+            "detail_derivative_HD_pixels": false,
+            "current_configured_api_image_null": true,
+            "whole_uncropped_fabric_photograph_retained": true,
+            "glare_uneven_lighting_shadow_perspective_surface_specks_retained": true,
+            "description": "Unchanged full photograph on fabric. Visible glare, uneven lighting, lower shadow, perspective and surface specks retained; no pristine physical-condition or native optical certification.",
+            "pristine_condition_certified": false,
+            "provider_never_resized_certified": false,
+            "native_optical_gain_claimed": false
+          },
+          "new_source_requests": 0,
+          "full_commercial_html_or_provider_json_included": false,
+          "source_wide_approval": false,
+          "vendor_licence_certified": false,
+          "physical_finish_certified": false,
+          "physical_edition_certified": false,
+          "unlimited_edition_certified": false,
+          "provider_never_resized_certified": false,
+          "native_optical_gain_claimed": false,
+          "stackr_enlargement": false
+        },
+        "queue_controls": {
+          "identity_controls": {
+            "canonical_alias": "2",
+            "printed_collector_number": "2/30",
+            "catalogue_set_code": "tk-sm-r",
+            "printed_set_code_literal": null,
+            "canonical_native_label_preserved": "Lightning Energy",
+            "actual_printed_title": "ENERGY",
+            "semantic_energy_type": "Lightning",
+            "printed_national_dex": null,
+            "category": "Energy"
+          },
+          "pixel_observations": {
+            "whole_original_inspected": true,
+            "full_frame_visible": true,
+            "all_four_rounded_corners_visible": true,
+            "printed_body_language": "en",
+            "printed_energy_title_type_glyph_footer_and_raichu_mark_readable": true,
+            "no_pokemon_fields_invented": true,
+            "whole_uncropped_fabric_photograph_retained": true,
+            "glare_shadow_perspective_surface_specks_retained": true,
+            "pristine_physical_condition_certified": false,
+            "edition_stamp_observed": false,
+            "stamp_absence_does_not_certify_unlimited": true
+          },
+          "source_qa": {
+            "actual_english_energy_full_front_verified": true,
+            "original_sha256": "aa596e1acb287f469733735faae3c4a2b9ecb614630762bed7ac31084eac1701",
+            "actual_signature_canonical_sha256": "0a0cf3a2742145ae2a7910771d4a7dcb441c0efb47a7a470f36f96ec10d8ca71",
+            "source_metadata_is_sole_identity_proof": false,
+            "physical_finish_certified": false,
+            "physical_edition_certified": false
+          }
+        },
+        "artwork_scope": "printing_front",
+        "delivery_kind": "shared",
+        "asset_variant_id": null,
+        "source_variant_id": null,
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "physical_edition_verified": false,
+        "vendor_licence_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    }
+  ],
+  "source_counts": {
+    "pricecharting": 1
+  },
+  "delivery_scope": {
+    "fixed_batch_ids": [
+      "EN-CARDS-020"
+    ],
+    "work_type": "CARDS",
+    "eligible_fronts": 1,
+    "eligible_aliases": [
+      "2"
+    ],
+    "category": "Energy",
+    "printed_collector_number": "2/30",
+    "printed_set_code_literal": null,
+    "asset_variant_id": null,
+    "source_variant_id": null,
+    "delivery_kind": "shared",
+    "whole_batch_completion_asserted": false
+  },
+  "binding_expectations": {
+    "production": [
+      {
+        "set_id": "6bbc266c-3ebc-4f6e-a3a5-d8a6d40427b7",
+        "set_code": "tk-sm-r",
+        "game_code": "pokemon",
+        "variant_id": "a5401eba-11c3-42f1-a05e-f76b3db9d945",
+        "finish_code": "normal",
+        "printing_id": "d70868de-b7dc-414e-ac9f-d63055956ef0",
+        "variant_code": "normal",
+        "language_code": "en",
+        "card_native_name": "Lightning Energy",
+        "collector_number": "2",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      }
+    ],
+    "staging": [
+      {
+        "set_id": "6bbc266c-3ebc-4f6e-a3a5-d8a6d40427b7",
+        "set_code": "tk-sm-r",
+        "game_code": "pokemon",
+        "variant_id": "a5401eba-11c3-42f1-a05e-f76b3db9d945",
+        "finish_code": "normal",
+        "printing_id": "d70868de-b7dc-414e-ac9f-d63055956ef0",
+        "variant_code": "normal",
+        "language_code": "en",
+        "card_native_name": "Lightning Energy",
+        "collector_number": "2",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      }
+    ]
+  },
+  "scope_counts": {
+    "production": {
+      "printings": 1,
+      "variants": 1,
+      "names": 2,
+      "sets": 1
+    },
+    "staging": {
+      "printings": 1,
+      "variants": 1,
+      "names": 2,
+      "sets": 1
+    }
+  },
+  "source_policies": {
+    "production": [
+      {
+        "code": "pokellector",
+        "display_name": "Pokellector (owner supplied Japanese card fronts)",
+        "source_type": "image",
+        "base_url": "https://jp.pokellector.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly2 Neo2 Ruin Wall reference fronts in STACKR-JA-LEGACY-TRAINER-FRONTS-20261015-008; owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval or independently verified vendor licence.",
+        "deprecated_at": null
+      },
+      {
+        "code": "pricecharting",
+        "display_name": "PriceCharting (owner supplied card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.pricecharting.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Owner-attested source use for exactly Aquapolis Mr. Mime95b and Porygon103b shared printing-front artwork in finite cohort AQUAPOLIS-SHARED-002-20261015. Independent vendor and underlying card licences are unverified. No source-wide approval; each later acquisition requires separate finite approval. Existing provenance rows and source policies must remain unchanged.",
+        "deprecated_at": null
+      },
+      {
+        "code": "scrydex",
+        "display_name": "Scrydex",
+        "source_type": "image",
+        "base_url": "https://scrydex.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Exactly 89 English MEP fronts approved by owner; catalogue/rights-evidence/mep89-scrydex-owner-confirmation.2026-09-27.json; 8c68bf3499de1e1e340b00fc03e5f1b469de7b65d259b5fba5a8b4cd31119ca9. No source-wide approval.",
+        "deprecated_at": null
+      },
+      {
+        "code": "tcgcollector",
+        "display_name": "TCGCollector (owner supplied Japanese card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.tcgcollector.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly3 independently accepted Leaders Stadium fronts019/081/096. Bind the final finite preparation/publication decision and exact source selection in the publisher plan. Owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval, independently verified vendor licence or physical finish/edition certification. Finite decision SHA256 68f1af735d5e481ed26d1aabbe94e493d520575d9d4191413508f9ec90cf68ff.",
+        "deprecated_at": null
+      }
+    ],
+    "staging": []
+  },
+  "new_sources": {
+    "production": [],
+    "staging": [
+      {
+        "code": "pricecharting",
+        "display_name": "PriceCharting (owner supplied card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.pricecharting.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Owner-attested source use for exactly Aquapolis Mr. Mime95b and Porygon103b shared printing-front artwork in finite cohort AQUAPOLIS-SHARED-002-20261015. Independent vendor and underlying card licences are unverified. No source-wide approval; each later acquisition requires separate finite approval. Existing provenance rows and source policies must remain unchanged.",
+        "deprecated_at": null
+      }
+    ]
+  },
+  "source_policy_checkpoint_sha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+  "existing_source_row_hashes": {
+    "pricecharting": "b4b74f69cac37abeee008806f6d8dd8ea63a0f0ce43fa065dce9261b428b421b",
+    "pokellector": "4a2a381f7146c0bfa0201c62e91e7682f18da6597c4743f23414f3606a942a71",
+    "tcgcollector": "f1f01d1b094986ad0a9f5efcf1e98fe7388e0e1c5452d23da6cf7cab97a1ca29",
+    "scrydex": "25af5b50521e6fd0942764536f62b0c53c3e72c69c874916241af47735407929"
+  },
+  "before_snapshot_hashes": {
+    "production": "d0d99488ffe40916ef9b31dfdc5f004f6588d06dd8e94a017d547ea7eb6b3ad9",
+    "staging": "abcebf44812a4376d26632e6b8f966472d8db1d19e31c4c5f33179213aee5b00"
+  },
+  "before_snapshot_counts": {
+    "production": 14,
+    "staging": 8
+  },
+  "expected_after_snapshot_counts": {
+    "production": 16,
+    "staging": 11
+  },
+  "production_source_changes_allowed": 0,
+  "stage_only_fixture_source_code": "pricecharting",
+  "canonical_schema_qualification": {
+    "production": {
+      "id": "d70868de-b7dc-414e-ac9f-d63055956ef0",
+      "set_id": "6bbc266c-3ebc-4f6e-a3a5-d8a6d40427b7",
+      "game_code": "pokemon",
+      "deprecated_at": null,
+      "language_code": "en",
+      "_column_presence": {
+        "printing_discriminator": true
+      },
+      "collector_number": "2",
+      "printing_discriminator": "",
+      "corrected_by_printing_id": null
+    },
+    "staging": {
+      "id": "d70868de-b7dc-414e-ac9f-d63055956ef0",
+      "set_id": "6bbc266c-3ebc-4f6e-a3a5-d8a6d40427b7",
+      "game_code": "pokemon",
+      "deprecated_at": null,
+      "language_code": "en",
+      "_column_presence": {
+        "printing_discriminator": false
+      },
+      "collector_number": "2",
+      "printing_discriminator": null,
+      "corrected_by_printing_id": null
+    }
+  },
+  "app_display_expectation": {
+    "large_role": "original",
+    "large_dimensions": [
+      1200,
+      1600
+    ],
+    "detail_dimensions": [
+      720,
+      960
+    ],
+    "reason": "Detail long edge960 is below the unchanged app helper threshold1000; verify actual app selection without enforcing large equals detail."
+  },
+  "saved_targets_sha256": "357fdc542cf8df83b0823f280ac75d3baf8ee78e89bac739adba41eab0f718dc",
+  "identity_table_sha256": "b4e8ce7317d0a1412e4330b52aca6b38f79b1c25c011d9ee153367c11c10efb2"
+}

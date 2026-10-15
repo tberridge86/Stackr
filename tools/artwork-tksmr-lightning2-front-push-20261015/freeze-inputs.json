@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "private_inputs": [
+    {
+      "file": "publish-review/lightning1-four-sources-20261015-production-before.json",
+      "sha256": "c5e7132f65a2d86737bf76d607a4350fa5b54140a04cf9a7bb65aaf89c7912b1"
+    },
+    {
+      "file": "publish-review/lightning1-four-sources-20261015-production-bindings.json",
+      "sha256": "c882547e556bf39820f67331fe533ce5d28107ad025aefc79ece3581b1b91a09"
+    },
+    {
+      "file": "publish-review/lightning1-four-sources-20261015-staging-before.json",
+      "sha256": "022d86e6dedf334d622b6e8cc6bac75a2ca12c06cc99de40c69b76225bff841f"
+    },
+    {
+      "file": "publish-review/lightning1-four-sources-20261015-staging-bindings.json",
+      "sha256": "5f777c09d250982db90554415b46de1cfef320f565b856ae94e54b3bcad75438"
+    },
+    {
+      "file": "source-batches/tksmr-lightning2-approved-front-20261015/root-approved1-source-original.json",
+      "sha256": "589fcd412e1bec60964ed2599fe10b4e4ba4c0c3f295949e96494acf10b78f27"
+    },
+    {
+      "file": "source-batches/tksmr-lightning2-approved-front-20261015/root-finite1-preparation-publication-decision.json",
+      "sha256": "1001c024be45d7bd8d6a5e90ca1b3c9f431724aa39ed4b4897139c96dfd0c775"
+    },
+    {
+      "file": "publish-review/root-four-source-policy-checkpoint-after-aquapolis2-20261015.json",
+      "sha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f"
+    },
+    {
+      "file": "publish-review/lightning1-independent-private-package-review-20261015.json",
+      "sha256": "d1924e81b936af10665ef1703597fc7fed4f3635e98f37c4f700fc2fa3b28b2f"
+    },
+    {
+      "file": "publish-review/lightning1-root-private-package-validation-20261015.json",
+      "sha256": "63514c39f8bbe8a7b9dce971c037fe851301ea4c0da2faee36a59710828affd3"
+    },
+    {
+      "file": "lightning1-root-source-archive-binding.json",
+      "sha256": "7ddde53d9b14ec80fa6762fa4dff09be8d6cf7f7532f2901c1ede09bee5dc909"
+    },
+    {
+      "file": "lightning1-root-upload-receipt.json",
+      "sha256": "421af3d809ce8d8306adedee951a05ce443d92fe89dad4cee73438f12ba772ae"
+    },
+    {
+      "file": "publish-review/trainer-kit-energy-three-independent-source-review-20261015.json",
+      "sha256": "e2b3ce3e5f9de5254c3405cd6f0665f08ff4ed91f8e052aaa78d179779b4d3d1"
+    }
+  ],
+  "source_manifest_file": "lightning1-fronts-source-manifest.json",
+  "source_manifest_sha256": "86e75232ef6edab0db64dc67e39f71f17821864eea82d6543ccf01e891352ea8",
+  "package_receipt_file": "lightning1-fronts-package-receipt.json",
+  "package_receipt_sha256": "19b7fcffc9a3853141ee5fa1e4b6700a2b45a8bb7084f2aec87fcc9c1a643510",
+  "archive": {
+    "id": 645429563,
+    "sha256": "904a6727badadcbaf9821b0c4902018ca71a7029453d7ac68fc844ba4a775b28",
+    "byte_size": 254382,
+    "file_count": 8,
+    "name": "lightning1-fronts-20261015.zip"
+  },
+  "unchanged_dependencies": [
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 9031,
+      "sha256": "5524305ba4bd6a0f3867ea2c097c57fb0d610e27ef1d9d64529b64e9c67249de"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/metadata-guard.mjs",
+      "bytes": 4018,
+      "sha256": "cca5354822fe11c007308f7d22ebf84649d2374619e0dd049c7347a9db9e116f"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/publish.mjs",
+      "bytes": 5885,
+      "sha256": "8451746bb6e188f56c5be31064742eaeecdc2f2c6d6e27cb31ab5c7227af6d1f"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "tools/artwork-next-push-20261013/frozen.mjs",
+      "bytes": 7732,
+      "sha256": "3e14eb76a012116492075328c50e6c5907f712004da02d4d3dae541d2617a95b"
+    },
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 30117,
+      "sha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24425,
+      "sha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 15024,
+      "sha256": "1d168e5407a5bdc6e027f58991de58a0664576d7c917d5b219fa13f9af4a1d0a"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/download-package.py",
+      "bytes": 5489,
+      "sha256": "53f1114f25bd995b4f05d9b2d3adad7ae2dadc85b4b13f038a84bcc5e7d6b09f"
+    }
+  ],
+  "staging_fixture_policy": {
+    "code": "pricecharting",
+    "display_name": "PriceCharting (owner supplied card fronts)",
+    "source_type": "image",
+    "base_url": "https://www.pricecharting.com",
+    "licence_status": "under_review",
+    "attribution_required": true,
+    "active": false,
+    "internal_notes": "Owner-attested source use for exactly Aquapolis Mr. Mime95b and Porygon103b shared printing-front artwork in finite cohort AQUAPOLIS-SHARED-002-20261015. Independent vendor and underlying card licences are unverified. No source-wide approval; each later acquisition requires separate finite approval. Existing provenance rows and source policies must remain unchanged.",
+    "deprecated_at": null
+  },
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "589fcd412e1bec60964ed2599fe10b4e4ba4c0c3f295949e96494acf10b78f27",
+    "finiteDecisionFileByteSha256": "1001c024be45d7bd8d6a5e90ca1b3c9f431724aa39ed4b4897139c96dfd0c775",
+    "sourceHandoffFileByteSha256": "64caff893846ecd56f6c07a01d5952675353887cb488abf31d32e4d7be2aebff",
+    "independentSourceReviewFileByteSha256": "e2b3ce3e5f9de5254c3405cd6f0665f08ff4ed91f8e052aaa78d179779b4d3d1",
+    "fourSourceCheckpointFileByteSha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "b2ed63f3192c7336a77941e4327de35777198dbb77034e19cb940e341cc33168",
+    "independentPrivatePackageReviewSha256": "d1924e81b936af10665ef1703597fc7fed4f3635e98f37c4f700fc2fa3b28b2f",
+    "rootPrivatePackageValidationSha256": "63514c39f8bbe8a7b9dce971c037fe851301ea4c0da2faee36a59710828affd3",
+    "rootSourceArchiveBindingSha256": "7ddde53d9b14ec80fa6762fa4dff09be8d6cf7f7532f2901c1ede09bee5dc909",
+    "rootUploadReceiptSha256": "421af3d809ce8d8306adedee951a05ce443d92fe89dad4cee73438f12ba772ae"
+  }
+}
