@@ -1,0 +1,9 @@
+# Exact8 legacy Japanese Trainer artwork
+
+Three Neo1 and five Neo2 independently accepted unnumbered Trainer fronts; all current normal variants and native labels retained. Six unchanged Scrydex originals and two distinct supplied Pokellector Wall photos produce24 unenlarged derivatives. Original073 has a qualified null artist;074075 retain their bottom-strip artefacts. Both Wall fronts are pixel-confirmed Trainers without HP, Dex, attacks or printed collector numbers; the exact photos39645/39648 distinguish Kabuto/Aerodactyl artwork.
+
+Only the finite V2 decision authorises8assets,8links and1new inactive/under_review attribution-required Pokellector source:46→63 scoped production rows. The complete existing17-field Scrydex source and every old scoped row remain unchanged. Two staging source fixtures and all writes roll back to40rows. Rollback of publication hides only new artwork, retaining immutable objects, old metadata/links and the inactive provenance source.
+
+Raw HTML byte hashes, private full provider JSON file/canonical hashes, derived identity projections, original signatures, historical null/false selections and safe public independent projections are distinct contracts. Full commercial JSON remains offline. The public projection removes only named absolute private paths. Pokellector photo identity is separate from supporting native Scrydex metadata. No source-wide licence, activation or physical edition/finish certification is asserted.
+
+Manual protected production requires exact main SHA and `PUBLISH ARTWORK LEGACY TRAINER FRONTS`, sharing production concurrency. Closed until root binds the immutable release asset. Focused Node/archive tests, full object decode, failure journal and secret scans precede root publication. All20 new text files are LF before byte freezing. Live completion requires root API verification.
