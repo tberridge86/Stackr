@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 1,
+  "status": "frozen_local_checks_passed_pending_independent_review_and_protected_publication",
+  "checkedAt": "2026-10-15T16:17:42.101949+00:00",
+  "fronts": 21,
+  "categoryCounts": {
+    "Trainer": 18,
+    "Energy": 3
+  },
+  "variantCounts": {
+    "normal": 20,
+    "holo": 1
+  },
+  "queueId": "STACKR-JA-NEO1-FINAL-FRONTS-20261015-021",
+  "confirmation": "PUBLISH ARTWORK NEO1 FINAL FRONTS",
+  "immutableArchive": {
+    "id": 644418419,
+    "sha256": "55979f2045cd46b2edbfca1d0a6e64ffff5fd492cdf9fd8ebe95e4d3144e4200",
+    "byte_size": 11701598,
+    "file_count": 88,
+    "name": "stackr-ja-artwork-neo1-final21-fronts-20261015.zip"
+  },
+  "sourcePolicyCheckpointSha256": "2013e3ecdb0bf05501b2cc7a66733c73e20ba80b3a7876e5d0442f1a32eb00e9",
+  "expectedSnapshotRows": {
+    "productionBefore": 91,
+    "productionAfter": 133,
+    "stagingBefore": 87,
+    "stagingAfterRollback": 87
+  },
+  "sourcePolicy": {
+    "fullExistingSourceFieldsPerRow": 17,
+    "existingSourceCodes": [
+      "scrydex",
+      "pokellector"
+    ],
+    "allExistingSourceFieldsPreserved": true,
+    "newProductionSourceRows": 0,
+    "sourceActivationOrExistingPolicyUpdates": 0,
+    "stagingRollbackOnlyFixtureCodes": [
+      "scrydex"
+    ],
+    "snapshotAndResolverUsePostgresqlJson": true,
+    "timestampMicrosecondTamperRejected": true
+  },
+  "checks": {
+    "focusedNodeTests": 16,
+    "archiveSafetyTests": 6,
+    "actualQueueReceipts": 21,
+    "jointRawManifestTamperRejections": 25,
+    "missingOrForgedAuthorityRejections": 2,
+    "sourceContractActualRows": 21,
+    "sourceContractTamperRejections": 19,
+    "privateFullJsonFilesVerified": 21,
+    "fullySharpDecodedImages": 84,
+    "fullyPilDecodedImages": 84,
+    "allArchiveMembersVerified": 88,
+    "persistedFailureJournalTests": 1,
+    "unchangedSharedDependencies": 11,
+    "newTextFilesLfEqualGitLf": 20,
+    "legacyEightReadOnlyRegression": {
+      "actualReceipts": 8,
+      "jointTamperRejections": 18,
+      "forgedAuthorityRejections": 2,
+      "localImageObjects": 32
+    },
+    "workflowConfig": "protected_manual_exact_main_confirmation_concurrency_actions_pins_receipt_secret_scan",
+    "secretScan": {
+      "status": "passed",
+      "publicTextFilesScanned": 20,
+      "findings": 0
+    }
+  },
+  "files": {
+    ".github/workflows/artwork-neo1-final-fronts-production.yml": {
+      "sha256": "38ebe73528858ab54a76fa1ccfdcc701b19351d8decd69212945a35c97f3b782",
+      "bytes": 3640
+    },
+    "tools/artwork-neo1-final-fronts-push-20261015/.gitattributes": {
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+      "bytes": 14
+    },
+    "tools/artwork-neo1-final-fronts-push-20261015/.gitignore": {
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "bytes": 19
+    },
+    "tools/artwork-neo1-final-fronts-push-20261015/approval.json": {
+      "sha256": "4136335d75d6c5ad43096386735edc65f1a080cb7ae36aaeb3c00a042beddcc3",
+      "bytes": 1545
+    },
+    "tools/artwork-neo1-final-fronts-push-20261015/before-query.sql": {
+      "sha256": "6712dfaf458d9e2c421b0773b29c07ce6e0e4b008fdab91f6b6c95cb5f7d81ca",
+      "bytes": 10416
+    },
+    "tools/artwork-neo1-final-fronts-push-20261015/download-package.py": {
+      "sha256": "9874de9f30685c98c9e91d40f2a188dda888aefd6076a087fb5133d55555d37e",
+      "bytes": 6084
+    },
+    "tools/artwork-neo1-final-fronts-push-20261015/download-package.test.py": {
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41",
+      "bytes": 6940
+    },
+    "tools/artwork-neo1-final-fronts-push-20261015/freeze-inputs.json": {
+      "sha256": "46518504f2f49a6c0d2a50e75743d787462e37c952797ec7bafaae1c0b158d53",
+      "bytes": 5046
+    },
+    "tools/artwork-neo1-final-fronts-push-20261015/freeze-local.mjs": {
+      "sha256": "c36d7d5704d90265f392ed0395d882cbecfda101b2104678c6a5943cc667cc48",
+      "bytes": 10352
+    },
+    "tools/artwork-neo1-final-fronts-push-20261015/frozen.mjs": {
+      "sha256": "daa2993b4e947fc7c8e25280451a124966e765fe747df5dbcb0c773703149ed2",
+      "bytes": 29619
+    },
+    "tools/artwork-neo1-final-fronts-push-20261015/identity-table.json": {
+      "sha256": "fe7f94cf0ef8380eb069e2e83eef347fdf8316d482a8ce95019011e9d9b285a1",
+      "bytes": 18586
+    },
+    "tools/artwork-neo1-final-fronts-push-20261015/metadata-guard.mjs": {
+      "sha256": "598405ead861610326a6f4de549a8eccca01c453b9bfdbd44186f35a1020aa9b",
+      "bytes": 9142
+    },
+    "tools/artwork-neo1-final-fronts-push-20261015/plan.json": {
+      "sha256": "8fbc44ccb8529893f365c8f5fc79a4c39718eb495a43e6800c000551da8c7eff",
+      "bytes": 823360
+    },
+    "tools/artwork-neo1-final-fronts-push-20261015/publish.mjs": {
+      "sha256": "21ec119ebe3d8af4ee8712b98d12ff0724330924e55b3cd96331e31f2f31702c",
+      "bytes": 6287
+    },
+    "tools/artwork-neo1-final-fronts-push-20261015/publish.test.mjs": {
+      "sha256": "d3b21982284fb1b625d0567ec12b85c7ca88c65e88f134cb34f7dba53e9523a4",
+      "bytes": 25268
+    },
+    "tools/artwork-neo1-final-fronts-push-20261015/README.md": {
+      "sha256": "27f5bfe2510fec1c0b029df952d4263dc4dacef8f40911f76a60a6304d18946e",
+      "bytes": 1975
+    },
+    "tools/artwork-neo1-final-fronts-push-20261015/saved-targets.json": {
+      "sha256": "d9a048c8b176efcda01bfa84fe325683b5aeded65650d681b04c8133b73b1e93",
+      "bytes": 8947
+    },
+    "tools/artwork-neo1-final-fronts-push-20261015/source-proof.mjs": {
+      "sha256": "d04bf159d8701db279aa956982faf3e80c71e0a8517f63b94a42bcf71639cc6b",
+      "bytes": 40747
+    },
+    "tools/artwork-neo1-final-fronts-push-20261015/verify-packages.mjs": {
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841",
+      "bytes": 1495
+    }
+  },
+  "limits": {
+    "providerRequests": 0,
+    "databaseRequests": 0,
+    "queueWrites": 0,
+    "storageWrites": 0,
+    "gitMutations": 0,
+    "livePublicationPerformed": false,
+    "independentPublisherReview": "root_next_step",
+    "apiAndDeviceDelivery": "not_verified_for_this_batch"
+  }
+}

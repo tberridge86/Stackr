@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 21,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "approved_at": "2026-10-15",
+  "cohort_sha256": "8fbc44ccb8529893f365c8f5fc79a4c39718eb495a43e6800c000551da8c7eff",
+  "source_counts": {
+    "scrydex": 21
+  },
+  "source_evidence": {
+    "approvedProjection": "4401e4bdc1a108bad633d0fa57153458dd94425f3fab87354a499150b11ac21f",
+    "finiteDecision": "e87071af2f7c5d4e2c464b7a322205a8fc59d3cbcf47ff5e7d2301e321619ead",
+    "independentSelection": "91d78cd79d853360a829d0b6b9a20d71e4ed5772e3f93c36411f1c22ffe34084",
+    "independentPrivateReview": "6f45d674a9540615254108744af466befc4813b4cb1824afd6e8482452eeb99a"
+  },
+  "source_policy_checkpoint_sha256": "2013e3ecdb0bf05501b2cc7a66733c73e20ba80b3a7876e5d0442f1a32eb00e9",
+  "scope": "Exactly21 Japanese Neo1 final fronts and63 unenlarged derivatives:18positive unnumberedTrainers and3SpecialEnergy;20normal/1holo095 current variants retained. Preserve full Tool/Stadium/Energy Japanese rules,081null qualified artist,077 unguessed scene,087maximum2/no reveal,092actualTRAINER/sourceEnergy disagreement, null optical rarity and all outer strips. Existing Scrydex and Pokellector source rows remain inactive/under_review with all17fields unchanged; zero new production source. No canonical,price,ownership,sourcewide or physical certification changes."
+}

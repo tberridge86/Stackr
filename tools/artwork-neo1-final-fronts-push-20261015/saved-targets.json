@@ -1,0 +1,275 @@
+[
+  {
+    "printing_id": "f6a9151d-3aa1-4f32-ab52-2e73316d7c4d",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "076",
+    "card_native_name": "ポケモンマーチ",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "feb2a7b6-22b0-4b94-92ed-aed61b6e1608"
+    ],
+    "batch_id": "JP-CARDS-006"
+  },
+  {
+    "printing_id": "320b46c3-0fe0-4fb2-a2d2-3009e5ceff77",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "077",
+    "card_native_name": "Moomooミルク",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "9671cb36-1ee2-4a35-9a62-bc057bfd3727"
+    ],
+    "batch_id": "JP-CARDS-006"
+  },
+  {
+    "printing_id": "1f2168ef-df8d-4117-891f-777b6bfe0b44",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "078",
+    "card_native_name": "エルム教授",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "3b6ed714-f899-46dc-b34f-0be351f24abd"
+    ],
+    "batch_id": "JP-CARDS-006"
+  },
+  {
+    "printing_id": "0f000159-0bf6-466b-bdc3-cd7b8593facc",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "079",
+    "card_native_name": "ゴールドベリー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "42c104ef-3c90-4285-83e0-89dc3dcc369f"
+    ],
+    "batch_id": "JP-CARDS-006"
+  },
+  {
+    "printing_id": "b18b7060-9a5a-45d5-bfc2-e02646a7515e",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "080",
+    "card_native_name": "カードフリップゲーム",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "bf205081-425d-4075-a9e5-dd03a966fbc0"
+    ],
+    "batch_id": "JP-CARDS-006"
+  },
+  {
+    "printing_id": "3f189403-dddb-4191-bb5c-35b776d51c48",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "081",
+    "card_native_name": "ミラクルベリー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "321f6fa2-ffa1-40f9-96f5-093c054c0134"
+    ],
+    "batch_id": "JP-CARDS-006"
+  },
+  {
+    "printing_id": "e26afa98-1bdb-4e1a-841e-05a5028f9de1",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "082",
+    "card_native_name": "新しいpokedex",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "a16e28ac-3084-4e22-bf2e-a7971fd705d9"
+    ],
+    "batch_id": "JP-CARDS-006"
+  },
+  {
+    "printing_id": "6b63e8ca-61d8-461a-877c-151172f83146",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "083",
+    "card_native_name": "スーパースクープアップ",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "74b0cfc9-a1ed-4d92-a859-e9d5091ba356"
+    ],
+    "batch_id": "JP-CARDS-006"
+  },
+  {
+    "printing_id": "559eae55-5efd-40b6-b009-06be5f4f0098",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "084",
+    "card_native_name": "ビルのテレポーター",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "d70e8d92-ecce-4299-ab02-3209c1c82df7"
+    ],
+    "batch_id": "JP-CARDS-006"
+  },
+  {
+    "printing_id": "dabf24bc-301c-4836-b2c8-c72b3f218029",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "085",
+    "card_native_name": "スプラウトタワー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "3cc88d1c-9124-4b89-8801-07986f407bb0"
+    ],
+    "batch_id": "JP-CARDS-006"
+  },
+  {
+    "printing_id": "913471d6-7c94-4ec3-b3bd-066910afebf3",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "086",
+    "card_native_name": "ecogym",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "3f6f22cd-6317-47ad-be2e-1009613d2388"
+    ],
+    "batch_id": "JP-CARDS-006"
+  },
+  {
+    "printing_id": "ea7f6a6e-10db-4ded-9221-db129a21c6b8",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "087",
+    "card_native_name": "エネルギー電荷",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "fc576d84-bdf1-47d5-aacc-f66e932f80ff"
+    ],
+    "batch_id": "JP-CARDS-006"
+  },
+  {
+    "printing_id": "a071b7ae-3d85-4259-b58f-abaa0b30d666",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "088",
+    "card_native_name": "フォーカスバンド",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "e9fbbf70-8354-4160-a6fa-2a2c5a782309"
+    ],
+    "batch_id": "JP-CARDS-006"
+  },
+  {
+    "printing_id": "80fe609b-0b7f-4c73-aa28-4e146a91880c",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "089",
+    "card_native_name": "メアリー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "0c9cf82c-f89d-4c8a-9f92-f8c35f0d8c07"
+    ],
+    "batch_id": "JP-CARDS-006"
+  },
+  {
+    "printing_id": "3bdfd2dd-68db-41c8-8f59-4f384abe40d1",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "090",
+    "card_native_name": "アーケードゲーム",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "55c56176-49d5-4e7f-a7d4-f5be8afbb8b6"
+    ],
+    "batch_id": "JP-CARDS-006"
+  },
+  {
+    "printing_id": "40a02759-7075-4330-8189-0014f4ab56de",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "091",
+    "card_native_name": "タイムカプセル",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "cbca8d53-d47f-41b7-8414-d06d0d430761"
+    ],
+    "batch_id": "JP-CARDS-006"
+  },
+  {
+    "printing_id": "fd57df1c-6369-4e10-94ad-9d644615049e",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "092",
+    "card_native_name": "スーパーエネルギー検索",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "f0f2ed7b-d295-4c01-b1d4-a31e435c0eb8"
+    ],
+    "batch_id": "JP-CARDS-006"
+  },
+  {
+    "printing_id": "97730ebb-67a6-4198-9b9c-fa9ec44356c7",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "093",
+    "card_native_name": "ポクギア",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "c38cdcda-b1e7-4050-b11b-f8e2ad12fff9"
+    ],
+    "batch_id": "JP-CARDS-006"
+  },
+  {
+    "printing_id": "b1ea5735-21f8-4e8f-8c8b-4931f44105e4",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "094",
+    "card_native_name": "闇のエネルギー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "741a2971-a9c6-49c5-b00e-f14d0561b76e"
+    ],
+    "batch_id": "JP-CARDS-006"
+  },
+  {
+    "printing_id": "b1188cfd-978b-4240-aa7b-872265d12a87",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "095",
+    "card_native_name": "金属エネルギー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "9ad16e3f-b962-4315-a030-ae2abeb8ccc2"
+    ],
+    "batch_id": "JP-CARDS-006"
+  },
+  {
+    "printing_id": "bd3707fe-0f86-4175-930b-919c1da41850",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "096",
+    "card_native_name": "エネルギーをリサイクルします",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "b77d1c12-0877-4aef-b33a-362ab9a6665a"
+    ],
+    "batch_id": "JP-CARDS-006"
+  }
+]
