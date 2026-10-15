@@ -12,7 +12,6 @@ import {
 } from '../lib/corocoroIssueArchive';
 import { getCorocoroIssueCoverPresentation } from '../lib/corocoroCoverReferences';
 import { getMagazineSetCoverForSet } from '../lib/magazineSetCovers';
-import { getMagazineOpening } from '../lib/magazineOpenings';
 
 type ModuleBox = { exports: Record<string, unknown> };
 
@@ -119,9 +118,6 @@ const screenModule = compileModule('app/corocoro.tsx', {
   '../components/StackrImage': { StackrImage: 'StackrImage' },
   '../components/Text': { Text: 'Text' },
   '../components/theme-context': { useTheme: () => ({ theme }) },
-  '../components/MagazineOpeningExperience': { MagazineOpeningExperience: 'MagazineOpeningExperience' },
-  '../components/MagazineCollectionAction': { MagazineCollectionAction: 'MagazineCollectionAction' },
-  '../lib/magazineOpenings': { getMagazineOpening },
   '../lib/corocoroIssueArchive': {
     formatCorocoroIssueMonth: (month: string) => month,
     getCorocoroIssueGroup,
