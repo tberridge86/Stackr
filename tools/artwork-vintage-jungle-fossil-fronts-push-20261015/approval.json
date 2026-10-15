@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 96,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "approved_at": "2026-10-15",
+  "cohort_sha256": "197b66e60011af4fb2a13aa2ba2b7ba230116e2fb6fcd84c2162f0877707b495",
+  "source_counts": {
+    "pokellector": 96
+  },
+  "source_evidence": {
+    "approvedProjection": "6cb6ec385c3e578b9c7e024ca4a287d507b7edad56dad993a0c6efa8b3c7c5ed",
+    "finiteDecision": "535f48e8876ac128ba286615bdca2dc20c99ef863a5f3eb2162a63e44d4e9ed8",
+    "independentSelection": "65341f1049bc62cff1fd3a87f35e7bdb523c1306253d8b1ff4b41bbfffd87373",
+    "independentPrivateReview": "70f2d3f235e201221ba40b4ece28566706fedbaab3e33806f1f0365cdb1d731e",
+    "sourcePolicyCheckpoint": "2013e3ecdb0bf05501b2cc7a66733c73e20ba80b3a7876e5d0442f1a32eb00e9"
+  },
+  "source_policy_checkpoint_sha256": "2013e3ecdb0bf05501b2cc7a66733c73e20ba80b3a7876e5d0442f1a32eb00e9",
+  "scope": "Exactly96 accepted Japanese Jungle/Fossil fronts:90Pokemon/6Trainer and288 unenlarged derivatives,64normal/32holo retained. Preserve actual printed Dex, full bodies, all6Trainer provider-absence qualifications, MysteriousFossil HP10 and special rules, crossed Slowpoke/Slowbro photo bindings and all current labels. Pokellector photos and TCGdex semantic metadata remain distinct. Both existing17-field sources stay inactive/under_review, zero new production sources. No canonical, pricing, ownership or physical certification changes."
+}

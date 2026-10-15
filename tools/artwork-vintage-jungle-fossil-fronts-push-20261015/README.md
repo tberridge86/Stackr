@@ -1,0 +1,7 @@
+# Exact96 Jungle/Fossil artwork
+
+Exactly96 accepted Japanese fronts:90Pokemon and6Trainers,64current normal and32current holo. Original provided Pokellector lossy WebP bytes are retained without crop, repair or enlargement; readable native detail,0HD. TCGdex raw JSON is private semantic metadata, never photo provenance. Raw HTML, complete JSON file bytes/canonical hashes, explicit safe identity and peer public projection hashes stay distinct.
+
+Actual printed NationalDex and full body/art bind Pokemon identities, never filenames or photo ordinals. The two Slowpoke/Slowbro photos deliberately cross source page ordinals. All6accepted Trainer signatures qualify the absent provider rules separately from raw historical templates. Mysterious Fossil is actualTRAINER with printedHP10 and its complete special play/evolution/knockout/discard rules. Current bad labels/artist metadata and all historical null selections remain unchanged.
+
+Both existing17-field sources remain inactive/under_review, with PostgreSQL JSON reads preserving all timestamp microseconds in snapshot and resolver. No new production sources; staging Pokellector fixture exists only inside rollback rehearsal. Protected exact-main manual workflow, shared concurrency, immutable byte checks, failure journals, old metadata/artwork preservation and guarded rollback remain required. Root performs publication and actual API verification.
