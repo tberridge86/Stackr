@@ -1,0 +1,9 @@
+# Seven verified Japanese Web fronts
+
+This finite package contains Web007,025,036,038,040,046 and048. Five existing normal/defaultTRUE and two holo/defaultFALSE tuples remain unchanged. All recorded English names and categories stay null. Each shared front has null asset/source variant IDs.
+
+The historical007 placement paraphrase remains separate from the pinned corrected Japanese literal. Surfing025 retains its observed なみのり form outside the unchanged raw observation keys. Trainer040 retains null Pokemon fields and both supporter-rule paragraphs. Dragonite038 retains ポケパワー and its small 特殊能力 header. Machamp048 stays718×1024, passes the existing hard preparation contract and retains its false generic720-width HD signal. No image is enlarged. Measured LARGE choices use three originals and four detail pages.
+
+Protected publication requires main, the exact expected commit and `PUBLISH ARTWORK WEB SEVEN FRONTS`. The existing production environment and shared concurrency lock remain enforced. Production33→47 adds only seven assets and seven links. Staging29→44→29 includes one temporary inactive PriceCharting fixture and exact rollback. All four existing17-field source rows, microseconds and other scoped rows remain immutable. No Web logo assets or links exist in the baseline. Exact shared fronts do not certify physical edition/finish/material, vendor rights or native optical quality.
+
+Run `node --test tools/artwork-web-seven-fronts-push-20261016/publish.test.mjs` and `python tools/artwork-web-seven-fronts-push-20261016/download-package.test.py`. Private read-only freeze verification takes the evidence root as the argument to `freeze-local.mjs`. Release asset646470015 is already uploaded once; no repeat upload is needed. Root must still verify the actual configured production API, all28 image files and default/explicit app selection after protected publication. This package does not deploy app/backend/schema/native/OTA changes.
