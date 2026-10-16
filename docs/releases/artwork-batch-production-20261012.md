@@ -1,6 +1,6 @@
 # Stackr artwork production handoff
 
-Updated 2026-10-16T20:56:50.762Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
+Updated 2026-10-16T21:26:35.415Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
 
 1974 tasks / 85 batches complete; 970 tasks / 76 batches remain.
 1272 sourced originals and 3816 display versions checked: 1272 originals live, 0 prepared and queued.
@@ -117,25 +117,25 @@ Japanese Darkness final thirteen: All13 JP-CARDS-017 originals and39 display ima
 - Frozen package asset 645501821, 394541 bytes, SHA ff8d88a63b1b173003e0ba264123cc4877a87b63c7b327b3799ed151f2593fca. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset 645525725, 791263 bytes, SHA 5ab280df47e24a7e4382100d34c5dcf1ea4227145414f58aab7764b11bb71304. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset 645584430, 859616 bytes, SHA cb60020e1886227fbbe62acde45f37a78bfa7f2185311d016067a166682496ef. Individual delivery state controls completion; an archive alone does not.
-- Frozen package asset 646111909, undefined bytes, SHA undefined. Individual delivery state controls completion; an archive alone does not.
-- Frozen package asset 646214227, undefined bytes, SHA undefined. Individual delivery state controls completion; an archive alone does not.
-- Frozen package asset 646324255, undefined bytes, SHA undefined. Individual delivery state controls completion; an archive alone does not.
-- Frozen package asset 646470015, undefined bytes, SHA undefined. Individual delivery state controls completion; an archive alone does not.
-- Frozen package asset 646704421, undefined bytes, SHA undefined. Individual delivery state controls completion; an archive alone does not.
-- Frozen package asset 646828275, undefined bytes, SHA undefined. Individual delivery state controls completion; an archive alone does not.
-- Frozen package asset 647356345, undefined bytes, SHA undefined. Individual delivery state controls completion; an archive alone does not.
-- Frozen package asset 648009411, undefined bytes, SHA undefined. Individual delivery state controls completion; an archive alone does not.
-- Frozen package asset 648265809, undefined bytes, SHA undefined. Individual delivery state controls completion; an archive alone does not.
-- Frozen package asset 648356088, undefined bytes, SHA undefined. Individual delivery state controls completion; an archive alone does not.
+- Frozen package asset 646111909, 1329087 bytes, SHA 03ec8c24e1706d7384796b996b93c146e97399c5f758322e01452f87b1ff4683. Individual delivery state controls completion; an archive alone does not.
+- Frozen package asset 646214227, 2977622 bytes, SHA b8a5112200e40f5be101f602263e14ef165595cdc380df2e8fa5ca83f06f6635. Individual delivery state controls completion; an archive alone does not.
+- Frozen package asset 646324255, 1529815 bytes, SHA 01fc2993c6e2b5518d3697abe657a8bbfdeff63d5ed7d8096edcae6d52c219e5. Individual delivery state controls completion; an archive alone does not.
+- Frozen package asset 646470015, 3213075 bytes, SHA eb78aae912fe9bbda9b893337dd172b1fad3c2ef8e7ef97965315c0e9cfd5086. Individual delivery state controls completion; an archive alone does not.
+- Frozen package asset 646704421, 1389917 bytes, SHA 1482ac67527df7cca8a6f06bb5b17798fa5eaa4df27ec3ac43faf1eb2e93994e. Individual delivery state controls completion; an archive alone does not.
+- Frozen package asset 646828275, 576283 bytes, SHA a6615b31d02b4c9c2392032d3448cb3f917f7f05de070a1ff45198092e1b5816. Individual delivery state controls completion; an archive alone does not.
+- Frozen package asset 647356345, 2969014 bytes, SHA 3faa42e7eab254c6a4de96379534a81a213419ec9a36a88c6ef23ad7a7ca7718. Individual delivery state controls completion; an archive alone does not.
+- Frozen package asset 648009411, 3725316 bytes, SHA 57ddd63643250633faf619aa60ae9eae936e59b1bbc1f1e159b98bf202fbeb68. Individual delivery state controls completion; an archive alone does not.
+- Frozen package asset 648265809, 4056759 bytes, SHA c53e01a36b0e37aef0ca5da29a506bcd314c46684a9c612473af82dcd41a4d3b. Individual delivery state controls completion; an archive alone does not.
+- Frozen package asset 648356088, 5976589 bytes, SHA 75a95c11c369d2fe9e73f31332401e7f14f23c5063a0b6e77a277180c7540cc0. Individual delivery state controls completion; an archive alone does not.
 
 ## Explicit remaining holds
 
-1 exact source identities remain unresolved; 0 gathered originals still need preparation and production delivery; 31 exact originals still need clear, complete pictures; 54 source version matches remain unresolved; 1 pictures need another exact card-text comparison. These are unfinished tasks and are excluded from publication. The current manual guide separates 415 specific follow-ups, 290 active source/release tasks and 635 further ordinary tasks.
+1 exact source identities remain unresolved; 0 gathered originals still need preparation and production delivery; 31 exact originals still need clear, complete pictures; 54 source version matches remain unresolved; 1 pictures need another exact card-text comparison. These are unfinished tasks and are excluded from publication. The current manual guide separates 963 specific follow-ups, 0 active source/release tasks and 7 further ordinary tasks.
 TCG Collector supplied 14 unchanged Energy originals at 255 × 361, 320 × 447, compared with the earlier 253 × 359 originals. 12 remain held for larger, readable detail artwork. Owner-attested permission is recorded; quality remains the delivery blocker.
 
 224 old Simplified Chinese cases have Traditional Chinese counterparts but still need an evidenced identity repair. No silent retagging. The fixed list also retains256language/card/version checks,36Traditional Chinese logos and2sharper Japanese originals. Flat reference fronts do not certify physical material/finish.
 
-No native/OTA/backend/gateway delivery or installed-phone acceptance is claimed by this artwork record. Before TestFlight, disclose pending promised replacements from this ledger.
+Artwork publication is checked through the production API. Native build 56 delivery is recorded separately below. Installed-phone acceptance remains pending, and all unfinished artwork stays explicitly disclosed.
 
 ## Current batches
 
@@ -398,8 +398,16 @@ Keep this promised replacement visible before TestFlight; completion requires ac
 
 All 36 logos from TC-LOGOS-001, TC-LOGOS-002, TC-LOGOS-003, TC-LOGOS-004 are included in main through PR395: 35 enhanced derivatives and 1 official original. The exact 36 asset byte hashes and set IDs match the saved manifest. Keep all 36 exact-ID bundled assets in the next separately authorized app build, then verify the installed app; source integration does not count as live API publication. Earlier research wording is historical for this source-integrated cohort; no live catalogue or fixed completion count is added by this app-source change.
 
-## Build 56 handoff — 16 October 2026
+## Earlier build 56 handoff — 16 October 2026, before Apple availability
 
 Artwork work is closed at 1,974 verified live items. There are 970 remaining: 963 specific follow-ups, seven ordinary source searches and no active or queued artwork jobs. The final 43 researched originals remain held for their named edition or picture-quality issues. They have not been published.
 
-Build 56 uses app version 1.0.6 and checked source fe283dbd080372cfd740fec330200f0f402ab6bd. Reviewed PRs 402, 396, 395, 401, 399, 400 and 337 are included. The actual iOS export contains all 36 exact sharper logo files. Native build and TestFlight delivery are queued to start after 21:12:11 UTC. Apple availability and an installed-device check remain pending. Nineteen older unaccepted PRs are explicitly excluded. This evidence-tracking draft remains unmerged.
+Build 56 uses app version 1.0.6 and checked source fe283dbd080372cfd740fec330200f0f402ab6bd. Reviewed PRs 402, 396, 395, 401, 399, 400 and 337 are included. The actual iOS export contains all 36 exact sharper logo files. The owner’s 21:12:11 UTC source-work cutoff was respected, and Expo accepted build b1cb5347-9b79-4fff-8266-f145c166557f. The native build is in progress; Apple submission, TestFlight availability and an installed-device check remain pending. Nineteen older unaccepted PRs are explicitly excluded. This evidence-tracking draft remains unmerged.
+
+## Build 56 available in TestFlight — 16 October 2026
+
+Apple availability was confirmed at 21:38:57 UTC: app 1.0.6, build 56 is VALID and IN_BETA_TESTING for the existing internal TestFlight delivery. The build is not expired. Expo build b1cb5347-9b79-4fff-8266-f145c166557f and submission d09726ca-071f-418c-b715-eb6017985e32 match checked source fe283dbd080372cfd740fec330200f0f402ab6bd, production channel and runtime 1.0.6. No external beta approval or public App Store release is claimed.
+
+The actual signed app package was independently checked: its app version and build number match, and it contains all 36 exact sharper logo files, retaining the provenance of 35 enhanced derivatives and one official original. The signed package SHA256 is c950fad003b053a6af73104a2b3e10d86663371a871c0fbba8f1bcccb8832773. A visual check on an installed iPhone remains pending.
+
+The seven reviewed PRs are included. Nineteen older unaccepted PRs remain excluded pending review. This evidence-tracking draft remains unmerged. Artwork totals remain 1,974 live and 970 unfinished: 963 specific follow-ups and seven ordinary source searches. All 1,272 formally prepared originals are published; none are queued. Native logo inclusion adds no unverified completion count to the fixed artwork list.
