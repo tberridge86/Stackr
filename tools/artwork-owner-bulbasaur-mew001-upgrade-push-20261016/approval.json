@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "scope": "Exactly one existing English Bulbasaur MEW001 normal-front modest clarity upgrade; finite owner-attested display/storage/standard derivative use",
+  "rootFiniteDecisionSha256": "f84f544aee361c63b60d199cf7e74b9a7b917b6fc576ad09547c3f0ce0ce4f0a",
+  "rootReferenceQualificationSha256": "3249fb89bc4802eb0903399a7567d5ea9582fec2bca0e64bfea9036826ea71c5",
+  "conditionalPublication": true,
+  "unconditionalPublication": false,
+  "sourceAuthorFlagsRemainFalse": true,
+  "vendorLicenceVerified": false,
+  "sourcewideApproval": false,
+  "physicalFinishCertified": false,
+  "physicalEditionCertified": false,
+  "missingArtworkCountDelta": 0
+}

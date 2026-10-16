@@ -1,0 +1,2 @@
+-- Draft read-only currently exposed exact target assets; the 21st row is an overflow sentinel.
+SELECT to_jsonb(m) AS payload FROM api.asset_manifest m WHERE printing_id='783db704-7783-4ef9-8d8d-c00da4c7defd'::uuid OR variant_id=ANY(ARRAY['272802e1-0bdb-49b3-b2ee-76c14e8c14a1','95c46d73-a9bc-4e36-aeee-fde9fee7a7ad']::uuid[]) OR asset_row_id=ANY(ARRAY['4971c906-4460-43cb-b660-07d1a1038627','b049d37b-3e80-426b-b359-622de6f16986']::uuid[]) ORDER BY catalogue_version_id,asset_row_id LIMIT 21;

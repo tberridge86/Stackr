@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_PUBLISHER_VALIDATION_PASS_PENDING_INDEPENDENT_REVIEW",
+  "workType": "QUALITY_UPGRADE",
+  "fixedMissingPopulationDelta": 0,
+  "missingLiveCountDelta": 0,
+  "sourceArchiveAlreadyUploadedAssetId": 647979461,
+  "archiveSHA256": "3fa38a9b511af60503b1c37a7e13a81e35b0465990785d9b6ee3fc8ef32cc579",
+  "archiveBytes": 187012,
+  "archiveMembers": 8,
+  "repoFilesExpected": 20,
+  "publisherTests": 83,
+  "archiveGuardTests": 12,
+  "archiveNegativeTests": 11,
+  "sharedJournalIntegrationTests": 1,
+  "actualFrozenBaselineBridge": {
+    "production": [
+      28,
+      30
+    ],
+    "staging": [
+      23,
+      26
+    ],
+    "SQLExecuted": false,
+    "reviewedPrivatePayloadMatched": true
+  },
+  "actualExtractedImageFullDecodes": 4,
+  "actualImageHashesMatched": 4,
+  "privatePillowSharpEvidencePinned": true,
+  "protectedWorkflow": {
+    "manualOnly": true,
+    "exactMainSHA": true,
+    "environment": "production",
+    "concurrency": "stackr-production-deployment",
+    "contentsPermission": "read",
+    "confirmation": "PUBLISH OWNER BULBASAUR MEW001 UPGRADE"
+  },
+  "transferPolicy": {
+    "maxConcurrency": 2,
+    "minIntervalMs": 700,
+    "maxTransientRetries": 3,
+    "retry401": false,
+    "retry403": false,
+    "immutableUploads": true
+  },
+  "metadata": {
+    "newExactNormalAsset": 1,
+    "newNormalLink": 1,
+    "oldNormalAllowedChanges": [
+      "publicly_servable",
+      "updated_at"
+    ],
+    "source17RowsPreservedProduction": 6,
+    "source17RowsPreservedStaging": 2,
+    "stagingOnlySourceFixtureInactiveUnderReview": true,
+    "stageRollbackTransactionExact": true,
+    "partialOrUnknownMetadataRecoveryRejected": true,
+    "productionSourceCreation": false,
+    "canonicalVariantChanges": false,
+    "publicReceiptsHaveNoFullBeforeRows": true
+  },
+  "rootPrivateContextSHA": "ec5c6b94c923dcc2306ce6a8726727427e9d60379fa9d9c8d5d978a99ee8d1a6",
+  "privatePackageHFSHA": "76d2c3efda70a61e3466c5e07fb7b6360fb44d6f310b9e66afa83cb0b03148ea",
+  "privateSourceContractSHA": "c5d7fdbcc2d614138a7f37c033635157554a6d317de0a84950df96a1fdb56dda",
+  "rootDecisionSHA": "f84f544aee361c63b60d199cf7e74b9a7b917b6fc576ad09547c3f0ce0ce4f0a",
+  "rootReferenceQualificationSHA": "3249fb89bc4802eb0903399a7567d5ea9582fec2bca0e64bfea9036826ea71c5",
+  "sourceAuthorFlagsRemainFalse": true,
+  "HDOriginalCertified": false,
+  "physicalFinishCertified": false,
+  "vendorLicenceVerified": false,
+  "sourcewideApproval": false,
+  "localNetworkOrSQLCalls": 0,
+  "releaseUploads": 0,
+  "workflowDispatches": 0,
+  "merges": 0,
+  "installedDeviceVerified": false,
+  "additionalDependencyRawGitAndVerifiedCheckoutByteForms": 11,
+  "prior400RawGitAndWorkingBytesUnchanged": true
+}
