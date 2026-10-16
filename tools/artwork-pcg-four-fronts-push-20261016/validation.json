@@ -1,0 +1,346 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_FROZEN_PUBLICATION_HANDOFF_READY",
+  "confirmation": "PUBLISH ARTWORK PCG FOUR FRONTS",
+  "queueId": "PCG1234-EXACT4-SHARED-FRONTS-20261016",
+  "fronts": 4,
+  "fixedVariantTuplesPerEnvironment": 4,
+  "workType": "CARDS",
+  "batchIds": [
+    "JP-CARDS-019",
+    "JP-CARDS-021",
+    "JP-CARDS-025",
+    "JP-CARDS-026"
+  ],
+  "recordedCategories": [
+    "Pokemon",
+    "Pokemon",
+    "Pokemon",
+    null
+  ],
+  "identities": [
+    {
+      "printingId": "3c83ecfe-306a-4f64-8003-e455fb4be4f9",
+      "setId": "8063eabc-362a-4f15-a4ec-4ed73824252d",
+      "setCode": "PCG1",
+      "languageCode": "ja",
+      "canonicalAlias": "034",
+      "actualPrintedName": "コイキング",
+      "actualPrintedForm": null,
+      "recordedCategory": "Pokemon",
+      "actualPrintedHP": 30,
+      "actualPrintedType": "Water",
+      "actualPrintedStage": "たね",
+      "actualPrintedEvolutionFrom": null,
+      "abilityCount": 0,
+      "attackCount": 2,
+      "printedPokemonExRule": null,
+      "printedCollectorNumber": "034/082",
+      "printedArtist": "Atsuko Nishida",
+      "printedNationalDex": null,
+      "printedSetCodeLiteral": null,
+      "currentVariantId": "e2710b68-93f0-4cdd-8537-57a1e6046a0f",
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentIsDefaultFlag": true,
+      "currentActualApiDefaultVariantId": "e2710b68-93f0-4cdd-8537-57a1e6046a0f",
+      "assetVariantId": null,
+      "sourceVariantId": null,
+      "deliveryKind": "shared",
+      "actualWrappedSignatureCanonicalSha256": "4d454618935f870abf035bdedaf6b5d37cf8ac79cf3fa158112c9a75b4b20604"
+    },
+    {
+      "printingId": "aec39508-e7ed-4d3d-a876-51dc5f7c258e",
+      "setId": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+      "setCode": "PCG2",
+      "languageCode": "ja",
+      "canonicalAlias": "023",
+      "actualPrintedName": "コイキング",
+      "actualPrintedForm": null,
+      "recordedCategory": "Pokemon",
+      "actualPrintedHP": 30,
+      "actualPrintedType": "Water",
+      "actualPrintedStage": "たね",
+      "actualPrintedEvolutionFrom": null,
+      "abilityCount": 0,
+      "attackCount": 2,
+      "printedPokemonExRule": null,
+      "printedCollectorNumber": "023/082",
+      "printedArtist": "Hisao Nakamura",
+      "printedNationalDex": null,
+      "printedSetCodeLiteral": null,
+      "currentVariantId": "41385d11-8aac-4618-b8b0-b810bdfcaa8a",
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentIsDefaultFlag": true,
+      "currentActualApiDefaultVariantId": "41385d11-8aac-4618-b8b0-b810bdfcaa8a",
+      "assetVariantId": null,
+      "sourceVariantId": null,
+      "deliveryKind": "shared",
+      "actualWrappedSignatureCanonicalSha256": "ca325b30c57338ce29fa3155757313e7dc7d4cdc3cd16609d1e7c56b6859f13f"
+    },
+    {
+      "printingId": "db02f454-b7b4-497d-b2a0-a9e5ab074665",
+      "setId": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+      "setCode": "PCG3",
+      "languageCode": "ja",
+      "canonicalAlias": "030",
+      "actualPrintedName": "デリバード",
+      "actualPrintedForm": null,
+      "recordedCategory": "Pokemon",
+      "actualPrintedHP": 70,
+      "actualPrintedType": "Water",
+      "actualPrintedStage": "たね",
+      "actualPrintedEvolutionFrom": null,
+      "abilityCount": 1,
+      "attackCount": 1,
+      "printedPokemonExRule": null,
+      "printedCollectorNumber": "030/084",
+      "printedArtist": "Yuka Morii",
+      "printedNationalDex": null,
+      "printedSetCodeLiteral": null,
+      "currentVariantId": "1f58b1ed-c5fe-4d9b-9d05-a3f3cc24cd2e",
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentIsDefaultFlag": true,
+      "currentActualApiDefaultVariantId": "1f58b1ed-c5fe-4d9b-9d05-a3f3cc24cd2e",
+      "assetVariantId": null,
+      "sourceVariantId": null,
+      "deliveryKind": "shared",
+      "actualWrappedSignatureCanonicalSha256": "90390dc41661349403dedd26a4d0956f41034a254230a2e10bd5d8658a9b7888"
+    },
+    {
+      "printingId": "bd47b01b-2694-4e7a-a446-9c2f7a5cbba7",
+      "setId": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+      "setCode": "PCG3",
+      "languageCode": "ja",
+      "canonicalAlias": "060",
+      "actualPrintedName": "R団のエビワラーex",
+      "actualPrintedForm": null,
+      "recordedCategory": null,
+      "actualPrintedHP": 100,
+      "actualPrintedType": "Darkness",
+      "actualPrintedStage": "たね",
+      "actualPrintedEvolutionFrom": null,
+      "abilityCount": 1,
+      "attackCount": 2,
+      "printedPokemonExRule": "ポケモンexが きぜつしたとき、相手プレイヤーはサイドを2枚とります。",
+      "printedCollectorNumber": "060/084",
+      "printedArtist": "Mitsuhiro Arita",
+      "printedNationalDex": null,
+      "printedSetCodeLiteral": null,
+      "currentVariantId": "d782e5b3-f7f7-4ac9-84ff-c9c6dfa05aca",
+      "currentVariantCode": "holo",
+      "currentFinishCode": "holo",
+      "currentIsDefaultFlag": false,
+      "currentActualApiDefaultVariantId": "d782e5b3-f7f7-4ac9-84ff-c9c6dfa05aca",
+      "assetVariantId": null,
+      "sourceVariantId": null,
+      "deliveryKind": "shared",
+      "actualWrappedSignatureCanonicalSha256": "51558677dd46c1d8aef43279c65277a4beac932d274551cbbc4f07f3df2d7aac"
+    }
+  ],
+  "tests": {
+    "publisherNode": {
+      "passed": 17,
+      "failed": 0
+    },
+    "archiveGuardsPython": {
+      "passed": 6,
+      "failed": 0
+    },
+    "priorPublisherRegressions": [
+      {
+        "tool": "Luvdisc",
+        "passed": 17
+      },
+      {
+        "tool": "SM1+SHARP2",
+        "passed": 17
+      },
+      {
+        "tool": "Aquapolis2",
+        "passed": 15
+      },
+      {
+        "tool": "Eevee1",
+        "passed": 15
+      }
+    ],
+    "persistedFailureJournal": {
+      "passed": 1,
+      "failed": 0
+    },
+    "sourceContractRerun": {
+      "passed": 161,
+      "positive": 10,
+      "negative": 151,
+      "failed": 0
+    },
+    "queue": {
+      "status": "PASS",
+      "realReceipts": 4,
+      "localImageByteObjects": 16,
+      "jointRawEntryTamperRejections": 140,
+      "forgedRawAuthorityRejections": 28,
+      "rootAuthorityPacketRejections": 10,
+      "private161ContractCasesReusedThroughIndependentPeerPin": true,
+      "priorReadOnlyReceipts": 12,
+      "priorLocalImageObjects": 48,
+      "sharpMetricCasePassed": true,
+      "allPriorExactPredicatesPreserved": true,
+      "inMemoryCompleteHelperDryRun": {
+        "priorEntries": 1215,
+        "afterEntries": 1219,
+        "onlyExactFourAdded": true,
+        "prior1215ByteValuesUnchanged": true,
+        "sharedWritesIntercepted": 4
+      },
+      "sharedFilesUnchanged": true,
+      "productionWrites": 0
+    }
+  },
+  "archiveInstaller": {
+    "assetId": 646214227,
+    "membersVerifiedAndExtracted": 20,
+    "runtimeSharpFullyDecoded": 16,
+    "privatePeerPILSharpRGBAAgreements": 16,
+    "privacySafeJsonFiles": 4,
+    "originalHdPixelFronts": 4,
+    "derivativeHdPixelFiles": 0,
+    "hdMeaning": "Delivered-pixel dimension threshold only; no provider-native optical certificate",
+    "noEnlargement": true,
+    "localPinnedArchiveOnly": true
+  },
+  "sourceGuard": {
+    "externalAuthorityAndBaselineFilesRehashed": 21,
+    "oldProductionSources": 4,
+    "oldFullSourceFieldsProtected": 68,
+    "productionNewSources": 0,
+    "productionPolicyChangesAllowed": 0,
+    "explicitProductionResolverHasNoInsertPath": true,
+    "full17MicrosecondsRetainedByBothJsonReaders": true,
+    "stagingBaselineScopedSources": 0,
+    "onlyTemporaryStagingFixture": "pricecharting",
+    "elevenCorrectScopeIds": true,
+    "rejectedObsoleteThreeAndTwoScopeCounts": true
+  },
+  "transactionFixtures": {
+    "production": {
+      "beforeRows": 29,
+      "afterRows": 37,
+      "assetsAdded": 4,
+      "linksAdded": 4,
+      "sourcesAdded": 0
+    },
+    "staging": {
+      "beforeRows": 19,
+      "temporaryRows": 28,
+      "afterRollbackRows": 19
+    },
+    "allThreeExistingSetLogosAndLinksUnchanged": true,
+    "canonicalMetadataAssetsLinksAndAllSourceRowsUnchanged": true,
+    "sourceAndLinkFailuresRollBack": true
+  },
+  "appSelection": [
+    {
+      "printing_id": "3c83ecfe-306a-4f64-8003-e455fb4be4f9",
+      "large_role": "original",
+      "large_dimensions": [
+        1028,
+        1411
+      ],
+      "large_object_path": "objects/59f7953cd442973c464adc0d05f6267c3488f494fad34be911542c048c2d31d2/original.jpg",
+      "detail_dimensions": [
+        720,
+        988
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "aec39508-e7ed-4d3d-a876-51dc5f7c258e",
+      "large_role": "original",
+      "large_dimensions": [
+        1026,
+        1416
+      ],
+      "large_object_path": "objects/3b0688053bc0ba6ffc6b9ff5be8d391f944106b686bc92f3ff4dbacfa1c65782/original.jpg",
+      "detail_dimensions": [
+        720,
+        994
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "db02f454-b7b4-497d-b2a0-a9e5ab074665",
+      "large_role": "original",
+      "large_dimensions": [
+        1027,
+        1409
+      ],
+      "large_object_path": "objects/356e2b83bf079ff0070eda4fe340482c43f7fcd51fc53b8b3adec7a0ce893e7f/original.jpg",
+      "detail_dimensions": [
+        720,
+        988
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "bd47b01b-2694-4e7a-a446-9c2f7a5cbba7",
+      "large_role": "original",
+      "large_dimensions": [
+        1218,
+        1600
+      ],
+      "large_object_path": "objects/9a2f6443bb670c35e8f7fb67a29d7346768277d3c877f52effd33f9ba87b23a1/original.jpg",
+      "detail_dimensions": [
+        720,
+        946
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    }
+  ],
+  "qualifications": {
+    "historicalSourceNullFalseFlagsUnchanged": true,
+    "heterogeneousRawWitnessKeysPreserved": true,
+    "HitmonchanRecordedCategoryNullPreserved": true,
+    "fullPrintedJapaneseExRuleAndBodyRetained": true,
+    "sharedFrontEligibilityDoesNotAuthenticatePhysicalEdition": true,
+    "providerBodyVerbatimAgreement": false,
+    "providerNeverResizedCertified": false,
+    "nativeOpticalGainClaimed": false,
+    "physicalEditionCertified": false,
+    "physicalFinishCertified": false,
+    "unlimitedEditionCertified": false,
+    "materialAuthenticityCertified": false,
+    "vendorLicenceCertified": false,
+    "sourcewideApproval": false
+  },
+  "priorThreeImmutableLineage": {
+    "approvedRowsCanonicalIdentical": true,
+    "privateHandoffSha256": "71af199c1e8957919c83cac9820b819426c1044e6effbf9922f991e973d790f0",
+    "archiveAssetId": 646165864,
+    "archiveNotSeparatelyQueuedOrPublished": true
+  },
+  "unchangedPriorRepositoryFilesRehashed": 280,
+  "unchangedSharedDependenciesRehashed": 11,
+  "unchangedPrivateOwnedFilesRehashed": 74,
+  "unchangedPrivateInputFilesRehashed": 114,
+  "workflow": {
+    "protectedProduction": true,
+    "exactMainSha": true,
+    "sharedDeploymentConcurrency": true,
+    "shaPinnedActions": 3,
+    "exact20FileSecretScanRequired": true,
+    "failureJournalAndRollbackReceipts": true
+  },
+  "planSha256": "d79fd3367b40be0d0a852ec774c761c7276ac4b8f4b10343a05de5b9134eae04",
+  "approvalSha256": "cfa62dea549f2444706b6502918c3e48710660a1fa4c54d4de7ca0836562c6d9",
+  "productionWrites": 0,
+  "livePublicationVerified": false,
+  "actualApiAndDefaultExplicitAllFourFilesVerificationRequiredAfterProtectedPublication": true
+}

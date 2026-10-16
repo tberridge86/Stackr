@@ -1,0 +1,82 @@
+[
+  {
+    "printing_id": "3c83ecfe-306a-4f64-8003-e455fb4be4f9",
+    "set_id": "8063eabc-362a-4f15-a4ec-4ed73824252d",
+    "set_code": "PCG1",
+    "language_code": "ja",
+    "collector_number": "034",
+    "card_native_name": "Magikarp",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-019",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "e2710b68-93f0-4cdd-8537-57a1e6046a0f"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:969e19616e3f1452f9c6429726dc26bcc9278d3fa712bdc627908020be2101ed",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/e4f5d0d1c5bd803938a282a6d628a988fcb046b9f669ad452683ec8e333d2214/1600.jpg",
+    "original_sha256": "59f7953cd442973c464adc0d05f6267c3488f494fad34be911542c048c2d31d2",
+    "body_sha256": "3f98ef44070865a1222b56224c8a47c7e05635401a7f7a8186b69356aa7a64f8",
+    "evidence_sha256": "f61cda6f71258235565451876055a02726b3926a9cfad0b58a4a875f2f8cf2f9"
+  },
+  {
+    "printing_id": "aec39508-e7ed-4d3d-a876-51dc5f7c258e",
+    "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+    "set_code": "PCG2",
+    "language_code": "ja",
+    "collector_number": "023",
+    "card_native_name": "Magikarp",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-021",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "41385d11-8aac-4618-b8b0-b810bdfcaa8a"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:216eb54cb14d91c43234a42350d520a86f72c65aa068c1105ba4a3f0902af8e0",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/d6d2e1d606137f572f172ea7a4f0fce814fcfba18ffb6efd78ef37f0d00a60ef/1600.jpg",
+    "original_sha256": "3b0688053bc0ba6ffc6b9ff5be8d391f944106b686bc92f3ff4dbacfa1c65782",
+    "body_sha256": "01f10aa544a2511c8f2be3ae3e55fb8deccee6bd6801c836e3216ad7446f2c9c",
+    "evidence_sha256": "0be0bd0525a55dbd047b87c32e2b7173928d1b14d04af1f7c0203af7a5d6ea3e"
+  },
+  {
+    "printing_id": "db02f454-b7b4-497d-b2a0-a9e5ab074665",
+    "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+    "set_code": "PCG3",
+    "language_code": "ja",
+    "collector_number": "030",
+    "card_native_name": "Delibird",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-025",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "1f58b1ed-c5fe-4d9b-9d05-a3f3cc24cd2e"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:0973053e12a282e02b519ab3d793d25c53b645468fbd018e4a21f274948f8d9f",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/67154956235a060c815fdc167a110259b888183ac554619e90042ed385817914/1600.jpg",
+    "original_sha256": "356e2b83bf079ff0070eda4fe340482c43f7fcd51fc53b8b3adec7a0ce893e7f",
+    "body_sha256": "889b2bd07070409e82ea9cabed978ae634626fec4ce23f6eaf956cec6b8ea757",
+    "evidence_sha256": "b666a0a8546e079b260079d08b0c99d16bf3b502f2c0b53a911b5d76da4f9dcb"
+  },
+  {
+    "printing_id": "bd47b01b-2694-4e7a-a446-9c2f7a5cbba7",
+    "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+    "set_code": "PCG3",
+    "language_code": "ja",
+    "collector_number": "060",
+    "card_native_name": "Rocket's Hitmonchan ex",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-026",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "d782e5b3-f7f7-4ac9-84ff-c9c6dfa05aca"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:2434851e2989680db395e6991f4ab79e780509e41032763da98586d3d807ef60",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/ref7bdf51e640008c472afd8ac00a3ab553532c496a67f5aa4aa594e772b9e0b44e/1600.jpg",
+    "original_sha256": "9a2f6443bb670c35e8f7fb67a29d7346768277d3c877f52effd33f9ba87b23a1",
+    "body_sha256": "43a22f865df4630080183c43d5c83e06d07e6fe20cac69eb7ad31377da1934aa",
+    "evidence_sha256": "8eb0665726ef9c6eb3e0b7570279f0761b013abf45e27ff3c58c9f4a2c59446a"
+  }
+]
