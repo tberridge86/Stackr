@@ -148,7 +148,7 @@ select {
   height:100%;
   display:block;
 }
-.study-card,.vacancy,.paper-curl {
+.study-card,.vacancy,.peel-paper,.peel-shadow {
   position:absolute;
   left:var(--slot-x);
   top:var(--slot-y);
@@ -158,11 +158,12 @@ select {
 }
 .vacancy {
   background:#fff9ed;
-  opacity:0;
+  z-index:1;
+  clip-path:inset(calc((1 - var(--peel-progress,0)) * 100%) 0 0 0);
   box-shadow:inset 0 0 0 1px #d6c8b3;
 }
 .vacancy[data-open='true'] {
-  opacity:1;
+  clip-path:inset(0);
 }
 .study-card {
   padding:0;
@@ -174,9 +175,17 @@ select {
   touch-action:pan-y;
   perspective:1000px;
   transform-style:preserve-3d;
+  transform-origin:top center;
+  transform:translate(var(--card-x,0%),var(--card-y,0%))
+    rotate(var(--card-angle,0deg)) rotateX(var(--card-lift,0deg));
 }
 .study-card[data-phase='loose'],.study-card[data-phase='revealed'] {
-  box-shadow:0 8px 13px #4a31602d;
+  box-shadow:2px 12px 16px #4a316040,0 1px 2px #5a49334d;
+}
+.study-card.is-peeling {
+  z-index:7;
+  box-shadow:0 calc(2px + var(--lift,0) * 7px)
+    calc(3px + var(--lift,0) * 9px) #4a31602d;
 }
 .turn {
   position:absolute;
@@ -203,12 +212,40 @@ select {
 .study-card[data-phase='revealed'] .turn {
   transform:rotateY(180deg);
 }
-.paper-curl {
+.peel-paper {
   z-index:4;
   opacity:0;
-  transform-origin:left center;
-  background:linear-gradient(90deg,#e4d5ba,#fffaf0 28%,#f4e7d1 72%,#c7b595);
-  box-shadow:5px 4px 10px #5a493324;
+  overflow:visible;
+  filter:drop-shadow(1px 4px 3px #5a493337);
+  pointer-events:none;
+}
+.peel-paper svg {
+  display:block;
+  width:100%;
+  height:170%;
+  overflow:visible;
+}
+.peel-underside {
+  fill:#fff8e9;
+  stroke:#d6c6a7;
+  stroke-width:.4;
+}
+.peel-fold {
+  fill:var(--peel-fold-fill,#e7d8bf);
+  stroke:#c5b18e;
+  stroke-width:.4;
+}
+.peel-edge {
+  fill:none;
+  stroke:#af9473;
+  stroke-width:.65;
+}
+.peel-shadow {
+  z-index:3;
+  opacity:0;
+  background:radial-gradient(ellipse at 50% 80%,#4734564d,transparent 72%);
+  filter:blur(4px);
+  transform:translateY(calc(var(--lift,0) * 6px));
   pointer-events:none;
 }
 .phase {

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "checkedAt": "2026-10-16T18:18:07.371517+00:00",
+  "checkedAt": "2026-10-16T19:16:23.064899+00:00",
   "sourceRevision": "5f37a80b6869d8f1ad6bea0b1e0d58fafd44b028",
   "supersedesInitialPackagingStatus": "corocoro-unpacking-evidence-20261016.json",
   "scope": "Watched sampled frames and narrated stages, not an exhaustive uncut reconstruction. Preview43 direct-insert rows is an incomplete historical subset. Original Mew remains visual benchmark.",
@@ -2243,7 +2243,7 @@
       "2022-packet"
     ],
     "mechanisms": [
-      "Registered old Japanese backs; supported card; peel sheet; pause back-up; separate flip",
+      "Slow progressive edge separation/rolled supporting paper; supportedback-up card; lift into freepose; pause; separateflip",
       "Already-open regular sleeve; slide right; front-up; fully clear packet"
     ],
     "actionSpeedCurlAndFlipAxis": "design_choices_not_measured_hand_trajectory",
@@ -2257,6 +2257,178 @@
     "ownershipBindings": 0
   },
   "validation": {
+    "schemaVersion": 1,
+    "checkedAt": "2026-10-16T19:16:23.064899+00:00",
+    "baseline": "88586aa388ed3758794e18c0a5073382b50e1bf6",
+    "reason": "Owner said the previous peel did not look like careful physical separation before a flip",
+    "motion": {
+      "peelMs": 4200,
+      "flipMs": 1100,
+      "stages": [
+        "Carefully loosen edge",
+        "Slowly separate backing with exposed rolled lip",
+        "Lift released card while keeping back up",
+        "Pause before user explicitly flips"
+      ],
+      "cardMovementDuringSupport": "Slight pitch,maximum3degrees; no front exposure",
+      "freePose": {
+        "xPercent": [
+          -8,
+          8
+        ],
+        "yPercent": -28,
+        "angleDegrees": [
+          -4,
+          4
+        ]
+      },
+      "flippedPose": "Same freeposition; only inner cardface turns",
+      "trajectoryCurlAndTiming": "Visual design choices, not measured historical hand movement",
+      "originalMewChanged": false,
+      "packet2022Changed": false
+    },
+    "sources": [
+      {
+        "source": "docs/prototypes/corocoro-unpacking-study.html",
+        "copy": "unpacking.html",
+        "sha256": "757e2cae3d9273f6b05478cf2fbfb9f99177f961bfa0d5943b286aa4e8533aef",
+        "bytes": 12747
+      },
+      {
+        "source": "docs/prototypes/corocoro-unpacking-study.js",
+        "copy": "corocoro-unpacking-study.js",
+        "sha256": "6b1adb0ee16ce3ca4832289f60f052b3765d473f6461fc940bff0de89c36d3ca",
+        "bytes": 21821
+      }
+    ],
+    "exactLocalCopies": true,
+    "privateOriginalHashesUnchanged": true,
+    "benchmarkSha256": "6d195a76f228ba3971961ed758d9763ca072de3ad23cd315bdb83cc4a19e22c7",
+    "agentChecks": {
+      "checkedAt": "2026-10-16T19:12:19.061Z",
+      "sourcePath": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/magazine-reveals-20261015/docs/prototypes/corocoro-unpacking-study.js",
+      "checks": [
+        "Middle peel supports selected back-up card, visible paper curl extends18% below it, other card stays fixed",
+        "Completed peel persists visibly free back-up pose and pauses before flip",
+        "Explicit1100ms flip uses inner card turn while retaining free position",
+        "Reset cancels RAF and restores registered backs, paper and controls",
+        "Mid-peel reduced motion settles only selected release, without automatic flip",
+        "Skip cancels live peel and reveals both at separated free positions",
+        "Visibility and pagehide cancel RAF and leave restartable controls",
+        "System reduced motion preserves separate release then flip",
+        "2022packet retains rightward front-up slide with unchanged timing and displacement"
+      ],
+      "passed": 9,
+      "scope": "Deterministic in-memory exact-source motion invariant checks; browser visual acceptance remains parent responsibility",
+      "remoteRequests": 0,
+      "catalogueWrites": 0
+    },
+    "independentReview": {
+      "verdict": "pass_with_validation_limits",
+      "baseline": "88586aa388ed3758794e18c0a5073382b50e1bf6",
+      "findings": [],
+      "independentLifecycleGroupsPassed": 12,
+      "latestGeometryChecksPassed": 4,
+      "syntax": "PASS",
+      "diffCheck": "PASS",
+      "visualFiles": [
+        "careful-peel-midpoint.jpg",
+        "careful-peel-loose-back.jpg"
+      ],
+      "visualObservations": [
+        "Rolled lip visible below supported left card back; right remains attached",
+        "Left card visibly lifted back-up with white vacancy and separate Flip action"
+      ],
+      "verified": [
+        "4.2-second staged peel then free back-up pause",
+        "Separate1100ms flip retains free pose",
+        "Reset/skip/reduced/system/visibility/pagehide cancel motion",
+        "StaleRAF and lateflipcompletion cannot overwrite reset",
+        "Image-load epoch isolation preserved",
+        "2022right-side slide unchanged",
+        "Nonloopback, alteredcredit and invalidrights scopes reject",
+        "ExposedSVG rolledlip,uniquegradientIDs and170%coordinate scale correct"
+      ],
+      "remoteRequests": 0,
+      "reviewerWrites": 0,
+      "limits": [
+        "Continuous browser acceptance supplied by parent",
+        "Actual narrow/installed-phone rendering held"
+      ]
+    },
+    "browser": {
+      "width": 1067,
+      "passes": [
+        "Visible intermediate rounded paper curl while card back remains supported",
+        "Left card freed back-up; right still attached",
+        "Separate Ivy flip preserves free position",
+        "Jigglypuff full4.2s release precedes separateflip",
+        "Both faces shown atfreeposes withwhitevacancies/nohorizontaloverflow",
+        "Reset during Jigglypuff midpeel restores both registeredbacks and controls",
+        "Reduced motion during Ivy midpeel settles only release/back-up pause"
+      ],
+      "captures": [
+        "careful-peel-midpoint.jpg",
+        "careful-peel-loose-back.jpg",
+        "careful-peel-flipped-fronts.jpg"
+      ],
+      "phoneProof": "held_not_established"
+    },
+    "effects": {
+      "newRasterArtwork": 0,
+      "newThirdPartyOriginals": 0,
+      "newPublicAssets": 0,
+      "catalogueWrites": 0,
+      "collectionWrites": 0,
+      "nativeChanges": 0,
+      "deployment": false,
+      "mainMerge": false
+    }
+  },
+  "effects": {
+    "newPrivateReferencePhotos": 4,
+    "newPrivateReferenceBytes": 1856360,
+    "newCoverBytes": 0,
+    "newCommittedPixelFiles": 0,
+    "newPublicApprovedAssets": 0,
+    "newNativeAssets": 0,
+    "newVideoOrFrameCopies": 0,
+    "catalogueWrites": 0,
+    "databaseWrites": 0,
+    "ownershipWrites": 0,
+    "deployment": false,
+    "mainMerge": false,
+    "nativeBuild": false,
+    "testFlight": false
+  },
+  "remaining": [
+    "Original1997magazineboundMew carrier and finish vs preproduction",
+    "December1998 quartet actual backside/removal",
+    "Other issue-specific openings and initialmagazine binding",
+    "Jigglypuff sharper originalcopy and all newphoto production reuse permission",
+    "Full publication-separated historical denominator",
+    "Actual rewritten prototype on narrowphone and installeddevice",
+    "Cetitan June2023opaqueprintedpouch: own exact card/carrier assets need preparing; observedmagazine release andpartialside extraction only, initialseal hiddenbyedit"
+  ],
+  "queueValidation": {
+    "all43PreviewIssueIdsRepresentedExactlyOnce": true,
+    "historicalRows": 24,
+    "laterQueueRows": 19,
+    "fullHistoricalDenominator": null,
+    "modernGroupingLabelIncludes2001to2003": true
+  },
+  "counts": {
+    "currentPreviewQueueRows": 43,
+    "historicalQueueRows": 24,
+    "laterQueueRows": 19,
+    "namedObservedOpeningReferenceCases": 7,
+    "distinctVideosWithObservedCardRelease": 6,
+    "modernVerifiedPartialMechanisms": 2,
+    "modernCompleteSealedOpenings": 0,
+    "implementedLocalStudies": 2,
+    "fullEligibleIssueDenominator": null
+  },
+  "previousPrototypeValidation": {
     "schemaVersion": 1,
     "checkedAt": "2026-10-16T18:18:07.371517+00:00",
     "scope": "New two-case local prototype; prior neutral prototype responsive/browser receipts are historical and not rerun claims",
@@ -2362,47 +2534,5 @@
     ],
     "finalWrapperGateRendered": true
   },
-  "effects": {
-    "newPrivateReferencePhotos": 4,
-    "newPrivateReferenceBytes": 1856360,
-    "newCoverBytes": 0,
-    "newCommittedPixelFiles": 0,
-    "newPublicApprovedAssets": 0,
-    "newNativeAssets": 0,
-    "newVideoOrFrameCopies": 0,
-    "catalogueWrites": 0,
-    "databaseWrites": 0,
-    "ownershipWrites": 0,
-    "deployment": false,
-    "mainMerge": false,
-    "nativeBuild": false,
-    "testFlight": false
-  },
-  "remaining": [
-    "Original1997magazineboundMew carrier and finish vs preproduction",
-    "December1998 quartet actual backside/removal",
-    "Other issue-specific openings and initialmagazine binding",
-    "Jigglypuff sharper originalcopy and all newphoto production reuse permission",
-    "Full publication-separated historical denominator",
-    "Actual rewritten prototype on narrowphone and installeddevice",
-    "Cetitan June2023opaqueprintedpouch: own exact card/carrier assets need preparing; observedmagazine release andpartialside extraction only, initialseal hiddenbyedit"
-  ],
-  "queueValidation": {
-    "all43PreviewIssueIdsRepresentedExactlyOnce": true,
-    "historicalRows": 24,
-    "laterQueueRows": 19,
-    "fullHistoricalDenominator": null,
-    "modernGroupingLabelIncludes2001to2003": true
-  },
-  "counts": {
-    "currentPreviewQueueRows": 43,
-    "historicalQueueRows": 24,
-    "laterQueueRows": 19,
-    "namedObservedOpeningReferenceCases": 7,
-    "distinctVideosWithObservedCardRelease": 6,
-    "modernVerifiedPartialMechanisms": 2,
-    "modernCompleteSealedOpenings": 0,
-    "implementedLocalStudies": 2,
-    "fullEligibleIssueDenominator": null
-  }
+  "carefulPeelCorrectionReceipt": "corocoro-careful-peel-correction-20261016.json"
 }

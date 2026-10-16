@@ -51,6 +51,76 @@
     animation = null;
     moving = null;
   }
+  function smooth(value) {
+    const bounded = Math.min(1, Math.max(0, value));
+    return bounded * bounded * (3 - 2 * bounded);
+  }
+  function paintPeel(card, progress) {
+    const release = smooth((progress - .7) / .3);
+    const lift = Math.sin(Math.PI * progress);
+    const stage = progress < .18 ? 'edge' : progress < .7 ? 'backing' : 'lifting';
+    if (card.button.classList.contains('is-peeling') && card.button.dataset.peelStage !== stage) {
+      card.button.dataset.peelStage = stage;
+      get('phase').textContent = stage === 'edge' ? 'Carefully loosening the edge…'
+        : stage === 'backing' ? 'Slowly separating the backing…' : 'Lifting the loose card, back facing up…';
+    }
+    for (const node of [card.button, card.vacancy, card.paper, card.shadow]) {
+      node.style.setProperty('--peel-progress', String(progress));
+      node.style.setProperty('--release-progress', String(release));
+      node.style.setProperty('--lift', String(lift));
+    }
+    card.button.style.setProperty('--card-x', (card.side * 8 * release) + '%');
+    card.button.style.setProperty('--card-y', (-28 * release) + '%');
+    card.button.style.setProperty('--card-angle', (card.side * 4 * release) + 'deg');
+    card.button.style.setProperty('--card-lift', (3 * lift) + 'deg');
+    const front = 100 - 96 * progress;
+    const bottom = 100 + 18 * lift;
+    const lip = bottom - (3 + 4 * lift);
+    const n = value => value.toFixed(2);
+    card.underside.setAttribute('d', `M 0 ${n(front)} C 25 ${n(front - 5 * lift)} 75 ${n(front + 5 * lift)} 100 ${n(front)} L 100 ${n(bottom)} C 76 ${n(bottom + 2 * lift)} 24 ${n(bottom + 2 * lift)} 0 ${n(bottom)} Z`);
+    card.fold.setAttribute('d', `M 0 ${n(lip)} C 25 ${n(lip - 2 * lift)} 75 ${n(lip + 2 * lift)} 100 ${n(lip)} L 100 ${n(bottom)} C 76 ${n(bottom + 2 * lift)} 24 ${n(bottom + 2 * lift)} 0 ${n(bottom)} Z`);
+    card.edge.setAttribute('d', `M 0 ${n(bottom)} C 24 ${n(bottom + 2 * lift)} 76 ${n(bottom + 2 * lift)} 100 ${n(bottom)}`);
+    card.paper.style.opacity = String(Math.min(1, progress * 8) * (1 - smooth((progress - .88) / .12)));
+    card.shadow.style.opacity = String(lift * .55);
+  }
+  function clearPeel(card) {
+    if (!card.paper) return;
+    card.button.classList.remove('is-peeling');
+    card.paper.classList.remove('is-peeling');
+    delete card.button.dataset.peelStage;
+    card.paper.style.opacity = '0';
+    card.shadow.style.opacity = '0';
+  }
+  function peelMotion(card) {
+    let frame = 0;
+    let stopped = false;
+    let rejectFinished;
+    const finished = new Promise((resolve, reject) => {
+      rejectFinished = reject;
+      let started;
+      const tick = now => {
+        if (stopped) return;
+        if (started === undefined) started = now;
+        const progress = Math.min(1, (now - started) / 4200);
+        paintPeel(card, smooth(progress));
+        if (progress < 1) frame = requestAnimationFrame(tick);
+        else resolve();
+      };
+      frame = requestAnimationFrame(tick);
+    });
+    card.button.classList.add('is-peeling');
+    card.paper.classList.add('is-peeling');
+    paintPeel(card, 0);
+    return {
+      finished,
+      cancel() {
+        if (stopped) return;
+        stopped = true;
+        cancelAnimationFrame(frame);
+        rejectFinished(Error('Peel cancelled'));
+      },
+    };
+  }
   function chooseNext() {
     return cards.find(card => card.phase === 'loose') ?? cards.find(card => card.phase === 'attached');
   }
@@ -73,8 +143,8 @@
     if (action === 'peel') {
       card.phase = 'loose';
       card.vacancy.dataset.open = 'true';
-      card.curl.style.opacity = '0';
-      card.curl.style.transform = '';
+      paintPeel(card, 1);
+      clearPeel(card);
       get('phase').textContent = card.name + ' is free, back facing up. Flip it to see the front.';
     } else {
       card.phase = 'revealed';
@@ -89,7 +159,7 @@
       card.phase = 'attached';
       card.button.dataset.phase = 'attached';
       if (card.vacancy) delete card.vacancy.dataset.open;
-      if (card.curl) { card.curl.style.opacity = ''; card.curl.style.transform = ''; }
+      if (card.paper) { paintPeel(card, 0); clearPeel(card); }
       if (card.sleeve) delete card.sleeve.dataset.open;
     });
     get('phase').textContent = ready ? activeCase.kind === 'sheet' ? 'Both backs match the sheet. Choose a card.' : 'The side is already open. Slide the card out.' : 'Reference images are unavailable. Reload to try again.';
@@ -101,30 +171,20 @@
     if (get('reduce').checked || systemMotion.matches) { settle(card, action); return; }
     const run = ++epoch;
     moving = { card, action };
-    let target;
-    let frames;
-    let duration;
+    let current;
     if (action === 'peel') {
-      target = card.curl;
-      target.style.opacity = '1';
-      get('phase').textContent = 'Keep the card supported. Peel the paper away…';
-      frames = [{ transform: 'translateX(0) rotateY(0deg)', opacity: .1 },
-        { transform: 'translateX(-12px) rotateY(-62deg)', opacity: 1, offset: .58 },
-        { transform: 'translateX(-32px) rotateY(-112deg)', opacity: 0 }];
-      duration = 1300;
+      get('phase').textContent = 'Keep the card supported. Slowly peel the backing away…';
+      current = peelMotion(card);
     } else if (action === 'flip') {
-      target = card.turn;
       get('phase').textContent = 'Turning ' + card.name + ' over…';
-      frames = [{ transform: 'rotateY(0deg)' }, { transform: 'rotateY(180deg)' }];
-      duration = 800;
+      current = card.turn.animate([{ transform: 'rotateY(0deg)' }, { transform: 'rotateY(180deg)' }],
+        { duration: 1100, easing: 'cubic-bezier(.45,0,.2,1)', fill: 'forwards' });
     } else {
-      target = card.button;
       get('phase').textContent = 'Sliding Pikachu VMAX out, front facing up…';
       const offset = card.button.offsetWidth * 46 / 36;
-      frames = [{ transform: 'translateX(0)' }, { transform: `translateX(${offset}px)` }];
-      duration = 1100;
+      current = card.button.animate([{ transform: 'translateX(0)' }, { transform: `translateX(${offset}px)` }],
+        { duration: 1100, easing: 'cubic-bezier(.2,.7,.2,1)', fill: 'forwards' });
     }
-    const current = target.animate(frames, { duration, easing: 'cubic-bezier(.2,.7,.2,1)', fill: 'forwards' });
     animation = current;
     controls();
     try { await current.finished; } catch { return; }
@@ -138,7 +198,7 @@
     cancel();
     for (const card of cards) {
       if (card.vacancy) card.vacancy.dataset.open = 'true';
-      if (card.curl) { card.curl.style.opacity = '0'; card.curl.style.transform = ''; }
+      if (card.paper) { paintPeel(card, 1); clearPeel(card); }
       if (card.sleeve) card.sleeve.dataset.open = 'true';
       card.phase = 'revealed';
     }
@@ -181,13 +241,43 @@
     const sheet = element('div', 'sheet-photo');
     sheet.append(photoSprite(config.paper, [0, 0, 1079, 917], true));
     mount.append(sheet);
-    cards = config.cards.map(info => {
+    cards = config.cards.map((info, index) => {
       if (!cropValid(info.slot, 1079, 917)) throw Error('Card position invalid');
       const vacancy = element('div', 'vacancy');
-      const curl = element('div', 'paper-curl');
+      const paper = element('div', 'peel-paper');
+      const shadow = element('div', 'peel-shadow');
+      const curl = document.createElementNS(svgNS, 'svg');
+      curl.setAttribute('viewBox', '0 0 100 170');
+      curl.setAttribute('preserveAspectRatio', 'none');
+      curl.setAttribute('aria-hidden', 'true');
+      const defs = document.createElementNS(svgNS, 'defs');
+      const gradient = document.createElementNS(svgNS, 'linearGradient');
+      const gradientId = 'peel-fold-' + index;
+      gradient.setAttribute('id', gradientId);
+      gradient.setAttribute('x1', '0%');
+      gradient.setAttribute('y1', '0%');
+      gradient.setAttribute('x2', '0%');
+      gradient.setAttribute('y2', '100%');
+      [['0%', '#fffaf0'], ['30%', '#e2d1b6'], ['65%', '#c4af8d'], ['100%', '#faf4e7']].forEach(([offset, color]) => {
+        const stop = document.createElementNS(svgNS, 'stop');
+        stop.setAttribute('offset', offset);
+        stop.setAttribute('stop-color', color);
+        gradient.append(stop);
+      });
+      defs.append(gradient);
+      curl.append(defs);
+      paper.style.setProperty('--peel-fold-fill', `url(#${gradientId})`);
+      const [underside, fold, edge] = ['peel-underside', 'peel-fold', 'peel-edge'].map(cls => {
+        const path = document.createElementNS(svgNS, 'path');
+        path.setAttribute('class', cls);
+        curl.append(path);
+        return path;
+      });
+      paper.append(curl);
       const button = element('button', 'study-card');
       button.type = 'button';
-      [vacancy, curl, button].forEach(node => slotStyle(node, info.slot));
+      button.dataset.side = index === 0 ? 'left' : 'right';
+      [vacancy, paper, shadow, button].forEach(node => slotStyle(node, info.slot));
       const turn = element('div', 'turn');
       const back = element('div', 'face back');
       back.append(photoSprite(config.paper, info.slot, true));
@@ -195,9 +285,12 @@
       front.append(photoSprite(info.front, info.front.crop));
       turn.append(back, front);
       button.append(turn);
-      const card = { name: info.name, phase: 'attached', button, turn, vacancy, curl };
+      const card = { name: info.name, phase: 'attached', side: index === 0 ? -1 : 1,
+        button, turn, vacancy, paper, shadow, underside, fold, edge };
+      paintPeel(card, 0);
+      clearPeel(card);
       button.addEventListener('click', () => { void perform(card); });
-      mount.append(vacancy, curl, button);
+      mount.append(vacancy, shadow, paper, button);
       return card;
     });
     get('stage').replaceChildren(mount);
