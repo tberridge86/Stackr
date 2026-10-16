@@ -1,0 +1,656 @@
+{
+  "schemaVersion": 1,
+  "queue_id": "PCG8-MUDKIP-001-20261015",
+  "source_manifest_sha256": "a7ba9cc8914e9dc56d1465eb6038e1479a4677fc6a0e16e302e5e266b7098722",
+  "package_receipt_sha256": "1cb810b3b602dfb06aa673060f9fe83262777c3f65c6e047d8cdd7dec537536e",
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "881d8f89601c9490a9f973e8bc403652ba3d7847cb5be95a927f25deb95e6cf3",
+    "finiteDecisionFileByteSha256": "7c958bfa3bd63b3cec05ea32952fcd367c53aebd24a094fcbe6a7c1043727b40",
+    "scopeCorrectionReceiptFileByteSha256": "aebfc103657ac6f98c0774fc1fde537cb8b6ed65015632cbc0292232c48139ad",
+    "historicalWrongScopeApprovalFileByteSha256": "af1a25a61f05fac2aefc204d1d3fdf684e594fbbb64d2e3910c8bd60fba60630",
+    "historicalWrongScopeDecisionFileByteSha256": "b50b5d76be627a62aeae49dd6cf01dce705a586b26046ae0cbaaee9ae175429e",
+    "sourceHandoffFileByteSha256": "00dd0b07376dcc3896aa68e17110fc11785c6f59fcb25c48e9d7407bae6e7198",
+    "independentSourceReviewFileByteSha256": "775660e85ecba9aecb92b90d6f56f8ec2557a909c86f9f27878946936fdca9d3",
+    "fourSourceCheckpointFileByteSha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "54664638d122442bc6b52efdd458d22436230993367dd31434326faba9f052d2",
+    "independentPrivatePackageReviewSha256": "bf81345f37018a1a9bab3de87cf800415f6c45e1e72e8d9c002508deecbba9cd",
+    "rootPrivatePackageValidationSha256": "2a392298b5fa3901a228ed95e2599ac252efef1eebdc1c6ae8307004d3ea152f",
+    "rootSourceArchiveBindingSha256": "94fec11a356b1b8ceea1d907cf5e51ca3cf2b078a1dd0daca2d23eb715be36aa",
+    "rootUploadReceiptSha256": "1d0c2ad41de52f0ede915c471c95f3c3947fe5c1b3991dd485928fecef712f8b"
+  },
+  "archive": {
+    "id": 645525725,
+    "sha256": "5ab280df47e24a7e4382100d34c5dcf1ea4227145414f58aab7764b11bb71304",
+    "byte_size": 791263,
+    "file_count": 8,
+    "name": "mudkip1-fronts-20261015.zip"
+  },
+  "archive_metadata": [
+    {
+      "file": "manifest.json",
+      "sha256": "a7ba9cc8914e9dc56d1465eb6038e1479a4677fc6a0e16e302e5e266b7098722",
+      "byte_size": 26873
+    },
+    {
+      "file": "receipts/preparation-summary.json",
+      "sha256": "023fd516f868f297165fd875ea6187b90c85a596980f0dfc616c5fa0ed8572c9",
+      "byte_size": 1313
+    },
+    {
+      "file": "receipts/current-card-bindings.json",
+      "sha256": "fb03f73284d2bacaf650557904ef1bf88d3c604190005390e0d2746c5c6b2c0a",
+      "byte_size": 4601
+    },
+    {
+      "file": "receipts/finite-decision.json",
+      "sha256": "9c11b56bcd20517f0489e551be82e80ba0a59a69ad1fb176216b48bdbad1996f",
+      "byte_size": 4417
+    }
+  ],
+  "rows": [
+    {
+      "printing_id": "23728d2b-ddc5-483b-bc3a-dd19bd9e5a45",
+      "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+      "set_code": "PCG8",
+      "language_code": "ja",
+      "collector_number": "021",
+      "card_native_name": "マッドキップ",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "b75dc155-b702-40e1-ad25-9cbcd0e5ab38"
+      ],
+      "batch_id": "JP-CARDS-040",
+      "work_type": "CARDS",
+      "source_code": "pricecharting",
+      "provider_id": "pricecharting-image-url-sha256:7fbfa93738aafd12a7cd597323758460272be2129c9a61ba267a359a8340a6fb",
+      "image_url": "https://storage.googleapis.com/images.pricecharting.com/02b9b8572bcb48987608ff6cbff31cff0931afc73003469191c942f5420f6cd9/1600.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/46161031c73062f381f73404a440f610bfd0a9f8f911ebac2a26a95e1644f8d2/original.jpg",
+          "sha256": "46161031c73062f381f73404a440f610bfd0a9f8f911ebac2a26a95e1644f8d2",
+          "byte_size": 512378,
+          "width": 1022,
+          "height": 1409,
+          "mime_type": "image/jpeg",
+          "artifact_id": 645525725
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/18806b9e30a239edf0c8b3acb2f9a63b5dba31e4d346cb14f84695e803c15b74/card-grid.webp",
+          "sha256": "18806b9e30a239edf0c8b3acb2f9a63b5dba31e4d346cb14f84695e803c15b74",
+          "byte_size": 20912,
+          "width": 240,
+          "height": 331,
+          "mime_type": "image/webp",
+          "artifact_id": 645525725
+        },
+        {
+          "role": "search-result",
+          "file": "objects/aa8fb85b11ae9494c90024ea31862b06f309de27f67c5170c4fe8398ee315d98/search-result.webp",
+          "sha256": "aa8fb85b11ae9494c90024ea31862b06f309de27f67c5170c4fe8398ee315d98",
+          "byte_size": 3620,
+          "width": 96,
+          "height": 133,
+          "mime_type": "image/webp",
+          "artifact_id": 645525725
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/17a6143bb898bdbb4e5fb38ac475bad9274e097626a3414abfba761279cb2fcd/detail-page.webp",
+          "sha256": "17a6143bb898bdbb4e5fb38ac475bad9274e097626a3414abfba761279cb2fcd",
+          "byte_size": 246152,
+          "width": 720,
+          "height": 993,
+          "mime_type": "image/webp",
+          "artifact_id": 645525725
+        }
+      ],
+      "evidence": {
+        "source_url": "https://storage.googleapis.com/images.pricecharting.com/02b9b8572bcb48987608ff6cbff31cff0931afc73003469191c942f5420f6cd9/1600.jpg",
+        "source_page_url": "https://www.pricecharting.com/game/pokemon-japanese-miracle-crystal/mudkip-21",
+        "provider_id": "pricecharting-image-url-sha256:7fbfa93738aafd12a7cd597323758460272be2129c9a61ba267a359a8340a6fb",
+        "source_metadata_sha256": "6aa1af6c0ca67793fc0df8e89e44fe008f1afd347838b3af8b639c508dc5e4f3",
+        "source_body": {
+          "contract": "pcg8-mudkip021-one-japanese-shared-front-v1",
+          "work_type": "CARDS",
+          "accepted_category": "Pokemon",
+          "photo_identity_projection": {
+            "schemaVersion": 1,
+            "sourceCode": "pricecharting",
+            "sourceDetailUrl": "https://www.pricecharting.com/game/pokemon-japanese-miracle-crystal/mudkip-21",
+            "literalOriginalUrl": "https://storage.googleapis.com/images.pricecharting.com/02b9b8572bcb48987608ff6cbff31cff0931afc73003469191c942f5420f6cd9/1600.jpg",
+            "literalOriginalUrlSha256": "7fbfa93738aafd12a7cd597323758460272be2129c9a61ba267a359a8340a6fb",
+            "sourceProductId": "3439734",
+            "canonicalPrintingId": "23728d2b-ddc5-483b-bc3a-dd19bd9e5a45",
+            "canonicalSetId": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+            "canonicalSetCode": "PCG8",
+            "languageCode": "ja",
+            "canonicalAlias": "021",
+            "printedCollectorNumber": "021/075",
+            "printedSetCodeLiteral": null,
+            "sourceSetAssociation": "Japanese Miracle Crystal",
+            "originalFileByteSha256": "46161031c73062f381f73404a440f610bfd0a9f8f911ebac2a26a95e1644f8d2",
+            "originalByteSize": 512378,
+            "width": 1022,
+            "height": 1409,
+            "format": "jpeg",
+            "actualPrintedName": "ミズゴロウ",
+            "actualPrintedForm": null,
+            "historicalSelectedSourceCardId": null,
+            "physicalEditionCertified": false,
+            "physicalFinishCertified": false
+          },
+          "photo_identity_projection_canonical_sha256": "f4b0fc3c0c5e75fee5e01477e4ed5334668f0eac2032b0208eee53c615b42b9e",
+          "photo_raw_private_html_file_byte_sha256": "6aa1af6c0ca67793fc0df8e89e44fe008f1afd347838b3af8b639c508dc5e4f3",
+          "root_approved_raw_row_canonical_sha256": "83665daf4a34e84499f664e4fe060aefdb16b6b455de6a0718c6029dbe881ffe",
+          "actual_pixel_signature": {
+            "alias": "PCG8-021",
+            "printedNativeName": "ミズゴロウ",
+            "printedHP": 50,
+            "printedType": "Water",
+            "printedStage": "たね",
+            "printedDeltaSpeciesLabel": null,
+            "abilities": [],
+            "attacks": [
+              {
+                "name": "ひとやすみ",
+                "cost": [
+                  "Colorless"
+                ],
+                "printedDamage": null,
+                "nativeText": "自分のダメージカウンターを2個とりのぞく。"
+              },
+              {
+                "name": "たきのぼり",
+                "cost": [
+                  "Water",
+                  "Colorless"
+                ],
+                "printedDamage": "20",
+                "nativeText": null
+              }
+            ],
+            "printedArtist": "Hajime Kusajima",
+            "printedWeakness": "Grass",
+            "printedResistance": null,
+            "printedRetreat": 1,
+            "printedCollectorNumber": "021/075",
+            "printedRarityGlyph": "black circle",
+            "copyrightYearObserved": 2006,
+            "art": "Dark blue Mudkip with yellow cheeks and large fin amid bright pink crystals and green/yellow ground.",
+            "editionStampObserved": false,
+            "allFourOuterPerimetersAndCornersVisible": true,
+            "frameQualification": "All rounded corners and complete outer perimeter are visible against pale photographic background with shadow; printed body/footer unobstructed.",
+            "foreignWatermarkObserved": false,
+            "actualCropObserved": false,
+            "completePrintedBodyReadable": true,
+            "printedFrontIdentityTupleSupported": true,
+            "nativeProviderQualification": "Providerマッドキップ/昼寝/滝 differ from printedミズゴロウ/ひとやすみ/たきのぼり. Actual remove-two clause and20-damage attack independently read; no verbatim provider agreement or canonical repair.",
+            "holds": [
+              "current_physical_edition_unresolved"
+            ]
+          },
+          "actual_pixel_signature_canonical_sha256": "dddbd224bb2861c5277e747e3ae8d4b0704c642802f97ff08185637c58fb3057",
+          "current_production_binding": {
+            "printing": {
+              "id": "23728d2b-ddc5-483b-bc3a-dd19bd9e5a45",
+              "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": true
+              },
+              "collector_number": "021",
+              "printing_discriminator": "",
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "b75dc155-b702-40e1-ad25-9cbcd0e5ab38",
+                "is_default": true,
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "23728d2b-ddc5-483b-bc3a-dd19bd9e5a45",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:d832f428-8d51-4ac0-a3cf-a5d38bddb88d:021:normal",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+                "set_code": "PCG8",
+                "variant_id": "b75dc155-b702-40e1-ad25-9cbcd0e5ab38",
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "23728d2b-ddc5-483b-bc3a-dd19bd9e5a45",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:d832f428-8d51-4ac0-a3cf-a5d38bddb88d:021:normal",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "021",
+                "catalogue_version": "ja:magazine-promo-reconciliation-2026-09-27-v1",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "23728d2b-ddc5-483b-bc3a-dd19bd9e5a45"
+          },
+          "current_staging_binding": {
+            "printing": {
+              "id": "23728d2b-ddc5-483b-bc3a-dd19bd9e5a45",
+              "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": false
+              },
+              "collector_number": "021",
+              "printing_discriminator": null,
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "b75dc155-b702-40e1-ad25-9cbcd0e5ab38",
+                "is_default": true,
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "23728d2b-ddc5-483b-bc3a-dd19bd9e5a45",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:d832f428-8d51-4ac0-a3cf-a5d38bddb88d:021:normal",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+                "set_code": "PCG8",
+                "variant_id": "b75dc155-b702-40e1-ad25-9cbcd0e5ab38",
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "23728d2b-ddc5-483b-bc3a-dd19bd9e5a45",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:d832f428-8d51-4ac0-a3cf-a5d38bddb88d:021:normal",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "021",
+                "catalogue_version": "ja:tcgdex-796afd47e430-full-primary-2026-08-19",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "23728d2b-ddc5-483b-bc3a-dd19bd9e5a45"
+          },
+          "required_asset_scope": {
+            "printing_id": "23728d2b-ddc5-483b-bc3a-dd19bd9e5a45",
+            "variant_id": null
+          },
+          "source_variant_id": null,
+          "required_delivery_kind": "shared",
+          "queue_controls": {
+            "identity_controls": {
+              "canonical_alias": "021",
+              "printed_collector_number": "021/075",
+              "catalogue_set_code": "PCG8",
+              "printed_set_code_literal": null,
+              "printed_national_dex": null,
+              "canonical_native_label_preserved": "マッドキップ",
+              "actual_printed_name": "ミズゴロウ",
+              "actual_printed_form": null,
+              "category": "Pokemon"
+            },
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "all_four_rounded_corners_visible": true,
+              "printed_body_language": "ja",
+              "actual_name_hp_type_stage_two_attacks_artist_setmark_collector_footer_readable": true,
+              "delta_species_label_observed": false,
+              "edition_stamp_observed": false,
+              "watermark_observed": false,
+              "stamp_absence_does_not_certify_unlimited": true,
+              "current_physical_edition_unresolved_retained": true,
+              "provider_attack_text_not_verbatim_printed_japanese": true
+            },
+            "source_qa": {
+              "actual_japanese_complete_front_verified": true,
+              "original_sha256": "46161031c73062f381f73404a440f610bfd0a9f8f911ebac2a26a95e1644f8d2",
+              "actual_signature_canonical_sha256": "dddbd224bb2861c5277e747e3ae8d4b0704c642802f97ff08185637c58fb3057",
+              "source_metadata_is_sole_identity_proof": false,
+              "physical_finish_certified": false,
+              "physical_edition_certified": false
+            }
+          },
+          "historical_authority": {
+            "selected_source_card_id": null,
+            "preparation_approved": false,
+            "publication_approved": false
+          },
+          "root_finite_authority": {
+            "decision_file_byte_sha256": "7c958bfa3bd63b3cec05ea32952fcd367c53aebd24a094fcbe6a7c1043727b40",
+            "preparation_approved": true,
+            "conditional_future_publication_approved": true,
+            "private_package_is_production_ready": false,
+            "scope_correction_receipt_sha256": "aebfc103657ac6f98c0774fc1fde537cb8b6ed65015632cbc0292232c48139ad",
+            "superseded_wrong_scope_approval_sha256": "af1a25a61f05fac2aefc204d1d3fdf684e594fbbb64d2e3910c8bd60fba60630",
+            "corrected_approval_sha256": "881d8f89601c9490a9f973e8bc403652ba3d7847cb5be95a927f25deb95e6cf3"
+          },
+          "coverage": {
+            "wholeUnchangedOriginalIndividuallyViewed": true,
+            "fullPILSharpRGBAAgreement": true,
+            "completeFrameAndFourOuterCornersVisible": true,
+            "actualJapaneseNameHPTypeStageCompleteAttackBodyArtistNumberReadable": true,
+            "printedNationalDexNotInvented": true,
+            "printedPCG8CodeNotInvented": true
+          },
+          "unresolved_physical_qualifications": [
+            "No physical edition or material authentication; no visible stamp does not certify unlimited. Source original signature retains its unresolved physical-edition qualification."
+          ],
+          "shared_front_eligibility_does_not_authenticate_physical_edition": true,
+          "current_edition_exact_match_established": false,
+          "no_observed_stamp_is_unlimited_certificate": false,
+          "source_provider_body_verbatim_agreement": false,
+          "canonical_translated_native_label_preserved": true,
+          "quality_qualification": {
+            "original_width": 1022,
+            "original_height": 1409,
+            "original_HD_pixels": true,
+            "detail_derivative_HD_pixels": false,
+            "current_configured_api_image_null": true,
+            "whole_original_perimeter_and_corners_retained": true,
+            "provider_never_resized_certified": false,
+            "native_optical_gain_claimed": false,
+            "app_large_expected_role": "original",
+            "app_large_reason": "Standard detail below 1000 long edge; original selected by unchanged app helper."
+          },
+          "new_source_requests": 0,
+          "full_commercial_html_or_provider_json_included": false,
+          "source_wide_approval": false,
+          "vendor_licence_certified": false,
+          "physical_finish_certified": false,
+          "physical_edition_certified": false,
+          "unlimited_edition_certified": false,
+          "provider_never_resized_certified": false,
+          "native_optical_gain_claimed": false,
+          "stackr_enlargement": false
+        },
+        "queue_controls": {
+          "identity_controls": {
+            "canonical_alias": "021",
+            "printed_collector_number": "021/075",
+            "catalogue_set_code": "PCG8",
+            "printed_set_code_literal": null,
+            "printed_national_dex": null,
+            "canonical_native_label_preserved": "マッドキップ",
+            "actual_printed_name": "ミズゴロウ",
+            "actual_printed_form": null,
+            "category": "Pokemon"
+          },
+          "pixel_observations": {
+            "whole_original_inspected": true,
+            "full_frame_visible": true,
+            "all_four_rounded_corners_visible": true,
+            "printed_body_language": "ja",
+            "actual_name_hp_type_stage_two_attacks_artist_setmark_collector_footer_readable": true,
+            "delta_species_label_observed": false,
+            "edition_stamp_observed": false,
+            "watermark_observed": false,
+            "stamp_absence_does_not_certify_unlimited": true,
+            "current_physical_edition_unresolved_retained": true,
+            "provider_attack_text_not_verbatim_printed_japanese": true
+          },
+          "source_qa": {
+            "actual_japanese_complete_front_verified": true,
+            "original_sha256": "46161031c73062f381f73404a440f610bfd0a9f8f911ebac2a26a95e1644f8d2",
+            "actual_signature_canonical_sha256": "dddbd224bb2861c5277e747e3ae8d4b0704c642802f97ff08185637c58fb3057",
+            "source_metadata_is_sole_identity_proof": false,
+            "physical_finish_certified": false,
+            "physical_edition_certified": false
+          }
+        },
+        "artwork_scope": "printing_front",
+        "delivery_kind": "shared",
+        "asset_variant_id": null,
+        "source_variant_id": null,
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "physical_edition_verified": false,
+        "vendor_licence_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    }
+  ],
+  "source_counts": {
+    "pricecharting": 1
+  },
+  "delivery_scope": {
+    "fixed_batch_ids": [
+      "JP-CARDS-040"
+    ],
+    "work_type": "CARDS",
+    "eligible_fronts": 1,
+    "eligible_aliases": [
+      "021"
+    ],
+    "category": "Pokemon",
+    "printed_collector_number": "021/075",
+    "printed_set_code_literal": null,
+    "asset_variant_id": null,
+    "source_variant_id": null,
+    "delivery_kind": "shared",
+    "whole_batch_completion_asserted": false
+  },
+  "binding_expectations": {
+    "production": [
+      {
+        "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+        "set_code": "PCG8",
+        "game_code": "pokemon",
+        "variant_id": "b75dc155-b702-40e1-ad25-9cbcd0e5ab38",
+        "finish_code": "normal",
+        "printing_id": "23728d2b-ddc5-483b-bc3a-dd19bd9e5a45",
+        "variant_code": "normal",
+        "language_code": "ja",
+        "card_native_name": "マッドキップ",
+        "collector_number": "021",
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "same_artwork_as_variant_id": null
+      }
+    ],
+    "staging": [
+      {
+        "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+        "set_code": "PCG8",
+        "game_code": "pokemon",
+        "variant_id": "b75dc155-b702-40e1-ad25-9cbcd0e5ab38",
+        "finish_code": "normal",
+        "printing_id": "23728d2b-ddc5-483b-bc3a-dd19bd9e5a45",
+        "variant_code": "normal",
+        "language_code": "ja",
+        "card_native_name": "マッドキップ",
+        "collector_number": "021",
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+        "same_artwork_as_variant_id": null
+      }
+    ]
+  },
+  "scope_counts": {
+    "production": {
+      "printings": 1,
+      "variants": 1,
+      "names": 2,
+      "sets": 1
+    },
+    "staging": {
+      "printings": 1,
+      "variants": 1,
+      "names": 2,
+      "sets": 1
+    }
+  },
+  "source_policies": {
+    "production": [
+      {
+        "code": "pokellector",
+        "display_name": "Pokellector (owner supplied Japanese card fronts)",
+        "source_type": "image",
+        "base_url": "https://jp.pokellector.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly2 Neo2 Ruin Wall reference fronts in STACKR-JA-LEGACY-TRAINER-FRONTS-20261015-008; owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval or independently verified vendor licence.",
+        "deprecated_at": null
+      },
+      {
+        "code": "pricecharting",
+        "display_name": "PriceCharting (owner supplied card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.pricecharting.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Owner-attested source use for exactly Aquapolis Mr. Mime95b and Porygon103b shared printing-front artwork in finite cohort AQUAPOLIS-SHARED-002-20261015. Independent vendor and underlying card licences are unverified. No source-wide approval; each later acquisition requires separate finite approval. Existing provenance rows and source policies must remain unchanged.",
+        "deprecated_at": null
+      },
+      {
+        "code": "scrydex",
+        "display_name": "Scrydex",
+        "source_type": "image",
+        "base_url": "https://scrydex.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Exactly 89 English MEP fronts approved by owner; catalogue/rights-evidence/mep89-scrydex-owner-confirmation.2026-09-27.json; 8c68bf3499de1e1e340b00fc03e5f1b469de7b65d259b5fba5a8b4cd31119ca9. No source-wide approval.",
+        "deprecated_at": null
+      },
+      {
+        "code": "tcgcollector",
+        "display_name": "TCGCollector (owner supplied Japanese card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.tcgcollector.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly3 independently accepted Leaders Stadium fronts019/081/096. Bind the final finite preparation/publication decision and exact source selection in the publisher plan. Owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval, independently verified vendor licence or physical finish/edition certification. Finite decision SHA256 68f1af735d5e481ed26d1aabbe94e493d520575d9d4191413508f9ec90cf68ff.",
+        "deprecated_at": null
+      }
+    ],
+    "staging": []
+  },
+  "new_sources": {
+    "production": [],
+    "staging": [
+      {
+        "code": "pricecharting",
+        "display_name": "PriceCharting (owner supplied card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.pricecharting.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Owner-attested source use for exactly Aquapolis Mr. Mime95b and Porygon103b shared printing-front artwork in finite cohort AQUAPOLIS-SHARED-002-20261015. Independent vendor and underlying card licences are unverified. No source-wide approval; each later acquisition requires separate finite approval. Existing provenance rows and source policies must remain unchanged.",
+        "deprecated_at": null
+      }
+    ]
+  },
+  "source_policy_checkpoint_sha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+  "existing_source_row_hashes": {
+    "pricecharting": "b4b74f69cac37abeee008806f6d8dd8ea63a0f0ce43fa065dce9261b428b421b",
+    "pokellector": "4a2a381f7146c0bfa0201c62e91e7682f18da6597c4743f23414f3606a942a71",
+    "tcgcollector": "f1f01d1b094986ad0a9f5efcf1e98fe7388e0e1c5452d23da6cf7cab97a1ca29",
+    "scrydex": "25af5b50521e6fd0942764536f62b0c53c3e72c69c874916241af47735407929"
+  },
+  "before_snapshot_hashes": {
+    "production": "667cfc8ff046a48b236625bb7969bfec9d1ba4e1fab9f2f3483cb0c6d9eedce8",
+    "staging": "4d81434f94307edff62ff6bfad987c60596077812412f6e8994c61f44850bef8"
+  },
+  "before_snapshot_counts": {
+    "production": 11,
+    "staging": 5
+  },
+  "expected_after_snapshot_counts": {
+    "production": 13,
+    "staging": 8
+  },
+  "production_source_changes_allowed": 0,
+  "stage_only_fixture_source_code": "pricecharting",
+  "canonical_schema_qualification": {
+    "production": {
+      "id": "23728d2b-ddc5-483b-bc3a-dd19bd9e5a45",
+      "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+      "game_code": "pokemon",
+      "deprecated_at": null,
+      "language_code": "ja",
+      "_column_presence": {
+        "printing_discriminator": true
+      },
+      "collector_number": "021",
+      "printing_discriminator": "",
+      "corrected_by_printing_id": null
+    },
+    "staging": {
+      "id": "23728d2b-ddc5-483b-bc3a-dd19bd9e5a45",
+      "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+      "game_code": "pokemon",
+      "deprecated_at": null,
+      "language_code": "ja",
+      "_column_presence": {
+        "printing_discriminator": false
+      },
+      "collector_number": "021",
+      "printing_discriminator": null,
+      "corrected_by_printing_id": null
+    }
+  },
+  "app_display_expectation": {
+    "large_role": "original",
+    "large_dimensions": [
+      1022,
+      1409
+    ],
+    "detail_dimensions": [
+      720,
+      993
+    ],
+    "reason": "Detail long edge993 is below the unchanged app helper threshold1000; verify actual app selection without enforcing large equals detail."
+  },
+  "saved_targets_sha256": "41d65d4007271d80242515d4f26bb84ea55ca2a273fd2f44bfd6aa6021a6c89f",
+  "identity_table_sha256": "d7ede8a5b95c3bf722e8b14ca6f7d0e78e0dcaccd1677c51b5e89276c2c39669"
+}

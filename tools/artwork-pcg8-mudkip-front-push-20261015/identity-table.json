@@ -1,0 +1,22 @@
+[
+  {
+    "printing_id": "23728d2b-ddc5-483b-bc3a-dd19bd9e5a45",
+    "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+    "set_code": "PCG8",
+    "language_code": "ja",
+    "collector_number": "021",
+    "card_native_name": "マッドキップ",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "b75dc155-b702-40e1-ad25-9cbcd0e5ab38"
+    ],
+    "batch_id": "JP-CARDS-040",
+    "work_type": "CARDS",
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:7fbfa93738aafd12a7cd597323758460272be2129c9a61ba267a359a8340a6fb",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/02b9b8572bcb48987608ff6cbff31cff0931afc73003469191c942f5420f6cd9/1600.jpg",
+    "original_sha256": "46161031c73062f381f73404a440f610bfd0a9f8f911ebac2a26a95e1644f8d2",
+    "body_sha256": "ad1c71d3b62b3514acd31b24d5f6c1b3e7f8b8c27758d7d6280782164bcce23a",
+    "evidence_sha256": "245a38c3a2f5cb677a1bc9312c2d7c9c0b421d609541103189fe0df405c190ac"
+  }
+]

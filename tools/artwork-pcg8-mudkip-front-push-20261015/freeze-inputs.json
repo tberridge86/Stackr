@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 1,
+  "private_inputs": [
+    {
+      "file": "publish-review/mudkip1-four-sources-20261015-production-before.json",
+      "sha256": "c698e30181ad41cf3c619b5fcadbe919a2d8b078967dc1dcacc990b2055b2519"
+    },
+    {
+      "file": "publish-review/mudkip1-four-sources-20261015-production-bindings.json",
+      "sha256": "377938a3ac2fb0f00a9f0d430b08c9bb5290626d838f87dbcb1f2a53a9d274ed"
+    },
+    {
+      "file": "publish-review/mudkip1-four-sources-20261015-staging-before.json",
+      "sha256": "5ed09501f039e9651dc20a5746aabafbe892b21991717eaee2b15fb4dfaf71ef"
+    },
+    {
+      "file": "publish-review/mudkip1-four-sources-20261015-staging-bindings.json",
+      "sha256": "754bd2c05e4110fdf97692c535db7829eb06bf61650604325674148d01ca5a84"
+    },
+    {
+      "file": "source-batches/pcg8-mudkip-one-approved-front-20261015/root-approved1-source-original-scope-corrected.json",
+      "sha256": "881d8f89601c9490a9f973e8bc403652ba3d7847cb5be95a927f25deb95e6cf3"
+    },
+    {
+      "file": "source-batches/pcg8-mudkip-one-approved-front-20261015/root-finite1-preparation-publication-decision-scope-corrected.json",
+      "sha256": "7c958bfa3bd63b3cec05ea32952fcd367c53aebd24a094fcbe6a7c1043727b40"
+    },
+    {
+      "file": "publish-review/root-four-source-policy-checkpoint-after-aquapolis2-20261015.json",
+      "sha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f"
+    },
+    {
+      "file": "publish-review/mudkip1-independent-private-package-review-20261015.json",
+      "sha256": "bf81345f37018a1a9bab3de87cf800415f6c45e1e72e8d9c002508deecbba9cd"
+    },
+    {
+      "file": "publish-review/mudkip1-root-private-package-validation-20261015.json",
+      "sha256": "2a392298b5fa3901a228ed95e2599ac252efef1eebdc1c6ae8307004d3ea152f"
+    },
+    {
+      "file": "mudkip1-root-source-archive-binding.json",
+      "sha256": "94fec11a356b1b8ceea1d907cf5e51ca3cf2b078a1dd0daca2d23eb715be36aa"
+    },
+    {
+      "file": "mudkip1-root-upload-receipt.json",
+      "sha256": "1d0c2ad41de52f0ede915c471c95f3c3947fe5c1b3991dd485928fecef712f8b"
+    },
+    {
+      "file": "publish-review/pcg89-next12-independent-source-review-20261015.json",
+      "sha256": "775660e85ecba9aecb92b90d6f56f8ec2557a909c86f9f27878946936fdca9d3"
+    },
+    {
+      "file": "source-batches/pcg8-mudkip-one-approved-front-20261015/root-scope-correction-receipt.json",
+      "sha256": "aebfc103657ac6f98c0774fc1fde537cb8b6ed65015632cbc0292232c48139ad"
+    },
+    {
+      "file": "source-batches/pcg8-mudkip-one-approved-front-20261015/root-approved1-source-original.json",
+      "sha256": "af1a25a61f05fac2aefc204d1d3fdf684e594fbbb64d2e3910c8bd60fba60630"
+    },
+    {
+      "file": "source-batches/pcg8-mudkip-one-approved-front-20261015/root-finite1-preparation-publication-decision.json",
+      "sha256": "b50b5d76be627a62aeae49dd6cf01dce705a586b26046ae0cbaaee9ae175429e"
+    }
+  ],
+  "source_manifest_file": "mudkip1-fronts-source-manifest.json",
+  "source_manifest_sha256": "a7ba9cc8914e9dc56d1465eb6038e1479a4677fc6a0e16e302e5e266b7098722",
+  "package_receipt_file": "mudkip1-fronts-package-receipt.json",
+  "package_receipt_sha256": "1cb810b3b602dfb06aa673060f9fe83262777c3f65c6e047d8cdd7dec537536e",
+  "archive": {
+    "id": 645525725,
+    "sha256": "5ab280df47e24a7e4382100d34c5dcf1ea4227145414f58aab7764b11bb71304",
+    "byte_size": 791263,
+    "file_count": 8,
+    "name": "mudkip1-fronts-20261015.zip"
+  },
+  "unchanged_dependencies": [
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 9031,
+      "sha256": "5524305ba4bd6a0f3867ea2c097c57fb0d610e27ef1d9d64529b64e9c67249de"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/metadata-guard.mjs",
+      "bytes": 4018,
+      "sha256": "cca5354822fe11c007308f7d22ebf84649d2374619e0dd049c7347a9db9e116f"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/publish.mjs",
+      "bytes": 5885,
+      "sha256": "8451746bb6e188f56c5be31064742eaeecdc2f2c6d6e27cb31ab5c7227af6d1f"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "tools/artwork-next-push-20261013/frozen.mjs",
+      "bytes": 7732,
+      "sha256": "3e14eb76a012116492075328c50e6c5907f712004da02d4d3dae541d2617a95b"
+    },
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 30117,
+      "sha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24425,
+      "sha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 15024,
+      "sha256": "1d168e5407a5bdc6e027f58991de58a0664576d7c917d5b219fa13f9af4a1d0a"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/download-package.py",
+      "bytes": 5489,
+      "sha256": "53f1114f25bd995b4f05d9b2d3adad7ae2dadc85b4b13f038a84bcc5e7d6b09f"
+    }
+  ],
+  "staging_fixture_policy": {
+    "code": "pricecharting",
+    "display_name": "PriceCharting (owner supplied card fronts)",
+    "source_type": "image",
+    "base_url": "https://www.pricecharting.com",
+    "licence_status": "under_review",
+    "attribution_required": true,
+    "active": false,
+    "internal_notes": "Owner-attested source use for exactly Aquapolis Mr. Mime95b and Porygon103b shared printing-front artwork in finite cohort AQUAPOLIS-SHARED-002-20261015. Independent vendor and underlying card licences are unverified. No source-wide approval; each later acquisition requires separate finite approval. Existing provenance rows and source policies must remain unchanged.",
+    "deprecated_at": null
+  },
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "881d8f89601c9490a9f973e8bc403652ba3d7847cb5be95a927f25deb95e6cf3",
+    "finiteDecisionFileByteSha256": "7c958bfa3bd63b3cec05ea32952fcd367c53aebd24a094fcbe6a7c1043727b40",
+    "scopeCorrectionReceiptFileByteSha256": "aebfc103657ac6f98c0774fc1fde537cb8b6ed65015632cbc0292232c48139ad",
+    "historicalWrongScopeApprovalFileByteSha256": "af1a25a61f05fac2aefc204d1d3fdf684e594fbbb64d2e3910c8bd60fba60630",
+    "historicalWrongScopeDecisionFileByteSha256": "b50b5d76be627a62aeae49dd6cf01dce705a586b26046ae0cbaaee9ae175429e",
+    "sourceHandoffFileByteSha256": "00dd0b07376dcc3896aa68e17110fc11785c6f59fcb25c48e9d7407bae6e7198",
+    "independentSourceReviewFileByteSha256": "775660e85ecba9aecb92b90d6f56f8ec2557a909c86f9f27878946936fdca9d3",
+    "fourSourceCheckpointFileByteSha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "54664638d122442bc6b52efdd458d22436230993367dd31434326faba9f052d2",
+    "independentPrivatePackageReviewSha256": "bf81345f37018a1a9bab3de87cf800415f6c45e1e72e8d9c002508deecbba9cd",
+    "rootPrivatePackageValidationSha256": "2a392298b5fa3901a228ed95e2599ac252efef1eebdc1c6ae8307004d3ea152f",
+    "rootSourceArchiveBindingSha256": "94fec11a356b1b8ceea1d907cf5e51ca3cf2b078a1dd0daca2d23eb715be36aa",
+    "rootUploadReceiptSha256": "1d0c2ad41de52f0ede915c471c95f3c3947fe5c1b3991dd485928fecef712f8b"
+  }
+}
