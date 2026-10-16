@@ -500,7 +500,7 @@
     },
     {
       "source": "D:\\Stackr-recovery-artifacts-20261009\\runtime-temp\\worktrees\\magazine-reveals-20261015\\docs\\prototypes\\corocoro-unpacking-study.js",
-      "sha256": "156e605d6fc69d9158011cdc107449662192f235c2d05d367a79f8379242a044",
+      "sha256": "a8cfdbab63553a5a10818517be52b8cfdeba2652e2515dd04719cd8da3886e46",
       "runtimeCopyIdentical": true
     }
   ],
@@ -661,5 +661,16 @@
     "upscales": 0,
     "deployments": 0,
     "physicalBindingOrSealProofInvented": false
+  },
+  "deliveryBaseRevision": "fe283dbd080372cfd740fec330200f0f402ab6bd",
+  "predecessorExternalMerge": {
+    "pullRequest": 396,
+    "headRevision": "4011ac26d82cdf63b9b1c5255005af3b703619db",
+    "mergeRevision": "fe283dbd080372cfd740fec330200f0f402ab6bd",
+    "mergedAt": "2026-10-16T20:25:31Z",
+    "mergedBy": "tberridge86",
+    "actor": "owner_external_to_this_task",
+    "followupBranch": "codex/corocoro-magazine-first-20261016",
+    "followupScope": "Only6 current prototype/release files; existing main native/artwork changes retained."
   }
 }

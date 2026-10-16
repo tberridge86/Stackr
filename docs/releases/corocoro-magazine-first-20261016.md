@@ -2,6 +2,8 @@
 
 The owner rejected the standalone peel presentation and asked to begin with the magazine cover, open to its insert and follow the real card delivery. The private study now starts with matched covers for all five cases. It preserves the original Shining Mew benchmark. [Current evidence](corocoro-magazine-first-20261016.json) records the internet references, exact private originals, physical limits and checks against baseline `4011ac26d82cdf63b9b1c5255005af3b703619db`.
 
+The owner merged the preceding case work in PR 396 while this correction was being prepared, at 20:25 UTC, merge `fe283dbd080372cfd740fec330200f0f402ab6bd`. This six-file follow-up is isolated on `codex/corocoro-magazine-first-20261016` against that current main; unrelated native/artwork changes are retained. The new cover-first correction remains a separate review candidate.
+
 ## Result
 
 The first action is **Open magazine**. Opening finishes at the insert; it never automatically peels, extracts or reveals the card. The old-back cases retain supported backing release, a loose back-up pause and a separate flip. The white backing curl is larger and visibly separates below the supported card, addressing the small floating-strip appearance. Existing release timing and free poses remain unchanged.
