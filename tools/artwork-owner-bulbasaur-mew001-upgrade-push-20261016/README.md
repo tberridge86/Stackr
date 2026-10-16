@@ -13,3 +13,5 @@ Runtime requires workflow_dispatch on the exact expected main revision, the exis
 Checks: node --test tools/artwork-owner-bulbasaur-mew001-upgrade-push-20261016/publish.test.mjs and python tools/artwork-owner-bulbasaur-mew001-upgrade-push-20261016/download-package.test.py. Transaction/transport test doubles are synthetic metadata/bytes and make no network or SQL connection; actual frozen package verification is separate.
 
 Dependency pins preserve all400 prior publisher files exactly. The11 inherited shared dependencies pin both their raw Git bytes and the independently verified CRLF checkout bytes; no general normalisation or content change is accepted.
+
+Integration reconciliation: exact main9c70b88040f88c82c1b4e92eb2551fa142183593 is merged. Only the inherited root package.json pin changed to the reviewed logo-test script addition; its raw Git and independently proven CRLF checkout bytes are pinned. The other410 dependencies and the byte-comparison guard are unchanged. Five regression cases also reject prior package bytes and unexpected content or EOL variants.

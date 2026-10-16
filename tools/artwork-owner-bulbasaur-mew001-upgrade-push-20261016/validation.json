@@ -9,7 +9,7 @@
   "archiveBytes": 187012,
   "archiveMembers": 8,
   "repoFilesExpected": 20,
-  "publisherTests": 83,
+  "publisherTests": 88,
   "archiveGuardTests": 12,
   "archiveNegativeTests": 11,
   "sharedJournalIntegrationTests": 1,
@@ -76,5 +76,17 @@
   "merges": 0,
   "installedDeviceVerified": false,
   "additionalDependencyRawGitAndVerifiedCheckoutByteForms": 11,
-  "prior400RawGitAndWorkingBytesUnchanged": true
+  "prior400RawGitAndWorkingBytesUnchanged": true,
+  "rootPublisherRepairContextSHA": "0abf165255ec1687cca60eb7027612eb1e9d443e548c12b09e335d3ad33277c4",
+  "integrationRepair": {
+    "mergedMainSHA": "9c70b88040f88c82c1b4e92eb2551fa142183593",
+    "mergeCommit": "b80000ade5cb2abe2c02d09c1369d49a2fe44bb2",
+    "onlyInheritedDependencyRepinned": "package.json",
+    "rawGitSHA256": "3ade21dfefd7b39399e9d62d07dd90261dd1ef4c9dc79af6e66f3053b1110f2f",
+    "exactVerifiedCRLFCheckoutSHA256": "6ae940f7b60904598072d20e58db9932523bbcbb603ab45913017072ecc6919a",
+    "oldPackageRejected": true,
+    "dependencyGuardUnchanged": true,
+    "newPackageRegressionTests": 5,
+    "priorLogoWorkPreserved": true
+  }
 }

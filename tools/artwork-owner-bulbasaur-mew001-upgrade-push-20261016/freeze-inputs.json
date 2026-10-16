@@ -2046,10 +2046,10 @@
     },
     {
       "file": "package.json",
-      "bytes": 37447,
-      "sha256": "e57c701d03c27e62a8f69170365ea76f6f3462abc391952c3c502ba464568966",
-      "checkoutBytes": 37762,
-      "checkoutSha256": "76b92aa3f772104921b15218a5597b750b1004dc69adf31eee1e18f0a0f5d02c",
+      "bytes": 37633,
+      "sha256": "3ade21dfefd7b39399e9d62d07dd90261dd1ef4c9dc79af6e66f3053b1110f2f",
+      "checkoutBytes": 37949,
+      "checkoutSha256": "6ae940f7b60904598072d20e58db9932523bbcbb603ab45913017072ecc6919a",
       "checkoutDifference": "Verified CRLF/LF only; both exact byte forms pinned"
     },
     {
@@ -2104,7 +2104,10 @@
     "rootPrivateValidationSHA": "b73864e8fd242203b6e542e67a3d7ab4a9eff2978b94467a66f924e9e5219bec",
     "rootUploadReceiptSHA": "e657e4e6fc2986e861cc8fff9f50bdba8b3b885a3cbdc417f67c92425fc0c410",
     "sourceManifestSHA": "cce0adb50f143ba576fc3f0967f7d872e7a3dacb61319248ccf998b9752a5a2a",
-    "sourcePackageReceiptSHA": "6812d6717d462a621525c5bb62eff46571fc34d713ac0e7df2e931a39b044f60"
+    "sourcePackageReceiptSHA": "6812d6717d462a621525c5bb62eff46571fc34d713ac0e7df2e931a39b044f60",
+    "rootPublisherRepairContextSHA": "0abf165255ec1687cca60eb7027612eb1e9d443e548c12b09e335d3ad33277c4",
+    "supersededPublisherReviewSHA": "41b363e2819890a24b198fae7bf37439d9e3bcc6cbbd00c38f3d3b0561cdafd3",
+    "mergedMainSHA": "9c70b88040f88c82c1b4e92eb2551fa142183593"
   },
   "private166PinsVerified": true,
   "privatePathsNotPublished": true,

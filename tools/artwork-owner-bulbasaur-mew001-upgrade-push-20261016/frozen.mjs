@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { isDeepStrictEqual } from 'node:util';
 import { check, digest } from '../queue1-publish-20260927/publish.mjs';
-export const INPUTS_SHA = 'db5ef805fab5bbc9efebe0ba185ad3d5b7b08a42daea4a2bc1fc841105140e13';
+export const INPUTS_SHA = 'f32fbe371150154f27c213edc4ae9655de4f0ef2e12feca8ec1f3abd70c3cc4c';
 export const PLAN_SHA = '891fb5e775ecc65878bed46ed196d8b6c1d7d8e8803d69034f2b5e6abc0b001a', APPROVAL_SHA = 'bdd3eca9bec344a48e73f4c5bef53794c6ecfc75aa0c2e6f1136dcd3065217c9';
 export const SQL_HASHES = { "before-query.sql": "7fe6ee33631779da4d79572dffb2943c221d2e7616ba4268882f3c5a7d8003ba", "bindings-query.sql": "e6b93b5abeb958931c94a90e262c41c695e4ae0e840937d3d2000b284a50f1fc", "views-query.sql": "d4a15cc05dba6a148cf821181c451fa0a848ed987da11275eeb3b115b9acc97a", "manifest-query.sql": "71e61392ce0a8247fe1ad7649dd13b07704a4995e62b0cd007ad47aa048f353c" };
 export const IDS = { printing: '783db704-7783-4ef9-8d8d-c00da4c7defd', set: 'f2d0385c-1aae-44a9-b301-bf13da9a131e', normal: '272802e1-0bdb-49b3-b2ee-76c14e8c14a1', reverse: '95c46d73-a9bc-4e36-aeee-fde9fee7a7ad', old: '4971c906-4460-43cb-b660-07d1a1038627', oldReverse: 'b049d37b-3e80-426b-b359-622de6f16986', sha: '64fdfa3734988b42434506baa094259d6f82474dc8a8c1c9afd52b8262af633e' };
