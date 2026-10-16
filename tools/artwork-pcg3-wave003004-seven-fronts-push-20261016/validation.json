@@ -1,0 +1,213 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_EXACT_PUBLISHER_READY_FOR_INDEPENDENT_REVIEW",
+  "fronts": 7,
+  "variants": 7,
+  "scopeUUIDs": 15,
+  "confirmation": "PUBLISH ARTWORK PCG3 WAVES003004 SEVEN FRONTS",
+  "rootPublisherContextSha256": "b65bb2735f9a70a8477972b468060c36d8eb4f4a83b0f323d3f76cd89d80d0c7",
+  "planSha256": "902aa9114eaddc584a42b4afc31ea12a8b5deb05c0e00747f2c220fc9b8ccbee",
+  "approvalSha256": "518323462369c89e1dafdb6fc5459b6ae7e63c9546bf5a2b5fecec664dfa5f6f",
+  "transactionFixtures": {
+    "production": [
+      35,
+      49
+    ],
+    "staging": [
+      29,
+      44,
+      29
+    ],
+    "assetsAdded": 7,
+    "linksAdded": 7,
+    "productionSourceChanges": 0,
+    "temporaryInactiveStagingPriceFixture": 1,
+    "existingPCG3LogoAssets": 1,
+    "existingPCG3LogoLinks": 1
+  },
+  "tests": {
+    "publisher": {
+      "passed": 20,
+      "failed": 0
+    },
+    "prior-and-journal": {
+      "passed": 108,
+      "failed": 0
+    },
+    "archiveGuards": {
+      "passed": 6,
+      "failed": 0
+    },
+    "queue": {
+      "status": "PASS",
+      "helperAuthorityRejections": 4,
+      "unselectedInventoryItemsPreserved": 2937,
+      "firstWaveVerifierImportPathPreserved": true,
+      "realReceipts": 7,
+      "localImageByteObjects": 28,
+      "jointRawEntryTamperRejections": 308,
+      "forgedRawAuthorityRejections": 49,
+      "rootAuthorityPacketRejections": 10,
+      "privateExactSourceContractReusedThroughIndependentPeerPin": true,
+      "priorReadOnlyReceipts": 32,
+      "priorLocalImageObjects": 128,
+      "sharpMetricCasePassed": true,
+      "allPriorExactPredicatesPreserved": true,
+      "inMemoryCompleteHelperDryRun": {
+        "priorEntries": 1235,
+        "afterEntries": 1242,
+        "onlyExactSevenAdded": true,
+        "prior1235ByteValuesUnchanged": true,
+        "sharedWritesIntercepted": 4
+      },
+      "sharedFilesUnchanged": true,
+      "productionWrites": 0
+    }
+  },
+  "privateSourceContract": {
+    "passed": 114,
+    "negative": 93,
+    "independentPrivatePeerSha256": "6348fb7d92e3aeceec76963dd24381c167ecf5228a415f0983cb470765c26847"
+  },
+  "actualUnchangedAppHelperPrivateCases": {
+    "defaultExplicit": 14,
+    "negative": 14,
+    "reportSha256": "3edce61912b4fc8430dc6a1ec1e0c64377837ebf899417cb8b72545baff1a11e"
+  },
+  "appSelection": [
+    {
+      "printing_id": "a57a1f5c-8506-4f65-9f19-8ee9b95eb3a5",
+      "large_role": "detail-page",
+      "large_dimensions": [
+        720,
+        1005
+      ],
+      "large_object_path": "objects/c81e2b0bb88043251788771a312d39e7474eff9c926b40727ca60e1d7f5eacce/detail-page.webp",
+      "detail_dimensions": [
+        720,
+        1005
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "2eb26020-fa19-4db2-b8e1-fb482d917a96",
+      "large_role": "detail-page",
+      "large_dimensions": [
+        720,
+        1008
+      ],
+      "large_object_path": "objects/b66e37d61d120bd4d191ed9a37433ed0d9464d98f2f19a8f896a4cbe82872ca8/detail-page.webp",
+      "detail_dimensions": [
+        720,
+        1008
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "708e67fc-25b0-40f2-9b1d-8a58c3e4bca3",
+      "large_role": "detail-page",
+      "large_dimensions": [
+        720,
+        1014
+      ],
+      "large_object_path": "objects/81bc559536d917b2ff0e9ab82cd7fca866db9c18cbf084958e126ad49673fcbe/detail-page.webp",
+      "detail_dimensions": [
+        720,
+        1014
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "23691e78-3dc2-472a-9b4d-7ce679465da3",
+      "large_role": "original",
+      "large_dimensions": [
+        835,
+        1155
+      ],
+      "large_object_path": "objects/b47af5a93c458ec69c34d8701402f5f190e866a7f51b23a97065fb233e727e0a/original.jpg",
+      "detail_dimensions": [
+        720,
+        996
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "2be19689-88c5-4d74-afab-2bf06f8ab994",
+      "large_role": "original",
+      "large_dimensions": [
+        782,
+        1074
+      ],
+      "large_object_path": "objects/6c79ac1d638fdd2aea76cf38933621b2f1abb32a23d4724678ab043c2d6b8e0f/original.jpg",
+      "detail_dimensions": [
+        720,
+        989
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "1b6ca98a-873f-4fad-952d-5bd389c02a7b",
+      "large_role": "original",
+      "large_dimensions": [
+        1161,
+        1600
+      ],
+      "large_object_path": "objects/352a502dec82b1ac1271232c1a56d5cd32e31c9391a9392002440b785277f24f/original.jpg",
+      "detail_dimensions": [
+        720,
+        992
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "42e209b0-5d1a-4230-b1d7-a4257d6149ee",
+      "large_role": "detail-page",
+      "large_dimensions": [
+        500,
+        700
+      ],
+      "large_object_path": "objects/c81979bac4737d96add9917fc9af97f3242f3f27956cb08862e1ec5fa204f4f0/detail-page.webp",
+      "detail_dimensions": [
+        500,
+        700
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    }
+  ],
+  "sourceHDCanvasSignals": 6,
+  "detailHDCanvasSignals": 2,
+  "archiveInstaller": {
+    "asset_id": 647356345,
+    "sha256": "3faa42e7eab254c6a4de96379534a81a213419ec9a36a88c6ef23ad7a7ca7718",
+    "bytes": 2969014,
+    "files": 32,
+    "status": "verified_and_extracted",
+    "provider_requests": 0
+  },
+  "decodedImages": 28,
+  "directRawObservationSchemaHashAndSeparateRootReadingsBound": true,
+  "trainerFullRulesAndNullPokemonFieldsPreserved": true,
+  "only074ReadableNative500x700FallbackApproved": true,
+  "sourceLineage003ThreeAnd004FourBound": true,
+  "Dark037FormAndOwner065DistinctionPreserved": true,
+  "recordedEnglishAndCategoryRemainNull": true,
+  "fourNormalTrueAndThreeHoloFalseTuplesUnchanged": true,
+  "sourceAndAssetVariantRemainNull": true,
+  "all68ExistingSourceFieldsAndMicrosecondsProtected": true,
+  "previousRepositoryFilesByteExact": 380,
+  "unchangedDependencies": 11,
+  "sourceRequests": 0,
+  "databaseRequests": 0,
+  "sharedWrites": 0,
+  "physicalFinishOrEditionCertified": false,
+  "opticalOrHandsetClaim": false,
+  "livePublicationVerified": false,
+  "actualConfiguredApiDefaultExplicitAndAll28FilesStillRequired": true
+}
