@@ -1,0 +1,44 @@
+[
+  {
+    "printing_id": "44c0fd56-5d24-4545-9a11-313bf3252953",
+    "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+    "set_code": "PCG2",
+    "language_code": "ja",
+    "collector_number": "056",
+    "card_native_name": "スウラー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-022",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "2f074dd6-a27f-4dfd-9ccb-5d741daa5dd4"
+    ]
+  },
+  {
+    "printing_id": "e1d523e5-69ea-4e97-858d-1e65d4a07cd5",
+    "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+    "set_code": "PCG2",
+    "language_code": "ja",
+    "collector_number": "077",
+    "card_native_name": "クリスタルシャード",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-023",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "a61ef170-e692-4768-a4ec-4276dd681ee5"
+    ]
+  },
+  {
+    "printing_id": "2af65062-f444-40b2-810a-233ee09da5b3",
+    "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+    "set_code": "PCG2",
+    "language_code": "ja",
+    "collector_number": "079",
+    "card_native_name": "流星滝",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-023",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "cc9f78f5-8239-49a5-af99-fb39b3f9fdba"
+    ]
+  }
+]

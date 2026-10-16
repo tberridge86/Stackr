@@ -1,0 +1,62 @@
+[
+  {
+    "printing_id": "44c0fd56-5d24-4545-9a11-313bf3252953",
+    "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+    "set_code": "PCG2",
+    "language_code": "ja",
+    "collector_number": "056",
+    "card_native_name": "スウラー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-022",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "2f074dd6-a27f-4dfd-9ccb-5d741daa5dd4"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:fc22ed3ec743face58b9b9774b97a2fef3d940b8457e3f509b984fc47722490b",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/rpjwhp7pndkrh3pw/1600.jpg",
+    "original_sha256": "8cdd607508f65319b4fc51a9855e2d40663c501e9d079348e6a3170a2c07a6f1",
+    "body_sha256": "b9350ce804683999b6d088321c8bc2216e40bbec8019f2c3490e278760863f06",
+    "evidence_sha256": "8dc76a3d4709e9b6f534efcc6d0a74df2ca4af8e3f39572220e38cecbe6a5a07"
+  },
+  {
+    "printing_id": "e1d523e5-69ea-4e97-858d-1e65d4a07cd5",
+    "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+    "set_code": "PCG2",
+    "language_code": "ja",
+    "collector_number": "077",
+    "card_native_name": "クリスタルシャード",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-023",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "a61ef170-e692-4768-a4ec-4276dd681ee5"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:9bfd0879c111624164eb0333ee9e4b324e8ae14c5174486586ab6901c4944635",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/v3ako3ujrssuaqyb/1600.jpg",
+    "original_sha256": "0b41d505ab20bfbbd4815e1cec624cbb369173dbab19ff7205a4c342f37f71b1",
+    "body_sha256": "75d9889e4fe25bb6450523d78283b088948bde425390718823d3d24002212de0",
+    "evidence_sha256": "ef576bc91bab6226074c8eb50933283b0eb6aefc5ad4ef61efb91498d3b660cc"
+  },
+  {
+    "printing_id": "2af65062-f444-40b2-810a-233ee09da5b3",
+    "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+    "set_code": "PCG2",
+    "language_code": "ja",
+    "collector_number": "079",
+    "card_native_name": "流星滝",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-023",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "cc9f78f5-8239-49a5-af99-fb39b3f9fdba"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:b5bed6b9bf1ce9892dfcf7589ba4398d781ac1211b020b6685ed9d6b9f218e4a",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/zpcyu3skqk2wt6nq/1600.jpg",
+    "original_sha256": "91ba253548f790cb4f21fa7e509ef5b257fb2531bd92b32960d05258df3935a5",
+    "body_sha256": "154dc2a783b2abda71ba651c02f164cfd18abb8751274564fc8bc69c0d3c860d",
+    "evidence_sha256": "c8b46b3da128e1545db9df08576f0ec803d42f81ee27f1ebb73e2b4f97cb0929"
+  }
+]
