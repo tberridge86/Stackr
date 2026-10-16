@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 3,
+  "variants": 3,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "physical_finish_verified": false,
+  "physical_edition_verified": false,
+  "cohort_sha256": "634da12b31508fd5038b4b8453143ac298a7f411a741a0d0b14d409cf934a8e4",
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "ae13ed03c8228c5fa6290f8ac1b9c3fdea2c9b74212137b5279e33451e56032f",
+    "finiteDecisionFileByteSha256": "5aec715bea952ac8703a22a85850c515c3158fc0447c159b75a148657d89f8a7",
+    "rootPrivateContextFileByteSha256": "d78a6921e0381a75e73048d321bcf4bf58b0babfbe7d916db5a702d3f32eb4ad",
+    "sourceHandoffFileByteSha256s": [
+      "9ca3a7f578fe36c37b80672efdf1194d6c34e25b82db9bc738f1583dbac11b0d"
+    ],
+    "independentSourceReviewFileByteSha256s": [
+      "46331988b4a4ef395fc83cba49d968e96996eca768850198af70d4dae815c387"
+    ],
+    "fourSourceCheckpointFileByteSha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "1aa91f6c4abc79a871e26a20aef0a6b12f909adac69d43fc36f36c7b006aa0c5",
+    "independentPrivatePackageReviewSha256": "ae034db5b9c94d1e3dc5284a95f835e95c15809547bcdaa1b6566d4634fdecb1",
+    "rootPrivatePackageValidationSha256": "03ac2d8a4726d807f8411859e10b357872f56e870008dd183f3247aff8759117",
+    "rootSourceArchiveBindingSha256": "f98159f1b7fd6a0378f6c7638defe79ff3972d4461072200235b316e1480c844",
+    "rootUploadReceiptSha256": "bb4181fad8b9fd6870dd8313769bbbf8b3f138ba174b89e5cbeaa65403748a44",
+    "actualMeasuredAppReportSha256": "619012a6de3597b40d9e53077a398e43ea12bf765a7e228e1999d6caebf1ed8e",
+    "actualMeasuredDimensionAuditSha256": "b0cadff233de6ce4009cbf4abb40e586ccfca4d63b02d05137001fd8ec6bd570",
+    "rootAdditiveMeasuredAppQualificationSha256": "f00ea612fb11eec7b9217cc48cae706e18afe0c362a4a3f46bda144d09d98d6e",
+    "rootPublisherContextSha256": "9e88b0fef2b086db9c76f5ebf3fcdb2d11692648d4f347135533e1030946b743"
+  },
+  "production_source_changes_allowed": 0,
+  "scope": "Exactly three Japanese Web shared printing fronts: Vulpix008, Hitmonlee014, Dugtrio029. Keep all recorded categories null, normal/defaulttrue, raw Dugtrio signature and additive actual ability logo. All measured LARGE roles detail-page, using current unchanged app helper. Production17→23 adds only3assets3links; staging13→20→13 includes one temporary PriceCharting fixture. Existing source rows and microseconds stay immutable; no existing Web set-logo assets or links. No physical edition/finish/material/unlimited/vendor/native optical certificate. Protected publication and actual live API verification remain required."
+}

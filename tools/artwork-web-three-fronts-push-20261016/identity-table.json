@@ -1,0 +1,62 @@
+[
+  {
+    "printing_id": "1b1f1db9-6e91-4cf5-8852-e11dfac760b8",
+    "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+    "set_code": "web1",
+    "language_code": "ja",
+    "collector_number": "008",
+    "card_native_name": "Vulpix",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-068",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "cab43ba9-aaa5-4c7b-ae3d-f6fc35dec8c0"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:babe13985dd7d12e754899c38869c567149631c797362743600720622dcdb6f1",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/255bk2q7dy3sm64y/1600.jpg",
+    "original_sha256": "a268399943cf21c840272f1c939f1d6114f1f5f403eaf48959acc2727e695e27",
+    "body_sha256": "0d5c3d3fdc77e68a918558a8da950aa47ef3e156963fd7b6f9c00edc0f22a49f",
+    "evidence_sha256": "c185962e04fa4d2af117dda7e9a29492ade2603d31228572ce6887ba9d9f4318"
+  },
+  {
+    "printing_id": "c76d9283-f8c4-47eb-8a8a-7adb9515ff64",
+    "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+    "set_code": "web1",
+    "language_code": "ja",
+    "collector_number": "014",
+    "card_native_name": "Hitmonlee",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-068",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "92c2f04b-30b3-486d-aa04-6a8c21d4a151"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:5b09e986349633224e9cb8415573668b11afa7635d555ae76b95a12bcd531495",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/ng3jvsx2d5fo7mmn/1600.jpg",
+    "original_sha256": "9d92ff18ec25d848a7c8852221aee5663d950c5e2bc639259fc8cb6849a20d02",
+    "body_sha256": "2bd031b5ca2263dd5be699cef23f7d40179b085a1cb347a76a30946dbbbbaf7d",
+    "evidence_sha256": "206867efd3f936f3c7b2ac0c916f9080fcdc0677e6dfade39a62f03bc573d0fd"
+  },
+  {
+    "printing_id": "0533fc6d-257a-4c31-96d8-2e834138ee69",
+    "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+    "set_code": "web1",
+    "language_code": "ja",
+    "collector_number": "029",
+    "card_native_name": "Dugtrio",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-069",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "d7c39018-9660-4045-9311-ffc1083ba7fc"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:359abaf9a01584bf1d595a7fb5712dc640dc63d82b940f7c687bb063a99a35d1",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/nwkaioaws34dinq5/1600.jpg",
+    "original_sha256": "e92a9f2d497cf727c3d5db0641dadc410810c18e5f096a744cdbc51c257de4b0",
+    "body_sha256": "732e9145f6706969936b2aa81316706e93d93dcd248555ebf218971d4cc0124f",
+    "evidence_sha256": "3a88f9b151a92c6dcd003f04f7e634ff49ece9d0fb36b4f46752d5531555f9a0"
+  }
+]
