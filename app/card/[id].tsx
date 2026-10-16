@@ -1,5 +1,5 @@
 import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
-import { getCorocoroIssuesForCard, formatCorocoroIssueMonth } from '../../lib/corocoroIssueArchive';
+import { getCorocoroIssuesForCard, formatCorocoroIssueGroup } from '../../lib/corocoroIssueArchive';
 import { useCardInspection } from '../../components/CardInspectionProvider';
 import { getEditionVariantImageUrl } from '../../lib/editionImages';
 import { CardDetailInspectSurface } from '../../components/InteractiveCardInspectPressable';
@@ -676,11 +676,11 @@ export default function CardDetailScreen() {
           key={issue.id}
           style={styles.setLinkRow}
           accessibilityRole="button"
-          accessibilityLabel={`Open ${issue.publication}, ${formatCorocoroIssueMonth(issue.issueMonth)} magazine binder`}
+          accessibilityLabel={`Open ${issue.publication}, ${formatCorocoroIssueGroup(issue)} magazine binder`}
           onPress={() => router.push({ pathname: '/corocoro', params: { issue: issue.id } })}
         >
           <Text style={styles.setLinkText}>
-            {issue.publication} · {formatCorocoroIssueMonth(issue.issueMonth)}
+            {issue.publication} · {formatCorocoroIssueGroup(issue)}
           </Text>
         </TouchableOpacity>
       ))}

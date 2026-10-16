@@ -1,5 +1,5 @@
 import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
-import { getCorocoroIssuesForSet, formatCorocoroIssueMonth } from '../../lib/corocoroIssueArchive';
+import { getCorocoroIssuesForSet, formatCorocoroIssueGroup } from '../../lib/corocoroIssueArchive';
 import { useTheme } from '../../components/theme-context';
 import { stackrHaptics } from '../../lib/haptics';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -1235,11 +1235,11 @@ export default function SetDetailScreen() {
         <StackrBackButton onPress={() => router.back()} />
         {getCorocoroIssuesForSet(setId ?? '').map(issue => (
           <TouchableOpacity key={issue.id} accessibilityRole="button"
-            accessibilityLabel={`Open ${formatCorocoroIssueMonth(issue.issueMonth)} CoroCoro magazine binder`}
+            accessibilityLabel={`Open ${formatCorocoroIssueGroup(issue)} CoroCoro magazine binder`}
             onPress={() => router.push({ pathname: '/corocoro', params: { issue: issue.id } })}
             style={{ paddingVertical: 12, minHeight: 44 }}>
             <Text style={{ color: theme.colors.primary, fontWeight: '800' }}>
-              CoroCoro · {formatCorocoroIssueMonth(issue.issueMonth)} edition
+              CoroCoro · {formatCorocoroIssueGroup(issue)} edition
             </Text>
           </TouchableOpacity>
         ))}

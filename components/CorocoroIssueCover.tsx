@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'expo-router';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
-import type { CorocoroIssueGroup } from '../lib/corocoroIssueArchive';
+import { formatCorocoroIssueGroup, type CorocoroIssueGroup } from '../lib/corocoroIssueArchive';
 import { getCorocoroIssueCoverPresentation } from '../lib/corocoroCoverReferences';
 import { StackrImage } from './StackrImage';
 import { Text } from './Text';
@@ -16,11 +16,12 @@ export function CorocoroIssueCover({ issueGroup, showSources = true }: { issueGr
     sourceEnabled: process.env.EXPO_PUBLIC_COROCORO_COVER_REFERENCES_ENABLED !== 'false',
   });
   const cover = presentation.image;
-  const month = new Date(`${issueGroup.issueMonth}-01T12:00:00Z`).toLocaleDateString('en-GB', { month: 'long', timeZone: 'UTC' });
+  const issueLabel = formatCorocoroIssueGroup(issueGroup);
+  const month = issueLabel.replace(/ \d{4}$/, '');
   const placeholder = <View style={styles.placeholder}><Text style={styles.label}>ISSUE RECORD</Text><Text style={styles.publication} numberOfLines={2}>{issueGroup.publication}</Text><View style={styles.rule} /><Text style={styles.month}>{month}</Text><Text style={styles.year}>{issueGroup.issueMonth.slice(0, 4)}</Text><Text style={styles.caption}>PLACEHOLDER · NO COVER</Text></View>;
   const links = [...presentation.alternativeSources, ...(presentation.source ? [presentation.source] : [])];
   return <View style={styles.root}>
-    <View style={styles.art}>{supplied || cover ? <StackrImage source={supplied} uri={supplied ? undefined : cover?.imageUrl} contentFit="contain" style={styles.fill} accessibilityLabel={supplied ? `${issueGroup.publication}, ${issueGroup.issueMonth} supplied cover` : cover?.alt} showFallbackIcon={false} fallback={placeholder} /> : placeholder}</View>
+    <View style={styles.art}>{supplied || cover ? <StackrImage source={supplied} uri={supplied ? undefined : cover?.imageUrl} contentFit="contain" style={styles.fill} accessibilityLabel={supplied ? `${issueGroup.publication}, ${issueLabel} supplied cover` : cover?.alt} showFallbackIcon={false} fallback={placeholder} /> : placeholder}</View>
     {showSources && <Text style={styles.source}>{supplied ? 'Supplied reference cover' : presentation.caption}</Text>}
     {showSources && links.map((source) => <Link key={source.url} href={source.url as `https://${string}`} target="_blank" rel="noopener noreferrer" asChild>
       <Pressable accessibilityRole="link" accessibilityLabel={source.label} onPress={(event) => event.stopPropagation()}>
