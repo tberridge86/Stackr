@@ -1,0 +1,142 @@
+[
+  {
+    "printing_id": "7b63e002-ca85-4d4d-be9d-fbaa54f6b959",
+    "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+    "set_code": "web1",
+    "language_code": "ja",
+    "collector_number": "007",
+    "card_native_name": "チャームレオン",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-068",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "63a7646e-f0e5-48c3-967f-f2a222992bcb"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:8025c373e49be6a5aa12006a0d90c70e536fd067923861f6808328c45fd4bb59",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/e584001619e0a9c1a239f8cd34ddf57d01efb4e421149f750b8ee6c16897b837/1600.jpg",
+    "original_sha256": "6359fa57e77511c7a4cc24e9bee16c8a3bbd6944f4bcd1f1e3cb5140e4a7fc7f",
+    "body_sha256": "ed99b12c52300ae23e1e904006f3c862b3e5b48a8d87c82cc1120c96b8306c07",
+    "evidence_sha256": "c047bd6ae552d1492c3e5695775942ac07acacab4ceec15e24109a7f8fb37845"
+  },
+  {
+    "printing_id": "221185d3-e4f8-4669-b339-5f06c86c0d50",
+    "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+    "set_code": "web1",
+    "language_code": "ja",
+    "collector_number": "025",
+    "card_native_name": "サーフィンピカチュ",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-068",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "b4c11fcc-df60-4b5e-ad4f-32f861555c7f"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:f5f108c16d6561cc1e747b367859046032abc5b8393528cd7892bfdc33688d51",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/dcyozyfpn33u4qtq/1600.jpg",
+    "original_sha256": "1adbcd4a234d8afd00df3bc781d30cbce823b959df22399e28aa023eacf7ba88",
+    "body_sha256": "d533eb5b358dd4ada48608a19d9052fa8e8ffdef63a5ac581397116999c6687c",
+    "evidence_sha256": "7c8d6ff7935772b254238f6ffd000b2d65109b7cb7683c24306d359ac22b7a26"
+  },
+  {
+    "printing_id": "7bab8d58-4c34-47a8-a07f-b34c8ab0bd98",
+    "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+    "set_code": "web1",
+    "language_code": "ja",
+    "collector_number": "036",
+    "card_native_name": "ライチュ",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-069",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "bfe40325-ca29-4c73-8917-194c4f83dc88"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:361e077f18538537629ba063711b9ac652100781955e66c82ca2403e0b4dceb9",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/nl26jcc3aji763o6/1600.jpg",
+    "original_sha256": "380c50eb1d97db5a39bf76d341675571851217f22b28cefe3ba914b2062f8fae",
+    "body_sha256": "381e2a51687eab318336cc60c50bfcbe7382018c0f795af4cb4f1270d2ee026b",
+    "evidence_sha256": "a3021398490b81bc0ead594a9a9de4f98281e0688fe8cbcfe7e0ddcb6441d352"
+  },
+  {
+    "printing_id": "2229f37c-46cb-4cb5-9e3c-22b10735ec5c",
+    "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+    "set_code": "web1",
+    "language_code": "ja",
+    "collector_number": "038",
+    "card_native_name": "ドラゴナイト",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-069",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "96b4e038-d8b8-4d7b-85a5-3ba621001f61"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:b8dfac137447cc31ebf4870ec6394412b99d2eec1716074f4c9dff4ddb32d4c9",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/9519a47ffd2c163c2efba04334662b0ebfcbd735945eb4c24765c85db046d0a4/1600.jpg",
+    "original_sha256": "d636ee4d10532d7924e5b42cceb3de397d4f930cccb41afa7de3757e09d231d0",
+    "body_sha256": "a4224642d6560212867ebf01d0d4664b5ebb886865746f70a43a469f78b1ee5a",
+    "evidence_sha256": "3007e758b95db49388ae9c65852ae14fea54f92fe5e9332722847310b43fd881"
+  },
+  {
+    "printing_id": "96fe50ae-f69c-4ddb-a401-fa7d97c9ad46",
+    "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+    "set_code": "web1",
+    "language_code": "ja",
+    "collector_number": "040",
+    "card_native_name": "ロケットのスニーク攻撃",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-069",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "79e20e98-58f0-4275-bfd2-78d72f52c24c"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:866a95773acb4f52d0e41a403ff8efbb11722794f54c730ac565fa98426ce9a6",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/qks6j7y53asg4f4x/1600.jpg",
+    "original_sha256": "1f55aa7203602af261cae926f161816f1fd893bcf5fb4464835e336d6787c962",
+    "body_sha256": "24955ac01b6c9da4fc2e041c9c9cfc3623ccf460caa75c9256922ea56b6b410c",
+    "evidence_sha256": "11ac4e20938600b4ed59987c78ed211d3abcf4d9c6a5624944a8fb5e0a23abb1"
+  },
+  {
+    "printing_id": "1f42fce8-0f6a-48bd-ad47-8b0217f7db53",
+    "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+    "set_code": "web1",
+    "language_code": "ja",
+    "collector_number": "046",
+    "card_native_name": "ザプドス",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-069",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "65789ad6-bc36-46d8-a06d-68cac9ec0a5e"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:55616df61cdeda7d40274f0ba86bbc0bd7c4723320281c05d2e000122abda2ad",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/4lzqgvdhi3xormtw/1600.jpg",
+    "original_sha256": "efe1a9492cf1a0d6af2c612fbeb81571a380ec3c24a962c4b69d9ec564c4fad7",
+    "body_sha256": "b340ebcb089db249f5f84b0bb66ee6ee86848424d228275cd50992c5cda94a92",
+    "evidence_sha256": "4b0e196730749edae6bbadfdbb34a9da50e0f91c04a5cb3655aeddd7f82fca41"
+  },
+  {
+    "printing_id": "fe52e1d7-ea84-4456-b139-61f4c83d1de2",
+    "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+    "set_code": "web1",
+    "language_code": "ja",
+    "collector_number": "048",
+    "card_native_name": "マチャンプ",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-069",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "598ec080-7293-417b-95a5-a1e5a0909f80"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:6a66f8bc5a37959a168af59de4c9294650c084572e7c6c2e1190980f62aabcd5",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/e76c14c1439f4b9d87668f04afde9c1152ff7d5130a7bb706d70b986dc827904/1600.jpg",
+    "original_sha256": "3c2ccbbc76085052edeead642d887c045132bc22835f46efe950780c8104250f",
+    "body_sha256": "21e0715642ed5a02518f0fb92dbaf5d3f1c4d7b798220883e7ce49ca9a8049e0",
+    "evidence_sha256": "c00907044989b726852a6475b88d00caacf8cbfa98f7474cf8bffa3cae33f9e1"
+  }
+]

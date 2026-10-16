@@ -1,0 +1,236 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_FROZEN_PUBLICATION_HANDOFF_READY_FOR_INDEPENDENT_REVIEW",
+  "confirmation": "PUBLISH ARTWORK WEB SEVEN FRONTS",
+  "fronts": 7,
+  "variants": 7,
+  "scopeUUIDs": 15,
+  "recordedCategoriesAndEnglishNull": true,
+  "normalTrueCount": 5,
+  "holoFalseCount": 2,
+  "sharedAssetAndSourceVariantIdsNull": true,
+  "transactionFixtures": {
+    "production": [
+      33,
+      47
+    ],
+    "staging": [
+      29,
+      44,
+      29
+    ],
+    "assetsAdded": 7,
+    "linksAdded": 7,
+    "productionSourceChanges": 0,
+    "temporaryStagingPriceFixture": 1,
+    "existingWebLogoAssets": 0,
+    "existingWebLogoLinks": 0
+  },
+  "tests": {
+    "publisher": {
+      "passed": 19,
+      "failed": 0,
+      "outputFile": "publisher-test-output.txt"
+    },
+    "prior-web3": {
+      "passed": 17,
+      "failed": 0,
+      "outputFile": "prior-web3-test-output.txt"
+    },
+    "prior-pcg4": {
+      "passed": 17,
+      "failed": 0,
+      "outputFile": "prior-pcg4-test-output.txt"
+    },
+    "prior-pcg2": {
+      "passed": 17,
+      "failed": 0,
+      "outputFile": "prior-pcg2-test-output.txt"
+    },
+    "failure-journal": {
+      "passed": 1,
+      "failed": 0,
+      "outputFile": "failure-journal-test-output.txt"
+    },
+    "archiveGuardsPython": {
+      "passed": 6,
+      "failed": 0
+    },
+    "queue": {
+      "status": "PASS",
+      "realReceipts": 7,
+      "localImageByteObjects": 28,
+      "jointRawEntryTamperRejections": 273,
+      "forgedRawAuthorityRejections": 49,
+      "rootAuthorityPacketRejections": 10,
+      "private83ContractCasesReusedThroughIndependentPeerPin": true,
+      "priorReadOnlyReceipts": 19,
+      "priorLocalImageObjects": 76,
+      "sharpMetricCasePassed": true,
+      "allPriorExactPredicatesPreserved": true,
+      "inMemoryCompleteHelperDryRun": {
+        "priorEntries": 1222,
+        "afterEntries": 1229,
+        "onlyExactSevenAdded": true,
+        "prior1222ByteValuesUnchanged": true,
+        "sharedWritesIntercepted": 4
+      },
+      "sharedFilesUnchanged": true,
+      "productionWrites": 0
+    }
+  },
+  "sourceContractIndependentPrivateChecks": {
+    "passed": 83,
+    "negative": 67,
+    "privatePeerSha256": "48aaa6b7d0d8f66e1e5a33141c741318c8c28e4b357cab8890f812ebc98edc5d"
+  },
+  "actualUnchangedAppHelperPrivateCases": {
+    "defaultExplicit": 14,
+    "negative": 14,
+    "reportSha256": "da2c0e40e1843df54f82860dd6d13518ca05e8fba7b07a3a4edf1496c1240e1a"
+  },
+  "appSelection": [
+    {
+      "printing_id": "7b63e002-ca85-4d4d-be9d-fbaa54f6b959",
+      "large_role": "original",
+      "large_dimensions": [
+        1200,
+        1600
+      ],
+      "large_object_path": "objects/6359fa57e77511c7a4cc24e9bee16c8a3bbd6944f4bcd1f1e3cb5140e4a7fc7f/original.jpg",
+      "detail_dimensions": [
+        720,
+        960
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "221185d3-e4f8-4669-b339-5f06c86c0d50",
+      "large_role": "original",
+      "large_dimensions": [
+        1162,
+        1600
+      ],
+      "large_object_path": "objects/1adbcd4a234d8afd00df3bc781d30cbce823b959df22399e28aa023eacf7ba88/original.jpg",
+      "detail_dimensions": [
+        720,
+        991
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "7bab8d58-4c34-47a8-a07f-b34c8ab0bd98",
+      "large_role": "detail-page",
+      "large_dimensions": [
+        720,
+        1010
+      ],
+      "large_object_path": "objects/f3fc89d95c6982109f6ea5ef5858edf2ddb32e86b8e365c712999cb975801c61/detail-page.webp",
+      "detail_dimensions": [
+        720,
+        1010
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "2229f37c-46cb-4cb5-9e3c-22b10735ec5c",
+      "large_role": "original",
+      "large_dimensions": [
+        845,
+        1159
+      ],
+      "large_object_path": "objects/d636ee4d10532d7924e5b42cceb3de397d4f930cccb41afa7de3757e09d231d0/original.jpg",
+      "detail_dimensions": [
+        720,
+        988
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "96fe50ae-f69c-4ddb-a401-fa7d97c9ad46",
+      "large_role": "detail-page",
+      "large_dimensions": [
+        720,
+        1011
+      ],
+      "large_object_path": "objects/6cdb4e4b281e13f693a16eca9a9556841255cc8af4d5a060e041185cb1141bfa/detail-page.webp",
+      "detail_dimensions": [
+        720,
+        1011
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "1f42fce8-0f6a-48bd-ad47-8b0217f7db53",
+      "large_role": "detail-page",
+      "large_dimensions": [
+        720,
+        1014
+      ],
+      "large_object_path": "objects/521d17192cd3110a1cde72c68a1e9fd05e1f36178d04bd9f7501d2743b00bc91/detail-page.webp",
+      "detail_dimensions": [
+        720,
+        1014
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "fe52e1d7-ea84-4456-b139-61f4c83d1de2",
+      "large_role": "detail-page",
+      "large_dimensions": [
+        718,
+        1024
+      ],
+      "large_object_path": "objects/328f25721c2cc14992bc799861f07c9d1a1e153a652571fc3d4fd298e6758671/detail-page.webp",
+      "detail_dimensions": [
+        718,
+        1024
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    }
+  ],
+  "archiveInstaller": {
+    "assetId": 646470015,
+    "sha256": "eb78aae912fe9bbda9b893337dd172b1fad3c2ef8e7ef97965315c0e9cfd5086",
+    "bytes": 3213075,
+    "membersVerifiedAndExtractedUsingLocalArchive": 32,
+    "runtimeSharpFullyDecoded": 28,
+    "sourceRequests": 0,
+    "databaseRequests": 0,
+    "storageWrites": 0,
+    "commandsRunBeforeFreeze": [
+      "download-package.py --archive PRIVATE_PINNED_ZIP",
+      "verify-packages.mjs PRIVATE_LOCAL_PACKAGES"
+    ],
+    "archiveGuardUnitTestsAlreadyRun": {
+      "passed": 6,
+      "failed": 0
+    }
+  },
+  "raw007WitnessAndSeparateCorrectedLiteralBound": true,
+  "root007CorrectionSha256": "5715565257cf7211c35acde90db026a497f315d0f7c9ec994baab2b1a6199d51",
+  "surfing025Form": "なみのり",
+  "surfingFormJointForgeryCases": 4,
+  "Trainer040BothSupporterRulesAndNullPokemonFields": true,
+  "Dragonite038PowerAndSmallSpecialAbilityHeaderRetained": true,
+  "Machamp718x1024AndFalseGeneric720HDSignalRetained": true,
+  "existingFullSourceFieldsProtected": 68,
+  "existingSourceMicrosecondsPreserved": true,
+  "previousRepositoryFilesByteExact": 320,
+  "unchangedSharedDependencies": 11,
+  "rootPublisherContextSha256": "9a70044a9d085e3c2b0287b809ecb5f0eb9c1a70b64a056aa0a213336c087d19",
+  "planSha256": "9eb559d543b303c19c5af6874564b021302819821a3035e6650d4c3c51f0c0c1",
+  "approvalSha256": "9fc2604b48286b1d81251c05e50b7054579b83764c193b6de8e3ffd092002dc8",
+  "sourceRequests": 0,
+  "databaseRequests": 0,
+  "sharedWrites": 0,
+  "livePublicationVerified": false,
+  "actualConfiguredApiDefaultExplicitAndAll28FilesStillRequired": true
+}
