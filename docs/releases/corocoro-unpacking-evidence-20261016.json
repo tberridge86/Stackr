@@ -582,5 +582,8 @@
     "RegularFebruary2022Pikachu packet rear/interior and continuous opening; distinguish digital insert set",
     "Snorlax and Pawmi exact carrier/removal evidence"
   ],
-  "rightsState": "New source photographs/footage remain metadata-only. Existing supplied cover reused locally; drawn motion study does not assert acquisition or public-photo permission."
+  "rightsState": "New source photographs/footage remain metadata-only. Existing supplied cover reused locally; drawn motion study does not assert acquisition or public-photo permission.",
+  "receiptStage": "Initial packaging-only investigation; superseded for current status",
+  "supersededBy": "corocoro-unpacking-footage-evidence-20261016.json",
+  "knownCorrection": "Initial portrait-stacked1996 reading came from illustrated instruction fronts. Owner scan shows two landscape backs stacked beside instructions; rotating whole carrier gives side-by-side portrait backs. December1998 illustrated-front diagram likewise does not verify reverse-side layout."
 }
