@@ -143,6 +143,11 @@ select {
   box-shadow:2px 5px 0 #d9cddd,0 13px 20px #59456822;
   background:#fffaf0;
 }
+.mount.single-sheet {
+  top:64px;
+  max-width:228px;
+  transform:translateX(-50%) rotate(-1deg);
+}
 .sheet-photo svg {
   width:100%;
   height:100%;
@@ -369,7 +374,7 @@ details p {
   overflow:hidden;
   cursor:pointer;
 }
-.packet-card img {
+.packet-card img,.packet-card svg {
   width:100%;
   height:100%;
   object-fit:contain;
@@ -392,10 +397,29 @@ details p {
   box-shadow:2px 5px 0 #d9cddd,0 13px 20px #59456822;
   pointer-events:none;
 }
-.packet-sleeve img {
+.packet-sleeve img,.packet-sleeve svg {
   width:100%;
   height:100%;
   object-fit:cover;
+}
+.packet-cetitan {
+  top:88px;
+}
+.packet-cetitan .packet-card {
+  top:22px;
+  left:26%;
+  width:34%;
+  aspect-ratio:868 / 1212;
+}
+.packet-cetitan .packet-card[data-phase='revealed'] {
+  transform:translateX(88.235294%);
+}
+.packet-cetitan .packet-sleeve {
+  width:50%;
+  aspect-ratio:820 / 980;
+  border:0;
+  background:transparent;
+  clip-path:polygon(9.88% 0,94.51% .51%,99.88% 99.28%,.49% 98.88%);
 }
 .packet-sleeve .packet-label {
   position:absolute;
@@ -442,6 +466,9 @@ details p {
   .mount {
     top:70px;
   }
+  .mount.single-sheet {
+    top:64px;
+  }
   .controls button {
     font-size:12px;
     padding:11px 9px;
@@ -455,7 +482,7 @@ details p {
 <p class="eyebrow">CoroCoro opening study</p>
 <h1 id="title">Peel the paper. Then turn the card.</h1>
 <p class="intro" id="intro">The old Pocket Monsters backs stay facing up. Release the backing first, then flip each card to reveal its front.</p>
-<label class="selector">Choose an insert<select id="case"><option value="1996-sheet">November 1996 · Ivy Pikachu &amp; Jigglypuff</option><option value="2022-packet">February 2022 · Pikachu VMAX</option></select></label>
+<label class="selector">Choose an insert<select id="case"><option value="1996-sheet">November 1996 · Ivy Pikachu &amp; Jigglypuff</option><option value="2000-cleffa">February 2000 · Cleffa</option><option value="2000-wooper">January 2000 · Wooper · additional issue</option><option value="2022-packet">February 2022 · Pikachu VMAX</option><option value="2023-cetitan">June 2023 · Cetitan</option></select></label>
 <div class="issue"><img id="cover" src="/covers/1996-11.png" alt="Supplied November 1996 CoroCoro Comic cover"><div><p id="issue-label">Monthly CoroCoro Comic · November 1996</p><strong id="card-label">Ivy Pikachu &amp; Jigglypuff</strong></div></div>
 <p class="detail" id="reference-note">Ivy Pikachu shows the original Ken Sugimori credit. Jigglypuff uses a small reference image; its pictured copy cannot distinguish the 1996 original from the identical 1998 reprint.</p>
 <section class="mat" id="mat" aria-label="CoroCoro card-opening reference preview"><span class="hint" id="hint">Backs facing up · then peel and flip</span><div id="stage"></div><p class="phase" id="phase" role="status">Loading the local reference images…</p></section>
@@ -473,8 +500,10 @@ details p {
 <a href="https://www.youtube.com/watch?v=8A5KDZAzDMs&amp;t=2700s" target="_blank" rel="noopener noreferrer">Lilypad Mew · loose-carrier preparation · 45:00 ↗</a>
 <a href="https://www.youtube.com/watch?v=BPGYODwpqns&amp;t=312s" target="_blank" rel="noopener noreferrer">Shining Mew · alternate packet opening · 5:12 ↗</a>
 </nav>
-<p>Cleffa's exact issue date still needs confirmation. Wooper is an additional case outside the current issue list, and its footage is sped up. The Lilypad Mew carrier is loose or pre-production material. The Shining Mew video shows a collector's alternate opening; your original reveal stays unchanged.</p>
-<p>Cetitan's printed pouch is removed from the magazine, then an edit skips its first seal opening. The already exposed card slides farther right, front facing up. Its own pouch and card references still need preparing before it receives an animation.</p>
+<a href="https://www.youtube.com/watch?v=8A5KDZAzDMs&amp;t=2285s" target="_blank" rel="noopener noreferrer">Farfetch’d · loose April-family carrier · 38:05 ↗</a>
+<a href="https://www.youtube.com/watch?v=eL7o-Atd7JU" target="_blank" rel="noopener noreferrer">Togepi · carrier peel and front reveal ↗</a>
+<p>Cleffa's February front and its own carrier are now matched. Wooper is an additional case outside the current issue list, and its footage is sped up. Both can be tried above. The Lilypad Mew carrier is loose or pre-production material. The Shining Mew video shows a collector's alternate opening; your original reveal stays unchanged.</p>
+<p>Cetitan's own pouch is now matched. Its animation begins after the film edit, with the card already partly out. Farfetch’d and Togepi have useful opening footage, but their own carrier photos are still needed before an animation is added.</p>
 <p>The other inserts still need their own opening evidence before receiving an animation.</p>
 </details>
 </main>
