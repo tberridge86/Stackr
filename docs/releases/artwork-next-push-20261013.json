@@ -1,22 +1,22 @@
 {
   "schemaVersion": "stackr-owner-artwork-production-evidence-v1",
   "inventoryId": "STACKR-ARTWORK-20261012",
-  "updatedAt": "2026-10-16T05:52:33.494Z",
+  "updatedAt": "2026-10-16T06:53:21.962Z",
   "scope": "Exact saved artwork list; original identities retained; actual production verification required",
   "summary": {
-    "checkedAt": "2026-10-16T05:36:04.743Z",
+    "checkedAt": "2026-10-16T06:33:09.362Z",
     "totalTasks": 2944,
     "totalBatches": 161,
-    "newlyPublishedFronts": 1316,
+    "newlyPublishedFronts": 1319,
     "previouslyCorrectedCasesVerified": 605,
-    "liveVerifiedTasks": 1921,
+    "liveVerifiedTasks": 1924,
     "completedBatches": 85,
-    "remainingTasks": 1023,
+    "remainingTasks": 1020,
     "remainingBatches": 76,
     "remainingGroups": [
       {
         "task": "Find permitted exact card fronts",
-        "items": 731
+        "items": 728
       },
       {
         "task": "Find permitted Traditional Chinese set logos",
@@ -31,22 +31,22 @@
         "items": 0
       }
     ],
-    "sourceLeadTargets": 1232,
+    "sourceLeadTargets": 1235,
     "scope": "Fixed saved list, retaining original identities; completion requires actual production API and image verification. Source gathering alone is not completion.",
     "queuedItems": 0,
     "queuedBatches": 0,
     "frontTasksNotYetGathered": 715,
     "smallOriginalCandidates": 13,
-    "frontTasksNotYetPrepared": 731,
+    "frontTasksNotYetPrepared": 728,
     "contentHeldOriginalCandidates": 0,
-    "sourceAcquiredPendingPreparation": 3,
-    "sourceIdentityMetadataHolds": 25,
+    "sourceAcquiredPendingPreparation": 7,
+    "sourceIdentityMetadataHolds": 26,
     "ownerSuppliedJapaneseGalleryLeads": {
       "suppliedSets": 23,
       "fixedBatchesCovered": 69,
       "fixedTasksCovered": 1479,
-      "coveredTasksAlreadyLive": 784,
-      "coveredTasksRemaining": 695,
+      "coveredTasksAlreadyLive": 787,
+      "coveredTasksRemaining": 692,
       "unprovidedSets": [],
       "sourceInventorySha256": "68aeb67adc1716a32e1539fc815b210e243c8f2ec15c6d5a5d059a1bbf914fe1",
       "exactPrintingOrLicenceApprovalClaimed": false,
@@ -113,10 +113,10 @@
       "scopeFile": "all-owner-links-working-queue.json",
       "scopeSha256": "dce8019d6367877078b63a26bbd7ce9a52a8c4f8a8cbe7b9c20faa98ff7eb2c9",
       "uniqueCardTasks": 1572,
-      "cardTasksAlreadyLive": 812,
-      "cardTasksRemaining": 760,
+      "cardTasksAlreadyLive": 815,
+      "cardTasksRemaining": 757,
       "historicalLogoResearchTasks": 36,
-      "remainingCombinedWork": 796,
+      "remainingCombinedWork": 793,
       "remainingCombinedBatches": 63,
       "remainingOutsideBoundProvidedLinks": 227,
       "originalBatchIdsRetained": true,
@@ -750,89 +750,37 @@
       "newSourceWorkRequiresFurtherReview": true
     },
     "nextOrdinaryArtworkWorkPlan": {
-      "status": "293 source originals retained across Challenge, Leaders and Expansion; exact source review and production preparation continue;0newlylive",
-      "receiptSha256": "46911b68e7ced3df9773dfa7aa3cfda2052b3971dd138b0d10154e1a8f3626b0",
-      "sourceRequests": 589,
-      "acquiredOriginals": 293,
-      "preparedOriginals": 0,
-      "newlyLive": 0,
-      "all933OrdinaryTasksRemainOpen": false,
-      "recommendedCohorts": [
-        {
-          "rank": 1,
-          "name": "Challenge from the Darkness",
-          "setCode": "PMCG6",
-          "originalBatches": [
-            {
-              "batchId": "JP-CARDS-062",
-              "count": 25
-            },
-            {
-              "batchId": "JP-CARDS-063",
-              "count": 25
-            },
-            {
-              "batchId": "JP-CARDS-064",
-              "count": 25
-            },
-            {
-              "batchId": "JP-CARDS-065",
-              "count": 23
-            }
-          ],
-          "targetCount": 98
-        },
-        {
-          "rank": 2,
-          "name": "Leaders' Stadium",
-          "setCode": "PMCG5",
-          "originalBatches": [
-            {
-              "batchId": "JP-CARDS-058",
-              "count": 25
-            },
-            {
-              "batchId": "JP-CARDS-059",
-              "count": 25
-            },
-            {
-              "batchId": "JP-CARDS-060",
-              "count": 25
-            },
-            {
-              "batchId": "JP-CARDS-061",
-              "count": 21
-            }
-          ],
-          "targetCount": 96
-        },
-        {
-          "rank": 3,
-          "name": "Expansion Pack first100 fixed tasks",
-          "setCode": "PMCG1",
-          "originalBatches": [
-            {
-              "batchId": "JP-CARDS-046",
-              "count": 25
-            },
-            {
-              "batchId": "JP-CARDS-047",
-              "count": 25
-            },
-            {
-              "batchId": "JP-CARDS-048",
-              "count": 25
-            },
-            {
-              "batchId": "JP-CARDS-049",
-              "count": 25
-            }
-          ],
-          "targetCount": 100
-        }
+      "status": "OWNER_REQUESTED_FIXED415_ORDINARY_SOURCE_CASES_ACTIVE",
+      "recordedAt": "2026-10-16T06:33:08.534Z",
+      "fixedPopulationSha256": "e9235eb7b66fb6da6fe8016db95f1a1e2cacfbe6be584e000f485f18e06cad56",
+      "fixedTargetCount": 415,
+      "setCounts": {
+        "PCG2": 50,
+        "PCG3": 57,
+        "PCG5": 67,
+        "PCG6": 70,
+        "PCG7": 41,
+        "PCG8": 32,
+        "PCG9": 21,
+        "VS1": 46,
+        "web1": 31
+      },
+      "firstWeb31SourceHTTPClosed92": true,
+      "firstWeb31NotYetRegisteredOrApproved": false,
+      "remaining384OfflineAssessmentFrozen": true,
+      "proposedPCG334RouteMetadataJobs668": true,
+      "proposedTrapinchOriginalOnly1": true,
+      "VS46LifecycleHeldSeparately": true,
+      "PCGNoObservedSourcePointer": 1,
+      "allRemainingOrdinarySourced": false,
+      "PCGEditionOnlyMetadataCases": 2,
+      "PCGEditionOnlyMetadataAliases": [
+        "PCG6-028",
+        "PCG6-075"
       ],
-      "sourceRequestsScope": "Completed metadata GETs:195Challenge+193Leaders+201Expansion. Original image GETs are tracked separately.",
-      "ordinaryTasksIncludingActiveSourceWork": 928
+      "ordinary415SourceTargetsReviewed": 31,
+      "remainingFrozenOrdinarySourceTargets": 384,
+      "firstWeb31SourceFrontsAccepted7": true
     },
     "ownerArtworkUntilZeroContinuation": {
       "recordedAt": "2026-10-15T17:47:46.524Z",
@@ -943,7 +891,7 @@
       "publicationReceiptSha256": "dfe5b5cb9ce4148f9987d31a75e0661485ff1a85db63e8ed9034f6a70d4c276a",
       "independentPostPublicationReviewSha256": "932af2eac11ce8dca0d70f61896e2cf3b975b46ec958b5d802cdc44887020eb7"
     },
-    "sourceAcquiredQualityHeld": 153,
+    "sourceAcquiredQualityHeld": 174,
     "nextLeadersStadium93Cohort": {
       "status": "All93actualproductioncardsand372originalderivativefilesindependentlyverified",
       "fixedTargets": 96,
@@ -1002,36 +950,37 @@
     },
     "sourceAcquiredFinishHeld": 2,
     "currentContinuationSourceCaptureTotals": {
-      "sourceMetadataGets": 1128,
-      "sourceOriginalGets": 520,
-      "retainedSourceOriginalCandidates": 520,
-      "acceptedAwaitingPreparation": 3,
+      "sourceMetadataGets": 1190,
+      "sourceOriginalGets": 550,
+      "retainedSourceOriginalCandidates": 550,
+      "acceptedAwaitingPreparation": 7,
       "sourceReviewPending": 0,
-      "qualityOrEditionHeld": 188,
+      "qualityOrEditionHeld": 211,
       "finishHeld": 3,
       "prepared": 0,
-      "newLiveVerified": 317,
+      "newLiveVerified": 320,
       "metadataGetCountsExcludeWebSearchAndCachedWebExtractions": true,
-      "uniqueSourcePrintingCandidates": 511,
+      "uniqueSourcePrintingCandidates": 541,
       "additionalAlternateTcGSourceCandidatesPendingReview": 0,
       "printingStatePartitionCountsStillTracksHeldOldCandidatesUntilAlternateAccepted": false,
-      "totalPreparedThisContinuation": 317,
+      "totalPreparedThisContinuation": 320,
       "partition": {
-        "live": 317,
+        "live": 320,
         "prepared": 0,
-        "acceptedAwaitingPreparation": 3,
-        "qualityOrEditionHeld": 188,
+        "acceptedAwaitingPreparation": 7,
+        "qualityOrEditionHeld": 211,
         "finishHeld": 3,
-        "totalUnique": 511
+        "totalUnique": 541
       },
       "accessDeniedMetadataGets": 3,
       "alternateCandidateCount": 9,
       "metadataCounterIncludesReadOnlyPaginationPostRequests": 6,
       "metadataCounterHistoricalFieldNameIncludesGetAndPostRequests": true,
       "vsWebDiscoveryWebSearchQueriesExcludedFromMetadataCounter": 2,
-      "nativeEndpointDocumentationWebSearchQueriesExcludedFromMetadataCounter": 1
+      "nativeEndpointDocumentationWebSearchQueriesExcludedFromMetadataCounter": 1,
+      "PCG3MissingSourceWebSearchQueriesExcludedFromMetadataCounter": 4
     },
-    "sourceAcquiredEditionHeld": 82,
+    "sourceAcquiredEditionHeld": 89,
     "nextChallengeDarkness97Cohort": {
       "status": "All97actualproductioncardsand388originalderivativefilesindependentlyverified",
       "fixedTargets": 98,
@@ -2385,6 +2334,76 @@
       "allFourHTTP200": true,
       "prepared": 0,
       "published": 0
+    },
+    "nextWebPCGThreeSharedFronts": {
+      "status": "ACTUAL_THREE_LIVE_API_BYTES_APP_HELPER_AND_PRESERVATION_INDEPENDENTLY_VERIFIED",
+      "printingIds": [
+        "1b1f1db9-6e91-4cf5-8852-e11dfac760b8",
+        "c76d9283-f8c4-47eb-8a8a-7adb9515ff64",
+        "0533fc6d-257a-4c31-96d8-2e834138ee69"
+      ],
+      "privatePreparedOriginals": 3,
+      "privatePreparedDerivatives": 9,
+      "formalPrepared": 3,
+      "published": 3,
+      "privateHandoffSha256": "951cd99bfec08d10795d8798385271bc11caca2f6171bc7fd1df419299d4889d",
+      "independentPrivateReviewSha256": "ae034db5b9c94d1e3dc5284a95f835e95c15809547bcdaa1b6566d4634fdecb1",
+      "archiveAssetId": 646324255,
+      "archiveSha256": "01fc2993c6e2b5518d3697abe657a8bbfdeff63d5ed7d8096edcae6d52c219e5",
+      "archiveBytes": 1529815,
+      "rootUploadReceiptSha256": "bb4181fad8b9fd6870dd8313769bbbf8b3f138ba174b89e5cbeaa65403748a44",
+      "rootSourceArchiveBindingSha256": "f98159f1b7fd6a0378f6c7638defe79ff3972d4461072200235b316e1480c844",
+      "publisherContextSha256": "9e88b0fef2b086db9c76f5ebf3fcdb2d11692648d4f347135533e1030946b743",
+      "actualAppLargeRole": "detail-page all3",
+      "oldExplicitEstimatesPreserved": true,
+      "measuredSourceHDCanvases": 3,
+      "measuredDetailHDCanvases": 2,
+      "allRecordedCategoriesNullPreserved": true,
+      "productionRows": [
+        17,
+        23
+      ],
+      "stagingRows": [
+        13,
+        20,
+        13
+      ],
+      "productionSourceChangesAllowed": 0,
+      "publisherHead": "61301c29b04c9b872751d35e94ce076575b26d65",
+      "publisherReviewSha256": "512d4ead5771a18cd1e8665cc3d5dc5d02fcf244158c9e9c4185a76dc10d7b92",
+      "pullRequest": "https://github.com/tberridge86/Stackr/pull/390",
+      "liveVerified": 3,
+      "runId": 38860631359,
+      "deploymentId": 7112424848,
+      "mainRevision": "b1162a989eecb4f4dcbf193c2f4e920ea4f1677d",
+      "independentActualReviewSha256": "027f6643e4377041a5573b43c540c6811a92cff2dfb2028704051dc89e24d0fd",
+      "actualAppDefaultExplicitCases": 6,
+      "actualPublicFilesFullyDecoded": 12,
+      "physicalEditionCertified": false,
+      "physicalFinishCertified": false,
+      "installedDeviceVerified": false
+    },
+    "nextWeb31SourceRegistered": {
+      "status": "SOURCE_REVIEWED_THIRTY_ORIGINALS_SEVEN_EXACT_FRONTS_ACCEPTED_WAITING_PRIVATE_PREPARATION",
+      "registeredAt": "2026-10-16T06:46:33.310Z",
+      "targets31": 31,
+      "metadataRequests62": 62,
+      "originalRequests30": 30,
+      "allHTTP200": 92,
+      "minimumStartGapMs": 806,
+      "candidateFrontsAccepted": 7,
+      "originalsHeld": 23,
+      "metadataEditionGaps": 1,
+      "sourceHandoffSha256": "524ea2a5494a0bd365f166f214835330101928d9982a3b9b0ec629cc61360e69",
+      "independentSourceReviewSha256": "eb225a3002823abde25e38ee493d6f06749e7a0eba1f4183a1390a6341158071",
+      "rootFinalApprovedProjectionSha256": "ebcd8e328e76a92eabd405d582b87a65c4b3f66f66c226c1aa360c8ee2592fa0",
+      "allSevenRootWholeViewedAndPeerWholeViewed": true,
+      "Web007RawPlacementParaphrasePreservedWithPinnedActualCorrection": true,
+      "Trainer040CanonicalCategoryNullPreserved": true,
+      "Machamp718x1024FalseHDWidthSignalRetained": true,
+      "Electrode026PerimeterUnresolvedNotAssertedCrop": true,
+      "prepared0": 0,
+      "published0": 0
     }
   },
   "ownerSuppliedAdditionalSourceLeads": [
@@ -3127,17 +3146,17 @@
     "extraPermissionPromptRequired": false,
     "sourceLicenceFacts": "Existing source facts retained; owner queue direction does not invent vendor licence metadata."
   },
-  "preparedOriginals": 1219,
-  "preparedDerivatives": 3657,
-  "publishedVerifiedOriginals": 1219,
+  "preparedOriginals": 1222,
+  "preparedDerivatives": 3666,
+  "publishedVerifiedOriginals": 1222,
   "queuedItems": 0,
   "preparedByLanguage": {
     "en": 433,
-    "ja": 786
+    "ja": 789
   },
   "publishedVerifiedByLanguage": {
     "en": 433,
-    "ja": 786
+    "ja": 789
   },
   "failedProductionRuns": [
     {
@@ -3488,6 +3507,10 @@
     {
       "queueId": "PCG1234-EXACT4-SHARED-FRONTS-20261016",
       "releaseAssetId": 646214227
+    },
+    {
+      "queueId": "WEBPCG3-EXACT3-SHARED-FRONTS-20261016",
+      "releaseAssetId": 646324255
     }
   ],
   "holds": [
@@ -6641,6 +6664,30 @@
       "requiredAction": "Largest literal source image is960x1341and readable. It has a visible1EDITIONstamp. The currentnormal-only target has no edition discriminator, while fullnative metadata lists both unstamped and first-edition normal variants. Exact edition binding remains unresolved. Card formatUnlimited is a gameplay format label, not printing-edition evidence."
     },
     {
+      "itemId": "card:c4b67f25-5241-448e-ada2-9579ab0e5e26",
+      "printingId": "c4b67f25-5241-448e-ada2-9579ab0e5e26",
+      "batchId": "JP-CARDS-068",
+      "setCode": "web1",
+      "collectorReference": "002",
+      "name": "ニドラン",
+      "status": "visible_first_edition_stamp_unbound",
+      "requiredAction": "Match the clearly visible first-edition stamp to the intended current edition before using this retained photo.",
+      "width": 986,
+      "height": 1388
+    },
+    {
+      "itemId": "card:a5a4f27a-3894-4b14-b637-80348aeb623d",
+      "printingId": "a5a4f27a-3894-4b14-b637-80348aeb623d",
+      "batchId": "JP-CARDS-068",
+      "setCode": "web1",
+      "collectorReference": "003",
+      "name": "ヴェノナト",
+      "status": "source_frame_completeness_unresolved",
+      "requiredAction": "Check the complete outer card border and corners. Their separation from the photo edge cannot be confirmed; this does not assert that the card is cropped.",
+      "width": 575,
+      "height": 800
+    },
+    {
       "itemId": "card:fe9d4224-24a6-4faa-954d-00f4fb7e306e",
       "printingId": "fe9d4224-24a6-4faa-954d-00f4fb7e306e",
       "batchId": "JP-CARDS-068",
@@ -6652,6 +6699,30 @@
       "width": 882,
       "height": 1233,
       "contentSha256": "9db6f3228278c3dd2c23dba72a8b31b38f4473c66c6c49f203ad4aebfec581b9"
+    },
+    {
+      "itemId": "card:04384dca-ef0e-49f3-8859-7867b3377260",
+      "printingId": "04384dca-ef0e-49f3-8859-7867b3377260",
+      "batchId": "JP-CARDS-068",
+      "setCode": "web1",
+      "collectorReference": "005",
+      "name": "タンゲラ",
+      "status": "image_framing_incomplete_source_original",
+      "requiredAction": "Find a complete original with all four outer card edges and corners.",
+      "width": 1074,
+      "height": 1520
+    },
+    {
+      "itemId": "card:5410a8f5-c2f8-4cf7-afa6-278253cf7bf6",
+      "printingId": "5410a8f5-c2f8-4cf7-afa6-278253cf7bf6",
+      "batchId": "JP-CARDS-068",
+      "setCode": "web1",
+      "collectorReference": "006",
+      "name": "うなり声",
+      "status": "visible_first_edition_stamp_unbound",
+      "requiredAction": "Match the clearly visible first-edition stamp to the intended current edition before using this retained photo.",
+      "width": 1038,
+      "height": 1497
     },
     {
       "itemId": "card:d56ee0bd-caa2-43a1-90f5-6f94514c24ba",
@@ -6693,6 +6764,54 @@
       "contentSha256": "0ea7b21aa22a5c6d9d4337196b9fe4c0e38b6afd56d6b84f4087d37222465f4b"
     },
     {
+      "itemId": "card:96ca37bb-37bb-4728-9282-0b63ccbf41f4",
+      "printingId": "96ca37bb-37bb-4728-9282-0b63ccbf41f4",
+      "batchId": "JP-CARDS-068",
+      "setCode": "web1",
+      "collectorReference": "013",
+      "name": "ディグレット",
+      "status": "image_framing_incomplete_source_original",
+      "requiredAction": "Find a complete original with all four outer card edges and corners.",
+      "width": 1046,
+      "height": 1468
+    },
+    {
+      "itemId": "card:ce01bc9c-976a-4cf1-8638-163d9a7e37f9",
+      "printingId": "ce01bc9c-976a-4cf1-8638-163d9a7e37f9",
+      "batchId": "JP-CARDS-068",
+      "setCode": "web1",
+      "collectorReference": "015",
+      "name": "ビルのテレポーター",
+      "status": "visible_first_edition_stamp_unbound",
+      "requiredAction": "Match the clearly visible first-edition stamp to the intended current edition before using this retained photo.",
+      "width": 356,
+      "height": 510
+    },
+    {
+      "itemId": "card:6e7a6400-18f4-4598-b848-8f002e2e6023",
+      "printingId": "6e7a6400-18f4-4598-b848-8f002e2e6023",
+      "batchId": "JP-CARDS-068",
+      "setCode": "web1",
+      "collectorReference": "016",
+      "name": "新しいpokedex",
+      "status": "source_identity_metadata_hold",
+      "requiredAction": "Find an exact matching original or resolve the edition. Only an explicitly first-edition source page was observed; no image was downloaded for this neutral normal record.",
+      "width": null,
+      "height": null
+    },
+    {
+      "itemId": "card:60480cd4-6f28-428c-8018-c6e1e264916b",
+      "printingId": "60480cd4-6f28-428c-8018-c6e1e264916b",
+      "batchId": "JP-CARDS-068",
+      "setCode": "web1",
+      "collectorReference": "017",
+      "name": "暗いアイビサウルス",
+      "status": "visible_first_edition_stamp_unbound",
+      "requiredAction": "Match the clearly visible first-edition stamp to the intended current edition before using this retained photo.",
+      "width": 474,
+      "height": 663
+    },
+    {
       "itemId": "card:9854ce7c-2eae-422a-8dba-988070fbd3ec",
       "printingId": "9854ce7c-2eae-422a-8dba-988070fbd3ec",
       "batchId": "JP-CARDS-068",
@@ -6719,6 +6838,90 @@
       "contentSha256": "83f795c70385f2a0962b8fc8d42d7b64ef06389e27019d599bc2243624241fb2"
     },
     {
+      "itemId": "card:f22b9861-ad14-40ec-a2ef-50edc6b634fc",
+      "printingId": "f22b9861-ad14-40ec-a2ef-50edc6b634fc",
+      "batchId": "JP-CARDS-068",
+      "setCode": "web1",
+      "collectorReference": "021",
+      "name": "暗いweezing",
+      "status": "source_rule_body_unreadable",
+      "requiredAction": "Find a clearer, complete original so the fine printed text, collector and artist can be checked.",
+      "width": 375,
+      "height": 500
+    },
+    {
+      "itemId": "card:0339b2f5-dd4d-47c4-bc85-26164e60290e",
+      "printingId": "0339b2f5-dd4d-47c4-bc85-26164e60290e",
+      "batchId": "JP-CARDS-068",
+      "setCode": "web1",
+      "collectorReference": "022",
+      "name": "ダークチャームレオン",
+      "status": "visible_first_edition_stamp_unbound",
+      "requiredAction": "Match the clearly visible first-edition stamp to the intended current edition before using this retained photo.",
+      "width": 1244,
+      "height": 1600
+    },
+    {
+      "itemId": "card:07713265-14a8-4163-a264-ce03ece9b753",
+      "printingId": "07713265-14a8-4163-a264-ce03ece9b753",
+      "batchId": "JP-CARDS-068",
+      "setCode": "web1",
+      "collectorReference": "023",
+      "name": "アルカニン",
+      "status": "source_rule_body_unreadable",
+      "requiredAction": "Find a clearer, complete original so the fine printed text, collector and artist can be checked.",
+      "width": 692,
+      "height": 970
+    },
+    {
+      "itemId": "card:5d69e38e-7e3f-4db3-a1fc-4dbd829aecf8",
+      "printingId": "5d69e38e-7e3f-4db3-a1fc-4dbd829aecf8",
+      "batchId": "JP-CARDS-068",
+      "setCode": "web1",
+      "collectorReference": "024",
+      "name": "暗いwartortle",
+      "status": "source_rule_body_unreadable",
+      "requiredAction": "Find a clearer, complete original so the fine printed text, collector and artist can be checked.",
+      "width": 680,
+      "height": 933
+    },
+    {
+      "itemId": "card:c9ca9af8-ccdf-4be9-9025-3682cfd7783f",
+      "printingId": "c9ca9af8-ccdf-4be9-9025-3682cfd7783f",
+      "batchId": "JP-CARDS-068",
+      "setCode": "web1",
+      "collectorReference": "026",
+      "name": "電極",
+      "status": "source_frame_completeness_unresolved",
+      "requiredAction": "Check the complete outer card border and corners. Their separation from the photo edge cannot be confirmed; this does not assert that the card is cropped.",
+      "width": 1024,
+      "height": 1446
+    },
+    {
+      "itemId": "card:fa7d129c-8205-4b74-8f34-33fc86a67aed",
+      "printingId": "fa7d129c-8205-4b74-8f34-33fc86a67aed",
+      "batchId": "JP-CARDS-068",
+      "setCode": "web1",
+      "collectorReference": "027",
+      "name": "暗いカダブラ",
+      "status": "image_framing_incomplete_source_original",
+      "requiredAction": "Find a complete original with all four outer card edges and corners.",
+      "width": 272,
+      "height": 384
+    },
+    {
+      "itemId": "card:5ea9eaa9-c11b-4e08-bb56-78943189f36f",
+      "printingId": "5ea9eaa9-c11b-4e08-bb56-78943189f36f",
+      "batchId": "JP-CARDS-069",
+      "setCode": "web1",
+      "collectorReference": "028",
+      "name": "暗いスローブロ",
+      "status": "source_rule_body_unreadable",
+      "requiredAction": "Find a clearer, complete original so the fine printed text, collector and artist can be checked.",
+      "width": 375,
+      "height": 500
+    },
+    {
       "itemId": "card:baa9df18-e2dd-4f71-808f-789370bca9f9",
       "printingId": "baa9df18-e2dd-4f71-808f-789370bca9f9",
       "batchId": "JP-CARDS-069",
@@ -6730,6 +6933,42 @@
       "width": 500,
       "height": 500,
       "contentSha256": "0d508b768ec47d6f784b973fa5f04163d2eb1c1b9b0450401de45d15c110b299"
+    },
+    {
+      "itemId": "card:6d73ad2a-bc4c-4dd8-9bfe-bb21009accf5",
+      "printingId": "6d73ad2a-bc4c-4dd8-9bfe-bb21009accf5",
+      "batchId": "JP-CARDS-069",
+      "setCode": "web1",
+      "collectorReference": "031",
+      "name": "ハイパーデボルブスプレー",
+      "status": "source_rule_body_unreadable",
+      "requiredAction": "Find a clearer, complete original so the fine printed text, collector and artist can be checked.",
+      "width": 238,
+      "height": 400
+    },
+    {
+      "itemId": "card:3a71cd8b-ef42-4d54-bd7e-355442332498",
+      "printingId": "3a71cd8b-ef42-4d54-bd7e-355442332498",
+      "batchId": "JP-CARDS-069",
+      "setCode": "web1",
+      "collectorReference": "032",
+      "name": "ポケモン再送信",
+      "status": "visible_first_edition_stamp_unbound",
+      "requiredAction": "Match the clearly visible first-edition stamp to the intended current edition before using this retained photo.",
+      "width": 172,
+      "height": 244
+    },
+    {
+      "itemId": "card:733478b0-8d35-40f3-9442-d0b3aac6862b",
+      "printingId": "733478b0-8d35-40f3-9442-d0b3aac6862b",
+      "batchId": "JP-CARDS-069",
+      "setCode": "web1",
+      "collectorReference": "034",
+      "name": "ニネタール",
+      "status": "source_rule_body_unreadable",
+      "requiredAction": "Find a clearer, complete original so the fine printed text, collector and artist can be checked.",
+      "width": 600,
+      "height": 800
     },
     {
       "itemId": "card:908bfb7c-7d4b-4c9c-afdd-aea00c1feed0",
@@ -6745,6 +6984,66 @@
       "contentSha256": "9416005a56c1d7658d2ee0af0c85d76d3e4c3fac1ba12420ca22d4172e17a1ec"
     },
     {
+      "itemId": "card:64bc1e91-1c1a-4f17-83ca-9a59eb9fe376",
+      "printingId": "64bc1e91-1c1a-4f17-83ca-9a59eb9fe376",
+      "batchId": "JP-CARDS-069",
+      "setCode": "web1",
+      "collectorReference": "037",
+      "name": "ダークアラカザム",
+      "status": "source_rule_body_unreadable",
+      "requiredAction": "Find a clearer, complete original so the fine printed text, collector and artist can be checked.",
+      "width": 500,
+      "height": 375
+    },
+    {
+      "itemId": "card:34eadd16-6737-478c-a6e9-3534d88b5c6a",
+      "printingId": "34eadd16-6737-478c-a6e9-3534d88b5c6a",
+      "batchId": "JP-CARDS-069",
+      "setCode": "web1",
+      "collectorReference": "041",
+      "name": "暗い金星",
+      "status": "source_frame_completeness_unresolved",
+      "requiredAction": "Check the complete outer card border and corners. Their separation from the photo edge cannot be confirmed; this does not assert that the card is cropped.",
+      "width": 640,
+      "height": 902
+    },
+    {
+      "itemId": "card:23ec81c6-81e9-4624-a957-9f9f5d3f6e34",
+      "printingId": "23ec81c6-81e9-4624-a957-9f9f5d3f6e34",
+      "batchId": "JP-CARDS-069",
+      "setCode": "web1",
+      "collectorReference": "042",
+      "name": "暗いカリザード",
+      "status": "image_framing_incomplete_source_original",
+      "requiredAction": "Find a complete original with all four outer card edges and corners.",
+      "width": 440,
+      "height": 618
+    },
+    {
+      "itemId": "card:1de0a8fc-6b20-4ce6-acbf-d32b44cfe7cb",
+      "printingId": "1de0a8fc-6b20-4ce6-acbf-d32b44cfe7cb",
+      "batchId": "JP-CARDS-069",
+      "setCode": "web1",
+      "collectorReference": "043",
+      "name": "モルトレス",
+      "status": "visible_first_edition_stamp_unbound",
+      "requiredAction": "Match the clearly visible first-edition stamp to the intended current edition before using this retained photo.",
+      "width": 320,
+      "height": 458
+    },
+    {
+      "itemId": "card:5afd91d9-7fc1-457d-b381-a2262610f6c5",
+      "printingId": "5afd91d9-7fc1-457d-b381-a2262610f6c5",
+      "batchId": "JP-CARDS-069",
+      "setCode": "web1",
+      "collectorReference": "044",
+      "name": "ダークブラストワイズ",
+      "status": "image_framing_incomplete_source_original",
+      "requiredAction": "Find a complete original with all four outer card edges and corners.",
+      "width": 983,
+      "height": 1392
+    },
+    {
       "itemId": "card:38f5d218-b175-46c8-baff-550efcb55124",
       "printingId": "38f5d218-b175-46c8-baff-550efcb55124",
       "batchId": "JP-CARDS-069",
@@ -6756,6 +7055,18 @@
       "width": 359,
       "height": 507,
       "contentSha256": "11503ef741a2105a0e0c185c91e3de88506163ef9158118193be2143c59612b8"
+    },
+    {
+      "itemId": "card:2c64c13a-c39b-462a-bdd6-0483dcb100bf",
+      "printingId": "2c64c13a-c39b-462a-bdd6-0483dcb100bf",
+      "batchId": "JP-CARDS-069",
+      "setCode": "web1",
+      "collectorReference": "047",
+      "name": "ジェンガー",
+      "status": "source_rule_body_unreadable",
+      "requiredAction": "Find a clearer, complete original so the fine printed text, collector and artist can be checked.",
+      "width": 378,
+      "height": 537
     },
     {
       "itemId": "card:00ea2b09-20cf-42b2-8036-16b91443001c",
@@ -108123,15 +108434,300 @@
         "priceChanges": 0,
         "ownershipChanges": 0
       }
+    },
+    {
+      "batchId": "JP-CARDS-068",
+      "itemId": "card:1b1f1db9-6e91-4cf5-8852-e11dfac760b8",
+      "printingId": "1b1f1db9-6e91-4cf5-8852-e11dfac760b8",
+      "setId": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+      "setCode": "web1",
+      "languageCode": "ja",
+      "collectorReference": "008",
+      "cardName": "Vulpix",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:babe13985dd7d12e754899c38869c567149631c797362743600720622dcdb6f1",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-web/vulpix-8",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/255bk2q7dy3sm64y/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "a268399943cf21c840272f1c939f1d6114f1f5f403eaf48959acc2727e695e27",
+        "byteSize": 218301,
+        "width": 726,
+        "height": 1032,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/21e335cd7fae7a623ba57adec287eb8e397b58ac77f4996f52cd1ae05b381b48/card-grid.webp",
+          "sha256": "21e335cd7fae7a623ba57adec287eb8e397b58ac77f4996f52cd1ae05b381b48",
+          "byte_size": 16156,
+          "width": 240,
+          "height": 341,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/aaabc6323f72dc650806ea141a230427235e7c16b0037a76dd76fbaf52503c35/search-result.webp",
+          "sha256": "aaabc6323f72dc650806ea141a230427235e7c16b0037a76dd76fbaf52503c35",
+          "byte_size": 3350,
+          "width": 96,
+          "height": 137,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/5db8a16b61cd6cfc6deb581bccdd6f376a878c76b2014ec8b8514abe38936c64/detail-page.webp",
+          "sha256": "5db8a16b61cd6cfc6deb581bccdd6f376a878c76b2014ec8b8514abe38936c64",
+          "byte_size": 262318,
+          "width": 720,
+          "height": 1023,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "008",
+        "printed_collector_number": "008/048",
+        "catalogue_set_code": "web1",
+        "printed_set_code_literal": null,
+        "printed_national_dex": null,
+        "printed_non_collector_web_id": "ID:Y-21",
+        "canonical_native_label_preserved": "Vulpix",
+        "actual_printed_name": "ロコン",
+        "actual_printed_form": null,
+        "category": null,
+        "actual_printed_category": "Pokemon",
+        "actual_native_category": "Pokemon"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T06:33:09.362Z",
+        "productionRun": 38860631359,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38860631359",
+        "publicationReceiptSha256": "6c5b487257c0b259d1b46798890dc688b0835f533833beffa2d4e348bd4cd4c9",
+        "printingId": "1b1f1db9-6e91-4cf5-8852-e11dfac760b8",
+        "assetId": "artwork-recovered-20260928:1b1f1db9-6e91-4cf5-8852-e11dfac760b8:a268399943cf21c840272f1c939f1d6114f1f5f403eaf48959acc2727e695e27",
+        "contentSha256": "a268399943cf21c840272f1c939f1d6114f1f5f403eaf48959acc2727e695e27",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/1b1f1db9-6e91-4cf5-8852-e11dfac760b8/a268399943cf21c840272f1c939f1d6114f1f5f403eaf48959acc2727e695e27/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-068",
+      "itemId": "card:c76d9283-f8c4-47eb-8a8a-7adb9515ff64",
+      "printingId": "c76d9283-f8c4-47eb-8a8a-7adb9515ff64",
+      "setId": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+      "setCode": "web1",
+      "languageCode": "ja",
+      "collectorReference": "014",
+      "cardName": "Hitmonlee",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:5b09e986349633224e9cb8415573668b11afa7635d555ae76b95a12bcd531495",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-web/hitmonlee-14",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/ng3jvsx2d5fo7mmn/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "9d92ff18ec25d848a7c8852221aee5663d950c5e2bc639259fc8cb6849a20d02",
+        "byteSize": 346168,
+        "width": 1087,
+        "height": 1529,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/1cd1a7203145d69109e28ebe0b0eedb9d7e2ef1e52e641b9c8ec7b1b47186297/card-grid.webp",
+          "sha256": "1cd1a7203145d69109e28ebe0b0eedb9d7e2ef1e52e641b9c8ec7b1b47186297",
+          "byte_size": 17410,
+          "width": 240,
+          "height": 338,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/23bbe97de63bebac72ede9613233113ce2bdeefc238470a3ae08979ae1784126/search-result.webp",
+          "sha256": "23bbe97de63bebac72ede9613233113ce2bdeefc238470a3ae08979ae1784126",
+          "byte_size": 3418,
+          "width": 96,
+          "height": 136,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/7739b630dc0516cefbde494f7bc50e637b1451db26c7ac9918d1a8ae9f775133/detail-page.webp",
+          "sha256": "7739b630dc0516cefbde494f7bc50e637b1451db26c7ac9918d1a8ae9f775133",
+          "byte_size": 193290,
+          "width": 720,
+          "height": 1013,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "014",
+        "printed_collector_number": "014/048",
+        "catalogue_set_code": "web1",
+        "printed_set_code_literal": null,
+        "printed_national_dex": null,
+        "printed_non_collector_web_id": "ID:Y-33",
+        "canonical_native_label_preserved": "Hitmonlee",
+        "actual_printed_name": "サワムラー",
+        "actual_printed_form": null,
+        "category": null,
+        "actual_printed_category": "Pokemon",
+        "actual_native_category": "Pokemon"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T06:33:09.362Z",
+        "productionRun": 38860631359,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38860631359",
+        "publicationReceiptSha256": "6c5b487257c0b259d1b46798890dc688b0835f533833beffa2d4e348bd4cd4c9",
+        "printingId": "c76d9283-f8c4-47eb-8a8a-7adb9515ff64",
+        "assetId": "artwork-recovered-20260928:c76d9283-f8c4-47eb-8a8a-7adb9515ff64:9d92ff18ec25d848a7c8852221aee5663d950c5e2bc639259fc8cb6849a20d02",
+        "contentSha256": "9d92ff18ec25d848a7c8852221aee5663d950c5e2bc639259fc8cb6849a20d02",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/c76d9283-f8c4-47eb-8a8a-7adb9515ff64/9d92ff18ec25d848a7c8852221aee5663d950c5e2bc639259fc8cb6849a20d02/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-069",
+      "itemId": "card:0533fc6d-257a-4c31-96d8-2e834138ee69",
+      "printingId": "0533fc6d-257a-4c31-96d8-2e834138ee69",
+      "setId": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+      "setCode": "web1",
+      "languageCode": "ja",
+      "collectorReference": "029",
+      "cardName": "Dugtrio",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:359abaf9a01584bf1d595a7fb5712dc640dc63d82b940f7c687bb063a99a35d1",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-web/dugtrio-29",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/nwkaioaws34dinq5/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "e92a9f2d497cf727c3d5db0641dadc410810c18e5f096a744cdbc51c257de4b0",
+        "byteSize": 201704,
+        "width": 740,
+        "height": 1035,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/8b5e13cf4172bb8f8d36dad506e458ae931a57a669bccc3dd79be1d0f3c235f8/card-grid.webp",
+          "sha256": "8b5e13cf4172bb8f8d36dad506e458ae931a57a669bccc3dd79be1d0f3c235f8",
+          "byte_size": 19382,
+          "width": 240,
+          "height": 335,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/729ddc3c5f7d1234483f242ddd20e48f4b98286207d10d8d1f211c433a6cd580/search-result.webp",
+          "sha256": "729ddc3c5f7d1234483f242ddd20e48f4b98286207d10d8d1f211c433a6cd580",
+          "byte_size": 3620,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/896805cb2bffb31d2b97ceb6a4194355133b33b52331ef0ea12b78c1d85963ae/detail-page.webp",
+          "sha256": "896805cb2bffb31d2b97ceb6a4194355133b33b52331ef0ea12b78c1d85963ae",
+          "byte_size": 235446,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "029",
+        "printed_collector_number": "029/048",
+        "catalogue_set_code": "web1",
+        "printed_set_code_literal": null,
+        "printed_national_dex": null,
+        "printed_non_collector_web_id": "ID:Y-20",
+        "canonical_native_label_preserved": "Dugtrio",
+        "actual_printed_name": "ダグトリオ",
+        "actual_printed_form": null,
+        "category": null,
+        "actual_printed_category": "Pokemon",
+        "actual_native_category": "Pokemon"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T06:33:09.362Z",
+        "productionRun": 38860631359,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38860631359",
+        "publicationReceiptSha256": "6c5b487257c0b259d1b46798890dc688b0835f533833beffa2d4e348bd4cd4c9",
+        "printingId": "0533fc6d-257a-4c31-96d8-2e834138ee69",
+        "assetId": "artwork-recovered-20260928:0533fc6d-257a-4c31-96d8-2e834138ee69:e92a9f2d497cf727c3d5db0641dadc410810c18e5f096a744cdbc51c257de4b0",
+        "contentSha256": "e92a9f2d497cf727c3d5db0641dadc410810c18e5f096a744cdbc51c257de4b0",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/0533fc6d-257a-4c31-96d8-2e834138ee69/e92a9f2d497cf727c3d5db0641dadc410810c18e5f096a744cdbc51c257de4b0/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     }
   ],
   "manualArtworkFollowUp": {
-    "updatedAt": "2026-10-16T05:51:00.161Z",
+    "updatedAt": "2026-10-16T06:52:10.748Z",
     "scope": "Specific follow-up details, separately from ordinary source work and active releases; current fixed inventory identities retained.",
     "collectorReferenceNote": "For older Japanese cards the Stackr reference may not be printed on the card; match its name, set, artwork and card text.",
-    "specificFollowUps": 605,
-    "ordinarySourceWorkStillOpen": 415,
-    "activeSourceOrPublicationWork": 3,
+    "specificFollowUps": 629,
+    "ordinarySourceWorkStillOpen": 384,
+    "activeSourceOrPublicationWork": 7,
     "batches": [
       {
         "batchId": "MANUAL-EN-001",
@@ -112397,6 +112993,34 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
           },
           {
+            "itemId": "card:c4b67f25-5241-448e-ada2-9579ab0e5e26",
+            "printingId": "c4b67f25-5241-448e-ada2-9579ab0e5e26",
+            "batchId": "JP-CARDS-068",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "002",
+            "name": "ニドラン",
+            "artworkType": "Card front",
+            "status": "visible_first_edition_stamp_unbound",
+            "whatToFind": "Confirm the intended first-edition or unstamped printing; a sharp original is retained, but its visible first-edition stamp is not matched by the current edition-neutral record.",
+            "detail": "visible_1st_Edition_stamp_no_matching_known_current_edition",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
+            "itemId": "card:a5a4f27a-3894-4b14-b637-80348aeb623d",
+            "printingId": "a5a4f27a-3894-4b14-b637-80348aeb623d",
+            "batchId": "JP-CARDS-068",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "003",
+            "name": "ヴェノナト",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unresolved",
+            "whatToFind": "Check the complete outer card border and corners. Their separation from the photo edge cannot be confirmed; this does not assert that the card is cropped.",
+            "detail": "original_canvas_below_720x1008_HD_threshold; right_outer_perimeter_corner_not_fully_separated_from_image_edge",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
             "itemId": "card:fe9d4224-24a6-4faa-954d-00f4fb7e306e",
             "printingId": "fe9d4224-24a6-4faa-954d-00f4fb7e306e",
             "batchId": "JP-CARDS-068",
@@ -112408,6 +113032,34 @@
             "status": "image_framing_incomplete_source_original",
             "whatToFind": "Find a complete original that includes all four outer card edges and corners; the inspected image is cropped.",
             "detail": "top_and_left_outer_perimeter_or_corners_outside_canvas; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
+            "itemId": "card:04384dca-ef0e-49f3-8859-7867b3377260",
+            "printingId": "04384dca-ef0e-49f3-8859-7867b3377260",
+            "batchId": "JP-CARDS-068",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "005",
+            "name": "タンゲラ",
+            "artworkType": "Card front",
+            "status": "image_framing_incomplete_source_original",
+            "whatToFind": "Find a complete original that includes all four outer card edges and corners; the inspected image is cropped.",
+            "detail": "left_outer_frame_cut_by_image_boundary",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
+            "itemId": "card:5410a8f5-c2f8-4cf7-afa6-278253cf7bf6",
+            "printingId": "5410a8f5-c2f8-4cf7-afa6-278253cf7bf6",
+            "batchId": "JP-CARDS-068",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "006",
+            "name": "うなり声",
+            "artworkType": "Card front",
+            "status": "visible_first_edition_stamp_unbound",
+            "whatToFind": "Confirm the intended first-edition or unstamped printing; a sharp original is retained, but its visible first-edition stamp is not matched by the current edition-neutral record.",
+            "detail": "visible_1st_Edition_stamp_no_matching_known_current_edition",
             "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
           },
           {
@@ -112437,7 +113089,12 @@
             "whatToFind": "Find a different complete sharp original for the exact printing and intended edition. Preserve this unchanged inspected original and its specific blocker; do not retry the closed source plan.",
             "detail": "blurred_full_body_footer_despite_large_delivered_canvas; outer_perimeter_and_corners_outside_canvas; printed_collector_artist_and_noncollector_identifier_unreadable; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-012",
+        "items": [
           {
             "itemId": "card:37899048-cbc7-4fac-9266-215a25512da5",
             "printingId": "37899048-cbc7-4fac-9266-215a25512da5",
@@ -112450,6 +113107,62 @@
             "status": "complete_printed_body_unreadable",
             "whatToFind": "Find a different complete sharp original for the exact printing and intended edition. Preserve this unchanged inspected original and its specific blocker; do not retry the closed source plan.",
             "detail": "original_canvas_below_HD_threshold_375x500; complete_attack_rules_collector_artist_and_edition_unreadable; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
+            "itemId": "card:96ca37bb-37bb-4728-9282-0b63ccbf41f4",
+            "printingId": "96ca37bb-37bb-4728-9282-0b63ccbf41f4",
+            "batchId": "JP-CARDS-068",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "013",
+            "name": "ディグレット",
+            "artworkType": "Card front",
+            "status": "image_framing_incomplete_source_original",
+            "whatToFind": "Find a complete original that includes all four outer card edges and corners; the inspected image is cropped.",
+            "detail": "bottom_outer_frame_and_corners_cut_by_image_boundary",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
+            "itemId": "card:ce01bc9c-976a-4cf1-8638-163d9a7e37f9",
+            "printingId": "ce01bc9c-976a-4cf1-8638-163d9a7e37f9",
+            "batchId": "JP-CARDS-068",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "015",
+            "name": "ビルのテレポーター",
+            "artworkType": "Card front",
+            "status": "visible_first_edition_stamp_unbound",
+            "whatToFind": "Confirm the intended first-edition or unstamped printing; a sharp original is retained, but its visible first-edition stamp is not matched by the current edition-neutral record.",
+            "detail": "visible_1st_Edition_stamp_no_matching_known_current_edition; original_canvas_below_720x1008_HD_threshold; fine_artist_line_not_confidently_readable; outer_perimeter_not_fully_visible",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
+            "itemId": "card:6e7a6400-18f4-4598-b848-8f002e2e6023",
+            "printingId": "6e7a6400-18f4-4598-b848-8f002e2e6023",
+            "batchId": "JP-CARDS-068",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "016",
+            "name": "新しいpokedex",
+            "artworkType": "Card front",
+            "status": "source_identity_metadata_hold",
+            "whatToFind": "Confirm the exact card identity against its Japanese title, card body and set.",
+            "detail": "explicit_source_page_1st_Edition_claim_unbound_not_actual_stamp_proof",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
+            "itemId": "card:60480cd4-6f28-428c-8018-c6e1e264916b",
+            "printingId": "60480cd4-6f28-428c-8018-c6e1e264916b",
+            "batchId": "JP-CARDS-068",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "017",
+            "name": "暗いアイビサウルス",
+            "artworkType": "Card front",
+            "status": "visible_first_edition_stamp_unbound",
+            "whatToFind": "Confirm the intended first-edition or unstamped printing; a sharp original is retained, but its visible first-edition stamp is not matched by the current edition-neutral record.",
+            "detail": "visible_1st_Edition_stamp_no_matching_known_current_edition; original_canvas_below_720x1008_HD_threshold; full_ability_attack_effect_evolution_instruction_and_artist_unreadable",
             "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
           },
           {
@@ -112481,6 +113194,104 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
           },
           {
+            "itemId": "card:f22b9861-ad14-40ec-a2ef-50edc6b634fc",
+            "printingId": "f22b9861-ad14-40ec-a2ef-50edc6b634fc",
+            "batchId": "JP-CARDS-068",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "021",
+            "name": "暗いweezing",
+            "artworkType": "Card front",
+            "status": "source_rule_body_unreadable",
+            "whatToFind": "Find a clearer original so the complete card rules can be checked; the retained photo is too blurred in its rules paragraph.",
+            "detail": "original_canvas_below_720x1008_HD_threshold; graded_slab_scene_card_region_small; full_effects_collector_artist_evolution_and_edition_fineprint_unreadable",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
+            "itemId": "card:0339b2f5-dd4d-47c4-bc85-26164e60290e",
+            "printingId": "0339b2f5-dd4d-47c4-bc85-26164e60290e",
+            "batchId": "JP-CARDS-068",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "022",
+            "name": "ダークチャームレオン",
+            "artworkType": "Card front",
+            "status": "visible_first_edition_stamp_unbound",
+            "whatToFind": "Confirm the intended first-edition or unstamped printing; a sharp original is retained, but its visible first-edition stamp is not matched by the current edition-neutral record.",
+            "detail": "visible_1st_Edition_stamp_no_matching_known_current_edition; graded_slab_scene; fine_evolution_placement_instruction_unreadable",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
+            "itemId": "card:07713265-14a8-4163-a264-ce03ece9b753",
+            "printingId": "07713265-14a8-4163-a264-ce03ece9b753",
+            "batchId": "JP-CARDS-068",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "023",
+            "name": "アルカニン",
+            "artworkType": "Card front",
+            "status": "source_rule_body_unreadable",
+            "whatToFind": "Find a clearer original so the complete card rules can be checked; the retained photo is too blurred in its rules paragraph.",
+            "detail": "original_canvas_below_720x1008_HD_threshold; fine_evolution_placement_instruction_not_fully_readable",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
+            "itemId": "card:5d69e38e-7e3f-4db3-a1fc-4dbd829aecf8",
+            "printingId": "5d69e38e-7e3f-4db3-a1fc-4dbd829aecf8",
+            "batchId": "JP-CARDS-068",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "024",
+            "name": "暗いwartortle",
+            "artworkType": "Card front",
+            "status": "source_rule_body_unreadable",
+            "whatToFind": "Find a clearer original so the complete card rules can be checked; the retained photo is too blurred in its rules paragraph.",
+            "detail": "original_canvas_below_720x1008_HD_threshold; fine_evolution_placement_instruction_not_fully_readable",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
+            "itemId": "card:c9ca9af8-ccdf-4be9-9025-3682cfd7783f",
+            "printingId": "c9ca9af8-ccdf-4be9-9025-3682cfd7783f",
+            "batchId": "JP-CARDS-068",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "026",
+            "name": "電極",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unresolved",
+            "whatToFind": "Check the complete outer card border and corners. Their separation from the photo edge cannot be confirmed; this does not assert that the card is cropped.",
+            "detail": "left_right_outer_perimeter_completeness_unresolved_at_image_boundary_requires_manual_frame_review",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
+            "itemId": "card:fa7d129c-8205-4b74-8f34-33fc86a67aed",
+            "printingId": "fa7d129c-8205-4b74-8f34-33fc86a67aed",
+            "batchId": "JP-CARDS-068",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "027",
+            "name": "暗いカダブラ",
+            "artworkType": "Card front",
+            "status": "image_framing_incomplete_source_original",
+            "whatToFind": "Find a complete original that includes all four outer card edges and corners; the inspected image is cropped.",
+            "detail": "original_canvas_below_720x1008_HD_threshold; full_ability_attack_effect_artist_collector_edition_and_evolution_fineprint_unreadable; top_outer_perimeter_corners_not_complete",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
+            "itemId": "card:5ea9eaa9-c11b-4e08-bb56-78943189f36f",
+            "printingId": "5ea9eaa9-c11b-4e08-bb56-78943189f36f",
+            "batchId": "JP-CARDS-069",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "028",
+            "name": "暗いスローブロ",
+            "artworkType": "Card front",
+            "status": "source_rule_body_unreadable",
+            "whatToFind": "Find a clearer original so the complete card rules can be checked; the retained photo is too blurred in its rules paragraph.",
+            "detail": "original_canvas_below_720x1008_HD_threshold; graded_slab_hand_scene_card_region_small; full_ability_attack_effect_HP_collector_artist_evolution_and_edition_unreadable",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
             "itemId": "card:baa9df18-e2dd-4f71-808f-789370bca9f9",
             "printingId": "baa9df18-e2dd-4f71-808f-789370bca9f9",
             "batchId": "JP-CARDS-069",
@@ -112493,12 +113304,49 @@
             "whatToFind": "Confirm the intended first-edition or unstamped printing; a sharp original is retained, but its visible first-edition stamp is not matched by the current edition-neutral record.",
             "detail": "original_canvas_below_HD_threshold_500x500; small_card_region_with_scene_background_not_card_region_resolution; visible_1st_Edition_stamp_conflicts_unqualified_current_printing; fine_footer_id_line_unreadable; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-012",
-        "items": [
+          },
+          {
+            "itemId": "card:6d73ad2a-bc4c-4dd8-9bfe-bb21009accf5",
+            "printingId": "6d73ad2a-bc4c-4dd8-9bfe-bb21009accf5",
+            "batchId": "JP-CARDS-069",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "031",
+            "name": "ハイパーデボルブスプレー",
+            "artworkType": "Card front",
+            "status": "source_rule_body_unreadable",
+            "whatToFind": "Find a clearer original so the complete card rules can be checked; the retained photo is too blurred in its rules paragraph.",
+            "detail": "original_canvas_below_720x1008_HD_threshold; graded_slab_scene_card_region_small; foreign_watermark_over_card_frame; full_trainer_rules_artist_collector_and_edition_unreadable",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
+            "itemId": "card:3a71cd8b-ef42-4d54-bd7e-355442332498",
+            "printingId": "3a71cd8b-ef42-4d54-bd7e-355442332498",
+            "batchId": "JP-CARDS-069",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "032",
+            "name": "ポケモン再送信",
+            "artworkType": "Card front",
+            "status": "visible_first_edition_stamp_unbound",
+            "whatToFind": "Confirm the intended first-edition or unstamped printing; a sharp original is retained, but its visible first-edition stamp is not matched by the current edition-neutral record.",
+            "detail": "original_canvas_below_720x1008_HD_threshold; visible_1st_Edition_stamp_no_matching_known_current_edition; full_trainer_rules_artist_collector_and_body_ID_unreadable; outer_perimeter_not_complete",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
+            "itemId": "card:733478b0-8d35-40f3-9442-d0b3aac6862b",
+            "printingId": "733478b0-8d35-40f3-9442-d0b3aac6862b",
+            "batchId": "JP-CARDS-069",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "034",
+            "name": "ニネタール",
+            "artworkType": "Card front",
+            "status": "source_rule_body_unreadable",
+            "whatToFind": "Find a clearer original so the complete card rules can be checked; the retained photo is too blurred in its rules paragraph.",
+            "detail": "original_canvas_below_720x1008_HD_threshold; fine_evolution_placement_instruction_unreadable",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
           {
             "itemId": "card:908bfb7c-7d4b-4c9c-afdd-aea00c1feed0",
             "printingId": "908bfb7c-7d4b-4c9c-afdd-aea00c1feed0",
@@ -112514,6 +113362,76 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
           },
           {
+            "itemId": "card:64bc1e91-1c1a-4f17-83ca-9a59eb9fe376",
+            "printingId": "64bc1e91-1c1a-4f17-83ca-9a59eb9fe376",
+            "batchId": "JP-CARDS-069",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "037",
+            "name": "ダークアラカザム",
+            "artworkType": "Card front",
+            "status": "source_rule_body_unreadable",
+            "whatToFind": "Find a clearer original so the complete card rules can be checked; the retained photo is too blurred in its rules paragraph.",
+            "detail": "original_canvas_below_720x1008_HD_threshold; multi_card_scene_target_region_small; full_attack_cost_effect_HP_evolution_collector_artist_and_edition_unreadable",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
+            "itemId": "card:34eadd16-6737-478c-a6e9-3534d88b5c6a",
+            "printingId": "34eadd16-6737-478c-a6e9-3534d88b5c6a",
+            "batchId": "JP-CARDS-069",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "041",
+            "name": "暗い金星",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unresolved",
+            "whatToFind": "Check the complete outer card border and corners. Their separation from the photo edge cannot be confirmed; this does not assert that the card is cropped.",
+            "detail": "original_canvas_below_720x1008_HD_threshold; fine_evolution_placement_instruction_unreadable; left_top_outer_frame_completeness_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
+            "itemId": "card:23ec81c6-81e9-4624-a957-9f9f5d3f6e34",
+            "printingId": "23ec81c6-81e9-4624-a957-9f9f5d3f6e34",
+            "batchId": "JP-CARDS-069",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "042",
+            "name": "暗いカリザード",
+            "artworkType": "Card front",
+            "status": "image_framing_incomplete_source_original",
+            "whatToFind": "Find a complete original that includes all four outer card edges and corners; the inspected image is cropped.",
+            "detail": "original_canvas_below_720x1008_HD_threshold; full_attack_effect_evolution_instruction_and_edition_unreadable; bottom_outer_frame_corners_not_complete",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
+            "itemId": "card:1de0a8fc-6b20-4ce6-acbf-d32b44cfe7cb",
+            "printingId": "1de0a8fc-6b20-4ce6-acbf-d32b44cfe7cb",
+            "batchId": "JP-CARDS-069",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "043",
+            "name": "モルトレス",
+            "artworkType": "Card front",
+            "status": "visible_first_edition_stamp_unbound",
+            "whatToFind": "Confirm the intended first-edition or unstamped printing; a sharp original is retained, but its visible first-edition stamp is not matched by the current edition-neutral record.",
+            "detail": "original_canvas_below_720x1008_HD_threshold; visible_1st_Edition_stamp_no_matching_known_current_edition; foreign_watermark_on_art; full_attack_effect_artist_and_collector_unreadable; outer_frame_corners_not_complete",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
+            "itemId": "card:5afd91d9-7fc1-457d-b381-a2262610f6c5",
+            "printingId": "5afd91d9-7fc1-457d-b381-a2262610f6c5",
+            "batchId": "JP-CARDS-069",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "044",
+            "name": "ダークブラストワイズ",
+            "artworkType": "Card front",
+            "status": "image_framing_incomplete_source_original",
+            "whatToFind": "Find a complete original that includes all four outer card edges and corners; the inspected image is cropped.",
+            "detail": "bottom_outer_frame_and_corners_cut_by_image_boundary; fine_evolution_placement_instruction_not_fully_readable",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
             "itemId": "card:38f5d218-b175-46c8-baff-550efcb55124",
             "printingId": "38f5d218-b175-46c8-baff-550efcb55124",
             "batchId": "JP-CARDS-069",
@@ -112525,6 +113443,25 @@
             "status": "complete_printed_body_unreadable",
             "whatToFind": "The image is too small to read the complete attack text, collector details and edition information. Find a different complete, sharper original for the exact printing and intended edition; preserve this unchanged photo and its named blocker. No retries under the closed scope.",
             "detail": "original_canvas_below_HD_threshold_359x507; full_attack_effect_collector_artist_and_edition_fine_text_unreadable; outer_card_perimeters_and_corners_not_fully_visible_in_original_canvas",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-013",
+        "items": [
+          {
+            "itemId": "card:2c64c13a-c39b-462a-bdd6-0483dcb100bf",
+            "printingId": "2c64c13a-c39b-462a-bdd6-0483dcb100bf",
+            "batchId": "JP-CARDS-069",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "047",
+            "name": "ジェンガー",
+            "artworkType": "Card front",
+            "status": "source_rule_body_unreadable",
+            "whatToFind": "Find a clearer original so the complete card rules can be checked; the retained photo is too blurred in its rules paragraph.",
+            "detail": "original_canvas_below_720x1008_HD_threshold; full_ability_attack_effect_collector_artist_evolution_instruction_and_edition_fineprint_unreadable",
             "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
           },
           {
@@ -112848,12 +113785,7 @@
             "whatToFind": "Resolve the recorded card identity or finish detail, then locate its matching original.",
             "detail": "Retain the previous explicit source/identity/finish hold. Matching metadata fields do not settle the rejected source or finish.",
             "providedGallery": null
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-013",
-        "items": [
+          },
           {
             "itemId": "card:f1b703a3-4546-42a6-a88d-e037e56e5b3a",
             "printingId": "f1b703a3-4546-42a6-a88d-e037e56e5b3a",
@@ -112867,7 +113799,12 @@
             "whatToFind": "Resolve the recorded card identity or finish detail, then locate its matching original.",
             "detail": "Retain the previous explicit source/identity/finish hold. Matching metadata fields do not settle the rejected source or finish.",
             "providedGallery": null
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-014",
+        "items": [
           {
             "itemId": "card:e66f6711-356c-4268-a68a-eac2f6a7df34",
             "printingId": "e66f6711-356c-4268-a68a-eac2f6a7df34",
