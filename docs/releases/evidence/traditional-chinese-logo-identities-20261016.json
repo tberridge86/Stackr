@@ -1,0 +1,108 @@
+{
+  "observedAt": "2026-10-16T16:46:58.174828+00:00",
+  "canonicalSnapshot": "docs/releases/catalogue-current-set-population-20260912.csv",
+  "canonicalSnapshotSha256": "fa31358be577d43e3e9daea449c6767359d7bafaf4d27f2ed019b369d8ffb3b7",
+  "currentPublicApiRead": "403 Forbidden; not retried or bypassed. No production read success is claimed.",
+  "productionMetadataChanged": false,
+  "identityAssessment": [
+    {
+      "setCode": "S11",
+      "canonicalSetId": "a7f84e96-a008-47f0-8b41-a05de3f23618",
+      "expectedLogo": "Lost Abyss / 迷途深淵",
+      "officialSourcePage": "https://asia.pokemon-card.com/tw/archive/special/card/s11",
+      "providerSource": "https://api.tcgdex.net/v2/zh-tw/sets/S11",
+      "providerResponseSha256": "4daedc379dbdccc3301f6051b5ea232ef65debc06dbbf0c960488d27535098ec",
+      "providerNativeName": "三連音爆",
+      "releaseDate": "2022-07-29",
+      "cardCount": {
+        "firstEd": 0,
+        "holo": 22,
+        "normal": 78,
+        "official": 100,
+        "reverse": 0,
+        "total": 100
+      },
+      "sampledMembers": [
+        {
+          "id": "S11-001",
+          "image": "https://assets.tcgdex.net/zh-tw/S/S11/001",
+          "localId": "001",
+          "name": "毛球"
+        },
+        {
+          "id": "S11-002",
+          "image": "https://assets.tcgdex.net/zh-tw/S/S11/002",
+          "localId": "002",
+          "name": "摩魯蛾"
+        },
+        {
+          "id": "S11-003",
+          "image": "https://assets.tcgdex.net/zh-tw/S/S11/003",
+          "localId": "003",
+          "name": "向日種子"
+        },
+        {
+          "id": "S11-004",
+          "image": "https://assets.tcgdex.net/zh-tw/S/S11/004",
+          "localId": "004",
+          "name": "向日花怪"
+        },
+        {
+          "id": "S11-005",
+          "image": "https://assets.tcgdex.net/zh-tw/S/S11/005",
+          "localId": "005",
+          "name": "橡實果"
+        }
+      ],
+      "decision": "Bind the source mark to the existing exact code/UUID; preserve the separately incorrect catalogue title for its metadata repair.",
+      "earlierHoldResolved": true
+    },
+    {
+      "setCode": "SP5",
+      "canonicalSetId": "104c8230-fefa-450c-8b97-0773154d456b",
+      "expectedLogo": "V-UNION",
+      "officialSourcePage": "https://asia.pokemon-card.com/tw/archive/special/card/sp5/index.html",
+      "providerSource": "https://api.tcgdex.net/v2/zh-tw/sets/SP5",
+      "providerResponseSha256": "b9480eabf1469668ce4acd77af83b3ac2475b8944734c1a9fd133f33beb3ede1",
+      "providerNativeName": "強大",
+      "releaseDate": "2021-08-27",
+      "cardCount": {
+        "firstEd": 0,
+        "holo": 0,
+        "normal": 0,
+        "official": 0,
+        "reverse": 0,
+        "total": 4
+      },
+      "sampledMembers": [
+        {
+          "id": "SP5-001",
+          "image": "https://assets.tcgdex.net/zh-tw/S/SP5/001",
+          "localId": "001",
+          "name": "甲賀忍蛙V-UNION"
+        },
+        {
+          "id": "SP5-005",
+          "image": "https://assets.tcgdex.net/zh-tw/S/SP5/005",
+          "localId": "005",
+          "name": "超夢V-UNION"
+        },
+        {
+          "id": "SP5-009",
+          "image": "https://assets.tcgdex.net/zh-tw/S/SP5/009",
+          "localId": "009",
+          "name": "蒼響V-UNION"
+        },
+        {
+          "id": "SP5-013",
+          "image": "https://assets.tcgdex.net/zh-tw/S/SP5/013",
+          "localId": "013",
+          "name": "芭內特博士"
+        }
+      ],
+      "decision": "Bind the source mark to the existing exact code/UUID; preserve the separately incorrect catalogue title for its metadata repair.",
+      "earlierHoldResolved": true
+    }
+  ],
+  "anniversaryDecision": "The two fifth-anniversary images remain in the owner pack and have no verified catalogue ID. They are not assigned to SP5 or included in the runtime mapping."
+}

@@ -99,6 +99,7 @@ jobs:
 
       - name: Prove native content and published API delivery
         run: |
+          npm run test:traditional-chinese-hires-logos
           npm run test:mobile-recovery
           npm run test:server-delivery
           npm run test:home-activity

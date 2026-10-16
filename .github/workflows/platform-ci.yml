@@ -58,6 +58,7 @@ jobs:
       - run: npm run test:next-beta-fixes
       - run: npm run lint
       - run: npm run typecheck
+      - run: npm run test:traditional-chinese-hires-logos
       - run: npm run typecheck:backend
       - run: npm run test:pokedex-release
       - run: npm run test:catalogue-price-baseline
