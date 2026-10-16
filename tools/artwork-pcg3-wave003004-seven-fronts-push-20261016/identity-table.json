@@ -1,0 +1,142 @@
+[
+  {
+    "printing_id": "a57a1f5c-8506-4f65-9f19-8ee9b95eb3a5",
+    "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+    "set_code": "PCG3",
+    "language_code": "ja",
+    "collector_number": "003",
+    "card_native_name": "グリマー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-024",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "43e914e2-1614-4b86-81da-b1ef02613b36"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:7e041a5d55ef5a4fab3ab20d41c88fcfae1230fd675168591310ce6d67f59eb5",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/huooimegywytpjrq/1600.jpg",
+    "original_sha256": "e5a22da5fb3857fd2194c77e341a21dd818711556342feb5c409e59c778c3016",
+    "body_sha256": "8e5a32e8250827bd657f8982e9087643476c9f41c3772790252dcec1adcfe30a",
+    "evidence_sha256": "f6f9a9bad22a10c593eba57fbe641dbb553fd13403eae481f1dfd2db90d721da"
+  },
+  {
+    "printing_id": "2eb26020-fa19-4db2-b8e1-fb482d917a96",
+    "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+    "set_code": "PCG3",
+    "language_code": "ja",
+    "collector_number": "009",
+    "card_native_name": "ジャンプラフ",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-024",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "e83e4c2d-3df5-444e-8ef4-f06ebb9aa0e6"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:51060b79d918caa8e40dafa89a8abe78fb412fe21aa8d481a106ec2fec5a96a3",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/egenezswe7rp2enj/1600.jpg",
+    "original_sha256": "67df949bf1f8ab313b547daf6cba7f73c6d534a21f75f459a5f65c8b5ce2b431",
+    "body_sha256": "c5589f446187af8ec552c266a5cecc696384d5ea868220eef767d9496a83a558",
+    "evidence_sha256": "2077370a912f2b30150a475c87b8c77f1d8e4f189c3e9547f59be8226a0d975f"
+  },
+  {
+    "printing_id": "708e67fc-25b0-40f2-9b1d-8a58c3e4bca3",
+    "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+    "set_code": "PCG3",
+    "language_code": "ja",
+    "collector_number": "037",
+    "card_native_name": "暗い電極",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-025",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "9a526912-52c2-42b0-bb0f-35fd20195e74"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:dda56e8fc388ecc0302feb9df64c48a3b2bc70229632ba5d1150e5eefc1b73cc",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/64i2bcvte3gxjmao/1600.jpg",
+    "original_sha256": "90f28463e697afd7690154e3c6e5bb4deecffcb453ee0bc14a1a55697ae5f487",
+    "body_sha256": "12a350d5df302f51d64966ea68025f5862ae4522c5e381c10fa3f38d03d5f614",
+    "evidence_sha256": "1a96f1d3cfdb299d2f63a43a5400d186bdd9de196ccfa5d130eab92206a93c95"
+  },
+  {
+    "printing_id": "23691e78-3dc2-472a-9b4d-7ce679465da3",
+    "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+    "set_code": "PCG3",
+    "language_code": "ja",
+    "collector_number": "041",
+    "card_native_name": "ドロージー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-025",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "bc2f8ac6-4e1b-4e02-ae6d-ceae71c3ca7a"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:cfeb4bf53e49f8c4d9f078ae12e4b7c4bdae284ddb6b12bb3c23bfb0e4a9f537",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/corrbp6otavpmnkdyr4c/1600.jpg",
+    "original_sha256": "b47af5a93c458ec69c34d8701402f5f190e866a7f51b23a97065fb233e727e0a",
+    "body_sha256": "1070f6dd5340a5514e2cecaebae3402428f4f1bd00ac97485e4c489b165788af",
+    "evidence_sha256": "8f822de4df3fec573bcf04547ca104069e8ee7896a44815b3622fd67874d0e82"
+  },
+  {
+    "printing_id": "2be19689-88c5-4d74-afab-2bf06f8ab994",
+    "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+    "set_code": "PCG3",
+    "language_code": "ja",
+    "collector_number": "050",
+    "card_native_name": "ピロスワイン",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-025",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "076b5d30-3cb6-446c-8003-3ee49e0a12dd"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:fc62a26c7a4e6f5e7f38cfaa85080dfad1328ece95d315ff39d8e3449ea73d9e",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/73962ea78ea2a7d6afc91ff2a392dfe9df0cac7826d56b968d53f1bbee1d16b5/1600.jpg",
+    "original_sha256": "6c79ac1d638fdd2aea76cf38933621b2f1abb32a23d4724678ab043c2d6b8e0f",
+    "body_sha256": "096a6014d0301b89318b2d8f6e40051a02aa10acd2e42762a8b498a62de42ee7",
+    "evidence_sha256": "0ce1ff9a933c6c71d109413793a8c6bfbc52c0b6e648685885193f9561e23364"
+  },
+  {
+    "printing_id": "1b6ca98a-873f-4fad-952d-5bd389c02a7b",
+    "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+    "set_code": "PCG3",
+    "language_code": "ja",
+    "collector_number": "065",
+    "card_native_name": "ロケットのウォブバッフェット",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-026",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "15b050d7-f502-4126-8d20-a6c8b4025ef2"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:931635670ed19f1b3071745e5d13ac9b1e542b9bb22d7c39430d3e7e98cab521",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/refc1128699d4fe3a5d2d5f3c318f6e0d5df72131fd032153a40f7e8aef29cd32fb/1600.jpg",
+    "original_sha256": "352a502dec82b1ac1271232c1a56d5cd32e31c9391a9392002440b785277f24f",
+    "body_sha256": "63d037a599901d5655e2a6ca223cdecef78e7e1fb540d6188b6681fc0a25fe84",
+    "evidence_sha256": "24de9a68636a496145fdd8ad2e69300a9551e89b538fbec522e714994d4f2c04"
+  },
+  {
+    "printing_id": "42e209b0-5d1a-4230-b1d7-a4257d6149ee",
+    "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+    "set_code": "PCG3",
+    "language_code": "ja",
+    "collector_number": "074",
+    "card_native_name": "急降下！テレポーター",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-026",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "b69d6245-6ec6-4891-a3a4-ae5fea4a419b"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:82d76f2b803b7b77f1de30863ed267c175f9b2d67905e91ae22a9eb9e914e418",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/exzudndlypwrfhgz/1600.jpg",
+    "original_sha256": "279d359d6b9495d1b6bcb21a552aecb5dd370e9f1179ecd8c1e779f4e15843d3",
+    "body_sha256": "4027c9bee906ac2291ad72d081a79a7c4455b9511777302d66506724db3de1d3",
+    "evidence_sha256": "06c99f05d105ef746512ea50223f14b11dc1981dbc8d23abf6ce895bf05fb33d"
+  }
+]

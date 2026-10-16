@@ -1,0 +1,100 @@
+[
+  {
+    "printing_id": "a57a1f5c-8506-4f65-9f19-8ee9b95eb3a5",
+    "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+    "set_code": "PCG3",
+    "language_code": "ja",
+    "collector_number": "003",
+    "card_native_name": "グリマー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-024",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "43e914e2-1614-4b86-81da-b1ef02613b36"
+    ]
+  },
+  {
+    "printing_id": "2eb26020-fa19-4db2-b8e1-fb482d917a96",
+    "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+    "set_code": "PCG3",
+    "language_code": "ja",
+    "collector_number": "009",
+    "card_native_name": "ジャンプラフ",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-024",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "e83e4c2d-3df5-444e-8ef4-f06ebb9aa0e6"
+    ]
+  },
+  {
+    "printing_id": "708e67fc-25b0-40f2-9b1d-8a58c3e4bca3",
+    "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+    "set_code": "PCG3",
+    "language_code": "ja",
+    "collector_number": "037",
+    "card_native_name": "暗い電極",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-025",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "9a526912-52c2-42b0-bb0f-35fd20195e74"
+    ]
+  },
+  {
+    "printing_id": "23691e78-3dc2-472a-9b4d-7ce679465da3",
+    "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+    "set_code": "PCG3",
+    "language_code": "ja",
+    "collector_number": "041",
+    "card_native_name": "ドロージー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-025",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "bc2f8ac6-4e1b-4e02-ae6d-ceae71c3ca7a"
+    ]
+  },
+  {
+    "printing_id": "2be19689-88c5-4d74-afab-2bf06f8ab994",
+    "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+    "set_code": "PCG3",
+    "language_code": "ja",
+    "collector_number": "050",
+    "card_native_name": "ピロスワイン",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-025",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "076b5d30-3cb6-446c-8003-3ee49e0a12dd"
+    ]
+  },
+  {
+    "printing_id": "1b6ca98a-873f-4fad-952d-5bd389c02a7b",
+    "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+    "set_code": "PCG3",
+    "language_code": "ja",
+    "collector_number": "065",
+    "card_native_name": "ロケットのウォブバッフェット",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-026",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "15b050d7-f502-4126-8d20-a6c8b4025ef2"
+    ]
+  },
+  {
+    "printing_id": "42e209b0-5d1a-4230-b1d7-a4257d6149ee",
+    "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+    "set_code": "PCG3",
+    "language_code": "ja",
+    "collector_number": "074",
+    "card_native_name": "急降下！テレポーター",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-026",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "b69d6245-6ec6-4891-a3a4-ae5fea4a419b"
+    ]
+  }
+]
