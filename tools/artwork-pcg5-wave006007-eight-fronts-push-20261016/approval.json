@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 8,
+  "variants": 8,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "physical_finish_verified": false,
+  "physical_edition_verified": false,
+  "cohort_sha256": "074c3c63473345e578ce9bf8db30af43e81d192e96f86a564c015058c1635df3",
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "ccc84806227629a97a97fc3ec4a0a66ccf9f32d2287a43f26fec41cf52eeabd5",
+    "finiteDecisionFileByteSha256": "51d722e237e5f2e237dfa5aac51747efd75c7c932ac2199bfd8205353ea9cc77",
+    "rootPrivateContextFileByteSha256": "0403ebddb01e09799b92dc7abd7eb659b301a020f264ceb27c2613518d448e95",
+    "sourceHandoffFileByteSha256s": [
+      "baed49569d4cfcc558ce8daf693fe3e8fe406dbc76c31d332bca4d8dee8a27de",
+      "32f2761962345063ba01d03a2f52da002277b33c71875a9e34e8b82a0eb74667"
+    ],
+    "independentSourceReviewFileByteSha256s": [
+      "20076a91c687a5f5877948b2b5bbb9f752304b2667720b6f1691f35873755555",
+      "9c611bc5c3cc9e999d1e1ea92a47ecd89f50856b089b42d998b3c4f0860bcdce"
+    ],
+    "priorPerWaveFiniteDecisionFileByteSha256s": [
+      "998f6e02194e1cc71c71b689cb445bd8826cd79845c45e0750651f07ad176dc8",
+      "5f60b4d2d53a4336a81767dc8a26695c052f2e14a2aff18dfb4f3077374c3b4d"
+    ],
+    "finiteFossilV2ModuleSha256": "5f4aa2c07a243d6977174c0200845a0ee4f011a2fe68041ce7e915a66468eec9",
+    "finiteFossilV2PeerSha256": "a88497cd804222950a654cfffb37e6d77b05af7cbe406ff44faa8375ed14698c",
+    "fourSourceCheckpointFileByteSha256": "8727932048b434d03fab570b670d7f2255df62647bc3a9fd47a3499b88aab896",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "c920bd55d685630149c3edba87ea3cd671ffe97d439ecc0edeb189953e92553e",
+    "privateSourceContractModuleFileByteSha256": "1b3b109fde20932a81ccb470db2dca3ebae85891ecb2aa8cad2377fa4e0c2703",
+    "independentPrivatePackageReviewSha256": "01f8a91dc328f8643a2a949f304fcc0ef4beff0d0034c07de3c09ebc559be755",
+    "rootPrivatePackageValidationSha256": "e88f3a6982b08e5d32a4b1aea5c49b9b103b44c6aed54d85707e41c7e31852c5",
+    "rootSourceArchiveBindingSha256": "d26fb3fa8caecc7adedebb7a41a83ca6547f0bf20b5820de0c58f6d8ab657db2",
+    "rootUploadReceiptSha256": "b0c64431e59ad14a7dff444cc76cdcced4c844bfe8c8655e921cb79ccf13b0ec",
+    "actualMeasuredAppReportSha256": "badbe2caf54c795630861f3ea694389914ee82079da52f4fe4e69246cad53923",
+    "actualMeasuredDimensionAuditSha256": "0be5bedba008ac82c0271a6c9cf775eb8d0fb3a86e0b6607abe363e1c56b2ead",
+    "rootPublisherContextSha256": "ef29da818fc956aff2a5a63ec972152e388799d4997b3131c8d4a8ee6317c21e"
+  },
+  "production_source_changes_allowed": 0,
+  "scope": "Exactly eight PCG5 fronts054072077078079081082084 from genuine source006one/source007seven. Retain canonical English/category null,7normalTRUE/054holoFALSE and actual API defaults. Finite fossil077HP40+ability/078HP50+noability/079HP40+ability and full rules retained without global Trainer changes. Production39→55 adds8assets8links preserving2172x724logo/link/full4source17fields and microseconds; stage33→50→33 exactrollback. LARGE5detail3original, sourceHDcanvas5/detail2;079082084 readable500 fallbacks;078081whitepadding retained. No physical/vendor/sourcewide/provider-optical/handset certificate."
+}

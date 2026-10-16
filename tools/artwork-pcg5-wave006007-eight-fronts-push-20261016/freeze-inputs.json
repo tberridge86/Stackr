@@ -1,0 +1,258 @@
+{
+  "schemaVersion": 1,
+  "private_inputs": [
+    {
+      "file": "pcg5-wave006007-root-publisher-context-v2-20261016.json",
+      "sha256": "ef29da818fc956aff2a5a63ec972152e388799d4997b3131c8d4a8ee6317c21e"
+    },
+    {
+      "file": "after-owner-bulbasaur-publisher-merge-next-prior-repository-byte-baseline-20261016.json",
+      "sha256": "b50e9fed786ef8a5969e794716266d36c71a97f78a60c9b7057dff0212effd85"
+    },
+    {
+      "file": "pcg5-wave006007-formal-queue-before-publisher-20261016.json",
+      "sha256": "c967c7453451657fa4d5cf3d7e941d468b3b4f10478ecd9714df02a08b0482ff"
+    },
+    {
+      "file": "pcg5-wave006007-eight-private-preparation-20261016/derived-approved-eight-projection.json",
+      "sha256": "ccc84806227629a97a97fc3ec4a0a66ccf9f32d2287a43f26fec41cf52eeabd5"
+    },
+    {
+      "file": "source-batches/pcg5-wave006007-root-approved-eight-20261016/root-finite-eight-combined-source-selection-preparation-decision.json",
+      "sha256": "51d722e237e5f2e237dfa5aac51747efd75c7c932ac2199bfd8205353ea9cc77"
+    },
+    {
+      "file": "pcg5-wave006007-eight-private-preparation-20261016/derived-private-preparation-context.json",
+      "sha256": "0403ebddb01e09799b92dc7abd7eb659b301a020f264ceb27c2613518d448e95"
+    },
+    {
+      "file": "pcg5-wave006007-eight-private-preparation-20261016/source-contract.json",
+      "sha256": "c920bd55d685630149c3edba87ea3cd671ffe97d439ecc0edeb189953e92553e"
+    },
+    {
+      "file": "pcg5-wave006007-eight-private-preparation-20261016/pcg5-source-contract.mjs",
+      "sha256": "1b3b109fde20932a81ccb470db2dca3ebae85891ecb2aa8cad2377fa4e0c2703"
+    },
+    {
+      "file": "publish-review/pcg5-wave006007-independent-private-package-review-20261016.json",
+      "sha256": "01f8a91dc328f8643a2a949f304fcc0ef4beff0d0034c07de3c09ebc559be755"
+    },
+    {
+      "file": "publish-review/pcg5-wave006007-root-private-final-integrity-20261016.json",
+      "sha256": "e88f3a6982b08e5d32a4b1aea5c49b9b103b44c6aed54d85707e41c7e31852c5"
+    },
+    {
+      "file": "publish-review/pcg5-wave006007-root-source-archive-binding-20261016.json",
+      "sha256": "d26fb3fa8caecc7adedebb7a41a83ca6547f0bf20b5820de0c58f6d8ab657db2"
+    },
+    {
+      "file": "publish-review/pcg5-wave006007-root-release-upload-binding-20261016.json",
+      "sha256": "b0c64431e59ad14a7dff444cc76cdcced4c844bfe8c8655e921cb79ccf13b0ec"
+    },
+    {
+      "file": "pcg5-wave006007-eight-private-preparation-20261016/private-package-handoff.json",
+      "sha256": "3b21a81758aadda95aa562f014adf8455b997043d3eda1493d5128bb87ca0f86"
+    },
+    {
+      "file": "pcg5-wave006007-eight-private-preparation-20261016/frozen-own-pins.json",
+      "sha256": "8f01df80daae0965851c733adc232d24d47ffb7d90ddaaaf6f1b2143011e4313"
+    },
+    {
+      "file": "pcg5-wave006007-eight-private-preparation-20261016/frozen-input-pins.json",
+      "sha256": "04ad4fffb1c3c06ce75e434c5285d2e460714f33aa5bd76da009e83b562621d7"
+    },
+    {
+      "file": "pcg5-wave006007-eight-private-preparation-20261016/private-projection-inputs.json",
+      "sha256": "ef7ee74f958f072a99ac4f6d9e9f0ac80271ba79a5789699bbcf3e6e429ff8b4"
+    },
+    {
+      "file": "pcg5-wave006007-eight-private-preparation-20261016/source-manifest.json",
+      "sha256": "ad138dd3f0ea566e62f1ccca5531aefa04925a17d37b5fc325bf424f7be04557"
+    },
+    {
+      "file": "pcg5-wave006007-eight-private-preparation-20261016/package-receipt.json",
+      "sha256": "4eccda7347167d784a1cc0314aa297cae24751972ed93673fffea5549845dffa"
+    },
+    {
+      "file": "pcg5-wave006007-eight-private-preparation-20261016/planned-actual-app-helper-acceptance.json",
+      "sha256": "badbe2caf54c795630861f3ea694389914ee82079da52f4fe4e69246cad53923"
+    },
+    {
+      "file": "pcg5-wave006007-eight-private-preparation-20261016/dimension-aspect-quality-audit.json",
+      "sha256": "0be5bedba008ac82c0271a6c9cf775eb8d0fb3a86e0b6607abe363e1c56b2ead"
+    },
+    {
+      "file": "pcg5-wave006007-eight-private-preparation-20261016/preservation-scope-proof.json",
+      "sha256": "c31defa2d1111bac4afca8a7100898a9b261073a0f3445a49c200bbeeb03cc39"
+    },
+    {
+      "file": "pcg5-wave006007-eight-private-preparation-20261016/source-input-pins.json",
+      "sha256": "57604f645746dea7a6b4a1312d55dd81e27cc26f9e73ef5f9fce61b67d72fbbd"
+    },
+    {
+      "file": "source-batches/pcg5-wave006007-eight-root-fresh-facts-20261016/pcg5-eight-wave006007-sources-20261016-production-before.json",
+      "sha256": "1ee3326214f4b901372ccf1d168296062da67c37a0a1eee8055e6de66a9635e6"
+    },
+    {
+      "file": "source-batches/pcg5-wave006007-eight-root-fresh-facts-20261016/pcg5-eight-wave006007-sources-20261016-production-bindings.json",
+      "sha256": "aaf7607e9052d69b88d75245c793b87005c6373ce4d1a1ea121e9ba3ec1ba63e"
+    },
+    {
+      "file": "source-batches/pcg5-wave006007-eight-root-fresh-facts-20261016/pcg5-eight-wave006007-sources-20261016-staging-before.json",
+      "sha256": "14d73e1d161d6d4918ac88574b6783e315cc57dc8978e3c371b695720356eb9a"
+    },
+    {
+      "file": "source-batches/pcg5-wave006007-eight-root-fresh-facts-20261016/pcg5-eight-wave006007-sources-20261016-staging-bindings.json",
+      "sha256": "31ea7465328afe252673dcd9b9779e0f91157a063c97b40ba1b397d300e0dc5b"
+    },
+    {
+      "file": "source-batches/pcg5-wave006007-eight-root-fresh-facts-20261016/root-four-sources-full17-checkpoint.json",
+      "sha256": "8727932048b434d03fab570b670d7f2255df62647bc3a9fd47a3499b88aab896"
+    },
+    {
+      "file": "source-batches/pcg5-wave006-root-approved-one-20261016/root-finite-one-source-selection-preparation-decision.json",
+      "sha256": "998f6e02194e1cc71c71b689cb445bd8826cd79845c45e0750651f07ad176dc8"
+    },
+    {
+      "file": "source-batches/ordinary334-wave006-final-source-review-20261016/frozen-source20-handoff.json",
+      "sha256": "baed49569d4cfcc558ce8daf693fe3e8fe406dbc76c31d332bca4d8dee8a27de"
+    },
+    {
+      "file": "publish-review/ordinary334-wave006-independent-actual-source-review-20261016.json",
+      "sha256": "20076a91c687a5f5877948b2b5bbb9f752304b2667720b6f1691f35873755555"
+    },
+    {
+      "file": "source-batches/pcg5-wave007-root-approved-seven-20261016/root-finite-seven-source-selection-preparation-decision-v2.json",
+      "sha256": "5f60b4d2d53a4336a81767dc8a26695c052f2e14a2aff18dfb4f3077374c3b4d"
+    },
+    {
+      "file": "source-batches/ordinary334-wave007-final-source-review-20261016/frozen-source20-handoff.json",
+      "sha256": "32f2761962345063ba01d03a2f52da002277b33c71875a9e34e8b82a0eb74667"
+    },
+    {
+      "file": "publish-review/ordinary334-wave007-independent-actual-source-review-20261016.json",
+      "sha256": "9c611bc5c3cc9e999d1e1ea92a47ecd89f50856b089b42d998b3c4f0860bcdce"
+    },
+    {
+      "file": "source-batches/pcg5-wave007-finite-fossil-projection-v2-20261016/finite-fossil-projection.mjs",
+      "sha256": "5f4aa2c07a243d6977174c0200845a0ee4f011a2fe68041ce7e915a66468eec9"
+    },
+    {
+      "file": "source-batches/pcg5-wave007-finite-fossil-projection-v2-20261016/proposed-operational-query.json",
+      "sha256": "ad3d0e9ba3e52f1885dad411867c44d6e10fb68bf33e35445105b4236045efcf"
+    },
+    {
+      "file": "publish-review/pcg5-wave007-independent-finite-fossil-projection-v2-review-20261016.json",
+      "sha256": "a88497cd804222950a654cfffb37e6d77b05af7cbe406ff44faa8375ed14698c"
+    }
+  ],
+  "source_manifest_file": "pcg5-wave006007-eight-private-preparation-20261016/source-manifest.json",
+  "source_manifest_sha256": "ad138dd3f0ea566e62f1ccca5531aefa04925a17d37b5fc325bf424f7be04557",
+  "package_receipt_file": "pcg5-wave006007-eight-private-preparation-20261016/package-receipt.json",
+  "package_receipt_sha256": "4eccda7347167d784a1cc0314aa297cae24751972ed93673fffea5549845dffa",
+  "archive": {
+    "id": 648009411,
+    "sha256": "57ddd63643250633faf619aa60ae9eae936e59b1bbc1f1e159b98bf202fbeb68",
+    "byte_size": 3725316,
+    "file_count": 36,
+    "name": "pcg5-wave006007-fronts-20261016.zip"
+  },
+  "unchanged_dependencies": [
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 9031,
+      "sha256": "5524305ba4bd6a0f3867ea2c097c57fb0d610e27ef1d9d64529b64e9c67249de"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/metadata-guard.mjs",
+      "bytes": 4018,
+      "sha256": "cca5354822fe11c007308f7d22ebf84649d2374619e0dd049c7347a9db9e116f"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/publish.mjs",
+      "bytes": 5885,
+      "sha256": "8451746bb6e188f56c5be31064742eaeecdc2f2c6d6e27cb31ab5c7227af6d1f"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "tools/artwork-next-push-20261013/frozen.mjs",
+      "bytes": 7732,
+      "sha256": "3e14eb76a012116492075328c50e6c5907f712004da02d4d3dae541d2617a95b"
+    },
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 30117,
+      "sha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24425,
+      "sha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 15024,
+      "sha256": "1d168e5407a5bdc6e027f58991de58a0664576d7c917d5b219fa13f9af4a1d0a"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/download-package.py",
+      "bytes": 5489,
+      "sha256": "53f1114f25bd995b4f05d9b2d3adad7ae2dadc85b4b13f038a84bcc5e7d6b09f"
+    }
+  ],
+  "staging_fixture_policy": {
+    "code": "pricecharting",
+    "display_name": "PriceCharting (owner supplied card fronts)",
+    "source_type": "image",
+    "base_url": "https://www.pricecharting.com",
+    "licence_status": "under_review",
+    "attribution_required": true,
+    "active": false,
+    "internal_notes": "Owner-attested source use for exactly Aquapolis Mr. Mime95b and Porygon103b shared printing-front artwork in finite cohort AQUAPOLIS-SHARED-002-20261015. Independent vendor and underlying card licences are unverified. No source-wide approval; each later acquisition requires separate finite approval. Existing provenance rows and source policies must remain unchanged.",
+    "deprecated_at": null
+  },
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "ccc84806227629a97a97fc3ec4a0a66ccf9f32d2287a43f26fec41cf52eeabd5",
+    "finiteDecisionFileByteSha256": "51d722e237e5f2e237dfa5aac51747efd75c7c932ac2199bfd8205353ea9cc77",
+    "rootPrivateContextFileByteSha256": "0403ebddb01e09799b92dc7abd7eb659b301a020f264ceb27c2613518d448e95",
+    "sourceHandoffFileByteSha256s": [
+      "baed49569d4cfcc558ce8daf693fe3e8fe406dbc76c31d332bca4d8dee8a27de",
+      "32f2761962345063ba01d03a2f52da002277b33c71875a9e34e8b82a0eb74667"
+    ],
+    "independentSourceReviewFileByteSha256s": [
+      "20076a91c687a5f5877948b2b5bbb9f752304b2667720b6f1691f35873755555",
+      "9c611bc5c3cc9e999d1e1ea92a47ecd89f50856b089b42d998b3c4f0860bcdce"
+    ],
+    "priorPerWaveFiniteDecisionFileByteSha256s": [
+      "998f6e02194e1cc71c71b689cb445bd8826cd79845c45e0750651f07ad176dc8",
+      "5f60b4d2d53a4336a81767dc8a26695c052f2e14a2aff18dfb4f3077374c3b4d"
+    ],
+    "finiteFossilV2ModuleSha256": "5f4aa2c07a243d6977174c0200845a0ee4f011a2fe68041ce7e915a66468eec9",
+    "finiteFossilV2PeerSha256": "a88497cd804222950a654cfffb37e6d77b05af7cbe406ff44faa8375ed14698c",
+    "fourSourceCheckpointFileByteSha256": "8727932048b434d03fab570b670d7f2255df62647bc3a9fd47a3499b88aab896",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "c920bd55d685630149c3edba87ea3cd671ffe97d439ecc0edeb189953e92553e",
+    "privateSourceContractModuleFileByteSha256": "1b3b109fde20932a81ccb470db2dca3ebae85891ecb2aa8cad2377fa4e0c2703",
+    "independentPrivatePackageReviewSha256": "01f8a91dc328f8643a2a949f304fcc0ef4beff0d0034c07de3c09ebc559be755",
+    "rootPrivatePackageValidationSha256": "e88f3a6982b08e5d32a4b1aea5c49b9b103b44c6aed54d85707e41c7e31852c5",
+    "rootSourceArchiveBindingSha256": "d26fb3fa8caecc7adedebb7a41a83ca6547f0bf20b5820de0c58f6d8ab657db2",
+    "rootUploadReceiptSha256": "b0c64431e59ad14a7dff444cc76cdcced4c844bfe8c8655e921cb79ccf13b0ec",
+    "actualMeasuredAppReportSha256": "badbe2caf54c795630861f3ea694389914ee82079da52f4fe4e69246cad53923",
+    "actualMeasuredDimensionAuditSha256": "0be5bedba008ac82c0271a6c9cf775eb8d0fb3a86e0b6607abe363e1c56b2ead",
+    "rootPublisherContextSha256": "ef29da818fc956aff2a5a63ec972152e388799d4997b3131c8d4a8ee6317c21e"
+  }
+}
