@@ -1,22 +1,22 @@
 {
   "schemaVersion": "stackr-owner-artwork-production-evidence-v1",
   "inventoryId": "STACKR-ARTWORK-20261012",
-  "updatedAt": "2026-10-16T19:34:36.874Z",
+  "updatedAt": "2026-10-16T21:04:04.495Z",
   "scope": "Exact saved artwork list; original identities retained; actual production verification required",
   "summary": {
-    "checkedAt": "2026-10-16T19:33:41.973Z",
+    "checkedAt": "2026-10-16T20:18:15.457Z",
     "totalTasks": 2944,
     "totalBatches": 161,
-    "newlyPublishedFronts": 1357,
+    "newlyPublishedFronts": 1369,
     "previouslyCorrectedCasesVerified": 605,
-    "liveVerifiedTasks": 1962,
+    "liveVerifiedTasks": 1974,
     "completedBatches": 85,
-    "remainingTasks": 982,
+    "remainingTasks": 970,
     "remainingBatches": 76,
     "remainingGroups": [
       {
         "task": "Find permitted exact card fronts",
-        "items": 690
+        "items": 678
       },
       {
         "task": "Find permitted Traditional Chinese set logos",
@@ -31,22 +31,22 @@
         "items": 0
       }
     ],
-    "sourceLeadTargets": 1273,
+    "sourceLeadTargets": 1285,
     "scope": "Fixed saved list, retaining original identities; completion requires actual production API and image verification. Source gathering alone is not completion.",
     "queuedItems": 0,
     "queuedBatches": 0,
     "frontTasksNotYetGathered": 665,
     "smallOriginalCandidates": 13,
-    "frontTasksNotYetPrepared": 690,
+    "frontTasksNotYetPrepared": 678,
     "contentHeldOriginalCandidates": 0,
-    "sourceAcquiredPendingPreparation": 12,
+    "sourceAcquiredPendingPreparation": 0,
     "sourceIdentityMetadataHolds": 26,
     "ownerSuppliedJapaneseGalleryLeads": {
       "suppliedSets": 23,
       "fixedBatchesCovered": 69,
       "fixedTasksCovered": 1479,
-      "coveredTasksAlreadyLive": 825,
-      "coveredTasksRemaining": 654,
+      "coveredTasksAlreadyLive": 837,
+      "coveredTasksRemaining": 642,
       "unprovidedSets": [],
       "sourceInventorySha256": "68aeb67adc1716a32e1539fc815b210e243c8f2ec15c6d5a5d059a1bbf914fe1",
       "exactPrintingOrLicenceApprovalClaimed": false,
@@ -113,10 +113,10 @@
       "scopeFile": "all-owner-links-working-queue.json",
       "scopeSha256": "dce8019d6367877078b63a26bbd7ce9a52a8c4f8a8cbe7b9c20faa98ff7eb2c9",
       "uniqueCardTasks": 1572,
-      "cardTasksAlreadyLive": 853,
-      "cardTasksRemaining": 719,
+      "cardTasksAlreadyLive": 865,
+      "cardTasksRemaining": 707,
       "historicalLogoResearchTasks": 36,
-      "remainingCombinedWork": 755,
+      "remainingCombinedWork": 743,
       "remainingCombinedBatches": 63,
       "remainingOutsideBoundProvidedLinks": 227,
       "originalBatchIdsRetained": true,
@@ -951,26 +951,26 @@
     "sourceAcquiredFinishHeld": 2,
     "currentContinuationSourceCaptureTotals": {
       "sourceMetadataGets": 1935,
-      "sourceOriginalGets": 827,
-      "retainedSourceOriginalCandidates": 827,
-      "acceptedAwaitingPreparation": 12,
+      "sourceOriginalGets": 871,
+      "retainedSourceOriginalCandidates": 871,
+      "acceptedAwaitingPreparation": 0,
       "sourceReviewPending": 0,
-      "qualityOrEditionHeld": 445,
+      "qualityOrEditionHeld": 489,
       "finishHeld": 3,
       "prepared": 0,
-      "newLiveVerified": 358,
+      "newLiveVerified": 370,
       "metadataGetCountsExcludeWebSearchAndCachedWebExtractions": true,
-      "uniqueSourcePrintingCandidates": 818,
+      "uniqueSourcePrintingCandidates": 862,
       "additionalAlternateTcGSourceCandidatesPendingReview": 0,
       "printingStatePartitionCountsStillTracksHeldOldCandidatesUntilAlternateAccepted": false,
-      "totalPreparedThisContinuation": 358,
+      "totalPreparedThisContinuation": 370,
       "partition": {
-        "live": 358,
+        "live": 370,
         "prepared": 0,
-        "acceptedAwaitingPreparation": 12,
-        "qualityOrEditionHeld": 445,
+        "acceptedAwaitingPreparation": 0,
+        "qualityOrEditionHeld": 489,
         "finishHeld": 3,
-        "totalUnique": 818
+        "totalUnique": 862
       },
       "accessDeniedMetadataGets": 3,
       "alternateCandidateCount": 9,
@@ -978,7 +978,7 @@
       "metadataCounterHistoricalFieldNameIncludesGetAndPostRequests": true,
       "vsWebDiscoveryWebSearchQueriesExcludedFromMetadataCounter": 2,
       "nativeEndpointDocumentationWebSearchQueriesExcludedFromMetadataCounter": 1,
-      "PCG3MissingSourceWebSearchQueriesExcludedFromMetadataCounter": 4,
+      "PCG3MissingSourceWebSearchQueriesExcludedFromMetadataCounter": 11,
       "ordinaryPcg334First20OriginalGets": 20,
       "supplementaryPokellectorDiscoveryWebSearchQueriesExcludedFromMetadataCounter": 6,
       "VS46NewMetadataGETs": 77,
@@ -1001,14 +1001,19 @@
         "independentActualReviewSha256": "8df1c65360a3a6a889218d593fdaef26ba4f6540b377b858c786d6f6437c4f8c"
       },
       "ordinaryPcg334Wave008OriginalGets": 20,
-      "privatelyPreparedAwaitingFormalQueue": 12,
+      "privatelyPreparedAwaitingFormalQueue": 0,
       "acceptedAwaitingPreparationIncludesPrivatePackagesNotYetInFormalQueue": true,
       "ordinaryPcg334Wave009OriginalGets": 20,
       "ordinaryPcg334Wave010OriginalGets": 20,
       "ordinaryPcg334Wave011OriginalGets": 20,
       "ordinaryPcg334Wave012OriginalGets": 20,
       "ordinaryPcg334Wave013OriginalGets": 20,
-      "ordinaryPcg334Wave014OriginalGets": 17
+      "ordinaryPcg334Wave014OriginalGets": 17,
+      "priorityPcg9035ExactOneOriginalGets": 1,
+      "VS46First20DiagnosticOriginalGets": 20,
+      "priorityPcg5004ExactOneOriginalGets": 1,
+      "VS46Next20DiagnosticOriginalGets": 20,
+      "VS46FinalTwoDiagnosticOriginalGets": 2
     },
     "sourceAcquiredEditionHeld": 89,
     "nextChallengeDarkness97Cohort": {
@@ -2688,10 +2693,10 @@
         "fronts": 12,
         "privatePreparedOriginals": 12,
         "privatePreparedDerivatives": 36,
-        "publishedVerified": 0,
-        "formallyQueuedOriginals": 0,
-        "status": "Private package independently reviewed; immutable archive uploaded; exact publisher preparation next",
-        "nextAction": "Prepare and independently review exact protected publisher, then queue and verify actual production delivery",
+        "publishedVerified": 12,
+        "formallyQueuedOriginals": 12,
+        "status": "Complete: protected publication and actual API/CDN/app-helper checks independently passed",
+        "nextAction": "Complete; preserve immutable originals and rollback evidence",
         "privateHandoffSha256": "c5d42eac529d1047ed8200b8bc1dd6425bf38e62eb46ed42d0ce04eede35a323",
         "archiveSha256": "75a95c11c369d2fe9e73f31332401e7f14f23c5063a0b6e77a277180c7540cc0",
         "archiveBytes": 5976589,
@@ -2705,7 +2710,17 @@
         "all48OtherOperationalSourceHoldsExplicit": true,
         "independentPrivateReviewSha256": "76e2c1bc639a3645fbad6ffcef8d86d3f204445b831e0d53780f17e1f311b041",
         "archiveAssetId": 648356088,
-        "rootUploadReceiptSha256": "77ebf292fffae683ec1e213b1e08ba8e746f289d503b255eb391afd53dbc32e1"
+        "rootUploadReceiptSha256": "77ebf292fffae683ec1e213b1e08ba8e746f289d503b255eb391afd53dbc32e1",
+        "independentPublisherReviewSha256": "7043dfe09da980ced3ea992097a049c31a6104ddbc5436363e7b54cc2881cd54",
+        "publisherPR": 401,
+        "publisherHeadSHA": "c3a692cf1d5b797a3e3c2a302cb5ab993fc03d5e",
+        "publisherMergedMainSHA": "55bf4e2143d8c5549b7acff258ee296a6ac299fc",
+        "rootMergedTreeEquivalenceSHA": "aa4f551808c3a1389b2cfdcf247f2c60198cf34d4e6c030ad0fee0ad5772ceee",
+        "productionRunId": 38959408386,
+        "productionDeploymentId": 7128345633,
+        "independentActualReviewSha256": "e762bfb3a7513faef3c41f365a1f4b116893812f8f7a8ec062d6b82eeb32a6d0",
+        "rootRetainedDeliverySha256": "59a271eaeff19cc769b3a1e5c057fd6ace291a0cf2d2d77cc33302ebaf7a4092",
+        "rootFinalPreservationSha256": "c99ad34882bd454697a846038d12bdb90a659bc56dc5f461e2457f8554b9d7a5"
       }
     ],
     "bundledTraditionalChineseLogoIntegration": {
@@ -2761,6 +2776,117 @@
       "closedHistoryCount": 1695,
       "closedHistorySHA": "683e1a57fa0cde30e9c0c9aaeafc6664d16400e3ea095b3e1b6724ec4b674fcd",
       "held052LiteralCorrectionDisclosed": true
+    },
+    "nextPriorityPCG9035SingleOriginalSource": {
+      "status": "Independently checked original retained: first-edition and complete-frame follow-up",
+      "sourceOriginals": 1,
+      "sourceCandidates": 0,
+      "held": 1,
+      "originalDimensions": {
+        "width": 1154,
+        "height": 1600
+      },
+      "sourceHandoffSha256": "682561d18f10d51125d38fb5b8ba636d304afce4a61cafbb7c392839a2a99692",
+      "independentActualReviewSha256": "2901e9d5f529af956d2f2bfb6a259528a55dc3b411a4d9417660835aeb2815e3",
+      "rootFiniteDecisionSha256": "bd37d2a530f4b1b21bd1b9784c3e040b6cd1e2bccb62398bb98dc0b1b203854a",
+      "sourceSelectionApproved": false,
+      "preparationApproved": false,
+      "publicationApproved": false,
+      "productionWrites": 0
+    },
+    "nextVS46First20DiagnosticSource": {
+      "registeredAt": "2026-10-16T20:20:16.878Z",
+      "sourceRequests": 20,
+      "held": 20,
+      "accepted": 0,
+      "actualPrintedBodyFullyRead": 13,
+      "actualCardFirstEditionStamps": 19,
+      "actualCardEditionUnknown": 1,
+      "rootDecisionSha256": "e521c828b74da2b22ff8cf9e8b5ddd66e6a6e6cd4766be2e94ed0b867f0f4934",
+      "independentActualSourceReviewSha256": "3e358b1d054d97ec48118c9afc2cd51fe45c1be69f18762c0de1126f1c352f0b",
+      "wholePrintingComplete": false
+    },
+    "nativeDelivery56": {
+      "updatedAt": "2026-10-16T21:03:49.357Z",
+      "status": "CHECKED_SOURCE_WAITING_FOR_OWNER_HOUR_CUTOFF",
+      "appVersion": "1.0.6",
+      "buildNumber": "56",
+      "source": "fe283dbd080372cfd740fec330200f0f402ab6bd",
+      "productionAPIArtworkLive": 1974,
+      "remainingArtworkDisclosed": 970,
+      "preparedArtworkUnpublished": 0,
+      "exactSharperLogosInIOSExport": 36,
+      "reviewedPRsIncluded": [
+        402,
+        396,
+        395,
+        401,
+        399,
+        400,
+        337
+      ],
+      "historical19UnacceptedPRsExcluded": true,
+      "nativeBuildNotBefore": "2026-10-16T21:12:11Z",
+      "buildStarted": false,
+      "submitted": false,
+      "testFlightAvailable": false,
+      "installedDeviceVerified": false
+    },
+    "remainingOrdinaryArtworkSources": {
+      "checkedAt": "2026-10-16T20:56:16.949Z",
+      "count": 7,
+      "rows": [
+        {
+          "alias": "PCG3-077",
+          "batchId": "JP-CARDS-026",
+          "printingId": "382aa8eb-97b2-4cfd-a8f9-7987bb007283",
+          "whatToFind": "A clear Japanese front for card77 from Rocket Gang Strikes Back, with its printed name, number and every edge visible. The saved name may be a machine label; do not use a similarly numbered card from another set.",
+          "query": "Tif, show the source gap for PCG3-077"
+        },
+        {
+          "alias": "PCG6-028",
+          "batchId": "JP-CARDS-034",
+          "printingId": "8d7858bd-c4f0-423b-b750-4ab89875b59c",
+          "whatToFind": "A clear Japanese Kyogre Star card28 front from Holon Research Tower. We also need to establish which edition and physical finish it shows.",
+          "query": "Tif, show the source gap for PCG6-028"
+        },
+        {
+          "alias": "PCG6-075",
+          "batchId": "JP-CARDS-035",
+          "printingId": "ea20897b-8e29-4520-8f94-5b7db7fb7d39",
+          "whatToFind": "A clear Japanese Metagross Star card75 front from Holon Research Tower. We also need to establish which edition and physical finish it shows.",
+          "query": "Tif, show the source gap for PCG6-075"
+        },
+        {
+          "alias": "VS1-001",
+          "batchId": "JP-CARDS-066",
+          "printingId": "7b16d3ed-6cb3-4d52-a847-912a1b992601",
+          "whatToFind": "The exact Japanese VS card1 front for the named owner and Pokémon, with its printed name, number, edition mark and full border visible. Finish information disagrees in the saved sources.",
+          "query": "Tif, show the source gap for VS1-001"
+        },
+        {
+          "alias": "VS1-143",
+          "batchId": "JP-CARDS-067",
+          "printingId": "bba831f5-34dc-4b90-93e4-2eee7ea4fa49",
+          "whatToFind": "A clear front of VS Energy card143, with the actual printed name/number, set mark, full rules, edition mark and all edges visible.",
+          "query": "Tif, show the source gap for VS1-143"
+        },
+        {
+          "alias": "VS1-144",
+          "batchId": "JP-CARDS-067",
+          "printingId": "71db76c4-1a2f-407a-8181-abd9c61fd7b4",
+          "whatToFind": "A clear front of VS Energy card144, with the actual printed name/number, set mark, full rules, edition mark and all edges visible.",
+          "query": "Tif, show the source gap for VS1-144"
+        },
+        {
+          "alias": "VS1-151",
+          "batchId": "JP-CARDS-067",
+          "printingId": "4a846966-44d4-44c0-a3c4-f5a19ade61de",
+          "whatToFind": "A clear front for the saved VS Energy alias151. First establish the actual printed number and set, then show the complete rules, edition mark and outer border.",
+          "query": "Tif, show the source gap for VS1-151"
+        }
+      ],
+      "noImagesAcquiredByCloseout": true
     }
   },
   "ownerSuppliedAdditionalSourceLeads": [
@@ -3503,17 +3629,17 @@
     "extraPermissionPromptRequired": false,
     "sourceLicenceFacts": "Existing source facts retained; owner queue direction does not invent vendor licence metadata."
   },
-  "preparedOriginals": 1260,
-  "preparedDerivatives": 3780,
-  "publishedVerifiedOriginals": 1260,
+  "preparedOriginals": 1272,
+  "preparedDerivatives": 3816,
+  "publishedVerifiedOriginals": 1272,
   "queuedItems": 0,
   "preparedByLanguage": {
     "en": 433,
-    "ja": 827
+    "ja": 839
   },
   "publishedVerifiedByLanguage": {
     "en": 433,
-    "ja": 827
+    "ja": 839
   },
   "failedProductionRuns": [
     {
@@ -3892,6 +4018,10 @@
     {
       "queueId": "pcg6-wave008009010-fronts",
       "releaseAssetId": 648265809
+    },
+    {
+      "queueId": "STACKR-JA-PCG789-WAVE011012013-EXACT12-SHARED-FRONTS-20261016",
+      "releaseAssetId": 648356088
     }
   ],
   "holds": [
@@ -6423,8 +6553,10 @@
       "setCode": "PCG5",
       "collectorReference": "004",
       "name": "グリマー",
-      "status": "exact_metadata_no_picture_pointer",
-      "requiredAction": "Find a direct source page and complete card picture for this exact printing."
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Resolve the visible First Edition mark and obtain a complete outer frame for this exact004/086 Grimer front; actual printed Japanese nameベトベター retained separately from the recordedグリマー label.",
+      "width": 1033,
+      "height": 1458
     },
     {
       "itemId": "card:8e3309c7-22b8-44ea-a9b9-c3d4d8f36c11",
@@ -9961,11 +10093,11 @@
       "setCode": "PCG9",
       "collectorReference": "035",
       "name": "トラピンチ（デルタ種）",
-      "status": "exact_metadata_literal_pointer_original_unattempted",
-      "requiredAction": "Check the retained exact Trapinch035/068 literal source link under a new single-card plan; two prior source plans closed before its original GET.",
-      "width": null,
-      "height": null,
-      "contentSha256": null
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Confirm the intended edition and find the complete outer card edges. The retained sharp photo has a visible first-edition stamp and its side/bottom borders meet the image bounds. Its actual printed name is ナックラー; the saved トラピンチ（デルタ種） label is preserved for a separate identity/name check.",
+      "width": 1154,
+      "height": 1600,
+      "contentSha256": "7e02f1335e4ddf91a3548be71610401bf7c442936c227d205c3893c9da5e90fe"
     },
     {
       "itemId": "card:8692c045-2f36-431b-9541-127bbbc74033",
@@ -10401,6 +10533,510 @@
       "name": "キョウのメタモン",
       "status": "one_photo_two_unmapped_normal_holo_variants",
       "requiredAction": "Challenge from the Darkness 072 has separate normal and holo variants with no same-artwork mapping. Exact independent version evidence is still needed."
+    },
+    {
+      "itemId": "card:89ed1fbb-9fcb-47ec-85e9-194acf2f48f1",
+      "printingId": "89ed1fbb-9fcb-47ec-85e9-194acf2f48f1",
+      "batchId": "JP-CARDS-066",
+      "setCode": "VS1",
+      "collectorReference": "002",
+      "name": "フォークナーの恐怖",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Resolve the separate First Edition and other catalogue choices before assigning this picture; keep the actual Japanese name and all remaining picture-quality issues shown in the evidence.",
+      "width": 738,
+      "height": 1036
+    },
+    {
+      "itemId": "card:b30f86c0-2d09-4757-92b7-68ab711881aa",
+      "printingId": "b30f86c0-2d09-4757-92b7-68ab711881aa",
+      "batchId": "JP-CARDS-066",
+      "setCode": "VS1",
+      "collectorReference": "003",
+      "name": "フォークナーのファーフェッチ",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Resolve the separate First Edition and other catalogue choices before assigning this picture; keep the actual Japanese name and all remaining picture-quality issues shown in the evidence.",
+      "width": 707,
+      "height": 980
+    },
+    {
+      "itemId": "card:45d65612-e61d-49cf-b20e-fd35f2e9a70e",
+      "printingId": "45d65612-e61d-49cf-b20e-fd35f2e9a70e",
+      "batchId": "JP-CARDS-066",
+      "setCode": "VS1",
+      "collectorReference": "062",
+      "name": "ジャニーンのアーボック",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Resolve the separate First Edition and other catalogue choices before assigning this picture; keep the actual Japanese name and all remaining picture-quality issues shown in the evidence.",
+      "width": 942,
+      "height": 1600
+    },
+    {
+      "itemId": "card:2b81cbdd-6ade-4b66-babf-1e05398ae2c1",
+      "printingId": "2b81cbdd-6ade-4b66-babf-1e05398ae2c1",
+      "batchId": "JP-CARDS-066",
+      "setCode": "VS1",
+      "collectorReference": "103",
+      "name": "フォークナーのテクニカルマシン01",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Resolve the separate First Edition and other catalogue choices before assigning this picture; keep the actual Japanese name and all remaining picture-quality issues shown in the evidence.",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "itemId": "card:b426a113-0d3b-4c63-a64a-9240d76d3ad8",
+      "printingId": "b426a113-0d3b-4c63-a64a-9240d76d3ad8",
+      "batchId": "JP-CARDS-066",
+      "setCode": "VS1",
+      "collectorReference": "104",
+      "name": "フォークナーのテクニカルマシン02",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Resolve the separate First Edition and other catalogue choices before assigning this picture; keep the actual Japanese name and all remaining picture-quality issues shown in the evidence.",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "itemId": "card:4b2ea949-732b-43f1-9524-c0a0598644c9",
+      "printingId": "4b2ea949-732b-43f1-9524-c0a0598644c9",
+      "batchId": "JP-CARDS-066",
+      "setCode": "VS1",
+      "collectorReference": "105",
+      "name": "Bugsyのテクニカルマシン01",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Resolve the separate First Edition and other catalogue choices before assigning this picture; keep the actual Japanese name and all remaining picture-quality issues shown in the evidence.",
+      "width": 1095,
+      "height": 1500
+    },
+    {
+      "itemId": "card:915b49d8-0b84-4739-9d47-ebff73dfbeb3",
+      "printingId": "915b49d8-0b84-4739-9d47-ebff73dfbeb3",
+      "batchId": "JP-CARDS-066",
+      "setCode": "VS1",
+      "collectorReference": "106",
+      "name": "Bugsyのテクニカルマシン02",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Resolve the separate First Edition and other catalogue choices before assigning this picture; keep the actual Japanese name and all remaining picture-quality issues shown in the evidence.",
+      "width": 357,
+      "height": 500
+    },
+    {
+      "itemId": "card:a1588c31-908b-441b-a855-7090c2444009",
+      "printingId": "a1588c31-908b-441b-a855-7090c2444009",
+      "batchId": "JP-CARDS-066",
+      "setCode": "VS1",
+      "collectorReference": "107",
+      "name": "ホイットニーのテクニカルマシン01",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Resolve the separate First Edition and other catalogue choices before assigning this picture; keep the actual Japanese name and all remaining picture-quality issues shown in the evidence.",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "itemId": "card:924e5ae4-fa29-4c84-9fc3-ab3cfac1e130",
+      "printingId": "924e5ae4-fa29-4c84-9fc3-ab3cfac1e130",
+      "batchId": "JP-CARDS-066",
+      "setCode": "VS1",
+      "collectorReference": "108",
+      "name": "ホイットニーのテクニカルマシン02",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Resolve the separate First Edition and other catalogue choices before assigning this picture; keep the actual Japanese name and all remaining picture-quality issues shown in the evidence.",
+      "width": 1110,
+      "height": 1525
+    },
+    {
+      "itemId": "card:8159e07c-0acd-473b-87e1-74e0c2cfc00b",
+      "printingId": "8159e07c-0acd-473b-87e1-74e0c2cfc00b",
+      "batchId": "JP-CARDS-066",
+      "setCode": "VS1",
+      "collectorReference": "109",
+      "name": "Morty's Technical Machine 01",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Resolve the separate First Edition and other catalogue choices before assigning this picture; keep the actual Japanese name and all remaining picture-quality issues shown in the evidence.",
+      "width": 350,
+      "height": 495
+    },
+    {
+      "itemId": "card:206a4fc4-1538-4189-8077-f9dc41194822",
+      "printingId": "206a4fc4-1538-4189-8077-f9dc41194822",
+      "batchId": "JP-CARDS-066",
+      "setCode": "VS1",
+      "collectorReference": "110",
+      "name": "Morty's Technical Machine 02",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Resolve the separate First Edition and other catalogue choices before assigning this picture; keep the actual Japanese name and all remaining picture-quality issues shown in the evidence.",
+      "width": 1424,
+      "height": 1600
+    },
+    {
+      "itemId": "card:5df97330-e269-4d45-8b38-1cc4bf4f4ac8",
+      "printingId": "5df97330-e269-4d45-8b38-1cc4bf4f4ac8",
+      "batchId": "JP-CARDS-066",
+      "setCode": "VS1",
+      "collectorReference": "111",
+      "name": "ジャスミンのテクニカルマシン01",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Resolve the separate First Edition and other catalogue choices before assigning this picture; keep the actual Japanese name and all remaining picture-quality issues shown in the evidence.",
+      "width": 1204,
+      "height": 1600
+    },
+    {
+      "itemId": "card:f5a23696-ef34-4bef-b0b0-85a500917c99",
+      "printingId": "f5a23696-ef34-4bef-b0b0-85a500917c99",
+      "batchId": "JP-CARDS-066",
+      "setCode": "VS1",
+      "collectorReference": "112",
+      "name": "ジャスミンのテクニカルマシン02",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Resolve the separate First Edition and other catalogue choices before assigning this picture; keep the actual Japanese name and all remaining picture-quality issues shown in the evidence.",
+      "width": 999,
+      "height": 1600
+    },
+    {
+      "itemId": "card:0b881d85-8a15-4d8d-97bc-59017c3db4b4",
+      "printingId": "0b881d85-8a15-4d8d-97bc-59017c3db4b4",
+      "batchId": "JP-CARDS-066",
+      "setCode": "VS1",
+      "collectorReference": "113",
+      "name": "チャックのテクニカルマシン01",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Resolve the separate First Edition and other catalogue choices before assigning this picture; keep the actual Japanese name and all remaining picture-quality issues shown in the evidence.",
+      "width": 1095,
+      "height": 1500
+    },
+    {
+      "itemId": "card:9141a8ee-7483-40de-9db3-3ef57f301354",
+      "printingId": "9141a8ee-7483-40de-9db3-3ef57f301354",
+      "batchId": "JP-CARDS-066",
+      "setCode": "VS1",
+      "collectorReference": "114",
+      "name": "チャックのテクニカルマシン02",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Resolve the separate First Edition and other catalogue choices before assigning this picture; keep the actual Japanese name and all remaining picture-quality issues shown in the evidence.",
+      "width": 375,
+      "height": 500
+    },
+    {
+      "itemId": "card:60fc0137-e0eb-49b8-b6b7-b6c2c5353817",
+      "printingId": "60fc0137-e0eb-49b8-b6b7-b6c2c5353817",
+      "batchId": "JP-CARDS-066",
+      "setCode": "VS1",
+      "collectorReference": "115",
+      "name": "プライスのテクニカルマシン01",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Resolve the separate First Edition and other catalogue choices before assigning this picture; keep the actual Japanese name and all remaining picture-quality issues shown in the evidence.",
+      "width": 1028,
+      "height": 1407
+    },
+    {
+      "itemId": "card:48d7ae2a-1f77-41eb-a557-95dabcb2915c",
+      "printingId": "48d7ae2a-1f77-41eb-a557-95dabcb2915c",
+      "batchId": "JP-CARDS-066",
+      "setCode": "VS1",
+      "collectorReference": "116",
+      "name": "プライスのテクニカルマシン02",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Resolve the separate First Edition and other catalogue choices before assigning this picture; keep the actual Japanese name and all remaining picture-quality issues shown in the evidence.",
+      "width": 1030,
+      "height": 1410
+    },
+    {
+      "itemId": "card:27b5a057-1581-4a55-bfb5-529a4cb7c7b7",
+      "printingId": "27b5a057-1581-4a55-bfb5-529a4cb7c7b7",
+      "batchId": "JP-CARDS-066",
+      "setCode": "VS1",
+      "collectorReference": "117",
+      "name": "Clair's Technical Machine 01",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Resolve the separate First Edition and other catalogue choices before assigning this picture; keep the actual Japanese name and all remaining picture-quality issues shown in the evidence.",
+      "width": 240,
+      "height": 400
+    },
+    {
+      "itemId": "card:9c281d65-f88c-48a7-af77-8af5c97f019b",
+      "printingId": "9c281d65-f88c-48a7-af77-8af5c97f019b",
+      "batchId": "JP-CARDS-066",
+      "setCode": "VS1",
+      "collectorReference": "118",
+      "name": "Clair's Technical Machine 02",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Resolve the separate First Edition and other catalogue choices before assigning this picture; keep the actual Japanese name and all remaining picture-quality issues shown in the evidence.",
+      "width": 500,
+      "height": 500
+    },
+    {
+      "itemId": "card:0f92a813-8fcf-4265-993c-08510ab9272d",
+      "printingId": "0f92a813-8fcf-4265-993c-08510ab9272d",
+      "batchId": "JP-CARDS-066",
+      "setCode": "VS1",
+      "collectorReference": "119",
+      "name": "ジャニーンのテクニカルマシン01",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Resolve the separate First Edition and other catalogue choices before assigning this picture; keep the actual Japanese name and all remaining picture-quality issues shown in the evidence.",
+      "width": 500,
+      "height": 500
+    },
+    {
+      "itemId": "card:4859cd5d-2757-4977-a279-5eb48d427624",
+      "printingId": "4859cd5d-2757-4977-a279-5eb48d427624",
+      "batchId": "JP-CARDS-066",
+      "setCode": "VS1",
+      "collectorReference": "120",
+      "name": "ジャニーンのテクニカルマシン02",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Match this picture to the correct edition before publishing it.",
+      "width": 375,
+      "height": 500
+    },
+    {
+      "itemId": "card:62c16497-34e7-476b-b20e-0e9fd77a6f4c",
+      "printingId": "62c16497-34e7-476b-b20e-0e9fd77a6f4c",
+      "batchId": "JP-CARDS-066",
+      "setCode": "VS1",
+      "collectorReference": "121",
+      "name": "ウィルのテクニカルマシン01",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Match this picture to the correct edition before publishing it.",
+      "width": 238,
+      "height": 400
+    },
+    {
+      "itemId": "card:d4592a5d-738a-4fec-90be-0fffc6b8a34c",
+      "printingId": "d4592a5d-738a-4fec-90be-0fffc6b8a34c",
+      "batchId": "JP-CARDS-066",
+      "setCode": "VS1",
+      "collectorReference": "122",
+      "name": "ウィルのテクニカルマシン02",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Match this picture to the correct edition before publishing it.",
+      "width": 892,
+      "height": 1568
+    },
+    {
+      "itemId": "card:2c515a0d-51a3-4916-a046-b89ae09cf551",
+      "printingId": "2c515a0d-51a3-4916-a046-b89ae09cf551",
+      "batchId": "JP-CARDS-066",
+      "setCode": "VS1",
+      "collectorReference": "123",
+      "name": "ブルーノのテクニカルマシン01",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Match this picture to the correct edition before publishing it.",
+      "width": 1110,
+      "height": 1537
+    },
+    {
+      "itemId": "card:1da2f765-07ac-4083-bdd5-7c12ceb74ed2",
+      "printingId": "1da2f765-07ac-4083-bdd5-7c12ceb74ed2",
+      "batchId": "JP-CARDS-067",
+      "setCode": "VS1",
+      "collectorReference": "124",
+      "name": "ブルーノのテクニカルマシン02",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Match this picture to the correct edition before publishing it.",
+      "width": 1038,
+      "height": 1417
+    },
+    {
+      "itemId": "card:2bf88a54-0366-4bd5-94cb-2af9fea3c417",
+      "printingId": "2bf88a54-0366-4bd5-94cb-2af9fea3c417",
+      "batchId": "JP-CARDS-067",
+      "setCode": "VS1",
+      "collectorReference": "125",
+      "name": "カレンのテクニカルマシン01",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Match this picture to the correct edition before publishing it.",
+      "width": 240,
+      "height": 400
+    },
+    {
+      "itemId": "card:94df2174-bddd-44a1-ad44-72a07f647b47",
+      "printingId": "94df2174-bddd-44a1-ad44-72a07f647b47",
+      "batchId": "JP-CARDS-067",
+      "setCode": "VS1",
+      "collectorReference": "126",
+      "name": "カレンのテクニカルマシン02",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Match this picture to the correct edition before publishing it.",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "itemId": "card:d1ffdf3e-456f-44d2-a1a4-859ece69a4c6",
+      "printingId": "d1ffdf3e-456f-44d2-a1a4-859ece69a4c6",
+      "batchId": "JP-CARDS-067",
+      "setCode": "VS1",
+      "collectorReference": "127",
+      "name": "ロケットのテクニカルマシン01",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Match this picture to the correct edition before publishing it.",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "itemId": "card:f44745bc-fe4f-4e2b-a14e-f5ae12eb8b72",
+      "printingId": "f44745bc-fe4f-4e2b-a14e-f5ae12eb8b72",
+      "batchId": "JP-CARDS-067",
+      "setCode": "VS1",
+      "collectorReference": "128",
+      "name": "ランスのテクニカルマシン01",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Match this picture to the correct edition before publishing it.",
+      "width": 500,
+      "height": 500
+    },
+    {
+      "itemId": "card:20aa28a2-edf9-480b-b3c4-b74b8d5b5193",
+      "printingId": "20aa28a2-edf9-480b-b3c4-b74b8d5b5193",
+      "batchId": "JP-CARDS-067",
+      "setCode": "VS1",
+      "collectorReference": "129",
+      "name": "ランスのテクニカルマシン02",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Match this picture to the correct edition before publishing it.",
+      "width": 1026,
+      "height": 1407
+    },
+    {
+      "itemId": "card:cc91cd7b-71b6-4259-8616-d7556c170291",
+      "printingId": "cc91cd7b-71b6-4259-8616-d7556c170291",
+      "batchId": "JP-CARDS-067",
+      "setCode": "VS1",
+      "collectorReference": "130",
+      "name": "ポーション",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Match this picture to the correct edition before publishing it.",
+      "width": 802,
+      "height": 1126
+    },
+    {
+      "itemId": "card:4a68bb96-e3f1-44cc-8aaa-3722043702db",
+      "printingId": "4a68bb96-e3f1-44cc-8aaa-3722043702db",
+      "batchId": "JP-CARDS-067",
+      "setCode": "VS1",
+      "collectorReference": "131",
+      "name": "Moomooミルク",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Match this picture to the correct edition before publishing it.",
+      "width": 597,
+      "height": 841
+    },
+    {
+      "itemId": "card:5e95e164-6b06-4bc3-a22e-327178c26210",
+      "printingId": "5e95e164-6b06-4bc3-a22e-327178c26210",
+      "batchId": "JP-CARDS-067",
+      "setCode": "VS1",
+      "collectorReference": "132",
+      "name": "フルヒール",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Match this picture to the correct edition before publishing it.",
+      "width": 810,
+      "height": 1112
+    },
+    {
+      "itemId": "card:e21ca4bf-0725-46c4-b106-dd4e8760f5fa",
+      "printingId": "e21ca4bf-0725-46c4-b106-dd4e8760f5fa",
+      "batchId": "JP-CARDS-067",
+      "setCode": "VS1",
+      "collectorReference": "133",
+      "name": "ポケモン反転",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Match this picture to the correct edition before publishing it.",
+      "width": 787,
+      "height": 1082
+    },
+    {
+      "itemId": "card:34b76269-6050-4bfc-9659-f2261fba48f0",
+      "printingId": "34b76269-6050-4bfc-9659-f2261fba48f0",
+      "batchId": "JP-CARDS-067",
+      "setCode": "VS1",
+      "collectorReference": "134",
+      "name": "スイッチ",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Match this picture to the correct edition before publishing it.",
+      "width": 736,
+      "height": 1036
+    },
+    {
+      "itemId": "card:8e172248-63a6-46e1-ba7b-6d955bc8fe3a",
+      "printingId": "8e172248-63a6-46e1-ba7b-6d955bc8fe3a",
+      "batchId": "JP-CARDS-067",
+      "setCode": "VS1",
+      "collectorReference": "135",
+      "name": "ワープポイント",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Match this picture to the correct edition before publishing it.",
+      "width": 795,
+      "height": 1104
+    },
+    {
+      "itemId": "card:83a4f71f-2c54-4b26-a1a9-653e62b06dff",
+      "printingId": "83a4f71f-2c54-4b26-a1a9-653e62b06dff",
+      "batchId": "JP-CARDS-067",
+      "setCode": "VS1",
+      "collectorReference": "136",
+      "name": "スーパースクープアップ",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Match this picture to the correct edition before publishing it.",
+      "width": 1600,
+      "height": 1600
+    },
+    {
+      "itemId": "card:bb011370-f2c5-4a7a-9338-06c923cbefc7",
+      "printingId": "bb011370-f2c5-4a7a-9338-06c923cbefc7",
+      "batchId": "JP-CARDS-067",
+      "setCode": "VS1",
+      "collectorReference": "137",
+      "name": "エネルギーの流れ",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Match this picture to the correct edition before publishing it.",
+      "width": 1600,
+      "height": 1600
+    },
+    {
+      "itemId": "card:e1323599-23ec-445f-a43c-c1910366c082",
+      "printingId": "e1323599-23ec-445f-a43c-c1910366c082",
+      "batchId": "JP-CARDS-067",
+      "setCode": "VS1",
+      "collectorReference": "138",
+      "name": "エネルギー電荷",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Match this picture to the correct edition before publishing it.",
+      "width": 1600,
+      "height": 1600
+    },
+    {
+      "itemId": "card:e21287e9-c794-4798-892b-935695f78dbf",
+      "printingId": "e21287e9-c794-4798-892b-935695f78dbf",
+      "batchId": "JP-CARDS-067",
+      "setCode": "VS1",
+      "collectorReference": "139",
+      "name": "エネルギーアーク",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Match this picture to the correct edition before publishing it.",
+      "width": 802,
+      "height": 1119
+    },
+    {
+      "itemId": "card:d81580b5-eb7c-4c4c-bdb3-88e2ae9d8ae6",
+      "printingId": "d81580b5-eb7c-4c4c-bdb3-88e2ae9d8ae6",
+      "batchId": "JP-CARDS-067",
+      "setCode": "VS1",
+      "collectorReference": "140",
+      "name": "エネルギー回復",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Match this picture to the correct edition before publishing it.",
+      "width": 1600,
+      "height": 1600
+    },
+    {
+      "itemId": "card:3b47858b-d864-4499-989f-b58d08f8bda3",
+      "printingId": "3b47858b-d864-4499-989f-b58d08f8bda3",
+      "batchId": "JP-CARDS-067",
+      "setCode": "VS1",
+      "collectorReference": "141",
+      "name": "マスターボール",
+      "status": "multiple_current_editions_need_separate_artwork",
+      "requiredAction": "Match this picture to the correct edition before publishing it.",
+      "width": 988,
+      "height": 1378
     },
     {
       "itemId": "card:9391a7cd-5a08-4140-a641-c70e4ec7d58a",
@@ -116166,15 +116802,1191 @@
         "priceChanges": 0,
         "ownershipChanges": 0
       }
+    },
+    {
+      "batchId": "JP-CARDS-037",
+      "itemId": "card:44e54db1-ee82-40e2-9465-c5eb1cc18cdb",
+      "printingId": "44e54db1-ee82-40e2-9465-c5eb1cc18cdb",
+      "setId": "421a8323-4094-4c7f-8622-fb6af390becc",
+      "setCode": "PCG7",
+      "languageCode": "ja",
+      "collectorReference": "022",
+      "cardName": "deoxys（デルタ種）",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:5257f46b3e91d8a1bff71066df005bd3192defec97ab5b14c222055fcb412a4e",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-holon-phantom/deoxys-22",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/jig6bp6a5pgf5gae/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "84977709728507c6ec359c1f60bb91c367f06ae8b9b875c0d8a3f08462d03e17",
+        "byteSize": 354991,
+        "width": 990,
+        "height": 1380,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/ed228f8869d8c66102e17b8ad0fb08a772f2633d87e4b80779b87d6503e1c6c5/card-grid.webp",
+          "sha256": "ed228f8869d8c66102e17b8ad0fb08a772f2633d87e4b80779b87d6503e1c6c5",
+          "byte_size": 22782,
+          "width": 240,
+          "height": 335,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/515609c34c5d603abd57afca5bafe1e88c35cd1db2ec68148e3d8e862d03897b/search-result.webp",
+          "sha256": "515609c34c5d603abd57afca5bafe1e88c35cd1db2ec68148e3d8e862d03897b",
+          "byte_size": 4140,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/2048ccb078d5bc482e8aba603a7c6cae7535c307c83760e4369a75875bc98aca/detail-page.webp",
+          "sha256": "2048ccb078d5bc482e8aba603a7c6cae7535c307c83760e4369a75875bc98aca",
+          "byte_size": 227332,
+          "width": 720,
+          "height": 1004,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "022",
+        "printed_collector_number": "022/052",
+        "catalogue_set_code": "PCG7",
+        "printed_set_code_literal": null,
+        "printed_set_mark_observation": "Three-circle triangular setmark beside022/052.",
+        "printed_national_dex": null,
+        "canonical_native_label_preserved": "deoxys（デルタ種）",
+        "canonical_english_label_preserved": null,
+        "actual_printed_name": "デオキシス",
+        "actual_printed_form": null,
+        "actual_printed_owner": null,
+        "actual_printed_name_qualifier": null,
+        "category": null,
+        "actual_printed_category": "Pokemon",
+        "actual_native_category": "Pokemon"
+      },
+      "currentVariantCode": "holo",
+      "currentFinishCode": "holo",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T20:18:15.457Z",
+        "productionRun": 38959408386,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38959408386",
+        "publicationReceiptSha256": "3803a3b52ffb772262575907965ab4196a14a595fb721957e9144a4cdd7ff774",
+        "printingId": "44e54db1-ee82-40e2-9465-c5eb1cc18cdb",
+        "assetId": "artwork-recovered-20260928:44e54db1-ee82-40e2-9465-c5eb1cc18cdb:84977709728507c6ec359c1f60bb91c367f06ae8b9b875c0d8a3f08462d03e17",
+        "contentSha256": "84977709728507c6ec359c1f60bb91c367f06ae8b9b875c0d8a3f08462d03e17",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/44e54db1-ee82-40e2-9465-c5eb1cc18cdb/84977709728507c6ec359c1f60bb91c367f06ae8b9b875c0d8a3f08462d03e17/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-038",
+      "itemId": "card:48edaa8d-8750-4aeb-a246-73ce4ef1218f",
+      "printingId": "48edaa8d-8750-4aeb-a246-73ce4ef1218f",
+      "setId": "421a8323-4094-4c7f-8622-fb6af390becc",
+      "setCode": "PCG7",
+      "languageCode": "ja",
+      "collectorReference": "033",
+      "cardName": "アルマルド（デルタ種）",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:f6b5659fee795eaa81b1a6e9e3ceda4c86a09db54c73d0c8a9249e1184725db3",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-holon-phantom/armaldo-33",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/013db1f56c66d78ca2e21d2e15c9629580b6c523ebba71b093395c7b61c7743b/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "8a56ec47105a19324ca523ceb1f513fbaf2d60636cb617254faad43a16167efd",
+        "byteSize": 581356,
+        "width": 1018,
+        "height": 1412,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/1c3797297aa856f9b8fa353fb22eae6eb96a7eedd71df373afe58247a76e2c00/card-grid.webp",
+          "sha256": "1c3797297aa856f9b8fa353fb22eae6eb96a7eedd71df373afe58247a76e2c00",
+          "byte_size": 26824,
+          "width": 240,
+          "height": 333,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/95b7a6cfe8ba436cfc40c4822fbd1f407513477b39e5d5dfb557e2d371229000/search-result.webp",
+          "sha256": "95b7a6cfe8ba436cfc40c4822fbd1f407513477b39e5d5dfb557e2d371229000",
+          "byte_size": 4294,
+          "width": 96,
+          "height": 133,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/7d9ce1a1ef36bea2ae29f474a7fddbc5da2e0db676d14fe05b9db1884e21d762/detail-page.webp",
+          "sha256": "7d9ce1a1ef36bea2ae29f474a7fddbc5da2e0db676d14fe05b9db1884e21d762",
+          "byte_size": 308468,
+          "width": 720,
+          "height": 999,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "033",
+        "printed_collector_number": "033/052",
+        "catalogue_set_code": "PCG7",
+        "printed_set_code_literal": null,
+        "printed_set_mark_observation": "Three-circle triangular setmark beside033/052.",
+        "printed_national_dex": null,
+        "canonical_native_label_preserved": "アルマルド（デルタ種）",
+        "canonical_english_label_preserved": null,
+        "actual_printed_name": "アーマルド",
+        "actual_printed_form": null,
+        "actual_printed_owner": null,
+        "actual_printed_name_qualifier": null,
+        "category": null,
+        "actual_printed_category": "Pokemon",
+        "actual_native_category": "Pokemon"
+      },
+      "currentVariantCode": "holo",
+      "currentFinishCode": "holo",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T20:18:15.457Z",
+        "productionRun": 38959408386,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38959408386",
+        "publicationReceiptSha256": "3803a3b52ffb772262575907965ab4196a14a595fb721957e9144a4cdd7ff774",
+        "printingId": "48edaa8d-8750-4aeb-a246-73ce4ef1218f",
+        "assetId": "artwork-recovered-20260928:48edaa8d-8750-4aeb-a246-73ce4ef1218f:8a56ec47105a19324ca523ceb1f513fbaf2d60636cb617254faad43a16167efd",
+        "contentSha256": "8a56ec47105a19324ca523ceb1f513fbaf2d60636cb617254faad43a16167efd",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/48edaa8d-8750-4aeb-a246-73ce4ef1218f/8a56ec47105a19324ca523ceb1f513fbaf2d60636cb617254faad43a16167efd/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-038",
+      "itemId": "card:d9d4cb1b-0b22-4753-98f2-181298f22a07",
+      "printingId": "d9d4cb1b-0b22-4753-98f2-181298f22a07",
+      "setId": "421a8323-4094-4c7f-8622-fb6af390becc",
+      "setCode": "PCG7",
+      "languageCode": "ja",
+      "collectorReference": "040",
+      "cardName": "ゆっくり（デルタ種）",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:e2e3ef3ac2ca2aef50c209895a2b80ceaf4a400d3bf39831981c7b5687263a9b",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-holon-phantom/cradily-40",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/4h77fixnqi6sjgzl/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "059c3984b262f75eb86bb206bcee0d0290150c32bfd20c985f3b783bbe48c74f",
+        "byteSize": 444341,
+        "width": 1035,
+        "height": 1449,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/24726e5908e3ff0628e01988dcd8f53b206734d6a5160b3df81fbc08cc5914f8/card-grid.webp",
+          "sha256": "24726e5908e3ff0628e01988dcd8f53b206734d6a5160b3df81fbc08cc5914f8",
+          "byte_size": 22882,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/726e0cd0fba18e3e69fa8f78a88d5e85e900c3a71042742b50e245bc6d402f0e/search-result.webp",
+          "sha256": "726e0cd0fba18e3e69fa8f78a88d5e85e900c3a71042742b50e245bc6d402f0e",
+          "byte_size": 4280,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/61e1cea40f4b4cf12222d6f6e7df2cebe1da03ac3100291a274fa9570a64d140/detail-page.webp",
+          "sha256": "61e1cea40f4b4cf12222d6f6e7df2cebe1da03ac3100291a274fa9570a64d140",
+          "byte_size": 240218,
+          "width": 720,
+          "height": 1008,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "040",
+        "printed_collector_number": "040/052",
+        "catalogue_set_code": "PCG7",
+        "printed_set_code_literal": null,
+        "printed_set_mark_observation": "Three-circle triangular setmark beside040/052.",
+        "printed_national_dex": null,
+        "canonical_native_label_preserved": "ゆっくり（デルタ種）",
+        "canonical_english_label_preserved": null,
+        "actual_printed_name": "ユレイドル",
+        "actual_printed_form": null,
+        "actual_printed_owner": null,
+        "actual_printed_name_qualifier": null,
+        "category": null,
+        "actual_printed_category": "Pokemon",
+        "actual_native_category": "Pokemon"
+      },
+      "currentVariantCode": "holo",
+      "currentFinishCode": "holo",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T20:18:15.457Z",
+        "productionRun": 38959408386,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38959408386",
+        "publicationReceiptSha256": "3803a3b52ffb772262575907965ab4196a14a595fb721957e9144a4cdd7ff774",
+        "printingId": "d9d4cb1b-0b22-4753-98f2-181298f22a07",
+        "assetId": "artwork-recovered-20260928:d9d4cb1b-0b22-4753-98f2-181298f22a07:059c3984b262f75eb86bb206bcee0d0290150c32bfd20c985f3b783bbe48c74f",
+        "contentSha256": "059c3984b262f75eb86bb206bcee0d0290150c32bfd20c985f3b783bbe48c74f",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/d9d4cb1b-0b22-4753-98f2-181298f22a07/059c3984b262f75eb86bb206bcee0d0290150c32bfd20c985f3b783bbe48c74f/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-038",
+      "itemId": "card:38e67ba5-019b-405a-9800-6995a3d62393",
+      "printingId": "38e67ba5-019b-405a-9800-6995a3d62393",
+      "setId": "421a8323-4094-4c7f-8622-fb6af390becc",
+      "setCode": "PCG7",
+      "languageCode": "ja",
+      "collectorReference": "048",
+      "cardName": "珍しいキャンディー",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:a0135570ba574a73d1176a5599b98df66d787dbf91bd22f4051fd2532bc46a9c",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-holon-phantom/rare-candy-48",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/3dxsoiqijpj5xmcb/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "8b76f7406270e84df93ee27dc2ed0cda7e413f3409db33633d301a1c116e5f5c",
+        "byteSize": 54130,
+        "width": 500,
+        "height": 702,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/2794db329684bca8a8938add670b08b1b618f4e8ab6f781746bdb9ba4b83c6d9/card-grid.webp",
+          "sha256": "2794db329684bca8a8938add670b08b1b618f4e8ab6f781746bdb9ba4b83c6d9",
+          "byte_size": 13728,
+          "width": 240,
+          "height": 337,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/a33e052033210aaa3e3b0665417aa21283157c1ed92143c398bd7e40f5a2ae3e/search-result.webp",
+          "sha256": "a33e052033210aaa3e3b0665417aa21283157c1ed92143c398bd7e40f5a2ae3e",
+          "byte_size": 2646,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/fa1baeb1c1dc62692679034c054a21ae35586937d9296b1837aa2ef2db8966ad/detail-page.webp",
+          "sha256": "fa1baeb1c1dc62692679034c054a21ae35586937d9296b1837aa2ef2db8966ad",
+          "byte_size": 51830,
+          "width": 500,
+          "height": 702,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "048",
+        "printed_collector_number": "048/052",
+        "catalogue_set_code": "PCG7",
+        "printed_set_code_literal": null,
+        "printed_set_mark_observation": "Three-circle triangular setmark beside048/052.",
+        "printed_national_dex": null,
+        "canonical_native_label_preserved": "珍しいキャンディー",
+        "canonical_english_label_preserved": null,
+        "actual_printed_name": "ふしぎなアメ",
+        "actual_printed_form": null,
+        "actual_printed_owner": null,
+        "actual_printed_name_qualifier": null,
+        "category": null,
+        "actual_printed_category": "Trainer",
+        "actual_native_category": "Trainer"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T20:18:15.457Z",
+        "productionRun": 38959408386,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38959408386",
+        "publicationReceiptSha256": "3803a3b52ffb772262575907965ab4196a14a595fb721957e9144a4cdd7ff774",
+        "printingId": "38e67ba5-019b-405a-9800-6995a3d62393",
+        "assetId": "artwork-recovered-20260928:38e67ba5-019b-405a-9800-6995a3d62393:8b76f7406270e84df93ee27dc2ed0cda7e413f3409db33633d301a1c116e5f5c",
+        "contentSha256": "8b76f7406270e84df93ee27dc2ed0cda7e413f3409db33633d301a1c116e5f5c",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/38e67ba5-019b-405a-9800-6995a3d62393/8b76f7406270e84df93ee27dc2ed0cda7e413f3409db33633d301a1c116e5f5c/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-038",
+      "itemId": "card:826abe37-5568-4559-b3e2-da9cc4e29658",
+      "printingId": "826abe37-5568-4559-b3e2-da9cc4e29658",
+      "setId": "421a8323-4094-4c7f-8622-fb6af390becc",
+      "setCode": "PCG7",
+      "languageCode": "ja",
+      "collectorReference": "050",
+      "cardName": "ホロンアドベンチャー",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:5b35193af80819e03ec17e690f20484b6914b6b264779beed53766ed199a7f1a",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-holon-phantom/holon-adventurer-50",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/qyth7vwanaf5v7eu/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "2c4fa56b5fb9559e380421b37fafe3ed9a176ae6f34dfc4c01b378e04f43de18",
+        "byteSize": 76052,
+        "width": 500,
+        "height": 700,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/075dda74d3917bc5e319f39b7426391ec5259a46b771bfcffada460a04b41967/card-grid.webp",
+          "sha256": "075dda74d3917bc5e319f39b7426391ec5259a46b771bfcffada460a04b41967",
+          "byte_size": 19012,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/74a119ce6bc6fb5f4ae7f61e7384d245d6d0d684a64e52210a0e1e8cdf0b15a3/search-result.webp",
+          "sha256": "74a119ce6bc6fb5f4ae7f61e7384d245d6d0d684a64e52210a0e1e8cdf0b15a3",
+          "byte_size": 3284,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/daba7ada71623d734b8f2a5c86627d762082cdb3471a37a47f23816d55de91cd/detail-page.webp",
+          "sha256": "daba7ada71623d734b8f2a5c86627d762082cdb3471a37a47f23816d55de91cd",
+          "byte_size": 83570,
+          "width": 500,
+          "height": 700,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "050",
+        "printed_collector_number": "050/052",
+        "catalogue_set_code": "PCG7",
+        "printed_set_code_literal": null,
+        "printed_set_mark_observation": "Three-circle triangular setmark beside050/052.",
+        "printed_national_dex": null,
+        "canonical_native_label_preserved": "ホロンアドベンチャー",
+        "canonical_english_label_preserved": null,
+        "actual_printed_name": "ホロンの冒険家",
+        "actual_printed_form": null,
+        "actual_printed_owner": null,
+        "actual_printed_name_qualifier": null,
+        "category": null,
+        "actual_printed_category": "Trainer",
+        "actual_native_category": "Trainer"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T20:18:15.457Z",
+        "productionRun": 38959408386,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38959408386",
+        "publicationReceiptSha256": "3803a3b52ffb772262575907965ab4196a14a595fb721957e9144a4cdd7ff774",
+        "printingId": "826abe37-5568-4559-b3e2-da9cc4e29658",
+        "assetId": "artwork-recovered-20260928:826abe37-5568-4559-b3e2-da9cc4e29658:2c4fa56b5fb9559e380421b37fafe3ed9a176ae6f34dfc4c01b378e04f43de18",
+        "contentSha256": "2c4fa56b5fb9559e380421b37fafe3ed9a176ae6f34dfc4c01b378e04f43de18",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/826abe37-5568-4559-b3e2-da9cc4e29658/2c4fa56b5fb9559e380421b37fafe3ed9a176ae6f34dfc4c01b378e04f43de18/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-041",
+      "itemId": "card:40c40f95-7df1-4153-9030-1871ccaf77cf",
+      "printingId": "40c40f95-7df1-4153-9030-1871ccaf77cf",
+      "setId": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+      "setCode": "PCG8",
+      "languageCode": "ja",
+      "collectorReference": "047",
+      "cardName": "メディチャム",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:606d667cd88c734886daaea0b25fe02f88abdb6a267058918f4dee0e90bee833",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-miracle-crystal/medicham-47",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/ikrh2cvxajwxganu/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "887470b1479016f08c4bc4e9d817f1f9aba9b8c7849c6ffd6715b0b7683fbeb5",
+        "byteSize": 81922,
+        "width": 500,
+        "height": 702,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/4f0cbce371f5f6e627ea4cfa2396d29ae09b0cc0ce6ff074c6f7b726e787cd06/card-grid.webp",
+          "sha256": "4f0cbce371f5f6e627ea4cfa2396d29ae09b0cc0ce6ff074c6f7b726e787cd06",
+          "byte_size": 22312,
+          "width": 240,
+          "height": 337,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/a5dec4fa68abbb0be45cbdca0cb4bba272ece2c586dde60ef78796ea55bf0eb0/search-result.webp",
+          "sha256": "a5dec4fa68abbb0be45cbdca0cb4bba272ece2c586dde60ef78796ea55bf0eb0",
+          "byte_size": 4120,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/d3a208ed04017a155e05fdf8b6bcd6ab103771aae26ebc2d15d149e1f6e46937/detail-page.webp",
+          "sha256": "d3a208ed04017a155e05fdf8b6bcd6ab103771aae26ebc2d15d149e1f6e46937",
+          "byte_size": 90840,
+          "width": 500,
+          "height": 702,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "047",
+        "printed_collector_number": "047/075",
+        "catalogue_set_code": "PCG8",
+        "printed_set_code_literal": null,
+        "printed_set_mark_observation": "Angular pointed setmark beside047/075.",
+        "printed_national_dex": null,
+        "canonical_native_label_preserved": "メディチャム",
+        "canonical_english_label_preserved": null,
+        "actual_printed_name": "チャーレム",
+        "actual_printed_form": null,
+        "actual_printed_owner": null,
+        "actual_printed_name_qualifier": null,
+        "category": null,
+        "actual_printed_category": "Pokemon",
+        "actual_native_category": "Pokemon"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T20:18:15.457Z",
+        "productionRun": 38959408386,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38959408386",
+        "publicationReceiptSha256": "3803a3b52ffb772262575907965ab4196a14a595fb721957e9144a4cdd7ff774",
+        "printingId": "40c40f95-7df1-4153-9030-1871ccaf77cf",
+        "assetId": "artwork-recovered-20260928:40c40f95-7df1-4153-9030-1871ccaf77cf:887470b1479016f08c4bc4e9d817f1f9aba9b8c7849c6ffd6715b0b7683fbeb5",
+        "contentSha256": "887470b1479016f08c4bc4e9d817f1f9aba9b8c7849c6ffd6715b0b7683fbeb5",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/40c40f95-7df1-4153-9030-1871ccaf77cf/887470b1479016f08c4bc4e9d817f1f9aba9b8c7849c6ffd6715b0b7683fbeb5/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-041",
+      "itemId": "card:16b33fb8-f25f-46d0-9cdc-3d58c9973093",
+      "printingId": "16b33fb8-f25f-46d0-9cdc-3d58c9973093",
+      "setId": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+      "setCode": "PCG8",
+      "languageCode": "ja",
+      "collectorReference": "048",
+      "cardName": "サボテン（デルタ種）",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:0bba36bb98f3150a4e45f05877738e9820f354fd5eac14669e37f459a6e54be9",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-miracle-crystal/cacturne-48",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/pe7abj52kraritlh/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "e10b678bf15ad4adb7b50fd027b0b3d91dcb43935c0ff09789937feab7951364",
+        "byteSize": 82660,
+        "width": 500,
+        "height": 700,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/d6b2e5459790486df9b158c700020e9eaec4f4e3ee3ea10d2f1c64e979851227/card-grid.webp",
+          "sha256": "d6b2e5459790486df9b158c700020e9eaec4f4e3ee3ea10d2f1c64e979851227",
+          "byte_size": 23338,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/2c90f5d538ec8a3f6ea6c3d3b1fbf35b04aa1c499b11c01c461086a8ddcdf8da/search-result.webp",
+          "sha256": "2c90f5d538ec8a3f6ea6c3d3b1fbf35b04aa1c499b11c01c461086a8ddcdf8da",
+          "byte_size": 4456,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/c9c9b9c02c6574b97b7ac94a7734cedcee080d2a49782e66f9c138373db84acf/detail-page.webp",
+          "sha256": "c9c9b9c02c6574b97b7ac94a7734cedcee080d2a49782e66f9c138373db84acf",
+          "byte_size": 93050,
+          "width": 500,
+          "height": 700,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "048",
+        "printed_collector_number": "048/075",
+        "catalogue_set_code": "PCG8",
+        "printed_set_code_literal": null,
+        "printed_set_mark_observation": "Angular pointed setmark beside048/075.",
+        "printed_national_dex": null,
+        "canonical_native_label_preserved": "サボテン（デルタ種）",
+        "canonical_english_label_preserved": null,
+        "actual_printed_name": "ノクタス",
+        "actual_printed_form": null,
+        "actual_printed_owner": null,
+        "actual_printed_name_qualifier": null,
+        "category": null,
+        "actual_printed_category": "Pokemon",
+        "actual_native_category": "Pokemon"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T20:18:15.457Z",
+        "productionRun": 38959408386,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38959408386",
+        "publicationReceiptSha256": "3803a3b52ffb772262575907965ab4196a14a595fb721957e9144a4cdd7ff774",
+        "printingId": "16b33fb8-f25f-46d0-9cdc-3d58c9973093",
+        "assetId": "artwork-recovered-20260928:16b33fb8-f25f-46d0-9cdc-3d58c9973093:e10b678bf15ad4adb7b50fd027b0b3d91dcb43935c0ff09789937feab7951364",
+        "contentSha256": "e10b678bf15ad4adb7b50fd027b0b3d91dcb43935c0ff09789937feab7951364",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/16b33fb8-f25f-46d0-9cdc-3d58c9973093/e10b678bf15ad4adb7b50fd027b0b3d91dcb43935c0ff09789937feab7951364/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-041",
+      "itemId": "card:4f98bea0-d418-4443-84bf-07a30281a5d3",
+      "printingId": "4f98bea0-d418-4443-84bf-07a30281a5d3",
+      "setId": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+      "setCode": "PCG8",
+      "languageCode": "ja",
+      "collectorReference": "050",
+      "cardName": "槍",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:296ec82e383b529dec32fe5d99fd309f1b398f343f5c0d67d061a94ef670522d",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-miracle-crystal/spearow-50",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/refb869a7c34d566afc4dde2bcdcbd349f5bcf485123e6d740b6f016925cb5e319a/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "c0e2953b4b20ad72219532598496be9d715fb1ed8b1444d498b8ea79e8b070af",
+        "byteSize": 433852,
+        "width": 1153,
+        "height": 1600,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/92f89b8d2c73db5696d5c497ed45e900e7af02d431f38233fae9ba8997bd6803/card-grid.webp",
+          "sha256": "92f89b8d2c73db5696d5c497ed45e900e7af02d431f38233fae9ba8997bd6803",
+          "byte_size": 16382,
+          "width": 240,
+          "height": 333,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/bd8cc8d02c3c1955a5fe99e08cdc6395b95aa36b9d2d1c169b10957cb9b2a674/search-result.webp",
+          "sha256": "bd8cc8d02c3c1955a5fe99e08cdc6395b95aa36b9d2d1c169b10957cb9b2a674",
+          "byte_size": 3262,
+          "width": 96,
+          "height": 133,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/5d3b26ff8771c94024a7cad4b77a049fb061943f354a518432ba0690a01a3295/detail-page.webp",
+          "sha256": "5d3b26ff8771c94024a7cad4b77a049fb061943f354a518432ba0690a01a3295",
+          "byte_size": 204824,
+          "width": 720,
+          "height": 999,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "050",
+        "printed_collector_number": "050/075",
+        "catalogue_set_code": "PCG8",
+        "printed_set_code_literal": null,
+        "printed_set_mark_observation": "Angular pointed setmark beside050/075.",
+        "printed_national_dex": null,
+        "canonical_native_label_preserved": "槍",
+        "canonical_english_label_preserved": null,
+        "actual_printed_name": "オニスズメ",
+        "actual_printed_form": null,
+        "actual_printed_owner": null,
+        "actual_printed_name_qualifier": null,
+        "category": null,
+        "actual_printed_category": "Pokemon",
+        "actual_native_category": "Pokemon"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T20:18:15.457Z",
+        "productionRun": 38959408386,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38959408386",
+        "publicationReceiptSha256": "3803a3b52ffb772262575907965ab4196a14a595fb721957e9144a4cdd7ff774",
+        "printingId": "4f98bea0-d418-4443-84bf-07a30281a5d3",
+        "assetId": "artwork-recovered-20260928:4f98bea0-d418-4443-84bf-07a30281a5d3:c0e2953b4b20ad72219532598496be9d715fb1ed8b1444d498b8ea79e8b070af",
+        "contentSha256": "c0e2953b4b20ad72219532598496be9d715fb1ed8b1444d498b8ea79e8b070af",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/4f98bea0-d418-4443-84bf-07a30281a5d3/c0e2953b4b20ad72219532598496be9d715fb1ed8b1444d498b8ea79e8b070af/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-042",
+      "itemId": "card:65ce4679-d7b1-48b4-a747-2e18cf57847f",
+      "printingId": "65ce4679-d7b1-48b4-a747-2e18cf57847f",
+      "setId": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+      "setCode": "PCG8",
+      "languageCode": "ja",
+      "collectorReference": "051",
+      "cardName": "jigglypuff",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:3aea527201802a9ed495dae24db19b30c7c6817d0ccda795a3ead36dfbeb0143",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-miracle-crystal/jigglypuff-51",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/ac182bede13131900b97aaee338c1db77f8dc0fb7193005ff65142bd7dbc367b/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "70837a665bfc760d181de1f5ab82cdb74ee601934928f3b85179a7b01f551520",
+        "byteSize": 713124,
+        "width": 1600,
+        "height": 1600,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/f9ff04519491850cd79c54f8381d02967402cb8cb42bb11b8cb10ab0622c5f83/card-grid.webp",
+          "sha256": "f9ff04519491850cd79c54f8381d02967402cb8cb42bb11b8cb10ab0622c5f83",
+          "byte_size": 6584,
+          "width": 240,
+          "height": 240,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/5ecaa9492c6a4fec78e592968864234208c398df1574235e6c73ef1619d59886/search-result.webp",
+          "sha256": "5ecaa9492c6a4fec78e592968864234208c398df1574235e6c73ef1619d59886",
+          "byte_size": 1120,
+          "width": 96,
+          "height": 96,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/3832fa17c2a86d741551a539649a41e6c5efa61c67d3828b44cabfeb4e0707e4/detail-page.webp",
+          "sha256": "3832fa17c2a86d741551a539649a41e6c5efa61c67d3828b44cabfeb4e0707e4",
+          "byte_size": 142138,
+          "width": 720,
+          "height": 720,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "051",
+        "printed_collector_number": "051/075",
+        "catalogue_set_code": "PCG8",
+        "printed_set_code_literal": null,
+        "printed_set_mark_observation": "Angular pointed setmark beside051/075.",
+        "printed_national_dex": null,
+        "canonical_native_label_preserved": "jigglypuff",
+        "canonical_english_label_preserved": "jigglypuff",
+        "actual_printed_name": "プリン",
+        "actual_printed_form": null,
+        "actual_printed_owner": null,
+        "actual_printed_name_qualifier": null,
+        "category": null,
+        "actual_printed_category": "Pokemon",
+        "actual_native_category": "Pokemon"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T20:18:15.457Z",
+        "productionRun": 38959408386,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38959408386",
+        "publicationReceiptSha256": "3803a3b52ffb772262575907965ab4196a14a595fb721957e9144a4cdd7ff774",
+        "printingId": "65ce4679-d7b1-48b4-a747-2e18cf57847f",
+        "assetId": "artwork-recovered-20260928:65ce4679-d7b1-48b4-a747-2e18cf57847f:70837a665bfc760d181de1f5ab82cdb74ee601934928f3b85179a7b01f551520",
+        "contentSha256": "70837a665bfc760d181de1f5ab82cdb74ee601934928f3b85179a7b01f551520",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/65ce4679-d7b1-48b4-a747-2e18cf57847f/70837a665bfc760d181de1f5ab82cdb74ee601934928f3b85179a7b01f551520/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-042",
+      "itemId": "card:e878f64d-e38a-4d38-854b-d0dedb8ecafe",
+      "printingId": "e878f64d-e38a-4d38-854b-d0dedb8ecafe",
+      "setId": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+      "setCode": "PCG8",
+      "languageCode": "ja",
+      "collectorReference": "068",
+      "cardName": "キャスト・アウェイ",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:b85a933355639621afe1efdbd56a7793f3e34c73357de8318495bb8838044784",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-miracle-crystal/castaway-68",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/corri4wf7kojvtosxgev/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "de83821bd05fb63841846b55857f651530de4b86bd19971074ab2158ec65f25c",
+        "byteSize": 453584,
+        "width": 1600,
+        "height": 1600,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/5e3c1388ad9f314c5fc791c06146151dccd16c51e6deb1cb00021cf166fb6719/card-grid.webp",
+          "sha256": "5e3c1388ad9f314c5fc791c06146151dccd16c51e6deb1cb00021cf166fb6719",
+          "byte_size": 8842,
+          "width": 240,
+          "height": 240,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/8f4df1522f4add92388c89349e846ff73a28c817b83c288b3a06fb6c74565c6e/search-result.webp",
+          "sha256": "8f4df1522f4add92388c89349e846ff73a28c817b83c288b3a06fb6c74565c6e",
+          "byte_size": 1756,
+          "width": 96,
+          "height": 96,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/3604c51646e5371b2974d26099f2954d1c1eb98784719660894391b504237d96/detail-page.webp",
+          "sha256": "3604c51646e5371b2974d26099f2954d1c1eb98784719660894391b504237d96",
+          "byte_size": 74808,
+          "width": 720,
+          "height": 720,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "068",
+        "printed_collector_number": "068/075",
+        "catalogue_set_code": "PCG8",
+        "printed_set_code_literal": null,
+        "printed_set_mark_observation": "Angular pointed setmark beside068/075.",
+        "printed_national_dex": null,
+        "canonical_native_label_preserved": "キャスト・アウェイ",
+        "canonical_english_label_preserved": null,
+        "actual_printed_name": "漂流者",
+        "actual_printed_form": null,
+        "actual_printed_owner": null,
+        "actual_printed_name_qualifier": null,
+        "category": null,
+        "actual_printed_category": "Trainer",
+        "actual_native_category": "Trainer"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T20:18:15.457Z",
+        "productionRun": 38959408386,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38959408386",
+        "publicationReceiptSha256": "3803a3b52ffb772262575907965ab4196a14a595fb721957e9144a4cdd7ff774",
+        "printingId": "e878f64d-e38a-4d38-854b-d0dedb8ecafe",
+        "assetId": "artwork-recovered-20260928:e878f64d-e38a-4d38-854b-d0dedb8ecafe:de83821bd05fb63841846b55857f651530de4b86bd19971074ab2158ec65f25c",
+        "contentSha256": "de83821bd05fb63841846b55857f651530de4b86bd19971074ab2158ec65f25c",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/e878f64d-e38a-4d38-854b-d0dedb8ecafe/de83821bd05fb63841846b55857f651530de4b86bd19971074ab2158ec65f25c/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-042",
+      "itemId": "card:c2e0e90e-3a4c-4020-89e4-91bcbbdafbe5",
+      "printingId": "c2e0e90e-3a4c-4020-89e4-91bcbbdafbe5",
+      "setId": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+      "setCode": "PCG8",
+      "languageCode": "ja",
+      "collectorReference": "075",
+      "cardName": "二重虹のエネルギー",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:fe19b87457cd2f790909ea769cb9dc53a6097bf9bde9c7e7310c73bc0a03e6a4",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-miracle-crystal/double-rainbow-energy-75",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/corr562cdyytolajlzrp/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "0b40f6a1d3e3311b06b1557923e82fc42ded5af0c90b4847b10ad6650a44fd8a",
+        "byteSize": 340563,
+        "width": 1040,
+        "height": 1464,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/9db91a2e2acfa8c808deee26524bc8c4973d00af6ee87564e870e5fa95cc1ce7/card-grid.webp",
+          "sha256": "9db91a2e2acfa8c808deee26524bc8c4973d00af6ee87564e870e5fa95cc1ce7",
+          "byte_size": 18534,
+          "width": 240,
+          "height": 338,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/50b6078643117d8e9bdc39b3206e8b4bd7b682770509bc9f978466c1ff80a7f5/search-result.webp",
+          "sha256": "50b6078643117d8e9bdc39b3206e8b4bd7b682770509bc9f978466c1ff80a7f5",
+          "byte_size": 4110,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/bacabc46291e942f32f757d0b2c2a64d1693460c989fa141743459cd86bea0d7/detail-page.webp",
+          "sha256": "bacabc46291e942f32f757d0b2c2a64d1693460c989fa141743459cd86bea0d7",
+          "byte_size": 195352,
+          "width": 720,
+          "height": 1014,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "075",
+        "printed_collector_number": "075/075",
+        "catalogue_set_code": "PCG8",
+        "printed_set_code_literal": null,
+        "printed_set_mark_observation": "Angular pointed setmark beside075/075.",
+        "printed_national_dex": null,
+        "canonical_native_label_preserved": "二重虹のエネルギー",
+        "canonical_english_label_preserved": null,
+        "actual_printed_name": "Wレインボーエネルギー",
+        "actual_printed_form": null,
+        "actual_printed_owner": null,
+        "actual_printed_name_qualifier": null,
+        "category": null,
+        "actual_printed_category": "Energy",
+        "actual_native_category": "Trainer"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T20:18:15.457Z",
+        "productionRun": 38959408386,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38959408386",
+        "publicationReceiptSha256": "3803a3b52ffb772262575907965ab4196a14a595fb721957e9144a4cdd7ff774",
+        "printingId": "c2e0e90e-3a4c-4020-89e4-91bcbbdafbe5",
+        "assetId": "artwork-recovered-20260928:c2e0e90e-3a4c-4020-89e4-91bcbbdafbe5:0b40f6a1d3e3311b06b1557923e82fc42ded5af0c90b4847b10ad6650a44fd8a",
+        "contentSha256": "0b40f6a1d3e3311b06b1557923e82fc42ded5af0c90b4847b10ad6650a44fd8a",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/c2e0e90e-3a4c-4020-89e4-91bcbbdafbe5/0b40f6a1d3e3311b06b1557923e82fc42ded5af0c90b4847b10ad6650a44fd8a/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-044",
+      "itemId": "card:73c8c54f-ca86-411d-bc34-437d6bbae88a",
+      "printingId": "73c8c54f-ca86-411d-bc34-437d6bbae88a",
+      "setId": "b5ef438a-ddcb-4093-8c9b-572639565af5",
+      "setCode": "PCG9",
+      "languageCode": "ja",
+      "collectorReference": "048",
+      "cardName": "デューゴン（デルタ種）",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:6a684dfea92230be95ca6e404c3b8c77b89357808033a47b6f1c8e3e1c87174b",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-offense-and-defense-of-the-furthest-ends/dewgong-48",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/5fe60e22067800c719421ab40ec9e7525edbd5e3857f48426ebdee938de59e1b/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "3739486c16f42b32410a07330d75121e775fd387e9871e2dab8689c3c873f041",
+        "byteSize": 204515,
+        "width": 854,
+        "height": 1113,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/7ee46cdb8388bc74538681860c66231310035246a1e05f2159fba76d727a8b37/card-grid.webp",
+          "sha256": "7ee46cdb8388bc74538681860c66231310035246a1e05f2159fba76d727a8b37",
+          "byte_size": 14556,
+          "width": 240,
+          "height": 313,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/f084818b865afdde71f33992270640ef6bc86172fc327007fcebcc0c75115986/search-result.webp",
+          "sha256": "f084818b865afdde71f33992270640ef6bc86172fc327007fcebcc0c75115986",
+          "byte_size": 3126,
+          "width": 96,
+          "height": 125,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/63d2756a22a496456d329e3978b4088e4caf89c7d46b628a6c0ee6ac48fc618d/detail-page.webp",
+          "sha256": "63d2756a22a496456d329e3978b4088e4caf89c7d46b628a6c0ee6ac48fc618d",
+          "byte_size": 156912,
+          "width": 720,
+          "height": 938,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "048",
+        "printed_collector_number": "048/068",
+        "catalogue_set_code": "PCG9",
+        "printed_set_code_literal": null,
+        "printed_set_mark_observation": "Black rounded double-lobed/wave-like setmark beside048/068.",
+        "printed_national_dex": null,
+        "canonical_native_label_preserved": "デューゴン（デルタ種）",
+        "canonical_english_label_preserved": null,
+        "actual_printed_name": "ジュゴン",
+        "actual_printed_form": null,
+        "actual_printed_owner": null,
+        "actual_printed_name_qualifier": null,
+        "category": null,
+        "actual_printed_category": "Pokemon",
+        "actual_native_category": "Pokemon"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T20:18:15.457Z",
+        "productionRun": 38959408386,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38959408386",
+        "publicationReceiptSha256": "3803a3b52ffb772262575907965ab4196a14a595fb721957e9144a4cdd7ff774",
+        "printingId": "73c8c54f-ca86-411d-bc34-437d6bbae88a",
+        "assetId": "artwork-recovered-20260928:73c8c54f-ca86-411d-bc34-437d6bbae88a:3739486c16f42b32410a07330d75121e775fd387e9871e2dab8689c3c873f041",
+        "contentSha256": "3739486c16f42b32410a07330d75121e775fd387e9871e2dab8689c3c873f041",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/73c8c54f-ca86-411d-bc34-437d6bbae88a/3739486c16f42b32410a07330d75121e775fd387e9871e2dab8689c3c873f041/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     }
   ],
   "manualArtworkFollowUp": {
-    "updatedAt": "2026-10-16T19:34:19.915Z",
+    "updatedAt": "2026-10-16T20:56:50.462Z",
     "scope": "Specific follow-up details, separately from ordinary source work and active releases; current fixed inventory identities retained.",
     "collectorReferenceNote": "For older Japanese cards the Stackr reference may not be printed on the card; match its name, set, artwork and card text.",
-    "specificFollowUps": 919,
-    "ordinarySourceWorkStillOpen": 51,
-    "activeSourceOrPublicationWork": 12,
+    "specificFollowUps": 963,
+    "ordinarySourceWorkStillOpen": 7,
+    "activeSourceOrPublicationWork": 0,
     "batches": [
       {
         "batchId": "MANUAL-EN-001",
@@ -119889,6 +121701,20 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11254/mirage-forest"
           },
           {
+            "itemId": "card:b6fe367a-6424-4935-93eb-7c612b3b066c",
+            "printingId": "b6fe367a-6424-4935-93eb-7c612b3b066c",
+            "batchId": "JP-CARDS-029",
+            "languageCode": "ja",
+            "setCode": "PCG5",
+            "collectorReference": "004",
+            "name": "グリマー",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "Resolve the visible First Edition mark and obtain a complete outer frame for this exact004/086 Grimer front; actual printed Japanese nameベトベター retained separately from the recordedグリマー label.",
+            "providedGallery": "https://www.tcgcollector.com/sets/11254/mirage-forest"
+          },
+          {
             "itemId": "card:8e3309c7-22b8-44ea-a9b9-c3d4d8f36c11",
             "printingId": "8e3309c7-22b8-44ea-a9b9-c3d4d8f36c11",
             "batchId": "JP-CARDS-029",
@@ -120167,7 +121993,12 @@
             "whatToFind": "Find a different complete sharp front for the exact printing/edition; retain this unchanged original and its named hold. No retries or further HTTP under this closed plan.",
             "detail": "outer_card_perimeter_at_canvas_boundary; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11254/mirage-forest"
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-011",
+        "items": [
           {
             "itemId": "card:847ea8ab-ca3b-4ddf-b9f2-6731c68ce988",
             "printingId": "847ea8ab-ca3b-4ddf-b9f2-6731c68ce988",
@@ -120181,12 +122012,7 @@
             "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
             "detail": "actual_printed_first_edition_conflicts_unqualified_source_mapping",
             "providedGallery": "https://www.tcgcollector.com/sets/11254/mirage-forest"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-011",
-        "items": [
+          },
           {
             "itemId": "card:7a8fad07-9c46-4585-bef4-5e7a4fafff67",
             "printingId": "7a8fad07-9c46-4585-bef4-5e7a4fafff67",
@@ -120522,7 +122348,12 @@
             "whatToFind": "Check whether this needs the ordinary or shiny card; the saved source descriptions disagree. Find that exact version once it is confirmed.",
             "detail": "Unresolved source/native rarity versus recorded/native variant finish metadata",
             "providedGallery": "https://www.tcgcollector.com/sets/11254/mirage-forest"
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-012",
+        "items": [
           {
             "itemId": "card:cc989606-7b6c-42d9-a34c-79065efac8ed",
             "printingId": "cc989606-7b6c-42d9-a34c-79065efac8ed",
@@ -120536,12 +122367,7 @@
             "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
             "detail": "actual_first_edition_stamp_observed",
             "providedGallery": "https://www.tcgcollector.com/sets/11254/mirage-forest"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-012",
-        "items": [
+          },
           {
             "itemId": "card:594ca1d3-1ca5-4316-b839-fd80dcacd79e",
             "printingId": "594ca1d3-1ca5-4316-b839-fd80dcacd79e",
@@ -120877,7 +122703,12 @@
             "whatToFind": "Confirm the exact special star-card version and its rules before choosing a picture.",
             "detail": "actual_Gold_Star_special_printing_requires_finish_and_physical_identity_review",
             "providedGallery": "https://www.tcgcollector.com/sets/11254/mirage-forest"
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-013",
+        "items": [
           {
             "itemId": "card:021f9cd9-4482-4fd1-b0f3-694138cec313",
             "printingId": "021f9cd9-4482-4fd1-b0f3-694138cec313",
@@ -120891,12 +122722,7 @@
             "whatToFind": "Find a clean, evenly lit full-card picture without visible marks or strong reflections.",
             "detail": "visible_vertical_light_streak_and_uneven_reflection_require_quality_review",
             "providedGallery": "https://www.tcgcollector.com/sets/11254/mirage-forest"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-013",
-        "items": [
+          },
           {
             "itemId": "card:0f9afaf2-172b-43e3-b28b-d3b8c2bcb38b",
             "printingId": "0f9afaf2-172b-43e3-b28b-d3b8c2bcb38b",
@@ -121232,7 +123058,12 @@
             "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
             "detail": "actual_first_edition_stamp_observed",
             "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-014",
+        "items": [
           {
             "itemId": "card:59a7feff-edc3-456c-8a46-53326009cf93",
             "printingId": "59a7feff-edc3-456c-8a46-53326009cf93",
@@ -121246,12 +123077,7 @@
             "whatToFind": "Find a full front without a stand covering its card number or corners.",
             "detail": "display_stand_obscures_full_collector_and_lower_outer_frame; bright_header_glare_and_soft_photo_require_cleaner_original",
             "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-014",
-        "items": [
+          },
           {
             "itemId": "card:2ea2a7e9-28d4-4251-be56-76bdd0f41d46",
             "printingId": "2ea2a7e9-28d4-4251-be56-76bdd0f41d46",
@@ -121587,7 +123413,12 @@
             "whatToFind": "Find a full-card picture with all four corners and outside edges visible.",
             "detail": "bright_header_reflection_and_soft_tight_photo_require_cleaner_complete_original",
             "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-015",
+        "items": [
           {
             "itemId": "card:faa68739-4d4c-4237-82bb-b0a3bf689fa8",
             "printingId": "faa68739-4d4c-4237-82bb-b0a3bf689fa8",
@@ -121601,12 +123432,7 @@
             "whatToFind": "Find a clearer full-card picture so its small text and edition marks can be read.",
             "detail": "visible_scattered_spots_and_marks_on_frame_and_rules_panel_require_quality_review",
             "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-015",
-        "items": [
+          },
           {
             "itemId": "card:74a0976c-df34-4e9c-8995-4bd497fb0a07",
             "printingId": "74a0976c-df34-4e9c-8995-4bd497fb0a07",
@@ -121942,7 +123768,12 @@
             "whatToFind": "Find a clearer full-card picture so its small text and edition marks can be read.",
             "detail": "small_original_prevents_reliable_complete_artist_footer_and_edition_read",
             "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-016",
+        "items": [
           {
             "itemId": "card:084a5e7d-7df1-4719-b339-ce942599a7d1",
             "printingId": "084a5e7d-7df1-4719-b339-ce942599a7d1",
@@ -121956,12 +123787,7 @@
             "whatToFind": "Find a full-card picture with all four corners and outside edges visible.",
             "detail": "four_card_composite_original_not_single_full_front",
             "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-016",
-        "items": [
+          },
           {
             "itemId": "card:db1ff564-ac6c-43c3-9963-d1ccadbee0fe",
             "printingId": "db1ff564-ac6c-43c3-9963-d1ccadbee0fe",
@@ -122297,7 +124123,12 @@
             "whatToFind": "Confirm the exact normal/shiny finish and find the matching front.",
             "detail": "finish_metadata_mismatch; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-017",
+        "items": [
           {
             "itemId": "card:afe337d7-0d0f-48f2-8999-7803a4b66a4f",
             "printingId": "afe337d7-0d0f-48f2-8999-7803a4b66a4f",
@@ -122311,12 +124142,7 @@
             "whatToFind": "Check whether this needs the ordinary or shiny card; the saved source descriptions disagree. Find that exact version once it is confirmed.",
             "detail": "Unresolved source/native rarity versus recorded/native variant finish metadata",
             "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-017",
-        "items": [
+          },
           {
             "itemId": "card:5d19154a-6af0-43d9-9b53-74dadf001f0e",
             "printingId": "5d19154a-6af0-43d9-9b53-74dadf001f0e",
@@ -122652,7 +124478,12 @@
             "whatToFind": "Find a clearer full-card picture so its small text and edition marks can be read.",
             "detail": "actual_printed_Energy_conflicts_with_cached_native_Trainer_category; small_original_prevents_reliable_complete_rules_artist_footer_and_edition_read",
             "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-018",
+        "items": [
           {
             "itemId": "card:6d72d30c-e5ea-486a-975e-3287cd98540b",
             "printingId": "6d72d30c-e5ea-486a-975e-3287cd98540b",
@@ -122666,12 +124497,7 @@
             "whatToFind": "Confirm the intended first-edition or unstamped printing; a sharp original is retained, but its visible first-edition stamp is not matched by the current edition-neutral record.",
             "detail": "Actual1EDITION stamp visible; current singleton normal/holo tuple has no edition discriminator, so exactedition remains unbound.",
             "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-018",
-        "items": [
+          },
           {
             "itemId": "card:689ed797-4f86-4484-b7fd-341a10ad0590",
             "printingId": "689ed797-4f86-4484-b7fd-341a10ad0590",
@@ -123007,7 +124833,12 @@
             "whatToFind": "Confirm the intended first-edition or unstamped printing; a sharp original is retained, but its visible first-edition stamp is not matched by the current edition-neutral record.",
             "detail": "visible_first_edition_stamp_unbound_to_current_normal_tuple; left_outer_perimeter_not_fully_established; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-019",
+        "items": [
           {
             "itemId": "card:85efbd32-5e06-4630-aea7-fc375f6e95b4",
             "printingId": "85efbd32-5e06-4630-aea7-fc375f6e95b4",
@@ -123021,12 +124852,7 @@
             "whatToFind": "Confirm the intended first-edition or unstamped printing; a sharp original is retained, but its visible first-edition stamp is not matched by the current edition-neutral record.",
             "detail": "visible_first_edition_stamp_unbound_to_current_normal_tuple; top_outer_perimeter_not_fully_established; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-019",
-        "items": [
+          },
           {
             "itemId": "card:ad0d7025-0c10-415e-9470-99c9d4dbf538",
             "printingId": "ad0d7025-0c10-415e-9470-99c9d4dbf538",
@@ -123362,7 +125188,12 @@
             "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
             "detail": "actual_first_edition_stamp_observed; small_original_prevents_reliable_complete_collector_artist_footer_read",
             "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-020",
+        "items": [
           {
             "itemId": "card:4315d610-8b72-4559-914c-df8f6fe4db8d",
             "printingId": "4315d610-8b72-4559-914c-df8f6fe4db8d",
@@ -123376,12 +125207,7 @@
             "whatToFind": "Find a full front without a stand covering its card number or corners.",
             "detail": "display_stand_obscures_full_collector_footer_and_lower_outer_frame; small_card_region_prevents_reliable_complete_EX_rule_ability_body_and_footer_read",
             "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-020",
-        "items": [
+          },
           {
             "itemId": "card:07294efd-afb9-4d41-aa5b-c01d1112b7e7",
             "printingId": "07294efd-afb9-4d41-aa5b-c01d1112b7e7",
@@ -123717,7 +125543,12 @@
             "whatToFind": "Find a sharper single-card front with its name, complete attacks, artist and card number readable.",
             "detail": "below_detail_resolution; unreadable_collector_artist_and_fine_ability_attack_body; outer_perimeter_not_fully_established; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-021",
+        "items": [
           {
             "itemId": "card:8430fba9-1219-445d-833c-618b6cc070e3",
             "printingId": "8430fba9-1219-445d-833c-618b6cc070e3",
@@ -123731,12 +125562,7 @@
             "whatToFind": "Confirm the intended first-edition or unstamped printing; a sharp original is retained, but its visible first-edition stamp is not matched by the current edition-neutral record.",
             "detail": "visible_first_edition_stamp_unbound_to_current_normal_tuple; outer_perimeter_uncertain_at_canvas_boundary; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-021",
-        "items": [
+          },
           {
             "itemId": "card:0cd6a8ca-a746-4a9d-a6ff-320101802f9e",
             "printingId": "0cd6a8ca-a746-4a9d-a6ff-320101802f9e",
@@ -124032,6 +125858,20 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
           },
           {
+            "itemId": "card:06ab9969-b663-469f-8728-cfd8c845dced",
+            "printingId": "06ab9969-b663-469f-8728-cfd8c845dced",
+            "batchId": "JP-CARDS-044",
+            "languageCode": "ja",
+            "setCode": "PCG9",
+            "collectorReference": "035",
+            "name": "トラピンチ（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_printed_first_edition_stamp_conflicts_with_unqualified_current_record; complete_outer_card_perimeter_not_present_separately_from_image_bounds",
+            "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
+          },
+          {
             "itemId": "card:8692c045-2f36-431b-9541-127bbbc74033",
             "printingId": "8692c045-2f36-431b-9541-127bbbc74033",
             "batchId": "JP-CARDS-044",
@@ -124058,7 +125898,12 @@
             "whatToFind": "Find a different complete sharp front for the exact printing/edition; retain this unchanged original and its named hold. No retries or further HTTP under this closed plan.",
             "detail": "top_and_side_outer_perimeters_not_fully_established; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-022",
+        "items": [
           {
             "itemId": "card:6692d163-17e4-4fa1-8050-161eef93b47e",
             "printingId": "6692d163-17e4-4fa1-8050-161eef93b47e",
@@ -124086,12 +125931,7 @@
             "whatToFind": "Find the front of this exact card; this source photo shows its back.",
             "detail": "literal_main_image_is_card_back_not_target_front; target_printed_identity_body_and_collector_absent; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-022",
-        "items": [
+          },
           {
             "itemId": "card:c288449e-1dcf-4484-8354-e0b713cb8565",
             "printingId": "c288449e-1dcf-4484-8354-e0b713cb8565",
@@ -124413,7 +126253,12 @@
             "whatToFind": "Find the card on its own, without a grading case or shop lettering.",
             "detail": "graded_slab_photo_not_clean_unobstructed_full_card_front; tiny_soft_card_body_footer_and_full_collector_not_readable",
             "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-023",
+        "items": [
           {
             "itemId": "card:1e94f4bc-ec53-4769-8600-f8425661b078",
             "printingId": "1e94f4bc-ec53-4769-8600-f8425661b078",
@@ -124441,12 +126286,7 @@
             "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
             "detail": "actual_printed_first_edition_stamp_conflicts_with_unqualified_current_record; complete_outer_card_perimeter_not_present_separately_from_image_bounds",
             "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-023",
-        "items": [
+          },
           {
             "itemId": "card:3b7128cd-4cb0-4c7e-b5ac-8a8d5aef429e",
             "printingId": "3b7128cd-4cb0-4c7e-b5ac-8a8d5aef429e",
@@ -124544,6 +126384,604 @@
             "whatToFind": "Find evidence for the normal and shiny versions. One source photo cannot distinguish both saved versions.",
             "detail": "Challenge from the Darkness 072 has separate normal and holo variants with no same-artwork mapping. Exact independent version evidence is still needed.",
             "providedGallery": "https://jp.pokellector.com/Challenge-from-the-Darkness-Expansion/"
+          },
+          {
+            "itemId": "card:89ed1fbb-9fcb-47ec-85e9-194acf2f48f1",
+            "printingId": "89ed1fbb-9fcb-47ec-85e9-194acf2f48f1",
+            "batchId": "JP-CARDS-066",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "002",
+            "name": "フォークナーの恐怖",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match. The full outer edge is not clear.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:b30f86c0-2d09-4757-92b7-68ab711881aa",
+            "printingId": "b30f86c0-2d09-4757-92b7-68ab711881aa",
+            "batchId": "JP-CARDS-066",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "003",
+            "name": "フォークナーのファーフェッチ",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match. The full outer edge is not clear.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:45d65612-e61d-49cf-b20e-fd35f2e9a70e",
+            "printingId": "45d65612-e61d-49cf-b20e-fd35f2e9a70e",
+            "batchId": "JP-CARDS-066",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "062",
+            "name": "ジャニーンのアーボック",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:2b81cbdd-6ade-4b66-babf-1e05398ae2c1",
+            "printingId": "2b81cbdd-6ade-4b66-babf-1e05398ae2c1",
+            "batchId": "JP-CARDS-066",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "103",
+            "name": "フォークナーのテクニカルマシン01",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:b426a113-0d3b-4c63-a64a-9240d76d3ad8",
+            "printingId": "b426a113-0d3b-4c63-a64a-9240d76d3ad8",
+            "batchId": "JP-CARDS-066",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "104",
+            "name": "フォークナーのテクニカルマシン02",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:4b2ea949-732b-43f1-9524-c0a0598644c9",
+            "printingId": "4b2ea949-732b-43f1-9524-c0a0598644c9",
+            "batchId": "JP-CARDS-066",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "105",
+            "name": "Bugsyのテクニカルマシン01",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:915b49d8-0b84-4739-9d47-ebff73dfbeb3",
+            "printingId": "915b49d8-0b84-4739-9d47-ebff73dfbeb3",
+            "batchId": "JP-CARDS-066",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "106",
+            "name": "Bugsyのテクニカルマシン02",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match. The full outer edge is not clear. Find a sharper picture so all printed text can be read.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:a1588c31-908b-441b-a855-7090c2444009",
+            "printingId": "a1588c31-908b-441b-a855-7090c2444009",
+            "batchId": "JP-CARDS-066",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "107",
+            "name": "ホイットニーのテクニカルマシン01",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match. The full outer edge is not clear. Find a sharper picture so all printed text can be read.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:924e5ae4-fa29-4c84-9fc3-ab3cfac1e130",
+            "printingId": "924e5ae4-fa29-4c84-9fc3-ab3cfac1e130",
+            "batchId": "JP-CARDS-066",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "108",
+            "name": "ホイットニーのテクニカルマシン02",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:8159e07c-0acd-473b-87e1-74e0c2cfc00b",
+            "printingId": "8159e07c-0acd-473b-87e1-74e0c2cfc00b",
+            "batchId": "JP-CARDS-066",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "109",
+            "name": "Morty's Technical Machine 01",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match. The full outer edge is not clear. Find a sharper picture so all printed text can be read.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:206a4fc4-1538-4189-8077-f9dc41194822",
+            "printingId": "206a4fc4-1538-4189-8077-f9dc41194822",
+            "batchId": "JP-CARDS-066",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "110",
+            "name": "Morty's Technical Machine 02",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match. The full outer edge is not clear.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:5df97330-e269-4d45-8b38-1cc4bf4f4ac8",
+            "printingId": "5df97330-e269-4d45-8b38-1cc4bf4f4ac8",
+            "batchId": "JP-CARDS-066",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "111",
+            "name": "ジャスミンのテクニカルマシン01",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:f5a23696-ef34-4bef-b0b0-85a500917c99",
+            "printingId": "f5a23696-ef34-4bef-b0b0-85a500917c99",
+            "batchId": "JP-CARDS-066",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "112",
+            "name": "ジャスミンのテクニカルマシン02",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match. The full outer edge is not clear.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:0b881d85-8a15-4d8d-97bc-59017c3db4b4",
+            "printingId": "0b881d85-8a15-4d8d-97bc-59017c3db4b4",
+            "batchId": "JP-CARDS-066",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "113",
+            "name": "チャックのテクニカルマシン01",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:9141a8ee-7483-40de-9db3-3ef57f301354",
+            "printingId": "9141a8ee-7483-40de-9db3-3ef57f301354",
+            "batchId": "JP-CARDS-066",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "114",
+            "name": "チャックのテクニカルマシン02",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match. Find a sharper picture so all printed text can be read.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:60fc0137-e0eb-49b8-b6b7-b6c2c5353817",
+            "printingId": "60fc0137-e0eb-49b8-b6b7-b6c2c5353817",
+            "batchId": "JP-CARDS-066",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "115",
+            "name": "プライスのテクニカルマシン01",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-024",
+        "items": [
+          {
+            "itemId": "card:48d7ae2a-1f77-41eb-a557-95dabcb2915c",
+            "printingId": "48d7ae2a-1f77-41eb-a557-95dabcb2915c",
+            "batchId": "JP-CARDS-066",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "116",
+            "name": "プライスのテクニカルマシン02",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:27b5a057-1581-4a55-bfb5-529a4cb7c7b7",
+            "printingId": "27b5a057-1581-4a55-bfb5-529a4cb7c7b7",
+            "batchId": "JP-CARDS-066",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "117",
+            "name": "Clair's Technical Machine 01",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "The edition mark cannot be read clearly. Find a sharper picture and match it to the correct edition. Find a sharper picture so all printed text can be read.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:9c281d65-f88c-48a7-af77-8af5c97f019b",
+            "printingId": "9c281d65-f88c-48a7-af77-8af5c97f019b",
+            "batchId": "JP-CARDS-066",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "118",
+            "name": "Clair's Technical Machine 02",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match. Find a sharper picture so all printed text can be read.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:0f92a813-8fcf-4265-993c-08510ab9272d",
+            "printingId": "0f92a813-8fcf-4265-993c-08510ab9272d",
+            "batchId": "JP-CARDS-066",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "119",
+            "name": "ジャニーンのテクニカルマシン01",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match. Find a sharper picture so all printed text can be read.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:4859cd5d-2757-4977-a279-5eb48d427624",
+            "printingId": "4859cd5d-2757-4977-a279-5eb48d427624",
+            "batchId": "JP-CARDS-066",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "120",
+            "name": "ジャニーンのテクニカルマシン02",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match. Find a sharper picture so all printed text can be read.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:62c16497-34e7-476b-b20e-0e9fd77a6f4c",
+            "printingId": "62c16497-34e7-476b-b20e-0e9fd77a6f4c",
+            "batchId": "JP-CARDS-066",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "121",
+            "name": "ウィルのテクニカルマシン01",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match. Find a sharper picture so all printed text can be read.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:d4592a5d-738a-4fec-90be-0fffc6b8a34c",
+            "printingId": "d4592a5d-738a-4fec-90be-0fffc6b8a34c",
+            "batchId": "JP-CARDS-066",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "122",
+            "name": "ウィルのテクニカルマシン02",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:2c515a0d-51a3-4916-a046-b89ae09cf551",
+            "printingId": "2c515a0d-51a3-4916-a046-b89ae09cf551",
+            "batchId": "JP-CARDS-066",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "123",
+            "name": "ブルーノのテクニカルマシン01",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:1da2f765-07ac-4083-bdd5-7c12ceb74ed2",
+            "printingId": "1da2f765-07ac-4083-bdd5-7c12ceb74ed2",
+            "batchId": "JP-CARDS-067",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "124",
+            "name": "ブルーノのテクニカルマシン02",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match. The full outer edge is not clear.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:2bf88a54-0366-4bd5-94cb-2af9fea3c417",
+            "printingId": "2bf88a54-0366-4bd5-94cb-2af9fea3c417",
+            "batchId": "JP-CARDS-067",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "125",
+            "name": "カレンのテクニカルマシン01",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match. Find a sharper picture so all printed text can be read.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:94df2174-bddd-44a1-ad44-72a07f647b47",
+            "printingId": "94df2174-bddd-44a1-ad44-72a07f647b47",
+            "batchId": "JP-CARDS-067",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "126",
+            "name": "カレンのテクニカルマシン02",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:d1ffdf3e-456f-44d2-a1a4-859ece69a4c6",
+            "printingId": "d1ffdf3e-456f-44d2-a1a4-859ece69a4c6",
+            "batchId": "JP-CARDS-067",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "127",
+            "name": "ロケットのテクニカルマシン01",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:f44745bc-fe4f-4e2b-a14e-f5ae12eb8b72",
+            "printingId": "f44745bc-fe4f-4e2b-a14e-f5ae12eb8b72",
+            "batchId": "JP-CARDS-067",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "128",
+            "name": "ランスのテクニカルマシン01",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match. Find a sharper picture so all printed text can be read.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:20aa28a2-edf9-480b-b3c4-b74b8d5b5193",
+            "printingId": "20aa28a2-edf9-480b-b3c4-b74b8d5b5193",
+            "batchId": "JP-CARDS-067",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "129",
+            "name": "ランスのテクニカルマシン02",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:cc91cd7b-71b6-4259-8616-d7556c170291",
+            "printingId": "cc91cd7b-71b6-4259-8616-d7556c170291",
+            "batchId": "JP-CARDS-067",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "130",
+            "name": "ポーション",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:4a68bb96-e3f1-44cc-8aaa-3722043702db",
+            "printingId": "4a68bb96-e3f1-44cc-8aaa-3722043702db",
+            "batchId": "JP-CARDS-067",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "131",
+            "name": "Moomooミルク",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match. The full outer edge is not clear.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:5e95e164-6b06-4bc3-a22e-327178c26210",
+            "printingId": "5e95e164-6b06-4bc3-a22e-327178c26210",
+            "batchId": "JP-CARDS-067",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "132",
+            "name": "フルヒール",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:e21ca4bf-0725-46c4-b106-dd4e8760f5fa",
+            "printingId": "e21ca4bf-0725-46c4-b106-dd4e8760f5fa",
+            "batchId": "JP-CARDS-067",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "133",
+            "name": "ポケモン反転",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:34b76269-6050-4bfc-9659-f2261fba48f0",
+            "printingId": "34b76269-6050-4bfc-9659-f2261fba48f0",
+            "batchId": "JP-CARDS-067",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "134",
+            "name": "スイッチ",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match. The full outer edge is not clear.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:8e172248-63a6-46e1-ba7b-6d955bc8fe3a",
+            "printingId": "8e172248-63a6-46e1-ba7b-6d955bc8fe3a",
+            "batchId": "JP-CARDS-067",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "135",
+            "name": "ワープポイント",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:83a4f71f-2c54-4b26-a1a9-653e62b06dff",
+            "printingId": "83a4f71f-2c54-4b26-a1a9-653e62b06dff",
+            "batchId": "JP-CARDS-067",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "136",
+            "name": "スーパースクープアップ",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:bb011370-f2c5-4a7a-9338-06c923cbefc7",
+            "printingId": "bb011370-f2c5-4a7a-9338-06c923cbefc7",
+            "batchId": "JP-CARDS-067",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "137",
+            "name": "エネルギーの流れ",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:e1323599-23ec-445f-a43c-c1910366c082",
+            "printingId": "e1323599-23ec-445f-a43c-c1910366c082",
+            "batchId": "JP-CARDS-067",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "138",
+            "name": "エネルギー電荷",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:e21287e9-c794-4798-892b-935695f78dbf",
+            "printingId": "e21287e9-c794-4798-892b-935695f78dbf",
+            "batchId": "JP-CARDS-067",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "139",
+            "name": "エネルギーアーク",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          },
+          {
+            "itemId": "card:d81580b5-eb7c-4c4c-bdb3-88e2ae9d8ae6",
+            "printingId": "d81580b5-eb7c-4c4c-bdb3-88e2ae9d8ae6",
+            "batchId": "JP-CARDS-067",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "140",
+            "name": "エネルギー回復",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-025",
+        "items": [
+          {
+            "itemId": "card:3b47858b-d864-4499-989f-b58d08f8bda3",
+            "printingId": "3b47858b-d864-4499-989f-b58d08f8bda3",
+            "batchId": "JP-CARDS-067",
+            "languageCode": "ja",
+            "setCode": "VS1",
+            "collectorReference": "141",
+            "name": "マスターボール",
+            "artworkType": "Card front",
+            "status": "multiple_current_editions_need_separate_artwork",
+            "whatToFind": "Match the recorded first-edition and other version separately, including their stamps and finish. The catalogue has no same-artwork mapping; source investigation can continue before either version is marked complete.",
+            "detail": "This picture shows a First Edition mark. The separate edition choices still need an exact artwork match. The full outer edge is not clear.",
+            "providedGallery": "https://jp.pokellector.com/Pokemon-VS-Expansion/"
           },
           {
             "itemId": "card:9391a7cd-5a08-4140-a641-c70e4ec7d58a",
@@ -124796,12 +127234,7 @@
             "whatToFind": "Find a clearer original so the complete card rules can be checked; the retained photo is too blurred in its rules paragraph.",
             "detail": "original_canvas_below_720x1008_HD_threshold; fine_evolution_placement_instruction_not_fully_readable",
             "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-024",
-        "items": [
+          },
           {
             "itemId": "card:5d69e38e-7e3f-4db3-a1fc-4dbd829aecf8",
             "printingId": "5d69e38e-7e3f-4db3-a1fc-4dbd829aecf8",
@@ -124885,7 +127318,12 @@
             "whatToFind": "Find a clearer original so the complete card rules can be checked; the retained photo is too blurred in its rules paragraph.",
             "detail": "original_canvas_below_720x1008_HD_threshold; graded_slab_scene_card_region_small; foreign_watermark_over_card_frame; full_trainer_rules_artist_collector_and_edition_unreadable",
             "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-026",
+        "items": [
           {
             "itemId": "card:3a71cd8b-ef42-4d54-bd7e-355442332498",
             "printingId": "3a71cd8b-ef42-4d54-bd7e-355442332498",
@@ -125151,12 +127589,7 @@
             "whatToFind": "Resolve the recorded card identity or finish detail, then locate its matching original.",
             "detail": "Retain the previous explicit source/identity/finish hold. Matching metadata fields do not settle the rejected source or finish.",
             "providedGallery": null
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-025",
-        "items": [
+          },
           {
             "itemId": "card:fa7e6dce-97aa-4a4c-8587-99cf6241ce11",
             "printingId": "fa7e6dce-97aa-4a4c-8587-99cf6241ce11",
@@ -125240,7 +127673,12 @@
             "whatToFind": "Resolve the recorded card identity or finish detail, then locate its matching original.",
             "detail": "Retain the previous explicit source/identity/finish hold. Matching metadata fields do not settle the rejected source or finish.",
             "providedGallery": null
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-027",
+        "items": [
           {
             "itemId": "card:ecab91f8-81ca-4e01-a89a-62eb26fddd19",
             "printingId": "ecab91f8-81ca-4e01-a89a-62eb26fddd19",
