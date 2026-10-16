@@ -1,0 +1,1121 @@
+{
+  "schemaVersion": "corocoro-real-interiors-v1",
+  "checkedAt": "2026-10-16T21:45:24.867682+00:00",
+  "baselineRevision": "9cef6d1adb94370a50673ce65d77867612bcd0a7",
+  "localPreview": "http://127.0.0.1:58412/unpacking.html",
+  "pullRequest": "https://github.com/tberridge86/Stackr/pull/403",
+  "implementedCases": [
+    "1996-sheet",
+    "2000-cleffa",
+    "2000-wooper",
+    "2022-packet",
+    "2023-cetitan"
+  ],
+  "sourceFiles": {
+    "1996-sheet": {
+      "referenceOnly": true,
+      "publicDisplayApproved": false,
+      "nativeDisplayApproved": false,
+      "sourceLicenceEstablished": false,
+      "originalBytesUnmodified": true,
+      "derivatives": [],
+      "checkedAt": "2026-10-16T21:35:54.140217+00:00",
+      "file": "1996-11-bound-insert-bulbagarden-original.jpeg",
+      "width": 778,
+      "height": 831,
+      "bytes": 181479,
+      "sha256": "abbdb8ab8b8b6882308b78925d2c2df725ecc5d86b5bddb9d2e715173b2591e5",
+      "mimeType": "image/jpeg",
+      "crop": [
+        0,
+        0,
+        778,
+        831
+      ],
+      "sourcePage": "https://bulbapedia.bulbagarden.net/wiki/File:Nov_1996_corocoro_insert.jpeg",
+      "sourceImage": "https://archives.bulbagarden.net/media/upload/4/44/Nov_1996_corocoro_insert.jpeg",
+      "sourceAttribution": "Omabyte, Bulbagarden Archives contributor, current file uploaded 8 July 2026; photographer not independently attested",
+      "location": "private-reference",
+      "scope": "private_reference",
+      "kind": "perspective_bound_interior",
+      "displayRotation": 0
+    },
+    "2000-cleffa": {
+      "referenceOnly": true,
+      "publicDisplayApproved": false,
+      "nativeDisplayApproved": false,
+      "sourceLicenceEstablished": false,
+      "originalBytesUnmodified": true,
+      "derivatives": [],
+      "checkedAt": "2026-10-16T21:35:54.140217+00:00",
+      "file": "2000-02-cleffa-bound-spread-mercari-original.jpg",
+      "width": 1080,
+      "height": 1080,
+      "bytes": 243078,
+      "sha256": "5201353df8fdc62b9c083e2e21e0a81b993dd2ac7407fc1f2beef33d4d50be14",
+      "mimeType": "image/jpeg",
+      "crop": [
+        0,
+        0,
+        1080,
+        1080
+      ],
+      "sourcePage": "https://jp.mercari.com/item/m18118128540",
+      "sourceImage": "https://static.mercdn.net/item/detail/orig/photos/m18118128540_1.jpg?1774896091",
+      "sourceAttribution": "Mercari seller 雀ママ, published listing photograph 1 of 14; photographer not separately named",
+      "location": "private-reference",
+      "scope": "private_reference",
+      "kind": "perspective_bound_interior",
+      "displayRotation": 0
+    },
+    "2000-wooper": {
+      "referenceOnly": true,
+      "publicDisplayApproved": false,
+      "nativeDisplayApproved": false,
+      "sourceLicenceEstablished": false,
+      "originalBytesUnmodified": true,
+      "derivatives": [],
+      "checkedAt": "2026-10-16T21:35:54.140217+00:00",
+      "file": "2000-01-wooper-bound-spread-ebay-original.webp",
+      "width": 687,
+      "height": 932,
+      "bytes": 118828,
+      "sha256": "723cb6d3fa7e8256a737d8b028461c776545da289df0f6389bc249b6879b8b1d",
+      "mimeType": "image/webp",
+      "crop": [
+        0,
+        0,
+        687,
+        932
+      ],
+      "sourcePage": "https://www.ebay.com/itm/377179937389",
+      "sourceImage": "https://i.ebayimg.com/images/g/qVAAAeSw9Npp~TJy/s-l1600.webp",
+      "sourceAttribution": "eBay seller dntfp98, published sold-listing photograph 4 of 7; photographer not separately named",
+      "location": "private-reference",
+      "scope": "private_reference",
+      "kind": "perspective_bound_interior",
+      "displayRotation": 0
+    },
+    "2022-packet": {
+      "file": "2022-pikachu-bound-interior-fril-original.jpg",
+      "width": 1080,
+      "height": 1080,
+      "bytes": 638319,
+      "sha256": "1144e8adedc5510e965bf568de51f5cb10b64b5fa5eaf03e05adfd348bb5aa59",
+      "mimeType": "image/jpeg",
+      "sourceImage": "https://img.fril.jp/img/819773059/l/2814763556.jpg?1772930818",
+      "browserExportPath": "C:/Users/berri/AppData/Local/Temp/browser-use/assets/85d6d573-e56e-4f60-8b8e-5458ef28d826/9562754f736ce0ae.jpg",
+      "browserManifestPath": "C:/Users/berri/AppData/Local/Temp/browser-use/assets/85d6d573-e56e-4f60-8b8e-5458ef28d826/manifest.json",
+      "orientation": "upright",
+      "crop": [
+        0,
+        0,
+        1080,
+        1080
+      ],
+      "suggestedDisplayView": [
+        135,
+        0,
+        810,
+        937
+      ],
+      "sourcePage": "https://item.fril.jp/f52f0158bba71551ef760a5eff22fbbc",
+      "location": "private-reference",
+      "scope": "private_reference",
+      "referenceOnly": true,
+      "publicDisplayApproved": false,
+      "sourceLicenceEstablished": false,
+      "kind": "perspective_bound_interior",
+      "displayRotation": 0
+    },
+    "2023-cetitan": {
+      "file": "2023-cetitan-bound-interior-fril-original.jpg",
+      "width": 1080,
+      "height": 1080,
+      "bytes": 290575,
+      "sha256": "f5c44620eafea95889d0171eb834d4255c0fca1280f41fd78d0b4e642d6e4940",
+      "mimeType": "image/jpeg",
+      "sourceImage": "https://img.fril.jp/img/844229703/l/2912093754.jpg?1784724415",
+      "browserExportPath": "C:/Users/berri/AppData/Local/Temp/browser-use/assets/5c0439c4-1324-4eeb-9704-b4a67937b92d/4e8d38a163e50acb.jpg",
+      "browserManifestPath": "C:/Users/berri/AppData/Local/Temp/browser-use/assets/5c0439c4-1324-4eeb-9704-b4a67937b92d/manifest.json",
+      "crop": [
+        0,
+        0,
+        1080,
+        1080
+      ],
+      "displayRotationDegreesClockwise": 90,
+      "sourcePage": "https://item.fril.jp/71c47f00b93e0aee209ae10a6e8333c2",
+      "location": "private-reference",
+      "scope": "private_reference",
+      "referenceOnly": true,
+      "publicDisplayApproved": false,
+      "sourceLicenceEstablished": false,
+      "kind": "perspective_bound_interior",
+      "displayRotation": 90
+    }
+  },
+  "historicalSourceEvidence": {
+    "schemaVersion": "corocoro-historical-real-interiors-v1",
+    "generatedAt": "2026-10-16T21:35:54.140217+00:00",
+    "status": "three_attached_insert_context_photographs_prepared_private_only",
+    "referenceOnly": true,
+    "publicDisplayApproved": false,
+    "nativeDisplayApproved": false,
+    "sourceLicenceEstablished": false,
+    "privatePreparationAuthority": "Owner explicitly requested internet references and real inside pages for the ongoing local CoroCoro preview; parent assigned offline sourcing/preparation within standing Tif 13 October authority. No public/native/catalogue authority added.",
+    "scope": {
+      "cases": 3,
+      "newOriginalStillFiles": 3,
+      "fullFlatSpreads": 0,
+      "attachedInsertContextPhotos": 3,
+      "videoDownloads": 0,
+      "videoFrameAssets": 0,
+      "rasterEdits": 0,
+      "upscales": 0,
+      "repoWrites": 0,
+      "catalogueWrites": 0,
+      "ownershipBindings": 0,
+      "publicOrNativeDelivery": 0
+    },
+    "caseIds": [
+      "1996-sheet",
+      "2000-cleffa",
+      "2000-wooper"
+    ],
+    "cases": [
+      {
+        "caseId": "1996-sheet",
+        "publication": "Monthly CoroCoro Comic",
+        "issue": "November 1996, No.223",
+        "language": "ja",
+        "cards": [
+          "Ivy Pikachu / ピカチュウ",
+          "Jigglypuff / プリン"
+        ],
+        "source": {
+          "referenceOnly": true,
+          "publicDisplayApproved": false,
+          "nativeDisplayApproved": false,
+          "sourceLicenceEstablished": false,
+          "originalBytesUnmodified": true,
+          "derivatives": [],
+          "checkedAt": "2026-10-16T21:35:54.140217+00:00",
+          "file": "private-unpacking-references/1996-11-bound-insert-bulbagarden-original.jpeg",
+          "width": 778,
+          "height": 831,
+          "bytes": 181479,
+          "sha256": "abbdb8ab8b8b6882308b78925d2c2df725ecc5d86b5bddb9d2e715173b2591e5",
+          "mimeType": "image/jpeg",
+          "crop": [
+            0,
+            0,
+            778,
+            831
+          ],
+          "sourcePage": "https://bulbapedia.bulbagarden.net/wiki/File:Nov_1996_corocoro_insert.jpeg",
+          "sourceImage": "https://archives.bulbagarden.net/media/upload/4/44/Nov_1996_corocoro_insert.jpeg",
+          "sourceAttribution": "Omabyte, Bulbagarden Archives contributor, current file uploaded 8 July 2026; photographer not independently attested"
+        },
+        "classification": "partial_bound_insert_context_photograph",
+        "completeFlatSpread": false,
+        "attachmentStatus": "Source file description explicitly states insert still in November 1996 magazine; photograph shows paper/card insert within an opened book, but exact fastening is hidden.",
+        "identityEvidence": [
+          "File description identifies the November 1996 CoroCoro issue and original Pikachu/Jigglypuff insert.",
+          "Photograph visibly has the exact green special-W-card label, two old Pocket Monsters backs and printed 1996 copyright.",
+          "Same printed two-back carrier layout as the previously validated 1996 carrier.",
+          "1998 loose mail-in pair and matte Asobikata booklet are not substituted. Exact card-front credit gate remains in parent manifest."
+        ],
+        "visiblePages": [
+          "Actual opposing page portion shows Gundam plastic-model feature/images.",
+          "Actual page beneath and around carrier shows Pokémon graphics and lettering.",
+          "No page number can be confidently read from this source."
+        ],
+        "viewCoordinates": {
+          "canvas": [
+            778,
+            831
+          ],
+          "gutterApproximate": {
+            "orientation": "horizontal_in_source_photo",
+            "y": 184
+          },
+          "carrierQuadApproximate": [
+            [
+              97,
+              184
+            ],
+            [
+              687,
+              180
+            ],
+            [
+              760,
+              662
+            ],
+            [
+              124,
+              728
+            ]
+          ],
+          "coordinateConfidence": "visual_estimate_only; perspective retained; no physical millimetre or verified cut line claim"
+        },
+        "deliveryFootage": "https://www.youtube.com/watch?v=8A5KDZAzDMs&t=1320s",
+        "footageRelation": "Parent previously observed exact cover at21:59, opened physical book at22:09 and supported backing curl at22:19; this agent did not rewatch the video in this pass. This is an independent still photo, not a video frame or proof of the same physical copy.",
+        "rightsEvidence": "File-specific licensing says copyrighted or registered trademark; contributor claims fair use. Site text CC licence is not a replacement image licence. Public/native approval held.",
+        "acquisition": {
+          "method": "Supported browser downloadMedia of the one observed original image, followed by immutable byte copy",
+          "requestedCount": 1,
+          "downloadedCount": 1,
+          "failedCount": 0,
+          "retries": 0,
+          "browserDownloadPath": "C:/Users/berri/Downloads/Nov_1996_corocoro_insert.jpeg"
+        },
+        "limits": [
+          "Partial photograph includes page context but not all edges of both pages.",
+          "Gutter/perforation/glue and original physical binding action remain hidden.",
+          "Do not use the separately cited Pokémon Machine feature as if it were the insert attachment spread."
+        ]
+      },
+      {
+        "caseId": "2000-cleffa",
+        "publication": "Monthly CoroCoro Comic",
+        "issue": "February 2000",
+        "language": "ja",
+        "cards": [
+          "Cleffa / ピィ"
+        ],
+        "source": {
+          "referenceOnly": true,
+          "publicDisplayApproved": false,
+          "nativeDisplayApproved": false,
+          "sourceLicenceEstablished": false,
+          "originalBytesUnmodified": true,
+          "derivatives": [],
+          "checkedAt": "2026-10-16T21:35:54.140217+00:00",
+          "file": "private-unpacking-references/2000-02-cleffa-bound-spread-mercari-original.jpg",
+          "width": 1080,
+          "height": 1080,
+          "bytes": 243078,
+          "sha256": "5201353df8fdc62b9c083e2e21e0a81b993dd2ac7407fc1f2beef33d4d50be14",
+          "mimeType": "image/jpeg",
+          "crop": [
+            0,
+            0,
+            1080,
+            1080
+          ],
+          "sourcePage": "https://jp.mercari.com/item/m18118128540",
+          "sourceImage": "https://static.mercdn.net/item/detail/orig/photos/m18118128540_1.jpg?1774896091",
+          "sourceAttribution": "Mercari seller 雀ママ, published listing photograph 1 of 14; photographer not separately named"
+        },
+        "classification": "partial_bound_insert_context_photograph",
+        "completeFlatSpread": false,
+        "attachmentStatus": "Carrier is visibly within the opened book at the left-side gutter; seller calls the book card unpeeled. Exact fastening is obscured.",
+        "identityEvidence": [
+          "Seller identifies the February 2000 issue and unpeeled Cleffa.",
+          "Gallery photo2 visibly shows the matching Monthly February2000 cover, 2000 badge and Cleffa promo cover panel.",
+          "Photo1 carrier right strip explicitly identifies special neo Cleffa card; it matches the separately preserved February2000 carrier and printed card-front issue text.",
+          "No.173 is species number, not a unique collector number."
+        ],
+        "coverCorroborationImage": "https://static.mercdn.net/item/detail/orig/photos/m18118128540_2.jpg?1774896091",
+        "visiblePages": [
+          "Left Pokémon film-news article is visible behind overlapping Bikkuriman sticker sheet and the Cleffa carrier; printed page11 is visible.",
+          "Right facing page is a Doraemon toy advertisement, including the plush toy and 4980-yen price.",
+          "The photograph clips the extreme right/top page edges; it is not a complete flat scan."
+        ],
+        "viewCoordinates": {
+          "canvas": [
+            1080,
+            1080
+          ],
+          "gutterQuadApproximate": [
+            [
+              632,
+              0
+            ],
+            [
+              654,
+              480
+            ],
+            [
+              699,
+              1028
+            ]
+          ],
+          "carrierQuadApproximate": [
+            [
+              237,
+              483
+            ],
+            [
+              666,
+              495
+            ],
+            [
+              680,
+              1018
+            ],
+            [
+              213,
+              1030
+            ]
+          ],
+          "cardQuadApproximate": [
+            [
+              272,
+              521
+            ],
+            [
+              580,
+              532
+            ],
+            [
+              588,
+              973
+            ],
+            [
+              249,
+              984
+            ]
+          ],
+          "coordinateConfidence": "visual_estimate_only; perspective retained; no physical millimetre or verified die-cut claim"
+        },
+        "deliveryFootage": "https://www.youtube.com/watch?v=iXaufqXi2Zg",
+        "additionalLooseCarrierFilm": "https://www.youtube.com/watch?v=sRhoSHEObgQ",
+        "footageRelation": "Prior films establish own carrier and later supported release; they begin from loose carrier or obscure magazine-to-carrier detachment. This independent still establishes actual neighbouring-page content and placement; no uninterrupted same-copy journey claimed.",
+        "rightsEvidence": "Publicly published seller photograph; no licence or reuse permission asserted. Private preparation authority only. Public/native approval held.",
+        "acquisition": {
+          "method": "Normal browser pageAssets export of exactly one observed original, followed by immutable byte copy",
+          "requestedCount": 1,
+          "downloadedCount": 1,
+          "failedCount": 0,
+          "retries": 0,
+          "browserExportPath": "C:/Users/berri/AppData/Local/Temp/browser-use/assets/fd3cf915-cadd-4ee9-bae3-79f211f371cd/0e660770fcd180c6.jpg",
+          "browserManifestPath": "C:/Users/berri/AppData/Local/Temp/browser-use/assets/fd3cf915-cadd-4ee9-bae3-79f211f371cd/manifest.json"
+        },
+        "limits": [
+          "Some spread edges and original carrier fastening are hidden.",
+          "Cleffa carrier overlaps a separate sticker insert; do not paste a generic bare page beneath it and describe that as the photographed layout.",
+          "The clearer Torecacamp carrier comes from another copy, so any transition is a labelled presentation transition rather than a continuous recorded opening."
+        ]
+      },
+      {
+        "caseId": "2000-wooper",
+        "publication": "Monthly CoroCoro Comic",
+        "issue": "January 2000, No.261",
+        "language": "ja",
+        "cards": [
+          "Wooper / ウパー"
+        ],
+        "source": {
+          "referenceOnly": true,
+          "publicDisplayApproved": false,
+          "nativeDisplayApproved": false,
+          "sourceLicenceEstablished": false,
+          "originalBytesUnmodified": true,
+          "derivatives": [],
+          "checkedAt": "2026-10-16T21:35:54.140217+00:00",
+          "file": "private-unpacking-references/2000-01-wooper-bound-spread-ebay-original.webp",
+          "width": 687,
+          "height": 932,
+          "bytes": 118828,
+          "sha256": "723cb6d3fa7e8256a737d8b028461c776545da289df0f6389bc249b6879b8b1d",
+          "mimeType": "image/webp",
+          "crop": [
+            0,
+            0,
+            687,
+            932
+          ],
+          "sourcePage": "https://www.ebay.com/itm/377179937389",
+          "sourceImage": "https://i.ebayimg.com/images/g/qVAAAeSw9Npp~TJy/s-l1600.webp",
+          "sourceAttribution": "eBay seller dntfp98, published sold-listing photograph 4 of 7; photographer not separately named"
+        },
+        "classification": "partial_bound_insert_context_photograph",
+        "completeFlatSpread": false,
+        "attachmentStatus": "The red-strip Wooper carrier visibly sits in the opened book at the left-side gutter; exact fastening hidden.",
+        "identityEvidence": [
+          "Listing explicitly identifies2000 magazineNo261 with neoWooper.",
+          "Photo1 shows matching MonthlyJanuary cover with month1 and neo-card promotion.",
+          "Photo2 spine visibly reads2000 No.261 and month1.",
+          "Photo4 own red instruction strip identifies ウパー and old Pocket Monsters back; existing separate front/carrier printing gate remains unchanged."
+        ],
+        "coverCorroborationImage": "https://i.ebayimg.com/images/g/0Q0AAeSwAFFp~TJV/s-l1600.webp",
+        "spineCorroborationImage": "https://i.ebayimg.com/images/g/8osAAeSwdJBp~TJi/s-l960.webp",
+        "visiblePages": [
+          "Actual left page has Pokémon graphics and information behind the Wooper carrier.",
+          "Right facing page is the colourful Momotaro Dentetsu game advertisement with HUDSON logo.",
+          "Page numbers and all spread edges are not visible."
+        ],
+        "viewCoordinates": {
+          "canvas": [
+            687,
+            932
+          ],
+          "gutterApproximate": {
+            "top": [
+              457,
+              0
+            ],
+            "bottom": [
+              508,
+              932
+            ]
+          },
+          "carrierQuadApproximate": [
+            [
+              168,
+              303
+            ],
+            [
+              490,
+              430
+            ],
+            [
+              502,
+              897
+            ],
+            [
+              122,
+              932
+            ]
+          ],
+          "cardQuadApproximate": [
+            [
+              201,
+              376
+            ],
+            [
+              435,
+              475
+            ],
+            [
+              459,
+              835
+            ],
+            [
+              164,
+              885
+            ]
+          ],
+          "coordinateConfidence": "visual_estimate_only; full lower edge partly outside photo; perspective and blur retained; no physical millimetre or die-cut claim"
+        },
+        "deliveryFootage": "https://www.youtube.com/watch?v=JEnnOd7vZfM&t=16s",
+        "footageRelation": "Prior film records lower-left careful release and states sped-up timing at~0:48. This independent still adds actual bound-page context. Do not infer real hand speed or an original fastening operation.",
+        "rightsEvidence": "Publicly published eBay seller photograph; no source licence or reuse permission asserted. Private preparation authority only. Public/native approval held.",
+        "acquisition": {
+          "method": "Current gallery explicitly exposed larger original URL after local-only audit; browser asset export failed once due page-fetch error; one normal urllib request to that observed image URL succeeded and preserved response bytes",
+          "requestedCount": 1,
+          "downloadedCount": 1,
+          "urllibRetries": 0,
+          "failedBrowserExportCount": 1,
+          "browserFailureManifest": "C:/Users/berri/AppData/Local/Temp/browser-use/assets/d7ab3dea-a617-402d-8249-4836d7d253e7/manifest.json",
+          "urlWasObservedInDOM": true,
+          "credentialsOrCookiesUsed": false,
+          "securityOrRegionBypass": false
+        },
+        "limits": [
+          "Source original is687x932 with genuine camera blur/perspective; URL1600 does not establishHD.",
+          "Most page text cannot be accurately read.",
+          "Actual source is a partial bound context photo, not full-page scan; neither underlying text nor clipped edges should be regenerated."
+        ]
+      }
+    ],
+    "metadataOnlyCandidates": [
+      {
+        "caseId": "1996-sheet",
+        "sourcePage": "https://bulbapedia.bulbagarden.net/wiki/File:November_1996_corocoro_TCG_spread_with_inset_zoom.jpg",
+        "status": "rejected_as_attachment_spread",
+        "reasons": [
+          "Annotated inset composite1480x699, not unmodified continuous spread.",
+          "Real NovemberTCG feature, but attachment adjacency is not established."
+        ],
+        "acquired": false
+      },
+      {
+        "caseId": "1996-sheet",
+        "sourcePage": "https://bulbapedia.bulbagarden.net/wiki/File:November_1996_corocoro,_pokemon_spread.jpg",
+        "status": "metadata_only_same_issue_feature",
+        "reasons": [
+          "Current file history says brightness/exposure/other filters increased.",
+          "Description only speculates page16-17.",
+          "Original cited sourcehttps://www.zoidsland.com/1rebyu-/koro96-11.html; not the photographed attachment spread."
+        ],
+        "acquired": false
+      },
+      {
+        "caseId": "1996-sheet",
+        "sourcePage": "https://archives.bulbagarden.net/wiki/File:CoroCoro_Nov1996_P20_P21.jpg",
+        "status": "metadata_only_unrelated_inside_pages",
+        "reasons": [
+          "November1996 pages20-21 on JapaneseBlue sprites, not attached card insert."
+        ],
+        "acquired": false
+      },
+      {
+        "caseId": "2000-wooper",
+        "sourcePage": "https://janbox.com/global/auction/item/p1244090761",
+        "status": "unavailable_candidate",
+        "reasons": [
+          "Search index says book with unpeeled card still attached; direct current read returned404.",
+          "No photos acquired, no regional or access bypass."
+        ],
+        "acquired": false
+      },
+      {
+        "caseId": "2000-wooper",
+        "sourcePage": "https://auctions.yahoo.co.jp/jp/auction/f1197450970",
+        "status": "previous_region_block_preserved",
+        "reasons": [
+          "Previous pass recorded UK region block; not retried or bypassed in this pass."
+        ],
+        "acquired": false
+      },
+      {
+        "caseId": "2000-wooper",
+        "sourcePage": "https://jp.mercari.com/item/m65721835365",
+        "status": "previous_deleted_source_preserved",
+        "reasons": [
+          "Previous pass recorded removed listing; no guessed image URL or deleted-page bypass."
+        ],
+        "acquired": false
+      },
+      {
+        "caseId": "2000-cleffa",
+        "sourcePage": "https://www.ebay.com/str/truenorf",
+        "status": "search_candidate_not_needed_after_exact_bound_source",
+        "reasons": [
+          "Index had completeFebruary2000book; current stronger exactMercari gallery inspected instead."
+        ],
+        "acquired": false
+      },
+      {
+        "caseId": "2000-wooper",
+        "sourcePage": "https://www.grelly.com/itm/corocoro-comic-january-2000-issue-magazine-shogakukan-japanese-vintage-168647661506",
+        "status": "search_candidate_not_needed_after_exact_bound_source",
+        "reasons": [
+          "Searchindex identified13photos andseller maki_japanese_card_shop; directebaycard-specificbookgallery gave required context."
+        ],
+        "acquired": false
+      }
+    ],
+    "actionableReviewList": [
+      {
+        "name": "1996 full-spread edges and attachment",
+        "caseId": "1996-sheet",
+        "nextAction": "Find a photograph of the same November1996 attachment opening with all page edges and fastening visible; compare Gundam/Pokémon neighbouring pages to sourcefilm. Keep current partial context photo explicitly labelled."
+      },
+      {
+        "name": "Cleffa full spread and original carrier detachment",
+        "caseId": "2000-cleffa",
+        "nextAction": "Seek an uninterrupted February2000 magazine opening or larger same-spread photo showing how the left-gutter layered insert detaches. Do not invent perforation/glue or substitute otherNeo issue pages."
+      },
+      {
+        "name": "Wooper sharper bound opening",
+        "caseId": "2000-wooper",
+        "nextAction": "Find a genuinely sharper sameJanuary2000 bound opening with readable page text and both page edges, preserving exactNo261 identity. Current687x932original remains honest limited private reference."
+      },
+      {
+        "name": "Internet-source licence for any public/native use",
+        "caseIds": [
+          "1996-sheet",
+          "2000-cleffa",
+          "2000-wooper"
+        ],
+        "nextAction": "Establish applicable source-image licence/reuse permission and existing acquisition authority before any public/native/catalogue delivery. Current private preparation does not supply those rights; no outreach sent."
+      }
+    ],
+    "renderingGuidance": [
+      "Use each full original photograph with contain sizing, preserving perspective and clipped edges; do not stretch it into a guessed flat two-page spread.",
+      "A close-up may use code-native viewport cropping with recorded coordinates; originals remain byte-identical and source attribution visible.",
+      "When moving from bound photo to a clearer carrier from another source/copy, describe it as presentation transition; do not claim continuous footage or same physical copy.",
+      "Original May2001 Mew benchmark is outside this helper scope and was not read or edited."
+    ],
+    "qualityAuditBeforeSharperDiscovery": {
+      "schemaVersion": "stackr-local-artwork-quality-audit-v1",
+      "source": "local_manifest_only",
+      "networkRequestsPerformed": false,
+      "assetWritesPerformed": false,
+      "rows": [
+        {
+          "id": "1996-11-bound-insert-original",
+          "width": 778,
+          "height": 831,
+          "exactIdentity": true,
+          "rightsApproved": false,
+          "role": "detail",
+          "status": "not_eligible",
+          "flags": [
+            "card_aspect_ratio_suspect",
+            "rights_unapproved"
+          ],
+          "replacementEligible": false
+        },
+        {
+          "id": "2000-02-cleffa-bound-spread-original",
+          "width": 1080,
+          "height": 1080,
+          "exactIdentity": true,
+          "rightsApproved": false,
+          "role": "detail",
+          "status": "not_eligible",
+          "flags": [
+            "card_aspect_ratio_suspect",
+            "rights_unapproved"
+          ],
+          "replacementEligible": false
+        },
+        {
+          "id": "2000-01-wooper-bound-spread-current",
+          "width": 549,
+          "height": 745,
+          "exactIdentity": true,
+          "rightsApproved": false,
+          "role": "detail",
+          "status": "not_eligible",
+          "flags": [
+            "rights_unapproved"
+          ],
+          "replacementEligible": false
+        },
+        {
+          "id": "2000-01-wooper-bound-spread-thumb",
+          "width": 103,
+          "height": 140,
+          "exactIdentity": true,
+          "rightsApproved": false,
+          "role": "detail",
+          "status": "not_eligible",
+          "flags": [
+            "below_detail_resolution",
+            "rights_unapproved"
+          ],
+          "replacementEligible": false
+        }
+      ],
+      "summary": {
+        "reviewed": 4,
+        "meetsRequestedResolution": 0,
+        "reviewRequired": 0,
+        "notEligible": 4,
+        "belowRequestedResolution": 1,
+        "suspectedCrop": 2,
+        "missingDimensions": 0
+      }
+    },
+    "finalOriginalQualityAudit": {
+      "schemaVersion": "stackr-local-artwork-quality-audit-v1",
+      "source": "local_manifest_only",
+      "networkRequestsPerformed": false,
+      "assetWritesPerformed": false,
+      "rows": [
+        {
+          "id": "1996-sheet-bound-context",
+          "width": 778,
+          "height": 831,
+          "exactIdentity": true,
+          "rightsApproved": false,
+          "role": "detail",
+          "status": "not_eligible",
+          "flags": [
+            "card_aspect_ratio_suspect",
+            "rights_unapproved"
+          ],
+          "replacementEligible": false
+        },
+        {
+          "id": "2000-cleffa-bound-context",
+          "width": 1080,
+          "height": 1080,
+          "exactIdentity": true,
+          "rightsApproved": false,
+          "role": "detail",
+          "status": "not_eligible",
+          "flags": [
+            "card_aspect_ratio_suspect",
+            "rights_unapproved"
+          ],
+          "replacementEligible": false
+        },
+        {
+          "id": "2000-wooper-bound-context",
+          "width": 687,
+          "height": 932,
+          "exactIdentity": true,
+          "rightsApproved": false,
+          "role": "detail",
+          "status": "not_eligible",
+          "flags": [
+            "rights_unapproved"
+          ],
+          "replacementEligible": false
+        }
+      ],
+      "summary": {
+        "reviewed": 3,
+        "meetsRequestedResolution": 0,
+        "reviewRequired": 0,
+        "notEligible": 3,
+        "belowRequestedResolution": 0,
+        "suspectedCrop": 2,
+        "missingDimensions": 0
+      }
+    },
+    "qualityAuditInterpretation": "Card aspect is a review signal; these are page context photographs, so a non-card ratio does not prove an improper crop. No quality audit authorizes public replacement. Wooper larger observed original improves dimensions from549x745 to687x932 but retains camera blur; no HD-original claim.",
+    "validation": {
+      "status": "pass",
+      "checks": [
+        "All3originals decode withPIL",
+        "All3SHA256/byte/dimensionreceipts match",
+        "All3private-reference holds explicit",
+        "Originals unmodified; no rasterderivatives",
+        "No repo/prototype/manifest/cataloguewrites by this helper"
+      ],
+      "repoBaselineInspected": "9cef6d1adb94370a50673ce65d77867612bcd0a7",
+      "newOriginalBytesTotal": 543385
+    }
+  },
+  "modernSourceEvidence": {
+    "schemaVersion": "corocoro-modern-real-interiors-v1",
+    "status": "two_exact_issue_photographed_interiors_prepared_private_rights_held",
+    "checkedAt": "2026-10-16T21:41:00Z",
+    "privatePreparationAuthority": "Owner request for real inside pages and standing offline source preparation; parent exclusive assignment. No public/native/catalogue authority added.",
+    "referenceOnly": true,
+    "sourceLicenceEstablished": false,
+    "publicDisplayApproved": false,
+    "nativeDisplayApproved": false,
+    "cases": [
+      {
+        "caseId": "2022-packet",
+        "issue": "Regular physical Monthly CoroCoro February 2022",
+        "pouchPrinting": "Japanese Pikachu VMAX 265/S-P",
+        "sourcePage": "https://item.fril.jp/f52f0158bba71551ef760a5eff22fbbc",
+        "sourceAttribution": "Fril/Rakuma seller bu-bi; original photographer not independently named",
+        "identityConfidence": "high_for_private_exact_issue_pouch_context",
+        "interior": {
+          "file": "2022-pikachu-bound-interior-fril-original.jpg",
+          "width": 1080,
+          "height": 1080,
+          "bytes": 638319,
+          "sha256": "1144e8adedc5510e965bf568de51f5cb10b64b5fa5eaf03e05adfd348bb5aa59",
+          "mimeType": "image/jpeg",
+          "sourceImage": "https://img.fril.jp/img/819773059/l/2814763556.jpg?1772930818",
+          "browserExportPath": "C:/Users/berri/AppData/Local/Temp/browser-use/assets/85d6d573-e56e-4f60-8b8e-5458ef28d826/9562754f736ce0ae.jpg",
+          "browserManifestPath": "C:/Users/berri/AppData/Local/Temp/browser-use/assets/85d6d573-e56e-4f60-8b8e-5458ef28d826/manifest.json",
+          "orientation": "upright",
+          "crop": [
+            0,
+            0,
+            1080,
+            1080
+          ],
+          "suggestedDisplayView": [
+            135,
+            0,
+            810,
+            937
+          ]
+        },
+        "sameGalleryCover": {
+          "file": "2022-02-cover-context-fril-original.jpg",
+          "width": 1080,
+          "height": 1080,
+          "bytes": 711196,
+          "sha256": "e2517988974cfac7f4cc05d030935b70c8be59586de514c2b4964882ef0961d7",
+          "sourceImage": "https://img.fril.jp/img/819773059/l/2814763552.jpg?1772930818",
+          "browserExportPath": "C:/Users/berri/AppData/Local/Temp/browser-use/assets/f96032e4-9523-4443-bd2b-8f1516375d01/221221c02ed7eeb9.jpg",
+          "browserManifestPath": "C:/Users/berri/AppData/Local/Temp/browser-use/assets/f96032e4-9523-4443-bd2b-8f1516375d01/manifest.json"
+        },
+        "identityEvidence": [
+          "Exact physical February 2022 magazine listing and same-gallery cover match primary publisher cover.",
+          "Printed wrapper reproduction shows Japanese Pikachu VMAX HP310, AKIRA EGAWA art, CoroCoro badge and 265/S-P footer. This is pouch printing, not the bare card.",
+          "Actual thick paper page stack, opened book and gutter are visible; this is the physical magazine rather than the digital bonus bundle."
+        ],
+        "actualPagesVisible": "Black/red Start Deck 100 and Pokemon page LEFT; white/pink Pokemon toy instruction and advertising page RIGHT. Purple portrait pouch lies near the gutter, covering part of the left print.",
+        "approximatePouchQuad": [
+          [
+            462,
+            214
+          ],
+          [
+            789,
+            295
+          ],
+          [
+            735,
+            812
+          ],
+          [
+            380,
+            836
+          ]
+        ],
+        "geometryLimit": "Visual estimates in the original photograph only; perspective retained. Outer page edges and part of right page omitted. No physical millimetres or flat scan claim.",
+        "footageRelationship": "Prior sHQVGH-CZbg footage proves detached sleeve and front-up rightward extraction. This still independently proves bound-book context, without establishing detachment or seal action.",
+        "held": [
+          "Initial detachment and seal opening remain unverified.",
+          "Full uncropped facing pages and page numbers remain missing.",
+          "Do not invent glue, perforation action or hidden page artwork."
+        ]
+      },
+      {
+        "caseId": "2023-cetitan",
+        "issue": "Regular physical CoroCoro Ichiban June 2023",
+        "pouchPrinting": "Japanese Cetitan 058/SV-P",
+        "sourcePage": "https://item.fril.jp/71c47f00b93e0aee209ae10a6e8333c2",
+        "sourceAttribution": "Fril/Rakuma seller LUCHS; original photographer not independently named",
+        "identityConfidence": "high_for_private_exact_issue_pouch_and_adjacent_sticker_page",
+        "interior": {
+          "file": "2023-cetitan-bound-interior-fril-original.jpg",
+          "width": 1080,
+          "height": 1080,
+          "bytes": 290575,
+          "sha256": "f5c44620eafea95889d0171eb834d4255c0fca1280f41fd78d0b4e642d6e4940",
+          "mimeType": "image/jpeg",
+          "sourceImage": "https://img.fril.jp/img/844229703/l/2912093754.jpg?1784724415",
+          "browserExportPath": "C:/Users/berri/AppData/Local/Temp/browser-use/assets/5c0439c4-1324-4eeb-9704-b4a67937b92d/4e8d38a163e50acb.jpg",
+          "browserManifestPath": "C:/Users/berri/AppData/Local/Temp/browser-use/assets/5c0439c4-1324-4eeb-9704-b4a67937b92d/manifest.json",
+          "crop": [
+            0,
+            0,
+            1080,
+            1080
+          ],
+          "displayRotationDegreesClockwise": 90
+        },
+        "identityEvidence": [
+          "Exact regular June 2023 physical magazine listing includes cover, back cover and bound-pouch close-up.",
+          "Actual interior shows Japanese Cetitan HP170, GOSSAN art reproduction, Ichiban badge and maximum 300 damage type on the known blue/purple pouch.",
+          "Matching Kirby birthday sticker page and narrow yellow/white facing-page strip reproduce the previously watched bHNdXPlKO2U 0:55 composition."
+        ],
+        "publisherPagination": {
+          "source": "https://www.bookshop-ps.com/bsp/bsp_magcode?sha=1&sho=1385906123",
+          "releaseDate": "2023-04-21",
+          "cetitanPage": 3,
+          "kirbyStickerPage": 5,
+          "limit": "Primary contents confirms issue/pagination, without complete page pixels or exact fastening."
+        },
+        "actualPagesVisible": "Sideways close-up of opaque Cetitan pouch over original Kirby birthday sticker sheet, with a narrow yellow/white adjacent-page strip. Display-only clockwise rotation makes pouch upright, Kirby left and yellow page right.",
+        "approximatePouchExtentInOriginal": [
+          0,
+          55,
+          1080,
+          835
+        ],
+        "geometryLimit": "Close-cropped original still; no complete full spread. Hidden Kirby art under pouch and outside page margins unavailable. No dewarp or raster re-export.",
+        "footageRelationship": "Matches prior observed 0:55 front-left/gutter placement. Previously watched 1:05-1:08 packet turn/lift and edited 1:12.1 card extraction remain unchanged; no additional film or frames acquired.",
+        "held": [
+          "Exact fastening remains obscured by fingers.",
+          "Initial seal opening and first emergence remain omitted by filmed edit.",
+          "Complete yellow facing page and full uncropped spread remain missing."
+        ]
+      }
+    ],
+    "displayRecommendation": "Use original interior photographs as paused book stages after exact cover opening, then transition into separate source-matched pouch action. The pouch is already printed into each photograph; do not invent hidden page art or leave a duplicate stationary pouch behind.",
+    "acquisition": {
+      "method": "Normal inspected accessible Chrome gallery, selected pageAssets original per bundle, exact byte copy to private artifact root.",
+      "requestedCount": 3,
+      "acquiredCount": 3,
+      "newFileBytes": 1640090,
+      "maximumConcurrentAssetRequests": 1,
+      "retries": 0,
+      "derivatives": [],
+      "videoDownloads": 0,
+      "videoFrameAssets": 0,
+      "rasterGeneration": 0,
+      "upscales": 0,
+      "repoWrites": 0,
+      "catalogueWrites": 0,
+      "publicPromotion": 0,
+      "outreach": 0
+    },
+    "correctionReceipt": "A stale carousel paint/DOM transition initially bundled the same-gallery cover. It was immediately inspected and renamed to the correct cover-context filename; the separately verified interior image was then prepared. No wrong image entered runtime manifest and no prior references were changed.",
+    "qualityReview": "Both 1080-square interiors are published perspective photographs with incomplete outer/facing-page content. Aspect is a review signal, not proof of crop quality. Original responses retained without HD, flat-scan, raster rotation or sharpness upgrade claims.",
+    "rejectedOrMetadataOnly": [
+      {
+        "source": "https://ninten-switch.com/corocoro-2023-5-gou-released",
+        "reason": "Monthly May 2023 preview of later Ichiban June issue; wrong physical spread for replacement."
+      },
+      {
+        "source": "https://jp.mercari.com/item/m47793820842",
+        "reason": "Explicit digital-version bonus bundle; rejected for physical magazine interior."
+      },
+      {
+        "source": "https://jp.mercari.com/item/m56748491347",
+        "reason": "Already cut loose sleeve; no bound interior."
+      },
+      {
+        "source": "https://pokeboon.com/jp/058svp-cetitan-promo/",
+        "reason": "Printing/date corroboration and card front only; no interior pixels acquired."
+      },
+      {
+        "source": "https://pokeboon.com/jp/265sp-pikachuvmax-promo/",
+        "reason": "Printing/date and physical/digital distinction only; no interior pixels acquired."
+      },
+      {
+        "source": "https://twicomi.com/manga/karubiimunohito/1649280059684044800",
+        "reason": "Exact-issue collector post indexed; no accepted matching bound-pouch still."
+      }
+    ],
+    "rights": "No photographer/publisher reproduction licence established. All three originals stay private/outside Git. Exact issue match, seller upload, provider response and owner request do not grant public/native/catalogue reproduction authority.",
+    "reviewList": [
+      {
+        "name": "Complete facing pages",
+        "action": "Find exact authorized full open-spread originals; keep close-crop limitations explicit."
+      },
+      {
+        "name": "Pikachu VMAX initial opening",
+        "action": "Need uninterrupted regular physical detachment and seal footage; still proves placement only."
+      },
+      {
+        "name": "Cetitan hidden seam",
+        "action": "Retain fastening and initial-seal uncertainty; do not fill the filmed edit."
+      },
+      {
+        "name": "Source permissions",
+        "action": "Establish source reproduction scope before public/native/catalogue use; approved API card binding unchanged."
+      }
+    ],
+    "checks": {
+      "threeOriginalHashesBytesDimensions": "PASS",
+      "threeLocalCopiesMatchBrowserExports": "PASS",
+      "localPixelsViewed": "PASS",
+      "originalMewAndPriorReferences": "No writes",
+      "browserCleanup": "Own temporary Chrome tab closed; user tabs and preview untouched"
+    }
+  },
+  "changes": {
+    "opening": "Matched cover to actual attached-insert photograph; no release on opening",
+    "inspect": "Separate inspect action to still-attached own carrier/pouch close-up, then existing filmed release",
+    "blankSpreads": "Removed fictitious blank page backgrounds",
+    "cetitan": "Clockwise90-degree interior display, hide photograph before pouch motion, preserve known edit and rightward front-up extraction",
+    "sourceFailure": "Optional exact interior hold preserves valid insert; source metadata fingerprints remain distinct from filesystem hash checks"
+  },
+  "coverage": {
+    "currentStudies": 5,
+    "actualInteriorPhotos": 5,
+    "completeFlatSpreads": 0,
+    "inventoryRows": 43,
+    "casesInInventory": 4,
+    "additionalWooper": true,
+    "completeHistoricalDenominator": null
+  },
+  "sourceAcquisition": {
+    "newInteriorFiles": 5,
+    "newInteriorBytes": 1472279,
+    "additionalContextCoverFiles": 1,
+    "additionalContextCoverBytes": 711196,
+    "privateImageFilesTotal": 21,
+    "privateImageBytesTotal": 8365802,
+    "newPublicAssets": 0,
+    "rasterEdits": 0,
+    "upscales": 0,
+    "videoDownloads": 0,
+    "videoFrameAssets": 0
+  },
+  "validation": {
+    "javascriptSyntax": "PASS",
+    "whitespace": "PASS",
+    "runtimeCopies": "PASS",
+    "fiveActualFiles": [
+      {
+        "caseId": "1996-sheet",
+        "status": "PASS_HASH_BYTES_DIMENSIONS_DECODE",
+        "file": "1996-11-bound-insert-bulbagarden-original.jpeg",
+        "bytes": 181479
+      },
+      {
+        "caseId": "2000-cleffa",
+        "status": "PASS_HASH_BYTES_DIMENSIONS_DECODE",
+        "file": "2000-02-cleffa-bound-spread-mercari-original.jpg",
+        "bytes": 243078
+      },
+      {
+        "caseId": "2000-wooper",
+        "status": "PASS_HASH_BYTES_DIMENSIONS_DECODE",
+        "file": "2000-01-wooper-bound-spread-ebay-original.webp",
+        "bytes": 118828
+      },
+      {
+        "caseId": "2022-packet",
+        "status": "PASS_HASH_BYTES_DIMENSIONS_DECODE",
+        "file": "2022-pikachu-bound-interior-fril-original.jpg",
+        "bytes": 638319
+      },
+      {
+        "caseId": "2023-cetitan",
+        "status": "PASS_HASH_BYTES_DIMENSIONS_DECODE",
+        "file": "2023-cetitan-bound-interior-fril-original.jpg",
+        "bytes": 290575
+      }
+    ],
+    "originalMewSha256": "6d195a76f228ba3971961ed758d9763ca072de3ad23cd315bdb83cc4a19e22c7",
+    "browser": {
+      "allFiveInsideStates": "PASS_ATTACHED_CARDS_DISABLED",
+      "normalCetitanInspectTurnLiftSlide": "PASS",
+      "consoleErrors": [],
+      "viewport320": {
+        "clientWidth": 305,
+        "scrollWidth": 305,
+        "matWidth": 279,
+        "photoWidth": 231,
+        "captionStatusGap": 14,
+        "result": "PASS"
+      },
+      "viewportOverrideReset": true,
+      "proof": "real-interiors-cetitan-final.jpg"
+    },
+    "independentReview": {
+      "status": "PASS_NO_ACTIONABLE_FINDINGS",
+      "baselineRevision": "9cef6d1adb94370a50673ce65d77867612bcd0a7",
+      "reviewer": "independent read-only magazine reviewer",
+      "checkedAt": "2026-10-16T21:45:24.867682+00:00",
+      "runtimeScenarioGroups": 16,
+      "adverseFixtures": 80,
+      "includes": [
+        "Five actual-interior pauses and650ms inspection transitions with attached cards",
+        "Queued reset/case-change completion races andA/B/A stale failed load rejection",
+        "User/system reduced motion, background/pagehide and skip cancellation",
+        "60malformed interior metadata fields",
+        "5swapped source rows",
+        "5missing source rows",
+        "5failed interior images",
+        "5preserved core source gates",
+        "Hanging optional-interior timeout fallback"
+      ],
+      "fiveOriginals": "PASS_HASH_BYTES_HEADER_DIMENSIONS_1472279_BYTES",
+      "runtimeCopies": "PASS",
+      "javascriptSyntax": "PASS",
+      "whitespace": "PASS",
+      "visualSourceCheck": "Real partial photos, no flattened/generated margins; photo hidden before physical release and no duplicate pouch or invented hidden Kirby art",
+      "writesByReviewer": 0,
+      "scopeLimit": "Mock lifecycle plus file/source checks; browser proof is separate, no installed-phone/native/public delivery proof"
+    },
+    "prototypeHashes": {
+      "docs/prototypes/corocoro-unpacking-study.html": "dc41af209e1c3a775a57149215c1c6607cc3f820d34b9d5703aafb93efd05e61",
+      "docs/prototypes/corocoro-unpacking-study.js": "25cd6329f8e8c46e537fe6a310058586c72d97b014fd7ed2b222cdbbe609e344"
+    }
+  },
+  "limits": [
+    "All interiors are partial perspective photographs, not complete flat scans",
+    "Photograph and footage do not establish same physical copy",
+    "Hidden page art, fastening, initial seal and film edits remain unresolved",
+    "Wooper context and front, and Jigglypuff front, retain low-detail limits",
+    "Jigglypuff copy cannot exclude identical1998reprint",
+    "Native Cetitan status remains scan_acquisition_required",
+    "Public/native image rights and physical finish/edition bindings remain held"
+  ],
+  "operations": {
+    "nativeSourceChanges": 0,
+    "ownershipBindings": 0,
+    "catalogueWrites": 0,
+    "priceRefreshes": 0,
+    "remoteDatabaseOperations": 0,
+    "deployments": 0,
+    "merges": 0,
+    "nativeBuilds": 0,
+    "otaUpdates": 0,
+    "testFlightSubmissions": 0
+  }
+}

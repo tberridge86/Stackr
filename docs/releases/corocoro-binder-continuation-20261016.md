@@ -1,5 +1,7 @@
 # CoroCoro magazine reveal continuation — 16 October 2026
 
+**Latest owner continuation:** [Actual inside pages for all five current studies](corocoro-real-interiors-20261016.md) replace the blank spreads. Cover opening pauses on the photographed insert before a separate close-up and card-specific release. [Current source/validation receipt](corocoro-real-interiors-20261016.json) retains partial-photo quality, unseen fastening/seal operations and private-image boundaries. The original Mew benchmark remains unchanged.
+
 The original Shining Mew paper pull, printed sleeve and card reference remain the visual benchmark. This candidate adds eleven verified issue-to-printing navigation links, ten documented insert distributions and named source references for all eighteen missing preview covers. New cover images and physical-variant ownership bindings remain held.
 
 ## Result and delivery state

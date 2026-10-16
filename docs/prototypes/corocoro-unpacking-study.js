@@ -19,6 +19,13 @@
     '2022-packet': ['2022-02-monthly-cover-publisher.jpg', 'b08bb1b42d8eeefc8fa792145db884995af7aa8685db18bde3525563f7695909', 450, 652, 'private-reference', 'https://corocoro-news.jp/news/320097/'],
     '2023-cetitan': ['2023-06-ichiban-cover-publisher.jpg', '09cc99afb544d66f90d20d6b3ca3c513d5c6a098f6807d8a0e1f431f5956c43d', 450, 565, 'private-reference', 'https://corocoro-news.jp/news/362389/'],
   };
+  const interiorReferences = {
+    '1996-sheet': ['1996-11-bound-insert-bulbagarden-original.jpeg', 'abbdb8ab8b8b6882308b78925d2c2df725ecc5d86b5bddb9d2e715173b2591e5', 778, 831, 0, 'https://bulbapedia.bulbagarden.net/wiki/File:Nov_1996_corocoro_insert.jpeg', 'The two-card carrier is still inside the magazine, beside the model page.'],
+    '2000-cleffa': ['2000-02-cleffa-bound-spread-mercari-original.jpg', '5201353df8fdc62b9c083e2e21e0a81b993dd2ac7407fc1f2beef33d4d50be14', 1080, 1080, 0, 'https://jp.mercari.com/item/m18118128540', 'Cleffa’s pink carrier lies over the other inserts, opposite the Doraemon advertisement.'],
+    '2000-wooper': ['2000-01-wooper-bound-spread-ebay-original.webp', '723cb6d3fa7e8256a737d8b028461c776545da289df0f6389bc249b6879b8b1d', 687, 932, 0, 'https://www.ebay.com/itm/377179937389', 'Wooper’s blue carrier is beside the gutter, opposite the game advertisement. This photograph is soft.'],
+    '2022-packet': ['2022-pikachu-bound-interior-fril-original.jpg', '1144e8adedc5510e965bf568de51f5cb10b64b5fa5eaf03e05adfd348bb5aa59', 1080, 1080, 0, 'https://item.fril.jp/f52f0158bba71551ef760a5eff22fbbc', 'The regular printed sleeve is inside the magazine, beside the Start Deck 100 page.'],
+    '2023-cetitan': ['2023-cetitan-bound-interior-fril-original.jpg', 'f5c44620eafea95889d0171eb834d4255c0fca1280f41fd78d0b4e642d6e4940', 1080, 1080, 90, 'https://item.fril.jp/71c47f00b93e0aee209ae10a6e8333c2', 'Cetitan’s pouch lies over the Kirby birthday stickers. The facing page is only partly visible.'],
+  };
   get('reduce').checked = systemMotion.matches;
 
   function element(tag, cls, text) {
@@ -153,7 +160,8 @@
     const closed = journey && journey.phase !== 'insert';
     get('play').disabled = !ready || Boolean(animation) || (!closed && !next);
     get('play').textContent = !ready ? 'References unavailable' : closed
-      ? journey.phase === 'delivery-front' ? 'Turn the printed pouch' : journey.phase === 'delivery-reverse' ? 'Lift the pouch free'
+      ? ['inside', 'inspecting'].includes(journey.phase) ? activeCase.kind === 'sheet' ? 'Inspect the card sheet' : journey.delivery ? 'Inspect the pouch' : 'Inspect the printed sleeve'
+        : journey.phase === 'delivery-front' ? 'Turn the printed pouch' : journey.phase === 'delivery-reverse' ? 'Lift the pouch free'
         : journey.coverAvailable ? 'Open magazine' : 'View insert reference' : !next ? 'Cards revealed'
       : next.phase === 'loose' ? 'Flip ' + next.name : activeCase.kind === 'packet' ? 'Slide out the card' : 'Peel ' + next.name;
     get('skip').disabled = !ready || (!closed && !next);
@@ -169,13 +177,21 @@
   function settle(card, action) {
     if (action === 'open') {
       journey.shell.hidden = true;
+      journey.interior.hidden = false;
+      journey.phase = 'inside';
+      get('stage').dataset.journey = 'inside';
+      get('hint').textContent = journey.interiorAvailable ? 'Inside the magazine · actual photograph' : 'Inside-page photograph unavailable';
+      get('phase').textContent = journey.interiorAvailable ? interiorReferences[get('case').value][6]
+        : 'The interior reference is unavailable. Inspect the separately verified insert.';
+    } else if (action === 'inspect') {
+      journey.interior.hidden = true;
       if (journey.delivery) {
         journey.phase = 'delivery-front';
         journey.delivery.hidden = false;
         journey.pouch.disabled = false;
         get('stage').dataset.journey = 'delivery';
-        get('hint').textContent = 'Printed pouch · turn across gutter · lift free';
-        get('phase').textContent = 'The printed pouch is beside the gutter. Turn it to inspect the other side.';
+        get('hint').textContent = 'Pouch close-up · turn · supported lift';
+        get('phase').textContent = 'Inspect the pouch close-up. Turn it as shown in the footage.';
       } else showInsert();
     } else if (action === 'turn-pouch') {
       journey.phase = 'delivery-reverse';
@@ -202,6 +218,7 @@
   function showInsert() {
     journey.phase = 'insert';
     journey.shell.hidden = true;
+    journey.interior.hidden = true;
     if (journey.delivery) { journey.delivery.hidden = true; journey.pouch.disabled = true; }
     journey.insert.hidden = false;
     get('stage').dataset.journey = 'insert';
@@ -214,6 +231,7 @@
       journey.phase = 'closed';
       journey.shell.hidden = false;
       journey.insert.hidden = true;
+      journey.interior.hidden = true;
       if (journey.delivery) {
         journey.delivery.hidden = true;
         journey.pouch.disabled = true;
@@ -254,7 +272,7 @@
     if (run !== epoch) return;
     journey.cover.style.transform = 'rotateY(160deg)';
     turn.cancel();
-    const target = journey.delivery ?? journey.insert;
+    const target = journey.interior;
     target.hidden = false;
     get('phase').textContent = 'Inspect the original insert reference before releasing the card.';
     const presentation = [
@@ -269,6 +287,30 @@
     animation = null;
     moving = null;
     settle(null, 'open');
+    current.cancel();
+  }
+  async function inspectInsert() {
+    if (!ready || journey?.phase !== 'inside' || animation) return;
+    if (get('reduce').checked || systemMotion.matches) { settle(null, 'inspect'); return; }
+    const run = ++epoch;
+    moving = { action: 'inspect' };
+    journey.phase = 'inspecting';
+    get('stage').dataset.journey = 'inspecting';
+    get('phase').textContent = 'Moving closer to inspect the insert…';
+    const target = journey.delivery ?? journey.insert;
+    target.hidden = false;
+    const motions = [
+      journey.interior.animate([{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(1.12)' }], { duration: 650, fill: 'forwards' }),
+      target.animate([{ opacity: 0, transform: 'scale(.9)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 650, easing: 'ease-out', fill: 'forwards' }),
+    ];
+    const current = { finished: Promise.all(motions.map(item => item.finished)), cancel: () => motions.forEach(item => item.cancel()) };
+    animation = current;
+    controls();
+    try { await current.finished; } catch { return; }
+    if (run !== epoch) return;
+    animation = null;
+    moving = null;
+    settle(null, 'inspect');
     current.cancel();
   }
   async function handlePouch() {
@@ -292,6 +334,7 @@
     current.cancel();
   }
   async function perform(card) {
+    if (journey?.phase === 'inside') { await inspectInsert(); return; }
     if (journey?.phase === 'delivery-front' || journey?.phase === 'delivery-reverse') { await handlePouch(); return; }
     if (journey && journey.phase !== 'insert') { await openMagazine(); return; }
     if (!ready || !card || animation || card.phase === 'revealed') return;
@@ -357,6 +400,35 @@
     journey.cover.replaceChildren(element('span', 'magazine-cover-held', activeCase.issue + ' · exact cover reference unavailable'));
     get('cover').hidden = true;
   }
+  function holdInterior() {
+    journey.interiorAvailable = false;
+    journey.interior.replaceChildren(element('p', 'interior-held', 'Actual inside-page photograph unavailable. Continue to the verified insert reference.'));
+  }
+  function renderInterior(id) {
+    const interior = element('div', 'interior-view');
+    interior.hidden = true;
+    get('stage').append(interior);
+    Object.assign(journey, { interior, interiorAvailable: false, interiorUrl: null });
+    const expected = interiorReferences[id];
+    const receipt = references.magazineInteriors?.[id];
+    const valid = expected && receipt?.file === expected[0] && receipt.sha256 === expected[1]
+      && receipt.width === expected[2] && receipt.height === expected[3] && receipt.displayRotation === expected[4]
+      && receipt.sourcePage === expected[5] && receipt.location === 'private-reference' && receipt.scope === 'private_reference'
+      && receipt.referenceOnly === true && receipt.publicDisplayApproved === false && receipt.sourceLicenceEstablished === false
+      && receipt.kind === 'perspective_bound_interior';
+    if (!valid) { holdInterior(); return; }
+    const frame = element('div', 'interior-photo');
+    const image = element('img');
+    image.src = localImage(receipt.file);
+    image.alt = activeCase.issue + ' · photographed bound insert and visible neighbouring pages';
+    if (receipt.displayRotation === 90) image.classList.add('rotate-clockwise');
+    frame.append(image);
+    interior.append(frame, element('span', 'interior-caption', 'Actual interior photograph · partial view'));
+    journey.interiorAvailable = true;
+    journey.interiorUrl = image.src;
+    get('sources').append(sourceLink('Inspect the actual inside pages ↗', receipt.sourcePage));
+    get('evidence').append(element('p', '', interiorReferences[id][6] + ' The photograph is a perspective, partial view; it is not a complete flat spread. The close-up uses a separate reference of the same insert. The transition does not recreate removal from the binding.'));
+  }
   function renderMagazine(id) {
     const stage = get('stage');
     const insert = element('div', 'insert-view');
@@ -370,6 +442,7 @@
     stage.replaceChildren(insert, shell);
     stage.dataset.journey = 'closed';
     journey = { phase: 'closed', shell, cover, insert, coverAvailable: false, coverUrl: null };
+    renderInterior(id);
     if (id === '2023-cetitan') renderPouchDelivery();
     const expected = coverReferences[id];
     const receipt = references.magazineCovers?.[id];
@@ -400,7 +473,7 @@
     const delivery = element('div', 'delivery-view');
     delivery.hidden = true;
     const spread = element('div', 'delivery-book');
-    spread.setAttribute('aria-label', 'Reconstructed open spread with Cetitan’s original printed pouch');
+    spread.setAttribute('aria-label', 'Close-up of Cetitan’s original printed pouch faces');
     const pouch = element('button', 'delivery-pouch');
     pouch.type = 'button';
     pouch.disabled = true;
@@ -568,9 +641,11 @@
       image.onerror = () => { clearTimeout(timer); resolve(false); };
       image.src = url;
     });
-    const [checks, coverReady] = await Promise.all([Promise.all(urls.map(check)), journey.coverUrl ? check(journey.coverUrl) : false]);
+    const [checks, coverReady, interiorReady] = await Promise.all([Promise.all(urls.map(check)), journey.coverUrl ? check(journey.coverUrl) : false,
+      journey.interiorUrl ? check(journey.interiorUrl) : false]);
     if (run !== loadEpoch) return;
     if (journey.coverUrl && !coverReady) holdCover();
+    if (journey.interiorUrl && !interiorReady) holdInterior();
     ready = checks.every(Boolean);
     reset();
   }
@@ -584,7 +659,7 @@
     const scenes = {
       '1996-sheet': {
         kind: 'sheet', title: 'Open CoroCoro. Find the two-card sheet.',
-        intro: 'Start with the November 1996 cover, inspect the matched insert, then keep the old Pocket Monsters backs facing up while releasing the paper. Turn each loose card to reveal its front.',
+        intro: 'Open the November 1996 cover to its photographed two-card insert. Inspect the sheet, keep the old Pocket Monsters backs facing up while releasing the paper, then turn each loose card over.',
         hint: 'Backs facing up · peel the paper · flip', issue: 'Monthly CoroCoro Comic · November 1996', label: 'Ivy Pikachu & Jigglypuff',
         note: 'Ivy Pikachu shows the original Ken Sugimori credit. Jigglypuff uses a small reference image; its pictured copy cannot distinguish the 1996 original from the identical 1998 reprint.',
         start: 'Both backs match the sheet. Choose a card.',
@@ -593,7 +668,7 @@
       },
       '2000-cleffa': {
         kind: 'sheet', title: 'Find Cleffa inside CoroCoro.',
-        intro: 'Open the February 2000 cover and inspect Cleffa’s own carrier. Support the card while the backing curls away from its lower-left arrow, then turn the loose card over.',
+        intro: 'Open the February 2000 cover to the photographed insert layers. Inspect Cleffa’s pink carrier, support the card while the backing curls from its lower-left arrow, then turn it over.',
         hint: 'Lower-left corner · careful peel · flip', issue: 'Monthly CoroCoro Comic · February 2000', label: 'Cleffa · ピィ',
         note: 'Cleffa uses its own pink carrier, right-hand instruction strip and original Japanese February front. The printed No.173 is its species number.',
         start: 'Back facing up. Begin at the lower-left arrow.',
@@ -602,7 +677,7 @@
       },
       '2000-wooper': {
         kind: 'sheet', title: 'Open CoroCoro for Wooper.',
-        intro: 'Start with the January 2000 cover and inspect the blue-wave carrier. Use its lower-left arrow, keep Wooper supported and release the paper before turning the card over.',
+        intro: 'Open the January 2000 cover to its photographed blue-wave insert. Inspect the carrier, use its lower-left arrow and keep Wooper supported while releasing the paper before turning it over.',
         hint: 'Lower-left corner · supported peel · flip', issue: 'Monthly CoroCoro Comic · January 2000', label: 'Wooper · ウパー · additional issue',
         note: 'Wooper has its own blue-wave carrier and red instruction strip. Its front is a small 300 × 419 reference. This issue is additional to the current magazine list.',
         start: 'Back facing up. Begin at the lower-left arrow.',
@@ -611,7 +686,7 @@
       },
       '2022-packet': {
         kind: 'packet', title: 'From magazine to Pikachu VMAX.',
-        intro: 'Open the February 2022 physical-magazine cover and inspect its printed sleeve. The watched extraction begins with the side already open, and Pikachu VMAX slides right with its front facing up.',
+        intro: 'Open the February 2022 physical-magazine cover to its photographed bound sleeve. Inspect the sleeve, then follow the filmed rightward extraction from its already-open side, front facing up.',
         hint: 'Right-side extraction · front facing up', issue: 'Monthly CoroCoro Comic · February 2022', label: 'Pikachu VMAX · 265/S-P',
         note: 'The pictured sleeve is the regular physical-magazine insert. The card image matches Japanese 265/S-P; physical finish remains unverified.',
         start: 'The side is already open. Slide the card out.',
@@ -620,12 +695,12 @@
       },
       '2023-cetitan': {
         kind: 'packet', title: 'Find Cetitan’s printed pouch.',
-        intro: 'Open the June 2023 Ichiban cover, turn the printed pouch across the gutter and gently lift it free. Continue from the filmed edit, then draw Cetitan to the right, front facing up.',
+        intro: 'Open the June 2023 Ichiban cover to the photographed pouch over Kirby stickers. Inspect its close-up, turn and support it as it lifts. Continue from the filmed edit, drawing Cetitan right, front facing up.',
         hint: 'Already partly out · draw right · front up', issue: 'CoroCoro Ichiban · June 2023', label: 'Cetitan · 058/SV-P',
         note: 'This is Cetitan’s own two-sided printed pouch. The Japanese 058/SV-P front is a private reference; its app scan remains pending.',
         start: 'After the film edit: the card is partly out, front facing up.',
         sources: [['Watch the open spread and pouch turn · 0:50 ↗','https://www.youtube.com/watch?v=bHNdXPlKO2U&t=50s'],['Watch the post-edit extraction · 1:12 ↗','https://www.youtube.com/watch?v=bHNdXPlKO2U&t=72s'],['Inspect both June pouch faces ↗','https://jp.mercari.com/item/m88749424307'],['Inspect the exact Japanese printing ↗','https://www.pokemon-card.com/card-search/details.php/card/43690']],
-        evidence: 'At 0:55 the pouch front lies left of the gutter over a Kirby sticker page. By 1:05 it has turned reverse-up onto the right; supported lifting follows, with fastening obscured by fingers. This preview uses the original pouch faces on an unprinted reconstructed spread; the interior artwork and exact positioning are not scans. The film’s back cover shows its green spine on the left at 0:43, establishing a right front-cover hinge. At about 1:12 an edit skips the seal opening and first emergence. The resumed shot shows an already protruding card sliding right, front up. The printed perforation guide does not establish that omitted operation.',
+        evidence: 'At 0:55 the pouch front lies left of the gutter over a Kirby sticker page. By 1:05 it has turned reverse-up onto the right; supported lifting follows, with fastening obscured by fingers. The actual interior photograph shows the same Kirby birthday insert. It is rotated clockwise for display. A separate close-up uses the original pouch faces for the turn and lift; page art hidden under the pouch is not reconstructed. The film’s back cover shows its green spine on the left at 0:43, establishing a right front-cover hinge. At about 1:12 an edit skips the seal opening and first emergence. The resumed shot shows an already protruding card sliding right, front up. The printed perforation guide does not establish that omitted operation.',
       },
     };
     activeCase = scenes[id];
@@ -635,7 +710,7 @@
     get('cover').hidden = true;
     get('sources').replaceChildren(...activeCase.sources.map(([label,url]) => sourceLink(label,url)));
     get('evidence').replaceChildren(element('p', '', activeCase.evidence),
-      element('p', '', 'The exact issue cover is a reference. The page turn, blank page spread and transition to the insert are reconstructions. They do not establish photographed interior pages, fastening or a binding-removal step that the footage omits.'),
+      element('p', '', 'The cover opens to an actual attached-insert photograph when the local source is available. Cover motion and the transition to a separate insert close-up are presentation choices. Hidden fastening and seal-opening steps remain unresolved.'),
       element('p', '', 'This preview does not change your collection. The original 2001 Mew reveal remains the benchmark.'));
     get('phase').textContent = 'Loading the local reference images…';
     try {
