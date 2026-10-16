@@ -1,22 +1,22 @@
 {
   "schemaVersion": "stackr-owner-artwork-production-evidence-v1",
   "inventoryId": "STACKR-ARTWORK-20261012",
-  "updatedAt": "2026-10-16T16:30:51.028Z",
+  "updatedAt": "2026-10-16T18:13:05.933Z",
   "scope": "Exact saved artwork list; original identities retained; actual production verification required",
   "summary": {
-    "checkedAt": "2026-10-16T16:28:41.003Z",
+    "checkedAt": "2026-10-16T18:12:08.567Z",
     "totalTasks": 2944,
     "totalBatches": 161,
-    "newlyPublishedFronts": 1339,
+    "newlyPublishedFronts": 1347,
     "previouslyCorrectedCasesVerified": 605,
-    "liveVerifiedTasks": 1944,
+    "liveVerifiedTasks": 1952,
     "completedBatches": 85,
-    "remainingTasks": 1000,
+    "remainingTasks": 992,
     "remainingBatches": 76,
     "remainingGroups": [
       {
         "task": "Find permitted exact card fronts",
-        "items": 708
+        "items": 700
       },
       {
         "task": "Find permitted Traditional Chinese set logos",
@@ -31,22 +31,22 @@
         "items": 0
       }
     ],
-    "sourceLeadTargets": 1255,
+    "sourceLeadTargets": 1263,
     "scope": "Fixed saved list, retaining original identities; completion requires actual production API and image verification. Source gathering alone is not completion.",
     "queuedItems": 0,
     "queuedBatches": 0,
-    "frontTasksNotYetGathered": 694,
+    "frontTasksNotYetGathered": 674,
     "smallOriginalCandidates": 13,
-    "frontTasksNotYetPrepared": 708,
+    "frontTasksNotYetPrepared": 700,
     "contentHeldOriginalCandidates": 0,
-    "sourceAcquiredPendingPreparation": 1,
+    "sourceAcquiredPendingPreparation": 13,
     "sourceIdentityMetadataHolds": 26,
     "ownerSuppliedJapaneseGalleryLeads": {
       "suppliedSets": 23,
       "fixedBatchesCovered": 69,
       "fixedTasksCovered": 1479,
-      "coveredTasksAlreadyLive": 807,
-      "coveredTasksRemaining": 672,
+      "coveredTasksAlreadyLive": 815,
+      "coveredTasksRemaining": 664,
       "unprovidedSets": [],
       "sourceInventorySha256": "68aeb67adc1716a32e1539fc815b210e243c8f2ec15c6d5a5d059a1bbf914fe1",
       "exactPrintingOrLicenceApprovalClaimed": false,
@@ -113,10 +113,10 @@
       "scopeFile": "all-owner-links-working-queue.json",
       "scopeSha256": "dce8019d6367877078b63a26bbd7ce9a52a8c4f8a8cbe7b9c20faa98ff7eb2c9",
       "uniqueCardTasks": 1572,
-      "cardTasksAlreadyLive": 835,
-      "cardTasksRemaining": 737,
+      "cardTasksAlreadyLive": 843,
+      "cardTasksRemaining": 729,
       "historicalLogoResearchTasks": 36,
-      "remainingCombinedWork": 773,
+      "remainingCombinedWork": 765,
       "remainingCombinedBatches": 63,
       "remainingOutsideBoundProvidedLinks": 227,
       "originalBatchIdsRetained": true,
@@ -951,26 +951,26 @@
     "sourceAcquiredFinishHeld": 2,
     "currentContinuationSourceCaptureTotals": {
       "sourceMetadataGets": 1935,
-      "sourceOriginalGets": 670,
-      "retainedSourceOriginalCandidates": 670,
-      "acceptedAwaitingPreparation": 1,
+      "sourceOriginalGets": 770,
+      "retainedSourceOriginalCandidates": 770,
+      "acceptedAwaitingPreparation": 13,
       "sourceReviewPending": 0,
-      "qualityOrEditionHeld": 317,
+      "qualityOrEditionHeld": 397,
       "finishHeld": 3,
       "prepared": 0,
-      "newLiveVerified": 340,
+      "newLiveVerified": 348,
       "metadataGetCountsExcludeWebSearchAndCachedWebExtractions": true,
-      "uniqueSourcePrintingCandidates": 661,
+      "uniqueSourcePrintingCandidates": 761,
       "additionalAlternateTcGSourceCandidatesPendingReview": 0,
       "printingStatePartitionCountsStillTracksHeldOldCandidatesUntilAlternateAccepted": false,
-      "totalPreparedThisContinuation": 340,
+      "totalPreparedThisContinuation": 348,
       "partition": {
-        "live": 340,
+        "live": 348,
         "prepared": 0,
-        "acceptedAwaitingPreparation": 1,
-        "qualityOrEditionHeld": 317,
+        "acceptedAwaitingPreparation": 13,
+        "qualityOrEditionHeld": 397,
         "finishHeld": 3,
-        "totalUnique": 661
+        "totalUnique": 761
       },
       "accessDeniedMetadataGets": 3,
       "alternateCandidateCount": 9,
@@ -986,7 +986,24 @@
       "ordinaryPcg334Wave003OriginalGets": 20,
       "ordinaryPcg334Wave004OriginalGets": 20,
       "ordinaryPcg334Wave005OriginalGets": 20,
-      "ordinaryPcg334Wave006OriginalGets": 20
+      "ordinaryPcg334Wave006OriginalGets": 20,
+      "ordinaryPcg334Wave007OriginalGets": 20,
+      "separateOwnerExistingArtworkUpgradeOperations": {
+        "sourceMetadataGets": 1,
+        "sourceOriginalGets": 1,
+        "additionalRetainedOriginals": 1,
+        "alreadyLivePrinting": true,
+        "excludedFromFixedMissingTaskPartition": true,
+        "fixed2944PopulationChange": 0,
+        "liveCountDelta": 0,
+        "preparedQualityUpgradeTargets": 1
+      },
+      "ordinaryPcg334Wave008OriginalGets": 20,
+      "privatelyPreparedAwaitingFormalQueue": 0,
+      "acceptedAwaitingPreparationIncludesPrivatePackagesNotYetInFormalQueue": false,
+      "ordinaryPcg334Wave009OriginalGets": 20,
+      "ordinaryPcg334Wave010OriginalGets": 20,
+      "ordinaryPcg334Wave011OriginalGets": 20
     },
     "sourceAcquiredEditionHeld": 89,
     "nextChallengeDarkness97Cohort": {
@@ -2482,6 +2499,136 @@
       "actualHandoffSha256": "3c659fd6bb5e09914bee135136d45c4640ca28b32398b4f8a9e60479476cd743",
       "physicalFinishCertified": false,
       "deviceVerified": false
+    },
+    "ownerRequestedThreeArtworkEnhancements": {
+      "ownerInstruction": "These pictures are needed; enhance wherever possible.",
+      "fixedMissingArtworkPopulationChange": 0,
+      "separateExistingArtworkScope": true,
+      "Golduck50a": {
+        "printingId": "df57fe68-bbdc-4828-8fa0-4666ca5cabd8",
+        "status": "Already live; existing600x825original clearerthan suppliedcopy; retain"
+      },
+      "Drowzee74a": {
+        "printingId": "9c59cef3-b7be-4821-a617-23c71adca370",
+        "status": "Already live; existing600x825original largerandclearerthan supplied356x499; retain"
+      },
+      "BulbasaurMEW001": {
+        "printingId": "783db704-7783-4ef9-8d8d-c00da4c7defd",
+        "status": "Protected run stopped before catalogue publication after a read-only manifest timeout; both rehearsals rolled back exactly; four immutable objects verified and reusable; bounded repair and actual API checks pending",
+        "currentOriginal": [
+          600,
+          825
+        ],
+        "selectedOriginal": [
+          655,
+          914
+        ],
+        "sourceMetadataRequests": 1,
+        "sourceOriginalRequests": 1,
+        "finiteDecisionSha256": "f84f544aee361c63b60d199cf7e74b9a7b917b6fc576ad09547c3f0ce0ce4f0a",
+        "sourceHandoffSha256": "2cc23f2686a80ae120f51c95a84cc092682a3079e5b7b2b2809fdd6413e6c78c",
+        "independentSourceReviewSha256": "c0b5e341fc059351d090d95edff876eeaf48bf9a8ac97e57ec417be18fdf1a27",
+        "normalVariantAndReverseExplicitNormalArtReferencePreserved": true,
+        "oldAssetsAndRollbackRequired": true,
+        "actuallyPublished": false,
+        "physicalFinishCertified": false,
+        "HDClaimed": false,
+        "privateHandoffSha256": "76d2c3efda70a61e3466c5e07fb7b6360fb44d6f310b9e66afa83cb0b03148ea",
+        "independentPrivateReviewSha256": "8dde0f79abbb3d041695d25e4efd2d9b19e75fc7c0da9a29e32315e58e5c6800",
+        "archiveAssetId": 647979461,
+        "preparedOriginals": 1,
+        "preparedDerivatives": 3,
+        "failedProtectedRunId": 38940305628,
+        "failedRunPreservationSha256": "592735e2f0addc1722ac7c5e8c18bfa64c559f3df2c4db888e56a9f7a6ccf22d",
+        "verifiedReusablePublicObjects": 4
+      }
+    },
+    "nextPCG5Wave006007Eight": {
+      "status": "PRIVATE_REVIEW_PASS_ARCHIVE_UPLOADED_ONCE_PUBLISHER_PENDING",
+      "accepted": 8,
+      "prepared": 0,
+      "published": 0,
+      "combinedFiniteDecisionSha256": "51d722e237e5f2e237dfa5aac51747efd75c7c932ac2199bfd8205353ea9cc77",
+      "source007RegistrationSha256": "c9f3320b1f92ca66e67d6b7c8485d3c23adc67922d2f7c0b58739f0d3fdbe379",
+      "fossilV2IndependentReviewSha256": "a88497cd804222950a654cfffb37e6d77b05af7cbe406ff44faa8375ed14698c",
+      "rawSource007PartitionRetained": {
+        "candidates": 4,
+        "held": 16
+      },
+      "derivedFiniteSource007Partition": {
+        "accepted": 7,
+        "held": 13
+      },
+      "exactFossilExceptions": [
+        "PCG5-077",
+        "PCG5-078",
+        "PCG5-079"
+      ],
+      "sourceAuthorApprovalFlagsFalsePreserved": true,
+      "privatePreparedOriginals": 8,
+      "privatePreparedDerivatives": 24,
+      "privateHandoffSha256": "3b21a81758aadda95aa562f014adf8455b997043d3eda1493d5128bb87ca0f86",
+      "independentPrivateReviewSha256": "01f8a91dc328f8643a2a949f304fcc0ef4beff0d0034c07de3c09ebc559be755",
+      "archiveAssetId": 648009411,
+      "rootSourceArchiveBindingSha256": "d26fb3fa8caecc7adedebb7a41a83ca6547f0bf20b5820de0c58f6d8ab657db2",
+      "rootUploadReceiptSha256": "b0c64431e59ad14a7dff444cc76cdcced4c844bfe8c8655e921cb79ccf13b0ec"
+    },
+    "nextPCG6Wave008": {
+      "status": "SOURCE20_REGISTERED_THREE_ACCEPTED_SEVENTEEN_HELD_PENDING_FINITE_GROUP",
+      "accepted": 3,
+      "held": 17,
+      "prepared": 0,
+      "published": 0,
+      "sourceHandoffSha256": "4f600dd25d3ffdb2744a140921a2bc71cc0e922a3c7fec12ea67dde4086e5762",
+      "independentSourceReviewSha256": "59955361dc218092e491465947bd5bdf02e25eaf880b37c81e634e96f3addcfe",
+      "rootDecisionSha256": "ae9fa3fa807f3d59f66742d77af7c3980bf362dfbc823957e239663599eade54",
+      "registrationSha256": "8b8dcc2ecdf5167ca5141e395e08814b856fdb9b8234e89c8faa0b1dc248d8c2",
+      "metadataNativeLabelsRetainedDespiteActualJapanesePrintLabels": true
+    },
+    "pendingPrivateArtworkCohorts": [
+      {
+        "cohortId": "PCG5-WAVE006007-EIGHT-FRONTS-20261016",
+        "label": "Japanese PCG5 card pictures",
+        "originalBatchIds": [
+          "JP-CARDS-031",
+          "JP-CARDS-032"
+        ],
+        "fronts": 8,
+        "privatePreparedOriginals": 8,
+        "privatePreparedDerivatives": 24,
+        "publishedVerified": 8,
+        "status": "Complete: protected publication and actual API/CDN/app-helper checks independently passed",
+        "nextAction": "Retain delivery and rollback evidence; installed-device review belongs to the next app build.",
+        "privateHandoffSha256": "3b21a81758aadda95aa562f014adf8455b997043d3eda1493d5128bb87ca0f86",
+        "independentPrivateReviewSha256": "01f8a91dc328f8643a2a949f304fcc0ef4beff0d0034c07de3c09ebc559be755",
+        "archiveAssetId": 648009411,
+        "archiveSha256": "57ddd63643250633faf619aa60ae9eae936e59b1bbc1f1e159b98bf202fbeb68",
+        "formallyQueuedOriginals": 8,
+        "independentPublisherReviewSha256": "a2d31c130b4652e506cf8e0a6d39810737ab9dc912fc893a0367469c54542285",
+        "productionRunId": 38942896698,
+        "independentActualReviewSha256": "491eea88a3ef6b577bf8d941aa633e51d7c56733cf72b44114f373986eeaec9c",
+        "rootRetainedDeliverySha256": "c4363eda7c9cbb415b0a7facc860de882308e0b149434db7654897ef81babbb0"
+      }
+    ],
+    "bundledTraditionalChineseLogoIntegration": {
+      "status": "36 logos integrated in app source; next app build and installed checks pending",
+      "sourceMainCommit": "9c70b88040f88c82c1b4e92eb2551fa142183593",
+      "pullRequest": "https://github.com/tberridge86/Stackr/pull/395",
+      "originalBatchIds": [
+        "TC-LOGOS-001",
+        "TC-LOGOS-002",
+        "TC-LOGOS-003",
+        "TC-LOGOS-004"
+      ],
+      "logos": 36,
+      "aiEnhancedDerivatives": 35,
+      "officialSourceOriginals": 1,
+      "rootGitByteHashChecks": 36,
+      "rootReconciliationSha256": "ab70a5b8a60700c205c36f6f242db5ea86ab941cb5752a290b5e14e34d766c51",
+      "fixedMissingCompletionDelta": 0,
+      "productionAPIPublished": false,
+      "appBuildDelivered": false,
+      "nextAction": "Keep all 36 exact-ID bundled assets in the next separately authorized app build, then verify the installed app; source integration does not count as live API publication."
     }
   },
   "ownerSuppliedAdditionalSourceLeads": [
@@ -3224,17 +3371,17 @@
     "extraPermissionPromptRequired": false,
     "sourceLicenceFacts": "Existing source facts retained; owner queue direction does not invent vendor licence metadata."
   },
-  "preparedOriginals": 1242,
-  "preparedDerivatives": 3726,
-  "publishedVerifiedOriginals": 1242,
+  "preparedOriginals": 1250,
+  "preparedDerivatives": 3750,
+  "publishedVerifiedOriginals": 1250,
   "queuedItems": 0,
   "preparedByLanguage": {
     "en": 433,
-    "ja": 809
+    "ja": 817
   },
   "publishedVerifiedByLanguage": {
     "en": 433,
-    "ja": 809
+    "ja": 817
   },
   "failedProductionRuns": [
     {
@@ -3605,6 +3752,10 @@
     {
       "queueId": "PCG3-WAVE003004-EXACT7-SHARED-FRONTS-20261016",
       "releaseAssetId": 647356345
+    },
+    {
+      "queueId": "PCG5-WAVE006007-EXACT8-SHARED-FRONTS-20261016",
+      "releaseAssetId": 648009411
     }
   ],
   "holds": [
@@ -6827,6 +6978,30 @@
       "contentSha256": "16eb6a68c75fb08c610a3e1ef8725d0804919b0544187821228811a79f8da8e6"
     },
     {
+      "itemId": "card:5e9079b2-596b-4247-947e-bddc69c30257",
+      "printingId": "5e9079b2-596b-4247-947e-bddc69c30257",
+      "batchId": "JP-CARDS-031",
+      "setCode": "PCG5",
+      "collectorReference": "064",
+      "name": "スピンダ",
+      "status": "source_quality_or_readability_unresolved",
+      "requiredAction": "Find a clearer complete original so the printed body, edition area and edges can be checked.",
+      "width": 299,
+      "height": 398
+    },
+    {
+      "itemId": "card:9ad1b9a4-d08c-4870-b295-c12ef9c18e00",
+      "printingId": "9ad1b9a4-d08c-4870-b295-c12ef9c18e00",
+      "batchId": "JP-CARDS-031",
+      "setCode": "PCG5",
+      "collectorReference": "065",
+      "name": "ビブラバ",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 929,
+      "height": 1300
+    },
+    {
       "itemId": "card:9ba01146-ce52-4de0-8c20-7df3bf51f6f9",
       "printingId": "9ba01146-ce52-4de0-8c20-7df3bf51f6f9",
       "batchId": "JP-CARDS-031",
@@ -6866,6 +7041,30 @@
       "contentSha256": null
     },
     {
+      "itemId": "card:65cd8377-6c02-4335-80f4-5ce28d40bc44",
+      "printingId": "65cd8377-6c02-4335-80f4-5ce28d40bc44",
+      "batchId": "JP-CARDS-031",
+      "setCode": "PCG5",
+      "collectorReference": "069",
+      "name": "ケクレオン",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 1130,
+      "height": 1600
+    },
+    {
+      "itemId": "card:353c4fc9-5003-4b97-acd5-7b7a25aef869",
+      "printingId": "353c4fc9-5003-4b97-acd5-7b7a25aef869",
+      "batchId": "JP-CARDS-031",
+      "setCode": "PCG5",
+      "collectorReference": "070",
+      "name": "ヌズリーフ",
+      "status": "source_frame_completeness_unresolved",
+      "requiredAction": "Find a complete card front with all four corners and outer borders visible.",
+      "width": 224,
+      "height": 290
+    },
+    {
       "itemId": "card:681eebe7-3e07-498b-976f-007b77a61da7",
       "printingId": "681eebe7-3e07-498b-976f-007b77a61da7",
       "batchId": "JP-CARDS-031",
@@ -6874,6 +7073,30 @@
       "name": "シフトリー",
       "status": "source_finish_metadata_conflict",
       "requiredAction": "Resolve catalogue normal vs source/native rarity and variant finish metadata before any exact-normal replacement; do not infer physical finish or alter live variants."
+    },
+    {
+      "itemId": "card:42b0db9e-bb4d-4ded-aa70-fc7ddad48c76",
+      "printingId": "42b0db9e-bb4d-4ded-aa70-fc7ddad48c76",
+      "batchId": "JP-CARDS-031",
+      "setCode": "PCG5",
+      "collectorReference": "073",
+      "name": "アロン",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "itemId": "card:151afa1c-0b18-4fa6-886f-75ba6f461fa5",
+      "printingId": "151afa1c-0b18-4fa6-886f-75ba6f461fa5",
+      "batchId": "JP-CARDS-031",
+      "setCode": "PCG5",
+      "collectorReference": "074",
+      "name": "レイロン",
+      "status": "source_watermarked_original",
+      "requiredAction": "Find a clean original without seller lettering, with the full card and its corners visible.",
+      "width": 1140,
+      "height": 1600
     },
     {
       "itemId": "card:36930be7-d9e3-403a-810c-274e6f6a03ba",
@@ -6886,6 +7109,66 @@
       "requiredAction": "Resolve catalogue normal vs source/native rarity and variant finish metadata before any exact-normal replacement; do not infer physical finish or alter live variants."
     },
     {
+      "itemId": "card:35f37d88-f586-4c34-8dea-320617b17070",
+      "printingId": "35f37d88-f586-4c34-8dea-320617b17070",
+      "batchId": "JP-CARDS-032",
+      "setCode": "PCG5",
+      "collectorReference": "076",
+      "name": "Registeel Star",
+      "status": "source_special_card_qualification_unresolved",
+      "requiredAction": "Resolve the exact Pokemon star identity and printed one-per-deck rule against source and catalogue metadata; retain unknown physical edition and finish.",
+      "width": 738,
+      "height": 1043
+    },
+    {
+      "itemId": "card:021f9cd9-4482-4fd1-b0f3-694138cec313",
+      "printingId": "021f9cd9-4482-4fd1-b0f3-694138cec313",
+      "batchId": "JP-CARDS-032",
+      "setCode": "PCG5",
+      "collectorReference": "080",
+      "name": "フィールドワーカー",
+      "status": "source_surface_or_lighting_quality_unresolved",
+      "requiredAction": "Find a clean, evenly lit complete card front without visible linear marks or strong reflections; keep the cause of this photo quality issue unverified.",
+      "width": 739,
+      "height": 1032
+    },
+    {
+      "itemId": "card:0f9afaf2-172b-43e3-b28b-d3b8c2bcb38b",
+      "printingId": "0f9afaf2-172b-43e3-b28b-d3b8c2bcb38b",
+      "batchId": "JP-CARDS-032",
+      "setCode": "PCG5",
+      "collectorReference": "083",
+      "name": "巨大な切り株",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 1165,
+      "height": 1600
+    },
+    {
+      "itemId": "card:de8649af-9770-4f34-afc1-2d6308e1d128",
+      "printingId": "de8649af-9770-4f34-afc1-2d6308e1d128",
+      "batchId": "JP-CARDS-032",
+      "setCode": "PCG5",
+      "collectorReference": "085",
+      "name": "パワーツリー",
+      "status": "source_graded_slab_or_overlay_held",
+      "requiredAction": "Find a clean complete card front without a holder, lot sticker or seller overlay; retain any additional edition or framing issue.",
+      "width": 500,
+      "height": 376
+    },
+    {
+      "itemId": "card:f03d38d4-2131-4637-9405-08d5ae196680",
+      "printingId": "f03d38d4-2131-4637-9405-08d5ae196680",
+      "batchId": "JP-CARDS-032",
+      "setCode": "PCG5",
+      "collectorReference": "086",
+      "name": "エネルギーを反応させます",
+      "status": "source_category_metadata_conflict",
+      "requiredAction": "Resolve the actual Energy front versus cached Trainer metadata; retain the current catalogue category and find an exact clean edition.",
+      "width": 593,
+      "height": 834
+    },
+    {
       "itemId": "card:c9a54e78-1232-4864-a039-9ca65c59cc56",
       "printingId": "c9a54e78-1232-4864-a039-9ca65c59cc56",
       "batchId": "JP-CARDS-033",
@@ -6894,6 +7177,18 @@
       "name": "雑草",
       "status": "visible_first_edition_stamp_unbound",
       "requiredAction": "Visible1EDITION mark does not bind to current edition-neutral normal tuple."
+    },
+    {
+      "itemId": "card:1cea4394-2a69-4cfa-856e-853e8b22590f",
+      "printingId": "1cea4394-2a69-4cfa-856e-853e8b22590f",
+      "batchId": "JP-CARDS-033",
+      "setCode": "PCG6",
+      "collectorReference": "002",
+      "name": "カクナ",
+      "status": "source_finish_qualification_unresolved",
+      "requiredAction": "Find a clear original whose photographed finish can be matched to the current normal variant; keep the observed sparkle pattern as an unresolved finish follow-up.",
+      "width": 444,
+      "height": 620
     },
     {
       "itemId": "card:e8c67bd9-1d74-4c33-a8bd-4de5087278a0",
@@ -6909,6 +7204,18 @@
       "contentSha256": "90f7685897d977e72e5aca3da8ea57d87ed87b1169d1c87ba653f083e2878456"
     },
     {
+      "itemId": "card:ee90c861-8301-4aa7-8f50-7c2bff659bf0",
+      "printingId": "ee90c861-8301-4aa7-8f50-7c2bff659bf0",
+      "batchId": "JP-CARDS-033",
+      "setCode": "PCG6",
+      "collectorReference": "004",
+      "name": "ゴルバット",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 549,
+      "height": 776
+    },
+    {
       "itemId": "card:7ffb93c5-fd0a-430c-8eb2-4df2cdfc784e",
       "printingId": "7ffb93c5-fd0a-430c-8eb2-4df2cdfc784e",
       "batchId": "JP-CARDS-033",
@@ -6922,6 +7229,18 @@
       "contentSha256": "a39e1033275bd214648dd79ea8b423fccc644bf967d99c9cb73c3184c224e08d"
     },
     {
+      "itemId": "card:0cd46c04-34c5-4c82-9cea-5412b805eb92",
+      "printingId": "0cd46c04-34c5-4c82-9cea-5412b805eb92",
+      "batchId": "JP-CARDS-033",
+      "setCode": "PCG6",
+      "collectorReference": "006",
+      "name": "おしっこ",
+      "status": "source_frame_completeness_unresolved",
+      "requiredAction": "Find a complete card front with all four corners and outer borders visible.",
+      "width": 1118,
+      "height": 1600
+    },
+    {
       "itemId": "card:382e83c4-b0bf-434e-9c89-52f2172e6428",
       "printingId": "382e83c4-b0bf-434e-9c89-52f2172e6428",
       "batchId": "JP-CARDS-033",
@@ -6933,6 +7252,18 @@
       "width": 1007,
       "height": 1397,
       "contentSha256": "f4df1ba4a2b48d5d5d69606e0841dde8b39b979a85bf3e20b71c7c16a6a970a1"
+    },
+    {
+      "itemId": "card:e4ee7fda-8ded-4801-9e04-14a584244fe6",
+      "printingId": "e4ee7fda-8ded-4801-9e04-14a584244fe6",
+      "batchId": "JP-CARDS-033",
+      "setCode": "PCG6",
+      "collectorReference": "009",
+      "name": "照らされます",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 750,
+      "height": 1046
     },
     {
       "itemId": "card:ac8aa714-4f99-4a02-b100-2a561cd3410d",
@@ -6956,6 +7287,18 @@
       "name": "クロバット（デルタ種）",
       "status": "source_finish_metadata_conflict",
       "requiredAction": "Resolve catalogue normal vs source/native rarity and variant finish metadata before any exact-normal replacement; do not infer physical finish or alter live variants."
+    },
+    {
+      "itemId": "card:7064ef59-0664-450f-9f25-23da4d595cb6",
+      "printingId": "7064ef59-0664-450f-9f25-23da4d595cb6",
+      "batchId": "JP-CARDS-033",
+      "setCode": "PCG6",
+      "collectorReference": "012",
+      "name": "同上",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 926,
+      "height": 1600
     },
     {
       "itemId": "card:174b6768-9049-4254-9145-7b6b8c2b50b8",
@@ -6982,6 +7325,54 @@
       "width": 375,
       "height": 500,
       "contentSha256": "85f9624e91ea5b2d86deac7623e1f948755e6cf8aea45c688c491d896367f4dd"
+    },
+    {
+      "itemId": "card:f30c4ea8-f302-4ae1-98f6-bec26368877c",
+      "printingId": "f30c4ea8-f302-4ae1-98f6-bec26368877c",
+      "batchId": "JP-CARDS-033",
+      "setCode": "PCG6",
+      "collectorReference": "015",
+      "name": "日当たりの良いキャストフォーム",
+      "status": "source_frame_completeness_unresolved",
+      "requiredAction": "Find a complete card front with all four corners and outer borders visible.",
+      "width": 710,
+      "height": 1062
+    },
+    {
+      "itemId": "card:47381873-a668-437c-a375-4f1afb2d39e6",
+      "printingId": "47381873-a668-437c-a375-4f1afb2d39e6",
+      "batchId": "JP-CARDS-033",
+      "setCode": "PCG6",
+      "collectorReference": "016",
+      "name": "バゴン（デルタ種）",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 760,
+      "height": 1285
+    },
+    {
+      "itemId": "card:feb5064c-6a2d-4947-bfab-0c4904ec1969",
+      "printingId": "feb5064c-6a2d-4947-bfab-0c4904ec1969",
+      "batchId": "JP-CARDS-033",
+      "setCode": "PCG6",
+      "collectorReference": "017",
+      "name": "シェルゴン（デルタ種）",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 1145,
+      "height": 1600
+    },
+    {
+      "itemId": "card:a463e1de-d676-4d91-8dce-e655d005252d",
+      "printingId": "a463e1de-d676-4d91-8dce-e655d005252d",
+      "batchId": "JP-CARDS-033",
+      "setCode": "PCG6",
+      "collectorReference": "018",
+      "name": "フレレオン（デルタ種）",
+      "status": "source_graded_slab_or_overlay_held",
+      "requiredAction": "Find a clean complete card front without a holder, lot sticker or seller overlay; retain any additional edition or framing issue.",
+      "width": 760,
+      "height": 1285
     },
     {
       "itemId": "card:62988687-da1a-4471-ac33-c19f3c69d255",
@@ -7023,6 +7414,54 @@
       "contentSha256": "709ebb795d2588da44b23554a8a21bdf9cd48ac154075e137e815c938fc3a048"
     },
     {
+      "itemId": "card:36955324-2cf6-4d9c-825b-4cb805aebf36",
+      "printingId": "36955324-2cf6-4d9c-825b-4cb805aebf36",
+      "batchId": "JP-CARDS-033",
+      "setCode": "PCG6",
+      "collectorReference": "024",
+      "name": "同上",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 1120,
+      "height": 1525
+    },
+    {
+      "itemId": "card:59a7feff-edc3-456c-8a46-53326009cf93",
+      "printingId": "59a7feff-edc3-456c-8a46-53326009cf93",
+      "batchId": "JP-CARDS-033",
+      "setCode": "PCG6",
+      "collectorReference": "025",
+      "name": "スローキング",
+      "status": "source_detail_obscured_by_display_stand",
+      "requiredAction": "Find a complete front without a stand hiding the collector number, footer or outer corners.",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "itemId": "card:2ea2a7e9-28d4-4251-be56-76bdd0f41d46",
+      "printingId": "2ea2a7e9-28d4-4251-be56-76bdd0f41d46",
+      "batchId": "JP-CARDS-034",
+      "setCode": "PCG6",
+      "collectorReference": "026",
+      "name": "雨のキャストフォーム",
+      "status": "source_frame_completeness_unresolved",
+      "requiredAction": "Find a complete card front with all four corners and outer borders visible.",
+      "width": 710,
+      "height": 1052
+    },
+    {
+      "itemId": "card:72f52a7c-9b86-4843-9972-1595d9972022",
+      "printingId": "72f52a7c-9b86-4843-9972-1595d9972022",
+      "batchId": "JP-CARDS-034",
+      "setCode": "PCG6",
+      "collectorReference": "027",
+      "name": "スノークラウドキャストフォーム",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 1011,
+      "height": 1423
+    },
+    {
       "itemId": "card:08a369d2-bbc5-4d6c-914b-c1970eb3e9a9",
       "printingId": "08a369d2-bbc5-4d6c-914b-c1970eb3e9a9",
       "batchId": "JP-CARDS-034",
@@ -7046,6 +7485,18 @@
       "contentSha256": "40b4ee122161ca6374e91909bc4d9d7c6c1784ba42173d931221530ff9644687"
     },
     {
+      "itemId": "card:8d5d9109-f382-43de-b872-ea816b9d7b5e",
+      "printingId": "8d5d9109-f382-43de-b872-ea816b9d7b5e",
+      "batchId": "JP-CARDS-034",
+      "setCode": "PCG6",
+      "collectorReference": "031",
+      "name": "ホロンのヴォルトーブ",
+      "status": "source_frame_completeness_unresolved",
+      "requiredAction": "Find a complete card front with all four corners and outer borders visible.",
+      "width": 500,
+      "height": 500
+    },
+    {
       "itemId": "card:a70cedcc-9c19-4bcf-9204-8cd47ed92a4c",
       "printingId": "a70cedcc-9c19-4bcf-9204-8cd47ed92a4c",
       "batchId": "JP-CARDS-034",
@@ -7054,6 +7505,66 @@
       "name": "ホロンの電極",
       "status": "source_finish_metadata_conflict",
       "requiredAction": "Resolve catalogue normal vs source/native rarity and variant finish metadata before any exact-normal replacement; do not infer physical finish or alter live variants."
+    },
+    {
+      "itemId": "card:0be62876-a02e-4787-a30c-0b2a84be3267",
+      "printingId": "0be62876-a02e-4787-a30c-0b2a84be3267",
+      "batchId": "JP-CARDS-034",
+      "setCode": "PCG6",
+      "collectorReference": "033",
+      "name": "同上",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 760,
+      "height": 1285
+    },
+    {
+      "itemId": "card:2da26283-eb7d-4a1f-ae38-3d0c030f4cc6",
+      "printingId": "2da26283-eb7d-4a1f-ae38-3d0c030f4cc6",
+      "batchId": "JP-CARDS-034",
+      "setCode": "PCG6",
+      "collectorReference": "034",
+      "name": "ドラチーニ（デルタ種）",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 375,
+      "height": 500
+    },
+    {
+      "itemId": "card:881d3ff2-babe-4c94-b22f-a0deb9347837",
+      "printingId": "881d3ff2-babe-4c94-b22f-a0deb9347837",
+      "batchId": "JP-CARDS-034",
+      "setCode": "PCG6",
+      "collectorReference": "035",
+      "name": "ドラゴンエア（デルタ種）",
+      "status": "source_frame_completeness_unresolved",
+      "requiredAction": "Find a complete card front with all four corners and outer borders visible.",
+      "width": 897,
+      "height": 1244
+    },
+    {
+      "itemId": "card:0186fa93-38f0-4c6d-9e38-e555dca806fc",
+      "printingId": "0186fa93-38f0-4c6d-9e38-e555dca806fc",
+      "batchId": "JP-CARDS-034",
+      "setCode": "PCG6",
+      "collectorReference": "036",
+      "name": "ベルダム（デルタ種）",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 949,
+      "height": 1600
+    },
+    {
+      "itemId": "card:c58505a1-2ca9-4afa-b99b-ad590fe3fcfc",
+      "printingId": "c58505a1-2ca9-4afa-b99b-ad590fe3fcfc",
+      "batchId": "JP-CARDS-034",
+      "setCode": "PCG6",
+      "collectorReference": "037",
+      "name": "メタン（デルタ種）",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 1139,
+      "height": 1600
     },
     {
       "itemId": "card:5f785c2b-fbb9-47c6-ac60-2efc95c1c272",
@@ -7096,6 +7607,18 @@
       "requiredAction": "Resolve catalogue normal vs source/native rarity and variant finish metadata before any exact-normal replacement; do not infer physical finish or alter live variants."
     },
     {
+      "itemId": "card:f5746d08-ddff-4370-a646-16b73998f6ed",
+      "printingId": "f5746d08-ddff-4370-a646-16b73998f6ed",
+      "batchId": "JP-CARDS-034",
+      "setCode": "PCG6",
+      "collectorReference": "042",
+      "name": "ラティオス（デルタ種）",
+      "status": "source_frame_completeness_unresolved",
+      "requiredAction": "Find a complete card front with all four corners and outer borders visible.",
+      "width": 1089,
+      "height": 1527
+    },
+    {
       "itemId": "card:104cce05-edbe-4135-a91b-8a203e0b12a9",
       "printingId": "104cce05-edbe-4135-a91b-8a203e0b12a9",
       "batchId": "JP-CARDS-034",
@@ -7104,6 +7627,54 @@
       "name": "レイカザ（デルタ種）",
       "status": "source_finish_metadata_conflict",
       "requiredAction": "Resolve catalogue normal vs source/native rarity and variant finish metadata before any exact-normal replacement; do not infer physical finish or alter live variants."
+    },
+    {
+      "itemId": "card:3069ebdb-174c-4e97-9ec3-d270fc79feea",
+      "printingId": "3069ebdb-174c-4e97-9ec3-d270fc79feea",
+      "batchId": "JP-CARDS-034",
+      "setCode": "PCG6",
+      "collectorReference": "045",
+      "name": "催眠",
+      "status": "source_quality_or_readability_unresolved",
+      "requiredAction": "Find a clearer complete original so the printed body, edition area and edges can be checked.",
+      "width": 275,
+      "height": 389
+    },
+    {
+      "itemId": "card:fd3dacb6-8893-4477-8a34-17476221cb9d",
+      "printingId": "fd3dacb6-8893-4477-8a34-17476221cb9d",
+      "batchId": "JP-CARDS-034",
+      "setCode": "PCG6",
+      "collectorReference": "046",
+      "name": "同上",
+      "status": "source_graded_slab_or_overlay_held",
+      "requiredAction": "Find a clean complete card front without a holder, lot sticker or seller overlay; retain any additional edition or framing issue.",
+      "width": 926,
+      "height": 1600
+    },
+    {
+      "itemId": "card:9e8a1e20-5e5a-4c28-b3fe-64132cb2d79f",
+      "printingId": "9e8a1e20-5e5a-4c28-b3fe-64132cb2d79f",
+      "batchId": "JP-CARDS-034",
+      "setCode": "PCG6",
+      "collectorReference": "047",
+      "name": "ラルト",
+      "status": "source_quality_or_readability_unresolved",
+      "requiredAction": "Find a clearer complete original so the printed body, edition area and edges can be checked.",
+      "width": 279,
+      "height": 391
+    },
+    {
+      "itemId": "card:922c177c-3138-4765-8633-6b2a923c1bdd",
+      "printingId": "922c177c-3138-4765-8633-6b2a923c1bdd",
+      "batchId": "JP-CARDS-034",
+      "setCode": "PCG6",
+      "collectorReference": "048",
+      "name": "キルリア",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 1200,
+      "height": 1600
     },
     {
       "itemId": "card:d0dcc762-0a5d-40df-995f-966f89f30ef4",
@@ -7129,6 +7700,102 @@
       "contentSha256": "4f1bc6c0e07e36fc0df5ef4e64e44529f59a7a4e53670f075c9d336f80b39214"
     },
     {
+      "itemId": "card:d3d4aa08-839c-49eb-9544-d3466a399f44",
+      "printingId": "d3d4aa08-839c-49eb-9544-d3466a399f44",
+      "batchId": "JP-CARDS-035",
+      "setCode": "PCG6",
+      "collectorReference": "051",
+      "name": "サンドシュー",
+      "status": "source_frame_completeness_unresolved",
+      "requiredAction": "Find a complete card front with all four corners and outer borders visible.",
+      "width": 1150,
+      "height": 1600
+    },
+    {
+      "itemId": "card:faa68739-4d4c-4237-82bb-b0a3bf689fa8",
+      "printingId": "faa68739-4d4c-4237-82bb-b0a3bf689fa8",
+      "batchId": "JP-CARDS-035",
+      "setCode": "PCG6",
+      "collectorReference": "052",
+      "name": "キューボン",
+      "status": "source_quality_or_readability_unresolved",
+      "requiredAction": "Find a clearer complete original so the printed body, edition area and edges can be checked.",
+      "width": 1094,
+      "height": 1529
+    },
+    {
+      "itemId": "card:74a0976c-df34-4e9c-8995-4bd497fb0a07",
+      "printingId": "74a0976c-df34-4e9c-8995-4bd497fb0a07",
+      "batchId": "JP-CARDS-035",
+      "setCode": "PCG6",
+      "collectorReference": "053",
+      "name": "同上",
+      "status": "source_graded_slab_or_overlay_held",
+      "requiredAction": "Find a clean complete card front without a holder, lot sticker or seller overlay; retain any additional edition or framing issue.",
+      "width": 926,
+      "height": 1600
+    },
+    {
+      "itemId": "card:67f11052-7b41-4210-9d3a-079c65c4a2af",
+      "printingId": "67f11052-7b41-4210-9d3a-079c65c4a2af",
+      "batchId": "JP-CARDS-035",
+      "setCode": "PCG6",
+      "collectorReference": "054",
+      "name": "マクヒタ",
+      "status": "source_frame_completeness_unresolved",
+      "requiredAction": "Find a complete card front with all four corners and outer borders visible.",
+      "width": 707,
+      "height": 1034
+    },
+    {
+      "itemId": "card:c66a9975-1650-49f8-9d3e-f619db5eebfd",
+      "printingId": "c66a9975-1650-49f8-9d3e-f619db5eebfd",
+      "batchId": "JP-CARDS-035",
+      "setCode": "PCG6",
+      "collectorReference": "055",
+      "name": "麻山",
+      "status": "source_quality_or_readability_unresolved",
+      "requiredAction": "Find a clearer complete original so the printed body, edition area and edges can be checked.",
+      "width": 323,
+      "height": 450
+    },
+    {
+      "itemId": "card:502558c5-cf95-4974-881c-d7c511cfd1c3",
+      "printingId": "502558c5-cf95-4974-881c-d7c511cfd1c3",
+      "batchId": "JP-CARDS-035",
+      "setCode": "PCG6",
+      "collectorReference": "056",
+      "name": "グルードンスター",
+      "status": "source_special_card_qualification_unresolved",
+      "requiredAction": "Resolve the exact Pokemon star identity and printed one-per-deck rule against source and catalogue metadata; retain unknown physical edition and finish.",
+      "width": 458,
+      "height": 642
+    },
+    {
+      "itemId": "card:6d277af7-21cd-4f47-ba40-929ebda647c5",
+      "printingId": "6d277af7-21cd-4f47-ba40-929ebda647c5",
+      "batchId": "JP-CARDS-035",
+      "setCode": "PCG6",
+      "collectorReference": "057",
+      "name": "サンドスラッシュ（デルタ種）",
+      "status": "source_frame_completeness_unresolved",
+      "requiredAction": "Find a complete card front with all four corners and outer borders visible.",
+      "width": 429,
+      "height": 596
+    },
+    {
+      "itemId": "card:c3005827-c43e-434e-a81b-a2474ba73729",
+      "printingId": "c3005827-c43e-434e-a81b-a2474ba73729",
+      "batchId": "JP-CARDS-035",
+      "setCode": "PCG6",
+      "collectorReference": "058",
+      "name": "マロワク（デルタ種）",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 1200,
+      "height": 1600
+    },
+    {
       "itemId": "card:ae43359a-542f-41c2-83a5-3868f6f3387b",
       "printingId": "ae43359a-542f-41c2-83a5-3868f6f3387b",
       "batchId": "JP-CARDS-035",
@@ -7140,6 +7807,42 @@
       "width": 1133,
       "height": 1600,
       "contentSha256": "3761fa19ba53e6d201d6f8172b6ebe0dd3df1ef604b72760c753622b55a1c060"
+    },
+    {
+      "itemId": "card:abf072fb-7b04-403e-9e45-fd9275958e19",
+      "printingId": "abf072fb-7b04-403e-9e45-fd9275958e19",
+      "batchId": "JP-CARDS-035",
+      "setCode": "PCG6",
+      "collectorReference": "060",
+      "name": "ペルシャ語",
+      "status": "source_frame_completeness_unresolved",
+      "requiredAction": "Find a complete card front with all four corners and outer borders visible.",
+      "width": 994,
+      "height": 1553
+    },
+    {
+      "itemId": "card:3829a8c2-fa81-4612-8cda-7812f4115c29",
+      "printingId": "3829a8c2-fa81-4612-8cda-7812f4115c29",
+      "batchId": "JP-CARDS-035",
+      "setCode": "PCG6",
+      "collectorReference": "061",
+      "name": "同上",
+      "status": "source_graded_slab_or_overlay_held",
+      "requiredAction": "Find a clean complete card front without a holder, lot sticker or seller overlay; retain any additional edition or framing issue.",
+      "width": 968,
+      "height": 1550
+    },
+    {
+      "itemId": "card:8497896c-7111-47bf-a0a0-f4366d48f402",
+      "printingId": "8497896c-7111-47bf-a0a0-f4366d48f402",
+      "batchId": "JP-CARDS-035",
+      "setCode": "PCG6",
+      "collectorReference": "062",
+      "name": "ポリゴン",
+      "status": "source_detail_obscured_by_display_stand",
+      "requiredAction": "Find a complete front without a stand hiding the collector number, footer or outer corners.",
+      "width": 1083,
+      "height": 1600
     },
     {
       "itemId": "card:00074f7b-1794-485c-87cc-46e6e5f5272e",
@@ -7155,6 +7858,66 @@
       "contentSha256": "efe7eb074ce66b349a84c893b42f50dab512455f4bb30996f430cb4d53907ba7"
     },
     {
+      "itemId": "card:31208730-3687-4094-b883-c454ff396a40",
+      "printingId": "31208730-3687-4094-b883-c454ff396a40",
+      "batchId": "JP-CARDS-035",
+      "setCode": "PCG6",
+      "collectorReference": "064",
+      "name": "テイロウ",
+      "status": "source_quality_or_readability_unresolved",
+      "requiredAction": "Find a clearer complete original so the printed body, edition area and edges can be checked.",
+      "width": 323,
+      "height": 450
+    },
+    {
+      "itemId": "card:48aa9eb8-adbd-4a51-9c83-4aaa0632f4f7",
+      "printingId": "48aa9eb8-adbd-4a51-9c83-4aaa0632f4f7",
+      "batchId": "JP-CARDS-035",
+      "setCode": "PCG6",
+      "collectorReference": "065",
+      "name": "スウラー",
+      "status": "source_frame_completeness_unresolved",
+      "requiredAction": "Find a complete card front with all four corners and outer borders visible.",
+      "width": 1010,
+      "height": 1345
+    },
+    {
+      "itemId": "card:a0fdd90b-e1b7-4d87-bfc1-02712e047de4",
+      "printingId": "a0fdd90b-e1b7-4d87-bfc1-02712e047de4",
+      "batchId": "JP-CARDS-035",
+      "setCode": "PCG6",
+      "collectorReference": "066",
+      "name": "アズリル",
+      "status": "source_detail_obscured_by_display_stand",
+      "requiredAction": "Find a complete front without a stand hiding the collector number, footer or outer corners.",
+      "width": 1121,
+      "height": 1600
+    },
+    {
+      "itemId": "card:ede7cf5a-6e44-47b1-932c-128d6fb19eda",
+      "printingId": "ede7cf5a-6e44-47b1-932c-128d6fb19eda",
+      "batchId": "JP-CARDS-035",
+      "setCode": "PCG6",
+      "collectorReference": "067",
+      "name": "castform",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 367,
+      "height": 500
+    },
+    {
+      "itemId": "card:d241900a-3715-4182-a0e2-4b11252d1ff8",
+      "printingId": "d241900a-3715-4182-a0e2-4b11252d1ff8",
+      "batchId": "JP-CARDS-035",
+      "setCode": "PCG6",
+      "collectorReference": "068",
+      "name": "プーチエナ",
+      "status": "source_quality_or_readability_unresolved",
+      "requiredAction": "Find a clearer complete original so the printed body, edition area and edges can be checked.",
+      "width": 273,
+      "height": 389
+    },
+    {
       "itemId": "card:14264f46-d2a6-4fdf-83c5-80a2180337a1",
       "printingId": "14264f46-d2a6-4fdf-83c5-80a2180337a1",
       "batchId": "JP-CARDS-035",
@@ -7166,6 +7929,18 @@
       "width": null,
       "height": null,
       "contentSha256": null
+    },
+    {
+      "itemId": "card:f7120a9c-4e1f-49aa-bf12-6c2e48f1ab2b",
+      "printingId": "f7120a9c-4e1f-49aa-bf12-6c2e48f1ab2b",
+      "batchId": "JP-CARDS-035",
+      "setCode": "PCG6",
+      "collectorReference": "071",
+      "name": "ホロンのマグナイト",
+      "status": "source_frame_completeness_unresolved",
+      "requiredAction": "Find a complete card front with all four corners and outer borders visible.",
+      "width": 400,
+      "height": 264
     },
     {
       "itemId": "card:09408683-799f-47f5-9d22-48ae6e555279",
@@ -7191,6 +7966,90 @@
       "contentSha256": "fc1c41d2ed4d7bd11e89d3bf342fa480bfa02445db10b19fd4a04f8e465cfe3f"
     },
     {
+      "itemId": "card:ec3f81bb-f31f-40c8-9e7f-f8e609e15617",
+      "printingId": "ec3f81bb-f31f-40c8-9e7f-f8e609e15617",
+      "batchId": "JP-CARDS-035",
+      "setCode": "PCG6",
+      "collectorReference": "074",
+      "name": "スカルモリー",
+      "status": "source_frame_completeness_unresolved",
+      "requiredAction": "Find a complete card front with all four corners and outer borders visible.",
+      "width": 375,
+      "height": 500
+    },
+    {
+      "itemId": "card:6bc70b17-70f7-47d3-a300-a36e1a94d827",
+      "printingId": "6bc70b17-70f7-47d3-a300-a36e1a94d827",
+      "batchId": "JP-CARDS-036",
+      "setCode": "PCG6",
+      "collectorReference": "076",
+      "name": "ホロントランシーバー",
+      "status": "source_quality_or_readability_unresolved",
+      "requiredAction": "Find a clearer complete original so the printed body, edition area and edges can be checked.",
+      "width": 293,
+      "height": 400
+    },
+    {
+      "itemId": "card:5570d935-adc0-47aa-869e-194442b3d883",
+      "printingId": "5570d935-adc0-47aa-869e-194442b3d883",
+      "batchId": "JP-CARDS-036",
+      "setCode": "PCG6",
+      "collectorReference": "077",
+      "name": "ホロン科学者",
+      "status": "source_frame_completeness_unresolved",
+      "requiredAction": "Find a complete card front with all four corners and outer borders visible.",
+      "width": 1031,
+      "height": 786
+    },
+    {
+      "itemId": "card:b7005427-2f07-413e-8b2b-3fffe2ff1898",
+      "printingId": "b7005427-2f07-413e-8b2b-3fffe2ff1898",
+      "batchId": "JP-CARDS-036",
+      "setCode": "PCG6",
+      "collectorReference": "079",
+      "name": "ホロンメンター",
+      "status": "source_quality_or_readability_unresolved",
+      "requiredAction": "Find a clearer complete original so the printed body, edition area and edges can be checked.",
+      "width": 274,
+      "height": 389
+    },
+    {
+      "itemId": "card:084a5e7d-7df1-4719-b339-ce942599a7d1",
+      "printingId": "084a5e7d-7df1-4719-b339-ce942599a7d1",
+      "batchId": "JP-CARDS-036",
+      "setCode": "PCG6",
+      "collectorReference": "081",
+      "name": "ホロン・ラス",
+      "status": "source_frame_completeness_unresolved",
+      "requiredAction": "Find a complete card front with all four corners and outer borders visible.",
+      "width": 500,
+      "height": 500
+    },
+    {
+      "itemId": "card:db1ff564-ac6c-43c3-9963-d1ccadbee0fe",
+      "printingId": "db1ff564-ac6c-43c3-9963-d1ccadbee0fe",
+      "batchId": "JP-CARDS-036",
+      "setCode": "PCG6",
+      "collectorReference": "082",
+      "name": "ホロン研究塔",
+      "status": "source_frame_completeness_unresolved",
+      "requiredAction": "Find a complete card front with all four corners and outer borders visible.",
+      "width": 660,
+      "height": 491
+    },
+    {
+      "itemId": "card:98c504f8-d0bf-46fb-8396-a87d47859a05",
+      "printingId": "98c504f8-d0bf-46fb-8396-a87d47859a05",
+      "batchId": "JP-CARDS-036",
+      "setCode": "PCG6",
+      "collectorReference": "084",
+      "name": "ホロンエネルギーGL",
+      "status": "source_frame_completeness_unresolved",
+      "requiredAction": "Find a complete card front with all four corners and outer borders visible.",
+      "width": 741,
+      "height": 659
+    },
+    {
       "itemId": "card:be461598-b758-4665-889d-3ff57ba84719",
       "printingId": "be461598-b758-4665-889d-3ff57ba84719",
       "batchId": "JP-CARDS-037",
@@ -7201,6 +8060,114 @@
       "requiredAction": "Measured356x510JPEG is below360px detailwidth threshold; no enlargement.; Actual1EDITION stamp visible; current singleton normal/holo tuple has no edition discriminator, so exactedition remains unbound.; viper.fox lettering visible within art; unmodified original retained."
     },
     {
+      "itemId": "card:df0777b3-caa0-410d-a657-4fd341f3479f",
+      "printingId": "df0777b3-caa0-410d-a657-4fd341f3479f",
+      "batchId": "JP-CARDS-037",
+      "setCode": "PCG7",
+      "collectorReference": "002",
+      "name": "ビブラバ（デルタ種）",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 356,
+      "height": 510
+    },
+    {
+      "itemId": "card:a43eeeb4-0591-432b-a0eb-92637938e469",
+      "printingId": "a43eeeb4-0591-432b-a0eb-92637938e469",
+      "batchId": "JP-CARDS-037",
+      "setCode": "PCG7",
+      "collectorReference": "003",
+      "name": "フライゴン（デルタ種）",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 918,
+      "height": 1284
+    },
+    {
+      "itemId": "card:77af3c3c-a1e7-4d93-8a44-383044a01233",
+      "printingId": "77af3c3c-a1e7-4d93-8a44-383044a01233",
+      "batchId": "JP-CARDS-037",
+      "setCode": "PCG7",
+      "collectorReference": "004",
+      "name": "マンキー（デルタ種）",
+      "status": "source_frame_completeness_unresolved",
+      "requiredAction": "Find a complete card front with all four corners and outer borders visible.",
+      "width": 500,
+      "height": 500
+    },
+    {
+      "itemId": "card:8c60c753-d3f8-4218-acf8-978dab836269",
+      "printingId": "8c60c753-d3f8-4218-acf8-978dab836269",
+      "batchId": "JP-CARDS-037",
+      "setCode": "PCG7",
+      "collectorReference": "005",
+      "name": "プライム（デルタ種）",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 279,
+      "height": 400
+    },
+    {
+      "itemId": "card:ea8c2695-fdd3-4639-b4a6-fd510d455c5f",
+      "printingId": "ea8c2695-fdd3-4639-b4a6-fd510d455c5f",
+      "batchId": "JP-CARDS-037",
+      "setCode": "PCG7",
+      "collectorReference": "006",
+      "name": "ホース（デルタ種）",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 1255,
+      "height": 1600
+    },
+    {
+      "itemId": "card:e09e82e6-be46-4fbf-9ada-d089538a7abd",
+      "printingId": "e09e82e6-be46-4fbf-9ada-d089538a7abd",
+      "batchId": "JP-CARDS-037",
+      "setCode": "PCG7",
+      "collectorReference": "007",
+      "name": "シードラ（デルタ種）",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "itemId": "card:d62e673f-8bdd-4000-9d29-7e673a905c73",
+      "printingId": "d62e673f-8bdd-4000-9d29-7e673a905c73",
+      "batchId": "JP-CARDS-037",
+      "setCode": "PCG7",
+      "collectorReference": "008",
+      "name": "ギャラドススター（デルタ種）",
+      "status": "source_special_card_qualification_unresolved",
+      "requiredAction": "Resolve the exact Pokemon star identity and printed one-per-deck rule against source and catalogue metadata; retain unknown physical edition and finish.",
+      "width": 750,
+      "height": 1047
+    },
+    {
+      "itemId": "card:160e0e98-5ce5-467e-8db4-72204d71f134",
+      "printingId": "160e0e98-5ce5-467e-8db4-72204d71f134",
+      "batchId": "JP-CARDS-037",
+      "setCode": "PCG7",
+      "collectorReference": "009",
+      "name": "アエロダクチル（デルタ種）",
+      "status": "source_frame_completeness_unresolved",
+      "requiredAction": "Find a complete card front with all four corners and outer borders visible.",
+      "width": 1034,
+      "height": 1412
+    },
+    {
+      "itemId": "card:5b852190-c033-4432-852c-2de7a7e2fccf",
+      "printingId": "5b852190-c033-4432-852c-2de7a7e2fccf",
+      "batchId": "JP-CARDS-037",
+      "setCode": "PCG7",
+      "collectorReference": "010",
+      "name": "ラティアス（デルタ種）",
+      "status": "source_quality_or_readability_unresolved",
+      "requiredAction": "Find a clearer complete original so the printed body, edition area and edges can be checked.",
+      "width": 321,
+      "height": 450
+    },
+    {
       "itemId": "card:1d3687fc-2b6a-482f-a685-84ca3ec0301c",
       "printingId": "1d3687fc-2b6a-482f-a685-84ca3ec0301c",
       "batchId": "JP-CARDS-037",
@@ -7209,6 +8176,18 @@
       "name": "キングドラ（デルタ種）",
       "status": "source_finish_metadata_conflict",
       "requiredAction": "Resolve catalogue normal vs source/native rarity and variant finish metadata before any exact-normal replacement; do not infer physical finish or alter live variants."
+    },
+    {
+      "itemId": "card:5f1dfe48-1c8f-48ec-baa9-49f5e38f582d",
+      "printingId": "5f1dfe48-1c8f-48ec-baa9-49f5e38f582d",
+      "batchId": "JP-CARDS-037",
+      "setCode": "PCG7",
+      "collectorReference": "012",
+      "name": "オッディッシュ（デルタ種）",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 1157,
+      "height": 1600
     },
     {
       "itemId": "card:99c1bdb5-6c67-4d17-a2e2-5f610f9a7898",
@@ -7244,6 +8223,30 @@
       "requiredAction": "Resolve catalogue normal vs source/native rarity and variant finish metadata before any exact-normal replacement; do not infer physical finish or alter live variants."
     },
     {
+      "itemId": "card:f2bfcba8-5e95-4505-b154-1ecb4c526a51",
+      "printingId": "f2bfcba8-5e95-4505-b154-1ecb4c526a51",
+      "batchId": "JP-CARDS-037",
+      "setCode": "PCG7",
+      "collectorReference": "016",
+      "name": "ピッジー（デルタ種）",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 375,
+      "height": 500
+    },
+    {
+      "itemId": "card:0741d130-a9a4-4b5b-8b4a-91c64ea91270",
+      "printingId": "0741d130-a9a4-4b5b-8b4a-91c64ea91270",
+      "batchId": "JP-CARDS-037",
+      "setCode": "PCG7",
+      "collectorReference": "017",
+      "name": "ピッジット（デルタ種）",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 356,
+      "height": 510
+    },
+    {
       "itemId": "card:8c7d060d-63f4-4311-94f3-45f7439be15d",
       "printingId": "8c7d060d-63f4-4311-94f3-45f7439be15d",
       "batchId": "JP-CARDS-037",
@@ -7255,6 +8258,30 @@
       "width": 1098,
       "height": 1528,
       "contentSha256": "a6cc0c7316a1c964e0f9f1ea9f47c35ee84a7a41c79459cecf0e044a81bd8bb3"
+    },
+    {
+      "itemId": "card:e3324fbf-0a23-4db7-a99e-02ffa85c0243",
+      "printingId": "e3324fbf-0a23-4db7-a99e-02ffa85c0243",
+      "batchId": "JP-CARDS-037",
+      "setCode": "PCG7",
+      "collectorReference": "019",
+      "name": "ゴルダック（デルタ種）",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 1166,
+      "height": 1600
+    },
+    {
+      "itemId": "card:6ea7bf92-3d9a-4e5d-8553-2fd0879853fe",
+      "printingId": "6ea7bf92-3d9a-4e5d-8553-2fd0879853fe",
+      "batchId": "JP-CARDS-037",
+      "setCode": "PCG7",
+      "collectorReference": "020",
+      "name": "カブト（デルタ種）",
+      "status": "source_frame_completeness_unresolved",
+      "requiredAction": "Find a complete card front with all four corners and outer borders visible.",
+      "width": 1015,
+      "height": 1443
     },
     {
       "itemId": "card:84d1dc7d-4943-4e1c-91f1-f2d84c2dc355",
@@ -7288,6 +8315,30 @@
       "name": "ギャラドス（デルタ種）",
       "status": "source_finish_metadata_conflict",
       "requiredAction": "Resolve catalogue normal vs source/native rarity and variant finish metadata before any exact-normal replacement; do not infer physical finish or alter live variants."
+    },
+    {
+      "itemId": "card:5d19154a-6af0-43d9-9b53-74dadf001f0e",
+      "printingId": "5d19154a-6af0-43d9-9b53-74dadf001f0e",
+      "batchId": "JP-CARDS-037",
+      "setCode": "PCG7",
+      "collectorReference": "025",
+      "name": "暗がり（デルタ種）",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 375,
+      "height": 500
+    },
+    {
+      "itemId": "card:05415ab9-a5b9-469b-8379-85f1851e1b93",
+      "printingId": "05415ab9-a5b9-469b-8379-85f1851e1b93",
+      "batchId": "JP-CARDS-038",
+      "setCode": "PCG7",
+      "collectorReference": "026",
+      "name": "オマニテ（デルタ種）",
+      "status": "source_detail_obscured_by_display_stand",
+      "requiredAction": "Find a complete front without a stand hiding the collector number, footer or outer corners.",
+      "width": 1173,
+      "height": 1600
     },
     {
       "itemId": "card:fc7e07d2-6d64-4797-848b-8455c5a2acd9",
@@ -7342,6 +8393,42 @@
       "contentSha256": "4f1aa009f3109189bc9414888488684a46fb6e8fafa91d290aaeed34910f4860"
     },
     {
+      "itemId": "card:5fbdf3c5-eb3a-4d41-8d0c-16436af8b14b",
+      "printingId": "5fbdf3c5-eb3a-4d41-8d0c-16436af8b14b",
+      "batchId": "JP-CARDS-038",
+      "setCode": "PCG7",
+      "collectorReference": "031",
+      "name": "カルバンハ（デルタ種）",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 319,
+      "height": 455
+    },
+    {
+      "itemId": "card:a94c9294-cc60-4d3e-ad80-002771b3f35e",
+      "printingId": "a94c9294-cc60-4d3e-ad80-002771b3f35e",
+      "batchId": "JP-CARDS-038",
+      "setCode": "PCG7",
+      "collectorReference": "032",
+      "name": "シャルデド（デルタ種）",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 1136,
+      "height": 1600
+    },
+    {
+      "itemId": "card:d1487c36-c410-465f-b363-1e3bb4ce0050",
+      "printingId": "d1487c36-c410-465f-b363-1e3bb4ce0050",
+      "batchId": "JP-CARDS-038",
+      "setCode": "PCG7",
+      "collectorReference": "034",
+      "name": "ホロンのキャストフォーム",
+      "status": "source_frame_completeness_unresolved",
+      "requiredAction": "Find a complete card front with all four corners and outer borders visible.",
+      "width": 500,
+      "height": 500
+    },
+    {
       "itemId": "card:42ca2ed0-84dc-4c1d-943b-555c18d92ea0",
       "printingId": "42ca2ed0-84dc-4c1d-943b-555c18d92ea0",
       "batchId": "JP-CARDS-038",
@@ -7386,6 +8473,30 @@
       "width": 1069,
       "height": 1494,
       "contentSha256": "92c65d2c70f31545e91e9fba351540f57e28b91e406e16e0c5aa40e3306b37f1"
+    },
+    {
+      "itemId": "card:336157e6-f49f-476a-919d-ba2affa73728",
+      "printingId": "336157e6-f49f-476a-919d-ba2affa73728",
+      "batchId": "JP-CARDS-038",
+      "setCode": "PCG7",
+      "collectorReference": "039",
+      "name": "ペルシャ（デルタ種）",
+      "status": "source_first_edition_unmatched",
+      "requiredAction": "Find an exact matching edition or establish its edition mapping; the visible first-edition stamp is not qualified by the current tuple.",
+      "width": 854,
+      "height": 1107
+    },
+    {
+      "itemId": "card:df91f6b7-562e-41f7-82d4-928ed8b3b1fa",
+      "printingId": "df91f6b7-562e-41f7-82d4-928ed8b3b1fa",
+      "batchId": "JP-CARDS-038",
+      "setCode": "PCG7",
+      "collectorReference": "041",
+      "name": "ピカチュウ（デルタ種）",
+      "status": "source_frame_completeness_unresolved",
+      "requiredAction": "Find a complete card front with all four corners and outer borders visible.",
+      "width": 738,
+      "height": 1063
     },
     {
       "itemId": "card:563ae556-89ad-4416-b895-c0c197f61bc8",
@@ -112579,15 +113690,799 @@
         "priceChanges": 0,
         "ownershipChanges": 0
       }
+    },
+    {
+      "batchId": "JP-CARDS-031",
+      "itemId": "card:99d92c62-48a1-4f46-8c52-f8bd29aa7925",
+      "printingId": "99d92c62-48a1-4f46-8c52-f8bd29aa7925",
+      "setId": "f8cb8c30-41dc-42a3-977a-23baba96fa69",
+      "setCode": "PCG5",
+      "languageCode": "ja",
+      "collectorReference": "054",
+      "cardName": "カブトップス",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:61300637e00bc4b093331ef847c4217719ade13ae4bb8c7dec13522612632e8b",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-mirage-forest/kabutops-54",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/3fpauxxmjtsaapsc/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "1aef481590a120ab907c90032de39a5bc1d7c92fad83fcf13f7137198c99e0d0",
+        "byteSize": 503534,
+        "width": 1022,
+        "height": 1434,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/26d6c26b179c459c74ffc32746cd50452f7d7162e9bfbf4e4329abf556a257c7/card-grid.webp",
+          "sha256": "26d6c26b179c459c74ffc32746cd50452f7d7162e9bfbf4e4329abf556a257c7",
+          "byte_size": 23786,
+          "width": 240,
+          "height": 337,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/244ba285b862f004d6ccb5d367de1c760bdf37bc4f48cb50396864d5322b3940/search-result.webp",
+          "sha256": "244ba285b862f004d6ccb5d367de1c760bdf37bc4f48cb50396864d5322b3940",
+          "byte_size": 4226,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/25e6a849ea53ab0bc89f3e3452846faa7a9c8b4e4418c91ddac0f3c4f8306ae9/detail-page.webp",
+          "sha256": "25e6a849ea53ab0bc89f3e3452846faa7a9c8b4e4418c91ddac0f3c4f8306ae9",
+          "byte_size": 283256,
+          "width": 720,
+          "height": 1010,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "054",
+        "printed_collector_number": "054/086",
+        "catalogue_set_code": "PCG5",
+        "printed_set_code_literal": null,
+        "printed_set_mark_observation": "Two black trees in white circular mark beside054/086.",
+        "printed_national_dex": null,
+        "canonical_native_label_preserved": "カブトップス",
+        "canonical_english_label_preserved": null,
+        "actual_printed_name": "カブトプス",
+        "actual_printed_form": null,
+        "actual_printed_owner": null,
+        "actual_printed_name_qualifier": null,
+        "category": null,
+        "actual_printed_category": "Pokemon",
+        "actual_native_category": "Pokemon"
+      },
+      "currentVariantCode": "holo",
+      "currentFinishCode": "holo",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T18:12:08.567Z",
+        "productionRun": 38942896698,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38942896698",
+        "publicationReceiptSha256": "f884f4084579b65d825f94a1005cc2798f5f7a4fd45103f23ed53bf0c8601d78",
+        "printingId": "99d92c62-48a1-4f46-8c52-f8bd29aa7925",
+        "assetId": "artwork-recovered-20260928:99d92c62-48a1-4f46-8c52-f8bd29aa7925:1aef481590a120ab907c90032de39a5bc1d7c92fad83fcf13f7137198c99e0d0",
+        "contentSha256": "1aef481590a120ab907c90032de39a5bc1d7c92fad83fcf13f7137198c99e0d0",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/99d92c62-48a1-4f46-8c52-f8bd29aa7925/1aef481590a120ab907c90032de39a5bc1d7c92fad83fcf13f7137198c99e0d0/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-031",
+      "itemId": "card:3b42d0a6-58d9-440f-a4fa-5dedd29bd2c1",
+      "printingId": "3b42d0a6-58d9-440f-a4fa-5dedd29bd2c1",
+      "setId": "f8cb8c30-41dc-42a3-977a-23baba96fa69",
+      "setCode": "PCG5",
+      "languageCode": "ja",
+      "collectorReference": "072",
+      "cardName": "絶対",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:b2d34101babf7b399430c38d8b3ef9a86a82fcdb5914248614bb4765050685d8",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-mirage-forest/absol-72",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/refd29f4010b69927460b3652ea75e593200192a4f11bcfb6d4c6328fc034cc9896/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "7cc5d4e4fbb7a20be902c7c9682dde8d2c0be82a6406a2c673a53ef02cf774e9",
+        "byteSize": 506646,
+        "width": 1220,
+        "height": 1600,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/c8044774c75058721b5959d8c50d2db7598d39151a2d1677d4906e1f5187ce8b/card-grid.webp",
+          "sha256": "c8044774c75058721b5959d8c50d2db7598d39151a2d1677d4906e1f5187ce8b",
+          "byte_size": 16656,
+          "width": 240,
+          "height": 315,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/f9677c230e921c251d069fa774f17f5b2e9f4355d04ff61a50d9fa39087d7d88/search-result.webp",
+          "sha256": "f9677c230e921c251d069fa774f17f5b2e9f4355d04ff61a50d9fa39087d7d88",
+          "byte_size": 3260,
+          "width": 96,
+          "height": 126,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/0ca47a8a03face45b9a4f5536ec11c842afc995796b3300aeb7322d21cf4bda7/detail-page.webp",
+          "sha256": "0ca47a8a03face45b9a4f5536ec11c842afc995796b3300aeb7322d21cf4bda7",
+          "byte_size": 211244,
+          "width": 720,
+          "height": 944,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "072",
+        "printed_collector_number": "072/086",
+        "catalogue_set_code": "PCG5",
+        "printed_set_code_literal": null,
+        "printed_set_mark_observation": "Two black trees in white circular mark beside072/086.",
+        "printed_national_dex": null,
+        "canonical_native_label_preserved": "絶対",
+        "canonical_english_label_preserved": null,
+        "actual_printed_name": "アブソル",
+        "actual_printed_form": null,
+        "actual_printed_owner": null,
+        "actual_printed_name_qualifier": null,
+        "category": null,
+        "actual_printed_category": "Pokemon",
+        "actual_native_category": "Pokemon"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T18:12:08.567Z",
+        "productionRun": 38942896698,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38942896698",
+        "publicationReceiptSha256": "f884f4084579b65d825f94a1005cc2798f5f7a4fd45103f23ed53bf0c8601d78",
+        "printingId": "3b42d0a6-58d9-440f-a4fa-5dedd29bd2c1",
+        "assetId": "artwork-recovered-20260928:3b42d0a6-58d9-440f-a4fa-5dedd29bd2c1:7cc5d4e4fbb7a20be902c7c9682dde8d2c0be82a6406a2c673a53ef02cf774e9",
+        "contentSha256": "7cc5d4e4fbb7a20be902c7c9682dde8d2c0be82a6406a2c673a53ef02cf774e9",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/3b42d0a6-58d9-440f-a4fa-5dedd29bd2c1/7cc5d4e4fbb7a20be902c7c9682dde8d2c0be82a6406a2c673a53ef02cf774e9/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-032",
+      "itemId": "card:d375bdec-7d0e-46ff-a6b9-b156ed9af609",
+      "printingId": "d375bdec-7d0e-46ff-a6b9-b156ed9af609",
+      "setId": "f8cb8c30-41dc-42a3-977a-23baba96fa69",
+      "setCode": "PCG5",
+      "languageCode": "ja",
+      "collectorReference": "077",
+      "cardName": "爪の化石",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:a6b00a82609adfbc976e9c6bfb6421e9ceeb00a492ab43e3c487dc5178cc67d8",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-mirage-forest/claw-fossil-77",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/wxtzkrzlxkam3hvn/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "80a8126ec1cbd48660d25971cce8d87a6b725d9e542f820ef4eb51b32ff74792",
+        "byteSize": 352761,
+        "width": 987,
+        "height": 1383,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/f539a1e6218435cdaeca7208d68b6184e9edc26e2b180b87e9f2cfb864237365/card-grid.webp",
+          "sha256": "f539a1e6218435cdaeca7208d68b6184e9edc26e2b180b87e9f2cfb864237365",
+          "byte_size": 17552,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/e8b66fa277be30ed191103a048a7e0b61ab73c2a09f649ba0f94396b400c6e1e/search-result.webp",
+          "sha256": "e8b66fa277be30ed191103a048a7e0b61ab73c2a09f649ba0f94396b400c6e1e",
+          "byte_size": 2904,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/0cd397893a08ffec3446eb14c86b89063ec03404b3a0c43365bc282bcc086ad0/detail-page.webp",
+          "sha256": "0cd397893a08ffec3446eb14c86b89063ec03404b3a0c43365bc282bcc086ad0",
+          "byte_size": 219690,
+          "width": 720,
+          "height": 1009,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "077",
+        "printed_collector_number": "077/086",
+        "catalogue_set_code": "PCG5",
+        "printed_set_code_literal": null,
+        "printed_set_mark_observation": "Two black trees in white circular mark beside077/086.",
+        "printed_national_dex": null,
+        "canonical_native_label_preserved": "爪の化石",
+        "canonical_english_label_preserved": null,
+        "actual_printed_name": "ツメの化石",
+        "actual_printed_form": null,
+        "actual_printed_owner": null,
+        "actual_printed_name_qualifier": null,
+        "category": null,
+        "actual_printed_category": "Trainer",
+        "actual_native_category": "Trainer"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T18:12:08.567Z",
+        "productionRun": 38942896698,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38942896698",
+        "publicationReceiptSha256": "f884f4084579b65d825f94a1005cc2798f5f7a4fd45103f23ed53bf0c8601d78",
+        "printingId": "d375bdec-7d0e-46ff-a6b9-b156ed9af609",
+        "assetId": "artwork-recovered-20260928:d375bdec-7d0e-46ff-a6b9-b156ed9af609:80a8126ec1cbd48660d25971cce8d87a6b725d9e542f820ef4eb51b32ff74792",
+        "contentSha256": "80a8126ec1cbd48660d25971cce8d87a6b725d9e542f820ef4eb51b32ff74792",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/d375bdec-7d0e-46ff-a6b9-b156ed9af609/80a8126ec1cbd48660d25971cce8d87a6b725d9e542f820ef4eb51b32ff74792/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-032",
+      "itemId": "card:54ab745b-392e-46a6-8480-b4dc593124a7",
+      "printingId": "54ab745b-392e-46a6-8480-b4dc593124a7",
+      "setId": "f8cb8c30-41dc-42a3-977a-23baba96fa69",
+      "setCode": "PCG5",
+      "languageCode": "ja",
+      "collectorReference": "078",
+      "cardName": "神秘的な化石",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:eb0f79f70a005df21967ca554727b19d8bdc5c6067e39f297b728ca3be410db7",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-mirage-forest/mysterious-fossil-78",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/corrkqozukjbnmfyf362/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "a2763347bb5a41905d1ea130bae478174c12543583e4e19634722e673f5db1d2",
+        "byteSize": 451385,
+        "width": 1600,
+        "height": 1600,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/4753e4b26c294170d1dc125c048e7f6a096d096b2595be48580c2107856ad0b1/card-grid.webp",
+          "sha256": "4753e4b26c294170d1dc125c048e7f6a096d096b2595be48580c2107856ad0b1",
+          "byte_size": 8488,
+          "width": 240,
+          "height": 240,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/d234b1ed5ac73d84a2f07c114b1a3b56681a6670e23e187ea988df8958bb6e8b/search-result.webp",
+          "sha256": "d234b1ed5ac73d84a2f07c114b1a3b56681a6670e23e187ea988df8958bb6e8b",
+          "byte_size": 1576,
+          "width": 96,
+          "height": 96,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/7699766a8269034c0854da1e0e913906b27288e9000e4a893c247237f60832df/detail-page.webp",
+          "sha256": "7699766a8269034c0854da1e0e913906b27288e9000e4a893c247237f60832df",
+          "byte_size": 73486,
+          "width": 720,
+          "height": 720,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "078",
+        "printed_collector_number": "078/086",
+        "catalogue_set_code": "PCG5",
+        "printed_set_code_literal": null,
+        "printed_set_mark_observation": "Two black trees in white circular mark beside078/086.",
+        "printed_national_dex": null,
+        "canonical_native_label_preserved": "神秘的な化石",
+        "canonical_english_label_preserved": null,
+        "actual_printed_name": "なにかの化石",
+        "actual_printed_form": null,
+        "actual_printed_owner": null,
+        "actual_printed_name_qualifier": null,
+        "category": null,
+        "actual_printed_category": "Trainer",
+        "actual_native_category": "Trainer"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T18:12:08.567Z",
+        "productionRun": 38942896698,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38942896698",
+        "publicationReceiptSha256": "f884f4084579b65d825f94a1005cc2798f5f7a4fd45103f23ed53bf0c8601d78",
+        "printingId": "54ab745b-392e-46a6-8480-b4dc593124a7",
+        "assetId": "artwork-recovered-20260928:54ab745b-392e-46a6-8480-b4dc593124a7:a2763347bb5a41905d1ea130bae478174c12543583e4e19634722e673f5db1d2",
+        "contentSha256": "a2763347bb5a41905d1ea130bae478174c12543583e4e19634722e673f5db1d2",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/54ab745b-392e-46a6-8480-b4dc593124a7/a2763347bb5a41905d1ea130bae478174c12543583e4e19634722e673f5db1d2/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-032",
+      "itemId": "card:f1ccf730-c3d2-44b6-a59d-72c0f1f6f2b9",
+      "printingId": "f1ccf730-c3d2-44b6-a59d-72c0f1f6f2b9",
+      "setId": "f8cb8c30-41dc-42a3-977a-23baba96fa69",
+      "setCode": "PCG5",
+      "languageCode": "ja",
+      "collectorReference": "079",
+      "cardName": "根の化石",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:9d0e5498240d36f81663345da5410b37fc0ff42d5a5fd6c51e3421d7fb629cca",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-mirage-forest/root-fossil-79",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/7ehneb3eptyghl5c/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "2060e56662f5366e10b2a3d7bb3099a39d36e7223b225f0338e6f8fb938e85ca",
+        "byteSize": 72626,
+        "width": 500,
+        "height": 700,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/75a3c7b65bdf870dd181c518e71161a263f484c91e6a162a06475c76c799393b/card-grid.webp",
+          "sha256": "75a3c7b65bdf870dd181c518e71161a263f484c91e6a162a06475c76c799393b",
+          "byte_size": 18192,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/d7f64d6b7e4afde531de5c85ceb0b72d1f3c4b8eb5dac81f7c32fb0c757751c1/search-result.webp",
+          "sha256": "d7f64d6b7e4afde531de5c85ceb0b72d1f3c4b8eb5dac81f7c32fb0c757751c1",
+          "byte_size": 3068,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/96085f3d8f7b2e012c4c2adc8bd864251aea96a383e54d0249aaa3961fefd738/detail-page.webp",
+          "sha256": "96085f3d8f7b2e012c4c2adc8bd864251aea96a383e54d0249aaa3961fefd738",
+          "byte_size": 79068,
+          "width": 500,
+          "height": 700,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "079",
+        "printed_collector_number": "079/086",
+        "catalogue_set_code": "PCG5",
+        "printed_set_code_literal": null,
+        "printed_set_mark_observation": "Two black trees in white circular mark beside079/086.",
+        "printed_national_dex": null,
+        "canonical_native_label_preserved": "根の化石",
+        "canonical_english_label_preserved": null,
+        "actual_printed_name": "ねっこの化石",
+        "actual_printed_form": null,
+        "actual_printed_owner": null,
+        "actual_printed_name_qualifier": null,
+        "category": null,
+        "actual_printed_category": "Trainer",
+        "actual_native_category": "Trainer"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T18:12:08.567Z",
+        "productionRun": 38942896698,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38942896698",
+        "publicationReceiptSha256": "f884f4084579b65d825f94a1005cc2798f5f7a4fd45103f23ed53bf0c8601d78",
+        "printingId": "f1ccf730-c3d2-44b6-a59d-72c0f1f6f2b9",
+        "assetId": "artwork-recovered-20260928:f1ccf730-c3d2-44b6-a59d-72c0f1f6f2b9:2060e56662f5366e10b2a3d7bb3099a39d36e7223b225f0338e6f8fb938e85ca",
+        "contentSha256": "2060e56662f5366e10b2a3d7bb3099a39d36e7223b225f0338e6f8fb938e85ca",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/f1ccf730-c3d2-44b6-a59d-72c0f1f6f2b9/2060e56662f5366e10b2a3d7bb3099a39d36e7223b225f0338e6f8fb938e85ca/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-032",
+      "itemId": "card:495d3e13-53cf-4193-b897-892e492dcef1",
+      "printingId": "495d3e13-53cf-4193-b897-892e492dcef1",
+      "setId": "f8cb8c30-41dc-42a3-977a-23baba96fa69",
+      "setCode": "PCG5",
+      "languageCode": "ja",
+      "collectorReference": "081",
+      "cardName": "奇妙な洞窟",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:5add5e6371ae36057465d55eedd33c8d0866d3419f4d8a372a985a98e4e67534",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-mirage-forest/strange-cave-81",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/corrd2xb3li3rfxlwbn5/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "4c4455af9208fe0fd572ad09fd0504d5ee389f5d1f8c55be9b8cb1ef740272b1",
+        "byteSize": 451690,
+        "width": 1600,
+        "height": 1600,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/ff757032bcdf071210c410e40b3fdff56af06acd7518a0c8dd151b920ef422a2/card-grid.webp",
+          "sha256": "ff757032bcdf071210c410e40b3fdff56af06acd7518a0c8dd151b920ef422a2",
+          "byte_size": 8492,
+          "width": 240,
+          "height": 240,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/822a3027621418402a47cbdad4be4d80bf23307264d0ac3eb4a6645b90a796e7/search-result.webp",
+          "sha256": "822a3027621418402a47cbdad4be4d80bf23307264d0ac3eb4a6645b90a796e7",
+          "byte_size": 1598,
+          "width": 96,
+          "height": 96,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/221b945da4dcf4cc3800240d036e3da02bf1ca87cf02d146f8ce629ca3adee83/detail-page.webp",
+          "sha256": "221b945da4dcf4cc3800240d036e3da02bf1ca87cf02d146f8ce629ca3adee83",
+          "byte_size": 75014,
+          "width": 720,
+          "height": 720,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "081",
+        "printed_collector_number": "081/086",
+        "catalogue_set_code": "PCG5",
+        "printed_set_code_literal": null,
+        "printed_set_mark_observation": "Two black trees in white circular mark beside081/086.",
+        "printed_national_dex": null,
+        "canonical_native_label_preserved": "奇妙な洞窟",
+        "canonical_english_label_preserved": null,
+        "actual_printed_name": "妖しい洞窟",
+        "actual_printed_form": null,
+        "actual_printed_owner": null,
+        "actual_printed_name_qualifier": null,
+        "category": null,
+        "actual_printed_category": "Trainer",
+        "actual_native_category": "Trainer"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T18:12:08.567Z",
+        "productionRun": 38942896698,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38942896698",
+        "publicationReceiptSha256": "f884f4084579b65d825f94a1005cc2798f5f7a4fd45103f23ed53bf0c8601d78",
+        "printingId": "495d3e13-53cf-4193-b897-892e492dcef1",
+        "assetId": "artwork-recovered-20260928:495d3e13-53cf-4193-b897-892e492dcef1:4c4455af9208fe0fd572ad09fd0504d5ee389f5d1f8c55be9b8cb1ef740272b1",
+        "contentSha256": "4c4455af9208fe0fd572ad09fd0504d5ee389f5d1f8c55be9b8cb1ef740272b1",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/495d3e13-53cf-4193-b897-892e492dcef1/4c4455af9208fe0fd572ad09fd0504d5ee389f5d1f8c55be9b8cb1ef740272b1/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-032",
+      "itemId": "card:48be3163-e728-45e7-b7d5-e4b5d2267507",
+      "printingId": "48be3163-e728-45e7-b7d5-e4b5d2267507",
+      "setId": "f8cb8c30-41dc-42a3-977a-23baba96fa69",
+      "setCode": "PCG5",
+      "languageCode": "ja",
+      "collectorReference": "082",
+      "cardName": "フルフレーム",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:4cdf40381d4465965de38961c738d265e73ff68ca160571052bfba7fb067fcc8",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-mirage-forest/full-flame-82",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/34ybxcgrv5bmb4mq/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "ad3e88bea140fa6b8b130530fb40921ebb455dca957729639aac008508035feb",
+        "byteSize": 68000,
+        "width": 500,
+        "height": 699,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/510c9801f2c6a743c15b1f5c558f2ce1295dfbe56744688408b7f460abcc8e7b/card-grid.webp",
+          "sha256": "510c9801f2c6a743c15b1f5c558f2ce1295dfbe56744688408b7f460abcc8e7b",
+          "byte_size": 18262,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/8ad0650c925b9310a51af62ad2be86546692403d99844080db698c82a02cc76e/search-result.webp",
+          "sha256": "8ad0650c925b9310a51af62ad2be86546692403d99844080db698c82a02cc76e",
+          "byte_size": 3034,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/9da9d03fe9c32403af572233fbd796d6fee0127ba3c4fe8c579337c44498e1db/detail-page.webp",
+          "sha256": "9da9d03fe9c32403af572233fbd796d6fee0127ba3c4fe8c579337c44498e1db",
+          "byte_size": 71236,
+          "width": 500,
+          "height": 699,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "082",
+        "printed_collector_number": "082/086",
+        "catalogue_set_code": "PCG5",
+        "printed_set_code_literal": null,
+        "printed_set_mark_observation": "Two black trees in white circular mark beside082/086.",
+        "printed_national_dex": null,
+        "canonical_native_label_preserved": "フルフレーム",
+        "canonical_english_label_preserved": null,
+        "actual_printed_name": "消えない炎",
+        "actual_printed_form": null,
+        "actual_printed_owner": null,
+        "actual_printed_name_qualifier": null,
+        "category": null,
+        "actual_printed_category": "Trainer",
+        "actual_native_category": "Trainer"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T18:12:08.567Z",
+        "productionRun": 38942896698,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38942896698",
+        "publicationReceiptSha256": "f884f4084579b65d825f94a1005cc2798f5f7a4fd45103f23ed53bf0c8601d78",
+        "printingId": "48be3163-e728-45e7-b7d5-e4b5d2267507",
+        "assetId": "artwork-recovered-20260928:48be3163-e728-45e7-b7d5-e4b5d2267507:ad3e88bea140fa6b8b130530fb40921ebb455dca957729639aac008508035feb",
+        "contentSha256": "ad3e88bea140fa6b8b130530fb40921ebb455dca957729639aac008508035feb",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/48be3163-e728-45e7-b7d5-e4b5d2267507/ad3e88bea140fa6b8b130530fb40921ebb455dca957729639aac008508035feb/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-032",
+      "itemId": "card:060248e6-200d-4e55-9c59-693b622a2bb0",
+      "printingId": "060248e6-200d-4e55-9c59-693b622a2bb0",
+      "setId": "f8cb8c30-41dc-42a3-977a-23baba96fa69",
+      "setCode": "PCG5",
+      "languageCode": "ja",
+      "collectorReference": "084",
+      "cardName": "呪われた石",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:df349ed039e3a7e3fd574faaed4795ae69626866fc6a3f0250ea4d90c7d9fbdc",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-mirage-forest/cursed-stone-84",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/uh34rolsdlxqxghb/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "8de54f528a843598606c69bf9fb2af28b72c8c10e213bd46b0b40c7cc973bc6d",
+        "byteSize": 71888,
+        "width": 500,
+        "height": 700,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/75a96e1a7cbe6c7e916c611b9fe1cbace7699c0348489ab7a72823c276d76577/card-grid.webp",
+          "sha256": "75a96e1a7cbe6c7e916c611b9fe1cbace7699c0348489ab7a72823c276d76577",
+          "byte_size": 19022,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/530cc00a88c0f3faa79b785c607506997de9130127dfaa3ddcf0ecb4272b001e/search-result.webp",
+          "sha256": "530cc00a88c0f3faa79b785c607506997de9130127dfaa3ddcf0ecb4272b001e",
+          "byte_size": 3242,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/37d40f45242aacfafb1d81731ec94f00575108ca245b947084fd9303736231c2/detail-page.webp",
+          "sha256": "37d40f45242aacfafb1d81731ec94f00575108ca245b947084fd9303736231c2",
+          "byte_size": 75704,
+          "width": 500,
+          "height": 700,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "084",
+        "printed_collector_number": "084/086",
+        "catalogue_set_code": "PCG5",
+        "printed_set_code_literal": null,
+        "printed_set_mark_observation": "Two black trees in white circular mark beside084/086.",
+        "printed_national_dex": null,
+        "canonical_native_label_preserved": "呪われた石",
+        "canonical_english_label_preserved": null,
+        "actual_printed_name": "呪われたほこら",
+        "actual_printed_form": null,
+        "actual_printed_owner": null,
+        "actual_printed_name_qualifier": null,
+        "category": null,
+        "actual_printed_category": "Trainer",
+        "actual_native_category": "Trainer"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T18:12:08.567Z",
+        "productionRun": 38942896698,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38942896698",
+        "publicationReceiptSha256": "f884f4084579b65d825f94a1005cc2798f5f7a4fd45103f23ed53bf0c8601d78",
+        "printingId": "060248e6-200d-4e55-9c59-693b622a2bb0",
+        "assetId": "artwork-recovered-20260928:060248e6-200d-4e55-9c59-693b622a2bb0:8de54f528a843598606c69bf9fb2af28b72c8c10e213bd46b0b40c7cc973bc6d",
+        "contentSha256": "8de54f528a843598606c69bf9fb2af28b72c8c10e213bd46b0b40c7cc973bc6d",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/060248e6-200d-4e55-9c59-693b622a2bb0/8de54f528a843598606c69bf9fb2af28b72c8c10e213bd46b0b40c7cc973bc6d/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     }
   ],
   "manualArtworkFollowUp": {
-    "updatedAt": "2026-10-16T16:30:05.586Z",
+    "updatedAt": "2026-10-16T18:12:39.850Z",
     "scope": "Specific follow-up details, separately from ordinary source work and active releases; current fixed inventory identities retained.",
     "collectorReferenceNote": "For older Japanese cards the Stackr reference may not be printed on the card; match its name, set, artwork and card text.",
-    "specificFollowUps": 791,
-    "ordinarySourceWorkStillOpen": 208,
-    "activeSourceOrPublicationWork": 1,
+    "specificFollowUps": 871,
+    "ordinarySourceWorkStillOpen": 108,
+    "activeSourceOrPublicationWork": 13,
     "batches": [
       {
         "batchId": "MANUAL-EN-001",
@@ -117124,6 +119019,34 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11254/mirage-forest"
           },
           {
+            "itemId": "card:5e9079b2-596b-4247-947e-bddc69c30257",
+            "printingId": "5e9079b2-596b-4247-947e-bddc69c30257",
+            "batchId": "JP-CARDS-031",
+            "languageCode": "ja",
+            "setCode": "PCG5",
+            "collectorReference": "064",
+            "name": "スピンダ",
+            "artworkType": "Card front",
+            "status": "source_quality_or_readability_unresolved",
+            "whatToFind": "Find a clearer full-card picture so its small text and edition marks can be read.",
+            "detail": "small_original_prevents_reliable_complete_body_collector_artist_and_edition_read",
+            "providedGallery": "https://www.tcgcollector.com/sets/11254/mirage-forest"
+          },
+          {
+            "itemId": "card:9ad1b9a4-d08c-4870-b295-c12ef9c18e00",
+            "printingId": "9ad1b9a4-d08c-4870-b295-c12ef9c18e00",
+            "batchId": "JP-CARDS-031",
+            "languageCode": "ja",
+            "setCode": "PCG5",
+            "collectorReference": "065",
+            "name": "ビブラバ",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed",
+            "providedGallery": "https://www.tcgcollector.com/sets/11254/mirage-forest"
+          },
+          {
             "itemId": "card:9ba01146-ce52-4de0-8c20-7df3bf51f6f9",
             "printingId": "9ba01146-ce52-4de0-8c20-7df3bf51f6f9",
             "batchId": "JP-CARDS-031",
@@ -117166,6 +119089,34 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11254/mirage-forest"
           },
           {
+            "itemId": "card:65cd8377-6c02-4335-80f4-5ce28d40bc44",
+            "printingId": "65cd8377-6c02-4335-80f4-5ce28d40bc44",
+            "batchId": "JP-CARDS-031",
+            "languageCode": "ja",
+            "setCode": "PCG5",
+            "collectorReference": "069",
+            "name": "ケクレオン",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed; foreign_seller_watermark_over_card",
+            "providedGallery": "https://www.tcgcollector.com/sets/11254/mirage-forest"
+          },
+          {
+            "itemId": "card:353c4fc9-5003-4b97-acd5-7b7a25aef869",
+            "printingId": "353c4fc9-5003-4b97-acd5-7b7a25aef869",
+            "batchId": "JP-CARDS-031",
+            "languageCode": "ja",
+            "setCode": "PCG5",
+            "collectorReference": "070",
+            "name": "ヌズリーフ",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unresolved",
+            "whatToFind": "Find a full-card picture with all four corners and outside edges visible.",
+            "detail": "small_dark_plastic_enclosure_photo_prevents_reliable_full_identity_body_read",
+            "providedGallery": "https://www.tcgcollector.com/sets/11254/mirage-forest"
+          },
+          {
             "itemId": "card:681eebe7-3e07-498b-976f-007b77a61da7",
             "printingId": "681eebe7-3e07-498b-976f-007b77a61da7",
             "batchId": "JP-CARDS-031",
@@ -117177,6 +119128,34 @@
             "status": "source_finish_metadata_conflict",
             "whatToFind": "Check whether this needs the ordinary or shiny card; the saved source descriptions disagree. Find that exact version once it is confirmed.",
             "detail": "Unresolved source/native rarity versus recorded/native variant finish metadata",
+            "providedGallery": "https://www.tcgcollector.com/sets/11254/mirage-forest"
+          },
+          {
+            "itemId": "card:42b0db9e-bb4d-4ded-aa70-fc7ddad48c76",
+            "printingId": "42b0db9e-bb4d-4ded-aa70-fc7ddad48c76",
+            "batchId": "JP-CARDS-031",
+            "languageCode": "ja",
+            "setCode": "PCG5",
+            "collectorReference": "073",
+            "name": "アロン",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed",
+            "providedGallery": "https://www.tcgcollector.com/sets/11254/mirage-forest"
+          },
+          {
+            "itemId": "card:151afa1c-0b18-4fa6-886f-75ba6f461fa5",
+            "printingId": "151afa1c-0b18-4fa6-886f-75ba6f461fa5",
+            "batchId": "JP-CARDS-031",
+            "languageCode": "ja",
+            "setCode": "PCG5",
+            "collectorReference": "074",
+            "name": "レイロン",
+            "artworkType": "Card front",
+            "status": "source_watermarked_original",
+            "whatToFind": "Find a clean card front without shop names or other lettering over the picture.",
+            "detail": "foreign_seller_watermark_over_card",
             "providedGallery": "https://www.tcgcollector.com/sets/11254/mirage-forest"
           },
           {
@@ -117194,6 +119173,81 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11254/mirage-forest"
           },
           {
+            "itemId": "card:35f37d88-f586-4c34-8dea-320617b17070",
+            "printingId": "35f37d88-f586-4c34-8dea-320617b17070",
+            "batchId": "JP-CARDS-032",
+            "languageCode": "ja",
+            "setCode": "PCG5",
+            "collectorReference": "076",
+            "name": "Registeel Star",
+            "artworkType": "Card front",
+            "status": "source_special_card_qualification_unresolved",
+            "whatToFind": "Confirm the exact special star-card version and its rules before choosing a picture.",
+            "detail": "actual_Gold_Star_special_printing_requires_finish_and_physical_identity_review",
+            "providedGallery": "https://www.tcgcollector.com/sets/11254/mirage-forest"
+          },
+          {
+            "itemId": "card:021f9cd9-4482-4fd1-b0f3-694138cec313",
+            "printingId": "021f9cd9-4482-4fd1-b0f3-694138cec313",
+            "batchId": "JP-CARDS-032",
+            "languageCode": "ja",
+            "setCode": "PCG5",
+            "collectorReference": "080",
+            "name": "フィールドワーカー",
+            "artworkType": "Card front",
+            "status": "source_surface_or_lighting_quality_unresolved",
+            "whatToFind": "Find a clean, evenly lit full-card picture without visible marks or strong reflections.",
+            "detail": "visible_vertical_light_streak_and_uneven_reflection_require_quality_review",
+            "providedGallery": "https://www.tcgcollector.com/sets/11254/mirage-forest"
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-013",
+        "items": [
+          {
+            "itemId": "card:0f9afaf2-172b-43e3-b28b-d3b8c2bcb38b",
+            "printingId": "0f9afaf2-172b-43e3-b28b-d3b8c2bcb38b",
+            "batchId": "JP-CARDS-032",
+            "languageCode": "ja",
+            "setCode": "PCG5",
+            "collectorReference": "083",
+            "name": "巨大な切り株",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed",
+            "providedGallery": "https://www.tcgcollector.com/sets/11254/mirage-forest"
+          },
+          {
+            "itemId": "card:de8649af-9770-4f34-afc1-2d6308e1d128",
+            "printingId": "de8649af-9770-4f34-afc1-2d6308e1d128",
+            "batchId": "JP-CARDS-032",
+            "languageCode": "ja",
+            "setCode": "PCG5",
+            "collectorReference": "085",
+            "name": "パワーツリー",
+            "artworkType": "Card front",
+            "status": "source_graded_slab_or_overlay_held",
+            "whatToFind": "Find the card on its own, without a grading case or shop lettering.",
+            "detail": "graded_slab_and_multiple_card_background_prevent_clean_single_front; small_card_region_prevents_reliable_full_rules_collector_artist_edition_read",
+            "providedGallery": "https://www.tcgcollector.com/sets/11254/mirage-forest"
+          },
+          {
+            "itemId": "card:f03d38d4-2131-4637-9405-08d5ae196680",
+            "printingId": "f03d38d4-2131-4637-9405-08d5ae196680",
+            "batchId": "JP-CARDS-032",
+            "languageCode": "ja",
+            "setCode": "PCG5",
+            "collectorReference": "086",
+            "name": "エネルギーを反応させます",
+            "artworkType": "Card front",
+            "status": "source_category_metadata_conflict",
+            "whatToFind": "Check the exact card type: the picture shows an Energy card, but a saved source calls it a Trainer card.",
+            "detail": "actual_Energy_class_conflicts_with_cached_native_Trainer_category; actual_first_edition_stamp_observed",
+            "providedGallery": "https://www.tcgcollector.com/sets/11254/mirage-forest"
+          },
+          {
             "itemId": "card:c9a54e78-1232-4864-a039-9ca65c59cc56",
             "printingId": "c9a54e78-1232-4864-a039-9ca65c59cc56",
             "batchId": "JP-CARDS-033",
@@ -117205,6 +119259,20 @@
             "status": "visible_first_edition_stamp_unbound",
             "whatToFind": "Confirm the intended first-edition or unstamped printing; a sharp original is retained, but its visible first-edition stamp is not matched by the current edition-neutral record.",
             "detail": "Visible1EDITION mark does not bind to current edition-neutral normal tuple.",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:1cea4394-2a69-4cfa-856e-853e8b22590f",
+            "printingId": "1cea4394-2a69-4cfa-856e-853e8b22590f",
+            "batchId": "JP-CARDS-033",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "002",
+            "name": "カクナ",
+            "artworkType": "Card front",
+            "status": "source_finish_qualification_unresolved",
+            "whatToFind": "Confirm the ordinary or shiny version: this photo has sparkle marks that have not been matched to the saved card.",
+            "detail": "actual_Metamom_002015_name_collector_and_setmark_conflict_with_cached_PCG6_Kakuna_identity; visible_sparkle_pattern_requires_finish_review_against_current_normal_tuple",
             "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
           },
           {
@@ -117222,6 +119290,20 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
           },
           {
+            "itemId": "card:ee90c861-8301-4aa7-8f50-7c2bff659bf0",
+            "printingId": "ee90c861-8301-4aa7-8f50-7c2bff659bf0",
+            "batchId": "JP-CARDS-033",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "004",
+            "name": "ゴルバット",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_Flareon_ex_004015_name_collector_setmark_conflict_with_cached_PCG6_Golbat_identity; actual_first_edition_stamp_observed; visible_EX_foil_requires_finish_review_against_current_normal_tuple",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
             "itemId": "card:7ffb93c5-fd0a-430c-8eb2-4df2cdfc784e",
             "printingId": "7ffb93c5-fd0a-430c-8eb2-4df2cdfc784e",
             "batchId": "JP-CARDS-033",
@@ -117236,6 +119318,20 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
           },
           {
+            "itemId": "card:0cd46c04-34c5-4c82-9cea-5412b805eb92",
+            "printingId": "0cd46c04-34c5-4c82-9cea-5412b805eb92",
+            "batchId": "JP-CARDS-033",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "006",
+            "name": "おしっこ",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unresolved",
+            "whatToFind": "Find a full-card picture with all four corners and outside edges visible.",
+            "detail": "actual_006015_deck_namespace_and_delta_identity_not_proven_for_current_PCG6_printing; strong_lower_left_glare_and_softness_prevent_clean_original_review; visible_reflective_pattern_requires_finish_review_against_current_normal_tuple",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
             "itemId": "card:382e83c4-b0bf-434e-9c89-52f2172e6428",
             "printingId": "382e83c4-b0bf-434e-9c89-52f2172e6428",
             "batchId": "JP-CARDS-033",
@@ -117247,6 +119343,20 @@
             "status": "visible_first_edition_stamp_unbound",
             "whatToFind": "Confirm the intended first-edition or unstamped printing; a sharp original is retained, but its visible first-edition stamp is not matched by the current edition-neutral record.",
             "detail": "visible_1st_edition_mark_does_not_match_unqualified_pointer; complete_top_outer_perimeter_not_established_canvas_edge_contact; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:e4ee7fda-8ded-4801-9e04-14a584244fe6",
+            "printingId": "e4ee7fda-8ded-4801-9e04-14a584244fe6",
+            "batchId": "JP-CARDS-033",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "009",
+            "name": "照らされます",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed",
             "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
           },
           {
@@ -117278,6 +119388,20 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
           },
           {
+            "itemId": "card:7064ef59-0664-450f-9f25-23da4d595cb6",
+            "printingId": "7064ef59-0664-450f-9f25-23da4d595cb6",
+            "batchId": "JP-CARDS-033",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "012",
+            "name": "同上",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed; graded_slab_original_not_clean_single_front; foreign_seller_overlay_on_original_canvas",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
             "itemId": "card:174b6768-9049-4254-9145-7b6b8c2b50b8",
             "printingId": "174b6768-9049-4254-9145-7b6b8c2b50b8",
             "batchId": "JP-CARDS-033",
@@ -117304,12 +119428,63 @@
             "whatToFind": "Confirm the intended first-edition or unstamped printing; a sharp original is retained, but its visible first-edition stamp is not matched by the current edition-neutral record.",
             "detail": "card_region_too_small_for_collector_artist_and_footer; visible_first_edition_stamp_not_bound_to_current_physical_tuple; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-013",
-        "items": [
+          },
+          {
+            "itemId": "card:f30c4ea8-f302-4ae1-98f6-bec26368877c",
+            "printingId": "f30c4ea8-f302-4ae1-98f6-bec26368877c",
+            "batchId": "JP-CARDS-033",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "015",
+            "name": "日当たりの良いキャストフォーム",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unresolved",
+            "whatToFind": "Find a full-card picture with all four corners and outside edges visible.",
+            "detail": "literal_main_original_is_card_back_no_front_identity_or_body",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:47381873-a668-437c-a375-4f1afb2d39e6",
+            "printingId": "47381873-a668-437c-a375-4f1afb2d39e6",
+            "batchId": "JP-CARDS-033",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "016",
+            "name": "バゴン（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed; graded_slab_original_not_clean_single_front",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:feb5064c-6a2d-4947-bfab-0c4904ec1969",
+            "printingId": "feb5064c-6a2d-4947-bfab-0c4904ec1969",
+            "batchId": "JP-CARDS-033",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "017",
+            "name": "シェルゴン（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:a463e1de-d676-4d91-8dce-e655d005252d",
+            "printingId": "a463e1de-d676-4d91-8dce-e655d005252d",
+            "batchId": "JP-CARDS-033",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "018",
+            "name": "フレレオン（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_graded_slab_or_overlay_held",
+            "whatToFind": "Find the card on its own, without a grading case or shop lettering.",
+            "detail": "graded_slab_original_not_clean_single_front",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
           {
             "itemId": "card:62988687-da1a-4471-ac33-c19f3c69d255",
             "printingId": "62988687-da1a-4471-ac33-c19f3c69d255",
@@ -117353,6 +119528,67 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
           },
           {
+            "itemId": "card:36955324-2cf6-4d9c-825b-4cb805aebf36",
+            "printingId": "36955324-2cf6-4d9c-825b-4cb805aebf36",
+            "batchId": "JP-CARDS-033",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "024",
+            "name": "同上",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:59a7feff-edc3-456c-8a46-53326009cf93",
+            "printingId": "59a7feff-edc3-456c-8a46-53326009cf93",
+            "batchId": "JP-CARDS-033",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "025",
+            "name": "スローキング",
+            "artworkType": "Card front",
+            "status": "source_detail_obscured_by_display_stand",
+            "whatToFind": "Find a full front without a stand covering its card number or corners.",
+            "detail": "display_stand_obscures_full_collector_and_lower_outer_frame; bright_header_glare_and_soft_photo_require_cleaner_original",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-014",
+        "items": [
+          {
+            "itemId": "card:2ea2a7e9-28d4-4251-be56-76bdd0f41d46",
+            "printingId": "2ea2a7e9-28d4-4251-be56-76bdd0f41d46",
+            "batchId": "JP-CARDS-034",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "026",
+            "name": "雨のキャストフォーム",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unresolved",
+            "whatToFind": "Find a full-card picture with all four corners and outside edges visible.",
+            "detail": "literal_main_original_is_card_back_no_front_identity_or_body",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:72f52a7c-9b86-4843-9972-1595d9972022",
+            "printingId": "72f52a7c-9b86-4843-9972-1595d9972022",
+            "batchId": "JP-CARDS-034",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "027",
+            "name": "スノークラウドキャストフォーム",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
             "itemId": "card:08a369d2-bbc5-4d6c-914b-c1970eb3e9a9",
             "printingId": "08a369d2-bbc5-4d6c-914b-c1970eb3e9a9",
             "batchId": "JP-CARDS-034",
@@ -117381,6 +119617,20 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
           },
           {
+            "itemId": "card:8d5d9109-f382-43de-b872-ea816b9d7b5e",
+            "printingId": "8d5d9109-f382-43de-b872-ea816b9d7b5e",
+            "batchId": "JP-CARDS-034",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "031",
+            "name": "ホロンのヴォルトーブ",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unresolved",
+            "whatToFind": "Find a full-card picture with all four corners and outside edges visible.",
+            "detail": "literal_main_original_contains_five_different_cards_not_single_front; small_target_card_region_prevents_full_collector_artist_body_edition_read",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
             "itemId": "card:a70cedcc-9c19-4bcf-9204-8cd47ed92a4c",
             "printingId": "a70cedcc-9c19-4bcf-9204-8cd47ed92a4c",
             "batchId": "JP-CARDS-034",
@@ -117392,6 +119642,76 @@
             "status": "source_finish_metadata_conflict",
             "whatToFind": "Check whether this needs the ordinary or shiny card; the saved source descriptions disagree. Find that exact version once it is confirmed.",
             "detail": "Unresolved source/native rarity versus recorded/native variant finish metadata",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:0be62876-a02e-4787-a30c-0b2a84be3267",
+            "printingId": "0be62876-a02e-4787-a30c-0b2a84be3267",
+            "batchId": "JP-CARDS-034",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "033",
+            "name": "同上",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed; graded_slab_original_not_clean_single_front",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:2da26283-eb7d-4a1f-ae38-3d0c030f4cc6",
+            "printingId": "2da26283-eb7d-4a1f-ae38-3d0c030f4cc6",
+            "batchId": "JP-CARDS-034",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "034",
+            "name": "ドラチーニ（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed; small_card_region_prevents_reliable_artist_footer_read",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:881d3ff2-babe-4c94-b22f-a0deb9347837",
+            "printingId": "881d3ff2-babe-4c94-b22f-a0deb9347837",
+            "batchId": "JP-CARDS-034",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "035",
+            "name": "ドラゴンエア（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unresolved",
+            "whatToFind": "Find a full-card picture with all four corners and outside edges visible.",
+            "detail": "soft_original_and_tight_upper_frame_require_cleaner_complete_front",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:0186fa93-38f0-4c6d-9e38-e555dca806fc",
+            "printingId": "0186fa93-38f0-4c6d-9e38-e555dca806fc",
+            "batchId": "JP-CARDS-034",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "036",
+            "name": "ベルダム（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed; graded_slab_original_not_clean_single_front",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:c58505a1-2ca9-4afa-b99b-ad590fe3fcfc",
+            "printingId": "c58505a1-2ca9-4afa-b99b-ad590fe3fcfc",
+            "batchId": "JP-CARDS-034",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "037",
+            "name": "メタン（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed",
             "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
           },
           {
@@ -117451,6 +119771,20 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
           },
           {
+            "itemId": "card:f5746d08-ddff-4370-a646-16b73998f6ed",
+            "printingId": "f5746d08-ddff-4370-a646-16b73998f6ed",
+            "batchId": "JP-CARDS-034",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "042",
+            "name": "ラティオス（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unresolved",
+            "whatToFind": "Find a full-card picture with all four corners and outside edges visible.",
+            "detail": "right_and_lower_outer_card_perimeter_not_established_in_tight_original",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
             "itemId": "card:104cce05-edbe-4135-a91b-8a203e0b12a9",
             "printingId": "104cce05-edbe-4135-a91b-8a203e0b12a9",
             "batchId": "JP-CARDS-034",
@@ -117462,6 +119796,62 @@
             "status": "source_finish_metadata_conflict",
             "whatToFind": "Check whether this needs the ordinary or shiny card; the saved source descriptions disagree. Find that exact version once it is confirmed.",
             "detail": "Unresolved source/native rarity versus recorded/native variant finish metadata",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:3069ebdb-174c-4e97-9ec3-d270fc79feea",
+            "printingId": "3069ebdb-174c-4e97-9ec3-d270fc79feea",
+            "batchId": "JP-CARDS-034",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "045",
+            "name": "催眠",
+            "artworkType": "Card front",
+            "status": "source_quality_or_readability_unresolved",
+            "whatToFind": "Find a clearer full-card picture so its small text and edition marks can be read.",
+            "detail": "small_original_prevents_reliable_complete_body_collector_artist_edition_read",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:fd3dacb6-8893-4477-8a34-17476221cb9d",
+            "printingId": "fd3dacb6-8893-4477-8a34-17476221cb9d",
+            "batchId": "JP-CARDS-034",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "046",
+            "name": "同上",
+            "artworkType": "Card front",
+            "status": "source_graded_slab_or_overlay_held",
+            "whatToFind": "Find the card on its own, without a grading case or shop lettering.",
+            "detail": "graded_slab_original_not_clean_single_front; foreign_seller_overlay_on_original_canvas",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:9e8a1e20-5e5a-4c28-b3fe-64132cb2d79f",
+            "printingId": "9e8a1e20-5e5a-4c28-b3fe-64132cb2d79f",
+            "batchId": "JP-CARDS-034",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "047",
+            "name": "ラルト",
+            "artworkType": "Card front",
+            "status": "source_quality_or_readability_unresolved",
+            "whatToFind": "Find a clearer full-card picture so its small text and edition marks can be read.",
+            "detail": "small_original_prevents_reliable_full_collector_artist_edition_read",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:922c177c-3138-4765-8633-6b2a923c1bdd",
+            "printingId": "922c177c-3138-4765-8633-6b2a923c1bdd",
+            "batchId": "JP-CARDS-034",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "048",
+            "name": "キルリア",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed",
             "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
           },
           {
@@ -117493,6 +119883,123 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
           },
           {
+            "itemId": "card:d3d4aa08-839c-49eb-9544-d3466a399f44",
+            "printingId": "d3d4aa08-839c-49eb-9544-d3466a399f44",
+            "batchId": "JP-CARDS-035",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "051",
+            "name": "サンドシュー",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unresolved",
+            "whatToFind": "Find a full-card picture with all four corners and outside edges visible.",
+            "detail": "bright_header_reflection_and_soft_tight_photo_require_cleaner_complete_original",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:faa68739-4d4c-4237-82bb-b0a3bf689fa8",
+            "printingId": "faa68739-4d4c-4237-82bb-b0a3bf689fa8",
+            "batchId": "JP-CARDS-035",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "052",
+            "name": "キューボン",
+            "artworkType": "Card front",
+            "status": "source_quality_or_readability_unresolved",
+            "whatToFind": "Find a clearer full-card picture so its small text and edition marks can be read.",
+            "detail": "visible_scattered_spots_and_marks_on_frame_and_rules_panel_require_quality_review",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-015",
+        "items": [
+          {
+            "itemId": "card:74a0976c-df34-4e9c-8995-4bd497fb0a07",
+            "printingId": "74a0976c-df34-4e9c-8995-4bd497fb0a07",
+            "batchId": "JP-CARDS-035",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "053",
+            "name": "同上",
+            "artworkType": "Card front",
+            "status": "source_graded_slab_or_overlay_held",
+            "whatToFind": "Find the card on its own, without a grading case or shop lettering.",
+            "detail": "graded_slab_original_not_clean_single_front; foreign_seller_overlay_on_original_canvas",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:67f11052-7b41-4210-9d3a-079c65c4a2af",
+            "printingId": "67f11052-7b41-4210-9d3a-079c65c4a2af",
+            "batchId": "JP-CARDS-035",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "054",
+            "name": "マクヒタ",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unresolved",
+            "whatToFind": "Find a full-card picture with all four corners and outside edges visible.",
+            "detail": "literal_main_original_is_card_back_no_front_identity_or_body",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:c66a9975-1650-49f8-9d3e-f619db5eebfd",
+            "printingId": "c66a9975-1650-49f8-9d3e-f619db5eebfd",
+            "batchId": "JP-CARDS-035",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "055",
+            "name": "麻山",
+            "artworkType": "Card front",
+            "status": "source_quality_or_readability_unresolved",
+            "whatToFind": "Find a clearer full-card picture so its small text and edition marks can be read.",
+            "detail": "small_original_prevents_reliable_full_body_artist_and_edition_read",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:502558c5-cf95-4974-881c-d7c511cfd1c3",
+            "printingId": "502558c5-cf95-4974-881c-d7c511cfd1c3",
+            "batchId": "JP-CARDS-035",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "056",
+            "name": "グルードンスター",
+            "artworkType": "Card front",
+            "status": "source_special_card_qualification_unresolved",
+            "whatToFind": "Confirm the exact special star-card version and its rules before choosing a picture.",
+            "detail": "actual_Gold_Star_special_printing_requires_finish_and_physical_identity_review",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:6d277af7-21cd-4f47-ba40-929ebda647c5",
+            "printingId": "6d277af7-21cd-4f47-ba40-929ebda647c5",
+            "batchId": "JP-CARDS-035",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "057",
+            "name": "サンドスラッシュ（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unresolved",
+            "whatToFind": "Find a full-card picture with all four corners and outside edges visible.",
+            "detail": "small_soft_original_with_reflective_artwork_band_prevents_complete_quality_identity_review",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:c3005827-c43e-434e-a81b-a2474ba73729",
+            "printingId": "c3005827-c43e-434e-a81b-a2474ba73729",
+            "batchId": "JP-CARDS-035",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "058",
+            "name": "マロワク（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
             "itemId": "card:ae43359a-542f-41c2-83a5-3868f6f3387b",
             "printingId": "ae43359a-542f-41c2-83a5-3868f6f3387b",
             "batchId": "JP-CARDS-035",
@@ -117504,6 +120011,48 @@
             "status": "source_quality_or_edition_hold",
             "whatToFind": "Find a different complete sharp front for the exact printing/edition; retain this unchanged original and its named hold. No retries or further HTTP under this closed plan.",
             "detail": "outer_card_perimeter_at_canvas_boundary; glare_over_lower_footer; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:abf072fb-7b04-403e-9e45-fd9275958e19",
+            "printingId": "abf072fb-7b04-403e-9e45-fd9275958e19",
+            "batchId": "JP-CARDS-035",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "060",
+            "name": "ペルシャ語",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unresolved",
+            "whatToFind": "Find a full-card picture with all four corners and outside edges visible.",
+            "detail": "right_outer_frame_and_setmark_truncated_in_original",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:3829a8c2-fa81-4612-8cda-7812f4115c29",
+            "printingId": "3829a8c2-fa81-4612-8cda-7812f4115c29",
+            "batchId": "JP-CARDS-035",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "061",
+            "name": "同上",
+            "artworkType": "Card front",
+            "status": "source_graded_slab_or_overlay_held",
+            "whatToFind": "Find the card on its own, without a grading case or shop lettering.",
+            "detail": "graded_slab_original_not_clean_single_front; opaque_graphic_overlay_on_external_grading_label",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:8497896c-7111-47bf-a0a0-f4366d48f402",
+            "printingId": "8497896c-7111-47bf-a0a0-f4366d48f402",
+            "batchId": "JP-CARDS-035",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "062",
+            "name": "ポリゴン",
+            "artworkType": "Card front",
+            "status": "source_detail_obscured_by_display_stand",
+            "whatToFind": "Find a full front without a stand covering its card number or corners.",
+            "detail": "display_stand_obscures_full_collector_footer_and_lower_outer_frame",
             "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
           },
           {
@@ -117521,6 +120070,76 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
           },
           {
+            "itemId": "card:31208730-3687-4094-b883-c454ff396a40",
+            "printingId": "31208730-3687-4094-b883-c454ff396a40",
+            "batchId": "JP-CARDS-035",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "064",
+            "name": "テイロウ",
+            "artworkType": "Card front",
+            "status": "source_quality_or_readability_unresolved",
+            "whatToFind": "Find a clearer full-card picture so its small text and edition marks can be read.",
+            "detail": "small_original_prevents_reliable_complete_footer_and_edition_read",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:48aa9eb8-adbd-4a51-9c83-4aaa0632f4f7",
+            "printingId": "48aa9eb8-adbd-4a51-9c83-4aaa0632f4f7",
+            "batchId": "JP-CARDS-035",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "065",
+            "name": "スウラー",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unresolved",
+            "whatToFind": "Find a full-card picture with all four corners and outside edges visible.",
+            "detail": "original_truncates_complete_lower_footer_collector_setmark_and_card_frame",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:a0fdd90b-e1b7-4d87-bfc1-02712e047de4",
+            "printingId": "a0fdd90b-e1b7-4d87-bfc1-02712e047de4",
+            "batchId": "JP-CARDS-035",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "066",
+            "name": "アズリル",
+            "artworkType": "Card front",
+            "status": "source_detail_obscured_by_display_stand",
+            "whatToFind": "Find a full front without a stand covering its card number or corners.",
+            "detail": "original_truncates_printed_native_name_and_upper_card_frame; display_stand_obscures_full_collector_footer_and_lower_outer_frame",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:ede7cf5a-6e44-47b1-932c-128d6fb19eda",
+            "printingId": "ede7cf5a-6e44-47b1-932c-128d6fb19eda",
+            "batchId": "JP-CARDS-035",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "067",
+            "name": "castform",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed; small_soft_original_prevents_reliable_complete_body_and_footer_read",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:d241900a-3715-4182-a0e2-4b11252d1ff8",
+            "printingId": "d241900a-3715-4182-a0e2-4b11252d1ff8",
+            "batchId": "JP-CARDS-035",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "068",
+            "name": "プーチエナ",
+            "artworkType": "Card front",
+            "status": "source_quality_or_readability_unresolved",
+            "whatToFind": "Find a clearer full-card picture so its small text and edition marks can be read.",
+            "detail": "small_original_prevents_reliable_complete_artist_footer_and_edition_read",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
             "itemId": "card:14264f46-d2a6-4fdf-83c5-80a2180337a1",
             "printingId": "14264f46-d2a6-4fdf-83c5-80a2180337a1",
             "batchId": "JP-CARDS-035",
@@ -117532,6 +120151,20 @@
             "status": "source_finish_mismatch",
             "whatToFind": "Confirm the exact normal/shiny finish and find the matching front.",
             "detail": "finish_metadata_mismatch; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:f7120a9c-4e1f-49aa-bf12-6c2e48f1ab2b",
+            "printingId": "f7120a9c-4e1f-49aa-bf12-6c2e48f1ab2b",
+            "batchId": "JP-CARDS-035",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "071",
+            "name": "ホロンのマグナイト",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unresolved",
+            "whatToFind": "Find a full-card picture with all four corners and outside edges visible.",
+            "detail": "front_and_back_composite_original_not_single_full_front",
             "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
           },
           {
@@ -117563,6 +120196,109 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
           },
           {
+            "itemId": "card:ec3f81bb-f31f-40c8-9e7f-f8e609e15617",
+            "printingId": "ec3f81bb-f31f-40c8-9e7f-f8e609e15617",
+            "batchId": "JP-CARDS-035",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "074",
+            "name": "スカルモリー",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unresolved",
+            "whatToFind": "Find a full-card picture with all four corners and outside edges visible.",
+            "detail": "small_protected_front_in_dark_surrounding_canvas_prevents_reliable_complete_body_and_footer_read",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:6bc70b17-70f7-47d3-a300-a36e1a94d827",
+            "printingId": "6bc70b17-70f7-47d3-a300-a36e1a94d827",
+            "batchId": "JP-CARDS-036",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "076",
+            "name": "ホロントランシーバー",
+            "artworkType": "Card front",
+            "status": "source_quality_or_readability_unresolved",
+            "whatToFind": "Find a clearer full-card picture so its small text and edition marks can be read.",
+            "detail": "small_original_prevents_reliable_complete_artist_footer_and_edition_read",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:5570d935-adc0-47aa-869e-194442b3d883",
+            "printingId": "5570d935-adc0-47aa-869e-194442b3d883",
+            "batchId": "JP-CARDS-036",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "077",
+            "name": "ホロン科学者",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unresolved",
+            "whatToFind": "Find a full-card picture with all four corners and outside edges visible.",
+            "detail": "original_contains_only_upper_card_region_rules_footer_and_full_frame_absent",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:b7005427-2f07-413e-8b2b-3fffe2ff1898",
+            "printingId": "b7005427-2f07-413e-8b2b-3fffe2ff1898",
+            "batchId": "JP-CARDS-036",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "079",
+            "name": "ホロンメンター",
+            "artworkType": "Card front",
+            "status": "source_quality_or_readability_unresolved",
+            "whatToFind": "Find a clearer full-card picture so its small text and edition marks can be read.",
+            "detail": "small_original_prevents_reliable_complete_artist_footer_and_edition_read",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:084a5e7d-7df1-4719-b339-ce942599a7d1",
+            "printingId": "084a5e7d-7df1-4719-b339-ce942599a7d1",
+            "batchId": "JP-CARDS-036",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "081",
+            "name": "ホロン・ラス",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unresolved",
+            "whatToFind": "Find a full-card picture with all four corners and outside edges visible.",
+            "detail": "four_card_composite_original_not_single_full_front",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-016",
+        "items": [
+          {
+            "itemId": "card:db1ff564-ac6c-43c3-9963-d1ccadbee0fe",
+            "printingId": "db1ff564-ac6c-43c3-9963-d1ccadbee0fe",
+            "batchId": "JP-CARDS-036",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "082",
+            "name": "ホロン研究塔",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unresolved",
+            "whatToFind": "Find a full-card picture with all four corners and outside edges visible.",
+            "detail": "original_contains_only_upper_card_region_rules_footer_and_full_frame_absent",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
+            "itemId": "card:98c504f8-d0bf-46fb-8396-a87d47859a05",
+            "printingId": "98c504f8-d0bf-46fb-8396-a87d47859a05",
+            "batchId": "JP-CARDS-036",
+            "languageCode": "ja",
+            "setCode": "PCG6",
+            "collectorReference": "084",
+            "name": "ホロンエネルギーGL",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unresolved",
+            "whatToFind": "Find a full-card picture with all four corners and outside edges visible.",
+            "detail": "actual_printed_Energy_conflicts_with_cached_native_Trainer_category; original_contains_only_upper_card_region_name_rules_footer_and_full_frame_absent",
+            "providedGallery": "https://www.tcgcollector.com/sets/11186/holon-research-tower"
+          },
+          {
             "itemId": "card:be461598-b758-4665-889d-3ff57ba84719",
             "printingId": "be461598-b758-4665-889d-3ff57ba84719",
             "batchId": "JP-CARDS-037",
@@ -117577,6 +120313,132 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
           },
           {
+            "itemId": "card:df0777b3-caa0-410d-a657-4fd341f3479f",
+            "printingId": "df0777b3-caa0-410d-a657-4fd341f3479f",
+            "batchId": "JP-CARDS-037",
+            "languageCode": "ja",
+            "setCode": "PCG7",
+            "collectorReference": "002",
+            "name": "ビブラバ（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "foreign_seller_watermark_over_card; actual_first_edition_stamp_observed; outer_card_perimeter_and_all_corners_not_established_in_tight_original",
+            "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
+          },
+          {
+            "itemId": "card:a43eeeb4-0591-432b-a0eb-92637938e469",
+            "printingId": "a43eeeb4-0591-432b-a0eb-92637938e469",
+            "batchId": "JP-CARDS-037",
+            "languageCode": "ja",
+            "setCode": "PCG7",
+            "collectorReference": "003",
+            "name": "フライゴン（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed",
+            "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
+          },
+          {
+            "itemId": "card:77af3c3c-a1e7-4d93-8a44-383044a01233",
+            "printingId": "77af3c3c-a1e7-4d93-8a44-383044a01233",
+            "batchId": "JP-CARDS-037",
+            "languageCode": "ja",
+            "setCode": "PCG7",
+            "collectorReference": "004",
+            "name": "マンキー（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unresolved",
+            "whatToFind": "Find a full-card picture with all four corners and outside edges visible.",
+            "detail": "small_card_region_prevents_reliable_complete_collector_artist_footer_and_edition_read",
+            "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
+          },
+          {
+            "itemId": "card:8c60c753-d3f8-4218-acf8-978dab836269",
+            "printingId": "8c60c753-d3f8-4218-acf8-978dab836269",
+            "batchId": "JP-CARDS-037",
+            "languageCode": "ja",
+            "setCode": "PCG7",
+            "collectorReference": "005",
+            "name": "プライム（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "original_truncates_printed_native_name_and_upper_card_frame; actual_first_edition_stamp_observed; small_original_prevents_reliable_complete_artist_collector_footer_read",
+            "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
+          },
+          {
+            "itemId": "card:ea8c2695-fdd3-4639-b4a6-fd510d455c5f",
+            "printingId": "ea8c2695-fdd3-4639-b4a6-fd510d455c5f",
+            "batchId": "JP-CARDS-037",
+            "languageCode": "ja",
+            "setCode": "PCG7",
+            "collectorReference": "006",
+            "name": "ホース（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed; upper_outer_corners_and_complete_top_perimeter_not_established_in_tight_original",
+            "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
+          },
+          {
+            "itemId": "card:e09e82e6-be46-4fbf-9ada-d089538a7abd",
+            "printingId": "e09e82e6-be46-4fbf-9ada-d089538a7abd",
+            "batchId": "JP-CARDS-037",
+            "languageCode": "ja",
+            "setCode": "PCG7",
+            "collectorReference": "007",
+            "name": "シードラ（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed",
+            "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
+          },
+          {
+            "itemId": "card:d62e673f-8bdd-4000-9d29-7e673a905c73",
+            "printingId": "d62e673f-8bdd-4000-9d29-7e673a905c73",
+            "batchId": "JP-CARDS-037",
+            "languageCode": "ja",
+            "setCode": "PCG7",
+            "collectorReference": "008",
+            "name": "ギャラドススター（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_special_card_qualification_unresolved",
+            "whatToFind": "Confirm the exact special star-card version and its rules before choosing a picture.",
+            "detail": "actual_Gold_Star_special_printing_requires_finish_and_physical_identity_review",
+            "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
+          },
+          {
+            "itemId": "card:160e0e98-5ce5-467e-8db4-72204d71f134",
+            "printingId": "160e0e98-5ce5-467e-8db4-72204d71f134",
+            "batchId": "JP-CARDS-037",
+            "languageCode": "ja",
+            "setCode": "PCG7",
+            "collectorReference": "009",
+            "name": "アエロダクチル（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unresolved",
+            "whatToFind": "Find a full-card picture with all four corners and outside edges visible.",
+            "detail": "original_truncates_printed_native_name_and_upper_card_frame",
+            "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
+          },
+          {
+            "itemId": "card:5b852190-c033-4432-852c-2de7a7e2fccf",
+            "printingId": "5b852190-c033-4432-852c-2de7a7e2fccf",
+            "batchId": "JP-CARDS-037",
+            "languageCode": "ja",
+            "setCode": "PCG7",
+            "collectorReference": "010",
+            "name": "ラティアス（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_quality_or_readability_unresolved",
+            "whatToFind": "Find a clearer full-card picture so its small text and edition marks can be read.",
+            "detail": "small_original_prevents_reliable_complete_ability_body_and_edition_footer_read",
+            "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
+          },
+          {
             "itemId": "card:1d3687fc-2b6a-482f-a685-84ca3ec0301c",
             "printingId": "1d3687fc-2b6a-482f-a685-84ca3ec0301c",
             "batchId": "JP-CARDS-037",
@@ -117588,6 +120450,20 @@
             "status": "source_finish_metadata_conflict",
             "whatToFind": "Check whether this needs the ordinary or shiny card; the saved source descriptions disagree. Find that exact version once it is confirmed.",
             "detail": "Unresolved source/native rarity versus recorded/native variant finish metadata",
+            "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
+          },
+          {
+            "itemId": "card:5f1dfe48-1c8f-48ec-baa9-49f5e38f582d",
+            "printingId": "5f1dfe48-1c8f-48ec-baa9-49f5e38f582d",
+            "batchId": "JP-CARDS-037",
+            "languageCode": "ja",
+            "setCode": "PCG7",
+            "collectorReference": "012",
+            "name": "オッディッシュ（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed; foreign_seller_watermark_over_card",
             "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
           },
           {
@@ -117633,6 +120509,34 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
           },
           {
+            "itemId": "card:f2bfcba8-5e95-4505-b154-1ecb4c526a51",
+            "printingId": "f2bfcba8-5e95-4505-b154-1ecb4c526a51",
+            "batchId": "JP-CARDS-037",
+            "languageCode": "ja",
+            "setCode": "PCG7",
+            "collectorReference": "016",
+            "name": "ピッジー（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed",
+            "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
+          },
+          {
+            "itemId": "card:0741d130-a9a4-4b5b-8b4a-91c64ea91270",
+            "printingId": "0741d130-a9a4-4b5b-8b4a-91c64ea91270",
+            "batchId": "JP-CARDS-037",
+            "languageCode": "ja",
+            "setCode": "PCG7",
+            "collectorReference": "017",
+            "name": "ピッジット（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed; foreign_seller_watermark_over_card; outer_card_perimeter_and_all_corners_not_established_in_tight_original",
+            "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
+          },
+          {
             "itemId": "card:8c7d060d-63f4-4311-94f3-45f7439be15d",
             "printingId": "8c7d060d-63f4-4311-94f3-45f7439be15d",
             "batchId": "JP-CARDS-037",
@@ -117644,6 +120548,34 @@
             "status": "source_quality_or_edition_hold",
             "whatToFind": "Find a different complete sharp front for the exact printing/edition; retain this unchanged original and its named hold. No retries or further HTTP under this closed plan.",
             "detail": "outer_card_perimeter_at_canvas_boundary; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
+          },
+          {
+            "itemId": "card:e3324fbf-0a23-4db7-a99e-02ffa85c0243",
+            "printingId": "e3324fbf-0a23-4db7-a99e-02ffa85c0243",
+            "batchId": "JP-CARDS-037",
+            "languageCode": "ja",
+            "setCode": "PCG7",
+            "collectorReference": "019",
+            "name": "ゴルダック（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed; foreign_seller_watermark_over_card",
+            "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
+          },
+          {
+            "itemId": "card:6ea7bf92-3d9a-4e5d-8553-2fd0879853fe",
+            "printingId": "6ea7bf92-3d9a-4e5d-8553-2fd0879853fe",
+            "batchId": "JP-CARDS-037",
+            "languageCode": "ja",
+            "setCode": "PCG7",
+            "collectorReference": "020",
+            "name": "カブト（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unresolved",
+            "whatToFind": "Find a full-card picture with all four corners and outside edges visible.",
+            "detail": "left_outer_card_perimeter_and_corners_not_established_in_tight_original",
             "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
           },
           {
@@ -117659,12 +120591,7 @@
             "whatToFind": "Check whether this needs the ordinary or shiny card; the saved source descriptions disagree. Find that exact version once it is confirmed.",
             "detail": "Unresolved source/native rarity versus recorded/native variant finish metadata",
             "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-014",
-        "items": [
+          },
           {
             "itemId": "card:8cba7d30-66c5-468c-9571-a06b61069f13",
             "printingId": "8cba7d30-66c5-468c-9571-a06b61069f13",
@@ -117691,6 +120618,39 @@
             "status": "source_finish_metadata_conflict",
             "whatToFind": "Check whether this needs the ordinary or shiny card; the saved source descriptions disagree. Find that exact version once it is confirmed.",
             "detail": "Unresolved source/native rarity versus recorded/native variant finish metadata",
+            "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-017",
+        "items": [
+          {
+            "itemId": "card:5d19154a-6af0-43d9-9b53-74dadf001f0e",
+            "printingId": "5d19154a-6af0-43d9-9b53-74dadf001f0e",
+            "batchId": "JP-CARDS-037",
+            "languageCode": "ja",
+            "setCode": "PCG7",
+            "collectorReference": "025",
+            "name": "暗がり（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed; small_original_prevents_reliable_complete_copyright_footer_read",
+            "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
+          },
+          {
+            "itemId": "card:05415ab9-a5b9-469b-8379-85f1851e1b93",
+            "printingId": "05415ab9-a5b9-469b-8379-85f1851e1b93",
+            "batchId": "JP-CARDS-038",
+            "languageCode": "ja",
+            "setCode": "PCG7",
+            "collectorReference": "026",
+            "name": "オマニテ（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_detail_obscured_by_display_stand",
+            "whatToFind": "Find a full front without a stand covering its card number or corners.",
+            "detail": "original_truncates_printed_native_name_and_upper_card_frame; display_stand_obscures_full_collector_footer_and_lower_outer_frame",
             "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
           },
           {
@@ -117750,6 +120710,48 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
           },
           {
+            "itemId": "card:5fbdf3c5-eb3a-4d41-8d0c-16436af8b14b",
+            "printingId": "5fbdf3c5-eb3a-4d41-8d0c-16436af8b14b",
+            "batchId": "JP-CARDS-038",
+            "languageCode": "ja",
+            "setCode": "PCG7",
+            "collectorReference": "031",
+            "name": "カルバンハ（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed; foreign_seller_watermark_over_card; outer_card_perimeter_and_all_corners_not_established_in_tight_original",
+            "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
+          },
+          {
+            "itemId": "card:a94c9294-cc60-4d3e-ad80-002771b3f35e",
+            "printingId": "a94c9294-cc60-4d3e-ad80-002771b3f35e",
+            "batchId": "JP-CARDS-038",
+            "languageCode": "ja",
+            "setCode": "PCG7",
+            "collectorReference": "032",
+            "name": "シャルデド（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed",
+            "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
+          },
+          {
+            "itemId": "card:d1487c36-c410-465f-b363-1e3bb4ce0050",
+            "printingId": "d1487c36-c410-465f-b363-1e3bb4ce0050",
+            "batchId": "JP-CARDS-038",
+            "languageCode": "ja",
+            "setCode": "PCG7",
+            "collectorReference": "034",
+            "name": "ホロンのキャストフォーム",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unresolved",
+            "whatToFind": "Find a full-card picture with all four corners and outside edges visible.",
+            "detail": "small_card_region_prevents_reliable_complete_energy_attachment_rules_collector_artist_footer_and_edition_read",
+            "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
+          },
+          {
             "itemId": "card:42ca2ed0-84dc-4c1d-943b-555c18d92ea0",
             "printingId": "42ca2ed0-84dc-4c1d-943b-555c18d92ea0",
             "batchId": "JP-CARDS-038",
@@ -117803,6 +120805,34 @@
             "status": "visible_first_edition_stamp_unbound",
             "whatToFind": "Confirm the intended first-edition or unstamped printing; a sharp original is retained, but its visible first-edition stamp is not matched by the current edition-neutral record.",
             "detail": "visible_first_edition_stamp_not_bound_to_current_physical_tuple; outer_perimeter_not_fully_established; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
+          },
+          {
+            "itemId": "card:336157e6-f49f-476a-919d-ba2affa73728",
+            "printingId": "336157e6-f49f-476a-919d-ba2affa73728",
+            "batchId": "JP-CARDS-038",
+            "languageCode": "ja",
+            "setCode": "PCG7",
+            "collectorReference": "039",
+            "name": "ペルシャ（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_first_edition_unmatched",
+            "whatToFind": "Confirm which edition we need. The saved picture has a first-edition stamp that has not been matched to this entry.",
+            "detail": "actual_first_edition_stamp_observed",
+            "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
+          },
+          {
+            "itemId": "card:df91f6b7-562e-41f7-82d4-928ed8b3b1fa",
+            "printingId": "df91f6b7-562e-41f7-82d4-928ed8b3b1fa",
+            "batchId": "JP-CARDS-038",
+            "languageCode": "ja",
+            "setCode": "PCG7",
+            "collectorReference": "041",
+            "name": "ピカチュウ（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unresolved",
+            "whatToFind": "Find a full-card picture with all four corners and outside edges visible.",
+            "detail": "right_outer_frame_and_setmark_truncated_in_original",
             "providedGallery": "https://www.tcgcollector.com/sets/11299/holon-phantom"
           },
           {
@@ -117944,7 +120974,12 @@
             "whatToFind": "Find the exact Japanese front with collector/footer unobstructed by its display stand and every outer edge clear.",
             "detail": "collector_footer_obscured_by_display_stand; outer_perimeter_uncertain; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-018",
+        "items": [
           {
             "itemId": "card:8c40e52f-cb3e-46ad-bc4c-b05221527bcd",
             "printingId": "8c40e52f-cb3e-46ad-bc4c-b05221527bcd",
@@ -118014,12 +121049,7 @@
             "whatToFind": "Confirm the intended first-edition or unstamped printing; a sharp original is retained, but its visible first-edition stamp is not matched by the current edition-neutral record.",
             "detail": "visible_first_edition_stamp_unbound_to_current_normal_tuple; stand_contact_outer_corner_frame_uncertainty; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-015",
-        "items": [
+          },
           {
             "itemId": "card:0af5f6dd-e671-4aa2-992d-b54e127cebf4",
             "printingId": "0af5f6dd-e671-4aa2-992d-b54e127cebf4",
@@ -118299,7 +121329,12 @@
             "whatToFind": "Find a larger original; the saved scan is too small for readable card detail.",
             "detail": "below_detail_height504; small_target_card_region; collector_artist_full_effect_unreadable; physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-019",
+        "items": [
           {
             "itemId": "card:516986fc-1352-4e61-9cd3-91e6333e4f6b",
             "printingId": "516986fc-1352-4e61-9cd3-91e6333e4f6b",
@@ -118369,12 +121404,7 @@
             "whatToFind": "Find a different complete sharp front for the exact printing/edition; retain this unchanged original and its named hold. No retries or further HTTP under this closed plan.",
             "detail": "hand_held_scene_not_isolated_card_front; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-016",
-        "items": [
+          },
           {
             "itemId": "card:9bbf2a13-3123-4441-b4ef-1379af34680a",
             "printingId": "9bbf2a13-3123-4441-b4ef-1379af34680a",
@@ -118654,7 +121684,12 @@
             "whatToFind": "Find a complete photo showing all four outer edges and rounded corners.",
             "detail": "top_and_side_outer_perimeters_not_fully_established; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-020",
+        "items": [
           {
             "itemId": "card:fd43847b-35c2-420d-b8fc-b8e5d53160a7",
             "printingId": "fd43847b-35c2-420d-b8fc-b8e5d53160a7",
@@ -118724,12 +121759,7 @@
             "whatToFind": "Confirm the exact normal/shiny finish and find the matching front.",
             "detail": "finish_metadata_mismatch; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-017",
-        "items": [
+          },
           {
             "itemId": "card:c76b0257-1d5c-484a-9b16-68b31a36d903",
             "printingId": "c76b0257-1d5c-484a-9b16-68b31a36d903",
@@ -119009,7 +122039,12 @@
             "whatToFind": "Find a clearer original so the complete card rules can be checked; the retained photo is too blurred in its rules paragraph.",
             "detail": "below_detail_resolution; slab_photo_with_unreadable_delta_label_collector_artist_and_fine_body; slab_label_first_edition_unbound_to_current_normal_tuple; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-021",
+        "items": [
           {
             "itemId": "card:67a271fa-b886-4171-9d5e-ddef20ecd6b2",
             "printingId": "67a271fa-b886-4171-9d5e-ddef20ecd6b2",
@@ -119079,12 +122114,7 @@
             "whatToFind": "Find a complete original that includes all four outer card edges and corners; the inspected image is cropped.",
             "detail": "actual_top_header_crop; printed_name_HP_type_form_not_observed; incomplete_card_frame; physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-018",
-        "items": [
+          },
           {
             "itemId": "card:c895f727-7f05-444f-983d-cb140a875493",
             "printingId": "c895f727-7f05-444f-983d-cb140a875493",
@@ -119364,7 +122394,12 @@
             "whatToFind": "Find a clearer original so the complete card rules can be checked; the retained photo is too blurred in its rules paragraph.",
             "detail": "original_canvas_below_720x1008_HD_threshold; graded_slab_scene_card_region_small; full_effects_collector_artist_evolution_and_edition_fineprint_unreadable",
             "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-022",
+        "items": [
           {
             "itemId": "card:0339b2f5-dd4d-47c4-bc85-26164e60290e",
             "printingId": "0339b2f5-dd4d-47c4-bc85-26164e60290e",
@@ -119434,12 +122469,7 @@
             "whatToFind": "Find a complete original that includes all four outer card edges and corners; the inspected image is cropped.",
             "detail": "original_canvas_below_720x1008_HD_threshold; full_ability_attack_effect_artist_collector_edition_and_evolution_fineprint_unreadable; top_outer_perimeter_corners_not_complete",
             "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-019",
-        "items": [
+          },
           {
             "itemId": "card:5ea9eaa9-c11b-4e08-bb56-78943189f36f",
             "printingId": "5ea9eaa9-c11b-4e08-bb56-78943189f36f",
@@ -119719,7 +122749,12 @@
             "whatToFind": "Resolve the recorded card identity or finish detail, then locate its matching original.",
             "detail": "Retain the previous explicit source/identity/finish hold. Matching metadata fields do not settle the rejected source or finish.",
             "providedGallery": null
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-023",
+        "items": [
           {
             "itemId": "card:07b4024b-3437-4378-a007-c42730b5f0b8",
             "printingId": "07b4024b-3437-4378-a007-c42730b5f0b8",
@@ -119789,12 +122824,7 @@
             "whatToFind": "Resolve the recorded card identity or finish detail, then locate its matching original.",
             "detail": "Retain the previous explicit source/identity/finish hold. Matching metadata fields do not settle the rejected source or finish.",
             "providedGallery": null
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-020",
-        "items": [
+          },
           {
             "itemId": "card:83f91ae8-23bf-4c82-93d9-66dedd10ad2b",
             "printingId": "83f91ae8-23bf-4c82-93d9-66dedd10ad2b",

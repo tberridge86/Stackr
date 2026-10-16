@@ -1,13 +1,13 @@
 # Stackr artwork production handoff
 
-Updated 2026-10-16T16:30:05.903Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
+Updated 2026-10-16T18:12:40.187Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
 
-1944 tasks / 85 batches complete; 1000 tasks / 76 batches remain.
-1242 sourced originals and 3726 display versions checked: 1242 originals live, 0 prepared and queued.
+1952 tasks / 85 batches complete; 992 tasks / 76 batches remain.
+1250 sourced originals and 3750 display versions checked: 1250 originals live, 0 prepared and queued.
 
 Owner standing approval covers exact artwork sourcing, publication and verification without another owner batch review. Independently verified vendor licence and physical edition/finish facts are not invented. Keep previous immutable objects and receipt-bound rollback.
 The owner confirms supplied-link artwork permission for www.tcgcollector.com, jp.pokellector.com, www.pricecharting.com, bulbapedia.bulbagarden.net. This is owner-attested permission (receipt SHA 7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d); independently verified vendor licence and source-wide policy activation remain false. Exact identity, readable unchanged originals and actual production verification remain required.
-All supplied links cover 1572 fixed card tasks: 835 currently live and checked, 737 open, plus 36 of 36 historical-logo research tasks still open. The frozen link scope began with 49 live cards and 1523 open cards; current counts come from the release inventory.
+All supplied links cover 1572 fixed card tasks: 843 currently live and checked, 729 open, plus 36 of 36 historical-logo research tasks still open. The frozen link scope began with 49 live cards and 1523 open cards; current counts come from the release inventory.
 Crossing the Ruins51: 51 prepared cohort records in the current queue, 51 live and checked, 0 awaiting actual production/API verification. Queue inclusion is not completion.
 My First Battle15: 15 prepared cohort records in the current queue, 15 live and checked, 0 awaiting actual production/API verification. Queue inclusion is not completion.
 Next Japanese Neo3 cohort: 48/48 exact originals and144 display images independently verified live; two Shining finish holds retained. Current fixed-task and production queue states control delivery.
@@ -68,6 +68,7 @@ Japanese Darkness final thirteen: All13 JP-CARDS-017 originals and39 display ima
 - Sourced 3, run 38878305219, JP-CARDS-021: all 3 card responses with preserved variant identities / all 12 decoded/hash/dimension-matched files independently verified. Receipt SHA e3c1bd88a554e28522d9ddde4a96f0f2659855f211ea862bd00429d3babef525. Rollback prepared, not executed.
 - Sourced 3, run 38903864057, JP-CARDS-022, JP-CARDS-023: all 3 card responses with preserved variant identities / all 12 decoded/hash/dimension-matched files independently verified. Receipt SHA 14cd4fb61a8ba4af2b737a622e9753b294a34cd9d983ac8a303dd55a16525a98. Rollback prepared, not executed.
 - Sourced 7, run 38930344165, JP-CARDS-024, JP-CARDS-025, JP-CARDS-026: all 7 card responses with preserved variant identities / all 28 decoded/hash/dimension-matched files independently verified. Receipt SHA 91d3a2a4b0dde3e1ea67d84a4a4fdde6e55cb214a848577232f4f5fd9a2c1424. Rollback prepared, not executed.
+- Sourced 8, run 38942896698, JP-CARDS-031, JP-CARDS-032: all 8 card responses with preserved variant identities / all 32 decoded/hash/dimension-matched files independently verified. Receipt SHA f884f4084579b65d825f94a1005cc2798f5f7a4fd45103f23ed53bf0c8601d78. Rollback prepared, not executed.
 
 ## Prepared work
 
@@ -121,10 +122,11 @@ Japanese Darkness final thirteen: All13 JP-CARDS-017 originals and39 display ima
 - Frozen package asset 646704421, undefined bytes, SHA undefined. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset 646828275, undefined bytes, SHA undefined. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset 647356345, undefined bytes, SHA undefined. Individual delivery state controls completion; an archive alone does not.
+- Frozen package asset 648009411, undefined bytes, SHA undefined. Individual delivery state controls completion; an archive alone does not.
 
 ## Explicit remaining holds
 
-1 exact source identities remain unresolved; 1 gathered originals still need preparation and production delivery; 31 exact originals still need clear, complete pictures; 54 source version matches remain unresolved; 1 pictures need another exact card-text comparison. These are unfinished tasks and are excluded from publication. The current manual guide separates 415 specific follow-ups, 290 active source/release tasks and 635 further ordinary tasks.
+1 exact source identities remain unresolved; 13 gathered originals still need preparation and production delivery; 31 exact originals still need clear, complete pictures; 54 source version matches remain unresolved; 1 pictures need another exact card-text comparison. These are unfinished tasks and are excluded from publication. The current manual guide separates 415 specific follow-ups, 290 active source/release tasks and 635 further ordinary tasks.
 TCG Collector supplied 14 unchanged Energy originals at 255 × 361, 320 × 447, compared with the earlier 253 × 359 originals. 12 remain held for larger, readable detail artwork. Owner-attested permission is recorded; quality remains the delivery blocker.
 
 224 old Simplified Chinese cases have Traditional Chinese counterparts but still need an evidenced identity repair. No silent retagging. The fixed list also retains256language/card/version checks,36Traditional Chinese logos and2sharper Japanese originals. Flat reference fronts do not certify physical material/finish.
@@ -203,8 +205,8 @@ No native/OTA/backend/gateway delivery or installed-phone acceptance is claimed 
 | JP-CARDS-028 | 0/3 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
 | JP-CARDS-029 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
 | JP-CARDS-030 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
-| JP-CARDS-031 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
-| JP-CARDS-032 | 0/11 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-031 | 2/25 | 2 of 25 live and checked | 23 exact sources still need gathering and verification |
+| JP-CARDS-032 | 6/11 | 6 of 11 live and checked | 5 exact sources still need gathering and verification |
 | JP-CARDS-033 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
 | JP-CARDS-034 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
 | JP-CARDS-035 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
@@ -299,7 +301,7 @@ No native/OTA/backend/gateway delivery or installed-phone acceptance is claimed 
 
 ## Owner-supplied Japanese gallery leads
 
-23 supplied sets cover 1479 fixed tasks; 807 are already live and 672 remain. All 23 requested Japanese gallery entry links are supplied.
+23 supplied sets cover 1479 fixed tasks; 815 are already live and 664 remain. All 23 requested Japanese gallery entry links are supplied.
 
 Individual gallery pictures still require exact printing/language/edition/finish binding and readable unchanged originals. Owner-attested permission for the four supplied sites is recorded above; independent vendor licence and source-wide policy activation remain false. Earlier MC reader size limits remain historical evidence. Competitive format Unlimited does not certify physical edition. Current per-item inventory and queue states control acquisition and verified delivery.
 
@@ -379,3 +381,15 @@ Nine source links are registered for 35 saved targets: two sharper Japanese orig
 ## Historical Chinese reference
 
 [Historical Taiwan/Hong Kong expansion list](https://bulbapedia.bulbagarden.net/wiki/User:Ruixiang95/List_of_Chinese_Pok%C3%A9mon_Trading_Card_Game_expansions) is a secondary user-space lead for 36 logo targets and the Chinese script boundary. Its actual tables end at Shiny Star V (2020); its international/Japanese navigation footer is excluded. Current regional primary evidence and exact logo artwork remain outstanding. Owner-attested permission for the supplied historical reference is recorded; its footer is excluded from catalogue coverage.
+
+## Owner-requested exact image upgrades
+
+These are additional improvements to already-live cards; they do not add to the fixed missing-artwork completion count.
+- Golduck50a/147: Already live; existing600x825original clearerthan suppliedcopy; retain.
+- Drowzee74a/147: Already live; existing600x825original largerandclearerthan supplied356x499; retain.
+- BulbasaurMEW001/165: Protected run stopped before catalogue publication after a read-only manifest timeout; both rehearsals rolled back exactly; four immutable objects verified and reusable; bounded repair and actual API checks pending.
+Keep this promised replacement visible before TestFlight; completion requires actual production API and image checks.
+
+## Traditional Chinese logos included in app source
+
+All 36 logos from TC-LOGOS-001, TC-LOGOS-002, TC-LOGOS-003, TC-LOGOS-004 are included in main through PR395: 35 enhanced derivatives and 1 official original. The exact 36 asset byte hashes and set IDs match the saved manifest. Keep all 36 exact-ID bundled assets in the next separately authorized app build, then verify the installed app; source integration does not count as live API publication. Earlier research wording is historical for this source-integrated cohort; no live catalogue or fixed completion count is added by this app-source change.
