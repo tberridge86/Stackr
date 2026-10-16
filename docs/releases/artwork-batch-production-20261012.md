@@ -1,13 +1,13 @@
 # Stackr artwork production handoff
 
-Updated 2026-10-16T06:52:11.662Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
+Updated 2026-10-16T07:40:48.956Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
 
-1924 tasks / 85 batches complete; 1020 tasks / 76 batches remain.
-1222 sourced originals and 3666 display versions checked: 1222 originals live, 0 prepared and queued.
+1931 tasks / 85 batches complete; 1013 tasks / 76 batches remain.
+1229 sourced originals and 3687 display versions checked: 1229 originals live, 0 prepared and queued.
 
 Owner standing approval covers exact artwork sourcing, publication and verification without another owner batch review. Independently verified vendor licence and physical edition/finish facts are not invented. Keep previous immutable objects and receipt-bound rollback.
 The owner confirms supplied-link artwork permission for www.tcgcollector.com, jp.pokellector.com, www.pricecharting.com, bulbapedia.bulbagarden.net. This is owner-attested permission (receipt SHA 7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d); independently verified vendor licence and source-wide policy activation remain false. Exact identity, readable unchanged originals and actual production verification remain required.
-All supplied links cover 1572 fixed card tasks: 815 currently live and checked, 757 open, plus 36 of 36 historical-logo research tasks still open. The frozen link scope began with 49 live cards and 1523 open cards; current counts come from the release inventory.
+All supplied links cover 1572 fixed card tasks: 822 currently live and checked, 750 open, plus 36 of 36 historical-logo research tasks still open. The frozen link scope began with 49 live cards and 1523 open cards; current counts come from the release inventory.
 Crossing the Ruins51: 51 prepared cohort records in the current queue, 51 live and checked, 0 awaiting actual production/API verification. Queue inclusion is not completion.
 My First Battle15: 15 prepared cohort records in the current queue, 15 live and checked, 0 awaiting actual production/API verification. Queue inclusion is not completion.
 Next Japanese Neo3 cohort: 48/48 exact originals and144 display images independently verified live; two Shining finish holds retained. Current fixed-task and production queue states control delivery.
@@ -64,6 +64,7 @@ Japanese Darkness final thirteen: All13 JP-CARDS-017 originals and39 display ima
 - Sourced 2, run 38852052961, JP-CARDS-041, JP-CARDS-044: all 2 card responses with preserved variant identities / all 8 decoded/hash/dimension-matched files independently verified. Receipt SHA 26dee4eb61dc6e60e3f6c1bb6d6d0558141b0eb6a4cb930519a401f33d14dcb3. Rollback prepared, not executed.
 - Sourced 4, run 38855802113, JP-CARDS-019, JP-CARDS-021, JP-CARDS-025, JP-CARDS-026: all 4 card responses with preserved variant identities / all 16 decoded/hash/dimension-matched files independently verified. Receipt SHA ad8076b42e702dc65e47b0895d214ec8d895febf4692b0bd5240d735246c8fb1. Rollback prepared, not executed.
 - Sourced 3, run 38860631359, JP-CARDS-068, JP-CARDS-069: all 3 card responses with preserved variant identities / all 12 decoded/hash/dimension-matched files independently verified. Receipt SHA 6c5b487257c0b259d1b46798890dc688b0835f533833beffa2d4e348bd4cd4c9. Rollback prepared, not executed.
+- Sourced 7, run 38867113710, JP-CARDS-068, JP-CARDS-069: all 7 card responses with preserved variant identities / all 28 decoded/hash/dimension-matched files independently verified. Receipt SHA da0f1381da0d9f56ae351ad52315c5973452b7b1d1f6c601a0a661610c8ae20d. Rollback prepared, not executed.
 
 ## Prepared work
 
@@ -113,10 +114,11 @@ Japanese Darkness final thirteen: All13 JP-CARDS-017 originals and39 display ima
 - Frozen package asset 646111909, undefined bytes, SHA undefined. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset 646214227, undefined bytes, SHA undefined. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset 646324255, undefined bytes, SHA undefined. Individual delivery state controls completion; an archive alone does not.
+- Frozen package asset 646470015, undefined bytes, SHA undefined. Individual delivery state controls completion; an archive alone does not.
 
 ## Explicit remaining holds
 
-1 exact source identities remain unresolved; 7 gathered originals still need preparation and production delivery; 31 exact originals still need clear, complete pictures; 54 source version matches remain unresolved; 0 pictures need another exact card-text comparison. These are unfinished tasks and are excluded from publication. The current manual guide separates 415 specific follow-ups, 290 active source/release tasks and 635 further ordinary tasks.
+1 exact source identities remain unresolved; 0 gathered originals still need preparation and production delivery; 31 exact originals still need clear, complete pictures; 54 source version matches remain unresolved; 0 pictures need another exact card-text comparison. These are unfinished tasks and are excluded from publication. The current manual guide separates 415 specific follow-ups, 290 active source/release tasks and 635 further ordinary tasks.
 TCG Collector supplied 14 unchanged Energy originals at 255 × 361, 320 × 447, compared with the earlier 253 × 359 originals. 12 remain held for larger, readable detail artwork. Owner-attested permission is recorded; quality remains the delivery blocker.
 
 224 old Simplified Chinese cases have Traditional Chinese counterparts but still need an evidenced identity repair. No silent retagging. The fixed list also retains256language/card/version checks,36Traditional Chinese logos and2sharper Japanese originals. Flat reference fronts do not certify physical material/finish.
@@ -232,8 +234,8 @@ No native/OTA/backend/gateway delivery or installed-phone acceptance is claimed 
 | JP-CARDS-065 | 23/23 | Live and verified | Complete; delivery evidence saved |
 | JP-CARDS-066 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
 | JP-CARDS-067 | 0/21 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded. |
-| JP-CARDS-068 | 2/25 | Web source pass reviewed; exact fronts preparing and named source gaps retained | 23 exact sources still need gathering and verification |
-| JP-CARDS-069 | 1/19 | Web source pass reviewed; exact fronts preparing and named source gaps retained | 18 exact sources still need gathering and verification |
+| JP-CARDS-068 | 4/25 | 4 of 25 live and checked | 21 exact sources still need gathering and verification |
+| JP-CARDS-069 | 6/19 | 6 of 19 live and checked | 13 exact sources still need gathering and verification |
 | JP-CHECK-001 | 0/2 | Identity or finish evidence still needed | The previously checked picture is unsuitable or belongs to a different card. |
 | JP-CHECK-002 | 0/4 | Identity or finish evidence still needed | The card name and source picture do not agree. |
 | JP-CHECK-003 | 0/3 | Identity or finish evidence still needed | The card name in Stackr differs from the name recorded by the source.; The card name and source picture do not agree. |
@@ -291,7 +293,7 @@ No native/OTA/backend/gateway delivery or installed-phone acceptance is claimed 
 
 ## Owner-supplied Japanese gallery leads
 
-23 supplied sets cover 1479 fixed tasks; 787 are already live and 692 remain. All 23 requested Japanese gallery entry links are supplied.
+23 supplied sets cover 1479 fixed tasks; 794 are already live and 685 remain. All 23 requested Japanese gallery entry links are supplied.
 
 Individual gallery pictures still require exact printing/language/edition/finish binding and readable unchanged originals. Owner-attested permission for the four supplied sites is recorded above; independent vendor licence and source-wide policy activation remain false. Earlier MC reader size limits remain historical evidence. Competitive format Unlimited does not certify physical edition. Current per-item inventory and queue states control acquisition and verified delivery.
 

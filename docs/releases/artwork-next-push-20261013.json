@@ -1,22 +1,22 @@
 {
   "schemaVersion": "stackr-owner-artwork-production-evidence-v1",
   "inventoryId": "STACKR-ARTWORK-20261012",
-  "updatedAt": "2026-10-16T06:53:21.962Z",
+  "updatedAt": "2026-10-16T07:42:43.927Z",
   "scope": "Exact saved artwork list; original identities retained; actual production verification required",
   "summary": {
-    "checkedAt": "2026-10-16T06:33:09.362Z",
+    "checkedAt": "2026-10-16T07:39:10.386Z",
     "totalTasks": 2944,
     "totalBatches": 161,
-    "newlyPublishedFronts": 1319,
+    "newlyPublishedFronts": 1326,
     "previouslyCorrectedCasesVerified": 605,
-    "liveVerifiedTasks": 1924,
+    "liveVerifiedTasks": 1931,
     "completedBatches": 85,
-    "remainingTasks": 1020,
+    "remainingTasks": 1013,
     "remainingBatches": 76,
     "remainingGroups": [
       {
         "task": "Find permitted exact card fronts",
-        "items": 728
+        "items": 721
       },
       {
         "task": "Find permitted Traditional Chinese set logos",
@@ -31,22 +31,22 @@
         "items": 0
       }
     ],
-    "sourceLeadTargets": 1235,
+    "sourceLeadTargets": 1242,
     "scope": "Fixed saved list, retaining original identities; completion requires actual production API and image verification. Source gathering alone is not completion.",
     "queuedItems": 0,
     "queuedBatches": 0,
-    "frontTasksNotYetGathered": 715,
+    "frontTasksNotYetGathered": 708,
     "smallOriginalCandidates": 13,
-    "frontTasksNotYetPrepared": 728,
+    "frontTasksNotYetPrepared": 721,
     "contentHeldOriginalCandidates": 0,
-    "sourceAcquiredPendingPreparation": 7,
+    "sourceAcquiredPendingPreparation": 0,
     "sourceIdentityMetadataHolds": 26,
     "ownerSuppliedJapaneseGalleryLeads": {
       "suppliedSets": 23,
       "fixedBatchesCovered": 69,
       "fixedTasksCovered": 1479,
-      "coveredTasksAlreadyLive": 787,
-      "coveredTasksRemaining": 692,
+      "coveredTasksAlreadyLive": 794,
+      "coveredTasksRemaining": 685,
       "unprovidedSets": [],
       "sourceInventorySha256": "68aeb67adc1716a32e1539fc815b210e243c8f2ec15c6d5a5d059a1bbf914fe1",
       "exactPrintingOrLicenceApprovalClaimed": false,
@@ -113,10 +113,10 @@
       "scopeFile": "all-owner-links-working-queue.json",
       "scopeSha256": "dce8019d6367877078b63a26bbd7ce9a52a8c4f8a8cbe7b9c20faa98ff7eb2c9",
       "uniqueCardTasks": 1572,
-      "cardTasksAlreadyLive": 815,
-      "cardTasksRemaining": 757,
+      "cardTasksAlreadyLive": 822,
+      "cardTasksRemaining": 750,
       "historicalLogoResearchTasks": 36,
-      "remainingCombinedWork": 793,
+      "remainingCombinedWork": 786,
       "remainingCombinedBatches": 63,
       "remainingOutsideBoundProvidedLinks": 227,
       "originalBatchIdsRetained": true,
@@ -950,24 +950,24 @@
     },
     "sourceAcquiredFinishHeld": 2,
     "currentContinuationSourceCaptureTotals": {
-      "sourceMetadataGets": 1190,
+      "sourceMetadataGets": 1858,
       "sourceOriginalGets": 550,
       "retainedSourceOriginalCandidates": 550,
-      "acceptedAwaitingPreparation": 7,
+      "acceptedAwaitingPreparation": 0,
       "sourceReviewPending": 0,
       "qualityOrEditionHeld": 211,
       "finishHeld": 3,
       "prepared": 0,
-      "newLiveVerified": 320,
+      "newLiveVerified": 327,
       "metadataGetCountsExcludeWebSearchAndCachedWebExtractions": true,
       "uniqueSourcePrintingCandidates": 541,
       "additionalAlternateTcGSourceCandidatesPendingReview": 0,
       "printingStatePartitionCountsStillTracksHeldOldCandidatesUntilAlternateAccepted": false,
-      "totalPreparedThisContinuation": 320,
+      "totalPreparedThisContinuation": 327,
       "partition": {
-        "live": 320,
+        "live": 327,
         "prepared": 0,
-        "acceptedAwaitingPreparation": 7,
+        "acceptedAwaitingPreparation": 0,
         "qualityOrEditionHeld": 211,
         "finishHeld": 3,
         "totalUnique": 541
@@ -2404,6 +2404,36 @@
       "Electrode026PerimeterUnresolvedNotAssertedCrop": true,
       "prepared0": 0,
       "published0": 0
+    },
+    "nextOrdinary334MetadataCapture": {
+      "status": "ALL334_REFERENCE_PAIRS_COMPLETE_668_SUCCESSFUL_METADATA_REQUESTS_ZERO_IMAGES",
+      "old197ClosedHandoffSha256": "d314c01c3a31471ee64cc14dd6aa02ea561fe1e17ddb007f3db4f3f9f012cee0",
+      "new471ClosedHandoffSha256": "744305c5640bd4f06b00f9c1a0fe820e872a22eaf2c8b5ced27f6d8f0fbc2958",
+      "metadataRequests": 668,
+      "detailRecords": 334,
+      "nativeRecords": 334,
+      "completePairs": 334,
+      "sourceImageRequests": 0,
+      "allHTTPClosed": true,
+      "old197ScopeNeverResumed": true,
+      "old197MinimumStartGapMs": 1078,
+      "new471MinimumStartGapMs": 1098,
+      "actualPacingViolation": false,
+      "diagnosticOnlyNotArtworkApproval": true,
+      "sourceOriginalMatchingAndQualityStillRequired": true,
+      "registeredAt": "2026-10-16T07:40:39.813Z"
+    },
+    "nextWebSevenPrepared": {
+      "status": "SEVEN_ACTUAL_API_IMAGES_AND_APP_SELECTION_VERIFIED_LIVE",
+      "preparedOriginals": 7,
+      "archiveAssetId": 646470015,
+      "PR": 391,
+      "publisherHead": "24b7912704889e73ac173680dc68a80f3b538ffa",
+      "privatePeerReviewSha256": "48aaa6b7d0d8f66e1e5a33141c741318c8c28e4b357cab8890f812ebc98edc5d",
+      "publisherPeerReviewSha256": "a5e7680d237a268239c8d8380636676cbbd138ebfabde2d987869df01f6a6902",
+      "publishedAndVerified": true,
+      "productionRun": 38867113710,
+      "actualIndependentReviewSha256": "856f1113ea1e9aef2adf93a51089447df2776137ebf97a776bf6d3576da68f69"
     }
   },
   "ownerSuppliedAdditionalSourceLeads": [
@@ -3146,17 +3176,17 @@
     "extraPermissionPromptRequired": false,
     "sourceLicenceFacts": "Existing source facts retained; owner queue direction does not invent vendor licence metadata."
   },
-  "preparedOriginals": 1222,
-  "preparedDerivatives": 3666,
-  "publishedVerifiedOriginals": 1222,
+  "preparedOriginals": 1229,
+  "preparedDerivatives": 3687,
+  "publishedVerifiedOriginals": 1229,
   "queuedItems": 0,
   "preparedByLanguage": {
     "en": 433,
-    "ja": 789
+    "ja": 796
   },
   "publishedVerifiedByLanguage": {
     "en": 433,
-    "ja": 789
+    "ja": 796
   },
   "failedProductionRuns": [
     {
@@ -3511,6 +3541,10 @@
     {
       "queueId": "WEBPCG3-EXACT3-SHARED-FRONTS-20261016",
       "releaseAssetId": 646324255
+    },
+    {
+      "queueId": "WEB7-EXACT7-SHARED-FRONTS-20261016",
+      "releaseAssetId": 646470015
     }
   ],
   "holds": [
@@ -108719,15 +108753,687 @@
         "priceChanges": 0,
         "ownershipChanges": 0
       }
+    },
+    {
+      "batchId": "JP-CARDS-068",
+      "itemId": "card:7b63e002-ca85-4d4d-be9d-fbaa54f6b959",
+      "printingId": "7b63e002-ca85-4d4d-be9d-fbaa54f6b959",
+      "setId": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+      "setCode": "web1",
+      "languageCode": "ja",
+      "collectorReference": "007",
+      "cardName": "チャームレオン",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:8025c373e49be6a5aa12006a0d90c70e536fd067923861f6808328c45fd4bb59",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-web/charmeleon-7",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/e584001619e0a9c1a239f8cd34ddf57d01efb4e421149f750b8ee6c16897b837/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "6359fa57e77511c7a4cc24e9bee16c8a3bbd6944f4bcd1f1e3cb5140e4a7fc7f",
+        "byteSize": 554004,
+        "width": 1200,
+        "height": 1600,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/6a06ade187d394d75fc0009c760781e5ba8e33f85933a5c0a15f8260233f0ee5/card-grid.webp",
+          "sha256": "6a06ade187d394d75fc0009c760781e5ba8e33f85933a5c0a15f8260233f0ee5",
+          "byte_size": 18698,
+          "width": 240,
+          "height": 320,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/1519480c57f98709d7b076e01b0bc1a574947bcb95b807dc8ac3a26e5d9ede3f/search-result.webp",
+          "sha256": "1519480c57f98709d7b076e01b0bc1a574947bcb95b807dc8ac3a26e5d9ede3f",
+          "byte_size": 3440,
+          "width": 96,
+          "height": 128,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/83ae0fd6ef5b0a94ffc32cbfb76f6b2d714e2d67d89abd6a8c5ce8bef59ccf71/detail-page.webp",
+          "sha256": "83ae0fd6ef5b0a94ffc32cbfb76f6b2d714e2d67d89abd6a8c5ce8bef59ccf71",
+          "byte_size": 224714,
+          "width": 720,
+          "height": 960,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "007",
+        "printed_collector_number": "007/048",
+        "catalogue_set_code": "web1",
+        "printed_set_code_literal": null,
+        "printed_national_dex": null,
+        "printed_non_collector_web_id": "Y-47",
+        "canonical_native_label_preserved": "チャームレオン",
+        "canonical_english_label_preserved": null,
+        "actual_printed_name": "リザード",
+        "actual_printed_form": null,
+        "category": null,
+        "actual_printed_category": "Pokemon",
+        "actual_native_category": "Pokemon"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T07:39:10.386Z",
+        "productionRun": 38867113710,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38867113710",
+        "publicationReceiptSha256": "da0f1381da0d9f56ae351ad52315c5973452b7b1d1f6c601a0a661610c8ae20d",
+        "printingId": "7b63e002-ca85-4d4d-be9d-fbaa54f6b959",
+        "assetId": "artwork-recovered-20260928:7b63e002-ca85-4d4d-be9d-fbaa54f6b959:6359fa57e77511c7a4cc24e9bee16c8a3bbd6944f4bcd1f1e3cb5140e4a7fc7f",
+        "contentSha256": "6359fa57e77511c7a4cc24e9bee16c8a3bbd6944f4bcd1f1e3cb5140e4a7fc7f",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/7b63e002-ca85-4d4d-be9d-fbaa54f6b959/6359fa57e77511c7a4cc24e9bee16c8a3bbd6944f4bcd1f1e3cb5140e4a7fc7f/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-068",
+      "itemId": "card:221185d3-e4f8-4669-b339-5f06c86c0d50",
+      "printingId": "221185d3-e4f8-4669-b339-5f06c86c0d50",
+      "setId": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+      "setCode": "web1",
+      "languageCode": "ja",
+      "collectorReference": "025",
+      "cardName": "サーフィンピカチュ",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:f5f108c16d6561cc1e747b367859046032abc5b8393528cd7892bfdc33688d51",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-web/surfing-pikachu-25",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/dcyozyfpn33u4qtq/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "1adbcd4a234d8afd00df3bc781d30cbce823b959df22399e28aa023eacf7ba88",
+        "byteSize": 307837,
+        "width": 1162,
+        "height": 1600,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/389303d2656924655622fd945f8b6208ec285eb5f6f1cf4f1aeb2d5ebda85620/card-grid.webp",
+          "sha256": "389303d2656924655622fd945f8b6208ec285eb5f6f1cf4f1aeb2d5ebda85620",
+          "byte_size": 13122,
+          "width": 240,
+          "height": 330,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/932cc2cd21d4bee6887a160ccde6466c7039cc9af0abc7212bb9d1f539bb59cc/search-result.webp",
+          "sha256": "932cc2cd21d4bee6887a160ccde6466c7039cc9af0abc7212bb9d1f539bb59cc",
+          "byte_size": 3218,
+          "width": 96,
+          "height": 132,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/b91a1f7fb527155226236fb48569b27da110df62a987dadb2e2785da91bc7795/detail-page.webp",
+          "sha256": "b91a1f7fb527155226236fb48569b27da110df62a987dadb2e2785da91bc7795",
+          "byte_size": 136152,
+          "width": 720,
+          "height": 991,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "025",
+        "printed_collector_number": "025/048",
+        "catalogue_set_code": "web1",
+        "printed_set_code_literal": null,
+        "printed_national_dex": null,
+        "printed_non_collector_web_id": "Y-10",
+        "canonical_native_label_preserved": "サーフィンピカチュ",
+        "canonical_english_label_preserved": null,
+        "actual_printed_name": "なみのりピカチュウ",
+        "actual_printed_form": "なみのり",
+        "category": null,
+        "actual_printed_category": "Pokemon",
+        "actual_native_category": "Pokemon"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T07:39:10.386Z",
+        "productionRun": 38867113710,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38867113710",
+        "publicationReceiptSha256": "da0f1381da0d9f56ae351ad52315c5973452b7b1d1f6c601a0a661610c8ae20d",
+        "printingId": "221185d3-e4f8-4669-b339-5f06c86c0d50",
+        "assetId": "artwork-recovered-20260928:221185d3-e4f8-4669-b339-5f06c86c0d50:1adbcd4a234d8afd00df3bc781d30cbce823b959df22399e28aa023eacf7ba88",
+        "contentSha256": "1adbcd4a234d8afd00df3bc781d30cbce823b959df22399e28aa023eacf7ba88",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/221185d3-e4f8-4669-b339-5f06c86c0d50/1adbcd4a234d8afd00df3bc781d30cbce823b959df22399e28aa023eacf7ba88/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-069",
+      "itemId": "card:7bab8d58-4c34-47a8-a07f-b34c8ab0bd98",
+      "printingId": "7bab8d58-4c34-47a8-a07f-b34c8ab0bd98",
+      "setId": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+      "setCode": "web1",
+      "languageCode": "ja",
+      "collectorReference": "036",
+      "cardName": "ライチュ",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:361e077f18538537629ba063711b9ac652100781955e66c82ca2403e0b4dceb9",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-web/raichu-36",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/nl26jcc3aji763o6/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "380c50eb1d97db5a39bf76d341675571851217f22b28cefe3ba914b2062f8fae",
+        "byteSize": 188937,
+        "width": 745,
+        "height": 1045,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/5044f6528450bc4394394b12926ad2f803fdbb1146e57b150d3e5f2a455fdd6e/card-grid.webp",
+          "sha256": "5044f6528450bc4394394b12926ad2f803fdbb1146e57b150d3e5f2a455fdd6e",
+          "byte_size": 23094,
+          "width": 240,
+          "height": 337,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/c6b20e645dbf4e7d8db98b5daa47e732881b1ca5b0ff3b2fb637c7d1648eda61/search-result.webp",
+          "sha256": "c6b20e645dbf4e7d8db98b5daa47e732881b1ca5b0ff3b2fb637c7d1648eda61",
+          "byte_size": 4534,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/f3fc89d95c6982109f6ea5ef5858edf2ddb32e86b8e365c712999cb975801c61/detail-page.webp",
+          "sha256": "f3fc89d95c6982109f6ea5ef5858edf2ddb32e86b8e365c712999cb975801c61",
+          "byte_size": 207140,
+          "width": 720,
+          "height": 1010,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "036",
+        "printed_collector_number": "036/048",
+        "catalogue_set_code": "web1",
+        "printed_set_code_literal": null,
+        "printed_national_dex": null,
+        "printed_non_collector_web_id": "Y-11",
+        "canonical_native_label_preserved": "ライチュ",
+        "canonical_english_label_preserved": null,
+        "actual_printed_name": "ライチュウ",
+        "actual_printed_form": null,
+        "category": null,
+        "actual_printed_category": "Pokemon",
+        "actual_native_category": "Pokemon"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T07:39:10.386Z",
+        "productionRun": 38867113710,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38867113710",
+        "publicationReceiptSha256": "da0f1381da0d9f56ae351ad52315c5973452b7b1d1f6c601a0a661610c8ae20d",
+        "printingId": "7bab8d58-4c34-47a8-a07f-b34c8ab0bd98",
+        "assetId": "artwork-recovered-20260928:7bab8d58-4c34-47a8-a07f-b34c8ab0bd98:380c50eb1d97db5a39bf76d341675571851217f22b28cefe3ba914b2062f8fae",
+        "contentSha256": "380c50eb1d97db5a39bf76d341675571851217f22b28cefe3ba914b2062f8fae",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/7bab8d58-4c34-47a8-a07f-b34c8ab0bd98/380c50eb1d97db5a39bf76d341675571851217f22b28cefe3ba914b2062f8fae/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-069",
+      "itemId": "card:2229f37c-46cb-4cb5-9e3c-22b10735ec5c",
+      "printingId": "2229f37c-46cb-4cb5-9e3c-22b10735ec5c",
+      "setId": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+      "setCode": "web1",
+      "languageCode": "ja",
+      "collectorReference": "038",
+      "cardName": "ドラゴナイト",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:b8dfac137447cc31ebf4870ec6394412b99d2eec1716074f4c9dff4ddb32d4c9",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-web/dragonite-38",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/9519a47ffd2c163c2efba04334662b0ebfcbd735945eb4c24765c85db046d0a4/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "d636ee4d10532d7924e5b42cceb3de397d4f930cccb41afa7de3757e09d231d0",
+        "byteSize": 167503,
+        "width": 845,
+        "height": 1159,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/d60249ef6bd02a6a20b3f9ecec034a454a437c352a7802a7963eb9dc8f180751/card-grid.webp",
+          "sha256": "d60249ef6bd02a6a20b3f9ecec034a454a437c352a7802a7963eb9dc8f180751",
+          "byte_size": 15230,
+          "width": 240,
+          "height": 329,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/fb3fb36fb1501da26df697846c558977615e4cad88a5cfaa83abad17f01dbc1d/search-result.webp",
+          "sha256": "fb3fb36fb1501da26df697846c558977615e4cad88a5cfaa83abad17f01dbc1d",
+          "byte_size": 3198,
+          "width": 96,
+          "height": 131,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/4d22aa1a6f4170fe2aad165e0ee7d31e1d783a084c8f69c6bc812f59565d90c1/detail-page.webp",
+          "sha256": "4d22aa1a6f4170fe2aad165e0ee7d31e1d783a084c8f69c6bc812f59565d90c1",
+          "byte_size": 144668,
+          "width": 720,
+          "height": 988,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "038",
+        "printed_collector_number": "038/048",
+        "catalogue_set_code": "web1",
+        "printed_set_code_literal": null,
+        "printed_national_dex": null,
+        "printed_non_collector_web_id": "Y-40",
+        "canonical_native_label_preserved": "ドラゴナイト",
+        "canonical_english_label_preserved": null,
+        "actual_printed_name": "カイリュー",
+        "actual_printed_form": null,
+        "category": null,
+        "actual_printed_category": "Pokemon",
+        "actual_native_category": "Pokemon"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T07:39:10.386Z",
+        "productionRun": 38867113710,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38867113710",
+        "publicationReceiptSha256": "da0f1381da0d9f56ae351ad52315c5973452b7b1d1f6c601a0a661610c8ae20d",
+        "printingId": "2229f37c-46cb-4cb5-9e3c-22b10735ec5c",
+        "assetId": "artwork-recovered-20260928:2229f37c-46cb-4cb5-9e3c-22b10735ec5c:d636ee4d10532d7924e5b42cceb3de397d4f930cccb41afa7de3757e09d231d0",
+        "contentSha256": "d636ee4d10532d7924e5b42cceb3de397d4f930cccb41afa7de3757e09d231d0",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/2229f37c-46cb-4cb5-9e3c-22b10735ec5c/d636ee4d10532d7924e5b42cceb3de397d4f930cccb41afa7de3757e09d231d0/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-069",
+      "itemId": "card:96fe50ae-f69c-4ddb-a401-fa7d97c9ad46",
+      "printingId": "96fe50ae-f69c-4ddb-a401-fa7d97c9ad46",
+      "setId": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+      "setCode": "web1",
+      "languageCode": "ja",
+      "collectorReference": "040",
+      "cardName": "ロケットのスニーク攻撃",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:866a95773acb4f52d0e41a403ff8efbb11722794f54c730ac565fa98426ce9a6",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-web/rocket%27s-sneak-attack-40",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/qks6j7y53asg4f4x/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "1f55aa7203602af261cae926f161816f1fd893bcf5fb4464835e336d6787c962",
+        "byteSize": 182299,
+        "width": 731,
+        "height": 1026,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/7061fc5c900f22470d78a881c36f86f29c3bd648e63d370449e4b8d638d94eca/card-grid.webp",
+          "sha256": "7061fc5c900f22470d78a881c36f86f29c3bd648e63d370449e4b8d638d94eca",
+          "byte_size": 17828,
+          "width": 240,
+          "height": 337,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/1d4d5ae5a4e438fa8f8dbb5bbca644f672c575173cf2af28b54e5a677b733abf/search-result.webp",
+          "sha256": "1d4d5ae5a4e438fa8f8dbb5bbca644f672c575173cf2af28b54e5a677b733abf",
+          "byte_size": 3736,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/6cdb4e4b281e13f693a16eca9a9556841255cc8af4d5a060e041185cb1141bfa/detail-page.webp",
+          "sha256": "6cdb4e4b281e13f693a16eca9a9556841255cc8af4d5a060e041185cb1141bfa",
+          "byte_size": 215946,
+          "width": 720,
+          "height": 1011,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "040",
+        "printed_collector_number": "040/048",
+        "catalogue_set_code": "web1",
+        "printed_set_code_literal": null,
+        "printed_national_dex": null,
+        "printed_non_collector_web_id": "Y-48",
+        "canonical_native_label_preserved": "ロケットのスニーク攻撃",
+        "canonical_english_label_preserved": null,
+        "actual_printed_name": "ロケット団のおねーさん",
+        "actual_printed_form": null,
+        "category": null,
+        "actual_printed_category": "Trainer",
+        "actual_native_category": "Trainer"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T07:39:10.386Z",
+        "productionRun": 38867113710,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38867113710",
+        "publicationReceiptSha256": "da0f1381da0d9f56ae351ad52315c5973452b7b1d1f6c601a0a661610c8ae20d",
+        "printingId": "96fe50ae-f69c-4ddb-a401-fa7d97c9ad46",
+        "assetId": "artwork-recovered-20260928:96fe50ae-f69c-4ddb-a401-fa7d97c9ad46:1f55aa7203602af261cae926f161816f1fd893bcf5fb4464835e336d6787c962",
+        "contentSha256": "1f55aa7203602af261cae926f161816f1fd893bcf5fb4464835e336d6787c962",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/96fe50ae-f69c-4ddb-a401-fa7d97c9ad46/1f55aa7203602af261cae926f161816f1fd893bcf5fb4464835e336d6787c962/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-069",
+      "itemId": "card:1f42fce8-0f6a-48bd-ad47-8b0217f7db53",
+      "printingId": "1f42fce8-0f6a-48bd-ad47-8b0217f7db53",
+      "setId": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+      "setCode": "web1",
+      "languageCode": "ja",
+      "collectorReference": "046",
+      "cardName": "ザプドス",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:55616df61cdeda7d40274f0ba86bbc0bd7c4723320281c05d2e000122abda2ad",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-web/zapdos-46",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/4lzqgvdhi3xormtw/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "efe1a9492cf1a0d6af2c612fbeb81571a380ec3c24a962c4b69d9ec564c4fad7",
+        "byteSize": 125230,
+        "width": 748,
+        "height": 1053,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/4523de4ad7f2c332e4bc56a209bac133807009875d43b69a49f34fe3e126387a/card-grid.webp",
+          "sha256": "4523de4ad7f2c332e4bc56a209bac133807009875d43b69a49f34fe3e126387a",
+          "byte_size": 17316,
+          "width": 240,
+          "height": 338,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/8f116ca3d33dd5fecda4a8c35418055e6717bf618a883f5035d58a30dd1a7766/search-result.webp",
+          "sha256": "8f116ca3d33dd5fecda4a8c35418055e6717bf618a883f5035d58a30dd1a7766",
+          "byte_size": 3866,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/521d17192cd3110a1cde72c68a1e9fd05e1f36178d04bd9f7501d2743b00bc91/detail-page.webp",
+          "sha256": "521d17192cd3110a1cde72c68a1e9fd05e1f36178d04bd9f7501d2743b00bc91",
+          "byte_size": 119802,
+          "width": 720,
+          "height": 1014,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "046",
+        "printed_collector_number": "046/048",
+        "catalogue_set_code": "web1",
+        "printed_set_code_literal": null,
+        "printed_national_dex": null,
+        "printed_non_collector_web_id": "Y-38",
+        "canonical_native_label_preserved": "ザプドス",
+        "canonical_english_label_preserved": null,
+        "actual_printed_name": "サンダー",
+        "actual_printed_form": null,
+        "category": null,
+        "actual_printed_category": "Pokemon",
+        "actual_native_category": "Pokemon"
+      },
+      "currentVariantCode": "holo",
+      "currentFinishCode": "holo",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T07:39:10.386Z",
+        "productionRun": 38867113710,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38867113710",
+        "publicationReceiptSha256": "da0f1381da0d9f56ae351ad52315c5973452b7b1d1f6c601a0a661610c8ae20d",
+        "printingId": "1f42fce8-0f6a-48bd-ad47-8b0217f7db53",
+        "assetId": "artwork-recovered-20260928:1f42fce8-0f6a-48bd-ad47-8b0217f7db53:efe1a9492cf1a0d6af2c612fbeb81571a380ec3c24a962c4b69d9ec564c4fad7",
+        "contentSha256": "efe1a9492cf1a0d6af2c612fbeb81571a380ec3c24a962c4b69d9ec564c4fad7",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/1f42fce8-0f6a-48bd-ad47-8b0217f7db53/efe1a9492cf1a0d6af2c612fbeb81571a380ec3c24a962c4b69d9ec564c4fad7/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-069",
+      "itemId": "card:fe52e1d7-ea84-4456-b139-61f4c83d1de2",
+      "printingId": "fe52e1d7-ea84-4456-b139-61f4c83d1de2",
+      "setId": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+      "setCode": "web1",
+      "languageCode": "ja",
+      "collectorReference": "048",
+      "cardName": "マチャンプ",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:6a66f8bc5a37959a168af59de4c9294650c084572e7c6c2e1190980f62aabcd5",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-web/machamp-48",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/e76c14c1439f4b9d87668f04afde9c1152ff7d5130a7bb706d70b986dc827904/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "3c2ccbbc76085052edeead642d887c045132bc22835f46efe950780c8104250f",
+        "byteSize": 202668,
+        "width": 718,
+        "height": 1024,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/c2fa0886d2346813c0adf6975bf79c43dd97498be1883a63df528dbaaab35308/card-grid.webp",
+          "sha256": "c2fa0886d2346813c0adf6975bf79c43dd97498be1883a63df528dbaaab35308",
+          "byte_size": 22208,
+          "width": 240,
+          "height": 342,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/9de11ca070743024c5e18d89a134b2358c5dc98cd93f9f262d9ca7e0b736601f/search-result.webp",
+          "sha256": "9de11ca070743024c5e18d89a134b2358c5dc98cd93f9f262d9ca7e0b736601f",
+          "byte_size": 4330,
+          "width": 96,
+          "height": 137,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/328f25721c2cc14992bc799861f07c9d1a1e153a652571fc3d4fd298e6758671/detail-page.webp",
+          "sha256": "328f25721c2cc14992bc799861f07c9d1a1e153a652571fc3d4fd298e6758671",
+          "byte_size": 264734,
+          "width": 718,
+          "height": 1024,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "048",
+        "printed_collector_number": "048/048",
+        "catalogue_set_code": "web1",
+        "printed_set_code_literal": null,
+        "printed_national_dex": null,
+        "printed_non_collector_web_id": "Y-25",
+        "canonical_native_label_preserved": "マチャンプ",
+        "canonical_english_label_preserved": null,
+        "actual_printed_name": "カイリキー",
+        "actual_printed_form": null,
+        "category": null,
+        "actual_printed_category": "Pokemon",
+        "actual_native_category": "Pokemon"
+      },
+      "currentVariantCode": "holo",
+      "currentFinishCode": "holo",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T07:39:10.386Z",
+        "productionRun": 38867113710,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38867113710",
+        "publicationReceiptSha256": "da0f1381da0d9f56ae351ad52315c5973452b7b1d1f6c601a0a661610c8ae20d",
+        "printingId": "fe52e1d7-ea84-4456-b139-61f4c83d1de2",
+        "assetId": "artwork-recovered-20260928:fe52e1d7-ea84-4456-b139-61f4c83d1de2:3c2ccbbc76085052edeead642d887c045132bc22835f46efe950780c8104250f",
+        "contentSha256": "3c2ccbbc76085052edeead642d887c045132bc22835f46efe950780c8104250f",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/fe52e1d7-ea84-4456-b139-61f4c83d1de2/3c2ccbbc76085052edeead642d887c045132bc22835f46efe950780c8104250f/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     }
   ],
   "manualArtworkFollowUp": {
-    "updatedAt": "2026-10-16T06:52:10.748Z",
+    "updatedAt": "2026-10-16T07:40:48.239Z",
     "scope": "Specific follow-up details, separately from ordinary source work and active releases; current fixed inventory identities retained.",
     "collectorReferenceNote": "For older Japanese cards the Stackr reference may not be printed on the card; match its name, set, artwork and card text.",
     "specificFollowUps": 629,
     "ordinarySourceWorkStillOpen": 384,
-    "activeSourceOrPublicationWork": 7,
+    "activeSourceOrPublicationWork": 0,
     "batches": [
       {
         "batchId": "MANUAL-EN-001",
