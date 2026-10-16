@@ -1,2 +1,13 @@
--- Draft read-only currently exposed exact target assets; the 21st row is an overflow sentinel.
-SELECT to_jsonb(m) AS payload FROM api.asset_manifest m WHERE printing_id='783db704-7783-4ef9-8d8d-c00da4c7defd'::uuid OR variant_id=ANY(ARRAY['272802e1-0bdb-49b3-b2ee-76c14e8c14a1','95c46d73-a9bc-4e36-aeee-fde9fee7a7ad']::uuid[]) OR asset_row_id=ANY(ARRAY['4971c906-4460-43cb-b660-07d1a1038627','b049d37b-3e80-426b-b359-622de6f16986']::uuid[]) ORDER BY catalogue_version_id,asset_row_id LIMIT 21;
+-- Complete bounded base-table closure; 5/21/41 rows are rejection sentinels.
+WITH target_variants AS MATERIALIZED (
+ SELECT id FROM catalog.card_variants WHERE printing_id=ANY($1::uuid[]) OR id=ANY($2::uuid[]) ORDER BY id LIMIT 5
+), base_assets AS MATERIALIZED (
+ SELECT id FROM catalog.assets WHERE printing_id=ANY($1::uuid[]) OR variant_id IN(SELECT id FROM target_variants) OR id=ANY($3::uuid[]) ORDER BY id LIMIT 21
+), scoped_links AS MATERIALIZED (
+ SELECT asset_id,catalogue_version_id FROM catalog.catalogue_version_assets WHERE asset_id IN(SELECT id FROM base_assets) OR printing_id=ANY($1::uuid[]) OR variant_id IN(SELECT id FROM target_variants) ORDER BY catalogue_version_id,asset_id LIMIT 41
+)
+SELECT jsonb_build_object(
+ 'variant_ids',COALESCE((SELECT jsonb_agg(id ORDER BY id) FROM target_variants),'[]'::jsonb),
+ 'base_asset_ids',COALESCE((SELECT jsonb_agg(id ORDER BY id) FROM base_assets),'[]'::jsonb),
+ 'link_rows',COALESCE((SELECT jsonb_agg(to_jsonb(l) ORDER BY catalogue_version_id,asset_id) FROM scoped_links l),'[]'::jsonb)
+) AS scope;

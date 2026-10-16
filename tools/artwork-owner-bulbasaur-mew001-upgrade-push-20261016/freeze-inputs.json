@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "priorPublisherFiles": 400,
+  "priorPublisherFiles": 420,
   "priorRepositoryFiles": [
     {
       "file": "tools/artwork-leaders-stadium-fronts-push-20261015/.gitattributes",
@@ -2001,6 +2001,106 @@
       "file": ".github/workflows/artwork-pcg3-wave003004-seven-fronts-production-20261016.yml",
       "sha256": "370efc0637d34ffa18028a38e7614e1f6ac08b0f694998062f3ad65e9ae94434",
       "bytes": 3844
+    },
+    {
+      "file": ".github/workflows/artwork-pcg5-wave006007-eight-fronts-production-20261016.yml",
+      "bytes": 3852,
+      "sha256": "7f6bb9380b6778a97a28c7eeded77d2c829d80476ce381d1d3e54b565a05f6f3"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/.gitattributes",
+      "bytes": 14,
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/.gitignore",
+      "bytes": 19,
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/README.md",
+      "bytes": 1810,
+      "sha256": "cfd71433e59e33ecd200505b01a315dc035015bdae114bb953b7deed5b038bbe"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/approval.json",
+      "bytes": 3475,
+      "sha256": "6f20811a2edeacc0dc8a522059d900adab56d8c3975247d0066752fdc6ab3a06"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/before-query.sql",
+      "bytes": 4755,
+      "sha256": "79250016c23e11cb4b9aefe9566640a8b5295132c37f2f2cb898161a0a6e6630"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/download-package.py",
+      "bytes": 6075,
+      "sha256": "67ff8392b0012f9c9919a4328e4c510da8299bfe8a7649db7ac5347ba0f878ba"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/download-package.test.py",
+      "bytes": 6940,
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/freeze-inputs.json",
+      "bytes": 13096,
+      "sha256": "1237f33bccf012f6a05b9b1c016f11c4b800bc63387cf88b1fc8877b41364cfe"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/freeze-local.mjs",
+      "bytes": 1965,
+      "sha256": "7c3369be7e0bd9fcd0b5f4ea3b3ed0cd437c117a337e390724de56db5cb116a3"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/frozen.mjs",
+      "bytes": 17778,
+      "sha256": "da1ecf7f029919ea2d9bee9c7187f0cfae0c85969fedf4fdd326bf09dab22e79"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/identity-table.json",
+      "bytes": 7816,
+      "sha256": "1cbd3bb008552c81c255b161cdb910fbcfbd937b7e8337170761829cca449a2c"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/metadata-guard.mjs",
+      "bytes": 12055,
+      "sha256": "8c048fd47ed07474a25076bce70a00cb309dc7cc88795a5dc315d03dc009c39c"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/plan.json",
+      "bytes": 239752,
+      "sha256": "074c3c63473345e578ce9bf8db30af43e81d192e96f86a564c015058c1635df3"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/publish.mjs",
+      "bytes": 7309,
+      "sha256": "2f9b2cfa232cdafd678ae1e9411bba05140ce3267e04042836a01541ceb663cf"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/publish.test.mjs",
+      "bytes": 32239,
+      "sha256": "f8e25f49187baaea03fc4e32c6862914bca6573247a324f8c2ac6bea4a2ce0a7"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/saved-targets.json",
+      "bytes": 3557,
+      "sha256": "5f90cd92fba39012cfff844695e1932b69886427bd11c975b70366fe997599ea"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/source-proof.mjs",
+      "bytes": 61461,
+      "sha256": "9aa6a1daf0c736604eabf4ead77080cf38e4759c0a0ac5adfb2fecac849b53be"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/validation.json",
+      "bytes": 7255,
+      "sha256": "f0ffaac32d9c01187d65d599a340914d04ecef4ef118f45341c367d6ba782a06"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/verify-packages.mjs",
+      "bytes": 1495,
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841"
     }
   ],
   "additionalDependencyFiles": [
@@ -2107,7 +2207,14 @@
     "sourcePackageReceiptSHA": "6812d6717d462a621525c5bb62eff46571fc34d713ac0e7df2e931a39b044f60",
     "rootPublisherRepairContextSHA": "0abf165255ec1687cca60eb7027612eb1e9d443e548c12b09e335d3ad33277c4",
     "supersededPublisherReviewSHA": "41b363e2819890a24b198fae7bf37439d9e3bcc6cbbd00c38f3d3b0561cdafd3",
-    "mergedMainSHA": "9c70b88040f88c82c1b4e92eb2551fa142183593"
+    "mergedMainSHA": "9c70b88040f88c82c1b4e92eb2551fa142183593",
+    "manifestTimeoutRepairContextSHA": "048a2e960e3e0b8d8688f4e32f788d878c3cb8ba23f1a652fc1ad370311393f6",
+    "failedRunReceiptSHA": "e885f1fc1a3a748b469e6527a2287824eb62f288af634caf5c43b591605667c2",
+    "rootFailurePreservationSHA": "592735e2f0addc1722ac7c5e8c18bfa64c559f3df2c4db888e56a9f7a6ccf22d",
+    "unrelated420BaselineSHA": "fb62981464feff8474b1541f74c3b3524356e05dd5a87ba57447636f43d897a1",
+    "repairBaseMainSHA": "e40a6b0354703de2a2e325671a9c53686615f130",
+    "existingObjectsOnly": true,
+    "rootActualNarrowMeasurementSHA": "b7f1de89bdac4f573a08f07929ecddc49e4df7e13bbdc6790fdb9994eae5575e"
   },
   "private166PinsVerified": true,
   "privatePathsNotPublished": true,

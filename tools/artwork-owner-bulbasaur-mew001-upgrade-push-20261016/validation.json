@@ -9,7 +9,7 @@
   "archiveBytes": 187012,
   "archiveMembers": 8,
   "repoFilesExpected": 20,
-  "publisherTests": 88,
+  "publisherTests": 117,
   "archiveGuardTests": 12,
   "archiveNegativeTests": 11,
   "sharedJournalIntegrationTests": 1,
@@ -88,5 +88,51 @@
     "dependencyGuardUnchanged": true,
     "newPackageRegressionTests": 5,
     "priorLogoWorkPreserved": true
+  },
+  "priorUnrelatedPublisherFiles": 420,
+  "actualPriorRun": {
+    "id": 38940305628,
+    "receiptSHA": "e885f1fc1a3a748b469e6527a2287824eb62f288af634caf5c43b591605667c2",
+    "rootPreservationSHA": "592735e2f0addc1722ac7c5e8c18bfa64c559f3df2c4db888e56a9f7a6ccf22d",
+    "staging": [
+      23,
+      26,
+      23
+    ],
+    "production": [
+      28,
+      30,
+      28
+    ],
+    "publishedAssets": 0,
+    "publishedLinks": 0,
+    "immutableObjectsVerified": 4
+  },
+  "manifestTimeoutRepair": {
+    "contextSHA": "048a2e960e3e0b8d8688f4e32f788d878c3cb8ba23f1a652fc1ad370311393f6",
+    "rawBaseIDClosure": true,
+    "assetAndVersionParameterizedViewQuery": true,
+    "exactFormerORPredicateRetainedInMemory": true,
+    "completeScopeComparedWithFrozenSnapshot": true,
+    "allLinkedVersionIDsIncluded": true,
+    "originalBaselineManifestHashesUnchanged": true,
+    "candidateSentinels": [
+      5,
+      21,
+      41
+    ],
+    "visibleSentinel": 21,
+    "statementTimeoutUnchanged45s": true,
+    "fixedPhaseAndFiveCharacterSQLSTATE": true,
+    "rawDriverErrorsExcluded": true,
+    "rawScopedAndBindingAndRollbackAndAfterEvidencePersisted": true,
+    "wholeOutputSecretScanRequired": true,
+    "objectsExistingOnly": true,
+    "uploadsForbidden": true,
+    "readOnlyMeasurementPreparedForRoot": true,
+    "workerRemoteSQL": 0,
+    "rootActualNarrowMeasurementSHA": "b7f1de89bdac4f573a08f07929ecddc49e4df7e13bbdc6790fdb9994eae5575e",
+    "rootActualProductionAndStagingScopeAndPayloadEquivalent": true,
+    "rootReadOnlyQueries": 4
   }
 }
