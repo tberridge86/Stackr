@@ -1,0 +1,86 @@
+name: Publish Stackr Bulbasaur MEW001 quality upgrade
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type PUBLISH OWNER BULBASAUR MEW001 UPGRADE
+        required: true
+        type: string
+      expected_main_sha:
+        description: Exact main revision containing the frozen batch
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-production-deployment
+  cancel-in-progress: false
+
+jobs:
+  owner_bulbasaur_mew001_upgrade:
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'PUBLISH OWNER BULBASAUR MEW001 UPGRADE'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: production
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            backend/package-lock.json
+      - name: Validate the exact artwork-only batch
+        env:
+          EXPECTED_SHA: ${{ inputs.expected_main_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_SHA" =~ ^[a-f0-9]{40}$ ]]
+          test "$EXPECTED_SHA" = "$GITHUB_SHA"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git diff --exit-code
+      - name: Install locked publisher dependencies
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm ci --prefix backend --omit=dev --ignore-scripts --no-audit --no-fund
+      - name: Verify batch, transaction and archive guards
+        run: |
+          node --test tools/artwork-owner-bulbasaur-mew001-upgrade-push-20261016/publish.test.mjs
+          python tools/artwork-owner-bulbasaur-mew001-upgrade-push-20261016/download-package.test.py
+      - name: Verify persisted failure receipts
+        run: node --test tools/artwork3303-publish-20260928/journal.integration.test.mjs
+      - name: Retrieve the frozen image package
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python tools/artwork-owner-bulbasaur-mew001-upgrade-push-20261016/download-package.py "$RUNNER_TEMP/artwork-owner-bulbasaur-mew001-upgrade-packages"
+      - name: Verify all four frozen images after extraction
+        run: node tools/artwork-owner-bulbasaur-mew001-upgrade-push-20261016/verify-packages.mjs "$RUNNER_TEMP/artwork-owner-bulbasaur-mew001-upgrade-packages"
+      - name: Rehearse and publish the exact normal-art upgrade
+        env:
+          STACKR_EXPECTED_MAIN_SHA: ${{ inputs.expected_main_sha }}
+          STACKR_OWNER_BULBASAUR_CONFIRMATION: PUBLISH OWNER BULBASAUR MEW001 UPGRADE
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PRODUCTION_SECRET_KEY: ${{ secrets.SUPABASE_PRODUCTION_SECRET_KEY }}
+          SUPABASE_STAGING_DB_URL: ${{ secrets.SUPABASE_STAGING_DB_URL }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          STACKR_OWNER_BULBASAUR_PACKAGES: ${{ runner.temp }}/artwork-owner-bulbasaur-mew001-upgrade-packages
+          STACKR_OWNER_BULBASAUR_OUTPUT: ${{ runner.temp }}/artwork-owner-bulbasaur-mew001-upgrade
+        run: node tools/artwork-owner-bulbasaur-mew001-upgrade-push-20261016/publish.mjs --execute
+      - name: Scan publication evidence for secrets
+        id: artwork_receipt_scan
+        if: always()
+        run: node scripts/deploy/secret-scan.mjs --directory="$RUNNER_TEMP/artwork-owner-bulbasaur-mew001-upgrade"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always() && steps.artwork_receipt_scan.outcome == 'success'
+        with:
+          name: artwork-owner-bulbasaur-mew001-upgrade-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/artwork-owner-bulbasaur-mew001-upgrade
+          retention-days: 90
+          if-no-files-found: warn
