@@ -1,0 +1,44 @@
+[
+  {
+    "printing_id": "1b1f1db9-6e91-4cf5-8852-e11dfac760b8",
+    "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+    "set_code": "web1",
+    "language_code": "ja",
+    "collector_number": "008",
+    "card_native_name": "Vulpix",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-068",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "cab43ba9-aaa5-4c7b-ae3d-f6fc35dec8c0"
+    ]
+  },
+  {
+    "printing_id": "c76d9283-f8c4-47eb-8a8a-7adb9515ff64",
+    "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+    "set_code": "web1",
+    "language_code": "ja",
+    "collector_number": "014",
+    "card_native_name": "Hitmonlee",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-068",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "92c2f04b-30b3-486d-aa04-6a8c21d4a151"
+    ]
+  },
+  {
+    "printing_id": "0533fc6d-257a-4c31-96d8-2e834138ee69",
+    "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+    "set_code": "web1",
+    "language_code": "ja",
+    "collector_number": "029",
+    "card_native_name": "Dugtrio",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-069",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "d7c39018-9660-4045-9311-ffc1083ba7fc"
+    ]
+  }
+]

@@ -1,0 +1,302 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_FROZEN_PUBLICATION_HANDOFF_READY",
+  "confirmation": "PUBLISH ARTWORK WEB THREE FRONTS",
+  "queueId": "WEBPCG3-EXACT3-SHARED-FRONTS-20261016",
+  "fronts": 3,
+  "fixedVariantTuplesPerEnvironment": 3,
+  "workType": "CARDS",
+  "batchIds": [
+    "JP-CARDS-068",
+    "JP-CARDS-069"
+  ],
+  "recordedCategories": [
+    null,
+    null,
+    null
+  ],
+  "identities": [
+    {
+      "printingId": "1b1f1db9-6e91-4cf5-8852-e11dfac760b8",
+      "setId": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+      "setCode": "web1",
+      "languageCode": "ja",
+      "canonicalAlias": "008",
+      "currentNativeLabel": "Vulpix",
+      "actualPrintedName": "ロコン",
+      "actualPrintedForm": null,
+      "recordedCategory": null,
+      "actualPrintedClassEvidenceOnly": "Pokemon",
+      "printedHP": "50",
+      "printedType": "Fire",
+      "printedStage": "たねポケモン",
+      "printedEvolutionFrom": null,
+      "abilityCount": 0,
+      "attackCount": 1,
+      "printedCollectorNumber": "008/048",
+      "printedArtist": "Atsuko Nishida",
+      "printedNationalDex": null,
+      "printedSetCodeLiteral": null,
+      "printedWebIdentifierNotNationalDex": "ID:Y-21",
+      "rawDugtrioAbilityKind": null,
+      "additiveActualAbilityLogo": null,
+      "currentVariantId": "cab43ba9-aaa5-4c7b-ae3d-f6fc35dec8c0",
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentIsDefaultFlag": true,
+      "actualApiFallbackDefaultVariantId": "cab43ba9-aaa5-4c7b-ae3d-f6fc35dec8c0",
+      "assetVariantId": null,
+      "sourceVariantId": null,
+      "deliveryKind": "shared",
+      "actualWrappedSignatureCanonicalSha256": "2a6873bd8485385ce968db124476284e6f65072a4a47ad6395f025fd9453c32d"
+    },
+    {
+      "printingId": "c76d9283-f8c4-47eb-8a8a-7adb9515ff64",
+      "setId": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+      "setCode": "web1",
+      "languageCode": "ja",
+      "canonicalAlias": "014",
+      "currentNativeLabel": "Hitmonlee",
+      "actualPrintedName": "サワムラー",
+      "actualPrintedForm": null,
+      "recordedCategory": null,
+      "actualPrintedClassEvidenceOnly": "Pokemon",
+      "printedHP": "50",
+      "printedType": "Fighting",
+      "printedStage": "たねポケモン",
+      "printedEvolutionFrom": null,
+      "abilityCount": 0,
+      "attackCount": 2,
+      "printedCollectorNumber": "014/048",
+      "printedArtist": "Shin-ichi Yoshida",
+      "printedNationalDex": null,
+      "printedSetCodeLiteral": null,
+      "printedWebIdentifierNotNationalDex": "ID:Y-33",
+      "rawDugtrioAbilityKind": null,
+      "additiveActualAbilityLogo": null,
+      "currentVariantId": "92c2f04b-30b3-486d-aa04-6a8c21d4a151",
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentIsDefaultFlag": true,
+      "actualApiFallbackDefaultVariantId": "92c2f04b-30b3-486d-aa04-6a8c21d4a151",
+      "assetVariantId": null,
+      "sourceVariantId": null,
+      "deliveryKind": "shared",
+      "actualWrappedSignatureCanonicalSha256": "ca3a854fe405221cef24b62fc479520b09b655e4aadb6a8df23b045772ec7b54"
+    },
+    {
+      "printingId": "0533fc6d-257a-4c31-96d8-2e834138ee69",
+      "setId": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+      "setCode": "web1",
+      "languageCode": "ja",
+      "canonicalAlias": "029",
+      "currentNativeLabel": "Dugtrio",
+      "actualPrintedName": "ダグトリオ",
+      "actualPrintedForm": null,
+      "recordedCategory": null,
+      "actualPrintedClassEvidenceOnly": "Pokemon",
+      "printedHP": "80",
+      "printedType": "Fighting",
+      "printedStage": "1進化ポケモン",
+      "printedEvolutionFrom": "ディグダから進化",
+      "abilityCount": 1,
+      "attackCount": 1,
+      "printedCollectorNumber": "029/048",
+      "printedArtist": "Miki Tanaka",
+      "printedNationalDex": null,
+      "printedSetCodeLiteral": null,
+      "printedWebIdentifierNotNationalDex": "ID:Y-20",
+      "rawDugtrioAbilityKind": "特殊能力",
+      "additiveActualAbilityLogo": "ポケボディー",
+      "currentVariantId": "d7c39018-9660-4045-9311-ffc1083ba7fc",
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentIsDefaultFlag": true,
+      "actualApiFallbackDefaultVariantId": "d7c39018-9660-4045-9311-ffc1083ba7fc",
+      "assetVariantId": null,
+      "sourceVariantId": null,
+      "deliveryKind": "shared",
+      "actualWrappedSignatureCanonicalSha256": "e6fb2caa773bab58a46c26d3e997bbd4ed72985c5ead7de42dbd6b0f1ce9f4ab"
+    }
+  ],
+  "tests": {
+    "publisherNode": {
+      "passed": 17,
+      "failed": 0
+    },
+    "archiveGuardsPython": {
+      "passed": 6,
+      "failed": 0
+    },
+    "priorPublisherRegressions": [
+      {
+        "tool": "PCG exact4",
+        "passed": 17
+      },
+      {
+        "tool": "PCG exact2",
+        "passed": 17
+      }
+    ],
+    "persistedFailureJournal": {
+      "passed": 1,
+      "failed": 0
+    },
+    "sourceContractRerun": {
+      "passed": 93,
+      "positive": 8,
+      "negative": 85,
+      "failed": 0
+    },
+    "queue": {
+      "status": "PASS",
+      "realReceipts": 3,
+      "localImageByteObjects": 12,
+      "jointRawEntryTamperRejections": 117,
+      "forgedRawAuthorityRejections": 21,
+      "rootAuthorityPacketRejections": 10,
+      "private93ContractCasesReusedThroughIndependentPeerPin": true,
+      "priorReadOnlyReceipts": 16,
+      "priorLocalImageObjects": 64,
+      "sharpMetricCasePassed": true,
+      "allPriorExactPredicatesPreserved": true,
+      "inMemoryCompleteHelperDryRun": {
+        "priorEntries": 1219,
+        "afterEntries": 1222,
+        "onlyExactThreeAdded": true,
+        "prior1219ByteValuesUnchanged": true,
+        "sharedWritesIntercepted": 4
+      },
+      "sharedFilesUnchanged": true,
+      "productionWrites": 0
+    }
+  },
+  "archiveInstaller": {
+    "assetId": 646324255,
+    "membersVerifiedAndExtracted": 16,
+    "runtimeSharpFullyDecoded": 12,
+    "privatePeerPILSharpRGBAAgreements": 12,
+    "privacySafeJsonFiles": 4,
+    "originalHdPixelFronts": 3,
+    "derivativeHdPixelFiles": 2,
+    "hdMeaning": "Existing dimension/aspect audit canvas qualification only; no provider-native optical or source-wide rights certificate",
+    "genericRightsUnapprovedAuditFlagsRetained": true,
+    "noEnlargement": true,
+    "localPinnedArchiveOnly": true
+  },
+  "sourceGuard": {
+    "externalAuthorityAndBaselineFilesRehashed": 25,
+    "oldProductionSources": 4,
+    "oldFullSourceFieldsProtected": 68,
+    "productionNewSources": 0,
+    "productionPolicyChangesAllowed": 0,
+    "explicitProductionResolverHasNoInsertPath": true,
+    "full17MicrosecondsRetainedByBothJsonReaders": true,
+    "stagingBaselineScopedSources": 0,
+    "onlyTemporaryStagingFixture": "pricecharting",
+    "sevenCorrectScopeUUIDs": true,
+    "rejectedObsoleteFourAndTwoScopeCounts": true
+  },
+  "transactionFixtures": {
+    "production": {
+      "beforeRows": 17,
+      "afterRows": 23,
+      "assetsAdded": 3,
+      "linksAdded": 3,
+      "sourcesAdded": 0
+    },
+    "staging": {
+      "beforeRows": 13,
+      "temporaryRows": 20,
+      "afterRollbackRows": 13
+    },
+    "existingWebSetLogoAssets": 0,
+    "existingWebSetLogoLinks": 0,
+    "canonicalMetadataAssetsLinksAndAllSourceRowsUnchanged": true,
+    "sourceAndLinkFailuresRollBack": true
+  },
+  "appSelection": [
+    {
+      "printing_id": "1b1f1db9-6e91-4cf5-8852-e11dfac760b8",
+      "large_role": "detail-page",
+      "large_dimensions": [
+        720,
+        1023
+      ],
+      "large_object_path": "objects/5db8a16b61cd6cfc6deb581bccdd6f376a878c76b2014ec8b8514abe38936c64/detail-page.webp",
+      "detail_dimensions": [
+        720,
+        1023
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "c76d9283-f8c4-47eb-8a8a-7adb9515ff64",
+      "large_role": "detail-page",
+      "large_dimensions": [
+        720,
+        1013
+      ],
+      "large_object_path": "objects/7739b630dc0516cefbde494f7bc50e637b1451db26c7ac9918d1a8ae9f775133/detail-page.webp",
+      "detail_dimensions": [
+        720,
+        1013
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "0533fc6d-257a-4c31-96d8-2e834138ee69",
+      "large_role": "detail-page",
+      "large_dimensions": [
+        720,
+        1007
+      ],
+      "large_object_path": "objects/896805cb2bffb31d2b97ceb6a4194355133b33b52331ef0ea12b78c1d85963ae/detail-page.webp",
+      "detail_dimensions": [
+        720,
+        1007
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    }
+  ],
+  "actualMeasuredAppReportSha256": "619012a6de3597b40d9e53077a398e43ea12bf765a7e228e1999d6caebf1ed8e",
+  "actualMeasuredDimensionAuditSha256": "b0cadff233de6ce4009cbf4abb40e586ccfca4d63b02d05137001fd8ec6bd570",
+  "rootAdditiveAppMeasurementQualificationSha256": "f00ea612fb11eec7b9217cc48cae706e18afe0c362a4a3f46bda144d09d98d6e",
+  "oldContextOriginalRoleEstimatesRemainHistorical": true,
+  "qualifications": {
+    "historicalSourceNullFalseFlagsUnchanged": true,
+    "recordedCategoryNullAllThree": true,
+    "rawDugtrioWrappedSignatureAndSpecialAbilityKindUnchanged": true,
+    "actualAbilityLogoIsAdditive": true,
+    "sharedFrontEligibilityDoesNotAuthenticatePhysicalEdition": true,
+    "providerBodyVerbatimAgreement": false,
+    "providerNeverResizedCertified": false,
+    "nativeOpticalGainClaimed": false,
+    "physicalEditionCertified": false,
+    "physicalFinishCertified": false,
+    "unlimitedEditionCertified": false,
+    "materialAuthenticityCertified": false,
+    "vendorLicenceCertified": false,
+    "sourcewideApproval": false
+  },
+  "unchangedPriorRepositoryFilesRehashed": 300,
+  "unchangedSharedDependenciesRehashed": 11,
+  "unchangedPrivateOwnedFilesRehashed": 64,
+  "unchangedPrivateInputFilesRehashed": 49,
+  "workflow": {
+    "protectedProduction": true,
+    "exactMainSha": true,
+    "sharedDeploymentConcurrency": true,
+    "shaPinnedActions": 3,
+    "exact20FileSecretScanRequired": true,
+    "failureJournalAndRollbackReceipts": true
+  },
+  "planSha256": "634da12b31508fd5038b4b8453143ac298a7f411a741a0d0b14d409cf934a8e4",
+  "approvalSha256": "9418793a2e5b0dc361c42a9f75860b4cec55a035f42742b9cd1ddcdb829e7dfa",
+  "productionWrites": 0,
+  "livePublicationVerified": false,
+  "actualApiAndDefaultExplicitAllFourFilesVerificationRequiredAfterProtectedPublication": true
+}

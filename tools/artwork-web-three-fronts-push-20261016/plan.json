@@ -1,0 +1,1731 @@
+{
+  "schemaVersion": 1,
+  "queue_id": "WEBPCG3-EXACT3-SHARED-FRONTS-20261016",
+  "source_manifest_sha256": "ed79ea04b77c159cbebaab0141e9856eac061d42ba0f78f903812037174b093e",
+  "package_receipt_sha256": "527c66313c437777f3175ad79a2517b8637a28f62988f0e07440a2a552b79ae6",
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "ae13ed03c8228c5fa6290f8ac1b9c3fdea2c9b74212137b5279e33451e56032f",
+    "finiteDecisionFileByteSha256": "5aec715bea952ac8703a22a85850c515c3158fc0447c159b75a148657d89f8a7",
+    "rootPrivateContextFileByteSha256": "d78a6921e0381a75e73048d321bcf4bf58b0babfbe7d916db5a702d3f32eb4ad",
+    "sourceHandoffFileByteSha256s": [
+      "9ca3a7f578fe36c37b80672efdf1194d6c34e25b82db9bc738f1583dbac11b0d"
+    ],
+    "independentSourceReviewFileByteSha256s": [
+      "46331988b4a4ef395fc83cba49d968e96996eca768850198af70d4dae815c387"
+    ],
+    "fourSourceCheckpointFileByteSha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "1aa91f6c4abc79a871e26a20aef0a6b12f909adac69d43fc36f36c7b006aa0c5",
+    "independentPrivatePackageReviewSha256": "ae034db5b9c94d1e3dc5284a95f835e95c15809547bcdaa1b6566d4634fdecb1",
+    "rootPrivatePackageValidationSha256": "03ac2d8a4726d807f8411859e10b357872f56e870008dd183f3247aff8759117",
+    "rootSourceArchiveBindingSha256": "f98159f1b7fd6a0378f6c7638defe79ff3972d4461072200235b316e1480c844",
+    "rootUploadReceiptSha256": "bb4181fad8b9fd6870dd8313769bbbf8b3f138ba174b89e5cbeaa65403748a44",
+    "actualMeasuredAppReportSha256": "619012a6de3597b40d9e53077a398e43ea12bf765a7e228e1999d6caebf1ed8e",
+    "actualMeasuredDimensionAuditSha256": "b0cadff233de6ce4009cbf4abb40e586ccfca4d63b02d05137001fd8ec6bd570",
+    "rootAdditiveMeasuredAppQualificationSha256": "f00ea612fb11eec7b9217cc48cae706e18afe0c362a4a3f46bda144d09d98d6e",
+    "rootPublisherContextSha256": "9e88b0fef2b086db9c76f5ebf3fcdb2d11692648d4f347135533e1030946b743"
+  },
+  "archive": {
+    "id": 646324255,
+    "sha256": "01fc2993c6e2b5518d3697abe657a8bbfdeff63d5ed7d8096edcae6d52c219e5",
+    "byte_size": 1529815,
+    "file_count": 16,
+    "name": "webpcg3-fronts-20261016.zip"
+  },
+  "archive_metadata": [
+    {
+      "file": "manifest.json",
+      "sha256": "ed79ea04b77c159cbebaab0141e9856eac061d42ba0f78f903812037174b093e",
+      "byte_size": 84053
+    },
+    {
+      "file": "receipts/preparation-summary.json",
+      "sha256": "2de9c8a1b92be077054b2fc16b68c254ac28ea6f32204dcca74aee515029c4bf",
+      "byte_size": 1313
+    },
+    {
+      "file": "receipts/current-card-bindings.json",
+      "sha256": "4d7bc087fe10601e70ba930b2492549a32ddfa3f11ea455a93a06c0697821f93",
+      "byte_size": 15438
+    },
+    {
+      "file": "receipts/finite-decision.json",
+      "sha256": "24330c5e41c71c019d2bd7246afe3bc08b06ea08a8d043a351dae4fe445021ea",
+      "byte_size": 2368
+    }
+  ],
+  "rows": [
+    {
+      "printing_id": "1b1f1db9-6e91-4cf5-8852-e11dfac760b8",
+      "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+      "set_code": "web1",
+      "language_code": "ja",
+      "collector_number": "008",
+      "card_native_name": "Vulpix",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "batch_id": "JP-CARDS-068",
+      "work_type": "CARDS",
+      "variant_ids": [
+        "cab43ba9-aaa5-4c7b-ae3d-f6fc35dec8c0"
+      ],
+      "source_code": "pricecharting",
+      "provider_id": "pricecharting-image-url-sha256:babe13985dd7d12e754899c38869c567149631c797362743600720622dcdb6f1",
+      "image_url": "https://storage.googleapis.com/images.pricecharting.com/255bk2q7dy3sm64y/1600.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/a268399943cf21c840272f1c939f1d6114f1f5f403eaf48959acc2727e695e27/original.jpg",
+          "sha256": "a268399943cf21c840272f1c939f1d6114f1f5f403eaf48959acc2727e695e27",
+          "byte_size": 218301,
+          "width": 726,
+          "height": 1032,
+          "mime_type": "image/jpeg",
+          "artifact_id": 646324255
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/21e335cd7fae7a623ba57adec287eb8e397b58ac77f4996f52cd1ae05b381b48/card-grid.webp",
+          "sha256": "21e335cd7fae7a623ba57adec287eb8e397b58ac77f4996f52cd1ae05b381b48",
+          "byte_size": 16156,
+          "width": 240,
+          "height": 341,
+          "mime_type": "image/webp",
+          "artifact_id": 646324255
+        },
+        {
+          "role": "search-result",
+          "file": "objects/aaabc6323f72dc650806ea141a230427235e7c16b0037a76dd76fbaf52503c35/search-result.webp",
+          "sha256": "aaabc6323f72dc650806ea141a230427235e7c16b0037a76dd76fbaf52503c35",
+          "byte_size": 3350,
+          "width": 96,
+          "height": 137,
+          "mime_type": "image/webp",
+          "artifact_id": 646324255
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/5db8a16b61cd6cfc6deb581bccdd6f376a878c76b2014ec8b8514abe38936c64/detail-page.webp",
+          "sha256": "5db8a16b61cd6cfc6deb581bccdd6f376a878c76b2014ec8b8514abe38936c64",
+          "byte_size": 262318,
+          "width": 720,
+          "height": 1023,
+          "mime_type": "image/webp",
+          "artifact_id": 646324255
+        }
+      ],
+      "evidence": {
+        "source_url": "https://storage.googleapis.com/images.pricecharting.com/255bk2q7dy3sm64y/1600.jpg",
+        "source_page_url": "https://www.pricecharting.com/game/pokemon-japanese-web/vulpix-8",
+        "provider_id": "pricecharting-image-url-sha256:babe13985dd7d12e754899c38869c567149631c797362743600720622dcdb6f1",
+        "source_metadata_sha256": "1df576588d4509950623772e424336e671cc9d6ff91bf20cd216cc61e7a804b9",
+        "source_body": {
+          "contract": "webpcg3-exact3-vulpix008-hitmonlee014-dugtrio029-japanese-shared-fronts-v1",
+          "work_type": "CARDS",
+          "accepted_category": null,
+          "recorded_inventory_category": null,
+          "actual_printed_category": "Pokemon",
+          "actual_native_category": "Pokemon",
+          "photo_identity_projection": {
+            "schemaVersion": 1,
+            "sourceCode": "pricecharting",
+            "sourceDetailUrl": "https://www.pricecharting.com/game/pokemon-japanese-web/vulpix-8",
+            "literalOriginalUrl": "https://storage.googleapis.com/images.pricecharting.com/255bk2q7dy3sm64y/1600.jpg",
+            "literalOriginalUrlSha256": "babe13985dd7d12e754899c38869c567149631c797362743600720622dcdb6f1",
+            "sourceProductId": "3438191",
+            "canonicalPrintingId": "1b1f1db9-6e91-4cf5-8852-e11dfac760b8",
+            "canonicalSetId": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+            "canonicalSetCode": "web1",
+            "languageCode": "ja",
+            "canonicalAlias": "008",
+            "printedCollectorNumber": "008/048",
+            "printedSetCodeLiteral": null,
+            "sourceSetAssociation": "Observed exact Japanese Web source page, actual printed Web logo and full xxx/048 collector, retained web1 set binding",
+            "originalFileByteSha256": "a268399943cf21c840272f1c939f1d6114f1f5f403eaf48959acc2727e695e27",
+            "originalByteSize": 218301,
+            "width": 726,
+            "height": 1032,
+            "format": "jpeg",
+            "actualPrintedName": "ロコン",
+            "actualPrintedForm": null,
+            "historicalSelectedSourceCardId": null,
+            "physicalEditionCertified": false,
+            "physicalFinishCertified": false
+          },
+          "photo_identity_projection_canonical_sha256": "3d007d7d24a1bfa3c6b74d445b1039b38ef9a64e61db9387baead1fb42656b0a",
+          "photo_raw_private_html_file_byte_sha256": "1df576588d4509950623772e424336e671cc9d6ff91bf20cd216cc61e7a804b9",
+          "root_approved_raw_row_canonical_sha256": "30d12ca85f0b0265df4199c1622c42f4c493c8a0ccabd7bbb7230b618da2e9ab",
+          "actual_pixel_signature": {
+            "alias": "web1-008",
+            "originalSha256": "a268399943cf21c840272f1c939f1d6114f1f5f403eaf48959acc2727e695e27",
+            "actualPrintedObservations": {
+              "printedNativeName": "ロコン",
+              "printedCardClass": "Pokemon",
+              "printedClassLabel": "たねポケモン; HP50 and Fire symbol",
+              "printedRules": null,
+              "printedTrainerSubtype": null,
+              "printedForm": null,
+              "printedHP": "50",
+              "printedType": "Fire",
+              "printedStage": "たねポケモン",
+              "printedEvolutionFrom": null,
+              "abilities": [],
+              "attacks": [
+                {
+                  "printedName": "きつねび",
+                  "printedCost": [
+                    "Fire",
+                    "Fire"
+                  ],
+                  "printedDamage": "10",
+                  "printedEffect": "のぞむなら、ダメージを与える前に、相手のベンチポケモンを1匹選び、相手と入れ替えてよい。"
+                }
+              ],
+              "printedPokemonExRule": null,
+              "printedCollectorNumber": "008/048",
+              "printedArtist": "Atsuko Nishida",
+              "printedWeakness": "Water",
+              "printedResistance": "none printed",
+              "printedRetreat": [
+                "Colorless"
+              ],
+              "printedRarityGlyph": "●",
+              "printedSetCodeLiteral": null,
+              "printedNationalDex": null,
+              "printedFlavorText": null,
+              "setMarkVisible": "Web logo",
+              "copyrightYear": null,
+              "editionStampObserved": false,
+              "foreignWatermarkObserved": false,
+              "allFourOuterPerimetersAndCornersVisible": true,
+              "frameQualification": "Complete tight whole-card scan with all four rounded corners visible against black corner background; name, type/stage, full single-attack effect, collector008/048 and Atsuko Nishida readable. No visible first-edition stamp; this is not a physical edition/material certificate.",
+              "art": "Vulpix facing right amid tall orange-yellow grass or flames.",
+              "printedNonCollectorIdentifier": "ID:Y-21",
+              "printedSpeciesPhysicalLine": "きつねポケモン・身長0.6m、体重9.9kg",
+              "printedCopyrightLiteral": "© Pokémon"
+            },
+            "nativeProviderQualification": {
+              "savedInventoryCategoryRetained": null,
+              "actualNativeCategory": "Pokemon",
+              "currentVariantCode": "normal",
+              "currentFinish": "normal",
+              "currentIsDefaultFlag": true,
+              "currentTuplePreserved": true,
+              "noVisibleStampDoesNotCertifyUnlimited": true,
+              "metadataNotVerbatimPrintedBodyProof": true
+            },
+            "holds": [],
+            "completePrintedIdentityAndBodyReadable": true
+          },
+          "actual_pixel_signature_canonical_sha256": "2a6873bd8485385ce968db124476284e6f65072a4a47ad6395f025fd9453c32d",
+          "actual_printed_ability_logo": null,
+          "root_additive_whole_original_observation_byte_sha256": "9bb8758156fcd023625f1fbc74d7fa6a85283de9258a92012fba1ee9a7649b6f",
+          "raw_wrapped_signature_not_rewritten": true,
+          "actual_ability_logo_observation_is_additive": true,
+          "current_production_binding": {
+            "printing": {
+              "id": "1b1f1db9-6e91-4cf5-8852-e11dfac760b8",
+              "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": true
+              },
+              "collector_number": "008",
+              "printing_discriminator": "",
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "cab43ba9-aaa5-4c7b-ae3d-f6fc35dec8c0",
+                "is_default": true,
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "1b1f1db9-6e91-4cf5-8852-e11dfac760b8",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:cdb922a5-eaec-4696-ae6f-3ad4d263c66b:008:normal",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+                "set_code": "web1",
+                "variant_id": "cab43ba9-aaa5-4c7b-ae3d-f6fc35dec8c0",
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "1b1f1db9-6e91-4cf5-8852-e11dfac760b8",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:cdb922a5-eaec-4696-ae6f-3ad4d263c66b:008:normal",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "008",
+                "catalogue_version": "ja:magazine-promo-reconciliation-2026-09-27-v1",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "1b1f1db9-6e91-4cf5-8852-e11dfac760b8"
+          },
+          "current_staging_binding": {
+            "printing": {
+              "id": "1b1f1db9-6e91-4cf5-8852-e11dfac760b8",
+              "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": false
+              },
+              "collector_number": "008",
+              "printing_discriminator": null,
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "cab43ba9-aaa5-4c7b-ae3d-f6fc35dec8c0",
+                "is_default": true,
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "1b1f1db9-6e91-4cf5-8852-e11dfac760b8",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:cdb922a5-eaec-4696-ae6f-3ad4d263c66b:008:normal",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+                "set_code": "web1",
+                "variant_id": "cab43ba9-aaa5-4c7b-ae3d-f6fc35dec8c0",
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "1b1f1db9-6e91-4cf5-8852-e11dfac760b8",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:cdb922a5-eaec-4696-ae6f-3ad4d263c66b:008:normal",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "008",
+                "catalogue_version": "ja:tcgdex-796afd47e430-full-primary-2026-08-19",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "1b1f1db9-6e91-4cf5-8852-e11dfac760b8"
+          },
+          "required_asset_scope": {
+            "printing_id": "1b1f1db9-6e91-4cf5-8852-e11dfac760b8",
+            "variant_id": null
+          },
+          "source_variant_id": null,
+          "required_delivery_kind": "shared",
+          "queue_controls": {
+            "identity_controls": {
+              "canonical_alias": "008",
+              "printed_collector_number": "008/048",
+              "catalogue_set_code": "web1",
+              "printed_set_code_literal": null,
+              "printed_national_dex": null,
+              "printed_non_collector_web_id": "ID:Y-21",
+              "canonical_native_label_preserved": "Vulpix",
+              "actual_printed_name": "ロコン",
+              "actual_printed_form": null,
+              "category": null,
+              "actual_printed_category": "Pokemon",
+              "actual_native_category": "Pokemon"
+            },
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "all_four_rounded_corners_visible": true,
+              "printed_body_language": "ja",
+              "complete_name_form_hp_type_stage_full_ability_attack_body_artist_collector_footer_readable": true,
+              "edition_stamp_observed": false,
+              "watermark_observed": false,
+              "stamp_absence_does_not_certify_unlimited": true,
+              "current_physical_edition_unresolved_retained": true,
+              "provider_body_not_verbatim_printed_japanese": true,
+              "raw_observation_keys_retained_without_inventing_fields": true
+            },
+            "source_qa": {
+              "actual_japanese_complete_front_verified": true,
+              "original_sha256": "a268399943cf21c840272f1c939f1d6114f1f5f403eaf48959acc2727e695e27",
+              "actual_signature_canonical_sha256": "2a6873bd8485385ce968db124476284e6f65072a4a47ad6395f025fd9453c32d",
+              "source_metadata_is_sole_identity_proof": false,
+              "physical_finish_certified": false,
+              "physical_edition_certified": false,
+              "unlimited_edition_certified": false
+            }
+          },
+          "historical_authority": {
+            "selected_source_card_id": null,
+            "preparation_approved": false,
+            "publication_approved": false
+          },
+          "root_finite_authority": {
+            "approved_file_byte_sha256": "ae13ed03c8228c5fa6290f8ac1b9c3fdea2c9b74212137b5279e33451e56032f",
+            "decision_file_byte_sha256": "5aec715bea952ac8703a22a85850c515c3158fc0447c159b75a148657d89f8a7",
+            "preparation_approved": true,
+            "conditional_future_publication_approved": true,
+            "private_package_is_production_ready": false
+          },
+          "coverage": {
+            "wholeUnchangedOriginalIndividuallyViewed": true,
+            "fullPILSharpRGBAAgreement": true,
+            "completeFrameAndFourOuterCornersVisible": true,
+            "completeJapaneseBodyFooterAndArtistReadable": true,
+            "unprintedNationalDexAndSetCodeNotInvented": true,
+            "printedNonCollectorWebIDRetainedNotTreatedAsDex": true
+          },
+          "unresolved_physical_qualifications": [
+            "Current sole normal/defaultTRUE and production blank/staging absent discriminator retained. A shared reference front does not certify physical edition, material, finish or unlimited status; no1ED mark observed."
+          ],
+          "shared_front_eligibility_does_not_authenticate_physical_edition": true,
+          "source_provider_body_verbatim_agreement": false,
+          "canonical_native_label_preserved": true,
+          "quality_qualification": {
+            "original_width": 726,
+            "original_height": 1032,
+            "whole_original_perimeter_and_corners_retained": true,
+            "provider_never_resized_certified": false,
+            "native_optical_gain_claimed": false,
+            "actual_derivative_measurement_required": true,
+            "app_large_role_must_be_measured_per_row": true
+          },
+          "new_source_requests": 0,
+          "full_commercial_html_or_provider_json_included": false,
+          "source_wide_approval": false,
+          "vendor_licence_certified": false,
+          "physical_finish_certified": false,
+          "physical_edition_certified": false,
+          "physical_material_authenticity_verified": false,
+          "unlimited_edition_certified": false,
+          "provider_never_resized_certified": false,
+          "native_optical_gain_claimed": false,
+          "stackr_enlargement": false
+        },
+        "queue_controls": {
+          "identity_controls": {
+            "canonical_alias": "008",
+            "printed_collector_number": "008/048",
+            "catalogue_set_code": "web1",
+            "printed_set_code_literal": null,
+            "printed_national_dex": null,
+            "printed_non_collector_web_id": "ID:Y-21",
+            "canonical_native_label_preserved": "Vulpix",
+            "actual_printed_name": "ロコン",
+            "actual_printed_form": null,
+            "category": null,
+            "actual_printed_category": "Pokemon",
+            "actual_native_category": "Pokemon"
+          },
+          "pixel_observations": {
+            "whole_original_inspected": true,
+            "full_frame_visible": true,
+            "all_four_rounded_corners_visible": true,
+            "printed_body_language": "ja",
+            "complete_name_form_hp_type_stage_full_ability_attack_body_artist_collector_footer_readable": true,
+            "edition_stamp_observed": false,
+            "watermark_observed": false,
+            "stamp_absence_does_not_certify_unlimited": true,
+            "current_physical_edition_unresolved_retained": true,
+            "provider_body_not_verbatim_printed_japanese": true,
+            "raw_observation_keys_retained_without_inventing_fields": true
+          },
+          "source_qa": {
+            "actual_japanese_complete_front_verified": true,
+            "original_sha256": "a268399943cf21c840272f1c939f1d6114f1f5f403eaf48959acc2727e695e27",
+            "actual_signature_canonical_sha256": "2a6873bd8485385ce968db124476284e6f65072a4a47ad6395f025fd9453c32d",
+            "source_metadata_is_sole_identity_proof": false,
+            "physical_finish_certified": false,
+            "physical_edition_certified": false,
+            "unlimited_edition_certified": false
+          }
+        },
+        "artwork_scope": "printing_front",
+        "delivery_kind": "shared",
+        "asset_variant_id": null,
+        "source_variant_id": null,
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "physical_edition_verified": false,
+        "vendor_licence_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "c76d9283-f8c4-47eb-8a8a-7adb9515ff64",
+      "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+      "set_code": "web1",
+      "language_code": "ja",
+      "collector_number": "014",
+      "card_native_name": "Hitmonlee",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "batch_id": "JP-CARDS-068",
+      "work_type": "CARDS",
+      "variant_ids": [
+        "92c2f04b-30b3-486d-aa04-6a8c21d4a151"
+      ],
+      "source_code": "pricecharting",
+      "provider_id": "pricecharting-image-url-sha256:5b09e986349633224e9cb8415573668b11afa7635d555ae76b95a12bcd531495",
+      "image_url": "https://storage.googleapis.com/images.pricecharting.com/ng3jvsx2d5fo7mmn/1600.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/9d92ff18ec25d848a7c8852221aee5663d950c5e2bc639259fc8cb6849a20d02/original.jpg",
+          "sha256": "9d92ff18ec25d848a7c8852221aee5663d950c5e2bc639259fc8cb6849a20d02",
+          "byte_size": 346168,
+          "width": 1087,
+          "height": 1529,
+          "mime_type": "image/jpeg",
+          "artifact_id": 646324255
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/1cd1a7203145d69109e28ebe0b0eedb9d7e2ef1e52e641b9c8ec7b1b47186297/card-grid.webp",
+          "sha256": "1cd1a7203145d69109e28ebe0b0eedb9d7e2ef1e52e641b9c8ec7b1b47186297",
+          "byte_size": 17410,
+          "width": 240,
+          "height": 338,
+          "mime_type": "image/webp",
+          "artifact_id": 646324255
+        },
+        {
+          "role": "search-result",
+          "file": "objects/23bbe97de63bebac72ede9613233113ce2bdeefc238470a3ae08979ae1784126/search-result.webp",
+          "sha256": "23bbe97de63bebac72ede9613233113ce2bdeefc238470a3ae08979ae1784126",
+          "byte_size": 3418,
+          "width": 96,
+          "height": 136,
+          "mime_type": "image/webp",
+          "artifact_id": 646324255
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/7739b630dc0516cefbde494f7bc50e637b1451db26c7ac9918d1a8ae9f775133/detail-page.webp",
+          "sha256": "7739b630dc0516cefbde494f7bc50e637b1451db26c7ac9918d1a8ae9f775133",
+          "byte_size": 193290,
+          "width": 720,
+          "height": 1013,
+          "mime_type": "image/webp",
+          "artifact_id": 646324255
+        }
+      ],
+      "evidence": {
+        "source_url": "https://storage.googleapis.com/images.pricecharting.com/ng3jvsx2d5fo7mmn/1600.jpg",
+        "source_page_url": "https://www.pricecharting.com/game/pokemon-japanese-web/hitmonlee-14",
+        "provider_id": "pricecharting-image-url-sha256:5b09e986349633224e9cb8415573668b11afa7635d555ae76b95a12bcd531495",
+        "source_metadata_sha256": "58b812839de7282bff29d7aa703d3d5ddd816b9922cf93b213d7d9a0d940a194",
+        "source_body": {
+          "contract": "webpcg3-exact3-vulpix008-hitmonlee014-dugtrio029-japanese-shared-fronts-v1",
+          "work_type": "CARDS",
+          "accepted_category": null,
+          "recorded_inventory_category": null,
+          "actual_printed_category": "Pokemon",
+          "actual_native_category": "Pokemon",
+          "photo_identity_projection": {
+            "schemaVersion": 1,
+            "sourceCode": "pricecharting",
+            "sourceDetailUrl": "https://www.pricecharting.com/game/pokemon-japanese-web/hitmonlee-14",
+            "literalOriginalUrl": "https://storage.googleapis.com/images.pricecharting.com/ng3jvsx2d5fo7mmn/1600.jpg",
+            "literalOriginalUrlSha256": "5b09e986349633224e9cb8415573668b11afa7635d555ae76b95a12bcd531495",
+            "sourceProductId": "3438197",
+            "canonicalPrintingId": "c76d9283-f8c4-47eb-8a8a-7adb9515ff64",
+            "canonicalSetId": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+            "canonicalSetCode": "web1",
+            "languageCode": "ja",
+            "canonicalAlias": "014",
+            "printedCollectorNumber": "014/048",
+            "printedSetCodeLiteral": null,
+            "sourceSetAssociation": "Observed exact Japanese Web source page, actual printed Web logo and full xxx/048 collector, retained web1 set binding",
+            "originalFileByteSha256": "9d92ff18ec25d848a7c8852221aee5663d950c5e2bc639259fc8cb6849a20d02",
+            "originalByteSize": 346168,
+            "width": 1087,
+            "height": 1529,
+            "format": "jpeg",
+            "actualPrintedName": "サワムラー",
+            "actualPrintedForm": null,
+            "historicalSelectedSourceCardId": null,
+            "physicalEditionCertified": false,
+            "physicalFinishCertified": false
+          },
+          "photo_identity_projection_canonical_sha256": "ffef0c266fb359efd7e73dc299af815a1bba4c2277d3f4cfdce3ab3f3430570a",
+          "photo_raw_private_html_file_byte_sha256": "58b812839de7282bff29d7aa703d3d5ddd816b9922cf93b213d7d9a0d940a194",
+          "root_approved_raw_row_canonical_sha256": "d6a31466e8b379c9fc497aaf0264e5c96c2b9f0b26183b44884ea1c907035707",
+          "actual_pixel_signature": {
+            "alias": "web1-014",
+            "originalSha256": "9d92ff18ec25d848a7c8852221aee5663d950c5e2bc639259fc8cb6849a20d02",
+            "actualPrintedObservations": {
+              "printedNativeName": "サワムラー",
+              "printedCardClass": "Pokemon",
+              "printedClassLabel": "たねポケモン; HP50 and Fighting symbol",
+              "printedRules": null,
+              "printedTrainerSubtype": null,
+              "printedForm": null,
+              "printedHP": "50",
+              "printedType": "Fighting",
+              "printedStage": "たねポケモン",
+              "printedEvolutionFrom": null,
+              "abilities": [],
+              "attacks": [
+                {
+                  "printedName": "にどげり",
+                  "printedCost": [
+                    "Fighting",
+                    "Fighting"
+                  ],
+                  "printedDamage": "30×",
+                  "printedEffect": "コインを2回投げ、「おもて」の数×30ダメージ。"
+                },
+                {
+                  "printedName": "まわしげり",
+                  "printedCost": [
+                    "Fighting",
+                    "Fighting",
+                    "Colorless"
+                  ],
+                  "printedDamage": "30",
+                  "printedEffect": "コインを1回投げ、「おもて」なら、相手を「マヒ」状態にする。"
+                }
+              ],
+              "printedPokemonExRule": null,
+              "printedCollectorNumber": "014/048",
+              "printedArtist": "Shin-ichi Yoshida",
+              "printedWeakness": "Psychic",
+              "printedResistance": "none printed",
+              "printedRetreat": [
+                "Colorless"
+              ],
+              "printedRarityGlyph": "●",
+              "printedSetCodeLiteral": null,
+              "printedNationalDex": null,
+              "printedFlavorText": null,
+              "setMarkVisible": "Web logo",
+              "copyrightYear": null,
+              "editionStampObserved": false,
+              "foreignWatermarkObserved": false,
+              "allFourOuterPerimetersAndCornersVisible": true,
+              "frameQualification": "Whole original retains all four rounded corners and outer edges against black corner margins. Complete two attacks, collector014/048, artist and footer are readable; no visible 1st Edition mark, without certifying physical edition/material.",
+              "art": "Hitmonlee with long segmented legs and red-orange limbs inside an interior scene.",
+              "printedNonCollectorIdentifier": "ID:Y-33",
+              "printedSpeciesPhysicalLine": "キックポケモン・身長1.5m、体重49.8kg",
+              "printedCopyrightLiteral": "© Pokémon"
+            },
+            "nativeProviderQualification": {
+              "savedInventoryCategoryRetained": null,
+              "actualNativeCategory": "Pokemon",
+              "currentVariantCode": "normal",
+              "currentFinish": "normal",
+              "currentIsDefaultFlag": true,
+              "currentTuplePreserved": true,
+              "noVisibleStampDoesNotCertifyUnlimited": true,
+              "metadataNotVerbatimPrintedBodyProof": true
+            },
+            "holds": [],
+            "completePrintedIdentityAndBodyReadable": true
+          },
+          "actual_pixel_signature_canonical_sha256": "ca3a854fe405221cef24b62fc479520b09b655e4aadb6a8df23b045772ec7b54",
+          "actual_printed_ability_logo": null,
+          "root_additive_whole_original_observation_byte_sha256": "9bb8758156fcd023625f1fbc74d7fa6a85283de9258a92012fba1ee9a7649b6f",
+          "raw_wrapped_signature_not_rewritten": true,
+          "actual_ability_logo_observation_is_additive": true,
+          "current_production_binding": {
+            "printing": {
+              "id": "c76d9283-f8c4-47eb-8a8a-7adb9515ff64",
+              "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": true
+              },
+              "collector_number": "014",
+              "printing_discriminator": "",
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "92c2f04b-30b3-486d-aa04-6a8c21d4a151",
+                "is_default": true,
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "c76d9283-f8c4-47eb-8a8a-7adb9515ff64",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:cdb922a5-eaec-4696-ae6f-3ad4d263c66b:014:normal",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+                "set_code": "web1",
+                "variant_id": "92c2f04b-30b3-486d-aa04-6a8c21d4a151",
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "c76d9283-f8c4-47eb-8a8a-7adb9515ff64",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:cdb922a5-eaec-4696-ae6f-3ad4d263c66b:014:normal",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "014",
+                "catalogue_version": "ja:magazine-promo-reconciliation-2026-09-27-v1",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "c76d9283-f8c4-47eb-8a8a-7adb9515ff64"
+          },
+          "current_staging_binding": {
+            "printing": {
+              "id": "c76d9283-f8c4-47eb-8a8a-7adb9515ff64",
+              "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": false
+              },
+              "collector_number": "014",
+              "printing_discriminator": null,
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "92c2f04b-30b3-486d-aa04-6a8c21d4a151",
+                "is_default": true,
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "c76d9283-f8c4-47eb-8a8a-7adb9515ff64",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:cdb922a5-eaec-4696-ae6f-3ad4d263c66b:014:normal",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+                "set_code": "web1",
+                "variant_id": "92c2f04b-30b3-486d-aa04-6a8c21d4a151",
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "c76d9283-f8c4-47eb-8a8a-7adb9515ff64",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:cdb922a5-eaec-4696-ae6f-3ad4d263c66b:014:normal",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "014",
+                "catalogue_version": "ja:tcgdex-796afd47e430-full-primary-2026-08-19",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "c76d9283-f8c4-47eb-8a8a-7adb9515ff64"
+          },
+          "required_asset_scope": {
+            "printing_id": "c76d9283-f8c4-47eb-8a8a-7adb9515ff64",
+            "variant_id": null
+          },
+          "source_variant_id": null,
+          "required_delivery_kind": "shared",
+          "queue_controls": {
+            "identity_controls": {
+              "canonical_alias": "014",
+              "printed_collector_number": "014/048",
+              "catalogue_set_code": "web1",
+              "printed_set_code_literal": null,
+              "printed_national_dex": null,
+              "printed_non_collector_web_id": "ID:Y-33",
+              "canonical_native_label_preserved": "Hitmonlee",
+              "actual_printed_name": "サワムラー",
+              "actual_printed_form": null,
+              "category": null,
+              "actual_printed_category": "Pokemon",
+              "actual_native_category": "Pokemon"
+            },
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "all_four_rounded_corners_visible": true,
+              "printed_body_language": "ja",
+              "complete_name_form_hp_type_stage_full_ability_attack_body_artist_collector_footer_readable": true,
+              "edition_stamp_observed": false,
+              "watermark_observed": false,
+              "stamp_absence_does_not_certify_unlimited": true,
+              "current_physical_edition_unresolved_retained": true,
+              "provider_body_not_verbatim_printed_japanese": true,
+              "raw_observation_keys_retained_without_inventing_fields": true
+            },
+            "source_qa": {
+              "actual_japanese_complete_front_verified": true,
+              "original_sha256": "9d92ff18ec25d848a7c8852221aee5663d950c5e2bc639259fc8cb6849a20d02",
+              "actual_signature_canonical_sha256": "ca3a854fe405221cef24b62fc479520b09b655e4aadb6a8df23b045772ec7b54",
+              "source_metadata_is_sole_identity_proof": false,
+              "physical_finish_certified": false,
+              "physical_edition_certified": false,
+              "unlimited_edition_certified": false
+            }
+          },
+          "historical_authority": {
+            "selected_source_card_id": null,
+            "preparation_approved": false,
+            "publication_approved": false
+          },
+          "root_finite_authority": {
+            "approved_file_byte_sha256": "ae13ed03c8228c5fa6290f8ac1b9c3fdea2c9b74212137b5279e33451e56032f",
+            "decision_file_byte_sha256": "5aec715bea952ac8703a22a85850c515c3158fc0447c159b75a148657d89f8a7",
+            "preparation_approved": true,
+            "conditional_future_publication_approved": true,
+            "private_package_is_production_ready": false
+          },
+          "coverage": {
+            "wholeUnchangedOriginalIndividuallyViewed": true,
+            "fullPILSharpRGBAAgreement": true,
+            "completeFrameAndFourOuterCornersVisible": true,
+            "completeJapaneseBodyFooterAndArtistReadable": true,
+            "unprintedNationalDexAndSetCodeNotInvented": true,
+            "printedNonCollectorWebIDRetainedNotTreatedAsDex": true
+          },
+          "unresolved_physical_qualifications": [
+            "Current sole normal/defaultTRUE and production blank/staging absent discriminator retained. A shared reference front does not certify physical edition, material, finish or unlimited status; no1ED mark observed."
+          ],
+          "shared_front_eligibility_does_not_authenticate_physical_edition": true,
+          "source_provider_body_verbatim_agreement": false,
+          "canonical_native_label_preserved": true,
+          "quality_qualification": {
+            "original_width": 1087,
+            "original_height": 1529,
+            "whole_original_perimeter_and_corners_retained": true,
+            "provider_never_resized_certified": false,
+            "native_optical_gain_claimed": false,
+            "actual_derivative_measurement_required": true,
+            "app_large_role_must_be_measured_per_row": true
+          },
+          "new_source_requests": 0,
+          "full_commercial_html_or_provider_json_included": false,
+          "source_wide_approval": false,
+          "vendor_licence_certified": false,
+          "physical_finish_certified": false,
+          "physical_edition_certified": false,
+          "physical_material_authenticity_verified": false,
+          "unlimited_edition_certified": false,
+          "provider_never_resized_certified": false,
+          "native_optical_gain_claimed": false,
+          "stackr_enlargement": false
+        },
+        "queue_controls": {
+          "identity_controls": {
+            "canonical_alias": "014",
+            "printed_collector_number": "014/048",
+            "catalogue_set_code": "web1",
+            "printed_set_code_literal": null,
+            "printed_national_dex": null,
+            "printed_non_collector_web_id": "ID:Y-33",
+            "canonical_native_label_preserved": "Hitmonlee",
+            "actual_printed_name": "サワムラー",
+            "actual_printed_form": null,
+            "category": null,
+            "actual_printed_category": "Pokemon",
+            "actual_native_category": "Pokemon"
+          },
+          "pixel_observations": {
+            "whole_original_inspected": true,
+            "full_frame_visible": true,
+            "all_four_rounded_corners_visible": true,
+            "printed_body_language": "ja",
+            "complete_name_form_hp_type_stage_full_ability_attack_body_artist_collector_footer_readable": true,
+            "edition_stamp_observed": false,
+            "watermark_observed": false,
+            "stamp_absence_does_not_certify_unlimited": true,
+            "current_physical_edition_unresolved_retained": true,
+            "provider_body_not_verbatim_printed_japanese": true,
+            "raw_observation_keys_retained_without_inventing_fields": true
+          },
+          "source_qa": {
+            "actual_japanese_complete_front_verified": true,
+            "original_sha256": "9d92ff18ec25d848a7c8852221aee5663d950c5e2bc639259fc8cb6849a20d02",
+            "actual_signature_canonical_sha256": "ca3a854fe405221cef24b62fc479520b09b655e4aadb6a8df23b045772ec7b54",
+            "source_metadata_is_sole_identity_proof": false,
+            "physical_finish_certified": false,
+            "physical_edition_certified": false,
+            "unlimited_edition_certified": false
+          }
+        },
+        "artwork_scope": "printing_front",
+        "delivery_kind": "shared",
+        "asset_variant_id": null,
+        "source_variant_id": null,
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "physical_edition_verified": false,
+        "vendor_licence_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "0533fc6d-257a-4c31-96d8-2e834138ee69",
+      "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+      "set_code": "web1",
+      "language_code": "ja",
+      "collector_number": "029",
+      "card_native_name": "Dugtrio",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "batch_id": "JP-CARDS-069",
+      "work_type": "CARDS",
+      "variant_ids": [
+        "d7c39018-9660-4045-9311-ffc1083ba7fc"
+      ],
+      "source_code": "pricecharting",
+      "provider_id": "pricecharting-image-url-sha256:359abaf9a01584bf1d595a7fb5712dc640dc63d82b940f7c687bb063a99a35d1",
+      "image_url": "https://storage.googleapis.com/images.pricecharting.com/nwkaioaws34dinq5/1600.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/e92a9f2d497cf727c3d5db0641dadc410810c18e5f096a744cdbc51c257de4b0/original.jpg",
+          "sha256": "e92a9f2d497cf727c3d5db0641dadc410810c18e5f096a744cdbc51c257de4b0",
+          "byte_size": 201704,
+          "width": 740,
+          "height": 1035,
+          "mime_type": "image/jpeg",
+          "artifact_id": 646324255
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/8b5e13cf4172bb8f8d36dad506e458ae931a57a669bccc3dd79be1d0f3c235f8/card-grid.webp",
+          "sha256": "8b5e13cf4172bb8f8d36dad506e458ae931a57a669bccc3dd79be1d0f3c235f8",
+          "byte_size": 19382,
+          "width": 240,
+          "height": 335,
+          "mime_type": "image/webp",
+          "artifact_id": 646324255
+        },
+        {
+          "role": "search-result",
+          "file": "objects/729ddc3c5f7d1234483f242ddd20e48f4b98286207d10d8d1f211c433a6cd580/search-result.webp",
+          "sha256": "729ddc3c5f7d1234483f242ddd20e48f4b98286207d10d8d1f211c433a6cd580",
+          "byte_size": 3620,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp",
+          "artifact_id": 646324255
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/896805cb2bffb31d2b97ceb6a4194355133b33b52331ef0ea12b78c1d85963ae/detail-page.webp",
+          "sha256": "896805cb2bffb31d2b97ceb6a4194355133b33b52331ef0ea12b78c1d85963ae",
+          "byte_size": 235446,
+          "width": 720,
+          "height": 1007,
+          "mime_type": "image/webp",
+          "artifact_id": 646324255
+        }
+      ],
+      "evidence": {
+        "source_url": "https://storage.googleapis.com/images.pricecharting.com/nwkaioaws34dinq5/1600.jpg",
+        "source_page_url": "https://www.pricecharting.com/game/pokemon-japanese-web/dugtrio-29",
+        "provider_id": "pricecharting-image-url-sha256:359abaf9a01584bf1d595a7fb5712dc640dc63d82b940f7c687bb063a99a35d1",
+        "source_metadata_sha256": "fbe8f074240793f5b6c487829b279be6863e13fb7d6d16f4f7f5eb7cdc1ffda3",
+        "source_body": {
+          "contract": "webpcg3-exact3-vulpix008-hitmonlee014-dugtrio029-japanese-shared-fronts-v1",
+          "work_type": "CARDS",
+          "accepted_category": null,
+          "recorded_inventory_category": null,
+          "actual_printed_category": "Pokemon",
+          "actual_native_category": "Pokemon",
+          "photo_identity_projection": {
+            "schemaVersion": 1,
+            "sourceCode": "pricecharting",
+            "sourceDetailUrl": "https://www.pricecharting.com/game/pokemon-japanese-web/dugtrio-29",
+            "literalOriginalUrl": "https://storage.googleapis.com/images.pricecharting.com/nwkaioaws34dinq5/1600.jpg",
+            "literalOriginalUrlSha256": "359abaf9a01584bf1d595a7fb5712dc640dc63d82b940f7c687bb063a99a35d1",
+            "sourceProductId": "3438212",
+            "canonicalPrintingId": "0533fc6d-257a-4c31-96d8-2e834138ee69",
+            "canonicalSetId": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+            "canonicalSetCode": "web1",
+            "languageCode": "ja",
+            "canonicalAlias": "029",
+            "printedCollectorNumber": "029/048",
+            "printedSetCodeLiteral": null,
+            "sourceSetAssociation": "Observed exact Japanese Web source page, actual printed Web logo and full xxx/048 collector, retained web1 set binding",
+            "originalFileByteSha256": "e92a9f2d497cf727c3d5db0641dadc410810c18e5f096a744cdbc51c257de4b0",
+            "originalByteSize": 201704,
+            "width": 740,
+            "height": 1035,
+            "format": "jpeg",
+            "actualPrintedName": "ダグトリオ",
+            "actualPrintedForm": null,
+            "historicalSelectedSourceCardId": null,
+            "physicalEditionCertified": false,
+            "physicalFinishCertified": false
+          },
+          "photo_identity_projection_canonical_sha256": "7a466b0a77984a12ca2e5632fdcbd431deb47c5b811c7be52a46a53fa55dd90c",
+          "photo_raw_private_html_file_byte_sha256": "fbe8f074240793f5b6c487829b279be6863e13fb7d6d16f4f7f5eb7cdc1ffda3",
+          "root_approved_raw_row_canonical_sha256": "21023512496f61a423772cf84361fcfe5698a51d6e0bb724753a6f6c6908fbf4",
+          "actual_pixel_signature": {
+            "alias": "web1-029",
+            "originalSha256": "e92a9f2d497cf727c3d5db0641dadc410810c18e5f096a744cdbc51c257de4b0",
+            "actualPrintedObservations": {
+              "printedNativeName": "ダグトリオ",
+              "printedCardClass": "Pokemon",
+              "printedClassLabel": "1進化ポケモン; HP80 and Fighting symbol",
+              "printedRules": null,
+              "printedTrainerSubtype": null,
+              "printedForm": null,
+              "printedHP": "80",
+              "printedType": "Fighting",
+              "printedStage": "1進化ポケモン",
+              "printedEvolutionFrom": "ディグダから進化",
+              "abilities": [
+                {
+                  "kind": "特殊能力",
+                  "printedName": "もぐる",
+                  "printedEffect": "このポケモンは、ベンチにいるかぎり、ワザによるダメージを受けない。"
+                }
+              ],
+              "attacks": [
+                {
+                  "printedName": "アースウェイブ",
+                  "printedCost": [
+                    "Fighting",
+                    "Fighting",
+                    "Fighting"
+                  ],
+                  "printedDamage": "30",
+                  "printedEffect": "相手のベンチポケモンを2匹選び、「弱点・抵抗力」に関係なく、それぞれ10ダメージ。"
+                }
+              ],
+              "printedPokemonExRule": null,
+              "printedCollectorNumber": "029/048",
+              "printedArtist": "Miki Tanaka",
+              "printedWeakness": "Grass",
+              "printedResistance": {
+                "type": "Lightning",
+                "value": "-30"
+              },
+              "printedRetreat": [
+                "Colorless",
+                "Colorless"
+              ],
+              "printedRarityGlyph": "◆",
+              "printedSetCodeLiteral": null,
+              "printedNationalDex": null,
+              "printedFlavorText": null,
+              "setMarkVisible": "Web logo",
+              "copyrightYear": null,
+              "editionStampObserved": false,
+              "foreignWatermarkObserved": false,
+              "allFourOuterPerimetersAndCornersVisible": true,
+              "frameQualification": "Complete tight scan retains all four rounded corners and outer frame. Full name/evolution/ability/attack/collector/artist/footer readable, no visible 1st Edition mark; physical edition/material remains uncertified.",
+              "art": "Three Dugtrio heads emerging from a pale opening against a woven green-and-brown background.",
+              "printedEvolutionRuleText": "「たねポケモン」の上に重ねて進化させます。",
+              "printedNonCollectorIdentifier": "ID:Y-20",
+              "printedSpeciesPhysicalLine": "もぐらポケモン・身長0.7m、体重33.3kg",
+              "printedCopyrightLiteral": "© Pokémon"
+            },
+            "nativeProviderQualification": {
+              "savedInventoryCategoryRetained": null,
+              "actualNativeCategory": "Pokemon",
+              "currentVariantCode": "normal",
+              "currentFinish": "normal",
+              "currentIsDefaultFlag": true,
+              "currentTuplePreserved": true,
+              "noVisibleStampDoesNotCertifyUnlimited": true,
+              "metadataNotVerbatimPrintedBodyProof": true
+            },
+            "holds": [],
+            "completePrintedIdentityAndBodyReadable": true
+          },
+          "actual_pixel_signature_canonical_sha256": "e6fb2caa773bab58a46c26d3e997bbd4ed72985c5ead7de42dbd6b0f1ce9f4ab",
+          "actual_printed_ability_logo": "ポケボディー",
+          "root_additive_whole_original_observation_byte_sha256": "9bb8758156fcd023625f1fbc74d7fa6a85283de9258a92012fba1ee9a7649b6f",
+          "raw_wrapped_signature_not_rewritten": true,
+          "actual_ability_logo_observation_is_additive": true,
+          "current_production_binding": {
+            "printing": {
+              "id": "0533fc6d-257a-4c31-96d8-2e834138ee69",
+              "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": true
+              },
+              "collector_number": "029",
+              "printing_discriminator": "",
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "d7c39018-9660-4045-9311-ffc1083ba7fc",
+                "is_default": true,
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "0533fc6d-257a-4c31-96d8-2e834138ee69",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:cdb922a5-eaec-4696-ae6f-3ad4d263c66b:029:normal",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+                "set_code": "web1",
+                "variant_id": "d7c39018-9660-4045-9311-ffc1083ba7fc",
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "0533fc6d-257a-4c31-96d8-2e834138ee69",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:cdb922a5-eaec-4696-ae6f-3ad4d263c66b:029:normal",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "029",
+                "catalogue_version": "ja:magazine-promo-reconciliation-2026-09-27-v1",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "0533fc6d-257a-4c31-96d8-2e834138ee69"
+          },
+          "current_staging_binding": {
+            "printing": {
+              "id": "0533fc6d-257a-4c31-96d8-2e834138ee69",
+              "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": false
+              },
+              "collector_number": "029",
+              "printing_discriminator": null,
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "d7c39018-9660-4045-9311-ffc1083ba7fc",
+                "is_default": true,
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "0533fc6d-257a-4c31-96d8-2e834138ee69",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:cdb922a5-eaec-4696-ae6f-3ad4d263c66b:029:normal",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+                "set_code": "web1",
+                "variant_id": "d7c39018-9660-4045-9311-ffc1083ba7fc",
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "0533fc6d-257a-4c31-96d8-2e834138ee69",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:cdb922a5-eaec-4696-ae6f-3ad4d263c66b:029:normal",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "029",
+                "catalogue_version": "ja:tcgdex-796afd47e430-full-primary-2026-08-19",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "0533fc6d-257a-4c31-96d8-2e834138ee69"
+          },
+          "required_asset_scope": {
+            "printing_id": "0533fc6d-257a-4c31-96d8-2e834138ee69",
+            "variant_id": null
+          },
+          "source_variant_id": null,
+          "required_delivery_kind": "shared",
+          "queue_controls": {
+            "identity_controls": {
+              "canonical_alias": "029",
+              "printed_collector_number": "029/048",
+              "catalogue_set_code": "web1",
+              "printed_set_code_literal": null,
+              "printed_national_dex": null,
+              "printed_non_collector_web_id": "ID:Y-20",
+              "canonical_native_label_preserved": "Dugtrio",
+              "actual_printed_name": "ダグトリオ",
+              "actual_printed_form": null,
+              "category": null,
+              "actual_printed_category": "Pokemon",
+              "actual_native_category": "Pokemon"
+            },
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "all_four_rounded_corners_visible": true,
+              "printed_body_language": "ja",
+              "complete_name_form_hp_type_stage_full_ability_attack_body_artist_collector_footer_readable": true,
+              "edition_stamp_observed": false,
+              "watermark_observed": false,
+              "stamp_absence_does_not_certify_unlimited": true,
+              "current_physical_edition_unresolved_retained": true,
+              "provider_body_not_verbatim_printed_japanese": true,
+              "raw_observation_keys_retained_without_inventing_fields": true
+            },
+            "source_qa": {
+              "actual_japanese_complete_front_verified": true,
+              "original_sha256": "e92a9f2d497cf727c3d5db0641dadc410810c18e5f096a744cdbc51c257de4b0",
+              "actual_signature_canonical_sha256": "e6fb2caa773bab58a46c26d3e997bbd4ed72985c5ead7de42dbd6b0f1ce9f4ab",
+              "source_metadata_is_sole_identity_proof": false,
+              "physical_finish_certified": false,
+              "physical_edition_certified": false,
+              "unlimited_edition_certified": false
+            }
+          },
+          "historical_authority": {
+            "selected_source_card_id": null,
+            "preparation_approved": false,
+            "publication_approved": false
+          },
+          "root_finite_authority": {
+            "approved_file_byte_sha256": "ae13ed03c8228c5fa6290f8ac1b9c3fdea2c9b74212137b5279e33451e56032f",
+            "decision_file_byte_sha256": "5aec715bea952ac8703a22a85850c515c3158fc0447c159b75a148657d89f8a7",
+            "preparation_approved": true,
+            "conditional_future_publication_approved": true,
+            "private_package_is_production_ready": false
+          },
+          "coverage": {
+            "wholeUnchangedOriginalIndividuallyViewed": true,
+            "fullPILSharpRGBAAgreement": true,
+            "completeFrameAndFourOuterCornersVisible": true,
+            "completeJapaneseBodyFooterAndArtistReadable": true,
+            "unprintedNationalDexAndSetCodeNotInvented": true,
+            "printedNonCollectorWebIDRetainedNotTreatedAsDex": true
+          },
+          "unresolved_physical_qualifications": [
+            "Current sole normal/defaultTRUE and production blank/staging absent discriminator retained. A shared reference front does not certify physical edition, material, finish or unlimited status; no1ED mark observed."
+          ],
+          "shared_front_eligibility_does_not_authenticate_physical_edition": true,
+          "source_provider_body_verbatim_agreement": false,
+          "canonical_native_label_preserved": true,
+          "quality_qualification": {
+            "original_width": 740,
+            "original_height": 1035,
+            "whole_original_perimeter_and_corners_retained": true,
+            "provider_never_resized_certified": false,
+            "native_optical_gain_claimed": false,
+            "actual_derivative_measurement_required": true,
+            "app_large_role_must_be_measured_per_row": true
+          },
+          "new_source_requests": 0,
+          "full_commercial_html_or_provider_json_included": false,
+          "source_wide_approval": false,
+          "vendor_licence_certified": false,
+          "physical_finish_certified": false,
+          "physical_edition_certified": false,
+          "physical_material_authenticity_verified": false,
+          "unlimited_edition_certified": false,
+          "provider_never_resized_certified": false,
+          "native_optical_gain_claimed": false,
+          "stackr_enlargement": false
+        },
+        "queue_controls": {
+          "identity_controls": {
+            "canonical_alias": "029",
+            "printed_collector_number": "029/048",
+            "catalogue_set_code": "web1",
+            "printed_set_code_literal": null,
+            "printed_national_dex": null,
+            "printed_non_collector_web_id": "ID:Y-20",
+            "canonical_native_label_preserved": "Dugtrio",
+            "actual_printed_name": "ダグトリオ",
+            "actual_printed_form": null,
+            "category": null,
+            "actual_printed_category": "Pokemon",
+            "actual_native_category": "Pokemon"
+          },
+          "pixel_observations": {
+            "whole_original_inspected": true,
+            "full_frame_visible": true,
+            "all_four_rounded_corners_visible": true,
+            "printed_body_language": "ja",
+            "complete_name_form_hp_type_stage_full_ability_attack_body_artist_collector_footer_readable": true,
+            "edition_stamp_observed": false,
+            "watermark_observed": false,
+            "stamp_absence_does_not_certify_unlimited": true,
+            "current_physical_edition_unresolved_retained": true,
+            "provider_body_not_verbatim_printed_japanese": true,
+            "raw_observation_keys_retained_without_inventing_fields": true
+          },
+          "source_qa": {
+            "actual_japanese_complete_front_verified": true,
+            "original_sha256": "e92a9f2d497cf727c3d5db0641dadc410810c18e5f096a744cdbc51c257de4b0",
+            "actual_signature_canonical_sha256": "e6fb2caa773bab58a46c26d3e997bbd4ed72985c5ead7de42dbd6b0f1ce9f4ab",
+            "source_metadata_is_sole_identity_proof": false,
+            "physical_finish_certified": false,
+            "physical_edition_certified": false,
+            "unlimited_edition_certified": false
+          }
+        },
+        "artwork_scope": "printing_front",
+        "delivery_kind": "shared",
+        "asset_variant_id": null,
+        "source_variant_id": null,
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "physical_edition_verified": false,
+        "vendor_licence_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    }
+  ],
+  "source_counts": {
+    "pricecharting": 3
+  },
+  "delivery_scope": {
+    "fixed_batch_ids": [
+      "JP-CARDS-068",
+      "JP-CARDS-069"
+    ],
+    "work_type": "CARDS",
+    "eligible_fronts": 3,
+    "eligible_set_aliases": [
+      "web1-008",
+      "web1-014",
+      "web1-029"
+    ],
+    "recorded_categories_preserved": [
+      {
+        "printingId": "1b1f1db9-6e91-4cf5-8852-e11dfac760b8",
+        "category": null
+      },
+      {
+        "printingId": "c76d9283-f8c4-47eb-8a8a-7adb9515ff64",
+        "category": null
+      },
+      {
+        "printingId": "0533fc6d-257a-4c31-96d8-2e834138ee69",
+        "category": null
+      }
+    ],
+    "asset_variant_id": null,
+    "source_variant_id": null,
+    "delivery_kind": "shared",
+    "whole_batch_completion_asserted": false
+  },
+  "binding_expectations": {
+    "production": [
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+        "set_code": "web1",
+        "printing_id": "1b1f1db9-6e91-4cf5-8852-e11dfac760b8",
+        "collector_number": "008",
+        "card_native_name": "Vulpix",
+        "variant_id": "cab43ba9-aaa5-4c7b-ae3d-f6fc35dec8c0",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+        "set_code": "web1",
+        "printing_id": "c76d9283-f8c4-47eb-8a8a-7adb9515ff64",
+        "collector_number": "014",
+        "card_native_name": "Hitmonlee",
+        "variant_id": "92c2f04b-30b3-486d-aa04-6a8c21d4a151",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+        "set_code": "web1",
+        "printing_id": "0533fc6d-257a-4c31-96d8-2e834138ee69",
+        "collector_number": "029",
+        "card_native_name": "Dugtrio",
+        "variant_id": "d7c39018-9660-4045-9311-ffc1083ba7fc",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      }
+    ],
+    "staging": [
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+        "set_code": "web1",
+        "printing_id": "1b1f1db9-6e91-4cf5-8852-e11dfac760b8",
+        "collector_number": "008",
+        "card_native_name": "Vulpix",
+        "variant_id": "cab43ba9-aaa5-4c7b-ae3d-f6fc35dec8c0",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+        "set_code": "web1",
+        "printing_id": "c76d9283-f8c4-47eb-8a8a-7adb9515ff64",
+        "collector_number": "014",
+        "card_native_name": "Hitmonlee",
+        "variant_id": "92c2f04b-30b3-486d-aa04-6a8c21d4a151",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+        "set_code": "web1",
+        "printing_id": "0533fc6d-257a-4c31-96d8-2e834138ee69",
+        "collector_number": "029",
+        "card_native_name": "Dugtrio",
+        "variant_id": "d7c39018-9660-4045-9311-ffc1083ba7fc",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      }
+    ]
+  },
+  "scope_counts": {
+    "production": {
+      "printings": 3,
+      "variants": 3,
+      "names": 6,
+      "sets": 1
+    },
+    "staging": {
+      "printings": 3,
+      "variants": 3,
+      "names": 6,
+      "sets": 1
+    }
+  },
+  "source_policies": {
+    "production": [
+      {
+        "code": "pokellector",
+        "display_name": "Pokellector (owner supplied Japanese card fronts)",
+        "source_type": "image",
+        "base_url": "https://jp.pokellector.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly2 Neo2 Ruin Wall reference fronts in STACKR-JA-LEGACY-TRAINER-FRONTS-20261015-008; owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval or independently verified vendor licence.",
+        "deprecated_at": null
+      },
+      {
+        "code": "pricecharting",
+        "display_name": "PriceCharting (owner supplied card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.pricecharting.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Owner-attested source use for exactly Aquapolis Mr. Mime95b and Porygon103b shared printing-front artwork in finite cohort AQUAPOLIS-SHARED-002-20261015. Independent vendor and underlying card licences are unverified. No source-wide approval; each later acquisition requires separate finite approval. Existing provenance rows and source policies must remain unchanged.",
+        "deprecated_at": null
+      },
+      {
+        "code": "scrydex",
+        "display_name": "Scrydex",
+        "source_type": "image",
+        "base_url": "https://scrydex.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Exactly 89 English MEP fronts approved by owner; catalogue/rights-evidence/mep89-scrydex-owner-confirmation.2026-09-27.json; 8c68bf3499de1e1e340b00fc03e5f1b469de7b65d259b5fba5a8b4cd31119ca9. No source-wide approval.",
+        "deprecated_at": null
+      },
+      {
+        "code": "tcgcollector",
+        "display_name": "TCGCollector (owner supplied Japanese card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.tcgcollector.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly3 independently accepted Leaders Stadium fronts019/081/096. Bind the final finite preparation/publication decision and exact source selection in the publisher plan. Owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval, independently verified vendor licence or physical finish/edition certification. Finite decision SHA256 68f1af735d5e481ed26d1aabbe94e493d520575d9d4191413508f9ec90cf68ff.",
+        "deprecated_at": null
+      }
+    ],
+    "staging": []
+  },
+  "new_sources": {
+    "production": [],
+    "staging": [
+      {
+        "code": "pricecharting",
+        "display_name": "PriceCharting (owner supplied card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.pricecharting.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Owner-attested source use for exactly Aquapolis Mr. Mime95b and Porygon103b shared printing-front artwork in finite cohort AQUAPOLIS-SHARED-002-20261015. Independent vendor and underlying card licences are unverified. No source-wide approval; each later acquisition requires separate finite approval. Existing provenance rows and source policies must remain unchanged.",
+        "deprecated_at": null
+      }
+    ]
+  },
+  "source_policy_checkpoint_sha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+  "existing_source_row_hashes": {
+    "pricecharting": "b4b74f69cac37abeee008806f6d8dd8ea63a0f0ce43fa065dce9261b428b421b",
+    "pokellector": "4a2a381f7146c0bfa0201c62e91e7682f18da6597c4743f23414f3606a942a71",
+    "tcgcollector": "f1f01d1b094986ad0a9f5efcf1e98fe7388e0e1c5452d23da6cf7cab97a1ca29",
+    "scrydex": "25af5b50521e6fd0942764536f62b0c53c3e72c69c874916241af47735407929"
+  },
+  "before_snapshot_hashes": {
+    "production": "2c8e55a25bf1f42a13cf3aeb815294235d3482bac4b763f7fad113cdb5821666",
+    "staging": "aaddc2460a3b8abd3091849b98d96a3b7d15edb5542c24407ee82c1fcf4e9a4b"
+  },
+  "before_snapshot_counts": {
+    "production": 17,
+    "staging": 13
+  },
+  "expected_after_snapshot_counts": {
+    "production": 23,
+    "staging": 20
+  },
+  "production_source_changes_allowed": 0,
+  "stage_only_fixture_source_code": "pricecharting",
+  "canonical_schema_qualification": {
+    "production": [
+      {
+        "id": "1b1f1db9-6e91-4cf5-8852-e11dfac760b8",
+        "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+        "game_code": "pokemon",
+        "deprecated_at": null,
+        "language_code": "ja",
+        "_column_presence": {
+          "printing_discriminator": true
+        },
+        "collector_number": "008",
+        "printing_discriminator": "",
+        "corrected_by_printing_id": null
+      },
+      {
+        "id": "c76d9283-f8c4-47eb-8a8a-7adb9515ff64",
+        "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+        "game_code": "pokemon",
+        "deprecated_at": null,
+        "language_code": "ja",
+        "_column_presence": {
+          "printing_discriminator": true
+        },
+        "collector_number": "014",
+        "printing_discriminator": "",
+        "corrected_by_printing_id": null
+      },
+      {
+        "id": "0533fc6d-257a-4c31-96d8-2e834138ee69",
+        "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+        "game_code": "pokemon",
+        "deprecated_at": null,
+        "language_code": "ja",
+        "_column_presence": {
+          "printing_discriminator": true
+        },
+        "collector_number": "029",
+        "printing_discriminator": "",
+        "corrected_by_printing_id": null
+      }
+    ],
+    "staging": [
+      {
+        "id": "1b1f1db9-6e91-4cf5-8852-e11dfac760b8",
+        "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+        "game_code": "pokemon",
+        "deprecated_at": null,
+        "language_code": "ja",
+        "_column_presence": {
+          "printing_discriminator": false
+        },
+        "collector_number": "008",
+        "printing_discriminator": null,
+        "corrected_by_printing_id": null
+      },
+      {
+        "id": "c76d9283-f8c4-47eb-8a8a-7adb9515ff64",
+        "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+        "game_code": "pokemon",
+        "deprecated_at": null,
+        "language_code": "ja",
+        "_column_presence": {
+          "printing_discriminator": false
+        },
+        "collector_number": "014",
+        "printing_discriminator": null,
+        "corrected_by_printing_id": null
+      },
+      {
+        "id": "0533fc6d-257a-4c31-96d8-2e834138ee69",
+        "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+        "game_code": "pokemon",
+        "deprecated_at": null,
+        "language_code": "ja",
+        "_column_presence": {
+          "printing_discriminator": false
+        },
+        "collector_number": "029",
+        "printing_discriminator": null,
+        "corrected_by_printing_id": null
+      }
+    ]
+  },
+  "app_display_expectation": [
+    {
+      "printing_id": "1b1f1db9-6e91-4cf5-8852-e11dfac760b8",
+      "large_role": "detail-page",
+      "large_dimensions": [
+        720,
+        1023
+      ],
+      "large_object_path": "objects/5db8a16b61cd6cfc6deb581bccdd6f376a878c76b2014ec8b8514abe38936c64/detail-page.webp",
+      "detail_dimensions": [
+        720,
+        1023
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "c76d9283-f8c4-47eb-8a8a-7adb9515ff64",
+      "large_role": "detail-page",
+      "large_dimensions": [
+        720,
+        1013
+      ],
+      "large_object_path": "objects/7739b630dc0516cefbde494f7bc50e637b1451db26c7ac9918d1a8ae9f775133/detail-page.webp",
+      "detail_dimensions": [
+        720,
+        1013
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "0533fc6d-257a-4c31-96d8-2e834138ee69",
+      "large_role": "detail-page",
+      "large_dimensions": [
+        720,
+        1007
+      ],
+      "large_object_path": "objects/896805cb2bffb31d2b97ceb6a4194355133b33b52331ef0ea12b78c1d85963ae/detail-page.webp",
+      "detail_dimensions": [
+        720,
+        1007
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    }
+  ],
+  "saved_targets_sha256": "d968d4478ba7247e98e8b55714a870373296c9b8bdf1787fe90988f395a178f1",
+  "identity_table_sha256": "7f4c30ae7537e48e8812ee17ff46ee81aa6c4264ef6c41baa67cfacb31c48442"
+}
