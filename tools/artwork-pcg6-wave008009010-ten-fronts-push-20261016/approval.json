@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 10,
+  "variants": 10,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "physical_finish_verified": false,
+  "physical_edition_verified": false,
+  "cohort_sha256": "16b6947b206476eaa7c86763eed0607681c2daa291aaa569429e7a4387ae4a0f",
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "61484eb4abfe5ce7787ad5fa6752efb034c8e1b95ae90b007aa5a8c299d32a87",
+    "finiteDecisionFileByteSha256": "42474a9c27107d72404a5a1c40a840ddc5b03a5faee2947b3ea001ac49d8497b",
+    "rootPrivateContextFileByteSha256": "50d3da85513eadb2550dad1055238018b0acc59bf83950922710cd13415d57c2",
+    "sourceLineages": {
+      "sourceLineages": [
+        {
+          "wave": "008",
+          "handoffSHA": "4f600dd25d3ffdb2744a140921a2bc71cc0e922a3c7fec12ea67dde4086e5762",
+          "independentSourcePeerSHA": "59955361dc218092e491465947bd5bdf02e25eaf880b37c81e634e96f3addcfe",
+          "priorRootDecisionSHA": "ae9fa3fa807f3d59f66742d77af7c3980bf362dfbc823957e239663599eade54"
+        },
+        {
+          "wave": "009",
+          "handoffSHA": "d3254352263f9938509cc7b899c4947c617bb92d6f37c35c6dc46da300e7bfd5",
+          "independentSourcePeerSHA": "2b28acbbd0298df871300839787ae064069cbb843f3f3fb8e19d16d504bc1ea1",
+          "priorRootDecisionSHA": "98b69c75b155971a789fef0a2967f9abc2c60a193d3210a0e098eb5e27486dab"
+        },
+        {
+          "wave": "010",
+          "handoffSHA": "16c4ad34320966b94ea449e9fbe9dba6c59d8d23475db0f746a2d64b3f73ca5f",
+          "independentSourcePeerSHA": "87cf8a63286e0c1bd367ed5454968042022ba179b5511976a4a7384f2b8f84d5",
+          "priorRootDecisionSHA": "1e222e22085524a99019dfb859b7ac7105fbab65ef50704fe39992bbcd03a06b"
+        }
+      ],
+      "finiteEnergyQualification": {
+        "aliases": [
+          "PCG6-085",
+          "PCG6-086"
+        ],
+        "handoffSHA": "ce221f8c00579866edd4c715ae22cf4d25abe679708972ea4a183bff0bcb6a7c",
+        "moduleSHA": "07ad55e7c9ff251c0a0aa46bc06f0718d8eaa88c4fac790e56e7f3bea051b1da",
+        "peerSHA": "884d6d5875e04125bc8fea1bd715379c683e0f7259d1b8c89c66b6be420dd8df",
+        "currentNativeProviderCategory": "Trainer",
+        "currentCanonicalCategory": null,
+        "printedClass": "Energy",
+        "completePrintedRulesIncludingPokemonExRestrictionPreserved": true,
+        "source010RawHistoricalPartition": {
+          "accepted": 4,
+          "held": 16
+        },
+        "source010OperationalPartition": {
+          "accepted": 6,
+          "held": 14
+        },
+        "sourceAuthorFlagsRemainFalse": true,
+        "globalTrainerOrEnergyWaiver": false,
+        "notIncluded": "PCG6-084"
+      },
+      "otherOperationalHolds": 50,
+      "rawHistoricalHolds": 52,
+      "allFalseSourceAuthorFlagsPreserved": true,
+      "allNineInsertionWitnessChecksAndStoredSHARecomputesRequired": true,
+      "newSourceRequestsAllowed": 0
+    },
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "a5408cf93e3806de7b76d19b2014c91fe2e2f2527cb76c5e6778b25f36506425",
+    "privateSourceContractModuleFileByteSha256": "8d234aae1a181aa47da915f71d3091ffed8237f56295b5cf298daa341157c479",
+    "v2ExternalValidatorBindingFileByteSha256": "e5ea926d9fc6ef91bfcf94b998800ce2a6d1f659c2a373982344f9b4722c9a35",
+    "privateV2HandoffFileByteSha256": "0a8d5f748d441041b6c496e8ada48e9aec41461ae5e28241b159e612cd07e298",
+    "unchangedArchiveDoesNotAloneProveCorrectedValidator": true,
+    "independentPrivatePackageReviewSha256": "af6f2ab63737fa1206f9c7337cc5add4e285bdd551bc46a4c6599c082e5323c9",
+    "rootPrivatePackageValidationSha256": "354bf9f5ea98db4979d5325e71a27852f449b36260b2ee4b94a487cffeb427fb",
+    "rootUploadReceiptSha256": "287eeec5e4b5f12653f8cd0f6eb4aefc0365d140bccc733ac775471d292f825b",
+    "actualMeasuredAppReportSha256": "02dcaa088cca0d9764b24c92170be095ac5a6b45b93ab4150047944298260962",
+    "rootPublisherContextSha256": "43aaa7135dc8e626ce262bdd8349cd7ea2ab564242ae3ea557c8927f2193c687"
+  },
+  "production_source_changes_allowed": 0,
+  "scope": "Exactly10 PCG6 shared printing fronts007020021044070078080083085086;7normal/defaultTRUE,020021070holo/defaultFALSE and sole API defaults retained. Finite Energy085086 printed Energy/providerTrainer/currentcategoryNULL retained with complete Pokemonex restriction and finite v3 qualification. All3source lineages and historical source-author false flags preserved;50operational/52historical holds remain held. Production47→67 preserves4full17sources with microseconds and2172×724logo/link; stage41→62→41 exactrollback. All40images unchanged; readable native500fallbacks, no optical/physical/vendor/sourcewide/handset certificate."
+}

@@ -1,0 +1,202 @@
+[
+  {
+    "printing_id": "fd7f0bfc-d80b-411f-b4e4-00c4223b7c9d",
+    "set_id": "8fdf462f-ca9c-47e7-a92d-1936b082a12d",
+    "set_code": "PCG6",
+    "language_code": "ja",
+    "collector_number": "007",
+    "card_native_name": "同上",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-033",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "19dfe7aa-93aa-44df-9bb2-2b41ff800a4e"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:b12e5e471293055585bbf9809175b3077c48b61160210ec0ab666353a448c185",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/rilhqvlo6ck6vo7p/1600.jpg",
+    "original_sha256": "92f0a9ae502e57c7b2022f1ab0ee46f13d506de9b632abb4396215434888cf04",
+    "body_sha256": "9e7330d8bb2a0a536103a0884235acb5aa7be369b7f98746788af174685cf06a",
+    "evidence_sha256": "f2332ec4013aee699b7149307e810a85ebfb4279c58d3da41d4010a1a55195b9"
+  },
+  {
+    "printing_id": "faebe598-d6b1-4240-bcee-ba9dddf47bca",
+    "set_id": "8fdf462f-ca9c-47e7-a92d-1936b082a12d",
+    "set_code": "PCG6",
+    "language_code": "ja",
+    "collector_number": "020",
+    "card_native_name": "ティラニター（デルタ種）",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-033",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "71aa1bf4-7e11-4350-8c06-2b195e696a9f"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:c391fa924e9246c1804640dcb9a4fbf2d1462d521c8089cf404b5c3638b6a6ed",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/u2nwj5jdbqijuu6g/1600.jpg",
+    "original_sha256": "d62eeb4c8a0bae029a940e140646c7e783ef603b1f3e6ea5ae2ae8f2bfa9df20",
+    "body_sha256": "13b47e345a1a421c5b28efd99d21e58783e50220e78b18521958820a24eab930",
+    "evidence_sha256": "e70868a4ac48c4f4a5ec2ee025f229ac7ab89a729530b3d500ad2fb1cc2bdc72"
+  },
+  {
+    "printing_id": "bcb2a732-f043-4eac-a767-6515f1c5408d",
+    "set_id": "8fdf462f-ca9c-47e7-a92d-1936b082a12d",
+    "set_code": "PCG6",
+    "language_code": "ja",
+    "collector_number": "021",
+    "card_native_name": "サラメンス（デルタ種）",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-033",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "6451b1a6-b023-402b-822f-3409512df5d9"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:85d85af671a17a36c6e73fdfd3f51002f031e3f14cb4fb44c4dfa1174e727f2a",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/93abcc9e43a3b40006094f2d32e8627b6f5512f1aa437bd8e8d4f04fcde8c0f1/1600.jpg",
+    "original_sha256": "d16d784f3652f194fab963b95660e9fed4317715a8630c9cb0819e305186421e",
+    "body_sha256": "8637f01af7b1f01aea99e8268bec523a1fe9890a48f921d13e1b7652851c3e04",
+    "evidence_sha256": "b83026a07b9218171505ec0f45329189bdfb65d5846d509a6c8730466e598610"
+  },
+  {
+    "printing_id": "fc9ae1df-0f27-470e-a866-3178f51b68c4",
+    "set_id": "8fdf462f-ca9c-47e7-a92d-1936b082a12d",
+    "set_code": "PCG6",
+    "language_code": "ja",
+    "collector_number": "044",
+    "card_native_name": "ドロージー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-034",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "32577dac-0959-40b9-9eb6-879c52dd3c93"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:62d2258c5d1017f962ea645fb763c32cb13436d6ccadb33339bbddc3762b8b37",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/us4h4cdsxukvq27z/1600.jpg",
+    "original_sha256": "79a4fc0c159a9a61be19247ffdc5c096967e0eb600c127728f2b0d6ff64977b3",
+    "body_sha256": "b3e789ceceb0edea35e551bbc2b57779e6c312c730ba851a9f081b727474f5ca",
+    "evidence_sha256": "a6a363ae921549b153df8e19918910559e42edff7938f9a14d7a9e4dbc92e32f"
+  },
+  {
+    "printing_id": "701a96ec-0100-41ea-b324-b6adc450fb2f",
+    "set_id": "8fdf462f-ca9c-47e7-a92d-1936b082a12d",
+    "set_code": "PCG6",
+    "language_code": "ja",
+    "collector_number": "070",
+    "card_native_name": "マイティエナ（デルタ種）",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-035",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "ccbaab4d-efdc-4110-b435-1ca275b2f58d"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:a7863155f818a311d0e1d8dae7b00cb1d2f5d4a36f5f02d86fb9384634f7334c",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/ttsyfo7b4222sxhb/1600.jpg",
+    "original_sha256": "70e1ee903f0b04aaea0cb6e673f6e424a762fa105d01f89dcbcb7b3fd7567b19",
+    "body_sha256": "8e11e0097abc8dab7d1d8b4bec2b56e1a76549817eb8ffc0e32e0a509fddbab7",
+    "evidence_sha256": "4f56c5a1a6b0ce1a3f6d83c08aab5aff2cd12518b421ee58376622f21a97ba59"
+  },
+  {
+    "printing_id": "7734f437-9514-4c5a-ace5-7359a60216ad",
+    "set_id": "8fdf462f-ca9c-47e7-a92d-1936b082a12d",
+    "set_code": "PCG6",
+    "language_code": "ja",
+    "collector_number": "078",
+    "card_native_name": "ホロン研究者",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-036",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "33542dbb-3aee-4441-bc34-15d6c1743acc"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:7208ced4c9c8f06b3e747e1c5d7a3688008e761e7190b4e2c4a1267498e29ee1",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/tpmjakdc3zwa5m7t/1600.jpg",
+    "original_sha256": "fc4bf0d3fdc44d675f1e62304ede414956a82f130285b9473ba8d8543af6da02",
+    "body_sha256": "a8da7ecb8ad84c25e92c5fc3d83b5bcb30cb74c5a517ea7dc387062efa00f619",
+    "evidence_sha256": "041ae8b03b12c6dfcf8f8504aede69ae3e4867d967bd0f7db6e392d1be63f091"
+  },
+  {
+    "printing_id": "bafca88a-6810-411a-8a1f-ca250618a502",
+    "set_id": "8fdf462f-ca9c-47e7-a92d-1936b082a12d",
+    "set_code": "PCG6",
+    "language_code": "ja",
+    "collector_number": "080",
+    "card_native_name": "ホロン農家",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-036",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "88c960dd-5bb1-4ec4-a530-886f823a1cfb"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:09488e73bb024ba87d41275530277db99b5f69b4e3040d7f93b89dbc7fb3e595",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/7jsgpvtenieodcqg/1600.jpg",
+    "original_sha256": "781351651d711f7109428932aa60ad1a81205bf5c1125fec7de2e928211b2533",
+    "body_sha256": "49996b7b1f44c9ef3690843e9986df3766f2e8a408796582d47c5f731536a72a",
+    "evidence_sha256": "3103bc907a2d9e1b78b894d6e527ee7026c806990e03bfc4c8f4a3bc0c484f6b"
+  },
+  {
+    "printing_id": "6176b1d7-f194-4edb-a627-c0a73fa04f5b",
+    "set_id": "8fdf462f-ca9c-47e7-a92d-1936b082a12d",
+    "set_code": "PCG6",
+    "language_code": "ja",
+    "collector_number": "083",
+    "card_native_name": "ホロン遺跡",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-036",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "0379b17a-5e24-4caa-85dd-48b7da2f195d"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:1c802c238faaf5ac9cc2eee16f50d0dc694d9a0a056c6fb8b71aa771e45b9caa",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/ktozgs6qv2bpkkjj/1600.jpg",
+    "original_sha256": "81500d92dcd34fbc7871b3fe5573b1a0e1aeee11042d1f9719c7a71d454a8596",
+    "body_sha256": "f27f97a126b5f6e4d8ce5e09b8aa7cdd69f3e5aaa82450e48479b2d1a1f73b88",
+    "evidence_sha256": "3fa180fae337997ed914340544e0f15509441406f86fa16a2a5a4f9fcacd3e78"
+  },
+  {
+    "printing_id": "cc1681cb-030e-4d1e-a144-d68ff927f111",
+    "set_id": "8fdf462f-ca9c-47e7-a92d-1936b082a12d",
+    "set_code": "PCG6",
+    "language_code": "ja",
+    "collector_number": "085",
+    "card_native_name": "ホロンエネルギーff",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-036",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "95aa1d56-b97a-4c68-b669-f9e83e7af868"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:e51e472f347e321eab8044fb0981b30819f60bcae17fccbe1f75279c73dff8aa",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/siozadnkxueyg7vk/1600.jpg",
+    "original_sha256": "8c5413a4e6f2ab2ed133db9481b393d01992922d4ac0aeaa3a0b2f47dffcba7f",
+    "body_sha256": "8915027494dbf5b88b6b5a253f8c4055a4c708e1a27a5d5e590fc163bbec6a0b",
+    "evidence_sha256": "36a5e2c40b38f1aa24742bc0e1eb9a4fbf2005badfe3ceaf6fb0762d89ee6d5d"
+  },
+  {
+    "printing_id": "335d5820-4616-49be-89ff-5c8f494e1940",
+    "set_id": "8fdf462f-ca9c-47e7-a92d-1936b082a12d",
+    "set_code": "PCG6",
+    "language_code": "ja",
+    "collector_number": "086",
+    "card_native_name": "ホロンエネルギーwp",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-036",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "2a28827b-2cfe-49e6-ae63-c300c08798e6"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:f464eb4a0a9a0b547c9ea905ec3b8e647eb5fe23a3f69974bb1a443eb14c809f",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/n2657c5an3fvsh27/1600.jpg",
+    "original_sha256": "cd88e8b85acd91ea917a4aa1521cbd567df1c29960c9c15ffaa0595e5d7c63b5",
+    "body_sha256": "0cea7385ca605978ca7122f0d7e39ca75d14f78a0be66deb1a1090f3e58ca23c",
+    "evidence_sha256": "344dff88dc98ad6dccdb9dbfa97a1577acd1974e3926a97410f7623cb60bdabb"
+  }
+]
