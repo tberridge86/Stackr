@@ -42,7 +42,7 @@ const module = { exports: {} as Record<string, any> };
 const dependencies: Record<string, unknown> = {
   react: React, 'react-native': native, 'expo-router': { useFocusEffect },
   '../lib/cardMotionPreference': { useCardMotionPreference: () => ({ loaded: preferenceLoaded, reduced }) },
-  '../lib/corocoroIssueArchive': { formatCorocoroIssueMonth: () => 'May 2001' },
+  '../lib/corocoroIssueArchive': { formatCorocoroIssueGroup: () => 'May 2001' },
   '../lib/corocoroSuppliedCovers': { getCorocoroSuppliedCover: () => source },
   './StackrImage': { StackrImage: 'StackrImage' }, './Text': { Text: 'Text' },
   './theme-context': { useTheme: () => ({ theme: { colors: new Proxy({}, { get: () => '#6938F5' }) } }) },

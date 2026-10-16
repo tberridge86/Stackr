@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, AppState, Easing, Pressable, StyleSheet, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { useCardMotionPreference } from '../lib/cardMotionPreference';
-import { formatCorocoroIssueMonth, type CorocoroIssueGroup } from '../lib/corocoroIssueArchive';
+import { formatCorocoroIssueGroup, type CorocoroIssueGroup } from '../lib/corocoroIssueArchive';
 import { getCorocoroSuppliedCover } from '../lib/corocoroSuppliedCovers';
 import { StackrImage } from './StackrImage';
 import { Text } from './Text';
@@ -65,7 +65,7 @@ export function CorocoroIssueOpening({ issue }: { issue: CorocoroIssueGroup }) {
       </Animated.View>
     </View> : null}
     <Text accessibilityLiveRegion="polite" style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 20 }}>
-      {phase === 'opening' ? `Opening ${formatCorocoroIssueMonth(issue.issueMonth)}…`
+      {phase === 'opening' ? `Opening ${formatCorocoroIssueGroup(issue)}…`
         : failed ? 'Cover unavailable. The issue and its cards are ready to browse.'
           : phase === 'open' ? 'Ready to browse. Opening does not mark any card owned.'
             : source ? 'Open the real issue cover, then browse the cards below.' : 'No verified cover yet. Browse the documented cards below.'}

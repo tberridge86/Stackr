@@ -5,7 +5,8 @@ import React from 'react';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import ts from 'typescript';
 import { createAccountLoadGeneration } from '../lib/accountLoadGeneration';
-import { getCorocoroIssueGroup, getCorocoroPublicationSummaries, getCorocoroIssuesForPublication, corocoroIssueEvidence } from '../lib/corocoroIssueArchive';
+import { getCorocoroIssueGroup, getCorocoroPublicationSummaries, getCorocoroIssuesForPublication, corocoroIssueEvidence,
+  formatCorocoroIssueGroup, getCorocoroVerifiedPrinting, validateCorocoroVerifiedPrinting, getCorocoroVerifiedPrintingArtwork } from '../lib/corocoroIssueArchive';
 import { getCuratedPokemonCardById } from '../lib/curatedPokemonCatalogue';
 import type { PokemonCard } from '../lib/pokemonTcg';
 import type { CorocoroIssueRecord } from '../lib/corocoroIssueArchive';
@@ -135,7 +136,8 @@ const screen = compile('app/corocoro.tsx', {
   '../components/StackrImage': { StackrImage: 'StackrImage' }, '../components/Text': { Text: 'Text' },
   '../components/theme-context': { useTheme: () => ({ theme: { colors: new Proxy({}, { get: () => '#6938F5' }) } }) },
   '../components/auth-context': { useAuth },
-  '../lib/corocoroIssueArchive': { getCorocoroIssueGroup, getCorocoroPublicationSummaries, getCorocoroIssuesForPublication, formatCorocoroIssueMonth: (month: string) => month },
+  '../lib/corocoroIssueArchive': { getCorocoroIssueGroup, getCorocoroPublicationSummaries, getCorocoroIssuesForPublication,
+    formatCorocoroIssueGroup, getCorocoroVerifiedPrinting, validateCorocoroVerifiedPrinting, getCorocoroVerifiedPrintingArtwork },
   '../lib/curatedPokemonCatalogue': { getCuratedPokemonCardById },
   '../lib/pokemonTcg': { fetchCardById: (id: string) => id === mewId ? cardPending?.promise ?? Promise.resolve(runtimeCard) : Promise.resolve(getCuratedPokemonCardById(id, 'ja')) },
   '../lib/corocoroIssueCollection': { ...helper, fetchCorocoroOwnedCardKeys: async () => {

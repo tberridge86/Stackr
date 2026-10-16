@@ -1038,6 +1038,362 @@
       ],
       "confidence": "primary_confirmed",
       "notes": "Paid applicant Start Deck 100 CoroCoro Comic ver., 60-card deck (only featured Pokémon listed here). Application QR/serial in magazine; capped 100,000 with lottery if exceeded. Fulfillment late March or late August 2022; not a free card insert."
+    },
+    {
+      "id": "corocoro-ichiban-2023-04-insert",
+      "publication": "CoroCoro Ichiban!",
+      "issueMonth": "2023-04",
+      "onSaleDate": "2023-02-21",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Pawmi",
+          "nativeName": "パモ",
+          "printedNumber": "035/SV-P",
+          "numbering": "numbered",
+          "language": "ja",
+          "format": "standard",
+          "illustrator": "Ryuta Fuse",
+          "edition": null,
+          "finish": null,
+          "physicalVariant": null,
+          "mappedStackrCardId": null,
+          "printingConfidence": "primary_card_number_and_distribution_corroborated"
+        }
+      ],
+      "sourceUrls": [
+        "https://corocoro-news.jp/news/357888/",
+        "https://www.pokemon-card.com/card-search/details.php/card/43128"
+      ],
+      "confidence": "primary_confirmed",
+      "issueLabel": "4月号",
+      "notes": "The numbered printing can be explored after its identity is checked. Physical finish, edition and collection ownership remain unverified."
+    },
+    {
+      "id": "corocoro-ichiban-2023-06-insert",
+      "publication": "CoroCoro Ichiban!",
+      "issueMonth": "2023-06",
+      "onSaleDate": "2023-04-21",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Cetitan",
+          "nativeName": "ハルクジラ",
+          "printedNumber": "058/SV-P",
+          "numbering": "numbered",
+          "language": "ja",
+          "format": "standard",
+          "illustrator": "GOSSAN",
+          "edition": null,
+          "finish": null,
+          "physicalVariant": null,
+          "mappedStackrCardId": null,
+          "printingConfidence": "primary_card_number_and_distribution_corroborated"
+        }
+      ],
+      "sourceUrls": [
+        "https://corocoro-news.jp/news/362389/",
+        "https://www.pokemon-card.com/card-search/details.php/card/43690"
+      ],
+      "confidence": "primary_confirmed",
+      "issueLabel": "6月号",
+      "notes": "The numbered printing can be explored after its identity is checked. Physical finish, edition and collection ownership remain unverified."
+    },
+    {
+      "id": "corocoro-2023-08-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "2023-08",
+      "onSaleDate": "2023-07-14",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Shroodle",
+          "nativeName": "シルシュルー",
+          "printedNumber": "087/SV-P",
+          "numbering": "numbered",
+          "language": "ja",
+          "format": "standard",
+          "illustrator": "Hitoshi Ariga",
+          "edition": null,
+          "finish": null,
+          "physicalVariant": null,
+          "mappedStackrCardId": null,
+          "printingConfidence": "primary_card_number_verified_publisher_publication_preferred"
+        }
+      ],
+      "sourceUrls": [
+        "https://corocoro-news.jp/news/367531/",
+        "https://www.pokemon-card.com/card-search/details.php/card/43842",
+        "https://www.youtube.com/watch?v=EJg2N31thw4"
+      ],
+      "confidence": "primary_distribution_confirmed_card_page_publication_conflict",
+      "issueLabel": "8月号",
+      "fieldConflicts": [
+        {
+          "field": "publication",
+          "publisherValue": "Monthly CoroCoro Comic",
+          "officialCardPageValue": "CoroCoro Ichiban! 2023年7月発売号",
+          "resolution": "Publisher contemporaneous announcement and official CoroCoro video explicitly name Monthly August issue; do not create an Ichiban insert from the conflicting card-page label."
+        }
+      ],
+      "notes": "The numbered printing can be explored after its identity is checked. Physical finish, edition and collection ownership remain unverified."
+    },
+    {
+      "id": "corocoro-ichiban-2023-09-insert",
+      "publication": "CoroCoro Ichiban!",
+      "issueMonth": "2023-09",
+      "onSaleDate": "2023-07-21",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Cyclizar",
+          "nativeName": "モトトカゲ",
+          "printedNumber": "097/SV-P",
+          "numbering": "numbered",
+          "language": "ja",
+          "format": "standard",
+          "illustrator": "Hasuno",
+          "edition": null,
+          "finish": null,
+          "physicalVariant": null,
+          "mappedStackrCardId": null,
+          "printingConfidence": "primary_card_number_and_distribution_corroborated"
+        }
+      ],
+      "sourceUrls": [
+        "https://corocoro-news.jp/news/368086/",
+        "https://www.pokemon-card.com/card-search/details.php/card/44026"
+      ],
+      "confidence": "primary_confirmed",
+      "issueLabel": "9月号",
+      "notes": "The numbered printing can be explored after its identity is checked. Physical finish, edition and collection ownership remain unverified."
+    },
+    {
+      "id": "corocoro-2023-11-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "2023-11",
+      "onSaleDate": "2023-10-14",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Grafaiai ex",
+          "nativeName": "タギングルex",
+          "printedNumber": "088/SV-P",
+          "numbering": "numbered",
+          "language": "ja",
+          "format": "standard",
+          "illustrator": "aky CG Works",
+          "edition": null,
+          "finish": null,
+          "physicalVariant": null,
+          "mappedStackrCardId": null,
+          "printingConfidence": "primary_card_number_and_distribution_corroborated"
+        }
+      ],
+      "sourceUrls": [
+        "https://corocoro-news.jp/news/374137/",
+        "https://shogakukan-comic.jp/news/45964",
+        "https://www.pokemon-card.com/card-search/details.php/card/44025/regu/XY"
+      ],
+      "confidence": "primary_confirmed",
+      "issueLabel": "11月号",
+      "notes": "Publisher explicitly calls this a real card supplement. The earlier August redemption ticket is a separate distribution. The regular and combined MiraCoro edition announcements require separate physical-edition review before representing their carrier packaging. The numbered printing can be explored after its identity is checked. Physical finish, edition and collection ownership remain unverified."
+    },
+    {
+      "id": "corocoro-ichiban-2024-04-insert",
+      "publication": "CoroCoro Ichiban!",
+      "issueMonth": "2024-04",
+      "onSaleDate": "2024-02-21",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Pachirisu",
+          "nativeName": "パチリス",
+          "printedNumber": "129/SV-P",
+          "numbering": "numbered",
+          "language": "ja",
+          "format": "standard",
+          "illustrator": "Yuya Oka",
+          "edition": null,
+          "finish": null,
+          "physicalVariant": null,
+          "mappedStackrCardId": null,
+          "printingConfidence": "primary_card_number_verified_publisher_issue_date_preferred"
+        }
+      ],
+      "sourceUrls": [
+        "https://corocoro-news.jp/news/381122/",
+        "https://www.pokemon-card.com/card-search/details.php/card/45406"
+      ],
+      "confidence": "primary_distribution_confirmed_card_page_date_conflict",
+      "issueLabel": "4月号",
+      "fieldConflicts": [
+        {
+          "field": "onSaleMonth",
+          "publisherValue": "2024-02",
+          "officialCardPageValue": "2024年3月発売号",
+          "resolution": "Use publisher's explicit 4月号 / 21 February date for issue identity; retain conflicting official card-page distribution label."
+        }
+      ],
+      "notes": "The numbered printing can be explored after its identity is checked. Physical finish, edition and collection ownership remain unverified."
+    },
+    {
+      "id": "corocoro-ichiban-2024-07-insert",
+      "publication": "CoroCoro Ichiban!",
+      "issueMonth": "2024-07",
+      "onSaleDate": "2024-05-21",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Zarude",
+          "nativeName": "ザルード",
+          "printedNumber": "162/SV-P",
+          "numbering": "numbered",
+          "language": "ja",
+          "format": "standard",
+          "illustrator": "Uninori",
+          "edition": null,
+          "finish": null,
+          "physicalVariant": null,
+          "mappedStackrCardId": null,
+          "printingConfidence": "primary_card_number_verified_publisher_issue_date_preferred"
+        }
+      ],
+      "sourceUrls": [
+        "https://corocoro-news.jp/news/385143/",
+        "https://corocoro-news.jp/news/385169/",
+        "https://www.pokemon-card.com/card-search/details.php/card/45843"
+      ],
+      "confidence": "primary_distribution_confirmed_card_page_date_conflict",
+      "issueLabel": "7月号",
+      "fieldConflicts": [
+        {
+          "field": "onSaleMonth",
+          "publisherValue": "2024-05",
+          "officialCardPageValue": "2024年7月発売号",
+          "resolution": "Use publisher's explicit 7月号 / 21 May date for issue identity; retain conflicting official card-page distribution label."
+        }
+      ],
+      "notes": "The numbered printing can be explored after its identity is checked. Physical finish, edition and collection ownership remain unverified."
+    },
+    {
+      "id": "corocoro-ichiban-2024-10-insert",
+      "publication": "CoroCoro Ichiban!",
+      "issueMonth": "2024-10",
+      "onSaleDate": "2024-08-21",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Kangaskhan",
+          "nativeName": "ガルーラ",
+          "printedNumber": "172/SV-P",
+          "numbering": "numbered",
+          "language": "ja",
+          "format": "standard",
+          "illustrator": "Uta",
+          "edition": null,
+          "finish": null,
+          "physicalVariant": null,
+          "mappedStackrCardId": null,
+          "printingConfidence": "primary_card_number_and_distribution_corroborated"
+        }
+      ],
+      "sourceUrls": [
+        "https://corocoro-news.jp/news/389049/",
+        "https://www.pokemon-card.com/card-search/details.php/card/47159"
+      ],
+      "confidence": "primary_confirmed",
+      "issueLabel": "10月号",
+      "notes": "Official card record also names Pokemon Fan 90. A shared printing distributed by two publications does not make Pokemon Fan 90 the same issue or an Ichiban duplicate. The numbered printing can be explored after its identity is checked. Physical finish, edition and collection ownership remain unverified."
+    },
+    {
+      "id": "corocoro-ichiban-2025-04-insert",
+      "publication": "CoroCoro Ichiban!",
+      "issueMonth": "2025-04",
+      "onSaleDate": "2025-02-21",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Iono's Tadbulb",
+          "nativeName": "ナンジャモのズピカ",
+          "printedNumber": "257/SV-P",
+          "numbering": "numbered",
+          "language": "ja",
+          "format": "standard",
+          "illustrator": "kurumitsu",
+          "edition": null,
+          "finish": null,
+          "physicalVariant": null,
+          "mappedStackrCardId": null,
+          "printingConfidence": "primary_card_number_verified_direct_issue_to_print_link_requires_visual_corroboration"
+        }
+      ],
+      "sourceUrls": [
+        "https://corocoro-news.jp/news/394712/",
+        "https://shogakukan-comic.jp/news/56779",
+        "https://www.pokemon-card.com/card-search/details.php/card/49616"
+      ],
+      "confidence": "primary_distribution_confirmed_printing_candidate",
+      "issueLabel": "4月号",
+      "notes": "Publisher confirms the named promo, and official card page confirms 257/SV-P. The official card page has no distribution label in the inspected text; exact issue-to-number visual corroboration remains required. Do not substitute Battle Partners 029/100, MEGA Dream 056/193 or deck 273/742. The exact issue-to-number association still needs corroboration. Card navigation and collection ownership remain unavailable."
+    },
+    {
+      "id": "corocoro-ichiban-2025-07-08-insert",
+      "publication": "CoroCoro Ichiban!",
+      "issueMonth": "2025-07",
+      "onSaleDate": "2025-05-21",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Team Rocket's Meowth",
+          "nativeName": "ロケット団のニャース",
+          "printedNumber": "259/SV-P",
+          "numbering": "numbered",
+          "language": "ja",
+          "format": "standard",
+          "illustrator": "Megumi Mizutani",
+          "edition": null,
+          "finish": null,
+          "physicalVariant": null,
+          "mappedStackrCardId": null,
+          "printingConfidence": "primary_card_number_and_issue_corroborated_sale_label_conflict_preserved"
+        }
+      ],
+      "sourceUrls": [
+        "https://corocoro-news.jp/news/396252/",
+        "https://corocoro-news.jp/news/396261/",
+        "https://www.pokemon-card.com/card-search/details.php/card/49633"
+      ],
+      "confidence": "primary_distribution_confirmed_card_page_date_conflict",
+      "issueLabel": "7・8月号",
+      "issueMonths": [
+        "2025-07",
+        "2025-08"
+      ],
+      "fieldConflicts": [
+        {
+          "field": "onSaleMonth",
+          "publisherValue": "2025-05",
+          "officialCardPageValue": "2025年7・8月発売号",
+          "resolution": "Publisher explicitly names the combined 7・8月号 on sale 21 May; preserve as one combined issue rather than separate July/August records."
+        }
+      ],
+      "notes": "Official card page also names Pokemon Fan 94. Publisher describes a shared Ichiban/Pokemon Fan logo. Catalogue identity and duplicate issue ownership must remain separate concerns. The numbered printing can be explored after its identity is checked. Physical finish, edition and collection ownership remain unverified."
     }
-  ]
+  ],
+  "continuation": {
+    "researchedAt": "2026-10-16T16:45:11Z",
+    "scope": "Ten additive 2023-2025 insert records from bounded primary-source research. Earlier records and identity mappings are retained.",
+    "sourceEvidence": "docs/releases/corocoro-additive-issue-evidence-20261016.json",
+    "verifiedPrintingBindings": "corocoroVerifiedPrintings.json",
+    "physicalVariantOwnershipBindingsApproved": 0,
+    "heldIssueToPrintingIds": [
+      "corocoro-ichiban-2025-04-insert"
+    ],
+    "limitations": [
+      "The archive is not an exhaustive checklist.",
+      "Verified numbered printing navigation does not establish physical finish, edition, carrier packaging or collection ownership.",
+      "Shared official-card-page metadata conflicts are preserved in each affected row."
+    ]
+  }
 }

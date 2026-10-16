@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 import { runInNewContext } from 'node:vm';
 import React from 'react';
 import ts from 'typescript';
-import { groupCorocoroIssues, getCorocoroIssuesForCard, getCorocoroIssuesForSet } from '../lib/corocoroIssueArchive';
+import { groupCorocoroIssues, getCorocoroIssuesForCard, getCorocoroIssuesForSet, formatCorocoroIssueGroup } from '../lib/corocoroIssueArchive';
 import { getCorocoroIssueCoverPresentation } from '../lib/corocoroCoverReferences';
 import { COROCORO_SUPPLIED_COVER_COUNT, getCorocoroSuppliedCover } from '../lib/corocoroSuppliedCovers';
 
@@ -50,6 +50,7 @@ const dependencies: Record<string, unknown> = {
   react: React,
   'expo-router': { Link: 'Link' },
   'react-native': { Platform: { OS: 'ios' }, Pressable: 'Pressable', View: 'View', StyleSheet: { create: (styles: unknown) => styles } },
+  '../lib/corocoroIssueArchive': { formatCorocoroIssueGroup },
   '../lib/corocoroCoverReferences': { getCorocoroIssueCoverPresentation },
   './StackrImage': { StackrImage },
   './Text': { Text: 'Text' },
@@ -68,6 +69,12 @@ function imageElements(value: unknown): any[] {
   const element = value as { type?: unknown; props?: { children?: unknown } };
   return [...(element.type === StackrImage ? [element] : []), ...imageElements(element.props?.children)];
 }
+function visibleText(value: unknown): string[] {
+  if (Array.isArray(value)) return value.flatMap(visibleText);
+  if (typeof value === 'string') return [value];
+  if (!value || typeof value !== 'object') return [];
+  return visibleText((value as { props?: { children?: unknown } }).props?.children);
+}
 const policyKeys = [
   'EXPO_PUBLIC_DISABLE_MAGAZINE_SET_COVERS', 'STACKR_DISABLE_MAGAZINE_SET_COVERS',
   'EXPO_PUBLIC_MAGAZINE_SET_COVER_DENYLIST', 'STACKR_MAGAZINE_SET_COVER_DENYLIST',
@@ -75,6 +82,13 @@ const policyKeys = [
 const savedPolicy = new Map(policyKeys.map(key => [key, process.env[key]]));
 try {
   for (const key of policyKeys) delete process.env[key];
+  const combinedIssue = issues.find(issue => issue.id === 'ichiban:2025-07')!;
+  const combinedCover = componentModule.CorocoroIssueCover!({ issueGroup: combinedIssue });
+  const combinedText = visibleText(combinedCover);
+  assert.ok(combinedText.includes('July / August'), 'The production-native placeholder keeps both printed months visible');
+  assert.ok(combinedText.includes('2025'));
+  assert.ok(combinedText.includes('PLACEHOLDER · NO COVER'));
+  assert.equal(imageElements(combinedCover).length, 0, 'Publisher source pointers do not become unapproved native cover images');
   const may2001 = issues.find(issue => issue.id === 'monthly:2001-05')!;
   const images = () => imageElements(componentModule.CorocoroIssueCover!({ issueGroup: may2001 }));
   assert.equal(images().length, 1, 'Allowed supplied cover remains visible in the actual component');

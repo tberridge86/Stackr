@@ -8,8 +8,13 @@ import {
   getCorocoroIssueGroup,
   getCorocoroIssuesForPublication,
   getCorocoroPublicationSummaries,
+  formatCorocoroIssueGroup,
+  getCorocoroVerifiedPrinting,
+  getCorocoroVerifiedPrintingArtwork,
+  validateCorocoroVerifiedPrinting,
   type CorocoroIssueGroup,
 } from '../lib/corocoroIssueArchive';
+import type { PokemonCard } from '../lib/pokemonTcg';
 import { getCorocoroIssueCoverPresentation } from '../lib/corocoroCoverReferences';
 import { getMagazineSetCoverForSet } from '../lib/magazineSetCovers';
 
@@ -76,7 +81,7 @@ const coverModule = compileModule('components/CorocoroIssueCover.tsx', {
   react: React,
   'expo-router': { Link },
   'react-native': native,
-  '../lib/corocoroIssueArchive': {},
+  '../lib/corocoroIssueArchive': { formatCorocoroIssueGroup },
   '../lib/corocoroCoverReferences': { getCorocoroIssueCoverPresentation },
   './StackrImage': { StackrImage: 'StackrImage' },
   './Text': { Text: 'Text' },
@@ -90,7 +95,7 @@ const nativeWindowCoverModule = compileModule('components/CorocoroIssueCover.tsx
   react: React,
   'expo-router': { Link },
   'react-native': native,
-  '../lib/corocoroIssueArchive': {},
+  '../lib/corocoroIssueArchive': { formatCorocoroIssueGroup },
   '../lib/corocoroCoverReferences': { getCorocoroIssueCoverPresentation },
   './StackrImage': { StackrImage: 'StackrImage' },
   './Text': { Text: 'Text' },
@@ -100,6 +105,7 @@ const NativeWindowCorocoroIssueCover = nativeWindowCoverModule.CorocoroIssueCove
 
 let routeParams: { publication?: string; issue?: string; q?: string } = {};
 const pushes: unknown[] = [];
+let readCard: (id: string) => Promise<PokemonCard | null> = async () => null;
 const screenModule = compileModule('app/corocoro.tsx', {
   react: React,
   'expo-router': {
@@ -124,13 +130,16 @@ const screenModule = compileModule('app/corocoro.tsx', {
   '../components/Text': { Text: 'Text' },
   '../components/theme-context': { useTheme: () => ({ theme }) },
   '../lib/corocoroIssueArchive': {
-    formatCorocoroIssueMonth: (month: string) => month,
+    formatCorocoroIssueGroup,
     getCorocoroIssueGroup,
     getCorocoroIssuesForPublication,
     getCorocoroPublicationSummaries,
+    getCorocoroVerifiedPrinting,
+    getCorocoroVerifiedPrintingArtwork,
+    validateCorocoroVerifiedPrinting,
   },
   '../lib/curatedPokemonCatalogue': { getCuratedPokemonCardById: () => null },
-  '../lib/pokemonTcg': { fetchCardById: async () => null },
+  '../lib/pokemonTcg': { fetchCardById: (id: string) => readCard(id) },
   '../lib/corocoroIssueCollection': {
     fetchCorocoroOwnedCardKeys: async () => new Set(), getCorocoroCollectionCard: () => null,
     getCorocoroCollectionDestinations: () => ({ binderIds: [], variants: false }),
@@ -159,6 +168,17 @@ async function run() {
     create(React.createElement(NativeWindowCorocoroIssueCover, { issueGroup: nativeLikeWindowIssue }));
   });
 
+  let combinedCover!: ReactTestRenderer;
+  await act(async () => {
+    combinedCover = create(React.createElement(CorocoroIssueCover, { issueGroup: getCorocoroIssueGroup('ichiban:2025-07')! }));
+  });
+  const combinedText = combinedCover.root.findAll(node => String(node.type) === 'Text').map(node => node.children.join(''));
+  assert.ok(combinedText.includes('July / August'), 'The actual placeholder displays both printed months of the single combined issue');
+  assert.ok(combinedText.includes('2025'));
+  assert.ok(combinedText.includes('PLACEHOLDER · NO COVER'));
+  assert.equal(countStackrImages(combinedCover), 0, 'An unapproved combined-issue cover source must remain a labelled placeholder');
+  await act(async () => combinedCover.unmount());
+
   const defaultRoute = await mount({});
   assert.equal(defaultRoute.root.findAllByType(CorocoroIssueCover).length, 3,
     'Discover opens a three-publication library, not the 34-issue grid');
@@ -167,8 +187,8 @@ async function run() {
   assert.equal(pushes.length, 0, 'Mounting the library must not navigate away');
 
   const monthlyRoute = await mount({ publication: 'monthly' });
-  assert.equal(getCorocoroIssuesForPublication('monthly').length, 32);
-  assert.equal(monthlyRoute.root.findAllByType(CorocoroIssueCover).length, 32,
+  assert.equal(getCorocoroIssuesForPublication('monthly').length, 34);
+  assert.equal(monthlyRoute.root.findAllByType(CorocoroIssueCover).length, 34,
     'The monthly selection mounts each exact documented monthly issue once');
   assert.equal(countStackrImages(monthlyRoute), 26,
     'Only the 26 exact supplied monthly covers are rendered; the remainder retain placeholders');
@@ -179,7 +199,93 @@ async function run() {
   assert.equal(issueRoute.root.findAllByProps({ accessibilityLabel: 'View Shining Mew card details' }).length, 1,
     'The exact mapped card pocket remains reachable after the issue route mounts');
 
-  console.log('CoroCoro screen runtime: default publication library, 32-issue monthly grid, exact supplied-cover/placeholder bounds and detail route mount passed.');
+  const pawmiRecord = getCorocoroIssueGroup('ichiban:2023-04')!.records[0];
+  const pawmi = getCorocoroVerifiedPrinting(pawmiRecord.id, pawmiRecord.cards[0])!;
+  const printingCard: PokemonCard = {
+    id: pawmi.cardId, language: 'ja', name: 'Pawmi', localName: pawmi.nativeName,
+    number: pawmi.collectorNumber, set: { id: pawmi.setId },
+    images: { small: 'https://example.com/unbound-image.jpg' },
+    raw_data: { set: { set_code: pawmi.setCode }, stackr: {
+      cardId: pawmi.cardId, defaultVariantId: 'variant-pawmi', variants: [{
+        variantId: 'variant-pawmi', variantCode: 'normal', finishCode: 'normal',
+        image: { assetId: 'asset-pawmi', assetType: 'card_image', game: 'pokemon',
+          cardId: pawmi.cardId, setId: pawmi.setId, variantId: 'variant-pawmi', permissionStatus: 'approved',
+          deliveryUrl: 'https://example.com/approved-pawmi.jpg', derivatives: [] },
+      }],
+    } },
+  };
+  const image = (renderer: ReactTestRenderer) => renderer.root.findAll(node => String(node.type) === 'StackrImage').at(-1)!;
+  const texts = (renderer: ReactTestRenderer) => renderer.root.findAll(node => String(node.type) === 'Text').map(node => node.children.join('')).join(' ');
+  const hasPrintingLink = (renderer: ReactTestRenderer) => renderer.root.findAllByProps({ accessibilityLabel: 'View Pawmi exact printing' }).length;
+  const assertNoCollectionAction = (renderer: ReactTestRenderer) => {
+    assert.equal(renderer.root.findAll(node => typeof node.props.accessibilityLabel === 'string'
+      && node.props.accessibilityLabel.startsWith('Add Pawmi')).length, 0);
+    assert.match(texts(renderer), /Physical finish and edition unverified/);
+  };
+
+  let resolveCard!: (value: PokemonCard | null) => void;
+  let cardReads = 0;
+  readCard = () => { cardReads++; return new Promise(resolve => { resolveCard = resolve; }); };
+  const checking = await mount({ issue: 'ichiban:2023-04' });
+  assert.equal(hasPrintingLink(checking), 0, 'Printing navigation waits for every fetched identity field');
+  assert.equal(image(checking).props.uri, undefined);
+  await act(async () => resolveCard(printingCard));
+  assert.equal(hasPrintingLink(checking), 1);
+  assert.equal(image(checking).props.uri, 'https://example.com/approved-pawmi.jpg');
+  assertNoCollectionAction(checking);
+  assert.equal(cardReads, 1, 'Stable archive binding objects must not cause a fetch loop after verification');
+  await act(async () => checking.unmount());
+
+  readCard = async () => ({ ...printingCard, number: '999' });
+  const wrongPrinting = await mount({ issue: 'ichiban:2023-04' });
+  assert.equal(hasPrintingLink(wrongPrinting), 0, 'Wrong collector numbers leave artwork and navigation unavailable');
+  assert.equal(image(wrongPrinting).props.uri, undefined);
+  assert.match(texts(wrongPrinting), /Retry printing check/);
+  await act(async () => wrongPrinting.unmount());
+
+  readCard = async () => ({ ...printingCard, raw_data: { set: { set_code: pawmi.setCode } } });
+  const noArtwork = await mount({ issue: 'ichiban:2023-04' });
+  assert.equal(hasPrintingLink(noArtwork), 1, 'A verified printing remains navigable when approved artwork is missing');
+  assert.equal(image(noArtwork).props.uri, undefined, 'An arbitrary image URL cannot bypass the bound API asset contract');
+  assertNoCollectionAction(noArtwork);
+  await act(async () => noArtwork.unmount());
+
+  const selectedVariant = printingCard.raw_data.stackr.variants[0];
+  readCard = async () => ({ ...printingCard, raw_data: { ...printingCard.raw_data, stackr: {
+    ...printingCard.raw_data.stackr, variants: [{ ...selectedVariant,
+      sameArtworkAsVariantId: 'shared-pawmi', nativeImageStatus: 'same_artwork_reference', imageVariantId: 'shared-pawmi',
+      image: { ...selectedVariant.image, variantId: 'shared-pawmi' },
+    }],
+  } } });
+  const sharedArtwork = await mount({ issue: 'ichiban:2023-04' });
+  assert.equal(hasPrintingLink(sharedArtwork), 1);
+  assert.match(texts(sharedArtwork), /Shared artwork reference · language or finish may differ/,
+    'Approved shared artwork must remain labelled as a reference');
+  assertNoCollectionAction(sharedArtwork);
+  await act(async () => sharedArtwork.unmount());
+
+  readCard = async () => { throw Error('offline'); };
+  const offline = await mount({ issue: 'ichiban:2023-04' });
+  assert.equal(hasPrintingLink(offline), 0);
+  await act(async () => {
+    readCard = async () => printingCard;
+    offline.root.findAll(node => String(node.type) === 'Pressable').find(node => node.children.some(child =>
+      typeof child === 'object' && child.children.includes('Retry printing check')))!.props.onPress();
+  });
+  assert.equal(hasPrintingLink(offline), 1, 'Retry rechecks the exact printing after an offline failure');
+  await act(async () => offline.unmount());
+
+  readCard = () => new Promise(resolve => { resolveCard = resolve; });
+  const late = await mount({ issue: 'ichiban:2023-04' });
+  routeParams = { issue: 'ichiban:2025-04' };
+  await act(async () => late.update(React.createElement(CorocoroLibraryScreen)));
+  await act(async () => resolveCard(printingCard));
+  assert.equal(late.root.findAllByProps({ accessibilityLabel: "View Iono's Tadbulb exact printing" }).length, 0);
+  assert.equal(hasPrintingLink(late), 0, 'A late response cannot carry a previous printing into the held Tadbulb issue');
+  assert.equal(image(late).props.uri, undefined);
+  await act(async () => late.unmount());
+
+  console.log('CoroCoro screen runtime: 34 monthly issues, original Mew, strict printing navigation/artwork, finish holds, retry and late-response isolation passed.');
 }
 
 void run().catch((error) => {
