@@ -1,0 +1,1822 @@
+{
+  "schemaVersion": 1,
+  "queue_id": "PCG2-WAVE002-EXACT3-SHARED-FRONTS-20261016",
+  "source_manifest_sha256": "2aef22f72616d9634de548cae7fd14e77345233972013787bfaded5faadd40a0",
+  "package_receipt_sha256": "62cf8cdc834e2e59db255ddfefbd1f3360ae8aecc67bfbb894f1c5b79791dfaf",
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "2aaad4065081121ae0cb1feb3875fe80544f654d3931e1b1f978bf8659f83178",
+    "finiteDecisionFileByteSha256": "2dc42c9600d0c921cbe8cb625cca8410aa8dccf7f43a9ca45c49b65ea67e0d10",
+    "rootPrivateContextFileByteSha256": "61cf54eb91f20f4efc28d31e887f6cacd87dc270e03a03ac85b065a226891dc5",
+    "sourceHandoffFileByteSha256s": [
+      "f8ccc869d98bf89ffc9c269c146b4361459888f9a9b15c28286ac29b9b2c47b7"
+    ],
+    "independentSourceReviewFileByteSha256s": [
+      "3a87e6253e608fd912ea3c6623ab108b35401f7a3f9b364c9fa71c643f87c712"
+    ],
+    "fourSourceCheckpointFileByteSha256": "73961c3c040dff4bc536a4b6dbc73171af7156d68f92f1c10d43ec1da7d2746e",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "f3e8df61672f0896aa02dbdbc99fe96cdcc85926735e332bf673d42589443398",
+    "independentPrivatePackageReviewSha256": "a1619e120609c2163a0ebff7742a5a1a628db22e4e1e98b806f619ff75bb4a55",
+    "rootPrivatePackageValidationSha256": "da886b7cc13e41cad782a982cabd67893658d72ccc6e605fd9692134498a5d50",
+    "rootSourceArchiveBindingSha256": "837d66032d7f1052744ff2330e10fc8472ab1b7108b160d6cc89792ba3fe2cfd",
+    "rootUploadReceiptSha256": "5ae49dacb02d0db5e47b74eea3ac28ceb61967381f22f8a28d8d70e7d4861994",
+    "actualMeasuredAppReportSha256": "1b4ef65535a447b40ebc592f55b7c6117678b00515dead534422a71b9e5ea1fa",
+    "actualMeasuredDimensionAuditSha256": "a1b08708b5242fafba6b1954fd325c5d24dacf77c983ee0fea377118588ec7fe",
+    "rootPublisherContextSha256": "320315c68ce9d08e0a7e177aa5e72f20d9d627d6934281134f921cd6081554a9"
+  },
+  "archive": {
+    "id": 646828275,
+    "sha256": "a6615b31d02b4c9c2392032d3448cb3f917f7f05de070a1ff45198092e1b5816",
+    "byte_size": 576283,
+    "file_count": 16,
+    "name": "pcg2-wave002-fronts-20261016.zip"
+  },
+  "archive_metadata": [
+    {
+      "file": "manifest.json",
+      "sha256": "2aef22f72616d9634de548cae7fd14e77345233972013787bfaded5faadd40a0",
+      "byte_size": 91943
+    },
+    {
+      "file": "receipts/preparation-summary.json",
+      "sha256": "56504fd69e6c8071d7061d730f1527ab52ac078222e2e9571c2f705c3f9c0fed",
+      "byte_size": 1592
+    },
+    {
+      "file": "receipts/current-card-bindings.json",
+      "sha256": "b9f1ee21e06d19eb3178947951c9762a59ecb7c5048cda794fd49165f72bd0fa",
+      "byte_size": 16774
+    },
+    {
+      "file": "receipts/finite-decision.json",
+      "sha256": "30e4e63f434b77c6afb47f493a4fb9222298d5581eb12d99f587ac6706f8fe67",
+      "byte_size": 6186
+    }
+  ],
+  "rows": [
+    {
+      "printing_id": "44c0fd56-5d24-4545-9a11-313bf3252953",
+      "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+      "set_code": "PCG2",
+      "language_code": "ja",
+      "collector_number": "056",
+      "card_native_name": "スウラー",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "batch_id": "JP-CARDS-022",
+      "work_type": "CARDS",
+      "variant_ids": [
+        "2f074dd6-a27f-4dfd-9ccb-5d741daa5dd4"
+      ],
+      "source_code": "pricecharting",
+      "provider_id": "pricecharting-image-url-sha256:fc22ed3ec743face58b9b9774b97a2fef3d940b8457e3f509b984fc47722490b",
+      "image_url": "https://storage.googleapis.com/images.pricecharting.com/rpjwhp7pndkrh3pw/1600.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/8cdd607508f65319b4fc51a9855e2d40663c501e9d079348e6a3170a2c07a6f1/original.jpg",
+          "sha256": "8cdd607508f65319b4fc51a9855e2d40663c501e9d079348e6a3170a2c07a6f1",
+          "byte_size": 73465,
+          "width": 500,
+          "height": 700,
+          "mime_type": "image/jpeg",
+          "artifact_id": 646828275
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/d0341152a14efc84e190e1f396dc7f61e2f5ce8540581591fad496a4d89b4059/card-grid.webp",
+          "sha256": "d0341152a14efc84e190e1f396dc7f61e2f5ce8540581591fad496a4d89b4059",
+          "byte_size": 20536,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp",
+          "artifact_id": 646828275
+        },
+        {
+          "role": "search-result",
+          "file": "objects/14b37ed82e825ed4349b71107e6787a4a1dd54f127123f7553c268318f51e202/search-result.webp",
+          "sha256": "14b37ed82e825ed4349b71107e6787a4a1dd54f127123f7553c268318f51e202",
+          "byte_size": 3644,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp",
+          "artifact_id": 646828275
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/aa4de91f8ac07896e4caa2cdbb9b1681861550c5a0a130a47ed7823da7e4e2ff/detail-page.webp",
+          "sha256": "aa4de91f8ac07896e4caa2cdbb9b1681861550c5a0a130a47ed7823da7e4e2ff",
+          "byte_size": 78808,
+          "width": 500,
+          "height": 700,
+          "mime_type": "image/webp",
+          "artifact_id": 646828275
+        }
+      ],
+      "evidence": {
+        "source_url": "https://storage.googleapis.com/images.pricecharting.com/rpjwhp7pndkrh3pw/1600.jpg",
+        "source_page_url": "https://www.pricecharting.com/game/pokemon-japanese-clash-of-the-blue-sky/swellow-56",
+        "provider_id": "pricecharting-image-url-sha256:fc22ed3ec743face58b9b9774b97a2fef3d940b8457e3f509b984fc47722490b",
+        "source_metadata_sha256": "19f32f2ea8dc7918906aa0888cd6a7326aa381224c3c7869c2b0b3cf5145c77c",
+        "source_body": {
+          "contract": "pcg2-wave002-exact-three-shared-fronts-v1",
+          "work_type": "CARDS",
+          "accepted_category": null,
+          "recorded_inventory_category": null,
+          "actual_printed_category": "Pokemon",
+          "actual_native_category": "Pokemon",
+          "photo_identity_projection": {
+            "schemaVersion": 1,
+            "sourceCode": "pricecharting",
+            "sourceDetailUrl": "https://www.pricecharting.com/game/pokemon-japanese-clash-of-the-blue-sky/swellow-56",
+            "literalOriginalUrl": "https://storage.googleapis.com/images.pricecharting.com/rpjwhp7pndkrh3pw/1600.jpg",
+            "literalOriginalUrlSha256": "fc22ed3ec743face58b9b9774b97a2fef3d940b8457e3f509b984fc47722490b",
+            "canonicalPrintingId": "44c0fd56-5d24-4545-9a11-313bf3252953",
+            "canonicalSetId": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+            "canonicalSetCode": "PCG2",
+            "languageCode": "ja",
+            "canonicalAlias": "056",
+            "printedCollectorNumber": "056/082",
+            "printedSetCodeLiteral": null,
+            "printedSetMarkObservation": "下右に白い流星形セットマーク",
+            "sourceSetAssociation": "Exact observed Japanese Clash of the Blue Sky page, actual shooting-star mark and full xxx/082 collector; unchanged current variant tuple.",
+            "originalFileByteSha256": "8cdd607508f65319b4fc51a9855e2d40663c501e9d079348e6a3170a2c07a6f1",
+            "originalByteSize": 73465,
+            "width": 500,
+            "height": 700,
+            "format": "jpeg",
+            "actualPrintedName": "オオスバメ",
+            "actualPrintedForm": null,
+            "physicalEditionCertified": false,
+            "physicalFinishCertified": false
+          },
+          "photo_identity_projection_canonical_sha256": "ca0a6a0eeeed27ca01526460328fc71857c2ddf3570f0c847f7f10abe7521206",
+          "private_detail_evidence_sha256": "19f32f2ea8dc7918906aa0888cd6a7326aa381224c3c7869c2b0b3cf5145c77c",
+          "root_decision_row_canonical_sha256": "08cb51b46da78d28d0a95e3b5f43b94fb54c6e0a58c30c8ee55d8eb8db924522",
+          "raw_source_printed_witness": {
+            "printedNativeName": "オオスバメ",
+            "printedCardClass": "Pokemon",
+            "printedHP": 70,
+            "printedType": "無色",
+            "printedStage": "1進化",
+            "printedEvolutionFrom": "スバメ",
+            "printedEvolutionPlacement": "スバメから進化",
+            "printedPokemonExRule": null,
+            "printedCollectorNumber": "056/082",
+            "printedArtist": "Midori Harada",
+            "setMarkVisible": "下右に白い流星形セットマーク",
+            "visibleFinishCues": "Pale front without clear holographic sparkle; no physical finish certification.",
+            "printedCopyright": "©2004 Pokémon/Nintendo/Creatures/GAME FREAK",
+            "printedRegulationMark": null,
+            "printedRules": null,
+            "printedSpecialIdentityMarkers": [],
+            "attacks": [
+              {
+                "name": "エアロクラッシュ",
+                "cost": [
+                  "無色",
+                  "無色"
+                ],
+                "damage": null,
+                "effect": "相手のポケモン1匹に、20ダメージ。コインを1回投げオモテなら、そのポケモンのエネルギーを1個トラッシュする。"
+              },
+              {
+                "name": "きゅうこうか",
+                "cost": [
+                  "無色",
+                  "無色"
+                ],
+                "damage": "40",
+                "effect": "コインを1回投げウラなら、自分にも10ダメージ。"
+              }
+            ],
+            "abilities": [],
+            "allFourOuterPerimetersAndCornersVisible": true,
+            "editionStampObserved": false,
+            "foreignWatermarkObserved": false,
+            "apparentFinishConflict": false,
+            "printedWeakness": "雷",
+            "printedResistance": "闘 -30",
+            "printedRetreatCost": [],
+            "qualityAdvisories": [
+              "Actual original is500x700, belowHD canvas signal; no enlargement or optical/native-HD certification."
+            ]
+          },
+          "raw_source_printed_witness_canonical_sha256": "624894f1265568f95d90ef9e89ade8bc9beaf3be531e272c5de5941bdc20b550",
+          "raw_source_witness_insertion_sha256": "977facff67c724a9865d423ab49f1d7773e3ead3d352cb6cfd7a0cd5341c5183",
+          "raw_source_historical_flags": {
+            "sourceSelectionApproved": false,
+            "preparationApproved": false,
+            "publicationApproved": false
+          },
+          "raw_source_witness_is_verbatim_certified": false,
+          "raw_source_witness_not_rewritten": true,
+          "root_actual_printed_witness": {
+            "printedNativeName": "オオスバメ",
+            "printedCardClass": "Pokemon",
+            "printedHP": 70,
+            "printedType": "無色",
+            "printedStage": "1進化",
+            "printedEvolutionFrom": "スバメ",
+            "printedEvolutionPlacement": "スバメから進化",
+            "printedPokemonExRule": null,
+            "printedCollectorNumber": "056/082",
+            "printedArtist": "Midori Harada",
+            "setMarkVisible": "下右に白い流星形セットマーク",
+            "visibleFinishCues": "Pale front without clear holographic sparkle; no physical finish certification.",
+            "printedCopyright": "©2004 Pokémon/Nintendo/Creatures/GAME FREAK",
+            "printedRegulationMark": null,
+            "printedRules": null,
+            "printedSpecialIdentityMarkers": [],
+            "attacks": [
+              {
+                "name": "エアロクラッシュ",
+                "cost": [
+                  "無色",
+                  "無色"
+                ],
+                "damage": null,
+                "effect": "相手のポケモン1匹に、20ダメージ。コインを1回投げオモテなら、そのポケモンのエネルギーを1個トラッシュする。"
+              },
+              {
+                "name": "きゅうこうか",
+                "cost": [
+                  "無色",
+                  "無色"
+                ],
+                "damage": "40",
+                "effect": "コインを1回投げウラなら、自分にも10ダメージ。"
+              }
+            ],
+            "abilities": [],
+            "allFourOuterPerimetersAndCornersVisible": true,
+            "editionStampObserved": false,
+            "foreignWatermarkObserved": false,
+            "apparentFinishConflict": false,
+            "printedWeakness": "雷",
+            "printedResistance": "闘 -30",
+            "printedRetreatCost": [],
+            "qualityAdvisories": [
+              "Actual original is500x700, belowHD canvas signal; no enlargement or optical/native-HD certification."
+            ]
+          },
+          "root_actual_printed_witness_canonical_sha256": "624894f1265568f95d90ef9e89ade8bc9beaf3be531e272c5de5941bdc20b550",
+          "additive_actual_evolution_observation": {
+            "rawField": "スバメから進化",
+            "rootActualLiteral": "スバメから進化",
+            "rootWholeViewSha256": "b4f0d223da5f1117b5a5b633fae73a2d5be4f43b28f562802bb8a81e8c358a0a",
+            "rawWitnessPreserved": true
+          },
+          "actual_pixel_signature": {
+            "printedNativeName": "オオスバメ",
+            "printedCardClass": "Pokemon",
+            "printedHP": 70,
+            "printedType": "無色",
+            "printedStage": "1進化",
+            "printedEvolutionFrom": "スバメ",
+            "printedEvolutionPlacement": "スバメから進化",
+            "printedPokemonExRule": null,
+            "printedCollectorNumber": "056/082",
+            "printedArtist": "Midori Harada",
+            "setMarkVisible": "下右に白い流星形セットマーク",
+            "visibleFinishCues": "Pale front without clear holographic sparkle; no physical finish certification.",
+            "printedCopyright": "©2004 Pokémon/Nintendo/Creatures/GAME FREAK",
+            "printedRegulationMark": null,
+            "printedRules": null,
+            "printedSpecialIdentityMarkers": [],
+            "attacks": [
+              {
+                "name": "エアロクラッシュ",
+                "cost": [
+                  "無色",
+                  "無色"
+                ],
+                "damage": null,
+                "effect": "相手のポケモン1匹に、20ダメージ。コインを1回投げオモテなら、そのポケモンのエネルギーを1個トラッシュする。"
+              },
+              {
+                "name": "きゅうこうか",
+                "cost": [
+                  "無色",
+                  "無色"
+                ],
+                "damage": "40",
+                "effect": "コインを1回投げウラなら、自分にも10ダメージ。"
+              }
+            ],
+            "abilities": [],
+            "allFourOuterPerimetersAndCornersVisible": true,
+            "editionStampObserved": false,
+            "foreignWatermarkObserved": false,
+            "apparentFinishConflict": false,
+            "printedWeakness": "雷",
+            "printedResistance": "闘 -30",
+            "printedRetreatCost": [],
+            "qualityAdvisories": [
+              "Actual original is500x700, belowHD canvas signal; no enlargement or optical/native-HD certification."
+            ]
+          },
+          "actual_pixel_signature_schema": "DIRECT_PRINTED_OBSERVATIONS_NOT_WRAPPED_SIGNATURE",
+          "actual_pixel_signature_canonical_sha256": "624894f1265568f95d90ef9e89ade8bc9beaf3be531e272c5de5941bdc20b550",
+          "current_production_binding": {
+            "printing": {
+              "id": "44c0fd56-5d24-4545-9a11-313bf3252953",
+              "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": true
+              },
+              "collector_number": "056",
+              "printing_discriminator": "",
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "2f074dd6-a27f-4dfd-9ccb-5d741daa5dd4",
+                "is_default": true,
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "44c0fd56-5d24-4545-9a11-313bf3252953",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:9fa08d47-d2cd-4829-85b6-819692a6850a:056:normal",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+                "set_code": "PCG2",
+                "variant_id": "2f074dd6-a27f-4dfd-9ccb-5d741daa5dd4",
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "44c0fd56-5d24-4545-9a11-313bf3252953",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:9fa08d47-d2cd-4829-85b6-819692a6850a:056:normal",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "056",
+                "catalogue_version": "ja:magazine-promo-reconciliation-2026-09-27-v1",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "44c0fd56-5d24-4545-9a11-313bf3252953"
+          },
+          "current_staging_binding": {
+            "printing": {
+              "id": "44c0fd56-5d24-4545-9a11-313bf3252953",
+              "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": false
+              },
+              "collector_number": "056",
+              "printing_discriminator": null,
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "2f074dd6-a27f-4dfd-9ccb-5d741daa5dd4",
+                "is_default": true,
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "44c0fd56-5d24-4545-9a11-313bf3252953",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:9fa08d47-d2cd-4829-85b6-819692a6850a:056:normal",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+                "set_code": "PCG2",
+                "variant_id": "2f074dd6-a27f-4dfd-9ccb-5d741daa5dd4",
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "44c0fd56-5d24-4545-9a11-313bf3252953",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:9fa08d47-d2cd-4829-85b6-819692a6850a:056:normal",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "056",
+                "catalogue_version": "ja:tcgdex-796afd47e430-full-primary-2026-08-19",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "44c0fd56-5d24-4545-9a11-313bf3252953"
+          },
+          "required_asset_scope": {
+            "printing_id": "44c0fd56-5d24-4545-9a11-313bf3252953",
+            "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+            "variant_id": null
+          },
+          "source_variant_id": null,
+          "required_delivery_kind": "shared",
+          "queue_controls": {
+            "identity_controls": {
+              "canonical_alias": "056",
+              "printed_collector_number": "056/082",
+              "catalogue_set_code": "PCG2",
+              "printed_set_code_literal": null,
+              "printed_set_mark_observation": "下右に白い流星形セットマーク",
+              "printed_national_dex": null,
+              "canonical_native_label_preserved": "スウラー",
+              "canonical_english_label_preserved": null,
+              "actual_printed_name": "オオスバメ",
+              "actual_printed_form": null,
+              "category": null,
+              "actual_printed_category": "Pokemon",
+              "actual_native_category": "Pokemon"
+            },
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "all_four_rounded_corners_visible": true,
+              "printed_body_language": "ja",
+              "complete_actual_body_artist_collector_readable": true,
+              "edition_stamp_observed": false,
+              "watermark_observed": false,
+              "stamp_absence_does_not_certify_unlimited": true,
+              "raw_source_witness_retained_separately": true,
+              "raw_source_verbatim_certified": false
+            },
+            "source_qa": {
+              "actual_japanese_complete_front_verified": true,
+              "original_sha256": "8cdd607508f65319b4fc51a9855e2d40663c501e9d079348e6a3170a2c07a6f1",
+              "raw_source_witness_canonical_sha256": "624894f1265568f95d90ef9e89ade8bc9beaf3be531e272c5de5941bdc20b550",
+              "root_actual_witness_canonical_sha256": "624894f1265568f95d90ef9e89ade8bc9beaf3be531e272c5de5941bdc20b550",
+              "source_metadata_is_sole_identity_proof": false,
+              "physical_finish_certified": false,
+              "physical_edition_certified": false
+            }
+          },
+          "root_finite_authority": {
+            "decision_file_byte_sha256": "2dc42c9600d0c921cbe8cb625cca8410aa8dccf7f43a9ca45c49b65ea67e0d10",
+            "preparation_approved": true,
+            "conditional_future_publication_root_owned": true,
+            "private_package_is_production_ready": false
+          },
+          "unresolved_physical_qualifications": [
+            "No visible1ED stamp does not certify unlimited edition.",
+            "Metadata/photographic foil cues do not authenticate physical edition, finish or material.",
+            "Original canvas dimensions do not establish card-region/provider optical resolution."
+          ],
+          "shared_front_eligibility_does_not_authenticate_physical_edition": true,
+          "source_provider_body_verbatim_agreement": false,
+          "canonical_native_label_preserved": true,
+          "canonical_english_null_preserved": true,
+          "original_canvas_is_not_card_region_dimensions": true,
+          "quality_advisories": "Complete readable single front retained at native500x700. Below generic HD canvas signal; no crop, retouch, enlargement or optical-HD claim. Sharper exact original remains a future supersession opportunity.",
+          "provider_native_resolution_certified": false,
+          "native_optical_gain_claimed": false,
+          "stackr_enlargement": false,
+          "source_wide_approval": false,
+          "vendor_licence_certified": false,
+          "physical_finish_certified": false,
+          "physical_edition_certified": false,
+          "new_source_requests": 0
+        },
+        "queue_controls": {
+          "identity_controls": {
+            "canonical_alias": "056",
+            "printed_collector_number": "056/082",
+            "catalogue_set_code": "PCG2",
+            "printed_set_code_literal": null,
+            "printed_set_mark_observation": "下右に白い流星形セットマーク",
+            "printed_national_dex": null,
+            "canonical_native_label_preserved": "スウラー",
+            "canonical_english_label_preserved": null,
+            "actual_printed_name": "オオスバメ",
+            "actual_printed_form": null,
+            "category": null,
+            "actual_printed_category": "Pokemon",
+            "actual_native_category": "Pokemon"
+          },
+          "pixel_observations": {
+            "whole_original_inspected": true,
+            "full_frame_visible": true,
+            "all_four_rounded_corners_visible": true,
+            "printed_body_language": "ja",
+            "complete_actual_body_artist_collector_readable": true,
+            "edition_stamp_observed": false,
+            "watermark_observed": false,
+            "stamp_absence_does_not_certify_unlimited": true,
+            "raw_source_witness_retained_separately": true,
+            "raw_source_verbatim_certified": false
+          },
+          "source_qa": {
+            "actual_japanese_complete_front_verified": true,
+            "original_sha256": "8cdd607508f65319b4fc51a9855e2d40663c501e9d079348e6a3170a2c07a6f1",
+            "raw_source_witness_canonical_sha256": "624894f1265568f95d90ef9e89ade8bc9beaf3be531e272c5de5941bdc20b550",
+            "root_actual_witness_canonical_sha256": "624894f1265568f95d90ef9e89ade8bc9beaf3be531e272c5de5941bdc20b550",
+            "source_metadata_is_sole_identity_proof": false,
+            "physical_finish_certified": false,
+            "physical_edition_certified": false
+          }
+        },
+        "artwork_scope": "printing_front",
+        "delivery_kind": "shared",
+        "asset_variant_id": null,
+        "source_variant_id": null,
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "physical_edition_verified": false,
+        "vendor_licence_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "e1d523e5-69ea-4e97-858d-1e65d4a07cd5",
+      "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+      "set_code": "PCG2",
+      "language_code": "ja",
+      "collector_number": "077",
+      "card_native_name": "クリスタルシャード",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "batch_id": "JP-CARDS-023",
+      "work_type": "CARDS",
+      "variant_ids": [
+        "a61ef170-e692-4768-a4ec-4276dd681ee5"
+      ],
+      "source_code": "pricecharting",
+      "provider_id": "pricecharting-image-url-sha256:9bfd0879c111624164eb0333ee9e4b324e8ae14c5174486586ab6901c4944635",
+      "image_url": "https://storage.googleapis.com/images.pricecharting.com/v3ako3ujrssuaqyb/1600.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/0b41d505ab20bfbbd4815e1cec624cbb369173dbab19ff7205a4c342f37f71b1/original.jpg",
+          "sha256": "0b41d505ab20bfbbd4815e1cec624cbb369173dbab19ff7205a4c342f37f71b1",
+          "byte_size": 79245,
+          "width": 500,
+          "height": 700,
+          "mime_type": "image/jpeg",
+          "artifact_id": 646828275
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/75db39c0ccde3eceb8a9ab509dfced77d05e79befc1cd5bbec0335d5b0887f3a/card-grid.webp",
+          "sha256": "75db39c0ccde3eceb8a9ab509dfced77d05e79befc1cd5bbec0335d5b0887f3a",
+          "byte_size": 19930,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp",
+          "artifact_id": 646828275
+        },
+        {
+          "role": "search-result",
+          "file": "objects/4005e5e2482bf359a530b8f4b4b149bce4482e9ae4db46f9b0d9f42d194396af/search-result.webp",
+          "sha256": "4005e5e2482bf359a530b8f4b4b149bce4482e9ae4db46f9b0d9f42d194396af",
+          "byte_size": 2828,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp",
+          "artifact_id": 646828275
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/a318c74e3d0c1ae5107343f8c71bc0cb0ce6042a7761ae87ab8c6bc8ca0a4f62/detail-page.webp",
+          "sha256": "a318c74e3d0c1ae5107343f8c71bc0cb0ce6042a7761ae87ab8c6bc8ca0a4f62",
+          "byte_size": 91600,
+          "width": 500,
+          "height": 700,
+          "mime_type": "image/webp",
+          "artifact_id": 646828275
+        }
+      ],
+      "evidence": {
+        "source_url": "https://storage.googleapis.com/images.pricecharting.com/v3ako3ujrssuaqyb/1600.jpg",
+        "source_page_url": "https://www.pricecharting.com/game/pokemon-japanese-clash-of-the-blue-sky/crystal-shard-77",
+        "provider_id": "pricecharting-image-url-sha256:9bfd0879c111624164eb0333ee9e4b324e8ae14c5174486586ab6901c4944635",
+        "source_metadata_sha256": "fec938508282f615e72431413feabb0972e7d08fa44293b54fe1d79411a5ad6a",
+        "source_body": {
+          "contract": "pcg2-wave002-exact-three-shared-fronts-v1",
+          "work_type": "CARDS",
+          "accepted_category": null,
+          "recorded_inventory_category": null,
+          "actual_printed_category": "Trainer",
+          "actual_native_category": "Trainer",
+          "photo_identity_projection": {
+            "schemaVersion": 1,
+            "sourceCode": "pricecharting",
+            "sourceDetailUrl": "https://www.pricecharting.com/game/pokemon-japanese-clash-of-the-blue-sky/crystal-shard-77",
+            "literalOriginalUrl": "https://storage.googleapis.com/images.pricecharting.com/v3ako3ujrssuaqyb/1600.jpg",
+            "literalOriginalUrlSha256": "9bfd0879c111624164eb0333ee9e4b324e8ae14c5174486586ab6901c4944635",
+            "canonicalPrintingId": "e1d523e5-69ea-4e97-858d-1e65d4a07cd5",
+            "canonicalSetId": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+            "canonicalSetCode": "PCG2",
+            "languageCode": "ja",
+            "canonicalAlias": "077",
+            "printedCollectorNumber": "077/082",
+            "printedSetCodeLiteral": null,
+            "printedSetMarkObservation": "White shooting-star set mark immediately right of 077/082.",
+            "sourceSetAssociation": "Exact observed Japanese Clash of the Blue Sky page, actual shooting-star mark and full xxx/082 collector; unchanged current variant tuple.",
+            "originalFileByteSha256": "0b41d505ab20bfbbd4815e1cec624cbb369173dbab19ff7205a4c342f37f71b1",
+            "originalByteSize": 79245,
+            "width": 500,
+            "height": 700,
+            "format": "jpeg",
+            "actualPrintedName": "水晶のかけら",
+            "actualPrintedForm": null,
+            "physicalEditionCertified": false,
+            "physicalFinishCertified": false
+          },
+          "photo_identity_projection_canonical_sha256": "21d2edd3776f2d07c3be6e043be171034263d508416b6ad3f354ff8e0eb1fea7",
+          "private_detail_evidence_sha256": "fec938508282f615e72431413feabb0972e7d08fa44293b54fe1d79411a5ad6a",
+          "root_decision_row_canonical_sha256": "e5b0f50afffb242738d32907c32c69326ba9f255f5046735a547370a1e314444",
+          "raw_source_printed_witness": {
+            "printedNativeName": "水晶のかけら",
+            "printedCardClass": "Trainer",
+            "printedHP": null,
+            "printedType": null,
+            "printedStage": null,
+            "printedEvolutionFrom": null,
+            "printedEvolutionPlacement": null,
+            "printedPokemonExRule": null,
+            "printedCollectorNumber": "077/082",
+            "printedArtist": "Jungo Suzuki",
+            "setMarkVisible": "White shooting-star set mark immediately right of 077/082.",
+            "visibleFinishCues": "Grey Trainer front without a clear holographic effect; physical finish remains uncertified.",
+            "printedCopyright": "©2004 Pokémon/Nintendo/Creatures/GAME FREAK",
+            "printedRegulationMark": null,
+            "printedRules": "このカードをつけているポケモンのタイプは、★になる。このカードをつけているポケモンがワザを使った番の終わりに、このカードをトラッシュする。\nポケモンのどうぐは、自分のポケモンにつけて使う。すでにポケモンのどうぐをつけているポケモンには、つけることができない。",
+            "printedSpecialIdentityMarkers": [],
+            "attacks": [],
+            "abilities": [],
+            "allFourOuterPerimetersAndCornersVisible": true,
+            "editionStampObserved": false,
+            "foreignWatermarkObserved": false,
+            "apparentFinishConflict": false,
+            "printedTrainerSubtype": "ポケモンのどうぐ",
+            "bodySymbolNotation": {
+              "★": "Actual printed colorless type symbol; semantic symbol notation, not a Japanese word printed on the card."
+            },
+            "qualityAdvisories": [
+              "Original500x700 belowHD canvas signal; no enlargement or provider optical/native-HD certification."
+            ]
+          },
+          "raw_source_printed_witness_canonical_sha256": "d5aa92b1c145c8a024e4f179396726448a99d0a32e1caa9b9b9ae5b82e7ded34",
+          "raw_source_witness_insertion_sha256": "6fc6b51ec1fb95dfbea9ead6e507958611431d604a609b6d68a5f5a1c62ece7f",
+          "raw_source_historical_flags": {
+            "sourceSelectionApproved": false,
+            "preparationApproved": false,
+            "publicationApproved": false
+          },
+          "raw_source_witness_is_verbatim_certified": false,
+          "raw_source_witness_not_rewritten": true,
+          "root_actual_printed_witness": {
+            "printedNativeName": "水晶のかけら",
+            "printedCardClass": "Trainer",
+            "printedHP": null,
+            "printedType": null,
+            "printedStage": null,
+            "printedEvolutionFrom": null,
+            "printedEvolutionPlacement": null,
+            "printedPokemonExRule": null,
+            "printedCollectorNumber": "077/082",
+            "printedArtist": "Jungo Suzuki",
+            "setMarkVisible": "White shooting-star set mark immediately right of 077/082.",
+            "visibleFinishCues": "Grey Trainer front without a clear holographic effect; physical finish remains uncertified.",
+            "printedCopyright": "©2004 Pokémon/Nintendo/Creatures/GAME FREAK",
+            "printedRegulationMark": null,
+            "printedRules": "このカードをつけているポケモンのタイプは、★になる。このカードをつけているポケモンがワザを使った番の終わりに、このカードをトラッシュする。\nポケモンのどうぐは、自分のポケモンにつけて使う。すでにポケモンのどうぐをつけているポケモンには、つけることができない。",
+            "printedSpecialIdentityMarkers": [],
+            "attacks": [],
+            "abilities": [],
+            "allFourOuterPerimetersAndCornersVisible": true,
+            "editionStampObserved": false,
+            "foreignWatermarkObserved": false,
+            "apparentFinishConflict": false,
+            "printedTrainerSubtype": "ポケモンのどうぐ",
+            "bodySymbolNotation": {
+              "★": "Actual printed colorless type symbol; semantic symbol notation, not a Japanese word printed on the card."
+            },
+            "qualityAdvisories": [
+              "Original500x700 belowHD canvas signal; no enlargement or provider optical/native-HD certification."
+            ]
+          },
+          "root_actual_printed_witness_canonical_sha256": "d5aa92b1c145c8a024e4f179396726448a99d0a32e1caa9b9b9ae5b82e7ded34",
+          "additive_actual_evolution_observation": {
+            "rawField": null,
+            "rootActualLiteral": null,
+            "rootWholeViewSha256": "f5b63f2e2bbe7c8ffa2f64385a1c2327e3a90b9b755ab129e30a19fcd36c1c72",
+            "rawWitnessPreserved": true
+          },
+          "actual_pixel_signature": {
+            "printedNativeName": "水晶のかけら",
+            "printedCardClass": "Trainer",
+            "printedHP": null,
+            "printedType": null,
+            "printedStage": null,
+            "printedEvolutionFrom": null,
+            "printedEvolutionPlacement": null,
+            "printedPokemonExRule": null,
+            "printedCollectorNumber": "077/082",
+            "printedArtist": "Jungo Suzuki",
+            "setMarkVisible": "White shooting-star set mark immediately right of 077/082.",
+            "visibleFinishCues": "Grey Trainer front without a clear holographic effect; physical finish remains uncertified.",
+            "printedCopyright": "©2004 Pokémon/Nintendo/Creatures/GAME FREAK",
+            "printedRegulationMark": null,
+            "printedRules": "このカードをつけているポケモンのタイプは、★になる。このカードをつけているポケモンがワザを使った番の終わりに、このカードをトラッシュする。\nポケモンのどうぐは、自分のポケモンにつけて使う。すでにポケモンのどうぐをつけているポケモンには、つけることができない。",
+            "printedSpecialIdentityMarkers": [],
+            "attacks": [],
+            "abilities": [],
+            "allFourOuterPerimetersAndCornersVisible": true,
+            "editionStampObserved": false,
+            "foreignWatermarkObserved": false,
+            "apparentFinishConflict": false,
+            "printedTrainerSubtype": "ポケモンのどうぐ",
+            "bodySymbolNotation": {
+              "★": "Actual printed colorless type symbol; semantic symbol notation, not a Japanese word printed on the card."
+            },
+            "qualityAdvisories": [
+              "Original500x700 belowHD canvas signal; no enlargement or provider optical/native-HD certification."
+            ]
+          },
+          "actual_pixel_signature_schema": "DIRECT_PRINTED_OBSERVATIONS_NOT_WRAPPED_SIGNATURE",
+          "actual_pixel_signature_canonical_sha256": "d5aa92b1c145c8a024e4f179396726448a99d0a32e1caa9b9b9ae5b82e7ded34",
+          "current_production_binding": {
+            "printing": {
+              "id": "e1d523e5-69ea-4e97-858d-1e65d4a07cd5",
+              "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": true
+              },
+              "collector_number": "077",
+              "printing_discriminator": "",
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "a61ef170-e692-4768-a4ec-4276dd681ee5",
+                "is_default": true,
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "e1d523e5-69ea-4e97-858d-1e65d4a07cd5",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:9fa08d47-d2cd-4829-85b6-819692a6850a:077:normal",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+                "set_code": "PCG2",
+                "variant_id": "a61ef170-e692-4768-a4ec-4276dd681ee5",
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "e1d523e5-69ea-4e97-858d-1e65d4a07cd5",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:9fa08d47-d2cd-4829-85b6-819692a6850a:077:normal",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "077",
+                "catalogue_version": "ja:magazine-promo-reconciliation-2026-09-27-v1",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "e1d523e5-69ea-4e97-858d-1e65d4a07cd5"
+          },
+          "current_staging_binding": {
+            "printing": {
+              "id": "e1d523e5-69ea-4e97-858d-1e65d4a07cd5",
+              "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": false
+              },
+              "collector_number": "077",
+              "printing_discriminator": null,
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "a61ef170-e692-4768-a4ec-4276dd681ee5",
+                "is_default": true,
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "e1d523e5-69ea-4e97-858d-1e65d4a07cd5",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:9fa08d47-d2cd-4829-85b6-819692a6850a:077:normal",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+                "set_code": "PCG2",
+                "variant_id": "a61ef170-e692-4768-a4ec-4276dd681ee5",
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "e1d523e5-69ea-4e97-858d-1e65d4a07cd5",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:9fa08d47-d2cd-4829-85b6-819692a6850a:077:normal",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "077",
+                "catalogue_version": "ja:tcgdex-796afd47e430-full-primary-2026-08-19",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "e1d523e5-69ea-4e97-858d-1e65d4a07cd5"
+          },
+          "required_asset_scope": {
+            "printing_id": "e1d523e5-69ea-4e97-858d-1e65d4a07cd5",
+            "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+            "variant_id": null
+          },
+          "source_variant_id": null,
+          "required_delivery_kind": "shared",
+          "queue_controls": {
+            "identity_controls": {
+              "canonical_alias": "077",
+              "printed_collector_number": "077/082",
+              "catalogue_set_code": "PCG2",
+              "printed_set_code_literal": null,
+              "printed_set_mark_observation": "White shooting-star set mark immediately right of 077/082.",
+              "printed_national_dex": null,
+              "canonical_native_label_preserved": "クリスタルシャード",
+              "canonical_english_label_preserved": null,
+              "actual_printed_name": "水晶のかけら",
+              "actual_printed_form": null,
+              "category": null,
+              "actual_printed_category": "Trainer",
+              "actual_native_category": "Trainer"
+            },
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "all_four_rounded_corners_visible": true,
+              "printed_body_language": "ja",
+              "complete_actual_body_artist_collector_readable": true,
+              "edition_stamp_observed": false,
+              "watermark_observed": false,
+              "stamp_absence_does_not_certify_unlimited": true,
+              "raw_source_witness_retained_separately": true,
+              "raw_source_verbatim_certified": false
+            },
+            "source_qa": {
+              "actual_japanese_complete_front_verified": true,
+              "original_sha256": "0b41d505ab20bfbbd4815e1cec624cbb369173dbab19ff7205a4c342f37f71b1",
+              "raw_source_witness_canonical_sha256": "d5aa92b1c145c8a024e4f179396726448a99d0a32e1caa9b9b9ae5b82e7ded34",
+              "root_actual_witness_canonical_sha256": "d5aa92b1c145c8a024e4f179396726448a99d0a32e1caa9b9b9ae5b82e7ded34",
+              "source_metadata_is_sole_identity_proof": false,
+              "physical_finish_certified": false,
+              "physical_edition_certified": false
+            }
+          },
+          "root_finite_authority": {
+            "decision_file_byte_sha256": "2dc42c9600d0c921cbe8cb625cca8410aa8dccf7f43a9ca45c49b65ea67e0d10",
+            "preparation_approved": true,
+            "conditional_future_publication_root_owned": true,
+            "private_package_is_production_ready": false
+          },
+          "unresolved_physical_qualifications": [
+            "No visible1ED stamp does not certify unlimited edition.",
+            "Metadata/photographic foil cues do not authenticate physical edition, finish or material.",
+            "Original canvas dimensions do not establish card-region/provider optical resolution."
+          ],
+          "shared_front_eligibility_does_not_authenticate_physical_edition": true,
+          "source_provider_body_verbatim_agreement": false,
+          "canonical_native_label_preserved": true,
+          "canonical_english_null_preserved": true,
+          "original_canvas_is_not_card_region_dimensions": true,
+          "quality_advisories": "Complete readable single front retained at native500x700. Below generic HD canvas signal; no crop, retouch, enlargement or optical-HD claim. Sharper exact original remains a future supersession opportunity.",
+          "provider_native_resolution_certified": false,
+          "native_optical_gain_claimed": false,
+          "stackr_enlargement": false,
+          "source_wide_approval": false,
+          "vendor_licence_certified": false,
+          "physical_finish_certified": false,
+          "physical_edition_certified": false,
+          "new_source_requests": 0
+        },
+        "queue_controls": {
+          "identity_controls": {
+            "canonical_alias": "077",
+            "printed_collector_number": "077/082",
+            "catalogue_set_code": "PCG2",
+            "printed_set_code_literal": null,
+            "printed_set_mark_observation": "White shooting-star set mark immediately right of 077/082.",
+            "printed_national_dex": null,
+            "canonical_native_label_preserved": "クリスタルシャード",
+            "canonical_english_label_preserved": null,
+            "actual_printed_name": "水晶のかけら",
+            "actual_printed_form": null,
+            "category": null,
+            "actual_printed_category": "Trainer",
+            "actual_native_category": "Trainer"
+          },
+          "pixel_observations": {
+            "whole_original_inspected": true,
+            "full_frame_visible": true,
+            "all_four_rounded_corners_visible": true,
+            "printed_body_language": "ja",
+            "complete_actual_body_artist_collector_readable": true,
+            "edition_stamp_observed": false,
+            "watermark_observed": false,
+            "stamp_absence_does_not_certify_unlimited": true,
+            "raw_source_witness_retained_separately": true,
+            "raw_source_verbatim_certified": false
+          },
+          "source_qa": {
+            "actual_japanese_complete_front_verified": true,
+            "original_sha256": "0b41d505ab20bfbbd4815e1cec624cbb369173dbab19ff7205a4c342f37f71b1",
+            "raw_source_witness_canonical_sha256": "d5aa92b1c145c8a024e4f179396726448a99d0a32e1caa9b9b9ae5b82e7ded34",
+            "root_actual_witness_canonical_sha256": "d5aa92b1c145c8a024e4f179396726448a99d0a32e1caa9b9b9ae5b82e7ded34",
+            "source_metadata_is_sole_identity_proof": false,
+            "physical_finish_certified": false,
+            "physical_edition_certified": false
+          }
+        },
+        "artwork_scope": "printing_front",
+        "delivery_kind": "shared",
+        "asset_variant_id": null,
+        "source_variant_id": null,
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "physical_edition_verified": false,
+        "vendor_licence_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "2af65062-f444-40b2-810a-233ee09da5b3",
+      "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+      "set_code": "PCG2",
+      "language_code": "ja",
+      "collector_number": "079",
+      "card_native_name": "流星滝",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "batch_id": "JP-CARDS-023",
+      "work_type": "CARDS",
+      "variant_ids": [
+        "cc9f78f5-8239-49a5-af99-fb39b3f9fdba"
+      ],
+      "source_code": "pricecharting",
+      "provider_id": "pricecharting-image-url-sha256:b5bed6b9bf1ce9892dfcf7589ba4398d781ac1211b020b6685ed9d6b9f218e4a",
+      "image_url": "https://storage.googleapis.com/images.pricecharting.com/zpcyu3skqk2wt6nq/1600.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/91ba253548f790cb4f21fa7e509ef5b257fb2531bd92b32960d05258df3935a5/original.jpg",
+          "sha256": "91ba253548f790cb4f21fa7e509ef5b257fb2531bd92b32960d05258df3935a5",
+          "byte_size": 79494,
+          "width": 500,
+          "height": 700,
+          "mime_type": "image/jpeg",
+          "artifact_id": 646828275
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/7184907747690216f411673185ea52ff779d442d0af2f111832efdceba46e9fc/card-grid.webp",
+          "sha256": "7184907747690216f411673185ea52ff779d442d0af2f111832efdceba46e9fc",
+          "byte_size": 20612,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp",
+          "artifact_id": 646828275
+        },
+        {
+          "role": "search-result",
+          "file": "objects/94c92af67a2c86223842875f9b9fc67a3579bd80701c983e82f54b9fac1a4b07/search-result.webp",
+          "sha256": "94c92af67a2c86223842875f9b9fc67a3579bd80701c983e82f54b9fac1a4b07",
+          "byte_size": 3392,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp",
+          "artifact_id": 646828275
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/809479298d19ef9280898ce50a0c406273d75b02e4d7a9d036dde9c6f1fc558e/detail-page.webp",
+          "sha256": "809479298d19ef9280898ce50a0c406273d75b02e4d7a9d036dde9c6f1fc558e",
+          "byte_size": 85708,
+          "width": 500,
+          "height": 700,
+          "mime_type": "image/webp",
+          "artifact_id": 646828275
+        }
+      ],
+      "evidence": {
+        "source_url": "https://storage.googleapis.com/images.pricecharting.com/zpcyu3skqk2wt6nq/1600.jpg",
+        "source_page_url": "https://www.pricecharting.com/game/pokemon-japanese-clash-of-the-blue-sky/meteor-falls-79",
+        "provider_id": "pricecharting-image-url-sha256:b5bed6b9bf1ce9892dfcf7589ba4398d781ac1211b020b6685ed9d6b9f218e4a",
+        "source_metadata_sha256": "c153ea44e99c50b6d78cb54d9d6e8c6150d0b3fa1a9088ee2cb97be03cad9c67",
+        "source_body": {
+          "contract": "pcg2-wave002-exact-three-shared-fronts-v1",
+          "work_type": "CARDS",
+          "accepted_category": null,
+          "recorded_inventory_category": null,
+          "actual_printed_category": "Trainer",
+          "actual_native_category": "Trainer",
+          "photo_identity_projection": {
+            "schemaVersion": 1,
+            "sourceCode": "pricecharting",
+            "sourceDetailUrl": "https://www.pricecharting.com/game/pokemon-japanese-clash-of-the-blue-sky/meteor-falls-79",
+            "literalOriginalUrl": "https://storage.googleapis.com/images.pricecharting.com/zpcyu3skqk2wt6nq/1600.jpg",
+            "literalOriginalUrlSha256": "b5bed6b9bf1ce9892dfcf7589ba4398d781ac1211b020b6685ed9d6b9f218e4a",
+            "canonicalPrintingId": "2af65062-f444-40b2-810a-233ee09da5b3",
+            "canonicalSetId": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+            "canonicalSetCode": "PCG2",
+            "languageCode": "ja",
+            "canonicalAlias": "079",
+            "printedCollectorNumber": "079/082",
+            "printedSetCodeLiteral": null,
+            "printedSetMarkObservation": "White shooting-star set mark beside 079/082 at lower right.",
+            "sourceSetAssociation": "Exact observed Japanese Clash of the Blue Sky page, actual shooting-star mark and full xxx/082 collector; unchanged current variant tuple.",
+            "originalFileByteSha256": "91ba253548f790cb4f21fa7e509ef5b257fb2531bd92b32960d05258df3935a5",
+            "originalByteSize": 79494,
+            "width": 500,
+            "height": 700,
+            "format": "jpeg",
+            "actualPrintedName": "流星の滝",
+            "actualPrintedForm": null,
+            "physicalEditionCertified": false,
+            "physicalFinishCertified": false
+          },
+          "photo_identity_projection_canonical_sha256": "0e78e1fc50de0b581ee2d1573fd655962ec676138ec0c9b740c859e24699a14f",
+          "private_detail_evidence_sha256": "c153ea44e99c50b6d78cb54d9d6e8c6150d0b3fa1a9088ee2cb97be03cad9c67",
+          "root_decision_row_canonical_sha256": "c417d0af9faa1c434a37cfaaadfcbf8a1c8a71648fd0e590155eff553fa608c7",
+          "raw_source_printed_witness": {
+            "printedNativeName": "流星の滝",
+            "printedCardClass": "Trainer",
+            "printedHP": null,
+            "printedType": null,
+            "printedStage": null,
+            "printedEvolutionFrom": null,
+            "printedEvolutionPlacement": null,
+            "printedPokemonExRule": null,
+            "printedCollectorNumber": "079/082",
+            "printedArtist": "Ryo Ueda",
+            "setMarkVisible": "White shooting-star set mark beside 079/082 at lower right.",
+            "visibleFinishCues": "Pale grey Trainer front without clear holographic sparkle; physical finish uncertified.",
+            "printedCopyright": "©2004 Pokémon/Nintendo/Creatures/GAME FREAK",
+            "printedRegulationMark": null,
+            "printedRules": "おたがいのバトル場の、「進化ポケモン全員（ポケモンexはのぞく）」は、進化する前に持っていたワザを、そのポケモンのワザとして使うことができる（そのワザに必要なエネルギーが、そのポケモンについていないなら、使うことはできない）。\nスタジアムは、バトル場の横に出して使う。別のスタジアムが場に出たなら、このカードをトラッシュする。",
+            "printedSpecialIdentityMarkers": [],
+            "attacks": [],
+            "abilities": [],
+            "allFourOuterPerimetersAndCornersVisible": true,
+            "editionStampObserved": false,
+            "foreignWatermarkObserved": false,
+            "apparentFinishConflict": false,
+            "printedTrainerSubtype": "スタジアム",
+            "qualityAdvisories": [
+              "Original500x700 belowHD canvas signal; no enlargement or provider optical/native-HD certification."
+            ]
+          },
+          "raw_source_printed_witness_canonical_sha256": "b27101518ef0af53a8e7f47f8a450a47e6970ea47ff2cdb5358d707e5649c946",
+          "raw_source_witness_insertion_sha256": "7675bdb1176b643034c0b1ecf6cc180c393087430b24b5e03d8dcc5b149d6159",
+          "raw_source_historical_flags": {
+            "sourceSelectionApproved": false,
+            "preparationApproved": false,
+            "publicationApproved": false
+          },
+          "raw_source_witness_is_verbatim_certified": false,
+          "raw_source_witness_not_rewritten": true,
+          "root_actual_printed_witness": {
+            "printedNativeName": "流星の滝",
+            "printedCardClass": "Trainer",
+            "printedHP": null,
+            "printedType": null,
+            "printedStage": null,
+            "printedEvolutionFrom": null,
+            "printedEvolutionPlacement": null,
+            "printedPokemonExRule": null,
+            "printedCollectorNumber": "079/082",
+            "printedArtist": "Ryo Ueda",
+            "setMarkVisible": "White shooting-star set mark beside 079/082 at lower right.",
+            "visibleFinishCues": "Pale grey Trainer front without clear holographic sparkle; physical finish uncertified.",
+            "printedCopyright": "©2004 Pokémon/Nintendo/Creatures/GAME FREAK",
+            "printedRegulationMark": null,
+            "printedRules": "おたがいのバトル場の、「進化ポケモン全員（ポケモンexはのぞく）」は、進化する前に持っていたワザを、そのポケモンのワザとして使うことができる（そのワザに必要なエネルギーが、そのポケモンについていないなら、使うことはできない）。\nスタジアムは、バトル場の横に出して使う。別のスタジアムが場に出たなら、このカードをトラッシュする。",
+            "printedSpecialIdentityMarkers": [],
+            "attacks": [],
+            "abilities": [],
+            "allFourOuterPerimetersAndCornersVisible": true,
+            "editionStampObserved": false,
+            "foreignWatermarkObserved": false,
+            "apparentFinishConflict": false,
+            "printedTrainerSubtype": "スタジアム",
+            "qualityAdvisories": [
+              "Original500x700 belowHD canvas signal; no enlargement or provider optical/native-HD certification."
+            ]
+          },
+          "root_actual_printed_witness_canonical_sha256": "b27101518ef0af53a8e7f47f8a450a47e6970ea47ff2cdb5358d707e5649c946",
+          "additive_actual_evolution_observation": {
+            "rawField": null,
+            "rootActualLiteral": null,
+            "rootWholeViewSha256": "da899135bb321b1f37cfc0a72140768c3becb078ebdadc4199e29fb54b4682e5",
+            "rawWitnessPreserved": true
+          },
+          "actual_pixel_signature": {
+            "printedNativeName": "流星の滝",
+            "printedCardClass": "Trainer",
+            "printedHP": null,
+            "printedType": null,
+            "printedStage": null,
+            "printedEvolutionFrom": null,
+            "printedEvolutionPlacement": null,
+            "printedPokemonExRule": null,
+            "printedCollectorNumber": "079/082",
+            "printedArtist": "Ryo Ueda",
+            "setMarkVisible": "White shooting-star set mark beside 079/082 at lower right.",
+            "visibleFinishCues": "Pale grey Trainer front without clear holographic sparkle; physical finish uncertified.",
+            "printedCopyright": "©2004 Pokémon/Nintendo/Creatures/GAME FREAK",
+            "printedRegulationMark": null,
+            "printedRules": "おたがいのバトル場の、「進化ポケモン全員（ポケモンexはのぞく）」は、進化する前に持っていたワザを、そのポケモンのワザとして使うことができる（そのワザに必要なエネルギーが、そのポケモンについていないなら、使うことはできない）。\nスタジアムは、バトル場の横に出して使う。別のスタジアムが場に出たなら、このカードをトラッシュする。",
+            "printedSpecialIdentityMarkers": [],
+            "attacks": [],
+            "abilities": [],
+            "allFourOuterPerimetersAndCornersVisible": true,
+            "editionStampObserved": false,
+            "foreignWatermarkObserved": false,
+            "apparentFinishConflict": false,
+            "printedTrainerSubtype": "スタジアム",
+            "qualityAdvisories": [
+              "Original500x700 belowHD canvas signal; no enlargement or provider optical/native-HD certification."
+            ]
+          },
+          "actual_pixel_signature_schema": "DIRECT_PRINTED_OBSERVATIONS_NOT_WRAPPED_SIGNATURE",
+          "actual_pixel_signature_canonical_sha256": "b27101518ef0af53a8e7f47f8a450a47e6970ea47ff2cdb5358d707e5649c946",
+          "current_production_binding": {
+            "printing": {
+              "id": "2af65062-f444-40b2-810a-233ee09da5b3",
+              "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": true
+              },
+              "collector_number": "079",
+              "printing_discriminator": "",
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "cc9f78f5-8239-49a5-af99-fb39b3f9fdba",
+                "is_default": true,
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "2af65062-f444-40b2-810a-233ee09da5b3",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:9fa08d47-d2cd-4829-85b6-819692a6850a:079:normal",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+                "set_code": "PCG2",
+                "variant_id": "cc9f78f5-8239-49a5-af99-fb39b3f9fdba",
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "2af65062-f444-40b2-810a-233ee09da5b3",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:9fa08d47-d2cd-4829-85b6-819692a6850a:079:normal",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "079",
+                "catalogue_version": "ja:magazine-promo-reconciliation-2026-09-27-v1",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "2af65062-f444-40b2-810a-233ee09da5b3"
+          },
+          "current_staging_binding": {
+            "printing": {
+              "id": "2af65062-f444-40b2-810a-233ee09da5b3",
+              "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": false
+              },
+              "collector_number": "079",
+              "printing_discriminator": null,
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "cc9f78f5-8239-49a5-af99-fb39b3f9fdba",
+                "is_default": true,
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "2af65062-f444-40b2-810a-233ee09da5b3",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:9fa08d47-d2cd-4829-85b6-819692a6850a:079:normal",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+                "set_code": "PCG2",
+                "variant_id": "cc9f78f5-8239-49a5-af99-fb39b3f9fdba",
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "2af65062-f444-40b2-810a-233ee09da5b3",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:9fa08d47-d2cd-4829-85b6-819692a6850a:079:normal",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "079",
+                "catalogue_version": "ja:tcgdex-796afd47e430-full-primary-2026-08-19",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "2af65062-f444-40b2-810a-233ee09da5b3"
+          },
+          "required_asset_scope": {
+            "printing_id": "2af65062-f444-40b2-810a-233ee09da5b3",
+            "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+            "variant_id": null
+          },
+          "source_variant_id": null,
+          "required_delivery_kind": "shared",
+          "queue_controls": {
+            "identity_controls": {
+              "canonical_alias": "079",
+              "printed_collector_number": "079/082",
+              "catalogue_set_code": "PCG2",
+              "printed_set_code_literal": null,
+              "printed_set_mark_observation": "White shooting-star set mark beside 079/082 at lower right.",
+              "printed_national_dex": null,
+              "canonical_native_label_preserved": "流星滝",
+              "canonical_english_label_preserved": null,
+              "actual_printed_name": "流星の滝",
+              "actual_printed_form": null,
+              "category": null,
+              "actual_printed_category": "Trainer",
+              "actual_native_category": "Trainer"
+            },
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "all_four_rounded_corners_visible": true,
+              "printed_body_language": "ja",
+              "complete_actual_body_artist_collector_readable": true,
+              "edition_stamp_observed": false,
+              "watermark_observed": false,
+              "stamp_absence_does_not_certify_unlimited": true,
+              "raw_source_witness_retained_separately": true,
+              "raw_source_verbatim_certified": false
+            },
+            "source_qa": {
+              "actual_japanese_complete_front_verified": true,
+              "original_sha256": "91ba253548f790cb4f21fa7e509ef5b257fb2531bd92b32960d05258df3935a5",
+              "raw_source_witness_canonical_sha256": "b27101518ef0af53a8e7f47f8a450a47e6970ea47ff2cdb5358d707e5649c946",
+              "root_actual_witness_canonical_sha256": "b27101518ef0af53a8e7f47f8a450a47e6970ea47ff2cdb5358d707e5649c946",
+              "source_metadata_is_sole_identity_proof": false,
+              "physical_finish_certified": false,
+              "physical_edition_certified": false
+            }
+          },
+          "root_finite_authority": {
+            "decision_file_byte_sha256": "2dc42c9600d0c921cbe8cb625cca8410aa8dccf7f43a9ca45c49b65ea67e0d10",
+            "preparation_approved": true,
+            "conditional_future_publication_root_owned": true,
+            "private_package_is_production_ready": false
+          },
+          "unresolved_physical_qualifications": [
+            "No visible1ED stamp does not certify unlimited edition.",
+            "Metadata/photographic foil cues do not authenticate physical edition, finish or material.",
+            "Original canvas dimensions do not establish card-region/provider optical resolution."
+          ],
+          "shared_front_eligibility_does_not_authenticate_physical_edition": true,
+          "source_provider_body_verbatim_agreement": false,
+          "canonical_native_label_preserved": true,
+          "canonical_english_null_preserved": true,
+          "original_canvas_is_not_card_region_dimensions": true,
+          "quality_advisories": "Complete readable single front retained at native500x700. Below generic HD canvas signal; no crop, retouch, enlargement or optical-HD claim. Sharper exact original remains a future supersession opportunity.",
+          "provider_native_resolution_certified": false,
+          "native_optical_gain_claimed": false,
+          "stackr_enlargement": false,
+          "source_wide_approval": false,
+          "vendor_licence_certified": false,
+          "physical_finish_certified": false,
+          "physical_edition_certified": false,
+          "new_source_requests": 0
+        },
+        "queue_controls": {
+          "identity_controls": {
+            "canonical_alias": "079",
+            "printed_collector_number": "079/082",
+            "catalogue_set_code": "PCG2",
+            "printed_set_code_literal": null,
+            "printed_set_mark_observation": "White shooting-star set mark beside 079/082 at lower right.",
+            "printed_national_dex": null,
+            "canonical_native_label_preserved": "流星滝",
+            "canonical_english_label_preserved": null,
+            "actual_printed_name": "流星の滝",
+            "actual_printed_form": null,
+            "category": null,
+            "actual_printed_category": "Trainer",
+            "actual_native_category": "Trainer"
+          },
+          "pixel_observations": {
+            "whole_original_inspected": true,
+            "full_frame_visible": true,
+            "all_four_rounded_corners_visible": true,
+            "printed_body_language": "ja",
+            "complete_actual_body_artist_collector_readable": true,
+            "edition_stamp_observed": false,
+            "watermark_observed": false,
+            "stamp_absence_does_not_certify_unlimited": true,
+            "raw_source_witness_retained_separately": true,
+            "raw_source_verbatim_certified": false
+          },
+          "source_qa": {
+            "actual_japanese_complete_front_verified": true,
+            "original_sha256": "91ba253548f790cb4f21fa7e509ef5b257fb2531bd92b32960d05258df3935a5",
+            "raw_source_witness_canonical_sha256": "b27101518ef0af53a8e7f47f8a450a47e6970ea47ff2cdb5358d707e5649c946",
+            "root_actual_witness_canonical_sha256": "b27101518ef0af53a8e7f47f8a450a47e6970ea47ff2cdb5358d707e5649c946",
+            "source_metadata_is_sole_identity_proof": false,
+            "physical_finish_certified": false,
+            "physical_edition_certified": false
+          }
+        },
+        "artwork_scope": "printing_front",
+        "delivery_kind": "shared",
+        "asset_variant_id": null,
+        "source_variant_id": null,
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "physical_edition_verified": false,
+        "vendor_licence_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    }
+  ],
+  "source_counts": {
+    "pricecharting": 3
+  },
+  "delivery_scope": {
+    "fixed_batch_ids": [
+      "JP-CARDS-022",
+      "JP-CARDS-023"
+    ],
+    "work_type": "CARDS",
+    "eligible_fronts": 3,
+    "eligible_set_aliases": [
+      "PCG2-056",
+      "PCG2-077",
+      "PCG2-079"
+    ],
+    "recorded_categories_preserved": [
+      {
+        "printingId": "44c0fd56-5d24-4545-9a11-313bf3252953",
+        "category": null
+      },
+      {
+        "printingId": "e1d523e5-69ea-4e97-858d-1e65d4a07cd5",
+        "category": null
+      },
+      {
+        "printingId": "2af65062-f444-40b2-810a-233ee09da5b3",
+        "category": null
+      }
+    ],
+    "asset_variant_id": null,
+    "source_variant_id": null,
+    "delivery_kind": "shared",
+    "whole_batch_completion_asserted": false
+  },
+  "binding_expectations": {
+    "production": [
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+        "set_code": "PCG2",
+        "printing_id": "44c0fd56-5d24-4545-9a11-313bf3252953",
+        "collector_number": "056",
+        "card_native_name": "スウラー",
+        "variant_id": "2f074dd6-a27f-4dfd-9ccb-5d741daa5dd4",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+        "set_code": "PCG2",
+        "printing_id": "e1d523e5-69ea-4e97-858d-1e65d4a07cd5",
+        "collector_number": "077",
+        "card_native_name": "クリスタルシャード",
+        "variant_id": "a61ef170-e692-4768-a4ec-4276dd681ee5",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+        "set_code": "PCG2",
+        "printing_id": "2af65062-f444-40b2-810a-233ee09da5b3",
+        "collector_number": "079",
+        "card_native_name": "流星滝",
+        "variant_id": "cc9f78f5-8239-49a5-af99-fb39b3f9fdba",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      }
+    ],
+    "staging": [
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+        "set_code": "PCG2",
+        "printing_id": "44c0fd56-5d24-4545-9a11-313bf3252953",
+        "collector_number": "056",
+        "card_native_name": "スウラー",
+        "variant_id": "2f074dd6-a27f-4dfd-9ccb-5d741daa5dd4",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+        "set_code": "PCG2",
+        "printing_id": "e1d523e5-69ea-4e97-858d-1e65d4a07cd5",
+        "collector_number": "077",
+        "card_native_name": "クリスタルシャード",
+        "variant_id": "a61ef170-e692-4768-a4ec-4276dd681ee5",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+        "set_code": "PCG2",
+        "printing_id": "2af65062-f444-40b2-810a-233ee09da5b3",
+        "collector_number": "079",
+        "card_native_name": "流星滝",
+        "variant_id": "cc9f78f5-8239-49a5-af99-fb39b3f9fdba",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      }
+    ]
+  },
+  "scope_counts": {
+    "production": {
+      "printings": 3,
+      "variants": 3,
+      "names": 6,
+      "sets": 1
+    },
+    "staging": {
+      "printings": 3,
+      "variants": 3,
+      "names": 6,
+      "sets": 1
+    }
+  },
+  "source_policies": {
+    "production": [
+      {
+        "code": "pokellector",
+        "display_name": "Pokellector (owner supplied Japanese card fronts)",
+        "source_type": "image",
+        "base_url": "https://jp.pokellector.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly2 Neo2 Ruin Wall reference fronts in STACKR-JA-LEGACY-TRAINER-FRONTS-20261015-008; owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval or independently verified vendor licence.",
+        "deprecated_at": null
+      },
+      {
+        "code": "pricecharting",
+        "display_name": "PriceCharting (owner supplied card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.pricecharting.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Owner-attested source use for exactly Aquapolis Mr. Mime95b and Porygon103b shared printing-front artwork in finite cohort AQUAPOLIS-SHARED-002-20261015. Independent vendor and underlying card licences are unverified. No source-wide approval; each later acquisition requires separate finite approval. Existing provenance rows and source policies must remain unchanged.",
+        "deprecated_at": null
+      },
+      {
+        "code": "scrydex",
+        "display_name": "Scrydex",
+        "source_type": "image",
+        "base_url": "https://scrydex.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Exactly 89 English MEP fronts approved by owner; catalogue/rights-evidence/mep89-scrydex-owner-confirmation.2026-09-27.json; 8c68bf3499de1e1e340b00fc03e5f1b469de7b65d259b5fba5a8b4cd31119ca9. No source-wide approval.",
+        "deprecated_at": null
+      },
+      {
+        "code": "tcgcollector",
+        "display_name": "TCGCollector (owner supplied Japanese card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.tcgcollector.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly3 independently accepted Leaders Stadium fronts019/081/096. Bind the final finite preparation/publication decision and exact source selection in the publisher plan. Owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval, independently verified vendor licence or physical finish/edition certification. Finite decision SHA256 68f1af735d5e481ed26d1aabbe94e493d520575d9d4191413508f9ec90cf68ff.",
+        "deprecated_at": null
+      }
+    ],
+    "staging": []
+  },
+  "new_sources": {
+    "production": [],
+    "staging": [
+      {
+        "code": "pricecharting",
+        "display_name": "PriceCharting (owner supplied card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.pricecharting.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Owner-attested source use for exactly Aquapolis Mr. Mime95b and Porygon103b shared printing-front artwork in finite cohort AQUAPOLIS-SHARED-002-20261015. Independent vendor and underlying card licences are unverified. No source-wide approval; each later acquisition requires separate finite approval. Existing provenance rows and source policies must remain unchanged.",
+        "deprecated_at": null
+      }
+    ]
+  },
+  "source_policy_checkpoint_sha256": "73961c3c040dff4bc536a4b6dbc73171af7156d68f92f1c10d43ec1da7d2746e",
+  "existing_source_row_hashes": {
+    "pricecharting": "b4b74f69cac37abeee008806f6d8dd8ea63a0f0ce43fa065dce9261b428b421b",
+    "pokellector": "4a2a381f7146c0bfa0201c62e91e7682f18da6597c4743f23414f3606a942a71",
+    "tcgcollector": "f1f01d1b094986ad0a9f5efcf1e98fe7388e0e1c5452d23da6cf7cab97a1ca29",
+    "scrydex": "25af5b50521e6fd0942764536f62b0c53c3e72c69c874916241af47735407929"
+  },
+  "before_snapshot_hashes": {
+    "production": "40e6f293824031bef740c2a9b8a409f17dbff906bb211a465ae84a9c6ff19223",
+    "staging": "e67b5003b97b89b685e7230e2dc8e7a2a83033907c82e6af00b1422b2ebcdb98"
+  },
+  "before_snapshot_counts": {
+    "production": 19,
+    "staging": 13
+  },
+  "expected_after_snapshot_counts": {
+    "production": 25,
+    "staging": 20
+  },
+  "production_source_changes_allowed": 0,
+  "stage_only_fixture_source_code": "pricecharting",
+  "canonical_schema_qualification": {
+    "production": [
+      {
+        "id": "44c0fd56-5d24-4545-9a11-313bf3252953",
+        "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+        "game_code": "pokemon",
+        "deprecated_at": null,
+        "language_code": "ja",
+        "_column_presence": {
+          "printing_discriminator": true
+        },
+        "collector_number": "056",
+        "printing_discriminator": "",
+        "corrected_by_printing_id": null
+      },
+      {
+        "id": "e1d523e5-69ea-4e97-858d-1e65d4a07cd5",
+        "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+        "game_code": "pokemon",
+        "deprecated_at": null,
+        "language_code": "ja",
+        "_column_presence": {
+          "printing_discriminator": true
+        },
+        "collector_number": "077",
+        "printing_discriminator": "",
+        "corrected_by_printing_id": null
+      },
+      {
+        "id": "2af65062-f444-40b2-810a-233ee09da5b3",
+        "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+        "game_code": "pokemon",
+        "deprecated_at": null,
+        "language_code": "ja",
+        "_column_presence": {
+          "printing_discriminator": true
+        },
+        "collector_number": "079",
+        "printing_discriminator": "",
+        "corrected_by_printing_id": null
+      }
+    ],
+    "staging": [
+      {
+        "id": "44c0fd56-5d24-4545-9a11-313bf3252953",
+        "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+        "game_code": "pokemon",
+        "deprecated_at": null,
+        "language_code": "ja",
+        "_column_presence": {
+          "printing_discriminator": false
+        },
+        "collector_number": "056",
+        "printing_discriminator": null,
+        "corrected_by_printing_id": null
+      },
+      {
+        "id": "e1d523e5-69ea-4e97-858d-1e65d4a07cd5",
+        "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+        "game_code": "pokemon",
+        "deprecated_at": null,
+        "language_code": "ja",
+        "_column_presence": {
+          "printing_discriminator": false
+        },
+        "collector_number": "077",
+        "printing_discriminator": null,
+        "corrected_by_printing_id": null
+      },
+      {
+        "id": "2af65062-f444-40b2-810a-233ee09da5b3",
+        "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+        "game_code": "pokemon",
+        "deprecated_at": null,
+        "language_code": "ja",
+        "_column_presence": {
+          "printing_discriminator": false
+        },
+        "collector_number": "079",
+        "printing_discriminator": null,
+        "corrected_by_printing_id": null
+      }
+    ]
+  },
+  "app_display_expectation": [
+    {
+      "printing_id": "44c0fd56-5d24-4545-9a11-313bf3252953",
+      "large_role": "detail-page",
+      "large_dimensions": [
+        500,
+        700
+      ],
+      "large_object_path": "objects/aa4de91f8ac07896e4caa2cdbb9b1681861550c5a0a130a47ed7823da7e4e2ff/detail-page.webp",
+      "detail_dimensions": [
+        500,
+        700
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "e1d523e5-69ea-4e97-858d-1e65d4a07cd5",
+      "large_role": "detail-page",
+      "large_dimensions": [
+        500,
+        700
+      ],
+      "large_object_path": "objects/a318c74e3d0c1ae5107343f8c71bc0cb0ce6042a7761ae87ab8c6bc8ca0a4f62/detail-page.webp",
+      "detail_dimensions": [
+        500,
+        700
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "2af65062-f444-40b2-810a-233ee09da5b3",
+      "large_role": "detail-page",
+      "large_dimensions": [
+        500,
+        700
+      ],
+      "large_object_path": "objects/809479298d19ef9280898ce50a0c406273d75b02e4d7a9d036dde9c6f1fc558e/detail-page.webp",
+      "detail_dimensions": [
+        500,
+        700
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    }
+  ],
+  "saved_targets_sha256": "8c923b5d622f884c63546fdf112b7dccf21554c2ea11bd2f65f10fba84cff700",
+  "identity_table_sha256": "15fb2c919a155b7f85e101b02c0d9e3c475f8a6046c2c01b0213f1a42a1db5be"
+}
