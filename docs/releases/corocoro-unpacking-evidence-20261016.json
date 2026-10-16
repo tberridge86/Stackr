@@ -1,0 +1,586 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-10-16T17:35:25.581Z",
+  "sourceRevision": "ab5cbcdfaccb02e899206feae740db67e7ce37de",
+  "scope": "Seven bounded packaging cases. Sealed fronts and printed carrier instructions are distinct from observed unwrapping. No whole-history denominator established.",
+  "coverInventory": {
+    "recordedDirectInsertRows": 43,
+    "displayedSuppliedCovers": 25,
+    "missingCoverRowsWithSourceReferences": 18,
+    "allMissingCoverPixelsImported": false,
+    "completeHistoricalDenominator": null
+  },
+  "counts": {
+    "boundedPackagingCases": 7,
+    "completeUnwrappingSequencesWatched": 0,
+    "newRemoteImageBytesAcquired": 0,
+    "newOwnershipBindings": 0,
+    "newNativeOpeningMechanismBindings": 0
+  },
+  "originalMewBenchmark": {
+    "preserved": true,
+    "sha256": "6d195a76f228ba3971961ed758d9763ca072de3ad23cd315bdb83cc4a19e22c7",
+    "actualDownwardTearAndHingeProven": false
+  },
+  "motionStudy": {
+    "issueId": "monthly:1996-11",
+    "url": "http://127.0.0.1:58412/unpacking.html",
+    "html": "docs/prototypes/corocoro-unpacking-study.html",
+    "script": "docs/prototypes/corocoro-unpacking-study.js",
+    "illustratedCarrierAndCards": true,
+    "noNewThirdPartyPhotography": true,
+    "cardArtworkPending": true,
+    "startingCornerAndTrajectoryProvisional": true,
+    "actualCollectionWrites": 0
+  },
+  "historical": {
+    "schemaVersion": 1,
+    "checkedAt": "2026-10-16T17:32:00Z",
+    "scope": "Bounded physical packaging research for May 2001, February 1997 and December 1998; November 1996 added as the visually supported two-card carrier comparison.",
+    "effects": {
+      "newImageDownloads": 0,
+      "newAcquiredAssets": 0,
+      "catalogueWrites": 0,
+      "outreachMessages": 0,
+      "watchedUnwrappingVideos": 0
+    },
+    "rights": {
+      "approvalStatus": "metadata_only_no_image_reuse_approval",
+      "publicImageDeliveryAllowed": false,
+      "note": "Public access and an illustration of a historical mechanism do not establish photography or reproduction permission. New sources were viewed in the browser only; no assets were imported. Existing local benchmark permission must stay distinct from rights to discovered third-party photographs."
+    },
+    "entries": [
+      {
+        "issueMonth": "2001-05",
+        "publication": "monthly",
+        "card": "Shining Mew / ひかるミュウ",
+        "collectorNumber": "unnumbered",
+        "mechanism": "printed_paper_packet_with_perforation",
+        "identityConfidence": "high_for_local_packet_front_and_issue_month",
+        "evidenceType": "sealed_packet_front_photo_not_unwrapping",
+        "sources": [
+          {
+            "url": "https://www.ebay.com/itm/156006031309",
+            "kind": "seller_packet_photographs",
+            "attribution": "Chaos Collectibles Ltd via eBay",
+            "inspected": "Listing metadata rechecked; named pre-existing local packet photo visually inspected."
+          },
+          {
+            "url": "https://pokeboon.com/jp/corocoro-shiningmew-promo/",
+            "kind": "collector_reference_page",
+            "claim": "May 2001 insert described as a bound-in paper bag."
+          }
+        ],
+        "localEvidence": {
+          "path": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/corocoro-continuation-20261016/mew-original-insert.jpg",
+          "visuallyInspected": true,
+          "proves": "Printed Shining Mew packet face with May issue wording and neo fourth-expansion celebration; sealed-state front geometry only."
+        },
+        "observed": {
+          "carrier": "Printed portrait paper packet; paper bag description corroborated by the reference page.",
+          "printedInstructionsJapanese": "中のカードの位置に注意して左のキリトリ線からきりはなそう！",
+          "translation": "Watch the position of the card inside and separate along the cut line to the left [of this instruction panel].",
+          "instructionGeometry": "Text is in a narrow strip on the packet's right edge. The visible vertical perforated line is immediately to that strip's LEFT, near the packet's RIGHT edge; it is not the packet's absolute left border.",
+          "cardCount": 1,
+          "cardOrientationInside": null,
+          "foldOrHingeLocation": null,
+          "glueLocation": null,
+          "attachmentToMagazine": "Described as a bound-in paper bag; exact binding/adhesive position is not shown in the saved detached-front photograph."
+        },
+        "unverified": [
+          "Scissors versus hand tear",
+          "Top-to-bottom versus bottom-to-top action",
+          "Front-face hinging after strip removal",
+          "Internal card orientation, position and extraction direction",
+          "Exact attachment of packet to spine/pages and rear seams"
+        ],
+        "observedActionOrder": [],
+        "proposedInterpolation": [
+          "Preserve existing Mew animation as the visual quality benchmark.",
+          "An evidence-informed revision may separate the narrow right-side strip at the visible perforation, then extract one card; actual hand motion, fold and extraction must remain explicitly provisional."
+        ],
+        "nextEvidenceNeeded": "Unedited opening footage or sequential exact-packet photographs showing front/rear and card extraction."
+      },
+      {
+        "issueMonth": "1997-02",
+        "publication": "monthly",
+        "card": "Mew / ミュウ (glossy)",
+        "collectorNumber": "unnumbered",
+        "mechanism": "peel_from_backing_reported_not_visually_verified",
+        "identityConfidence": "high_for_issue_card_relation; medium_for_reported_peel_mechanism",
+        "evidenceType": "primary_archived_identity_article_plus_secondary_packaging_text",
+        "sources": [
+          {
+            "url": "https://web.archive.org/web/20120416091302/http://ptcg.creatures.co.jp:80/column/8102",
+            "kind": "archived_primary_creatures_article",
+            "publishedAt": "2011-09-28",
+            "author": "Iチノセ, introduced by サトウ",
+            "supports": "Identifies favourite Mew as the February 1997 CoroCoro insert; does not demonstrate physical removal."
+          },
+          {
+            "url": "https://pokeboon.com/jp/corocoro-mew-glossy-promo/",
+            "kind": "secondary_collector_reference",
+            "supports": "Describes a card attached to backing and peeled off; backing photo mismatches."
+          },
+          {
+            "url": "https://www.enndalbuy2.com/product/8258",
+            "kind": "trade_listing_text",
+            "supports": "Names February 1997 Mew with backing, unpeeled; displayed image is a generic buysample.jpg placeholder."
+          },
+          {
+            "url": "https://auctions.yahoo.co.jp/jp/auction/k1102265018",
+            "kind": "candidate_seller_photographs",
+            "access": "Search metadata available; browser stopped at UK/EEA access restriction; photographs not inspected."
+          }
+        ],
+        "observed": {
+          "carrier": null,
+          "cardCount": 1,
+          "cardOrientation": null,
+          "foldLocation": null,
+          "adhesiveLocation": null,
+          "printedOpeningInstructions": null,
+          "attachmentToMagazine": null
+        },
+        "reportedMechanism": "A glossy Mew mounted on a backing sheet and peeled from it.",
+        "rejectedEvidence": [
+          {
+            "url": "https://pokeboon.com/wp-content/uploads/oldback-items/corocoro-9611.jpg",
+            "reason": "The February 1997 page labels this as its backing, but visual inspection shows Pikachu and Jigglypuff instructions. It is the November 1996 two-card carrier and must not be applied to Mew."
+          }
+        ],
+        "observedActionOrder": [],
+        "proposedInterpolation": [
+          "A generic backing-to-card peel may be studied as provisional geometry; do not label its layout or opening corner as verified February 1997."
+        ],
+        "nextEvidenceNeeded": "Exact February 1997 Mew carrier front/rear or footage showing detachment, correct glossy printing, card orientation and attachment points.",
+        "identityGuard": "Same-artwork JR 1997 non-glossy Mew is not an exact CoroCoro glossy packaging reference."
+      },
+      {
+        "issueMonth": "1998-12",
+        "publication": "monthly",
+        "cards": [
+          "Erika's Bulbasaur",
+          "Misty's Tentacool",
+          "Lt. Surge's Jolteon",
+          "Brock's Mankey"
+        ],
+        "mechanism": "four_card_peel_backing",
+        "identityConfidence": "medium_high_for_carrier_and_four_card_layout; physical_opening_unverified",
+        "evidenceType": "period_carrier_photo_on_collector_page_not_unwrapping",
+        "sources": [
+          {
+            "url": "https://pokeboon.com/jp/corocoro-erikasbulbasaur-promo/",
+            "kind": "collector_reference_page",
+            "supports": "Describes four attached cards, names all four, says they can be peeled from backing."
+          },
+          {
+            "url": "https://pokeboon.com/wp-content/uploads/oldback-items/corocoro-9812.jpg",
+            "kind": "carrier_photo",
+            "visualInspection": true,
+            "naturalWidth": 300,
+            "naturalHeight": 426,
+            "scope": "Browser display only; not saved/imported."
+          }
+        ],
+        "observed": {
+          "carrier": "Portrait printed backing sheet with Leaders' Stadium special-card instructions.",
+          "cardCount": 4,
+          "layout": "2 x 2 portrait card positions: Bulbasaur upper left; Tentacool upper right; Jolteon lower left; Mankey lower right. Position reading follows visible Japanese card labels.",
+          "printedInstructionHeading": "ポケットモンスターカードゲーム公式認定スペシャルカード（リーダーズスタジアム）の使い方",
+          "removalInstruction": "Photo contains printed handling instructions but fine print is too small for a reliable complete transcription.",
+          "foldLocation": null,
+          "adhesiveLocation": null,
+          "attachmentToMagazine": null
+        },
+        "observedActionOrder": [],
+        "proposedInterpolation": [
+          "Keep the carrier visible while individual cards lift from their own positions; four-card reveal order is a design choice, not observed historical action."
+        ],
+        "nextEvidenceNeeded": "Higher-resolution exact carrier instructions or actual peel footage showing adhesive, starting edge, backing and sequence."
+      },
+      {
+        "issueMonth": "1996-11",
+        "publication": "monthly",
+        "cards": [
+          "Pikachu (glossy)",
+          "Jigglypuff (glossy)"
+        ],
+        "mechanism": "two_card_peel_backing",
+        "identityConfidence": "medium_high_for_carrier_type_and_card_positions",
+        "evidenceType": "period_carrier_photo_plus_secondary_description_not_unwrapping",
+        "sources": [
+          {
+            "url": "https://pokeboon.com/jp/corocoro-pikachu-glossy-promo/",
+            "kind": "collector_reference_page",
+            "supports": "November 1996 two attached glossy cards described as removable from backing."
+          },
+          {
+            "url": "https://pokeboon.com/wp-content/uploads/oldback-items/corocoro-9611.jpg",
+            "kind": "carrier_photo",
+            "visualInspection": true,
+            "scope": "Observed via February 1997 page's mislabeled image; actual visible content is Pikachu/Jigglypuff, consistent with November 1996."
+          }
+        ],
+        "observed": {
+          "carrier": "Portrait printed backing; Pikachu and Jigglypuff card positions are vertically stacked.",
+          "cardCount": 2,
+          "layout": "Pikachu upper, Jigglypuff lower; both portrait.",
+          "removalLabels": "Numbered vertical labels next to both card positions instruct peeling the named card from the indicated position; full tiny-text transcription remains incomplete.",
+          "itemBeingRemoved": "The card is removed from backing. No clear evidence that a separate plastic film is the object being peeled.",
+          "glueLocation": null,
+          "startingCorner": null,
+          "removalDirection": null,
+          "magazineBinding": null
+        },
+        "observedActionOrder": [],
+        "proposedInterpolation": [
+          "Best-supported neutral next study: a two-position paper carrier, followed by a single card lifting/peeling away while the second stays attached. Starting corner, curvature and sequential order stay provisional and visibly labelled."
+        ],
+        "nextEvidenceNeeded": "Larger original carrier scan or continuous first-hand peel footage for precise starting point and adhesive/release behavior."
+      }
+    ],
+    "footageSearch": {
+      "status": "No exact opening sequence was watched or timestamp verified in this bounded pass.",
+      "candidate": {
+        "url": "https://www.youtube.com/watch?v=8A5KDZAzDMs",
+        "titleFromSearch": "I Spent $2,713,096 on The World's First Pokémon Card",
+        "source": "A third-party transcript result mentioned peeling early CoroCoro cards; direct web access returned internal error. Not used to verify motion or exact issue.",
+        "accepted": false
+      },
+      "limitations": [
+        "Yahoo seller photographs unavailable to UK/EEA browser; no access bypass attempted.",
+        "PokeBoon carrier thumbnails are low resolution.",
+        "Search result text and seller sealed-state claims cannot establish unwrapping order."
+      ]
+    },
+    "recommendation": {
+      "preserveOriginalMewBenchmark": true,
+      "nextMotionStudy": "Neutral paper-carrier peel with two portrait cards, using the visually supported November 1996 layout. Keep historical exact-mechanics claims separate from interpolation.",
+      "reuse1997OrAllIssues": false,
+      "requiresIssueSpecificMechanisms": true
+    }
+  },
+  "modern": {
+    "schemaVersion": 1,
+    "checkedAt": "2026-10-16T17:31:31Z",
+    "scope": "Read-only bounded modern packaging research for animation; exactly three modern printing cases. No new artwork evidence acquired or imported.",
+    "operationReceipt": {
+      "repoEdits": 0,
+      "imageOriginalDownloads": 0,
+      "videoDownloads": 0,
+      "watchedVideos": 0,
+      "imageImports": 0,
+      "catalogueWrites": 0,
+      "collectionWrites": 0,
+      "spend": 0,
+      "rightsOutreach": 0
+    },
+    "evidenceBasis": "Existing verified printing navigation manifest plus current publisher text, one directly viewed sealed-packet photograph, secondary collector claims and explicitly inaccessible/unwatched candidates.",
+    "cases": [
+      {
+        "caseId": "monthly-2022-02-pikachu-vmax",
+        "issueRecordId": "corocoro-2022-02-insert",
+        "publication": "monthly",
+        "issueMonth": "2022-02",
+        "card": {
+          "name": "Pikachu VMAX",
+          "nativeName": "ピカチュウVMAX",
+          "language": "ja",
+          "printedNumber": "265/S-P",
+          "physicalFinishStatus": "unverified",
+          "ownershipBindingAllowed": false
+        },
+        "identityConfidence": "verified numbered-printing navigation in existing Stackr manifest; physical distribution variant must remain separate",
+        "sources": [
+          {
+            "url": "https://corocoro-news.jp/news/320449/",
+            "type": "publisher_page_text",
+            "publishedAt": "2022-01-15",
+            "checkedAt": "2026-10-16T17:31:31Z",
+            "read": true,
+            "claim": "February issue has real Pikachu VMAX promo insert, release January15. Page also links a digital edition. This text supplies no removal mechanism.",
+            "rightsStatus": "All rights reserved; written permission needed for reproduction/republication."
+          },
+          {
+            "url": "https://www.pokemon-card.com/card-search/details.php/card/41152/regu/XY",
+            "type": "primary_card_identity_existing_evidence",
+            "readThisPass": false,
+            "claim": "Official numbered card details linked by existing verified printing manifest; no packet construction evidence."
+          },
+          {
+            "url": "https://magi.camp/items/678745409",
+            "type": "collector_sealed_packet_photograph",
+            "checkedAt": "2026-10-16T17:31:31Z",
+            "viewedInBrowser": true,
+            "photoUrl": "https://storage.googleapis.com/magi-production-public/iy6sjg5o7elkteu39hahks5pm41o",
+            "decodedDimensions": {
+              "width": 750,
+              "height": 1080
+            },
+            "imageSaved": false,
+            "claim": "Front of upright opaque printed carrier seen directly. It says February real-card insert and reproduces Pikachu VMAX face with265/S-P. Seller describes unopened carrier with card and single-card count. Back/interior not shown.",
+            "confidence": "moderate packaging silhouette; seller provenance and exact physical distribution not independently authenticated",
+            "rightsStatus": "Unestablished reuse licence; metadata-only."
+          },
+          {
+            "url": "https://pokeboon.com/jp/265sp-pikachuvmax-promo/",
+            "type": "secondary_collector_page_text",
+            "read": true,
+            "claim": "Separates normal physical magazine from digital-read-code insert set; claims sealed treatment for normal version and direct insertion into digital insert set.",
+            "confidence": "secondary claim needing primary photo/footage verification",
+            "rightsStatus": "Unestablished reuse licence; metadata-only."
+          },
+          {
+            "url": "https://digital-furoku.corocoro.jp/issue/202202",
+            "type": "publisher_digital_product_candidate",
+            "checkedAt": "2026-10-16T17:31:31Z",
+            "accessStatus": "Redirects to current homepage; historical product detail unavailable",
+            "read": false
+          },
+          {
+            "url": "https://www.youtube.com/watch?v=BCltOUXwuAo",
+            "type": "publisher_video_candidate",
+            "title": "コロコロ2月号はピカチュウVMAX付き！",
+            "publishedAt": "2022-01-21",
+            "watched": false,
+            "timestamps": [],
+            "accessStatus": "Hidden browser creation timed out. Search title alone is not evidence of opening actions."
+          },
+          {
+            "url": "https://www.youtube.com/watch?v=hwxgB4CUFqw",
+            "type": "publisher_video_candidate",
+            "title": "ポケモンカード実物ふろく「ピカチュウVMAX」を入手せよ！【コロコロ2月号CM】",
+            "publishedAt": "2022-01-14",
+            "watched": false,
+            "timestamps": [],
+            "claim": "Promotional CM discovered only; no assertion it demonstrates unwrapping."
+          }
+        ],
+        "observedPackaging": {
+          "carrier": "Opaque rectangular portrait printed carrier, apparently paper/card surface; exact material unverified",
+          "seam": null,
+          "perforation": null,
+          "openingInstruction": null,
+          "attachment": null,
+          "cardCount": {
+            "advertised": 1,
+            "physicallyObserved": null
+          },
+          "verifiedActionOrder": [],
+          "isFirstHandOpeningFootage": false
+        },
+        "unknowns": [
+          "Packet stock/composition and thickness",
+          "Rear seam or glued flap",
+          "Perforation or cut line",
+          "Magazine attachment method",
+          "Printed opening instruction",
+          "Observed order of detachment, opening and card removal",
+          "Interior orientation"
+        ],
+        "animationRecommendation": {
+          "readyForHistoricalOpeningReconstruction": false,
+          "permittedLocalStudy": "Neutral portrait packet silhouette only, clearly labelled concept; no assertion of seam tear, peel or slide direction",
+          "nextEvidenceNeeded": "Exact regular physical February2022 insert rear/interior photos and first-hand continuous detachment/opening/card extraction footage; separately inspect digital set.",
+          "doNotReuseMewMechanism": true
+        }
+      },
+      {
+        "caseId": "ichiban-2021-03-snorlax",
+        "issueRecordId": "corocoro-ichiban-2021-03-insert",
+        "publication": "ichiban",
+        "issueMonth": "2021-03",
+        "card": {
+          "name": "Snorlax",
+          "nativeName": "カビゴン",
+          "language": "ja",
+          "printedNumber": "156/S-P",
+          "physicalFinishStatus": "unverified",
+          "physicalFinishNote": "Publisher says special shiny/foil specification; exact pattern unverified and API normal variant must not become ownership evidence.",
+          "ownershipBindingAllowed": false
+        },
+        "identityConfidence": "verified numbered-printing navigation in existing Stackr manifest",
+        "sources": [
+          {
+            "url": "https://corocoro-news.jp/%E6%9C%AA%E5%88%86%E9%A1%9E/266111/",
+            "type": "publisher_page_text",
+            "publishedAt": "2021-01-20",
+            "checkedAt": "2026-10-16T17:31:31Z",
+            "read": true,
+            "claim": "March2021 Ichiban real-card Snorlax insert, release January21, special shiny specification. Does not describe packet/removal.",
+            "rightsStatus": "All rights reserved; written permission needed for reproduction/republication."
+          },
+          {
+            "url": "https://www.pokemon-card.com/card-search/details.php/card/39246",
+            "type": "primary_card_identity_existing_evidence",
+            "readThisPass": false,
+            "claim": "Official numbered card details linked by existing verified printing manifest; no packet construction evidence."
+          },
+          {
+            "url": "https://pokeboon.com/156sp-snorlax-promo/",
+            "type": "secondary_collector_page_text",
+            "read": true,
+            "claim": "Identifies156/S-P as March2021 Ichiban insert distributed January21; no opening mechanism evidence."
+          },
+          {
+            "url": "https://paypayfleamarket.yahoo.co.jp/item/z611180086",
+            "type": "collector_sealed_packet_photo_candidate",
+            "checkedAt": "2026-10-16T17:31:31Z",
+            "viewedInBrowser": false,
+            "accessStatus": "Browser shows Yahoo service unavailable in EEA/UK; no bypass attempted",
+            "claim": "Search excerpt claims unopened156/S-P March2021 insert. Images not accessed or visually verified.",
+            "rightsStatus": "Unestablished reuse licence; metadata-only."
+          }
+        ],
+        "observedPackaging": {
+          "carrier": null,
+          "seam": null,
+          "perforation": null,
+          "openingInstruction": null,
+          "attachment": null,
+          "cardCount": {
+            "advertisedNamedPromo": 1,
+            "physicallyObserved": null
+          },
+          "verifiedActionOrder": [],
+          "isFirstHandOpeningFootage": false
+        },
+        "unknowns": [
+          "Packet stock/composition and thickness",
+          "Rear seam or glued flap",
+          "Perforation or cut line",
+          "Magazine attachment method",
+          "Printed opening instruction",
+          "Observed order of detachment, opening and card removal",
+          "Interior orientation"
+        ],
+        "animationRecommendation": {
+          "readyForHistoricalOpeningReconstruction": false,
+          "permittedLocalStudy": "No issue-specific physical opening sequence justified yet",
+          "nextEvidenceNeeded": "Accessible exact packet front/back and continuous first-hand opening footage",
+          "doNotReuseMewMechanism": true
+        }
+      },
+      {
+        "caseId": "ichiban-2023-04-pawmi",
+        "issueRecordId": "corocoro-ichiban-2023-04-insert",
+        "publication": "ichiban",
+        "issueMonth": "2023-04",
+        "card": {
+          "name": "Pawmi",
+          "nativeName": "パモ",
+          "language": "ja",
+          "printedNumber": "035/SV-P",
+          "physicalFinishStatus": "unverified",
+          "ownershipBindingAllowed": false
+        },
+        "identityConfidence": "verified numbered-printing navigation in existing Stackr manifest",
+        "sources": [
+          {
+            "url": "https://corocoro-news.jp/news/357888/",
+            "type": "publisher_page_text",
+            "publishedAt": "2023-02-20",
+            "checkedAt": "2026-10-16T17:31:31Z",
+            "read": true,
+            "claim": "April2023 Ichiban includes Pawmi promo and expansion card catalogue; release February21. Shows card/catalogue previews, without textual packet construction or opening instructions.",
+            "rightsStatus": "All rights reserved; written permission needed for reproduction/republication."
+          },
+          {
+            "url": "https://corocoro-news.jp/news/357928/",
+            "type": "publisher_search_excerpt",
+            "publishedAt": "2023-02-21",
+            "checkedAt": "2026-10-16T17:31:31Z",
+            "read": false,
+            "searchExcerptRead": true,
+            "claim": "April issue launch reiterates Pawmi and separate catalogue/booklet; does not prove those are packaged together."
+          },
+          {
+            "url": "https://www.pokemon-card.com/card-search/details.php/card/43128",
+            "type": "primary_card_identity_existing_evidence",
+            "readThisPass": false,
+            "claim": "Official numbered card details linked by existing verified printing manifest; no packet construction evidence."
+          }
+        ],
+        "observedPackaging": {
+          "carrier": null,
+          "seam": null,
+          "perforation": null,
+          "openingInstruction": null,
+          "attachment": null,
+          "cardCount": {
+            "advertisedNamedPromo": 1,
+            "physicallyObserved": null
+          },
+          "verifiedActionOrder": [],
+          "isFirstHandOpeningFootage": false
+        },
+        "unknowns": [
+          "Packet stock/composition and thickness",
+          "Rear seam or glued flap",
+          "Perforation or cut line",
+          "Magazine attachment method",
+          "Printed opening instruction",
+          "Observed order of detachment, opening and card removal",
+          "Interior orientation"
+        ],
+        "animationRecommendation": {
+          "readyForHistoricalOpeningReconstruction": false,
+          "permittedLocalStudy": "No issue-specific physical opening sequence justified yet",
+          "nextEvidenceNeeded": "Exact April2023 packet photos/instructions and first-hand opening footage; do not treat separate catalogue as its card carrier",
+          "doNotReuseMewMechanism": true
+        }
+      }
+    ],
+    "rejectedOrUnresolvedDiscovery": [
+      {
+        "url": "https://jp.mercari.com/item/m98469747304",
+        "reason": "2025Meowth collector listing says4sealed boxes, but browser remained unpopulated when inspected; no image or exact issue carrier confirmation. SeparatePokemonFan94 distributions exist; collector label alone cannot establish correct carrier."
+      },
+      {
+        "url": "https://corocoro-news.jp/news/396261/",
+        "reason": "Publisher verifies combinedJuly/Aug2025Meowth insert alongsideKirbycube/etc; article text does not establish promo packet construction or sharedboxcontents."
+      }
+    ],
+    "recommendation": {
+      "bestModernNextEvidenceCase": "monthly-2022-02-pikachu-vmax",
+      "reason": "Already observed opaque printed portrait carrier; primary issue identity exists. Distinct digital set creates a useful explicit physical-variant guard.",
+      "modernMechanicallyVerifiedCases": 0,
+      "modernReadyForAuthenticOpeningAnimation": 0,
+      "rootNextMotionStudy": "Use independently verified historical carrier/peel case from historical specialist; keep modern cases held.",
+      "reviewList": [
+        {
+          "name": "Pikachu VMAX265/S-P regular physical magazine packet",
+          "action": "Find rear/interior and continuous detachment/opening/card extraction evidence; compare digital set separately."
+        },
+        {
+          "name": "Snorlax156/S-P March2021 Ichiban packet",
+          "action": "Obtain accessible exact-carrier photos/opening footage; confirm foil pattern separately."
+        },
+        {
+          "name": "Pawmi035/SV-P April2023 Ichiban packet",
+          "action": "Find exact packet construction/opening evidence, separately from card catalogue."
+        }
+      ]
+    },
+    "licenceBoundary": "Read-only reference viewing is not Stackr acquisition or public display permission. No publisher/collector packet artwork or footage downloaded/imported/republished. Any neutral motion sketch must be truthful about inferred steps."
+  },
+  "coordinatorSupplement": {
+    "sourceUrl": "https://www.youtube.com/watch?v=BCltOUXwuAo",
+    "checkedAt": "2026-10-16T17:35:25.596Z",
+    "channelVisible": "コロコロチャンネル【公式】",
+    "browserResult": "Video unavailable: The uploader has not made this video available in your country",
+    "watched": false,
+    "timestamps": [],
+    "country": "UK",
+    "accessBypass": false
+  },
+  "nextEvidence": [
+    "Exact1997Mew carrier front/rear rather than mismatched1996image",
+    "Larger1996/1998carrier scans or continuous peeling footage for actual starting point and adhesive",
+    "May2001front/rear and continuous strip removal/card extraction",
+    "RegularFebruary2022Pikachu packet rear/interior and continuous opening; distinguish digital insert set",
+    "Snorlax and Pawmi exact carrier/removal evidence"
+  ],
+  "rightsState": "New source photographs/footage remain metadata-only. Existing supplied cover reused locally; drawn motion study does not assert acquisition or public-photo permission."
+}

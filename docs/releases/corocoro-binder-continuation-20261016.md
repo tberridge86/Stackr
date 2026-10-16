@@ -43,3 +43,7 @@ The independent read-only Stackr reviewer reproduced strict binding, archive, sc
 Browser proof is local preview evidence only. Source tests do not establish the owner's installed iPhone motion or real collection save/restart experience. Opening direction remains an interactive reconstruction rather than physical unsealing proof.
 
 No deployment, main merge, remote database/catalogue mutation, price refresh, native build, OTA publication or TestFlight submission occurred. The separate ordinary-artwork workstream and its production ledger were preserved. Before TestFlight, retain this feature's cover-rights, identity/finish, original-sleeve and installed-device gaps in shared release evidence.
+
+## Unpacking follow-up
+
+[Seven bounded packaging cases and a separate peel-motion study](corocoro-unpacking-study-20261016.md) now distinguish paper packets from card backing sheets. The original Mew benchmark and native source behaviour are preserved. No complete unwrapping sequence was watched; starting corners, carrier seams and hand/extraction movement remain explicit evidence gaps. The local illustrated study uses the supported November 1996 two-card arrangement and does not assign its mechanics to other issues.
