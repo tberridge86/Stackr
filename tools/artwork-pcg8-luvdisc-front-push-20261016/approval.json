@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 1,
+  "variants": 1,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "physical_finish_verified": false,
+  "physical_edition_verified": false,
+  "cohort_sha256": "a485736a9db61e7f59cacf7aa0248a02addedf31a84f4f878f1df8c2338b3763",
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "0d51946911fdb2635591bee7b0af18eaf435784845c164970f4cb1688b4f57af",
+    "finiteDecisionFileByteSha256": "18d97d8614e1593fd437dc8e1720caaa31831e1ec899ccbc0a30761c70b11eff",
+    "rootPrivateContextFileByteSha256": "7ac4ebf7a643e942c2694b880d5b31d2d88e6692d35a07130c694f970ef8aa56",
+    "sourceHandoffFileByteSha256": "a7fa9e58fe7d21a0e317e09943948c76376a759eeed2ad065f4a7bca3d04e64b",
+    "independentSourceReviewFileByteSha256": "722e1b9468df498064df9bf409e514209579427dd9c6891fa6d2d0456753a7c3",
+    "fourSourceCheckpointFileByteSha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "3e32963c56e4827d4585cd9e53c2a6f31e6edf2545eb3d8b989141f4d6aa6fd9",
+    "independentPrivatePackageReviewSha256": "3922759f3f7dd24278d6f4fbf21d911b4681b812a1350604ac2e84a2b9377250",
+    "rootPrivatePackageValidationSha256": "52bfff5031a2a2c3a737f7fc7306b5c31f0deeb6cbd9ffa9c00a81fb64a21af2",
+    "rootSourceArchiveBindingSha256": "28a93ae9fb41e610e410ea4f87b33a5b439dbe739db4827eec106334e2014078",
+    "rootUploadReceiptSha256": "e013cea1fde1b3b0a1b5d7ba365ed8c02109994923f0812514be6c4c6860a968",
+    "rootPublisherContextSha256": "664eeb4f22f1fc3d23de0061519eea0dad543e9188a53390ee302947179d951b"
+  },
+  "production_source_changes_allowed": 0,
+  "scope": "Exactly one Japanese PCG8ラブカスHP60Waterたね027/075 shared printing front; sole holo variant with is_defaultfalse and current luvdisc label unchanged. Complete actual Japanese おあいこ deck/opponent-count/own-bench/shuffle and スタジアムプレイ own-Stadium heal-one/opponent-Stadium bench10 preserved in original nested actualPrintedObservations wrapper. No Delta/ability/Dex/literalPCG8 or unprinted provider parenthetical. Original1020x1403 unchanged, detail720x990 non-HD; app large original. Physical edition/finish/material/unlimited and provider optical provenance remain uncertified. Preserve all4full17sources/microseconds/PCG8logo/link. Production11to13 one asset/link; stagePricefixture5to8to5; zero production source/policy writes."
+}
