@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_EXACT_PUBLISHER_READY_FOR_INDEPENDENT_REVIEW",
+  "fronts": 3,
+  "variants": 3,
+  "scopeUUIDs": 7,
+  "confirmation": "PUBLISH ARTWORK PCG2 WAVE001 THREE FRONTS",
+  "rootPublisherContextSha256": "22446c27ce6c1d5f31275ebb2f1cb73010a6ea50d39b8f9ee190127d6981ae9b",
+  "planSha256": "a9c4439ecde035eefdde6fb42e4ed7e42097adc641cc9de9bee0cad1f3bf2aaa",
+  "approvalSha256": "59e03fc9079cf484f07dfc2e9664132ac5afe2704ec22bd7cc9aa4e3686a34af",
+  "transactionFixtures": {
+    "production": [
+      19,
+      25
+    ],
+    "staging": [
+      13,
+      20,
+      13
+    ],
+    "assetsAdded": 3,
+    "linksAdded": 3,
+    "productionSourceChanges": 0,
+    "temporaryInactiveStagingPriceFixture": 1,
+    "existingPCG2LogoAssets": 1,
+    "existingPCG2LogoLinks": 1
+  },
+  "tests": {
+    "publisher": {
+      "passed": 18,
+      "failed": 0
+    },
+    "prior-and-journal": {
+      "passed": 71,
+      "failed": 0
+    },
+    "archiveGuards": {
+      "passed": 6,
+      "failed": 0
+    },
+    "queue": {
+      "status": "PASS",
+      "realReceipts": 3,
+      "localImageByteObjects": 12,
+      "jointRawEntryTamperRejections": 117,
+      "forgedRawAuthorityRejections": 21,
+      "rootAuthorityPacketRejections": 10,
+      "privateExactSourceContractReusedThroughIndependentPeerPin": true,
+      "priorReadOnlyReceipts": 26,
+      "priorLocalImageObjects": 104,
+      "sharpMetricCasePassed": true,
+      "allPriorExactPredicatesPreserved": true,
+      "inMemoryCompleteHelperDryRun": {
+        "priorEntries": 1229,
+        "afterEntries": 1232,
+        "onlyExactThreeAdded": true,
+        "prior1229ByteValuesUnchanged": true,
+        "sharedWritesIntercepted": 4
+      },
+      "sharedFilesUnchanged": true,
+      "productionWrites": 0
+    }
+  },
+  "privateSourceContract": {
+    "passed": 55,
+    "negative": 47,
+    "independentPrivatePeerSha256": "6a4bffebd1737774a33188aebd5d2015e69699c4749b980a96d493ac7ca39b4d"
+  },
+  "actualUnchangedAppHelperPrivateCases": {
+    "defaultExplicit": 6,
+    "negative": 6,
+    "reportSha256": "8b698ddc2b5c2e921fb5f266d2a3f854c684c6cb4413deefbead60025e853fca"
+  },
+  "appSelection": [
+    {
+      "printing_id": "36710a9b-7b22-4412-b2a9-2fb4af5aeb7c",
+      "large_role": "detail-page",
+      "large_dimensions": [
+        720,
+        1008
+      ],
+      "large_object_path": "objects/e3a3cd2a49b7e062f50c35134a35e26c6376d3da23923153e0735dae268eb4c2/detail-page.webp",
+      "detail_dimensions": [
+        720,
+        1008
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "e6192b59-9593-4315-a414-591df5f3fe51",
+      "large_role": "original",
+      "large_dimensions": [
+        1200,
+        1600
+      ],
+      "large_object_path": "objects/373f4913a06262a776cce6813e6eceed3c100d6b1f6bf166bd2e3a47a7ab2c7c/original.jpg",
+      "detail_dimensions": [
+        720,
+        960
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "c61d1e2b-a65c-4b2a-bce6-6f66d236b4fb",
+      "large_role": "detail-page",
+      "large_dimensions": [
+        720,
+        1003
+      ],
+      "large_object_path": "objects/dd402a19a777e8f2c94062f24cc03d4f1aab6f97560be6b5afd3b09dba7e2bb5/detail-page.webp",
+      "detail_dimensions": [
+        720,
+        1003
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    }
+  ],
+  "sourceHDCanvasSignals": 3,
+  "detailHDCanvasSignals": 1,
+  "archiveInstaller": {
+    "asset_id": 646704421,
+    "sha256": "1482ac67527df7cca8a6f06bb5b17798fa5eaa4df27ec3ac43faf1eb2e93994e",
+    "bytes": 1389917,
+    "files": 16,
+    "status": "verified_and_extracted",
+    "provider_requests": 0
+  },
+  "decodedImages": 12,
+  "rawNullPlacementsAndSeparateRootLiteralsBound": true,
+  "recordedEnglishAndCategoryRemainNull": true,
+  "currentHoloFalseAndTwoNormalTrueTuplesUnchanged": true,
+  "sourceAndAssetVariantRemainNull": true,
+  "all68ExistingSourceFieldsAndMicrosecondsProtected": true,
+  "previousRepositoryFilesByteExact": 340,
+  "unchangedDependencies": 11,
+  "sourceRequests": 0,
+  "databaseRequests": 0,
+  "sharedWrites": 0,
+  "physicalFinishOrEditionCertified": false,
+  "opticalOrHandsetClaim": false,
+  "livePublicationVerified": false,
+  "actualConfiguredApiDefaultExplicitAndAll12FilesStillRequired": true
+}
