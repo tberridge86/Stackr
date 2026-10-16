@@ -1,22 +1,22 @@
 {
   "schemaVersion": "stackr-owner-artwork-production-evidence-v1",
   "inventoryId": "STACKR-ARTWORK-20261012",
-  "updatedAt": "2026-10-16T04:58:09.941Z",
+  "updatedAt": "2026-10-16T05:52:33.494Z",
   "scope": "Exact saved artwork list; original identities retained; actual production verification required",
   "summary": {
-    "checkedAt": "2026-10-16T04:51:43.527Z",
+    "checkedAt": "2026-10-16T05:36:04.743Z",
     "totalTasks": 2944,
     "totalBatches": 161,
-    "newlyPublishedFronts": 1312,
+    "newlyPublishedFronts": 1316,
     "previouslyCorrectedCasesVerified": 605,
-    "liveVerifiedTasks": 1917,
+    "liveVerifiedTasks": 1921,
     "completedBatches": 85,
-    "remainingTasks": 1027,
+    "remainingTasks": 1023,
     "remainingBatches": 76,
     "remainingGroups": [
       {
         "task": "Find permitted exact card fronts",
-        "items": 735
+        "items": 731
       },
       {
         "task": "Find permitted Traditional Chinese set logos",
@@ -31,22 +31,22 @@
         "items": 0
       }
     ],
-    "sourceLeadTargets": 1228,
+    "sourceLeadTargets": 1232,
     "scope": "Fixed saved list, retaining original identities; completion requires actual production API and image verification. Source gathering alone is not completion.",
     "queuedItems": 0,
     "queuedBatches": 0,
-    "frontTasksNotYetGathered": 718,
+    "frontTasksNotYetGathered": 715,
     "smallOriginalCandidates": 13,
-    "frontTasksNotYetPrepared": 735,
+    "frontTasksNotYetPrepared": 731,
     "contentHeldOriginalCandidates": 0,
-    "sourceAcquiredPendingPreparation": 4,
+    "sourceAcquiredPendingPreparation": 3,
     "sourceIdentityMetadataHolds": 25,
     "ownerSuppliedJapaneseGalleryLeads": {
       "suppliedSets": 23,
       "fixedBatchesCovered": 69,
       "fixedTasksCovered": 1479,
-      "coveredTasksAlreadyLive": 780,
-      "coveredTasksRemaining": 699,
+      "coveredTasksAlreadyLive": 784,
+      "coveredTasksRemaining": 695,
       "unprovidedSets": [],
       "sourceInventorySha256": "68aeb67adc1716a32e1539fc815b210e243c8f2ec15c6d5a5d059a1bbf914fe1",
       "exactPrintingOrLicenceApprovalClaimed": false,
@@ -113,10 +113,10 @@
       "scopeFile": "all-owner-links-working-queue.json",
       "scopeSha256": "dce8019d6367877078b63a26bbd7ce9a52a8c4f8a8cbe7b9c20faa98ff7eb2c9",
       "uniqueCardTasks": 1572,
-      "cardTasksAlreadyLive": 808,
-      "cardTasksRemaining": 764,
+      "cardTasksAlreadyLive": 812,
+      "cardTasksRemaining": 760,
       "historicalLogoResearchTasks": 36,
-      "remainingCombinedWork": 800,
+      "remainingCombinedWork": 796,
       "remainingCombinedBatches": 63,
       "remainingOutsideBoundProvidedLinks": 227,
       "originalBatchIdsRetained": true,
@@ -1002,32 +1002,34 @@
     },
     "sourceAcquiredFinishHeld": 2,
     "currentContinuationSourceCaptureTotals": {
-      "sourceMetadataGets": 1081,
-      "sourceOriginalGets": 506,
-      "retainedSourceOriginalCandidates": 506,
-      "acceptedAwaitingPreparation": 4,
+      "sourceMetadataGets": 1128,
+      "sourceOriginalGets": 520,
+      "retainedSourceOriginalCandidates": 520,
+      "acceptedAwaitingPreparation": 3,
       "sourceReviewPending": 0,
-      "qualityOrEditionHeld": 177,
+      "qualityOrEditionHeld": 188,
       "finishHeld": 3,
       "prepared": 0,
-      "newLiveVerified": 313,
+      "newLiveVerified": 317,
       "metadataGetCountsExcludeWebSearchAndCachedWebExtractions": true,
-      "uniqueSourcePrintingCandidates": 497,
+      "uniqueSourcePrintingCandidates": 511,
       "additionalAlternateTcGSourceCandidatesPendingReview": 0,
       "printingStatePartitionCountsStillTracksHeldOldCandidatesUntilAlternateAccepted": false,
-      "totalPreparedThisContinuation": 313,
+      "totalPreparedThisContinuation": 317,
       "partition": {
-        "live": 313,
+        "live": 317,
         "prepared": 0,
-        "acceptedAwaitingPreparation": 4,
-        "qualityOrEditionHeld": 177,
+        "acceptedAwaitingPreparation": 3,
+        "qualityOrEditionHeld": 188,
         "finishHeld": 3,
-        "totalUnique": 497
+        "totalUnique": 511
       },
       "accessDeniedMetadataGets": 3,
       "alternateCandidateCount": 9,
-      "metadataCounterIncludesReadOnlyPaginationPostRequests": 5,
-      "metadataCounterHistoricalFieldNameIncludesGetAndPostRequests": true
+      "metadataCounterIncludesReadOnlyPaginationPostRequests": 6,
+      "metadataCounterHistoricalFieldNameIncludesGetAndPostRequests": true,
+      "vsWebDiscoveryWebSearchQueriesExcludedFromMetadataCounter": 2,
+      "nativeEndpointDocumentationWebSearchQueriesExcludedFromMetadataCounter": 1
     },
     "sourceAcquiredEditionHeld": 82,
     "nextChallengeDarkness97Cohort": {
@@ -2108,7 +2110,7 @@
       "sourceOriginals": 2,
       "accepted": 2,
       "preparedOriginals": 2,
-      "liveVerified": 0,
+      "liveVerified": 2,
       "approvedSourceSha256": "31aae4b963a67dcf1aae3a6a174616c7ad036c12590d4a6d3516e6c2d9138fe9",
       "finitePreparationDecisionSha256": "912c4fcac1656776b60357da92cb1424ad8d787b4b0464cd89f9661acbcad974",
       "independentScopeCorrectionReviewSha256": "80992ab28ffa47d33fe6ab26472a34dbcc1d134668948ca7b797476392c4d556",
@@ -2143,13 +2145,15 @@
       "sourceMetadataGets": 96,
       "sourceOriginalGets": 43,
       "newUniqueAcquiredPrintingCandidates": 43,
-      "acceptedAwaitingPreparation": 3,
+      "acceptedAwaitingPreparation": 0,
       "qualityIdentityOrEditionHeld": 40,
       "metadataOnlyFinishHeld": 5,
       "metadataOnlyFinishHoldsExcludedFromAcquiredPartition": true,
       "minimumStartGapMs": 805,
       "prepared": 0,
-      "published": 0
+      "published": 3,
+      "preparedOriginals": 3,
+      "liveVerified": 3
     },
     "nextPCG123ThreeSharedFronts": {
       "status": "IMMUTABLE_PRIVATE_THREE_PACKAGE_REUSED_AS_LINEAGE_IN_ADDITIVE_FOUR_NOT_SEPARATELY_QUEUED",
@@ -2161,7 +2165,7 @@
       ],
       "accepted": 3,
       "preparedOriginals": 0,
-      "liveVerified": 0,
+      "liveVerified": 3,
       "approvedSourceSha256": "0ba6e26683ebb3dc16006136429730fbbdd192165603d8185ce6ea6a7e5dbe61",
       "finitePreparationDecisionSha256": "c80fc5b3135cb2cb738ecdeefadc9db9da3347e12dd26ce8e54c685351dbc9e3",
       "independentSourceReviewSha256": "5bb022cd60e4d1ef02aef359a49c428bd6e7adc1ffc0340d129d1faec6e45d8a",
@@ -2172,7 +2176,9 @@
       "targetsDropped": 0,
       "priorPrivateReviewSha256": "0a172675a52a4ad4c955b70809e2722572cd20a4eebb646f334eb86f6c8b2af5",
       "archiveAssetId": 646165864,
-      "archiveUploadedButNotProductionCompletion": true
+      "archiveUploadedButNotProductionCompletion": true,
+      "liveViaAdditiveFourCohort": true,
+      "separateProductionRun": false
     },
     "nextPCG123567Followup25IndependentSource": {
       "status": "All25reviewed/registered;21acquiredspecificquality/identity/editionholds4metadatafinishskips;0eligible",
@@ -2224,15 +2230,17 @@
       "sourceMetadataGets": 38,
       "sourceOriginalGets": 10,
       "newUniqueAcquiredPrintingCandidates": 10,
-      "acceptedAwaitingPreparation": 1,
+      "acceptedAwaitingPreparation": 0,
       "qualityIdentityOrEditionHeld": 9,
       "metadataOnlyFinishHeld": 9,
       "metadataOnlyFinishHoldsExcludedFromAcquiredPartition": true,
       "prepared": 0,
-      "published": 0
+      "published": 1,
+      "preparedOriginals": 1,
+      "liveVerified": 1
     },
     "nextPCG1234FourSharedFronts": {
-      "status": "ADDITIVE_FOUR_PRIVATE_PREPARATION_AUTHORIZED",
+      "status": "FOUR_FRONTS_LIVE_AND_INDEPENDENTLY_VERIFIED",
       "includesExistingAcceptedThreePlusAcceptedHitmonchan": true,
       "additionalSourceCandidatesCounted": 0,
       "printingIds": [
@@ -2245,7 +2253,7 @@
       "finiteDecisionSha256": "7608cc5c480280744f3c8f8c503b3f0f94c7c23ff9f1a23aa897d419888e3007",
       "contextSha256": "d7ee6bd2932672edb17c93611e17bebef2c9bb8dd924b80482b81093eeddeaf5",
       "prepared": 0,
-      "published": 0,
+      "published": 4,
       "productionBeforeAfter": [
         29,
         37
@@ -2254,7 +2262,24 @@
         19,
         28,
         19
-      ]
+      ],
+      "privateHandoffSha256": "8223290823be5513cdc70e79a31547e91b2aaeca7c80e280fc03833f9638bcb2",
+      "privateIndependentReviewSha256": "55fcfbfa0178b8beab4866b3a978b0e432c801b3278a3eac6340abfc35d4bf63",
+      "archiveAssetId": 646214227,
+      "archiveSha256": "b8a5112200e40f5be101f602263e14ef165595cdc380df2e8fa5ca83f06f6635",
+      "archiveBytes": 2977622,
+      "rootUploadReceiptSha256": "ef9bb9fea382852f4b0209e1b0cd5972067c54798227a5b40e65a83cf34f8b39",
+      "publisherContextSha256": "12dd3e078e6dd482f95c036b50d7f433e72cfd8e6bc48f2047463c0dd5c2495c",
+      "publisherPullRequest": 389,
+      "publisherHead": "71839c783d4665e0251579ba89d12d9a5fe35e9a",
+      "independentPublisherReviewSha256": "4adacf716e90a06c4b51490ce21ff906046ba8252a694679814efd3c92bdab26",
+      "liveVerified": 4,
+      "preparedOriginals": 4,
+      "productionRun": 38855802113,
+      "protectedMainSha": "f6e1a5b58d25994fae444a69d28ba04520f32bbf",
+      "hostedChecksPassed": 8,
+      "receiptSha256": "ad8076b42e702dc65e47b0895d214ec8d895febf4692b0bd5240d735246c8fb1",
+      "independentActualReviewSha256": "ff4ceb573dcdc1502544f677d1deeefd5ca58fecbd5a0153b220bda4f5a7cd09"
     },
     "nextPCG12356Nextpage9IndependentSource": {
       "status": "FROZEN_REGISTERED_ZERO_ELIGIBLE_FIVE_IMAGE_HOLDS_FOUR_METADATA_FINISH_HOLDS",
@@ -2269,6 +2294,95 @@
       "qualityIdentityOrEditionHeld": 5,
       "metadataOnlyFinishHeld": 4,
       "metadataOnlyFinishHoldsExcludedFromAcquiredPartition": true,
+      "prepared": 0,
+      "published": 0
+    },
+    "nextVsWebTwoIndexMetadata": {
+      "status": "TWO_INDEX_GETS_FROZEN_INDEPENDENT_PASS_REGISTERED_METADATA_ONLY",
+      "sourceHandoffSha256": "63bc587c0ed3ae8174b6bbc1cafff7cc6d55913b8c853d15ba970130602f4726",
+      "independentReviewSha256": "d21885f5baac6a4a82a0478a17eeb351a58e5ad6eed5d566b390fc3ed60d3814",
+      "metadataGets": 2,
+      "originalGets": 0,
+      "VS1LiteralLinks": 150,
+      "web1LiteralLinks": 96,
+      "minCheckedGapMs": 814,
+      "globalStop": false,
+      "VS1FurtherObservedForm": true,
+      "rawCommercialHtmlPrivate": true,
+      "sourceSelectionApproved": false,
+      "preparationApproved": false,
+      "publicationApproved": false
+    },
+    "nextVSObservedPaginationMetadata": {
+      "status": "FROZEN_INDEPENDENT_METADATA_PASS_REGISTERED_ONE_VS_OBSERVED_POST_ONLY",
+      "sourceHandoffSha256": "5bfdeddff49bf43bc4cb8d3a973f0fd698428b9c0d3d26be133a3930cc963cda",
+      "independentReviewSha256": "4a742878036a0683a701f9c106ba9f70749f6e9f36bc491b43b15397c41be8ca",
+      "metadataPostRequests": 1,
+      "sourceOriginalRequests": 0,
+      "newLiteralVSLinks": 20,
+      "totalSavedVSLiteralLinks": 170,
+      "allHttp200": true,
+      "globalStop": false,
+      "oldSuccessfulGetStillClosed": true,
+      "newObservedMethodBodyIdentityDistinct": true,
+      "sourceSelectionApproved": false,
+      "preparationApproved": false,
+      "publicationApproved": false
+    },
+    "nextWebPCG16IndependentSource": {
+      "status": "THREE_EXACT_SHARED_FRONTS_ACCEPTED_SEVEN_IMAGE_HOLDS_TWO_METADATA_FINISH_SKIPS_FOUR_OLD_SCOPE_UNATTEMPTED",
+      "sourceHandoffSha256": "9ca3a7f578fe36c37b80672efdf1194d6c34e25b82db9bc738f1583dbac11b0d",
+      "independentSourceReviewSha256": "46331988b4a4ef395fc83cba49d968e96996eca768850198af70d4dae815c387",
+      "rootSourceAcceptanceSha256": "9eba1734e0e43944b517413c3f48c386eca507edf0df81b7b2f048bf6273dd91",
+      "targets": 16,
+      "sourceMetadataGets": 32,
+      "sourceOriginalGets": 10,
+      "newUniqueAcquiredPrintingCandidates": 10,
+      "acceptedAwaitingPreparation": 3,
+      "qualityIdentityOrEditionHeld": 7,
+      "metadataOnlyFinishHeld": 2,
+      "metadataOnlyFinishHoldsExcludedFromAcquiredPartition": true,
+      "oldLocalFilenamePreflightStopRetained": true,
+      "oldUnattemptedOriginalRequests": 4,
+      "newFourOriginalOnlyScopeSeparate": true,
+      "qualityIssueUnion": 6,
+      "editionIssueUnion": 3,
+      "incompletePrintedBodyUnion": 5,
+      "prepared": 0,
+      "published": 0
+    },
+    "nextVS12NativeFullMetadata": {
+      "status": "FROZEN_INDEPENDENT_PASS_REGISTERED_METADATA_ONLY",
+      "sourceHandoffSha256": "415e51d9ace8325953b2fab2e61a3a1a9e9e5cf1ce5c4663dc5a52334a4af40b",
+      "independentReviewSha256": "7f14bd50220f961dab5fad184418e75ec6566b1fdfb2ac5a6c63809ec4af17b9",
+      "metadataGets": 12,
+      "originalGets": 0,
+      "allHTTP200": true,
+      "minGapMs": 806,
+      "PokemonWithBodyProfiles": 3,
+      "TrainersWithoutProviderBody": 9,
+      "fullActualJapaneseVSPrintingProofStillRequired": true,
+      "noCanonicalNameOrTranslationRepair": true,
+      "sourceSelectionApproved": false,
+      "preparationApproved": false,
+      "publicationApproved": false
+    },
+    "nextWebPCGFourUntouchedOriginals": {
+      "status": "NEW_FOUR_ORIGINALS_INDEPENDENTLY_REVIEWED_REGISTERED_ALL_HELD",
+      "sourceHandoffSha256": "aed33bba6c09489f0f7831108584771187e5aa05223f5d3b0f48f9c6d1dd61cd",
+      "independentSourceReviewSha256": "41ec8fcff596898d2491658866c53b9a0e942476eb8d75380b60fc56b60da220",
+      "sourceMetadataGets": 0,
+      "sourceOriginalGets": 4,
+      "newUniqueAcquiredPrintingCandidates": 4,
+      "acceptedAwaitingPreparation": 0,
+      "qualityIdentityOrEditionHeld": 4,
+      "qualityIssueUnion": 4,
+      "editionIssueUnion": 1,
+      "incompletePrintedBodyUnion": 3,
+      "cachedMetadataNotRecounted": true,
+      "old16LocalStopPreserved": true,
+      "oldStoppedScopeNeverResumed": true,
+      "allFourHTTP200": true,
       "prepared": 0,
       "published": 0
     }
@@ -3013,17 +3127,17 @@
     "extraPermissionPromptRequired": false,
     "sourceLicenceFacts": "Existing source facts retained; owner queue direction does not invent vendor licence metadata."
   },
-  "preparedOriginals": 1215,
-  "preparedDerivatives": 3645,
-  "publishedVerifiedOriginals": 1215,
+  "preparedOriginals": 1219,
+  "preparedDerivatives": 3657,
+  "publishedVerifiedOriginals": 1219,
   "queuedItems": 0,
   "preparedByLanguage": {
     "en": 433,
-    "ja": 782
+    "ja": 786
   },
   "publishedVerifiedByLanguage": {
     "en": 433,
-    "ja": 782
+    "ja": 786
   },
   "failedProductionRuns": [
     {
@@ -3370,6 +3484,10 @@
     {
       "queueId": "PCG-EXACT2-SHARED-FRONTS-20261016",
       "releaseAssetId": 646111909
+    },
+    {
+      "queueId": "PCG1234-EXACT4-SHARED-FRONTS-20261016",
+      "releaseAssetId": 646214227
     }
   ],
   "holds": [
@@ -3929,6 +4047,32 @@
       "contentSha256": "6434210bb5b5fa40db916f246ea60173ea7b06cec09a8519e617246e3b1fd936"
     },
     {
+      "itemId": "card:3c7f29c7-a29a-4564-9b64-7c2dd45e984a",
+      "printingId": "3c7f29c7-a29a-4564-9b64-7c2dd45e984a",
+      "batchId": "JP-CARDS-018",
+      "setCode": "PCG1",
+      "collectorReference": "016",
+      "name": "weepinbell",
+      "status": "visible_first_edition_stamp_unbound",
+      "requiredAction": "The image is small, has a visible 1st Edition mark, and fine artist/footer text remains unreadable. Find a different complete, sharper original for the exact printing and intended edition; preserve this unchanged photo and its named blocker. No retries under the closed scope.",
+      "width": 359,
+      "height": 507,
+      "contentSha256": "a28c2d4306484a4211f3eb8af62512ee0bcbbf12dcaa45d099ea048fae83a71d"
+    },
+    {
+      "itemId": "card:da472eb0-3e38-40b9-99e3-54e6224a9587",
+      "printingId": "da472eb0-3e38-40b9-99e3-54e6224a9587",
+      "batchId": "JP-CARDS-018",
+      "setCode": "PCG1",
+      "collectorReference": "017",
+      "name": "Victreebel",
+      "status": "metadata_source_finish_conflict",
+      "requiredAction": "Resolve the recorded normal-versus-holo conflict before selecting an original; no image was requested.",
+      "width": null,
+      "height": null,
+      "contentSha256": null
+    },
+    {
       "itemId": "card:90b0f61e-790d-44fb-8a40-14a3d3597c5c",
       "printingId": "90b0f61e-790d-44fb-8a40-14a3d3597c5c",
       "batchId": "JP-CARDS-018",
@@ -4015,6 +4159,32 @@
       "name": "Articuno Ex",
       "status": "finish_metadata_conflict",
       "requiredAction": "Resolve the exact normal/holo discrepancy before acquiring any picture for this current tuple.",
+      "width": null,
+      "height": null,
+      "contentSha256": null
+    },
+    {
+      "itemId": "card:f244c98b-facb-4dac-a248-7e1d74a35ffa",
+      "printingId": "f244c98b-facb-4dac-a248-7e1d74a35ffa",
+      "batchId": "JP-CARDS-019",
+      "setCode": "PCG1",
+      "collectorReference": "041",
+      "name": "Voltorb",
+      "status": "complete_printed_body_unreadable",
+      "requiredAction": "The full card is visible, but the image is too small to verify the complete ability and edition/footer details. Find a different complete, sharper original for the exact printing and intended edition; preserve this unchanged photo and its named blocker. No retries under the closed scope.",
+      "width": 321,
+      "height": 450,
+      "contentSha256": "fe01481c660d8ebd5a2175cd65c9267eadda458d44d8bc035b092330c4a49e5f"
+    },
+    {
+      "itemId": "card:b093e26f-4d38-4724-862c-40eac1c61269",
+      "printingId": "b093e26f-4d38-4724-862c-40eac1c61269",
+      "batchId": "JP-CARDS-019",
+      "setCode": "PCG1",
+      "collectorReference": "043",
+      "name": "Zapdos Ex",
+      "status": "metadata_source_finish_conflict",
+      "requiredAction": "Resolve the recorded normal-versus-holo conflict before selecting an original; no image was requested.",
       "width": null,
       "height": null,
       "contentSha256": null
@@ -6469,6 +6639,123 @@
       "name": "アイビサウルス",
       "status": "visible_first_edition_stamp_unbound",
       "requiredAction": "Largest literal source image is960x1341and readable. It has a visible1EDITIONstamp. The currentnormal-only target has no edition discriminator, while fullnative metadata lists both unstamped and first-edition normal variants. Exact edition binding remains unresolved. Card formatUnlimited is a gameplay format label, not printing-edition evidence."
+    },
+    {
+      "itemId": "card:fe9d4224-24a6-4faa-954d-00f4fb7e306e",
+      "printingId": "fe9d4224-24a6-4faa-954d-00f4fb7e306e",
+      "batchId": "JP-CARDS-068",
+      "setCode": "web1",
+      "collectorReference": "004",
+      "name": "exeggcute",
+      "status": "image_framing_incomplete_source_original",
+      "requiredAction": "Find a different complete sharp original for the exact printing and intended edition. Preserve this unchanged inspected original and its specific blocker; do not retry the closed source plan.",
+      "width": 882,
+      "height": 1233,
+      "contentSha256": "9db6f3228278c3dd2c23dba72a8b31b38f4473c66c6c49f203ad4aebfec581b9"
+    },
+    {
+      "itemId": "card:d56ee0bd-caa2-43a1-90f5-6f94514c24ba",
+      "printingId": "d56ee0bd-caa2-43a1-90f5-6f94514c24ba",
+      "batchId": "JP-CARDS-068",
+      "setCode": "web1",
+      "collectorReference": "009",
+      "name": "wartortle",
+      "status": "visible_first_edition_stamp_unbound",
+      "requiredAction": "Find a different complete sharp original for the exact printing and intended edition. Preserve this unchanged inspected original and its specific blocker; do not retry the closed source plan.",
+      "width": 434,
+      "height": 621,
+      "contentSha256": "7390c54de4fdaa33a519d74e547f7907c6e4c3895e9017576febe9a3bbf67c19"
+    },
+    {
+      "itemId": "card:c0f2fd9a-6061-493c-b3c8-81b500486618",
+      "printingId": "c0f2fd9a-6061-493c-b3c8-81b500486618",
+      "batchId": "JP-CARDS-068",
+      "setCode": "web1",
+      "collectorReference": "011",
+      "name": "Voltorb",
+      "status": "complete_printed_body_unreadable",
+      "requiredAction": "Find a different complete sharp original for the exact printing and intended edition. Preserve this unchanged inspected original and its specific blocker; do not retry the closed source plan.",
+      "width": 1125,
+      "height": 1599,
+      "contentSha256": "05b0a53a631f85de46a2bc1cec996ef3c0cd55bac5312757e46d5a2f73e5fcc0"
+    },
+    {
+      "itemId": "card:37899048-cbc7-4fac-9266-215a25512da5",
+      "printingId": "37899048-cbc7-4fac-9266-215a25512da5",
+      "batchId": "JP-CARDS-068",
+      "setCode": "web1",
+      "collectorReference": "012",
+      "name": "slowpoke",
+      "status": "complete_printed_body_unreadable",
+      "requiredAction": "Find a different complete sharp original for the exact printing and intended edition. Preserve this unchanged inspected original and its specific blocker; do not retry the closed source plan.",
+      "width": 375,
+      "height": 500,
+      "contentSha256": "0ea7b21aa22a5c6d9d4337196b9fe4c0e38b6afd56d6b84f4087d37222465f4b"
+    },
+    {
+      "itemId": "card:9854ce7c-2eae-422a-8dba-988070fbd3ec",
+      "printingId": "9854ce7c-2eae-422a-8dba-988070fbd3ec",
+      "batchId": "JP-CARDS-068",
+      "setCode": "web1",
+      "collectorReference": "019",
+      "name": "venomoth",
+      "status": "visible_first_edition_stamp_unbound",
+      "requiredAction": "Find a different complete sharp original for the exact printing and intended edition. Preserve this unchanged inspected original and its specific blocker; do not retry the closed source plan.",
+      "width": 803,
+      "height": 1122,
+      "contentSha256": "49856c0634c4afb06e64fd1b7f3089af2fa1aa03c4ad440b26aeb68c4601d208"
+    },
+    {
+      "itemId": "card:e2dba562-dba7-4c96-83b6-59555cf47704",
+      "printingId": "e2dba562-dba7-4c96-83b6-59555cf47704",
+      "batchId": "JP-CARDS-068",
+      "setCode": "web1",
+      "collectorReference": "020",
+      "name": "exeggutor",
+      "status": "complete_printed_body_unreadable",
+      "requiredAction": "Find a different complete sharp original for the exact printing and intended edition. Preserve this unchanged inspected original and its specific blocker; do not retry the closed source plan.",
+      "width": 228,
+      "height": 328,
+      "contentSha256": "83f795c70385f2a0962b8fc8d42d7b64ef06389e27019d599bc2243624241fb2"
+    },
+    {
+      "itemId": "card:baa9df18-e2dd-4f71-808f-789370bca9f9",
+      "printingId": "baa9df18-e2dd-4f71-808f-789370bca9f9",
+      "batchId": "JP-CARDS-069",
+      "setCode": "web1",
+      "collectorReference": "030",
+      "name": "Max Revive",
+      "status": "visible_first_edition_stamp_unbound",
+      "requiredAction": "Find a different complete sharp original for the exact printing and intended edition. Preserve this unchanged inspected original and its specific blocker; do not retry the closed source plan.",
+      "width": 500,
+      "height": 500,
+      "contentSha256": "0d508b768ec47d6f784b973fa5f04163d2eb1c1b9b0450401de45d15c110b299"
+    },
+    {
+      "itemId": "card:908bfb7c-7d4b-4c9c-afdd-aea00c1feed0",
+      "printingId": "908bfb7c-7d4b-4c9c-afdd-aea00c1feed0",
+      "batchId": "JP-CARDS-069",
+      "setCode": "web1",
+      "collectorReference": "035",
+      "name": "Magikarp",
+      "status": "image_framing_incomplete_source_original",
+      "requiredAction": "Sharp image and readable card text, but the complete lower/right card boundary and corners are missing. Find a different complete, sharper original for the exact printing and intended edition; preserve this unchanged photo and its named blocker. No retries under the closed scope.",
+      "width": 986,
+      "height": 1374,
+      "contentSha256": "9416005a56c1d7658d2ee0af0c85d76d3e4c3fac1ba12420ca22d4172e17a1ec"
+    },
+    {
+      "itemId": "card:38f5d218-b175-46c8-baff-550efcb55124",
+      "printingId": "38f5d218-b175-46c8-baff-550efcb55124",
+      "batchId": "JP-CARDS-069",
+      "setCode": "web1",
+      "collectorReference": "045",
+      "name": "articuno",
+      "status": "complete_printed_body_unreadable",
+      "requiredAction": "The image is too small to read the complete attack text, collector details and edition information. Find a different complete, sharper original for the exact printing and intended edition; preserve this unchanged photo and its named blocker. No retries under the closed scope.",
+      "width": 359,
+      "height": 507,
+      "contentSha256": "11503ef741a2105a0e0c185c91e3de88506163ef9158118193be2143c59612b8"
     },
     {
       "itemId": "card:00ea2b09-20cf-42b2-8036-16b91443001c",
@@ -107468,15 +107755,383 @@
         "priceChanges": 0,
         "ownershipChanges": 0
       }
+    },
+    {
+      "batchId": "JP-CARDS-019",
+      "itemId": "card:3c83ecfe-306a-4f64-8003-e455fb4be4f9",
+      "printingId": "3c83ecfe-306a-4f64-8003-e455fb4be4f9",
+      "setId": "8063eabc-362a-4f15-a4ec-4ed73824252d",
+      "setCode": "PCG1",
+      "languageCode": "ja",
+      "collectorReference": "034",
+      "cardName": "Magikarp",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:969e19616e3f1452f9c6429726dc26bcc9278d3fa712bdc627908020be2101ed",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-flight-of-legends/magikarp-34",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/e4f5d0d1c5bd803938a282a6d628a988fcb046b9f669ad452683ec8e333d2214/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "59f7953cd442973c464adc0d05f6267c3488f494fad34be911542c048c2d31d2",
+        "byteSize": 520296,
+        "width": 1028,
+        "height": 1411,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/22ad89773a7c1652c27fa03139c5587fea5e4b156b8bbbae7e9415170df43cc0/card-grid.webp",
+          "sha256": "22ad89773a7c1652c27fa03139c5587fea5e4b156b8bbbae7e9415170df43cc0",
+          "byte_size": 20192,
+          "width": 240,
+          "height": 329,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/547c46eec963e17710b432fed6859094d529ced94e5c5a5d0770613c75a54d73/search-result.webp",
+          "sha256": "547c46eec963e17710b432fed6859094d529ced94e5c5a5d0770613c75a54d73",
+          "byte_size": 3572,
+          "width": 96,
+          "height": 132,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/06dfecde4292ea6ca3432310661220d4aa6ce5b6861eec51102b525d81a32e04/detail-page.webp",
+          "sha256": "06dfecde4292ea6ca3432310661220d4aa6ce5b6861eec51102b525d81a32e04",
+          "byte_size": 245764,
+          "width": 720,
+          "height": 988,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "034",
+        "printed_collector_number": "034/082",
+        "catalogue_set_code": "PCG1",
+        "printed_set_code_literal": null,
+        "printed_national_dex": null,
+        "canonical_native_label_preserved": "Magikarp",
+        "actual_printed_name": "コイキング",
+        "actual_printed_form": null,
+        "category": "Pokemon"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T05:36:04.743Z",
+        "productionRun": 38855802113,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38855802113",
+        "publicationReceiptSha256": "ad8076b42e702dc65e47b0895d214ec8d895febf4692b0bd5240d735246c8fb1",
+        "printingId": "3c83ecfe-306a-4f64-8003-e455fb4be4f9",
+        "assetId": "artwork-recovered-20260928:3c83ecfe-306a-4f64-8003-e455fb4be4f9:59f7953cd442973c464adc0d05f6267c3488f494fad34be911542c048c2d31d2",
+        "contentSha256": "59f7953cd442973c464adc0d05f6267c3488f494fad34be911542c048c2d31d2",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/3c83ecfe-306a-4f64-8003-e455fb4be4f9/59f7953cd442973c464adc0d05f6267c3488f494fad34be911542c048c2d31d2/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-021",
+      "itemId": "card:aec39508-e7ed-4d3d-a876-51dc5f7c258e",
+      "printingId": "aec39508-e7ed-4d3d-a876-51dc5f7c258e",
+      "setId": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+      "setCode": "PCG2",
+      "languageCode": "ja",
+      "collectorReference": "023",
+      "cardName": "Magikarp",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:216eb54cb14d91c43234a42350d520a86f72c65aa068c1105ba4a3f0902af8e0",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-clash-of-the-blue-sky/magikarp-23",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/d6d2e1d606137f572f172ea7a4f0fce814fcfba18ffb6efd78ef37f0d00a60ef/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "3b0688053bc0ba6ffc6b9ff5be8d391f944106b686bc92f3ff4dbacfa1c65782",
+        "byteSize": 476723,
+        "width": 1026,
+        "height": 1416,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/19bef3528684172e7a795a642f743b25491bb365294151ac5314e2dfa2b88620/card-grid.webp",
+          "sha256": "19bef3528684172e7a795a642f743b25491bb365294151ac5314e2dfa2b88620",
+          "byte_size": 22856,
+          "width": 240,
+          "height": 331,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/a1bb6e4ae4b2aa1fce250eddc5cb1851dca7d89170398103ba5988962e338756/search-result.webp",
+          "sha256": "a1bb6e4ae4b2aa1fce250eddc5cb1851dca7d89170398103ba5988962e338756",
+          "byte_size": 4190,
+          "width": 96,
+          "height": 133,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/4fe39d8a072333dd80f60288d1c361360dd74dc47b4ac448ec077b45dec22afa/detail-page.webp",
+          "sha256": "4fe39d8a072333dd80f60288d1c361360dd74dc47b4ac448ec077b45dec22afa",
+          "byte_size": 235544,
+          "width": 720,
+          "height": 994,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "023",
+        "printed_collector_number": "023/082",
+        "catalogue_set_code": "PCG2",
+        "printed_set_code_literal": null,
+        "printed_national_dex": null,
+        "canonical_native_label_preserved": "Magikarp",
+        "actual_printed_name": "コイキング",
+        "actual_printed_form": null,
+        "category": "Pokemon"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T05:36:04.743Z",
+        "productionRun": 38855802113,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38855802113",
+        "publicationReceiptSha256": "ad8076b42e702dc65e47b0895d214ec8d895febf4692b0bd5240d735246c8fb1",
+        "printingId": "aec39508-e7ed-4d3d-a876-51dc5f7c258e",
+        "assetId": "artwork-recovered-20260928:aec39508-e7ed-4d3d-a876-51dc5f7c258e:3b0688053bc0ba6ffc6b9ff5be8d391f944106b686bc92f3ff4dbacfa1c65782",
+        "contentSha256": "3b0688053bc0ba6ffc6b9ff5be8d391f944106b686bc92f3ff4dbacfa1c65782",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/aec39508-e7ed-4d3d-a876-51dc5f7c258e/3b0688053bc0ba6ffc6b9ff5be8d391f944106b686bc92f3ff4dbacfa1c65782/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-025",
+      "itemId": "card:db02f454-b7b4-497d-b2a0-a9e5ab074665",
+      "printingId": "db02f454-b7b4-497d-b2a0-a9e5ab074665",
+      "setId": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+      "setCode": "PCG3",
+      "languageCode": "ja",
+      "collectorReference": "030",
+      "cardName": "Delibird",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:0973053e12a282e02b519ab3d793d25c53b645468fbd018e4a21f274948f8d9f",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-rocket-gang-strikes-back/delibird-30",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/67154956235a060c815fdc167a110259b888183ac554619e90042ed385817914/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "356e2b83bf079ff0070eda4fe340482c43f7fcd51fc53b8b3adec7a0ce893e7f",
+        "byteSize": 588107,
+        "width": 1027,
+        "height": 1409,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/1f120de2fa2f3c650e14c7ddf3048360b814687065b4216141790da1d8dd6408/card-grid.webp",
+          "sha256": "1f120de2fa2f3c650e14c7ddf3048360b814687065b4216141790da1d8dd6408",
+          "byte_size": 23978,
+          "width": 240,
+          "height": 329,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/d8f9eb54318ea9c88a45fdcc2a220b1a5731523ac30c788d719e9ac9011c46ec/search-result.webp",
+          "sha256": "d8f9eb54318ea9c88a45fdcc2a220b1a5731523ac30c788d719e9ac9011c46ec",
+          "byte_size": 3924,
+          "width": 96,
+          "height": 132,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/0c0cd3da0c6ff6395ae3148ca00429e4072701cfa68d64443b95f30ec7199b9a/detail-page.webp",
+          "sha256": "0c0cd3da0c6ff6395ae3148ca00429e4072701cfa68d64443b95f30ec7199b9a",
+          "byte_size": 289022,
+          "width": 720,
+          "height": 988,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "030",
+        "printed_collector_number": "030/084",
+        "catalogue_set_code": "PCG3",
+        "printed_set_code_literal": null,
+        "printed_national_dex": null,
+        "canonical_native_label_preserved": "Delibird",
+        "actual_printed_name": "デリバード",
+        "actual_printed_form": null,
+        "category": "Pokemon"
+      },
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T05:36:04.743Z",
+        "productionRun": 38855802113,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38855802113",
+        "publicationReceiptSha256": "ad8076b42e702dc65e47b0895d214ec8d895febf4692b0bd5240d735246c8fb1",
+        "printingId": "db02f454-b7b4-497d-b2a0-a9e5ab074665",
+        "assetId": "artwork-recovered-20260928:db02f454-b7b4-497d-b2a0-a9e5ab074665:356e2b83bf079ff0070eda4fe340482c43f7fcd51fc53b8b3adec7a0ce893e7f",
+        "contentSha256": "356e2b83bf079ff0070eda4fe340482c43f7fcd51fc53b8b3adec7a0ce893e7f",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/db02f454-b7b4-497d-b2a0-a9e5ab074665/356e2b83bf079ff0070eda4fe340482c43f7fcd51fc53b8b3adec7a0ce893e7f/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
+    },
+    {
+      "batchId": "JP-CARDS-026",
+      "itemId": "card:bd47b01b-2694-4e7a-a446-9c2f7a5cbba7",
+      "printingId": "bd47b01b-2694-4e7a-a446-9c2f7a5cbba7",
+      "setId": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+      "setCode": "PCG3",
+      "languageCode": "ja",
+      "collectorReference": "060",
+      "cardName": "Rocket's Hitmonchan ex",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:2434851e2989680db395e6991f4ab79e780509e41032763da98586d3d807ef60",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-rocket-gang-strikes-back/rocket%27s-hitmonchan-ex-60",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/ref7bdf51e640008c472afd8ac00a3ab553532c496a67f5aa4aa594e772b9e0b44e/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "9a2f6443bb670c35e8f7fb67a29d7346768277d3c877f52effd33f9ba87b23a1",
+        "byteSize": 360094,
+        "width": 1218,
+        "height": 1600,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/f6f8b76ef072ff4467dc042173f725e728c01eb3ef791c9515f5a571752610e0/card-grid.webp",
+          "sha256": "f6f8b76ef072ff4467dc042173f725e728c01eb3ef791c9515f5a571752610e0",
+          "byte_size": 14872,
+          "width": 240,
+          "height": 316,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/dc4e9b3181b0d2d3a94476318367eecb5cb1bf1eb707200e8e529656e409e0d5/search-result.webp",
+          "sha256": "dc4e9b3181b0d2d3a94476318367eecb5cb1bf1eb707200e8e529656e409e0d5",
+          "byte_size": 2964,
+          "width": 96,
+          "height": 126,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/7790a82875d97184c6746930951868432563792cf681f9acca6648a83be86d06/detail-page.webp",
+          "sha256": "7790a82875d97184c6746930951868432563792cf681f9acca6648a83be86d06",
+          "byte_size": 153272,
+          "width": 720,
+          "height": 946,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "060",
+        "printed_collector_number": "060/084",
+        "catalogue_set_code": "PCG3",
+        "printed_set_code_literal": null,
+        "printed_national_dex": null,
+        "canonical_native_label_preserved": "Rocket's Hitmonchan ex",
+        "actual_printed_name": "R団のエビワラーex",
+        "actual_printed_form": null,
+        "category": null
+      },
+      "currentVariantCode": "holo",
+      "currentFinishCode": "holo",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T05:36:04.743Z",
+        "productionRun": 38855802113,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38855802113",
+        "publicationReceiptSha256": "ad8076b42e702dc65e47b0895d214ec8d895febf4692b0bd5240d735246c8fb1",
+        "printingId": "bd47b01b-2694-4e7a-a446-9c2f7a5cbba7",
+        "assetId": "artwork-recovered-20260928:bd47b01b-2694-4e7a-a446-9c2f7a5cbba7:9a2f6443bb670c35e8f7fb67a29d7346768277d3c877f52effd33f9ba87b23a1",
+        "contentSha256": "9a2f6443bb670c35e8f7fb67a29d7346768277d3c877f52effd33f9ba87b23a1",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/bd47b01b-2694-4e7a-a446-9c2f7a5cbba7/9a2f6443bb670c35e8f7fb67a29d7346768277d3c877f52effd33f9ba87b23a1/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     }
   ],
   "manualArtworkFollowUp": {
-    "updatedAt": "2026-10-16T04:58:06.416Z",
+    "updatedAt": "2026-10-16T05:51:00.161Z",
     "scope": "Specific follow-up details, separately from ordinary source work and active releases; current fixed inventory identities retained.",
     "collectorReferenceNote": "For older Japanese cards the Stackr reference may not be printed on the card; match its name, set, artwork and card text.",
-    "specificFollowUps": 596,
-    "ordinarySourceWorkStillOpen": 427,
-    "activeSourceOrPublicationWork": 4,
+    "specificFollowUps": 605,
+    "ordinarySourceWorkStillOpen": 415,
+    "activeSourceOrPublicationWork": 3,
     "batches": [
       {
         "batchId": "MANUAL-EN-001",
@@ -108319,7 +108974,7 @@
             "artworkType": "Card front",
             "status": "edition_and_scan_check",
             "whatToFind": "Confirm whether the saved printing needs first edition. The inspected source examples carry a first-edition stamp and overlaid lettering; a clean matching original is needed.",
-            "detail": "Find an approved exact Japanese printing front; metadata fields alone do not prove Japanese printed-language artwork.",
+            "detail": "original_canvas_below_HD_threshold_359x507; visible_1st_Edition_stamp_conflicts_unqualified_current_printing; fine_artist_and_footer_text_unreadable; outer_card_perimeters_and_corners_not_fully_visible_in_original_canvas",
             "providedGallery": "https://www.tcgcollector.com/sets/11225/flight-of-legends"
           },
           {
@@ -108333,7 +108988,7 @@
             "artworkType": "Card front",
             "status": "edition_and_scan_check",
             "whatToFind": "Confirm whether the saved printing needs first edition. The inspected source examples carry a first-edition stamp and overlaid lettering; a clean matching original is needed.",
-            "detail": "Find an approved exact Japanese printing front; metadata fields alone do not prove Japanese printed-language artwork.",
+            "detail": "explicit_source_or_native_finish_contradiction; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11225/flight-of-legends"
           },
           {
@@ -108599,7 +109254,7 @@
             "artworkType": "Card front",
             "status": "edition_and_scan_check",
             "whatToFind": "Confirm whether the saved printing needs first edition. The inspected source examples carry a first-edition stamp and overlaid lettering; a clean matching original is needed.",
-            "detail": "Find an approved exact Japanese printing front; metadata fields alone do not prove Japanese printed-language artwork.",
+            "detail": "original_canvas_below_HD_threshold_321x450; complete_ability_effect_and_edition_footer_fine_text_unreadable",
             "providedGallery": "https://www.tcgcollector.com/sets/11225/flight-of-legends"
           },
           {
@@ -108627,7 +109282,7 @@
             "artworkType": "Card front",
             "status": "edition_and_scan_check",
             "whatToFind": "Confirm whether the saved printing needs first edition. The inspected source examples carry a first-edition stamp and overlaid lettering; a clean matching original is needed.",
-            "detail": "Find an approved exact Japanese printing front; metadata fields alone do not prove Japanese printed-language artwork.",
+            "detail": "explicit_source_or_native_finish_contradiction; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11225/flight-of-legends"
           },
           {
@@ -111742,6 +112397,137 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
           },
           {
+            "itemId": "card:fe9d4224-24a6-4faa-954d-00f4fb7e306e",
+            "printingId": "fe9d4224-24a6-4faa-954d-00f4fb7e306e",
+            "batchId": "JP-CARDS-068",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "004",
+            "name": "exeggcute",
+            "artworkType": "Card front",
+            "status": "image_framing_incomplete_source_original",
+            "whatToFind": "Find a complete original that includes all four outer card edges and corners; the inspected image is cropped.",
+            "detail": "top_and_left_outer_perimeter_or_corners_outside_canvas; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
+            "itemId": "card:d56ee0bd-caa2-43a1-90f5-6f94514c24ba",
+            "printingId": "d56ee0bd-caa2-43a1-90f5-6f94514c24ba",
+            "batchId": "JP-CARDS-068",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "009",
+            "name": "wartortle",
+            "artworkType": "Card front",
+            "status": "visible_first_edition_stamp_unbound",
+            "whatToFind": "Confirm the intended first-edition or unstamped printing; a sharp original is retained, but its visible first-edition stamp is not matched by the current edition-neutral record.",
+            "detail": "original_canvas_below_HD_threshold_434x621; visible_1st_edition_mark_does_not_match_unqualified_pointer; complete_upper_evolution_rule_and_fine_attack_body_unreadable; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
+            "itemId": "card:c0f2fd9a-6061-493c-b3c8-81b500486618",
+            "printingId": "c0f2fd9a-6061-493c-b3c8-81b500486618",
+            "batchId": "JP-CARDS-068",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "011",
+            "name": "Voltorb",
+            "artworkType": "Card front",
+            "status": "complete_printed_body_unreadable",
+            "whatToFind": "Find a different complete sharp original for the exact printing and intended edition. Preserve this unchanged inspected original and its specific blocker; do not retry the closed source plan.",
+            "detail": "blurred_full_body_footer_despite_large_delivered_canvas; outer_perimeter_and_corners_outside_canvas; printed_collector_artist_and_noncollector_identifier_unreadable; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
+            "itemId": "card:37899048-cbc7-4fac-9266-215a25512da5",
+            "printingId": "37899048-cbc7-4fac-9266-215a25512da5",
+            "batchId": "JP-CARDS-068",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "012",
+            "name": "slowpoke",
+            "artworkType": "Card front",
+            "status": "complete_printed_body_unreadable",
+            "whatToFind": "Find a different complete sharp original for the exact printing and intended edition. Preserve this unchanged inspected original and its specific blocker; do not retry the closed source plan.",
+            "detail": "original_canvas_below_HD_threshold_375x500; complete_attack_rules_collector_artist_and_edition_unreadable; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
+            "itemId": "card:9854ce7c-2eae-422a-8dba-988070fbd3ec",
+            "printingId": "9854ce7c-2eae-422a-8dba-988070fbd3ec",
+            "batchId": "JP-CARDS-068",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "019",
+            "name": "venomoth",
+            "artworkType": "Card front",
+            "status": "visible_first_edition_stamp_unbound",
+            "whatToFind": "Confirm the intended first-edition or unstamped printing; a sharp original is retained, but its visible first-edition stamp is not matched by the current edition-neutral record.",
+            "detail": "visible_1st_edition_mark_does_not_match_unqualified_pointer; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
+            "itemId": "card:e2dba562-dba7-4c96-83b6-59555cf47704",
+            "printingId": "e2dba562-dba7-4c96-83b6-59555cf47704",
+            "batchId": "JP-CARDS-068",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "020",
+            "name": "exeggutor",
+            "artworkType": "Card front",
+            "status": "complete_printed_body_unreadable",
+            "whatToFind": "Find a different complete sharp original for the exact printing and intended edition. Preserve this unchanged inspected original and its specific blocker; do not retry the closed source plan.",
+            "detail": "original_canvas_below_HD_threshold_228x328; complete_evolution_attack_rules_collector_artist_edition_unreadable; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
+            "itemId": "card:baa9df18-e2dd-4f71-808f-789370bca9f9",
+            "printingId": "baa9df18-e2dd-4f71-808f-789370bca9f9",
+            "batchId": "JP-CARDS-069",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "030",
+            "name": "Max Revive",
+            "artworkType": "Card front",
+            "status": "visible_first_edition_stamp_unbound",
+            "whatToFind": "Confirm the intended first-edition or unstamped printing; a sharp original is retained, but its visible first-edition stamp is not matched by the current edition-neutral record.",
+            "detail": "original_canvas_below_HD_threshold_500x500; small_card_region_with_scene_background_not_card_region_resolution; visible_1st_Edition_stamp_conflicts_unqualified_current_printing; fine_footer_id_line_unreadable; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-012",
+        "items": [
+          {
+            "itemId": "card:908bfb7c-7d4b-4c9c-afdd-aea00c1feed0",
+            "printingId": "908bfb7c-7d4b-4c9c-afdd-aea00c1feed0",
+            "batchId": "JP-CARDS-069",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "035",
+            "name": "Magikarp",
+            "artworkType": "Card front",
+            "status": "image_framing_incomplete_source_original",
+            "whatToFind": "Find a complete original that includes all four outer card edges and corners; the inspected image is cropped.",
+            "detail": "outer_bottom_and_right_card_perimeters_and_corners_not_fully_visible_in_original_canvas",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
+            "itemId": "card:38f5d218-b175-46c8-baff-550efcb55124",
+            "printingId": "38f5d218-b175-46c8-baff-550efcb55124",
+            "batchId": "JP-CARDS-069",
+            "languageCode": "ja",
+            "setCode": "web1",
+            "collectorReference": "045",
+            "name": "articuno",
+            "artworkType": "Card front",
+            "status": "complete_printed_body_unreadable",
+            "whatToFind": "The image is too small to read the complete attack text, collector details and edition information. Find a different complete, sharper original for the exact printing and intended edition; preserve this unchanged photo and its named blocker. No retries under the closed scope.",
+            "detail": "original_canvas_below_HD_threshold_359x507; full_attack_effect_collector_artist_and_edition_fine_text_unreadable; outer_card_perimeters_and_corners_not_fully_visible_in_original_canvas",
+            "providedGallery": "https://www.tcgcollector.com/sets/11168/pokemon-web"
+          },
+          {
             "itemId": "card:839d6cc3-0842-410b-b78b-804d4a4589a2",
             "printingId": "839d6cc3-0842-410b-b78b-804d4a4589a2",
             "batchId": "JP-CHECK-001",
@@ -111838,12 +112624,7 @@
             "whatToFind": "Resolve the recorded card identity or finish detail, then locate its matching original.",
             "detail": "Retain the previous explicit source/identity/finish hold. Matching metadata fields do not settle the rejected source or finish.",
             "providedGallery": null
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-012",
-        "items": [
+          },
           {
             "itemId": "card:07b4024b-3437-4378-a007-c42730b5f0b8",
             "printingId": "07b4024b-3437-4378-a007-c42730b5f0b8",
@@ -112067,7 +112848,12 @@
             "whatToFind": "Resolve the recorded card identity or finish detail, then locate its matching original.",
             "detail": "Retain the previous explicit source/identity/finish hold. Matching metadata fields do not settle the rejected source or finish.",
             "providedGallery": null
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-013",
+        "items": [
           {
             "itemId": "card:f1b703a3-4546-42a6-a88d-e037e56e5b3a",
             "printingId": "f1b703a3-4546-42a6-a88d-e037e56e5b3a",
