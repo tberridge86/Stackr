@@ -1,0 +1,668 @@
+{
+  "schemaVersion": 1,
+  "queue_id": "PCG8-LUVDISC-001-20261015",
+  "source_manifest_sha256": "8bc1260175856b0e19bf56bcc91b5e6275dce077cfcc4f446eec730426e1fcfd",
+  "package_receipt_sha256": "70bc30983c6c8b3e2515414371f4c0513fc62cd553dbad0371fa985b06515db0",
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "0d51946911fdb2635591bee7b0af18eaf435784845c164970f4cb1688b4f57af",
+    "finiteDecisionFileByteSha256": "18d97d8614e1593fd437dc8e1720caaa31831e1ec899ccbc0a30761c70b11eff",
+    "rootPrivateContextFileByteSha256": "7ac4ebf7a643e942c2694b880d5b31d2d88e6692d35a07130c694f970ef8aa56",
+    "sourceHandoffFileByteSha256": "a7fa9e58fe7d21a0e317e09943948c76376a759eeed2ad065f4a7bca3d04e64b",
+    "independentSourceReviewFileByteSha256": "722e1b9468df498064df9bf409e514209579427dd9c6891fa6d2d0456753a7c3",
+    "fourSourceCheckpointFileByteSha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "3e32963c56e4827d4585cd9e53c2a6f31e6edf2545eb3d8b989141f4d6aa6fd9",
+    "independentPrivatePackageReviewSha256": "3922759f3f7dd24278d6f4fbf21d911b4681b812a1350604ac2e84a2b9377250",
+    "rootPrivatePackageValidationSha256": "52bfff5031a2a2c3a737f7fc7306b5c31f0deeb6cbd9ffa9c00a81fb64a21af2",
+    "rootSourceArchiveBindingSha256": "28a93ae9fb41e610e410ea4f87b33a5b439dbe739db4827eec106334e2014078",
+    "rootUploadReceiptSha256": "e013cea1fde1b3b0a1b5d7ba365ed8c02109994923f0812514be6c4c6860a968",
+    "rootPublisherContextSha256": "664eeb4f22f1fc3d23de0061519eea0dad543e9188a53390ee302947179d951b"
+  },
+  "archive": {
+    "id": 645584430,
+    "sha256": "cb60020e1886227fbbe62acde45f37a78bfa7f2185311d016067a166682496ef",
+    "byte_size": 859616,
+    "file_count": 8,
+    "name": "luvdisc1-fronts-20261015.zip"
+  },
+  "archive_metadata": [
+    {
+      "file": "manifest.json",
+      "sha256": "8bc1260175856b0e19bf56bcc91b5e6275dce077cfcc4f446eec730426e1fcfd",
+      "byte_size": 28082
+    },
+    {
+      "file": "receipts/preparation-summary.json",
+      "sha256": "503ef448ce4dfa24627d0cde0a37818ba618a8590907e44181a405648cf1ead3",
+      "byte_size": 1313
+    },
+    {
+      "file": "receipts/current-card-bindings.json",
+      "sha256": "6eb9f133c4120d12e560ea4895e20d96e93e8c58e220f34a273f3571ac3029e9",
+      "byte_size": 4594
+    },
+    {
+      "file": "receipts/finite-decision.json",
+      "sha256": "f84b688534dd5876fb962165ac5025eb2ba8f9e74f6d1727455a6615fbfc49e7",
+      "byte_size": 4613
+    }
+  ],
+  "rows": [
+    {
+      "printing_id": "1ec3e5ff-f0c2-4ff2-8423-9021a810f5b7",
+      "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+      "set_code": "PCG8",
+      "language_code": "ja",
+      "collector_number": "027",
+      "card_native_name": "luvdisc",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "c1697767-547d-4c48-a774-ccb5357f07b4"
+      ],
+      "batch_id": "JP-CARDS-041",
+      "work_type": "CARDS",
+      "source_code": "pricecharting",
+      "provider_id": "pricecharting-image-url-sha256:db50605658ba522392b809aea4200d8d2cef733f30c4cd75bd20ea3296720f8c",
+      "image_url": "https://storage.googleapis.com/images.pricecharting.com/7a9b921596b750b23bf473eed1864bed1eb2904b414a9c2ff87f80f075a19024/1600.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/caf0171a65a1a8d2c6ab7350ba201d270316dcf1767f13a628243dee15f54356/original.jpg",
+          "sha256": "caf0171a65a1a8d2c6ab7350ba201d270316dcf1767f13a628243dee15f54356",
+          "byte_size": 540677,
+          "width": 1020,
+          "height": 1403,
+          "mime_type": "image/jpeg",
+          "artifact_id": 645584430
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/0f9466bf055d1b5fac70f467cf4f38e6a0bae0acf9fe3dfc4c0fef09eaf931af/card-grid.webp",
+          "sha256": "0f9466bf055d1b5fac70f467cf4f38e6a0bae0acf9fe3dfc4c0fef09eaf931af",
+          "byte_size": 26002,
+          "width": 240,
+          "height": 330,
+          "mime_type": "image/webp",
+          "artifact_id": 645584430
+        },
+        {
+          "role": "search-result",
+          "file": "objects/784495e41d6da9d73f3c8a30a7f30dddd710a535cf48590f8840c976892b366a/search-result.webp",
+          "sha256": "784495e41d6da9d73f3c8a30a7f30dddd710a535cf48590f8840c976892b366a",
+          "byte_size": 4218,
+          "width": 96,
+          "height": 132,
+          "mime_type": "image/webp",
+          "artifact_id": 645584430
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/041efc22e3410d0673283fa7ce5218d0b673fedd6942ec500a075c8535e12ce0/detail-page.webp",
+          "sha256": "041efc22e3410d0673283fa7ce5218d0b673fedd6942ec500a075c8535e12ce0",
+          "byte_size": 278720,
+          "width": 720,
+          "height": 990,
+          "mime_type": "image/webp",
+          "artifact_id": 645584430
+        }
+      ],
+      "evidence": {
+        "source_url": "https://storage.googleapis.com/images.pricecharting.com/7a9b921596b750b23bf473eed1864bed1eb2904b414a9c2ff87f80f075a19024/1600.jpg",
+        "source_page_url": "https://www.pricecharting.com/game/pokemon-japanese-miracle-crystal/luvdisc-27",
+        "provider_id": "pricecharting-image-url-sha256:db50605658ba522392b809aea4200d8d2cef733f30c4cd75bd20ea3296720f8c",
+        "source_metadata_sha256": "f9b940f1c1332891f903f0f22a5fe9632999ffef1e1f9d95c9cf18ef47340b8a",
+        "source_body": {
+          "contract": "pcg8-luvdisc027-one-japanese-shared-holo-front-v1",
+          "work_type": "CARDS",
+          "accepted_category": "Pokemon",
+          "photo_identity_projection": {
+            "schemaVersion": 1,
+            "sourceCode": "pricecharting",
+            "sourceDetailUrl": "https://www.pricecharting.com/game/pokemon-japanese-miracle-crystal/luvdisc-27",
+            "literalOriginalUrl": "https://storage.googleapis.com/images.pricecharting.com/7a9b921596b750b23bf473eed1864bed1eb2904b414a9c2ff87f80f075a19024/1600.jpg",
+            "literalOriginalUrlSha256": "db50605658ba522392b809aea4200d8d2cef733f30c4cd75bd20ea3296720f8c",
+            "sourceProductId": "3439740",
+            "canonicalPrintingId": "1ec3e5ff-f0c2-4ff2-8423-9021a810f5b7",
+            "canonicalSetId": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+            "canonicalSetCode": "PCG8",
+            "languageCode": "ja",
+            "canonicalAlias": "027",
+            "printedCollectorNumber": "027/075",
+            "printedSetCodeLiteral": null,
+            "sourceSetAssociation": "Japanese Miracle Crystal",
+            "originalFileByteSha256": "caf0171a65a1a8d2c6ab7350ba201d270316dcf1767f13a628243dee15f54356",
+            "originalByteSize": 540677,
+            "width": 1020,
+            "height": 1403,
+            "format": "jpeg",
+            "actualPrintedName": "ラブカス",
+            "actualPrintedForm": null,
+            "historicalSelectedSourceCardId": null,
+            "physicalEditionCertified": false,
+            "physicalFinishCertified": false
+          },
+          "photo_identity_projection_canonical_sha256": "c1618641a6c4182ca793180ec5026f7f374ae0e88b03c479a53026252935255c",
+          "photo_raw_private_html_file_byte_sha256": "f9b940f1c1332891f903f0f22a5fe9632999ffef1e1f9d95c9cf18ef47340b8a",
+          "root_approved_raw_row_canonical_sha256": "86ab8bd636b878c8e3f73ea8221709559c467b0e0ee2a8653e31f80713ef1f9b",
+          "actual_pixel_signature": {
+            "alias": "PCG8-027",
+            "originalSha256": "caf0171a65a1a8d2c6ab7350ba201d270316dcf1767f13a628243dee15f54356",
+            "actualPrintedObservations": {
+              "printedNativeName": "ラブカス",
+              "category": "Pokemon",
+              "printedForm": null,
+              "printedHP": 60,
+              "printedType": "Water",
+              "printedStage": "たね",
+              "abilities": [],
+              "attacks": [
+                {
+                  "name": "おあいこ",
+                  "cost": [
+                    "Colorless"
+                  ],
+                  "printedDamage": null,
+                  "nativeText": "自分の山札から、相手のポケモンの数ぶんまでの「たねポケモン」を選び出し、自分のベンチに出す。その後、その山札を切る。"
+                },
+                {
+                  "name": "スタジアムプレイ",
+                  "cost": [
+                    "Colorless"
+                  ],
+                  "printedDamage": "10",
+                  "nativeText": "場に自分の「スタジアム」があるなら、自分のポケモン全員のダメージカウンターを、それぞれ1個ずつとりのぞく。場に相手の「スタジアム」があるなら、相手のベンチポケモン全員にも、それぞれ10ダメージ。"
+                }
+              ],
+              "printedCollectorNumber": "027/075",
+              "printedArtist": "Kyoko Umemoto",
+              "printedWeakness": "Lightning",
+              "printedResistance": null,
+              "printedRetreat": 1,
+              "printedRarityGlyph": "black star",
+              "printedSetCodeLiteral": null,
+              "printedNationalDex": null,
+              "setMarkVisible": true,
+              "copyrightYear": 2006,
+              "editionStampObserved": false,
+              "foreignWatermarkObserved": false,
+              "allFourOuterPerimetersAndCornersVisible": true,
+              "frameQualification": "All rounded corners and complete perimeter visible against pale photographic background; full printed body and footer unobstructed.",
+              "art": "Pink heart-shaped Luvdisc swimming right-to-left through blue water before green islands/palms, with reflective foil-like flecks in art.",
+              "finishAppearance": "holo-like reflective art pattern observed; no physical finish authenticity certification",
+              "sourceMetadataIsSoleIdentityProof": false
+            },
+            "nativeProviderQualification": "Provider luvdisc/ゲームでさえ and translated Stadium effect are nonverbatim. Printed おあいこ deck/bench/shuffle clause and スタジアムプレイ own-Stadium heal-one / opponent-Stadium bench10 clauses independently transcribed. Provider extra bench weakness/resistance parenthetical is not printed here and not inserted. HP60/Water/damage10 support identity. Existing canonical label and holo is_default=false unchanged.",
+            "holds": [
+              "current_physical_edition_unresolved"
+            ],
+            "completePrintedIdentityAndBodyReadable": true
+          },
+          "actual_pixel_signature_canonical_sha256": "ee451cfad67d03ae89b4f2d098c27f0d9de4a8b9dd6cda709e3128e2f1a59f6e",
+          "source_signature_wrapper_preserved": true,
+          "current_production_binding": {
+            "printing": {
+              "id": "1ec3e5ff-f0c2-4ff2-8423-9021a810f5b7",
+              "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": true
+              },
+              "collector_number": "027",
+              "printing_discriminator": "",
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "c1697767-547d-4c48-a774-ccb5357f07b4",
+                "is_default": false,
+                "artwork_key": null,
+                "finish_code": "holo",
+                "printing_id": "1ec3e5ff-f0c2-4ff2-8423-9021a810f5b7",
+                "variant_code": "holo",
+                "canonical_key": "pokemon:ja:d832f428-8d51-4ac0-a3cf-a5d38bddb88d:027:holo",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+                "set_code": "PCG8",
+                "variant_id": "c1697767-547d-4c48-a774-ccb5357f07b4",
+                "artwork_key": null,
+                "finish_code": "holo",
+                "printing_id": "1ec3e5ff-f0c2-4ff2-8423-9021a810f5b7",
+                "variant_code": "holo",
+                "canonical_key": "pokemon:ja:d832f428-8d51-4ac0-a3cf-a5d38bddb88d:027:holo",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "027",
+                "catalogue_version": "ja:magazine-promo-reconciliation-2026-09-27-v1",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "1ec3e5ff-f0c2-4ff2-8423-9021a810f5b7"
+          },
+          "current_staging_binding": {
+            "printing": {
+              "id": "1ec3e5ff-f0c2-4ff2-8423-9021a810f5b7",
+              "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": false
+              },
+              "collector_number": "027",
+              "printing_discriminator": null,
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "c1697767-547d-4c48-a774-ccb5357f07b4",
+                "is_default": false,
+                "artwork_key": null,
+                "finish_code": "holo",
+                "printing_id": "1ec3e5ff-f0c2-4ff2-8423-9021a810f5b7",
+                "variant_code": "holo",
+                "canonical_key": "pokemon:ja:d832f428-8d51-4ac0-a3cf-a5d38bddb88d:027:holo",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+                "set_code": "PCG8",
+                "variant_id": "c1697767-547d-4c48-a774-ccb5357f07b4",
+                "artwork_key": null,
+                "finish_code": "holo",
+                "printing_id": "1ec3e5ff-f0c2-4ff2-8423-9021a810f5b7",
+                "variant_code": "holo",
+                "canonical_key": "pokemon:ja:d832f428-8d51-4ac0-a3cf-a5d38bddb88d:027:holo",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "027",
+                "catalogue_version": "ja:tcgdex-796afd47e430-full-primary-2026-08-19",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "1ec3e5ff-f0c2-4ff2-8423-9021a810f5b7"
+          },
+          "required_asset_scope": {
+            "printing_id": "1ec3e5ff-f0c2-4ff2-8423-9021a810f5b7",
+            "variant_id": null
+          },
+          "source_variant_id": null,
+          "required_delivery_kind": "shared",
+          "current_holo_is_default_false_retained": true,
+          "actual_api_default_variant_id": "c1697767-547d-4c48-a774-ccb5357f07b4",
+          "queue_controls": {
+            "identity_controls": {
+              "canonical_alias": "027",
+              "printed_collector_number": "027/075",
+              "catalogue_set_code": "PCG8",
+              "printed_set_code_literal": null,
+              "printed_national_dex": null,
+              "canonical_native_label_preserved": "luvdisc",
+              "actual_printed_name": "ラブカス",
+              "actual_printed_form": null,
+              "category": "Pokemon"
+            },
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "all_four_rounded_corners_visible": true,
+              "printed_body_language": "ja",
+              "complete_actual_japanese_attacks_costs_effects_artist_footer_readable": true,
+              "delta_species_label_observed": false,
+              "edition_stamp_observed": false,
+              "watermark_observed": false,
+              "stamp_absence_does_not_certify_unlimited": true,
+              "current_physical_edition_unresolved_retained": true,
+              "provider_attack_text_not_verbatim_printed_japanese": true,
+              "provider_unprinted_parenthetical_excluded": true
+            },
+            "source_qa": {
+              "actual_japanese_complete_front_verified": true,
+              "original_sha256": "caf0171a65a1a8d2c6ab7350ba201d270316dcf1767f13a628243dee15f54356",
+              "actual_signature_canonical_sha256": "ee451cfad67d03ae89b4f2d098c27f0d9de4a8b9dd6cda709e3128e2f1a59f6e",
+              "source_metadata_is_sole_identity_proof": false,
+              "physical_finish_certified": false,
+              "physical_edition_certified": false
+            }
+          },
+          "historical_authority": {
+            "selected_source_card_id": null,
+            "preparation_approved": false,
+            "publication_approved": false
+          },
+          "root_finite_authority": {
+            "decision_file_byte_sha256": "18d97d8614e1593fd437dc8e1720caaa31831e1ec899ccbc0a30761c70b11eff",
+            "approved_projection_file_byte_sha256": "0d51946911fdb2635591bee7b0af18eaf435784845c164970f4cb1688b4f57af",
+            "root_private_context_file_byte_sha256": "7ac4ebf7a643e942c2694b880d5b31d2d88e6692d35a07130c694f970ef8aa56",
+            "preparation_approved": true,
+            "conditional_future_publication_approved": true,
+            "root_approved_row_preparation_approved": true,
+            "private_package_is_production_ready": false
+          },
+          "coverage": {
+            "wholeUnchangedOriginalIndividuallyViewed": true,
+            "fullPILSharpRGBAAgreement": true,
+            "completeFrameAndFourOuterCornersVisible": true,
+            "actualJapaneseNameHPTypeStageCompleteAttackBodyArtistNumberReadable": true,
+            "printedNationalDexNotInvented": true,
+            "printedPCG8CodeNotInvented": true
+          },
+          "unresolved_physical_qualifications": [
+            "No physical edition or material authentication; no observed edition stamp does not certify unlimited. Historical source physical-edition qualification remains. Holo-like photographed appearance does not authenticate physical finish."
+          ],
+          "shared_front_eligibility_does_not_authenticate_physical_edition": true,
+          "current_edition_exact_match_established": false,
+          "no_observed_stamp_is_unlimited_certificate": false,
+          "source_provider_body_verbatim_agreement": false,
+          "provider_unprinted_weakness_resistance_parenthetical_included": false,
+          "canonical_translated_native_label_preserved": true,
+          "quality_qualification": {
+            "original_width": 1020,
+            "original_height": 1403,
+            "original_HD_pixels": true,
+            "detail_derivative_HD_pixels": false,
+            "current_configured_api_image_null": true,
+            "whole_original_perimeter_and_corners_retained": true,
+            "provider_never_resized_certified": false,
+            "native_optical_gain_claimed": false,
+            "app_large_expected_role": "original",
+            "app_large_reason": "Standard detail below1000 long edge; original expected from unchanged app helper."
+          },
+          "new_source_requests": 0,
+          "full_commercial_html_or_provider_json_included": false,
+          "source_wide_approval": false,
+          "vendor_licence_certified": false,
+          "physical_finish_certified": false,
+          "physical_edition_certified": false,
+          "physical_material_authenticity_verified": false,
+          "unlimited_edition_certified": false,
+          "provider_never_resized_certified": false,
+          "native_optical_gain_claimed": false,
+          "stackr_enlargement": false
+        },
+        "queue_controls": {
+          "identity_controls": {
+            "canonical_alias": "027",
+            "printed_collector_number": "027/075",
+            "catalogue_set_code": "PCG8",
+            "printed_set_code_literal": null,
+            "printed_national_dex": null,
+            "canonical_native_label_preserved": "luvdisc",
+            "actual_printed_name": "ラブカス",
+            "actual_printed_form": null,
+            "category": "Pokemon"
+          },
+          "pixel_observations": {
+            "whole_original_inspected": true,
+            "full_frame_visible": true,
+            "all_four_rounded_corners_visible": true,
+            "printed_body_language": "ja",
+            "complete_actual_japanese_attacks_costs_effects_artist_footer_readable": true,
+            "delta_species_label_observed": false,
+            "edition_stamp_observed": false,
+            "watermark_observed": false,
+            "stamp_absence_does_not_certify_unlimited": true,
+            "current_physical_edition_unresolved_retained": true,
+            "provider_attack_text_not_verbatim_printed_japanese": true,
+            "provider_unprinted_parenthetical_excluded": true
+          },
+          "source_qa": {
+            "actual_japanese_complete_front_verified": true,
+            "original_sha256": "caf0171a65a1a8d2c6ab7350ba201d270316dcf1767f13a628243dee15f54356",
+            "actual_signature_canonical_sha256": "ee451cfad67d03ae89b4f2d098c27f0d9de4a8b9dd6cda709e3128e2f1a59f6e",
+            "source_metadata_is_sole_identity_proof": false,
+            "physical_finish_certified": false,
+            "physical_edition_certified": false
+          }
+        },
+        "artwork_scope": "printing_front",
+        "delivery_kind": "shared",
+        "asset_variant_id": null,
+        "source_variant_id": null,
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "physical_edition_verified": false,
+        "vendor_licence_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    }
+  ],
+  "source_counts": {
+    "pricecharting": 1
+  },
+  "delivery_scope": {
+    "fixed_batch_ids": [
+      "JP-CARDS-041"
+    ],
+    "work_type": "CARDS",
+    "eligible_fronts": 1,
+    "eligible_aliases": [
+      "027"
+    ],
+    "category": "Pokemon",
+    "printed_collector_number": "027/075",
+    "printed_set_code_literal": null,
+    "asset_variant_id": null,
+    "source_variant_id": null,
+    "delivery_kind": "shared",
+    "whole_batch_completion_asserted": false
+  },
+  "binding_expectations": {
+    "production": [
+      {
+        "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+        "set_code": "PCG8",
+        "game_code": "pokemon",
+        "variant_id": "c1697767-547d-4c48-a774-ccb5357f07b4",
+        "finish_code": "holo",
+        "printing_id": "1ec3e5ff-f0c2-4ff2-8423-9021a810f5b7",
+        "variant_code": "holo",
+        "language_code": "ja",
+        "card_native_name": "luvdisc",
+        "collector_number": "027",
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "same_artwork_as_variant_id": null
+      }
+    ],
+    "staging": [
+      {
+        "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+        "set_code": "PCG8",
+        "game_code": "pokemon",
+        "variant_id": "c1697767-547d-4c48-a774-ccb5357f07b4",
+        "finish_code": "holo",
+        "printing_id": "1ec3e5ff-f0c2-4ff2-8423-9021a810f5b7",
+        "variant_code": "holo",
+        "language_code": "ja",
+        "card_native_name": "luvdisc",
+        "collector_number": "027",
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+        "same_artwork_as_variant_id": null
+      }
+    ]
+  },
+  "scope_counts": {
+    "production": {
+      "printings": 1,
+      "variants": 1,
+      "names": 2,
+      "sets": 1
+    },
+    "staging": {
+      "printings": 1,
+      "variants": 1,
+      "names": 2,
+      "sets": 1
+    }
+  },
+  "source_policies": {
+    "production": [
+      {
+        "code": "pokellector",
+        "display_name": "Pokellector (owner supplied Japanese card fronts)",
+        "source_type": "image",
+        "base_url": "https://jp.pokellector.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly2 Neo2 Ruin Wall reference fronts in STACKR-JA-LEGACY-TRAINER-FRONTS-20261015-008; owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval or independently verified vendor licence.",
+        "deprecated_at": null
+      },
+      {
+        "code": "pricecharting",
+        "display_name": "PriceCharting (owner supplied card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.pricecharting.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Owner-attested source use for exactly Aquapolis Mr. Mime95b and Porygon103b shared printing-front artwork in finite cohort AQUAPOLIS-SHARED-002-20261015. Independent vendor and underlying card licences are unverified. No source-wide approval; each later acquisition requires separate finite approval. Existing provenance rows and source policies must remain unchanged.",
+        "deprecated_at": null
+      },
+      {
+        "code": "scrydex",
+        "display_name": "Scrydex",
+        "source_type": "image",
+        "base_url": "https://scrydex.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Exactly 89 English MEP fronts approved by owner; catalogue/rights-evidence/mep89-scrydex-owner-confirmation.2026-09-27.json; 8c68bf3499de1e1e340b00fc03e5f1b469de7b65d259b5fba5a8b4cd31119ca9. No source-wide approval.",
+        "deprecated_at": null
+      },
+      {
+        "code": "tcgcollector",
+        "display_name": "TCGCollector (owner supplied Japanese card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.tcgcollector.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly3 independently accepted Leaders Stadium fronts019/081/096. Bind the final finite preparation/publication decision and exact source selection in the publisher plan. Owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval, independently verified vendor licence or physical finish/edition certification. Finite decision SHA256 68f1af735d5e481ed26d1aabbe94e493d520575d9d4191413508f9ec90cf68ff.",
+        "deprecated_at": null
+      }
+    ],
+    "staging": []
+  },
+  "new_sources": {
+    "production": [],
+    "staging": [
+      {
+        "code": "pricecharting",
+        "display_name": "PriceCharting (owner supplied card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.pricecharting.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Owner-attested source use for exactly Aquapolis Mr. Mime95b and Porygon103b shared printing-front artwork in finite cohort AQUAPOLIS-SHARED-002-20261015. Independent vendor and underlying card licences are unverified. No source-wide approval; each later acquisition requires separate finite approval. Existing provenance rows and source policies must remain unchanged.",
+        "deprecated_at": null
+      }
+    ]
+  },
+  "source_policy_checkpoint_sha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+  "existing_source_row_hashes": {
+    "pricecharting": "b4b74f69cac37abeee008806f6d8dd8ea63a0f0ce43fa065dce9261b428b421b",
+    "pokellector": "4a2a381f7146c0bfa0201c62e91e7682f18da6597c4743f23414f3606a942a71",
+    "tcgcollector": "f1f01d1b094986ad0a9f5efcf1e98fe7388e0e1c5452d23da6cf7cab97a1ca29",
+    "scrydex": "25af5b50521e6fd0942764536f62b0c53c3e72c69c874916241af47735407929"
+  },
+  "before_snapshot_hashes": {
+    "production": "542e93ffe6ae4a35a6a54bb2908f4c2112faa1b2b0124552d1f771c37c2eebad",
+    "staging": "54345051c0ccd6b38ea14281057fbe521d8352cbc070e698e433e12aeb9d0fc8"
+  },
+  "before_snapshot_counts": {
+    "production": 11,
+    "staging": 5
+  },
+  "expected_after_snapshot_counts": {
+    "production": 13,
+    "staging": 8
+  },
+  "production_source_changes_allowed": 0,
+  "stage_only_fixture_source_code": "pricecharting",
+  "canonical_schema_qualification": {
+    "production": {
+      "id": "1ec3e5ff-f0c2-4ff2-8423-9021a810f5b7",
+      "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+      "game_code": "pokemon",
+      "deprecated_at": null,
+      "language_code": "ja",
+      "_column_presence": {
+        "printing_discriminator": true
+      },
+      "collector_number": "027",
+      "printing_discriminator": "",
+      "corrected_by_printing_id": null
+    },
+    "staging": {
+      "id": "1ec3e5ff-f0c2-4ff2-8423-9021a810f5b7",
+      "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+      "game_code": "pokemon",
+      "deprecated_at": null,
+      "language_code": "ja",
+      "_column_presence": {
+        "printing_discriminator": false
+      },
+      "collector_number": "027",
+      "printing_discriminator": null,
+      "corrected_by_printing_id": null
+    }
+  },
+  "app_display_expectation": {
+    "large_role": "original",
+    "large_dimensions": [
+      1020,
+      1403
+    ],
+    "detail_dimensions": [
+      720,
+      990
+    ],
+    "reason": "Detail long edge990 is below the unchanged app helper threshold1000; verify actual app selection without enforcing large equals detail."
+  },
+  "saved_targets_sha256": "1a851d3164b28f1bb12528554194482e9792dde58c39e52f2f4a75778743a501",
+  "identity_table_sha256": "1dbb29d9a61ef13659cceb39f84912b51ef52612330f4d16a894fba1edf60bf6"
+}
