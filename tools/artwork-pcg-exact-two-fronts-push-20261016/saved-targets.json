@@ -1,0 +1,30 @@
+[
+  {
+    "printing_id": "b7574fc2-64bf-499e-9c6c-5122ce550a62",
+    "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+    "set_code": "PCG8",
+    "language_code": "ja",
+    "collector_number": "040",
+    "card_native_name": "Dusclops",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "1a449bbf-02f3-4d07-8741-45475431ad07"
+    ],
+    "batch_id": "JP-CARDS-041",
+    "work_type": "CARDS"
+  },
+  {
+    "printing_id": "6920ca9b-a187-4cf1-9f56-7a1a48d4762f",
+    "set_id": "b5ef438a-ddcb-4093-8c9b-572639565af5",
+    "set_code": "PCG9",
+    "language_code": "ja",
+    "collector_number": "026",
+    "card_native_name": "feraligatr（デルタ種）",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "fb44782b-ef4c-416a-a9f0-5b6adad52144"
+    ],
+    "batch_id": "JP-CARDS-044",
+    "work_type": "CARDS"
+  }
+]
