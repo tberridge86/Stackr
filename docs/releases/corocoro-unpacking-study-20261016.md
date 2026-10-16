@@ -1,5 +1,7 @@
 # CoroCoro watched openings and local animation studies — 16 October 2026
 
+**Latest owner correction:** [The magazine-first journey](corocoro-magazine-first-20261016.md) now starts all five cases with exact covers, opens before any release and adds Cetitan's filmed gutter turn/lift before its post-edit extraction. The enlarged supported backing addresses the weak standalone peel. [Current evidence](corocoro-magazine-first-20261016.json) retains unknown interior/binding/seal steps explicitly. Earlier stages below remain historical receipts.
+
 **Current continuation:** [Three further studies and current validation](corocoro-next-unpacking-cases-20261016.md) add Cleffa, additional January 2000 Wooper and post-edit Cetitan extraction. Five scenes now use their own source carriers/pouches; exact Cleffa issue/front evidence is strengthened and eight further originals are privately prepared. The original Mew benchmark is unchanged. [Latest evidence](corocoro-next-unpacking-cases-20261016.json) includes valid 355px viewport proof and actual 320/355 DOM bounds; installed-phone behaviour remains held. The two-scene report below is preserved as the earlier checked stage, not current coverage.
 
 Actual first-hand footage now supports the November 1996 pair's **back-up sheet release, then turn-over** and the regular February 2022 Pikachu VMAX sleeve's **right-side extraction, front-up**. The separate localhost study implements those two action orders. The original Shining Mew benchmark remains byte-identical and unchanged.
