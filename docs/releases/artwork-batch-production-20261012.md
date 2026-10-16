@@ -1,13 +1,13 @@
 # Stackr artwork production handoff
 
-Updated 2026-10-16T00:15:49.091Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
+Updated 2026-10-16T03:44:18.577Z. Fixed inventory STACKR-ARTWORK-20261012: 2,944 tasks /161 stable batches.
 
-1914 tasks / 85 batches complete; 1030 tasks / 76 batches remain.
-1212 sourced originals and 3636 display versions checked: 1212 originals live, 0 prepared and queued.
+1915 tasks / 85 batches complete; 1029 tasks / 76 batches remain.
+1213 sourced originals and 3639 display versions checked: 1213 originals live, 0 prepared and queued.
 
 Owner standing approval covers exact artwork sourcing, publication and verification without another owner batch review. Independently verified vendor licence and physical edition/finish facts are not invented. Keep previous immutable objects and receipt-bound rollback.
 The owner confirms supplied-link artwork permission for www.tcgcollector.com, jp.pokellector.com, www.pricecharting.com, bulbapedia.bulbagarden.net. This is owner-attested permission (receipt SHA 7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d); independently verified vendor licence and source-wide policy activation remain false. Exact identity, readable unchanged originals and actual production verification remain required.
-All supplied links cover 1572 fixed card tasks: 805 currently live and checked, 767 open, plus 36 of 36 historical-logo research tasks still open. The frozen link scope began with 49 live cards and 1523 open cards; current counts come from the release inventory.
+All supplied links cover 1572 fixed card tasks: 806 currently live and checked, 766 open, plus 36 of 36 historical-logo research tasks still open. The frozen link scope began with 49 live cards and 1523 open cards; current counts come from the release inventory.
 Crossing the Ruins51: 51 prepared cohort records in the current queue, 51 live and checked, 0 awaiting actual production/API verification. Queue inclusion is not completion.
 My First Battle15: 15 prepared cohort records in the current queue, 15 live and checked, 0 awaiting actual production/API verification. Queue inclusion is not completion.
 Next Japanese Neo3 cohort: 48/48 exact originals and144 display images independently verified live; two Shining finish holds retained. Current fixed-task and production queue states control delivery.
@@ -60,6 +60,7 @@ Japanese Darkness final thirteen: All13 JP-CARDS-017 originals and39 display ima
 - Sourced 1, run 38821961294, EN-CARDS-020: all 1 card responses with preserved variant identities / all 4 decoded/hash/dimension-matched files independently verified. Receipt SHA 1264dd744df3f9f0271ac3deebc40c9b831d9d3e168a89be5da8449634c3bfb9. Rollback prepared, not executed.
 - Sourced 1, run 38825739364, JP-CARDS-043: all 1 card responses with preserved variant identities / all 4 decoded/hash/dimension-matched files independently verified. Receipt SHA 83ba10df5d2606171545d3d3c4889dc73e60e29a92dbec4a493f360ee810b017. Rollback prepared, not executed.
 - Sourced 1, run 38827865998, JP-CARDS-040: all 1 card responses with preserved variant identities / all 4 decoded/hash/dimension-matched files independently verified. Receipt SHA d7c3ff7c1addd3d9b2edef4f2f988cd4e5d6432a1d409c9faf7fe84fd1dd9e3c. Rollback prepared, not executed.
+- Sourced 1, run 38846181174, JP-CARDS-041: all 1 card responses with preserved variant identities / all 4 decoded/hash/dimension-matched files independently verified. Receipt SHA d99c42fbc13137072192e8806151d3a1c4f2fb4cca920134f99381ce271af445. Rollback prepared, not executed.
 
 ## Prepared work
 
@@ -105,6 +106,7 @@ Japanese Darkness final thirteen: All13 JP-CARDS-017 originals and39 display ima
 - Frozen package asset 645429563, 254382 bytes, SHA 904a6727badadcbaf9821b0c4902018ca71a7029453d7ac68fc844ba4a775b28. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset 645501821, 394541 bytes, SHA ff8d88a63b1b173003e0ba264123cc4877a87b63c7b327b3799ed151f2593fca. Individual delivery state controls completion; an archive alone does not.
 - Frozen package asset 645525725, 791263 bytes, SHA 5ab280df47e24a7e4382100d34c5dcf1ea4227145414f58aab7764b11bb71304. Individual delivery state controls completion; an archive alone does not.
+- Frozen package asset 645584430, 859616 bytes, SHA cb60020e1886227fbbe62acde45f37a78bfa7f2185311d016067a166682496ef. Individual delivery state controls completion; an archive alone does not.
 
 ## Explicit remaining holds
 
@@ -197,7 +199,7 @@ No native/OTA/backend/gateway delivery or installed-phone acceptance is claimed 
 | JP-CARDS-038 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
 | JP-CARDS-039 | 0/2 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
 | JP-CARDS-040 | 2/25 | 2 of 25 live and checked | 23 exact sources still need gathering and verification |
-| JP-CARDS-041 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
+| JP-CARDS-041 | 1/25 | 1 of 25 live and checked | 1 exact pictures need larger readable originals; 23 exact sources still need gathering and verification |
 | JP-CARDS-042 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
 | JP-CARDS-043 | 1/25 | 1 of 25 live and checked | 1 exact pictures need larger readable originals; 23 exact sources still need gathering and verification |
 | JP-CARDS-044 | 0/25 | Current source metadata reviewed; exact picture needed | No matching full card picture is recorded.; For newly supplied gallery media: exact printing, edition/finish and source-use evidence required; existing verified originals retain their current status |
@@ -283,7 +285,7 @@ No native/OTA/backend/gateway delivery or installed-phone acceptance is claimed 
 
 ## Owner-supplied Japanese gallery leads
 
-23 supplied sets cover 1479 fixed tasks; 777 are already live and 702 remain. All 23 requested Japanese gallery entry links are supplied.
+23 supplied sets cover 1479 fixed tasks; 778 are already live and 701 remain. All 23 requested Japanese gallery entry links are supplied.
 
 Individual gallery pictures still require exact printing/language/edition/finish binding and readable unchanged originals. Owner-attested permission for the four supplied sites is recorded above; independent vendor licence and source-wide policy activation remain false. Earlier MC reader size limits remain historical evidence. Competitive format Unlimited does not certify physical edition. Current per-item inventory and queue states control acquisition and verified delivery.
 

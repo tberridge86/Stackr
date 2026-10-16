@@ -1,22 +1,22 @@
 {
   "schemaVersion": "stackr-owner-artwork-production-evidence-v1",
   "inventoryId": "STACKR-ARTWORK-20261012",
-  "updatedAt": "2026-10-16T00:16:01.787Z",
+  "updatedAt": "2026-10-16T03:44:50.637Z",
   "scope": "Exact saved artwork list; original identities retained; actual production verification required",
   "summary": {
-    "checkedAt": "2026-10-16T00:15:25.805Z",
+    "checkedAt": "2026-10-16T03:41:57.020Z",
     "totalTasks": 2944,
     "totalBatches": 161,
-    "newlyPublishedFronts": 1309,
+    "newlyPublishedFronts": 1310,
     "previouslyCorrectedCasesVerified": 605,
-    "liveVerifiedTasks": 1914,
+    "liveVerifiedTasks": 1915,
     "completedBatches": 85,
-    "remainingTasks": 1030,
+    "remainingTasks": 1029,
     "remainingBatches": 76,
     "remainingGroups": [
       {
         "task": "Find permitted exact card fronts",
-        "items": 738
+        "items": 737
       },
       {
         "task": "Find permitted Traditional Chinese set logos",
@@ -31,13 +31,13 @@
         "items": 0
       }
     ],
-    "sourceLeadTargets": 1225,
+    "sourceLeadTargets": 1226,
     "scope": "Fixed saved list, retaining original identities; completion requires actual production API and image verification. Source gathering alone is not completion.",
     "queuedItems": 0,
     "queuedBatches": 0,
-    "frontTasksNotYetGathered": 724,
+    "frontTasksNotYetGathered": 723,
     "smallOriginalCandidates": 13,
-    "frontTasksNotYetPrepared": 738,
+    "frontTasksNotYetPrepared": 737,
     "contentHeldOriginalCandidates": 0,
     "sourceAcquiredPendingPreparation": 1,
     "sourceIdentityMetadataHolds": 25,
@@ -45,8 +45,8 @@
       "suppliedSets": 23,
       "fixedBatchesCovered": 69,
       "fixedTasksCovered": 1479,
-      "coveredTasksAlreadyLive": 777,
-      "coveredTasksRemaining": 702,
+      "coveredTasksAlreadyLive": 778,
+      "coveredTasksRemaining": 701,
       "unprovidedSets": [],
       "sourceInventorySha256": "68aeb67adc1716a32e1539fc815b210e243c8f2ec15c6d5a5d059a1bbf914fe1",
       "exactPrintingOrLicenceApprovalClaimed": false,
@@ -113,10 +113,10 @@
       "scopeFile": "all-owner-links-working-queue.json",
       "scopeSha256": "dce8019d6367877078b63a26bbd7ce9a52a8c4f8a8cbe7b9c20faa98ff7eb2c9",
       "uniqueCardTasks": 1572,
-      "cardTasksAlreadyLive": 805,
-      "cardTasksRemaining": 767,
+      "cardTasksAlreadyLive": 806,
+      "cardTasksRemaining": 766,
       "historicalLogoResearchTasks": 36,
-      "remainingCombinedWork": 803,
+      "remainingCombinedWork": 802,
       "remainingCombinedBatches": 63,
       "remainingOutsideBoundProvidedLinks": 227,
       "originalBatchIdsRetained": true,
@@ -943,7 +943,7 @@
       "publicationReceiptSha256": "dfe5b5cb9ce4148f9987d31a75e0661485ff1a85db63e8ed9034f6a70d4c276a",
       "independentPostPublicationReviewSha256": "932af2eac11ce8dca0d70f61896e2cf3b975b46ec958b5d802cdc44887020eb7"
     },
-    "sourceAcquiredQualityHeld": 56,
+    "sourceAcquiredQualityHeld": 73,
     "nextLeadersStadium93Cohort": {
       "status": "All93actualproductioncardsand372originalderivativefilesindependentlyverified",
       "fixedTargets": 96,
@@ -1002,32 +1002,32 @@
     },
     "sourceAcquiredFinishHeld": 2,
     "currentContinuationSourceCaptureTotals": {
-      "sourceMetadataGets": 772,
-      "sourceOriginalGets": 390,
-      "retainedSourceOriginalCandidates": 390,
+      "sourceMetadataGets": 826,
+      "sourceOriginalGets": 412,
+      "retainedSourceOriginalCandidates": 412,
       "acceptedAwaitingPreparation": 1,
       "sourceReviewPending": 0,
-      "qualityOrEditionHeld": 67,
+      "qualityOrEditionHeld": 88,
       "finishHeld": 3,
       "prepared": 0,
-      "newLiveVerified": 310,
+      "newLiveVerified": 311,
       "metadataGetCountsExcludeWebSearchAndCachedWebExtractions": true,
-      "uniqueSourcePrintingCandidates": 381,
+      "uniqueSourcePrintingCandidates": 403,
       "additionalAlternateTcGSourceCandidatesPendingReview": 0,
       "printingStatePartitionCountsStillTracksHeldOldCandidatesUntilAlternateAccepted": false,
-      "totalPreparedThisContinuation": 310,
+      "totalPreparedThisContinuation": 311,
       "partition": {
-        "live": 310,
+        "live": 311,
         "prepared": 0,
         "acceptedAwaitingPreparation": 1,
-        "qualityOrEditionHeld": 67,
+        "qualityOrEditionHeld": 88,
         "finishHeld": 3,
-        "totalUnique": 381
+        "totalUnique": 403
       },
       "accessDeniedMetadataGets": 3,
       "alternateCandidateCount": 9
     },
-    "sourceAcquiredEditionHeld": 35,
+    "sourceAcquiredEditionHeld": 42,
     "nextChallengeDarkness97Cohort": {
       "status": "All97actualproductioncardsand388originalderivativefilesindependentlyverified",
       "fixedTargets": 98,
@@ -1928,7 +1928,7 @@
       "metadataGets": 40,
       "sourceOriginalGets": 6,
       "newUniquePrintingCandidates": 6,
-      "acceptedAwaitingPreparation": 1,
+      "acceptedAwaitingPreparation": 0,
       "qualityOrEditionHeld": 5,
       "explicitFirstEditionHeld": 1,
       "metadataCompleteOriginalUnattempted": 14,
@@ -1939,15 +1939,17 @@
       "prepared": 0,
       "published": 0,
       "sourceCurrent18normal2holoTuplesPreserved": true,
-      "status": "Source-only20metadata/6originals reviewed:1Luvdiscaccepted,5held,14thenunattempted; sourceauthornulls unchanged"
+      "status": "Luvdisc actual production live; five first-phase acquired holds and separate14later-source holds retained",
+      "preparedOriginals": 1,
+      "liveVerified": 1
     },
     "nextPCG8LuvdiscOneFront": {
-      "status": "Private package independently reviewed and uploaded; exact publisher preparation next",
+      "status": "Actual production API and all4files plus default/explicit app image selection independently verified",
       "queueId": "PCG8-LUVDISC-001-20261015",
       "printingId": "1ec3e5ff-f0c2-4ff2-8423-9021a810f5b7",
       "accepted": 1,
-      "preparedOriginals": 0,
-      "liveVerified": 0,
+      "preparedOriginals": 1,
+      "liveVerified": 1,
       "approvedSourceSha256": "0d51946911fdb2635591bee7b0af18eaf435784845c164970f4cb1688b4f57af",
       "finitePreparationDecisionSha256": "18d97d8614e1593fd437dc8e1720caaa31831e1ec899ccbc0a30761c70b11eff",
       "independentSourceReviewSha256": "722e1b9468df498064df9bf409e514209579427dd9c6891fa6d2d0456753a7c3",
@@ -1966,7 +1968,33 @@
       "appLargeOriginalDimensions": [
         1020,
         1403
-      ]
+      ],
+      "sourceManifestSha256": "8bc1260175856b0e19bf56bcc91b5e6275dce077cfcc4f446eec730426e1fcfd",
+      "packageReceiptSha256": "70bc30983c6c8b3e2515414371f4c0513fc62cd553dbad0371fa985b06515db0",
+      "publisherHandoffSha256": "9f81702c2bbe96caa6634693c6de763fc099820bea4de60298e531d4b15daf2a",
+      "queueIntegrationSha256": "1f0090f08c61a643ae62ce0cc4c8ceb28b1e8c52eaf9bd56fec98c3425dec71a",
+      "queued": 0,
+      "pullRequest": 387,
+      "reviewedHead": "b5475e6def6574d8f912b5231760f1f6decc8c26",
+      "protectedMainSha": "9a6524eeec15cc6040842c2096d5fd2f8e023ce9",
+      "publicationRunId": 38846181174,
+      "productionDeploymentId": 7110206347,
+      "hostedChecksPassed": 8,
+      "independentExactHeadReviewSha256": "efbabbcf5784260732e4c69a33462d7e08a6eed51bc021962133e6ec7fac9862",
+      "publicationReceiptSha256": "d99c42fbc13137072192e8806151d3a1c4f2fb4cca920134f99381ce271af445",
+      "actualApiVerificationSha256": "3ed4caf1c036e9d68ab66ae36e8ee4668038f21583ec25c20824c3d82d40f400",
+      "fullActualCardResponseSha256": "25e7e2959e0ab7391db6af4e452debc41195a0c8518f9f339599a4861c55f398",
+      "rootBoundarySha256": "daff69a9d2032bac9b60cd1ac7d62ca86da3e9f7e70273350d0b6c711828b652",
+      "independentPostPublicationReviewSha256": "483ff7ee34a0a528bd6ccf66c77d00ec268dd8f29dec5210f68e65cb3d8be11c",
+      "actualAppCases": 2,
+      "appLargeOriginalVerified": true,
+      "productionRowsBefore": 11,
+      "productionRowsAfter": 13,
+      "stagingRowsBeforeAndAfter": 5,
+      "all4Full17SourceRowsAndMicrosecondsPreserved": true,
+      "existingSetLogoAndLinkPreserved": true,
+      "rollbackReceiptRetained": true,
+      "deviceVerified": false
     },
     "nextPCG89FourteenSingleCardSourcePlans": {
       "schemaVersion": 1,
@@ -1995,6 +2023,54 @@
       "countsIncludedInRegisteredSourceTotals": true,
       "sourceAcquiredPendingIndependentReview": 0,
       "sourceRegistrationFileSha256": null
+    },
+    "nextPCG123567PriceSetIndexes": {
+      "status": "Six metadata pages independently reviewed and registered; partial coverage, no image or physical-identity approval",
+      "sourceMetadataGets": 6,
+      "sourceOriginalGets": 0,
+      "numberedUnlabelledLiteralCardLinks": 424,
+      "firstEditionLabelledLiteralLinks": 429,
+      "sealedProductLinksExcluded": 2,
+      "pagesWithPagination": 5,
+      "sourceHandoffSha256": "8a9b93eb0e21a2c4d70a9d357e81e20fc8ec6ba24a821e86eaccbb6b0287d56d",
+      "independentMetadataReviewSha256": "31dfdd6fc11f7cf32f0c66e1bc0486a66d5740334689090980a424acac1f3861",
+      "rootSourceRegistrationSha256": "b886a6118be2263f74f3d256e2a4dd27bca0c6f2059ffc36c02dc220b8eb6701",
+      "fullSetCoverageClaimed": false,
+      "suffixOnlyIdentityMatchingAllowed": false
+    },
+    "nextPCG89Next24IndependentSource": {
+      "status": "All24 independently reviewed and registered;1Dusclops accepted,21 acquired holds,2metadata-only finish holds",
+      "sourceHandoffSha256": "6f77b38b21f8121fff5b6c480b72d362984f0576a3d38eb4b9c0f5491f068dcf",
+      "independentSourceReviewSha256": "83db568fac391d69f2c54231ac004fbb6cf586e1deaf30f1f98fb535ca7ede15",
+      "targets": 24,
+      "sourceMetadataGets": 48,
+      "sourceOriginalGets": 22,
+      "newUniqueAcquiredPrintingCandidates": 22,
+      "acceptedAwaitingPreparation": 1,
+      "qualityIdentityOrEditionHeld": 21,
+      "metadataOnlyFinishHeld": 2,
+      "metadataOnlyFinishHoldsExcludedFromAcquiredSourcePartition": true,
+      "sourceRegistrationSha256": "157462d9ebb5f433ab86429d0a497d2e12deb94c0078cdb3523ac32eef2ba7c5",
+      "minimumStartGapMs": 805,
+      "prepared": 0,
+      "published": 0
+    },
+    "nextPCG8DusclopsOneFront": {
+      "status": "Exact original independently accepted; awaiting economical grouped preparation",
+      "queueId": "PCG8-DUSCLOPS-001-20261016",
+      "printingId": "b7574fc2-64bf-499e-9c6c-5122ce550a62",
+      "accepted": 1,
+      "preparedOriginals": 0,
+      "liveVerified": 0,
+      "approvedSourceSha256": "f9b0ce6ab3785cbef05ca43d3f8d731715c64dc4a4eb5eb6e8f44b33b1952d6c",
+      "finitePreparationDecisionSha256": "59a0574d6c4df36f3a5c3f1b269e787b1fa2d7e38fd8dff3c0a14f9e7e003a55",
+      "independentSourceReviewSha256": "83db568fac391d69f2c54231ac004fbb6cf586e1deaf30f1f98fb535ca7ede15",
+      "sourceHDPixels": 1,
+      "expectedDetailHD": 1,
+      "appLargeRoleMustBeMeasured": true,
+      "productionBeforeRows": 13,
+      "stagingBeforeRows": 7,
+      "physicalQualificationsRetained": true
     }
   },
   "ownerSuppliedAdditionalSourceLeads": [
@@ -2737,17 +2813,17 @@
     "extraPermissionPromptRequired": false,
     "sourceLicenceFacts": "Existing source facts retained; owner queue direction does not invent vendor licence metadata."
   },
-  "preparedOriginals": 1212,
-  "preparedDerivatives": 3636,
-  "publishedVerifiedOriginals": 1212,
+  "preparedOriginals": 1213,
+  "preparedDerivatives": 3639,
+  "publishedVerifiedOriginals": 1213,
   "queuedItems": 0,
   "preparedByLanguage": {
     "en": 433,
-    "ja": 779
+    "ja": 780
   },
   "publishedVerifiedByLanguage": {
     "en": 433,
-    "ja": 779
+    "ja": 780
   },
   "failedProductionRuns": [
     {
@@ -3084,6 +3160,12 @@
       "releaseAssetId": 645525725,
       "byteSize": 791263,
       "sha256": "5ab280df47e24a7e4382100d34c5dcf1ea4227145414f58aab7764b11bb71304"
+    },
+    {
+      "queueId": "PCG8-LUVDISC-001-20261015",
+      "releaseAssetId": 645584430,
+      "byteSize": 859616,
+      "sha256": "cb60020e1886227fbbe62acde45f37a78bfa7f2185311d016067a166682496ef"
     }
   ],
   "holds": [
@@ -3808,6 +3890,19 @@
       "contentSha256": "4be364f3a09b470b19ad718a2735f2d1c25b499609827a70b651436bc60cba41"
     },
     {
+      "itemId": "card:689ed797-4f86-4484-b7fd-341a10ad0590",
+      "printingId": "689ed797-4f86-4484-b7fd-341a10ad0590",
+      "batchId": "JP-CARDS-040",
+      "setCode": "PCG8",
+      "collectorReference": "002",
+      "name": "アイビサウルス",
+      "status": "source_frame_completeness_unconfirmed",
+      "requiredAction": "Find a complete photo showing all four outer edges and rounded corners.",
+      "width": 1049,
+      "height": 1517,
+      "contentSha256": "c78a0137e6abd51996a45401fe751ad9cd1e46828fc27eb83a09fa63daa100c8"
+    },
+    {
       "itemId": "card:9e1c9d71-cdf7-460b-990a-5935d3f1357d",
       "printingId": "9e1c9d71-cdf7-460b-990a-5935d3f1357d",
       "batchId": "JP-CARDS-040",
@@ -3819,6 +3914,19 @@
       "width": 1166,
       "height": 1600,
       "contentSha256": "07220e0c55abccdb135a634b3230759ec727e3d413a7bc2f6268b4d3e0d6d3ae"
+    },
+    {
+      "itemId": "card:05f92598-dbff-4b19-bfa3-10dd1e2afe3a",
+      "printingId": "05f92598-dbff-4b19-bfa3-10dd1e2afe3a",
+      "batchId": "JP-CARDS-040",
+      "setCode": "PCG8",
+      "collectorReference": "006",
+      "name": "グロビル",
+      "status": "source_physical_edition_unresolved",
+      "requiredAction": "Find the matching edition with all edges and details readable, or confirm which edition this record should use.",
+      "width": 1001,
+      "height": 1403,
+      "contentSha256": "c17d2c46a533dda6310a36891f6fdf3c0e80d9507e891fbd210ce49ef78f5b34"
     },
     {
       "itemId": "card:a013ef50-2e75-4ff6-9567-e84e786cb754",
@@ -3847,6 +3955,19 @@
       "contentSha256": "97a1644f8d422fab96934571869c06283a78ab6c8edf91b40998311a7123c21a"
     },
     {
+      "itemId": "card:9fe0b308-a0ff-439f-968c-c93a3c0af496",
+      "printingId": "9fe0b308-a0ff-439f-968c-c93a3c0af496",
+      "batchId": "JP-CARDS-040",
+      "setCode": "PCG8",
+      "collectorReference": "009",
+      "name": "スワロット",
+      "status": "source_physical_edition_unresolved",
+      "requiredAction": "Find the matching edition with all edges and details readable, or confirm which edition this record should use.",
+      "width": 593,
+      "height": 834,
+      "contentSha256": "674092f1129667ca47390f6284ae3c441de540c140f3eb2a1cc6bed6837a9435"
+    },
+    {
       "itemId": "card:f2432fa4-af40-41bb-8b0d-b48f7058af09",
       "printingId": "f2432fa4-af40-41bb-8b0d-b48f7058af09",
       "batchId": "JP-CARDS-040",
@@ -3871,6 +3992,19 @@
       "width": 779,
       "height": 1073,
       "contentSha256": "b2fe456412912bbe7a39d2466eaee482042a18dbd4e8b662003f55523cee7658"
+    },
+    {
+      "itemId": "card:2cbf08ce-cea4-4e70-962f-418c6caa7961",
+      "printingId": "2cbf08ce-cea4-4e70-962f-418c6caa7961",
+      "batchId": "JP-CARDS-040",
+      "setCode": "PCG8",
+      "collectorReference": "012",
+      "name": "チャームレオン",
+      "status": "source_physical_edition_unresolved",
+      "requiredAction": "Find the matching edition with all edges and details readable, or confirm which edition this record should use.",
+      "width": 1020,
+      "height": 1408,
+      "contentSha256": "9d772edb38b0a6e106c12d5c0ddeaf098ad7312d76179868f34cfc94e9ad2065"
     },
     {
       "itemId": "card:148af3f7-366c-409a-ac32-a61fb7eebba4",
@@ -3899,6 +4033,19 @@
       "contentSha256": "a28b9a6ce78c5f1e1740e271331cf1b5f912f50123c57963533f25c40a525fb9"
     },
     {
+      "itemId": "card:0af5f6dd-e671-4aa2-992d-b54e127cebf4",
+      "printingId": "0af5f6dd-e671-4aa2-992d-b54e127cebf4",
+      "batchId": "JP-CARDS-040",
+      "setCode": "PCG8",
+      "collectorReference": "016",
+      "name": "カメラプ",
+      "status": "source_printed_identity_incomplete",
+      "requiredAction": "Find a sharper single-card front with its name, complete attacks, artist and card number readable.",
+      "width": 500,
+      "height": 500,
+      "contentSha256": "3211e4dedb1e825657799b956d7712f747e9a88b7281c5b6c1336df955da7ba3"
+    },
+    {
       "itemId": "card:a3d6f0fa-80fa-4d8e-bd49-55c248f81cf5",
       "printingId": "a3d6f0fa-80fa-4d8e-bd49-55c248f81cf5",
       "batchId": "JP-CARDS-040",
@@ -3910,6 +4057,19 @@
       "width": 1038,
       "height": 1454,
       "contentSha256": "cd6ed7d9b6808c7ccaa201c9da11a7911ea11ea22e05cb2a0eb08f6921768df2"
+    },
+    {
+      "itemId": "card:9922dea0-3800-4586-98fb-e6f64de1d9eb",
+      "printingId": "9922dea0-3800-4586-98fb-e6f64de1d9eb",
+      "batchId": "JP-CARDS-040",
+      "setCode": "PCG8",
+      "collectorReference": "019",
+      "name": "wartortle",
+      "status": "source_physical_edition_unresolved",
+      "requiredAction": "Find the matching edition with all edges and details readable, or confirm which edition this record should use.",
+      "width": 1028,
+      "height": 1412,
+      "contentSha256": "756986ec155022526beedc088a961283e2aeef1bbe00121420ac65b6d240d610"
     },
     {
       "itemId": "card:2d3c45f7-9479-48d1-a9b8-ae4c05fc98e3",
@@ -3925,6 +4085,19 @@
       "contentSha256": "10cf4a2da2bdc2e8876fbe3c1e552c098c87bca5921a2e769bedbc0dda2b12e2"
     },
     {
+      "itemId": "card:8d05244f-d42b-4e61-b79f-50484b8f4d81",
+      "printingId": "8d05244f-d42b-4e61-b79f-50484b8f4d81",
+      "batchId": "JP-CARDS-040",
+      "setCode": "PCG8",
+      "collectorReference": "022",
+      "name": "マーシュトンプ",
+      "status": "source_printed_identity_incomplete",
+      "requiredAction": "Find a sharp complete original without a seller watermark.",
+      "width": 1158,
+      "height": 1600,
+      "contentSha256": "20340e1a5b6ed6a7a00287218534830e97071d1c45c331ecea7e78289b886496"
+    },
+    {
       "itemId": "card:a557a0f5-77f6-4d02-a9b5-b94c163f9476",
       "printingId": "a557a0f5-77f6-4d02-a9b5-b94c163f9476",
       "batchId": "JP-CARDS-040",
@@ -3936,6 +4109,19 @@
       "width": 1017,
       "height": 1407,
       "contentSha256": "20e4cbb6c1f1fa34eb4a642f9fdd29331c01f23d4cf22b2310a39e8247f0eebd"
+    },
+    {
+      "itemId": "card:6bae3136-fbea-4c09-a48b-2e9471ee1e73",
+      "printingId": "6bae3136-fbea-4c09-a48b-2e9471ee1e73",
+      "batchId": "JP-CARDS-040",
+      "setCode": "PCG8",
+      "collectorReference": "025",
+      "name": "ロンベル",
+      "status": "source_printed_identity_incomplete",
+      "requiredAction": "Find a sharper single-card front with its name, complete attacks, artist and card number readable.",
+      "width": 500,
+      "height": 375,
+      "contentSha256": "c5686f78553a74b451f16072242d5e20f8ce3eec9f3e206be38becf088218050"
     },
     {
       "itemId": "card:42b917d5-9f7b-4203-9fb7-2f0d3193738b",
@@ -3964,6 +4150,19 @@
       "contentSha256": "bbc4361ed4c872efd7d6797ddd576cbfdefdb817e2ff3398ccc6006a303e4e21"
     },
     {
+      "itemId": "card:90c626bd-6baf-487f-a565-135ceb9c2866",
+      "printingId": "90c626bd-6baf-487f-a565-135ceb9c2866",
+      "batchId": "JP-CARDS-041",
+      "setCode": "PCG8",
+      "collectorReference": "031",
+      "name": "マネクリック",
+      "status": "source_physical_edition_unresolved",
+      "requiredAction": "Find the matching edition with all edges and details readable, or confirm which edition this record should use.",
+      "width": 1024,
+      "height": 1413,
+      "contentSha256": "cce4a740e6449a7059673138e7e8d09c40cf45091d14b713cc59de5367b0c73d"
+    },
+    {
       "itemId": "card:ae6d89c5-2d3f-4276-9df5-a215303cecdc",
       "printingId": "ae6d89c5-2d3f-4276-9df5-a215303cecdc",
       "batchId": "JP-CARDS-041",
@@ -3977,6 +4176,19 @@
       "contentSha256": "547652438fa1fb7d8804ddefc199f4189fe1570a70f5ce9552bdd81019aecc67"
     },
     {
+      "itemId": "card:6bbe1c09-1914-44cb-a05e-f039cd6797d5",
+      "printingId": "6bbe1c09-1914-44cb-a05e-f039cd6797d5",
+      "batchId": "JP-CARDS-041",
+      "setCode": "PCG8",
+      "collectorReference": "036",
+      "name": "Grumpig",
+      "status": "source_printed_identity_incomplete",
+      "requiredAction": "Find a sharper single-card front with its name, complete attacks, artist and card number readable.",
+      "width": 593,
+      "height": 834,
+      "contentSha256": "af7dadb5393d2f913e82334322a8f1517e3eb715e9681472d9162955aebd5ade"
+    },
+    {
       "itemId": "card:3fd9f6e2-66c9-4e4b-a436-0c3bfbc31591",
       "printingId": "3fd9f6e2-66c9-4e4b-a436-0c3bfbc31591",
       "batchId": "JP-CARDS-041",
@@ -3988,6 +4200,19 @@
       "width": 375,
       "height": 500,
       "contentSha256": "2a6aaa39eef4a61f730e5579a2f50512113efe994569b5418656c38b2b678072"
+    },
+    {
+      "itemId": "card:516986fc-1352-4e61-9cd3-91e6333e4f6b",
+      "printingId": "516986fc-1352-4e61-9cd3-91e6333e4f6b",
+      "batchId": "JP-CARDS-041",
+      "setCode": "PCG8",
+      "collectorReference": "038",
+      "name": "バネット",
+      "status": "source_finish_metadata_mismatch",
+      "requiredAction": "Resolve the foil finish: the saved card says normal and the source records say holo.",
+      "width": null,
+      "height": null,
+      "contentSha256": null
     },
     {
       "itemId": "card:b98ce240-a15b-4273-8726-2b6a2e208915",
@@ -4026,6 +4251,32 @@
       "contentSha256": "e196064c23c5a7e86ee17b17f3164d451ca25fa7c938da5ec4fce80b9bb34ebe"
     },
     {
+      "itemId": "card:7f8ff350-6dcb-455a-b04f-7f888de33d6a",
+      "printingId": "7f8ff350-6dcb-455a-b04f-7f888de33d6a",
+      "batchId": "JP-CARDS-043",
+      "setCode": "PCG9",
+      "collectorReference": "003",
+      "name": "ドラゴンエア（デルタ種）",
+      "status": "source_printed_identity_incomplete",
+      "requiredAction": "Find a sharper single-card front with its name, complete attacks, artist and card number readable.",
+      "width": 375,
+      "height": 500,
+      "contentSha256": "3e2af34ec7060c2bc77d5ac884a861c4fe87c64e6202cb29db18c5e1d080a2b9"
+    },
+    {
+      "itemId": "card:af1c6cf3-114e-4159-ae27-31135eb8e12d",
+      "printingId": "af1c6cf3-114e-4159-ae27-31135eb8e12d",
+      "batchId": "JP-CARDS-043",
+      "setCode": "PCG9",
+      "collectorReference": "006",
+      "name": "quagsire（デルタ種）",
+      "status": "source_printed_identity_incomplete",
+      "requiredAction": "Find a sharp complete original without a seller watermark.",
+      "width": 319,
+      "height": 458,
+      "contentSha256": "b548bd0f07f4bd1994b5c27d7fc049e30c35a379bf4e04066ee165ea2afca3fe"
+    },
+    {
       "itemId": "card:a4404754-02b9-4efe-9575-14a7c7890fa6",
       "printingId": "a4404754-02b9-4efe-9575-14a7c7890fa6",
       "batchId": "JP-CARDS-043",
@@ -4039,6 +4290,19 @@
       "contentSha256": "e22e5ca7758265808f2933af93ff75eddea84236e19faee2687448582a4fcf35"
     },
     {
+      "itemId": "card:3b1b35aa-b3ca-4c2a-8656-cfe1c6f4d5fa",
+      "printingId": "3b1b35aa-b3ca-4c2a-8656-cfe1c6f4d5fa",
+      "batchId": "JP-CARDS-043",
+      "setCode": "PCG9",
+      "collectorReference": "008",
+      "name": "アーボック（デルタ種）",
+      "status": "source_physical_edition_unresolved",
+      "requiredAction": "Find the matching edition with all edges and details readable, or confirm which edition this record should use.",
+      "width": 1600,
+      "height": 1600,
+      "contentSha256": "5d6a76e6bb1eeebb9638374a7e1fdc61ae89dec3170133100e7f737fb33da776"
+    },
+    {
       "itemId": "card:4e8f3b7e-26cf-479c-808f-3c6996596dbc",
       "printingId": "4e8f3b7e-26cf-479c-808f-3c6996596dbc",
       "batchId": "JP-CARDS-043",
@@ -4050,6 +4314,19 @@
       "width": 1157,
       "height": 1600,
       "contentSha256": "a24ae9e1bfa9ca7dd203e83cafebae7d711b6ff45d5cbcf41b3ba275b06efb3e"
+    },
+    {
+      "itemId": "card:9130d41e-2119-4fef-8360-f0122d48828c",
+      "printingId": "9130d41e-2119-4fef-8360-f0122d48828c",
+      "batchId": "JP-CARDS-043",
+      "setCode": "PCG9",
+      "collectorReference": "011",
+      "name": "スウェロー（デルタ種）",
+      "status": "source_printed_identity_incomplete",
+      "requiredAction": "Find a sharper single-card front with its name, complete attacks, artist and card number readable.",
+      "width": 299,
+      "height": 398,
+      "contentSha256": "09785b8ab3e37a1e68c99c100921107a7419528ab2aab64fa200ae04261e7af8"
     },
     {
       "itemId": "card:8430fba9-1219-445d-833c-618b6cc070e3",
@@ -4078,6 +4355,19 @@
       "contentSha256": "b39f87b8c4e67e96d686cededcfe42368d28a3a01a70c4fabcbcded0b1a084eb"
     },
     {
+      "itemId": "card:1cc5d2d9-64e0-4f14-8ef1-fadcd2c2ea88",
+      "printingId": "1cc5d2d9-64e0-4f14-8ef1-fadcd2c2ea88",
+      "batchId": "JP-CARDS-043",
+      "setCode": "PCG9",
+      "collectorReference": "017",
+      "name": "togetic（デルタ種）",
+      "status": "source_frame_completeness_unconfirmed",
+      "requiredAction": "Find a complete photo showing all four outer edges and rounded corners.",
+      "width": 1140,
+      "height": 1600,
+      "contentSha256": "b42d83113cf6b3920d302ed762b6d7fa837a692997987d9cafc1dd2058a91d8d"
+    },
+    {
       "itemId": "card:fd43847b-35c2-420d-b8fc-b8e5d53160a7",
       "printingId": "fd43847b-35c2-420d-b8fc-b8e5d53160a7",
       "batchId": "JP-CARDS-043",
@@ -4104,6 +4394,19 @@
       "contentSha256": "57794b8642106428caf010a2e4de6abf6d4110db302025a71fedfee1023632dc"
     },
     {
+      "itemId": "card:945cfade-052a-4aa4-a3e7-c6a66a10e466",
+      "printingId": "945cfade-052a-4aa4-a3e7-c6a66a10e466",
+      "batchId": "JP-CARDS-043",
+      "setCode": "PCG9",
+      "collectorReference": "021",
+      "name": "シェルゴン（デルタ種）",
+      "status": "source_printed_identity_incomplete",
+      "requiredAction": "Find a sharper single-card front with its name, complete attacks, artist and card number readable.",
+      "width": 375,
+      "height": 500,
+      "contentSha256": "faa82aa7b2b18bd4e4272bbc3fae0a7432abbb024f1e75faac7f0e48dc08dbfa"
+    },
+    {
       "itemId": "card:5288cebb-14d9-4217-ba3e-1d3209e1adbd",
       "printingId": "5288cebb-14d9-4217-ba3e-1d3209e1adbd",
       "batchId": "JP-CARDS-043",
@@ -4115,6 +4418,19 @@
       "width": 370,
       "height": 500,
       "contentSha256": "c318ea35626006976290137ae90f4e300b5c75a645adc8150b78e0c961d490a3"
+    },
+    {
+      "itemId": "card:8539275d-b1ac-4389-b06b-cd18a48b5b5f",
+      "printingId": "8539275d-b1ac-4389-b06b-cd18a48b5b5f",
+      "batchId": "JP-CARDS-043",
+      "setCode": "PCG9",
+      "collectorReference": "025",
+      "name": "クロコノー（デルタ種）",
+      "status": "source_frame_completeness_unconfirmed",
+      "requiredAction": "Find a complete photo showing all four outer edges and rounded corners.",
+      "width": 608,
+      "height": 846,
+      "contentSha256": "73cee484414333b3a91bbdcb3841900abbdc879ebb517225f11881b376246522"
     },
     {
       "itemId": "card:8696ce1c-0806-44bd-b8f1-b04c20edc12c",
@@ -4143,6 +4459,19 @@
       "contentSha256": "d742958674584bc84bdbb4077db23bb77073cb3f1d676be1291b3aeddf1cde35"
     },
     {
+      "itemId": "card:f84bfabf-4a81-4883-a52b-9fa6dad0500d",
+      "printingId": "f84bfabf-4a81-4883-a52b-9fa6dad0500d",
+      "batchId": "JP-CARDS-044",
+      "setCode": "PCG9",
+      "collectorReference": "030",
+      "name": "ニネタール（デルタ種）",
+      "status": "source_finish_metadata_mismatch",
+      "requiredAction": "Resolve the foil finish: the saved card says normal and the source records say holo.",
+      "width": null,
+      "height": null,
+      "contentSha256": null
+    },
+    {
       "itemId": "card:a41e581c-317e-42e1-8fb2-a9d5c98bb83a",
       "printingId": "a41e581c-317e-42e1-8fb2-a9d5c98bb83a",
       "batchId": "JP-CARDS-044",
@@ -4169,6 +4498,32 @@
       "contentSha256": "3aeb618a64cadee64b11a253d04f638730bde3e7b1350caec5634e2c4f7e5047"
     },
     {
+      "itemId": "card:8d553a91-05c8-41b5-999d-4741e32456e7",
+      "printingId": "8d553a91-05c8-41b5-999d-4741e32456e7",
+      "batchId": "JP-CARDS-044",
+      "setCode": "PCG9",
+      "collectorReference": "033",
+      "name": "キラバ（デルタ種）",
+      "status": "source_frame_completeness_unconfirmed",
+      "requiredAction": "Find a complete photo showing all four outer edges and rounded corners.",
+      "width": 1031,
+      "height": 1458,
+      "contentSha256": "46e9a51fc71ffe756fdb4c10eaeedfade9401bd6e28b0d4714be7ed17ea1ca76"
+    },
+    {
+      "itemId": "card:a82b8c54-7d5a-444e-9eec-c36025eff007",
+      "printingId": "a82b8c54-7d5a-444e-9eec-c36025eff007",
+      "batchId": "JP-CARDS-044",
+      "setCode": "PCG9",
+      "collectorReference": "034",
+      "name": "Typhlosion（デルタ種）",
+      "status": "source_printed_identity_incomplete",
+      "requiredAction": "Find a sharper single-card front with its name, complete attacks, artist and card number readable.",
+      "width": 363,
+      "height": 505,
+      "contentSha256": "803408fe73a5025779aec4e30b792075c42f9015e449d4e1e8ed1a05e69c5cfc"
+    },
+    {
       "itemId": "card:06ab9969-b663-469f-8728-cfd8c845dced",
       "printingId": "06ab9969-b663-469f-8728-cfd8c845dced",
       "batchId": "JP-CARDS-044",
@@ -4182,6 +4537,19 @@
       "contentSha256": null
     },
     {
+      "itemId": "card:8692c045-2f36-431b-9541-127bbbc74033",
+      "printingId": "8692c045-2f36-431b-9541-127bbbc74033",
+      "batchId": "JP-CARDS-044",
+      "setCode": "PCG9",
+      "collectorReference": "036",
+      "name": "ビブラバ（デルタ種）",
+      "status": "source_physical_edition_unresolved",
+      "requiredAction": "Find the matching edition with all edges and details readable, or confirm which edition this record should use.",
+      "width": 1035,
+      "height": 1451,
+      "contentSha256": "babc29a3f260c8ed54d7be52094f24b0536d8a84ea4fa96c0318efe25e7d2346"
+    },
+    {
       "itemId": "card:6692d163-17e4-4fa1-8050-161eef93b47e",
       "printingId": "6692d163-17e4-4fa1-8050-161eef93b47e",
       "batchId": "JP-CARDS-044",
@@ -4193,6 +4561,19 @@
       "width": 500,
       "height": 500,
       "contentSha256": "13634ad5748cf42910e8498476d3660006ec0d8636ca7ffd6afa8dd22840ca3f"
+    },
+    {
+      "itemId": "card:1a315787-243a-46a2-8a7a-9c179b4c84ad",
+      "printingId": "1a315787-243a-46a2-8a7a-9c179b4c84ad",
+      "batchId": "JP-CARDS-044",
+      "setCode": "PCG9",
+      "collectorReference": "039",
+      "name": "クロイスター（デルタ種）",
+      "status": "source_photo_is_card_back",
+      "requiredAction": "Find the front of this exact card; this source photo shows its back.",
+      "width": 708,
+      "height": 1060,
+      "contentSha256": "7bb8ad0cc358f54558d0b8e8ec0efa63b7a06ec06612955defbe8b907cca0897"
     },
     {
       "itemId": "card:c288449e-1dcf-4484-8354-e0b713cb8565",
@@ -105057,14 +105438,106 @@
         "priceChanges": 0,
         "ownershipChanges": 0
       }
+    },
+    {
+      "batchId": "JP-CARDS-041",
+      "itemId": "card:1ec3e5ff-f0c2-4ff2-8423-9021a810f5b7",
+      "printingId": "1ec3e5ff-f0c2-4ff2-8423-9021a810f5b7",
+      "setId": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+      "setCode": "PCG8",
+      "languageCode": "ja",
+      "collectorReference": "027",
+      "cardName": "luvdisc",
+      "sourceCode": "pricecharting",
+      "providerCardId": "pricecharting-image-url-sha256:db50605658ba522392b809aea4200d8d2cef733f30c4cd75bd20ea3296720f8c",
+      "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-japanese-miracle-crystal/luvdisc-27",
+      "sourceImageUrl": "https://storage.googleapis.com/images.pricecharting.com/7a9b921596b750b23bf473eed1864bed1eb2904b414a9c2ff87f80f075a19024/1600.jpg",
+      "sourceKind": "Third-party sourced card front; not AI generated",
+      "sourceLicenceFacts": {
+        "ownerFiniteStoreResizeDisplayDecision": true,
+        "ownerWebsitePermissionAttested": true,
+        "vendorLicenceVerified": false,
+        "sourcewideApproval": false,
+        "physicalEditionVerified": false,
+        "physicalFinishVerified": false,
+        "unlimitedEditionCertified": false
+      },
+      "original": {
+        "sha256": "caf0171a65a1a8d2c6ab7350ba201d270316dcf1767f13a628243dee15f54356",
+        "byteSize": 540677,
+        "width": 1020,
+        "height": 1403,
+        "mimeType": "image/jpeg"
+      },
+      "derivatives": [
+        {
+          "role": "card-grid",
+          "file": "objects/0f9466bf055d1b5fac70f467cf4f38e6a0bae0acf9fe3dfc4c0fef09eaf931af/card-grid.webp",
+          "sha256": "0f9466bf055d1b5fac70f467cf4f38e6a0bae0acf9fe3dfc4c0fef09eaf931af",
+          "byte_size": 26002,
+          "width": 240,
+          "height": 330,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "search-result",
+          "file": "objects/784495e41d6da9d73f3c8a30a7f30dddd710a535cf48590f8840c976892b366a/search-result.webp",
+          "sha256": "784495e41d6da9d73f3c8a30a7f30dddd710a535cf48590f8840c976892b366a",
+          "byte_size": 4218,
+          "width": 96,
+          "height": 132,
+          "mime_type": "image/webp"
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/041efc22e3410d0673283fa7ce5218d0b673fedd6942ec500a075c8535e12ce0/detail-page.webp",
+          "sha256": "041efc22e3410d0673283fa7ce5218d0b673fedd6942ec500a075c8535e12ce0",
+          "byte_size": 278720,
+          "width": 720,
+          "height": 990,
+          "mime_type": "image/webp"
+        }
+      ],
+      "state": "Live in production and independently checked",
+      "publishedAndVerified": true,
+      "physicalFinishVerified": false,
+      "humanReviewRequired": false,
+      "japanesePrintedIdentity": {
+        "canonical_alias": "027",
+        "printed_collector_number": "027/075",
+        "catalogue_set_code": "PCG8",
+        "printed_set_code_literal": null,
+        "printed_national_dex": null,
+        "canonical_native_label_preserved": "luvdisc",
+        "actual_printed_name": "ラブカス",
+        "actual_printed_form": null,
+        "category": "Pokemon"
+      },
+      "currentVariantCode": "holo",
+      "currentFinishCode": "holo",
+      "currentDelivery": {
+        "verifiedAt": "2026-10-16T03:41:57.020Z",
+        "productionRun": 38846181174,
+        "productionRunUrl": "https://github.com/tberridge86/Stackr/actions/runs/38846181174",
+        "publicationReceiptSha256": "d99c42fbc13137072192e8806151d3a1c4f2fb4cca920134f99381ce271af445",
+        "printingId": "1ec3e5ff-f0c2-4ff2-8423-9021a810f5b7",
+        "assetId": "artwork-recovered-20260928:1ec3e5ff-f0c2-4ff2-8423-9021a810f5b7:caf0171a65a1a8d2c6ab7350ba201d270316dcf1767f13a628243dee15f54356",
+        "contentSha256": "caf0171a65a1a8d2c6ab7350ba201d270316dcf1767f13a628243dee15f54356",
+        "deliveryUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/printing/1ec3e5ff-f0c2-4ff2-8423-9021a810f5b7/caf0171a65a1a8d2c6ab7350ba201d270316dcf1767f13a628243dee15f54356/original.jpg",
+        "originalAndThreeDisplayFilesVerified": true,
+        "physicalFinishVerified": false,
+        "canonicalChanges": 0,
+        "priceChanges": 0,
+        "ownershipChanges": 0
+      }
     }
   ],
   "manualArtworkFollowUp": {
-    "updatedAt": "2026-10-16T00:15:48.715Z",
+    "updatedAt": "2026-10-16T03:44:18.261Z",
     "scope": "Specific follow-up details, separately from ordinary source work and active releases; current fixed inventory identities retained.",
     "collectorReferenceNote": "For older Japanese cards the Stackr reference may not be printed on the card; match its name, set, artwork and card text.",
-    "specificFollowUps": 474,
-    "ordinarySourceWorkStillOpen": 555,
+    "specificFollowUps": 497,
+    "ordinarySourceWorkStillOpen": 531,
     "activeSourceOrPublicationWork": 1,
     "batches": [
       {
@@ -107005,6 +107478,20 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
           },
           {
+            "itemId": "card:689ed797-4f86-4484-b7fd-341a10ad0590",
+            "printingId": "689ed797-4f86-4484-b7fd-341a10ad0590",
+            "batchId": "JP-CARDS-040",
+            "languageCode": "ja",
+            "setCode": "PCG8",
+            "collectorReference": "002",
+            "name": "アイビサウルス",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unconfirmed",
+            "whatToFind": "Find a complete photo showing all four outer edges and rounded corners.",
+            "detail": "outer_perimeter_not_fully_established; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
+          },
+          {
             "itemId": "card:9e1c9d71-cdf7-460b-990a-5935d3f1357d",
             "printingId": "9e1c9d71-cdf7-460b-990a-5935d3f1357d",
             "batchId": "JP-CARDS-040",
@@ -107016,6 +107503,20 @@
             "status": "visible_first_edition_stamp_unbound",
             "whatToFind": "Confirm the intended first-edition or unstamped printing; a sharp original is retained, but its visible first-edition stamp is not matched by the current edition-neutral record.",
             "detail": "explicit_first_edition_unbound_to_current_printing; foreign_pokemuseum_watermark_retained",
+            "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
+          },
+          {
+            "itemId": "card:05f92598-dbff-4b19-bfa3-10dd1e2afe3a",
+            "printingId": "05f92598-dbff-4b19-bfa3-10dd1e2afe3a",
+            "batchId": "JP-CARDS-040",
+            "languageCode": "ja",
+            "setCode": "PCG8",
+            "collectorReference": "006",
+            "name": "グロビル",
+            "artworkType": "Card front",
+            "status": "source_physical_edition_unresolved",
+            "whatToFind": "Find the matching edition with all edges and details readable, or confirm which edition this record should use.",
+            "detail": "visible_first_edition_stamp_unbound_to_current_normal_tuple; left_outer_perimeter_unconfirmed; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
           },
           {
@@ -107047,6 +107548,20 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
           },
           {
+            "itemId": "card:9fe0b308-a0ff-439f-968c-c93a3c0af496",
+            "printingId": "9fe0b308-a0ff-439f-968c-c93a3c0af496",
+            "batchId": "JP-CARDS-040",
+            "languageCode": "ja",
+            "setCode": "PCG8",
+            "collectorReference": "009",
+            "name": "スワロット",
+            "artworkType": "Card front",
+            "status": "source_physical_edition_unresolved",
+            "whatToFind": "Find the matching edition with all edges and details readable, or confirm which edition this record should use.",
+            "detail": "visible_first_edition_stamp_unbound_to_current_holo_tuple; outer_perimeter_not_fully_established; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
+          },
+          {
             "itemId": "card:f2432fa4-af40-41bb-8b0d-b48f7058af09",
             "printingId": "f2432fa4-af40-41bb-8b0d-b48f7058af09",
             "batchId": "JP-CARDS-040",
@@ -107071,6 +107586,20 @@
             "artworkType": "Card front",
             "status": "visible_first_edition_stamp_unbound",
             "whatToFind": "Confirm the intended first-edition or unstamped printing; a sharp original is retained, but its visible first-edition stamp is not matched by the current edition-neutral record.",
+            "detail": "visible_first_edition_stamp_unbound_to_current_normal_tuple; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
+          },
+          {
+            "itemId": "card:2cbf08ce-cea4-4e70-962f-418c6caa7961",
+            "printingId": "2cbf08ce-cea4-4e70-962f-418c6caa7961",
+            "batchId": "JP-CARDS-040",
+            "languageCode": "ja",
+            "setCode": "PCG8",
+            "collectorReference": "012",
+            "name": "チャームレオン",
+            "artworkType": "Card front",
+            "status": "source_physical_edition_unresolved",
+            "whatToFind": "Find the matching edition with all edges and details readable, or confirm which edition this record should use.",
             "detail": "visible_first_edition_stamp_unbound_to_current_normal_tuple; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
           },
@@ -107103,6 +107632,20 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
           },
           {
+            "itemId": "card:0af5f6dd-e671-4aa2-992d-b54e127cebf4",
+            "printingId": "0af5f6dd-e671-4aa2-992d-b54e127cebf4",
+            "batchId": "JP-CARDS-040",
+            "languageCode": "ja",
+            "setCode": "PCG8",
+            "collectorReference": "016",
+            "name": "カメラプ",
+            "artworkType": "Card front",
+            "status": "source_printed_identity_incomplete",
+            "whatToFind": "Find a sharper single-card front with its name, complete attacks, artist and card number readable.",
+            "detail": "below_detail_resolution; small_card_region_with_unreadable_collector_artist_and_fine_body; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
+          },
+          {
             "itemId": "card:a3d6f0fa-80fa-4d8e-bd49-55c248f81cf5",
             "printingId": "a3d6f0fa-80fa-4d8e-bd49-55c248f81cf5",
             "batchId": "JP-CARDS-040",
@@ -107114,6 +107657,20 @@
             "status": "source_frame_completeness_unconfirmed",
             "whatToFind": "Find a full-frame Squirtle018/075 original with every outer edge clear. Preserve the printed flat10-damage reduction qualification rather than the provider’s altered wording.",
             "detail": "outer_perimeter_uncertain_at_canvas_boundary; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
+          },
+          {
+            "itemId": "card:9922dea0-3800-4586-98fb-e6f64de1d9eb",
+            "printingId": "9922dea0-3800-4586-98fb-e6f64de1d9eb",
+            "batchId": "JP-CARDS-040",
+            "languageCode": "ja",
+            "setCode": "PCG8",
+            "collectorReference": "019",
+            "name": "wartortle",
+            "artworkType": "Card front",
+            "status": "source_physical_edition_unresolved",
+            "whatToFind": "Find the matching edition with all edges and details readable, or confirm which edition this record should use.",
+            "detail": "visible_first_edition_stamp_unbound_to_current_normal_tuple; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
           },
           {
@@ -107131,6 +107688,20 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
           },
           {
+            "itemId": "card:8d05244f-d42b-4e61-b79f-50484b8f4d81",
+            "printingId": "8d05244f-d42b-4e61-b79f-50484b8f4d81",
+            "batchId": "JP-CARDS-040",
+            "languageCode": "ja",
+            "setCode": "PCG8",
+            "collectorReference": "022",
+            "name": "マーシュトンプ",
+            "artworkType": "Card front",
+            "status": "source_printed_identity_incomplete",
+            "whatToFind": "Find a sharp complete original without a seller watermark.",
+            "detail": "visible_source_watermark_retained; soft_photo_with_unreadable_artist_and_fine_footer; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
+          },
+          {
             "itemId": "card:a557a0f5-77f6-4d02-a9b5-b94c163f9476",
             "printingId": "a557a0f5-77f6-4d02-a9b5-b94c163f9476",
             "batchId": "JP-CARDS-040",
@@ -107142,6 +107713,20 @@
             "status": "visible_first_edition_stamp_unbound",
             "whatToFind": "Confirm the intended first-edition or unstamped printing; a sharp original is retained, but its visible first-edition stamp is not matched by the current edition-neutral record.",
             "detail": "visible_first_edition_stamp_unbound_to_current_normal_tuple; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
+          },
+          {
+            "itemId": "card:6bae3136-fbea-4c09-a48b-2e9471ee1e73",
+            "printingId": "6bae3136-fbea-4c09-a48b-2e9471ee1e73",
+            "batchId": "JP-CARDS-040",
+            "languageCode": "ja",
+            "setCode": "PCG8",
+            "collectorReference": "025",
+            "name": "ロンベル",
+            "artworkType": "Card front",
+            "status": "source_printed_identity_incomplete",
+            "whatToFind": "Find a sharper single-card front with its name, complete attacks, artist and card number readable.",
+            "detail": "below_detail_resolution; two_card_composite_not_single_catalogue_front; small_card_region_with_unreadable_collector_artist_and_fine_body; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
           },
           {
@@ -107173,6 +107758,25 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
           },
           {
+            "itemId": "card:90c626bd-6baf-487f-a565-135ceb9c2866",
+            "printingId": "90c626bd-6baf-487f-a565-135ceb9c2866",
+            "batchId": "JP-CARDS-041",
+            "languageCode": "ja",
+            "setCode": "PCG8",
+            "collectorReference": "031",
+            "name": "マネクリック",
+            "artworkType": "Card front",
+            "status": "source_physical_edition_unresolved",
+            "whatToFind": "Find the matching edition with all edges and details readable, or confirm which edition this record should use.",
+            "detail": "visible_first_edition_stamp_unbound_to_current_holo_tuple; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-006",
+        "items": [
+          {
             "itemId": "card:ae6d89c5-2d3f-4276-9df5-a215303cecdc",
             "printingId": "ae6d89c5-2d3f-4276-9df5-a215303cecdc",
             "batchId": "JP-CARDS-041",
@@ -107187,6 +107791,20 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
           },
           {
+            "itemId": "card:6bbe1c09-1914-44cb-a05e-f039cd6797d5",
+            "printingId": "6bbe1c09-1914-44cb-a05e-f039cd6797d5",
+            "batchId": "JP-CARDS-041",
+            "languageCode": "ja",
+            "setCode": "PCG8",
+            "collectorReference": "036",
+            "name": "Grumpig",
+            "artworkType": "Card front",
+            "status": "source_printed_identity_incomplete",
+            "whatToFind": "Find a sharper single-card front with its name, complete attacks, artist and card number readable.",
+            "detail": "collector_footer_unreadable_in_dark_source; outer_perimeter_not_fully_established; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
+          },
+          {
             "itemId": "card:3fd9f6e2-66c9-4e4b-a436-0c3bfbc31591",
             "printingId": "3fd9f6e2-66c9-4e4b-a436-0c3bfbc31591",
             "batchId": "JP-CARDS-041",
@@ -107198,6 +107816,20 @@
             "status": "exact_small_source_original_below_detail_quality",
             "whatToFind": "Find a larger original; the saved scan is too small for readable card detail.",
             "detail": "below_detail_height504; small_target_card_region; collector_artist_full_effect_unreadable; physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
+          },
+          {
+            "itemId": "card:516986fc-1352-4e61-9cd3-91e6333e4f6b",
+            "printingId": "516986fc-1352-4e61-9cd3-91e6333e4f6b",
+            "batchId": "JP-CARDS-041",
+            "languageCode": "ja",
+            "setCode": "PCG8",
+            "collectorReference": "038",
+            "name": "バネット",
+            "artworkType": "Card front",
+            "status": "source_finish_metadata_mismatch",
+            "whatToFind": "Resolve the foil finish: the saved card says normal and the source records say holo.",
+            "detail": "finish_metadata_mismatch; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11278/miracle-crystal"
           },
           {
@@ -107243,6 +107875,20 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
           },
           {
+            "itemId": "card:7f8ff350-6dcb-455a-b04f-7f888de33d6a",
+            "printingId": "7f8ff350-6dcb-455a-b04f-7f888de33d6a",
+            "batchId": "JP-CARDS-043",
+            "languageCode": "ja",
+            "setCode": "PCG9",
+            "collectorReference": "003",
+            "name": "ドラゴンエア（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_printed_identity_incomplete",
+            "whatToFind": "Find a sharper single-card front with its name, complete attacks, artist and card number readable.",
+            "detail": "below_detail_resolution; small_card_region_with_unreadable_artist_and_fine_footer; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
+          },
+          {
             "itemId": "card:3336cfac-caa7-4e2e-b486-accfd5eb262e",
             "printingId": "3336cfac-caa7-4e2e-b486-accfd5eb262e",
             "batchId": "JP-CARDS-043",
@@ -107254,6 +107900,20 @@
             "status": "metadata_source_finish_conflict",
             "whatToFind": "Confirm normal versus shiny and the exact printing before using the image.",
             "detail": "Source listing says Rare Holo ex; current sole variant is normal/normal. Find a compatible exact original or separately establish a catalogue correction; source taxonomy alone does not prove a wrong photo.",
+            "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
+          },
+          {
+            "itemId": "card:af1c6cf3-114e-4159-ae27-31135eb8e12d",
+            "printingId": "af1c6cf3-114e-4159-ae27-31135eb8e12d",
+            "batchId": "JP-CARDS-043",
+            "languageCode": "ja",
+            "setCode": "PCG9",
+            "collectorReference": "006",
+            "name": "quagsire（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_printed_identity_incomplete",
+            "whatToFind": "Find a sharp complete original without a seller watermark.",
+            "detail": "below_detail_resolution; visible_source_watermark_retained; outer_perimeter_not_fully_established; unreadable_collector_artist_and_ability_body; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
           },
           {
@@ -107271,6 +107931,20 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
           },
           {
+            "itemId": "card:3b1b35aa-b3ca-4c2a-8656-cfe1c6f4d5fa",
+            "printingId": "3b1b35aa-b3ca-4c2a-8656-cfe1c6f4d5fa",
+            "batchId": "JP-CARDS-043",
+            "languageCode": "ja",
+            "setCode": "PCG9",
+            "collectorReference": "008",
+            "name": "アーボック（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_physical_edition_unresolved",
+            "whatToFind": "Find the matching edition with all edges and details readable, or confirm which edition this record should use.",
+            "detail": "visible_first_edition_stamp_unbound_to_current_normal_tuple; large_easel_scene_not_isolated_card_front; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
+          },
+          {
             "itemId": "card:4e8f3b7e-26cf-479c-808f-3c6996596dbc",
             "printingId": "4e8f3b7e-26cf-479c-808f-3c6996596dbc",
             "batchId": "JP-CARDS-043",
@@ -107282,6 +107956,20 @@
             "status": "source_frame_completeness_unconfirmed",
             "whatToFind": "Find an original with the entire outer left edge and all four corners clearly inside the picture; the retained name, body and010/068 are readable.",
             "detail": "left_outer_perimeter_uncertain_at_image_boundary; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
+          },
+          {
+            "itemId": "card:9130d41e-2119-4fef-8360-f0122d48828c",
+            "printingId": "9130d41e-2119-4fef-8360-f0122d48828c",
+            "batchId": "JP-CARDS-043",
+            "languageCode": "ja",
+            "setCode": "PCG9",
+            "collectorReference": "011",
+            "name": "スウェロー（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_printed_identity_incomplete",
+            "whatToFind": "Find a sharper single-card front with its name, complete attacks, artist and card number readable.",
+            "detail": "below_detail_resolution; unreadable_collector_artist_and_fine_ability_attack_body; outer_perimeter_not_fully_established; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
           },
           {
@@ -107297,12 +107985,7 @@
             "whatToFind": "Confirm the intended first-edition or unstamped printing; a sharp original is retained, but its visible first-edition stamp is not matched by the current edition-neutral record.",
             "detail": "visible_first_edition_stamp_unbound_to_current_normal_tuple; outer_perimeter_uncertain_at_canvas_boundary; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-006",
-        "items": [
+          },
           {
             "itemId": "card:c5559c4f-594f-4ba4-8248-a230f0463d98",
             "printingId": "c5559c4f-594f-4ba4-8248-a230f0463d98",
@@ -107315,6 +107998,20 @@
             "status": "visible_first_edition_stamp_unbound",
             "whatToFind": "Confirm the intended first-edition or unstamped printing; a sharp original is retained, but its visible first-edition stamp is not matched by the current edition-neutral record.",
             "detail": "visible_first_edition_stamp_unbound_to_current_normal_tuple; outer_perimeter_uncertain_at_canvas_boundary; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
+          },
+          {
+            "itemId": "card:1cc5d2d9-64e0-4f14-8ef1-fadcd2c2ea88",
+            "printingId": "1cc5d2d9-64e0-4f14-8ef1-fadcd2c2ea88",
+            "batchId": "JP-CARDS-043",
+            "languageCode": "ja",
+            "setCode": "PCG9",
+            "collectorReference": "017",
+            "name": "togetic（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unconfirmed",
+            "whatToFind": "Find a complete photo showing all four outer edges and rounded corners.",
+            "detail": "top_and_side_outer_perimeters_not_fully_established; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
           },
           {
@@ -107346,6 +108043,20 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
           },
           {
+            "itemId": "card:945cfade-052a-4aa4-a3e7-c6a66a10e466",
+            "printingId": "945cfade-052a-4aa4-a3e7-c6a66a10e466",
+            "batchId": "JP-CARDS-043",
+            "languageCode": "ja",
+            "setCode": "PCG9",
+            "collectorReference": "021",
+            "name": "シェルゴン（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_printed_identity_incomplete",
+            "whatToFind": "Find a sharper single-card front with its name, complete attacks, artist and card number readable.",
+            "detail": "below_detail_resolution; small_card_region_with_unreadable_collector_artist_and_fine_footer; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
+          },
+          {
             "itemId": "card:5288cebb-14d9-4217-ba3e-1d3209e1adbd",
             "printingId": "5288cebb-14d9-4217-ba3e-1d3209e1adbd",
             "batchId": "JP-CARDS-043",
@@ -107357,6 +108068,20 @@
             "status": "exact_small_source_original_below_detail_quality",
             "whatToFind": "Find a larger original; the saved scan is too small for readable card detail.",
             "detail": "Below detail role minimum height of 504px: actual height 500px.; Artist and small footer symbols not certified from pixels.; No observed edition stamp does not certify unlimited; exact physical edition remains unresolved.",
+            "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
+          },
+          {
+            "itemId": "card:8539275d-b1ac-4389-b06b-cd18a48b5b5f",
+            "printingId": "8539275d-b1ac-4389-b06b-cd18a48b5b5f",
+            "batchId": "JP-CARDS-043",
+            "languageCode": "ja",
+            "setCode": "PCG9",
+            "collectorReference": "025",
+            "name": "クロコノー（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unconfirmed",
+            "whatToFind": "Find a complete photo showing all four outer edges and rounded corners.",
+            "detail": "side_outer_perimeters_not_fully_established; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
           },
           {
@@ -107388,6 +108113,25 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
           },
           {
+            "itemId": "card:f84bfabf-4a81-4883-a52b-9fa6dad0500d",
+            "printingId": "f84bfabf-4a81-4883-a52b-9fa6dad0500d",
+            "batchId": "JP-CARDS-044",
+            "languageCode": "ja",
+            "setCode": "PCG9",
+            "collectorReference": "030",
+            "name": "ニネタール（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_finish_metadata_mismatch",
+            "whatToFind": "Resolve the foil finish: the saved card says normal and the source records say holo.",
+            "detail": "finish_metadata_mismatch; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-007",
+        "items": [
+          {
             "itemId": "card:a41e581c-317e-42e1-8fb2-a9d5c98bb83a",
             "printingId": "a41e581c-317e-42e1-8fb2-a9d5c98bb83a",
             "batchId": "JP-CARDS-044",
@@ -107416,6 +108160,48 @@
             "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
           },
           {
+            "itemId": "card:8d553a91-05c8-41b5-999d-4741e32456e7",
+            "printingId": "8d553a91-05c8-41b5-999d-4741e32456e7",
+            "batchId": "JP-CARDS-044",
+            "languageCode": "ja",
+            "setCode": "PCG9",
+            "collectorReference": "033",
+            "name": "キラバ（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_frame_completeness_unconfirmed",
+            "whatToFind": "Find a complete photo showing all four outer edges and rounded corners.",
+            "detail": "top_right_corner_and_right_outer_perimeter_unconfirmed; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
+          },
+          {
+            "itemId": "card:a82b8c54-7d5a-444e-9eec-c36025eff007",
+            "printingId": "a82b8c54-7d5a-444e-9eec-c36025eff007",
+            "batchId": "JP-CARDS-044",
+            "languageCode": "ja",
+            "setCode": "PCG9",
+            "collectorReference": "034",
+            "name": "Typhlosion（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_printed_identity_incomplete",
+            "whatToFind": "Find a sharper single-card front with its name, complete attacks, artist and card number readable.",
+            "detail": "unreadable_collector_artist_and_complete_ability_attack_body; outer_perimeter_not_fully_established; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
+          },
+          {
+            "itemId": "card:8692c045-2f36-431b-9541-127bbbc74033",
+            "printingId": "8692c045-2f36-431b-9541-127bbbc74033",
+            "batchId": "JP-CARDS-044",
+            "languageCode": "ja",
+            "setCode": "PCG9",
+            "collectorReference": "036",
+            "name": "ビブラバ（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_physical_edition_unresolved",
+            "whatToFind": "Find the matching edition with all edges and details readable, or confirm which edition this record should use.",
+            "detail": "visible_first_edition_stamp_unbound_to_current_normal_tuple; outer_perimeter_not_fully_established; visible_vertical_surface_line_retained; current_physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
+          },
+          {
             "itemId": "card:6692d163-17e4-4fa1-8050-161eef93b47e",
             "printingId": "6692d163-17e4-4fa1-8050-161eef93b47e",
             "batchId": "JP-CARDS-044",
@@ -107427,6 +108213,20 @@
             "status": "exact_small_source_original_below_detail_quality",
             "whatToFind": "Find a larger original; the saved scan is too small for readable card detail.",
             "detail": "delivered_height500_below_detail504; small_target_region; collector_artist_unreadable; external_seller_label_in_whole_original; physical_edition_unresolved",
+            "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
+          },
+          {
+            "itemId": "card:1a315787-243a-46a2-8a7a-9c179b4c84ad",
+            "printingId": "1a315787-243a-46a2-8a7a-9c179b4c84ad",
+            "batchId": "JP-CARDS-044",
+            "languageCode": "ja",
+            "setCode": "PCG9",
+            "collectorReference": "039",
+            "name": "クロイスター（デルタ種）",
+            "artworkType": "Card front",
+            "status": "source_photo_is_card_back",
+            "whatToFind": "Find the front of this exact card; this source photo shows its back.",
+            "detail": "literal_main_image_is_card_back_not_target_front; target_printed_identity_body_and_collector_absent; current_physical_edition_unresolved",
             "providedGallery": "https://www.tcgcollector.com/sets/11295/offense-and-defense-of-the-furthest-ends"
           },
           {
@@ -107652,12 +108452,7 @@
             "whatToFind": "Resolve the recorded card identity or finish detail, then locate its matching original.",
             "detail": "Retain the previous explicit source/identity/finish hold. Matching metadata fields do not settle the rejected source or finish.",
             "providedGallery": null
-          }
-        ]
-      },
-      {
-        "batchId": "MANUAL-JA-007",
-        "items": [
+          },
           {
             "itemId": "card:3e0d1e04-3271-4922-8b31-ff2a1f1209b6",
             "printingId": "3e0d1e04-3271-4922-8b31-ff2a1f1209b6",
@@ -107685,7 +108480,12 @@
             "whatToFind": "Resolve the recorded card identity or finish detail, then locate its matching original.",
             "detail": "Retain the previous explicit source/identity/finish hold. Matching metadata fields do not settle the rejected source or finish.",
             "providedGallery": null
-          },
+          }
+        ]
+      },
+      {
+        "batchId": "MANUAL-JA-008",
+        "items": [
           {
             "itemId": "card:8c29209a-a402-4c90-8689-f239e454af52",
             "printingId": "8c29209a-a402-4c90-8689-f239e454af52",
