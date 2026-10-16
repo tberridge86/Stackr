@@ -13,6 +13,8 @@ import {
 import { getCorocoroIssueCoverPresentation } from '../lib/corocoroCoverReferences';
 import { getMagazineSetCoverForSet } from '../lib/magazineSetCovers';
 
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
 type ModuleBox = { exports: Record<string, unknown> };
 
 function compileModule(
@@ -109,12 +111,15 @@ const screenModule = compileModule('app/corocoro.tsx', {
       replace: (path: string) => pushes.push({ replace: path }),
     },
     useLocalSearchParams: () => routeParams,
+    useFocusEffect: () => {},
   },
   'react-native': native,
   'react-native-safe-area-context': { SafeAreaView: 'SafeAreaView' },
   '@expo/vector-icons': { Ionicons: 'Ionicons' },
   '../components/StackrLoadingIndicator': { StackrLoadingIndicator: 'StackrLoadingIndicator' },
   '../components/CorocoroIssueCover': { CorocoroIssueCover },
+  '../components/CorocoroIssueOpening': { CorocoroIssueOpening: 'CorocoroIssueOpening' },
+  '../components/auth-context': { useAuth: () => ({ user: null, loading: false }) },
   '../components/StackrImage': { StackrImage: 'StackrImage' },
   '../components/Text': { Text: 'Text' },
   '../components/theme-context': { useTheme: () => ({ theme }) },
@@ -126,6 +131,14 @@ const screenModule = compileModule('app/corocoro.tsx', {
   },
   '../lib/curatedPokemonCatalogue': { getCuratedPokemonCardById: () => null },
   '../lib/pokemonTcg': { fetchCardById: async () => null },
+  '../lib/corocoroIssueCollection': {
+    fetchCorocoroOwnedCardKeys: async () => new Set(), getCorocoroCollectionCard: () => null,
+    getCorocoroCollectionDestinations: () => ({ binderIds: [], variants: false }),
+    getCorocoroIssueOwnership: () => ({ total: 1, owned: null, pending: 0 }),
+  },
+  '../lib/pokedexOwnershipState': { usePokedexOwnership: () => ({ values: null, status: 'idle' }) },
+  '../lib/manualCollectionDraft': { createManualCollectionDraft: () => { throw Error('Browsing cannot create a review'); } },
+  '../lib/supabase': { supabase: {} },
 });
 const CorocoroLibraryScreen = screenModule.default as React.ComponentType;
 
