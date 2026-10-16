@@ -2,7 +2,7 @@ import { supabase } from './supabase';
 import { MOBILE_RUNTIME_CONFIG } from './mobileRuntimeConfig';
 import { stackrApiClient } from './stackrApiV1';
 import { subscribeRequestCacheInvalidation } from './requestCache';
-import { createBinderReopenCache, type BinderReopenScope, type BinderReopenStore } from './binderReopenSnapshot';
+import { BINDER_REOPEN_STORED_BYTES, BINDER_REOPEN_STORED_ENTRIES, createBinderReopenCache, type BinderReopenScope, type BinderReopenStore } from './binderReopenSnapshot';
 import { fetchBinderById, fetchBinderCards, type BinderCardRecord, type BinderRecord } from './binders';
 
 declare const require: (name: string) => any;
@@ -28,7 +28,7 @@ export async function createBinderReopenSqliteStore(db: SnapshotDatabase): Promi
       if (payload.length * 2 > 2 * 1024 * 1024) return;
       await db.withExclusiveTransactionAsync(async (tx) => {
         await tx.runAsync('INSERT OR REPLACE INTO binder_reopen_v1(namespace, account_id, binder_id, saved_at, payload) VALUES (?, ?, ?, ?, ?)', [snapshot.namespace, snapshot.accountId, snapshot.binder.id, snapshot.savedAt, payload]);
-        await tx.runAsync('DELETE FROM binder_reopen_v1 WHERE rowid IN (SELECT rowid FROM (SELECT rowid, ROW_NUMBER() OVER (ORDER BY saved_at DESC, rowid DESC) AS position, SUM(LENGTH(CAST(payload AS BLOB))) OVER (ORDER BY saved_at DESC, rowid DESC ROWS UNBOUNDED PRECEDING) AS total_bytes FROM binder_reopen_v1) WHERE position > 8 OR total_bytes > 8388608)');
+        await tx.runAsync('DELETE FROM binder_reopen_v1 WHERE rowid IN (SELECT rowid FROM (SELECT rowid, ROW_NUMBER() OVER (ORDER BY saved_at DESC, rowid DESC) AS position, SUM(LENGTH(CAST(payload AS BLOB))) OVER (ORDER BY saved_at DESC, rowid DESC ROWS UNBOUNDED PRECEDING) AS total_bytes FROM binder_reopen_v1) WHERE position > ? OR total_bytes > ?)', [BINDER_REOPEN_STORED_ENTRIES, BINDER_REOPEN_STORED_BYTES]);
       });
     },
     async clear() { await db.runAsync('DELETE FROM binder_reopen_v1'); },
@@ -79,10 +79,8 @@ export function isBinderAccessDenied(error: unknown) {
     || candidate?.code === 'PGRST301' || candidate?.code === 'session_not_found';
 }
 
-const BINDER_REOPEN_PRELOAD_LIMIT = 8;
-
 /**
- * Warms the existing, bounded reopen cache after Home is already usable.
+ * Warms the bounded reopen cache after Home or the binder library is usable.
  * This reads private rows through the normal RLS-backed binder functions; it
  * never turns a local cache into authorisation or downloads optional assets.
  */
@@ -105,10 +103,16 @@ export async function preloadBinderReopenViews(
     && sessionExpiresAt * 1000 > Date.now();
 
   const scope = binderReopenScope(trustedAccountId);
+  const seen = new Set<string>();
   const candidates = binders
     .filter((binder) => binder?.user_id === trustedAccountId && (binder.type === 'official' || binder.type === 'custom') && Boolean(binder.id))
     .sort((left, right) => Date.parse(right.created_at ?? '') - Date.parse(left.created_at ?? ''))
-    .slice(0, BINDER_REOPEN_PRELOAD_LIMIT);
+    .filter((binder) => {
+      if (seen.has(binder.id)) return false;
+      seen.add(binder.id);
+      return true;
+    })
+    .slice(0, BINDER_REOPEN_STORED_ENTRIES);
 
   for (const candidate of candidates) {
     if (!isEligible()) return;
@@ -120,7 +124,7 @@ export async function preloadBinderReopenViews(
     if (!isEligible()) return;
 
     try {
-      if (candidate.type === 'custom') {
+      if (candidate.type === 'custom' && options.completeSavedCardsByBinder?.has(candidate.id)) {
         const completeCards = options.completeSavedCardsByBinder?.get(candidate.id);
         if (!completeCards || completeCards.some((row) => row?.binder_id !== candidate.id)) continue;
         if (!isEligible()) return;
@@ -136,7 +140,9 @@ export async function preloadBinderReopenViews(
       // save() is the authoritative completeness/whitelist/size gate. A
       // partial catalogue, foreign row, or oversized payload simply is not
       // cached and this low-priority pass proceeds to the next candidate.
-      binderReopenCache.save(scope, binder, cards, lease);
+      binderReopenCache.save(scope, binder, cards, lease, undefined, binder.type === 'custom' ? {
+        customSource: { kind: 'binder-saved-cards-v1', cardCount: cards.length },
+      } : {});
     } catch {
       // Preloading is opportunistic: a single unavailable binder must not fan
       // out retries or delay the remaining bounded candidates.

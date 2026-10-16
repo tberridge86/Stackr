@@ -244,6 +244,15 @@ async function main() {
   assert.equal(viewWarm.warmedViews[0].isCurrent(), false, 'sign-out revokes an already-started binder warmer');
   await viewWarm.close();
 
+  const slowPrices = deferred<any>();
+  const earlyWarm = await harness({ valuation: () => slowPrices.promise, saved: async () => ({ ...emptySaved(), binders: [{
+    id: '00000000-0000-4000-8000-000000000001', user_id: 'owner-a', name: 'Started binder',
+    color: '#000', type: 'custom', is_public: false, source_set_id: null, created_at: '2026-10-12T12:00:00Z',
+  }], cardsByBinder: new Map([['00000000-0000-4000-8000-000000000001', []]]) }) });
+  await earlyWarm.interactions(); await earlyWarm.settle();
+  assert.equal(earlyWarm.warmedViews.length, 1, 'a stalled price request cannot block preparing saved binders');
+  await earlyWarm.close();
+
   const signedOut = await harness({ owner: '' });
   assert.equal(signedOut.state().collectionValueLoading, false, 'signed-out Home settles its collection state');
   assert.equal(signedOut.state().chaseLoading, false);

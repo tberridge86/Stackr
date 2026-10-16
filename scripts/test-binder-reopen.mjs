@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
-import { createBinderReopenCache, snapshotBinderView, isCompleteBinderSnapshot, BINDER_REOPEN_MAX_AGE_MS } from '../lib/binderReopenSnapshot.ts';
+import { createBinderReopenCache, snapshotBinderView, isCompleteBinderSnapshot, BINDER_REOPEN_MAX_AGE_MS, BINDER_REOPEN_STORED_ENTRIES, BINDER_REOPEN_STORED_BYTES } from '../lib/binderReopenSnapshot.ts';
 import { beginBinderRetrieval, getBinderRetrievalObservations } from '../lib/performance.ts';
 import * as requestCache from '../lib/requestCache.ts';
 import { mergeBinderArtwork } from '../lib/stackrSetRetrieval.ts';
@@ -126,6 +126,7 @@ const code = ts.transpileModule(`export const load = ${callback};`, { compilerOp
 function screenHarness() {
   const auth = deferred(), record = deferred(), network = deferred(), disk = deferred();
   const state = { binder: null, cards: [], loading: null, ownershipReady: false, status: null }; let saves = 0, invalidations = 0;
+  const savedArgs = [];
   const never = () => new Promise(() => {});
   const runtime = { exports: {}, console, AbortController, binderId: binder.id, Date,
     visiblePriceReaderRef: { current: null }, visiblePriceIdsRef: { current: [] },
@@ -133,20 +134,21 @@ function screenHarness() {
     mergeBinderArtwork,
     accountGenerationRef: { current: 0 }, loadRequestRef: { current: 0 }, artworkRequestRef: { current: null }, activeAccountIdRef: { current: scope.accountId }, retrievalTraceRef: { current: null },
     beginBinderRetrieval, isCompleteBinderSnapshot, binderReopenScope: () => scope, readBinderReopenPreview: () => disk.promise,
-    binderReopenCache: { lease: () => 0, save: () => { saves++; }, invalidate: () => { invalidations++; } },
+    binderReopenCache: { lease: () => 0, save: (...args) => { saves++; savedArgs.push(args); }, invalidate: () => { invalidations++; } },
     retainBinderPreviewDuringRefresh: work => work(), invalidateBinderCaches: () => {}, invalidatePokemonCatalogueCardCaches: () => {},
     isBinderAccessDenied: error => error?.status === 403 || error?.status === 401,
     isCurrentAccountRequest: (a, b) => a.accountGeneration === b.accountGeneration && a.requestId === b.requestId,
     measureAsync: (_name, work) => work(), fetchBinderById: () => record.promise, fetchBinderCards: () => network.promise,
     supabase: { auth: { getUser: () => auth.promise }, from: () => { const q = { select: () => q, eq: () => q, in: () => q, order: () => q, then: () => never() }; return q; } },
     attachBinderCatalogueArtwork: never, attachBinderSetArtwork: never, attachLatestSnapshotPrices: never, getVariantCardKey: (c, s) => `${s}:${c}`,
+    getCustomBinderNameArtKeyForBinder: async () => null,
     setCards: v => { state.cards = typeof v === 'function' ? v(state.cards) : v; }, setLoading: v => state.loading = v,
     setBinder: v => state.binder = v, setOwnershipReady: v => state.ownershipReady = v, setReopenStatus: v => state.status = v,
     setUserId: () => {}, setIsPublic: () => {}, setCustomNameArtKey: () => {}, setSelectedCard: () => {},
     setShowcaseRows: () => {}, setOwnedVariants: () => {}, setVariantManagedCards: () => {}, Alert: { alert: () => {} },
   };
   vm.runInNewContext(code, runtime);
-  return { auth, record, network, disk, state, runtime, load: runtime.exports.load, get saves() { return saves; }, get invalidations() { return invalidations; } };
+  return { auth, record, network, disk, state, runtime, savedArgs, load: runtime.exports.load, get saves() { return saves; }, get invalidations() { return invalidations; } };
 }
 const snapshot = () => snapshotBinderView(scope, binder, cards(), Date.now());
 await test('actual screen renders a complete read-only saved view before auth or ownership network replies', async () => {
@@ -181,6 +183,18 @@ await test('actual screen replaces saved data only after a complete refresh and 
 await test('actual screen rejects cached content after navigation or account change', async () => {
   const h = screenHarness(); h.load(); h.runtime.accountGenerationRef.current++; h.disk.resolve(snapshot()); await tick(); assert.equal(h.state.cards.length, 0);
 });
+await test('opening a custom binder saves its complete private rows for the next app launch', async () => {
+  const h = screenHarness(); const pending = h.load(); h.disk.resolve(null);
+  h.auth.resolve({ data: { user: { id: scope.accountId } } });
+  h.record.resolve({ ...binder, type: 'custom', source_set_id: null }); await tick();
+  h.network.resolve(cards(2)); await pending;
+  assert.equal(h.saves, 1, 'the actual custom-binder screen enters the complete owner cache');
+  assert.deepEqual(copy(h.savedArgs[0][5]), { customSource: { kind: 'binder-saved-cards-v1', cardCount: 2 } });
+  const restored = snapshotBinderView(h.savedArgs[0][0], h.savedArgs[0][1], h.savedArgs[0][2], h.savedArgs[0][4], h.savedArgs[0][5]);
+  assert.equal(isCompleteBinderSnapshot(restored, scope, binder.id, Date.now()), true);
+  assert.equal(h.state.cards.length, 2);
+  assert.equal(h.state.loading, false);
+});
 await test('native viewability callback and committed ownership hook are wired separately', async () => {
   assert.match(source, /onViewableItemsChanged=\{onBinderViewableItemsChanged\}/);
   assert.match(source, /ownershipReady && !isReadOnly\) retrievalTraceRef\.current\?\.editable/);
@@ -204,7 +218,7 @@ await test('SQLite adapter survives a real file reopen, isolates owners, bounds 
     './mobileRuntimeConfig': { MOBILE_RUNTIME_CONFIG: { supabaseUrl: 'https://fixture.invalid' } },
     './stackrApiV1': { stackrApiClient: { catalogueCacheNamespace: scope.namespace } },
     './requestCache': { subscribeRequestCacheInvalidation: () => {} },
-    './binderReopenSnapshot': { createBinderReopenCache },
+    './binderReopenSnapshot': { createBinderReopenCache, BINDER_REOPEN_STORED_ENTRIES, BINDER_REOPEN_STORED_BYTES },
   };
   vm.runInNewContext(compiled, { exports: module.exports, require: name => dependencies[name] ?? {}, console });
   const folder = mkdtempSync(join(tmpdir(), 'stackr-reopen-')); const path = join(folder, 'snapshot.sqlite');
@@ -229,7 +243,10 @@ await test('SQLite adapter survives a real file reopen, isolates owners, bounds 
     await assert.rejects(store.write(changed), /disk write failure/); failPrune = false;
     assert.equal((await store.read(scope, binder.id)).cards[0].owned_quantity, 4);
     for (let i = 0; i < 10; i++) { const value = copy(saved); value.binder.id = uuid(9900 + i); value.savedAt += i; await store.write(value); }
-    assert.equal(db.prepare('SELECT count(*) AS n FROM binder_reopen_v1').get().n, 8);
+    assert.equal(db.prepare('SELECT count(*) AS n FROM binder_reopen_v1').get().n, 11, 'more than eight started binders survive on disk');
+    for (let i = 10; i < BINDER_REOPEN_STORED_ENTRIES + 2; i++) { const value = copy(saved); value.binder.id = uuid(9900 + i); value.savedAt += i; await store.write(value); }
+    assert.equal(db.prepare('SELECT count(*) AS n FROM binder_reopen_v1').get().n, BINDER_REOPEN_STORED_ENTRIES, 'disk retention remains bounded');
+    assert.equal(await store.read(scope, binder.id), null, 'oldest entries are evicted at the storage limit');
     await store.clear(); assert.equal(db.prepare('SELECT count(*) AS n FROM binder_reopen_v1').get().n, 0);
   } finally { db.close(); rmSync(folder, { recursive: true, force: true }); }
 });

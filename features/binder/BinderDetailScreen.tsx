@@ -1,7 +1,7 @@
 import { isGeneralPreparedCoverage, preferredPreparedValuation, preparedGeneralPricingSummary, preparedPricingSummary, type PreparedGeneralValuation, type PreparedValuation } from '../../lib/preparedCollectionValuation';
 import { getCollectionPriceCoverageLabel } from '../../lib/collectionPricingState';
 import { binderReopenCache, binderReopenScope, isBinderAccessDenied, readBinderReopenPreview, retainBinderPreviewDuringRefresh } from '../../lib/binderReopenRuntime';
-import { isCompleteBinderSnapshot, type BinderReopenSnapshot } from '../../lib/binderReopenSnapshot';
+import { isCompleteBinderSnapshot, type BinderReopenSaveOptions, type BinderReopenSnapshot } from '../../lib/binderReopenSnapshot';
 import { mergeBinderArtwork } from '../../lib/stackrSetRetrieval';
 import { loadLatestSnapshotBinderPrices } from '../../lib/binderPricing';
 import { createVisibleBinderPriceReader, type VisibleBinderPriceReader } from '../../lib/binderVisiblePrices';
@@ -1186,8 +1186,11 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
       const snapshotScope = user ? binderReopenScope(user.id) : null;
       const savedAt = Date.now();
+      const snapshotOptions: BinderReopenSaveOptions = binderData.type === 'custom' ? {
+        customSource: { kind: 'binder-saved-cards-v1', cardCount: binderCards.length },
+      } : {};
       const completeOwnerView = snapshotScope && isCompleteBinderSnapshot({
-        ...snapshotScope, schema: 1, savedAt, binder: binderData, cards: binderCards,
+        ...snapshotScope, schema: 1, savedAt, binder: binderData, cards: binderCards, customSource: snapshotOptions.customSource,
       }, snapshotScope, binderId, savedAt);
       const expected = binderData.catalogue_set_total ?? binderData.catalogue_set_printed_total;
       const incompleteRefresh = binderData.type === 'official' && ((binderData.user_id === user?.id && !completeOwnerView)
@@ -1204,7 +1207,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         setReopenStatus(null);
       }
       const displayCards = previewState.snapshot ? mergeBinderArtwork(binderCards, previewState.snapshot.cards) : binderCards;
-      if (completeOwnerView && snapshotScope) binderReopenCache.save(snapshotScope, binderData, displayCards, reopenLease, savedAt);
+      if (completeOwnerView && snapshotScope) binderReopenCache.save(snapshotScope, binderData, displayCards, reopenLease, savedAt, snapshotOptions);
       setBinder(binderData);
       setCustomNameArtKey(customNameArtKey);
 
@@ -1223,7 +1226,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       void attachBinderCatalogueArtwork(binderCards, artworkRequest.signal, applyArtwork).then((enriched) => {
         applyArtwork(enriched);
         if (completeOwnerView && snapshotScope && isCurrentRequest() && !artworkRequest.signal.aborted) {
-          binderReopenCache.save(snapshotScope, binderData, mergeBinderArtwork(displayCards, enriched), reopenLease, savedAt);
+          binderReopenCache.save(snapshotScope, binderData, mergeBinderArtwork(displayCards, enriched), reopenLease, savedAt, snapshotOptions);
         }
       }).catch((error) => {
         if (isCurrentRequest() && !artworkRequest.signal.aborted) console.log('Binder artwork unavailable:', error);
