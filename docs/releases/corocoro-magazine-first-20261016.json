@@ -1,0 +1,665 @@
+{
+  "schemaVersion": "corocoro-magazine-first-v1",
+  "checkedAt": "2026-10-16T20:32:19.971169+00:00",
+  "baselineRevision": "4011ac26d82cdf63b9b1c5255005af3b703619db",
+  "localPreview": "http://127.0.0.1:58412/unpacking.html",
+  "ownerProblem": "Standalone peeling lacked magazine delivery context and convincing supported backing separation. Owner asks cover, open issue, show actual insert, then card-specific reveal using internet references.",
+  "implementedCases": [
+    "1996-sheet",
+    "2000-cleffa",
+    "2000-wooper",
+    "2022-packet",
+    "2023-cetitan"
+  ],
+  "changes": {
+    "allCases": "Exact cover first, right-spine presentation, separate opening then own insert/action. No card auto-release on cover opening.",
+    "cetitan": "Additional film-derived front pouch left of gutter, right-margin turn to readable reverse on right, supported lift toward viewer/right, then explicit post-edit partly-exposed front-up card extraction.",
+    "peel": "Larger visible backing curl below supported old back; previous release timing, lifted loose-back pause and separate flip preserved.",
+    "coverFailure": "Exact cover unavailable or fails loading: explicitly offer separate View insert reference, preserve valid card/source holds."
+  },
+  "internetSourceReceipt": {
+    "schemaVersion": "corocoro-magazine-delivery-reference-v1",
+    "status": "three_missing_covers_prepared_two_delivery_films_observed_interiors_held",
+    "generatedAt": "2026-10-16T20:25:17.674440+00:00",
+    "referenceOnly": true,
+    "publicDisplayApproved": false,
+    "nativeDisplayApproved": false,
+    "sourceLicenceEstablished": false,
+    "privatePreparationAuthority": "Owner latest request to start with cover, open to reveal, then exact delivery motion; parent exclusive source task; standing Tif13Oct offline source preparation. No public/native/catalogue authority added.",
+    "cases": [
+      {
+        "caseId": "1996-sheet",
+        "issue": "Monthly CoroCoro November1996",
+        "cover": {
+          "file": "covers/1996-11.png",
+          "width": 449,
+          "height": 647,
+          "bytes": 713370,
+          "sha256": "e84ec33681ff263d5226e7b14c6b7f78db64b322207d3a967ad3d94d573267a5",
+          "mimeType": "image/png",
+          "crop": [
+            0,
+            0,
+            449,
+            647
+          ],
+          "sourcePage": null,
+          "sourceImage": null,
+          "origin": "existing_owner_supplied_cover",
+          "originalBytesUnmodified": true,
+          "derivatives": [],
+          "publicDisplayApproved": false,
+          "nativeDisplayApproved": false,
+          "sourceLicenceEstablished": false,
+          "referenceOnly": true,
+          "checkedAt": "2026-10-16T20:26:00Z"
+        },
+        "coverIdentityEvidence": [
+          "Monthly11 badge visible",
+          "Original Red/Blue Nintendo GameBoy promotion and1996 mark visible"
+        ],
+        "coverConfidence": "high_for_private_reference",
+        "deliveryFootage": "https://www.youtube.com/watch?v=8A5KDZAzDMs&t=1320s",
+        "thisAgentWatched": false,
+        "priorEvidence": "historical-footage-continued.json",
+        "verifiedCurrentScope": "Existing carrier/back registration and later hand-supported release already recorded; root re-inspecting22:00–23:23 in this pass.",
+        "boundInteriorPixelsPrepared": false,
+        "hold": [
+          "Do not claim original binding attachment from a loose carrier; use parent current observed ledger if it establishes more."
+        ],
+        "parentCurrentPassObservations": {
+          "source": "https://www.youtube.com/watch?v=8A5KDZAzDMs",
+          "reportedBy": "root magazine coordinator",
+          "thisAgentWatched": false,
+          "observed": [
+            "21:59 exact front cover",
+            "22:09 opened physical book below carrier",
+            "22:19 supported card while larger backing curls away"
+          ],
+          "limit": "Original binding operation remains under hands or cuts; no exact glue/perforation claim added."
+        }
+      },
+      {
+        "caseId": "2000-cleffa",
+        "issue": "Monthly CoroCoro February2000",
+        "cover": {
+          "file": "covers/2000-02.png",
+          "width": 446,
+          "height": 649,
+          "bytes": 682632,
+          "sha256": "0ef889c1eb9d8b4ad467cfcdf50d0b03a52f81a28184901e6b3f4de8ab853785",
+          "mimeType": "image/png",
+          "crop": [
+            0,
+            0,
+            446,
+            649
+          ],
+          "sourcePage": null,
+          "sourceImage": null,
+          "origin": "existing_owner_supplied_cover",
+          "originalBytesUnmodified": true,
+          "derivatives": [],
+          "publicDisplayApproved": false,
+          "nativeDisplayApproved": false,
+          "sourceLicenceEstablished": false,
+          "referenceOnly": true,
+          "checkedAt": "2026-10-16T20:26:00Z"
+        },
+        "coverIdentityEvidence": [
+          "2000 and month2 visible",
+          "Pii/CoroCoro neo special card panel visible"
+        ],
+        "coverConfidence": "high_for_private_reference",
+        "deliveryFootage": "https://www.youtube.com/watch?v=iXaufqXi2Zg",
+        "thisAgentWatched": false,
+        "priorEvidence": "next-artwork-references.json; historical-footage-continued.json",
+        "verifiedCurrentScope": "Own exact portrait carrier and printed lower-left peel guide; later loose-carrier release seen in prior ledger.",
+        "boundInteriorPixelsPrepared": false,
+        "hold": [
+          "Magazine cover-to-insert placement, page number and original fastening not established by existing loose carrier/photo evidence.",
+          "Generic page-turn into this own carrier is presentation reconstruction, not exact original attachment proof."
+        ]
+      },
+      {
+        "caseId": "2000-wooper",
+        "issue": "Monthly CoroCoro January2000",
+        "cover": {
+          "file": "private-unpacking-references/2000-01-monthly-cover-comicvine.jpg",
+          "width": 847,
+          "height": 1280,
+          "bytes": 421366,
+          "sha256": "8ab051a8c62cbf54a918947424a496dd7517b26f67b6238072f755c38893dfd1",
+          "mimeType": "image/jpeg",
+          "crop": [
+            0,
+            0,
+            847,
+            1280
+          ],
+          "sourcePage": "https://comicvine.gamespot.com/corocoro-comic-261-no-1-2000/4000-617775/",
+          "sourceImage": "https://comicvine.gamespot.com/a/uploads/scale_large/13/136525/6029804-1.jpg",
+          "origin": "new_private_original",
+          "originalBytesUnmodified": true,
+          "derivatives": [],
+          "publicDisplayApproved": false,
+          "nativeDisplayApproved": false,
+          "sourceLicenceEstablished": false,
+          "referenceOnly": true,
+          "checkedAt": "2026-10-16T20:26:00Z"
+        },
+        "coverIdentityEvidence": [
+          "Exact archive page names #261, January2000",
+          "Photographed cover month1 and Heisei12/No261 badge visible",
+          "CoroCoro neo card footer visible"
+        ],
+        "coverConfidence": "high_for_private_reference",
+        "coverQuality": "Published847x1280 archive photograph, framing/perspective retained; no HD-original or flat-scan claim.",
+        "deliveryFootage": "https://www.youtube.com/watch?v=JEnnOd7vZfM",
+        "thisAgentWatched": false,
+        "priorEvidence": "next-artwork-references.json; historical-footage-continued.json",
+        "verifiedCurrentScope": "Own carrier and printed lower-left guide; prior filmed release recorded.",
+        "boundInteriorPixelsPrepared": false,
+        "hold": [
+          "Exact original interior placement and fastening not established.",
+          "Yahoo gallery regional access blocked and Mercari gallery no longer available; no bypass."
+        ],
+        "acquisition": {
+          "method": "Normal browser pageAssets bundle of one observed current-page asset; exact byte copy",
+          "requestedCount": 1,
+          "downloadedCount": 1,
+          "failedCount": 0,
+          "retries": 0,
+          "browserExportPath": "C:/Users/berri/AppData/Local/Temp/browser-use/assets/c51e1a04-6714-40a8-b851-378c8343153f/692725bf9b1f85b9.jpg",
+          "browserManifestPath": "C:/Users/berri/AppData/Local/Temp/browser-use/assets/c51e1a04-6714-40a8-b851-378c8343153f/manifest.json"
+        }
+      },
+      {
+        "caseId": "2022-packet",
+        "issue": "Regular physical Monthly CoroCoro February2022",
+        "cover": {
+          "file": "private-unpacking-references/2022-02-monthly-cover-publisher.jpg",
+          "width": 450,
+          "height": 652,
+          "bytes": 326611,
+          "sha256": "b08bb1b42d8eeefc8fa792145db884995af7aa8685db18bde3525563f7695909",
+          "mimeType": "image/jpeg",
+          "crop": [
+            0,
+            0,
+            450,
+            652
+          ],
+          "sourcePage": "https://corocoro-news.jp/news/320097/",
+          "sourceImage": "https://corocoro-news.jp/wp-content/uploads/2022/01/e62b67e2f42ec28e6de12c3b96bc68d1.jpg",
+          "origin": "new_private_original",
+          "originalBytesUnmodified": true,
+          "derivatives": [],
+          "publicDisplayApproved": false,
+          "nativeDisplayApproved": false,
+          "sourceLicenceEstablished": false,
+          "referenceOnly": true,
+          "checkedAt": "2026-10-16T20:26:00Z"
+        },
+        "coverIdentityEvidence": [
+          "Primary publisher article dated2022Jan10 calls this Monthly February paper magazine cover",
+          "Image month2 and giant265/S-P PikachuVMAX promotion visible",
+          "Publisher article distinguishes separate digital-version bonus bundle"
+        ],
+        "coverConfidence": "high_for_private_reference",
+        "deliveryFootage": "https://www.youtube.com/watch?v=sHQVGH-CZbg",
+        "thisAgentWatched": true,
+        "observed": [
+          {
+            "timeSeconds": 8,
+            "action": "Three regular physical paper magazine front covers on table."
+          },
+          {
+            "timeSeconds": 20,
+            "action": "One regular physical magazine lifted, front cover facing camera."
+          },
+          {
+            "timeSeconds": 30,
+            "action": "Front cover still held."
+          },
+          {
+            "timeSeconds": 45,
+            "action": "Back cover shown; no insert attachment visible."
+          },
+          {
+            "timeSeconds": 54.0,
+            "action": "Detached portrait opaque sleeve resting beside cover; no original interior placement visible."
+          },
+          {
+            "timeSeconds": 55.0,
+            "action": "Same detached printed sleeve; card not yet shown in sampled image."
+          }
+        ],
+        "verification": "Each accepted paused observation read HTML video currentTime and readyState4 after normal seek-slider control. Full uninterrupted0–61s coverage not claimed.",
+        "boundInteriorPixelsPrepared": false,
+        "hold": [
+          "Original sleeve attachment, book page placement, detachment and initial seal breach remain unverified.",
+          "Do not make this an adhesive peel or inherit1996/Neo release method.",
+          "Existing front-up rightward extraction follows prior accepted footage; starting cover/page presentation may be reconstructed but must remain labelled."
+        ],
+        "acquisition": {
+          "method": "One observed named public publisher full-size cover response via urllib; exact bytes saved",
+          "requestedCount": 1,
+          "downloadedCount": 1,
+          "retries": 0
+        }
+      },
+      {
+        "caseId": "2023-cetitan",
+        "issue": "Regular physical CoroCoro Ichiban June2023",
+        "cover": {
+          "file": "private-unpacking-references/2023-06-ichiban-cover-publisher.jpg",
+          "width": 450,
+          "height": 565,
+          "bytes": 273501,
+          "sha256": "09cc99afb544d66f90d20d6b3ca3c513d5c6a098f6807d8a0e1f431f5956c43d",
+          "mimeType": "image/jpeg",
+          "crop": [
+            0,
+            0,
+            450,
+            565
+          ],
+          "sourcePage": "https://corocoro-news.jp/news/362389/",
+          "sourceImage": "https://corocoro-news.jp/wp-content/uploads/2023/04/7e6f9ac0ac3dcfb0e324ee5ed556f4cf.jpg",
+          "origin": "new_private_original",
+          "originalBytesUnmodified": true,
+          "derivatives": [],
+          "publicDisplayApproved": false,
+          "nativeDisplayApproved": false,
+          "sourceLicenceEstablished": false,
+          "referenceOnly": true,
+          "checkedAt": "2026-10-16T20:26:00Z"
+        },
+        "coverIdentityEvidence": [
+          "Primary publisher article dated2023Apr20 identifies June2023 issue, releasedApr21",
+          "Image month6, CaptainPikachu centre, Cetitan left panel visible"
+        ],
+        "coverConfidence": "high_for_private_reference",
+        "deliveryFootage": "https://www.youtube.com/watch?v=bHNdXPlKO2U",
+        "thisAgentWatched": true,
+        "observed": [
+          {
+            "timeSeconds": 45,
+            "action": "Back cover held; physical book present."
+          },
+          {
+            "timeSeconds": 50,
+            "action": "Book opened and pages fanned; not an immediate cover-to-card peel."
+          },
+          {
+            "timeSeconds": 55,
+            "action": "Opened spread: Kirby sticker sheet LEFT, yellow/white advertisement/instructions RIGHT. Blue/purple Cetitan pouch front lies mainlyLEFT of gutter with RIGHT margin near gutter. Card remains hidden."
+          },
+          {
+            "timeSeconds": 65,
+            "action": "Pouch now turned ontoRIGHT side of gutter, illustrated characters reverse-up. LEFT edge near gutter; fingers support/grip near top-left. Card remains completely hidden."
+          },
+          {
+            "timeSeconds": 65.833332,
+            "action": "Top-left/gutter region under fingers; pouchreverse-up and card hidden."
+          },
+          {
+            "timeSeconds": 66.833331,
+            "action": "Pouch lifted toward viewer/slightlyright; thumb supports central/lower face. Exactfastening operation remains obscured."
+          },
+          {
+            "timeSeconds": 67.833323,
+            "action": "Reverse-up pouch fartherfree, book shiftsleft; card hidden."
+          },
+          {
+            "timeSeconds": 68.833318,
+            "action": "Reverse-up pouch supported free ofspread; card hidden."
+          },
+          {
+            "timeSeconds": 70,
+            "action": "Loose reverse-up pouch close to camera while physical magazine restsleft/backcover-up."
+          }
+        ],
+        "verification": "Accepted paused observations read HTML video currentTime and readyState4.65.833–68.833 observed with normal player keyboard frame-step; no video/frame originals downloaded or saved.",
+        "observedGeometry": {
+          "atSeconds": 55,
+          "reference": "Approximately800x358 displayedvideoimage, excluding page chrome; position coordinate origin is videoimage top-left.",
+          "gutterXApprox": 400,
+          "pouchBoundingApprox": [
+            225,
+            95,
+            224,
+            263
+          ],
+          "pouchBottomCropped": true,
+          "role": "Visual composition reference only; no physical millimetres or precise diecut/adhesive measurement."
+        },
+        "boundInteriorPixelsPrepared": false,
+        "recommendedPresentation": [
+          "Start exact regular physical June2023 cover.",
+          "Open/browse into a reconstructed spread; explicitly identify surrounding page artwork as unavailable.",
+          "Place original pouchfront LEFT of gutter withRIGHTedge near centre; cardhidden.",
+          "Turn poucharound its gutter-sideRIGHTedge to show existing original reversesourceonRIGHT; then lift gently towardviewer/slightlyright, cardhidden.",
+          "Transition across actual filmed edit around1:12.1 to existing already-partly-exposed card extraction.",
+          "Draw card fartherRIGHT front-up; do not add sealtear, scissors or forcedcardflip."
+        ],
+        "hold": [
+          "No authorized original interior still found in this bounded pass; background must be a clearly labelled reconstruction, with no generated Kirby artwork or borrowed unrelated spread.",
+          "Fingers conceal precise fastening/perforation detachment; no animated glue, rupture line, debris or sound as claimed fact.",
+          "Original pouch externally looksclosed/cardhidden in earlyshot, but intactseal status not established.",
+          "Initialseal breach and first emergence remain omitted by filmed edit."
+        ],
+        "acquisition": {
+          "method": "One observed named public publisher full-size cover response via urllib; exact bytes saved",
+          "requestedCount": 1,
+          "downloadedCount": 1,
+          "retries": 0
+        },
+        "wholeMagazineHinge": {
+          "frontCoverSpine": "right",
+          "confidence": "high_from_same_physical_book_front_to_back_rotation",
+          "source": "https://www.youtube.com/watch?v=bHNdXPlKO2U",
+          "observations": [
+            {
+              "timeSeconds": 35,
+              "action": "Front cover matches the exact regular June2023 cover; hands hold whole physical book."
+            },
+            {
+              "timeSeconds": 40,
+              "action": "Same front cover, both book edges visible."
+            },
+            {
+              "timeSeconds": 41.99998,
+              "action": "Collector rotates whole book from front to back."
+            },
+            {
+              "timeSeconds": 42.999973,
+              "action": "Back cover has clearly distinct bright GREEN printed spine strip on its LEFT."
+            }
+          ],
+          "inference": "The same bound spine is therefore on the RIGHT when the front cover faces the viewer. This whole-book spine is separate from the pouch right-edge/gutter hinge.",
+          "method": "Normal player seek slider and documented keyboard frame-step; currentTime/readiness4 checked; no frames saved."
+        }
+      }
+    ],
+    "acquisitionSummary": {
+      "newOriginalFiles": 3,
+      "newBytes": 1021478,
+      "retries": 0,
+      "maximumConcurrentAssetRequests": 1,
+      "derivatives": 0,
+      "videoDownloads": 0,
+      "frameAssetWrites": 0,
+      "upscales": 0,
+      "rasterGeneration": 0,
+      "repoWrites": 0,
+      "catalogueWrites": 0,
+      "publicPublication": 0
+    },
+    "rights": {
+      "publisher": "Shogakukan footer says reproduction/republication requires writtenpermission; none established. These publisher originals remain private references.",
+      "comicvine": "Public archive listing/image and owner source request do not establish reproductionlicence; no public/native asset approval.",
+      "providedCovers": "Existing owner-provided local files reused without changes; rights/publicscope not independently established by this task."
+    },
+    "unavailableSources": [
+      {
+        "url": "https://paypayfleamarket.yahoo.co.jp/item/f1197450970",
+        "reason": "Normal browser displaysUK/EEA regionunavailability; underlying images403; no bypass; no originalsacquired."
+      },
+      {
+        "url": "https://jp.mercari.com/item/m65721835365",
+        "reason": "Normal browser says page not found/deleted; no gallery originals acquired."
+      }
+    ],
+    "rejectedSources": [
+      {
+        "url": "https://crm.ga.edu/item/2091571901",
+        "reason": "Implausible copied marketplace page without accountable originalphotographer/acquisitionauthority; not used."
+      },
+      {
+        "url": "https://crm.ga.edu/item/9091571896",
+        "reason": "Implausible copied marketplace page; no originalevidence used."
+      }
+    ],
+    "reviewList": [
+      {
+        "name": "Original interior pixels",
+        "action": "Obtain authorized exact same-issue open-spread photographs, especially Cetitan Kirby/pouchgutter page; until then retain reconstructedbackground label."
+      },
+      {
+        "name": "1996/Cleffa/Wooper original attachment",
+        "action": "Need first-hand cover-to-stillboundinsert footage before asserting page number, glue, boundperforation or exactdetachment."
+      },
+      {
+        "name": "PikachuVMAX sleeve delivery",
+        "action": "Need uninterrupted regularphysical bookopening and sealoperation; do not substitute digitalbundlepackaging."
+      },
+      {
+        "name": "Cetitan hidden fastening and seal",
+        "action": "Film confirms front-to-reverse packetturn and gutterrelease context, but fingers/edit hide exact fastening/seal; leave mechanism unsimulated."
+      },
+      {
+        "name": "Public reproduction scope",
+        "action": "Keep3newcover originals outsideGit/private localhost until exactsource permission is established."
+      }
+    ],
+    "checks": {
+      "jsonParse": "PASS",
+      "fiveCoverHashesBytesDimensions": "PASS",
+      "newArchiveFileEqualsBrowserExport": "PASS: byte-for-byte equality",
+      "originalPixelsUnmodified": true,
+      "cropBounds": "PASS: all covers use full original response",
+      "browserCleanup": "PASS: both own temporary delivery and hinge-check tabs closed; user preview untouched",
+      "newCoverQuality": "Published response resolutions retained. Two publisher covers are450px wide; archive cover is847px wide. No HD original, perfect crop, flat scan or sharpness upgrade asserted.",
+      "sourceReproductionRights": "HOLD: no public/native/catalogue approval"
+    }
+  },
+  "coverOriginalChecks": [
+    {
+      "case": "1996-sheet",
+      "file": "1996-11.png",
+      "sha256Match": true,
+      "dimensionsMatch": true,
+      "bytesMatch": true
+    },
+    {
+      "case": "2000-cleffa",
+      "file": "2000-02.png",
+      "sha256Match": true,
+      "dimensionsMatch": true,
+      "bytesMatch": true
+    },
+    {
+      "case": "2000-wooper",
+      "file": "2000-01-monthly-cover-comicvine.jpg",
+      "sha256Match": true,
+      "dimensionsMatch": true,
+      "bytesMatch": true
+    },
+    {
+      "case": "2022-packet",
+      "file": "2022-02-monthly-cover-publisher.jpg",
+      "sha256Match": true,
+      "dimensionsMatch": true,
+      "bytesMatch": true
+    },
+    {
+      "case": "2023-cetitan",
+      "file": "2023-06-ichiban-cover-publisher.jpg",
+      "sha256Match": true,
+      "dimensionsMatch": true,
+      "bytesMatch": true
+    }
+  ],
+  "sourceCopies": [
+    {
+      "source": "D:\\Stackr-recovery-artifacts-20261009\\runtime-temp\\worktrees\\magazine-reveals-20261015\\docs\\prototypes\\corocoro-unpacking-study.html",
+      "sha256": "0e1564c49abfd3d19752a032d60295389c0f4dbdf0c72b2d5f6eb0f4c99fcf98",
+      "runtimeCopyIdentical": true
+    },
+    {
+      "source": "D:\\Stackr-recovery-artifacts-20261009\\runtime-temp\\worktrees\\magazine-reveals-20261015\\docs\\prototypes\\corocoro-unpacking-study.js",
+      "sha256": "156e605d6fc69d9158011cdc107449662192f235c2d05d367a79f8379242a044",
+      "runtimeCopyIdentical": true
+    }
+  ],
+  "benchmark": {
+    "sha256": "6d195a76f228ba3971961ed758d9763ca072de3ad23cd315bdb83cc4a19e22c7",
+    "unchanged": true
+  },
+  "parent1996FilmObservations": {
+    "source": "https://www.youtube.com/watch?v=8A5KDZAzDMs",
+    "method": "Normal player playback, paused frames and UI seek slider; no media/frame downloads",
+    "samples": [
+      {
+        "seconds": 1319.690579,
+        "observed": "Exact November1996 front cover displayed in slab; illustration matches existing supplied cover."
+      },
+      {
+        "seconds": 1329.690579,
+        "observed": "Collector handles insert above opened thick magazine on red mat; cut to remote commentary afterward."
+      },
+      {
+        "seconds": 1339.690579,
+        "observed": "Hands support card while sizeable white backing curls downward; magazine lies opened below. Initial binding/seam operation remains obscured."
+      }
+    ]
+  },
+  "physicalLimits": [
+    "No exact printed interior artwork/photograph prepared; blank spread is explicitly reconstructed, no generated Kirby artwork.",
+    "Cetitan cover right spine follows same-book front/back observations; generic timing/page-turn presentation remains designed.",
+    "Other case interior placement/binding is not established by loose carrier or edited sleeve footage.",
+    "Exact fastening, adhesives, cut/perforation operation and initial modern seal/emergence remain held.",
+    "Physical finish/copy identity, new ownership and public/native image permissions remain held.",
+    "Five scenes are not all43 preview rows or complete historical denominator."
+  ],
+  "browserChecks": {
+    "status": "pass",
+    "actualDesktopWidth": 1067,
+    "allFiveCoversLoaded": true,
+    "checks": [
+      "1996 cover then supported peel available as separate action",
+      "Cleffa/Wooper/2022 reduced cover opening leaves cards attached and next action ready",
+      "Cetitan normal cover/open/gutterfront/turn/gutterreverse/lift/posteditpartial/extract flow",
+      "Cetitan reduced turn/lift advances only current step; hidden pouch disabled afterward",
+      "Reset during cover opening returns closedcover without stale completion",
+      "Normal320 Wooper tallcover/status gap21.2471px; nohorizontaloverflow",
+      "Normal320 Wooper enlargedfold/status sampled gap61.8555px",
+      "Temporary viewport override reset; research tab closed"
+    ],
+    "narrow": {
+      "viewport": 320,
+      "matWidth": 279,
+      "matHeight": 440,
+      "closedCoverBottom": 832.9248046875,
+      "closedPhaseTop": 854.171875,
+      "gap": 21.2470703125,
+      "scrollWidth": 305,
+      "peelFoldBottom": 373.31640625,
+      "peelPhaseTop": 435.171875,
+      "peelGap": 61.85546875,
+      "peelGapLimit": "sampled backing phase, not maximumtrajectoryproof"
+    },
+    "captures": [
+      "magazine-first-1996-cover.jpg",
+      "magazine-first-1996-supported-peel.jpg",
+      "magazine-first-cetitan-gutter-front.jpg",
+      "magazine-first-cetitan-gutter-reverse.jpg",
+      "magazine-first-wooper-320-cover.jpg",
+      "magazine-first-wooper-320-peel.jpg",
+      "magazine-first-cetitan-cover.jpg"
+    ],
+    "physicalPhone": "not_verified",
+    "finalReady": {
+      "selected": "2023-cetitan",
+      "viewport": 1067,
+      "coverFile": "2023-06-ichiban-cover-publisher.jpg",
+      "action": "Open magazine",
+      "overflow": false,
+      "capture": "magazine-first-cetitan-cover.jpg"
+    }
+  },
+  "independentReview": {
+    "verdict": "pass_with_evidence_limits",
+    "baseline": "4011ac26d82cdf63b9b1c5255005af3b703619db",
+    "findings": [],
+    "correctedFindings": [
+      "Tall closed cover/status overlap: reduced widths",
+      "Opening page clipping near400breakpoint: smaller cover cap through460"
+    ],
+    "checks": {
+      "runtimeScenarioGroupsPassed": 20,
+      "adverseFixturesPassed": 45,
+      "closedCoverGeometryChecksPassed": 60,
+      "openingGeometryChecksPassed": 12,
+      "enlargedCurlCasesPassed": 36,
+      "sourceRuntimeCopies": "exactly equal",
+      "javascriptSyntax": "passed",
+      "gitDiffCheck": "passed"
+    },
+    "verifiedBehavior": [
+      "Allfive exactcovers precede separate opening/release",
+      "Rightspine opening preserves attachedcards",
+      "Reset/skip/reduced/background/pagehide cancel eachstep",
+      "Queued completion/stale images cannot overwritecase",
+      "Invalid/missing/unloadablecover offers validinsertreference",
+      "Cetitan frontleft->readablereverseright->supportedlift->posteditextract",
+      "Reduced motion advances current Cetitan step only",
+      "Hidden pouch cannot act afterextraction",
+      "Prior peel durations/loosebackpauses/flips/packetextract preserved"
+    ],
+    "geometry": {
+      "viewportWidths": [
+        320,
+        355,
+        401,
+        430,
+        460,
+        461
+      ],
+      "scrollbarWidths": [
+        0,
+        15
+      ],
+      "minimumClosedStatusGapPx": 5.59,
+      "minimumOpeningEdgeMarginPx": 12.78
+    },
+    "sourceValidation": {
+      "fiveCovers": "hash/bytes/header dimensions match",
+      "cetitanPouchFront": "hash/bytes match",
+      "privateRightsHold": "preserved",
+      "runtimeCryptographicClaim": false
+    },
+    "visualEvidence": [
+      "Normal320 Wooper closedcover andlargercurl show clearance",
+      "Cetitan originalfrontleft andreadablereverseright"
+    ],
+    "evidenceLimits": [
+      "Blank interior/transitions explicitly reconstructed",
+      "Exact fastening/omittedseal unverified",
+      "Stillcaptures/sourcebounds notphysicaldevicemotion proof"
+    ],
+    "originalMew": "untouched",
+    "reviewerRemoteRequests": 0,
+    "reviewerWrites": 0
+  },
+  "scope": {
+    "newPrivateCoverOriginals": 3,
+    "newPrivateCoverBytes": 1021478,
+    "privateImageFilesTotal": 15,
+    "privateImageBytesTotal": 6182327,
+    "existingSuppliedShelfCovers": 25,
+    "previewInventoryRows": 43,
+    "newNativeChanges": 0,
+    "publicOrNativeCoverImports": 0,
+    "publicAssets": 0,
+    "catalogueWrites": 0,
+    "ownershipBindings": 0,
+    "videoDownloads": 0,
+    "rasterGeneration": 0,
+    "upscales": 0,
+    "deployments": 0,
+    "physicalBindingOrSealProofInvented": false
+  }
+}
