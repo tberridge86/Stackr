@@ -67,6 +67,7 @@ import { StackrButtonPattern } from '../../components/StackrEmboss';
 import { StackrImage } from '../../components/StackrImage';
 import { useProfile } from '../../components/profile-context';
 import { useAuth } from '../../components/auth-context';
+import { useStartedBinderPreload } from '../../hooks/useStartedBinderPreload';
 import { numericTextStyle, typeScale } from '../../lib/typography';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
@@ -921,6 +922,7 @@ export default function BinderLibraryScreen() {
   const loadRequestRef = useRef(0);
   const accountIdRef = useRef<string | null>(activeAccountId);
   accountIdRef.current = activeAccountId;
+  useStartedBinderPreload(binders, activeAccountId, !savedReadOnly && binderRowsOwnerId === activeAccountId);
 
   useEffect(() => {
     loadRequestRef.current += 1;

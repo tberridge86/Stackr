@@ -8,11 +8,11 @@ export type BinderReopenSnapshot = BinderReopenScope & {
   savedAt: number;
   binder: BinderRecord;
   cards: BinderCardRecord[];
-  /** Only Home's verified full private saved-card pagination may set this. */
-  customSource?: { kind: 'home-saved-cards-v1'; cardCount: number };
+  /** Set only after a verified full private saved-card pagination. */
+  customSource?: { kind: 'home-saved-cards-v1' | 'binder-saved-cards-v1'; cardCount: number };
 };
 export type BinderReopenSaveOptions = {
-  customSource?: { kind: 'home-saved-cards-v1'; cardCount: number };
+  customSource?: BinderReopenSnapshot['customSource'];
 };
 export type BinderReopenStore = {
   read(scope: BinderReopenScope, binderId: string): Promise<unknown>;
@@ -23,6 +23,9 @@ export const BINDER_REOPEN_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 const MAX_BYTES = 8 * 1024 * 1024;
 const MAX_ENTRY_BYTES = 2 * 1024 * 1024;
 const MAX_ENTRIES = 8;
+// Keep working memory small while retaining more started binders across launches.
+export const BINDER_REOPEN_STORED_ENTRIES = 64;
+export const BINDER_REOPEN_STORED_BYTES = 64 * 1024 * 1024;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const key = (scope: BinderReopenScope, binderId: string) => JSON.stringify([scope.namespace, scope.accountId, binderId]);
 const copy = <T>(value: T): T => JSON.parse(JSON.stringify(value));
@@ -83,9 +86,9 @@ export function snapshotBinderView(scope: BinderReopenScope, binder: BinderRecor
     }
     return result;
   });
-  const customSource = options.customSource?.kind === 'home-saved-cards-v1'
+  const customSource = (options.customSource?.kind === 'home-saved-cards-v1' || options.customSource?.kind === 'binder-saved-cards-v1')
     && Number.isSafeInteger(options.customSource.cardCount)
-    ? { kind: 'home-saved-cards-v1' as const, cardCount: options.customSource.cardCount }
+    ? { kind: options.customSource.kind, cardCount: options.customSource.cardCount }
     : undefined;
   return copy(stripTcgdexReferencesFromValueBeforePersistence({ ...scope, schema: 1 as const, savedAt, binder: record, cards: rows, customSource }));
 }
@@ -98,7 +101,7 @@ export function isCompleteBinderSnapshot(value: unknown, scope: BinderReopenScop
       || s.binder?.id !== binderId || !UUID.test(s.binder.id) || s.binder.user_id !== scope.accountId
       || !Array.isArray(s.cards) || s.cards.length > 2500) return false;
     if (s.binder.type === 'custom') {
-      if (s.customSource?.kind !== 'home-saved-cards-v1' || !Number.isSafeInteger(s.customSource.cardCount)
+      if ((s.customSource?.kind !== 'home-saved-cards-v1' && s.customSource?.kind !== 'binder-saved-cards-v1') || !Number.isSafeInteger(s.customSource.cardCount)
         || s.customSource.cardCount !== s.cards.length) return false;
       const rows = new Set<string>();
       for (const row of s.cards) {
@@ -169,7 +172,8 @@ export function createBinderReopenCache(options: { store: () => Promise<BinderRe
         const stored = await store?.read(scope, binderId);
         if (lease !== generation || !isCompleteBinderSnapshot(stored, scope, binderId, now())) return null;
         // Disk contents pass the same whitelist as fresh responses, not only shape checks.
-        const snapshot = snapshotBinderView(scope, stored.binder, stored.cards, stored.savedAt);
+        const snapshot = snapshotBinderView(scope, stored.binder, stored.cards, stored.savedAt, { customSource: stored.customSource });
+        if (!isCompleteBinderSnapshot(snapshot, scope, binderId, now())) return null;
         const newer = memory.get(key(scope, binderId))?.snapshot;
         if (newer && newer.savedAt >= snapshot.savedAt && isCompleteBinderSnapshot(newer, scope, binderId, now())) return copy(newer);
         remember(snapshot);

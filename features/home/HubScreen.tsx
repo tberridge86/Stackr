@@ -1603,6 +1603,26 @@ export default function HubScreen() {
         },
       });
       preloadSavedCards = cardsByBinder;
+      if (isCurrentRequest() && expectedUserId && preloadCandidates.length) {
+        homeBinderPreloadCancelRef.current?.();
+        let cancelled = false;
+        const isCurrentPreload = () => !cancelled
+          && homeCollectionRequestRef.current === requestId
+          && homeSessionGenerationRef.current === generation
+          && homeSessionUserIdRef.current === expectedUserId
+          && homeSessionExpiresAtRef.current * 1000 > Date.now()
+          && getCollectionSummaryVersion() === preloadVersion;
+        const task = InteractionManager.runAfterInteractions(() => {
+          if (!isCurrentPreload()) return;
+          // Start after private rows arrive, before optional prices and charts.
+          void import('../../lib/binderReopenRuntime').then(({ preloadBinderReopenViews }) => {
+            if (isCurrentPreload()) return preloadBinderReopenViews(preloadCandidates, expectedUserId, isCurrentPreload, {
+              completeSavedCardsByBinder: preloadSavedCards,
+            });
+          }).catch(() => {});
+        });
+        homeBinderPreloadCancelRef.current = () => { cancelled = true; task.cancel?.(); };
+      }
       const binderGroups: HomeBinderCardGroup[] = await Promise.all(
         binders.map(async (binder) => {
             const binderCards = cardsByBinder.get(binder.id) ?? [];
@@ -2006,27 +2026,6 @@ export default function HubScreen() {
       if (homeCollectionRequestRef.current === requestId) {
         hasLoadedCollectionValueRef.current = true;
         setCollectionValueLoading(false);
-        if (collectorDataLoaded && expectedUserId && preloadCandidates.length) {
-          homeBinderPreloadCancelRef.current?.();
-          let cancelled = false;
-          const isCurrentPreload = () => !cancelled
-            && homeCollectionRequestRef.current === requestId
-            && homeSessionGenerationRef.current === generation
-            && homeSessionUserIdRef.current === expectedUserId
-            && homeSessionExpiresAtRef.current * 1000 > Date.now()
-            && getCollectionSummaryVersion() === preloadVersion;
-          const task = InteractionManager.runAfterInteractions(() => {
-            if (!isCurrentPreload()) return;
-            // Complete binder snapshots use the existing bounded, read-only
-            // phone cache; neither this import nor warming holds first content.
-            void import('../../lib/binderReopenRuntime').then(({ preloadBinderReopenViews }) => {
-              if (isCurrentPreload()) return preloadBinderReopenViews(preloadCandidates, expectedUserId, isCurrentPreload, {
-                completeSavedCardsByBinder: preloadSavedCards,
-              });
-            }).catch(() => {});
-          });
-          homeBinderPreloadCancelRef.current = () => { cancelled = true; task.cancel?.(); };
-        }
       }
     }
   }, [applyCachedHomeCollection, chartRange, refreshMintyForMarketSignature, saveHomeCollectionCache]);

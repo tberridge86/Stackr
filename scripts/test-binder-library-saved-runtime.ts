@@ -73,6 +73,9 @@ async function main() {
     '../../components/theme-context': { useTheme: () => ({ theme: { colors: { bg: '#fff' } } }) },
     '../../components/profile-context': { useProfile: () => ({ profile: null }) },
     '../../components/auth-context': { useAuth: () => auth },
+    '../../hooks/useStartedBinderPreload': { useStartedBinderPreload: (_rows: unknown, _owner: unknown, enabled: boolean) => {
+      assert.equal(enabled, false, 'the actual saved-library route disables automatic remote preparation');
+    } },
     '../../lib/stackrQuery': { stackrQueryClient: { setQueryData: (...args: unknown[]) => writes.push(args), getQueryData: () => null, fetchQuery: async () => { remoteCalls += 1; return null; }, invalidateQueries: async () => {} }, stackrQueryKeys: { binderLibrary: (id: string) => ['binder', id], binderLibraryRoot: ['binder-root'], binderLibrarySummaries: () => ['summary'] }, stackrQueryTiming: { hotPathStaleMs: 1 } },
     '../../lib/binders': { fetchBinders: async () => { remoteCalls += 1; return []; }, invalidateBinderCaches() {}, deleteBinder: async () => {} },
     '../../lib/supabase': { supabase: { auth: { getSession: async () => { remoteCalls += 1; return { data: {}, error: null }; } } } },
