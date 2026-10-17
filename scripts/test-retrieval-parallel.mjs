@@ -7,6 +7,8 @@ import ts from 'typescript';
 import * as identity from '../lib/binderCardIdentity.ts';
 import * as presentation from '../lib/binderCataloguePresentation.ts';
 import * as cache from '../lib/requestCache.ts';
+import * as optionalCatalogueEnrichment from '../lib/optionalCatalogueEnrichment.ts';
+import { withPersonalDataReadTimeout } from '../lib/personalDataRead.ts';
 
 const results = [];
 async function test(name, run) { await run(); results.push(name); console.log(`PASS ${name}`); }
@@ -32,6 +34,7 @@ function binderHarness(options = {}) {
   } };
   const dependencies = {
     './supabase': { supabase }, './requestCache': cache,
+    './optionalCatalogueEnrichment': optionalCatalogueEnrichment,
     './pokemonTcg': { normalizePokemonCardLanguage: () => 'en', fetchCardsForSet: async (id, readOptions) => {
       calls.catalogue++; assert.equal(id, catalogueSet.id); assert.equal(readOptions.includeAssets, false); assert.equal(readOptions.minimumCardCount, 252); return cards.promise;
     } },
@@ -152,6 +155,7 @@ function screenHarness() {
   const state = { loading: null, cards: [], ownershipReady: false };
   const never = () => new Promise(() => {});
   const context = { exports: {}, console, AbortController, binderId: 'binder',
+    withPersonalDataReadTimeout,
     visiblePriceReaderRef: { current: null }, visiblePriceIdsRef: { current: [] },
     createVisibleBinderPriceReader,
     stackrApiClient: {},
@@ -179,7 +183,7 @@ function screenHarness() {
       return { rows, failure: null };
     },
     loadProgressiveBinderPrices: (rows) => { calls.prices++; calls.priceRows += rows.length; return never(); }, getVariantCardKey: (card, set) => `${set}:${card}`,
-    setLoading: (v) => { state.loading = v; }, setOwnershipReady: (v) => { state.ownershipReady = v; }, setCards: (v) => { state.cards = typeof v === 'function' ? v(state.cards) : v; },
+    setLoading: (v) => { state.loading = v; }, setLoadError: () => {}, setOwnershipReady: (v) => { state.ownershipReady = v; }, setCards: (v) => { state.cards = typeof v === 'function' ? v(state.cards) : v; },
     setShowcaseRows: () => {}, setOwnedVariants: () => {}, setVariantManagedCards: () => {}, setUserId: () => {}, setBinder: () => {}, setCustomNameArtKey: () => {}, setIsPublic: () => {},
     invalidateBinderCaches: () => {}, invalidatePokemonCatalogueCardCaches: () => {}, Alert: { alert: () => {} },
   };
@@ -189,6 +193,7 @@ function screenHarness() {
 
 await test('actual screen overlaps authentication and binder lookup, then renders before optional requests settle', async () => {
   const h = screenHarness(); const pending = h.load();
+  await tick();
   assert.equal(h.calls.auth, 1); assert.equal(h.calls.record, 1, 'record lookup must not await auth network');
   h.record.resolve(binder); await tick(); assert.equal(h.calls.cards, 0, 'authentication must still complete before cards are loaded');
   h.auth.resolve({ data: { user: { id: 'owner' } } }); await tick(); assert.equal(h.calls.cards, 1);

@@ -117,7 +117,7 @@
         "reportedRuntimeContext": "1.0.6 (56); phone build number not rechecked in this report",
         "baselineRevision": "fe283dbd080372cfd740fec330200f0f402ab6bd"
       },
-      "nextAction": "Publish the reviewed repair PR, retain hosted-check evidence and obtain approval for the exact live app delivery. Then verify repeat Home focus, official/custom binder opening, quantities and honest price coverage on the phone."
+      "nextAction": "Owner approved PR404 release after hosted checks pass and confirmed binder loading spinner. Correct the two outdated VM dependency maps, require passing exact replacement-head CI, then merge and deliver only this repair through the existing production-profile TestFlight lane. Verify repeat Home focus, official/custom binder opening, quantities and honest price coverage on the phone."
     },
     {
       "id": "BACKEND-SET-IDENTITY-001",

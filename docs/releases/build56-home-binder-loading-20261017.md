@@ -34,6 +34,8 @@ Independent read-only source review found two introduced issues before publicati
 
 Prepared, tested and reviewed: **yes**. Merged, deployed and verified on iPhone: **no**. The installed phone remains on the existing release until a separately authorised delivery. Device acceptance remains open for repeat Home focus, official/custom binder opening, counts, values and account transitions. No live owner account contents or price coverage were inspected. Hosted CI is separate from these local results.
 
+The owner subsequently confirmed that tapping a binder stays on its loading spinner and explicitly approved releasing PR #404 after hosted checks pass. The first hosted runs found two outdated VM dependency maps in the English identity and parallel retrieval tests. The follow-up wires the real deadline/enrichment helpers into those harnesses and preserves the identity, 252-card completion and concurrent-start assertions. No production implementation changes are part of this harness correction. Exact replacement-head CI remains a required release gate.
+
 Rollback for a future authorised app delivery: retain the previous release and revert only this repair's source changes; no database migration or data rollback is required.
 
 ## References

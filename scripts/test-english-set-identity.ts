@@ -70,8 +70,8 @@ async function main() {
     './foreignCardPresentation': { buildForeignCardPresentation: () => ({ name: 'Card', setName: 'Prismatic Evolutions', englishDisplayName: 'Card', englishSetDisplayName: 'Prismatic Evolutions', translationStatus: 'not_required', isForeign: false, withheldNativeDetails: false, details: {} }) },
     './supabase': { supabase: {} },
     './tcgdexControlledCardReference': { enforceTcgdexRuntimeImagePolicy: (value: unknown) => value },
-    './resilientCatalogueRead': { firstNonEmptyCatalogueRows: async () => [], preferNonEmptyCatalogueRows: async () => [] },
-    './optionalCatalogueEnrichment': { readOptionalCatalogueEnrichment: async (read: any) => read(undefined), throwIfOptionalCatalogueReadAborted: () => {} },
+    './resilientCatalogueRead': resilientCatalogueRead,
+    './optionalCatalogueEnrichment': optionalCatalogueEnrichment,
     './publishedSetLogoFallbacks': { getPublishedSetCoverFallback: () => undefined, getPublishedSetLogoFallback: () => undefined },
   };
   const exports: any = {};
