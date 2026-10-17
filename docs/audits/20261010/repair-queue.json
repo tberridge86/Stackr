@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-17T07:20:55Z",
+  "updatedAt": "2026-10-17T08:46:52.138Z",
   "coordinator": "root",
   "workingDirectory": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/tif-readiness-integration",
-  "branch": "agent/release/tif-build55-device-repairs-20261012",
+  "branch": "codex/build58-set-card-retrieval-20261017",
   "auditedBaseRevision": "5da3ba5edd07d0390f5169d5a6713c7cbfd3a0b1",
   "protocol": ".codex/AUDIT_PROTOCOL.md",
   "auditStatus": {
@@ -80,10 +80,86 @@
   },
   "issues": [
     {
+      "id": "RETRIEVAL-LIVE-DB-TIMEOUT-20261017",
+      "severity": "P1",
+      "owner": "stackr_coding",
+      "status": "live_failure_reproduced_database_diagnostic_approval_pending",
+      "summary": "Celebi search and Storm/English30th/Japanese30th/Classic set-card reads return504; database logs show statement timeouts despite healthy basic service probes.",
+      "evidence": "docs/performance/build58-set-card-retrieval-20261017.json",
+      "files": [
+        "backend/routes/v1.js",
+        "backend/lib/fastSetCards.js",
+        "gateway/src/proxy.js"
+      ],
+      "validation": [
+        "Exact public source and service-role set-card failures reproduced; no successful card/count proof",
+        "No speculative backend/schema/index repair performed"
+      ],
+      "delivery": {
+        "local": "investigated",
+        "reviewed": false,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Await explicit approval for the prepared bounded read-only database diagnostic; then select and test an evidence-backed repair. No repeated failing probes while the dependency is distressed."
+    },
+    {
+      "id": "SEARCH-LATE-SETTLEMENT-20261017",
+      "severity": "P2",
+      "owner": "stackr_search",
+      "status": "locally_tested_independently_reviewed_not_released",
+      "summary": "Late canonical/cache publication can repaint a failed search; adjacent queued hydration can restore old request/account cards and quantities after invalidation.",
+      "evidence": "docs/performance/build58-set-card-retrieval-20261017.json",
+      "files": [
+        "app/(tabs)/search.tsx",
+        "scripts/test-search-settlement-runtime.ts"
+      ],
+      "validation": [
+        "Late canonical/cache callbacks cannot repaint a settled request",
+        "Queued callbacks recheck the active request",
+        "Queued card/product hydration cannot restore results after replacement or account invalidation",
+        "Same-request ownership and listing hydration still work after settlement",
+        "Baseline regression failed; repaired runtime checks, typecheck and lint passed; independent review accepted"
+      ],
+      "delivery": {
+        "local": "implemented_tested",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Include in the reviewed repair candidate; preserve distinction from the still-unresolved live API/database failure."
+    },
+    {
+      "id": "STORM-M6-LOGO-20261017",
+      "severity": "P2",
+      "owner": "stackr_artwork",
+      "status": "exact_gap_confirmed_candidate_metadata_only_source_permission_pending",
+      "summary": "Storm Emeralda Japanese M6 has neither a bundled logo nor a generated published fallback; approved runtime provider omits its logo field.",
+      "evidence": "docs/performance/build58-set-card-retrieval-20261017.json",
+      "files": [
+        "lib/japaneseSetLogos.ts",
+        "lib/generated/publishedSetLogos.generated.json"
+      ],
+      "validation": [
+        "Exact owner source sheet inspected: it contains M6a/M5/M4/M3/M2.2/M2, not M6",
+        "Candidate source declares1918x510; actual pixels/source-use permission remain unverified"
+      ],
+      "delivery": {
+        "local": "metadata_only",
+        "reviewed": false,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Establish permission for the exact candidate or obtain a permitted original; verify exact logo pixels before preparing runtime delivery."
+    },
+    {
       "id": "BUILD56-HOME-BINDER-LOADING-20261017",
       "severity": "P1",
       "owner": "stackr_coding",
-      "status": "locally_tested_independently_reviewed_release_pending",
+      "status": "native58_internal_available_further_owner_retrieval_failure_reported",
       "summary": "Owner reports Home collection/value stuck loading, instant binder covers but missing values and quantities, and every binder failing to open after the build56 release.",
       "evidence": "docs/releases/build56-home-binder-loading-20261017.md",
       "files": [
@@ -111,13 +187,18 @@
       "delivery": {
         "local": "implemented_tested",
         "reviewed": true,
-        "merged": false,
-        "deployed": false,
+        "merged": true,
+        "deployed": true,
         "deviceVerified": false,
         "reportedRuntimeContext": "1.0.6 (56); phone build number not rechecked in this report",
-        "baselineRevision": "fe283dbd080372cfd740fec330200f0f402ab6bd"
+        "baselineRevision": "fe283dbd080372cfd740fec330200f0f402ab6bd",
+        "appVersion": "1.0.6",
+        "buildNumber": "58",
+        "source": "ec37dd85035f4a5d58158915a2c2c29e188f76d7",
+        "testFlightAvailable": true,
+        "pullRequest": "https://github.com/tberridge86/Stackr/pull/404"
       },
-      "nextAction": "Owner approved PR404 release after hosted checks pass and confirmed binder loading spinner. Correct the two outdated VM dependency maps, require passing exact replacement-head CI, then merge and deliver only this repair through the existing production-profile TestFlight lane. Verify repeat Home focus, official/custom binder opening, quantities and honest price coverage on the phone."
+      "nextAction": "PR404 is delivered in TestFlight58. Follow RETRIEVAL-LIVE-DB-TIMEOUT-20261017 for reproduced API/database timeouts; device acceptance remains outstanding."
     },
     {
       "id": "BACKEND-SET-IDENTITY-001",
@@ -2502,13 +2583,12 @@
   ],
   "currentWork": {
     "owner": "root",
-    "status": "sme_review_completed_source_committed_release_and_acceptance_pending",
-    "runtimeRevision": "f3042f985ba1269ed25144f2c28d3e7ef2f09cbd",
-    "checkedHead": "d690822b496cdd686a4e683e7dba919e00621226",
-    "report": "docs/releases/tif-sme-source-queue-review-20261012.md",
-    "pullRequest": "https://github.com/tberridge86/Stackr/pull/337",
-    "independentReview": "Reviewed source/test fixes retained; independent queue and Git inventories reconciled against exact ancestry.",
-    "nextAction": "Carry the reviewed candidate through its approved release lane and actual phone acceptance; separately review the five source/coverage records and legacy unreviewed candidates. Do not mark the app complete or blanket-commit historical WIP."
+    "status": "source_search_repair_ready_live_retrieval_diagnostic_approval_pending",
+    "baseline": "ec37dd85035f4a5d58158915a2c2c29e188f76d7",
+    "branch": "codex/build58-set-card-retrieval-20261017",
+    "report": "docs/performance/build58-set-card-retrieval-20261017.json",
+    "liveRetrievalResolved": false,
+    "nextAction": "Run only the approved bounded database diagnostic after owner approval"
   },
   "completionGoal": {
     "threadId": "01a12a4c-4b1a-7823-b948-148c90d7cd8e",
@@ -2779,5 +2859,15 @@
     "installedDeviceVerified": false,
     "livePromotionPerformed": false,
     "classificationNote": "The 33 commit-mapped scoped repairs and five open source/coverage records overlap at partially repaired PDX-003; DELIVERY-MOBILE-001 is a delivery-only record without a source mapping."
+  },
+  "priorCurrentWorkBefore20261017Retrieval": {
+    "owner": "root",
+    "status": "sme_review_completed_source_committed_release_and_acceptance_pending",
+    "runtimeRevision": "f3042f985ba1269ed25144f2c28d3e7ef2f09cbd",
+    "checkedHead": "d690822b496cdd686a4e683e7dba919e00621226",
+    "report": "docs/releases/tif-sme-source-queue-review-20261012.md",
+    "pullRequest": "https://github.com/tberridge86/Stackr/pull/337",
+    "independentReview": "Reviewed source/test fixes retained; independent queue and Git inventories reconciled against exact ancestry.",
+    "nextAction": "Carry the reviewed candidate through its approved release lane and actual phone acceptance; separately review the five source/coverage records and legacy unreviewed candidates. Do not mark the app complete or blanket-commit historical WIP."
   }
 }

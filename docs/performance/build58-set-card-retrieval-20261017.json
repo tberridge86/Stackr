@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-17T08:46:52.138Z",
+  "source": "ec37dd85035f4a5d58158915a2c2c29e188f76d7",
+  "branch": "codex/build58-set-card-retrieval-20261017",
+  "ownerReport": {
+    "installedBuildConfirmed": false,
+    "reportedAfterBuild58Availability": true,
+    "symptoms": [
+      "Storm Emeralda binder logo absent",
+      "30th normal and Classic sets unavailable",
+      "Celebi search loader bounced then Search unavailable",
+      "No set or card accessible through Discover, Search or binders",
+      "Card haptics could not be tested"
+    ]
+  },
+  "activeDelivery": {
+    "app": "1.0.6 (58)",
+    "source": "ec37dd85035f4a5d58158915a2c2c29e188f76d7",
+    "internalTestFlightAvailable": true,
+    "pullRequest": "https://github.com/tberridge86/Stackr/pull/404",
+    "installedDeviceAccepted": false
+  },
+  "publicApiEvidence": {
+    "environment": "production",
+    "probeEnvironment": "desktop, not the owner phone",
+    "backendSource": "0188361a1b1e278ea180f9eec5ec487af52ca8cd",
+    "deploymentId": "0ec29984-7ac0-4cc6-93d9-4c26beb871d9",
+    "observedWindowUtc": "2026-10-17 08:36–08:39",
+    "healthStatus": 200,
+    "readinessStatus": 200,
+    "celebiSearch": {
+      "status": 504,
+      "elapsedMs": 9013,
+      "code": "downstream_timeout",
+      "requestId": "55a938f0-2691-4a54-9f54-74952b96096d"
+    },
+    "setLookup": {
+      "status": 504,
+      "elapsedMs": 9016,
+      "requestId": "6b0b9b81-30b7-45c2-8c2c-5e3d11218bbf"
+    },
+    "exactSetFacts": [
+      {
+        "label": "storm",
+        "path": "/v1/sets/903d5baa-27c7-5690-b1d7-2395c770204a/cards?language=ja&includeAssets=false&limit=500",
+        "language": "ja",
+        "sourceExpectedPrintings": 113,
+        "startedAt": "2026-10-17T08:38:43.302Z",
+        "elapsedMs": 8408,
+        "status": 504,
+        "requestId": "8bd66418-744a-4c3c-9a35-821e755fa0b7",
+        "returnedCount": null
+      },
+      {
+        "label": "en30th",
+        "path": "/v1/sets/258cb8e5-c769-540d-9e3c-40d4ed4dafdb/cards?language=en&includeAssets=false&limit=500",
+        "language": "en",
+        "sourceExpectedPrintings": 161,
+        "startedAt": "2026-10-17T08:38:43.355Z",
+        "elapsedMs": 8343,
+        "status": 504,
+        "requestId": "874e95ed-3297-4de5-9780-375850210d09",
+        "returnedCount": null
+      },
+      {
+        "label": "ja30th",
+        "path": "/v1/sets/88e351b5-8191-5ef4-854b-2978046cda53/cards?language=ja&includeAssets=false&limit=500",
+        "language": "ja",
+        "sourceExpectedPrintings": 176,
+        "startedAt": "2026-10-17T08:38:51.712Z",
+        "elapsedMs": 8270,
+        "status": 504,
+        "requestId": "95c81b11-66af-4be8-a2eb-cce6d32c9772",
+        "returnedCount": null
+      },
+      {
+        "label": "classic",
+        "path": "/v1/sets/07422e07-e2a2-5966-b0e1-008afc08d97c/cards?language=en&includeAssets=false&limit=500",
+        "language": "en",
+        "sourceExpectedPrintings": 30,
+        "startedAt": "2026-10-17T08:38:51.713Z",
+        "elapsedMs": 8435,
+        "status": 504,
+        "requestId": "36439ff8-4eec-4fed-8ddd-9ce9f90afb8c",
+        "returnedCount": null
+      }
+    ],
+    "probesRepeated": false,
+    "interpretation": "All four target reads failed. Their current publication/card counts cannot be inferred from these failures."
+  },
+  "dependencyEvidence": {
+    "source": "Read-only Railway and Supabase logs, not a Postgres diagnostic script",
+    "confirmed": [
+      "PostgreSQL SQLSTATE 57014 statement timeouts for exact api.catalogue_sets lookup",
+      "Service-role set-card reads and public set lookup both time out",
+      "Observability RPC also timed out"
+    ],
+    "unknown": [
+      "Current blocking locks or database pressure",
+      "Current live view/index definitions",
+      "Exact query plan"
+    ],
+    "diagnosis": "Database-dependent retrieval failure reproduced; underlying database cause remains unresolved."
+  },
+  "localSearchRepair": {
+    "files": [
+      "app/(tabs)/search.tsx",
+      "scripts/test-search-settlement-runtime.ts"
+    ],
+    "implemented": true,
+    "independentlyReviewed": true,
+    "typecheck": "PASS",
+    "lint": "PASS; 0 errors, 8 pre-existing warnings",
+    "narrowChecks": "Actual coordinator, progressive search, settlement reliability and diff checks passed",
+    "regressions": [
+      "Late canonical/cache callbacks cannot repaint a settled request",
+      "Queued callbacks recheck the active request",
+      "Queued card/product hydration cannot restore results after replacement or account invalidation",
+      "Same-request ownership and listing hydration still work after settlement"
+    ],
+    "adjacentExistingRisk": "Reviewer reproduced old-account ownership quantity returning from an already queued updater; fixed and regression-tested.",
+    "merged": false,
+    "deployed": false,
+    "resolvesLiveApiFailure": false
+  },
+  "stormLogo": {
+    "setId": "903d5baa-27c7-5690-b1d7-2395c770204a",
+    "language": "ja",
+    "setCode": "M6",
+    "bundledLogoPresent": false,
+    "publishedFallbackRowPresent": false,
+    "approvedProviderMetadata": {
+      "url": "https://api.tcgdex.net/v2/ja/sets/M6",
+      "status": 200,
+      "logoFieldPresent": false,
+      "symbolFieldPresent": false
+    },
+    "sourceCandidate": {
+      "candidateId": "JA-M6-LOGO-BILLSARCHIVE-001",
+      "sourcePage": "https://billsarchive.com/storm-emeralda",
+      "sourcePageHttpStatus": 200,
+      "literalAssetUrl": "https://billsarchive.com/assets/logos/japanese/jp-storm-emeralda.webp",
+      "assetType": "set_logo",
+      "declaredWidth": 1918,
+      "declaredHeight": 510,
+      "dimensionEvidence": "Literal source HTML img width/height; actual pixels not acquired or independently measured.",
+      "imageAlt": "Pokémon TCG Storm Emeralda Set Logo",
+      "identityEvidence": "Source page Japanese native title, M6 code, 31 July 2026 and113total agree with official page and TCGdex. Actual image not visually inspected.",
+      "identityConfidence": "Strong metadata match; pixel verification pending.",
+      "rightsStatus": "not_established_for_this_exact_source_and_use",
+      "acquisitionAuthorityStatus": "not_established",
+      "registryFinding": "Bill’s Archive not among named source registry codes. No corresponding exact logo permission shown by assigned evidence.",
+      "disposition": "metadata_only_do_not_download_mirror_publish_or_hotlink",
+      "nextAction": "Locate an existing exact Bill’s Archive logo rights/authority record or obtain matching owner-supplied permitted original; then verify actual pixels/dimensions/hash and attach exact M6 binding in a separately assigned repair."
+    },
+    "pixelsVerified": false,
+    "acquisitionOrPublicationPerformed": false,
+    "blocker": "Exact candidate source/use permission and actual pixels unverified; do not expand existing card-front or bundled-pack permissions."
+  },
+  "diagnostic": {
+    "status": "AWAITING_EXPLICIT_OWNER_APPROVAL",
+    "targetProject": "oakdbbzdqwurpjnoqhmu",
+    "proposalFile": "proposed-readonly-db-diagnostic.sql (private task evidence)",
+    "proposalSha256": "5e48ced4e155254dea0ed651cbfd76c31d34fd5484a0fd8b20c718abd12af04d",
+    "scope": "Four READ ONLY/ROLLBACK blocks; aggregate waits, named definitions/indexes, EXPLAIN without ANALYZE for one exact set under existing roles; 3s statement / 500ms lock limits",
+    "executed": false,
+    "approvalReason": "Owner-supplied AGENTS.md explicitly requires approval for remote database scripts."
+  },
+  "haptics": {
+    "status": "NOT_TESTED_BLOCKED_BY_CARD_ACCESS",
+    "defectEstablished": false
+  },
+  "operations": {
+    "remotePostgresScripts": 0,
+    "databaseWrites": 0,
+    "catalogueChanges": 0,
+    "priceRefreshes": 0,
+    "deployments": 0,
+    "nativePublications": 0,
+    "otaPublications": 0
+  },
+  "remaining": [
+    "Run only the approved bounded database diagnostic after owner approval",
+    "Repair the evidenced database/backend cause and verify actual Celebi and all four set/card responses",
+    "Verify and authorise the exact M6 logo source before use",
+    "Prepare any concrete new deployment/native release for matching owner approval",
+    "Repeat the affected journeys and then card haptics on the owner phone"
+  ]
+}
