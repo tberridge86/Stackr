@@ -32,6 +32,45 @@ export function currentTrace() {
   return storage.getStore() ?? null;
 }
 
+export function catalogueReadSignal(childSignal) {
+  const parent = currentTrace()?.catalogueReadSignal;
+  return parent && childSignal ? AbortSignal.any([parent, childSignal]) : parent ?? childSignal;
+}
+
+// Bind the builder, not just fetch: the SDK also uses this signal during retry
+// backoff and body reads. It returns plain errors on abort, so recheck afterward.
+export async function readCatalogueQuery(query, childSignal) {
+  const signal = catalogueReadSignal(childSignal);
+  signal?.throwIfAborted();
+  const result = await (signal ? query.abortSignal(signal) : query);
+  signal?.throwIfAborted();
+  return result;
+}
+
+export function publicCatalogueRead(req, res, next) {
+  const controller = new AbortController();
+  const cleanup = () => {
+    req.removeListener('aborted', abort);
+    res.removeListener('close', close);
+    res.removeListener('finish', cleanup);
+  };
+  const abort = () => {
+    controller.abort(new DOMException('Catalogue client disconnected.', 'AbortError'));
+    cleanup();
+  };
+  const close = () => {
+    if (!res.writableFinished) abort();
+    else cleanup();
+  };
+  req.once('aborted', abort);
+  res.once('close', close);
+  res.once('finish', cleanup);
+  if (req.aborted || res.destroyed) abort();
+  // Shared clients retain no request signal. Copy the existing trace so parallel
+  // requests for the same identity cannot cancel each other.
+  storage.run({ ...(currentTrace() ?? childTrace(req.headers.traceparent)), catalogueReadSignal: controller.signal }, next);
+}
+
 export function traceMiddleware() {
   return (req, res, next) => {
     const trace = childTrace(req.headers.traceparent);

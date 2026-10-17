@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-17T09:55:31.823Z",
+  "updatedAt": "2026-10-17T11:48:46.684Z",
   "coordinator": "root",
   "workingDirectory": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/tif-readiness-integration",
   "branch": "codex/build58-set-card-retrieval-20261017",
@@ -80,6 +80,49 @@
   },
   "issues": [
     {
+      "id": "RELEASE-SMOKE-FAIL-FAST-20261017",
+      "severity": "P2",
+      "owner": "stackr_coding",
+      "status": "locally_tested_independently_reviewed_not_released",
+      "summary": "Required smoke continued later checks after failure and could retain an unread failed-response body.",
+      "evidence": "docs/performance/public-catalogue-cancellation-20261017.json",
+      "files": [
+        "scripts/deploy/smoke.mjs",
+        "scripts/test-deployment-commerce-disabled-smoke.mjs",
+        ".github/workflows/deploy-owner-testflight-backend.yml"
+      ],
+      "validation": [
+        "Actual CLI loopback baseline RED, final23/23 GREEN and independently retested",
+        "Held failed response body socket closes; partial JSON and first-failure exit1; no later checks",
+        "Full39-check success/default continuation/request-ID waiver preserved; syntax/YAML/diff checks pass"
+      ],
+      "nextAction": "Reconcile exact updated PR407 head/tree and hosted CI, review the server-only proposal, then request matching server release approval. Required public journey and mobile/device gates remain outstanding.",
+      "newLiveReleaseApproved": false
+    },
+    {
+      "id": "API-DISCONNECT-CANCELLATION-20261017",
+      "severity": "P2",
+      "owner": "stackr_coding",
+      "status": "locally_tested_independently_reviewed_not_released",
+      "summary": "Abandoned public catalogue reads continued SDK work after the client disconnected; fallback queries could follow the abandoned read.",
+      "evidence": "docs/performance/public-catalogue-cancellation-20261017.json",
+      "files": [
+        "backend/lib/traceContext.js",
+        "backend/routes/v1.js",
+        "backend/lib/stackrApiV1.js",
+        "backend/lib/fastSetCards.js",
+        "backend/test/public-catalogue-cancellation.test.mjs"
+      ],
+      "validation": [
+        "Actual Express/context/installed-SDK baseline RED; 13 focused cases GREEN and independently retested",
+        "Existing API/artwork/translation/observability and 9 identity/set cases PASS",
+        "Backend typecheck and syntax PASS; repository lint 0 errors and 8 pre-existing warnings"
+      ],
+      "nextAction": "Reconcile exact updated PR407 head/tree and hosted CI, review the server-only proposal, then request matching server release approval. Required public journey and mobile/device gates remain outstanding.",
+      "productionRootCauseEstablished": false,
+      "newLiveReleaseApproved": false
+    },
+    {
       "id": "CARD-UNCACHED-FACTS-20261017",
       "severity": "P2",
       "owner": "stackr_coding",
@@ -139,7 +182,7 @@
       "id": "RETRIEVAL-LIVE-DB-TIMEOUT-20261017",
       "severity": "P1",
       "owner": "stackr_coding",
-      "status": "approved_diagnostic_partial_results_optional_artwork_repair_integration_wider_failure_unresolved",
+      "status": "pr406_backend_deployed_public_gate_failed_further_diagnostics_no_results_native_hold",
       "summary": "Owner confirms installed58; Binder unavailable, card search fails and Home later stops. Storm facts-only read recovered113 cards while Celebi still504. Optional artwork independently reproduced as blocking successful Search/card facts; wider DB distress unresolved.",
       "evidence": "docs/performance/build58-set-card-retrieval-20261017.json",
       "files": [
@@ -155,11 +198,24 @@
       "delivery": {
         "local": "implemented_tested",
         "reviewed": true,
-        "merged": false,
-        "deployed": false,
+        "merged": true,
+        "backendDeployed": true,
+        "backendSource": "ccccc9ef48b2c501650ea3496a4af2c7ebc902c2",
+        "publicRetrievalVerified": false,
+        "nativePublished": false,
         "deviceVerified": false
       },
-      "nextAction": "Finish/review concrete repair and actual native asset proof; request matching live approval. After deployment verify real card/set/Home/binder journeys; retain unresolved DB/private-read issue until evidenced recovery."
+      "nextAction": "Reconcile exact updated PR407 head/tree and hosted CI, review the server-only proposal, then request matching server release approval. Required public journey and mobile/device gates remain outstanding.",
+      "postreleaseObservation": {
+        "source": "ccccc9ef48b2c501650ea3496a4af2c7ebc902c2",
+        "backendDeployed": true,
+        "nativePublished": false,
+        "mewSearch": "HTTP504; later public journey probes skipped",
+        "postgresDiagnostic": "One approved new attempt returned connection timeout and no rows; unknown statement execution; no retry",
+        "providerLogAggregate": "One approved attempt returned service error and no rows; no retry",
+        "resourceMeasurementsAvailable": true,
+        "resourceInterpretation": "Owner supplied Primary Database memory/CPU/IO charts,13/60 global database connections,1/200 dedicated pooler connections,3.26GB disk usage and8GB provisioned. Shared pooler has no data. These snapshots weaken disk-full/global-connection-cap explanations; smaller PostgREST internal pool occupancy, latency and workload cause remain unknown."
+      }
     },
     {
       "id": "SEARCH-LATE-SETTLEMENT-20261017",
@@ -213,7 +269,7 @@
         "deployed": false,
         "deviceVerified": false
       },
-      "nextAction": "Prove exact unchanged asset in actual iOS export and carry reviewed candidate through matching approved release and device check."
+      "nextAction": "Exact unchanged source logo (640 by 170 pixels) verified among 34 required assets in the merged-source local iOS export. TestFlight is held because live public card retrieval still fails; actual signed/native delivery and device acceptance remain pending."
     },
     {
       "id": "BUILD56-HOME-BINDER-LOADING-20261017",
@@ -2643,16 +2699,26 @@
   ],
   "currentWork": {
     "owner": "root",
-    "status": "reviewed_integrated_source_ready_for_frozen_export_and_hosted_checks",
-    "branch": "codex/build58-set-card-retrieval-20261017",
-    "report": "docs/performance/build58-set-card-retrieval-20261017.json",
-    "pullRequest": "https://github.com/tberridge86/Stackr/pull/406",
-    "installedBuildConfirmed": "1.0.6(58)",
-    "diagnostic": "approved_executed_partial_results",
-    "nextAction": "Verify actual clean frozen iOS export and exact M6 bytes, then exact-head hosted checks",
+    "status": "cancellation_and_fail_fast_reviewed_preparing_exact_head_ci_server_plan_native_hold",
+    "branch": "codex/public-catalogue-cancellation-20261017",
+    "report": "docs/performance/public-catalogue-cancellation-20261017.json",
+    "pullRequest": "https://github.com/tberridge86/Stackr/pull/407",
+    "previousApprovedPullRequest": "https://github.com/tberridge86/Stackr/pull/406",
+    "approvedBackendMergedAndDeployed": true,
+    "approvedBackendSource": "ccccc9ef48b2c501650ea3496a4af2c7ebc902c2",
+    "installedBuildConfirmed": "1.0.6 (58)",
+    "diagnostic": "Approved Postgres check and provider-log aggregate each attempted once; no diagnostic rows, no retries",
+    "mergedSourceIosExport": "PASS, including exact M6 bytes among 34 required assets; local export only",
+    "publicJourneyGate": "FAILED_Mew_HTTP_504_later_probes_skipped",
+    "nativeReleaseGate": "HOLD",
+    "nextAction": "Reconcile exact updated PR407 head/tree and hosted CI, review the server-only proposal, then request matching server release approval. Required public journey and mobile/device gates remain outstanding.",
     "liveRetrievalResolved": false,
     "newLiveOperationsAuthorized": false,
-    "releaseEvidence": "docs/releases/build58-retrieval-repair-20261017.md"
+    "newNativeBuildCreated": false,
+    "releaseEvidence": "docs/releases/build58-retrieval-repair-20261017.md",
+    "implementationCommit": "27fa5a7c3df2a8372643ea01fa67971601421714",
+    "resourceReadings": "Owner supplied Primary Database memory/CPU/IO charts,13/60 global database connections,1/200 dedicated pooler connections,3.26GB disk usage and8GB provisioned. Shared pooler has no data. These snapshots weaken disk-full/global-connection-cap explanations; smaller PostgREST internal pool occupancy, latency and workload cause remain unknown.",
+    "releaseVerification": "23/23 smoke CLI regression cases pass and independently retested; successful full gate retained; no new deployment."
   },
   "completionGoal": {
     "threadId": "01a12a4c-4b1a-7823-b948-148c90d7cd8e",

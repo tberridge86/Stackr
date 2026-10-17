@@ -4,6 +4,7 @@ import { getEnglishCardDisplaySupplement } from './cardDisplayNames.js';
 import { findNativeCardNamesForEnglishQuery, normalizeCardEnglishSearchText } from './cardNameTranslations.js';
 import { matchesPokedexSpeciesName, normalisePokedexName, pokedexCardLookupName } from './pokedexCards.js';
 import { correctedCatalogueCardId, correctedCatalogueSetId, CORRECTION_LANGUAGE } from './catalogueLanguageCorrections.js';
+import { catalogueReadSignal, readCatalogueQuery } from './traceContext.js';
 
 export const STACKR_API_V1 = '1';
 export const DEFAULT_CATALOGUE_CACHE_CONTROL = 'public, max-age=60, stale-while-revalidate=300';
@@ -169,14 +170,14 @@ function table(supabase, schema, name) {
   return supabase.schema(schema).from(name);
 }
 
-async function queryRows(query) {
-  const { data, error } = await query;
+async function queryRows(query, signal) {
+  const { data, error } = await readCatalogueQuery(query, signal);
   if (error) throw error;
   return data ?? [];
 }
 
 async function queryMaybeOne(query) {
-  const { data, error } = await query;
+  const { data, error } = await readCatalogueQuery(query);
   if (error) throw error;
   return data ?? null;
 }
@@ -465,17 +466,12 @@ async function fetchCardImageAssets(assetSupabase, cards, options = {}) {
   ])).filter(Boolean))];
   const printingIds = [...new Set(cards.map((card) => card.cardId).filter(Boolean))];
 
-  function assetRead(request) {
-    options.signal?.throwIfAborted();
-    return options.signal ? request.abortSignal(options.signal) : request;
-  }
-
   async function fetchBy(column, ids) {
     const pageSize = 1000;
     const batches = await Promise.all(chunked(ids).map(async (batch) => {
       const rows = [];
       for (let from = 0; ; from += pageSize) {
-        const page = await queryRows(assetRead(
+        const page = await queryRows(
           table(assetSupabase, 'api', 'asset_manifest')
             .select('*')
             .eq('asset_type', 'card_image')
@@ -483,7 +479,8 @@ async function fetchCardImageAssets(assetSupabase, cards, options = {}) {
             .order('catalogue_version_id', { ascending: true })
             .order('asset_row_id', { ascending: true })
             .range(from, from + pageSize - 1),
-        ));
+          options.signal,
+        );
         rows.push(...page);
         if (page.length < pageSize) break;
       }
@@ -497,7 +494,7 @@ async function fetchCardImageAssets(assetSupabase, cards, options = {}) {
     for (const batch of pairedIdentityBatches(variantIds, printingIds)) {
       let cursor = null;
       for (;;) {
-        const page = await queryRows(assetRead(assetSupabase.schema('api').rpc(
+        const page = await queryRows(assetSupabase.schema('api').rpc(
           'card_image_manifest_for_identities',
           {
             p_variant_ids: batch.variantIds,
@@ -506,7 +503,7 @@ async function fetchCardImageAssets(assetSupabase, cards, options = {}) {
             p_after_asset_id: cursor?.assetRowId ?? null,
             p_limit: 1000,
           },
-        )));
+        ), options.signal);
         rows.push(...page);
         if (page.length < 1000) break;
         const nextCursor = manifestCursorFromRow(page.at(-1));
@@ -600,6 +597,7 @@ async function enrichCardImagesOptionally(assetSupabase, cards, options) {
       deadline,
     ]);
   } catch (error) {
+    catalogueReadSignal()?.throwIfAborted();
     const code = typeof error?.code === 'string' && /^[A-Za-z0-9_]{1,64}$/.test(error.code) ? error.code : null;
     console.warn(JSON.stringify({ event: 'optional_card_artwork_failed', code }));
     return cards;
@@ -1119,8 +1117,7 @@ export async function searchPublishedEnglishTranslations(supabase, query, limit,
       .eq('language_code', code).in('card_native_name', nativeNames)
       .order('variant_id', { ascending: true }).limit(Math.min(500, limit * 4));
     if (selectedSetId) request = request.eq('set_id', selectedSetId);
-    if (signal) request = request.abortSignal(signal);
-    return queryRows(request);
+    return queryRows(request, signal);
   }));
   return dedupeByVariant(pages.flat()).filter((row) => (
     (!language || row.language_code === language) && (!selectedSetId || row.set_id === selectedSetId)
@@ -1768,6 +1765,7 @@ export function createCatalogueV1Service(options) {
             ]);
             results = mergePublishedTranslationSearchResults(results, translationResults, limit);
           } catch (error) {
+            catalogueReadSignal()?.throwIfAborted();
             const code = typeof error?.code === 'string' && /^[A-Za-z0-9_]{1,64}$/.test(error.code) ? error.code : null;
             console.warn(JSON.stringify({ event: 'optional_translation_search_failed', code }));
           } finally {
