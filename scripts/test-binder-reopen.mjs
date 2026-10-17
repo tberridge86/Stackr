@@ -119,13 +119,22 @@ await test('visible content and edit readiness are different measurements; stale
 
 // Execute actual screen load callback, with native viewability itself deliberately not simulated as a paint claim.
 const source = fs.readFileSync('features/binder/BinderDetailScreen.tsx', 'utf8');
-const ast = ts.createSourceFile('screen.tsx', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX); let callback;
-function visit(n) { if (ts.isVariableDeclaration(n) && n.name.getText(ast) === 'load' && ts.isCallExpression(n.initializer)) callback = n.initializer.arguments[0].getText(ast); ts.forEachChild(n, visit); }
+const ast = ts.createSourceFile('screen.tsx', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX); let callback, authEffect;
+function visit(n) {
+  if (ts.isVariableDeclaration(n) && n.name.getText(ast) === 'load' && ts.isCallExpression(n.initializer)) callback = n.initializer.arguments[0].getText(ast);
+  if (ts.isCallExpression(n) && n.expression.getText(ast) === 'useEffect' && n.arguments[0]?.getText(ast).includes('supabase.auth.onAuthStateChange')) authEffect = n.arguments[0].getText(ast);
+  ts.forEachChild(n, visit);
+}
 visit(ast); assert(callback);
 const code = ts.transpileModule(`export const load = ${callback};`, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
+const deadlineCode = ts.transpileModule(fs.readFileSync('lib/personalDataRead.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
 function screenHarness() {
   const auth = deferred(), record = deferred(), network = deferred(), disk = deferred();
-  const state = { binder: null, cards: [], loading: null, ownershipReady: false, status: null }; let saves = 0, invalidations = 0;
+  const state = { binder: null, cards: [], loading: null, error: null, ownershipReady: false, status: null }; let saves = 0, invalidations = 0;
+  const timers = new Map(); let timerId = 0;
+  const deadline = { exports: {} };
+  vm.runInNewContext(deadlineCode, { exports: deadline.exports, AbortController,
+    setTimeout: action => { timers.set(++timerId, action); return timerId; }, clearTimeout: id => timers.delete(id) });
   const savedArgs = [];
   const never = () => new Promise(() => {});
   const runtime = { exports: {}, console, AbortController, binderId: binder.id, Date,
@@ -134,6 +143,7 @@ function screenHarness() {
     mergeBinderArtwork,
     accountGenerationRef: { current: 0 }, loadRequestRef: { current: 0 }, artworkRequestRef: { current: null }, activeAccountIdRef: { current: scope.accountId }, retrievalTraceRef: { current: null },
     beginBinderRetrieval, isCompleteBinderSnapshot, binderReopenScope: () => scope, readBinderReopenPreview: () => disk.promise,
+    withPersonalDataReadTimeout: deadline.exports.withPersonalDataReadTimeout,
     binderReopenCache: { lease: () => 0, save: (...args) => { saves++; savedArgs.push(args); }, invalidate: () => { invalidations++; } },
     retainBinderPreviewDuringRefresh: work => work(), invalidateBinderCaches: () => {}, invalidatePokemonCatalogueCardCaches: () => {},
     isBinderAccessDenied: error => error?.status === 403 || error?.status === 401,
@@ -143,12 +153,15 @@ function screenHarness() {
     attachBinderCatalogueArtwork: never, attachBinderSetArtwork: never, attachLatestSnapshotPrices: never, getVariantCardKey: (c, s) => `${s}:${c}`,
     getCustomBinderNameArtKeyForBinder: async () => null,
     setCards: v => { state.cards = typeof v === 'function' ? v(state.cards) : v; }, setLoading: v => state.loading = v,
+    setLoadError: v => state.error = v,
     setBinder: v => state.binder = v, setOwnershipReady: v => state.ownershipReady = v, setReopenStatus: v => state.status = v,
     setUserId: () => {}, setIsPublic: () => {}, setCustomNameArtKey: () => {}, setSelectedCard: () => {},
     setShowcaseRows: () => {}, setOwnedVariants: () => {}, setVariantManagedCards: () => {}, Alert: { alert: () => {} },
   };
   vm.runInNewContext(code, runtime);
-  return { auth, record, network, disk, state, runtime, savedArgs, load: runtime.exports.load, get saves() { return saves; }, get invalidations() { return invalidations; } };
+  return { auth, record, network, disk, state, runtime, savedArgs, load: runtime.exports.load,
+    async deadline() { for (const [id, action] of [...timers]) { timers.delete(id); action(); } await tick(); },
+    get saves() { return saves; }, get invalidations() { return invalidations; } };
 }
 const snapshot = () => snapshotBinderView(scope, binder, cards(), Date.now());
 await test('actual screen renders a complete read-only saved view before auth or ownership network replies', async () => {
@@ -182,6 +195,50 @@ await test('actual screen replaces saved data only after a complete refresh and 
 });
 await test('actual screen rejects cached content after navigation or account change', async () => {
   const h = screenHarness(); h.load(); h.runtime.accountGenerationRef.current++; h.disk.resolve(snapshot()); await tick(); assert.equal(h.state.cards.length, 0);
+});
+await test('actual screen stops an uncached hanging auth read, offers retry and ignores the late result', async () => {
+  const h = screenHarness(); const pending = h.load(); h.disk.resolve(null); await tick();
+  assert.equal(h.state.loading, true);
+  await h.deadline(); await pending;
+  assert.equal(h.state.loading, false); assert.equal(h.state.binder, null);
+  assert.match(h.state.error, /try again/i);
+  h.auth.resolve({ data: { user: { id: scope.accountId } } }); h.record.resolve(binder); await tick();
+  assert.equal(h.state.binder, null, 'late authorisation cannot reopen a timed-out binder');
+  const retry = h.load(); await tick(); h.network.resolve(cards()); await retry;
+  assert.equal(h.state.cards.length, 124); assert.equal(h.state.error, null);
+});
+await test('actual screen retains a read-only saved view when fresh card rows never settle', async () => {
+  const h = screenHarness(); const pending = h.load(); h.disk.resolve(snapshot());
+  h.auth.resolve({ data: { user: { id: scope.accountId } } }); h.record.resolve(binder); await tick();
+  await h.deadline(); await pending;
+  assert.equal(h.state.loading, false); assert.equal(h.state.cards.length, 124);
+  assert.equal(h.state.status.state, 'offline'); assert.equal(h.state.ownershipReady, false);
+  h.network.resolve(cards(117)); await tick();
+  assert.equal(h.state.cards.length, 124, 'late incomplete cards cannot replace the retained saved view');
+});
+await test('actual binder auth listener defers reload and discards a superseded account event', async () => {
+  assert(authEffect);
+  const h = screenHarness(); let listener, loads = 0, timerId = 0;
+  const timers = new Map();
+  h.runtime.activeAccountIdRef.current = null;
+  h.runtime.setDetailVisible = () => {};
+  h.runtime.load = () => { loads++; };
+  h.runtime.setTimeout = action => { timers.set(++timerId, action); return timerId; };
+  h.runtime.clearTimeout = id => timers.delete(id);
+  h.runtime.supabase.auth.onAuthStateChange = next => { listener = next; return { data: { subscription: { unsubscribe() {} } } }; };
+  const compiled = ts.transpileModule(`export const authEffect = ${authEffect};`, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
+  const authRuntime = { ...h.runtime, exports: {} };
+  vm.runInNewContext(compiled, authRuntime);
+  const cleanup = authRuntime.exports.authEffect();
+  listener('SIGNED_IN', { user: { id: 'owner-a' } });
+  assert.equal(loads, 0, 'auth-dependent loads cannot run inside the Supabase notification callback');
+  listener('SIGNED_OUT', null);
+  assert.equal(timers.size, 0, 'sign-out cancels a queued private reload');
+  listener('SIGNED_IN', { user: { id: 'owner-b' } });
+  for (const action of [...timers.values()]) action();
+  assert.equal(loads, 1, 'the current account reloads after the callback returns');
+  listener('SIGNED_IN', { user: { id: 'owner-c' } }); cleanup();
+  assert.equal(timers.size, 0, 'unmount cancels pending account work');
 });
 await test('opening a custom binder saves its complete private rows for the next app launch', async () => {
   const h = screenHarness(); const pending = h.load(); h.disk.resolve(null);

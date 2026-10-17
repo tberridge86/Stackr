@@ -33,6 +33,7 @@ import { getPokemonSetDisplaySeries } from './pokemonSetSeries';
 import {
   firstNonEmptyCatalogueRows,
   preferNonEmptyCatalogueRows,
+  withCatalogueReadDeadline,
 } from './resilientCatalogueRead';
 import {
   readOptionalCatalogueEnrichment,
@@ -829,13 +830,18 @@ export async function fetchStackrSet(
   ({ reference, language } = correctedChineseSetContext(reference, language));
   const prefixLanguage = getPokemonSetLanguageFromPrefixedId(reference);
   if (prefixLanguage && language && toStackrApiLanguage(language) !== prefixLanguage) return null;
-  const setId = await resolveCanonicalStackrSetId(reference, language, client);
-  if (!setId) return null;
-  const set = rememberedSet(client, setId) ?? (await client.set(setId)).data.set;
-  const requestedLanguage = toStackrApiLanguage(language) ?? getPokemonSetLanguageFromPrefixedId(reference);
-  if (requestedLanguage && toLegacyLanguage(set.languageCode) !== requestedLanguage) return null;
-  rememberSet(client, set);
-  const facts = stackrSetToLegacySet(set);
+  const resolved = await withCatalogueReadDeadline(async (signal) => {
+    const setId = await resolveCanonicalStackrSetId(reference, language, client, signal);
+    if (!setId) return null;
+    const set = rememberedSet(client, setId) ?? (await client.set(setId, { signal })).data.set;
+    throwIfOptionalCatalogueReadAborted(signal);
+    const requestedLanguage = toStackrApiLanguage(language) ?? getPokemonSetLanguageFromPrefixedId(reference);
+    if (requestedLanguage && toLegacyLanguage(set.languageCode) !== requestedLanguage) return null;
+    rememberSet(client, set);
+    return { setId, facts: stackrSetToLegacySet(set) };
+  }, PREFERRED_CATALOGUE_READ_TIMEOUT_MS);
+  if (!resolved) return null;
+  const { setId, facts } = resolved;
   if (!options.includeAssets) return facts;
   const results = await Promise.all(['set_logo', 'set_symbol', 'set_cover', 'set_artwork'].map((assetType) =>
     readOptionalCatalogueEnrichment((signal) => allPages<StackrCatalogueAsset>(async (cursor, pageSignal) => {
@@ -920,6 +926,7 @@ async function resolveCanonicalStackrSetId(
       { language: apiLanguage ?? undefined, setCode, limit: 25 },
       { signal },
   )));
+  throwIfOptionalCatalogueReadAborted(signal);
   for (const response of responses) {
     for (const set of response.data.sets) {
       const hasRequestedLanguage = !apiLanguage || toLegacyLanguage(set.languageCode) === toLegacyLanguage(apiLanguage);
@@ -1082,8 +1089,11 @@ export function fetchStackrCardsForSet(
   client: StackrApiClient = stackrApiClient,
   options: SetCardReadOptions = {},
 ) {
-  if (options.includeAssets === false) return fetchCanonicalSetCardFacts(reference, language, client, undefined, options)
-    .then((facts) => facts.cards.map((card) => stackrCardToLegacyCard(card)));
+  if (options.includeAssets === false) return withCatalogueReadDeadline(async (signal) => {
+    const facts = await fetchCanonicalSetCardFacts(reference, language, client, signal, options);
+    throwIfOptionalCatalogueReadAborted(signal);
+    return facts.cards.map((card) => stackrCardToLegacyCard(card));
+  }, PREFERRED_CATALOGUE_READ_TIMEOUT_MS);
   return shouldUseStackrApi(client)
     ? fetchCanonicalStackrCardsForSet(reference, language, client)
     : fetchLegacyStackrCardsForSet(reference, language);
@@ -1103,10 +1113,12 @@ export function fetchPreferredStackrCardsForReferences(
   client: StackrApiClient = stackrApiClient,
   options: SetCardReadOptions = {},
 ) {
-  if (options.includeAssets === false) return firstNonEmptyCatalogueRows(references, async (reference) => {
-    const facts = await fetchCanonicalSetCardFacts(reference, language, client, undefined, options);
+  if (options.includeAssets === false) return withCatalogueReadDeadline((signal) => firstNonEmptyCatalogueRows(references, async (reference) => {
+    throwIfOptionalCatalogueReadAborted(signal);
+    const facts = await fetchCanonicalSetCardFacts(reference, language, client, signal, options);
+    throwIfOptionalCatalogueReadAborted(signal);
     return facts.cards.map((card) => stackrCardToLegacyCard(card));
-  });
+  }), PREFERRED_CATALOGUE_READ_TIMEOUT_MS);
   const candidates = [...new Set(references.map((value) => String(value ?? '').trim()).filter(Boolean))];
   const preferred: {
     facts: Awaited<ReturnType<typeof fetchCanonicalSetCardFacts>> | null;

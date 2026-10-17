@@ -1,3 +1,25 @@
+/** Bound required facts as well as their transport, without caching an empty fallback. */
+export async function withCatalogueReadDeadline<T>(
+  read: (signal: AbortSignal) => Promise<T>,
+  timeoutMs: number,
+): Promise<T> {
+  const controller = new AbortController();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      Promise.resolve().then(() => read(controller.signal)),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => {
+          reject(new Error('The card catalogue is taking longer than expected. Please try again.'));
+          controller.abort();
+        }, timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
+  }
+}
+
 export async function firstNonEmptyCatalogueRows<Candidate, Row>(
   candidates: Candidate[],
   read: (candidate: Candidate) => Promise<Row[]>,

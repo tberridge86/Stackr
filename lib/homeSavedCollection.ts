@@ -1,20 +1,21 @@
 import { fetchBinders, type BinderCardRecord, type BinderRecord } from './binders';
 import { fetchOwnedCardRows } from './ownership';
 import { supabase } from './supabase';
+import { withPersonalDataReadTimeout } from './personalDataRead';
 
 /** Read saved collection records before requesting optional catalogue artwork or prices. */
 export async function fetchHomeSavedCollection(userId: string, options: {
   onBindersReady?: (binders: BinderRecord[]) => void;
 } = {}) {
   const [binders, ownedRows] = await Promise.all([
-    fetchBinders({ enrich: false }).then((savedBinders) => {
+    withPersonalDataReadTimeout(() => fetchBinders({ enrich: false })).then((savedBinders) => {
       if (savedBinders.some((binder) => binder.user_id !== userId)) {
         throw new Error('The collection account changed. Please retry.');
       }
       options.onBindersReady?.(savedBinders);
       return savedBinders;
     }),
-    fetchOwnedCardRows(),
+    withPersonalDataReadTimeout(() => fetchOwnedCardRows()),
   ]);
   if (binders.some((binder) => binder.user_id !== userId)
     || ownedRows.some((row) => row.user_id && row.user_id !== userId)) {
@@ -26,9 +27,9 @@ export async function fetchHomeSavedCollection(userId: string, options: {
   for (let offset = 0; offset < binders.length; offset += 100) {
     const ids = binders.slice(offset, offset + 100).map((binder) => binder.id);
     for (let from = 0; ; from += 1000) {
-      const { data, error } = await supabase.from('binder_cards').select('*')
+      const { data, error } = await withPersonalDataReadTimeout((signal) => supabase.from('binder_cards').select('*')
         .in('binder_id', ids)
-        .order('id', { ascending: true }).range(from, from + 999);
+        .order('id', { ascending: true }).range(from, from + 999).abortSignal(signal));
       if (error) throw error;
       const page = (data ?? []) as BinderCardRecord[];
       if (page.some((row) => !knownBinders.has(row.binder_id))) {

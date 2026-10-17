@@ -42,6 +42,9 @@ const compiled = ts.transpileModule(source, { compilerOptions: {
   module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022,
   jsx: ts.JsxEmit.React, esModuleInterop: true,
 } }).outputText;
+const deadlineSource = ts.transpileModule(readFileSync('lib/personalDataRead.ts', 'utf8'), {
+  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+}).outputText;
 
 async function harness(options: {
   owner?: string;
@@ -64,6 +67,9 @@ async function harness(options: {
   const fakeSetTimeout = (action: () => void, delay = 0) => {
     const id = ++nextTimer; timers.set(id, { due: now + delay, action }); return id;
   };
+  const deadlineModule = { exports: {} as Record<string, any> };
+  vm.runInNewContext(deadlineSource, { module: deadlineModule, exports: deadlineModule.exports,
+    setTimeout: fakeSetTimeout, clearTimeout: (id: number) => timers.delete(id), AbortController });
   const authResult = (id: string) => ({ data: { user: id ? { id } : null }, error: null });
   const supabase = {
     auth: {
@@ -102,6 +108,7 @@ async function harness(options: {
     '../../components/profile-context': { useProfile: () => ({ profile: null }) },
     '../../components/HomeCommandCenter': { HOME_TOKENS: { layout: {} } },
     '../../lib/supabase': { supabase },
+    '../../lib/personalDataRead': deadlineModule.exports,
     '../../lib/homeCollectionCache': homeCache,
     '../../lib/binderLibraryCache': { writePersistedBinderOverview: async (id: string, value: unknown, guard: { isCurrent: () => boolean }) => {
       if (guard.isCurrent()) preloads.push({ owner: id, snapshot: value, isCurrent: guard.isCurrent });
@@ -178,6 +185,20 @@ async function main() {
   assert.deepEqual(mobile.savedReads, [], 'a local preview does not authorise live collection reads');
   await mobile.close();
 
+  const stalledVerification = deferred<any>();
+  const timeout = await harness({ cache: async () => null,
+    authRead: async (call, owner) => call === 1 ? stalledVerification.promise : { data: { user: { id: owner } }, error: null } });
+  assert.equal(timeout.state().collectionValueLoading, true);
+  await timeout.tick(10_000);
+  assert.equal(timeout.state().collectionValueLoading, false, 'a first collection with no cache leaves the spinner when verification stalls');
+  assert.match(timeout.state().collectionValueError, /try again/i, 'the failed collection offers a truthful retry');
+  stalledVerification.resolve({ data: { user: { id: 'owner-a' } }, error: null });
+  await timeout.settle();
+  assert.deepEqual(timeout.savedReads, [], 'a late timed-out verification cannot start collection reads');
+  await act(async () => { await timeout.state().refresh(); });
+  assert.equal(timeout.state().collectionTotal, 333, 'retry after an auth timeout recovers using the current account');
+  await timeout.close();
+
   const deniedCheck = deferred<any>();
   const denied = await harness({ authRead: async () => deniedCheck.promise });
   assert.equal(denied.state().collectionTotal, 111);
@@ -251,6 +272,13 @@ async function main() {
   }], cardsByBinder: new Map([['00000000-0000-4000-8000-000000000001', []]]) }) });
   await earlyWarm.interactions(); await earlyWarm.settle();
   assert.equal(earlyWarm.warmedViews.length, 1, 'a stalled price request cannot block preparing saved binders');
+  await earlyWarm.tick(10_000);
+  assert.equal(earlyWarm.state().collectionValueLoading, false, 'a stalled valuation does not retain a loading screen');
+  assert.equal(earlyWarm.state().collectionTotal, 111, 'valuation timeout preserves the last successful value');
+  assert.match(earlyWarm.state().collectionPricingWarning, /last successful/);
+  slowPrices.resolve({ data: { state: 'pending', summary: null } });
+  await earlyWarm.settle();
+  assert.match(earlyWarm.state().collectionPricingWarning, /last successful/, 'a late timed-out valuation cannot replace the retry state');
   await earlyWarm.close();
 
   const signedOut = await harness({ owner: '' });

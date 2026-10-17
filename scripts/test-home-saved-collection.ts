@@ -2,12 +2,14 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
+import * as personalDataRead from '../lib/personalDataRead';
 
 const binder = { id: 'binder-a', user_id: 'owner-a', type: 'official', source_set_id: 'base1' };
 let fail = false;
 let wrongAccount = false;
 let pendingOwnership: Promise<unknown> | null = null;
 const reads: [number, number][] = [];
+let rangeFrom = 0, rangeTo = 999;
 const saved = Array.from({ length: 1702 }, (_, index) => ({
   id: `card-${index}`, binder_id: binder.id, card_id: `card-${index}`, owned: index < 1323,
 }));
@@ -15,12 +17,15 @@ const query: any = {
   select: () => query,
   in: (column: string, ids: string[]) => { assert.equal(column, 'binder_id'); assert.deepEqual(Array.from(ids), ['binder-a']); return query; },
   order: () => query,
-  range: async (from: number, to: number) => {
-    reads.push([from, to]);
-    return { data: saved.slice(from, to + 1), error: fail ? new Error('read failed') : null };
+  range: (from: number, to: number) => { rangeFrom = from; rangeTo = to; return query; },
+  abortSignal: () => query,
+  then: (resolve: (value: unknown) => unknown) => {
+    reads.push([rangeFrom, rangeTo]);
+    return Promise.resolve({ data: saved.slice(rangeFrom, rangeTo + 1), error: fail ? new Error('read failed') : null }).then(resolve);
   },
 };
 const dependencies: Record<string, unknown> = {
+  './personalDataRead': personalDataRead,
   './binders': { fetchBinders: async (options: unknown) => {
     assert.equal((options as { enrich: boolean }).enrich, false, 'Home must not wait for catalogue branding');
     return [{ ...binder, user_id: wrongAccount ? 'owner-b' : binder.user_id }];
