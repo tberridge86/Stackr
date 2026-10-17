@@ -5,6 +5,7 @@ import ts from 'typescript';
 import * as cache from '../lib/requestCache';
 import * as identity from '../lib/binderCardIdentity';
 import * as presentation from '../lib/binderCataloguePresentation';
+import * as optionalCatalogueEnrichment from '../lib/optionalCatalogueEnrichment';
 
 async function main() {
   cache.invalidateRequestCache();
@@ -29,6 +30,7 @@ async function main() {
   } };
   const dependencies: Record<string, unknown> = {
     './supabase': { supabase }, './requestCache': cache,
+    './optionalCatalogueEnrichment': optionalCatalogueEnrichment,
     './pokemonTcg': { normalizePokemonCardLanguage: () => 'en', fetchCardsForSet: async (id: string, options: any) => {
       assert.equal(id, set.id); assert.equal(options.preferCanonicalApi, true);
       assert.equal(options.minimumCardCount, 237);

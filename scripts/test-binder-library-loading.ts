@@ -4,6 +4,7 @@ import vm from 'node:vm';
 import { URL } from 'node:url';
 import ts from 'typescript';
 import * as requestCache from '../lib/requestCache';
+import * as optionalCatalogueEnrichment from '../lib/optionalCatalogueEnrichment';
 
 async function main() {
   requestCache.invalidateRequestCache();
@@ -42,6 +43,7 @@ async function main() {
   const dependencies: Record<string, unknown> = {
     './supabase': { supabase },
     './requestCache': requestCache,
+    './optionalCatalogueEnrichment': optionalCatalogueEnrichment,
     './stackrDomainAdapter': {
       fetchPreferredStackrSets: () => { catalogueReads += 1; return catalogue; },
       fetchStackrSet: () => { catalogueReads += 1; return catalogue.then(rows => rows[0] ?? null); },

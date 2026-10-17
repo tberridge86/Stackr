@@ -427,14 +427,14 @@ async function attachSetBrandingToBinders(binders: BinderRecord[], includeAssets
   const single = binders.length === 1 && binders[0].language ? binders[0] : null;
   const catalogueSets = single
     ? await getCachedOrFetch(`binder:catalogue-set:${single.language}:${single.source_set_id}:${includeAssets ? 'assets' : 'facts'}`, 5 * 60 * 1000, async () => {
-      const set = await fetchStackrSet(single.source_set_id!, single.language, { includeAssets });
+      const set = await readOptionalCatalogueEnrichment(() => fetchStackrSet(single.source_set_id!, single.language, { includeAssets }));
       if (!set) throw new Error('Binder catalogue metadata is temporarily unavailable.');
       return [set];
     }).catch(() => [])
     : await getCachedOrFetch(`binder:catalogue-sets:${includeAssets ? 'assets' : 'facts'}`, 5 * 60 * 1000, async () => {
-    const sets = await fetchPreferredStackrSets(null, undefined, { includeAssets });
+    const sets = await readOptionalCatalogueEnrichment(() => fetchPreferredStackrSets(null, undefined, { includeAssets }));
     // Empty/error metadata reads must be retryable, not cached for five minutes.
-    if (!sets.length) throw new Error('Binder catalogue metadata is temporarily unavailable.');
+    if (!sets?.length) throw new Error('Binder catalogue metadata is temporarily unavailable.');
     return sets;
   }).catch(() => []);
 

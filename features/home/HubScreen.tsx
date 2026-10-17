@@ -39,6 +39,7 @@ import { writePersistedBinderOverview } from '../../lib/binderLibraryCache';
 import { getCollectionSummaryVersion } from '../../lib/collectionSummaryInvalidation';
 import { readRecentHomeActivityRows } from '../../lib/homeActivity';
 import { supabase } from '../../lib/supabase';
+import { withPersonalDataReadTimeout } from '../../lib/personalDataRead';
 import { PRICE_API_URL } from '../../lib/config';
 import { ValueTrackerCard } from '../../components/ValueTrackerCard';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
@@ -1538,7 +1539,7 @@ export default function HubScreen() {
     setCollectionPricingWarning(null);
     setHomeDataError(null);
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser().catch((error) => {
+      const { data: { user }, error: userError } = await withPersonalDataReadTimeout(() => supabase.auth.getUser()).catch((error) => {
         accountDenied = isKnownAuthDenial(error);
         throw error;
       });
@@ -1569,7 +1570,7 @@ export default function HubScreen() {
       );
       const confirmCurrentRequest = async () => {
         if (!isCurrentRequest()) return false;
-        const { data: { user: confirmedUser }, error: confirmationError } = await supabase.auth.getUser().catch((error) => {
+        const { data: { user: confirmedUser }, error: confirmationError } = await withPersonalDataReadTimeout(() => supabase.auth.getUser()).catch((error) => {
           accountDenied = isKnownAuthDenial(error);
           throw error;
         });
@@ -1719,7 +1720,7 @@ export default function HubScreen() {
       // One private prepared generation replaces the phone-side price fan-out.
       // A 404 or lower-coverage partial summary uses exact stored-price reads.
       let prepared = null;
-      try { prepared = (await stackrApiClient.collectionValuation()).data; }
+      try { prepared = (await withPersonalDataReadTimeout(() => stackrApiClient.collectionValuation())).data; }
       catch (error) { if ((error as { status?: number }).status !== 404) throw error; }
       if (!await confirmCurrentRequest()) return;
       if (prepared) {

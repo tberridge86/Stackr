@@ -6,6 +6,7 @@ import { mergeBinderArtwork } from '../../lib/stackrSetRetrieval';
 import { loadLatestSnapshotBinderPrices } from '../../lib/binderPricing';
 import { createVisibleBinderPriceReader, type VisibleBinderPriceReader } from '../../lib/binderVisiblePrices';
 import { readOptionalCatalogueEnrichment } from '../../lib/optionalCatalogueEnrichment';
+import { withPersonalDataReadTimeout } from '../../lib/personalDataRead';
 import { stackrApiClient } from '../../lib/stackrApiV1';
 import { attachBinderCatalogueArtwork, attachBinderSetArtwork } from '../../lib/binders';
 import { StackrBrowseFilterGroup } from '../../components/StackrBrowseControls';
@@ -853,6 +854,7 @@ export default function BinderDetailScreen() {
   const [updatingVisibility, setUpdatingVisibility] = useState(false);
   const [cards, setCards] = useState<BinderCardWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [reopenStatus, setReopenStatus] = useState<{ savedAt: number; state: 'refreshing' | 'offline' | 'incomplete' } | null>(null);
   const retrievalTraceRef = useRef<ReturnType<typeof beginBinderRetrieval> | null>(null);
   const visiblePriceReaderRef = useRef<VisibleBinderPriceReader | null>(null);
@@ -1105,6 +1107,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
     try {
       setLoading(true);
+      setLoadError(null);
       setOwnershipReady(false);
       setBinder(null);
       setCards([]);
@@ -1132,7 +1135,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       // Both requests retain their existing server checks. Overlap their
       // latency, but do not render or load cards until both have completed and
       // the active-account/public-binder checks below have passed.
-      const [{ data: { user } }, binderData] = await Promise.all([
+      const [{ data: { user } }, binderData] = await withPersonalDataReadTimeout(() => Promise.all([
         supabase.auth.getUser().then((result) => {
           if (result.error) throw result.error;
           return result;
@@ -1142,7 +1145,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           () => fetchBinderById(binderId, { includeAssets: false }),
           { binderId }
         ),
-      ]);
+      ]));
       if (!isCurrentRequest()) return;
       if (previewState.snapshot && previewState.snapshot.accountId !== user?.id) {
         previewAllowed = false;
@@ -1172,7 +1175,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       if (!previewState.snapshot) setBinder(binderData);
       setIsPublic(Boolean(binderData?.is_public));
 
-      const [customNameArtKey, binderCards] = await Promise.all([
+      const [customNameArtKey, binderCards] = await withPersonalDataReadTimeout(() => Promise.all([
         binderData.type === 'custom'
           ? getCustomBinderNameArtKeyForBinder(binderData.id, binderData.name)
           : Promise.resolve(null),
@@ -1181,7 +1184,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           () => fetchBinderCards(binderId, { includePrices: false, includeAssets: false }),
           { binderId }
         ),
-      ]);
+      ]));
       if (!isCurrentRequest()) return;
 
       const snapshotScope = user ? binderReopenScope(user.id) : null;
@@ -1393,10 +1396,13 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           setCards([]);
           setSelectedCard(null);
           setReopenStatus(null);
+          setLoadError('We could not access this binder. Check your sign-in and try again.');
         } else if (previewState.snapshot) {
           setReopenStatus({ savedAt: previewState.snapshot.savedAt, state: 'offline' });
         } else {
-          Alert.alert('Error', 'Could not refresh this binder. Any available saved view will remain read-only.');
+          setBinder(null);
+          setCards([]);
+          setLoadError('We could not load this binder. Check your connection and try again.');
         }
       }
     } finally {
@@ -1405,6 +1411,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   }, [binderId]);
 
   useEffect(() => {
+    let reloadTimer: ReturnType<typeof setTimeout> | null = null;
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       const nextAccountId = session?.user.id ?? null;
       if (activeAccountIdRef.current === nextAccountId) {
@@ -1416,6 +1423,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       }
 
       activeAccountIdRef.current = nextAccountId;
+      if (reloadTimer) clearTimeout(reloadTimer);
       accountGenerationRef.current += 1;
       loadRequestRef.current += 1;
       artworkRequestRef.current?.abort();
@@ -1436,11 +1444,19 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       setLoading(false);
 
       if (nextAccountId) {
-        void load();
+        const generation = accountGenerationRef.current;
+        // Supabase still owns its auth lock while notifying subscribers.
+        // Start auth-dependent reads only after that callback has returned.
+        reloadTimer = setTimeout(() => {
+          if (generation === accountGenerationRef.current && activeAccountIdRef.current === nextAccountId) void load();
+        }, 0);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      if (reloadTimer) clearTimeout(reloadTimer);
+      subscription.unsubscribe();
+    };
   }, [load]);
 
   useEffect(() => {
@@ -3451,8 +3467,14 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         <StackrBackdrop />
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900' }}>
-            Binder not found
+            {loadError ? 'Binder unavailable' : 'Binder not found'}
           </Text>
+          {loadError ? <>
+            <Text style={{ color: theme.colors.textSoft, textAlign: 'center', paddingHorizontal: 24, marginTop: 12 }}>{loadError}</Text>
+            <TouchableOpacity onPress={() => void load()} accessibilityRole="button" style={{ padding: 16, marginTop: 8 }}>
+              <Text style={{ color: theme.colors.primary, fontWeight: '800' }}>Try again</Text>
+            </TouchableOpacity>
+          </> : null}
         </View>
       </SafeAreaView>
     );

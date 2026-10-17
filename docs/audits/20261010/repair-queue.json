@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-12T19:42:36.819Z",
+  "updatedAt": "2026-10-17T07:20:55Z",
   "coordinator": "root",
   "workingDirectory": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/tif-readiness-integration",
   "branch": "agent/release/tif-build55-device-repairs-20261012",
@@ -79,6 +79,46 @@
     }
   },
   "issues": [
+    {
+      "id": "BUILD56-HOME-BINDER-LOADING-20261017",
+      "severity": "P1",
+      "owner": "stackr_coding",
+      "status": "locally_tested_independently_reviewed_release_pending",
+      "summary": "Owner reports Home collection/value stuck loading, instant binder covers but missing values and quantities, and every binder failing to open after the build56 release.",
+      "evidence": "docs/releases/build56-home-binder-loading-20261017.md",
+      "files": [
+        "lib/supabase.tsx",
+        "lib/supabaseReadFetch.ts",
+        "lib/personalDataRead.ts",
+        "lib/resilientCatalogueRead.ts",
+        "lib/stackrDomainAdapter.ts",
+        "lib/binders.ts",
+        "lib/homeSavedCollection.ts",
+        "app/(tabs)/binder.tsx",
+        "features/binder/BinderDetailScreen.tsx",
+        "features/home/HubScreen.tsx"
+      ],
+      "validation": [
+        "Installed Supabase SDK with mocked HTTP reproduces a stalled getUser holding the auth lock and preventing later session/database dispatch",
+        "npm run typecheck passed; npm run lint passed with eight pre-existing warnings and no errors",
+        "Focused changed-file ESLint passed with no errors; existing warnings retained",
+        "npm run test:startup-loading, test:collection-loading, test:binder-retrieval, test:binder-catalogue and test:home-release passed",
+        "Final binder-library runtime verifies 1702 saved rows, exact quantities, staggered cache ages, canonical master owned2/total204 and account isolation",
+        "Final binder-reopen test passed22 including file-backed SQLite, timeout/retry and deferred auth-event loading",
+        "Independent reviewer found and verified fixes for cached-price generation mismatch and swapped catalogue/ownership Promise slots; no remaining actionable finding",
+        "No physical-device or live-account trace captured; device cause and new live price coverage remain unverified"
+      ],
+      "delivery": {
+        "local": "implemented_tested",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false,
+        "reportedRuntimeContext": "1.0.6 (56); phone build number not rechecked in this report",
+        "baselineRevision": "fe283dbd080372cfd740fec330200f0f402ab6bd"
+      },
+      "nextAction": "Publish the reviewed repair PR, retain hosted-check evidence and obtain approval for the exact live app delivery. Then verify repeat Home focus, official/custom binder opening, quantities and honest price coverage on the phone."
+    },
     {
       "id": "BACKEND-SET-IDENTITY-001",
       "severity": "P1",

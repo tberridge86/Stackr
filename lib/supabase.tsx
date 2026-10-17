@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { Platform } from 'react-native';
 import 'react-native-url-polyfill/auto';
 import { MOBILE_RUNTIME_CONFIG } from './mobileRuntimeConfig';
+import { createSupabaseReadFetch } from './supabaseReadFetch';
 
 const isStaticWebRender = Platform.OS === 'web' && typeof window === 'undefined';
 const staticRenderStorage = {
@@ -15,6 +16,9 @@ export const supabase = createClient(
   MOBILE_RUNTIME_CONFIG.supabaseUrl,
   MOBILE_RUNTIME_CONFIG.supabasePublishableKey,
   {
+    global: {
+      fetch: createSupabaseReadFetch({ supabaseUrl: MOBILE_RUNTIME_CONFIG.supabaseUrl }),
+    },
     auth: {
       storage: isStaticWebRender ? staticRenderStorage : AsyncStorage,
       autoRefreshToken: !isStaticWebRender,
