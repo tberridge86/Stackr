@@ -3,6 +3,16 @@ import { randomBytes } from 'node:crypto';
 
 const storage = new AsyncLocalStorage();
 const TRACEPARENT = /^00-([a-f0-9]{32})-([a-f0-9]{16})-([a-f0-9]{2})$/i;
+const REQUEST_ID = /^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
+const MANIFEST_PHASES = new Set(['manifest_versions', 'manifest_latest_change', 'manifest_languages']);
+
+function safeRequestId(value) {
+  return typeof value === 'string' && REQUEST_ID.test(value) ? value.toLowerCase() : undefined;
+}
+
+function emitTraceEvent(event) {
+  try { console.info(JSON.stringify(event)); } catch { /* Telemetry cannot fail a catalogue read. */ }
+}
 
 function randomHex(bytes) {
   return randomBytes(bytes).toString('hex');
@@ -30,6 +40,31 @@ export function formatTraceparent(trace = storage.getStore()) {
 
 export function currentTrace() {
   return storage.getStore() ?? null;
+}
+
+export function observeCatalogueManifestRead(phase, read) {
+  if (!MANIFEST_PHASES.has(phase)) return read();
+  const parent = currentTrace();
+  const context = { ...parent, ...childTrace(formatTraceparent(parent)), catalogueReadPhase: phase };
+  return storage.run(context, async () => {
+    const startedAt = performance.now();
+    const emit = (outcome) => emitTraceEvent({
+      event: 'stackr_catalogue_manifest_read', phase, outcome,
+      trace_id: context.traceId, span_id: context.spanId, parent_span_id: context.parentSpanId,
+      request_id: safeRequestId(context.requestId),
+      duration_ms: Math.max(0, Math.round(performance.now() - startedAt)),
+    });
+    emit('started');
+    let outcome = 'success';
+    try {
+      return await read();
+    } catch (error) {
+      outcome = context.catalogueReadSignal?.aborted ? 'cancelled' : 'error';
+      throw error;
+    } finally {
+      emit(outcome);
+    }
+  });
 }
 
 export function catalogueReadSignal(childSignal) {
@@ -68,7 +103,8 @@ export function publicCatalogueRead(req, res, next) {
   if (req.aborted || res.destroyed) abort();
   // Shared clients retain no request signal. Copy the existing trace so parallel
   // requests for the same identity cannot cancel each other.
-  storage.run({ ...(currentTrace() ?? childTrace(req.headers.traceparent)), catalogueReadSignal: controller.signal }, next);
+  storage.run({ ...(currentTrace() ?? childTrace(req.headers.traceparent)),
+    catalogueReadSignal: controller.signal, requestId: safeRequestId(req.stackrRequestId) }, next);
 }
 
 export function traceMiddleware() {
@@ -94,7 +130,7 @@ export function createTracedFetch(fetchImpl = globalThis.fetch) {
       status = response.status;
       return response;
     } finally {
-      console.info(JSON.stringify({
+      emitTraceEvent({
         level: status >= 500 || status === 0 ? 'error' : 'info',
         event: 'stackr_trace_span',
         trace_id: span.traceId,
@@ -104,7 +140,10 @@ export function createTracedFetch(fetchImpl = globalThis.fetch) {
         operation: 'supabase_rest',
         status,
         duration_ms: Date.now() - startedAt,
-      }));
+        ...(MANIFEST_PHASES.has(parent?.catalogueReadPhase) ? {
+          phase: parent.catalogueReadPhase, request_id: safeRequestId(parent.requestId),
+        } : {}),
+      });
     }
   };
 }

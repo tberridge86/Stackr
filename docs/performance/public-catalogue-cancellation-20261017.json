@@ -89,24 +89,28 @@
     "limitationsRetained": true
   },
   "delivery": {
-    "merged": false,
-    "newBackendDeployed": false,
+    "merged": true,
+    "newBackendDeployed": true,
     "newNativeBuild": false,
     "newTestFlightPublished": false,
-    "approvalForThisNewSourceRelease": false,
-    "sourceState": "LOCALLY_TESTED_INDEPENDENTLY_REVIEWED_DRAFT_PR_UPDATED_CHECKS_REQUIRED",
+    "approvalForThisNewSourceRelease": true,
+    "sourceState": "APPROVED_MERGED_DEPLOYED_ATTESTED_REQUIRED_CATALOGUE_GATE_FAILED",
     "sourceCommitted": true,
-    "pullRequestDraft": true
+    "pullRequestDraft": false,
+    "reviewedHead": "be6619c44353c6bcc49f161be67a952708639c65",
+    "mergedSource": "dcee48a2bad9f0f73f56d0d5c9f6025bb990fe92",
+    "deploymentId": "0329385d-1b0b-4de8-919a-c9998a8e3d5d"
   },
   "liveFollowup": {
     "priorApprovedPr": "https://github.com/tberridge86/Stackr/pull/406",
-    "deployedBackendSource": "ccccc9ef48b2c501650ea3496a4af2c7ebc902c2",
-    "requestedPublicGate": "FAILED_MEW_HTTP_504",
+    "deployedBackendSource": "dcee48a2bad9f0f73f56d0d5c9f6025bb990fe92",
+    "requestedPublicGate": "PR407_REQUIRED_CATALOGUE_MANIFEST_HTTP504; owner-specific Mew/Celebi/set/card journeys skipped",
     "approvedPostgresDiagnostic": "One attempt returned connection timeout and zero diagnostic rows; statement execution unknown; no retry",
     "approvedProviderLogAggregate": "One attempt returned inner service error and zero result rows; no retry",
     "providerMetadata": "ACTIVE_HEALTHY does not establish usable database connections or resource headroom",
     "resourceReadings": "Owner supplied Primary Database memory/CPU/IO charts,13/60 global database connections,1/200 dedicated pooler connections,3.26GB disk usage and8GB provisioned. Shared pooler has no data. These snapshots weaken disk-full/global-connection-cap explanations; smaller PostgREST internal pool occupancy, latency and workload cause remain unknown.",
-    "savedLogs": "The later10:41–10:44 projection has37 rows with blank SQL/role/timestamp fields and no hidden SQL. An earlier09:37 saved receipt contains6 statement rows (4 distinct statement/timestamp pairs) for artwork-manifest, stored-price and database-statistics reads. Earlier statements do not identify the10:43 Mew statement or root cause. No query replay or new remote diagnostic."
+    "savedLogs": "The later10:41–10:44 projection has37 rows with blank SQL/role/timestamp fields and no hidden SQL. An earlier09:37 saved receipt contains6 statement rows (4 distinct statement/timestamp pairs) for artwork-manifest, stored-price and database-statistics reads. Earlier statements do not identify the10:43 Mew statement or root cause. No query replay or new remote diagnostic.",
+    "previousPr406BackendSource": "ccccc9ef48b2c501650ea3496a4af2c7ebc902c2"
   },
   "limitations": [
     "Offline origin transport is mocked; real Express loopback, route/context/service and installed Supabase SDK are exercised.",
@@ -115,10 +119,10 @@
     "Request disconnect cancellation is confirmed locally. Production gateway disconnect propagation, database resource recovery, and installed-device retrieval are unverified.",
     "This P2 repair is not evidence of the cause or cure of the separate production database connection/statement failures."
   ],
-  "nextAction": "Reconcile exact updated PR407 head/tree and hosted CI, review the server-only proposal, then request matching server release approval. Required public journey and mobile/device gates remain outstanding.",
+  "nextAction": "Identify which of the three required manifest metadata reads stalls. Prepare bounded safe phase telemetry locally; any new live diagnostic release/query needs matching approval. Public retrieval and native/mobile/device gates remain unresolved.",
   "implementationCommit": "27fa5a7c3df2a8372643ea01fa67971601421714",
   "pullRequest": "https://github.com/tberridge86/Stackr/pull/407",
-  "updatedAt": "2026-10-17T11:48:46.684Z",
+  "updatedAt": "2026-10-17T12:18:17.097Z",
   "sourceHashScope": "Original independently reviewed working-copy bytes. Git LF/CRLF equivalence was independently reconciled; committed blob hashes are retained in the private receipt.",
   "releaseVerification": {
     "problem": "Required smoke continued later checks after failure and could retain an unread failed-response body.",
@@ -149,7 +153,21 @@
     "limits": [
       "Local loopback CLI evidence, not production recovery.",
       "Up to39 sequential logical checks on success; redirects can add network hops. Existing10s per-check timer and image-body byte policy remain.",
-      "No new live operation approved; no database, pool, storage, credential or paid-tier change proposed."
-    ]
+      "Exact PR407 server release approved and performed once; no additional deployment or diagnostic authority follows. No database/pool/storage/credential/paid-tier change."
+    ],
+    "production": {
+      "workflow": "https://github.com/tberridge86/Stackr/actions/runs/39031435229",
+      "backendValidation": "PASS",
+      "backendDeployment": "PASS",
+      "sourceHealthAttestation": "PASS",
+      "workflowConclusion": "FAILURE",
+      "completedLogicalChecks": 25,
+      "passed": 24,
+      "firstFailure": "/v1/catalog/manifest HTTP504",
+      "laterChecksAndOwnerJourneys": "SKIPPED",
+      "conditionalRestore": "Not triggered; current health/source passed and baseline had same catalogue504",
+      "unrelatedStagedCredentialPatch": "Preserved unchanged",
+      "independentOutcomeReview": "ACCEPTED"
+    }
   }
 }

@@ -4,7 +4,7 @@ import { getEnglishCardDisplaySupplement } from './cardDisplayNames.js';
 import { findNativeCardNamesForEnglishQuery, normalizeCardEnglishSearchText } from './cardNameTranslations.js';
 import { matchesPokedexSpeciesName, normalisePokedexName, pokedexCardLookupName } from './pokedexCards.js';
 import { correctedCatalogueCardId, correctedCatalogueSetId, CORRECTION_LANGUAGE } from './catalogueLanguageCorrections.js';
-import { catalogueReadSignal, readCatalogueQuery } from './traceContext.js';
+import { catalogueReadSignal, observeCatalogueManifestRead, readCatalogueQuery } from './traceContext.js';
 
 export const STACKR_API_V1 = '1';
 export const DEFAULT_CATALOGUE_CACHE_CONTROL = 'public, max-age=60, stale-while-revalidate=300';
@@ -1311,18 +1311,18 @@ export function createCatalogueV1Service(options) {
 
     async manifest() {
       const [versions, latest, languages] = await Promise.all([
-        queryRows(table(supabase, 'api', 'published_catalogue_versions')
+        observeCatalogueManifestRead('manifest_versions', () => queryRows(table(supabase, 'api', 'published_catalogue_versions')
           .select('id,version_key,version_label,language_code,min_change_sequence,max_change_sequence,published_at,updated_at,language_sort_order')
           .order('language_sort_order', { ascending: true })
-          .order('language_code', { ascending: true })),
-        queryMaybeOne(table(supabase, 'api', 'catalogue_delta_changes')
+          .order('language_code', { ascending: true }))),
+        observeCatalogueManifestRead('manifest_latest_change', () => queryMaybeOne(table(supabase, 'api', 'catalogue_delta_changes')
           .select('change_sequence')
           .order('change_sequence', { ascending: false })
           .limit(1)
-          .maybeSingle()),
-        queryRows(table(supabase, 'api', 'catalogue_languages')
+          .maybeSingle())),
+        observeCatalogueManifestRead('manifest_languages', () => queryRows(table(supabase, 'api', 'catalogue_languages')
           .select('code,bcp47_code,english_name,native_name,script_code,sort_order')
-          .order('sort_order', { ascending: true })),
+          .order('sort_order', { ascending: true }))),
       ]);
       const currentCatalogueVersion = versions.length
         ? versions.map((version) => version.version_key).join('|')
