@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-17T08:46:52.138Z",
+  "updatedAt": "2026-10-17T09:46:05.824Z",
   "coordinator": "root",
   "workingDirectory": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/tif-readiness-integration",
   "branch": "codex/build58-set-card-retrieval-20261017",
@@ -83,26 +83,27 @@
       "id": "RETRIEVAL-LIVE-DB-TIMEOUT-20261017",
       "severity": "P1",
       "owner": "stackr_coding",
-      "status": "live_failure_reproduced_database_diagnostic_approval_pending",
-      "summary": "Celebi search and Storm/English30th/Japanese30th/Classic set-card reads return504; database logs show statement timeouts despite healthy basic service probes.",
+      "status": "approved_diagnostic_partial_results_optional_artwork_repair_integration_wider_failure_unresolved",
+      "summary": "Owner confirms installed58; Binder unavailable, card search fails and Home later stops. Storm facts-only read recovered113 cards while Celebi still504. Optional artwork independently reproduced as blocking successful Search/card facts; wider DB distress unresolved.",
       "evidence": "docs/performance/build58-set-card-retrieval-20261017.json",
       "files": [
-        "backend/routes/v1.js",
-        "backend/lib/fastSetCards.js",
-        "gateway/src/proxy.js"
+        "backend/lib/stackrApiV1.js",
+        "scripts/test-backend-search-enrichment.mjs",
+        "scripts/test-stackr-api-v1.mjs"
       ],
       "validation": [
-        "Exact public source and service-role set-card failures reproduced; no successful card/count proof",
-        "No speculative backend/schema/index repair performed"
+        "Approved four read-only blocks executed once; limited finalSELECT outputs and connection timeout on same-scope format recovery recorded",
+        "Actual-SDK Search and single-card regressions pass, backend typecheck passes and independent final review accepted; essential errors remain explicit",
+        "Set/binder first paint already excludes optional artwork; no all-routes recovery claim"
       ],
       "delivery": {
-        "local": "investigated",
-        "reviewed": false,
+        "local": "implemented_tested",
+        "reviewed": true,
         "merged": false,
         "deployed": false,
         "deviceVerified": false
       },
-      "nextAction": "Await explicit approval for the prepared bounded read-only database diagnostic; then select and test an evidence-backed repair. No repeated failing probes while the dependency is distressed."
+      "nextAction": "Finish/review concrete repair and actual native asset proof; request matching live approval. After deployment verify real card/set/Home/binder journeys; retain unresolved DB/private-read issue until evidenced recovery."
     },
     {
       "id": "SEARCH-LATE-SETTLEMENT-20261017",
@@ -135,25 +136,28 @@
       "id": "STORM-M6-LOGO-20261017",
       "severity": "P2",
       "owner": "stackr_artwork",
-      "status": "exact_gap_confirmed_candidate_metadata_only_source_permission_pending",
-      "summary": "Storm Emeralda Japanese M6 has neither a bundled logo nor a generated published fallback; approved runtime provider omits its logo field.",
+      "status": "owner_approved_original_locally_integrated_independently_reviewed_not_released",
+      "summary": "Exact Japanese M6 source original now bundled with canonical binder-ID binding; approval and actual640x170 pixels verified.",
       "evidence": "docs/performance/build58-set-card-retrieval-20261017.json",
       "files": [
         "lib/japaneseSetLogos.ts",
-        "lib/generated/publishedSetLogos.generated.json"
+        "assets/rev2/11-japanese-set-logo/storm-m6-20261017.json",
+        "catalogue/rights-reviews/billsarchive-m6-set-logo-owner-approved.2026-10-17.json",
+        "scripts/audit-japanese-set-logo-runtime-coverage.ts"
       ],
       "validation": [
-        "Exact owner source sheet inspected: it contains M6a/M5/M4/M3/M2.2/M2, not M6",
-        "Candidate source declares1918x510; actual pixels/source-use permission remain unverified"
+        "Byte-exact original640x170/16610bytes verified against scoped owner attestation",
+        "Canonical binder, foreign language, M5/M6a and additive224inventory regressions pass",
+        "Independent review accepted; original223manifest byte-identical"
       ],
       "delivery": {
-        "local": "metadata_only",
-        "reviewed": false,
+        "local": "implemented_tested",
+        "reviewed": true,
         "merged": false,
         "deployed": false,
         "deviceVerified": false
       },
-      "nextAction": "Establish permission for the exact candidate or obtain a permitted original; verify exact logo pixels before preparing runtime delivery."
+      "nextAction": "Prove exact unchanged asset in actual iOS export and carry reviewed candidate through matching approved release and device check."
     },
     {
       "id": "BUILD56-HOME-BINDER-LOADING-20261017",
@@ -190,7 +194,7 @@
         "merged": true,
         "deployed": true,
         "deviceVerified": false,
-        "reportedRuntimeContext": "1.0.6 (56); phone build number not rechecked in this report",
+        "reportedRuntimeContext": "Owner confirms installed1.0.6(58); continued Home/binder retrieval failures reported2026-10-17",
         "baselineRevision": "fe283dbd080372cfd740fec330200f0f402ab6bd",
         "appVersion": "1.0.6",
         "buildNumber": "58",
@@ -2583,12 +2587,15 @@
   ],
   "currentWork": {
     "owner": "root",
-    "status": "source_search_repair_ready_live_retrieval_diagnostic_approval_pending",
-    "baseline": "ec37dd85035f4a5d58158915a2c2c29e188f76d7",
+    "status": "reviewed_source_ready_for_export_and_hosted_checks",
     "branch": "codex/build58-set-card-retrieval-20261017",
     "report": "docs/performance/build58-set-card-retrieval-20261017.json",
+    "pullRequest": "https://github.com/tberridge86/Stackr/pull/406",
+    "installedBuildConfirmed": "1.0.6(58)",
+    "diagnostic": "approved_executed_partial_results",
+    "nextAction": "Verify actual iOS export includes the unchanged original M6 asset; then exact-head hosted checks",
     "liveRetrievalResolved": false,
-    "nextAction": "Run only the approved bounded database diagnostic after owner approval"
+    "newLiveOperationsAuthorized": false
   },
   "completionGoal": {
     "threadId": "01a12a4c-4b1a-7823-b948-148c90d7cd8e",

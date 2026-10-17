@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
@@ -36,6 +37,38 @@ const localArtwork = compileModule('lib/localSetArtwork.ts', {
   './magazineSetCovers': { getMagazineSetCoverSourceForSet: () => null },
 });
 const getLocalSetArtworkSourceForSet = localArtwork.getLocalSetArtworkSourceForSet as (input: Record<string, unknown>) => string | null;
+
+const storm = JSON.parse(readFileSync('assets/rev2/11-japanese-set-logo/storm-m6-20261017.json', 'utf8'));
+const stormPermission = JSON.parse(readFileSync(storm.permissionRecord, 'utf8'));
+const stormBytes = readFileSync(storm.assetPath);
+assert.equal(storm.setId, '903d5baa-27c7-5690-b1d7-2395c770204a');
+assert.equal(storm.setCode, 'M6');
+assert.equal(storm.language, 'ja');
+assert.equal(createHash('sha256').update(stormBytes).digest('hex'), storm.sha256);
+assert.equal(stormBytes.length, storm.bytes);
+assert.equal(stormPermission.publicRuntimeDisplayAuthorized, true);
+assert.equal(stormPermission.assetPersistenceAuthorized, true);
+assert.equal(stormPermission.canonicalDatabaseWriteAuthorized, false);
+assert.equal(stormPermission.scope.sha256, storm.sha256);
+assert.equal(stormPermission.scope.assetPath, storm.assetPath);
+assert.equal(stormPermission.scope.setId, storm.setId);
+assert.equal(stormPermission.scope.assetCount, 1);
+assert.equal(storm.origin, 'source_original_unchanged');
+const stormSource = `bundled:../${storm.assetPath}`;
+assert.equal(getLocalSetArtworkSourceForSet({ id: storm.setId, language: 'ja' }), stormSource,
+  'An existing exact Storm binder must show its bundled mark without a successful catalogue read.');
+assert.equal(getJapaneseSetLogoSource(`ja:${storm.setId}`), stormSource);
+assert.equal(getJapaneseSetLogoSource('ja:M6'), stormSource);
+assert.equal(getJapaneseSetLogoSourceForSet({ id: storm.setId, language: 'ja', setCode: 'M5' }), stormSource,
+  'The exact canonical Storm binding must win over a stale code.');
+assert.equal(getLocalSetArtworkSourceForSet({ language: 'ja', englishDisplayName: 'Storm Emeralda' }), stormSource);
+for (const language of ['en', 'zh-tw', 'zh-cn', 'ko']) {
+  assert.equal(getLocalSetArtworkSourceForSet({ id: storm.setId, language, setCode: 'M6', name: 'Storm Emeralda' }), null,
+    'The Japanese Storm logo must not cross languages.');
+}
+assert.equal(getJapaneseSetLogoSourceForSet({ id: storm.setId.slice(0, -1), language: 'ja' }), null);
+assert.match(getJapaneseSetLogoSourceForSet({ id: '88e351b5-8191-5ef4-854b-2978046cda53', language: 'ja', setCode: 'M6a' }) ?? '', /\/m6a\.png$/,
+  'Japanese anniversary keeps its own existing logo.');
 
 const japaneseSm6 = {
   id: '04fe9fe1-7206-4215-b9ab-ccea25916593',

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import './test-printing-asset-manifest.mjs';
+import './test-backend-search-enrichment.mjs';
 import { Buffer } from 'node:buffer';
 import { readFile } from 'node:fs/promises';
 import express from 'express';
@@ -481,6 +482,7 @@ async function assertSearchServerClientIsolation(exactOriginalAvailable = false)
             in(column, value) { filters.push(['in', column, value]); return this; },
             order(column, options) { filters.push(['order', column, options]); return this; },
             range(from, to) { filters.push(['range', from, to]); return this; },
+            abortSignal(signal) { filters.push(['abortSignal', signal]); return this; },
             then(resolve, reject) {
               assetOperations.push(filters);
               const variantFilter = filters.find(([name, column]) => name === 'in' && column === 'variant_id');
@@ -553,6 +555,8 @@ async function assertSearchServerClientIsolation(exactOriginalAvailable = false)
   assert.ok(assetOperations.some((filters) => filters.some(([name, column]) => name === 'in' && column === 'variant_id')));
   assert.ok(assetOperations.some((filters) => filters.some(([name, column]) => name === 'in' && column === 'printing_id')));
   assert.ok(assetOperations.every((filters) => filters.some(([name]) => name === 'range')));
+  assert.ok(assetOperations.every((filters) => filters.some(([name, signal]) => name === 'abortSignal' && signal instanceof AbortSignal)),
+    'Optional search image reads receive the child cancellation signal');
 }
 
 async function assertSiblingVariantIsNotAnImageFallback() {
