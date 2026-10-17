@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-17T09:55:31.823Z",
+  "updatedAt": "2026-10-17T11:12:58.847Z",
   "coordinator": "root",
   "workingDirectory": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/tif-readiness-integration",
   "branch": "codex/build58-set-card-retrieval-20261017",
@@ -80,6 +80,29 @@
   },
   "issues": [
     {
+      "id": "API-DISCONNECT-CANCELLATION-20261017",
+      "severity": "P2",
+      "owner": "stackr_coding",
+      "status": "locally_tested_independently_reviewed_not_released",
+      "summary": "Abandoned public catalogue reads continued SDK work after the client disconnected; fallback queries could follow the abandoned read.",
+      "evidence": "docs/performance/public-catalogue-cancellation-20261017.json",
+      "files": [
+        "backend/lib/traceContext.js",
+        "backend/routes/v1.js",
+        "backend/lib/stackrApiV1.js",
+        "backend/lib/fastSetCards.js",
+        "backend/test/public-catalogue-cancellation.test.mjs"
+      ],
+      "validation": [
+        "Actual Express/context/installed-SDK baseline RED; 13 focused cases GREEN and independently retested",
+        "Existing API/artwork/translation/observability and 9 identity/set cases PASS",
+        "Backend typecheck and syntax PASS; repository lint 0 errors and 8 pre-existing warnings"
+      ],
+      "nextAction": "Retain the reviewed source in an isolated commit and draft PR. Obtain provider resource evidence and prepare any additional concrete live action for matching approval. Required public/mobile delivery gates and installed-device acceptance remain outstanding.",
+      "productionRootCauseEstablished": false,
+      "newLiveReleaseApproved": false
+    },
+    {
       "id": "CARD-UNCACHED-FACTS-20261017",
       "severity": "P2",
       "owner": "stackr_coding",
@@ -139,7 +162,7 @@
       "id": "RETRIEVAL-LIVE-DB-TIMEOUT-20261017",
       "severity": "P1",
       "owner": "stackr_coding",
-      "status": "approved_diagnostic_partial_results_optional_artwork_repair_integration_wider_failure_unresolved",
+      "status": "pr406_backend_deployed_public_gate_failed_further_diagnostics_no_results_native_hold",
       "summary": "Owner confirms installed58; Binder unavailable, card search fails and Home later stops. Storm facts-only read recovered113 cards while Celebi still504. Optional artwork independently reproduced as blocking successful Search/card facts; wider DB distress unresolved.",
       "evidence": "docs/performance/build58-set-card-retrieval-20261017.json",
       "files": [
@@ -155,11 +178,23 @@
       "delivery": {
         "local": "implemented_tested",
         "reviewed": true,
-        "merged": false,
-        "deployed": false,
+        "merged": true,
+        "backendDeployed": true,
+        "backendSource": "ccccc9ef48b2c501650ea3496a4af2c7ebc902c2",
+        "publicRetrievalVerified": false,
+        "nativePublished": false,
         "deviceVerified": false
       },
-      "nextAction": "Finish/review concrete repair and actual native asset proof; request matching live approval. After deployment verify real card/set/Home/binder journeys; retain unresolved DB/private-read issue until evidenced recovery."
+      "nextAction": "Complete the separate request-lifecycle source repair; obtain provider resource evidence and prepare any additional concrete live action for matching approval. Do not release TestFlight until required public/mobile delivery gates pass.",
+      "postreleaseObservation": {
+        "source": "ccccc9ef48b2c501650ea3496a4af2c7ebc902c2",
+        "backendDeployed": true,
+        "nativePublished": false,
+        "mewSearch": "HTTP504; later public journey probes skipped",
+        "postgresDiagnostic": "One approved new attempt returned connection timeout and no rows; unknown statement execution; no retry",
+        "providerLogAggregate": "One approved attempt returned service error and no rows; no retry",
+        "resourceMeasurementsAvailable": false
+      }
     },
     {
       "id": "SEARCH-LATE-SETTLEMENT-20261017",
@@ -213,7 +248,7 @@
         "deployed": false,
         "deviceVerified": false
       },
-      "nextAction": "Prove exact unchanged asset in actual iOS export and carry reviewed candidate through matching approved release and device check."
+      "nextAction": "Exact unchanged source logo (640 by 170 pixels) verified among 34 required assets in the merged-source local iOS export. TestFlight is held because live public card retrieval still fails; actual signed/native delivery and device acceptance remain pending."
     },
     {
       "id": "BUILD56-HOME-BINDER-LOADING-20261017",
@@ -2643,15 +2678,22 @@
   ],
   "currentWork": {
     "owner": "root",
-    "status": "reviewed_integrated_source_ready_for_frozen_export_and_hosted_checks",
-    "branch": "codex/build58-set-card-retrieval-20261017",
-    "report": "docs/performance/build58-set-card-retrieval-20261017.json",
-    "pullRequest": "https://github.com/tberridge86/Stackr/pull/406",
-    "installedBuildConfirmed": "1.0.6(58)",
-    "diagnostic": "approved_executed_partial_results",
-    "nextAction": "Verify actual clean frozen iOS export and exact M6 bytes, then exact-head hosted checks",
+    "status": "cancellation_source_locally_tested_reviewed_public_gate_failed_native_hold",
+    "branch": "codex/public-catalogue-cancellation-20261017",
+    "report": "docs/performance/public-catalogue-cancellation-20261017.json",
+    "pullRequest": null,
+    "previousApprovedPullRequest": "https://github.com/tberridge86/Stackr/pull/406",
+    "approvedBackendMergedAndDeployed": true,
+    "approvedBackendSource": "ccccc9ef48b2c501650ea3496a4af2c7ebc902c2",
+    "installedBuildConfirmed": "1.0.6 (58)",
+    "diagnostic": "Approved Postgres check and provider-log aggregate each attempted once; no diagnostic rows, no retries",
+    "mergedSourceIosExport": "PASS, including exact M6 bytes among 34 required assets; local export only",
+    "publicJourneyGate": "FAILED_Mew_HTTP_504_later_probes_skipped",
+    "nativeReleaseGate": "HOLD",
+    "nextAction": "Retain reviewed request-cancellation candidate in an isolated commit/draft PR. Await owner CPU/memory/connection readings; prepare any new live repair for matching approval. Required public/mobile and device gates remain outstanding.",
     "liveRetrievalResolved": false,
     "newLiveOperationsAuthorized": false,
+    "newNativeBuildCreated": false,
     "releaseEvidence": "docs/releases/build58-retrieval-repair-20261017.md"
   },
   "completionGoal": {

@@ -9,6 +9,7 @@ import {
   toCatalogueAsset,
 } from './stackrApiV1.js';
 import { correctedCatalogueSetId, CORRECTION_LANGUAGE } from './catalogueLanguageCorrections.js';
+import { readCatalogueQuery } from './traceContext.js';
 
 function clean(value) {
   const text = String(value ?? '').trim();
@@ -52,11 +53,11 @@ function paginationFromRows(bundleRows, rawRows, limit) {
 async function fetchFactRows(supabase, setId, language, afterVariantId, limit, options) {
   let catalogueVersionId = clean(options.catalogueVersionId);
   if (!catalogueVersionId) {
-    const { data: publishedSet, error } = await supabase.schema('api')
+    const { data: publishedSet, error } = await readCatalogueQuery(supabase.schema('api')
       .from('catalogue_sets')
       .select('catalogue_version_id')
       .eq('set_id', setId)
-      .maybeSingle();
+      .maybeSingle());
     if (error) throw error;
     if (!publishedSet) return { cards: [], pagination: { limit, nextCursor: null } };
     catalogueVersionId = clean(publishedSet.catalogue_version_id);
@@ -77,7 +78,7 @@ async function fetchFactRows(supabase, setId, language, afterVariantId, limit, o
   if (language) query = query.eq('language_code', language);
   if (afterVariantId) query = query.gt('variant_id', afterVariantId);
 
-  const { data, error } = await query;
+  const { data, error } = await readCatalogueQuery(query);
   if (error) throw error;
 
   const bundleRows = Array.isArray(data) ? data : [];
@@ -110,9 +111,9 @@ export async function fetchFastSetCards(supabase, setId, input = {}, options = {
   }
 
   if (isLanguageCorrection) {
-    const { data: publishedSet, error } = await supabase.schema('api')
+    const { data: publishedSet, error } = await readCatalogueQuery(supabase.schema('api')
       .from('catalogue_sets').select('catalogue_version_id,language_code')
-      .eq('set_id', setId).maybeSingle();
+      .eq('set_id', setId).maybeSingle());
     if (error) throw error;
     if (!publishedSet || publishedSet.language_code !== CORRECTION_LANGUAGE) {
       throw new ApiError(502, 'invalid_language_correction', 'The reviewed correction target is unavailable.');
@@ -132,12 +133,12 @@ export async function fetchFastSetCards(supabase, setId, input = {}, options = {
     return result;
   }
 
-  const { data, error } = await supabase.schema('api').rpc('catalogue_set_card_rows', {
+  const { data, error } = await readCatalogueQuery(supabase.schema('api').rpc('catalogue_set_card_rows', {
     p_set_id: setId,
     p_language_code: language,
     p_after_variant_id: afterVariantId,
     p_limit: limit,
-  });
+  }));
   if (error) throw error;
 
   const bundleRows = Array.isArray(data) ? data : [];

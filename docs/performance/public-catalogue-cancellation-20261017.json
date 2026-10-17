@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-17T11:11:22.957Z",
+  "base": "ccccc9ef48b2c501650ea3496a4af2c7ebc902c2",
+  "branch": "codex/public-catalogue-cancellation-20261017",
+  "problem": "Abandoned public catalogue reads continued SDK work after the client disconnected; fallback queries could follow the abandoned read.",
+  "productionRootCauseEstablished": false,
+  "baseline": {
+    "head": "ccccc9ef48b2c501650ea3496a4af2c7ebc902c2",
+    "result": "RED",
+    "tests": 1,
+    "passed": 0,
+    "expected": "Disconnected response aborts the SDK transport",
+    "actual": "SDK signal undefined",
+    "method": "Actual Express router, async context, service and installed SDK, with loopback client and mocked origin fetch"
+  },
+  "implementation": [
+    "Opt in public catalogue handlers to a request-local cancellation signal, cleaning listeners after finish or close.",
+    "Combine parent disconnect cancellation with existing artwork and translation deadlines; bind SDK builders rather than singleton clients.",
+    "Stop later pages, strategies and fast-set fallbacks after cancellation; avoid writes to a closed response.",
+    "Keep normal HTTP/cache/identity behaviour and authenticated pricing/admin operations outside the opt-in scope."
+  ],
+  "sourceSha256": {
+    "backend/lib/traceContext.js": "ec1e4a2bdd0ec12ba0f5784151e7312e49c8b9b6671d0d3e3fd25183189b75b1",
+    "backend/routes/v1.js": "39b9a6c7ec16831b09f2bb4c79a19a8a7c60605602a572f8f4084211b3d1a82c",
+    "backend/lib/stackrApiV1.js": "02424bb3968c469b975520efa4581a86634866031621baa6b0a9680acdc28492",
+    "backend/lib/fastSetCards.js": "087fc339c88367711429d44506ebc1f1b400a7922b5684daa047954eb2cd8f46",
+    "backend/test/public-catalogue-cancellation.test.mjs": "1388f608f4de3d926e29dd875f5dc2fcc15f06c3ba7359443c4e8b91f7cc99de"
+  },
+  "validation": [
+    {
+      "command": "node --test backend/test/public-catalogue-cancellation.test.mjs",
+      "exitCode": 0,
+      "tests": 13,
+      "pass": 13,
+      "output": "cancellation-green.output.txt"
+    },
+    {
+      "command": "npm run test:stackr-api-v1",
+      "exitCode": 0,
+      "notes": "Transport policy, API integration (including printing assets and actual SDK optional artwork), cache recovery pass. Existing ExpoModulesCoreJSLogger diagnostic appears in cache-recovery harness; command passes."
+    },
+    {
+      "command": "npm run typecheck:backend",
+      "exitCode": 0
+    },
+    {
+      "command": "node --test backend/test/fast-set-language-corrections.test.mjs backend/test/set-card-version-binding.test.mjs backend/test/catalogue-language-corrections.test.mjs",
+      "exitCode": 0,
+      "tests": 9,
+      "pass": 9
+    },
+    {
+      "command": "node scripts/test-quality-observability.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/test-backend-translation-search.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/test-backend-approved-card-names.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node --check (each of the four changed source files and new test)",
+      "exitCode": 0
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run lint",
+      "exitCode": 0,
+      "errors": 0,
+      "preExistingWarnings": 8,
+      "outputScope": "Repository Expo lint on existing app/components; changed backend JavaScript separately syntax-checked and runtime-tested"
+    }
+  ],
+  "independentReview": {
+    "status": "ACCEPTED",
+    "sourceFiles": 5,
+    "exactSourceHashesVerified": true,
+    "focusedSuiteIndependentlyRetested": {
+      "tests": 13,
+      "passed": 13
+    },
+    "limitationsRetained": true
+  },
+  "delivery": {
+    "merged": false,
+    "newBackendDeployed": false,
+    "newNativeBuild": false,
+    "newTestFlightPublished": false,
+    "approvalForThisNewSourceRelease": false,
+    "sourceState": "LOCALLY_TESTED_AND_INDEPENDENTLY_REVIEWED"
+  },
+  "liveFollowup": {
+    "priorApprovedPr": "https://github.com/tberridge86/Stackr/pull/406",
+    "deployedBackendSource": "ccccc9ef48b2c501650ea3496a4af2c7ebc902c2",
+    "requestedPublicGate": "FAILED_MEW_HTTP_504",
+    "approvedPostgresDiagnostic": "One attempt returned connection timeout and zero diagnostic rows; statement execution unknown; no retry",
+    "approvedProviderLogAggregate": "One attempt returned inner service error and zero result rows; no retry",
+    "providerMetadata": "ACTIVE_HEALTHY does not establish usable database connections or resource headroom",
+    "resourceReadings": "Requested from owner; not yet available"
+  },
+  "limitations": [
+    "Offline origin transport is mocked; real Express loopback, route/context/service and installed Supabase SDK are exercised.",
+    "503 cancellation can re-enter the SDK fetch callback with an already aborted signal, but native-fetch-compatible transport sends no new network request.",
+    "No shared in-flight promise coalescing exists in the scoped helpers; same-route/identity concurrency verifies independent context and SDK builders.",
+    "Request disconnect cancellation is confirmed locally. Production gateway disconnect propagation, database resource recovery, and installed-device retrieval are unverified.",
+    "This P2 repair is not evidence of the cause or cure of the separate production database connection/statement failures."
+  ],
+  "nextAction": "Retain the reviewed source in an isolated commit and draft PR. Obtain provider resource evidence and prepare any additional concrete live action for matching approval. Required public/mobile delivery gates and installed-device acceptance remain outstanding."
+}
