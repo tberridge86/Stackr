@@ -363,6 +363,7 @@ test('Owner backend fail-fast smoke retains the complete success gate and stops 
   const assetId = '33333333-3333-4333-8333-333333333333';
   const nextAssetId = '44444444-4444-4444-8444-444444444444';
   const requests = [];
+  const requestIds = [];
   let fault = null;
   let baseUrl;
   let heldSocketClosed = false;
@@ -382,6 +383,7 @@ test('Owner backend fail-fast smoke retains the complete success gate and stops 
   const server = createServer(async (req, res) => {
     const key = `${req.method} ${req.url}`;
     requests.push(key);
+    requestIds.push(String(req.headers['x-request-id'] ?? ''));
     const active = fault?.key === key ? fault.kind : null;
     if (active === 'transport') { req.socket.destroy(); return; }
     const requestId = String(req.headers['x-request-id'] ?? '');
@@ -436,6 +438,7 @@ test('Owner backend fail-fast smoke retains the complete success gate and stops 
   baseUrl = `http://127.0.0.1:${server.address().port}`;
   const scenario = async (nextFault = null, failFast = true, extraArgs = []) => {
     requests.length = 0;
+    requestIds.length = 0;
     fault = nextFault;
     return runSmoke([
       `--backend=${baseUrl}/origin`, `--gateway=${baseUrl}/gateway`, '--recognition=',
@@ -453,6 +456,9 @@ test('Owner backend fail-fast smoke retains the complete success gate and stops 
         assert.deepEqual(Object.keys(output), ['ok', 'checks']);
         assert.equal(output.ok, true); assert.equal(output.checks.length, 39);
         assert.deepEqual(requests, fullOrder);
+        if (failFast) assert.deepEqual(output.checks.map(check => check.requestId), requestIds);
+        else assert.ok(output.checks.every(check => !Object.hasOwn(check, 'requestId')));
+        assert.ok(requestIds.every(id => /^[a-f0-9-]{36}$/.test(id)));
         assert.ok(output.checks.every(check => check.ok));
       });
     }
@@ -472,6 +478,7 @@ test('Owner backend fail-fast smoke retains the complete success gate and stops 
         assert.deepEqual(Object.keys(output), ['ok', 'checks']);
         assert.equal(output.checks.length, expectedCount);
         assert.deepEqual(requests, fullOrder.slice(0, expectedCount));
+        assert.deepEqual(output.checks.map(check => check.requestId), requestIds);
         const failed = output.checks.at(-1);
         assert.ok(!failed.ok || !failed.requestIdPropagated);
         assert.ok(output.checks.slice(0, -1).every(check => check.ok));
@@ -493,6 +500,7 @@ test('Owner backend fail-fast smoke retains the complete success gate and stops 
       assert.equal(output.ok, false); assert.equal(output.checks.length, 1);
       assert.equal(output.checks[0].status, 504);
       assert.equal(output.checks[0].requestIdPropagated, true);
+      assert.equal(output.checks[0].requestId, requestIds[0]);
       assert.deepEqual(requests, ['GET /origin/health']);
       for (let i = 0; !heldSocketClosed && i < 60; i++) await new Promise(resolve => setTimeout(resolve, 5));
       assert.equal(heldSocketClosed, true, 'Failed-check transport must close without waiting for garbage collection.');
