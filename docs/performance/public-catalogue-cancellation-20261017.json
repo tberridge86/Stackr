@@ -94,7 +94,9 @@
     "newNativeBuild": false,
     "newTestFlightPublished": false,
     "approvalForThisNewSourceRelease": false,
-    "sourceState": "LOCALLY_TESTED_AND_INDEPENDENTLY_REVIEWED"
+    "sourceState": "LOCALLY_TESTED_AND_INDEPENDENTLY_REVIEWED",
+    "sourceCommitted": true,
+    "pullRequestDraft": true
   },
   "liveFollowup": {
     "priorApprovedPr": "https://github.com/tberridge86/Stackr/pull/406",
@@ -112,5 +114,7 @@
     "Request disconnect cancellation is confirmed locally. Production gateway disconnect propagation, database resource recovery, and installed-device retrieval are unverified.",
     "This P2 repair is not evidence of the cause or cure of the separate production database connection/statement failures."
   ],
-  "nextAction": "Retain the reviewed source in an isolated commit and draft PR. Obtain provider resource evidence and prepare any additional concrete live action for matching approval. Required public/mobile delivery gates and installed-device acceptance remain outstanding."
+  "nextAction": "Await provider CPU/memory/connection readings and exact-head hosted checks for reviewed draft PR407. Prepare any new live action for matching approval; required public/mobile and device gates remain outstanding.",
+  "implementationCommit": "27fa5a7c3df2a8372643ea01fa67971601421714",
+  "pullRequest": "https://github.com/tberridge86/Stackr/pull/407"
 }

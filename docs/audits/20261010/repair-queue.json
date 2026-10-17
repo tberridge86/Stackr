@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-17T11:12:58.847Z",
+  "updatedAt": "2026-10-17T11:14:11.821Z",
   "coordinator": "root",
   "workingDirectory": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/tif-readiness-integration",
   "branch": "codex/build58-set-card-retrieval-20261017",
@@ -2681,7 +2681,7 @@
     "status": "cancellation_source_locally_tested_reviewed_public_gate_failed_native_hold",
     "branch": "codex/public-catalogue-cancellation-20261017",
     "report": "docs/performance/public-catalogue-cancellation-20261017.json",
-    "pullRequest": null,
+    "pullRequest": "https://github.com/tberridge86/Stackr/pull/407",
     "previousApprovedPullRequest": "https://github.com/tberridge86/Stackr/pull/406",
     "approvedBackendMergedAndDeployed": true,
     "approvedBackendSource": "ccccc9ef48b2c501650ea3496a4af2c7ebc902c2",
@@ -2690,11 +2690,12 @@
     "mergedSourceIosExport": "PASS, including exact M6 bytes among 34 required assets; local export only",
     "publicJourneyGate": "FAILED_Mew_HTTP_504_later_probes_skipped",
     "nativeReleaseGate": "HOLD",
-    "nextAction": "Retain reviewed request-cancellation candidate in an isolated commit/draft PR. Await owner CPU/memory/connection readings; prepare any new live repair for matching approval. Required public/mobile and device gates remain outstanding.",
+    "nextAction": "Await provider CPU/memory/connection readings and exact-head hosted checks for reviewed draft PR407. Prepare any new live action for matching approval; required public/mobile and device gates remain outstanding.",
     "liveRetrievalResolved": false,
     "newLiveOperationsAuthorized": false,
     "newNativeBuildCreated": false,
-    "releaseEvidence": "docs/releases/build58-retrieval-repair-20261017.md"
+    "releaseEvidence": "docs/releases/build58-retrieval-repair-20261017.md",
+    "implementationCommit": "27fa5a7c3df2a8372643ea01fa67971601421714"
   },
   "completionGoal": {
     "threadId": "01a12a4c-4b1a-7823-b948-148c90d7cd8e",
