@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-17T11:14:11.821Z",
+  "updatedAt": "2026-10-17T11:48:46.684Z",
   "coordinator": "root",
   "workingDirectory": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/tif-readiness-integration",
   "branch": "codex/build58-set-card-retrieval-20261017",
@@ -80,6 +80,26 @@
   },
   "issues": [
     {
+      "id": "RELEASE-SMOKE-FAIL-FAST-20261017",
+      "severity": "P2",
+      "owner": "stackr_coding",
+      "status": "locally_tested_independently_reviewed_not_released",
+      "summary": "Required smoke continued later checks after failure and could retain an unread failed-response body.",
+      "evidence": "docs/performance/public-catalogue-cancellation-20261017.json",
+      "files": [
+        "scripts/deploy/smoke.mjs",
+        "scripts/test-deployment-commerce-disabled-smoke.mjs",
+        ".github/workflows/deploy-owner-testflight-backend.yml"
+      ],
+      "validation": [
+        "Actual CLI loopback baseline RED, final23/23 GREEN and independently retested",
+        "Held failed response body socket closes; partial JSON and first-failure exit1; no later checks",
+        "Full39-check success/default continuation/request-ID waiver preserved; syntax/YAML/diff checks pass"
+      ],
+      "nextAction": "Reconcile exact updated PR407 head/tree and hosted CI, review the server-only proposal, then request matching server release approval. Required public journey and mobile/device gates remain outstanding.",
+      "newLiveReleaseApproved": false
+    },
+    {
       "id": "API-DISCONNECT-CANCELLATION-20261017",
       "severity": "P2",
       "owner": "stackr_coding",
@@ -98,7 +118,7 @@
         "Existing API/artwork/translation/observability and 9 identity/set cases PASS",
         "Backend typecheck and syntax PASS; repository lint 0 errors and 8 pre-existing warnings"
       ],
-      "nextAction": "Retain the reviewed source in an isolated commit and draft PR. Obtain provider resource evidence and prepare any additional concrete live action for matching approval. Required public/mobile delivery gates and installed-device acceptance remain outstanding.",
+      "nextAction": "Reconcile exact updated PR407 head/tree and hosted CI, review the server-only proposal, then request matching server release approval. Required public journey and mobile/device gates remain outstanding.",
       "productionRootCauseEstablished": false,
       "newLiveReleaseApproved": false
     },
@@ -185,7 +205,7 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "nextAction": "Complete the separate request-lifecycle source repair; obtain provider resource evidence and prepare any additional concrete live action for matching approval. Do not release TestFlight until required public/mobile delivery gates pass.",
+      "nextAction": "Reconcile exact updated PR407 head/tree and hosted CI, review the server-only proposal, then request matching server release approval. Required public journey and mobile/device gates remain outstanding.",
       "postreleaseObservation": {
         "source": "ccccc9ef48b2c501650ea3496a4af2c7ebc902c2",
         "backendDeployed": true,
@@ -193,7 +213,8 @@
         "mewSearch": "HTTP504; later public journey probes skipped",
         "postgresDiagnostic": "One approved new attempt returned connection timeout and no rows; unknown statement execution; no retry",
         "providerLogAggregate": "One approved attempt returned service error and no rows; no retry",
-        "resourceMeasurementsAvailable": false
+        "resourceMeasurementsAvailable": true,
+        "resourceInterpretation": "Owner supplied Primary Database memory/CPU/IO charts,13/60 global database connections,1/200 dedicated pooler connections,3.26GB disk usage and8GB provisioned. Shared pooler has no data. These snapshots weaken disk-full/global-connection-cap explanations; smaller PostgREST internal pool occupancy, latency and workload cause remain unknown."
       }
     },
     {
@@ -2678,7 +2699,7 @@
   ],
   "currentWork": {
     "owner": "root",
-    "status": "cancellation_source_locally_tested_reviewed_public_gate_failed_native_hold",
+    "status": "cancellation_and_fail_fast_reviewed_preparing_exact_head_ci_server_plan_native_hold",
     "branch": "codex/public-catalogue-cancellation-20261017",
     "report": "docs/performance/public-catalogue-cancellation-20261017.json",
     "pullRequest": "https://github.com/tberridge86/Stackr/pull/407",
@@ -2690,12 +2711,14 @@
     "mergedSourceIosExport": "PASS, including exact M6 bytes among 34 required assets; local export only",
     "publicJourneyGate": "FAILED_Mew_HTTP_504_later_probes_skipped",
     "nativeReleaseGate": "HOLD",
-    "nextAction": "Await provider CPU/memory/connection readings and exact-head hosted checks for reviewed draft PR407. Prepare any new live action for matching approval; required public/mobile and device gates remain outstanding.",
+    "nextAction": "Reconcile exact updated PR407 head/tree and hosted CI, review the server-only proposal, then request matching server release approval. Required public journey and mobile/device gates remain outstanding.",
     "liveRetrievalResolved": false,
     "newLiveOperationsAuthorized": false,
     "newNativeBuildCreated": false,
     "releaseEvidence": "docs/releases/build58-retrieval-repair-20261017.md",
-    "implementationCommit": "27fa5a7c3df2a8372643ea01fa67971601421714"
+    "implementationCommit": "27fa5a7c3df2a8372643ea01fa67971601421714",
+    "resourceReadings": "Owner supplied Primary Database memory/CPU/IO charts,13/60 global database connections,1/200 dedicated pooler connections,3.26GB disk usage and8GB provisioned. Shared pooler has no data. These snapshots weaken disk-full/global-connection-cap explanations; smaller PostgREST internal pool occupancy, latency and workload cause remain unknown.",
+    "releaseVerification": "23/23 smoke CLI regression cases pass and independently retested; successful full gate retained; no new deployment."
   },
   "completionGoal": {
     "threadId": "01a12a4c-4b1a-7823-b948-148c90d7cd8e",

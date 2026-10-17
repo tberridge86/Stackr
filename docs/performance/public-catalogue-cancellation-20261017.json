@@ -94,7 +94,7 @@
     "newNativeBuild": false,
     "newTestFlightPublished": false,
     "approvalForThisNewSourceRelease": false,
-    "sourceState": "LOCALLY_TESTED_AND_INDEPENDENTLY_REVIEWED",
+    "sourceState": "LOCALLY_TESTED_INDEPENDENTLY_REVIEWED_DRAFT_PR_UPDATED_CHECKS_REQUIRED",
     "sourceCommitted": true,
     "pullRequestDraft": true
   },
@@ -105,7 +105,8 @@
     "approvedPostgresDiagnostic": "One attempt returned connection timeout and zero diagnostic rows; statement execution unknown; no retry",
     "approvedProviderLogAggregate": "One attempt returned inner service error and zero result rows; no retry",
     "providerMetadata": "ACTIVE_HEALTHY does not establish usable database connections or resource headroom",
-    "resourceReadings": "Requested from owner; not yet available"
+    "resourceReadings": "Owner supplied Primary Database memory/CPU/IO charts,13/60 global database connections,1/200 dedicated pooler connections,3.26GB disk usage and8GB provisioned. Shared pooler has no data. These snapshots weaken disk-full/global-connection-cap explanations; smaller PostgREST internal pool occupancy, latency and workload cause remain unknown.",
+    "savedLogs": "The later10:41–10:44 projection has37 rows with blank SQL/role/timestamp fields and no hidden SQL. An earlier09:37 saved receipt contains6 statement rows (4 distinct statement/timestamp pairs) for artwork-manifest, stored-price and database-statistics reads. Earlier statements do not identify the10:43 Mew statement or root cause. No query replay or new remote diagnostic."
   },
   "limitations": [
     "Offline origin transport is mocked; real Express loopback, route/context/service and installed Supabase SDK are exercised.",
@@ -114,7 +115,41 @@
     "Request disconnect cancellation is confirmed locally. Production gateway disconnect propagation, database resource recovery, and installed-device retrieval are unverified.",
     "This P2 repair is not evidence of the cause or cure of the separate production database connection/statement failures."
   ],
-  "nextAction": "Await provider CPU/memory/connection readings and exact-head hosted checks for reviewed draft PR407. Prepare any new live action for matching approval; required public/mobile and device gates remain outstanding.",
+  "nextAction": "Reconcile exact updated PR407 head/tree and hosted CI, review the server-only proposal, then request matching server release approval. Required public journey and mobile/device gates remain outstanding.",
   "implementationCommit": "27fa5a7c3df2a8372643ea01fa67971601421714",
-  "pullRequest": "https://github.com/tberridge86/Stackr/pull/407"
+  "pullRequest": "https://github.com/tberridge86/Stackr/pull/407",
+  "updatedAt": "2026-10-17T11:48:46.684Z",
+  "sourceHashScope": "Original independently reviewed working-copy bytes. Git LF/CRLF equivalence was independently reconciled; committed blob hashes are retained in the private receipt.",
+  "releaseVerification": {
+    "problem": "Required smoke continued later checks after failure and could retain an unread failed-response body.",
+    "implementation": [
+      "Opt-in --fail-fast aborts the failed check, flushes honest partial JSON and exits1 through a handled sentinel.",
+      "Default mode retains continuation; successful runs retain all39 fixture checks and existing assertions.",
+      "Owner backend lane runs the regression before deployment and uses --silent to produce parseable JSON."
+    ],
+    "workingCopySha256": {
+      "scripts/deploy/smoke.mjs": "9dd9223ca0ddf5be9129f01826fb0c15ef8bddf9b25a976dce3b1b6339bd0d42",
+      ".github/workflows/deploy-owner-testflight-backend.yml": "9569bda5d8bf1a56c31075aa36355cd0b2aba6f1abb6ae1cee96cc7cae30d6ad",
+      "scripts/test-deployment-commerce-disabled-smoke.mjs": "a095f1380011a7cbbe2236969c3e1915a6770355577e205894cb0398fa15290a"
+    },
+    "validation": {
+      "command": "npm run test:deployment-commerce-disabled-smoke",
+      "tests": 23,
+      "passed": 23,
+      "exitCode": 0,
+      "independentlyRetested": true,
+      "heldFailedBodyBaseline": "RED:3s fixture watchdog; earlier naturally exited around8s, so no claim of indefinite hang",
+      "heldFailedBodyGreen": "Closes failed socket and exits1; honest one-check receipt and no later requests",
+      "syntax": "PASS",
+      "workflowYaml": "PASS",
+      "diffCheck": "PASS",
+      "runtime": "Local Windows Node24; workflow remains Node22"
+    },
+    "independentReview": "ACCEPTED; final3 working-copy hashes verified. Original5 backend/test files unchanged.",
+    "limits": [
+      "Local loopback CLI evidence, not production recovery.",
+      "Up to39 sequential logical checks on success; redirects can add network hops. Existing10s per-check timer and image-body byte policy remain.",
+      "No new live operation approved; no database, pool, storage, credential or paid-tier change proposed."
+    ]
+  }
 }
