@@ -1238,7 +1238,7 @@ export async function resolveCachedStackrCard(
 
 export async function fetchStackrCard(
   reference: string,
-  options: { language?: string | null; setId?: string | null } = {},
+  options: { language?: string | null; setId?: string | null; onCanonicalCard?: (card: StackrLegacyCard) => void } = {},
   client: StackrApiClient = stackrApiClient,
 ) {
   if (!shouldUseStackrApi(client)) {
@@ -1259,8 +1259,12 @@ export async function fetchStackrCard(
   const selectedCard = resolved.variantId === resolved.card.defaultVariantId ? resolved.card
     : { ...resolved.card, defaultVariantId: resolved.variantId };
   const embeddedAssets = embeddedCardImageAssets(selectedCard);
+  // Only verified printing/variant facts can end a caller's essential loading
+  // phase; the returned promise still includes the existing optional artwork.
+  const facts = stackrCardToLegacyCard(selectedCard, embeddedAssets);
+  options.onCanonicalCard?.(facts);
   if (primaryCardImageAsset(selectedCard, embeddedAssets)) {
-    return stackrCardToLegacyCard(selectedCard, embeddedAssets);
+    return facts;
   }
   const assets = await readOptionalCatalogueEnrichment(signal => fetchStackrAssetsForPrinting(client, selectedCard.cardId, signal));
   return stackrCardToLegacyCard(selectedCard, assets ?? []);

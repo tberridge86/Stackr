@@ -1009,13 +1009,16 @@ export default function GlobalSearchScreen() {
 
     const correctionPromise = correctPokemonNameQuery(trimmed, { allowIndex: false }).catch(() => null);
     let canonicalCards: SearchResults['cards'] | null = null;
+    let acceptingEarlyCards = true;
     const cachedCardsPromise = force
       ? Promise.resolve(null)
       : readCachedCanonicalSearch(primary, selectedLanguage).catch(() => null);
     void cachedCardsPromise.then((cachedRows) => {
-      if (requestId !== requestRef.current || canonicalCards !== null || !cachedRows?.length) return;
-      canonicalCards = mapCardResults(cachedRows);
-      setResults((current) => ({ ...current, cards: canonicalCards! }));
+      if (!acceptingEarlyCards || requestId !== requestRef.current || canonicalCards !== null || !cachedRows?.length) return;
+      const cards = mapCardResults(cachedRows);
+      canonicalCards = cards;
+      setResults((current) => acceptingEarlyCards && requestId === requestRef.current
+        ? { ...current, cards } : current);
     });
     const cardsPromise = searchLocalPokemonCards<any>(primary, {
       language: selectedLanguage,
@@ -1026,9 +1029,11 @@ export default function GlobalSearchScreen() {
       skipIndexFallback: true,
       skipNameCorrection: true,
       onCanonicalResults: (rows) => {
-        if (requestId !== requestRef.current) return;
-        canonicalCards = mapCardResults(rows);
-        setResults((current) => ({ ...current, cards: canonicalCards! }));
+        if (!acceptingEarlyCards || requestId !== requestRef.current) return;
+        const cards = mapCardResults(rows);
+        canonicalCards = cards;
+        setResults((current) => acceptingEarlyCards && requestId === requestRef.current
+          ? { ...current, cards } : current);
         void writeCachedCanonicalSearch(primary, selectedLanguage, rows).catch(() => {});
       },
     });
@@ -1204,6 +1209,9 @@ export default function GlobalSearchScreen() {
       settledListings,
     ]);
 
+    // A transport or storage read may outlive the UI deadline. Once this
+    // request settles, its early facts must not repaint that final snapshot.
+    acceptingEarlyCards = false;
     if (requestId !== requestRef.current) return;
 
     const nextErrors: SearchErrorState = {};
@@ -1284,6 +1292,7 @@ export default function GlobalSearchScreen() {
           ownedMap.set(row.card_id, (ownedMap.get(row.card_id) ?? 0) + Math.max(1, Number(row.quantity ?? 1) || 1));
         });
         setResults((current) => {
+          if (requestId !== requestRef.current) return current;
           const hydrated = {
             ...current,
             cards: mapCardResults(cardsForHydration, listingStats, ownedMap),
@@ -1297,18 +1306,21 @@ export default function GlobalSearchScreen() {
     if (productsResult.status === 'fulfilled' && productsResult.value.length) {
       fetchProductListingStats(productsResult.value).then((productListingStats) => {
         if (requestId !== requestRef.current) return;
-        setResults((current) => ({
-          ...current,
-          sealed: productsResult.value.map((product) => ({
-            ...product,
-            latest_price: product.latest_price
-              ? {
-                  ...product.latest_price,
-                  count: productListingStats.get(product.id)?.count ?? product.latest_price.count,
-                }
-              : product.latest_price,
-          })),
-        }));
+        setResults((current) => {
+          if (requestId !== requestRef.current) return current;
+          return {
+            ...current,
+            sealed: productsResult.value.map((product) => ({
+              ...product,
+              latest_price: product.latest_price
+                ? {
+                    ...product.latest_price,
+                    count: productListingStats.get(product.id)?.count ?? product.latest_price.count,
+                  }
+                : product.latest_price,
+            })),
+          };
+        });
       }).catch(() => {});
     }
   }, [category, searchIdentityEpoch, selectedLanguage]);

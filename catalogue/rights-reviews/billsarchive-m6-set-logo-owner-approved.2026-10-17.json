@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "stackr-scoped-local-set-logo-owner-attestation-v1",
+  "decisionId": "billsarchive-m6-set-logo-owner-approved:2026-10-17",
+  "classification": "amber",
+  "status": "authorized_on_owner_permission_attestation",
+  "recordedDate": "2026-10-17",
+  "activationAuthorized": true,
+  "publicRuntimeDisplayAuthorized": true,
+  "assetPersistenceAuthorized": true,
+  "canonicalDatabaseWriteAuthorized": false,
+  "ownerAttestation": {
+    "source": "Direct reply from the Stackr owner in the current repair chat",
+    "question": "Do your website permissions cover downloading, bundling and displaying the Storm Emeralda logo from Bill’s Archive in Stackr? The candidate is on https://billsarchive.com/storm-emeralda. I have not downloaded or used it yet.",
+    "answer": "Yes, Bill’s Archive is covered",
+    "independentlyIssuedLicensorGrantVerified": false
+  },
+  "scope": {
+    "sourceName": "Bill’s Archive",
+    "sourcePage": "https://billsarchive.com/storm-emeralda",
+    "sourceUrl": "https://billsarchive.com/assets/logos/japanese/jp-storm-emeralda.webp",
+    "assetType": "set_logo",
+    "language": "ja",
+    "setId": "903d5baa-27c7-5690-b1d7-2395c770204a",
+    "setCode": "M6",
+    "assetCount": 1,
+    "assetPath": "assets/rev2/11-japanese-set-logo/logos-owner-approved-20261017/m6.webp",
+    "sha256": "ef4ea9578d26a3b9ed3aacc731a447014946e776bf3bdf438fa0306e58d70b50",
+    "bytes": 16610,
+    "allowedUses": ["download_exact_original", "bundle_exact_original", "in_app_set_identification"],
+    "excludedUses": ["unrelated_images_or_sources", "catalogue_identity_or_price_changes", "recognition_training", "standalone_export", "merchandise"]
+  },
+  "verification": {
+    "checkedAt": "2026-10-17T09:35:07Z",
+    "fullyDecoded": true,
+    "width": 640,
+    "height": 170,
+    "transparentBackground": true,
+    "sourcePixelsUnchanged": true,
+    "actualPixelsViewedBy": ["stackr_artwork specialist", "root integration owner"],
+    "sourceHtmlDimensionsAreNotOriginalResolution": true
+  },
+  "attribution": {
+    "sourceName": "Bill’s Archive",
+    "sourcePage": "https://billsarchive.com/storm-emeralda",
+    "contractualWording": "Not independently specified by the owner statement; no additional contractual terms invented."
+  },
+  "boundaries": {
+    "existingSourceRegistryUnchanged": true,
+    "historicalJapanesePackDecisionUnchanged": true,
+    "newBackendOrNativePublicationAuthorizedByThisRecord": false
+  }
+}

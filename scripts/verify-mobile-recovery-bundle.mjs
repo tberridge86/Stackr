@@ -21,12 +21,19 @@ for (const phrase of [
   assert.ok(code.includes(Buffer.from(phrase)), `Recovery UI content is absent from the exported iOS code: ${phrase}`);
 }
 const bundled = new Set(ios.assets.map(asset => path.basename(asset.path.replaceAll('\\', '/'))));
+const stormLogo = JSON.parse(readFileSync('assets/rev2/11-japanese-set-logo/storm-m6-20261017.json', 'utf8'));
+assert.equal(stormLogo.setId, '903d5baa-27c7-5690-b1d7-2395c770204a');
+assert.equal(stormLogo.setCode, 'M6');
+assert.equal(stormLogo.assetPath, 'assets/rev2/11-japanese-set-logo/logos-owner-approved-20261017/m6.webp');
+assert.equal(createHash('sha256').update(readFileSync(stormLogo.assetPath)).digest('hex'), stormLogo.sha256,
+  'The Storm logo must retain its verified source bytes.');
 const required = [
   'assets/startup/stackr-premium-opening.mp4',
   'assets/startup/stackr-premium-poster.png',
   'assets/loading/card.png', 'assets/loading/sleeve.png',
   'assets/loading/loader.png', 'assets/loading/sheen.png',
   'assets/rev2/01-brand/logos/stackr-letter-s.png',
+  stormLogo.assetPath,
 ];
 const covers = [...readFileSync('lib/corocoroSuppliedCovers.ts', 'utf8').matchAll(/require\('([^']+)'\)/g)]
   .map(match => path.join('lib', match[1]));
@@ -38,4 +45,4 @@ for (const file of [...required, ...covers]) {
   assert.equal(createHash('md5').update(readFileSync(exported)).digest('hex'), digest,
     `Exported asset bytes differ from the reviewed source: ${file}`);
 }
-console.log('iOS recovery bundle: recovery UI content, premium opening, card loader, original S and 26 CoroCoro covers verified (33 assets).');
+console.log('iOS recovery bundle: recovery UI content, premium opening, card loader, original S, exact Storm M6 logo and 26 CoroCoro covers verified (34 assets).');

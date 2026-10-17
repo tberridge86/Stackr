@@ -2311,8 +2311,11 @@ function mapCanonicalCardDbRow(data: any): PokemonCard {
 
 export async function fetchCardById(
   cardId: string,
-  options: { language?: PokemonCardLanguage | string | null } = {}
+  options: { language?: PokemonCardLanguage | string | null; onCanonicalCard?: (card: PokemonCard) => void } = {}
 ): Promise<PokemonCard | null> {
-  const card = await fetchStackrCard(cardId, { language: options.language });
+  const card = await fetchStackrCard(cardId, {
+    language: options.language,
+    onCanonicalCard: options.onCanonicalCard ? card => options.onCanonicalCard?.(fromStackrCard(card)) : undefined,
+  });
   return card ? (await attachLiveTcgdexCardReferences([fromStackrCard(card)], 1))[0] ?? null : null;
 }

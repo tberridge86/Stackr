@@ -14,6 +14,7 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3
 const EXACT_NAME_TYPES = new Set(['native', 'english_display']);
 const ALIAS_NAME_TYPES = new Set(['alias', 'translated', 'search_normalized']);
 const POKEDEX_EMPTY_SOURCE_PAGE_LIMIT = 4;
+const OPTIONAL_CARD_ARTWORK_TIMEOUT_MS = 500;
 const SAME_ARTWORK_DISPLAY_REFERENCE_LIMIT = 50;
 const SAME_ARTWORK_MAX_WIDTH = 512;
 const SAME_ARTWORK_MAX_HEIGHT = 720;
@@ -464,12 +465,17 @@ async function fetchCardImageAssets(assetSupabase, cards, options = {}) {
   ])).filter(Boolean))];
   const printingIds = [...new Set(cards.map((card) => card.cardId).filter(Boolean))];
 
+  function assetRead(request) {
+    options.signal?.throwIfAborted();
+    return options.signal ? request.abortSignal(options.signal) : request;
+  }
+
   async function fetchBy(column, ids) {
     const pageSize = 1000;
     const batches = await Promise.all(chunked(ids).map(async (batch) => {
       const rows = [];
       for (let from = 0; ; from += pageSize) {
-        const page = await queryRows(
+        const page = await queryRows(assetRead(
           table(assetSupabase, 'api', 'asset_manifest')
             .select('*')
             .eq('asset_type', 'card_image')
@@ -477,7 +483,7 @@ async function fetchCardImageAssets(assetSupabase, cards, options = {}) {
             .order('catalogue_version_id', { ascending: true })
             .order('asset_row_id', { ascending: true })
             .range(from, from + pageSize - 1),
-        );
+        ));
         rows.push(...page);
         if (page.length < pageSize) break;
       }
@@ -491,7 +497,7 @@ async function fetchCardImageAssets(assetSupabase, cards, options = {}) {
     for (const batch of pairedIdentityBatches(variantIds, printingIds)) {
       let cursor = null;
       for (;;) {
-        const page = await queryRows(assetSupabase.schema('api').rpc(
+        const page = await queryRows(assetRead(assetSupabase.schema('api').rpc(
           'card_image_manifest_for_identities',
           {
             p_variant_ids: batch.variantIds,
@@ -500,7 +506,7 @@ async function fetchCardImageAssets(assetSupabase, cards, options = {}) {
             p_after_asset_id: cursor?.assetRowId ?? null,
             p_limit: 1000,
           },
-        ));
+        )));
         rows.push(...page);
         if (page.length < 1000) break;
         const nextCursor = manifestCursorFromRow(page.at(-1));
@@ -523,6 +529,7 @@ async function fetchCardImageAssets(assetSupabase, cards, options = {}) {
     ]);
     fetchedRows = [...variantRows, ...printingRows];
   }
+  options.signal?.throwIfAborted();
   const uniqueRows = new Map();
   for (const row of fetchedRows) {
     const rowId = clean(row?.asset_row_id) ?? clean(row?.asset_id);
@@ -573,6 +580,33 @@ async function fetchCardImageAssets(assetSupabase, cards, options = {}) {
       };
     }),
   }));
+}
+
+async function enrichCardImagesOptionally(assetSupabase, cards, options) {
+  if (!cards.length) return cards;
+  const controller = new AbortController();
+  let timeout;
+  const deadline = new Promise((_, reject) => {
+    timeout = setTimeout(() => {
+      reject(new ApiError(504, 'card_artwork_timeout', 'Optional card artwork timed out.'));
+      controller.abort();
+    }, OPTIONAL_CARD_ARTWORK_TIMEOUT_MS);
+  });
+  try {
+    // Identity facts are already usable. An optional image read (including its
+    // body) must not turn those cards into an unavailable response.
+    return await Promise.race([
+      fetchCardImageAssets(assetSupabase, cards, { ...options, signal: controller.signal }),
+      deadline,
+    ]);
+  } catch (error) {
+    const code = typeof error?.code === 'string' && /^[A-Za-z0-9_]{1,64}$/.test(error.code) ? error.code : null;
+    console.warn(JSON.stringify({ event: 'optional_card_artwork_failed', code }));
+    return cards;
+  } finally {
+    clearTimeout(timeout);
+    controller.abort();
+  }
 }
 
 export function toLanguage(row) {
@@ -1502,7 +1536,7 @@ export function createCatalogueV1Service(options) {
       }
       if (!rows.length) throw new ApiError(404, 'card_not_found', 'Card was not found.');
       if (cardId !== originalCardId && rows.some(row => row.language_code !== CORRECTION_LANGUAGE)) throw new ApiError(502, 'invalid_language_correction', 'The reviewed correction target is unavailable.');
-      const [card] = await fetchCardImageAssets(
+      const [card] = await enrichCardImagesOptionally(
         assetSupabase,
         [toCardSummary(sortCardsForDisplay(rows))].filter(Boolean),
         assetUrlOptions,
@@ -1743,7 +1777,7 @@ export function createCatalogueV1Service(options) {
         }
         if (results.length) {
           const cards = results.filter((result) => result.type === 'card' && result.card).map((result) => result.card);
-          const hydratedCards = await fetchCardImageAssets(assetSupabase, cards, assetUrlOptions);
+          const hydratedCards = await enrichCardImagesOptionally(assetSupabase, cards, assetUrlOptions);
           let cardIndex = 0;
           return {
             query: q,
