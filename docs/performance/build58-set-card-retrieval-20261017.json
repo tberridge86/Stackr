@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-17T09:46:05.824Z",
+  "observedAt": "2026-10-17T09:55:31.823Z",
   "source": "ec37dd85035f4a5d58158915a2c2c29e188f76d7",
   "branch": "codex/build58-set-card-retrieval-20261017",
   "ownerReport": {
@@ -181,7 +181,7 @@
       "PostgreSQL SQLSTATE 57014 statement timeouts for exact api.catalogue_sets lookup",
       "Service-role set-card reads and public set lookup both time out",
       "Observability RPC also timed out",
-      "At09:32:52 two image-manifest RPC57014 timeouts followed the Celebi/Storm verification pair; Storm requested no assets and succeeded. This supports optional-artwork involvement but lacks request-ID correlation."
+      "At09:32:52 two image-manifest RPC57014 timeout log entries followed the Celebi/Storm verification pair; Storm requested no assets and succeeded. This supports optional-artwork involvement but lacks request-ID correlation or proof the log entries represent distinct requests."
     ],
     "unknown": [
       "Underlying cause of wider intermittent database/connection distress",
@@ -189,7 +189,17 @@
       "Measured query execution times: EXPLAIN did not use ANALYZE",
       "Owner phone private Home/binder query failure details"
     ],
-    "diagnosis": "Database-dependent retrieval failure reproduced; underlying database cause remains unresolved."
+    "diagnosis": "Database-dependent retrieval failure reproduced; underlying database cause remains unresolved.",
+    "latestLogObservation": {
+      "windowUtc": "2026-10-17T09:37:00Z–09:47:00Z",
+      "mode": "One bounded read-only ClickHouse logs aggregate after new owner feedback; no Postgres script or personal records",
+      "postgresStatementTimeoutMessages": 1,
+      "postgrestStatementTimeoutMessages": 1,
+      "postgrestTimeoutManagerMessages": 2,
+      "exactRequestAttributionAvailable": false,
+      "managementStatus": "ACTIVE_HEALTHY",
+      "interpretation": "Management liveness does not prove successful app data retrieval; wider timeout evidence remains."
+    }
   },
   "localSearchRepair": {
     "files": [
@@ -299,17 +309,15 @@
     "otaPublications": 0
   },
   "remaining": [
-    "Verify actual iOS export includes the unchanged original M6 asset; then exact-head hosted checks",
-    "Verify the actual iOS export includes the unchanged original M6 asset",
-    "Prepare the exact PR406 repair and obtain matching deployment/native publication approval",
-    "After authorised backend deployment verify Celebi/Mew cards, all four sets and individual-card responses; do not infer current Anniversary/Classic counts from source inventory",
-    "Continue investigating wider database distress and actual private Home/binder failures if requested journeys still fail",
-    "Repeat affected journeys and card haptics on the owner phone"
+    "Verify actual clean frozen iOS export and exact M6 bytes, then exact-head hosted checks",
+    "Obtain matching approval for reviewed PR406 merge/backend deployment and conditional normal-production TestFlight release",
+    "After authorised backend deployment verify Mew/Celebi cards, all four target set metadata/card responses, individual-card detail and existing published-mobile gate. Keep native publication on hold if these fail",
+    "Resolve any remaining wider database/private Home/binder failures with evidence; repeat physical app journeys and haptics. Existing artwork programme remains separate and unresolved batches are not claimed complete"
   ],
   "candidate": {
     "pullRequest": "https://github.com/tberridge86/Stackr/pull/406",
     "committedBase": "6ed69415e9722142db060ab610fa74ea2ef57770",
-    "followup": "Final Search and single-card optional artwork repair, exact M6 logo and native asset verifier locally tested and independently reviewed; actual export and new hosted checks follow this source freeze.",
+    "followup": "Final backend Search/card-detail, client early facts, Home deadline, exact M6 logo and native verifier are tested and independently reviewed. Actual clean frozen export and hosted checks follow this source commit.",
     "merged": false,
     "deployed": false,
     "nativePublished": false
@@ -340,14 +348,60 @@
     "actualProductionSearchRecovered": false
   },
   "integratedChecks": {
-    "typecheck": "PASS",
-    "lint": "PASS;0errors8existingwarnings",
+    "typecheck": "PASS final client/Home source",
+    "lint": "PASS final client/Home source;0errors8existingwarnings",
     "logoRuntime": "PASS",
     "additiveLogoAuditor": "PASS",
     "logoIndependentReview": "ACCEPTED",
     "currentBackendExtensionReview": "ACCEPTED",
-    "actualIosBundle": "PENDING",
+    "actualIosBundle": "PENDING_AFTER_THIS_SOURCE_FREEZE",
     "bundleVerifierIndependentReview": "ACCEPTED; actual verifier positive virtual34assetexport and missingM6/alteredsource/alteredexport negatives",
-    "backendTypecheck": "PASS"
-  }
+    "backendTypecheck": "PASS",
+    "uncachedCardIndependentReview": "ACCEPTED",
+    "homeIndependentReview": "ACCEPTED",
+    "deviceFeedback": "PASS including new uncached regression",
+    "homeRelease": "PASS",
+    "hostedChecks": "PENDING_ON_NEW_HEAD; historical6edchecks9pass1skip do not cover followup"
+  },
+  "homeLocalSettingsRepair": {
+    "status": "LOCALLY_TESTED_INDEPENDENTLY_REVIEWED_NOT_RELEASED",
+    "reproduction": "Actual Home hook: successful network and saved collection reads, no cache and one deferred master-setting read kept collectionValueLoading true after60 simulated seconds. Custom artwork had same unbounded wait.",
+    "files": [
+      "features/home/HubScreen.tsx",
+      "scripts/test-home-startup-runtime.ts"
+    ],
+    "behavior": "Both local pre-facts Promise.all stages now use the existing10second deadline. No master-setting or value defaults invented. Existing retry/error and valid saved valuation behavior retained.",
+    "verification": [
+      "New actual-hook regression RED against139c2a4e, GREEN after repair, independently reproduced",
+      "Both waits: no-cache error, no invented valuation, late completion ignored, explicit retry succeeds",
+      "Both waits: valid cached value retained, late completion after sign-out cannot restore private data",
+      "Existing startup runtime and Home release checks pass"
+    ],
+    "independentReview": "ACCEPTED",
+    "phoneIncidentCausalityEstablished": false,
+    "deviceVerified": false
+  },
+  "uncachedCardFirstFactsRepair": {
+    "status": "LOCALLY_TESTED_INDEPENDENTLY_REVIEWED_NOT_RELEASED",
+    "sourceFinding": "Uncached Card Detail awaited optional2second image manifest and eligible Japanese/Chinese provider fallback before rendering facts. Provider set and card stages can each take8seconds. English Mew/Celebi do not use that provider fallback.",
+    "explainsWiderPrivateHomeBinderFailure": false,
+    "files": [
+      "lib/stackrDomainAdapter.ts",
+      "lib/pokemonTcg.ts",
+      "app/card/[id].tsx",
+      "scripts/test-uncached-card-facts-runtime.ts",
+      "package.json"
+    ],
+    "behavior": "Publish selected exact canonical/variant-checked facts under current route guard, retain existing final guarded image pipeline.",
+    "verification": [
+      "Actual uncached screen/adapter regression RED against prior implementation, GREEN after handoff",
+      "Selected canonical/variant facts display while manifest/provider deferred",
+      "Final valid image retains non-enumerable display-only overlay; optional failure retains facts",
+      "Route/account transitions and late queued updates cannot repaint old context; essential failure remains unavailable",
+      "Existing device-feedback lane, cancellation, finish identity, provider policy and English canonical resolution/cache regressions pass"
+    ],
+    "independentReview": "ACCEPTED",
+    "priceReadStability": "Image-only updates retain the current quote and one automatic read; genuine printing/account identity changes reload and edition restrictions remain. Actual-screen RED2reads/GREEN1read and independent review passed."
+  },
+  "releaseEvidence": "docs/releases/build58-retrieval-repair-20261017.md"
 }

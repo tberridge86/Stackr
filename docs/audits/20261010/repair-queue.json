@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-17T09:46:05.824Z",
+  "updatedAt": "2026-10-17T09:55:31.823Z",
   "coordinator": "root",
   "workingDirectory": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/tif-readiness-integration",
   "branch": "codex/build58-set-card-retrieval-20261017",
@@ -79,6 +79,62 @@
     }
   },
   "issues": [
+    {
+      "id": "CARD-UNCACHED-FACTS-20261017",
+      "severity": "P2",
+      "owner": "stackr_coding",
+      "status": "locally_tested_independently_reviewed_not_released",
+      "summary": "Uncached Card Detail awaited optional imagery before facts; the selected canonical card now paints early and later images retain identity, provenance and route/account guards.",
+      "evidence": "docs/performance/build58-set-card-retrieval-20261017.json",
+      "files": [
+        "lib/stackrDomainAdapter.ts",
+        "lib/pokemonTcg.ts",
+        "app/card/[id].tsx",
+        "scripts/test-uncached-card-facts-runtime.ts",
+        "package.json"
+      ],
+      "validation": [
+        "Actual uncached screen/adapter regression RED against prior implementation, GREEN after handoff",
+        "Selected canonical/variant facts display while manifest/provider deferred",
+        "Final valid image retains non-enumerable display-only overlay; optional failure retains facts",
+        "Route/account transitions and late queued updates cannot repaint old context; essential failure remains unavailable",
+        "Existing device-feedback lane, cancellation, finish identity, provider policy and English canonical resolution/cache regressions pass"
+      ],
+      "delivery": {
+        "local": "implemented_tested",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Verify actual native export, hosted checks and matching authorised release; physical acceptance remains open."
+    },
+    {
+      "id": "HOME-LOCAL-SETTINGS-DEADLINE-20261017",
+      "severity": "P2",
+      "owner": "stackr_coding",
+      "status": "locally_tested_independently_reviewed_not_released",
+      "summary": "Saved master-setting/custom-art local reads could keep Home loading forever after network reads succeeded; both now settle with the existing honest retry/cache boundary.",
+      "evidence": "docs/performance/build58-set-card-retrieval-20261017.json",
+      "files": [
+        "features/home/HubScreen.tsx",
+        "scripts/test-home-startup-runtime.ts"
+      ],
+      "validation": [
+        "New actual-hook regression RED against139c2a4e, GREEN after repair, independently reproduced",
+        "Both waits: no-cache error, no invented valuation, late completion ignored, explicit retry succeeds",
+        "Both waits: valid cached value retained, late completion after sign-out cannot restore private data",
+        "Existing startup runtime and Home release checks pass"
+      ],
+      "delivery": {
+        "local": "implemented_tested",
+        "reviewed": true,
+        "merged": false,
+        "deployed": false,
+        "deviceVerified": false
+      },
+      "nextAction": "Include in the reviewed native repair candidate; phone incident causality and wider live data retrieval remain unverified."
+    },
     {
       "id": "RETRIEVAL-LIVE-DB-TIMEOUT-20261017",
       "severity": "P1",
@@ -2587,15 +2643,16 @@
   ],
   "currentWork": {
     "owner": "root",
-    "status": "reviewed_source_ready_for_export_and_hosted_checks",
+    "status": "reviewed_integrated_source_ready_for_frozen_export_and_hosted_checks",
     "branch": "codex/build58-set-card-retrieval-20261017",
     "report": "docs/performance/build58-set-card-retrieval-20261017.json",
     "pullRequest": "https://github.com/tberridge86/Stackr/pull/406",
     "installedBuildConfirmed": "1.0.6(58)",
     "diagnostic": "approved_executed_partial_results",
-    "nextAction": "Verify actual iOS export includes the unchanged original M6 asset; then exact-head hosted checks",
+    "nextAction": "Verify actual clean frozen iOS export and exact M6 bytes, then exact-head hosted checks",
     "liveRetrievalResolved": false,
-    "newLiveOperationsAuthorized": false
+    "newLiveOperationsAuthorized": false,
+    "releaseEvidence": "docs/releases/build58-retrieval-repair-20261017.md"
   },
   "completionGoal": {
     "threadId": "01a12a4c-4b1a-7823-b948-148c90d7cd8e",

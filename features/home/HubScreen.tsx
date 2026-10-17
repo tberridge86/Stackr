@@ -1624,7 +1624,9 @@ export default function HubScreen() {
         });
         homeBinderPreloadCancelRef.current = () => { cancelled = true; task.cancel?.(); };
       }
-      const binderGroups: HomeBinderCardGroup[] = await Promise.all(
+      // Local settings can stall independently of the network. Keep the same
+      // retry boundary without guessing master-set accounting defaults.
+      const binderGroups: HomeBinderCardGroup[] = await withPersonalDataReadTimeout(() => Promise.all(
         binders.map(async (binder) => {
             const binderCards = cardsByBinder.get(binder.id) ?? [];
             const masterSetEnabled = await isHomeMasterSetEnabled(binder.id);
@@ -1646,16 +1648,16 @@ export default function HubScreen() {
               })),
             };
         })
-      );
+      ));
       const allCards = binderGroups.flatMap((group) => group.cards);
-      const customNameArtEntries = await Promise.all(
+      const customNameArtEntries = await withPersonalDataReadTimeout(() => Promise.all(
         binderGroups
           .filter((group) => group.binder.type === 'custom')
           .map(async (group) => [
             group.binder.id,
             await getCustomBinderNameArtKeyForBinder(group.binder.id, group.binder.name),
           ] as const)
-      );
+      ));
       let binderSummaries = buildBinderSummaries(binderGroups, Object.fromEntries(customNameArtEntries));
       const nextActiveBinder = selectActiveBinder(binderSummaries);
       let nextDuplicateSummary = buildDuplicateSummary(binderGroups);

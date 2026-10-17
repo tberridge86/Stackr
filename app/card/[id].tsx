@@ -132,6 +132,13 @@ export default function CardDetailScreen() {
   const params = useLocalSearchParams<{ id?: string; setId?: string; editionHint?: string; variant?: string; finish?: string; slabbed?: string }>();
   const cardId = typeof params.id === 'string' ? params.id : '';
   const paramSetId = typeof params.setId === 'string' ? params.setId : '';
+  const cardContext = JSON.stringify([userId, cardId, paramSetId]);
+  const cardContextRef = useRef({ key: cardContext, generation: 0 });
+  // Invalidate late work during render, including A -> B -> A transitions
+  // before effect cleanup and state updaters have finished.
+  if (cardContextRef.current.key !== cardContext) {
+    cardContextRef.current = { key: cardContext, generation: cardContextRef.current.generation + 1 };
+  }
   const priceContextRef = useRef('');
   const priceRequestRef = useRef(0);
   const editionHint = params.editionHint === '1st_edition' || params.editionHint === 'unlimited' || params.editionHint === 'shadowless'
@@ -156,6 +163,12 @@ export default function CardDetailScreen() {
   } = useTrade();
 
   const [card, setCard] = useState<PokemonCard | null>(null);
+  const priceCardRef = useRef(card);
+  priceCardRef.current = card;
+  const priceCardKey = card ? JSON.stringify([
+    card.id, card.set?.id, card.set?.name, card.number,
+    card.language ?? card.raw_data?.language, card.raw_data?.stackr?.defaultVariantId,
+  ]) : null;
   const [referenceImage, setReferenceImage] = useState(false);
   const [artworkLoading, setArtworkLoading] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -200,6 +213,9 @@ export default function CardDetailScreen() {
   useEffect(() => {
     let mounted = true;
     const artworkAbort = new AbortController();
+    const generation = cardContextRef.current.generation;
+    const isCurrent = () => mounted && !artworkAbort.signal.aborted && cardContextRef.current.generation === generation;
+    let publishedFacts = false;
 
     const loadCard = async () => {
       try {
@@ -216,11 +232,19 @@ export default function CardDetailScreen() {
 
         // A direct card route must never download every set to locate one ID.
         if (!found && cardId) {
-          found = await fetchCardById(cardId);
+          found = await fetchCardById(cardId, { onCanonicalCard: (facts) => {
+            if (!isCurrent()) return;
+            publishedFacts = true;
+            setCard(current => isCurrent() ? facts : current);
+            setLoading(current => isCurrent() ? false : current);
+            setArtworkLoading(current => isCurrent() ? !facts.images?.small && !facts.images?.large : current);
+          } });
         }
 
-        if (mounted) {
-          setCard(found ?? null);
+        if (isCurrent()) {
+          // Keep the original model: provider image overlays are intentionally
+          // non-enumerable and must not be copied through an object spread.
+          setCard(current => isCurrent() ? found ?? null : current);
           if (foundInCache && found && !found.images?.small && !found.images?.large) {
             setArtworkLoading(true);
             // The enrichment WeakMap accepts canonical facts only; unsupported
@@ -229,18 +253,19 @@ export default function CardDetailScreen() {
             void enrichStackrCardArtworkFromFacts([canonicalFacts], artworkAbort.signal).then((enriched) => {
               if (!mounted || artworkAbort.signal.aborted) return;
               setCard((current) => {
-                if (!current) return current;
+                if (!isCurrent() || !current) return current;
                 const merged = mergeSetCardArtwork([current as CanonicalPokemonCard], enriched)[0];
                 return merged ? merged as PokemonCard : current;
               });
-            }).catch(() => undefined).finally(() => { if (mounted && !artworkAbort.signal.aborted) setArtworkLoading(false); });
-          } else setArtworkLoading(false);
+            }).catch(() => undefined).finally(() => { setArtworkLoading(current => isCurrent() ? false : current); });
+          } else setArtworkLoading(current => isCurrent() ? false : current);
         }
       } catch (err) {
         console.error('Failed to load card:', err);
-        if (mounted) setCard(null);
+        setCard(current => isCurrent() && !publishedFacts ? null : current);
+        setArtworkLoading(current => isCurrent() ? false : current);
       } finally {
-        if (mounted) setLoading(false);
+        setLoading(current => isCurrent() ? false : current);
       }
     };
 
@@ -254,7 +279,7 @@ export default function CardDetailScreen() {
       mounted = false;
       artworkAbort.abort();
     };
-  }, [cardId, paramSetId]);
+  }, [cardId, paramSetId, userId]);
 
   // ===============================
   // FETCH STACKR MARKET PRICE
@@ -348,15 +373,18 @@ export default function CardDetailScreen() {
 
   // Auto-fetch the provider-neutral Stackr estimate once the card is loaded.
   useEffect(() => {
+    const priceCard = priceCardRef.current;
     setEbayPrice(null);
     setLatestSnapshotPrice(null);
     setEbayLoading(false);
     setPriceRefreshNotice(null);
-    if (card) {
-      void fetchEbay(card);
+    if (priceCard) {
+      void fetchEbay(priceCard);
     }
     return () => { priceRequestRef.current += 1; };
-  }, [card, fetchEbay]);
+    // Account and edition changes are represented by fetchEbay. Optional
+    // artwork changes must retain the current quote and its in-flight read.
+  }, [priceCardKey, fetchEbay]);
 
   // ===============================
   // MEMOS

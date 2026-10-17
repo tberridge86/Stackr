@@ -34,7 +34,7 @@ assert.ok(renderStart > 0);
 const source = homeSource.slice(0, renderStart) + `
   return React.createElement('HomeState', { collectionTotal, collectionPricingSummary,
     ownedCardCount, activeBinder, chartData, collectionPricingWarning, collectionValueError,
-    collectionValueLoading, chaseLoading, activityLoading, recentActivity, chaseCards,
+    collectionValueLoading, homeDataError, chaseLoading, activityLoading, recentActivity, chaseCards,
     restore: applyCachedHomeCollection, refresh: loadCollectionValue });
 }
 `;
@@ -55,6 +55,8 @@ async function harness(options: {
   authRead?: (call: number, owner: string) => Promise<any>;
   strictMode?: boolean;
   valuation?: () => Promise<any>;
+  localSetting?: (key: string) => Promise<string | null>;
+  customNameArt?: () => Promise<string | null>;
 } = {}) {
   let owner = options.owner ?? 'owner-a', focused = true, authCalls = 0, now = 0, nextTimer = 0;
   let listener: ((event: string, session: any) => void) | null = null;
@@ -97,7 +99,7 @@ async function harness(options: {
       React.useEffect(() => active ? callback() : undefined, [callback, active]);
     } },
     '@react-native-async-storage/async-storage': { getItem: async (key: string) => {
-      if (!key.startsWith('stackr:home-collection-cache:v2:')) return null;
+      if (!key.startsWith('stackr:home-collection-cache:v2:')) return options.localSetting?.(key) ?? null;
       const id = decodeURIComponent(key.split(':').at(-1)!); reads.push(id);
       return options.cache ? options.cache(id) : snapshot(id, id === 'owner-a' ? 111 : 222);
     }, removeItem: async () => {}, setItem: async () => {} },
@@ -128,7 +130,7 @@ async function harness(options: {
       return result;
     } },
     '../../lib/homeActivity': { readRecentHomeActivityRows: async () => [] },
-    '../../lib/customBinderNameArt': { getCustomBinderNameArtKeyForBinder: async () => null },
+    '../../lib/customBinderNameArt': { getCustomBinderNameArtKeyForBinder: options.customNameArt ?? (async () => null) },
     '../../lib/binders': { fetchBinders: async () => [], fetchBinderCards: async () => [] },
     '../../lib/stackrDomainAdapter': { fetchStackrCardRows: async () => new Map(), fetchStackrPriceSnapshots: async () => new Map() },
     '../../lib/mintyPreferences': { useMintyPreferences: () => ({ settings: {}, save: async () => {} }) },
@@ -178,6 +180,41 @@ async function harness(options: {
 }
 
 async function main() {
+  const savedCustom = async (): Promise<ReturnType<typeof emptySaved>> => ({ ...emptySaved(), binders: [{
+    id: '00000000-0000-4000-8000-000000000001', user_id: 'owner-a', name: 'Saved custom binder',
+    color: '#000', type: 'custom', is_public: false, source_set_id: null, created_at: '2026-10-12T12:00:00Z',
+  }], cardsByBinder: new Map([['00000000-0000-4000-8000-000000000001', []]]) });
+  for (const waitFor of ['master-setting', 'custom-art'] as const) {
+    const localRead = deferred<string | null>();
+    const localOptions = waitFor === 'master-setting'
+      ? { localSetting: () => localRead.promise }
+      : { customNameArt: () => localRead.promise };
+    const waiting = await harness({ cache: async () => null, saved: savedCustom, ...localOptions });
+    assert.equal(waiting.state().collectionValueLoading, true);
+    await waiting.tick(10_000);
+    assert.equal(waiting.state().collectionValueLoading, false, `${waitFor} cannot keep Home loading after its deadline`);
+    assert.match(waiting.state().homeDataError, /try again/i);
+    assert.equal(waiting.state().collectionTotal, null, 'a timed-out setting cannot invent a completed valuation');
+    localRead.resolve('true'); await waiting.settle();
+    assert.equal(waiting.state().collectionTotal, null, 'late local settings cannot publish after timeout');
+    await act(async () => { await waiting.state().refresh(); });
+    assert.equal(waiting.state().collectionTotal, 333, 'a new explicit retry can use the resolved local setting');
+    await waiting.close();
+
+    const cachedRead = deferred<string | null>();
+    const cached = await harness({ saved: savedCustom, ...(waitFor === 'master-setting'
+      ? { localSetting: () => cachedRead.promise } : { customNameArt: () => cachedRead.promise }) });
+    assert.equal(cached.state().collectionTotal, 111);
+    await cached.tick(10_000);
+    assert.equal(cached.state().collectionTotal, 111, 'a local-setting timeout preserves a valid saved valuation');
+    assert.equal(cached.state().collectionValueLoading, false);
+    assert.match(cached.state().collectionPricingWarning, /last successful/);
+    await cached.auth('', 'SIGNED_OUT');
+    cachedRead.resolve('true'); await cached.settle();
+    assert.equal(cached.state().collectionTotal, null, 'a late setting cannot restore private data after sign-out');
+    await cached.close();
+  }
+
   const mobileVerification = deferred<any>();
   const mobile = await harness({ authRead: async () => mobileVerification.promise });
   assert.equal(mobile.state().collectionTotal, 111,
