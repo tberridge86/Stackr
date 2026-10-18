@@ -66,7 +66,7 @@
     "retries": 0,
     "interpretation": "Gateway rejected the request before origin. No successful live batch latency or asset completeness was measured. The preceding failures that opened the circuit were not observed."
   },
-  "separateGatewayFinding": "Confirmed current source coupling: optional manifests and essential facts shared circuit:backend. Gateway source8b5ebc7 now isolates manifests locally;55gatewaytests and independentreview PASS. Not deployed. Preceding live failure sequence/root timeout cause remains unknown.",
+  "separateGatewayFinding": "Reviewed circuit isolation deployed through approved gateway-only lane; health/privacy and real customdomain/runtime/DO verified. Historical opening sequence remains unknown.",
   "railwayRead": {
     "requests": 1,
     "windowUtc": [
@@ -93,7 +93,7 @@
     }
   ],
   "listingMediaRepaired": false,
-  "liveGatewayDeployed": false,
+  "liveGatewayDeployed": true,
   "nativePublished": false,
   "phoneVerified": false,
   "performanceTargetsMeasured": false,
@@ -124,5 +124,17 @@
       "existingWarnings": 1
     },
     "runtimeFilesChanged": false
+  },
+  "postDeploymentPublicVerification": {
+    "report": "docs/releases/gateway-live-delivery-20261018.json",
+    "manifestAssets": 105,
+    "manifestElapsedMs": 557,
+    "wholeManifestStageElapsedMs": 558,
+    "optionalDeadlineMs": 2000,
+    "eligibleResolverRows": 98,
+    "totalResolverRows": 100,
+    "strictDecodedThumbnails": 1,
+    "remainingExactArtworkGaps": 2,
+    "phoneVerified": false
   }
 }

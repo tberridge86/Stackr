@@ -1,13 +1,14 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { PGlite } from '@electric-sql/pglite';
 
 const sql = readFileSync(resolve(process.cwd(), 'docs/sql/asset-manifest-card-image-equivalence-fixture.sql'), 'utf8');
 const rpc = readFileSync(resolve(process.cwd(), 'supabase/migrations/20260906062838_expose_bounded_card_image_identity_read.sql'), 'utf8');
 const indexes = readFileSync(resolve(process.cwd(), 'supabase/migrations/20260906062835_index_asset_printing_identity.sql'), 'utf8');
 
-// Deployment must keep the measured identity expansion and the existing manifest
-// as the final authority; a faster lookup must not loosen eligibility or payloads.
+// Retain the original September 6 proposal's historical branch fixture. It does
+// not exercise the later RPC definitions; the in-memory rehearsal below does.
 assert.match(rpc, /returns setof api\.asset_manifest/i);
 assert.match(rpc, /security invoker\s+set search_path = ''/i);
 assert.doesNotMatch(rpc, /security definer|\b(insert into|update|delete from|truncate|drop)\b/i);
@@ -95,4 +96,180 @@ for (const inheritedOnly of ['ja-v1/a-derived-cva', 'ja-v1/a-derived-asset']) {
 }
 assert.ok(candidateKeys().has('ja-v1/a-logo'),
   'candidate preselection must leave non-card filtering to the final manifest read');
-if (process.argv.includes('--sql')) process.stdout.write(sql); else console.log('Offline self-contained asset-manifest equivalence fixture passed; no PostgreSQL or production query ran.');
+
+async function rehearseCurrentIdentityRpc() {
+  // Load definitions in migration order so the test cannot silently keep testing
+  // a superseded function when a later CREATE OR REPLACE migration is added.
+  const migrationDir = resolve(process.cwd(), 'supabase/migrations');
+  const migrations = readdirSync(migrationDir).filter((name) => /^\d{14}_.+\.sql$/.test(name)).sort()
+    .map((name) => ({ name, source: readFileSync(resolve(migrationDir, name), 'utf8') }));
+  const identityMigrations = migrations.filter(({ source }) => /create\s+or\s+replace\s+function\s+api\.card_image_manifest_for_identities\s*\(/i.test(source));
+  const manifestMigration = migrations.findLast(({ source }) => /create\s+or\s+replace\s+view\s+api\.asset_manifest\b/i.test(source));
+  assert.ok(identityMigrations.length >= 3 && manifestMigration, 'Current identity RPC and manifest definitions must exist');
+  const latest = identityMigrations.at(-1);
+  const db = new PGlite();
+  const id = (n) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
+  const version = id(1), secondVersion = id(2), draft = id(3), deprecated = id(4);
+  const set = id(100), otherSet = id(101), printing = id(200), otherPrinting = id(201);
+  const variant = id(300), siblingVariant = id(301), otherVariant = id(302);
+  const rowKey = (row) => `${row.catalogue_version_id}/${row.asset_row_id}`;
+  const expectedKey = (n, publication = version) => `${publication}/${id(n)}`;
+  const read = async (variantIds, printingIds, after = null, limit = 1000) => (await db.query(
+    'select * from api.card_image_manifest_for_identities($1::uuid[], $2::uuid[], $3::uuid, $4::uuid, $5::integer)',
+    [variantIds, printingIds, after?.catalogue_version_id ?? null, after?.asset_row_id ?? null, limit],
+  )).rows;
+
+  async function addAsset(n, { assetOverrides = {}, memberVariant = variant, memberPrinting = printing,
+    publications = [version] } = {}) {
+    const asset = {
+      id: id(n), asset_id: `fixture-${n}`, asset_type: 'card_image', game_code: 'pokemon',
+      set_id: set, printing_id: printing, variant_id: memberVariant,
+      storage_provider: 'external_reference', storage_bucket: null, storage_key: null,
+      url: `https://fixture.invalid/${n}.webp`, original_source_url: `https://fixture.invalid/source/${n}`,
+      source_attribution: 'Verified fixture source', attribution_text: 'Older fixture attribution',
+      permission_status: 'approved', rights_status: 'approved', asset_visibility: 'public_catalogue',
+      publicly_servable: true, retention_status: 'active', deleted_at: null,
+      content_sha256: 'a'.repeat(64), perceptual_hash: 'fixture-hash', mime_type: 'image/webp',
+      width: 600, height: 825, byte_size: 1234, derivative_list: [{ name: 'thumbnail', width: 120 }],
+      cache_control: 'public, max-age=300', externally_referenced: true, unavailable_reason: null,
+      last_verified_at: '2026-10-18T00:00:00Z', created_at: '2026-10-01T00:00:00Z', updated_at: '2026-10-18T00:00:00Z',
+      ...assetOverrides,
+    };
+    await db.query('insert into catalog.assets select * from jsonb_populate_record(null::catalog.assets, $1::jsonb)', [JSON.stringify(asset)]);
+    for (const publication of publications) await db.query(
+      'insert into catalog.catalogue_version_assets values ($1, $2, $3, $4, $5)',
+      [publication, id(n), set, memberPrinting, memberVariant],
+    );
+  }
+
+  async function assertEquivalent(variantIds, printingIds, expectedKeys, after = null, limit = 1000) {
+    // This cohort has explicit, normalized CVA identities. Compare full payloads
+    // against the actual manifest view, including delivery metadata. For mixed
+    // selectors the current RPC intentionally adds printing-scoped fronts only;
+    // it must not substitute a sibling variant's image for the selected finish.
+    const expected = (await db.query(`select * from api.asset_manifest
+      where asset_type = 'card_image'
+        and (variant_id = any($1::uuid[])
+          or (printing_id = any($2::uuid[]) and (cardinality($1::uuid[]) = 0 or variant_id is null)))
+        and ($3::uuid is null or (catalogue_version_id, asset_row_id) > ($3::uuid, $4::uuid))
+      order by catalogue_version_id, asset_row_id limit $5`,
+    [variantIds, printingIds, after?.catalogue_version_id ?? null, after?.asset_row_id ?? null, limit])).rows;
+    assert.deepEqual(expected.map(rowKey), expectedKeys, 'The independently selected manifest cohort must match the declared identities');
+    const actual = await read(variantIds, printingIds, after, limit);
+    assert.deepEqual(actual, expected, 'Current RPC must preserve exact eligible manifest rows, payloads and keyset order');
+    return actual;
+  }
+
+  try {
+    // No connection string or persistent directory: these schemas and writes
+    // exist only inside this disposable in-memory PostgreSQL instance.
+    await db.exec(`set statement_timeout = '5s';
+      create role anon; create role authenticated; create role service_role;
+      create schema api; create schema catalog;
+      create table catalog.catalogue_versions(id uuid primary key, status text, deprecated_at timestamptz);
+      create table catalog.card_variants(id uuid primary key, printing_id uuid, set_id uuid, deprecated_at timestamptz);
+      create table catalog.card_printings(id uuid primary key, set_id uuid);
+      create table catalog.assets(
+        id uuid primary key, asset_id text, asset_type text, game_code text, set_id uuid, printing_id uuid, variant_id uuid,
+        storage_provider text, storage_bucket text, storage_key text, url text, original_source_url text,
+        source_attribution text, attribution_text text, permission_status text, rights_status text,
+        asset_visibility text, publicly_servable boolean, retention_status text, deleted_at timestamptz,
+        content_sha256 text, perceptual_hash text, mime_type text, width integer, height integer, byte_size bigint,
+        derivative_list jsonb, cache_control text, externally_referenced boolean, unavailable_reason text,
+        last_verified_at timestamptz, created_at timestamptz, updated_at timestamptz);
+      create table catalog.catalogue_version_assets(
+        catalogue_version_id uuid, asset_id uuid, set_id uuid, printing_id uuid, variant_id uuid,
+        primary key(catalogue_version_id, asset_id));
+      grant usage on schema api, catalog to service_role;
+      grant select on all tables in schema catalog to service_role;`);
+    await db.exec(manifestMigration.source);
+    for (const migration of identityMigrations) await db.exec(migration.source);
+    await db.exec('grant select on api.asset_manifest to service_role');
+    for (const [publication, status, deprecatedAt] of [
+      [version, 'published', null], [secondVersion, 'published', null],
+      [draft, 'draft', null], [deprecated, 'published', '2026-10-18T00:00:00Z'],
+    ]) await db.query('insert into catalog.catalogue_versions values ($1, $2, $3)', [publication, status, deprecatedAt]);
+    for (const [variantId, printingId, setId] of [
+      [variant, printing, set], [siblingVariant, printing, set], [otherVariant, otherPrinting, otherSet],
+    ]) await db.query('insert into catalog.card_variants values ($1, $2, $3, null)', [variantId, printingId, setId]);
+    await db.query('insert into catalog.card_printings values ($1, $2), ($3, $4)', [printing, set, otherPrinting, otherSet]);
+
+    await addAsset(1000, { publications: [version, secondVersion, draft, deprecated] });
+    await addAsset(1001, { memberVariant: null }); // A printing-scoped front, not a sibling finish.
+    await addAsset(1002, { memberVariant: siblingVariant });
+    await addAsset(1003, { memberVariant: otherVariant, memberPrinting: otherPrinting,
+      assetOverrides: { set_id: otherSet, printing_id: otherPrinting } });
+    await addAsset(1004, { assetOverrides: { set_id: otherSet, printing_id: otherPrinting,
+      variant_id: otherVariant, asset_id: null, source_attribution: null } }); // Explicit CVA identity wins.
+    for (const [index, assetOverrides] of [
+      { asset_type: 'set_logo' }, { asset_visibility: 'private' }, { publicly_servable: false },
+      { permission_status: 'review' }, { rights_status: 'review' }, { retention_status: 'expired' },
+      { deleted_at: '2026-10-18T00:00:00Z' }, { storage_provider: 'unavailable' },
+    ].entries()) await addAsset(1100 + index, { assetOverrides });
+
+    const printingKeys = [expectedKey(1000), expectedKey(1001), expectedKey(1002), expectedKey(1004), expectedKey(1000, secondVersion)];
+    await assertEquivalent([], [printing], printingKeys);
+    await assertEquivalent([variant], [], [expectedKey(1000), expectedKey(1004), expectedKey(1000, secondVersion)]);
+    const mixedKeys = [expectedKey(1000), expectedKey(1001), expectedKey(1004), expectedKey(1000, secondVersion)];
+    await assertEquivalent([variant], [printing], mixedKeys);
+    await assertEquivalent([], [printing, printing], printingKeys);
+    await assertEquivalent([], [], []);
+    await assertEquivalent([], [id(999)], []);
+
+    // Equal asset IDs in two versions catch cursors that compare only asset_id.
+    const first = await assertEquivalent([], [printing], printingKeys.slice(0, 2), null, 2);
+    const second = await assertEquivalent([], [printing], printingKeys.slice(2, 4), first.at(-1), 2);
+    const third = await assertEquivalent([], [printing], printingKeys.slice(4), second.at(-1), 2);
+    await assertEquivalent([], [printing], [], third.at(-1), 2);
+
+    // Validate PostgreSQL execution/bounds and retained service-only grants,
+    // rather than relying exclusively on regex checks of the old migration.
+    await assert.rejects(read(null, []), /Image identity arrays/);
+    await assert.rejects(read([], [null]), /Image identity arrays/);
+    await assert.rejects(read([], Array(101).fill(printing)), /Image identity arrays/);
+    await assert.rejects(read([], [printing], null, 0), /Image page limit/);
+    await assert.rejects(read([], [printing], null, 1001), /Image page limit/);
+    await assert.rejects(read([], [printing], { catalogue_version_id: version }), /Both image cursor UUIDs/);
+    const privileges = (await db.query(`select
+      has_function_privilege('anon', 'api.card_image_manifest_for_identities(uuid[],uuid[],uuid,uuid,integer)', 'EXECUTE') as anon,
+      has_function_privilege('authenticated', 'api.card_image_manifest_for_identities(uuid[],uuid[],uuid,uuid,integer)', 'EXECUTE') as authenticated,
+      has_function_privilege('service_role', 'api.card_image_manifest_for_identities(uuid[],uuid[],uuid,uuid,integer)', 'EXECUTE') as service,
+      p.prosecdef from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'api' and p.proname = 'card_image_manifest_for_identities'`)).rows[0];
+    assert.deepEqual(privileges, { anon: false, authenticated: false, service: true, prosecdef: false });
+    await db.exec('set role service_role');
+    await assertEquivalent([variant], [printing], mixedKeys);
+    await db.exec('reset role');
+
+    // Negative controls prove this test executes the latest SQL: the predecessor
+    // omits mixed-selector printing fronts, while eligibility/cursor mutations
+    // must be caught by the same independent view/pagination assertions.
+    for (const [label, alteredSource, check] of [
+      ['predecessor printing-front gap', identityMigrations.at(-2).source,
+        () => assertEquivalent([variant], [printing], mixedKeys)],
+      ['missing rights filter', latest.source.replace("AND a.rights_status = 'approved'", ''),
+        () => assertEquivalent([], [printing], printingKeys)],
+      ['missing cursor filter', latest.source.replace(/p_after_version_id IS NULL\s+OR/i, 'TRUE OR'),
+        () => assertEquivalent([], [printing], printingKeys.slice(2), first.at(-1))],
+    ]) {
+      assert.notEqual(alteredSource, latest.source, `Negative control must alter ${label}`);
+      await db.exec('begin');
+      try {
+        await db.exec(alteredSource);
+        await assert.rejects(check(), { code: 'ERR_ASSERTION' }, `Must reject ${label}`);
+      } finally {
+        await db.exec('rollback');
+      }
+    }
+    await assertEquivalent([variant], [printing], mixedKeys);
+    return latest.name;
+  } finally {
+    await db.close();
+  }
+}
+
+if (process.argv.includes('--sql')) process.stdout.write(sql);
+else {
+  const migration = await rehearseCurrentIdentityRpc();
+  console.log(`Historical VALUES fixture and current ${migration} passed in isolated in-memory PostgreSQL: explicit printing/variant memberships, full delivery payloads, eligibility, keyset pages and negative controls. No production query or latency measurement ran.`);
+}

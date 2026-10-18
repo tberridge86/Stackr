@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-18T17:04:56.360Z",
+  "ownerReportedInstalledBuild": 59,
+  "recordingNumericBuildConfirmed": false,
+  "easBuildId": "c2781ab0-5dc3-4992-8cc0-505cd56a3c81",
+  "appVersion": "1.0.6",
+  "buildProfile": "production",
+  "channel": "production",
+  "runtimeVersion": "1.0.6",
+  "sourceCommit": "f9350f896375ffac84a22ca2f7a4ec7654538091",
+  "historicalEasStatus": "FINISHED",
+  "historicalAppleState": "VALID / IN_BETA_TESTING",
+  "historicalAppleObservedAt": "2026-10-17T14:12:15Z",
+  "freshAppleQuery": false,
+  "ownerRecognitionEnabled": false,
+  "signedStormLogoSha256": "ef4ea9578d26a3b9ed3aacc731a447014946e776bf3bdf438fa0306e58d70b50",
+  "newNativePublished": false,
+  "nextBuildNumber": null,
+  "phoneAcceptance": false,
+  "evidenceDigests": [
+    {
+      "relativePath": "evidence/consolidation-20261018/gateway-release-20261018/phone-build59-reference/reference.json",
+      "sha256": "e4c6d371ab06ef51a38a9e5fb38bd041dad2ea88c9c807e953573e21c8a0ae35"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/gateway-release-20261018/phone-build59-reference/report.md",
+      "sha256": "974c5909b73a747e3f8302a67621739a6acd6820d6e5c36a62ce10bad5e1b898"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/gateway-release-20261018/phone-build59-reference/file-hashes.json",
+      "sha256": "62729a9b1d399370644c438b2201f9056cebc55471ef52113a659fbf0120e944"
+    }
+  ]
+}

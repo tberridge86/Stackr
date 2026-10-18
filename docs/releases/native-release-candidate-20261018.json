@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "preparedAt": "2026-10-18T17:08:35.660Z",
+  "approval": "pending separate native build/submission approval",
+  "frozenSource": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
+  "profile": "production",
+  "channel": "production",
+  "runtimeVersion": "1.0.6",
+  "appVersion": "1.0.6",
+  "bundleIdentifier": "com.tommo86.Stackr",
+  "ownerRecognitionEnabled": false,
+  "expectedBackendSha": "f9350f896375ffac84a22ca2f7a4ec7654538091",
+  "gatewayVersion": "56f04b7f-0692-4d8f-a9ae-0963442e57b8",
+  "runtimeConfigPreflightPassed": true,
+  "appSourceExactlyMatchesVerifiedExport66156ca": true,
+  "unsignedExportReceipt": "docs/releases/ios-export-asset-verification-20261018.json",
+  "mainCi": [
+    {
+      "name": "Stackr Platform CI",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/39146845272"
+    },
+    {
+      "name": "Stackr Gateway CI",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/39146845248"
+    },
+    {
+      "name": "Owner Pricing Identity Tests",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/39146845332"
+    }
+  ],
+  "workflow": "build-owner-ios-release.yml",
+  "workflowBuildProfileMustBeExplicit": "production",
+  "githubExpoTokenNamePresent": false,
+  "credentialValuesRead": false,
+  "releaseRoute": "Protected workflow has no repository EXPO_TOKEN name; first inspect environment-secret names and existing authenticated local route before choosing exactly one build dispatch. Never change credentials or bypass protection.",
+  "newBuildNumber": null,
+  "remoteAutoIncrement": true,
+  "fullFreshNativeDeliveryGatePassed": false,
+  "remainingBeforeAnyBuild": [
+    "Matching explicit native approval",
+    "Fresh existing full native delivery gate, including anonymous publishable-key activity schema checks at limit0; no collector rows or SQL writes",
+    "Exactly one build request with source/profile/channel/runtime/number readback"
+  ],
+  "afterBuildBeforeSubmission": [
+    "Read back FINISHED exact EAS build ID/source/profile/channel/runtime/actual assigned number",
+    "Inspect actual signed archive and verify promised assets including exact English Storm hash and3TraditionalChinese pack-art files",
+    "Submit exact verified ID using production profile to existing internal Team (Expo); verify Apple processing/group availability; preserve59"
+  ],
+  "outstandingArtworkDisclosure": {
+    "trackingPullRequest": "https://github.com/tberridge86/Stackr/pull/339",
+    "trackingRecordOnly": true,
+    "previousRecordedFixedListTotal": 2944,
+    "previousRecordedLiveVerified": 1974,
+    "previousRecordedRemaining": 970,
+    "followups": 963,
+    "ordinarySourceSearches": 7,
+    "researchOriginalsHeld": 43,
+    "currentWholeBatchReverified": false,
+    "doNotMergeTrackingPr": true
+  },
+  "otherOpenAcceptance": [
+    "Two exact Pikachu artwork gaps and two earlier Wartortle gaps",
+    "Generic Home printing identity, exact November2023CoroCoro cover/source rights",
+    "Private binder/account counts/values/history/movers and listingmedia",
+    "Recorded physical journeys overWiFi/mobiledata, inspection/haptics, required performance samples"
+  ],
+  "newNativePublished": false,
+  "phoneClosedIssues": 0,
+  "excluded": [
+    "OTA/publicAppStore/externaltester expansion",
+    "New database/catalogue mutations or arbitrary diagnostic SQL",
+    "Providerprice refreshes/job restarts/credential changes/permanent deletion"
+  ]
+}

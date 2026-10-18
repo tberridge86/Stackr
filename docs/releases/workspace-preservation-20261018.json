@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-18T14:38:13.916Z",
+  "observedAt": "2026-10-18T17:07:29.211Z",
   "canonicalRepository": "D:/Stackr",
   "branch": "codex/stackr-repair-consolidation-20261018",
   "privateEvidenceRoot": "D:/Stackr-organization",
@@ -126,7 +126,7 @@
     },
     {
       "relativePath": "evidence/consolidation-20261018/remaining-data-roots.json",
-      "sha256": "a07e07a76d6db8c7c49b8ac3f983f61190e603c36fb2b0bea60f60aa1ab9dc8b"
+      "sha256": "3392ac9ea7429a5190e671ce4bbb4c7f38718fe6e7dd9eb2d38fcc232a2b1b8c"
     },
     {
       "relativePath": "preserved-work/small-evidence-20261018/receipt.json",
@@ -247,6 +247,30 @@
     {
       "relativePath": "preserved-work/mobile-rc-artifacts-20261018/shortcut-relocation.json",
       "sha256": "e5130e3df39d080f3da45d8ee21fc7a03df406d16a168e9298d47d2cb696d0e6"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/fallback-preservation-initial-stop.json",
+      "sha256": "527c2ad332d4583e36aaec3d7ec703df0626bc31a131d3895f0a771ec5dfc9f6"
+    },
+    {
+      "relativePath": "preserved-work/fallback-snapshots-20261018/receipt.json",
+      "sha256": "839cd774197f7105a211de29acb0f985cc7e6a7ac6ab28fa642a5c529ab06f0a"
+    },
+    {
+      "relativePath": "preserved-work/fallback-snapshots-20261018/source-inventory.json",
+      "sha256": "4e42cd8238b41be1c041e648872167524f9ee0e6e1dbe1f35af083f28774402f"
+    },
+    {
+      "relativePath": "preserved-work/fallback-snapshots-20261018/relocation-receipts/outcome.json",
+      "sha256": "ed435f83fee5084e7d9381fd667711d797f04ed1425d49170e92c78f32dc03b3"
+    },
+    {
+      "relativePath": "preserved-work/fallback-snapshots-20261018/independent-guard-review.json",
+      "sha256": "7132e4014c302791c4297382d651dc83835527eb64c03e406a9cfb94b63c06bb"
+    },
+    {
+      "relativePath": "active-runtime/repair-consolidation-20261018/fallback-move-guard-fixture/result.json",
+      "sha256": "afe2196480eb2986aa1c9058cf77bb8d15058a0646bb9b6516956672363bf55d"
     }
   ],
   "scope": "Sanitized receipt summary. File-copy counts overlap between checkouts and cohorts; do not add them as unique files or claim complete whole-drive backup.",
@@ -284,8 +308,8 @@
     "inverseMovesVerified": true,
     "sourceAppliedOverCurrentApp": false
   },
-  "totalOriginalFoldersReversiblyRelocated": 36,
-  "folderCountScope": "25 Git checkouts +3 native source snapshots +3 artwork folders +2 evidence folders +1 protected backup +1 historical release packet +1 mobile release artifact folder. Cohort bytes overlap retained copies; no unique-byte or disk-reclaimed claim.",
+  "totalOriginalFoldersReversiblyRelocated": 37,
+  "folderCountScope": "25 Git checkouts +3 native source snapshots +3 artwork folders +2 evidence folders +1 protected backup +1 historical release packet +1 mobile release artifact folder. Cohort bytes overlap retained copies; no unique-byte or disk-reclaimed claim. +1 historical fallback root containing5checkpoints/frozenpreview.",
   "mobileReleaseArtifacts": {
     "foldersRelocated": 1,
     "files": 3607,
@@ -303,5 +327,18 @@
     "nativePublished": false,
     "failedV1": "Stopped before first move because a parsed DateTime was coerced through the current locale; original and both copies intact. All v1 proof retained.",
     "correctedV2": "Direct UTC ticks for typed dates and strict invariant ISO parsing;34focused cases passed underenGB/enUS and independently reran. Full fresh source verification and all six move guards passed."
+  },
+  "historicalFallbackSnapshots": {
+    "foldersRelocated": 1,
+    "containedCheckpoints": 5,
+    "files": 3134,
+    "bytes": 276884297,
+    "directories": 261,
+    "independentExactCopies": 2,
+    "sourceOverlay": false,
+    "allSixFreshHashAndStructureChecksPassed": true,
+    "inverseMoveVerified": true,
+    "consumerCheck": "No direct non-PowerShell command line or documented8098/4174/4181 listener before each leg; cwd/environments uninspected.",
+    "packagedPreviewAssetsPreserved": true
   }
 }
