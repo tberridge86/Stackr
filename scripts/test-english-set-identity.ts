@@ -200,7 +200,9 @@ async function main() {
   }));
   const exactFactsClient = (set: any, rows: any[], namespace: string): any => ({
     catalogueCacheNamespace: namespace,
-    sets: async () => ({ data: { sets: [prismatic] }, meta: { pagination: { nextCursor: null } } }),
+    // Alias resolution and detail reads must describe the same catalogue row.
+    // The adapter can reuse canonical metadata learned while resolving aliases.
+    sets: async () => ({ data: { sets: [set] }, meta: { pagination: { nextCursor: null } } }),
     set: async (id: string) => { assert.equal(id, PRISMATIC_ID); return { data: { set } }; },
     setCards: async (_id: string, query: any) => {
       assert.equal(query.includeAssets, false, 'facts validation must keep the facts-only request');
