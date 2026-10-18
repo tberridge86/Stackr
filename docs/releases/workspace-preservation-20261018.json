@@ -86,8 +86,7 @@
     "Preserve/classify remaining ignored and large source/evidence material",
     "Migrate dependency targets, nested repositories and original primary last",
     "Owner-approved exact deletion list before permanent reclamation",
-    "Resolve live reads and deliver/replay the confirmed iPhone build",
-    "Resolve the absent original D:/CodexLogoWork location; do not infer deletion or loss from absence or claim all original folders consolidated"
+    "Resolve live reads and deliver/replay the confirmed iPhone build"
   ],
   "privateReceiptDigests": [
     {
@@ -445,5 +444,10 @@
     },
     "sourceDirectoryAbsent": true,
     "permanentDeletion": false
+  },
+  "historicalRemainingGateSupersededByOwnerExclusion": {
+    "gate": "Resolve the absent original D:/CodexLogoWork location; do not infer deletion or loss from absence or claim all original folders consolidated",
+    "ownerAnswer": "codex logo work was irrelevant top stackr",
+    "reason": "Owner explicitly excluded this unrelated folder; it is not an unresolved Stackr location."
   }
 }

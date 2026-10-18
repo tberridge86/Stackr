@@ -1614,5 +1614,21 @@
     },
     "sourceDirectoryAbsent": true,
     "permanentDeletion": false
+  },
+  "currentJungleStagingHistoryRead": {
+    "recordedAt": "2026-10-18T20:54:21.492Z",
+    "remoteSqlCalls": 1,
+    "successfulSqlCalls": 1,
+    "remoteWrites": 0,
+    "approvalConsumed": true,
+    "historicalFirstEditionKeyCollision": true,
+    "freshFixtureInsertBlocked": true,
+    "evidence": {
+      "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/staging-history-read-execution-20261018/query-outcome.json",
+      "sha256": "82c4aae23557642b2594e5f9e6481b65042aa1e0753abdf35b84f75ee5215ca3"
+    },
+    "stagingRehearsalApproved": false,
+    "productionRepairApproved": false,
+    "testFlightHeld": true
   }
 }
