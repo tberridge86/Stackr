@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-18T21:53:41.132Z",
+  "observedAt": "2026-10-18T22:28:13.977Z",
   "ownerRequest": "Ensure BOTH plans have satisfied the work listed before TestFlight.",
-  "sourceHeadAudited": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
+  "sourceHeadAudited": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
   "branch": "codex/stackr-repair-consolidation-20261018",
   "runtimeAndNativeCandidate": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
   "backendSource": "f9350f896375ffac84a22ca2f7a4ec7654538091",
@@ -886,18 +886,24 @@
             "sha256": "cd497b6176327e55fe1221224a017fead6fec23312fd73ce875755f3961de25e"
           },
           "unsignedIos": {
-            "exportedSource": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
+            "exportedSource": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
             "runtimeRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+            "preservedIconCommits": [
+              "4fd177443d1e2f0a12e296728293d113c6a81f25",
+              "c85fa68f4e6dc7d62b290a76df59bd24d05446b3"
+            ],
             "bundle": {
-              "path": "_expo/static/js/ios/entry-41e9e4fdecdc123f827f005aec05eb9e.hbc",
-              "sha256": "c279c5ea4c6b4f1ebab3a927f6b0bbd015908338908126910ddd6d365fbdb06a",
-              "bytes": 11798374
+              "path": "_expo/static/js/ios/entry-42dd80153c3289eb216419c5ede080c9.hbc",
+              "sha256": "c5e4e3f99c8f04e0508368b2c2d58453e5137f09bac49f133c489d1a840f6541",
+              "bytes": 11804174
             },
             "exactUniqueAssetsVerified": 74,
             "listingMediaHelpersPackaged": true,
+            "iconComponentHelpersPackaged": true,
+            "exactSvgPathsPackaged": 44,
             "receipt": {
-              "privatePath": "evidence/consolidation-20261018/listing-search-media-source-v1/ios-export-asset-verification.json",
-              "sha256": "05e8008e52fe45fa329564434be000a2325bcef4860ba691dab5ccefccb4b878"
+              "privatePath": "evidence/consolidation-20261018/combined-icons-ios-export-v1/asset-verification.json",
+              "sha256": "7b6754daa17475758abba077cc3a0423ccf9e5cbf75803bfbefc3ec1ae085b49"
             },
             "nativeSigned": false,
             "uploaded": false,
@@ -921,6 +927,27 @@
               "sha256": "9fb65f14b076e4fd7e5967948b5fc16b2cd1d31b2ff6661b70858160e0a2c1fc"
             },
             "scope": "Exact pushed source snapshot. Subsequent documentation commits need their own hosted status; skipped release/canary gates do not prove delivery or phone acceptance."
+          },
+          "previousUnsignedIosBeforeIconIntegration": {
+            "exportedSource": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
+            "runtimeRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+            "bundle": {
+              "path": "_expo/static/js/ios/entry-41e9e4fdecdc123f827f005aec05eb9e.hbc",
+              "sha256": "c279c5ea4c6b4f1ebab3a927f6b0bbd015908338908126910ddd6d365fbdb06a",
+              "bytes": 11798374
+            },
+            "exactUniqueAssetsVerified": 74,
+            "listingMediaHelpersPackaged": true,
+            "receipt": {
+              "privatePath": "evidence/consolidation-20261018/listing-search-media-source-v1/ios-export-asset-verification.json",
+              "sha256": "05e8008e52fe45fa329564434be000a2325bcef4860ba691dab5ccefccb4b878"
+            },
+            "nativeSigned": false,
+            "uploaded": false,
+            "submitted": false,
+            "published": false,
+            "phoneVerified": false,
+            "testFlightHeld": true
           }
         },
         "delivery": {
@@ -1040,7 +1067,7 @@
       "requirement": "Consolidate under D:/Stackr-organization with reversible recovery",
       "state": "partially_satisfied",
       "satisfiedInFull": false,
-      "remaining": "41 verified reversible relocations with preservation/restoration proof; actual inverse moves were rehearsed where recorded. The three artwork roots have copy/restoration and rollback evidence, not a recorded physical inverse-move rehearsal. Further original roots remain; relocation retains bytes and is not reclamation.",
+      "remaining": "42 verified reversible relocations with preservation/restoration proof; actual inverse moves were rehearsed where recorded. The three artwork roots have copy/restoration and rollback evidence, not a recorded physical inverse-move rehearsal. Further original roots remain; relocation retains bytes and is not reclamation.",
       "owner": "Tif"
     },
     {
@@ -1048,7 +1075,7 @@
       "requirement": "Account for every folder in the original owner list",
       "state": "all60_accounted_one_owner_excluded_unrelated",
       "satisfiedInFull": true,
-      "remaining": "Folder accounting is complete: 41 verified relocations, 17 retained old roots, one organization destination and one owner-excluded unrelated folder, D:/CodexLogoWork. Stackr-relevant denominator is 59; consolidation of retained work remains incomplete.",
+      "remaining": "Folder accounting is complete: 42 verified relocations, 16 retained old roots, one organization destination and one owner-excluded unrelated folder, D:/CodexLogoWork. Stackr-relevant denominator is 59; consolidation of retained work remains incomplete.",
       "owner": "Tif",
       "evidence": {
         "privatePath": "evidence/consolidation-20261018/owner-scope-correction-codexlogowork/owner-scope-reply.json",
@@ -1249,20 +1276,20 @@
     "sha256": "714099dd3456675f74e4ae5e8df9427349e4a71d15ad76985db1743667499d52"
   },
   "originalFolderCoverage": {
-    "privatePath": "evidence/consolidation-20261018/native-aaae6ac-initialization-assessment/move-preparation-v2/current-owner-folder-placement.json",
-    "sha256": "7c01de116a9c457abfe91b11f9f8c6e6163c8ba89398dfd0153d7b5112cc1650"
+    "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/visual-acceptance-assessment-20261018/preparation-v3-atomic-original/current-owner-folder-placement.json",
+    "sha256": "8964a388161284d375dee58591e1e8a26587fbe21870d105450b10b95b9a920f"
   },
   "originalFolderCounts": {
-    "relocatedWithRecordedProof": 41,
-    "retainedDependencyDataOrUnfinishedWork": 17,
+    "relocatedWithRecordedProof": 42,
+    "retainedDependencyDataOrUnfinishedWork": 16,
     "existingOrganizationDestination": 1,
     "ownerExcludedUnrelated": 1,
     "unmappedUnresolvedOriginal": 0,
     "originalMapRowsPresent": 60,
     "originalMapRowsMissing": 0,
-    "namedOriginalPathsStillPresentIncludingOrganizationDestination": 18,
-    "namedOldRootsStillPresentExcludingOrganizationDestination": 17,
-    "originalPathsAbsent": 42,
+    "namedOriginalPathsStillPresentIncludingOrganizationDestination": 17,
+    "namedOldRootsStillPresentExcludingOrganizationDestination": 16,
+    "originalPathsAbsent": 43,
     "stackrRelevantOriginalPaths": 59
   },
   "originalNamedPaths": 60,
@@ -1403,24 +1430,6 @@
       "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
     },
     {
-      "original": "D:/Stackr-visual-acceptance-20260910",
-      "mapRowPresent": true,
-      "hold": null,
-      "capturedCohort": {
-        "file": "D:/Stackr-organization/preserved-work/consolidation-20261018-content/combined-summary.json",
-        "sha256": "03c8a24a1b53c558104a2111882b911ea6b439d1104bf5dd4401ede25b0ffabc",
-        "capturedFiles": 1,
-        "capturedBytes": 9691,
-        "restoredFiles": 1,
-        "restoreExact": true,
-        "allNecessaryIgnoredMaterialPreserved": false,
-        "scope": "Only the recorded captured cohort; not a complete whole-root preservation claim"
-      },
-      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder.",
-      "currentLocation": "D:\\Stackr-visual-acceptance-20260910",
-      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
-    },
-    {
       "original": "D:/Stackr-build37-feedback-20260912",
       "mapRowPresent": true,
       "hold": null,
@@ -1524,11 +1533,11 @@
     }
   },
   "continuation": {
-    "recordedAt": "2026-10-18T21:53:41.132Z",
+    "recordedAt": "2026-10-18T22:28:13.977Z",
     "source": "b379c5c48b4cdbe9f169c739467e362be93f3a0e",
     "homeSourceRepair": "d0f9e74aa099a4805383d1fabb4b5e6f91e59cdb",
     "regularNovemberCover": "f047a5f577126502767e88cdf6d491c467914fcc",
-    "latestUnsignedSource": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
+    "latestUnsignedSource": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
     "exactExportAssets": 74,
     "testFlightHeld": true,
     "phoneClosedIssues": 0,
@@ -1539,12 +1548,13 @@
       "privatePath": "evidence/consolidation-20261018/owner-scope-correction-codexlogowork/owner-scope-reply.json",
       "sha256": "454b9490c612e2f26a68f9032182d26d87f74a288d4a4bb2bfc205301b6ea4d9"
     },
-    "latestTestedSourceRevision": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
-    "latestUnsignedSourceRevision": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
+    "latestTestedSourceRevision": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
+    "latestUnsignedSourceRevision": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
     "unsignedPromisedAssets": 74,
     "currentSourceEvidence": "docs/releases/artwork-reassignment-repair-20261018.json",
     "videoIssuesClosedOnPhone": 0,
-    "currentRuntimeSourceCandidate": "32b97bbc2cec9d416072c0b17b011453987a3d4d"
+    "currentRuntimeSourceCandidate": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+    "exactExportSvgPaths": 44
   },
   "historicalUnresolvedOriginalsBeforeOwnerCorrection": [
     {
@@ -1602,11 +1612,11 @@
   "videoRegisterSynchronization": {
     "recordedAt": "2026-10-18T20:30:22.209Z",
     "source": "docs/releases/video-repair-register-20261018.json",
-    "sourceSha256": "913598835e3aab3779f4fb0b93646eccb5e1e268e4487c13c3d97c716ed62da7",
+    "sourceSha256": "85c40622d6232ac3f465a7cb23091fd23fe823893b47190953d844dee0008ae6",
     "issues": 23,
     "phoneClosedIssues": 0,
     "scope": "Current per-issue source/delivery states synchronized from the maintained register; original planned requirements and closure criteria retained. Historical revisions remain in Git.",
-    "updatedAt": "2026-10-18T21:53:41.132Z",
+    "updatedAt": "2026-10-18T22:28:13.977Z",
     "phoneClosed": 0,
     "jungleStagingRehearsalRecorded": true
   },
@@ -1825,6 +1835,96 @@
     "scope": "Exact pushed 7623fea hosted checks; later documentation commits require fresh hosted status. No release or phone acceptance."
   },
   "currentUnsignedIos": {
+    "exportedSource": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
+    "runtimeRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+    "preservedIconCommits": [
+      "4fd177443d1e2f0a12e296728293d113c6a81f25",
+      "c85fa68f4e6dc7d62b290a76df59bd24d05446b3"
+    ],
+    "bundle": {
+      "path": "_expo/static/js/ios/entry-42dd80153c3289eb216419c5ede080c9.hbc",
+      "sha256": "c5e4e3f99c8f04e0508368b2c2d58453e5137f09bac49f133c489d1a840f6541",
+      "bytes": 11804174
+    },
+    "exactUniqueAssetsVerified": 74,
+    "listingMediaHelpersPackaged": true,
+    "iconComponentHelpersPackaged": true,
+    "exactSvgPathsPackaged": 44,
+    "receipt": {
+      "privatePath": "evidence/consolidation-20261018/combined-icons-ios-export-v1/asset-verification.json",
+      "sha256": "7b6754daa17475758abba077cc3a0423ccf9e5cbf75803bfbefc3ec1ae085b49"
+    },
+    "nativeSigned": false,
+    "uploaded": false,
+    "submitted": false,
+    "published": false,
+    "phoneVerified": false,
+    "testFlightHeld": true
+  },
+  "historicalOriginalFolderCoverageBeforeVisual": {
+    "privatePath": "evidence/consolidation-20261018/native-aaae6ac-initialization-assessment/move-preparation-v2/current-owner-folder-placement.json",
+    "sha256": "7c01de116a9c457abfe91b11f9f8c6e6163c8ba89398dfd0153d7b5112cc1650"
+  },
+  "visualAtomicOriginalDirectoryContinuation": {
+    "registeredAt": "2026-10-18T22:18:16.139Z",
+    "original": "D:\\Stackr-visual-acceptance-20260910",
+    "current": "D:\\Stackr-organization\\archive\\consolidated-worktrees-20261018\\Stackr-visual-acceptance-20260910",
+    "preservationContract": "ATOMIC_ORIGINAL_TREE_RETENTION_V3",
+    "originalPhysicalDirectory": {
+      "device": "437697643",
+      "fileId": "281474978649203",
+      "birthtimeNs": "1789058641753471200",
+      "mode": 16822
+    },
+    "physicalMoveReturnReplayPassed": true,
+    "importantGitIndexControlsAndWipPreserved": true,
+    "independentlyRestoredNecessaryOutputFiles": 31,
+    "independentlyRestoredUntrackedWipFiles": 1,
+    "historicalWholeTree": {
+      "files": 55386,
+      "bytes": 1869093075,
+      "directories": 8737,
+      "freshFullTreeEqualityClaimed": false
+    },
+    "historicalDependencyCohort": {
+      "files": 51932,
+      "bytes": 779323200,
+      "ordinaryOriginalEntriesRetainedPhysically": true,
+      "independentlyBackedUp": false,
+      "reconstructed": false,
+      "deletionAllowed": false
+    },
+    "outcome": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/visual-acceptance-assessment-20261018/preparation-v3-atomic-original/execution-b065e030-1774-4661-9a1e-1b99e5a3150b/outcome.json",
+      "sha256": "e4c599dd2c3e12446b5701518bd4198493adf61239626de3027d314603325954"
+    },
+    "verification": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/visual-acceptance-assessment-20261018/preparation-v3-atomic-original/root-verified-outcome.json",
+      "sha256": "d4b00b217f350a69231757b9800fd0ec78b5cee4dd3d00b1cc3b5abb24ee5d6c"
+    },
+    "review": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/visual-atomic-original-implementation-review-v3-bounded-completion-review.json",
+      "sha256": "7408c542ceb4b8804a81c85e358153c73d88a38eee18757681ae80dfb46cfca0"
+    },
+    "restore": {
+      "type": "atomic-original-directory-retention-v3",
+      "helper": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/visual-acceptance-assessment-20261018/preparation-v3-atomic-original/restore-visual.cjs",
+        "sha256": "7436b9e7b31871c8b2f57caed265477df3b81e3294a8774b9f3fe37ed93dbbb0"
+      },
+      "instructions": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/visual-acceptance-assessment-20261018/preparation-v3-atomic-original/REVIEW-AND-RESTORE.md",
+        "sha256": "7f8c0d852544b21133b53e665331db6f0a6894a4bd8c4f77174ab73f95776d22"
+      },
+      "standardGenericRestoreSupported": false,
+      "originalSharedCommonRequired": "D:/Stackr-1/.git",
+      "requiresCurrentExactLocalReview": true,
+      "historicalPlanMustNotBeSilentlyRebound": true
+    },
+    "sourceDirectoryAbsent": true,
+    "permanentDeletion": false
+  },
+  "previousUnsignedIosBeforeIconIntegration": {
     "exportedSource": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
     "runtimeRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
     "bundle": {
@@ -1844,5 +1944,26 @@
     "published": false,
     "phoneVerified": false,
     "testFlightHeld": true
+  },
+  "preservedIconIntegration": {
+    "source": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
+    "separateImplementationRevision": "4fd177443d1e2f0a12e296728293d113c6a81f25",
+    "authoredByThisContinuation": false,
+    "review": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/icon-integration-compatibility-review-v1-bounded-completion-review.json",
+      "sha256": "181489ad613aed983cbea06f5bd75b76c505d7d46c842f5cc756baf2f80bc0e5"
+    },
+    "outcome": "PASS_COMPATIBILITY_REVIEW",
+    "rootTypecheck": {
+      "exitCode": 0,
+      "settledToolSession": 41645
+    },
+    "rootLint": {
+      "exitCode": 0,
+      "errors": 0,
+      "existingWarnings": 8,
+      "settledToolSession": 28404
+    },
+    "scope": "Separate icon work retained and independently reviewed against immutable8dd..c85. Root current-source typecheck/lint and local unsigned package pass. No native publication or phone evidence."
   }
 }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-18T18:38:57.998Z",
+  "observedAt": "2026-10-18T22:18:16.139Z",
   "canonicalRepository": "D:/Stackr",
   "branch": "codex/stackr-repair-consolidation-20261018",
   "privateEvidenceRoot": "D:/Stackr-organization",
@@ -26,9 +26,9 @@
     "nativeAbsentIndex": "Original absent index and initialization locks retained; scratch restoration reproduces actual source state"
   },
   "relocatedCodingFolders": {
-    "count": 26,
+    "count": 27,
     "cleanLinkedWorktrees": 18,
-    "dirtyLinkedWorktrees": 6,
+    "dirtyLinkedWorktrees": 7,
     "independentRepositories": 2,
     "dirtyIndependentRepositories": 1,
     "everyInverseMoveRehearsed": true,
@@ -321,7 +321,7 @@
     "inverseMovesVerified": true,
     "sourceAppliedOverCurrentApp": false
   },
-  "totalOriginalFoldersReversiblyRelocated": 41,
+  "totalOriginalFoldersReversiblyRelocated": 42,
   "folderCountScope": "26 Git checkouts +3 native source snapshots +3 artwork folders +2 evidence folders +1 protected backup +1 historical release packet +1 mobile release artifact folder. Cohort bytes overlap retained copies; no unique-byte or disk-reclaimed claim. +1 historical fallback root containing5checkpoints/frozenpreview.",
   "mobileReleaseArtifacts": {
     "foldersRelocated": 1,
@@ -357,8 +357,8 @@
   "originalNamedRoots": {
     "total": 60,
     "currentlyMapped": 60,
-    "relocatedWithRecordedProof": 41,
-    "retainedOldRoots": 17,
+    "relocatedWithRecordedProof": 42,
+    "retainedOldRoots": 16,
     "organizationDestination": 1,
     "unresolvedAbsentOriginals": 0,
     "consolidationComplete": false,
@@ -510,5 +510,64 @@
       "sourceMoved": false,
       "fullSecurityAndAlternateStreamBackupClaimed": false
     }
-  ]
+  ],
+  "visualAtomicOriginalDirectoryContinuation": {
+    "registeredAt": "2026-10-18T22:18:16.139Z",
+    "original": "D:\\Stackr-visual-acceptance-20260910",
+    "current": "D:\\Stackr-organization\\archive\\consolidated-worktrees-20261018\\Stackr-visual-acceptance-20260910",
+    "preservationContract": "ATOMIC_ORIGINAL_TREE_RETENTION_V3",
+    "originalPhysicalDirectory": {
+      "device": "437697643",
+      "fileId": "281474978649203",
+      "birthtimeNs": "1789058641753471200",
+      "mode": 16822
+    },
+    "physicalMoveReturnReplayPassed": true,
+    "importantGitIndexControlsAndWipPreserved": true,
+    "independentlyRestoredNecessaryOutputFiles": 31,
+    "independentlyRestoredUntrackedWipFiles": 1,
+    "historicalWholeTree": {
+      "files": 55386,
+      "bytes": 1869093075,
+      "directories": 8737,
+      "freshFullTreeEqualityClaimed": false
+    },
+    "historicalDependencyCohort": {
+      "files": 51932,
+      "bytes": 779323200,
+      "ordinaryOriginalEntriesRetainedPhysically": true,
+      "independentlyBackedUp": false,
+      "reconstructed": false,
+      "deletionAllowed": false
+    },
+    "outcome": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/visual-acceptance-assessment-20261018/preparation-v3-atomic-original/execution-b065e030-1774-4661-9a1e-1b99e5a3150b/outcome.json",
+      "sha256": "e4c599dd2c3e12446b5701518bd4198493adf61239626de3027d314603325954"
+    },
+    "verification": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/visual-acceptance-assessment-20261018/preparation-v3-atomic-original/root-verified-outcome.json",
+      "sha256": "d4b00b217f350a69231757b9800fd0ec78b5cee4dd3d00b1cc3b5abb24ee5d6c"
+    },
+    "review": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/visual-atomic-original-implementation-review-v3-bounded-completion-review.json",
+      "sha256": "7408c542ceb4b8804a81c85e358153c73d88a38eee18757681ae80dfb46cfca0"
+    },
+    "restore": {
+      "type": "atomic-original-directory-retention-v3",
+      "helper": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/visual-acceptance-assessment-20261018/preparation-v3-atomic-original/restore-visual.cjs",
+        "sha256": "7436b9e7b31871c8b2f57caed265477df3b81e3294a8774b9f3fe37ed93dbbb0"
+      },
+      "instructions": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/visual-acceptance-assessment-20261018/preparation-v3-atomic-original/REVIEW-AND-RESTORE.md",
+        "sha256": "7f8c0d852544b21133b53e665331db6f0a6894a4bd8c4f77174ab73f95776d22"
+      },
+      "standardGenericRestoreSupported": false,
+      "originalSharedCommonRequired": "D:/Stackr-1/.git",
+      "requiresCurrentExactLocalReview": true,
+      "historicalPlanMustNotBeSilentlyRebound": true
+    },
+    "sourceDirectoryAbsent": true,
+    "permanentDeletion": false
+  }
 }

@@ -39,18 +39,24 @@
       "sha256": "cd497b6176327e55fe1221224a017fead6fec23312fd73ce875755f3961de25e"
     },
     "unsignedIos": {
-      "exportedSource": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
+      "exportedSource": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
       "runtimeRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+      "preservedIconCommits": [
+        "4fd177443d1e2f0a12e296728293d113c6a81f25",
+        "c85fa68f4e6dc7d62b290a76df59bd24d05446b3"
+      ],
       "bundle": {
-        "path": "_expo/static/js/ios/entry-41e9e4fdecdc123f827f005aec05eb9e.hbc",
-        "sha256": "c279c5ea4c6b4f1ebab3a927f6b0bbd015908338908126910ddd6d365fbdb06a",
-        "bytes": 11798374
+        "path": "_expo/static/js/ios/entry-42dd80153c3289eb216419c5ede080c9.hbc",
+        "sha256": "c5e4e3f99c8f04e0508368b2c2d58453e5137f09bac49f133c489d1a840f6541",
+        "bytes": 11804174
       },
       "exactUniqueAssetsVerified": 74,
       "listingMediaHelpersPackaged": true,
+      "iconComponentHelpersPackaged": true,
+      "exactSvgPathsPackaged": 44,
       "receipt": {
-        "privatePath": "evidence/consolidation-20261018/listing-search-media-source-v1/ios-export-asset-verification.json",
-        "sha256": "05e8008e52fe45fa329564434be000a2325bcef4860ba691dab5ccefccb4b878"
+        "privatePath": "evidence/consolidation-20261018/combined-icons-ios-export-v1/asset-verification.json",
+        "sha256": "7b6754daa17475758abba077cc3a0423ccf9e5cbf75803bfbefc3ec1ae085b49"
       },
       "nativeSigned": false,
       "uploaded": false,
@@ -74,6 +80,27 @@
         "sha256": "9fb65f14b076e4fd7e5967948b5fc16b2cd1d31b2ff6661b70858160e0a2c1fc"
       },
       "scope": "Exact pushed source snapshot. Subsequent documentation commits need their own hosted status; skipped release/canary gates do not prove delivery or phone acceptance."
+    },
+    "previousUnsignedIosBeforeIconIntegration": {
+      "exportedSource": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
+      "runtimeRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+      "bundle": {
+        "path": "_expo/static/js/ios/entry-41e9e4fdecdc123f827f005aec05eb9e.hbc",
+        "sha256": "c279c5ea4c6b4f1ebab3a927f6b0bbd015908338908126910ddd6d365fbdb06a",
+        "bytes": 11798374
+      },
+      "exactUniqueAssetsVerified": 74,
+      "listingMediaHelpersPackaged": true,
+      "receipt": {
+        "privatePath": "evidence/consolidation-20261018/listing-search-media-source-v1/ios-export-asset-verification.json",
+        "sha256": "05e8008e52fe45fa329564434be000a2325bcef4860ba691dab5ccefccb4b878"
+      },
+      "nativeSigned": false,
+      "uploaded": false,
+      "submitted": false,
+      "published": false,
+      "phoneVerified": false,
+      "testFlightHeld": true
     }
   },
   "delivery": {
