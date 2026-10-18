@@ -1488,19 +1488,33 @@ export async function searchStackrCards(
     .map((result) => result.card!)
     .filter((card) => !primaryCardImageAsset(card, embeddedCardImageAssets(card)))
     .map((card) => card.cardId))];
-  const assetsByPrinting = new Map<string, StackrCatalogueAsset[]>();
+  const assets: StackrCatalogueAsset[] = [];
   if (printingIds.length) await readOptionalCatalogueEnrichment(async (signal) => {
-    // One slow missing image cannot keep search busy indefinitely or create a
-    // hundred simultaneous manifest requests. Retain every canonical match.
-    for (let index = 0; index < printingIds.length; index += 4) {
-      throwIfOptionalCatalogueReadAborted(signal);
-      await Promise.all(printingIds.slice(index, index + 4).map(async (printingId) => {
-        const assets = await fetchStackrAssetsForPrinting(client, printingId, signal).catch(() => []);
-        if (!signal?.aborted) assetsByPrinting.set(printingId, assets);
-      }));
+    // The existing API accepts up to 100 exact printing identities. A search
+    // page shares one paginated read instead of spending its optional deadline
+    // on serial waves of per-card requests. Keep completed pages on failure.
+    for (let index = 0; index < printingIds.length; index += 100) {
+      const printingBatch = printingIds.slice(index, index + 100);
+      const seenCursors = new Set<string>();
+      let cursor: string | null = null;
+      do {
+        throwIfOptionalCatalogueReadAborted(signal);
+        const page = await client.assetManifest({
+          printingIds: printingBatch, assetType: 'card_image', cursor, limit: 250,
+        }, { signal });
+        // Some transports ignore abort. A late page must never enrich a
+        // completed search or dispatch more work after the shared deadline.
+        throwIfOptionalCatalogueReadAborted(signal);
+        assets.push(...page.data.assets);
+        cursor = page.meta.pagination?.nextCursor ?? null;
+        if (cursor && seenCursors.has(cursor)) throw new Error('Search artwork pagination did not advance.');
+        if (cursor) seenCursors.add(cursor);
+      } while (cursor);
     }
   });
-  return cards.map((result) => stackrCardToLegacyCard(result.card!, assetsByPrinting.get(result.card!.cardId) ?? []));
+  // The existing mapper still restricts assets to each printing and its
+  // verified variants; batching does not change language/edition face rules.
+  return cards.map((result) => stackrCardToLegacyCard(result.card!, assets));
 }
 
 export async function fetchStackrPrice(

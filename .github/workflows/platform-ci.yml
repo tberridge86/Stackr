@@ -85,6 +85,7 @@ jobs:
       - run: npm run test:ux-service-release
       - run: npm run test:personal-loading
       - run: npm run test:feedback-recovery
+      - run: npm run test:storm-logo-publication
       - run: npm run test:binder-retrieval
       - run: npm run test:startup-loading
       - run: npm run test:integration-repair
