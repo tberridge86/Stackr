@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-18T22:28:13.977Z",
+  "updatedAt": "2026-10-18T23:31:13.018Z",
   "sourceVideo": {
     "fileName": "WhatsApp Video 2026-10-18 at 09.12.30.mp4",
     "sha256": "a29ad89ce8cec90b3dfa299c5a951ff4b60d686187f5a27c03a4e6175d1e859c",
@@ -68,7 +68,7 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Both approved bounded diagnostic sets completed; no timeout cause, missing index or exact owned-card freshness/coverage is established. No price refresh or worker restart performed; phone evidence remains open.",
+      "remainingBlocker": "One saved worker timeout occurred in optional coverage reporting and later saved reports recovered; the SQL performance cause for every historical timeout remains unconfirmed. Exact owned-card quote coverage/freshness and phone evidence remain unverified. No price refresh or job restart performed.",
       "additionalSourceRepair": {
         "revision": "d59c3a6e6f48fbb106866ed9e51edd2e0486a0b9",
         "files": [
@@ -80,6 +80,23 @@
         "independentlyReviewed": true,
         "merged": false,
         "scope": "Truthful missing/unknown/stale freshness and partial-coverage labels; no live quote retrieval or refresh proof."
+      },
+      "responseIdentityRepair": {
+        "repairCommit": "d70a222ac548ba6c7830163e94897fdc7e0cda6d",
+        "sourceFiles": [
+          "lib/collectionPricingApi.ts",
+          "scripts/test-collection-pricing-api.ts",
+          "scripts/test-binder-pricing.ts",
+          "scripts/test-collection-price-backpressure.mjs"
+        ],
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "nativePublished": false,
+        "deviceVerified": false,
+        "receipt": "docs/releases/collection-pricing-response-identity-20261019.json",
+        "scope": "Reject mismatched/missing stored-response variant/product/currency without inventing values; exact owner coverage remains unverified."
       }
     },
     {
@@ -248,7 +265,24 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Actual provider quotes/freshness remain incomplete; old-account queued work is bounded by query cancellation/deadline; phone evidence pending."
+      "remainingBlocker": "Actual provider quotes/freshness remain incomplete; old-account queued work is bounded by query cancellation/deadline; phone evidence pending.",
+      "responseIdentityRepair": {
+        "repairCommit": "d70a222ac548ba6c7830163e94897fdc7e0cda6d",
+        "sourceFiles": [
+          "lib/collectionPricingApi.ts",
+          "scripts/test-collection-pricing-api.ts",
+          "scripts/test-binder-pricing.ts",
+          "scripts/test-collection-price-backpressure.mjs"
+        ],
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "nativePublished": false,
+        "deviceVerified": false,
+        "receipt": "docs/releases/collection-pricing-response-identity-20261019.json",
+        "scope": "Reject mismatched/missing stored-response variant/product/currency without inventing values; exact owner coverage remains unverified."
+      }
     },
     {
       "id": "V09",
@@ -415,7 +449,7 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Both approved bounded diagnostic sets completed; no timeout cause, missing index or exact owned-card freshness/coverage is established. No price refresh or worker restart performed; phone evidence remains open.",
+      "remainingBlocker": "One saved worker timeout occurred in optional coverage reporting and later saved reports recovered; the SQL performance cause for every historical timeout remains unconfirmed. Exact owned-card quote coverage/freshness and phone evidence remain unverified. No price refresh or job restart performed.",
       "additionalSourceRepair": {
         "revision": "d59c3a6e6f48fbb106866ed9e51edd2e0486a0b9",
         "files": [
@@ -427,6 +461,23 @@
         "independentlyReviewed": true,
         "merged": false,
         "scope": "Truthful missing/unknown/stale freshness and partial-coverage labels; no live quote retrieval or refresh proof."
+      },
+      "responseIdentityRepair": {
+        "repairCommit": "d70a222ac548ba6c7830163e94897fdc7e0cda6d",
+        "sourceFiles": [
+          "lib/collectionPricingApi.ts",
+          "scripts/test-collection-pricing-api.ts",
+          "scripts/test-binder-pricing.ts",
+          "scripts/test-collection-price-backpressure.mjs"
+        ],
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "nativePublished": false,
+        "deviceVerified": false,
+        "receipt": "docs/releases/collection-pricing-response-identity-20261019.json",
+        "scope": "Reject mismatched/missing stored-response variant/product/currency without inventing values; exact owner coverage remains unverified."
       }
     },
     {
@@ -922,9 +973,9 @@
     "workingSnapshotRootsRestored": 18,
     "capturedFileCopiesRestored": 13862,
     "capturedWorkingBytes": 4197961088,
-    "archivedCodingFolders": 27,
+    "archivedCodingFolders": 28,
     "archivedCleanLinkedWorktrees": 18,
-    "archivedPreservedDirtyLinkedWorktrees": 7,
+    "archivedPreservedDirtyLinkedWorktrees": 8,
     "archivedIndependentRepositories": 2,
     "separatelyPreservedIgnoredEvidenceFiles": 7760,
     "separatelyPreservedIgnoredEvidenceBytes": 3501108635,
@@ -943,22 +994,22 @@
     "nativeSourceBytesSeparatelyPreserved": 1754954518,
     "mobileReleaseArtifactFoldersRelocated": 1,
     "mobileReleaseArtifactFilesVerified": 3607,
-    "totalOriginalFoldersReversiblyRelocated": 42,
+    "totalOriginalFoldersReversiblyRelocated": 43,
     "historicalFallbackFoldersRelocated": 1,
     "historicalFallbackFilesPreserved": 3134,
     "originalNamedRoots": {
       "total": 60,
       "stackrRelevant": 59,
-      "relocated": 42,
-      "retained": 16,
+      "relocated": 43,
+      "retained": 15,
       "organizationDestination": 1,
       "ownerExcludedUnrelated": 1,
       "unresolvedAbsent": 0,
       "wholePlanComplete": false
     },
     "currentCoverage": {
-      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/visual-acceptance-assessment-20261018/preparation-v3-atomic-original/current-owner-folder-placement.json",
-      "sha256": "8964a388161284d375dee58591e1e8a26587fbe21870d105450b10b95b9a920f"
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/current-owner-folder-placement.json",
+      "sha256": "47aaa90fee565a8580f9e8f85ca9e2f3d07ff32656f319f53328ff06083589bf"
     },
     "visualAtomicOriginalDirectoryContinuation": {
       "registeredAt": "2026-10-18T22:18:16.139Z",
@@ -1010,6 +1061,67 @@
         "instructions": {
           "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/visual-acceptance-assessment-20261018/preparation-v3-atomic-original/REVIEW-AND-RESTORE.md",
           "sha256": "7f8c0d852544b21133b53e665331db6f0a6894a4bd8c4f77174ab73f95776d22"
+        },
+        "standardGenericRestoreSupported": false,
+        "originalSharedCommonRequired": "D:/Stackr-1/.git",
+        "requiresCurrentExactLocalReview": true,
+        "historicalPlanMustNotBeSilentlyRebound": true
+      },
+      "sourceDirectoryAbsent": true,
+      "permanentDeletion": false
+    },
+    "rcOriginalDirectoryContinuation": {
+      "registeredAt": "2026-10-18T23:28:28.432Z",
+      "original": "D:\\Stackr-rc-closure-20260824",
+      "current": "D:\\Stackr-organization\\archive\\consolidated-worktrees-20261018\\Stackr-rc-closure-20260824",
+      "preservationContract": "ATOMIC_ORIGINAL_TREE_RETENTION_V3",
+      "originalPhysicalDirectory": {
+        "device": "437697643",
+        "fileId": "281474977706047",
+        "birthtimeNs": "1787549656142849200"
+      },
+      "physicalMoveReturnReplayPassed": true,
+      "independentlyRestoredImportantFiles": 4475,
+      "independentlyRestoredImportantBytes": 1683454155,
+      "importantCohort": {
+        "workingFiles": 4398,
+        "workingBytes": 1672291865,
+        "additionalFiles": 77,
+        "additionalBytes": 11162290
+      },
+      "historicalWholeTree": {
+        "files": 63290,
+        "bytes": 2786649904,
+        "freshFullTreeEqualityClaimed": false
+      },
+      "ordinaryOriginalDependencyEntriesRetainedPhysically": true,
+      "independentDependencyBackup": false,
+      "dependencyDeletionAllowed": false,
+      "outcome": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/execution-53494dd4-36e8-4b6c-b1e0-71eda9fd7a33/outcome.json",
+        "sha256": "e1939002d54fe1605556eb65250664c6b2802f86287c86796b678288cec10c97"
+      },
+      "verification": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/root-verified-outcome-v2.json",
+        "sha256": "ed43762efe58f4969404d8752c825f11addec60ad88d8f1111a3914b95dc875b"
+      },
+      "review": {
+        "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/rc-operational-amendment-review-v2-bounded-completion-review.json",
+        "sha256": "11bc759296445c69320844a7f00c3df5c0d81dc250d3ceba40be252068c03050"
+      },
+      "restore": {
+        "type": "atomic-original-directory-retention-v3",
+        "helper": {
+          "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/restore-rc-v2.cjs",
+          "sha256": "debc49447354bc754b1a049cafc28ae5590fb22b570eb35a68e6cb23ff8c64d1"
+        },
+        "guard": {
+          "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/rc-move-v2.cjs",
+          "sha256": "f2f40dbf3c77c1561dd3aa8cdbad6c5c82378400f461215e8ce0ccf1a2dd92ee"
+        },
+        "instructions": {
+          "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/REVIEW.md",
+          "sha256": "1065b5accbb2adb6687abe55e239052351ba51794bcb9dfe9fb73f96deba5d87"
         },
         "standardGenericRestoreSupported": false,
         "originalSharedCommonRequired": "D:/Stackr-1/.git",

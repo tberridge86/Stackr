@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-18T22:18:16.139Z",
+  "observedAt": "2026-10-18T23:31:32.603Z",
   "canonicalRepository": "D:/Stackr",
   "branch": "codex/stackr-repair-consolidation-20261018",
   "privateEvidenceRoot": "D:/Stackr-organization",
@@ -26,9 +26,9 @@
     "nativeAbsentIndex": "Original absent index and initialization locks retained; scratch restoration reproduces actual source state"
   },
   "relocatedCodingFolders": {
-    "count": 27,
+    "count": 28,
     "cleanLinkedWorktrees": 18,
-    "dirtyLinkedWorktrees": 7,
+    "dirtyLinkedWorktrees": 8,
     "independentRepositories": 2,
     "dirtyIndependentRepositories": 1,
     "everyInverseMoveRehearsed": true,
@@ -321,7 +321,7 @@
     "inverseMovesVerified": true,
     "sourceAppliedOverCurrentApp": false
   },
-  "totalOriginalFoldersReversiblyRelocated": 42,
+  "totalOriginalFoldersReversiblyRelocated": 43,
   "folderCountScope": "26 Git checkouts +3 native source snapshots +3 artwork folders +2 evidence folders +1 protected backup +1 historical release packet +1 mobile release artifact folder. Cohort bytes overlap retained copies; no unique-byte or disk-reclaimed claim. +1 historical fallback root containing5checkpoints/frozenpreview.",
   "mobileReleaseArtifacts": {
     "foldersRelocated": 1,
@@ -357,8 +357,8 @@
   "originalNamedRoots": {
     "total": 60,
     "currentlyMapped": 60,
-    "relocatedWithRecordedProof": 42,
-    "retainedOldRoots": 16,
+    "relocatedWithRecordedProof": 43,
+    "retainedOldRoots": 15,
     "organizationDestination": 1,
     "unresolvedAbsentOriginals": 0,
     "consolidationComplete": false,
@@ -493,7 +493,9 @@
       "sourceUnchanged": true,
       "sourceMoved": false,
       "wholeRootBackedUp": false,
-      "dependenciesBackedUp": false
+      "dependenciesBackedUp": false,
+      "historicalAtCapture": true,
+      "currentSourceMoved": true
     },
     {
       "source": "D:/CodexTemp/Stackr-iPhone-scan-20260903",
@@ -509,6 +511,52 @@
       "sourceUnchanged": true,
       "sourceMoved": false,
       "fullSecurityAndAlternateStreamBackupClaimed": false
+    },
+    {
+      "source": "D:/Stackr-chinese-partial-dependencies-20261010",
+      "files": 2513,
+      "bytes": 26114058,
+      "directories": 712,
+      "scope": "Whole named partial dependency tree, no links",
+      "wholeRootBackedUp": true,
+      "receipt": {
+        "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-preservation-v1/outcome.json",
+        "sha256": "de2b7262ed420ac722df14453010decc5a287072f5267655c9270591a65ffd59"
+      },
+      "threeIndependentHashesEqual": true,
+      "sourceUnchanged": true,
+      "sourceMoved": false
+    },
+    {
+      "source": "Selected SigLIP2 model and corresponding pinned gallery",
+      "files": 4,
+      "bytes": 549168578,
+      "scope": "Exact four artifacts only, not full model or Python runtime",
+      "wholeRootBackedUp": false,
+      "preservedPathsAcceptedByExistingPackager": true,
+      "receipt": {
+        "privatePath": "evidence/consolidation-20261018/model-artifact-path-preparation-v1/selected-copy-outcome.json",
+        "sha256": "5330b79d7376d21106c14d835d8e648e81ce070d1fd28671c853b4f891dc167a"
+      },
+      "threeIndependentHashesEqual": true,
+      "sourceUnchanged": true,
+      "sourceMoved": false
+    },
+    {
+      "source": "D:/Stackr-1/.cache/npm/_npx/8a74c048636603b8",
+      "files": 15633,
+      "bytes": 122118474,
+      "directories": 1872,
+      "scope": "Complete EAS CLI23.2.0runtime, both independent preserved copies pass local --version",
+      "wholeRootBackedUp": true,
+      "nativeOperationPerformed": false,
+      "receipt": {
+        "privatePath": "evidence/consolidation-20261018/eas-cli-preservation-v1/outcome.json",
+        "sha256": "bcf8a9a73b727bb1af833df51c1ff8e04030b2ea26340641a69fe45e6a40ea5d"
+      },
+      "threeIndependentHashesEqual": true,
+      "sourceUnchanged": true,
+      "sourceMoved": false
     }
   ],
   "visualAtomicOriginalDirectoryContinuation": {
@@ -561,6 +609,67 @@
       "instructions": {
         "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/visual-acceptance-assessment-20261018/preparation-v3-atomic-original/REVIEW-AND-RESTORE.md",
         "sha256": "7f8c0d852544b21133b53e665331db6f0a6894a4bd8c4f77174ab73f95776d22"
+      },
+      "standardGenericRestoreSupported": false,
+      "originalSharedCommonRequired": "D:/Stackr-1/.git",
+      "requiresCurrentExactLocalReview": true,
+      "historicalPlanMustNotBeSilentlyRebound": true
+    },
+    "sourceDirectoryAbsent": true,
+    "permanentDeletion": false
+  },
+  "rcOriginalDirectoryContinuation": {
+    "registeredAt": "2026-10-18T23:28:28.432Z",
+    "original": "D:\\Stackr-rc-closure-20260824",
+    "current": "D:\\Stackr-organization\\archive\\consolidated-worktrees-20261018\\Stackr-rc-closure-20260824",
+    "preservationContract": "ATOMIC_ORIGINAL_TREE_RETENTION_V3",
+    "originalPhysicalDirectory": {
+      "device": "437697643",
+      "fileId": "281474977706047",
+      "birthtimeNs": "1787549656142849200"
+    },
+    "physicalMoveReturnReplayPassed": true,
+    "independentlyRestoredImportantFiles": 4475,
+    "independentlyRestoredImportantBytes": 1683454155,
+    "importantCohort": {
+      "workingFiles": 4398,
+      "workingBytes": 1672291865,
+      "additionalFiles": 77,
+      "additionalBytes": 11162290
+    },
+    "historicalWholeTree": {
+      "files": 63290,
+      "bytes": 2786649904,
+      "freshFullTreeEqualityClaimed": false
+    },
+    "ordinaryOriginalDependencyEntriesRetainedPhysically": true,
+    "independentDependencyBackup": false,
+    "dependencyDeletionAllowed": false,
+    "outcome": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/execution-53494dd4-36e8-4b6c-b1e0-71eda9fd7a33/outcome.json",
+      "sha256": "e1939002d54fe1605556eb65250664c6b2802f86287c86796b678288cec10c97"
+    },
+    "verification": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/root-verified-outcome-v2.json",
+      "sha256": "ed43762efe58f4969404d8752c825f11addec60ad88d8f1111a3914b95dc875b"
+    },
+    "review": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/rc-operational-amendment-review-v2-bounded-completion-review.json",
+      "sha256": "11bc759296445c69320844a7f00c3df5c0d81dc250d3ceba40be252068c03050"
+    },
+    "restore": {
+      "type": "atomic-original-directory-retention-v3",
+      "helper": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/restore-rc-v2.cjs",
+        "sha256": "debc49447354bc754b1a049cafc28ae5590fb22b570eb35a68e6cb23ff8c64d1"
+      },
+      "guard": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/rc-move-v2.cjs",
+        "sha256": "f2f40dbf3c77c1561dd3aa8cdbad6c5c82378400f461215e8ce0ccf1a2dd92ee"
+      },
+      "instructions": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/REVIEW.md",
+        "sha256": "1065b5accbb2adb6687abe55e239052351ba51794bcb9dfe9fb73f96deba5d87"
       },
       "standardGenericRestoreSupported": false,
       "originalSharedCommonRequired": "D:/Stackr-1/.git",

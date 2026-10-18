@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-18T22:28:13.977Z",
+  "observedAt": "2026-10-18T23:31:13.018Z",
   "ownerRequest": "Ensure BOTH plans have satisfied the work listed before TestFlight.",
   "sourceHeadAudited": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
   "branch": "codex/stackr-repair-consolidation-20261018",
@@ -1067,7 +1067,7 @@
       "requirement": "Consolidate under D:/Stackr-organization with reversible recovery",
       "state": "partially_satisfied",
       "satisfiedInFull": false,
-      "remaining": "42 verified reversible relocations with preservation/restoration proof; actual inverse moves were rehearsed where recorded. The three artwork roots have copy/restoration and rollback evidence, not a recorded physical inverse-move rehearsal. Further original roots remain; relocation retains bytes and is not reclamation.",
+      "remaining": "43 verified reversible relocations with preservation/restoration proof; actual inverse moves were rehearsed where recorded. The three artwork roots have copy/restoration and rollback evidence, not a recorded physical inverse-move rehearsal. Further original roots remain; relocation retains bytes and is not reclamation.",
       "owner": "Tif"
     },
     {
@@ -1075,7 +1075,7 @@
       "requirement": "Account for every folder in the original owner list",
       "state": "all60_accounted_one_owner_excluded_unrelated",
       "satisfiedInFull": true,
-      "remaining": "Folder accounting is complete: 42 verified relocations, 16 retained old roots, one organization destination and one owner-excluded unrelated folder, D:/CodexLogoWork. Stackr-relevant denominator is 59; consolidation of retained work remains incomplete.",
+      "remaining": "Folder accounting is complete: 43 verified relocations, 15 retained old roots, one organization destination and one owner-excluded unrelated folder, D:/CodexLogoWork. Stackr-relevant denominator is 59; consolidation of retained work remains incomplete.",
       "owner": "Tif",
       "evidence": {
         "privatePath": "evidence/consolidation-20261018/owner-scope-correction-codexlogowork/owner-scope-reply.json",
@@ -1103,7 +1103,7 @@
       "requirement": "Migrate original shared D:/Stackr-1 last",
       "state": "held_until_dependencies_and_preservation_complete",
       "satisfiedInFull": false,
-      "remaining": "Original is still the chat workspace/common Git/dependency and cached EAS CLI home. Necessary ignored material and dependent Git/restore/runtime paths are not fully closed.",
+      "remaining": "Original remains the chat workspace, common Git, data/model and nested-path dependency. The EAS CLI has independent preserved/restored copies verified locally; historical release helpers still need an exact new path binding before future publishing. Remaining preservation and dependent runtime/restore paths are open.",
       "owner": "Tif"
     },
     {
@@ -1276,20 +1276,20 @@
     "sha256": "714099dd3456675f74e4ae5e8df9427349e4a71d15ad76985db1743667499d52"
   },
   "originalFolderCoverage": {
-    "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/visual-acceptance-assessment-20261018/preparation-v3-atomic-original/current-owner-folder-placement.json",
-    "sha256": "8964a388161284d375dee58591e1e8a26587fbe21870d105450b10b95b9a920f"
+    "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/current-owner-folder-placement.json",
+    "sha256": "47aaa90fee565a8580f9e8f85ca9e2f3d07ff32656f319f53328ff06083589bf"
   },
   "originalFolderCounts": {
-    "relocatedWithRecordedProof": 42,
-    "retainedDependencyDataOrUnfinishedWork": 16,
+    "relocatedWithRecordedProof": 43,
+    "retainedDependencyDataOrUnfinishedWork": 15,
     "existingOrganizationDestination": 1,
     "ownerExcludedUnrelated": 1,
     "unmappedUnresolvedOriginal": 0,
     "originalMapRowsPresent": 60,
     "originalMapRowsMissing": 0,
-    "namedOriginalPathsStillPresentIncludingOrganizationDestination": 17,
-    "namedOldRootsStillPresentExcludingOrganizationDestination": 16,
-    "originalPathsAbsent": 43,
+    "namedOriginalPathsStillPresentIncludingOrganizationDestination": 16,
+    "namedOldRootsStillPresentExcludingOrganizationDestination": 15,
+    "originalPathsAbsent": 44,
     "stackrRelevantOriginalPaths": 59
   },
   "originalNamedPaths": 60,
@@ -1328,24 +1328,6 @@
       },
       "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder.",
       "currentLocation": "D:\\Stackr-release-hardening-2026-08-19",
-      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
-    },
-    {
-      "original": "D:/Stackr-rc-closure-20260824",
-      "mapRowPresent": true,
-      "hold": null,
-      "capturedCohort": {
-        "file": "D:/Stackr-organization/preserved-work/consolidation-20261018-content/combined-summary.json",
-        "sha256": "03c8a24a1b53c558104a2111882b911ea6b439d1104bf5dd4401ede25b0ffabc",
-        "capturedFiles": 1470,
-        "capturedBytes": 646228764,
-        "restoredFiles": 1470,
-        "restoreExact": true,
-        "allNecessaryIgnoredMaterialPreserved": false,
-        "scope": "Only the recorded captured cohort; not a complete whole-root preservation claim"
-      },
-      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder.",
-      "currentLocation": "D:\\Stackr-rc-closure-20260824",
       "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
     },
     {
@@ -1594,20 +1576,10 @@
     "permanentDeletion": false
   },
   "currentHostedSourceChecks": {
-    "checkedAt": "2026-10-18T21:49:28.020Z",
-    "sourceHead": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
-    "succeeded": 10,
-    "failed": 0,
-    "pending": 0,
-    "skipped": [
-      "release-candidate-gate",
-      "canary-api-evidence"
-    ],
-    "evidence": {
-      "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-4e1cdf7.json",
-      "sha256": "9fb65f14b076e4fd7e5967948b5fc16b2cd1d31b2ff6661b70858160e0a2c1fc"
-    },
-    "scope": "Exact pushed source snapshot. Subsequent documentation commits need their own hosted status; skipped release/canary gates do not prove delivery or phone acceptance."
+    "recordedAt": "2026-10-18T23:31:45.669Z",
+    "stateAtRecord": "PENDING_NEW_COMMITTED_PRICING_IDENTITY_SOURCE",
+    "lastPassedRevision": "0708673cde0ff60e8698b0053f77ff11b6de5dfb",
+    "sourceChecksAreNotPhoneAcceptance": true
   },
   "videoRegisterSynchronization": {
     "recordedAt": "2026-10-18T20:30:22.209Z",
@@ -1809,7 +1781,13 @@
     "productionWritesAuthorized": false,
     "testFlightHeld": true
   },
-  "currentRuntimeSourceCandidate": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+  "currentRuntimeSourceCandidate": {
+    "revision": "d70a222ac548ba6c7830163e94897fdc7e0cda6d",
+    "scope": "Reviewed collection response-identity guard on top of prior native/runtime repairs",
+    "receipt": "docs/releases/collection-pricing-response-identity-20261019.json",
+    "phoneVerified": false,
+    "nativePublished": false
+  },
   "currentJungleProductionProposal": {
     "document": "docs/releases/jungle-production-image-correction-20261018.json",
     "sqlAndOperationsReviewed": true,
@@ -1965,5 +1943,99 @@
       "settledToolSession": 28404
     },
     "scope": "Separate icon work retained and independently reviewed against immutable8dd..c85. Root current-source typecheck/lint and local unsigned package pass. No native publication or phone evidence."
+  },
+  "rcOriginalDirectoryContinuation": {
+    "registeredAt": "2026-10-18T23:28:28.432Z",
+    "original": "D:\\Stackr-rc-closure-20260824",
+    "current": "D:\\Stackr-organization\\archive\\consolidated-worktrees-20261018\\Stackr-rc-closure-20260824",
+    "preservationContract": "ATOMIC_ORIGINAL_TREE_RETENTION_V3",
+    "originalPhysicalDirectory": {
+      "device": "437697643",
+      "fileId": "281474977706047",
+      "birthtimeNs": "1787549656142849200"
+    },
+    "physicalMoveReturnReplayPassed": true,
+    "independentlyRestoredImportantFiles": 4475,
+    "independentlyRestoredImportantBytes": 1683454155,
+    "importantCohort": {
+      "workingFiles": 4398,
+      "workingBytes": 1672291865,
+      "additionalFiles": 77,
+      "additionalBytes": 11162290
+    },
+    "historicalWholeTree": {
+      "files": 63290,
+      "bytes": 2786649904,
+      "freshFullTreeEqualityClaimed": false
+    },
+    "ordinaryOriginalDependencyEntriesRetainedPhysically": true,
+    "independentDependencyBackup": false,
+    "dependencyDeletionAllowed": false,
+    "outcome": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/execution-53494dd4-36e8-4b6c-b1e0-71eda9fd7a33/outcome.json",
+      "sha256": "e1939002d54fe1605556eb65250664c6b2802f86287c86796b678288cec10c97"
+    },
+    "verification": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/root-verified-outcome-v2.json",
+      "sha256": "ed43762efe58f4969404d8752c825f11addec60ad88d8f1111a3914b95dc875b"
+    },
+    "review": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/rc-operational-amendment-review-v2-bounded-completion-review.json",
+      "sha256": "11bc759296445c69320844a7f00c3df5c0d81dc250d3ceba40be252068c03050"
+    },
+    "restore": {
+      "type": "atomic-original-directory-retention-v3",
+      "helper": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/restore-rc-v2.cjs",
+        "sha256": "debc49447354bc754b1a049cafc28ae5590fb22b570eb35a68e6cb23ff8c64d1"
+      },
+      "guard": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/rc-move-v2.cjs",
+        "sha256": "f2f40dbf3c77c1561dd3aa8cdbad6c5c82378400f461215e8ce0ccf1a2dd92ee"
+      },
+      "instructions": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/REVIEW.md",
+        "sha256": "1065b5accbb2adb6687abe55e239052351ba51794bcb9dfe9fb73f96deba5d87"
+      },
+      "standardGenericRestoreSupported": false,
+      "originalSharedCommonRequired": "D:/Stackr-1/.git",
+      "requiresCurrentExactLocalReview": true,
+      "historicalPlanMustNotBeSilentlyRebound": true
+    },
+    "sourceDirectoryAbsent": true,
+    "permanentDeletion": false
+  },
+  "collectionPricingResponseIdentityRepair": {
+    "repairCommit": "d70a222ac548ba6c7830163e94897fdc7e0cda6d",
+    "sourceFiles": [
+      "lib/collectionPricingApi.ts",
+      "scripts/test-collection-pricing-api.ts",
+      "scripts/test-binder-pricing.ts",
+      "scripts/test-collection-price-backpressure.mjs"
+    ],
+    "implemented": true,
+    "tested": true,
+    "independentlyReviewed": true,
+    "merged": false,
+    "nativePublished": false,
+    "deviceVerified": false,
+    "receipt": "docs/releases/collection-pricing-response-identity-20261019.json",
+    "scope": "Reject mismatched/missing stored-response variant/product/currency without inventing values; exact owner coverage remains unverified."
+  },
+  "historicalHostedSourceChecksBeforePricingIdentity": {
+    "checkedAt": "2026-10-18T21:49:28.020Z",
+    "sourceHead": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
+    "succeeded": 10,
+    "failed": 0,
+    "pending": 0,
+    "skipped": [
+      "release-candidate-gate",
+      "canary-api-evidence"
+    ],
+    "evidence": {
+      "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-4e1cdf7.json",
+      "sha256": "9fb65f14b076e4fd7e5967948b5fc16b2cd1d31b2ff6661b70858160e0a2c1fc"
+    },
+    "scope": "Exact pushed source snapshot. Subsequent documentation commits need their own hosted status; skipped release/canary gates do not prove delivery or phone acceptance."
   }
 }
