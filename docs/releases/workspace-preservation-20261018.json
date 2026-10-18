@@ -478,5 +478,37 @@
     },
     "sourceDirectoryAbsent": true,
     "permanentDeletion": false
-  }
+  },
+  "additionalNecessaryCohorts": [
+    {
+      "source": "D:/Stackr-visual-acceptance-20260910",
+      "files": 31,
+      "bytes": 745912,
+      "scope": "30 necessary output files plus lint cache and empty output directory",
+      "receipt": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/visual-acceptance-assessment-20261018/added-output-backup-v1/outcome.json",
+        "sha256": "8063d20d7265628f4dd31126dd80f3355e2f6440bf7989c73eb788e41adff2e0"
+      },
+      "threeIndependentHashesEqual": true,
+      "sourceUnchanged": true,
+      "sourceMoved": false,
+      "wholeRootBackedUp": false,
+      "dependenciesBackedUp": false
+    },
+    {
+      "source": "D:/CodexTemp/Stackr-iPhone-scan-20260903",
+      "files": 170,
+      "bytes": 78234155,
+      "directories": 17,
+      "scope": "Only the named Stackr scan folder; unrelated siblings untouched",
+      "receipt": {
+        "privatePath": "evidence/consolidation-20261018/codextemp-iphone-scan-preservation-v1/outcome.json",
+        "sha256": "37855f20c38ba9d039395be714f8c2167983050b7550f21e588b133913ddabd5"
+      },
+      "threeIndependentHashesEqual": true,
+      "sourceUnchanged": true,
+      "sourceMoved": false,
+      "fullSecurityAndAlternateStreamBackupClaimed": false
+    }
+  ]
 }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-18T21:20:19.967Z",
+  "observedAt": "2026-10-18T21:35:01.645Z",
   "ownerRequest": "Ensure BOTH plans have satisfied the work listed before TestFlight.",
   "sourceHeadAudited": "bfeac49e05c596301e8bb4727665216066625a44",
   "branch": "codex/stackr-repair-consolidation-20261018",
@@ -789,12 +789,12 @@
       "issue": "Search cards and listing media show placeholders",
       "requiredResolution": "Separate exact card artwork from listing-media mapping and transport/decode failures.",
       "acceptance": "Available thumbnails render without blocking facts; real gaps explicit.",
-      "state": "gateway_deployed_public_batch_verified_native_and_listing_media_open",
+      "state": "gateway_deployed_listing_media_source_repaired_native_and_phone_open",
       "relevantSourceRepairMerged": true,
       "nativePublished": false,
       "phoneAccepted": false,
       "satisfiedInFull": false,
-      "remaining": "Gateway public95-ID batch now returns105assets/557ms;98/100currentresolverrows eligible and only1exactthumbnaildecoded. Two exactPikachu gaps, listingmedia, newnativepublication and phonejourneys remain open.",
+      "remaining": "The historical public95-printing batch returned105assets in557ms;98/100 resolver rows were eligible and one exact thumbnail was decoded in that capture. Structured listing-media selection is now repaired and locally reviewed. Exact recorded listing identity, live media delivery, remaining exact Pikachu artwork, native publication and phone journeys remain open.",
       "repairCommit": "66156ca9893e8767a4e594173f63accae015354e",
       "sourceFiles": [
         "lib/stackrDomainAdapter.ts",
@@ -844,6 +844,58 @@
         "productionWrite": false,
         "productionFirstEditionVisibilityNotEstablishedByStaging": true,
         "phoneVerified": false
+      },
+      "additionalListingMediaRepair": {
+        "recordedAt": "2026-10-18T21:35:01.645Z",
+        "issueId": "V23",
+        "sourceRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+        "sourceGapConfirmed": true,
+        "recordedListingIdentityConfirmed": false,
+        "change": "Search requests structured listing media and seller image fields. Valid available thumbnails use the existing official/legacy preference followed by seller front/labelled media/back. One compatibility retry is limited to an exact missing media-column error and a current request generation.",
+        "sourceFiles": [
+          "app/(tabs)/search.tsx",
+          "lib/listingSearchMedia.ts",
+          "lib/marketplacePresentation.ts"
+        ],
+        "safeguards": [
+          "Unchanged trade/active/product predicates,18-row limit and RLS/client path",
+          "No compatibility retry on permissions, timeouts, unrelated schema errors or superseded/account-invalidated queries",
+          "HTTPS-only validated image candidates; malformed or unavailable media stays explicit",
+          "No changes to listing publication, prices, quantities or private collection data"
+        ],
+        "validation": {
+          "newListingMediaRegression": "PASS",
+          "actualProgressiveSearch": "PASS",
+          "actualSearchCoordinatorSettlement": "PASS",
+          "searchRecovery": "PASS",
+          "typecheck": "PASS",
+          "lint": {
+            "errors": 0,
+            "existingWarnings": 8
+          },
+          "independentReview": {
+            "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/listing-search-media-source-review-v1-bounded-completion-review.json",
+            "sha256": "8e5d36613500c5686e2b95489f6137053770d7bfb6e005d8e541dffebe0fc2b5"
+          },
+          "sevenFileSourceBundle": {
+            "privatePath": "evidence/consolidation-20261018/listing-search-media-source-v1/source-pins.json",
+            "sha256": "39bd10a15d0f32ef9d139f379cbef74b549556e334507cdae650f4450d58c717"
+          },
+          "actualMapperBeforeAndAfter": {
+            "privatePath": "evidence/consolidation-20261018/listing-search-media-source-v1/actual-mapper-before-after.json",
+            "sha256": "cd497b6176327e55fe1221224a017fead6fec23312fd73ce875755f3961de25e"
+          }
+        },
+        "delivery": {
+          "implemented": true,
+          "tested": true,
+          "independentlyReviewed": true,
+          "merged": false,
+          "nativePublished": false,
+          "phoneVerified": false,
+          "unsignedCurrentRevisionExportPending": true
+        },
+        "testFlightHeld": true
       }
     }
   ],
@@ -1709,10 +1761,20 @@
     "testFlightHeld": true
   },
   "currentRuntimeSourceCandidate": {
-    "revision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
+    "revision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
     "merged": false,
     "nativePublished": false,
     "phoneVerified": false,
+    "testFlightHeld": true,
+    "unsignedCurrentRevisionExportPending": true,
+    "historical74AssetExportSource": "d0cf371080936ff538e86ac8883fed6af4d1200e"
+  },
+  "currentJungleProductionProposal": {
+    "document": "docs/releases/jungle-production-image-correction-20261018.json",
+    "sqlAndOperationsReviewed": true,
+    "ownerApproved": false,
+    "productionExecuted": false,
+    "normalImageGapDisclosed": true,
     "testFlightHeld": true
   }
 }

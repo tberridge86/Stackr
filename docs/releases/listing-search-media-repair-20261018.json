@@ -1,0 +1,52 @@
+{
+  "recordedAt": "2026-10-18T21:35:01.645Z",
+  "issueId": "V23",
+  "sourceRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+  "sourceGapConfirmed": true,
+  "recordedListingIdentityConfirmed": false,
+  "change": "Search requests structured listing media and seller image fields. Valid available thumbnails use the existing official/legacy preference followed by seller front/labelled media/back. One compatibility retry is limited to an exact missing media-column error and a current request generation.",
+  "sourceFiles": [
+    "app/(tabs)/search.tsx",
+    "lib/listingSearchMedia.ts",
+    "lib/marketplacePresentation.ts"
+  ],
+  "safeguards": [
+    "Unchanged trade/active/product predicates,18-row limit and RLS/client path",
+    "No compatibility retry on permissions, timeouts, unrelated schema errors or superseded/account-invalidated queries",
+    "HTTPS-only validated image candidates; malformed or unavailable media stays explicit",
+    "No changes to listing publication, prices, quantities or private collection data"
+  ],
+  "validation": {
+    "newListingMediaRegression": "PASS",
+    "actualProgressiveSearch": "PASS",
+    "actualSearchCoordinatorSettlement": "PASS",
+    "searchRecovery": "PASS",
+    "typecheck": "PASS",
+    "lint": {
+      "errors": 0,
+      "existingWarnings": 8
+    },
+    "independentReview": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/listing-search-media-source-review-v1-bounded-completion-review.json",
+      "sha256": "8e5d36613500c5686e2b95489f6137053770d7bfb6e005d8e541dffebe0fc2b5"
+    },
+    "sevenFileSourceBundle": {
+      "privatePath": "evidence/consolidation-20261018/listing-search-media-source-v1/source-pins.json",
+      "sha256": "39bd10a15d0f32ef9d139f379cbef74b549556e334507cdae650f4450d58c717"
+    },
+    "actualMapperBeforeAndAfter": {
+      "privatePath": "evidence/consolidation-20261018/listing-search-media-source-v1/actual-mapper-before-after.json",
+      "sha256": "cd497b6176327e55fe1221224a017fead6fec23312fd73ce875755f3961de25e"
+    }
+  },
+  "delivery": {
+    "implemented": true,
+    "tested": true,
+    "independentlyReviewed": true,
+    "merged": false,
+    "nativePublished": false,
+    "phoneVerified": false,
+    "unsignedCurrentRevisionExportPending": true
+  },
+  "testFlightHeld": true
+}
