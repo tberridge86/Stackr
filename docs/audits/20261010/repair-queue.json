@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-18T17:10:10.177Z",
+  "updatedAt": "2026-10-18T17:21:29.463Z",
   "coordinator": "Tif / root",
   "workingDirectory": "D:/Stackr",
   "branch": "codex/stackr-repair-consolidation-20261018",
@@ -30,7 +30,7 @@
       "report": "docs/releases/repair-consolidation-20261018.md",
       "issueRegister": "docs/releases/video-repair-register-20261018.json",
       "independentReview": "PASS source, live gateway/public bounded evidence and37folderproof; final coordination-state finding corrected. No phone acceptance.",
-      "nextAction": "Complete the reviewed normal-production native preparation, obtain matching native build/internal TestFlight submission approval, run full fresh existing delivery gates, then carry one exact signed build to phone journeys. Continue exact identity/artwork/price gaps and remaining consolidation consumers; migrate original primary last.",
+      "nextAction": "Await the specific native build/internal TestFlight reply. If approved, run full fresh delivery gates and one guarded normal-production build; verify actual signed73assets and fresh delivery before exact-ID submission. Continue remaining source/data/phone gates; migrate original primary last.",
       "schedulerCreated": false,
       "pullRequest": "https://github.com/tberridge86/Stackr/pull/409",
       "mergedMainRevision": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
@@ -43,7 +43,17 @@
       "ownerReportedInstalledPhoneBuild": 59,
       "newNativeBuildCreated": false,
       "deviceVerified": false,
-      "closedVideoIssues": 0
+      "closedVideoIssues": 0,
+      "nativePreparation": {
+        "report": "docs/releases/native-release-candidate-20261018.json",
+        "reviewed": true,
+        "exactSource": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
+        "profile": "production",
+        "localIdentityVerified": true,
+        "promisedSignedAssets": 73,
+        "nativeApproval": "requested_pending_human_answer",
+        "realBuildStarted": false
+      }
     },
     "lastObservedPullRequest": {
       "url": "https://github.com/tberridge86/Stackr/pull/337",
@@ -127,7 +137,7 @@
       "closedVideoIssues": 0,
       "liveDeployment": true,
       "deviceVerified": false,
-      "nextAction": "Complete the reviewed normal-production native preparation, obtain matching native build/internal TestFlight submission approval, run full fresh existing delivery gates, then carry one exact signed build to phone journeys. Continue exact identity/artwork/price gaps and remaining consolidation consumers; migrate original primary last.",
+      "nextAction": "Await the specific native build/internal TestFlight reply. If approved, run full fresh delivery gates and one guarded normal-production build; verify actual signed73assets and fresh delivery before exact-ID submission. Continue remaining source/data/phone gates; migrate original primary last.",
       "pullRequest": "https://github.com/tberridge86/Stackr/pull/409",
       "liveReadDiagnostics": "docs/releases/live-read-diagnostics-20261018.json",
       "preservationSummary": "docs/releases/workspace-preservation-20261018.json",
@@ -141,7 +151,17 @@
       "gatewayReleaseRun": "https://github.com/tberridge86/Stackr/actions/runs/39147311549",
       "totalOriginalFoldersReversiblyRelocated": 37,
       "ownerReportedInstalledPhoneBuild": 59,
-      "newNativeBuildCreated": false
+      "newNativeBuildCreated": false,
+      "nativePreparation": {
+        "report": "docs/releases/native-release-candidate-20261018.json",
+        "reviewed": true,
+        "exactSource": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
+        "profile": "production",
+        "localIdentityVerified": true,
+        "promisedSignedAssets": 73,
+        "nativeApproval": "requested_pending_human_answer",
+        "realBuildStarted": false
+      }
     },
     {
       "id": "CATALOGUE-MANIFEST-READ-PHASE-20261017",
@@ -2829,7 +2849,7 @@
     "liveDeployment": true,
     "newNativeBuildCreated": false,
     "deviceVerified": false,
-    "nextAction": "Complete the reviewed normal-production native preparation, obtain matching native build/internal TestFlight submission approval, run full fresh existing delivery gates, then carry one exact signed build to phone journeys. Continue exact identity/artwork/price gaps and remaining consolidation consumers; migrate original primary last.",
+    "nextAction": "Await the specific native build/internal TestFlight reply. If approved, run full fresh delivery gates and one guarded normal-production build; verify actual signed73assets and fresh delivery before exact-ID submission. Continue remaining source/data/phone gates; migrate original primary last.",
     "productionDiagnostics": "docs/releases/production-diagnostics-20261018.json",
     "additionalRuntimeRevision": "66156ca9893e8767a4e594173f63accae015354e",
     "stormPublication": "docs/releases/storm-m6-publication-20261018.json",
@@ -2848,6 +2868,16 @@
       "independentReview": "PASS",
       "remoteDatabaseExecution": false,
       "runtimeSqlChanged": false
+    },
+    "nativePreparation": {
+      "report": "docs/releases/native-release-candidate-20261018.json",
+      "reviewed": true,
+      "exactSource": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
+      "profile": "production",
+      "localIdentityVerified": true,
+      "promisedSignedAssets": 73,
+      "nativeApproval": "requested_pending_human_answer",
+      "realBuildStarted": false
     }
   },
   "completionGoal": {

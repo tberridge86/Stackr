@@ -103,6 +103,27 @@ remain separate gates.
 Existing performance targets and required sample sizes remain unchanged and
 unmeasured by this work; no percentile claim is made.
 
+The [normal-production native candidate](native-release-candidate-20261018.json)
+is prepared for already merged source `4e405d7`, separately from the deployed
+backend `f9350f8`. Its app/configuration bytes match the verified export. The
+existing local EAS 23.2.0 route confirmed the same account identity as delivered
+59; an initial 30-second metadata timeout is retained beside the successful
+bounded follow-up. All 17 prepared files and 15 executable/configuration helper
+hashes passed independent review. Offline validation passed 101 launcher cases,
+five unknown-outcome holds, ten synthetic archive cases and 14 syntax checks.
+No native build or submission has started. Separate publishing approval was
+requested after preparation and review.
+
+The approved execution would run fresh existing delivery gates, verify all 73
+promised assets in the actual signed app, then submit that exact finished build
+ID to the existing internal Team (Expo). A separate fresh public/mobile/history
+check is required before submission after a long build. Initial receipts and
+unknown outcomes remain immutable. The history schema reads return no collector
+rows. Normal production preserves build 59's audience; the owner-recognition
+profile is separate. The actual next build number comes from fresh inventory.
+The earlier 970-item artwork backlog recorded in PR #339 remains disclosed and
+has not been reverified as a whole batch or closed by this candidate.
+
 ## Live and source gaps
 
 The sampled Storm factual-card request returned `504 downstream_timeout` in

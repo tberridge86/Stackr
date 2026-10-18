@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "preparedAt": "2026-10-18T17:08:35.660Z",
-  "approval": "pending separate native build/submission approval",
+  "approval": "requested; awaiting direct human answer",
   "frozenSource": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
   "profile": "production",
   "channel": "production",
@@ -38,7 +38,7 @@
   "workflowBuildProfileMustBeExplicit": "production",
   "githubExpoTokenNamePresent": false,
   "credentialValuesRead": false,
-  "releaseRoute": "Protected workflow has no repository EXPO_TOKEN name; first inspect environment-secret names and existing authenticated local route before choosing exactly one build dispatch. Never change credentials or bypass protection.",
+  "releaseRoute": "Existing local EAS23.2.0 route using the same account identity as delivered59; one immutable normal-production build request and exact-ID internal Team (Expo) submission after fresh gates.",
   "newBuildNumber": null,
   "remoteAutoIncrement": true,
   "fullFreshNativeDeliveryGatePassed": false,
@@ -76,5 +76,58 @@
     "OTA/publicAppStore/externaltester expansion",
     "New database/catalogue mutations or arbitrary diagnostic SQL",
     "Providerprice refreshes/job restarts/credential changes/permanent deletion"
-  ]
+  ],
+  "preparationReviewed": true,
+  "preparationReviewScope": "Prepared local guards and offline validation only; real native gates/build/signed archive/phone remain pending.",
+  "githubEnvironmentExpoTokenNamePresent": false,
+  "localReadOnlyIdentityVerified": true,
+  "localIdentityObservation": "2026-10-18T17:16:33.502Z",
+  "localSourceWorktree": "D:/Stackr-organization/active-runtime/repair-consolidation-20261018/native-release-source-4e405d7",
+  "preparedExactBundledAssets": 73,
+  "offlineValidation": {
+    "launcherAndValidatorCases": 101,
+    "unknownOutcomeHoldCases": 5,
+    "syntheticArchiveCases": 10,
+    "syntaxChecks": 14,
+    "remoteCalls": 0,
+    "actualSignedArchiveVerified": false
+  },
+  "preSubmissionFreshness": "Separate successful public/API/history-limit0 receipt under10minutes old, bound to original build intent and actual signed proof; no repeat export or rewritten initial receipts.",
+  "approvalScopeRequested": [
+    "One normal-production exact4e source build after existing full fresh delivery gates",
+    "Read-only delivery checks before build and submission, including anonymous history schema requests withlimit0/no collector rows",
+    "Verify actual signed73assets and submit exactly that finished build ID to existing internal Team (Expo)",
+    "Read back Apple processing and existing group availability; retain delivered59"
+  ],
+  "evidenceDigests": [
+    {
+      "relativePath": "evidence/consolidation-20261018/native-release-20261018/prepared-files-sha256.json",
+      "sha256": "eda78e4feb826a363885272aa50c8e5520627831236283d1288eebbc4e6d7b1f"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/native-release-20261018/independent-helper-review.receipt.json",
+      "sha256": "7ba1fbd527a81f27f71d0bda0a282415103747b7b1170576b9e4867f67e633d7"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/native-release-20261018/offline-validation.json",
+      "sha256": "8439fe0e08b68213bc441c1553dd61f08383b456368bae73a617daa02c5f2755"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/gateway-release-20261018/native-source-checkout.json",
+      "sha256": "5558bf4dd900d07e49e98fc6e62d535a5b73cdca2679232226332640f5307533"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/gateway-release-20261018/native-local-route-readiness.json",
+      "sha256": "b02d824fab2be958d446aa7e836cf350668ac058cada7bc32d2c7f4a5af74cf7"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/gateway-release-20261018/native-local-route-readiness-followup.json",
+      "sha256": "b3880c27036deaa91036a558980a4019fa5c6e52c584dd3f9520a33c5a9bdebd"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/native-release-20261018/native-approval-question.json",
+      "sha256": "7d68812d0e35339223675af78ae920c904258af4745939cdf9c1b97607dd961c"
+    }
+  ],
+  "primaryMigrationHold": "Existing cached EAS CLI still resides under D:/Stackr-1; retain it and the original primary until native delivery or separately tested runtime relocation and all remaining dependency repairs."
 }
