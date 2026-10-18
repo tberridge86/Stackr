@@ -8,7 +8,7 @@ import { auditJapaneseSetLogoRuntimeCoverage } from './audit-japanese-set-logo-r
 const temporaryRoot = mkdtempSync(join(tmpdir(), 'stackr-ja-logo-audit-'));
 const outputDir = join(temporaryRoot, 'report');
 const manifestPath = 'assets/rev2/11-japanese-set-logo/manifest.json';
-const addendumPath = 'assets/rev2/11-japanese-set-logo/storm-m6-20261017.json';
+const addendumPath = 'assets/rev2/11-japanese-set-logo/storm-m6-owner-supplied-20261018.json';
 const runtimePath = 'lib/japaneseSetLogos.ts';
 const hash = (path: string) => createHash('sha256').update(readFileSync(path)).digest('hex');
 const historicalManifestSha = hash(manifestPath);
@@ -48,9 +48,9 @@ try {
   const customRuntime = join(temporaryRoot, 'custom-runtime.ts');
   const customManifest = join(temporaryRoot, 'custom-manifest.json');
   const customAddendum = join(temporaryRoot, 'custom-addendum.json');
-  const m6Source = "source: require('../assets/rev2/11-japanese-set-logo/logos-owner-approved-20261017/m6.webp') as ImageSourcePropType,";
+  const m6Source = "source: require('../assets/rev2/11-japanese-set-logo/logos-owner-supplied-20261018/m6.png') as ImageSourcePropType,";
   assert.ok(source.includes(m6Source));
-  writeFileSync(customRuntime, source.replace(m6Source, "source: (require(\n      '../assets/rev2/11-japanese-set-logo/logos-owner-approved-20261017/m6.webp'\n    )) as ImageSourcePropType,"));
+  writeFileSync(customRuntime, source.replace(m6Source, "source: (require(\n      '../assets/rev2/11-japanese-set-logo/logos-owner-supplied-20261018/m6.png'\n    )) as ImageSourcePropType,"));
   writeFileSync(customManifest, readFileSync(manifestPath));
   writeFileSync(customAddendum, readFileSync(addendumPath));
   const customArgs = { evidencePath, manifestPath: customManifest, addendumPath: customAddendum,
@@ -64,7 +64,7 @@ try {
   for (const [name, replacement, error] of [
     ['missing-source', '', /logo m6 source must be one literal require/],
     ['borrowed-next-entry', "source: require('../assets/rev2/11-japanese-set-logo/logos/m5.png') as ImageSourcePropType,", /m6 is not exactly manifest-bound/],
-    ['unknown-asset', m6Source.replace('m6.webp', 'unbound.webp'), /m6 is not exactly manifest-bound/],
+    ['unknown-asset', m6Source.replace('m6.png', 'unbound.png'), /m6 is not exactly manifest-bound/],
     ['dynamic-source', "source: getUnverifiedLogo(),", /logo m6 source must be one literal require/],
   ] as const) {
     writeFileSync(customRuntime, source.replace(m6Source, replacement));
@@ -89,10 +89,17 @@ try {
   writeFileSync(customManifest, JSON.stringify(duplicateManifest));
   assert.throws(() => auditJapaneseSetLogoRuntimeCoverage({ ...customArgs, outputDir: join(temporaryRoot, 'duplicate-inventory') }), /224 unique keys and asset paths/);
   writeFileSync(customManifest, readFileSync(manifestPath));
-  writeFileSync(customAddendum, JSON.stringify({ ...addendum, assetPath: addendum.assetPath.replace('m6.webp', 'unknown.webp') }));
+  writeFileSync(customAddendum, JSON.stringify({ ...addendum, assetPath: addendum.assetPath.replace('m6.png', 'unknown.png') }));
   assert.throws(() => auditJapaneseSetLogoRuntimeCoverage({ ...customArgs, outputDir: join(temporaryRoot, 'unbound-addendum') }), /addendum has invalid identity, asset or permission binding/);
+  for (const [name, override] of [
+    ['unapproved-permission', { permissionRecord: 'catalogue/rights-reviews/unapproved.json' }],
+    ['unapproved-bytes', { sha256: '0'.repeat(64) }],
+  ] as const) {
+    writeFileSync(customAddendum, JSON.stringify({ ...addendum, ...override }));
+    assert.throws(() => auditJapaneseSetLogoRuntimeCoverage({ ...customArgs, outputDir: join(temporaryRoot, name) }), /addendum has invalid identity, asset or permission binding/);
+  }
   assert.equal(hash(manifestPath), historicalManifestSha, 'The historical 223-logo manifest remains byte-identical');
-  console.log('Japanese set-logo audit binds 223 historical logos plus exact M6 WebP, hashes the additive input and rejects malformed, borrowed and unbound entries without artwork reads.');
+  console.log('Japanese set-logo audit binds 223 historical logos plus the exact owner-selected M6 PNG, hashes the additive input and rejects malformed, borrowed and unapproved entries without artwork reads.');
 } finally {
   assert.equal(dirname(resolve(temporaryRoot)), resolve(tmpdir()));
   assert.ok(basename(temporaryRoot).startsWith('stackr-ja-logo-audit-'));

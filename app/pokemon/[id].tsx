@@ -447,7 +447,7 @@ export default function PokemonDetailScreen() {
               <View style={styles.progressCard}>
                 <View style={styles.progressTop}>
                   <Text style={styles.progressTitle}>Pokemon card collection</Text>
-                  <Text style={styles.progressCount}>{collectionComplete ? (ownedCount === null ? 'Ownership unknown' : `${ownedCount} / ${totalCount}`) : `${totalCount} cards loaded`}</Text>
+                  <Text style={styles.progressCount}>{collectionComplete ? (ownedCount === null ? 'Ownership unknown' : `${ownedCount} / ${totalCount}`) : cardsLoading && totalCount === 0 ? 'Loading cards…' : `${totalCount} cards loaded`}</Text>
                 </View>
                 {collectionComplete ? (
                   <View style={styles.progressTrack}>

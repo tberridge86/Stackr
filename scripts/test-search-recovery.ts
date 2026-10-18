@@ -9,6 +9,12 @@ assert.equal(getSearchFailureSummary({},groups).message,'', 'A successful empty 
 assert.equal(getSearchFailureSummary({listings:'offline'},['cards']).message,'', 'Unrelated sources must not show errors in a focused category.');
 assert.deepEqual(getSearchFailureSummary({cards:'offline'},['cards','listings']).failedGroups,['cards']);
 assert.equal(getSearchFailureSummary({cards:'offline'},['cards','listings']).allFailed,false);
+assert.equal(getSearchFailureSummary({cards:'Card results could not be refreshed.'},['cards']).message,
+  'Cards could not be refreshed.', 'Retained factual cards must not be described as an initial load failure.');
+assert.equal(getSearchFailureSummary({cards:'Card results could not be refreshed.',sets:'Set results could not be loaded.'},groups).message,
+  'Cards could not be refreshed. Sets could not be loaded.', 'Mixed source failures retain their separate refresh/load meanings.');
+assert.equal(getSearchFailureSummary({cards:'offline'},['cards']).message,'Cards could not be loaded.',
+  'An opaque initial failure still receives the established safe source label.');
 const previous={...empty(),cards:['card-a'],collectors:['collector-a']};
 const next={...empty(),collectors:['collector-b']};
 const merged=retainFailedSearchGroups(next,{cards:'offline'},previous);
@@ -17,4 +23,13 @@ assert.deepEqual(merged.collectors,['collector-b'],'A working source replaces ol
 assert.deepEqual(retainFailedSearchGroups(empty(),{},previous).cards,[],'A successful empty refresh removes stale results.');
 assert.deepEqual(retainFailedSearchGroups(empty(),failed,null).cards,[],'A different query cannot inherit old results.');
 assert.deepEqual(next.cards,[],'Merging must not mutate the source response.');
+const refreshError = {cards:'Card results could not be refreshed.'};
+const earlyFacts = {...empty(),cards:['early-current-card']};
+const retainedFacts = retainFailedSearchGroups(earlyFacts,refreshError,previous,{cards:true});
+assert.deepEqual(retainedFacts.cards,['early-current-card'],'Current early facts survive a failed fresh factual completion.');
+assert.equal(getSearchFailureSummary(refreshError,['cards']).message,'Cards could not be refreshed.',
+  'Retaining facts must not clear their failed refresh status.');
+const currentEmpty = retainFailedSearchGroups(empty(),{},retainedFacts,{cards:true});
+assert.deepEqual(currentEmpty.cards,[],'A successful current empty read replaces retained facts.');
+assert.equal(getSearchFailureSummary({},['cards']).message,'','A successful current read closes the factual error.');
 console.log('Search failure, partial success and retained-result checks passed.');

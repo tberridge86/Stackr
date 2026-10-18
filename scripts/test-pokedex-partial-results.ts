@@ -13,7 +13,7 @@ const source = baseline
   ? execFileSync('git', ['show', `9bdd2355799fd6e69a8ac14aa59c205481159b63:${path}`], { encoding: 'utf8' })
   : readFileSync(path, 'utf8');
 const tick = () => new Promise<void>((resolve) => setImmediate(resolve));
-type Progress = { cards: any[]; complete: boolean; error?: Error };
+type Progress = { cards: any[]; complete: boolean; error?: Error | null };
 const cards = Array.from({ length: 30 }, (_, index) => ({
   id: `printing-${index}`, set_id: 'fixture-ja-set', name: 'Fixture Raichu', number: String(index + 1),
   canonical_card: { cardId: `canonical-${index}` },
@@ -32,7 +32,10 @@ function renderedNodes(value: any): any[] {
 const renderedText = (value: any) => renderedNodes(value).filter(node => node.type === 'Text')
   .flatMap(node => node.props.children.flat(Infinity)).join(' ');
 
-function harness() {
+function harness(options: {
+  readCards?: (name: string, options: { onProgress: (progress: Progress) => void }) => Promise<Progress>;
+  ownershipPending?: boolean;
+} = {}) {
   const slots: any[] = [];
   let cursor = 0;
   let effects: (() => void)[] = [];
@@ -75,11 +78,13 @@ function harness() {
     'react-native-safe-area-context': { SafeAreaView: 'SafeArea', useSafeAreaInsets: () => ({ bottom: 0 }) },
     '../../components/RaritySymbol': { RaritySymbol: 'Rarity', RARITY_SYMBOL_CARD_OVERLAY: {} },
     '../../lib/pokedexCollection': {
-      fetchCardsForPokemon: (name: string, options: any) => new Promise<Progress>((resolve) => requests.push({ name, publish: options.onProgress, resolve })),
+      fetchCardsForPokemon: options.readCards ?? ((name: string, request: any) => new Promise<Progress>((resolve) => requests.push({ name, publish: request.onProgress, resolve }))),
       fetchOwnedPokedexCards: async () => new Map(), hydratePokedexCardArtwork: async () => [],
       formatPokedexName: (name: string) => name, setPokedexCardOwned: async () => {},
     },
-    '../../lib/pokedexOwnershipState': { usePokedexOwnership: () => ({ values: new Set(['fixture-ja-set:printing-0']), canMutate: true, status: 'ready', busyKey: null, message: null }) },
+    '../../lib/pokedexOwnershipState': { usePokedexOwnership: () => options.ownershipPending
+      ? { values: null, canMutate: false, status: 'loading', busyKey: null, message: 'Loading ownership…' }
+      : { values: new Set(['fixture-ja-set:printing-0']), canMutate: true, status: 'ready', busyKey: null, message: null } },
     '../../lib/setDisplay': { getDisplaySetName: () => 'Fixture set' }, '../../lib/stackrSizing': { stackrCardImageSizes: { cardAspectRatio: 0.71 } },
     '../../lib/haptics': { stackrHaptics: { selection: async () => {}, cardPreview: async () => {} } },
     '../../components/CardInspectionProvider': { useCardInspection: () => ({ inspectCard() {} }) },
@@ -105,7 +110,77 @@ function harness() {
   };
 }
 
+function fallbackService() {
+  let canonicalReads = 0;
+  const results: Progress[] = [];
+  const fallbackCards = cards.slice(0, 16).map(card => ({ ...card, name: 'Raichu' }));
+  const canonicalCards = cards.map((card, index) => ({ cardId: `recovered-${index}`, defaultVariantId: `variant-${index}`, legacy: card }));
+  const dependencies: Record<string, any> = {
+    './cardSearch': { searchLocalPokemonCards: async () => fallbackCards },
+    './supabase': { supabase: {} },
+    './pokemonDisplayNames': {
+      getPreferredCardDisplayName: (input: any) => input.fallbackName,
+      getEnglishCardDisplayName: () => null,
+      getPreferredSetDisplayName: () => 'Fixture set', getEnglishSetDisplayName: () => null,
+    },
+    './stackrDomainAdapter': {
+      fetchStackrCardRows: async () => new Map(), fetchStackrSetRows: async () => new Map(),
+      fetchStackrPriceSnapshots: async () => new Map(),
+      stackrCardToLegacyCard: (card: any) => ({ ...card.legacy, id: card.cardId, name: 'Raichu' }),
+    },
+    './stackrApiV1': { stackrApiClient: {
+      pokemonCards: async () => {
+        canonicalReads += 1;
+        if (canonicalReads === 1) throw new Error('Internal fixture transport failure');
+        return { data: { cards: canonicalCards }, meta: {} };
+      },
+      assetManifest: async () => ({ data: { assets: [] }, meta: {} }),
+    } },
+    './pokedexCollectionCore': {},
+  };
+  const exports: any = {};
+  const servicePath = 'lib/pokedexCollection.ts';
+  const serviceSource = process.env.PDX_FALLBACK_BASELINE === '1'
+    ? execFileSync('git', ['show', `HEAD:${servicePath}`], { encoding: 'utf8' })
+    : readFileSync(servicePath, 'utf8');
+  runInNewContext(ts.transpileModule(serviceSource, { compilerOptions: {
+    module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022,
+  } }).outputText, { exports, Set, Map, Date,
+    require: (name: string) => { assert.ok(name in dependencies, `Unexpected collection dependency: ${name}`); return dependencies[name]; },
+  });
+  return {
+    readCards: async (name: string, options: { onProgress: (progress: Progress) => void }): Promise<Progress> => {
+      const result = await exports.fetchCardsForPokemon(name, options);
+      results.push(result);
+      return result;
+    },
+    reads: () => canonicalReads, results,
+  };
+}
+
 async function run() {
+  const initial = harness({ ownershipPending: true }); initial.render(); await initial.flush();
+  assert.match(initial.text(), /Loading cards…/, 'A pending first factual read is presented as loading, not an empty catalogue.');
+  assert.doesNotMatch(initial.text(), /0 cards loaded|No cards found/);
+  assert.match(initial.text(), /Loading ownership…/, 'Private ownership loading remains independent of catalogue loading.');
+  assert.equal(initial.track(), undefined); initial.unmount();
+
+  const service = fallbackService();
+  const fallback = harness({ readCards: service.readCards }); fallback.render(); await fallback.flush(); await tick(); fallback.render();
+  assert.equal(fallback.list().props.data.length, 16, 'The real collection fallback keeps useful legacy cards after canonical failure.');
+  assert.match(fallback.text(), /16 cards loaded/); assert.match(fallback.text(), /partial card list/);
+  assert.match(fallback.text(), /complete card list could not be loaded/, 'The actual fallback result carries the existing retryable error field.');
+  assert.doesNotMatch(fallback.text(), /Internal fixture transport failure/, 'The user receives a safe factual recovery message.');
+  assert.ok(fallback.retry(), 'A real canonical-failure fallback exposes the existing screen Retry.');
+  assert.equal(fallback.track(), undefined, 'A fallback is never a complete collection denominator.');
+  const fallbackSnapshot = JSON.stringify(service.results[0]);
+  fallback.retry().props.onPress(); fallback.render(); await fallback.flush(); await tick(); fallback.render();
+  assert.equal(service.reads(), 2, 'Actual Retry restarts the canonical collection read.');
+  assert.equal(fallback.list().props.data.length, 30); assert.ok(fallback.track());
+  assert.equal(fallback.retry(), undefined); assert.doesNotMatch(fallback.text(), /partial card list|could not be loaded/);
+  assert.equal(JSON.stringify(service.results[0]), fallbackSnapshot, 'Later success never mutates the previously returned partial snapshot.');
+  fallback.unmount();
+
   const h = harness(); h.render(); await h.flush();
   assert.equal(h.requests[0].name, 'raichu', 'The selected species remains the catalogue query.');
   const partial = { cards: cards.slice(0, 24), complete: false, error: new Error('Second page failed') };

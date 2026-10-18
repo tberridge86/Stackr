@@ -66,7 +66,7 @@ import { StackrHeroBackdrop } from '../../components/StackrBackdrop';
 import { StackrButtonPattern } from '../../components/StackrEmboss';
 import { StackrImage } from '../../components/StackrImage';
 import { useProfile } from '../../components/profile-context';
-import { useAuth } from '../../components/auth-context';
+import { isKnownAuthDenial, useAuth } from '../../components/auth-context';
 import { useStartedBinderPreload } from '../../hooks/useStartedBinderPreload';
 import { readOptionalCatalogueEnrichment } from '../../lib/optionalCatalogueEnrichment';
 import { withPersonalDataReadTimeout } from '../../lib/personalDataRead';
@@ -852,7 +852,7 @@ type BinderLibraryFactsSnapshot = {
   priceKeysByBinder: Record<string, string[]>;
 };
 
-const BINDER_SUMMARY_COUNT_VERSION = 'set-total-known-state-v3';
+const BINDER_SUMMARY_COUNT_VERSION = 'set-total-known-state-v4';
 const getMasterSetStorageKey = (binderId: string) => `stackr:binder-master-set:${binderId}`;
 
 const getBinderLibrarySignature = (data: BinderRecord[]) =>
@@ -863,6 +863,9 @@ const getBinderLibrarySignature = (data: BinderRecord[]) =>
       binder.source_set_id ?? '',
       binder.master_set_enabled ? 'master' : 'standard',
       binder.card_mode ?? '',
+      binder.catalogue_identity_status === 'resolved' ? binder.catalogue_set_id ?? '' : '',
+      binder.catalogue_identity_status === 'resolved' ? binder.catalogue_set_total ?? '' : '',
+      binder.catalogue_identity_status === 'resolved' ? binder.catalogue_set_printed_total ?? '' : '',
     ].join(':'))
     .join('|') || 'empty'].join('|');
 
@@ -1052,12 +1055,25 @@ export default function BinderLibraryScreen() {
             .select('id, language, printed_total, total')
             .in('id', setIdCandidates).abortSignal(signal!))
         : Promise.resolve({ data: [], error: null }),
-      setIdCandidates.length
-        ? readOptionalCatalogueEnrichment(async (signal) => await supabase
-            .from('tcg_sets')
-            .select('id, source_id, language, printed_total, actual_total')
-            .in('id', setIdCandidates).abortSignal(signal!))
-        : Promise.resolve({ data: [], error: null }),
+      (async () => {
+        const canonicalIds = [...new Set(data.flatMap((binder) => [
+          binder.catalogue_identity_status === 'resolved' ? binder.catalogue_set_id : null,
+          /^[0-9a-f-]{36}$/i.test(binder.source_set_id ?? '') ? binder.source_set_id : null,
+        ]).filter((id): id is string => Boolean(id)))];
+        const byLanguage = new Map<PokemonCardLanguage, string[]>();
+        for (const binder of data) {
+          if (!binder.source_set_id || binder.type !== 'official') continue;
+          const language = inferBinderLanguage(binder.language, binder.source_set_id);
+          byLanguage.set(language, [...new Set([...(byLanguage.get(language) ?? []), ...getSetLookupCandidates(binder.source_set_id)])]);
+        }
+        const results = await Promise.all([
+          ...(canonicalIds.length ? [readOptionalCatalogueEnrichment(async (signal) => await supabase.from('tcg_sets')
+            .select('id, source_id, language, printed_total, actual_total').in('id', canonicalIds).abortSignal(signal!))] : []),
+          ...[...byLanguage].map(([language, references]) => readOptionalCatalogueEnrichment(async (signal) => await supabase.from('tcg_sets')
+            .select('id, source_id, language, printed_total, actual_total').eq('language', language).in('source_id', references).abortSignal(signal!))),
+        ]);
+        return { data: results.flatMap((result) => result?.data ?? []), error: results.find((result) => result?.error)?.error ?? null };
+      })(),
       masterSetIdCandidates.length
         ? readOptionalCatalogueEnrichment(async (signal) => await supabase
             .from('pokemon_cards')
@@ -1101,15 +1117,23 @@ export default function BinderLibraryScreen() {
         raw_data: card.raw_payload ?? null,
       })),
     ];
+    const canonicalSets = (canonicalSetRowsResult?.data ?? []) as any[];
+    const canonicalSourceIds = new Map<string, Set<string>>();
+    for (const set of canonicalSets) {
+      const key = getLanguageSetKey(set.source_id, set.language);
+      canonicalSourceIds.set(key, new Set([...(canonicalSourceIds.get(key) ?? []), set.id]));
+    }
     const setTotals = new Map(
       [
         ...(setRowsResult?.data ?? []),
-        ...((canonicalSetRowsResult?.data ?? []) as any[]).map((set) => ({
-          id: set.id,
+        ...canonicalSets.flatMap((set) => [...new Set([set.id,
+          canonicalSourceIds.get(getLanguageSetKey(set.source_id, set.language))?.size === 1 ? set.source_id : null,
+        ].filter(Boolean))].map((id) => ({
+          id,
           language: set.language,
           printed_total: set.printed_total,
           total: set.actual_total,
-        })),
+        }))),
       ].map((set) => [
         getLanguageSetKey(set.id, set.language),
         readStoredSetTotal(set),
@@ -1169,9 +1193,9 @@ export default function BinderLibraryScreen() {
       ownedRowsByBinder.set(binder.id, ownedRows);
       const storedOfficialTotal = binder.source_set_id ? setTotals.get(binderSetKey) ?? null : null;
       const knownOfficialTotal = getKnownPokemonSetTotal(binder.source_set_id, binderLanguage) ?? null;
-      const officialTotal = storedOfficialTotal && storedOfficialTotal > 0
-        ? storedOfficialTotal
-        : knownOfficialTotal;
+      const resolvedTotal = binder.catalogue_identity_status === 'resolved' && binder.catalogue_set_id
+        ? readStoredSetTotal({ total: binder.catalogue_set_total, printed_total: binder.catalogue_set_printed_total }) : null;
+      const officialTotal = resolvedTotal ?? (storedOfficialTotal && storedOfficialTotal > 0 ? storedOfficialTotal : knownOfficialTotal);
       const isMasterSet = nextMasterSets[binder.id] === true;
       const masterCards = binder.source_set_id ? cardsBySet.get(binderSetKey) ?? [] : [];
       const catalogueLooksComplete = binder.type === 'official' && officialTotal != null && masterCards.length >= officialTotal;
@@ -1267,9 +1291,27 @@ export default function BinderLibraryScreen() {
     return { counts: nextCounts, masterSets: nextMasterSets, priceInputs, priceKeysByBinder: Object.fromEntries(priceKeysByBinder) };
   }, []);
 
-  const fetchBinderValues = useCallback(async (facts: BinderLibraryFactsSnapshot): Promise<BinderValueMap> => {
+  const fetchBinderValues = useCallback(async (
+    facts: BinderLibraryFactsSnapshot,
+    isCurrent: () => boolean = () => true,
+  ): Promise<BinderValueMap> => {
     const nextValues: BinderValueMap = {};
-    const prices = await loadCollectionPrices(facts.priceInputs);
+    const prices = await loadCollectionPrices(facts.priceInputs, { isCurrent });
+    if (!isCurrent()) {
+      throw Object.assign(new Error('Stored collection price read was cancelled.'), { name: 'AbortError' });
+    }
+    // Concurrent workers can finish with different failures. A verified access
+    // denial takes precedence over a transient failure in any sibling result.
+    const denied = prices.find((price) => price.requestFailure?.kind === 'authentication_required'
+      || price.requestFailure?.kind === 'access_denied' || isKnownAuthDenial(price.requestFailure));
+    const interrupted = denied ?? prices.find((price) => price.requestFailure || price.requestError);
+    if (interrupted) {
+      const failure = interrupted.requestFailure;
+      throw Object.assign(new Error('Stored collection prices could not be read.'), {
+        status: failure?.status ?? (failure?.kind === 'authentication_required' ? 401 : failure?.kind === 'access_denied' ? 403 : null),
+        code: failure?.code ?? 'stored_price_read_failed', requestFailure: failure,
+      });
+    }
     const pricesByKey = new Map(prices.map((price) => [price.key, price]));
     for (const [binderId, keys] of Object.entries(facts.priceKeysByBinder)) {
       const priceRows = keys.map((key) => pricesByKey.get(key)).filter(Boolean);
@@ -1318,7 +1360,11 @@ export default function BinderLibraryScreen() {
       const priceSignature = sha256Text(JSON.stringify([facts.priceInputs, facts.priceKeysByBinder]));
       const nextValues = await stackrQueryClient.fetchQuery({
         queryKey: [...queryKey, 'prices', priceSignature],
-        queryFn: () => withPersonalDataReadTimeout(() => fetchBinderValues(facts)),
+        // React Query may share this work between cached and fresh overview
+        // subscribers. Its lifetime belongs to the query, not one subscriber.
+        queryFn: ({ signal: querySignal }) => withPersonalDataReadTimeout(
+          (signal) => fetchBinderValues(facts, () => !signal.aborted), { signal: querySignal },
+        ),
         staleTime: forceRefresh ? 0 : stackrQueryTiming.hotPathStaleMs,
       });
       if (!isCurrentSummary()) return;
@@ -1327,7 +1373,17 @@ export default function BinderLibraryScreen() {
       applyBinderSummarySnapshot(snapshot);
       setLibraryError(null);
     } catch (error) {
-      if (isCurrentSummary()) setLibraryError('Some collection details could not refresh. Your binders are still available. Pull to refresh or try again.');
+      if (isCurrentSummary()) {
+        if (isKnownAuthDenial(error)) {
+          // A price denial must not become an honest no-quote result, nor leave
+          // private cached prices visible as if access were still verified.
+          setValues({});
+          stackrQueryClient.removeQueries({ queryKey: queryKey.slice(0, -1) });
+          setLibraryError('Stored price access could not be verified. Check your sign-in and try again.');
+        } else {
+          setLibraryError('Some collection details could not refresh. Your last known prices remain visible. Pull to refresh or try again.');
+        }
+      }
       throw error;
     }
   }, [applyBinderSummarySnapshot, fetchBinderFactsSnapshot, fetchBinderValues]);
@@ -1435,6 +1491,11 @@ export default function BinderLibraryScreen() {
         stackrQueryClient.setQueryData(queryKey, enriched);
         applyBinderOverviewSnapshot(enriched);
         void writePersistedBinderOverview(accountId, enriched, { isCurrent, savedAt: Date.now() });
+        if (getBinderLibrarySignature(enrichedBinders) !== getBinderLibrarySignature(snapshot.binders)) {
+          void loadBinderSummaries(enrichedBinders, accountId, shouldForceRefresh, isCurrent).catch((summaryError) => {
+            console.log('Failed to load enriched binder totals', summaryError);
+          });
+        }
       }).catch((summaryError) => {
         console.log('Failed to load binder summaries', summaryError);
       });

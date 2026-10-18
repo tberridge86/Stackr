@@ -119,9 +119,10 @@ await test('visible content and edit readiness are different measurements; stale
 
 // Execute actual screen load callback, with native viewability itself deliberately not simulated as a paint claim.
 const source = fs.readFileSync('features/binder/BinderDetailScreen.tsx', 'utf8');
-const ast = ts.createSourceFile('screen.tsx', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX); let callback, authEffect;
+const ast = ts.createSourceFile('screen.tsx', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX); let callback, authEffect, readOnlyCopy;
 function visit(n) {
   if (ts.isVariableDeclaration(n) && n.name.getText(ast) === 'load' && ts.isCallExpression(n.initializer)) callback = n.initializer.arguments[0].getText(ast);
+  if (ts.isVariableDeclaration(n) && n.name.getText(ast) === 'readOnlyMessage') readOnlyCopy = n.initializer.getText(ast);
   if (ts.isCallExpression(n) && n.expression.getText(ast) === 'useEffect' && n.arguments[0]?.getText(ast).includes('supabase.auth.onAuthStateChange')) authEffect = n.arguments[0].getText(ast);
   ts.forEachChild(n, visit);
 }
@@ -144,6 +145,7 @@ function screenHarness() {
     accountGenerationRef: { current: 0 }, loadRequestRef: { current: 0 }, artworkRequestRef: { current: null }, activeAccountIdRef: { current: scope.accountId }, retrievalTraceRef: { current: null },
     beginBinderRetrieval, isCompleteBinderSnapshot, binderReopenScope: () => scope, readBinderReopenPreview: () => disk.promise,
     withPersonalDataReadTimeout: deadline.exports.withPersonalDataReadTimeout,
+    readOptionalCatalogueEnrichment: (work) => Promise.resolve().then(work),
     binderReopenCache: { lease: () => 0, save: (...args) => { saves++; savedArgs.push(args); }, invalidate: () => { invalidations++; } },
     retainBinderPreviewDuringRefresh: work => work(), invalidateBinderCaches: () => {}, invalidatePokemonCatalogueCardCaches: () => {},
     isBinderAccessDenied: error => error?.status === 403 || error?.status === 401,
@@ -164,6 +166,72 @@ function screenHarness() {
     get saves() { return saves; }, get invalidations() { return invalidations; } };
 }
 const snapshot = () => snapshotBinderView(scope, binder, cards(), Date.now());
+await test('saved-preview artwork recovers before live auth and never changes ownership or prices', async () => {
+  const h = screenHarness(); let artworkCalls = 0;
+  const art = deferred();
+  h.runtime.attachBinderCatalogueArtwork = (rows, signal, onProgress) => {
+    artworkCalls++;
+    art.promise.then(onProgress);
+    return art.promise;
+  };
+  h.load(); h.disk.resolve(snapshot()); await tick();
+  assert.equal(artworkCalls, 1, 'a saved preview must start its independent image recovery');
+  const recovered = cards(); recovered[0].card.images = { small: 'https://approved.invalid/card.webp' };
+  recovered[0].owned_quantity = 99; recovered[0].tcg_price = 999;
+  art.resolve(recovered); await tick();
+  assert.equal(h.state.cards[0].card.images.small, 'https://approved.invalid/card.webp');
+  assert.equal(h.state.cards[0].owned_quantity, 4);
+  assert.notEqual(h.state.cards[0].tcg_price, 999);
+  assert.equal(h.state.ownershipReady, false);
+});
+await test('late saved-preview artwork cannot restore an account-invalidated view', async () => {
+  const h = screenHarness(); const art = deferred();
+  h.runtime.attachBinderCatalogueArtwork = () => art.promise;
+  h.load(); h.disk.resolve(snapshot()); await tick();
+  h.runtime.accountGenerationRef.current++;
+  const recovered = cards(); recovered[0].card.images = { small: 'https://approved.invalid/old-account.webp' };
+  art.resolve(recovered); await tick();
+  assert.equal(Boolean(h.state.cards[0].card.images.small), false);
+});
+await test('a queued saved-preview image update cannot overwrite a completed fresh model', async () => {
+  const h = screenHarness(); const art = deferred(); const queued = [];
+  const publish = h.runtime.setCards;
+  h.runtime.setCards = (value) => typeof value === 'function' ? queued.push(value) : publish(value);
+  let calls = 0;
+  h.runtime.attachBinderCatalogueArtwork = () => ++calls === 1 ? art.promise : new Promise(() => {});
+  const pending = h.load(); h.disk.resolve(snapshot()); await tick();
+  const oldArt = cards(); oldArt[0].card.images = { small: 'https://approved.invalid/saved.webp' };
+  art.resolve(oldArt); await tick();
+  h.auth.resolve({ data: { user: { id: scope.accountId } } }); h.record.resolve(binder); await tick();
+  const fresh = cards(); fresh[0].card.images = { small: 'https://approved.invalid/fresh.webp' };
+  h.network.resolve(fresh); await pending;
+  for (const update of queued) publish(update);
+  assert.equal(h.state.cards[0].card.images.small, 'https://approved.invalid/fresh.webp');
+});
+await test('read-only copy distinguishes saved, pending, confirmed foreign and explicit own-binder views', async () => {
+  assert(readOnlyCopy);
+  const copyCode = ts.transpileModule(`export const message = ${readOnlyCopy};`, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+  const label = (state) => { const exports = {}; vm.runInNewContext(copyCode, { ...state, exports }); return exports.message; };
+  const own = { userId: 'owner-a', binder: { user_id: 'owner-a' }, ownershipReady: true, reopenStatus: null };
+  assert.match(label({ ...own, reopenStatus: { state: 'offline' } }), /Saved binder/);
+  assert.match(label({ ...own, ownershipReady: false }), /Checking ownership/);
+  assert.match(label({ ...own, binder: { user_id: 'owner-b' } }), /another collector/);
+  assert.equal(label(own), 'Read-only binder');
+  assert.equal(label({ ...own, userId: null }), 'Read-only binder');
+});
+await test('optional custom binder name artwork cannot hold usable card facts', async () => {
+  const h = screenHarness(); const customArt = deferred();
+  h.runtime.getCustomBinderNameArtKeyForBinder = () => customArt.promise;
+  const pending = h.load(); h.disk.resolve(null);
+  h.auth.resolve({ data: { user: { id: scope.accountId } } });
+  h.record.resolve({ ...binder, type: 'custom', source_set_id: null }); await tick();
+  h.network.resolve(cards(2)); await tick();
+  const visibleBeforeCustomArt = h.state.cards.length;
+  customArt.resolve('custom-art'); await pending;
+  assert.equal(visibleBeforeCustomArt, 2, 'optional local artwork cannot block the card model');
+});
 await test('actual screen renders a complete read-only saved view before auth or ownership network replies', async () => {
   const h = screenHarness(); h.load(); h.disk.resolve(snapshot()); await tick();
   assert.equal(h.state.cards.length, 124); assert.equal(h.state.loading, false); assert.equal(h.state.ownershipReady, false); assert.equal(h.state.status.state, 'refreshing');

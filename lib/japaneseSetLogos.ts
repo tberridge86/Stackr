@@ -1041,7 +1041,7 @@ const JAPANESE_SET_LOGOS_BY_KEY: Record<string, JapaneseSetLogoMatch> = {
     normalizedKey: "m6",
     name: "Storm Emeralda",
     code: "M6",
-    source: require('../assets/rev2/11-japanese-set-logo/logos-owner-approved-20261017/m6.webp') as ImageSourcePropType,
+    source: require('../assets/rev2/11-japanese-set-logo/logos-owner-supplied-20261018/m6.png') as ImageSourcePropType,
   },
   "m5": {
     key: "m5",

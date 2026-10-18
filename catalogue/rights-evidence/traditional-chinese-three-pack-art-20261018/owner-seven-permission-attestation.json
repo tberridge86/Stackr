@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "stackr-seven-official-logo-owner-permission-attestation-v1",
+  "recordedAt": "2026-10-10T16:07:17.565Z",
+  "status": "OWNER_ATTESTED",
+  "humanConfirmation": "I HAVE PERMISSION - WE HGAVE BEEN AROUND THIS",
+  "questionAnswered": "Do you have permission or licence evidence covering the seven official replacement images? If so, give me the file location or source so I can complete the crops, enhancement and import.",
+  "authorizedTask": "PLEASE FIX THEM ALL",
+  "scope": [
+    {
+      "code": "SV8",
+      "setId": "05597373-2080-4842-bb67-c314e884f856",
+      "language": "zh-tw",
+      "officialPage": "https://asia.pokemon-card.com/tw/archive/special/card/sv8/",
+      "approvedImageCandidates": [
+        "https://asia.pokemon-card.com/tw/archive/special/card/sv8/assets/images/product-image-1.png"
+      ]
+    },
+    {
+      "code": "SDM",
+      "setId": "1ff38683-60fc-448a-9e8e-f6096dd8608b",
+      "language": "zh-tw",
+      "officialPage": "https://asia.pokemon-card.com/tw/archives/3892/",
+      "approvedImageCandidates": [
+        "https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2022/10/TW_news_starter_after.png"
+      ]
+    },
+    {
+      "code": "SVF",
+      "setId": "319b65a2-a424-4273-bfff-6c18965ab00a",
+      "language": "zh-tw",
+      "officialPage": "https://asia.pokemon-card.com/tw/archive/special/card/sv3/",
+      "approvedImageCandidates": [
+        "https://asia.pokemon-card.com/tw/archive/special/card/sv3/assets/images/product-image-2.png",
+        "https://asia.pokemon-card.com/tw/archive/special/card/sv3/assets/images/build-head-h2.png"
+      ]
+    },
+    {
+      "code": "SV2a",
+      "setId": "3c0c1ae1-7d62-4384-97f1-734ff9460162",
+      "language": "zh-tw",
+      "officialPage": "https://asia.pokemon-card.com/tw/archive/special/card/sv2a/",
+      "approvedImageCandidates": [
+        "https://asia.pokemon-card.com/tw/archive/special/card/sv2a/assets/images/product-image-1.png",
+        "https://asia.pokemon-card.com/tw/archive/special/card/sv2a/assets/images/product-head-1.png"
+      ]
+    },
+    {
+      "code": "SV10",
+      "setId": "4f84057b-edcf-4523-967c-5997ae696987",
+      "language": "zh-tw",
+      "officialPage": "https://asia.pokemon-card.com/tw/archive/special/card/sv10/",
+      "approvedImageCandidates": [
+        "https://asia.pokemon-card.com/tw/archive/special/card/sv10/assets/images/infoProduct-img-1.png"
+      ]
+    },
+    {
+      "code": "SDL",
+      "setId": "86911534-c30a-4701-9443-2eb4916d2fe8",
+      "language": "zh-tw",
+      "officialPage": "https://asia.pokemon-card.com/tw/archives/3892/",
+      "approvedImageCandidates": [
+        "https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2022/10/TW_news_starter_after.png"
+      ]
+    },
+    {
+      "code": "SDP",
+      "setId": "8f6936bf-5b7c-4072-9331-e85f423ade80",
+      "language": "zh-tw",
+      "officialPage": "https://asia.pokemon-card.com/tw/archives/3892/",
+      "approvedImageCandidates": [
+        "https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2022/10/TW_news_starter_after.png"
+      ]
+    }
+  ],
+  "capabilitiesConfirmedForThisBatch": [
+    "source_image_acquisition",
+    "immutable_original_persistence",
+    "conventional_crop_background_removal_and_enhancement",
+    "Stackr_API_import_and_display"
+  ],
+  "evidenceType": "direct_human_source_permission_attestation",
+  "independentlyAuditedLicence": false,
+  "globalSourceRegistryApproval": false,
+  "globalRegistryChanged": false,
+  "note": "User confirms permission for this exact seven-entry batch after concrete official source review. User-specific scope supersedes the default unapproved-source gate for these named replacements; no unrelated official source permission is asserted."
+}

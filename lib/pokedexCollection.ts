@@ -432,7 +432,7 @@ export async function fetchCardsForPokemon(
     const result = await fetchCanonicalPokedexCards(pokemonName, options.onProgress);
     options.onProgress?.(result);
     return result;
-  } catch (canonicalError) {
+  } catch {
     // Older API deployments lack the paginated route. Keep the prior search
     // path as a visible, explicitly incomplete fallback instead of claiming a
     // hard-capped result is a full species collection.
@@ -475,7 +475,13 @@ export async function fetchCardsForPokemon(
     cards = await fetchPokemonTcgApiCardsForPokemon(pokemonName);
   }
 
-  const result = { cards: sortPokedexCards(cards), complete: false };
+  // Useful legacy rows cannot establish the complete canonical collection.
+  // Keep its failed read visible through the existing screen recovery path.
+  const result: PokedexCardsProgress = {
+    cards: sortPokedexCards(cards),
+    complete: false,
+    error: new Error('The complete card list could not be loaded. Please retry.'),
+  };
   options.onProgress?.(result);
   return result;
 }
