@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-18T17:36:00.110Z",
+  "updatedAt": "2026-10-18T18:14:55.933Z",
   "sourceVideo": {
     "fileName": "WhatsApp Video 2026-10-18 at 09.12.30.mp4",
     "sha256": "a29ad89ce8cec90b3dfa299c5a951ff4b60d686187f5a27c03a4e6175d1e859c",
@@ -23,8 +23,8 @@
       "owner": "stackr_artwork",
       "resolution": "Trace the exact Home printing; restore accepted image and verified name while preserving native identity.",
       "closureCriterion": "Correct exact-printing Home tile renders.",
-      "state": "blocked_exact_printing_identity",
-      "cause": "The visible Home tile does not expose a reliable exact printing ID; generic saved text cannot establish a verified translation or image.",
+      "state": "home_varoom_delayed_metadata_and_artwork_under_investigation",
+      "cause": "Owner confirms the generic blank tile is the eventual Varoom tile. Delay in Home factual/name/image delivery needs tracing separately from optional prices/artwork; no wrong-printing replacement inferred.",
       "sourceFiles": [],
       "repairCommit": null,
       "validation": [],
@@ -37,7 +37,8 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Need the affected account/card identity and installed-Home rendering; no invented replacement."
+      "remainingBlocker": "Need the affected account/card identity and installed-Home rendering; no invented replacement.",
+      "ownerReply": "The blank tile eventually becomes Varoom (same tile). Earlier separate-working-comparator interpretation is superseded; exact printing fields remain unconfirmed."
     },
     {
       "id": "V02",
@@ -60,7 +61,19 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Both approved bounded diagnostic sets completed; no timeout cause, missing index or exact owned-card freshness/coverage is established. No price refresh or worker restart performed; phone evidence remains open."
+      "remainingBlocker": "Both approved bounded diagnostic sets completed; no timeout cause, missing index or exact owned-card freshness/coverage is established. No price refresh or worker restart performed; phone evidence remains open.",
+      "additionalSourceRepair": {
+        "revision": "d59c3a6e6f48fbb106866ed9e51edd2e0486a0b9",
+        "files": [
+          "lib/collectionPricingState.ts",
+          "scripts/test-collection-pricing-state.ts"
+        ],
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "scope": "Truthful missing/unknown/stale freshness and partial-coverage labels; no live quote retrieval or refresh proof."
+      }
     },
     {
       "id": "V03",
@@ -340,7 +353,20 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Source regression fixed; actual Storm image responses and visible phone images remain pending, with a live factual-read timeout recorded."
+      "remainingBlocker": "Later bounded M6facts/preferred reads returned113eligible shared printing-face references; two exact original images decoded/hash checked. Captured client replay113inspectable/0manifestrequests. A separate whole-set manifest returned504; cause unresolved. Full113image-download and installed-phone acceptance remain open.",
+      "additionalSourceRepair": {
+        "revision": "d59c3a6e6f48fbb106866ed9e51edd2e0486a0b9",
+        "files": [
+          "lib/binders.ts",
+          "lib/stackrDomainAdapter.ts",
+          "scripts/test-saved-binder-artwork-recovery.ts"
+        ],
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "scope": "Full-resolution/provenance merge, live subset full-population pagination, non-sliding metadataTTL;113captured preferred references replay correctly."
+      }
     },
     {
       "id": "V13",
@@ -363,7 +389,19 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Both approved bounded diagnostic sets completed; no timeout cause, missing index or exact owned-card freshness/coverage is established. No price refresh or worker restart performed; phone evidence remains open."
+      "remainingBlocker": "Both approved bounded diagnostic sets completed; no timeout cause, missing index or exact owned-card freshness/coverage is established. No price refresh or worker restart performed; phone evidence remains open.",
+      "additionalSourceRepair": {
+        "revision": "d59c3a6e6f48fbb106866ed9e51edd2e0486a0b9",
+        "files": [
+          "lib/collectionPricingState.ts",
+          "scripts/test-collection-pricing-state.ts"
+        ],
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "scope": "Truthful missing/unknown/stale freshness and partial-coverage labels; no live quote retrieval or refresh proof."
+      }
     },
     {
       "id": "V14",
@@ -443,23 +481,34 @@
       "owner": "stackr_artwork",
       "resolution": "Verify exact regular monthly edition source and acquisition/display evidence before binding.",
       "closureCriterion": "Correct exact-edition cover renders or named source/rights blocker remains.",
-      "state": "blocked_verified_cover_source",
-      "cause": "Named November 2023 cover leads exist, but exact regular-versus-special edition and source permission/acquisition remain unresolved.",
+      "state": "reviewed_source_and_unsigned_export_verified_native_and_phone_pending",
+      "cause": "Exact regular issue and direct owner source permission verified. The released publisher original is now bundled for the existing monthly:2023-11 record; no combined-edition or card association inferred.",
       "sourceFiles": [
-        "docs/releases/corocoro-cover-source-evidence-20261016.json"
+        "components/CorocoroIssueCover.tsx",
+        "lib/corocoroSuppliedCovers.ts",
+        "lib/magazineSetCoverAssets.ts",
+        "lib/magazineSetCovers.ts",
+        "assets/magazine-covers/2023-11-corocoro-regular.jpg",
+        "catalogue/rights-reviews/corocoro-november-2023-owner-directed.2026-10-18.json"
       ],
-      "repairCommit": null,
-      "validation": [],
+      "repairCommit": "f047a5f577126502767e88cdf6d491c467914fcc",
+      "validation": [
+        "scripts/test-corocoro-mobile-delivery.ts",
+        "scripts/test-corocoro-screen-runtime.ts",
+        "scripts/test-magazine-set-covers.ts",
+        "scripts/test-magazine-set-cover-pack.mjs",
+        "docs/releases/remaining-repairs-verification-20261018.json"
+      ],
       "delivery": {
-        "implemented": false,
-        "tested": false,
-        "independentlyReviewed": false,
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
         "merged": false,
         "deployed": false,
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Verified exact cover and permissible source required before import; placeholder stays explicit."
+      "remainingBlocker": "Exact bytes passed current unsigned iOS export. Signed app and installed-phone rendering remain pending; TestFlight stays held."
     },
     {
       "id": "V17",
@@ -762,14 +811,14 @@
     },
     "sourceSecretScan": {
       "passed": true,
-      "repositoryTextFiles": 3708,
-      "scope": "Current working source/evidence including both-plan completion audit; npm run ci:secret-scan passed. No runtime edits in this audit."
+      "repositoryTextFiles": 3710,
+      "scope": "Current source and new repair verification; npm run ci:secret-scan passed, no phone closure."
     },
-    "localIosExport": "passed_exact_four_exported_assets_verified",
+    "localIosExport": "PASS_actual74exact_assets",
     "nativeSigned": false,
     "installedPhone": "pending",
     "performanceSample": "unmeasured; no p95 claim",
-    "exportReceipt": "docs/releases/ios-export-asset-verification-20261018.json",
+    "exportReceipt": "docs/releases/remaining-repairs-verification-20261018.json",
     "hostedChecks": {
       "checkedRevision": "ad063a7c4357b1fd3de05f7d06893755b6cd20ab",
       "succeeded": 10,
@@ -782,8 +831,8 @@
       "scope": "Tests and source checks only; subsequent documentation revisions need their own hosted results"
     },
     "feedbackRecovery": "PASS; six scripts",
-    "localIosExportSource": "66156ca9893e8767a4e594173f63accae015354e",
-    "localIosBundleSha256": "d2f8302a0f99026e284387224cef9f51ef3a5aad85014360ec782d897ef251db",
+    "localIosExportSource": "f047a5f577126502767e88cdf6d491c467914fcc",
+    "localIosBundleSha256": "9f0c8c3164e80ba35c1f362a65dbe402d07102fd95180837b203d677234bfc64",
     "gateway": {
       "passed": 55,
       "failed": 0,
@@ -832,6 +881,21 @@
       "passed": true,
       "repositoryTextFiles": 3703,
       "scope": "Final source/evidence scan after search batching, gateway repair and release-plan documentation"
+    },
+    "previousUnsignedExport": {
+      "source": "66156ca9893e8767a4e594173f63accae015354e",
+      "receipt": "docs/releases/ios-export-asset-verification-20261018.json"
+    },
+    "latestCoverValidation": {
+      "focused": 7,
+      "typecheck": "PASS",
+      "lintErrors": 0,
+      "existingLintWarnings": 8
+    },
+    "historicalSourceSecretScanBeforeRemainingRepairs": {
+      "passed": true,
+      "repositoryTextFiles": 3708,
+      "scope": "Current working source/evidence including both-plan completion audit; npm run ci:secret-scan passed. No runtime edits in this audit."
     }
   },
   "pullRequest": "https://github.com/tberridge86/Stackr/pull/409",
@@ -853,7 +917,10 @@
   "publicRetrievalVerification": "docs/releases/public-retrieval-verification-20261018.json",
   "additionalRuntimeRevisions": [
     "66156ca9893e8767a4e594173f63accae015354e",
-    "8b5ebc753ade3feaf574b21a8b6b01efa79ad582"
+    "8b5ebc753ade3feaf574b21a8b6b01efa79ad582",
+    "d59c3a6e6f48fbb106866ed9e51edd2e0486a0b9",
+    "f047a5f577126502767e88cdf6d491c467914fcc",
+    "c310ccd362efdbbe9133f726dda429c58506c15f"
   ],
   "searchArtworkRepair": "docs/releases/search-artwork-batching-20261018.json",
   "gatewayRepair": {
@@ -907,5 +974,7 @@
     "appNativePublication": false
   },
   "phoneClosedIssues": 0,
-  "completionAudit": "docs/releases/both-plans-completion-audit-20261018.md"
+  "completionAudit": "docs/releases/both-plans-completion-audit-20261018.md",
+  "remainingRepairVerification": "docs/releases/remaining-repairs-verification-20261018.json",
+  "followupPullRequest": "https://github.com/tberridge86/Stackr/pull/410"
 }

@@ -412,3 +412,22 @@ These are recovery checkpoints containing historical uncommitted work, not
 source to overlay onto the maintained app. Their selective-restoration guidance
 remains with the originals. This brings the total to **37 original folders
 reversibly relocated**; no permanent deletion or space recovery is claimed.
+
+
+The resumed repair batch is committed separately from the earlier completion
+audit. Revision d59c3a6 repairs exact binder artwork inspection/provenance,
+live-subset pagination and metadata cache expiry; price labels now retain
+unknown/stale freshness under partial coverage. Revision f047a5f binds the
+owner-approved, exact regular November2023 CoroCoro cover to the existing issue.
+The original81-cover pack is unchanged. Full typecheck/lint, seven cover checks
+and independent app/cover reviews pass.
+
+The actual local unsigned iOS export from f047a5f now verifies **74 exact assets**,
+including the English-lettered Storm logo,27monthly covers,36retained Chinese
+logos and3pack-art fallbacks. The active verifier replaces its old26-cover/old
+logo expectation and rejects four controlled missing/corrupt export cases.
+See [current repair evidence](remaining-repairs-verification-20261018.json).
+This is unsigned local proof: no TestFlight build/upload/submission started.
+The earlier4e native preparation remains historical and must not be reused as
+proof for these later repairs. All phone-level closure and remaining data,
+identity, source-batch and consolidation gates remain open.

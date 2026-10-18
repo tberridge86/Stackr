@@ -66,7 +66,7 @@
   },
   "otherOpenAcceptance": [
     "Two exact Pikachu artwork gaps and two earlier Wartortle gaps",
-    "Generic Home printing identity, exact November2023CoroCoro cover/source rights",
+    "Unidentified Home printing; November2023 cover is source/import/unsigned-export verified, signed/phone proof pending.",
     "Private binder/account counts/values/history/movers and listingmedia",
     "Recorded physical journeys overWiFi/mobiledata, inspection/haptics, required performance samples"
   ],
@@ -143,8 +143,21 @@
   ],
   "primaryMigrationHold": "Existing cached EAS CLI still resides under D:/Stackr-1; retain it and the original primary until native delivery or separately tested runtime relocation and all remaining dependency repairs.",
   "approvalAtPreparation": "requested; awaiting direct human answer",
-  "currentStateObservedAt": "2026-10-18T17:30:03.093Z",
-  "executionState": "HELD_PENDING_COMPLETION_REVIEW_AND_UNSATISFIED_REQUIREMENTS",
+  "currentStateObservedAt": "2026-10-18T18:14:55.933Z",
+  "executionState": "held_until_remaining_repairs_verified",
   "newApprovalReceived": true,
-  "ownerCompletionAudit": "docs/releases/both-plans-completion-audit-20261018.md"
+  "ownerCompletionAudit": "docs/releases/both-plans-completion-audit-20261018.md",
+  "supersedingSource": {
+    "revision": "c310ccd362efdbbe9133f726dda429c58506c15f",
+    "runtimeRepair": "d59c3a6e6f48fbb106866ed9e51edd2e0486a0b9",
+    "coverRepair": "f047a5f577126502767e88cdf6d491c467914fcc",
+    "prepared4eIsHistorical": true,
+    "promisedAssets": 74,
+    "unsignedExportedSource": "f047a5f577126502767e88cdf6d491c467914fcc",
+    "actualUnsignedAssetsVerified": 74,
+    "signedAssetsVerified": false,
+    "buildRequested": false,
+    "submissionRequested": false,
+    "verificationRecord": "docs/releases/remaining-repairs-verification-20261018.json"
+  }
 }
