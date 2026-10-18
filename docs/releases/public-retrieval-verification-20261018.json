@@ -1,0 +1,213 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-18T14:12:15.586Z",
+  "sourceRevisionAtCapture": "290c172527a3c4cab40c914e2392ec31cda4db3e",
+  "scope": "Bounded current public API and local client replay evidence only; separate from installed-phone and universal catalogue completeness.",
+  "wartortle": {
+    "requests": {
+      "factual": 2,
+      "manifests": 1,
+      "imageBytes": 2,
+      "retries": 0,
+      "total": 5,
+      "allowed": {
+        "factual": 4,
+        "manifests": 2,
+        "imageBytes": 2
+      },
+      "timeoutPerRequestMs": 12000
+    },
+    "facts": {
+      "pageCounts": [
+        16,
+        38
+      ],
+      "pageElapsedMs": [
+        2704,
+        1002
+      ],
+      "repeatedCrossPagePrintings": 12,
+      "repeatedMetadataDifferences": 0,
+      "uniqueCanonicalPrintings": 42,
+      "finalCursor": null,
+      "sourcePagesExhausted": true,
+      "requestBudgetTruncated": false,
+      "languages": {
+        "zh-cn": {
+          "count": 6,
+          "catalogueVersionIds": [
+            "79f43e8f-7062-4d29-8571-569eccb7c249"
+          ]
+        },
+        "en": {
+          "count": 23,
+          "catalogueVersionIds": [
+            "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+          ]
+        },
+        "zh-tw": {
+          "count": 3,
+          "catalogueVersionIds": [
+            "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e"
+          ]
+        },
+        "ja": {
+          "count": 10,
+          "catalogueVersionIds": [
+            "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+          ]
+        }
+      },
+      "completeness": "The endpoint cursor was exhausted for this current published-name population. No declared broader expected inventory was supplied or read; universal Wartortle catalogue completeness is unmeasured. Sixteen is demonstrably a canonical first-page count in this sample, not proof that fallback ran."
+    },
+    "currentClient": {
+      "replaySha256": "52b9b5e59c90e665215bd775fd6d42c81b670aed96b232958a4df25bbdece72e",
+      "replayedResult": {
+        "count": 42,
+        "complete": true
+      },
+      "confirmed": [
+        "lib/pokedexCollection.ts:371-398 loops on meta.pagination.nextCursor, with first24/subsequent120; no cards.length<limit completion branch.",
+        "lib/pokedexCollection.ts:378 deduplicates immutable printing IDs; the12 repeated captured cards are byte-identical DTOs.",
+        "lib/pokedexCollection.ts:381 emits16 as complete:false; factsComplete becomes true only after the cursor loop at412.",
+        "lib/stackrApiV1.ts:841 returns the response envelope without trimming pagination metadata.",
+        "app/pokemon/[id].tsx:142 copies progress.complete;143 stops the initial loading flag on useful progress, but does not set collectionComplete true.",
+        "lib/pokedexCollection.ts:399-405 retains useful facts as complete:false plus the failed continuation error.",
+        "lib/cardArtworkPresentation.ts:34-38 and64 reject first_edition-to-normal face sharing; no matching-name substitution is permitted."
+      ],
+      "historicalCause": "Not established. The sampled first-page count16 matches the recorded count, but current local replay follows its real cursor and reaches42. A historical second-page failure, stale/older installed source, or another UI state would require its actual request/build evidence; no source repair is justified by this sample alone."
+    },
+    "artwork": {
+      "sample": "Only the exact first16 visible canonical printings",
+      "manifestAssets": 17,
+      "manifestElapsedMs": 1391,
+      "manifestFinalCursor": null,
+      "eligiblePresentationCandidates": 14,
+      "unresolvedPresentations": 2,
+      "imagesActuallyFetchedDecodedAndHashMatched": 2,
+      "checkedImages": [
+        {
+          "cardId": "6b936314-e727-46a5-a16d-6019ae752535",
+          "languageCode": "zh-cn",
+          "setId": "1e70ad98-8533-4fd0-8d02-15dda333cce9",
+          "setCode": "csm2ac",
+          "collectorNumber": "007",
+          "variantId": "5173a70c-23ad-4b83-a4e0-eae3f7632abb",
+          "assetId": "2ad6dc1a-0912-47a5-9fbc-6d1e0f938123",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/c8/7c/c87c5f32334d3222451a9879f11f80e7e6d6c550a49a44d00d3652e992dbe0bb/card-grid.webp",
+          "status": 200,
+          "bytes": 18876,
+          "sha256": "c87c5f32334d3222451a9879f11f80e7e6d6c550a49a44d00d3652e992dbe0bb",
+          "dimensions": {
+            "width": 240,
+            "height": 335,
+            "format": "webp"
+          },
+          "elapsedMs": 521
+        },
+        {
+          "cardId": "18f41052-beb6-416f-84a7-e8473e59e9a7",
+          "languageCode": "en",
+          "setId": "f2d0385c-1aae-44a9-b301-bf13da9a131e",
+          "setCode": "sv03.5",
+          "collectorNumber": "008",
+          "variantId": "6d595e07-18a3-4010-abfa-9a0a2e55fe28",
+          "assetId": "0a92e737-7bae-4a0d-b7d8-617bc4ee7b33",
+          "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/f3/76/f376a0862f54398aa9e527763d4fd7db3984698c3447f2fb78855ca30f391e2c/card-grid.webp",
+          "status": 200,
+          "bytes": 17110,
+          "sha256": "f376a0862f54398aa9e527763d4fd7db3984698c3447f2fb78855ca30f391e2c",
+          "dimensions": {
+            "width": 240,
+            "height": 330,
+            "format": "webp"
+          },
+          "elapsedMs": 152
+        }
+      ],
+      "unresolved": [
+        {
+          "cardId": "5d69e38e-7e3f-4db3-a1fc-4dbd829aecf8",
+          "languageCode": "ja",
+          "setId": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+          "setCode": "web1",
+          "collectorNumber": "024",
+          "defaultVariantId": "d7f0b6b9-5c1e-4ae4-a752-aea1e7b42896",
+          "finding": "Exact JA web1 #024 reports scan_acquisition_required; this complete scoped manifest returned no asset for it. Underlying nonpublic/rejected/source assets were not inventoried."
+        },
+        {
+          "cardId": "db527939-efea-436d-85ac-a7b704e92ff7",
+          "languageCode": "en",
+          "setId": "97e3aeb6-2645-4c3a-9fd4-10d95a181b6e",
+          "setCode": "base1",
+          "collectorNumber": "42",
+          "defaultVariantId": "de5d7738-ffd1-4db6-8dd0-3d289129284f",
+          "finding": "Exact EN Base Set #42 normal default points to a first_edition variant. Approved first_edition asset exists, but the current client correctly rejects implicit cross-edition display. This is an identity/presentation gap, not evidence of HTTP failure or absent stored bytes."
+        }
+      ],
+      "limits": "No installed-phone image rendering, listing-media path, full42-printing image census, remote metadata repair, source acquisition or source replacement performed."
+    }
+  },
+  "pikachuSearch": {
+    "requests": 2,
+    "retries": 0,
+    "observations": [
+      {
+        "url": "https://api.stackrtcg.com/v1/search?q=Pikachu&limit=100",
+        "startedAt": "2026-10-18T14:10:21.502Z",
+        "endedAt": "2026-10-18T14:10:24.593Z",
+        "elapsedMs": 3089,
+        "status": 200,
+        "requestId": "06cbd74a-191f-49a8-9196-f813d9486b21",
+        "generatedAt": "2026-10-18T14:10:24.962Z",
+        "totalResults": 100,
+        "cardResults": 100,
+        "cardsWithEmbeddedVariantImage": 0,
+        "responseSha256": "4bd9ec0a4f1fb7751b89594b07aea1ef2b5ce9fc232f81fbd41792c863548027"
+      },
+      {
+        "url": "https://api.stackrtcg.com/v1/search?q=Pikachu&language=ja&limit=40",
+        "startedAt": "2026-10-18T14:10:21.550Z",
+        "endedAt": "2026-10-18T14:10:25.594Z",
+        "elapsedMs": 4044,
+        "status": 200,
+        "requestId": "b41106c0-2079-4569-83dd-58e81ce932c3",
+        "generatedAt": "2026-10-18T14:10:25.983Z",
+        "totalResults": 16,
+        "cardResults": 16,
+        "cardsWithEmbeddedVariantImage": 0,
+        "responseSha256": "c0dcad889d8e847b90f9f7be83cb2d688dc9be2266805c1804234928c607ec95"
+      }
+    ],
+    "scope": "Current factual search success does not establish historical query settlement or optional image/listing delivery."
+  },
+  "privateReceiptDigests": [
+    {
+      "relativePath": "evidence/consolidation-20261018/wartortle-public-read-20261018/report.json",
+      "sha256": "e0893841512a27c263baf5fa60f2b466d9d2c94a6d3a989753d73c292f858947"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/pikachu-public-search-20261018/receipt.json",
+      "sha256": "f4326fcbd5da791b582ffe180bbc34437d0a6196bd84455bbc81eb7a06d7b0ca"
+    }
+  ],
+  "noCookieHeadersPublished": true,
+  "providerRefresh": false,
+  "remoteSql": false,
+  "mutation": false,
+  "phoneVerified": false,
+  "performanceTargetsMeasured": false,
+  "pikachuArtworkProbe": {
+    "observedAt": "2026-10-18T14:17:40.340Z",
+    "request": "GET /v1/assets/manifest?printingIds={95 exact previously captured IDs}&assetType=card_image&limit=250",
+    "status": 503,
+    "code": "downstream_circuit_open",
+    "elapsedMs": 426,
+    "printingIdentities": 95,
+    "requestId": "727fa75b-49d9-47b7-aca0-066c80c441ba",
+    "requests": 1,
+    "retries": 0,
+    "interpretation": "Gateway rejected the request before origin. No successful live batch latency or asset completeness was measured. The preceding failures that opened the circuit were not observed."
+  },
+  "searchArtworkSourceRepair": "docs/releases/search-artwork-batching-20261018.json"
+}

@@ -1,8 +1,10 @@
 # 18 October video repairs and workspace consolidation
 
 Tif coordinates both approved plans in the independent `D:/Stackr` repository,
-on `codex/stackr-repair-consolidation-20261018`. The runtime repair commit is
-`bb9f41030a63274f79004e787ab9bb2f5a2fc89d`, based on remote main
+on `codex/stackr-repair-consolidation-20261018`. The initial runtime repair is
+`bb9f41030a63274f79004e787ab9bb2f5a2fc89d`; search artwork batching is
+`66156ca9893e8767a4e594173f63accae015354e` and gateway circuit isolation is
+`8b5ebc753ade3feaf574b21a8b6b01efa79ad582`, based on remote main
 `f9350f896375ffac84a22ca2f7a4ec7654538091`.
 
 The [23-issue register](video-repair-register-20261018.json) is the closure
@@ -43,6 +45,16 @@ identify a numeric phone build. Approximate timestamps refer to the 292-second
   direct permission is bound to its hash in the rights receipt. Three supplied
   Traditional Chinese pack images provide artwork fallback; they are not
   presented as standalone logos. Previous immutable assets and receipts remain.
+- Search artwork now requests at most 100 exact printing IDs per manifest
+  batch, with bounded pagination under the existing optional deadline. Factual
+  cards remain usable first; completed artwork pages survive later failures.
+  The regression changes 100 singleton requests into one batch while retaining
+  exact variant/edition rules, cancellation and concurrent-query isolation.
+- Optional asset manifests have a separate fixed gateway circuit. Five failed
+  image requests can no longer block healthy factual routes or reset their
+  failure count. Existing failure thresholds, cooldowns, retries, authentication
+  and cache rules remain. This gateway change is locally tested and reviewed;
+  it has not been deployed.
 
 ## Validation and delivery
 
@@ -52,11 +64,13 @@ serialized saved artwork, binder values/counts, actual Value History screen,
 collection pricing, Pokédex partial/account/loading, search recovery/settlement,
 Japanese/Traditional Chinese artwork and CoroCoro interaction tests passed.
 The additional chart-date regression exercises the rendered tracker. A whole
-source secret scan passed across 3684 text files. No backend/gateway runtime
-files changed in this candidate.
+source secret scan passed across 3701 text files before the final evidence
+updates. All 55 gateway tests passed, with no skips, after restoring the exact
+locked dependencies. The existing local Worker dry-run build also passed;
+no upload occurred. No backend runtime files changed in this candidate.
 
 The existing candidate workflows now run `npm run test:feedback-recovery`,
-covering five focused recovery regressions. At source/evidence revision
+covering six focused recovery regressions. At earlier source/evidence revision
 `ad063a7c4357b1fd3de05f7d06893755b6cd20ab`, all ten applicable hosted checks
 passed. The release-candidate and canary-API jobs were skipped; they are not
 passes or live-delivery evidence. The draft review is
@@ -71,9 +85,11 @@ The final local production iOS export passed. The
 [export receipt](ios-export-asset-verification-20261018.json) verifies all four
 selected source assets byte for byte in the actual exported asset map and bundle
 metadata. Bundle SHA-256:
-`e37e7563866a918a28961f72d8928018475a5242bc35984374ec69e90e89a02c`.
-This is an unsigned local export. Merge, live API/image response, signed native
-publication and installed-iPhone Wi-Fi/mobile journeys remain separate gates.
+`d2f8302a0f99026e284387224cef9f51ef3a5aad85014360ec782d897ef251db`,
+exported from search runtime revision `66156ca`. The previous export is retained.
+This is an unsigned local export. The exact M6 API/image response was separately
+verified; broader image delivery, merge, signed native publication and
+installed-iPhone Wi-Fi/mobile journeys remain separate gates.
 Existing performance targets and required sample sizes remain unchanged and
 unmeasured by this work; no percentile claim is made.
 
@@ -94,15 +110,98 @@ which does not establish successful database/storage reads. The
 the precise database/query cause and its relationship to each video symptom
 remain unproved.
 
-The [bounded read-only SQL](diagnostics-20261018-read-only.sql) is prepared and
-independently reviewed. Running remote database scripts requires the owner's
-explicit approval under AGENTS.md; that request is pending. The prepared
-valuation route is not probed with an authenticated GET because it can enqueue
-preparation even without a provider refresh. Unrelated staged API credentials
-must not be swept into a deployment.
+The owner approved the [bounded read-only SQL](diagnostics-20261018-read-only.sql),
+and the checks completed. The initial tool response exposed only the final
+row-producing result, so the five earlier unchanged checks were collected
+separately in the same read-only/deadline/rollback wrapper. One further point
+sample reused the same approved wait-state statement: seven SQL tool calls in
+total. The [diagnostic report](production-diagnostics-20261018.json) records
+each call and the interpretation limits. No writes, provider refreshes, worker
+restarts or deployments occurred. The prepared valuation route is not probed
+with an authenticated GET because it can enqueue preparation even without a
+provider refresh. Unrelated staged API credentials must not be swept into a
+deployment.
+
+The two activity samples show 13 then 17 idle ClientRead sessions and one active
+session without a reported wait. The facts EXPLAIN is indexed but contains only
+estimates; it does not establish runtime or API/Storage health. Several actual
+physical table names are absent from the approved index-filter list, so the
+metadata cannot establish missing indexes. No timeout root cause is confirmed.
+
+At 13:33 UTC the same public facts request returned three cards with HTTP 200
+in about 2.3 seconds. The source Storm PNG returned HTTP 200 and all 900649 bytes
+match the supplied hash. These point successes do not close the intermittent
+failure or phone journeys. The production logo manifest returned an empty
+asset list: the historical r7 import retained the source in the logo library,
+but left its production canonical set association null after the recorded
+staging UUID failed the guarded production match. A one-asset association repair
+has now been applied under the separate existing exact-artwork authorization.
+The exact M6-only transaction committed one asset and one existing-version
+membership, reusing the unchanged public PNG. All 13 focused preparation/guard
+tests passed, including isolated PostgreSQL publication, rollback and rejection
+cases; independent review passed the exact frozen SQL. The transaction retained
+five-second statement and one-second lock limits. It changed no set, printing,
+variant or version records, refreshed no prices and uploaded no new object.
+
+After the old default caches and bounded in-flight reads could expire, both
+normal per-set logo API URLs returned the exact single approved M6 asset. The
+selected image response matched all 900649 original bytes, hash and 1280x544
+dimensions. The [publication receipt](storm-m6-publication-20261018.json) records
+the exact operation, rollback and API evidence. The old Japanese bundled asset
+and original source remain retained. Signed native delivery and visible
+Discover/binder phone acceptance are still open; the generic matcher was not
+loosened.
+
+The owner separately approved four corrected follow-up checks, which all
+completed once. The first index filter used outdated table names. Its follow-up
+returned 42 index definitions across six corrected physical tables, the
+stored-price view definition, and estimated plans matching first-page per-set
+logo and known-version card facts reads. The
+[follow-up report](production-diagnostics-followup-20261018.json) preserves the
+exact scope and result hashes. These are metadata and estimated plans, not
+runtime or private collection-price evidence. No timeout cause or missing-index
+repair is established, and no refresh, restart, deployment or database schema
+change was performed.
+
+Fresh [public retrieval checks](public-retrieval-verification-20261018.json)
+enumerated 42 distinct Wartortle printings across four published language
+versions in two pages. The first page has 16 cards and a continuation cursor;
+an exact current-client replay follows it and emits 42 complete. This does not
+establish the historical installed-build cause or a broader expected population.
+For the first 16 printings, one complete manifest yields 14 eligible artwork
+presentations. Two actual thumbnails fully decode and match their declared
+hashes. Japanese web1 #024 needs an approved exact source; English Base Set #42
+normal points to first-edition artwork, which the existing identity guard
+correctly refuses. Neither gap is repaired with an unrelated image.
+
+Fresh public Pikachu searches returned 100 all-language and 16 Japanese factual
+cards, with no embedded variant images. These current successes do not establish
+the recorded failure cause or optional thumbnail/listing-media delivery.
+
+One subsequent manifest request for the 95 distinct printing identities in the
+100-card search returned `503 downstream_circuit_open` in 426ms, before reaching
+the origin. This does not measure successful batch latency. Source reproduction
+confirmed that asset manifests and factual backend routes share a circuit;
+the separate [gateway repair](gateway-circuit-isolation-20261018.json) fixes that
+coupling. Its four new regressions failed on the original source and passed
+after repair; independent review passed. The preceding production failures that
+opened the observed circuit remain unknown. One bounded Railway log read for
+14:14–14:19 UTC, filter `catalogue`, returned zero matching entries; this filtered
+absence is not proof of a healthy origin. The
+[search repair receipt](search-artwork-batching-20261018.json) retains the failed
+live probe alongside local validation.
+
+Read-only gateway metadata identifies production deployment
+`946af123-25ca-4a8b-89f1-e441b52f8bb0`, version
+`71032825-4494-46c2-82b0-de3a21d6953d`, at 100% traffic, tagged to source
+`ea8190f3a0bda642e266438b68f19d4f398f7845`. Its durable-object namespace matches
+the existing release guard. The only gateway runtime difference between that
+tagged source and this candidate is the reviewed proxy circuit change. The
+[gateway release plan](gateway-circuit-release-plan-20261018.md) retains exact
+approval, current-main checks, rollback and post-deployment verification gates.
 
 Home's unidentified Japanese printing, the exact November 2023 CoroCoro cover
-and rights, complete live Wartortle population, affected listing media,
+and rights, broader expected Wartortle population, affected listing media,
 per-card movers, fresh exact-card prices and recorded-phone acceptance remain
 open. March 1999's two specific references, full-resolution final Pikachu
 inspection and tactile haptics need the explicit acceptance journeys. No
@@ -175,13 +274,44 @@ any source change; its failed evidence and the revised reviewed proof remain.
 
 Remaining changed or unclassified work, dependency junction targets, the old
 shared Git primary and large source/data/evidence roots remain held until their
-respective checks pass. Secure backups need a fresh restoration proof; model
-and recognition data retain provenance and consumer paths; mixed-project
+respective checks pass. Model and recognition data retain provenance and
+consumer paths; mixed-project
 `D:/CodexTemp` cannot be moved wholesale. The current hold matrix is private
 `evidence/consolidation-20261018/remaining-data-roots.json`.
+
+The secure backup folder now has a separate exact eight-file encrypted copy,
+a fresh private extraction of 107 files (461026376 bytes), and successful checks
+against all 106 internal manifest hashes. After independent review, the original
+archive, protected key and recovery files moved together to
+`D:/Stackr-organization/backups/secure-recovery-20260730`; an actual inverse move
+and repeat relocation passed all eight fingerprints. The recovery script uses
+its own folder. This proves local archive recovery, not a remote database restore
+or recovery under another Windows account. Private plaintext contents are not
+published.
+
+The historical approved Home source packet moved separately under
+`evidence/source-release-packets-20261018/Stackr-release-queue`. All 17 original
+manifest hashes match; the complete 20-file packet (417563 bytes) has two exact
+copies and passed move/back/move verification. The original manifest and paths
+remain historical evidence, with a current-location note in its maintained
+handoff. The packet is not applied over newer pricing or account safeguards,
+and its pending phone acceptance is not closed by relocation.
+
 Reversible archival does not reclaim disk space. No permanent deletion
 has occurred; any deletion proposal must name exact paths and recovery evidence
 for the owner's approval. No blanket removal, reset or overwrite is permitted.
+
+Three additional non-Git native source/export roots (`mobile-eas-build-check`,
+`mobile-eas-build-camera-20260826`, `mobile-eas-build-slim`) moved under
+`archive/native-source-snapshots-20261018` after independent review. Their 4250
+ordinary files (1754954518 bytes), empty-directory structure and three root
+dependency junctions have two exact copies. Each original tree passed complete
+file/directory/junction fingerprints before and after every move/back/move leg.
+All private configuration and packaged exports are retained. Dependency targets
+were never traversed; each root junction still names `D:/Stackr-1/node_modules`,
+which must migrate with the original shared primary last. The archived source
+was not applied over the current app. These counts are a separate cohort and
+overlap other retained copies; they are not unique-file totals.
 
 Before a release, also reconcile existing promised artwork batches, including
 the original-front batch tracked in PR #339. This candidate's local assets do

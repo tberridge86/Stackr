@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-10-18T10:23:52.775Z",
+  "checkedAt": "2026-10-18T14:21:19.927Z",
   "platform": "ios",
   "environment": "production",
-  "output": "D:/Stackr-organization/active-runtime/repair-consolidation-20261018/ios-export-final",
-  "sourceCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+  "output": "D:/Stackr-organization/active-runtime/repair-consolidation-20261018/ios-export-search-artwork-batching",
+  "sourceCommit": "66156ca9893e8767a4e594173f63accae015354e",
   "localExportPassed": true,
   "nativeSigned": false,
   "published": false,
   "deviceVerified": false,
   "bundle": {
-    "path": "_expo/static/js/ios/entry-882e7ec326ed55c701140e3446d7dc3a.hbc",
-    "bytes": 11781375,
-    "sha256": "e37e7563866a918a28961f72d8928018475a5242bc35984374ec69e90e89a02c"
+    "path": "_expo/static/js/ios/entry-cd0bf373501d893c76eb61d0fa71dab2.hbc",
+    "bytes": 11781395,
+    "sha256": "d2f8302a0f99026e284387224cef9f51ef3a5aad85014360ec782d897ef251db"
   },
   "assetMapSha256": "46be09cc3263bced8d76be61fd52a9fcfd8c49b3520f25b64cb9d0d4d3cb3a47",
   "assets": [
@@ -57,5 +57,10 @@
       "exactBytesVerified": true
     }
   ],
-  "limitation": "A local production export proves packaged bytes, not signed/native inclusion, API image delivery or installed-phone rendering."
+  "limitation": "A local production export proves packaged bytes, not signed/native inclusion, API image delivery or installed-phone rendering.",
+  "previousVerifiedExport": {
+    "sourceCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+    "bundleSha256": "e37e7563866a918a28961f72d8928018475a5242bc35984374ec69e90e89a02c",
+    "retainedPrivateOutput": "D:/Stackr-organization/active-runtime/repair-consolidation-20261018/ios-export-final"
+  }
 }

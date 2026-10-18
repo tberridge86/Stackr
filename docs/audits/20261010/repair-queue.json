@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-18T11:10:29.604Z",
+  "updatedAt": "2026-10-18T14:22:14.047Z",
   "coordinator": "Tif / root",
   "workingDirectory": "D:/Stackr",
   "branch": "codex/stackr-repair-consolidation-20261018",
@@ -25,12 +25,12 @@
     "lastPassStartedAt": "2026-10-11T08:12:47Z",
     "currentWork": {
       "owner": "root",
-      "status": "reviewed_local_video_repairs_and_reversible_workspace_consolidation_in_progress",
+      "status": "local_repairs_and_storm_api_artwork_verified_native_phone_acceptance_open",
       "runtimeRevision": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
       "report": "docs/releases/repair-consolidation-20261018.md",
       "issueRegister": "docs/releases/video-repair-register-20261018.json",
       "independentReview": "Scoped runtime and preservation-tool findings resolved; phone/live acceptance remains open.",
-      "nextAction": "Finish recovery-backed consolidation and matching draft PR. Remote read-only SQL awaits explicit owner approval; live promotion and installed-device closure remain separate.",
+      "nextAction": "Deliver the reviewed native candidate through its matching approval lane, resolve exact identity/source/data blockers and replay confirmed phone journeys; preserve remaining consolidation gates and migrate original primary last.",
       "schedulerCreated": false,
       "pullRequest": "https://github.com/tberridge86/Stackr/pull/409"
     },
@@ -95,7 +95,7 @@
       "id": "VIDEO-REPAIR-CONSOLIDATION-20261018",
       "severity": "P1",
       "owner": "Tif / root",
-      "status": "reviewed_local_repairs_consolidation_in_progress_live_and_phone_acceptance_open",
+      "status": "local_repairs_and_storm_api_artwork_verified_native_phone_acceptance_open",
       "summary": "Implement both owner plans: all 23 video issues and one clean independent D:/Stackr integration branch with lossless preservation before old-folder cleanup.",
       "evidence": "docs/releases/repair-consolidation-20261018.md",
       "issueRegister": "docs/releases/video-repair-register-20261018.json",
@@ -111,10 +111,13 @@
       "closedVideoIssues": 0,
       "liveDeployment": false,
       "deviceVerified": false,
-      "nextAction": "Resolve remaining preservation/path gates; await explicit bounded SQL approval, diagnose the live reads, then deliver and replay the confirmed iPhone build.",
+      "nextAction": "Deliver the reviewed native candidate through its matching approval lane, resolve exact identity/source/data blockers and replay confirmed phone journeys; preserve remaining consolidation gates and migrate original primary last.",
       "pullRequest": "https://github.com/tberridge86/Stackr/pull/409",
       "liveReadDiagnostics": "docs/releases/live-read-diagnostics-20261018.json",
-      "preservationSummary": "docs/releases/workspace-preservation-20261018.json"
+      "preservationSummary": "docs/releases/workspace-preservation-20261018.json",
+      "productionDiagnostics": "docs/releases/production-diagnostics-20261018.json",
+      "stormPublication": "docs/releases/storm-m6-publication-20261018.json",
+      "productionDiagnosticsFollowup": "docs/releases/production-diagnostics-followup-20261018.json"
     },
     {
       "id": "CATALOGUE-MANIFEST-READ-PHASE-20261017",
@@ -2781,7 +2784,7 @@
   ],
   "currentWork": {
     "owner": "Tif / root",
-    "status": "reviewed_local_repairs_and_reversible_archives_live_and_device_gates_open",
+    "status": "source_repairs_tested_reviewed_gateway_release_prepared_hosted_checks_pending",
     "workingDirectory": "D:/Stackr",
     "branch": "codex/stackr-repair-consolidation-20261018",
     "runtimeRevision": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
@@ -2790,11 +2793,17 @@
     "preservationSummary": "docs/releases/workspace-preservation-20261018.json",
     "archivedCodingFolders": 25,
     "closedVideoIssues": 0,
-    "liveSqlApproval": "pending",
+    "liveSqlApproval": "Prepared diagnostics approved and completed; no arbitrary new SQL or deployment approval",
     "liveDeployment": false,
     "newNativeBuildCreated": false,
     "deviceVerified": false,
-    "nextAction": "Resolve remaining preservation/path gates; await explicit bounded SQL approval, diagnose the live reads, then deliver and replay the confirmed iPhone build."
+    "nextAction": "Finish exact-current-head hosted checks and obtain explicit reviewed PR merge/gateway-only deployment approval using the guarded existing lane. Preserve live503 and origin-timeout gaps; no native publication or new SQL/price/job authority.",
+    "productionDiagnostics": "docs/releases/production-diagnostics-20261018.json",
+    "additionalRuntimeRevision": "66156ca9893e8767a4e594173f63accae015354e",
+    "stormPublication": "docs/releases/storm-m6-publication-20261018.json",
+    "searchArtworkRepair": "docs/releases/search-artwork-batching-20261018.json",
+    "totalOriginalFoldersReversiblyRelocated": 35,
+    "gatewayRevision": "8b5ebc753ade3feaf574b21a8b6b01efa79ad582"
   },
   "completionGoal": {
     "threadId": "01a12a4c-4b1a-7823-b948-148c90d7cd8e",

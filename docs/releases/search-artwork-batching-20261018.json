@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-18T14:22:13.912Z",
+  "sourceCommit": "66156ca9893e8767a4e594173f63accae015354e",
+  "sourceFiles": {
+    "lib/stackrDomainAdapter.ts": "9bee9cf2825b35dc851f9da14cd0c194896d5d073897045a587fa9dd8e9117d6",
+    "scripts/test-search-artwork-batching.ts": "8305fc9330375b16caa17563f1795e6dbe3a13c585e6da5b22d0d98dce81ccd8",
+    "scripts/test-progressive-card-search.mjs": "847d7ed11abdbc5331c749d43abdd4bfd2085a02e6396dc13f47042823893066"
+  },
+  "confirmedSourceCause": "Search optional artwork made one manifest request per missing printing. With 100 instantaneous factual cards the actual source dispatched 100 singleton requests within its existing optional deadline.",
+  "localRed": {
+    "command": "node --import tsx scripts/test-search-artwork-batching.ts",
+    "exitCode": 1,
+    "observedManifestCalls": 100,
+    "expectedBatchCalls": 1,
+    "assertion": "100 factual cards must use one identity-batch manifest, observed100 calls",
+    "scope": "Actual source search and mapper functions, real unchanged artwork resolver; mocked instant public responses, no network"
+  },
+  "repair": "Only searchStackrCards optional image stage: at most100 exact missing-printing IDs per batch, paginated250-asset pages, sequential batch/page requests under existing2-second optional deadline. Completed page assets survive later failure/timeout; abort is checked before dispatch and after response. Existing current mapper filters printing/variant identity and unchanged resolver enforces edition/finish.",
+  "focusedChecks": [
+    {
+      "command": "node --import tsx scripts/test-search-artwork-batching.ts",
+      "outcome": "PASS:100→1 batch; pagination;101-source defensive response chunks100+1; partial page/batch retention; optional failure; required facts failure; two-second abort and late-response immutability; repeated cursor stops; concurrent queries isolated; foreign/wrong-set/special-finish refusal; existing embedded artwork skipped"
+    },
+    {
+      "command": "node scripts/test-progressive-card-search.mjs",
+      "outcome": "PASS: early canonical facts; bounded stalled batch; current search first/final renders, stale-query rejection and identity kept"
+    },
+    {
+      "command": "node --import tsx scripts/test-saved-binder-artwork-recovery.ts",
+      "outcome": "PASS: serialized saved binder exact identity/quantities/private fields/cancellation remain"
+    },
+    {
+      "command": "node --import tsx scripts/test-master-set-artwork.ts",
+      "outcome": "PASS: five-language artwork identity, permission and protected-finish rules"
+    },
+    {
+      "command": "npx eslint lib/stackrDomainAdapter.ts scripts/test-search-artwork-batching.ts scripts/test-progressive-card-search.mjs",
+      "outcome": "PASS with0errors;5 pre-existing adapter array-type warnings. New test array warning corrected after this run."
+    },
+    {
+      "command": "git diff --check -- lib/stackrDomainAdapter.ts scripts/test-progressive-card-search.mjs scripts/test-search-artwork-batching.ts",
+      "outcome": "PASS"
+    }
+  ],
+  "integratedChecks": {
+    "typecheck": "PASS",
+    "lint": {
+      "errors": 0,
+      "existingWarnings": 8
+    },
+    "feedbackRecovery": "PASS; all six scripts",
+    "progressiveSearch": "PASS",
+    "independentReview": "PASS; actual search batching functions and identity resolver, read-only independent rerun",
+    "productionIosExport": "PASS; unsigned, four exact artwork assets; separate export receipt"
+  },
+  "liveManifestProbe": {
+    "observedAt": "2026-10-18T14:17:40.340Z",
+    "request": "GET /v1/assets/manifest?printingIds={95 exact previously captured IDs}&assetType=card_image&limit=250",
+    "status": 503,
+    "code": "downstream_circuit_open",
+    "elapsedMs": 426,
+    "printingIdentities": 95,
+    "requestId": "727fa75b-49d9-47b7-aca0-066c80c441ba",
+    "requests": 1,
+    "retries": 0,
+    "interpretation": "Gateway rejected the request before origin. No successful live batch latency or asset completeness was measured. The preceding failures that opened the circuit were not observed."
+  },
+  "separateGatewayFinding": "Confirmed current source coupling: optional manifests and essential facts shared circuit:backend. Gateway source8b5ebc7 now isolates manifests locally;55gatewaytests and independentreview PASS. Not deployed. Preceding live failure sequence/root timeout cause remains unknown.",
+  "railwayRead": {
+    "requests": 1,
+    "windowUtc": [
+      "2026-10-18T14:14:00Z",
+      "2026-10-18T14:19:00Z"
+    ],
+    "filter": "catalogue",
+    "limit": 40,
+    "matches": 0,
+    "interpretation": "Filtered absence is not proof of no origin failure; a gateway-rejected request would not reach origin."
+  },
+  "receiptDigests": [
+    {
+      "relativePath": "evidence/consolidation-20261018/search-artwork-batching-20261018/local-report.json",
+      "sha256": "075f0ef445afee84b814c2ad6d2cb16a196864433f3a02b596b6a0bf05312e39"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/search-artwork-batching-20261018/public-batch-first-page.json",
+      "sha256": "651192ac43581f8a91652402f808bd49c0a49221abf5ab2874cbcaa1dd0b0782"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/live-circuit-investigation-20261018/railway-read-only/request-and-sanitized-result.json",
+      "sha256": "67479d35a8f860843ac8759b3a8bef7adafe21a821222b21492a0ea362c75718"
+    }
+  ],
+  "listingMediaRepaired": false,
+  "liveGatewayDeployed": false,
+  "nativePublished": false,
+  "phoneVerified": false,
+  "performanceTargetsMeasured": false,
+  "remaining": [
+    "Live circuit/origin reliability and successful batch latency",
+    "Exact available artwork and listing-media recovery",
+    "Signed native delivery and recorded phone journeys",
+    "Required performance sample sizes"
+  ],
+  "gatewayRepair": "docs/releases/gateway-circuit-isolation-20261018.json"
+}

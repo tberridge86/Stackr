@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-18T11:10:29.604Z",
+  "updatedAt": "2026-10-18T14:22:14.032Z",
   "sourceVideo": {
     "fileName": "WhatsApp Video 2026-10-18 at 09.12.30.mp4",
     "sha256": "a29ad89ce8cec90b3dfa299c5a951ff4b60d686187f5a27c03a4e6175d1e859c",
@@ -46,7 +46,7 @@
       "owner": "stackr_pricing",
       "resolution": "Separate unavailable, stale, unresolved and failed stored reads; preserve exact price evidence and quantities.",
       "closureCriterion": "Owned totals reconcile with labelled price coverage.",
-      "state": "live_pricing_diagnosis_pending",
+      "state": "live_quote_coverage_and_timeout_cause_open",
       "cause": "Missing quotes and retrieval failures remain distinct. Two live pricing workers reported database statement timeouts; exact owned-card coverage is not proven.",
       "sourceFiles": [],
       "repairCommit": null,
@@ -60,7 +60,7 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Read-only production diagnosis requested; provider refresh and account-level reconciliation remain pending."
+      "remainingBlocker": "Both approved bounded diagnostic sets completed; no timeout cause, missing index or exact owned-card freshness/coverage is established. No price refresh or worker restart performed; phone evidence remains open."
     },
     {
       "id": "V03",
@@ -255,7 +255,7 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Live Storm facts also returned downstream_timeout in a bounded public read. Database diagnosis and repeated installed-binder journeys pending."
+      "remainingBlocker": "Stored-source reopening regressions pass and public facts have both success and timeout observations. Both bounded diagnostic sets completed without a confirmed timeout cause; repeated installed-binder journeys remain required."
     },
     {
       "id": "V10",
@@ -348,7 +348,7 @@
       "owner": "stackr_pricing",
       "resolution": "Preserve stale status/provider identity and prepare the existing approved refresh path.",
       "closureCriterion": "Eligible fresh evidence replaces stale only after authorised live processing.",
-      "state": "live_pricing_diagnosis_pending",
+      "state": "live_quote_coverage_and_timeout_cause_open",
       "cause": "Stale estimates remain labelled; fresh provider evidence was not fabricated. Live pricing workers reported statement timeouts.",
       "sourceFiles": [],
       "repairCommit": null,
@@ -362,7 +362,7 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Diagnosis and approved pricing workflow needed before fresh evidence and exact-variant phone checks."
+      "remainingBlocker": "Both approved bounded diagnostic sets completed; no timeout cause, missing index or exact owned-card freshness/coverage is established. No price refresh or worker restart performed; phone evidence remains open."
     },
     {
       "id": "V14",
@@ -371,18 +371,23 @@
       "owner": "stackr_artwork",
       "resolution": "Bind exact owner-supplied M6 PNG from remaining-98 pack without modifying original pixels; preserve previous asset.",
       "closureCriterion": "Resolver, exported/signed bytes and installed app display the selected original.",
-      "state": "local_repair_tested",
-      "cause": "Bundled Japanese-only M6 artwork took precedence over remote assets. Select the unchanged supplied English-lettered PNG; exact owner permission was explicitly confirmed on 18 October.",
+      "state": "api_artwork_verified_native_phone_acceptance_pending",
+      "cause": "Supplied English-lettered source was present in the public logo library, but the r7 production canonical mapping was null. The old native source selection also preferred a Japanese-only bundled logo.",
       "sourceFiles": [
         "lib/japaneseSetLogos.ts",
         "assets/rev2/11-japanese-set-logo/storm-m6-owner-supplied-20261018.json",
-        "catalogue/rights-reviews/stackr-m6-owner-supplied-set-logo.2026-10-18.json"
+        "catalogue/rights-reviews/stackr-m6-owner-supplied-set-logo.2026-10-18.json",
+        "scripts/prepare-reviewed-set-logo-catalogue-publication.mjs",
+        "scripts/prepare-storm-m6-catalogue-link-20261018.mjs",
+        "scripts/test-prepare-storm-m6-catalogue-link-20261018.mjs"
       ],
       "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
       "validation": [
         "scripts/test-japanese-set-logo-runtime-lookup.ts",
         "scripts/test-audit-japanese-set-logo-runtime-coverage.ts",
-        "docs/releases/ios-export-asset-verification-20261018.json"
+        "docs/releases/ios-export-asset-verification-20261018.json",
+        "npm run test:storm-logo-publication: 13 passed including isolated PostgreSQL publish/rollback and rejection guards",
+        "Exact frozen candidate v2 independently reviewed; production commit receipt contains one M6 asset and one published membership"
       ],
       "delivery": {
         "implemented": true,
@@ -391,9 +396,12 @@
         "merged": false,
         "deployed": false,
         "nativePublished": false,
-        "deviceVerified": false
+        "deviceVerified": false,
+        "catalogueArtworkPublished": true,
+        "apiArtworkVerified": true
       },
-      "remainingBlocker": "Local production export exact bytes verified; signed/native delivery, actual API response and Discover/binder/set phone rendering remain pending. Previous immutable asset retained."
+      "remainingBlocker": "Exact M6 logo and bytes are verified through normal per-set API URLs after cache expiry. Signed native delivery and actual Discover/binder phone rendering remain open.",
+      "publicationReceipt": "docs/releases/storm-m6-publication-20261018.json"
     },
     {
       "id": "V15",
@@ -458,8 +466,8 @@
       "owner": "stackr_performance",
       "resolution": "Keep facts progressive, preserve canonical failure and retry pagination without false completeness.",
       "closureCriterion": "Declared complete population or actionable partial recovery verified.",
-      "state": "partial_recovery_tested",
-      "cause": "The canonical-failure fallback can show only retained cards. Error/retry propagation is repaired, while a fallback count is never declared catalogue completeness.",
+      "state": "current_canonical_pagination_and_replay_verified_phone_completeness_open",
+      "cause": "Current first canonical page returns16cards WITH a continuation cursor; the next page completes42distinct printings across4published language versions. Current-module replay correctly emits16 incomplete then42 complete, so this sample does not demonstrate a pagination source defect or establish the historical installed-build cause.",
       "sourceFiles": [
         "lib/pokedexCollection.ts",
         "app/pokemon/[id].tsx"
@@ -467,7 +475,8 @@
       "repairCommit": null,
       "validation": [
         "scripts/test-pokedex-partial-results.ts",
-        "scripts/test-pokedex-loading.ts"
+        "scripts/test-pokedex-loading.ts",
+        "Bounded current API:2facts pages,42distinctprintings,nullfinalcursor; exact current-module replay16/incomplete to42/complete"
       ],
       "delivery": {
         "implemented": false,
@@ -478,7 +487,7 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Recover and reconcile actual canonical Wartortle population; fallback availability is not a complete result."
+      "remainingBlocker": "Declared broader species population and exact installed-build continuation remain unverified. Preserve useful progress/error/Retry; do not treat16first-page count as proven fallback or full inventory."
     },
     {
       "id": "V18",
@@ -514,21 +523,21 @@
       "owner": "stackr_performance",
       "resolution": "Verify bounded exact-artwork hydration and preserve useful facts while images decode.",
       "closureCriterion": "Declared image sample decodes with honest persistent failure recovery.",
-      "state": "image_delivery_diagnosis_open",
-      "cause": "Facts remain usable before optional artwork. The exact recorded picture delay is not proved to share the binder serialization cause.",
+      "state": "scoped_image_delivery_verified_two_exact_source_identity_gaps",
+      "cause": "A complete manifest for the first16current Wartortle printings provides14eligiblepresentationcandidates; two selected thumbnails decode and match hashes. JAweb1#024 is acquisition-required with no returned scoped asset; ENbase1#42normal points to first-edition artwork rejected by the edition guard. These gaps are distinct from historical transport delay.",
       "sourceFiles": [],
       "repairCommit": null,
       "validation": [],
       "delivery": {
         "implemented": false,
-        "tested": false,
+        "tested": true,
         "independentlyReviewed": false,
         "merged": false,
         "deployed": false,
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Verify exact Pokédex image candidates, response/decoding failures and bounded installed hydration; no guessed image substitution."
+      "remainingBlocker": "Resolve exact JAweb1#024 approved source and verify ENbase1#42normal artwork/identity before mapping. Full42imagepopulation, installed rendering and historical delay remain unverified."
     },
     {
       "id": "V20",
@@ -564,7 +573,7 @@
       "owner": "stackr_performance",
       "resolution": "Keep independent useful groups and trace failed current factual-card read.",
       "closureCriterion": "Current-query cards and explicit Retry recover correctly.",
-      "state": "current_search_recovery_checks_passed",
+      "state": "current_public_factual_search_verified_phone_recovery_open",
       "cause": "Independent search groups and factual-card failures remain separate. Current-query retries and settled/superseded callback guards have regression coverage; the live recorded request cause is not proved.",
       "sourceFiles": [
         "lib/searchRecovery.ts"
@@ -572,7 +581,8 @@
       "repairCommit": null,
       "validation": [
         "scripts/test-search-recovery.ts",
-        "scripts/test-search-settlement-runtime.ts"
+        "scripts/test-search-settlement-runtime.ts",
+        "Fresh configured API search:100all-language and16Japanese Pikachu factualcards HTTP200; no embedded variant images"
       ],
       "delivery": {
         "implemented": false,
@@ -583,7 +593,7 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Trace/retest actual Pikachu factual-card failure on the delivered phone build."
+      "remainingBlocker": "Current public fact reads succeed, but historical installed query failure/current-query Retry and optional image delivery still require phone acceptance."
     },
     {
       "id": "V22",
@@ -620,21 +630,32 @@
       "owner": "stackr_artwork",
       "resolution": "Separate exact card artwork from listing-media mapping and transport/decode failures.",
       "closureCriterion": "Available thumbnails render without blocking facts; real gaps explicit.",
-      "state": "image_delivery_diagnosis_open",
-      "cause": "Card catalogue artwork and listing media have separate sources. The recording does not establish exact absent URI, rejected candidate or failed decode.",
-      "sourceFiles": [],
-      "repairCommit": null,
-      "validation": [],
+      "state": "card_artwork_batching_source_repaired_live_gateway_and_listing_media_open",
+      "cause": "Confirmed current source image fan-out:100 cards triggered100 singleton manifest requests. This reduces optional image progress under the existing2-second deadline. The historical listing placeholder and exact installed path are unconfirmed. A current95-printing batch is rejected503 downstream_circuit_open; its preceding trigger is unknown.",
+      "sourceFiles": [
+        "lib/stackrDomainAdapter.ts",
+        "scripts/test-search-artwork-batching.ts",
+        "scripts/test-progressive-card-search.mjs"
+      ],
+      "repairCommit": "66156ca9893e8767a4e594173f63accae015354e",
+      "validation": [
+        "Actual source RED100singleton calls→GREEN1batch",
+        "Focused identity/pagination/partial/cancellation/concurrent-query guards PASS",
+        "Root typecheck/lint and six recovery scripts PASS",
+        "Independent source review PASS",
+        "Unsigned production iOS export with four exact assets PASS",
+        "Current public95-printing batch503 recorded; live latency NOT verified"
+      ],
       "delivery": {
-        "implemented": false,
-        "tested": false,
-        "independentlyReviewed": false,
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
         "merged": false,
         "deployed": false,
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Identify affected cards/listing media and verify actual thumbnails; do not borrow another printing image."
+      "remainingBlocker": "Gateway/origin reliability, actual eligible card thumbnails, separate listing-media cause, signed delivery and installed-phone verification remain open."
     }
   ],
   "additionalAcceptance": [
@@ -677,7 +698,14 @@
     "currentMap": "D:/Stackr-organization/START-HERE.html",
     "bytesReclaimedByRelocation": 0,
     "separateEvidenceFoldersRelocated": 2,
-    "separateEvidenceFilesVerified": 8
+    "separateEvidenceFilesVerified": 8,
+    "secureBackupFoldersRelocated": 1,
+    "secureBackupFreshExtractionFiles": 107,
+    "historicalReleasePacketFoldersRelocated": 1,
+    "historicalReleasePacketFilesVerified": 20,
+    "nativeSourceFoldersRelocated": 3,
+    "nativeSourceFilesSeparatelyPreserved": 4250,
+    "nativeSourceBytesSeparatelyPreserved": 1754954518
   },
   "limits": [
     "Phone build, API trace and full device timing not established by video",
@@ -711,7 +739,8 @@
     },
     "sourceSecretScan": {
       "passed": true,
-      "repositoryTextFiles": 3684
+      "repositoryTextFiles": 3703,
+      "scope": "Final source/evidence scan after search batching, gateway repair and release-plan documentation"
     },
     "localIosExport": "passed_exact_four_exported_assets_verified",
     "nativeSigned": false,
@@ -728,8 +757,46 @@
         "canary-api-evidence"
       ],
       "scope": "Tests and source checks only; subsequent documentation revisions need their own hosted results"
+    },
+    "feedbackRecovery": "PASS; six scripts",
+    "localIosExportSource": "66156ca9893e8767a4e594173f63accae015354e",
+    "localIosBundleSha256": "d2f8302a0f99026e284387224cef9f51ef3a5aad85014360ec782d897ef251db",
+    "gateway": {
+      "passed": 55,
+      "failed": 0,
+      "skipped": 0,
+      "localDryRunBuild": "PASS",
+      "independentlyReviewed": true,
+      "deployed": false
     }
   },
   "pullRequest": "https://github.com/tberridge86/Stackr/pull/409",
-  "liveReadDiagnostics": "docs/releases/live-read-diagnostics-20261018.json"
+  "liveReadDiagnostics": "docs/releases/live-read-diagnostics-20261018.json",
+  "productionDiagnostics": {
+    "report": "docs/releases/production-diagnostics-20261018.json",
+    "ownerApproved": true,
+    "approvedSqlSha256": "2ee4559c42004e130c6bd9309da54318ae972db1c9db5bad69b064aa77cc0efe",
+    "completed": true,
+    "sqlToolCalls": 7,
+    "rootCauseEstablished": false,
+    "sourceStormPngBytesVerified": true,
+    "catalogueStormLogoSelectionVerified": true,
+    "phoneVerified": false,
+    "followupReport": "docs/releases/production-diagnostics-followup-20261018.json",
+    "followupCompleted": true,
+    "followupSqlToolCalls": 4
+  },
+  "publicRetrievalVerification": "docs/releases/public-retrieval-verification-20261018.json",
+  "additionalRuntimeRevisions": [
+    "66156ca9893e8767a4e594173f63accae015354e",
+    "8b5ebc753ade3feaf574b21a8b6b01efa79ad582"
+  ],
+  "searchArtworkRepair": "docs/releases/search-artwork-batching-20261018.json",
+  "gatewayRepair": {
+    "sourceCommit": "8b5ebc753ade3feaf574b21a8b6b01efa79ad582",
+    "evidence": "docs/releases/gateway-circuit-isolation-20261018.json",
+    "releasePlan": "docs/releases/gateway-circuit-release-plan-20261018.md",
+    "locallyTested": true,
+    "deployed": false
+  }
 }

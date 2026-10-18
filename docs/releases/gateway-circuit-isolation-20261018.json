@@ -60,8 +60,8 @@
     },
     "sourceSecretScan": {
       "passed": true,
-      "files": 3701,
-      "scope": "Source before this additional evidence file; final changed-evidence scan remains required"
+      "files": 3703,
+      "scope": "Final source/evidence scan"
     }
   },
   "liveObservation": {
@@ -76,17 +76,26 @@
     "implemented": true,
     "locallyTested": true,
     "independentlyReviewed": true,
-    "committed": false,
+    "committed": true,
     "merged": false,
     "deployed": false,
     "phoneVerified": false
   },
   "releaseBoundary": "Gateway-only publication requires matching explicit owner approval and exact source/CI/rollback attestation. No backend deployment, credential change, database script, price refresh, worker restart or native publication is included.",
   "remaining": [
-    "Confirm current deployed source and rollback identity before publication",
     "Exact reviewed candidate hosted checks",
     "Explicit publication approval",
     "Successful bounded public fact/image reads after publication",
     "Installed-phone journeys and required latency sample sizes"
-  ]
+  ],
+  "sourceCommit": "8b5ebc753ade3feaf574b21a8b6b01efa79ad582",
+  "rollbackObservation": {
+    "report": "docs/releases/gateway-circuit-release-plan-20261018.md",
+    "deploymentId": "946af123-25ca-4a8b-89f1-e441b52f8bb0",
+    "versionId": "71032825-4494-46c2-82b0-de3a21d6953d",
+    "tag": "gateway-privacy-ea8190f3a0bda642e266438b68f19d4f398f7845",
+    "durableObjectNamespaceVerified": true,
+    "sourceTagRuntimeDiff": "Only gateway/src/proxy.js circuit isolation",
+    "freshPredeploymentAttestationStillRequired": true
+  }
 }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-18T11:10:29.604Z",
+  "observedAt": "2026-10-18T14:08:36.369Z",
   "canonicalRepository": "D:/Stackr",
   "branch": "codex/stackr-repair-consolidation-20261018",
   "privateEvidenceRoot": "D:/Stackr-organization",
@@ -85,7 +85,6 @@
     "Preserve/classify remaining ignored and large source/evidence material",
     "Migrate dependency targets, nested repositories and original primary last",
     "Owner-approved exact deletion list before permanent reclamation",
-    "Explicit approval before prepared read-only remote database script",
     "Resolve live reads and deliver/replay the confirmed iPhone build"
   ],
   "privateReceiptDigests": [
@@ -127,7 +126,7 @@
     },
     {
       "relativePath": "evidence/consolidation-20261018/remaining-data-roots.json",
-      "sha256": "f3b4e32f8976f0146513687205414c34e187fc858945bc35033c3cbc968e0c43"
+      "sha256": "402e170c996c3e3a8fa8d32fc116a6688bf1ad61f5724ece2ee2f507f0e33d0c"
     },
     {
       "relativePath": "preserved-work/small-evidence-20261018/receipt.json",
@@ -148,7 +147,103 @@
     {
       "relativePath": "evidence/consolidation-20261018/legacy-junction-repair-20261018-v3/final-outcome.json",
       "sha256": "6badb68abee8f7cc97f63bc203d7a93c630e5c20546fe39b1f9ee30c0dee0ad4"
+    },
+    {
+      "relativePath": "preserved-work/secure-recovery-20261018/receipt.json",
+      "sha256": "2b3508f0c9dab0b72b66d09098c2dbefb0ea4c6476c692bfd6c1d38a6f6286be"
+    },
+    {
+      "relativePath": "preserved-work/secure-recovery-20261018/internal-checksum-verification.json",
+      "sha256": "fea30bd3e8fd89bffffd3f7189d3928c2a54fc7463e7401b187d777a0eedf90f"
+    },
+    {
+      "relativePath": "preserved-work/secure-recovery-20261018/relocation-result.json",
+      "sha256": "e22ed134e9081b22b47a7f6346babab74923a9e3438c0e676fcf4b96b52d3c69"
+    },
+    {
+      "relativePath": "preserved-work/release-queue-20261018/receipt.json",
+      "sha256": "81d7543b8a48955f126d177aeb49df4a1e11819372df925a1f2a00bac87eba2c"
+    },
+    {
+      "relativePath": "preserved-work/release-queue-20261018/relocation-result.json",
+      "sha256": "12f8d36984b67e41e6c98342b71e3b93e2d0c88fd34150e97ce2e2df6406c816"
+    },
+    {
+      "relativePath": "preserved-work/native-source-snapshots-20261018/summary.json",
+      "sha256": "3f240cf1d0d3e425e02b891b0df305ae1fc0db91487a863ac6bc898910bbfbcc"
+    },
+    {
+      "relativePath": "preserved-work/native-source-snapshots-20261018/relocation-summary.json",
+      "sha256": "f6adc133db11cfd42a0a8f0a3b5a1c8934ffe3058f8c2061fbeeb5d008d53a6a"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/relocation-shortcuts-followup-20261018/receipt.json",
+      "sha256": "34df65f337229ca14414060970f7edaf6533a9b7be3190d8d980be74c084fc2b"
+    },
+    {
+      "relativePath": "preserved-work/native-source-snapshots-20261018/Stackr-mobile-eas-build-check/receipt.json",
+      "sha256": "136cfc9d9280de743ce1b360dd094a454ffa255ebf21c79df75dac9f575c8c18"
+    },
+    {
+      "relativePath": "preserved-work/native-source-snapshots-20261018/Stackr-mobile-eas-build-check/relocation-result.json",
+      "sha256": "edba187108442d0d7aa7e03e992f7baf00ecd6493e99cb87b7719a96a383501c"
+    },
+    {
+      "relativePath": "preserved-work/native-source-snapshots-20261018/Stackr-mobile-eas-build-camera-20260826/receipt.json",
+      "sha256": "4935075d541fb8ca0eb982334b79aaba12dd0e4a74b8216fc7477fb9f19d25fd"
+    },
+    {
+      "relativePath": "preserved-work/native-source-snapshots-20261018/Stackr-mobile-eas-build-camera-20260826/relocation-result.json",
+      "sha256": "4e42d1345e644c1f3d4e88e323fdd2355d41ff6d61160872d1175e95f1602931"
+    },
+    {
+      "relativePath": "preserved-work/native-source-snapshots-20261018/Stackr-mobile-eas-build-slim/receipt.json",
+      "sha256": "3cb9c7e418ae9991514c8dbd2cb1d0324f17bbd4d144f4c1a71180b30ed4d5c3"
+    },
+    {
+      "relativePath": "preserved-work/native-source-snapshots-20261018/Stackr-mobile-eas-build-slim/relocation-result.json",
+      "sha256": "644fbabd0df583a10504087847220e08ce58abff5c18d7ce4197ab6422ef9948"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/native-source-shortcuts-20261018/receipt.json",
+      "sha256": "27fad6f5653bcde12814dbba28f056353f63ccf32e9f7b3683770c9f0e90e938"
     }
   ],
-  "scope": "Sanitized receipt summary. File-copy counts overlap between checkouts and cohorts; do not add them as unique files or claim complete whole-drive backup."
+  "scope": "Sanitized receipt summary. File-copy counts overlap between checkouts and cohorts; do not add them as unique files or claim complete whole-drive backup.",
+  "secureRecovery": {
+    "encryptedFoldersRelocated": 1,
+    "encryptedSourceFiles": 8,
+    "encryptedSourceBytes": 107320651,
+    "freshPrivateExtractionFiles": 107,
+    "freshPrivateExtractionBytes": 461026376,
+    "internalManifestChecksumsVerified": 106,
+    "inverseMoveVerified": true,
+    "encryptedSourceAndKeyRetainedTogether": true,
+    "remoteDatabaseRestored": false,
+    "separateWindowsAccountRecoveryVerified": false,
+    "plaintextContentsPublished": false
+  },
+  "historicalReleasePackets": {
+    "foldersRelocated": 1,
+    "files": 20,
+    "bytes": 417563,
+    "exactIndependentCopies": 2,
+    "approvedManifestFilesVerified": 17,
+    "inverseMoveVerified": true,
+    "currentSourceOverwritten": false,
+    "pendingAcceptanceClosed": false
+  },
+  "nativeSourceSnapshots": {
+    "foldersRelocated": 3,
+    "files": 4250,
+    "bytes": 1754954518,
+    "independentExactCopies": 2,
+    "wholeSourceExportsAndPrivateConfigurationRetained": true,
+    "rootDependencyJunctionsPreserved": 3,
+    "dependencyTargetsTraversed": false,
+    "inverseMovesVerified": true,
+    "sourceAppliedOverCurrentApp": false
+  },
+  "totalOriginalFoldersReversiblyRelocated": 35,
+  "folderCountScope": "25 Git coding checkouts +3 native source/export roots +3 supplied-artwork roots +2 small evidence roots +1 encrypted backup root +1 historical release-packet root. No permanent deletion."
 }
