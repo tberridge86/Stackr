@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-18T18:14:55.933Z",
+  "updatedAt": "2026-10-18T18:38:57.998Z",
   "sourceVideo": {
     "fileName": "WhatsApp Video 2026-10-18 at 09.12.30.mp4",
     "sha256": "a29ad89ce8cec90b3dfa299c5a951ff4b60d686187f5a27c03a4e6175d1e859c",
@@ -20,25 +20,32 @@
       "id": "V01",
       "videoTime": "00:12",
       "issue": "Home card image and verified name missing",
-      "owner": "stackr_artwork",
+      "owner": "stackr_coding",
       "resolution": "Trace the exact Home printing; restore accepted image and verified name while preserving native identity.",
       "closureCriterion": "Correct exact-printing Home tile renders.",
-      "state": "home_varoom_delayed_metadata_and_artwork_under_investigation",
-      "cause": "Owner confirms the generic blank tile is the eventual Varoom tile. Delay in Home factual/name/image delivery needs tracing separately from optional prices/artwork; no wrong-printing replacement inferred.",
-      "sourceFiles": [],
-      "repairCommit": null,
-      "validation": [],
+      "state": "home_progressive_facts_repair_reviewed_unsigned_phone_pending",
+      "cause": "Owner confirms the same blank tile eventually becomes Varoom. The Home chase path waited for optional artwork hydration and combined prices/artwork before publishing card facts; details now publish progressively, with independent optional updates. This confirms a source dependency, not the exact video printing.",
+      "sourceFiles": [
+        "features/home/HubScreen.tsx",
+        "components/HomeCommandCenter.tsx"
+      ],
+      "repairCommit": "d0f9e74aa099a4805383d1fabb4b5e6f91e59cdb",
+      "validation": [
+        "scripts/test-home-startup-runtime.ts",
+        "scripts/test-home-collector-sections.ts"
+      ],
       "delivery": {
-        "implemented": false,
-        "tested": false,
-        "independentlyReviewed": false,
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
         "merged": false,
         "deployed": false,
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Need the affected account/card identity and installed-Home rendering; no invented replacement.",
-      "ownerReply": "The blank tile eventually becomes Varoom (same tile). Earlier separate-working-comparator interpretation is superseded; exact printing fields remain unconfirmed."
+      "remainingBlocker": "Exact affected printing/subsurface and installed Home rendering remain unconfirmed. Verify the same eventual Varoom tile, account isolation and retry on the approved native candidate.",
+      "ownerReply": "The blank tile eventually becomes Varoom (same tile). Earlier separate-working-comparator interpretation is superseded; exact printing fields remain unconfirmed.",
+      "additionalSecurityRepair": "Raw/late401/403/JWT permission denials clear retained private cards and selections, invalidate pending work and preserve the actual response status; review finding HOME-DENIAL-01 resolved with regressions."
     },
     {
       "id": "V02",

@@ -608,7 +608,7 @@
       "requirement": "Consolidate under D:/Stackr-organization with reversible recovery",
       "state": "partially_satisfied",
       "satisfiedInFull": false,
-      "remaining": "37 verified reversible relocations with preservation/restoration proof; actual inverse moves were rehearsed where recorded. The three artwork roots have copy/restoration and rollback evidence, not a recorded physical inverse-move rehearsal. Further original roots remain; relocation retains bytes and is not reclamation.",
+      "remaining": "38 verified reversible relocations with preservation/restoration proof; actual inverse moves were rehearsed where recorded. The three artwork roots have copy/restoration and rollback evidence, not a recorded physical inverse-move rehearsal. Further original roots remain; relocation retains bytes and is not reclamation.",
       "owner": "Tif"
     },
     {
@@ -616,7 +616,7 @@
       "requirement": "Account for every folder in the original owner list",
       "state": "all60_mapped_one_location_unresolved",
       "satisfiedInFull": false,
-      "remaining": "The exact 60 original paths are now mapped: 37 verified relocations, 21 retained old roots, one organization destination and one absent unresolved original, D:/CodexLogoWork. Six missing map rows were corrected with before copies retained. Mapping does not close the unresolved location or consolidation.",
+      "remaining": "The exact 60 original paths are now mapped: 38 verified relocations, 20 retained old roots, one organization destination and one absent unresolved original, D:/CodexLogoWork. Six missing map rows were corrected with before copies retained. Mapping does not close the unresolved location or consolidation.",
       "owner": "Tif"
     },
     {
@@ -817,15 +817,15 @@
     "sha256": "0fbcb5ac47e2e151a55cc4e8cc02904796b04d97649de20b28ef3d585c599a11"
   },
   "originalFolderCounts": {
-    "relocatedWithRecordedProof": 37,
-    "retainedDependencyDataOrUnfinishedWork": 21,
+    "relocatedWithRecordedProof": 38,
+    "retainedDependencyDataOrUnfinishedWork": 20,
     "existingOrganizationDestination": 1,
     "unmappedUnresolvedOriginal": 1,
     "originalMapRowsPresent": 54,
     "originalMapRowsMissing": 6,
-    "namedOriginalPathsStillPresentIncludingOrganizationDestination": 22,
-    "namedOldRootsStillPresentExcludingOrganizationDestination": 21,
-    "originalPathsAbsent": 38
+    "namedOriginalPathsStillPresentIncludingOrganizationDestination": 21,
+    "namedOldRootsStillPresentExcludingOrganizationDestination": 20,
+    "originalPathsAbsent": 39
   },
   "originalNamedPaths": 60,
   "remainingOriginalRoots": [
@@ -959,22 +959,6 @@
       "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder."
     },
     {
-      "original": "D:/Stackr-pricing-identity-20260907",
-      "mapRowPresent": true,
-      "hold": null,
-      "capturedCohort": {
-        "file": "D:/Stackr-organization/preserved-work/consolidation-20261018-content/combined-summary.json",
-        "sha256": "03c8a24a1b53c558104a2111882b911ea6b439d1104bf5dd4401ede25b0ffabc",
-        "capturedFiles": 0,
-        "capturedBytes": 0,
-        "restoredFiles": 0,
-        "restoreExact": true,
-        "allNecessaryIgnoredMaterialPreserved": false,
-        "scope": "Only the recorded captured cohort; not a complete whole-root preservation claim"
-      },
-      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder."
-    },
-    {
       "original": "D:/Stackr-native-aaae6ac-20260910",
       "mapRowPresent": true,
       "hold": null,
@@ -1100,5 +1084,18 @@
     "sha256": "1191fe3fd594c6b54740540ea9fa6d598e726102cae8e68d2d5baba5991f7f18",
     "currentlyMappedOriginalPaths": 60,
     "unresolvedLocations": 1
+  },
+  "continuation": {
+    "recordedAt": "2026-10-18T18:38:57.998Z",
+    "source": "b379c5c48b4cdbe9f169c739467e362be93f3a0e",
+    "homeSourceRepair": "d0f9e74aa099a4805383d1fabb4b5e6f91e59cdb",
+    "regularNovemberCover": "f047a5f577126502767e88cdf6d491c467914fcc",
+    "latestUnsignedSource": "d0f9e74aa099a4805383d1fabb4b5e6f91e59cdb",
+    "exactExportAssets": 74,
+    "testFlightHeld": true,
+    "phoneClosedIssues": 0,
+    "moreRecentSourceEvidence": "docs/releases/remaining-repairs-verification-20261018.json",
+    "workspaceEvidence": "docs/releases/workspace-preservation-20261018.json",
+    "historicalSnapshotRetained": "Original source/evidence observations remain the earlier audit; current issue stages use video-repair-register-20261018.json."
   }
 }

@@ -31,6 +31,13 @@ identify a numeric phone build. Approximate timestamps refer to the 292-second
 
 ## Implemented repairs
 
+- Home publishes canonical card facts and names before optional artwork and
+  prices finish. Loaded details remain usable during recovery. Raw and late
+  permission denials clear retained private state and invalidate pending work.
+  The owner confirms the blank tile eventually becomes Varoom; its exact
+  printing and installed rendering remain open. Commit`d0f9e74` passes focused
+  regressions, typecheck/lint, independent review and an unsigned iOS export
+  containing all74 required assets. No signed build or submission has started.
 - Saved binders hydrate images independently of live ownership confirmation.
   Serialization had lost private canonical artwork handles. Recovery now reads
   complete canonical facts for the saved set/language, validates the saved

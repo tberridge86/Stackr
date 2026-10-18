@@ -159,5 +159,18 @@
     "buildRequested": false,
     "submissionRequested": false,
     "verificationRecord": "docs/releases/remaining-repairs-verification-20261018.json"
+  },
+  "currentContinuation": {
+    "recordedAt": "2026-10-18T18:38:57.998Z",
+    "source": "b379c5c48b4cdbe9f169c739467e362be93f3a0e",
+    "homeRepair": "d0f9e74aa099a4805383d1fabb4b5e6f91e59cdb",
+    "unsignedExportSource": "d0f9e74aa099a4805383d1fabb4b5e6f91e59cdb",
+    "exactAssets": 74,
+    "signed": false,
+    "uploaded": false,
+    "submitted": false,
+    "testFlightHeld": true,
+    "verification": "docs/releases/remaining-repairs-verification-20261018.json",
+    "historicalFrozenPreparationUnchanged": true
   }
 }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-18T17:36:00.110Z",
+  "observedAt": "2026-10-18T18:38:57.998Z",
   "canonicalRepository": "D:/Stackr",
   "branch": "codex/stackr-repair-consolidation-20261018",
   "privateEvidenceRoot": "D:/Stackr-organization",
@@ -26,9 +26,9 @@
     "nativeAbsentIndex": "Original absent index and initialization locks retained; scratch restoration reproduces actual source state"
   },
   "relocatedCodingFolders": {
-    "count": 25,
+    "count": 26,
     "cleanLinkedWorktrees": 18,
-    "dirtyLinkedWorktrees": 5,
+    "dirtyLinkedWorktrees": 6,
     "independentRepositories": 2,
     "dirtyIndependentRepositories": 1,
     "everyInverseMoveRehearsed": true,
@@ -322,8 +322,8 @@
     "inverseMovesVerified": true,
     "sourceAppliedOverCurrentApp": false
   },
-  "totalOriginalFoldersReversiblyRelocated": 37,
-  "folderCountScope": "25 Git checkouts +3 native source snapshots +3 artwork folders +2 evidence folders +1 protected backup +1 historical release packet +1 mobile release artifact folder. Cohort bytes overlap retained copies; no unique-byte or disk-reclaimed claim. +1 historical fallback root containing5checkpoints/frozenpreview.",
+  "totalOriginalFoldersReversiblyRelocated": 38,
+  "folderCountScope": "26 Git checkouts +3 native source snapshots +3 artwork folders +2 evidence folders +1 protected backup +1 historical release packet +1 mobile release artifact folder. Cohort bytes overlap retained copies; no unique-byte or disk-reclaimed claim. +1 historical fallback root containing5checkpoints/frozenpreview.",
   "mobileReleaseArtifacts": {
     "foldersRelocated": 1,
     "files": 3607,
@@ -358,12 +358,35 @@
   "originalNamedRoots": {
     "total": 60,
     "currentlyMapped": 60,
-    "relocatedWithRecordedProof": 37,
-    "retainedOldRoots": 21,
+    "relocatedWithRecordedProof": 38,
+    "retainedOldRoots": 20,
     "organizationDestination": 1,
     "unresolvedAbsentOriginals": 1,
     "unresolvedPath": "D:/CodexLogoWork",
     "consolidationComplete": false
   },
-  "completionAudit": "docs/releases/both-plans-completion-audit-20261018.md"
+  "completionAudit": "docs/releases/both-plans-completion-audit-20261018.md",
+  "pricingIdentityContinuation": {
+    "source": "D:/Stackr-pricing-identity-20260907",
+    "current": "D:/Stackr-organization/archive/consolidated-worktrees-20261018/Stackr-pricing-identity-20260907",
+    "files": 25118,
+    "bytes": 1272800021,
+    "directories": 4719,
+    "independentExactCopies": 2,
+    "rawIndexPreservedImmutably": true,
+    "logicalIndexVerified": true,
+    "allSixFullPhysicalAndGitGuardsPassed": true,
+    "inverseMoveVerified": true,
+    "restoreWhatIfPassed": true,
+    "restoreWhatIfScope": "Compatibility check only; full physical restoration proven separately by the guarded actual inverse move.",
+    "outcome": {
+      "file": "D:/Stackr-organization/evidence/consolidation-20261018/remaining-coding-roots-20261018/move-execution-3a6c8bb235084a28bd9495e8c632da16/outcome.json",
+      "sha256": "8d3247125c6d9115366481c8a2ac63c65743d1bb7f43fd5f8074975a51b4c8d0"
+    },
+    "registration": {
+      "file": "D:/Stackr-organization/evidence/consolidation-20261018/remaining-coding-roots-20261018/pricing-relocation-registration.json",
+      "sha256": "69c0f09aa20b9f383b36f31bd1399be92c6695fd3e914ea29c6ed62b7f1439f8"
+    },
+    "permanentDeletion": false
+  }
 }

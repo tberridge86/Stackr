@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "recordedAt": "2026-10-18T18:14:55.933Z",
+  "recordedAt": "2026-10-18T18:38:57.998Z",
   "workingDirectory": "D:/Stackr",
   "branch": "codex/stackr-repair-consolidation-20261018",
-  "sourceRevision": "c310ccd362efdbbe9133f726dda429c58506c15f",
+  "sourceRevision": "b379c5c48b4cdbe9f169c739467e362be93f3a0e",
   "workContinues": true,
   "phoneClosedIssues": 0,
   "testFlightState": "held_until_repairs_verified",
@@ -61,6 +61,24 @@
       "revision": "c310ccd362efdbbe9133f726dda429c58506c15f",
       "change": "The active release verifier requires the selected English-lettered Storm logo,27CoroCoro covers,36retained Chinese logos and3pack-art fallbacks:74distinct exact exported assets. The old gate failed27versus26; the current gate passes actual export and rejects four controlled missing/corrupt export cases.",
       "frozenHistoricalNativeHelpersChanged": false
+    },
+    {
+      "issues": [
+        "V01"
+      ],
+      "revision": "d0f9e74aa099a4805383d1fabb4b5e6f91e59cdb",
+      "change": "Home card facts and verified names publish before optional artwork and prices. Existing same-card/set estimates survive ordinary transient failure; access denials clear private retained state and invalidate late callbacks. Loaded sheet facts remain usable with truthful status.",
+      "identityGuessed": false,
+      "phoneVerified": false
+    },
+    {
+      "issues": [
+        "V07",
+        "V12"
+      ],
+      "revision": "b379c5c48b4cdbe9f169c739467e362be93f3a0e",
+      "change": "Canonical set test fixture now returns consistent list/detail metadata. Missing exact totals and131/180partial lists still reject; no runtime weakening.",
+      "fixtureOnly": true
     }
   ],
   "validation": {
@@ -75,6 +93,34 @@
     "actualBinderRedToGreen": true,
     "metadataTtlRedToGreen": true,
     "unsignedIos": {
+      "exportedSource": "d0f9e74aa099a4805383d1fabb4b5e6f91e59cdb",
+      "bundle": {
+        "path": "_expo/static/js/ios/entry-9c9783026f9b5fd791b6f325cfee2269.hbc",
+        "sha256": "42d845b1ce38adebbe02291f3cde0d22d68b4bcd468910e7801a2a21d3e7d549",
+        "bytes": 11787234
+      },
+      "exactUniqueAssetsVerified": 74,
+      "nativeSigned": false,
+      "published": false,
+      "phoneVerified": false
+    },
+    "home": {
+      "focusedGroups": 7,
+      "progressiveCases": 13,
+      "denialCases": 24,
+      "independentReview": "PASS; finalv2",
+      "rootTypecheck": "PASS",
+      "rootLintErrors": 0,
+      "existingLintWarnings": 8
+    },
+    "englishSetFixture": {
+      "narrowGroups": 3,
+      "rootTypecheck": "PASS",
+      "rootLint": "PASS",
+      "targetedLint": "PASS",
+      "independentReview": "PASS"
+    },
+    "previousUnsignedIos": {
       "exportedSource": "f047a5f577126502767e88cdf6d491c467914fcc",
       "bundle": {
         "path": "_expo/static/js/ios/entry-b870fab98eeb4d93b26feaa0965d0db9.hbc",
@@ -168,6 +214,10 @@
     {
       "relativePath": "evidence/consolidation-20261018/pricing-freshness-20261018/green.json",
       "sha256": "b90253d36db738d598033b17f7ad6effd02c150db5acd4a6200e06aa856ebf85"
+    },
+    {
+      "privatePath": "remaining-artwork-20261018/ios-export-home-asset-verification.json",
+      "sha256": "8806aeb1c8a3762df5d4694b75fe99be5a63bb515301bbba22d94ec7351fb114"
     }
   ],
   "delivery": {
@@ -175,7 +225,30 @@
     "merged": false,
     "nativeSigned": false,
     "nativePublished": false,
-    "phoneVerified": false
+    "phoneVerified": false,
+    "testFlightHeld": true
   },
-  "boundary": "Local implementation, tests and unsigned export only. No new database script/catalogue mutation,price refresh,job,deployment,TestFlight upload/submission or permanent deletion."
+  "boundary": "Local implementation, tests and unsigned export only. No new database script/catalogue mutation,price refresh,job,deployment,TestFlight upload/submission or permanent deletion.",
+  "homeContinuationEvidence": {
+    "export": {
+      "file": "D:/Stackr-organization/evidence/consolidation-20261018/remaining-artwork-20261018/ios-export-home-asset-verification.json",
+      "sha256": "8806aeb1c8a3762df5d4694b75fe99be5a63bb515301bbba22d94ec7351fb114"
+    },
+    "rootValidation": {
+      "file": "D:/Stackr-organization/evidence/consolidation-20261018/home-display-integration-20261018/v2/root-validation.json",
+      "sha256": "655c766ca9c24c8c5095cbcb153eda86911796c7ebd6ee791353f109cbfa0e8b"
+    },
+    "independentReview": {
+      "file": "D:/Stackr-organization/evidence/consolidation-20261018/remaining-repairs-review-20261018/home-display-review-v2.json",
+      "sha256": "6c889ab09db3e22b02552d94bb5b3f51271c5def28cec0c205eca39d22a259de"
+    },
+    "fixtureValidation": {
+      "file": "D:/Stackr-organization/evidence/consolidation-20261018/remaining-artwork-20261018/english-set-fixture-validation.json",
+      "sha256": "7358d0d43dc64e4053dbcb4d2af7fbfe1b5994ce86838e686af0cf6cbbfc29af"
+    },
+    "fixtureReview": {
+      "file": "D:/Stackr-organization/evidence/consolidation-20261018/remaining-repairs-review-20261018/english-set-fixture-review.json",
+      "sha256": "15e9aed04bf539d79585e4a4406002b86d472f5907e7ac92bf33c9d489347026"
+    }
+  }
 }
