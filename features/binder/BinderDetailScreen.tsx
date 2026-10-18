@@ -1,3 +1,4 @@
+import { StackrFunctionalIcon } from '../../components/StackrFunctionalIcon';
 import { isGeneralPreparedCoverage, preferredPreparedValuation, preparedGeneralPricingSummary, preparedPricingSummary, type PreparedGeneralValuation, type PreparedValuation } from '../../lib/preparedCollectionValuation';
 import { getCollectionPriceCoverageLabel } from '../../lib/collectionPricingState';
 import { binderReopenCache, binderReopenScope, isBinderAccessDenied, readBinderReopenPreview, retainBinderPreviewDuringRefresh } from '../../lib/binderReopenRuntime';
@@ -2986,7 +2987,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
               alignItems: 'center',
               justifyContent: 'center',
             }}>
-              <Image source={stackrIcons.chase} style={{ width: 28, height: 28 }} resizeMode="contain" />
+              <StackrFunctionalIcon source={stackrIcons.chase} style={{ width: 28, height: 28 }} resizeMode="contain" />
             </View>
           )}
           <View style={{ flex: 1, minWidth: 0 }}>

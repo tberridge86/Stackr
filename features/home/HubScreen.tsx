@@ -1,3 +1,4 @@
+import { StackrFunctionalIcon } from '../../components/StackrFunctionalIcon';
 import { takeRotatingStringBatch } from '../../lib/homePriceRefreshCore';
 import { hasLowerPreparedPriceCoverage, isPreparedGeneralValuation, preferredPreparedValuation, preparedGeneralPricingSummary, preparedPricingSummary, preparedValuationTrend } from '../../lib/preparedCollectionValuation';
 import { blocksIndependentPriceRead, mergeCollectionPriceRead, storedCollectionPriceResults, type StoredCollectionPrice } from '../../lib/stableCollectionPrices';
@@ -2909,7 +2910,7 @@ export default function HubScreen() {
               accessibilityRole="button"
               accessibilityLabel="Open Stackr tips"
             >
-              <Image
+              <StackrFunctionalIcon
                 source={stackrIcons.info}
                 style={{ width: 30, height: 30 }}
                 resizeMode="contain"
@@ -2924,7 +2925,7 @@ export default function HubScreen() {
               accessibilityRole="button"
               accessibilityLabel="Open notifications"
             >
-              <Image
+              <StackrFunctionalIcon
                 source={stackrIcons.notifications}
                 style={{ width: 31, height: 31 }}
                 resizeMode="contain"
@@ -2962,7 +2963,7 @@ export default function HubScreen() {
             onPress={() => router.push('/(tabs)/search')}
             style={{ flex: 1, minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 9, paddingHorizontal: 13, borderRadius: 16, backgroundColor: theme.colors.card, borderColor: theme.colors.border, borderWidth: 1 }}
           >
-            <Image source={stackrIcons.searchCard} style={{ width: 24, height: 24 }} resizeMode="contain" />
+            <StackrFunctionalIcon source={stackrIcons.searchCard} style={{ width: 24, height: 24 }} resizeMode="contain" />
             <Text style={{ flex: 1, color: theme.colors.textSoft, fontSize: 14 }}>Find your next card</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -2971,7 +2972,7 @@ export default function HubScreen() {
             onPress={() => router.push('/scan')}
             style={{ minHeight: 48, paddingHorizontal: 15, borderRadius: 16, flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: theme.colors.primary }}
           >
-            <Image source={stackrIcons.scanCard} style={{ width: 25, height: 25 }} resizeMode="contain" />
+            <StackrFunctionalIcon source={stackrIcons.scanCard} style={{ width: 25, height: 25 }} resizeMode="contain" />
             <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700' }}>Scan</Text>
           </TouchableOpacity>
         </View>
@@ -3059,7 +3060,7 @@ export default function HubScreen() {
           onPress={() => router.push('/(tabs)/community')}
           style={{ minHeight: 76, borderTopWidth: 1, borderTopColor: theme.colors.border, flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 16 }}
         >
-          <Image source={stackrIcons.social} style={{ width: 35, height: 35 }} resizeMode="contain" />
+          <StackrFunctionalIcon source={stackrIcons.social} style={{ width: 35, height: 35 }} resizeMode="contain" />
           <View style={{ flex: 1 }}>
             <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: '700' }}>Collecting is better together</Text>
             <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 19, marginTop: 3 }}>Collector posts, trades and local meet ups</Text>

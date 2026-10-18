@@ -1,3 +1,4 @@
+import { StackrFunctionalIcon } from '../../components/StackrFunctionalIcon';
 import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import { getCorocoroIssuesForCard, formatCorocoroIssueGroup } from '../../lib/corocoroIssueArchive';
 import { useCardInspection } from '../../components/CardInspectionProvider';
@@ -959,7 +960,7 @@ export default function CardDetailScreen() {
             isWishlisted ? styles.chaseButtonActive : styles.chaseButton,
           ]}
         >
-          <Image source={stackrIcons.chase} style={styles.chaseButtonIcon} resizeMode="contain" />
+          <StackrFunctionalIcon source={stackrIcons.chase} style={styles.chaseButtonIcon} resizeMode="contain" />
           <Text style={[styles.showcaseButtonText, isWishlisted && styles.chaseButtonActiveText]}>
             {isWishlisted ? 'Remove from Chase' : 'Add to Chase'}
           </Text>

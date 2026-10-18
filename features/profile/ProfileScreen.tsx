@@ -1,3 +1,4 @@
+import { StackrFunctionalIcon } from '../../components/StackrFunctionalIcon';
 import { StackrImage } from '../../components/StackrImage';
 import { StackrCardArtworkFallback } from '../../components/StackrArtworkFallback';
 import { stackrCardImageSizes } from '../../lib/stackrSizing';
@@ -201,7 +202,7 @@ function HeroIcon({
   label?: string;
 }) {
   return (
-    <Image
+    <StackrFunctionalIcon
       source={typeof icon === 'string' ? HERO_ICONS[icon] : icon}
       resizeMode="contain"
       accessibilityLabel={label}

@@ -1,3 +1,4 @@
+import { StackrFunctionalIcon } from '../../components/StackrFunctionalIcon';
 import { StackrBrowseToolbar } from '../../components/StackrBrowseControls';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
@@ -2907,7 +2908,7 @@ function ListingDetailModal({
                   borderColor: saved ? `${theme.colors.primary}55` : theme.colors.border,
                 }}
               >
-                <Image
+                <StackrFunctionalIcon
                   source={stackrIcons.favorite}
                   resizeMode="contain"
                   style={{ width: 24, height: 24, opacity: saved ? 1 : 0.72 }}
@@ -3180,7 +3181,7 @@ function DetailBadge({
       }}
     >
       {imageIcon ? (
-        <Image
+        <StackrFunctionalIcon
           source={imageIcon}
           resizeMode="contain"
           style={{ width: 17, height: 17 }}

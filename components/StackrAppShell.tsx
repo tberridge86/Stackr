@@ -14,7 +14,7 @@ import { lazy, memo, Suspense, useEffect, useState } from 'react';
 import { BETA_TRADE_DEMO_MODE } from '../lib/config';
 import { StackrPopupProvider } from './StackrPopupProvider';
 import { StackrBackdrop } from './StackrBackdrop';
-import { StackrNavigationIcon, type StackrNavigationIconName } from './StackrNavigationIcon';
+import { STACKR_ICON_OUTLINE, StackrNavigationIcon, type StackrNavigationIconName } from './StackrNavigationIcon';
 import { typeScale } from '../lib/typography';
 import { COLLECTOR_TABS, SELLER_TABS } from '../lib/routes';
 import { stackrTabBarSizes } from '../lib/stackrSizing';
@@ -162,7 +162,8 @@ const PersistentTabBar = memo(function PersistentTabBar() {
             }}>
               <StackrNavigationIcon
                 name={icon}
-                color={active ? theme.colors.primary : theme.colors.textSoft}
+                color={active ? theme.colors.primary : theme.dark ? theme.colors.text : STACKR_ICON_OUTLINE}
+                accentColor={theme.colors.primary}
               />
             </View>
             <Text style={{

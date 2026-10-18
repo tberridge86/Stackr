@@ -1,3 +1,4 @@
+import { StackrFunctionalIcon } from '../../components/StackrFunctionalIcon';
 import { useTheme } from '../../components/theme-context';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
@@ -450,7 +451,7 @@ export default function PokedexScreen() {
         ]}
       >
         <View style={styles.regionIconFrame}>
-          <Image
+          <StackrFunctionalIcon
             source={source}
             style={styles.regionIcon}
             resizeMode="contain"

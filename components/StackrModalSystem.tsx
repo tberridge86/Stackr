@@ -1,7 +1,7 @@
+import { StackrFunctionalIcon } from './StackrFunctionalIcon';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
-  Image,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -305,7 +305,7 @@ export function StackrQuickActionSheet({
               ]}
             >
               {action.imageIcon ? (
-                <Image source={action.imageIcon} style={styles.quickActionImageIcon} resizeMode="contain" />
+                <StackrFunctionalIcon source={action.imageIcon} style={styles.quickActionImageIcon} resizeMode="contain" />
               ) : (
                 <Ionicons name={action.icon ?? 'sparkles-outline'} size={19} color={toneColor} />
               )}

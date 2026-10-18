@@ -1,3 +1,4 @@
+import { StackrFunctionalIcon } from '../StackrFunctionalIcon';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StackrLoadingIndicator as ActivityIndicator } from '../StackrLoadingIndicator';
@@ -248,7 +249,7 @@ function MarketQuickLink({
       }}
     >
       {imageIcon ? (
-        <Image
+        <StackrFunctionalIcon
           source={imageIcon}
           resizeMode="contain"
           style={{ width: 18, height: 18, flexShrink: 0 }}
@@ -339,7 +340,7 @@ export function MarketModeSelector({
               borderColor: active ? theme.colors.border : 'transparent',
             }}
           >
-            <Image
+            <StackrFunctionalIcon
               source={mode === 'buy' ? stackrIcons.sellCard : stackrIcons.trade}
               resizeMode="contain"
               style={{
@@ -633,7 +634,7 @@ function ListingMetaPill({
       }}
     >
       {imageIcon ? (
-        <Image
+        <StackrFunctionalIcon
           source={imageIcon}
           resizeMode="contain"
           style={{ width: 14, height: 14, flexShrink: 0 }}
@@ -851,7 +852,7 @@ function FavoriteButton({
           justifyContent: 'center',
         }}
       >
-        <Image
+        <StackrFunctionalIcon
           source={stackrIcons.favorite}
           resizeMode="contain"
           style={{

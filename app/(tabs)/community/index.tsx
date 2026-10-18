@@ -1,3 +1,4 @@
+import { StackrFunctionalIcon } from '../../../components/StackrFunctionalIcon';
 import { router, useLocalSearchParams } from 'expo-router';
 import { StackrBottomSheet } from '../../../components/StackrModalSystem';
 import { useTheme } from '../../../components/theme-context';
@@ -1520,7 +1521,7 @@ export default function CommunityScreen() {
                 <StackrCardActionIcon source={stackrIcons.searchCard} frameSize={30} artworkSize={24} />
               </Pressable>
               <Pressable onPress={() => router.push('/notifications')} style={styles.heroIconButton}>
-                <Image source={stackrIcons.notifications} style={{ width: 26, height: 26 }} resizeMode="contain" />
+                <StackrFunctionalIcon source={stackrIcons.notifications} style={{ width: 26, height: 26 }} resizeMode="contain" />
                 <View style={styles.notificationDot} />
               </Pressable>
             </View>

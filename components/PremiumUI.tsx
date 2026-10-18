@@ -1,4 +1,4 @@
-import { StackrNavigationIcon, type StackrNavigationIconName } from './StackrNavigationIcon';
+import { STACKR_ICON_OUTLINE, StackrNavigationIcon, type StackrNavigationIconName } from './StackrNavigationIcon';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StackrLoadingIndicator as ActivityIndicator } from './StackrLoadingIndicator';
@@ -204,7 +204,7 @@ export function EmptyStateCard({
             marginBottom: 14,
           }}
         >
-          {navigationIcon ? <StackrNavigationIcon name={navigationIcon} size={27} color={theme.colors.primary} /> : icon ? <Ionicons name={icon} size={27} color={theme.colors.primary} /> : null}
+          {navigationIcon ? <StackrNavigationIcon name={navigationIcon} size={27} color={theme.dark ? theme.colors.text : STACKR_ICON_OUTLINE} accentColor={theme.colors.primary} /> : icon ? <Ionicons name={icon} size={27} color={theme.colors.primary} /> : null}
         </View>
         <Text variant="sectionTitleCompact" style={{ color: theme.colors.text, fontSize: 18, textAlign: 'center' }}>
           {title}

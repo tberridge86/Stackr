@@ -1,4 +1,5 @@
-import { StackrNavigationIcon, type StackrNavigationIconName } from './StackrNavigationIcon';
+import { StackrFunctionalIcon } from './StackrFunctionalIcon';
+import { STACKR_ICON_OUTLINE, StackrNavigationIcon, type StackrNavigationIconName } from './StackrNavigationIcon';
 import { Ionicons } from '@expo/vector-icons';
 import { enforceSetVisualRuntimePolicy } from '../lib/providerSetMarkRuntimePolicy';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -303,7 +304,7 @@ function EmptyMessage({
             frameSize={imageIconSize ? imageIconSize + 10 : 42}
             artworkSize={imageIconSize ?? 32}
           />
-        ) : navigationIcon ? <StackrNavigationIcon name={navigationIcon} size={24} color={theme.colors.primary} /> : icon ? (
+        ) : navigationIcon ? <StackrNavigationIcon name={navigationIcon} size={24} color={theme.dark ? theme.colors.text : STACKR_ICON_OUTLINE} accentColor={theme.colors.primary} /> : icon ? (
           <Ionicons name={icon} size={24} color={HOME_HERO_PRIMARY} />
         ) : null}
       </View>
@@ -534,7 +535,7 @@ export function HomeActionsRow({
           ]}
         >
           <View style={styles.communityUtilityIcon}>
-            <Image
+            <StackrFunctionalIcon
               source={stackrIcons.social}
               style={styles.communityUtilityImageIcon as ImageStyle}
               resizeMode="contain"
@@ -939,7 +940,7 @@ function DuplicateSummaryBar({
       <StackrButtonPattern tone="light" />
       <View style={styles.duplicateSummaryMain}>
         <View style={styles.duplicateSummaryIcon}>
-          <Image source={stackrIcons.duplicates} style={styles.duplicateSummaryIconImage as ImageStyle} resizeMode="contain" />
+          <StackrFunctionalIcon source={stackrIcons.duplicates} style={styles.duplicateSummaryIconImage as ImageStyle} resizeMode="contain" />
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={styles.duplicateSummaryTitle} numberOfLines={1}>
@@ -1118,7 +1119,7 @@ function OpportunityRow({
     >
       <View style={styles.opportunityIconV2}>
         {imageIcon ? (
-          <Image source={imageIcon} style={styles.opportunityImageIconV2 as ImageStyle} resizeMode="contain" />
+          <StackrFunctionalIcon source={imageIcon} style={styles.opportunityImageIconV2 as ImageStyle} resizeMode="contain" />
         ) : (
           <Ionicons name={icon} size={20} color={HOME_HERO_PRIMARY} />
         )}
@@ -1434,7 +1435,7 @@ export function ChaseCardsSheet({
             </View>
           ) : !items.length ? (
             <View style={[styles.chaseSheetStateCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-              <Image source={stackrIcons.chase} style={styles.chaseSheetEmptyIcon as ImageStyle} resizeMode="contain" />
+              <StackrFunctionalIcon source={stackrIcons.chase} style={styles.chaseSheetEmptyIcon as ImageStyle} resizeMode="contain" />
               <Text style={[styles.chaseSheetStateTitle, { color: theme.colors.text }]}>No chase cards yet</Text>
               <Text style={[styles.chaseSheetStateCopy, { color: theme.colors.textSoft }]}>
                 Add cards you are hunting to track value and find listings.
@@ -1686,7 +1687,7 @@ export function RecentActivitySection({
                     ) : (
                       <View style={styles.activityImageFallback}>
                         {visual.imageIcon ? (
-                          <Image source={visual.imageIcon} style={styles.activityFallbackImage as ImageStyle} resizeMode="contain" />
+                          <StackrFunctionalIcon source={visual.imageIcon} style={styles.activityFallbackImage as ImageStyle} resizeMode="contain" />
                         ) : (
                           <Ionicons name={item.icon ?? visual.icon} size={17} color={visual.color} />
                         )}
@@ -1694,7 +1695,7 @@ export function RecentActivitySection({
                     )}
                     <View style={[styles.activityBadge, { backgroundColor: visual.color }]}>
                       {visual.imageIcon ? (
-                        <Image source={visual.imageIcon} style={styles.activityBadgeImage as ImageStyle} resizeMode="contain" />
+                        <StackrFunctionalIcon source={visual.imageIcon} style={[styles.activityBadgeImage as ImageStyle, { tintColor: '#FFFFFF' }]} resizeMode="contain" />
                       ) : (
                         <Ionicons name={visual.icon} size={10} color="#FFFFFF" />
                       )}
@@ -1810,7 +1811,7 @@ export function TradeProtectionSummaryCard({ onPress }: { onPress: () => void })
     >
       <View style={styles.protectionHeader}>
         <View style={styles.protectionIcon}>
-          <Image source={stackrIcons.protect} style={styles.protectionIconImage as ImageStyle} resizeMode="contain" />
+          <StackrFunctionalIcon source={stackrIcons.protect} style={styles.protectionIconImage as ImageStyle} resizeMode="contain" />
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={[styles.protectionTitle, { color: theme.colors.text }]}>Trade protection, matched to value</Text>

@@ -1,4 +1,5 @@
-import { StackrNavigationIcon } from '../../components/StackrNavigationIcon';
+import { StackrFunctionalIcon } from '../../components/StackrFunctionalIcon';
+import { STACKR_ICON_OUTLINE, StackrNavigationIcon } from '../../components/StackrNavigationIcon';
 import { StackrBinderButton, StackrBrowseFilterSheet, StackrBrowseFilterGroup } from '../../components/StackrBrowseControls';
 import { useTheme } from '../../components/theme-context';
 import { stackrHaptics } from '../../lib/haptics';
@@ -314,7 +315,7 @@ function CollectionVaultShortcutButton({
             justifyContent: 'center',
           }}
         >
-          <Image
+          <StackrFunctionalIcon
             source={imageIcon}
             style={{ width: 30, height: 30 }}
             resizeMode="contain"
@@ -417,7 +418,7 @@ function BinderOptionsSheet({
                   justifyContent: 'center',
                 }}
               >
-                <Image
+                <StackrFunctionalIcon
                   source={isGraded ? stackrIcons.profile : stackrIcons.binders}
                   style={{ width: 32, height: 32 }}
                   resizeMode="contain"
@@ -1663,7 +1664,7 @@ export default function BinderLibraryScreen() {
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8, alignItems: 'center', justifyContent: 'space-between' }}>
             <StackrBinderButton label="New binder" onPress={() => router.push('/binder/new')} />
             <TouchableOpacity onPress={handleScanCard} accessibilityRole="button" accessibilityLabel="Scan cards" style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
-              <StackrNavigationIcon name="scan" color={theme.colors.primary} size={22} />
+              <StackrNavigationIcon name="scan" color={theme.dark ? theme.colors.text : STACKR_ICON_OUTLINE} accentColor={theme.colors.primary} size={22} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setSortOpen(true)} accessibilityRole="button" accessibilityLabel={`Sort binders. ${currentSortLabel}`} style={{ minHeight: 44, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               <Ionicons name="swap-vertical-outline" size={20} color={theme.colors.primary} />
