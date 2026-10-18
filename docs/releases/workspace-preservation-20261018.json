@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-18T23:31:32.603Z",
+  "observedAt": "2026-10-18T23:54:28.319Z",
   "canonicalRepository": "D:/Stackr",
   "branch": "codex/stackr-repair-consolidation-20261018",
   "privateEvidenceRoot": "D:/Stackr-organization",
@@ -26,9 +26,9 @@
     "nativeAbsentIndex": "Original absent index and initialization locks retained; scratch restoration reproduces actual source state"
   },
   "relocatedCodingFolders": {
-    "count": 28,
+    "count": 29,
     "cleanLinkedWorktrees": 18,
-    "dirtyLinkedWorktrees": 8,
+    "dirtyLinkedWorktrees": 9,
     "independentRepositories": 2,
     "dirtyIndependentRepositories": 1,
     "everyInverseMoveRehearsed": true,
@@ -321,7 +321,7 @@
     "inverseMovesVerified": true,
     "sourceAppliedOverCurrentApp": false
   },
-  "totalOriginalFoldersReversiblyRelocated": 43,
+  "totalOriginalFoldersReversiblyRelocated": 44,
   "folderCountScope": "26 Git checkouts +3 native source snapshots +3 artwork folders +2 evidence folders +1 protected backup +1 historical release packet +1 mobile release artifact folder. Cohort bytes overlap retained copies; no unique-byte or disk-reclaimed claim. +1 historical fallback root containing5checkpoints/frozenpreview.",
   "mobileReleaseArtifacts": {
     "foldersRelocated": 1,
@@ -357,8 +357,8 @@
   "originalNamedRoots": {
     "total": 60,
     "currentlyMapped": 60,
-    "relocatedWithRecordedProof": 43,
-    "retainedOldRoots": 15,
+    "relocatedWithRecordedProof": 44,
+    "retainedOldRoots": 14,
     "organizationDestination": 1,
     "unresolvedAbsentOriginals": 0,
     "consolidationComplete": false,
@@ -675,6 +675,88 @@
       "originalSharedCommonRequired": "D:/Stackr-1/.git",
       "requiresCurrentExactLocalReview": true,
       "historicalPlanMustNotBeSilentlyRebound": true
+    },
+    "sourceDirectoryAbsent": true,
+    "permanentDeletion": false
+  },
+  "releaseValidationRawContinuation": {
+    "registeredAt": "2026-10-18T23:54:28.319Z",
+    "original": "D:\\Stackr-release-validation-20260824",
+    "current": "D:\\Stackr-organization\\archive\\consolidated-worktrees-20261018\\Stackr-release-validation-20260824",
+    "preservationContract": "raw-preservation-v1",
+    "originalPhysicalDirectory": {
+      "device": "437697643",
+      "fileId": "281474977803306",
+      "birthtimeNs": "1787552994935213600"
+    },
+    "physicalMoveReturnReplayPassed": true,
+    "independentlyRestoredFiles": 45014,
+    "independentlyRestoredBytes": 1400526778,
+    "requiredGitObjects": 6660,
+    "requiredGitObjectBytes": 827267302,
+    "rawIndexSha256": "9d974eb982200fd2b580dcf2d1b1229b0572aac723ff43b3d2c13e0f7e8dd635",
+    "sourceHead": "50ef37dece1fb19eeacfe5906c8f9335e6560f4f",
+    "rawProof": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/raw-preservation-completion-v1/raw-preservation-proof-continuity-v4.json",
+      "sha256": "9f12286287dcbfe8858b9ecea0fb327dec8367255590569753e49a3d0746992f"
+    },
+    "preservationAcceptance": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/release-validation-continuity-final-acceptance-v4-bounded-completion-review.json",
+      "sha256": "bda12d394ea83aab96eefbac1637878c3a48b7af376b36abdac869e73d40a018"
+    },
+    "priorLogicalWorkflowCompleted": false,
+    "sourceStatusOrDiffWorkflowClaimed": false,
+    "bodyHashesFromAcceptedPreservation": true,
+    "freshBodyRehashClaimed": false,
+    "currentPhysicalContinuityAndMembershipPassed": true,
+    "outgoingDependencyJunction": {
+      "relative": "gateway/node_modules",
+      "target": "D:/Stackr-1/gateway/node_modules",
+      "targetBodiesBackedUpByThisProof": false
+    },
+    "outcome": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/preflight-a24dbdc2-855b-462e-bce7-1f2d40dc33ec/outcome.json",
+      "sha256": "644e91742cbe0827ee2c849f7abea0cc69b41da4dd6d13033869aed5142403fd"
+    },
+    "verification": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/root-verified-outcome-v4.json",
+      "sha256": "ea74d7f73f2cd8528824190a6f806c83b22dc91a01134daed624b29b53d47159"
+    },
+    "review": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/release-target-hdd-scheduling-review-v4-bounded-completion-review.json",
+      "sha256": "ddcee781b755147f8668505dd63c9c5cbffc248fd183a69008410f2f500d0de8"
+    },
+    "restore": {
+      "type": "raw-preservation-v1",
+      "helper": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/restore-release.cjs",
+        "sha256": "9f303ac011f0f2c0115ab81bd23b42edb3af8ac46a3f560c7c32b67bfa8a05c9"
+      },
+      "guard": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/release-move.cjs",
+        "sha256": "8fb72af45e67a8910aa37f1f31275a85644a07736cc703e8015bdb8b7062c00a"
+      },
+      "bindingCapture": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/capture-root-binding.cjs",
+        "sha256": "f21acf3e76c8db77ced6b63f94c0c47a405b0b5a5fdfe4629843aec1f3f4c7b3"
+      },
+      "instructions": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/REVIEW-AND-RESTORE.md",
+        "sha256": "4875ab2efe90a0a554d611f6c24b7448725f86f00854d750a9dddce01e5d0add"
+      },
+      "plan": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/move-plan-prepared.json",
+        "sha256": "0cb115c4f87cdaa0124b1cffcf223cf042cdda5dd23902839f3ee57ab77ad556"
+      },
+      "standardGenericRestoreSupported": false,
+      "originalSharedCommonRequired": "D:/Stackr-1/.git",
+      "requiresCurrentExactLocalReview": true,
+      "requiresFreshRestoreBinding": true,
+      "bindingInvocation": "capture-root-binding.cjs --restore <actual-current-canonical-HEAD>",
+      "requiresSeparateCurrentRootGrant": true,
+      "requiresExactSuccessfulArchiveIntentAndOutcome": true,
+      "historicalPlanMustNotBeSilentlyRebound": true,
+      "noAutomaticRetryOrRollback": true
     },
     "sourceDirectoryAbsent": true,
     "permanentDeletion": false

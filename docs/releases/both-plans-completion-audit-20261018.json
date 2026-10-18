@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-18T23:31:13.018Z",
+  "observedAt": "2026-10-18T23:54:28.319Z",
   "ownerRequest": "Ensure BOTH plans have satisfied the work listed before TestFlight.",
   "sourceHeadAudited": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
   "branch": "codex/stackr-repair-consolidation-20261018",
@@ -1067,7 +1067,7 @@
       "requirement": "Consolidate under D:/Stackr-organization with reversible recovery",
       "state": "partially_satisfied",
       "satisfiedInFull": false,
-      "remaining": "43 verified reversible relocations with preservation/restoration proof; actual inverse moves were rehearsed where recorded. The three artwork roots have copy/restoration and rollback evidence, not a recorded physical inverse-move rehearsal. Further original roots remain; relocation retains bytes and is not reclamation.",
+      "remaining": "44 verified reversible relocations with preservation/restoration proof; actual inverse moves were rehearsed where recorded. The three artwork roots have copy/restoration and rollback evidence, not a recorded physical inverse-move rehearsal. Further original roots remain; relocation retains bytes and is not reclamation.",
       "owner": "Tif"
     },
     {
@@ -1075,7 +1075,7 @@
       "requirement": "Account for every folder in the original owner list",
       "state": "all60_accounted_one_owner_excluded_unrelated",
       "satisfiedInFull": true,
-      "remaining": "Folder accounting is complete: 43 verified relocations, 15 retained old roots, one organization destination and one owner-excluded unrelated folder, D:/CodexLogoWork. Stackr-relevant denominator is 59; consolidation of retained work remains incomplete.",
+      "remaining": "Folder accounting is complete: 44 verified relocations, 14 retained old roots, one organization destination and one owner-excluded unrelated folder, D:/CodexLogoWork. Stackr-relevant denominator is 59; consolidation of retained work remains incomplete.",
       "owner": "Tif",
       "evidence": {
         "privatePath": "evidence/consolidation-20261018/owner-scope-correction-codexlogowork/owner-scope-reply.json",
@@ -1276,20 +1276,20 @@
     "sha256": "714099dd3456675f74e4ae5e8df9427349e4a71d15ad76985db1743667499d52"
   },
   "originalFolderCoverage": {
-    "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/current-owner-folder-placement.json",
-    "sha256": "47aaa90fee565a8580f9e8f85ca9e2f3d07ff32656f319f53328ff06083589bf"
+    "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/current-owner-folder-placement.json",
+    "sha256": "ac5139d2591952b9fb59789a1ff3f5731593dc864fff5c9d802b8793267c11d9"
   },
   "originalFolderCounts": {
-    "relocatedWithRecordedProof": 43,
-    "retainedDependencyDataOrUnfinishedWork": 15,
+    "relocatedWithRecordedProof": 44,
+    "retainedDependencyDataOrUnfinishedWork": 14,
     "existingOrganizationDestination": 1,
     "ownerExcludedUnrelated": 1,
     "unmappedUnresolvedOriginal": 0,
     "originalMapRowsPresent": 60,
     "originalMapRowsMissing": 0,
-    "namedOriginalPathsStillPresentIncludingOrganizationDestination": 16,
-    "namedOldRootsStillPresentExcludingOrganizationDestination": 15,
-    "originalPathsAbsent": 44,
+    "namedOriginalPathsStillPresentIncludingOrganizationDestination": 15,
+    "namedOldRootsStillPresentExcludingOrganizationDestination": 14,
+    "originalPathsAbsent": 45,
     "stackrRelevantOriginalPaths": 59
   },
   "originalNamedPaths": 60,
@@ -1328,24 +1328,6 @@
       },
       "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder.",
       "currentLocation": "D:\\Stackr-release-hardening-2026-08-19",
-      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
-    },
-    {
-      "original": "D:/Stackr-release-validation-20260824",
-      "mapRowPresent": true,
-      "hold": null,
-      "capturedCohort": {
-        "file": "D:/Stackr-organization/preserved-work/consolidation-20261018-content/combined-summary.json",
-        "sha256": "03c8a24a1b53c558104a2111882b911ea6b439d1104bf5dd4401ede25b0ffabc",
-        "capturedFiles": 1163,
-        "capturedBytes": 4850676,
-        "restoredFiles": 1163,
-        "restoreExact": true,
-        "allNecessaryIgnoredMaterialPreserved": false,
-        "scope": "Only the recorded captured cohort; not a complete whole-root preservation claim"
-      },
-      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder.",
-      "currentLocation": "D:\\Stackr-release-validation-20260824",
       "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
     },
     {
@@ -2037,5 +2019,100 @@
       "sha256": "9fb65f14b076e4fd7e5967948b5fc16b2cd1d31b2ff6661b70858160e0a2c1fc"
     },
     "scope": "Exact pushed source snapshot. Subsequent documentation commits need their own hosted status; skipped release/canary gates do not prove delivery or phone acceptance."
+  },
+  "releaseValidationRawContinuation": {
+    "registeredAt": "2026-10-18T23:54:28.319Z",
+    "original": "D:\\Stackr-release-validation-20260824",
+    "current": "D:\\Stackr-organization\\archive\\consolidated-worktrees-20261018\\Stackr-release-validation-20260824",
+    "preservationContract": "raw-preservation-v1",
+    "originalPhysicalDirectory": {
+      "device": "437697643",
+      "fileId": "281474977803306",
+      "birthtimeNs": "1787552994935213600"
+    },
+    "physicalMoveReturnReplayPassed": true,
+    "independentlyRestoredFiles": 45014,
+    "independentlyRestoredBytes": 1400526778,
+    "requiredGitObjects": 6660,
+    "requiredGitObjectBytes": 827267302,
+    "rawIndexSha256": "9d974eb982200fd2b580dcf2d1b1229b0572aac723ff43b3d2c13e0f7e8dd635",
+    "sourceHead": "50ef37dece1fb19eeacfe5906c8f9335e6560f4f",
+    "rawProof": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/raw-preservation-completion-v1/raw-preservation-proof-continuity-v4.json",
+      "sha256": "9f12286287dcbfe8858b9ecea0fb327dec8367255590569753e49a3d0746992f"
+    },
+    "preservationAcceptance": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/release-validation-continuity-final-acceptance-v4-bounded-completion-review.json",
+      "sha256": "bda12d394ea83aab96eefbac1637878c3a48b7af376b36abdac869e73d40a018"
+    },
+    "priorLogicalWorkflowCompleted": false,
+    "sourceStatusOrDiffWorkflowClaimed": false,
+    "bodyHashesFromAcceptedPreservation": true,
+    "freshBodyRehashClaimed": false,
+    "currentPhysicalContinuityAndMembershipPassed": true,
+    "outgoingDependencyJunction": {
+      "relative": "gateway/node_modules",
+      "target": "D:/Stackr-1/gateway/node_modules",
+      "targetBodiesBackedUpByThisProof": false
+    },
+    "outcome": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/preflight-a24dbdc2-855b-462e-bce7-1f2d40dc33ec/outcome.json",
+      "sha256": "644e91742cbe0827ee2c849f7abea0cc69b41da4dd6d13033869aed5142403fd"
+    },
+    "verification": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/root-verified-outcome-v4.json",
+      "sha256": "ea74d7f73f2cd8528824190a6f806c83b22dc91a01134daed624b29b53d47159"
+    },
+    "review": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/release-target-hdd-scheduling-review-v4-bounded-completion-review.json",
+      "sha256": "ddcee781b755147f8668505dd63c9c5cbffc248fd183a69008410f2f500d0de8"
+    },
+    "restore": {
+      "type": "raw-preservation-v1",
+      "helper": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/restore-release.cjs",
+        "sha256": "9f303ac011f0f2c0115ab81bd23b42edb3af8ac46a3f560c7c32b67bfa8a05c9"
+      },
+      "guard": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/release-move.cjs",
+        "sha256": "8fb72af45e67a8910aa37f1f31275a85644a07736cc703e8015bdb8b7062c00a"
+      },
+      "bindingCapture": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/capture-root-binding.cjs",
+        "sha256": "f21acf3e76c8db77ced6b63f94c0c47a405b0b5a5fdfe4629843aec1f3f4c7b3"
+      },
+      "instructions": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/REVIEW-AND-RESTORE.md",
+        "sha256": "4875ab2efe90a0a554d611f6c24b7448725f86f00854d750a9dddce01e5d0add"
+      },
+      "plan": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/move-plan-prepared.json",
+        "sha256": "0cb115c4f87cdaa0124b1cffcf223cf042cdda5dd23902839f3ee57ab77ad556"
+      },
+      "standardGenericRestoreSupported": false,
+      "originalSharedCommonRequired": "D:/Stackr-1/.git",
+      "requiresCurrentExactLocalReview": true,
+      "requiresFreshRestoreBinding": true,
+      "bindingInvocation": "capture-root-binding.cjs --restore <actual-current-canonical-HEAD>",
+      "requiresSeparateCurrentRootGrant": true,
+      "requiresExactSuccessfulArchiveIntentAndOutcome": true,
+      "historicalPlanMustNotBeSilentlyRebound": true,
+      "noAutomaticRetryOrRollback": true
+    },
+    "sourceDirectoryAbsent": true,
+    "permanentDeletion": false
+  },
+  "currentUnsignedPackage": {
+    "sourceHead": "4e5715f5e93a962c8f39e09e773be183c53059f1",
+    "runtimeRevision": "d70a222ac548ba6c7830163e94897fdc7e0cda6d",
+    "receipt": {
+      "privatePath": "evidence/consolidation-20261018/pricing-identity-ios-export-v1/asset-verification.json",
+      "sha256": "8f539fb0841b53255a40caf9077e6d31d0bb159dfab1371dcce9c14098360475"
+    },
+    "exactAssets": 74,
+    "svgPaths": 44,
+    "signed": false,
+    "submitted": false,
+    "phoneVerified": false
   }
 }
