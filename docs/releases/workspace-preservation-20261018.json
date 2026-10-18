@@ -321,7 +321,7 @@
     "inverseMovesVerified": true,
     "sourceAppliedOverCurrentApp": false
   },
-  "totalOriginalFoldersReversiblyRelocated": 40,
+  "totalOriginalFoldersReversiblyRelocated": 41,
   "folderCountScope": "26 Git checkouts +3 native source snapshots +3 artwork folders +2 evidence folders +1 protected backup +1 historical release packet +1 mobile release artifact folder. Cohort bytes overlap retained copies; no unique-byte or disk-reclaimed claim. +1 historical fallback root containing5checkpoints/frozenpreview.",
   "mobileReleaseArtifacts": {
     "foldersRelocated": 1,
@@ -357,8 +357,8 @@
   "originalNamedRoots": {
     "total": 60,
     "currentlyMapped": 60,
-    "relocatedWithRecordedProof": 40,
-    "retainedOldRoots": 18,
+    "relocatedWithRecordedProof": 41,
+    "retainedOldRoots": 17,
     "organizationDestination": 1,
     "unresolvedAbsentOriginals": 0,
     "consolidationComplete": false,
@@ -449,5 +449,34 @@
     "gate": "Resolve the absent original D:/CodexLogoWork location; do not infer deletion or loss from absence or claim all original folders consolidated",
     "ownerAnswer": "codex logo work was irrelevant top stackr",
     "reason": "Owner explicitly excluded this unrelated folder; it is not an unresolved Stackr location."
+  },
+  "nativeInitializingRelocation": {
+    "recordedAt": "2026-10-18T21:17:32.911Z",
+    "original": "D:/Stackr-native-aaae6ac-20260910",
+    "current": "D:/Stackr-organization/archive/initializing-worktrees-20261018/Stackr-native-aaae6ac-20260910",
+    "files": 242,
+    "bytes": 106910711,
+    "directories": 47,
+    "payloadCopiesVerified": 241,
+    "physicalInverseAndReplayVerified": true,
+    "initializationStatePreserved": true,
+    "indexStillAbsent": true,
+    "sharedMainControlsUnchanged": true,
+    "receipt": {
+      "privatePath": "evidence/consolidation-20261018/native-aaae6ac-initialization-assessment/move-preparation-v2/execution-16a49636-a147-418c-bb68-0711726f2e2a/outcome.json",
+      "sha256": "d0a4fd7aecab4b04fd22521170ea8ed64bc042f3f8d502bf6dc5a7fe89ebb565"
+    },
+    "restore": {
+      "type": "initializing-worktree-separate-reviewed-restore",
+      "instructions": "evidence/consolidation-20261018/native-aaae6ac-initialization-assessment/move-preparation-v2/REVIEW-AND-NATIVE-RESTORE.md",
+      "instructionsSha256": "e1b2c21b61a3539019a9c2e07fcb03a0b2d33d4b80d7d593555b930c5353bbea",
+      "helper": "evidence/consolidation-20261018/native-aaae6ac-initialization-assessment/move-preparation-v2/restore-initializing-native.cjs",
+      "helperSha256": "26c7cab4ecd0a0b1a644239eef4be2c113b412467dbe57cad35dc90f9bc651f4",
+      "standardRestoreScriptSupported": false,
+      "originalSharedCommonRequired": "D:/Stackr-1/.git",
+      "requiresNewExactRestoreApproval": true
+    },
+    "sourceDirectoryAbsent": true,
+    "permanentDeletion": false
   }
 }

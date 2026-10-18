@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-18T19:33:01.184Z",
+  "updatedAt": "2026-10-18T21:20:19.967Z",
   "sourceVideo": {
     "fileName": "WhatsApp Video 2026-10-18 at 09.12.30.mp4",
     "sha256": "a29ad89ce8cec90b3dfa299c5a951ff4b60d686187f5a27c03a4e6175d1e859c",
@@ -753,11 +753,15 @@
       "remainingBlocker": "Gateway public95-ID batch now returns105assets/557ms;98/100currentresolverrows eligible and only1exactthumbnaildecoded. Two exactPikachu gaps, listingmedia, newnativepublication and phonejourneys remain open.",
       "additionalCatalogueFinding": {
         "id": "AR-JUNGLE60-EXACT-REBIND",
-        "state": "existing_stamped_object_normal_association_confirmed_v4_preparation",
+        "state": "approved_staging_rollback_rehearsal_passed_production_repair_still_unapproved",
         "evidence": "docs/releases/jungle-association-diagnostics-20261018.json",
         "liveWrite": false,
         "normalGapDisclosed": true,
-        "normalAliasAbsentNarrativeSuperseded": true
+        "normalAliasAbsentNarrativeSuperseded": true,
+        "stagingExecution": "docs/releases/jungle-staging-rehearsal-20261018.json",
+        "productionWrite": false,
+        "productionFirstEditionVisibilityNotEstablishedByStaging": true,
+        "phoneVerified": false
       },
       "warmArtworkReassignmentRepair": {
         "sourceRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
@@ -1037,5 +1041,33 @@
     "document": "docs/releases/artwork-reassignment-repair-20261018.json",
     "sourceRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
     "phoneClosedIssues": 0
+  },
+  "jungleStagingRollbackRehearsal": {
+    "observedAt": "2026-10-18T21:16:47.345Z",
+    "state": "APPROVED_SINGLE_STAGING_ROLLBACK_REHEARSAL_COMPLETED_NO_TOOL_ERROR",
+    "executed": true,
+    "sqlCalls": 1,
+    "projectId": "lmwfhvexfcoyeuoyrlco",
+    "effectiveQuerySha256": "c4b383672578aded3f646a1af29f6524b062839bdaa6803c608a44899455311e",
+    "ownerApproval": {
+      "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/staging-rehearsal-execution-v6-20261018/owner-staging-write-approval.json",
+      "sha256": "552fc43a3cc6dcdac4778ed32d4413127af5d4d6c1c56b16764df736d8fffac5"
+    },
+    "intent": {
+      "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/staging-rehearsal-execution-v6-20261018/execution-intent.json",
+      "sha256": "cb864e64abad66d9000c755e7bada8cc6d97a4eb287cbbe795e69699f077a21e"
+    },
+    "outcome": {
+      "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/staging-rehearsal-execution-v6-20261018/query-outcome.json",
+      "sha256": "e43c8e3b14d7bcfcea85bdf33af0115f60beae11489926eacfd38032d16dfb8c"
+    },
+    "alwaysRollback": true,
+    "persistentChanges": 0,
+    "noticesReturned": false,
+    "returnedRows": 0,
+    "assertionMeaning": "Successful guarded DO completed all internal assertions and rollback verification. Detailed NOTICE fixture payloads were not returned by the connector.",
+    "httpOrNativeOrPhoneVerified": false,
+    "productionWritesAuthorized": false,
+    "testFlightHeld": true
   }
 }
