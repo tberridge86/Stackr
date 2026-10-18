@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-18T17:21:29.463Z",
+  "updatedAt": "2026-10-18T19:33:01.184Z",
   "coordinator": "Tif / root",
   "workingDirectory": "D:/Stackr",
   "branch": "codex/stackr-repair-consolidation-20261018",
@@ -2601,6 +2601,42 @@
       },
       "implementationRevision": "33ac0437e66dd281f3ed73c2f75e8b556c58e0ff",
       "reviewCategory": "scoped_repair_present_delivery_or_acceptance_remaining"
+    },
+    {
+      "id": "JUNGLE-WARM-01",
+      "severity": "P2",
+      "owner": "stackr_coding",
+      "status": "committed_reviewed_unsigned_export_verified_native_phone_pending",
+      "summary": "Preferred merging and legacy image-only merges retained the old nonempty image after an approved exact reassignment. Serialized saved recovery lost the prior binding comparison, and imageful cached Card Detail skipped optional revalidation.",
+      "files": [
+        "lib/stackrPreferredSetArtwork.ts",
+        "lib/stackrDomainAdapter.ts",
+        "lib/binders.ts",
+        "lib/stackrSetRetrieval.ts",
+        "lib/pokemonTcg.ts",
+        "app/card/[id].tsx"
+      ],
+      "implementationRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
+      "evidence": "docs/releases/artwork-reassignment-repair-20261018.json",
+      "validation": [
+        "Actual JSON/snapshot facts-only enrichment and attacher full/selected-only pages",
+        "Actual cached Card Detail revalidation, failure, account/route/abort cases",
+        "Root typecheck/lint/wired master lane and independent V2 review PASS",
+        "Unsigned iOS export with74exactassets PASS"
+      ],
+      "delivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "committed": true,
+        "unsignedExportVerified": true,
+        "merged": false,
+        "deployed": false,
+        "nativeSigned": false,
+        "published": false,
+        "phoneVerified": false
+      },
+      "nextAction": "Retain TestFlight hold; live one-association proposal and missing normal source remain separate. Verify eventual signed delivery and installed journeys."
     }
   ],
   "integrationBaseRevision": "599c776f12201470273574c4d5f9f01632609dc1",

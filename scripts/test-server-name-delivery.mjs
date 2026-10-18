@@ -5,6 +5,7 @@ import ts from 'typescript';
 import { toCardSummary } from '../backend/lib/stackrApiV1.js';
 import { OWNER_APPROVED_CARD_ENGLISH_NAME_RECORDS as records } from '../backend/lib/generated/ownerApprovedCardEnglishNames.js';
 import { buildForeignCardPresentation } from '../lib/foreignCardPresentation.ts';
+import { copyPreferredSetArtworkReassignments, getPreferredSetArtworkReassignments } from '../lib/stackrPreferredSetArtwork.ts';
 
 // Execute the actual API→legacy adapter; image and transport dependencies are
 // irrelevant here and intentionally stay off this name-delivery fixture.
@@ -20,6 +21,7 @@ vm.runInNewContext(ts.transpileModule(source.slice(start, end), {
   resolveCardArtwork: () => ({ small: undefined, large: undefined }),
   clean: (value) => value ?? null, toLegacyLanguage: (value) => value,
   canonicalArtworkFacts: new WeakMap(), buildForeignCardPresentation,
+  copyPreferredSetArtworkReassignments, getPreferredSetArtworkReassignments,
 });
 const approved = records.find(([language, native]) => language === 'ja' && native === 'あとだしハンマー');
 const row = { printing_id: approved[3][0], variant_id: '33333333-3333-4333-8333-333333333333',

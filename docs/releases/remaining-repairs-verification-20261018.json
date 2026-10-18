@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "recordedAt": "2026-10-18T18:38:57.998Z",
+  "recordedAt": "2026-10-18T19:33:01.184Z",
   "workingDirectory": "D:/Stackr",
   "branch": "codex/stackr-repair-consolidation-20261018",
-  "sourceRevision": "b379c5c48b4cdbe9f169c739467e362be93f3a0e",
+  "sourceRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
   "workContinues": true,
   "phoneClosedIssues": 0,
   "testFlightState": "held_until_repairs_verified",
@@ -93,11 +93,11 @@
     "actualBinderRedToGreen": true,
     "metadataTtlRedToGreen": true,
     "unsignedIos": {
-      "exportedSource": "d0f9e74aa099a4805383d1fabb4b5e6f91e59cdb",
+      "exportedSource": "d0cf371080936ff538e86ac8883fed6af4d1200e",
       "bundle": {
-        "path": "_expo/static/js/ios/entry-9c9783026f9b5fd791b6f325cfee2269.hbc",
-        "sha256": "42d845b1ce38adebbe02291f3cde0d22d68b4bcd468910e7801a2a21d3e7d549",
-        "bytes": 11787234
+        "path": "_expo/static/js/ios/entry-079ebd166aa22cedb2e79265d73810d8.hbc",
+        "sha256": "3d1e1c50bb0a8e7cecd295326caee48a3c3013c72fc1d7671341a1a3fe1325c3",
+        "bytes": 11796288
       },
       "exactUniqueAssetsVerified": 74,
       "nativeSigned": false,
@@ -132,16 +132,36 @@
       "nativeSigned": false,
       "published": false,
       "phoneVerified": false
-    }
+    },
+    "historicalUnsignedIos": [
+      {
+        "exportedSource": "d0f9e74aa099a4805383d1fabb4b5e6f91e59cdb",
+        "bundle": {
+          "path": "_expo/static/js/ios/entry-9c9783026f9b5fd791b6f325cfee2269.hbc",
+          "sha256": "42d845b1ce38adebbe02291f3cde0d22d68b4bcd468910e7801a2a21d3e7d549",
+          "bytes": 11787234
+        },
+        "exactUniqueAssetsVerified": 74,
+        "nativeSigned": false,
+        "published": false,
+        "phoneVerified": false
+      }
+    ]
   },
   "boundedStormEvidence": {
     "factualPrintings": 113,
     "preferredArtworkEligible": 113,
     "decodedOriginalFiles": 113,
     "actualMapperReplay": {
+      "sourceRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
       "inputPrintings": 113,
       "inspectableReferences": 113,
-      "manifestRequests": 0
+      "manifestRequests": 0,
+      "offlineReplay": true,
+      "evidence": {
+        "privatePath": "evidence/consolidation-20261018/remaining-retrieval-20261018/storm-real-client-replay-warm-v2.json",
+        "sha256": "d5a0148eb7c5f9972643801296a5ca430e9c0c5986db99d29ea4c3ed578e71b6"
+      }
     },
     "interpretation": "All113captured approved shared printing-face references freshly fetched, hash/byte/dimension matched and decoded. Earlier two-file sample and113actual-client replay retained; exact physical finishes and phone rendering remain unverified.",
     "separateWholeSetManifest": {
@@ -258,5 +278,13 @@
       "file": "D:/Stackr-organization/evidence/consolidation-20261018/remaining-repairs-review-20261018/english-set-fixture-review.json",
       "sha256": "15e9aed04bf539d79585e4a4406002b86d472f5907e7ac92bf33c9d489347026"
     }
+  },
+  "warmArtworkReassignmentRepair": {
+    "document": "docs/releases/artwork-reassignment-repair-20261018.json",
+    "sourceRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
+    "review": "PASS_SOURCE_TEST_ONLY",
+    "unsignedExportAssets": 74,
+    "liveDataUnchanged": true,
+    "phoneVerified": false
   }
 }

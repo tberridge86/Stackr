@@ -1,0 +1,30 @@
+{
+  "recordedAt": "2026-10-18T19:33:41.648Z",
+  "state": "REVIEWED_READ_ONLY_PROPOSAL_OWNER_AUTHORIZATION_PENDING",
+  "target": {
+    "id": "lmwfhvexfcoyeuoyrlco",
+    "name": "Stackr me5 staging",
+    "metadataStatus": "ACTIVE_HEALTHY",
+    "observedAt": "2026-10-18T19:32:08.479Z",
+    "sqlAccessOrContentsVerified": false
+  },
+  "script": "docs/releases/jungle-staging-bindings-read-only-20261018.sql",
+  "scriptSha256": "169171f1d862af03cb476411bda6b8c24edd7538ab295ddf48eca68e0689c2bb",
+  "queries": 5,
+  "statementSeconds": 5,
+  "lockSeconds": 1,
+  "idleSeconds": 15,
+  "collectorOrPriceRows": false,
+  "writes": false,
+  "executionApproved": false,
+  "executed": false,
+  "independentReview": {
+    "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/jungle-staging-binding-read-review-v1.json",
+    "sha256": "344d27eaf97cbd7ae630122050fb2401c053c7300fb723b939198fe8e6ef9d50"
+  },
+  "exactSplitPlan": {
+    "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/staging-binding-preparation/read-only-execution-plan.json",
+    "sha256": "b56aee61cfd9e865641b1848be2d7f72b1667ed27bad7d3cee73f5f24c1a5937"
+  },
+  "testFlightHeld": true
+}

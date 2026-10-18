@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-18T19:15:21.952Z",
+  "updatedAt": "2026-10-18T19:33:01.184Z",
   "sourceVideo": {
     "fileName": "WhatsApp Video 2026-10-18 at 09.12.30.mp4",
     "sha256": "a29ad89ce8cec90b3dfa299c5a951ff4b60d686187f5a27c03a4e6175d1e859c",
@@ -381,6 +381,17 @@
         "verifiedFiles": 113,
         "sourceApiCapturedEarlier": true,
         "phoneVerified": false
+      },
+      "warmArtworkReassignmentRepair": {
+        "sourceRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "unsignedIosVerified": true,
+        "merged": false,
+        "nativePublished": false,
+        "phoneVerified": false,
+        "scope": "Fresh positive exact reassignment invalidates stale cached artwork; does not supply missing source images or identify the video printing."
       }
     },
     {
@@ -606,7 +617,18 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Resolve exact JAweb1#024 approved source and verify ENbase1#42normal artwork/identity before mapping. Full42imagepopulation, installed rendering and historical delay remain unverified."
+      "remainingBlocker": "Resolve exact JAweb1#024 approved source and verify ENbase1#42normal artwork/identity before mapping. Full42imagepopulation, installed rendering and historical delay remain unverified.",
+      "warmArtworkReassignmentRepair": {
+        "sourceRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "unsignedIosVerified": true,
+        "merged": false,
+        "nativePublished": false,
+        "phoneVerified": false,
+        "scope": "Fresh positive exact reassignment invalidates stale cached artwork; does not supply missing source images or identify the video printing."
+      }
     },
     {
       "id": "V20",
@@ -736,6 +758,17 @@
         "liveWrite": false,
         "normalGapDisclosed": true,
         "normalAliasAbsentNarrativeSuperseded": true
+      },
+      "warmArtworkReassignmentRepair": {
+        "sourceRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "unsignedIosVerified": true,
+        "merged": false,
+        "nativePublished": false,
+        "phoneVerified": false,
+        "scope": "Fresh positive exact reassignment invalidates stale cached artwork; does not supply missing source images or identify the video printing."
       }
     }
   ],
@@ -999,5 +1032,10 @@
   "phoneClosedIssues": 0,
   "completionAudit": "docs/releases/both-plans-completion-audit-20261018.md",
   "remainingRepairVerification": "docs/releases/remaining-repairs-verification-20261018.json",
-  "followupPullRequest": "https://github.com/tberridge86/Stackr/pull/410"
+  "followupPullRequest": "https://github.com/tberridge86/Stackr/pull/410",
+  "warmArtworkReassignmentRepair": {
+    "document": "docs/releases/artwork-reassignment-repair-20261018.json",
+    "sourceRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
+    "phoneClosedIssues": 0
+  }
 }

@@ -249,7 +249,7 @@
       "nativePublished": false,
       "phoneAccepted": false,
       "satisfiedInFull": false,
-      "remaining": "Source regression fixed; actual Storm image responses and visible phone images remain pending, with a live factual-read timeout recorded.",
+      "remaining": "All113capturedM6image files freshly200/hash/bytes/dimensions/decode verified; current-source actual client replay113tile/inspection references with0fallback manifest calls. Historical manifest timeout cause and installed rendering remain open.",
       "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
       "sourceFiles": [
         "features/binder/BinderDetailScreen.tsx",
@@ -1088,7 +1088,7 @@
     }
   },
   "continuation": {
-    "recordedAt": "2026-10-18T19:07:19.457Z",
+    "recordedAt": "2026-10-18T19:33:01.184Z",
     "source": "b379c5c48b4cdbe9f169c739467e362be93f3a0e",
     "homeSourceRepair": "d0f9e74aa099a4805383d1fabb4b5e6f91e59cdb",
     "regularNovemberCover": "f047a5f577126502767e88cdf6d491c467914fcc",
@@ -1102,7 +1102,12 @@
     "ownerScopeCorrection": {
       "privatePath": "evidence/consolidation-20261018/owner-scope-correction-codexlogowork/owner-scope-reply.json",
       "sha256": "454b9490c612e2f26a68f9032182d26d87f74a288d4a4bb2bfc205301b6ea4d9"
-    }
+    },
+    "latestTestedSourceRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
+    "latestUnsignedSourceRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
+    "unsignedPromisedAssets": 74,
+    "currentSourceEvidence": "docs/releases/artwork-reassignment-repair-20261018.json",
+    "videoIssuesClosedOnPhone": 0
   },
   "historicalUnresolvedOriginalsBeforeOwnerCorrection": [
     {

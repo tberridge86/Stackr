@@ -172,5 +172,17 @@
     "testFlightHeld": true,
     "verification": "docs/releases/remaining-repairs-verification-20261018.json",
     "historicalFrozenPreparationUnchanged": true
+  },
+  "latestUnsignedIntegrationVerification": {
+    "recordedAt": "2026-10-18T19:33:01.184Z",
+    "sourceRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
+    "sourceTree": "ca671a57f5f4841a12688aae1af2c7192845e08f",
+    "document": "docs/releases/artwork-reassignment-repair-20261018.json",
+    "exactPromisedAssets": 74,
+    "nativeSigned": false,
+    "submitted": false,
+    "phoneVerified": false,
+    "changesPriorApprovedNativeGrant": false,
+    "testFlightHeld": true
   }
 }
