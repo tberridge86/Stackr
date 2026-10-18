@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-18T18:38:57.998Z",
+  "updatedAt": "2026-10-18T18:56:14.696Z",
   "sourceVideo": {
     "fileName": "WhatsApp Video 2026-10-18 at 09.12.30.mp4",
     "sha256": "a29ad89ce8cec90b3dfa299c5a951ff4b60d686187f5a27c03a4e6175d1e859c",
@@ -720,7 +720,15 @@
         "gatewayDeployed": true,
         "publicBatchVerified": true
       },
-      "remainingBlocker": "Gateway public95-ID batch now returns105assets/557ms;98/100currentresolverrows eligible and only1exactthumbnaildecoded. Two exactPikachu gaps, listingmedia, newnativepublication and phonejourneys remain open."
+      "remainingBlocker": "Gateway public95-ID batch now returns105assets/557ms;98/100currentresolverrows eligible and only1exactthumbnaildecoded. Two exactPikachu gaps, listingmedia, newnativepublication and phonejourneys remain open.",
+      "additionalCatalogueFinding": {
+        "id": "AR-JUNGLE60-EXACT-REBIND",
+        "state": "existing_stamped_object_normal_association_confirmed_v4_preparation",
+        "evidence": "docs/releases/jungle-association-diagnostics-20261018.json",
+        "liveWrite": false,
+        "normalGapDisclosed": true,
+        "normalAliasAbsentNarrativeSuperseded": true
+      }
     }
   ],
   "additionalAcceptance": [
