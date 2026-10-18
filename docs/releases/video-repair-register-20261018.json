@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-18T10:27:13.651Z",
+  "updatedAt": "2026-10-18T10:31:12.456Z",
   "sourceVideo": {
     "fileName": "WhatsApp Video 2026-10-18 at 09.12.30.mp4",
     "sha256": "a29ad89ce8cec90b3dfa299c5a951ff4b60d686187f5a27c03a4e6175d1e859c",
@@ -676,7 +676,8 @@
       "Shared binder query cancellation race",
       "Mixed access-denial precedence",
       "Serialized saved artwork handle loss",
-      "Saved-subset artwork pagination"
+      "Saved-subset artwork pagination",
+      "Git text-conversion disabled and actual binary document patch restoration"
     ],
     "physicalPhoneEvidence": null
   },
@@ -700,5 +701,7 @@
     "installedPhone": "pending",
     "performanceSample": "unmeasured; no p95 claim",
     "exportReceipt": "docs/releases/ios-export-asset-verification-20261018.json"
-  }
+  },
+  "pullRequest": "https://github.com/tberridge86/Stackr/pull/409",
+  "liveReadDiagnostics": "docs/releases/live-read-diagnostics-20261018.json"
 }

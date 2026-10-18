@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-18T10:24:47.017Z",
+  "updatedAt": "2026-10-18T10:31:12.456Z",
   "coordinator": "Tif / root",
   "workingDirectory": "D:/Stackr",
   "branch": "codex/stackr-repair-consolidation-20261018",
@@ -31,7 +31,8 @@
       "issueRegister": "docs/releases/video-repair-register-20261018.json",
       "independentReview": "Scoped runtime and preservation-tool findings resolved; phone/live acceptance remains open.",
       "nextAction": "Finish recovery-backed consolidation and matching draft PR. Remote read-only SQL awaits explicit owner approval; live promotion and installed-device closure remain separate.",
-      "schedulerCreated": false
+      "schedulerCreated": false,
+      "pullRequest": "https://github.com/tberridge86/Stackr/pull/409"
     },
     "lastObservedPullRequest": {
       "url": "https://github.com/tberridge86/Stackr/pull/337",
@@ -108,7 +109,9 @@
       "closedVideoIssues": 0,
       "liveDeployment": false,
       "deviceVerified": false,
-      "nextAction": "Complete recovery-backed archive registry; obtain explicit approval for bounded remote read-only SQL; then resolve demonstrated live causes and deliver/retest on the confirmed installed phone build."
+      "nextAction": "Complete recovery-backed archive registry; obtain explicit approval for bounded remote read-only SQL; then resolve demonstrated live causes and deliver/retest on the confirmed installed phone build.",
+      "pullRequest": "https://github.com/tberridge86/Stackr/pull/409",
+      "liveReadDiagnostics": "docs/releases/live-read-diagnostics-20261018.json"
     },
     {
       "id": "CATALOGUE-MANIFEST-READ-PHASE-20261017",

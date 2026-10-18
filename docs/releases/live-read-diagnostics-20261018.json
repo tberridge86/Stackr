@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "observedOn": "2026-10-18",
+  "scope": "Bounded public HTTP reads and project control-plane status; no remote SQL, refresh, restart, catalogue mutation or deployment",
+  "observations": [
+    {
+      "surface": "Japanese M6 factual cards",
+      "setId": "903d5baa-27c7-5690-b1d7-2395c770204a",
+      "request": "GET /v1/sets/{setId}/cards?language=ja&limit=3&includeAssets=false",
+      "httpStatus": 504,
+      "error": "downstream_timeout",
+      "elapsedMsApproximate": 8810,
+      "requestId": "803bc925-ddd5-436c-8eb0-fd798b5eb93e",
+      "responseGeneratedAt": "2026-10-18T10:04:09.257Z"
+    },
+    {
+      "surface": "Japanese M6 logo manifest",
+      "request": "GET /v1/assets/manifest?assetType=set_logo&setId=903d5baa-27c7-5690-b1d7-2395c770204a&limit=10",
+      "httpStatus": 504,
+      "error": "downstream_timeout",
+      "elapsedMs": 8490,
+      "requestId": "f7a65bff-0494-41c3-b509-a435bf4866f8"
+    },
+    {
+      "surface": "Previously published owner-source Storm PNG",
+      "expectedSha256": "383905581374e6a41be583303354be84a34891d52f8b6420ea632ff61a07f7ba",
+      "request": "GET existing public Supabase Storage source URL recorded in storm-m6-owner-supplied-20261018.json",
+      "httpStatus": 544,
+      "error": "DatabaseTimeout",
+      "message": "The connection to the database timed out",
+      "elapsedMsFirstRead": 5233,
+      "responseBytesFirstRead": 124,
+      "actualImageBytesVerified": false,
+      "repeatRead": "Same HTTP status and explicit DatabaseTimeout response"
+    },
+    {
+      "surface": "Supabase project control-plane metadata",
+      "projectRef": "oakdbbzdqwurpjnoqhmu",
+      "status": "ACTIVE_HEALTHY",
+      "limitation": "Control-plane project status does not establish successful database/storage requests or their latency."
+    }
+  ],
+  "conclusion": "A live database-backed read failure affects public card/artwork paths. The precise query/resource cause is not established and is not claimed to explain every recorded phone failure.",
+  "nextAction": "Owner approval is pending for the prepared bounded read-only production SQL. Retain all source, delivery and phone acceptance gaps separately.",
+  "phoneBuild": "unverified",
+  "phoneVerified": false
+}

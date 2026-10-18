@@ -79,6 +79,14 @@ does not establish reliability. A Traditional Chinese asset-manifest sample
 also timed out. Two existing pricing workers reported database statement
 timeouts. They were not restarted and no provider refresh was triggered.
 
+A subsequent public Storm image download returned HTTP 544 with the explicit
+`DatabaseTimeout` message, repeated on a second bounded read. Its logo manifest
+returned another downstream 504. The project control plane reports healthy,
+which does not establish successful database/storage reads. The
+[read diagnostics](live-read-diagnostics-20261018.json) retain these observations;
+the precise database/query cause and its relationship to each video symptom
+remain unproved.
+
 The [bounded read-only SQL](diagnostics-20261018-read-only.sql) is prepared and
 independently reviewed. Running remote database scripts requires the owner's
 explicit approval under AGENTS.md; that request is pending. The prepared
