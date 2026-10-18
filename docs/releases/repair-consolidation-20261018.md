@@ -313,6 +313,18 @@ which must migrate with the original shared primary last. The archived source
 was not applied over the current app. These counts are a separate cohort and
 overlap other retained copies; they are not unique-file totals.
 
+The historical mobile release-artifact folder has also moved to
+`archive/mobile-rc-artifacts-20261018` after two exact copies and an actual
+move/back/move rehearsal: 3607 files, 2641290629 bytes and 340 directories.
+All four named export manifests retain their asset references; no package or
+archive was executed or published. The first verifier stopped before any move
+on a Windows date-locale conversion. Its immutable failure receipt remains;
+the corrected helper passed 34 cases across UK/US cultures, independent review,
+a full fresh source verification and all six before/after movement checks.
+The original shortcut is preserved and its current target verified. This brings
+the total to **36 original folders reversibly relocated**, with no permanent
+deletion or disk-space recovery claim.
+
 Before a release, also reconcile existing promised artwork batches, including
 the original-front batch tracked in PR #339. This candidate's local assets do
 not silently close or replace earlier delivery obligations.

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-18T14:08:36.369Z",
+  "observedAt": "2026-10-18T14:38:13.916Z",
   "canonicalRepository": "D:/Stackr",
   "branch": "codex/stackr-repair-consolidation-20261018",
   "privateEvidenceRoot": "D:/Stackr-organization",
@@ -126,7 +126,7 @@
     },
     {
       "relativePath": "evidence/consolidation-20261018/remaining-data-roots.json",
-      "sha256": "402e170c996c3e3a8fa8d32fc116a6688bf1ad61f5724ece2ee2f507f0e33d0c"
+      "sha256": "a07e07a76d6db8c7c49b8ac3f983f61190e603c36fb2b0bea60f60aa1ab9dc8b"
     },
     {
       "relativePath": "preserved-work/small-evidence-20261018/receipt.json",
@@ -207,6 +207,46 @@
     {
       "relativePath": "evidence/consolidation-20261018/native-source-shortcuts-20261018/receipt.json",
       "sha256": "27fad6f5653bcde12814dbba28f056353f63ccf32e9f7b3683770c9f0e90e938"
+    },
+    {
+      "relativePath": "preserved-work/mobile-rc-artifacts-20261018/preservation-outcome.json",
+      "sha256": "99647424273a1b93a0f040e1ccd91556fe27d6675fcf9461df489b33b8a24dc8"
+    },
+    {
+      "relativePath": "preserved-work/mobile-rc-artifacts-20261018/preserved-file-hashes.json",
+      "sha256": "5b9807f430ecdb69f05d21ac81b262b76a2dfc711d003160a37acd7de23ac5bb"
+    },
+    {
+      "relativePath": "preserved-work/mobile-rc-artifacts-20261018/manifest-relationships.json",
+      "sha256": "9d07d5439080e6b541396c46292f3e5d9acfac86323e7c081a9830260d481242"
+    },
+    {
+      "relativePath": "preserved-work/mobile-rc-artifacts-20261018/relocation-review-bundle-v2.json",
+      "sha256": "e8e95f11e72765acb7df304db6c807e1929d5fc87b140cdd42b11375f4285389"
+    },
+    {
+      "relativePath": "preserved-work/mobile-rc-artifacts-20261018/relocation-plan-v2.json",
+      "sha256": "242067990b67d5039ca1713b2f767c4c349850a000376500b87c68c4954ed406"
+    },
+    {
+      "relativePath": "preserved-work/mobile-rc-artifacts-20261018/timestamp-regression-v2-result.json",
+      "sha256": "38510e03691f60634c6d090ef754db0c9388a01bd4b59664c79ff0d7ecf02eb3"
+    },
+    {
+      "relativePath": "preserved-work/mobile-rc-artifacts-20261018/pre-execution-verifier-v2-result.json",
+      "sha256": "86ceebd87cea07ae6b32b98500006cbbaba704fa639e239312e9f1577f8c8475"
+    },
+    {
+      "relativePath": "preserved-work/mobile-rc-artifacts-20261018/relocation-receipts-v1/failure.json",
+      "sha256": "7dbd4b470bd140624e0ef03923a6e30a07546521dd8101b2652add3bd8763c3a"
+    },
+    {
+      "relativePath": "preserved-work/mobile-rc-artifacts-20261018/relocation-receipts-v2/outcome.json",
+      "sha256": "9cab134c38e903f213ed130cd54052668d6eb1805a002846cf82d0ded3275db1"
+    },
+    {
+      "relativePath": "preserved-work/mobile-rc-artifacts-20261018/shortcut-relocation.json",
+      "sha256": "e5130e3df39d080f3da45d8ee21fc7a03df406d16a168e9298d47d2cb696d0e6"
     }
   ],
   "scope": "Sanitized receipt summary. File-copy counts overlap between checkouts and cohorts; do not add them as unique files or claim complete whole-drive backup.",
@@ -244,6 +284,24 @@
     "inverseMovesVerified": true,
     "sourceAppliedOverCurrentApp": false
   },
-  "totalOriginalFoldersReversiblyRelocated": 35,
-  "folderCountScope": "25 Git coding checkouts +3 native source/export roots +3 supplied-artwork roots +2 small evidence roots +1 encrypted backup root +1 historical release-packet root. No permanent deletion."
+  "totalOriginalFoldersReversiblyRelocated": 36,
+  "folderCountScope": "25 Git checkouts +3 native source snapshots +3 artwork folders +2 evidence folders +1 protected backup +1 historical release packet +1 mobile release artifact folder. Cohort bytes overlap retained copies; no unique-byte or disk-reclaimed claim.",
+  "mobileReleaseArtifacts": {
+    "foldersRelocated": 1,
+    "files": 3607,
+    "bytes": 2641290629,
+    "directories": 340,
+    "independentExactCopies": 2,
+    "namedExportManifestsVerified": 4,
+    "declaredAssetReferences": 1900,
+    "distinctDeclaredAssetPaths": 1890,
+    "manifestMissingReferences": 0,
+    "fullHashAndStructureGuardBeforeAfterEachMove": true,
+    "inverseMoveVerified": true,
+    "shortcutOriginalPreservedAndTargetVerified": true,
+    "archiveExecuted": false,
+    "nativePublished": false,
+    "failedV1": "Stopped before first move because a parsed DateTime was coerced through the current locale; original and both copies intact. All v1 proof retained.",
+    "correctedV2": "Direct UTC ticks for typed dates and strict invariant ISO parsing;34focused cases passed underenGB/enUS and independently reran. Full fresh source verification and all six move guards passed."
+  }
 }

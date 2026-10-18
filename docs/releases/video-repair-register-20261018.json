@@ -705,7 +705,10 @@
     "historicalReleasePacketFilesVerified": 20,
     "nativeSourceFoldersRelocated": 3,
     "nativeSourceFilesSeparatelyPreserved": 4250,
-    "nativeSourceBytesSeparatelyPreserved": 1754954518
+    "nativeSourceBytesSeparatelyPreserved": 1754954518,
+    "mobileReleaseArtifactFoldersRelocated": 1,
+    "mobileReleaseArtifactFilesVerified": 3607,
+    "totalOriginalFoldersReversiblyRelocated": 36
   },
   "limits": [
     "Phone build, API trace and full device timing not established by video",

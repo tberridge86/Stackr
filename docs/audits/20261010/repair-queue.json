@@ -2802,7 +2802,7 @@
     "additionalRuntimeRevision": "66156ca9893e8767a4e594173f63accae015354e",
     "stormPublication": "docs/releases/storm-m6-publication-20261018.json",
     "searchArtworkRepair": "docs/releases/search-artwork-batching-20261018.json",
-    "totalOriginalFoldersReversiblyRelocated": 35,
+    "totalOriginalFoldersReversiblyRelocated": 36,
     "gatewayRevision": "8b5ebc753ade3feaf574b21a8b6b01efa79ad582"
   },
   "completionGoal": {
