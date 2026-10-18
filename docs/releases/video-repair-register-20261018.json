@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-18T10:31:12.456Z",
+  "updatedAt": "2026-10-18T11:10:29.604Z",
   "sourceVideo": {
     "fileName": "WhatsApp Video 2026-10-18 at 09.12.30.mp4",
     "sha256": "a29ad89ce8cec90b3dfa299c5a951ff4b60d686187f5a27c03a4e6175d1e859c",
@@ -660,7 +660,24 @@
       "exactStagedIndex": true,
       "unstagedPatchApplicable": true,
       "allNecessaryIgnoredMaterialPreserved": false
-    }
+    },
+    "registeredWorktrees": 111,
+    "protectedPrivateCommitRefs": 104,
+    "workingSnapshotRootsRestored": 18,
+    "capturedFileCopiesRestored": 13862,
+    "capturedWorkingBytes": 4197961088,
+    "archivedCodingFolders": 25,
+    "archivedCleanLinkedWorktrees": 18,
+    "archivedPreservedDirtyLinkedWorktrees": 5,
+    "archivedIndependentRepositories": 2,
+    "separatelyPreservedIgnoredEvidenceFiles": 7760,
+    "separatelyPreservedIgnoredEvidenceBytes": 3501108635,
+    "preservationSummary": "docs/releases/workspace-preservation-20261018.json",
+    "restorationRegistry": "D:/Stackr-organization/archive/consolidated-worktrees-20261018/archived-worktrees.json",
+    "currentMap": "D:/Stackr-organization/START-HERE.html",
+    "bytesReclaimedByRelocation": 0,
+    "separateEvidenceFoldersRelocated": 2,
+    "separateEvidenceFilesVerified": 8
   },
   "limits": [
     "Phone build, API trace and full device timing not established by video",
@@ -700,7 +717,18 @@
     "nativeSigned": false,
     "installedPhone": "pending",
     "performanceSample": "unmeasured; no p95 claim",
-    "exportReceipt": "docs/releases/ios-export-asset-verification-20261018.json"
+    "exportReceipt": "docs/releases/ios-export-asset-verification-20261018.json",
+    "hostedChecks": {
+      "checkedRevision": "ad063a7c4357b1fd3de05f7d06893755b6cd20ab",
+      "succeeded": 10,
+      "failed": 0,
+      "pending": 0,
+      "skipped": [
+        "release-candidate-gate",
+        "canary-api-evidence"
+      ],
+      "scope": "Tests and source checks only; subsequent documentation revisions need their own hosted results"
+    }
   },
   "pullRequest": "https://github.com/tberridge86/Stackr/pull/409",
   "liveReadDiagnostics": "docs/releases/live-read-diagnostics-20261018.json"

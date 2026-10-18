@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-18T10:31:12.456Z",
+  "updatedAt": "2026-10-18T11:10:29.604Z",
   "coordinator": "Tif / root",
   "workingDirectory": "D:/Stackr",
   "branch": "codex/stackr-repair-consolidation-20261018",
@@ -96,22 +96,25 @@
       "severity": "P1",
       "owner": "Tif / root",
       "status": "reviewed_local_repairs_consolidation_in_progress_live_and_phone_acceptance_open",
-      "summary": "Implement both owner plans: all23video issues and one clean independent D:/Stackr integration branch with lossless preservation before old-folder cleanup.",
+      "summary": "Implement both owner plans: all 23 video issues and one clean independent D:/Stackr integration branch with lossless preservation before old-folder cleanup.",
       "evidence": "docs/releases/repair-consolidation-20261018.md",
       "issueRegister": "docs/releases/video-repair-register-20261018.json",
       "runtimeRevision": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
       "validation": [
-        "Root typecheck passed; lint0errors8existingwarnings",
+        "Root typecheck passed; lint 0 errors and 8 existing warnings",
         "Focused actual-screen, serializer, pagination, concurrency/account and artwork regressions passed",
         "Final local iOS export passed; four exact selected asset bytes verified",
-        "Independent Git restoration contains all104registeredheads;3677primaryworkingfiles restored exactly"
+        "At ad063a7, ten hosted checks passed; two release/canary jobs skipped",
+        "All 104 registered commit heads restored and protected; all 18 captured working snapshots restored exactly",
+        "25 coding folders reversibly archived; 7760 necessary ignored evidence files have separate exact copies"
       ],
       "closedVideoIssues": 0,
       "liveDeployment": false,
       "deviceVerified": false,
-      "nextAction": "Complete recovery-backed archive registry; obtain explicit approval for bounded remote read-only SQL; then resolve demonstrated live causes and deliver/retest on the confirmed installed phone build.",
+      "nextAction": "Resolve remaining preservation/path gates; await explicit bounded SQL approval, diagnose the live reads, then deliver and replay the confirmed iPhone build.",
       "pullRequest": "https://github.com/tberridge86/Stackr/pull/409",
-      "liveReadDiagnostics": "docs/releases/live-read-diagnostics-20261018.json"
+      "liveReadDiagnostics": "docs/releases/live-read-diagnostics-20261018.json",
+      "preservationSummary": "docs/releases/workspace-preservation-20261018.json"
     },
     {
       "id": "CATALOGUE-MANIFEST-READ-PHASE-20261017",
@@ -2777,27 +2780,21 @@
     }
   ],
   "currentWork": {
-    "owner": "root",
-    "status": "local_manifest_diagnostics_tested_reviewed_preparing_draft_ci",
-    "branch": "codex/catalogue-manifest-diagnostics-20261017",
-    "report": "docs/performance/catalogue-manifest-diagnostics-20261017.json",
-    "pullRequest": null,
-    "previousApprovedPullRequest": "https://github.com/tberridge86/Stackr/pull/407",
-    "approvedBackendMergedAndDeployed": true,
-    "approvedBackendSource": "dcee48a2bad9f0f73f56d0d5c9f6025bb990fe92",
-    "installedBuildConfirmed": "1.0.6 (58)",
-    "diagnostic": "Approved Postgres check and provider-log aggregate each attempted once; no diagnostic rows, no retries",
-    "mergedSourceIosExport": "Historical PR406/ccccc9ef local iOS export PASS, including exact M6 bytes among34 required assets. No PR407/dcee48a2 or diagnostic-candidate native export/build/delivery.",
-    "publicJourneyGate": "REQUIRED_MANIFEST504_OWNER_JOURNEYS_SKIPPED",
-    "nativeReleaseGate": "HOLD",
-    "nextAction": "Freeze reviewed candidate in draftPR and verify fresh exact-head hosted CI. A new server diagnostic release and single filtered app-log read require separate matching owner approval.",
-    "liveRetrievalResolved": false,
-    "newLiveOperationsAuthorized": false,
+    "owner": "Tif / root",
+    "status": "reviewed_local_repairs_and_reversible_archives_live_and_device_gates_open",
+    "workingDirectory": "D:/Stackr",
+    "branch": "codex/stackr-repair-consolidation-20261018",
+    "runtimeRevision": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+    "pullRequest": "https://github.com/tberridge86/Stackr/pull/409",
+    "issueRegister": "docs/releases/video-repair-register-20261018.json",
+    "preservationSummary": "docs/releases/workspace-preservation-20261018.json",
+    "archivedCodingFolders": 25,
+    "closedVideoIssues": 0,
+    "liveSqlApproval": "pending",
+    "liveDeployment": false,
     "newNativeBuildCreated": false,
-    "releaseEvidence": "docs/releases/build58-retrieval-repair-20261017.md",
-    "implementationCommit": "27fa5a7c3df2a8372643ea01fa67971601421714",
-    "resourceReadings": "Owner supplied Primary Database memory/CPU/IO charts,13/60 global database connections,1/200 dedicated pooler connections,3.26GB disk usage and8GB provisioned. Shared pooler has no data. These snapshots weaken disk-full/global-connection-cap explanations; smaller PostgREST internal pool occupancy, latency and workload cause remain unknown.",
-    "releaseVerification": "23/23 smoke CLI regression cases pass and independently retested; successful full gate retained; no new deployment."
+    "deviceVerified": false,
+    "nextAction": "Resolve remaining preservation/path gates; await explicit bounded SQL approval, diagnose the live reads, then deliver and replay the confirmed iPhone build."
   },
   "completionGoal": {
     "threadId": "01a12a4c-4b1a-7823-b948-148c90d7cd8e",
@@ -2839,7 +2836,7 @@
     "canonicalPreparationRevision": "ec068d2327e840e6b1525abc1d04e09a4617232c",
     "currentReviewReport": "docs/releases/tif-sme-source-queue-review-20261012.md"
   },
-  "candidateRemoteBranch": "agent/release/tif-build55-device-repairs-20261012",
+  "candidateRemoteBranch": "codex/stackr-repair-consolidation-20261018",
   "heldWork": [
     {
       "issue": "SET-ACCOUNT-BOUNDARY investigation",
@@ -3085,5 +3082,29 @@
     "workingDirectory": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/tif-readiness-integration",
     "branch": "codex/build58-set-card-retrieval-20261017",
     "auditedBaseRevision": "5da3ba5edd07d0390f5169d5a6713c7cbfd3a0b1"
-  }
+  },
+  "previousCurrentWorkBefore20261018": {
+    "owner": "root",
+    "status": "local_manifest_diagnostics_tested_reviewed_preparing_draft_ci",
+    "branch": "codex/catalogue-manifest-diagnostics-20261017",
+    "report": "docs/performance/catalogue-manifest-diagnostics-20261017.json",
+    "pullRequest": null,
+    "previousApprovedPullRequest": "https://github.com/tberridge86/Stackr/pull/407",
+    "approvedBackendMergedAndDeployed": true,
+    "approvedBackendSource": "dcee48a2bad9f0f73f56d0d5c9f6025bb990fe92",
+    "installedBuildConfirmed": "1.0.6 (58)",
+    "diagnostic": "Approved Postgres check and provider-log aggregate each attempted once; no diagnostic rows, no retries",
+    "mergedSourceIosExport": "Historical PR406/ccccc9ef local iOS export PASS, including exact M6 bytes among34 required assets. No PR407/dcee48a2 or diagnostic-candidate native export/build/delivery.",
+    "publicJourneyGate": "REQUIRED_MANIFEST504_OWNER_JOURNEYS_SKIPPED",
+    "nativeReleaseGate": "HOLD",
+    "nextAction": "Freeze reviewed candidate in draftPR and verify fresh exact-head hosted CI. A new server diagnostic release and single filtered app-log read require separate matching owner approval.",
+    "liveRetrievalResolved": false,
+    "newLiveOperationsAuthorized": false,
+    "newNativeBuildCreated": false,
+    "releaseEvidence": "docs/releases/build58-retrieval-repair-20261017.md",
+    "implementationCommit": "27fa5a7c3df2a8372643ea01fa67971601421714",
+    "resourceReadings": "Owner supplied Primary Database memory/CPU/IO charts,13/60 global database connections,1/200 dedicated pooler connections,3.26GB disk usage and8GB provisioned. Shared pooler has no data. These snapshots weaken disk-full/global-connection-cap explanations; smaller PostgREST internal pool occupancy, latency and workload cause remain unknown.",
+    "releaseVerification": "23/23 smoke CLI regression cases pass and independently retested; successful full gate retained; no new deployment."
+  },
+  "previousCandidateRemoteBranchBefore20261018": "agent/release/tif-build55-device-repairs-20261012"
 }

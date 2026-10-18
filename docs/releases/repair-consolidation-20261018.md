@@ -55,6 +55,13 @@ The additional chart-date regression exercises the rendered tracker. A whole
 source secret scan passed across 3684 text files. No backend/gateway runtime
 files changed in this candidate.
 
+The existing candidate workflows now run `npm run test:feedback-recovery`,
+covering five focused recovery regressions. At source/evidence revision
+`ad063a7c4357b1fd3de05f7d06893755b6cd20ab`, all ten applicable hosted checks
+passed. The release-candidate and canary-API jobs were skipped; they are not
+passes or live-delivery evidence. The draft review is
+[PR #409](https://github.com/tberridge86/Stackr/pull/409).
+
 Independent review findings were repaired and rechecked: exact Storm permission,
 lossless raw Git patch capture, shared-query cancellation, mixed access-denial
 precedence, serialized artwork recovery and saved-subset pagination. The review
@@ -108,24 +115,71 @@ artwork, identity, quote or completion denominator is invented.
 patches without changing a source checkout. Metadata alone is not a backup.
 
 The original all-refs bundle was independently restored and passed full Git
-object checks; all 104 registered unique commit heads are present. The original
-checkout's 3677 captured working files (2295652088 bytes) were separately
-restored with exact hashes, exact staged index and applicable unstaged patch.
-Unclassified ignored material and dependent paths still hold the original
-primary checkout. Its migration is last.
+object checks. All 104 distinct commit heads from 111 registered worktrees are
+present and protected by private preservation refs against pruning. Across 18
+working snapshots, 13,862 captured file copies (4,197,961,088 bytes) were
+restored with exact hashes, staged-state checks and applicable unstaged patches.
+These are file copies across checkouts, not unique files or a claim that every
+ignored file is backed up. The primary accounts for 3677 of those working files
+(2295652088 bytes). Additional private configuration and signing material has
+separate recovery proof; it is not committed here.
+
+The two standalone repositories also have independently restored Git objects.
+The nested metadata-provider checkout is shallow: its standalone bundle cannot
+be cloned independently, so a separate verified local bare clone preserves its
+exact shallow boundary instead. The native checkout's pre-existing absent index
+and initialization locks remain untouched; a separate scratch restoration
+reproduces its actual state. These exceptions remain explicit in the private
+receipts. Unclassified ignored material and dependent paths still hold the
+original shared primary. Its migration is last.
 
 Four named supplied source batches were copied and hash-verified (1208 files,
 1123117559 bytes). The original `41 BRANDFALLBACKS`, `MISSING ARTWORK` and
 Traditional Chinese six-per-page source folders were independently copied,
 restored and moved reversibly under
 `design-sources/original-folders-20261018/archived` (578 files, 1106823876 bytes).
-Clean old Git worktrees are archived only after current status/head checks,
-necessary ignored-material recovery and actual Git move/back/move verification.
-The private current locations and restoration registries record exact paths.
+Twenty-five coding folders have now moved under the organization archive:
+18 clean linked worktrees, five linked worktrees with preserved changes, and
+two standalone repositories. Every move was reversed and repeated successfully.
+The dirty moves preserve working and staged fingerprints; the standalone moves
+retain independent Git metadata and objects. Separately, 7760 necessary ignored
+source/export/evidence files (3501108635 bytes) have both preserved and restored
+copies. Packaged export directories named `node_modules` are retained evidence,
+not assumed dependency caches. A classification addendum supplements the
+immutable original receipts without rewriting them.
 
-Dirty/unknown work, dependency junction targets, the old shared Git primary and
-large unclassified evidence remain preserved until their respective checks
-pass. Reversible archival does not reclaim disk space. No permanent deletion
+The private current locations and 25-entry restoration registry record exact
+paths. The restoration tool supports linked and standalone repositories and
+rejects unexpected working/index states. Shortcuts and the current
+`D:/Stackr-organization/START-HERE.html` map point to the recorded locations;
+the original 5 October map remains as historical evidence. The
+[preservation summary](workspace-preservation-20261018.json) provides sanitized
+counts and receipt hashes; private configurations, captures and source receipts
+remain on disk.
+
+Two small flat evidence folders, `Stackr-stage6-review` and
+`Stackr-rebuild-evidence-31031383876`, were also independently copied, restored
+and moved/back/moved under `evidence/original-folders-20261018`: eight files,
+3356672 bytes. Their private receipt contents are not published. These moves
+are separate from the 25 coding-folder relocations.
+
+A bounded post-move audit inspected 120 existing roots and 85 root/direct-service
+dependency junctions. It found no broken links caused by today's relocations.
+Seven older broken links were repaired after independent review and a passing
+private Windows fixture; each original junction is retained intact for rollback.
+All four affected checkouts retain exact HEAD, working and staged fingerprints.
+One pre-existing Wrangler root link remains held because its exact mapped
+dependency directory is absent. No substitute dependency tree was invented.
+The first private fixture exposed an absent-target recreation limitation before
+any source change; its failed evidence and the revised reviewed proof remain.
+
+Remaining changed or unclassified work, dependency junction targets, the old
+shared Git primary and large source/data/evidence roots remain held until their
+respective checks pass. Secure backups need a fresh restoration proof; model
+and recognition data retain provenance and consumer paths; mixed-project
+`D:/CodexTemp` cannot be moved wholesale. The current hold matrix is private
+`evidence/consolidation-20261018/remaining-data-roots.json`.
+Reversible archival does not reclaim disk space. No permanent deletion
 has occurred; any deletion proposal must name exact paths and recovery evidence
 for the owner's approval. No blanket removal, reset or overwrite is permitted.
 

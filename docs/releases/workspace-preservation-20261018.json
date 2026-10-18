@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-18T11:10:29.604Z",
+  "canonicalRepository": "D:/Stackr",
+  "branch": "codex/stackr-repair-consolidation-20261018",
+  "privateEvidenceRoot": "D:/Stackr-organization",
+  "originalPrimary": "D:/Stackr-1",
+  "originalPrimaryMigration": "Held; migrate last after dependent Git, runtime and restore paths are repaired",
+  "gitObjects": {
+    "registeredWorktrees": 111,
+    "uniqueCommitHeadsRestored": 104,
+    "privateProtectedRefs": 104,
+    "fullObjectCheckPassed": true,
+    "independentRepositoriesRestored": 2,
+    "nestedShallowRepository": "Separate verified no-hardlinks bare clone; standalone bundle clone failed and is not claimed usable"
+  },
+  "workingSnapshots": {
+    "roots": 18,
+    "capturedFileCopies": 13862,
+    "capturedBytes": 4197961088,
+    "allCapturedFilesRestoredExactly": true,
+    "exactStagedStateChecked": true,
+    "unstagedPatchesChecked": true,
+    "includesPrivateConfiguration": "Supplemental private evidence; never committed",
+    "allIgnoredMaterialPreserved": false,
+    "nativeAbsentIndex": "Original absent index and initialization locks retained; scratch restoration reproduces actual source state"
+  },
+  "relocatedCodingFolders": {
+    "count": 25,
+    "cleanLinkedWorktrees": 18,
+    "dirtyLinkedWorktrees": 5,
+    "independentRepositories": 2,
+    "dirtyIndependentRepositories": 1,
+    "everyInverseMoveRehearsed": true,
+    "originalContentsRetained": true
+  },
+  "ignoredEvidence": {
+    "files": 7760,
+    "bytes": 3501108635,
+    "separateExactCopies": 2,
+    "nestedPackagedNodeModulesAreEvidence": true,
+    "dependencyTargetsTraversed": false
+  },
+  "suppliedArtwork": {
+    "namedSourceBatchesCopied": 4,
+    "namedBatchFiles": 1208,
+    "namedBatchBytes": 1123117559,
+    "oldRootFoldersRelocated": 3,
+    "relocatedFiles": 578,
+    "relocatedBytes": 1106823876,
+    "independentCopyAndRestoreVerified": true,
+    "publicationAndPhoneAcceptance": "Pending; preservation does not establish delivery"
+  },
+  "separateEvidenceFolders": {
+    "folders": 2,
+    "files": 8,
+    "bytes": 3356672,
+    "actualCopyRestoreAndInverseMovePassed": true,
+    "privateReceiptContentsPublished": false
+  },
+  "restorationTools": {
+    "tool": "D:/Stackr-organization/Restore-ArchivedWorktree.ps1",
+    "supportsPreservedDirtyStates": true,
+    "supportsTwoAllowlistedIndependentRepositories": true,
+    "actualWhatIfChecksPassed": true,
+    "fingerprintMismatchRejected": true
+  },
+  "currentMap": "D:/Stackr-organization/START-HERE.html",
+  "permanentDeletionPerformed": false,
+  "bytesReclaimedByRelocation": 0,
+  "legacyDependencyJunctions": {
+    "baselineBroken": 8,
+    "repaired": 7,
+    "repairStatus": "seven_junctions_repaired_one_held_source_git_state_unchanged",
+    "sourceGitStateUnchanged": true,
+    "rootsAudited": 120,
+    "junctionsAudited": 85,
+    "brokenFromTodaysRelocations": 0,
+    "remainingPreExistingBroken": 1,
+    "held": "Wrangler archived root dependency link has no original mapped target; no replacement tree invented",
+    "rollback": "Seven original junction entries retained intact in private evidence; native inverse move avoids recreating absent targets",
+    "scope": "Root and direct-service dependency links only; pre-existing broken links in older archives were not introduced by the 18 October relocations"
+  },
+  "remainingGates": [
+    "Preserve/classify remaining ignored and large source/evidence material",
+    "Migrate dependency targets, nested repositories and original primary last",
+    "Owner-approved exact deletion list before permanent reclamation",
+    "Explicit approval before prepared read-only remote database script",
+    "Resolve live reads and deliver/replay the confirmed iPhone build"
+  ],
+  "privateReceiptDigests": [
+    {
+      "relativePath": "archive/consolidated-worktrees-20261018/clean-eighteen-worktrees.summary.json",
+      "sha256": "6cd2b69849cf058350c048c975407d2ac75335871670bfb94a1ed84b4e5503a1"
+    },
+    {
+      "relativePath": "archive/consolidated-worktrees-20261018/cache-classification-addendum.20261018.json",
+      "sha256": "4a84459e479c9a04e6c18a69f8a924812602ca9b3c969a8bb98e2060f9e39ee1"
+    },
+    {
+      "relativePath": "archive/consolidated-worktrees-20261018/archived-worktrees.json",
+      "sha256": "6c1af1c8aeacb3f6e8c3244e416f2bef394673c26adcd4b44b1a95192402008f"
+    },
+    {
+      "relativePath": "preserved-work/consolidation-20261018-content/combined-summary.json",
+      "sha256": "03c8a24a1b53c558104a2111882b911ea6b439d1104bf5dd4401ede25b0ffabc"
+    },
+    {
+      "relativePath": "preserved-work/consolidation-20261018/git-bundles/independent-repository-restoration.json",
+      "sha256": "fce06ca84a79d78901d2cd30510a58f9f46d7209db56ce9ece6ece1731697972"
+    },
+    {
+      "relativePath": "preserved-work/consolidation-20261018/git-bundles/nested-provider-restoration.json",
+      "sha256": "653eb8d9ed92915c2902a281f1b5d36d234dd0870f5f1bcfb029d01d108e3c72"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/protected-worktree-heads.json",
+      "sha256": "960c6e4471821a1ae8c18da9baa942910457ba4de23f1457899623de20b1e96b"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/restore-fingerprint-regression.json",
+      "sha256": "72510b7a53a560f4f1b6ceeb3c2602fe38338feafd3bad8f5ca15c16059dc504"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/final-shortcut-repair.json",
+      "sha256": "1679e8ad5c98d225f44edc7efea1930411376437a5b338785e35d78a01eccf0e"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/remaining-data-roots.json",
+      "sha256": "f3b4e32f8976f0146513687205414c34e187fc858945bc35033c3cbc968e0c43"
+    },
+    {
+      "relativePath": "preserved-work/small-evidence-20261018/receipt.json",
+      "sha256": "eb1005155f3ae5673d10dbc903efdf9ee3e38eede45d22d2db12932295628f82"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/legacy-junction-repair-20261018-v3/execution-receipt.json",
+      "sha256": "170ef44b0d20887e2da40d330903c74d074942a089448e09d75b4ef30918abb8"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/legacy-junction-repair-20261018-v3/fixture-proof.json",
+      "sha256": "587f428453d6706038e1bb55b0f082609492cc8248e349119167033d46716b64"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/legacy-junction-repair-20261018-v3/dependency-junction-post-repair.json",
+      "sha256": "b2a7976afd3bb6083c26d8f7b9f4c7873cac472dfecac5eedef7a2c7988ac4d4"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/legacy-junction-repair-20261018-v3/final-outcome.json",
+      "sha256": "6badb68abee8f7cc97f63bc203d7a93c630e5c20546fe39b1f9ee30c0dee0ad4"
+    }
+  ],
+  "scope": "Sanitized receipt summary. File-copy counts overlap between checkouts and cohorts; do not add them as unique files or claim complete whole-drive backup."
+}
