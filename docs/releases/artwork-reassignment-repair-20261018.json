@@ -75,6 +75,25 @@
         "privatePath": "evidence/consolidation-20261018/jungle-warm-reassignment-20261018/v2/post-integration-harness-validation.json",
         "sha256": "f47dd4d9425c256a36ed52c263649fcdb7a5ad8799b2aac8fc9cea35fb0b3552"
       }
+    },
+    "cacheMinimumHarness": {
+      "file": "scripts/test-pokemon-set-card-cache-minimum.ts",
+      "sha256": "e2eda3f774eb066f8ead53324a6c2f0ddbc95da220e928e8d539775f353958e4",
+      "assertionsUnchanged": true,
+      "realHelpersInjected": true,
+      "binderCatalogueGroups": 6,
+      "rootTypecheck": "PASS",
+      "rootLint": {
+        "errors": 0,
+        "existingWarnings": 8
+      },
+      "independentReview": "PASS_TEST_ONLY",
+      "priorHostedFailurePreserved": true,
+      "hostedRecheck": "Pending next committed revision",
+      "evidence": {
+        "privatePath": "evidence/consolidation-20261018/jungle-warm-reassignment-20261018/v2/cache-minimum-harness-validation.json",
+        "sha256": "cb7a3fe7122dc497de851f2acc08e47b9fa1a5bfff8a2ee8fc477e56a4a04396"
+      }
     }
   },
   "capturedStormReplay": {

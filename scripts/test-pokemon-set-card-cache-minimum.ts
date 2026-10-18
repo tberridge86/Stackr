@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
 import { cacheNonEmptyCatalogueRows, readNonEmptyCatalogueRows } from '../lib/resilientCatalogueRead';
+import { copyPreferredSetArtworkReassignments, getPreferredSetArtworkReassignments } from '../lib/stackrPreferredSetArtwork';
 
 type Deferred<T> = { promise: Promise<T>; resolve: (value: T) => void };
 
@@ -44,6 +45,7 @@ async function main() {
     './pokemonSetIdentity': { getPokemonSetLanguageFromPrefixedId: () => null, stripPokemonSetLanguagePrefix: (value: string) => value },
     './englishSetIdentity': { getEnglishSetReferenceAliases: () => [] },
     './resilientCatalogueRead': { cacheNonEmptyCatalogueRows, readNonEmptyCatalogueRows },
+    './stackrPreferredSetArtwork': { copyPreferredSetArtworkReassignments, getPreferredSetArtworkReassignments },
     './foreignPokemon': { fetchForeignPokemonCard: async () => null, fetchForeignPokemonSet: async () => null, invalidateForeignPokemonSetReferenceCache: () => {} },
     './tcgdexControlledCardReference': { defineTcgdexRuntimeImageOverlay: () => {}, enforceTcgdexRuntimeImagePolicy: () => null, isTcgdexControlledCardReferenceSourceEnabled: () => false },
     './tcgdexControlledReferenceLookup': { getTcgdexControlledReferenceLookupIdentity: () => null, matchTcgdexProviderCardFromLiveSet: () => null, normalizeTcgdexCollectorIdentity: () => null },
