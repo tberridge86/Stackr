@@ -89,7 +89,7 @@
       },
       "independentReview": "PASS_TEST_ONLY",
       "priorHostedFailurePreserved": true,
-      "hostedRecheck": "Pending next committed revision",
+      "hostedRecheck": "PASS_AT_9b75d63",
       "evidence": {
         "privatePath": "evidence/consolidation-20261018/jungle-warm-reassignment-20261018/v2/cache-minimum-harness-validation.json",
         "sha256": "cb7a3fe7122dc497de851f2acc08e47b9fa1a5bfff8a2ee8fc477e56a4a04396"
@@ -109,10 +109,23 @@
       },
       "independentReview": "PASS_TEST_ONLY",
       "priorHostedFailurePreserved": true,
-      "hostedRecheck": "Pending next committed revision",
+      "hostedRecheck": "PASS_AT_9b75d63",
       "evidence": {
         "privatePath": "evidence/consolidation-20261018/jungle-warm-reassignment-20261018/v2/english-harness-validation.json",
         "sha256": "a905cf21d87d23f6b67fa2598d0392fcce878c1bf10a382b7d16701551ee2571"
+      }
+    },
+    "currentHostedChecks": {
+      "sourceHead": "9b75d6357259c8f8159b5fc3967d0e03a10a11a7",
+      "success": 10,
+      "skipped": 2,
+      "skippedNames": [
+        "canary-api-evidence",
+        "release-candidate-gate"
+      ],
+      "evidence": {
+        "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-9b75d63.json",
+        "sha256": "c6ad9110f7f6bab48542912e2385b5c23269ca5fbc3ef35147d69b6921a398a4"
       }
     }
   },

@@ -608,7 +608,7 @@
       "requirement": "Consolidate under D:/Stackr-organization with reversible recovery",
       "state": "partially_satisfied",
       "satisfiedInFull": false,
-      "remaining": "38 verified reversible relocations with preservation/restoration proof; actual inverse moves were rehearsed where recorded. The three artwork roots have copy/restoration and rollback evidence, not a recorded physical inverse-move rehearsal. Further original roots remain; relocation retains bytes and is not reclamation.",
+      "remaining": "39 verified reversible relocations with preservation/restoration proof; actual inverse moves were rehearsed where recorded. The three artwork roots have copy/restoration and rollback evidence, not a recorded physical inverse-move rehearsal. Further original roots remain; relocation retains bytes and is not reclamation.",
       "owner": "Tif"
     },
     {
@@ -616,7 +616,7 @@
       "requirement": "Account for every folder in the original owner list",
       "state": "all60_accounted_one_owner_excluded_unrelated",
       "satisfiedInFull": true,
-      "remaining": "Folder accounting is complete: 38 verified relocations, 20 retained old roots, one organization destination and one owner-excluded unrelated folder, D:/CodexLogoWork. Stackr-relevant denominator is 59; consolidation of retained work remains incomplete.",
+      "remaining": "Folder accounting is complete: 39 verified relocations, 19 retained old roots, one organization destination and one owner-excluded unrelated folder, D:/CodexLogoWork. Stackr-relevant denominator is 59; consolidation of retained work remains incomplete.",
       "owner": "Tif",
       "evidence": {
         "privatePath": "evidence/consolidation-20261018/owner-scope-correction-codexlogowork/owner-scope-reply.json",
@@ -817,20 +817,20 @@
     "sha256": "714099dd3456675f74e4ae5e8df9427349e4a71d15ad76985db1743667499d52"
   },
   "originalFolderCoverage": {
-    "privatePath": "evidence/consolidation-20261018/completion-audit-20261018/original-folder-coverage.json",
-    "sha256": "0fbcb5ac47e2e151a55cc4e8cc02904796b04d97649de20b28ef3d585c599a11"
+    "privatePath": "evidence/consolidation-20261018/recognition-capture-vault-20261018-v2/current-owner-folder-placement.json",
+    "sha256": "feffac47ff2f9dbea88b91a7cb8c1aa70e0fdf0a90251ddf6cd4c778ed2c0801"
   },
   "originalFolderCounts": {
-    "relocatedWithRecordedProof": 38,
-    "retainedDependencyDataOrUnfinishedWork": 20,
+    "relocatedWithRecordedProof": 39,
+    "retainedDependencyDataOrUnfinishedWork": 19,
     "existingOrganizationDestination": 1,
-    "unmappedUnresolvedOriginal": 0,
-    "originalMapRowsPresent": 54,
-    "originalMapRowsMissing": 6,
-    "namedOriginalPathsStillPresentIncludingOrganizationDestination": 21,
-    "namedOldRootsStillPresentExcludingOrganizationDestination": 20,
-    "originalPathsAbsent": 39,
     "ownerExcludedUnrelated": 1,
+    "unmappedUnresolvedOriginal": 0,
+    "originalMapRowsPresent": 60,
+    "originalMapRowsMissing": 0,
+    "namedOriginalPathsStillPresentIncludingOrganizationDestination": 20,
+    "namedOldRootsStillPresentExcludingOrganizationDestination": 19,
+    "originalPathsAbsent": 40,
     "stackrRelevantOriginalPaths": 59
   },
   "originalNamedPaths": 60,
@@ -924,13 +924,6 @@
       "original": "D:/CodexTemp",
       "mapRowPresent": true,
       "hold": "Contains Stackr scan evidence and unrelated iCloud research; whole-root movement is outside the Stackr-only scope.",
-      "capturedCohort": null,
-      "nextAction": "Resolve the documented hold, preserve the required cohort and verify restoration before any relocation."
-    },
-    {
-      "original": "D:/Stackr-recognition-captures",
-      "mapRowPresent": true,
-      "hold": "Preserve consent, provenance, labels, manifests and capture relationships before relocation.",
       "capturedCohort": null,
       "nextAction": "Resolve the documented hold, preserve the required cohort and verify restoration before any relocation."
     },
@@ -1129,5 +1122,35 @@
         "sha256": "454b9490c612e2f26a68f9032182d26d87f74a288d4a4bb2bfc205301b6ea4d9"
       }
     }
-  ]
+  ],
+  "historicalOriginalFolderCoverageBeforeVault": {
+    "privatePath": "evidence/consolidation-20261018/completion-audit-20261018/original-folder-coverage.json",
+    "sha256": "0fbcb5ac47e2e151a55cc4e8cc02904796b04d97649de20b28ef3d585c599a11"
+  },
+  "recognitionCaptureVaultContinuation": {
+    "recordedAt": "2026-10-18T19:58:09.527Z",
+    "receipt": {
+      "privatePath": "evidence/consolidation-20261018/recognition-capture-vault-20261018-v2/move-execution-682ff69f04414e66a5d475f960667c4e/outcome.json",
+      "sha256": "21db48e64eb795699df5de362a1694d89132eec0e9c023b9ba7bde452d7ffa6e"
+    },
+    "files": 13,
+    "bytes": 13821,
+    "directories": 8,
+    "fullyPreservedAndRelocated": true,
+    "permanentDeletion": false
+  },
+  "currentHostedSourceChecks": {
+    "sourceHead": "9b75d6357259c8f8159b5fc3967d0e03a10a11a7",
+    "success": 10,
+    "skipped": 2,
+    "skippedNames": [
+      "canary-api-evidence",
+      "release-candidate-gate"
+    ],
+    "evidence": {
+      "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-9b75d63.json",
+      "sha256": "c6ad9110f7f6bab48542912e2385b5c23269ca5fbc3ef35147d69b6921a398a4"
+    },
+    "runtimeUnchangedByLaterDocumentation": true
+  }
 }

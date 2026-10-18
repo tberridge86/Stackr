@@ -322,7 +322,7 @@
     "inverseMovesVerified": true,
     "sourceAppliedOverCurrentApp": false
   },
-  "totalOriginalFoldersReversiblyRelocated": 38,
+  "totalOriginalFoldersReversiblyRelocated": 39,
   "folderCountScope": "26 Git checkouts +3 native source snapshots +3 artwork folders +2 evidence folders +1 protected backup +1 historical release packet +1 mobile release artifact folder. Cohort bytes overlap retained copies; no unique-byte or disk-reclaimed claim. +1 historical fallback root containing5checkpoints/frozenpreview.",
   "mobileReleaseArtifacts": {
     "foldersRelocated": 1,
@@ -358,8 +358,8 @@
   "originalNamedRoots": {
     "total": 60,
     "currentlyMapped": 60,
-    "relocatedWithRecordedProof": 38,
-    "retainedOldRoots": 20,
+    "relocatedWithRecordedProof": 39,
+    "retainedOldRoots": 19,
     "organizationDestination": 1,
     "unresolvedAbsentOriginals": 0,
     "consolidationComplete": false,
@@ -395,6 +395,29 @@
       "file": "D:/Stackr-organization/evidence/consolidation-20261018/remaining-coding-roots-20261018/pricing-relocation-registration.json",
       "sha256": "69c0f09aa20b9f383b36f31bd1399be92c6695fd3e914ea29c6ed62b7f1439f8"
     },
+    "permanentDeletion": false
+  },
+  "recognitionCaptureVaultContinuation": {
+    "recordedAt": "2026-10-18T19:58:09.527Z",
+    "original": "D:/Stackr-recognition-captures",
+    "current": "D:/Stackr-organization/data-and-models/Stackr-recognition-captures",
+    "files": 13,
+    "bytes": 13821,
+    "directories": 8,
+    "fullSnapshotAndRestoration": true,
+    "actualInverseAndReplay": true,
+    "policiesAndQuarantineSemanticsUnchanged": true,
+    "mappedUseNoteRequired": true,
+    "originalFailedTimestampAttemptRetained": true,
+    "receipt": {
+      "privatePath": "evidence/consolidation-20261018/recognition-capture-vault-20261018-v2/move-execution-682ff69f04414e66a5d475f960667c4e/outcome.json",
+      "sha256": "21db48e64eb795699df5de362a1694d89132eec0e9c023b9ba7bde452d7ffa6e"
+    },
+    "currentOwnerFolderCoverage": {
+      "privatePath": "evidence/consolidation-20261018/recognition-capture-vault-20261018-v2/current-owner-folder-placement.json",
+      "sha256": "feffac47ff2f9dbea88b91a7cb8c1aa70e0fdf0a90251ddf6cd4c778ed2c0801"
+    },
+    "sourceDirectoryAbsent": true,
     "permanentDeletion": false
   }
 }
