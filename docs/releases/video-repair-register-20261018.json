@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-18T21:35:01.645Z",
+  "updatedAt": "2026-10-18T21:53:41.132Z",
   "sourceVideo": {
     "fileName": "WhatsApp Video 2026-10-18 at 09.12.30.mp4",
     "sha256": "a29ad89ce8cec90b3dfa299c5a951ff4b60d686187f5a27c03a4e6175d1e859c",
@@ -813,6 +813,43 @@
           "actualMapperBeforeAndAfter": {
             "privatePath": "evidence/consolidation-20261018/listing-search-media-source-v1/actual-mapper-before-after.json",
             "sha256": "cd497b6176327e55fe1221224a017fead6fec23312fd73ce875755f3961de25e"
+          },
+          "unsignedIos": {
+            "exportedSource": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
+            "runtimeRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+            "bundle": {
+              "path": "_expo/static/js/ios/entry-41e9e4fdecdc123f827f005aec05eb9e.hbc",
+              "sha256": "c279c5ea4c6b4f1ebab3a927f6b0bbd015908338908126910ddd6d365fbdb06a",
+              "bytes": 11798374
+            },
+            "exactUniqueAssetsVerified": 74,
+            "listingMediaHelpersPackaged": true,
+            "receipt": {
+              "privatePath": "evidence/consolidation-20261018/listing-search-media-source-v1/ios-export-asset-verification.json",
+              "sha256": "05e8008e52fe45fa329564434be000a2325bcef4860ba691dab5ccefccb4b878"
+            },
+            "nativeSigned": false,
+            "uploaded": false,
+            "submitted": false,
+            "published": false,
+            "phoneVerified": false,
+            "testFlightHeld": true
+          },
+          "hostedSourceChecks": {
+            "checkedAt": "2026-10-18T21:49:28.020Z",
+            "sourceHead": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
+            "succeeded": 10,
+            "failed": 0,
+            "pending": 0,
+            "skipped": [
+              "release-candidate-gate",
+              "canary-api-evidence"
+            ],
+            "evidence": {
+              "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-4e1cdf7.json",
+              "sha256": "9fb65f14b076e4fd7e5967948b5fc16b2cd1d31b2ff6661b70858160e0a2c1fc"
+            },
+            "scope": "Exact pushed source snapshot. Subsequent documentation commits need their own hosted status; skipped release/canary gates do not prove delivery or phone acceptance."
           }
         },
         "delivery": {
@@ -822,7 +859,8 @@
           "merged": false,
           "nativePublished": false,
           "phoneVerified": false,
-          "unsignedCurrentRevisionExportPending": true
+          "unsignedCurrentRevisionExportPending": false,
+          "unsignedIosVerified": true
         },
         "testFlightHeld": true
       }
@@ -857,9 +895,9 @@
     "workingSnapshotRootsRestored": 18,
     "capturedFileCopiesRestored": 13862,
     "capturedWorkingBytes": 4197961088,
-    "archivedCodingFolders": 25,
+    "archivedCodingFolders": 26,
     "archivedCleanLinkedWorktrees": 18,
-    "archivedPreservedDirtyLinkedWorktrees": 5,
+    "archivedPreservedDirtyLinkedWorktrees": 6,
     "archivedIndependentRepositories": 2,
     "separatelyPreservedIgnoredEvidenceFiles": 7760,
     "separatelyPreservedIgnoredEvidenceBytes": 3501108635,
@@ -878,17 +916,22 @@
     "nativeSourceBytesSeparatelyPreserved": 1754954518,
     "mobileReleaseArtifactFoldersRelocated": 1,
     "mobileReleaseArtifactFilesVerified": 3607,
-    "totalOriginalFoldersReversiblyRelocated": 37,
+    "totalOriginalFoldersReversiblyRelocated": 41,
     "historicalFallbackFoldersRelocated": 1,
     "historicalFallbackFilesPreserved": 3134,
     "originalNamedRoots": {
       "total": 60,
-      "relocated": 37,
-      "retained": 21,
+      "stackrRelevant": 59,
+      "relocated": 41,
+      "retained": 17,
       "organizationDestination": 1,
-      "unresolvedAbsent": 1,
-      "locationGap": "D:/CodexLogoWork",
+      "ownerExcludedUnrelated": 1,
+      "unresolvedAbsent": 0,
       "wholePlanComplete": false
+    },
+    "currentCoverage": {
+      "privatePath": "evidence/consolidation-20261018/native-aaae6ac-initialization-assessment/move-preparation-v2/current-owner-folder-placement.json",
+      "sha256": "7c01de116a9c457abfe91b11f9f8c6e6163c8ba89398dfd0153d7b5112cc1650"
     }
   },
   "limits": [
@@ -926,13 +969,14 @@
       "repositoryTextFiles": 3710,
       "scope": "Current source and new repair verification; npm run ci:secret-scan passed, no phone closure."
     },
-    "localIosExport": "PASS_actual74exact_assets",
+    "localIosExport": "PASS_actual74exact_assets_with_listing_media_repair",
     "nativeSigned": false,
     "installedPhone": "pending",
     "performanceSample": "unmeasured; no p95 claim",
     "exportReceipt": "docs/releases/remaining-repairs-verification-20261018.json",
     "hostedChecks": {
-      "checkedRevision": "ad063a7c4357b1fd3de05f7d06893755b6cd20ab",
+      "checkedAt": "2026-10-18T21:49:28.020Z",
+      "sourceHead": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
       "succeeded": 10,
       "failed": 0,
       "pending": 0,
@@ -940,11 +984,15 @@
         "release-candidate-gate",
         "canary-api-evidence"
       ],
-      "scope": "Tests and source checks only; subsequent documentation revisions need their own hosted results"
+      "evidence": {
+        "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-4e1cdf7.json",
+        "sha256": "9fb65f14b076e4fd7e5967948b5fc16b2cd1d31b2ff6661b70858160e0a2c1fc"
+      },
+      "scope": "Exact pushed source snapshot. Subsequent documentation commits need their own hosted status; skipped release/canary gates do not prove delivery or phone acceptance."
     },
     "feedbackRecovery": "PASS; six scripts",
-    "localIosExportSource": "f047a5f577126502767e88cdf6d491c467914fcc",
-    "localIosBundleSha256": "9f0c8c3164e80ba35c1f362a65dbe402d07102fd95180837b203d677234bfc64",
+    "localIosExportSource": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
+    "localIosBundleSha256": "c279c5ea4c6b4f1ebab3a927f6b0bbd015908338908126910ddd6d365fbdb06a",
     "gateway": {
       "passed": 55,
       "failed": 0,
@@ -1008,6 +1056,43 @@
       "passed": true,
       "repositoryTextFiles": 3708,
       "scope": "Current working source/evidence including both-plan completion audit; npm run ci:secret-scan passed. No runtime edits in this audit."
+    },
+    "historicalHostedChecksBeforeListingMedia": {
+      "checkedRevision": "ad063a7c4357b1fd3de05f7d06893755b6cd20ab",
+      "succeeded": 10,
+      "failed": 0,
+      "pending": 0,
+      "skipped": [
+        "release-candidate-gate",
+        "canary-api-evidence"
+      ],
+      "scope": "Tests and source checks only; subsequent documentation revisions need their own hosted results"
+    },
+    "previousLatestUnsignedIos": {
+      "source": "f047a5f577126502767e88cdf6d491c467914fcc",
+      "bundleSha256": "9f0c8c3164e80ba35c1f362a65dbe402d07102fd95180837b203d677234bfc64",
+      "scope": "Historical unsigned package snapshot retained."
+    },
+    "currentUnsignedIos": {
+      "exportedSource": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
+      "runtimeRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+      "bundle": {
+        "path": "_expo/static/js/ios/entry-41e9e4fdecdc123f827f005aec05eb9e.hbc",
+        "sha256": "c279c5ea4c6b4f1ebab3a927f6b0bbd015908338908126910ddd6d365fbdb06a",
+        "bytes": 11798374
+      },
+      "exactUniqueAssetsVerified": 74,
+      "listingMediaHelpersPackaged": true,
+      "receipt": {
+        "privatePath": "evidence/consolidation-20261018/listing-search-media-source-v1/ios-export-asset-verification.json",
+        "sha256": "05e8008e52fe45fa329564434be000a2325bcef4860ba691dab5ccefccb4b878"
+      },
+      "nativeSigned": false,
+      "uploaded": false,
+      "submitted": false,
+      "published": false,
+      "phoneVerified": false,
+      "testFlightHeld": true
     }
   },
   "pullRequest": "https://github.com/tberridge86/Stackr/pull/409",

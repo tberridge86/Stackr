@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-18T21:35:01.645Z",
+  "observedAt": "2026-10-18T21:53:41.132Z",
   "ownerRequest": "Ensure BOTH plans have satisfied the work listed before TestFlight.",
-  "sourceHeadAudited": "bfeac49e05c596301e8bb4727665216066625a44",
+  "sourceHeadAudited": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
   "branch": "codex/stackr-repair-consolidation-20261018",
   "runtimeAndNativeCandidate": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
   "backendSource": "f9350f896375ffac84a22ca2f7a4ec7654538091",
@@ -884,6 +884,43 @@
           "actualMapperBeforeAndAfter": {
             "privatePath": "evidence/consolidation-20261018/listing-search-media-source-v1/actual-mapper-before-after.json",
             "sha256": "cd497b6176327e55fe1221224a017fead6fec23312fd73ce875755f3961de25e"
+          },
+          "unsignedIos": {
+            "exportedSource": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
+            "runtimeRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+            "bundle": {
+              "path": "_expo/static/js/ios/entry-41e9e4fdecdc123f827f005aec05eb9e.hbc",
+              "sha256": "c279c5ea4c6b4f1ebab3a927f6b0bbd015908338908126910ddd6d365fbdb06a",
+              "bytes": 11798374
+            },
+            "exactUniqueAssetsVerified": 74,
+            "listingMediaHelpersPackaged": true,
+            "receipt": {
+              "privatePath": "evidence/consolidation-20261018/listing-search-media-source-v1/ios-export-asset-verification.json",
+              "sha256": "05e8008e52fe45fa329564434be000a2325bcef4860ba691dab5ccefccb4b878"
+            },
+            "nativeSigned": false,
+            "uploaded": false,
+            "submitted": false,
+            "published": false,
+            "phoneVerified": false,
+            "testFlightHeld": true
+          },
+          "hostedSourceChecks": {
+            "checkedAt": "2026-10-18T21:49:28.020Z",
+            "sourceHead": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
+            "succeeded": 10,
+            "failed": 0,
+            "pending": 0,
+            "skipped": [
+              "release-candidate-gate",
+              "canary-api-evidence"
+            ],
+            "evidence": {
+              "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-4e1cdf7.json",
+              "sha256": "9fb65f14b076e4fd7e5967948b5fc16b2cd1d31b2ff6661b70858160e0a2c1fc"
+            },
+            "scope": "Exact pushed source snapshot. Subsequent documentation commits need their own hosted status; skipped release/canary gates do not prove delivery or phone acceptance."
           }
         },
         "delivery": {
@@ -893,7 +930,8 @@
           "merged": false,
           "nativePublished": false,
           "phoneVerified": false,
-          "unsignedCurrentRevisionExportPending": true
+          "unsignedCurrentRevisionExportPending": false,
+          "unsignedIosVerified": true
         },
         "testFlightHeld": true
       }
@@ -1486,11 +1524,11 @@
     }
   },
   "continuation": {
-    "recordedAt": "2026-10-18T19:33:01.184Z",
+    "recordedAt": "2026-10-18T21:53:41.132Z",
     "source": "b379c5c48b4cdbe9f169c739467e362be93f3a0e",
     "homeSourceRepair": "d0f9e74aa099a4805383d1fabb4b5e6f91e59cdb",
     "regularNovemberCover": "f047a5f577126502767e88cdf6d491c467914fcc",
-    "latestUnsignedSource": "d0f9e74aa099a4805383d1fabb4b5e6f91e59cdb",
+    "latestUnsignedSource": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
     "exactExportAssets": 74,
     "testFlightHeld": true,
     "phoneClosedIssues": 0,
@@ -1501,11 +1539,12 @@
       "privatePath": "evidence/consolidation-20261018/owner-scope-correction-codexlogowork/owner-scope-reply.json",
       "sha256": "454b9490c612e2f26a68f9032182d26d87f74a288d4a4bb2bfc205301b6ea4d9"
     },
-    "latestTestedSourceRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
-    "latestUnsignedSourceRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
+    "latestTestedSourceRevision": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
+    "latestUnsignedSourceRevision": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
     "unsignedPromisedAssets": 74,
     "currentSourceEvidence": "docs/releases/artwork-reassignment-repair-20261018.json",
-    "videoIssuesClosedOnPhone": 0
+    "videoIssuesClosedOnPhone": 0,
+    "currentRuntimeSourceCandidate": "32b97bbc2cec9d416072c0b17b011453987a3d4d"
   },
   "historicalUnresolvedOriginalsBeforeOwnerCorrection": [
     {
@@ -1545,29 +1584,29 @@
     "permanentDeletion": false
   },
   "currentHostedSourceChecks": {
-    "checkedAt": "2026-10-18T21:20:19.967Z",
-    "sourceHead": "7623fea04c302b7a974408c8cf37efb5c7c3bb23",
+    "checkedAt": "2026-10-18T21:49:28.020Z",
+    "sourceHead": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
     "succeeded": 10,
+    "failed": 0,
+    "pending": 0,
     "skipped": [
       "release-candidate-gate",
       "canary-api-evidence"
     ],
-    "failed": 0,
-    "pending": 0,
     "evidence": {
-      "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-7623fea.json",
-      "sha256": "e7b24754874f33229f074171ce31246f6ce48c4b3104a8fe68ed5305ffff19a9"
+      "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-4e1cdf7.json",
+      "sha256": "9fb65f14b076e4fd7e5967948b5fc16b2cd1d31b2ff6661b70858160e0a2c1fc"
     },
-    "scope": "Exact pushed 7623fea hosted checks; later documentation commits require fresh hosted status. No release or phone acceptance."
+    "scope": "Exact pushed source snapshot. Subsequent documentation commits need their own hosted status; skipped release/canary gates do not prove delivery or phone acceptance."
   },
   "videoRegisterSynchronization": {
     "recordedAt": "2026-10-18T20:30:22.209Z",
     "source": "docs/releases/video-repair-register-20261018.json",
-    "sourceSha256": "be83457a48939e3bedc5d86ea1f27bc300669e4f82aa86cc48c85a1a11d76733",
+    "sourceSha256": "913598835e3aab3779f4fb0b93646eccb5e1e268e4487c13c3d97c716ed62da7",
     "issues": 23,
     "phoneClosedIssues": 0,
     "scope": "Current per-issue source/delivery states synchronized from the maintained register; original planned requirements and closure criteria retained. Historical revisions remain in Git.",
-    "updatedAt": "2026-10-18T21:20:19.967Z",
+    "updatedAt": "2026-10-18T21:53:41.132Z",
     "phoneClosed": 0,
     "jungleStagingRehearsalRecorded": true
   },
@@ -1760,21 +1799,50 @@
     "productionWritesAuthorized": false,
     "testFlightHeld": true
   },
-  "currentRuntimeSourceCandidate": {
-    "revision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
-    "merged": false,
-    "nativePublished": false,
-    "phoneVerified": false,
-    "testFlightHeld": true,
-    "unsignedCurrentRevisionExportPending": true,
-    "historical74AssetExportSource": "d0cf371080936ff538e86ac8883fed6af4d1200e"
-  },
+  "currentRuntimeSourceCandidate": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
   "currentJungleProductionProposal": {
     "document": "docs/releases/jungle-production-image-correction-20261018.json",
     "sqlAndOperationsReviewed": true,
     "ownerApproved": false,
     "productionExecuted": false,
     "normalImageGapDisclosed": true,
+    "testFlightHeld": true
+  },
+  "historicalHostedSourceChecksBeforeListingMedia": {
+    "checkedAt": "2026-10-18T21:20:19.967Z",
+    "sourceHead": "7623fea04c302b7a974408c8cf37efb5c7c3bb23",
+    "succeeded": 10,
+    "skipped": [
+      "release-candidate-gate",
+      "canary-api-evidence"
+    ],
+    "failed": 0,
+    "pending": 0,
+    "evidence": {
+      "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-7623fea.json",
+      "sha256": "e7b24754874f33229f074171ce31246f6ce48c4b3104a8fe68ed5305ffff19a9"
+    },
+    "scope": "Exact pushed 7623fea hosted checks; later documentation commits require fresh hosted status. No release or phone acceptance."
+  },
+  "currentUnsignedIos": {
+    "exportedSource": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
+    "runtimeRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+    "bundle": {
+      "path": "_expo/static/js/ios/entry-41e9e4fdecdc123f827f005aec05eb9e.hbc",
+      "sha256": "c279c5ea4c6b4f1ebab3a927f6b0bbd015908338908126910ddd6d365fbdb06a",
+      "bytes": 11798374
+    },
+    "exactUniqueAssetsVerified": 74,
+    "listingMediaHelpersPackaged": true,
+    "receipt": {
+      "privatePath": "evidence/consolidation-20261018/listing-search-media-source-v1/ios-export-asset-verification.json",
+      "sha256": "05e8008e52fe45fa329564434be000a2325bcef4860ba691dab5ccefccb4b878"
+    },
+    "nativeSigned": false,
+    "uploaded": false,
+    "submitted": false,
+    "published": false,
+    "phoneVerified": false,
     "testFlightHeld": true
   }
 }
