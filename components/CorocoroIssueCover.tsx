@@ -21,8 +21,8 @@ export function CorocoroIssueCover({ issueGroup, showSources = true }: { issueGr
   const placeholder = <View style={styles.placeholder}><Text style={styles.label}>ISSUE RECORD</Text><Text style={styles.publication} numberOfLines={2}>{issueGroup.publication}</Text><View style={styles.rule} /><Text style={styles.month}>{month}</Text><Text style={styles.year}>{issueGroup.issueMonth.slice(0, 4)}</Text><Text style={styles.caption}>PLACEHOLDER · NO COVER</Text></View>;
   const links = [...presentation.alternativeSources, ...(presentation.source ? [presentation.source] : [])];
   return <View style={styles.root}>
-    <View style={styles.art}>{supplied || cover ? <StackrImage source={supplied} uri={supplied ? undefined : cover?.imageUrl} contentFit="contain" style={styles.fill} accessibilityLabel={supplied ? `${issueGroup.publication}, ${issueLabel} supplied cover` : cover?.alt} showFallbackIcon={false} fallback={placeholder} /> : placeholder}</View>
-    {showSources && <Text style={styles.source}>{supplied ? 'Supplied reference cover' : presentation.caption}</Text>}
+    <View style={styles.art}>{supplied || cover ? <StackrImage source={supplied} uri={supplied ? undefined : cover?.imageUrl} contentFit="contain" style={styles.fill} accessibilityLabel={supplied ? `${issueGroup.publication}, ${issueLabel} cover` : cover?.alt} showFallbackIcon={false} fallback={placeholder} /> : placeholder}</View>
+    {showSources && <Text style={styles.source}>{supplied ? 'Issue cover' : presentation.caption}</Text>}
     {showSources && links.map((source) => <Link key={source.url} href={source.url as `https://${string}`} target="_blank" rel="noopener noreferrer" asChild>
       <Pressable accessibilityRole="link" accessibilityLabel={source.label} onPress={(event) => event.stopPropagation()}>
         <Text style={styles.source}>{source.label} ↗</Text>

@@ -11,12 +11,12 @@ import { MAGAZINE_SET_COVER_ASSET_KEYS } from '../lib/magazineSetCoverAssets';
 
 const source = (key: string) => `stub:${key}` as any;
 
-assert.equal(MAGAZINE_SET_COVER_METADATA.length, 81, 'every supplied cover needs one explicit issue metadata row');
-assert.equal(new Set(MAGAZINE_SET_COVER_METADATA.map((cover) => cover.key)).size, 81);
+assert.equal(MAGAZINE_SET_COVER_METADATA.length, 82, 'the 81 supplied covers and approved November cover need distinct issue metadata');
+assert.equal(new Set(MAGAZINE_SET_COVER_METADATA.map((cover) => cover.key)).size, 82);
 assert.deepEqual(
   [...MAGAZINE_SET_COVER_ASSET_KEYS].sort(),
   MAGAZINE_SET_COVER_METADATA.map((cover) => cover.key).sort(),
-  'every exact issue key must have one separate static PNG source mapping',
+  'every exact issue key must have one separate static source mapping',
 );
 
 for (const cover of MAGAZINE_SET_COVER_METADATA) {
@@ -43,6 +43,14 @@ const actualRelativePaths = readdirSync(assetRoot, { recursive: true })
   .map((entry) => `../assets/Pokemon_Magazine_Cover_Art_PNGs/${entry.replace(/\\/g, '/')}`)
   .sort();
 assert.deepEqual([...requiredPaths].sort(), actualRelativePaths, 'static require paths must exactly cover the supplied PNG population');
+assert.ok(sourceFile.includes("'corocoro-comic-2023-11': () => require('../assets/magazine-covers/2023-11-corocoro-regular.jpg')"),
+  'The additional regular November cover must retain its exact static source binding');
+assert.ok(existsSync(resolve('assets/magazine-covers/2023-11-corocoro-regular.jpg')));
+assert.equal(getMagazineSetCoverForSet({ id: 'ja:magazine:corocoro-comic:2023-11', language: 'ja' }, undefined, source)?.key,
+  'corocoro-comic-2023-11');
+assert.equal(getMagazineSetCoverForSet({ name: '月刊コロコロコミック 2023年11月号', language: 'en' }, undefined, source), null);
+assert.equal(getMagazineSetCoverForSet({ name: 'CoroCoro Comic and MiraCoro Comic (November 2023)', language: 'ja' }, undefined, source), null,
+  'A combined edition cannot inherit the regular issue cover');
 
 assert.equal(
   getMagazineSetCoverForSet({ id: 'ja:corocoro-comic-february-1997-promo', language: 'ja' }, undefined, source)?.key,

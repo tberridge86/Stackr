@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -15,8 +16,12 @@ const assetRequire = createRequire(import.meta.url);
 assetRequire.extensions['.png'] = (module, filename) => {
   module.exports = { uri: filename };
 };
+assetRequire.extensions['.jpg'] = assetRequire.extensions['.png'];
 
 const native = { development: false, platform: 'ios', hostname: '' };
+const novemberCoverPath = resolve('assets/magazine-covers/2023-11-corocoro-regular.jpg');
+assert.equal((getCorocoroSuppliedCover('monthly:2023-11', native) as { uri: string } | null)?.uri, novemberCoverPath,
+  'The existing November2023 regular issue must render its approved bundled cover in production iOS.');
 const issues = groupCorocoroIssues();
 let covered = 0;
 for (const issue of issues) {
@@ -24,15 +29,25 @@ for (const issue of issues) {
   if (!image) continue;
   covered++;
   assert.equal(issue.publicationId, 'monthly');
-  assert.equal(image.uri, resolve(`assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/${issue.issueMonth}-CoroCoro-Comic.png`));
+  const november = issue.id === 'monthly:2023-11';
+  assert.equal(image.uri, november ? novemberCoverPath : resolve(`assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/${issue.issueMonth}-CoroCoro-Comic.png`));
   const bytes = readFileSync(image.uri);
+  if (november) {
+    assert.equal(bytes.readUInt16BE(0), 0xffd8);
+    assert.equal(createHash('sha256').update(bytes).digest('hex'), 'f4c2b52e01077cb532acfd6118243767d4f7194b8f80204e19eb5b6441dc77ca',
+      'The bundled cover must preserve the exact released publisher original, rather than the masked teaser.');
+    continue;
+  }
   assert.equal(bytes.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
   assert.ok(bytes.readUInt32BE(16) > 0 && bytes.readUInt32BE(20) > 0);
 }
-assert.equal(covered, 26, 'The supplied cover pack must be available in the production iOS bundle.');
+assert.equal(covered, 27, 'The 26 supplied covers and exact newly approved November cover must be available offline.');
 assert.equal(COROCORO_SUPPLIED_COVER_COUNT, covered);
 assert.ok(getCorocoroSuppliedCover('monthly:2001-05', native));
 assert.equal(getCorocoroSuppliedCover('bessatsu:2001-05', native), null);
+assert.equal(getCorocoroSuppliedCover('ichiban:2023-11', native), null, 'A different publication cannot inherit the new monthly cover.');
+assert.equal(getCorocoroSuppliedCover('monthly:2023-10', native), null, 'A nearby month cannot inherit the November cover.');
+assert.equal(getCorocoroSuppliedCover('monthly:2023-11', { ...native, sourceEnabled: false }), null);
 assert.equal(getCorocoroSuppliedCover('monthly:2001-05', { ...native, sourceEnabled: false }), null);
 assert.deepEqual(getCorocoroIssuesForCard('ja:corocoro-shining-mew-2001').map(issue => issue.id), ['monthly:2001-05']);
 assert.deepEqual(getCorocoroIssuesForCard('SM3p-041'), [], 'A later Shining Mew must not inherit the 2001 magazine.');
@@ -91,7 +106,11 @@ try {
   assert.equal(imageElements(combinedCover).length, 0, 'Publisher source pointers do not become unapproved native cover images');
   const may2001 = issues.find(issue => issue.id === 'monthly:2001-05')!;
   const images = () => imageElements(componentModule.CorocoroIssueCover!({ issueGroup: may2001 }));
+  const november2023 = issues.find(issue => issue.id === 'monthly:2023-11')!;
+  const novemberImages = () => imageElements(componentModule.CorocoroIssueCover!({ issueGroup: november2023 }));
   assert.equal(images().length, 1, 'Allowed supplied cover remains visible in the actual component');
+  assert.equal(novemberImages().length, 1, 'The exact new cover is selected by the production-native component');
+  assert.equal(novemberImages()[0].props.source.uri, novemberCoverPath);
   const cases = [
     ['EXPO_PUBLIC_DISABLE_MAGAZINE_SET_COVERS', 'true'],
     ['STACKR_DISABLE_MAGAZINE_SET_COVERS', 'true'],
@@ -105,6 +124,13 @@ try {
     assert.equal(getCorocoroSuppliedCover(may2001.id, native), null, `${key} must block bundled artwork`);
     assert.equal(images().length, 0, `${key} must select the component's existing placeholder`);
   }
+  for (const key of policyKeys) delete process.env[key];
+  process.env.EXPO_PUBLIC_MAGAZINE_SET_COVER_DENYLIST = 'corocoro-comic-2023-11';
+  assert.equal(novemberImages().length, 0, 'Withdrawing the exact November cover restores its existing named placeholder');
+  assert.ok(visibleText(componentModule.CorocoroIssueCover!({ issueGroup: november2023 })).includes('PLACEHOLDER · NO COVER'));
+  assert.equal(images().length, 1, 'Withdrawing November must preserve the earlier supplied cover');
+  process.env.EXPO_PUBLIC_DISABLE_MAGAZINE_SET_COVERS = 'true';
+  assert.equal(novemberImages().length, 0, 'The new cover obeys global withdrawal too');
   for (const key of policyKeys) delete process.env[key];
   process.env.EXPO_PUBLIC_MAGAZINE_SET_COVER_DENYLIST = 'corocoro-comic-1997-02';
   assert.equal(images().length, 1, 'Denying a different exact issue preserves this cover');
@@ -121,4 +147,4 @@ try {
     else process.env[key] = value;
   }
 }
-console.log('CoroCoro mobile delivery: 26 offline covers, exact issue links and Discover navigation passed.');
+console.log('CoroCoro mobile delivery: 27 offline covers, exact released November2023 bytes, issue links and Discover navigation passed.');

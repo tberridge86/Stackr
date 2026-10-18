@@ -1,7 +1,7 @@
 import type { ImageSourcePropType } from 'react-native';
 import { getMagazineSetCoverForSet } from './magazineSetCovers';
 
-// Owner-supplied covers are bundled for offline use on the phone.
+// Owner-approved covers are bundled for offline use on the phone.
 // Issue keys preserve the exact publication and printed cover month.
 const covers: Record<string, () => ImageSourcePropType> = {
   'monthly:1996-11': () => require('../assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/1996-11-CoroCoro-Comic.png'),
@@ -30,6 +30,7 @@ const covers: Record<string, () => ImageSourcePropType> = {
   'monthly:2001-05': () => require('../assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2001-05-CoroCoro-Comic.png'),
   'monthly:2001-08': () => require('../assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2001-08-CoroCoro-Comic.png'),
   'monthly:2001-12': () => require('../assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2001-12-CoroCoro-Comic.png'),
+  'monthly:2023-11': () => require('../assets/magazine-covers/2023-11-corocoro-regular.jpg'),
 };
 
 export const COROCORO_SUPPLIED_COVER_COUNT = Object.keys(covers).length;
