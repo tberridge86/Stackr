@@ -103,5 +103,26 @@
     "Signed native delivery and recorded phone journeys",
     "Required performance sample sizes"
   ],
-  "gatewayRepair": "docs/releases/gateway-circuit-isolation-20261018.json"
+  "gatewayRepair": "docs/releases/gateway-circuit-isolation-20261018.json",
+  "ciAssertionRepair": {
+    "supersededHead": "a6c4fbfc40a0eb7e1759d71579854637887c52da",
+    "failedJobs": [
+      "openapi-and-generated-client",
+      "integration-tests",
+      "lint-type-unit",
+      "gateway-and-app"
+    ],
+    "sharedCause": "Existing API source assertion still expected the removed singleton search-manifest helper call. No runtime failure was demonstrated by that assertion.",
+    "testFile": "scripts/test-stackr-api-v1.mjs",
+    "testFileSha256": "48c5e71d7816346cee00ca864fec0b776d6a14463ac59e04d2c4f26de7041c10",
+    "repair": "Assert the current bounded batched manifest wire contract; behavioral batching/identity/cancellation tests retained.",
+    "fullApiAlias": "PASS",
+    "serverDeliveryAlias": "PASS",
+    "behavioralBatchingTarget": "PASS",
+    "targetedLint": {
+      "errors": 0,
+      "existingWarnings": 1
+    },
+    "runtimeFilesChanged": false
+  }
 }
