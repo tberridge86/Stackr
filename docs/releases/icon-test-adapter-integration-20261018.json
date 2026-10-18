@@ -61,5 +61,90 @@
   "unsignedRuntimeStill": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
   "testFlightHeld": true,
   "nativePublished": false,
-  "phoneVerified": false
+  "phoneVerified": false,
+  "followup": {
+    "recordedAt": "2026-10-18T22:53:40.454Z",
+    "baseRevision": "3c2b8586167a4f92592d664eae4c05c390aa8ddc",
+    "reason": "Subsequent strict screen harnesses also require the explicit functional icon dependency after the icon integration",
+    "failedLocalGroups": [
+      {
+        "command": "npm run test:pokedex-release",
+        "session": 49431,
+        "exitCode": 1,
+        "dependency": "../../components/StackrFunctionalIcon"
+      },
+      {
+        "command": "npm run test:device-feedback",
+        "exitCode": 1,
+        "harness": "test-artwork-loading-recovery.ts",
+        "dependency": "../../components/StackrFunctionalIcon"
+      },
+      {
+        "command": "npm run test:device-feedback",
+        "exitCode": 1,
+        "harness": "test-uncached-card-facts-runtime.ts",
+        "dependency": "../../components/StackrFunctionalIcon"
+      }
+    ],
+    "repairs": [
+      {
+        "path": "scripts/test-pokedex-account-boundary.ts",
+        "localWorkingSha256": "c75017235c3f31bcdb0260e478d6d9ade04f37bb9350c5403b70f762cdb0d1f2",
+        "change": "One explicit named StackrFunctionalIcon image leaf; strict dependency guard and existing assertions retained"
+      },
+      {
+        "path": "scripts/test-pokedex-cache-handoff.ts",
+        "localWorkingSha256": "faa1cf2fea5951788d16da76f4f3332c8a94c80ea7bc6a43f820de01a5a6d4cd",
+        "change": "One explicit named StackrFunctionalIcon image leaf; strict dependency guard and existing assertions retained"
+      },
+      {
+        "path": "scripts/test-shared-ux-release.ts",
+        "localWorkingSha256": "a4147550d41b84b47e1eeae84437e236e257f2696bab277064896e483d777161",
+        "change": "One explicit named StackrFunctionalIcon image leaf; strict dependency guard and existing assertions retained"
+      },
+      {
+        "path": "scripts/test-artwork-loading-recovery.ts",
+        "localWorkingSha256": "c719903654added9a59c73b89da4f8179685e029b0b11307aa9d857d9a6f8c19",
+        "change": "One explicit named StackrFunctionalIcon image leaf; strict dependency guard and existing assertions retained"
+      },
+      {
+        "path": "scripts/test-uncached-card-facts-runtime.ts",
+        "localWorkingSha256": "bb407144a5d275c2d900b346a44dd241200dc1d032e505308d51e5dacab52a6d",
+        "change": "One explicit named StackrFunctionalIcon image leaf; strict dependency guard and existing assertions retained"
+      }
+    ],
+    "validation": {
+      "typecheck": {
+        "command": "npm run typecheck",
+        "toolSession": 30639,
+        "exitCode": 0
+      },
+      "lint": {
+        "command": "npm run lint",
+        "toolSession": 37984,
+        "exitCode": 0,
+        "errors": 0,
+        "existingWarnings": 8
+      },
+      "pokedexRelease": {
+        "command": "npm run test:pokedex-release",
+        "exitCode": 0,
+        "accountBoundaryGroups": 15
+      },
+      "deviceFeedback": {
+        "command": "npm run test:device-feedback",
+        "exitCode": 0,
+        "fullGroupAfterBothCardHarnessCorrections": true
+      },
+      "uxServiceRelease": {
+        "command": "npm run test:ux-service-release",
+        "exitCode": 0
+      },
+      "diffCheck": {
+        "exitCode": 0
+      }
+    },
+    "appRuntimeModified": false,
+    "hostedSuccessor": "pending_after_push"
+  }
 }
