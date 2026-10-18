@@ -11,12 +11,9 @@ import { getPreferredSetDisplayName } from './pokemonDisplayNames';
 import { fetchPreferredStackrSets, fetchStackrPriceSnapshots, fetchStackrSet } from './stackrDomainAdapter';
 import { resolveBinderSetIdentity } from './binderSetIdentity';
 import { createSavedBinderCardMatcher, normalizeBinderCollectorNumber } from './binderCardIdentity';
+import { mergeBinderArtwork } from './stackrSetRetrieval';
 import { positiveCatalogueCount, preserveUnmatchedBinderRows } from './binderCataloguePresentation';
 import { enforceSetVisualRuntimePolicy } from './providerSetMarkRuntimePolicy';
-import {
-  defineTcgdexRuntimeImageOverlay,
-  hasTcgdexRuntimeImageOverlay,
-} from './tcgdexControlledCardReference';
 import { selectTcgdexReferencePersistenceImage } from './tcgdexReferencePersistence';
 import {
   getPokemonSetLanguageFromPrefixedId,
@@ -1558,16 +1555,27 @@ export async function attachBinderCatalogueArtwork(
 ): Promise<BinderCardRecord[]> {
   const eligible = rows.filter((row) => row.catalogue_match_status === 'catalogue' && row.card?.raw_data?.stackr?.canonical);
   if (!eligible.length) return rows;
+  const artworkIdentity = (card: any): string | null => {
+    const identity = card?.raw_data?.stackr;
+    const variant = identity?.variants?.find((candidate: any) => candidate.variantId === identity.defaultVariantId);
+    if (!identity?.canonical || !variant || !identity.catalogueVersionId) return null;
+    return JSON.stringify([card.id, card.set?.id, card.language, card.number, identity.catalogueVersionId,
+      identity.defaultVariantId, variant.canonicalId, variant.imageVariantId, variant.finishCode ?? null]);
+  };
   const merge = (displayCards: Awaited<ReturnType<typeof enrichStackrCardArtworkFromFacts>>) => {
-    const byId = new Map(displayCards.map((card) => [JSON.stringify([card.id, card.language, card.raw_data?.stackr && (card.raw_data.stackr as any).defaultVariantId]), card]));
-    return rows.map((row) => {
-      const identity = row.card?.raw_data?.stackr;
-      const display = identity && byId.get(JSON.stringify([identity.cardId, row.language, identity.defaultVariantId]));
+    const byId = new Map(displayCards.flatMap((card) => {
+      const identity = artworkIdentity(card);
+      return identity ? [[identity, card] as const] : [];
+    }));
+    const enriched = rows.map((row) => {
+      const identity = artworkIdentity(row.card);
+      const display = identity ? byId.get(identity) : null;
       if (!display || (!display.images.small && !display.images.large)) return row;
-      const card = { ...row.card, images: display.images };
-      if (hasTcgdexRuntimeImageOverlay(display, 'images')) defineTcgdexRuntimeImageOverlay(card, 'images', display.images, display.images.small);
-      return { ...row, card };
+      return { ...row, card: display };
     });
+    // Share the screen's image-only merge so inspection, provenance and tiles
+    // advance together while current facts, ownership and quantities stay put.
+    return mergeBinderArtwork(rows, enriched);
   };
   const enriched = await enrichStackrCardArtworkFromFacts(eligible.map((row) => row.card), signal, undefined,
     (progress) => onProgress?.(merge(progress)));

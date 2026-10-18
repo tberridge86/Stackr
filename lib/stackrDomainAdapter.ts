@@ -1000,8 +1000,10 @@ async function fetchCanonicalSetCardFacts(
     if (prefixLanguage && apiLanguage && prefixLanguage !== apiLanguage) throw new Error('Conflicting catalogue language');
     let expectedCount = Number(options.minimumCardCount ?? 0);
     if (!apiLanguage || !Number.isSafeInteger(expectedCount) || expectedCount < 1) {
-      const set = (await client.set(setId, { signal })).data.set;
+      const cachedSet = rememberedSet(client, setId);
+      const set = cachedSet ?? (await client.set(setId, { signal })).data.set;
       if (apiLanguage && apiLanguage !== set.languageCode) throw new Error('Conflicting catalogue language');
+      if (!cachedSet) rememberSet(client, set);
       apiLanguage = set.languageCode;
       // A printed count excludes secret cards for sets such as Prismatic
       // Evolutions. This facts lane validates exact completion, so it must
@@ -1649,7 +1651,36 @@ export async function enrichStackrCardArtworkFromFacts(
     enriched.push(...await enrichCanonicalSetCards({ setId: facts[0].set.setId, cards: selected(preferred) }, client, signal));
     onProgress?.(enriched);
   };
-  for (const facts of groups.values()) await enrichGroup(facts);
+  for (const facts of groups.values()) {
+    throwIfOptionalCatalogueReadAborted(signal);
+    const hasCurrentArtwork = facts.every((fact) => primaryCardImageAsset(fact, embeddedCardImageAssets(fact)));
+    const knownTotal = Number(rememberedSet(client, facts[0].set.setId)?.total);
+    const isKnownComplete = Number.isSafeInteger(knownTotal) && knownTotal > 0
+      && knownTotal === new Set(facts.map((fact) => fact.cardId)).size;
+    if (hasCurrentArtwork || isKnownComplete) {
+      await enrichGroup(facts);
+      continue;
+    }
+    // A live custom binder/card detail can retain a valid in-memory fact while
+    // selecting only one printing from a later whole-set artwork page. Read the
+    // shared complete facts cache only when its population is not already known
+    // complete. This extra optional read is capped at seven seconds; existing
+    // artwork and complete set views above do not wait for it. They still run
+    // preferred enrichment so a sharper approved replacement can supersede it.
+    const recovered = await readOptionalCatalogueEnrichment((recoverySignal) => fetchCanonicalSetCardFacts(
+      facts[0].set.setId, facts[0].languageCode, client, recoverySignal, { includeAssets: false },
+    ), signal, 7000);
+    throwIfOptionalCatalogueReadAborted(signal);
+    const selected = new Map(facts.map((fact) => [fact.cardId, fact]));
+    let population = facts;
+    if (recovered && recovered.cards.every((fact) => fact.catalogueVersionId === facts[0].catalogueVersionId)) {
+      const recoveredIds = new Set(recovered.cards.map((fact) => fact.cardId));
+      if (facts.every((fact) => recoveredIds.has(fact.cardId))) {
+        population = recovered.cards.map((fact) => selected.get(fact.cardId) ?? fact);
+      }
+    }
+    await enrichGroup(facts, population);
+  }
   for (const [key, savedCards] of savedGroups) {
     throwIfOptionalCatalogueReadAborted(signal);
     const [setId, language] = JSON.parse(key) as [string, StackrApiLanguageCode];
