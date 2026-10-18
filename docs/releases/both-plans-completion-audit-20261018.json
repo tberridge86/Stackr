@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-18T17:36:00.208Z",
+  "observedAt": "2026-10-18T20:30:22.209Z",
   "ownerRequest": "Ensure BOTH plans have satisfied the work listed before TestFlight.",
-  "sourceHeadAudited": "cdd02d32361242a30fba73fe1313d03d6b79e4b5",
+  "sourceHeadAudited": "bfeac49e05c596301e8bb4727665216066625a44",
   "branch": "codex/stackr-repair-consolidation-20261018",
   "runtimeAndNativeCandidate": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
   "backendSource": "f9350f896375ffac84a22ca2f7a4ec7654538091",
@@ -22,19 +22,36 @@
   "video": [
     {
       "id": "V01",
-      "owner": "stackr_artwork",
+      "owner": "stackr_coding",
       "issue": "Home card image and verified name missing",
       "requiredResolution": "Trace the exact Home printing; restore accepted image and verified name while preserving native identity.",
       "acceptance": "Correct exact-printing Home tile renders.",
-      "state": "blocked_exact_printing_identity",
+      "state": "home_progressive_facts_repair_reviewed_unsigned_phone_pending",
       "relevantSourceRepairMerged": false,
       "nativePublished": false,
       "phoneAccepted": false,
       "satisfiedInFull": false,
-      "remaining": "Need the affected account/card identity and installed-Home rendering; no invented replacement.",
-      "repairCommit": null,
-      "sourceFiles": [],
-      "checks": []
+      "remaining": "Exact affected printing/subsurface and installed Home rendering remain unconfirmed. Verify the same eventual Varoom tile, account isolation and retry on the approved native candidate.",
+      "repairCommit": "d0f9e74aa099a4805383d1fabb4b5e6f91e59cdb",
+      "sourceFiles": [
+        "features/home/HubScreen.tsx",
+        "components/HomeCommandCenter.tsx"
+      ],
+      "checks": [
+        "scripts/test-home-startup-runtime.ts",
+        "scripts/test-home-collector-sections.ts"
+      ],
+      "confirmedCauseOrSourceGap": "Owner confirms the same blank tile eventually becomes Varoom. The Home chase path waited for optional artwork hydration and combined prices/artwork before publishing card facts; details now publish progressively, with independent optional updates. This confirms a source dependency, not the exact video printing.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "additionalSecurityRepair": "Raw/late401/403/JWT permission denials clear retained private cards and selections, invalidate pending work and preserve the actual response status; review finding HOME-DENIAL-01 resolved with regressions."
     },
     {
       "id": "V02",
@@ -50,7 +67,29 @@
       "remaining": "Both approved bounded diagnostic sets completed; no timeout cause, missing index or exact owned-card freshness/coverage is established. No price refresh or worker restart performed; phone evidence remains open.",
       "repairCommit": null,
       "sourceFiles": [],
-      "checks": []
+      "checks": [],
+      "confirmedCauseOrSourceGap": "Missing quotes and retrieval failures remain distinct. Two live pricing workers reported database statement timeouts; exact owned-card coverage is not proven.",
+      "currentDelivery": {
+        "implemented": false,
+        "tested": false,
+        "independentlyReviewed": false,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "additionalSourceRepair": {
+        "revision": "d59c3a6e6f48fbb106866ed9e51edd2e0486a0b9",
+        "files": [
+          "lib/collectionPricingState.ts",
+          "scripts/test-collection-pricing-state.ts"
+        ],
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "scope": "Truthful missing/unknown/stale freshness and partial-coverage labels; no live quote retrieval or refresh proof."
+      }
     },
     {
       "id": "V03",
@@ -71,7 +110,17 @@
       ],
       "checks": [
         "scripts/test-value-history-recovery.ts"
-      ]
+      ],
+      "confirmedCauseOrSourceGap": "The screen repeated market reads and conflated missing observations/refresh metadata. It now reads one bounded stored sample, exposes Retry and labels provider freshness unavailable.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
     },
     {
       "id": "V04",
@@ -92,7 +141,17 @@
       ],
       "checks": [
         "scripts/test-value-history-recovery.ts"
-      ]
+      ],
+      "confirmedCauseOrSourceGap": "Same-day paired observations were discarded and optional previews delayed facts. Preserve exact paired estimates and reject conflicting variant comparisons.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
     },
     {
       "id": "V05",
@@ -113,7 +172,17 @@
       ],
       "checks": [
         "scripts/test-value-history-recovery.ts"
-      ]
+      ],
+      "confirmedCauseOrSourceGap": "Unbounded per-binder/per-card history fan-out could leave collection movers loading. The lane now settles independently with bounded recovery and honest absence of per-card history.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
     },
     {
       "id": "V06",
@@ -134,7 +203,17 @@
       ],
       "checks": [
         "scripts/test-value-history-recovery.ts"
-      ]
+      ],
+      "confirmedCauseOrSourceGap": "The former path discarded genuine aggregate history. Use validated prepared trends and owner-bound Home v4 saved observations, with range support, saved provenance and account-generation guards.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
     },
     {
       "id": "V07",
@@ -155,7 +234,17 @@
       "checks": [
         "scripts/test-binder-library-value-recovery.ts",
         "scripts/test-binder-library-progress-runtime.ts"
-      ]
+      ],
+      "confirmedCauseOrSourceGap": "Legacy set codes were looked up only as canonical IDs and verified enriched totals were unused. Added exact language-scoped source-ID lookup and proven metadata fallback.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
     },
     {
       "id": "V08",
@@ -176,7 +265,17 @@
       "checks": [
         "scripts/test-binder-library-value-recovery.ts",
         "scripts/test-binder-library-progress-runtime.ts"
-      ]
+      ],
+      "confirmedCauseOrSourceGap": "Price request failures were reduced to no-quote summaries. Added truthful errors, retained transient values, any-denial cache clearing and query-owned cancellation; overlapping shared loads no longer erase valid values.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
     },
     {
       "id": "V09",
@@ -196,7 +295,17 @@
       ],
       "checks": [
         "scripts/test-binder-reopen.mjs"
-      ]
+      ],
+      "confirmedCauseOrSourceGap": "Saved content waited on live reads and optional name artwork could block usable facts. Show guarded saved previews and hydrate imagery independently; optional names no longer block facts.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
     },
     {
       "id": "V10",
@@ -216,7 +325,17 @@
       ],
       "checks": [
         "scripts/test-binder-reopen.mjs"
-      ]
+      ],
+      "confirmedCauseOrSourceGap": "Saved display readiness is independent of live ownership confirmation. Existing mutation guards are preserved and ownership remains explicit.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
     },
     {
       "id": "V11",
@@ -236,7 +355,17 @@
       ],
       "checks": [
         "scripts/test-binder-reopen.mjs"
-      ]
+      ],
+      "confirmedCauseOrSourceGap": "All read-only states shared foreign-owner wording. Distinguish saved, pending ownership, verified foreign ownership and explicit read-only views.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
     },
     {
       "id": "V12",
@@ -249,7 +378,7 @@
       "nativePublished": false,
       "phoneAccepted": false,
       "satisfiedInFull": false,
-      "remaining": "All113capturedM6image files freshly200/hash/bytes/dimensions/decode verified; current-source actual client replay113tile/inspection references with0fallback manifest calls. Historical manifest timeout cause and installed rendering remain open.",
+      "remaining": "All113captured M6preferred shared printing-face image URLs now return200with exact hashes/bytes/dimensions and decode successfully. Captured client replay113inspectable/0manifestrequests remains distinct. Historical whole-set manifest504 cause and installed-phone acceptance remain open.",
       "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
       "sourceFiles": [
         "features/binder/BinderDetailScreen.tsx",
@@ -259,8 +388,50 @@
         "scripts/test-saved-binder-artwork-recovery.ts",
         "scripts/test-preferred-set-artwork.ts",
         "scripts/test-binder-reopen.mjs",
-        "docs/releases/gateway-live-delivery-20261018.json (bounded public read; not phone acceptance)"
-      ]
+        "docs/releases/gateway-live-delivery-20261018.json (bounded public read; not phone acceptance)",
+        "docs/releases/storm-image-delivery-20261018.json (113fresh file responses; not phone rendering)"
+      ],
+      "confirmedCauseOrSourceGap": "Serialized saved views lost the WeakMap fact handle, so actual image recovery made zero requests. Recover complete public facts per exact set/language and prove printing/version/number/finish; use whole-set image pagination even for saved subsets.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "additionalSourceRepair": {
+        "revision": "d59c3a6e6f48fbb106866ed9e51edd2e0486a0b9",
+        "files": [
+          "lib/binders.ts",
+          "lib/stackrDomainAdapter.ts",
+          "scripts/test-saved-binder-artwork-recovery.ts"
+        ],
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "scope": "Full-resolution/provenance merge, live subset full-population pagination, non-sliding metadataTTL;113captured preferred references replay correctly."
+      },
+      "warmArtworkReassignmentRepair": {
+        "sourceRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "unsignedIosVerified": true,
+        "merged": false,
+        "nativePublished": false,
+        "phoneVerified": false,
+        "scope": "Fresh positive exact reassignment invalidates stale cached artwork; does not supply missing source images or identify the video printing."
+      },
+      "fullCapturedImageDelivery": {
+        "document": "docs/releases/storm-image-delivery-20261018.json",
+        "requests": 113,
+        "verifiedFiles": 113,
+        "sourceApiCapturedEarlier": true,
+        "phoneVerified": false
+      }
     },
     {
       "id": "V13",
@@ -276,7 +447,29 @@
       "remaining": "Both approved bounded diagnostic sets completed; no timeout cause, missing index or exact owned-card freshness/coverage is established. No price refresh or worker restart performed; phone evidence remains open.",
       "repairCommit": null,
       "sourceFiles": [],
-      "checks": []
+      "checks": [],
+      "confirmedCauseOrSourceGap": "Stale estimates remain labelled; fresh provider evidence was not fabricated. Live pricing workers reported statement timeouts.",
+      "currentDelivery": {
+        "implemented": false,
+        "tested": false,
+        "independentlyReviewed": false,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "additionalSourceRepair": {
+        "revision": "d59c3a6e6f48fbb106866ed9e51edd2e0486a0b9",
+        "files": [
+          "lib/collectionPricingState.ts",
+          "scripts/test-collection-pricing-state.ts"
+        ],
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "scope": "Truthful missing/unknown/stale freshness and partial-coverage labels; no live quote retrieval or refresh proof."
+      }
     },
     {
       "id": "V14",
@@ -306,7 +499,19 @@
         "npm run test:storm-logo-publication: 13 passed including isolated PostgreSQL publish/rollback and rejection guards",
         "Exact frozen candidate v2 independently reviewed; production commit receipt contains one M6 asset and one published membership",
         "docs/releases/gateway-live-delivery-20261018.json (bounded public read; not phone acceptance)"
-      ]
+      ],
+      "confirmedCauseOrSourceGap": "Supplied English-lettered source was present in the public logo library, but the r7 production canonical mapping was null. The old native source selection also preferred a Japanese-only bundled logo.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false,
+        "catalogueArtworkPublished": true,
+        "apiArtworkVerified": true
+      }
     },
     {
       "id": "V15",
@@ -330,7 +535,17 @@
         "scripts/test-traditional-chinese-hires-logos.ts",
         "scripts/test-official-english-set-logo-runtime-lookup.cjs",
         "docs/releases/ios-export-asset-verification-20261018.json"
-      ]
+      ],
+      "confirmedCauseOrSourceGap": "Newest SV9/SV9a/SV10 entries lacked selected artwork. Verified supplied native pack art is available as product artwork fallback, with strict Traditional Chinese identity; it is not relabelled a standalone logo.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
     },
     {
       "id": "V16",
@@ -338,17 +553,38 @@
       "issue": "November2023CoroCoro issue has no cover",
       "requiredResolution": "Verify exact regular monthly edition source and acquisition/display evidence before binding.",
       "acceptance": "Correct exact-edition cover renders or named source/rights blocker remains.",
-      "state": "blocked_verified_cover_source",
+      "state": "reviewed_source_and_unsigned_export_verified_native_and_phone_pending",
       "relevantSourceRepairMerged": false,
       "nativePublished": false,
       "phoneAccepted": false,
       "satisfiedInFull": false,
-      "remaining": "Verified exact cover and permissible source required before import; placeholder stays explicit.",
-      "repairCommit": null,
+      "remaining": "Exact bytes passed current unsigned iOS export. Signed app and installed-phone rendering remain pending; TestFlight stays held.",
+      "repairCommit": "f047a5f577126502767e88cdf6d491c467914fcc",
       "sourceFiles": [
-        "docs/releases/corocoro-cover-source-evidence-20261016.json"
+        "components/CorocoroIssueCover.tsx",
+        "lib/corocoroSuppliedCovers.ts",
+        "lib/magazineSetCoverAssets.ts",
+        "lib/magazineSetCovers.ts",
+        "assets/magazine-covers/2023-11-corocoro-regular.jpg",
+        "catalogue/rights-reviews/corocoro-november-2023-owner-directed.2026-10-18.json"
       ],
-      "checks": []
+      "checks": [
+        "scripts/test-corocoro-mobile-delivery.ts",
+        "scripts/test-corocoro-screen-runtime.ts",
+        "scripts/test-magazine-set-covers.ts",
+        "scripts/test-magazine-set-cover-pack.mjs",
+        "docs/releases/remaining-repairs-verification-20261018.json"
+      ],
+      "confirmedCauseOrSourceGap": "Exact regular issue and direct owner source permission verified. The released publisher original is now bundled for the existing monthly:2023-11 record; no combined-edition or card association inferred.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
     },
     {
       "id": "V17",
@@ -372,7 +608,17 @@
         "scripts/test-pokedex-loading.ts",
         "Bounded current API:2facts pages,42distinctprintings,nullfinalcursor; exact current-module replay16/incomplete to42/complete",
         "docs/releases/gateway-live-delivery-20261018.json (bounded public read; not phone acceptance)"
-      ]
+      ],
+      "confirmedCauseOrSourceGap": "Current first canonical page returns16cards WITH a continuation cursor; the next page completes42distinct printings across4published language versions. Current-module replay correctly emits16 incomplete then42 complete, so this sample does not demonstrate a pagination source defect or establish the historical installed-build cause.",
+      "currentDelivery": {
+        "implemented": false,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
     },
     {
       "id": "V18",
@@ -392,7 +638,17 @@
       ],
       "checks": [
         "scripts/test-pokedex-account-boundary.ts"
-      ]
+      ],
+      "confirmedCauseOrSourceGap": "Ownership remains an independent account-scoped request. No source cause specific to the recorded ownership delay is established.",
+      "currentDelivery": {
+        "implemented": false,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
     },
     {
       "id": "V19",
@@ -410,7 +666,28 @@
       "sourceFiles": [],
       "checks": [
         "docs/releases/gateway-live-delivery-20261018.json (bounded public read; not phone acceptance)"
-      ]
+      ],
+      "confirmedCauseOrSourceGap": "A complete manifest for the first16current Wartortle printings provides14eligiblepresentationcandidates; two selected thumbnails decode and match hashes. JAweb1#024 is acquisition-required with no returned scoped asset; ENbase1#42normal points to first-edition artwork rejected by the edition guard. These gaps are distinct from historical transport delay.",
+      "currentDelivery": {
+        "implemented": false,
+        "tested": true,
+        "independentlyReviewed": false,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "warmArtworkReassignmentRepair": {
+        "sourceRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "unsignedIosVerified": true,
+        "merged": false,
+        "nativePublished": false,
+        "phoneVerified": false,
+        "scope": "Fresh positive exact reassignment invalidates stale cached artwork; does not supply missing source images or identify the video printing."
+      }
     },
     {
       "id": "V20",
@@ -430,7 +707,17 @@
       ],
       "checks": [
         "scripts/test-pokedex-partial-results.ts"
-      ]
+      ],
+      "confirmedCauseOrSourceGap": "Canonical fallback dropped the existing progress.error field. Retained cards now preserve the canonical error so existing Retry appears; success clears it.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
     },
     {
       "id": "V21",
@@ -453,7 +740,17 @@
         "scripts/test-search-settlement-runtime.ts",
         "Fresh configured API search:100all-language and16Japanese Pikachu factualcards HTTP200; no embedded variant images",
         "docs/releases/gateway-live-delivery-20261018.json (bounded public read; not phone acceptance)"
-      ]
+      ],
+      "confirmedCauseOrSourceGap": "Independent search groups and factual-card failures remain separate. Current-query retries and settled/superseded callback guards have regression coverage; the live recorded request cause is not proved.",
+      "currentDelivery": {
+        "implemented": false,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
     },
     {
       "id": "V22",
@@ -474,7 +771,17 @@
       "checks": [
         "scripts/test-search-recovery.ts",
         "scripts/test-search-settlement-runtime.ts"
-      ]
+      ],
+      "confirmedCauseOrSourceGap": "Retained cards retained initial-load failure wording. Recovery now preserves refresh-versus-load wording without clearing errors before current factual success.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
     },
     {
       "id": "V23",
@@ -502,7 +809,30 @@
         "Unsigned production iOS export with four exact assets PASS",
         "Historical pre-deployment 95-printing batch503 retained. Later bounded public point returned105assets/557ms; no sustained or phone/p95 claim.",
         "docs/releases/gateway-live-delivery-20261018.json (bounded public read; not phone acceptance)"
-      ]
+      ],
+      "confirmedCauseOrSourceGap": "Confirmed pre-repair source image fan-out: 100 cards triggered 100 singleton manifest requests under the existing two-second optional deadline. Before the gateway deployment, the same 95-printing batch returned 503 downstream_circuit_open; its preceding trigger remains unknown. After the reviewed batch/circuit repairs, one bounded public sample returned 105 assets in 557ms. Historical listing-media cause, installed path and sustained reliability remain unconfirmed.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false,
+        "gatewayDeployed": true,
+        "publicBatchVerified": true
+      },
+      "warmArtworkReassignmentRepair": {
+        "sourceRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "unsignedIosVerified": true,
+        "merged": false,
+        "nativePublished": false,
+        "phoneVerified": false,
+        "scope": "Fresh positive exact reassignment invalidates stale cached artwork; does not supply missing source images or identify the video printing."
+      }
     }
   ],
   "additionalAcceptance": [
@@ -1140,17 +1470,90 @@
     "permanentDeletion": false
   },
   "currentHostedSourceChecks": {
-    "sourceHead": "9b75d6357259c8f8159b5fc3967d0e03a10a11a7",
+    "sourceHead": "bfeac49e05c596301e8bb4727665216066625a44",
     "success": 10,
+    "failed": 0,
+    "pending": 0,
     "skipped": 2,
     "skippedNames": [
       "canary-api-evidence",
       "release-candidate-gate"
     ],
     "evidence": {
-      "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-9b75d63.json",
-      "sha256": "c6ad9110f7f6bab48542912e2385b5c23269ca5fbc3ef35147d69b6921a398a4"
+      "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-bfeac49.json",
+      "sha256": "18e3d94a19aba0e790b0ddcb54eaa7b3abddae93029a012e98bc53b15ed5397d"
     },
+    "runtimeSource": "d0cf371080936ff538e86ac8883fed6af4d1200e",
     "runtimeUnchangedByLaterDocumentation": true
+  },
+  "videoRegisterSynchronization": {
+    "recordedAt": "2026-10-18T20:30:22.209Z",
+    "source": "docs/releases/video-repair-register-20261018.json",
+    "sourceSha256": "be83457a48939e3bedc5d86ea1f27bc300669e4f82aa86cc48c85a1a11d76733",
+    "issues": 23,
+    "phoneClosedIssues": 0,
+    "scope": "Current per-issue source/delivery states synchronized from the maintained register; original planned requirements and closure criteria retained. Historical revisions remain in Git."
+  },
+  "nativeInitializingCheckoutCurrentState": {
+    "source": "D:/Stackr-native-aaae6ac-20260910",
+    "files": 242,
+    "bytes": 106910711,
+    "directories": 47,
+    "payloadComparison": {
+      "privatePath": "evidence/consolidation-20261018/native-aaae6ac-initialization-assessment/current-existing-payload-comparison-reconciled-v2.json",
+      "sha256": "3c45fb7aebe2a096010b9262500099d4fc1927c1715eb522aa5d58417daf5eb6"
+    },
+    "directoryRestoration": {
+      "privatePath": "evidence/consolidation-20261018/native-aaae6ac-initialization-assessment/directory-restoration-verification-v1.json",
+      "sha256": "8cb0b35ecf05cb60b9ffe77d15f9e2121ad703f7af77ddd727798f7b41719cd6"
+    },
+    "initializationStateRetained": true,
+    "absentIndexRetained": true,
+    "lockedMoveFixture": {
+      "privatePath": "active-runtime/repair-consolidation-20261018/native-locked-move-fixture-v1/result.json",
+      "sha256": "0adbd8aa6d84b7a09817b01781e9e71665657cebb7f9471913ae6b0019ff4b53",
+      "actualRealSourceMoved": false
+    },
+    "moveReady": false
+  },
+  "currentPricingWorkerReadOnlyObservation": {
+    "privatePath": "evidence/consolidation-20261018/pricing-worker-observation-20261018-2031.json",
+    "sha256": "4a3a3522927d0b1b7505acb2776fb29ef016af2200595d9e910a6ebd8c8ac374",
+    "scope": "Two existing production workers,30runtime-log entries each,14:00–20:31UTC; no database scripts, job triggers/restarts or price refreshes",
+    "catalogueProgress": {
+      "reportedAt": "2026-10-18T20:29:46.715223278Z",
+      "setsClaimed": 100,
+      "complete": 84,
+      "unmapped": 15,
+      "deferred": 1,
+      "cards": 12404,
+      "priced": 8844,
+      "status": "running",
+      "datasetAt": "2026-10-18T20:05:40+0000"
+    },
+    "cardmarketProgress": {
+      "reportedAt": "2026-10-18T20:21:22.646662673Z",
+      "reviewedMappings": 9234,
+      "stored": 0,
+      "repairs": 86,
+      "complete": true,
+      "quoteScope": "printing_level_blended",
+      "fullCatalogueCurrent": false
+    },
+    "interpretation": "Reported run progress does not establish new writes, complete catalogue coverage, exact owned-card or finish-specific quotes, or closure of V02/V08/V13. Earlier statement timeout is still present in the bounded window; its cause remains unconfirmed.",
+    "phoneAccepted": false
+  },
+  "currentJungleStagingReadExecution": {
+    "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/staging-binding-execution-20261018/execution-summary.json",
+    "sha256": "9d4d34318357636aa1d4a333570fdb65aeea8674ffcdb2d3d2d3086453910950",
+    "remoteSqlCalls": 5,
+    "successfulSqlCalls": 5,
+    "remoteWrites": 0,
+    "decision": "HOLD",
+    "matchingNondeletedObjects": 2,
+    "activeFirstEditionCandidateFound": false,
+    "stagingBindingSelected": false,
+    "next": "Prepare an exact separately reviewed staging rollback rehearsal; remote rehearsal and production association change remain unapproved.",
+    "testFlightHeld": true
   }
 }

@@ -1,6 +1,6 @@
 {
-  "recordedAt": "2026-10-18T19:33:41.648Z",
-  "state": "REVIEWED_READ_ONLY_PROPOSAL_OWNER_AUTHORIZATION_PENDING",
+  "recordedAt": "2026-10-18T20:39:04.753Z",
+  "state": "APPROVED_FIVE_READS_COMPLETED_STAGING_PARITY_HOLD",
   "target": {
     "id": "lmwfhvexfcoyeuoyrlco",
     "name": "Stackr me5 staging",
@@ -16,8 +16,8 @@
   "idleSeconds": 15,
   "collectorOrPriceRows": false,
   "writes": false,
-  "executionApproved": false,
-  "executed": false,
+  "executionApproved": true,
+  "executed": true,
   "independentReview": {
     "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/jungle-staging-binding-read-review-v1.json",
     "sha256": "344d27eaf97cbd7ae630122050fb2401c053c7300fb723b939198fe8e6ef9d50"
@@ -26,5 +26,33 @@
     "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/staging-binding-preparation/read-only-execution-plan.json",
     "sha256": "b56aee61cfd9e865641b1848be2d7f72b1667ed27bad7d3cee73f5f24c1a5937"
   },
-  "testFlightHeld": true
+  "testFlightHeld": true,
+  "historicalPreparedState": "REVIEWED_READ_ONLY_PROPOSAL_OWNER_AUTHORIZATION_PENDING",
+  "remoteSqlCalls": 5,
+  "successfulSqlCalls": 5,
+  "executionEvidence": {
+    "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/staging-binding-execution-20261018/execution-summary.json",
+    "sha256": "9d4d34318357636aa1d4a333570fdb65aeea8674ffcdb2d3d2d3086453910950"
+  },
+  "actualContext": {
+    "transactionReadOnly": "on",
+    "statementTimeout": "5s",
+    "serverVersion": "17.6"
+  },
+  "discovery": {
+    "decision": "HOLD",
+    "holdReasons": [
+      "HOLD_ASSET_MISSING_MULTIPLE_OR_OVERFLOW",
+      "HOLD_VARIANT_MISSING_MULTIPLE_OR_OVERFLOW",
+      "HOLD_VARIANT_IDENTITY_OR_EDITION_DIFFERS",
+      "HOLD_EXISTING_ALIAS_OR_ASSET_BINDING_DIFFERS",
+      "HOLD_EXACT_PUBLISHED_MEMBERSHIP_MISSING"
+    ],
+    "stagingBinding": null,
+    "matchingNondeletedObjects": 2,
+    "activeCandidateVariants": 1,
+    "activeFirstEditionCandidateFound": false,
+    "beforeRowsSha256": "696d6eeb94ee1606509a7ac4aa7824db30c4e89a6a9475de2b3b3fbf22af3348"
+  },
+  "additionalSqlOrWriteAuthority": false
 }
