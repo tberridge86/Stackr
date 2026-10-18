@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "preparedAt": "2026-10-18T17:08:35.660Z",
-  "approval": "requested; awaiting direct human answer",
+  "approval": "Direct human native approval received; execution subsequently held for owner completion audit of both plans.",
   "frozenSource": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
   "profile": "production",
   "channel": "production",
@@ -43,7 +43,7 @@
   "remoteAutoIncrement": true,
   "fullFreshNativeDeliveryGatePassed": false,
   "remainingBeforeAnyBuild": [
-    "Matching explicit native approval",
+    "Resolve the later owner condition: review both plans against their listed work and retain unmet source, data and consolidation requirements explicitly. Native execution remains held.",
     "Fresh existing full native delivery gate, including anonymous publishable-key activity schema checks at limit0; no collector rows or SQL writes",
     "Exactly one build request with source/profile/channel/runtime/number readback"
   ],
@@ -127,7 +127,24 @@
     {
       "relativePath": "evidence/consolidation-20261018/native-release-20261018/native-approval-question.json",
       "sha256": "7d68812d0e35339223675af78ae920c904258af4745939cdf9c1b97607dd961c"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/native-release-20261018/approval.received.json",
+      "sha256": "ea729e9dbfefa9750ccbafde2714eb3247de169ca33596cb69e49a986dc1a0fe"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/native-release-20261018/owner-query-hold.json",
+      "sha256": "59d4b4a5ed3c80f7aeb6bff7d1b857ada93127151de89f89ec3239c02b73ce34"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/completion-audit-20261018/owner-clarification.json",
+      "sha256": "4c6fc8008d1286955a212dc0bf59019a30527f9e2968c7f3b71cb5de305514b8"
     }
   ],
-  "primaryMigrationHold": "Existing cached EAS CLI still resides under D:/Stackr-1; retain it and the original primary until native delivery or separately tested runtime relocation and all remaining dependency repairs."
+  "primaryMigrationHold": "Existing cached EAS CLI still resides under D:/Stackr-1; retain it and the original primary until native delivery or separately tested runtime relocation and all remaining dependency repairs.",
+  "approvalAtPreparation": "requested; awaiting direct human answer",
+  "currentStateObservedAt": "2026-10-18T17:30:03.093Z",
+  "executionState": "HELD_PENDING_COMPLETION_REVIEW_AND_UNSATISFIED_REQUIREMENTS",
+  "newApprovalReceived": true,
+  "ownerCompletionAudit": "docs/releases/both-plans-completion-audit-20261018.md"
 }

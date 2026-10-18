@@ -25,12 +25,12 @@
     "lastPassStartedAt": "2026-10-11T08:12:47Z",
     "currentWork": {
       "owner": "root",
-      "status": "merged_gateway_live_native_publication_and_phone_acceptance_open",
+      "status": "completion_audited_both_plans_incomplete_native_execution_held",
       "runtimeRevision": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
       "report": "docs/releases/repair-consolidation-20261018.md",
       "issueRegister": "docs/releases/video-repair-register-20261018.json",
       "independentReview": "PASS source, live gateway/public bounded evidence and37folderproof; final coordination-state finding corrected. No phone acceptance.",
-      "nextAction": "Await the specific native build/internal TestFlight reply. If approved, run full fresh delivery gates and one guarded normal-production build; verify actual signed73assets and fresh delivery before exact-ID submission. Continue remaining source/data/phone gates; migrate original primary last.",
+      "nextAction": "Both-plan completion audit confirms unmet work. Continue permitted card/binder retrieval and exact artwork/source repairs, then supported valuation/history; continue dependency-aware preservation and consolidation, with original primary last. Keep native execution held and retain the existing grant. Do not treat this audit as new SQL, price refresh, job, catalogue mutation or deletion authority.",
       "schedulerCreated": false,
       "pullRequest": "https://github.com/tberridge86/Stackr/pull/409",
       "mergedMainRevision": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
@@ -51,8 +51,17 @@
         "profile": "production",
         "localIdentityVerified": true,
         "promisedSignedAssets": 73,
-        "nativeApproval": "requested_pending_human_answer",
+        "nativeApproval": "received_execution_held_for_later_owner_completion_review",
         "realBuildStarted": false
+      },
+      "completionAudit": "docs/releases/both-plans-completion-audit-20261018.md",
+      "bothPlansSatisfiedInFull": false,
+      "originalFolderCoverage": {
+        "total": 60,
+        "relocated": 37,
+        "retained": 21,
+        "organizationDestination": 1,
+        "unresolvedAbsent": 1
       }
     },
     "lastObservedPullRequest": {
@@ -116,7 +125,7 @@
       "id": "VIDEO-REPAIR-CONSOLIDATION-20261018",
       "severity": "P1",
       "owner": "Tif / root",
-      "status": "merged_gateway_live_native_publication_and_phone_acceptance_open",
+      "status": "completion_audited_both_plans_incomplete_native_execution_held",
       "summary": "Implement both owner plans: all 23 video issues and one clean independent D:/Stackr integration branch with lossless preservation before old-folder cleanup.",
       "evidence": "docs/releases/repair-consolidation-20261018.md",
       "issueRegister": "docs/releases/video-repair-register-20261018.json",
@@ -137,7 +146,7 @@
       "closedVideoIssues": 0,
       "liveDeployment": true,
       "deviceVerified": false,
-      "nextAction": "Await the specific native build/internal TestFlight reply. If approved, run full fresh delivery gates and one guarded normal-production build; verify actual signed73assets and fresh delivery before exact-ID submission. Continue remaining source/data/phone gates; migrate original primary last.",
+      "nextAction": "Both-plan completion audit confirms unmet work. Continue permitted card/binder retrieval and exact artwork/source repairs, then supported valuation/history; continue dependency-aware preservation and consolidation, with original primary last. Keep native execution held and retain the existing grant. Do not treat this audit as new SQL, price refresh, job, catalogue mutation or deletion authority.",
       "pullRequest": "https://github.com/tberridge86/Stackr/pull/409",
       "liveReadDiagnostics": "docs/releases/live-read-diagnostics-20261018.json",
       "preservationSummary": "docs/releases/workspace-preservation-20261018.json",
@@ -159,8 +168,17 @@
         "profile": "production",
         "localIdentityVerified": true,
         "promisedSignedAssets": 73,
-        "nativeApproval": "requested_pending_human_answer",
+        "nativeApproval": "received_execution_held_for_later_owner_completion_review",
         "realBuildStarted": false
+      },
+      "completionAudit": "docs/releases/both-plans-completion-audit-20261018.md",
+      "bothPlansSatisfiedInFull": false,
+      "originalFolderCoverage": {
+        "total": 60,
+        "relocated": 37,
+        "retained": 21,
+        "organizationDestination": 1,
+        "unresolvedAbsent": 1
       }
     },
     {
@@ -2836,7 +2854,7 @@
   ],
   "currentWork": {
     "owner": "Tif / root",
-    "status": "merged_gateway_live_native_publication_and_phone_acceptance_open",
+    "status": "completion_audited_both_plans_incomplete_native_execution_held",
     "workingDirectory": "D:/Stackr",
     "branch": "codex/stackr-repair-consolidation-20261018",
     "runtimeRevision": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
@@ -2845,11 +2863,11 @@
     "preservationSummary": "docs/releases/workspace-preservation-20261018.json",
     "archivedCodingFolders": 25,
     "closedVideoIssues": 0,
-    "liveSqlApproval": "Two exact diagnostic scripts completed; exact supplied M6 artwork has separate standing authority. Gateway-only grant used for PR409/run39147311549. No new SQL, pricing, jobs, native publication or deletion authority.",
+    "liveSqlApproval": "Both approved diagnostic scripts completed. Exact supplied M6 artwork and gateway grant already executed. A separate native grant was subsequently received, then held for the owner completion audit. No arbitrary new SQL, price refresh, job restart, credential change or deletion authority.",
     "liveDeployment": true,
     "newNativeBuildCreated": false,
     "deviceVerified": false,
-    "nextAction": "Await the specific native build/internal TestFlight reply. If approved, run full fresh delivery gates and one guarded normal-production build; verify actual signed73assets and fresh delivery before exact-ID submission. Continue remaining source/data/phone gates; migrate original primary last.",
+    "nextAction": "Both-plan completion audit confirms unmet work. Continue permitted card/binder retrieval and exact artwork/source repairs, then supported valuation/history; continue dependency-aware preservation and consolidation, with original primary last. Keep native execution held and retain the existing grant. Do not treat this audit as new SQL, price refresh, job, catalogue mutation or deletion authority.",
     "productionDiagnostics": "docs/releases/production-diagnostics-20261018.json",
     "additionalRuntimeRevision": "66156ca9893e8767a4e594173f63accae015354e",
     "stormPublication": "docs/releases/storm-m6-publication-20261018.json",
@@ -2876,8 +2894,17 @@
       "profile": "production",
       "localIdentityVerified": true,
       "promisedSignedAssets": 73,
-      "nativeApproval": "requested_pending_human_answer",
+      "nativeApproval": "received_execution_held_for_later_owner_completion_review",
       "realBuildStarted": false
+    },
+    "completionAudit": "docs/releases/both-plans-completion-audit-20261018.md",
+    "bothPlansSatisfiedInFull": false,
+    "originalFolderCoverage": {
+      "total": 60,
+      "relocated": 37,
+      "retained": 21,
+      "organizationDestination": 1,
+      "unresolvedAbsent": 1
     }
   },
   "completionGoal": {

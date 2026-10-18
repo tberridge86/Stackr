@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-18T17:07:29.211Z",
+  "observedAt": "2026-10-18T17:36:00.110Z",
   "canonicalRepository": "D:/Stackr",
   "branch": "codex/stackr-repair-consolidation-20261018",
   "privateEvidenceRoot": "D:/Stackr-organization",
@@ -49,7 +49,8 @@
     "relocatedFiles": 578,
     "relocatedBytes": 1106823876,
     "independentCopyAndRestoreVerified": true,
-    "publicationAndPhoneAcceptance": "Pending; preservation does not establish delivery"
+    "publicationAndPhoneAcceptance": "Preservation is not delivery. Exact M6 logo has a separate API-verified publication receipt; remaining promised assets and signed/phone evidence retain their separate gates.",
+    "inverseMoveRehearsal": "Not recorded for these three source-artwork roots; independent copy/restoration, moved-and-verified receipt and rollback instructions are retained."
   },
   "separateEvidenceFolders": {
     "folders": 2,
@@ -85,7 +86,8 @@
     "Preserve/classify remaining ignored and large source/evidence material",
     "Migrate dependency targets, nested repositories and original primary last",
     "Owner-approved exact deletion list before permanent reclamation",
-    "Resolve live reads and deliver/replay the confirmed iPhone build"
+    "Resolve live reads and deliver/replay the confirmed iPhone build",
+    "Resolve the absent original D:/CodexLogoWork location; do not infer deletion or loss from absence or claim all original folders consolidated"
   ],
   "privateReceiptDigests": [
     {
@@ -271,6 +273,18 @@
     {
       "relativePath": "active-runtime/repair-consolidation-20261018/fallback-move-guard-fixture/result.json",
       "sha256": "afe2196480eb2986aa1c9058cf77bb8d15058a0646bb9b6516956672363bf55d"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/completion-audit-20261018/original-folder-coverage.json",
+      "sha256": "0fbcb5ac47e2e151a55cc4e8cc02904796b04d97649de20b28ef3d585c599a11"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/completion-audit-20261018/map-reconciliation.json",
+      "sha256": "1191fe3fd594c6b54740540ea9fa6d598e726102cae8e68d2d5baba5991f7f18"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/completion-audit-20261018/independent-review.json",
+      "sha256": "714099dd3456675f74e4ae5e8df9427349e4a71d15ad76985db1743667499d52"
     }
   ],
   "scope": "Sanitized receipt summary. File-copy counts overlap between checkouts and cohorts; do not add them as unique files or claim complete whole-drive backup.",
@@ -340,5 +354,16 @@
     "inverseMoveVerified": true,
     "consumerCheck": "No direct non-PowerShell command line or documented8098/4174/4181 listener before each leg; cwd/environments uninspected.",
     "packagedPreviewAssetsPreserved": true
-  }
+  },
+  "originalNamedRoots": {
+    "total": 60,
+    "currentlyMapped": 60,
+    "relocatedWithRecordedProof": 37,
+    "retainedOldRoots": 21,
+    "organizationDestination": 1,
+    "unresolvedAbsentOriginals": 1,
+    "unresolvedPath": "D:/CodexLogoWork",
+    "consolidationComplete": false
+  },
+  "completionAudit": "docs/releases/both-plans-completion-audit-20261018.md"
 }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-18T17:07:29.211Z",
+  "updatedAt": "2026-10-18T17:36:00.110Z",
   "sourceVideo": {
     "fileName": "WhatsApp Video 2026-10-18 at 09.12.30.mp4",
     "sha256": "a29ad89ce8cec90b3dfa299c5a951ff4b60d686187f5a27c03a4e6175d1e859c",
@@ -434,7 +434,7 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Signed/native delivery, API artwork availability and actual Discover/binder rendering pending."
+      "remainingBlocker": "Three supplied pack-art fallbacks are implemented and correctly typed; this does not prove all affected Traditional Chinese set logos are replaced. Reconcile the exact affected sets and accepted assets, then verify configured API, signed native bytes and Discover/binder rendering."
     },
     {
       "id": "V16",
@@ -637,7 +637,7 @@
       "resolution": "Separate exact card artwork from listing-media mapping and transport/decode failures.",
       "closureCriterion": "Available thumbnails render without blocking facts; real gaps explicit.",
       "state": "gateway_deployed_public_batch_verified_native_and_listing_media_open",
-      "cause": "Confirmed current source image fan-out:100 cards triggered100 singleton manifest requests. This reduces optional image progress under the existing2-second deadline. The historical listing placeholder and exact installed path are unconfirmed. A current95-printing batch is rejected503 downstream_circuit_open; its preceding trigger is unknown.",
+      "cause": "Confirmed pre-repair source image fan-out: 100 cards triggered 100 singleton manifest requests under the existing two-second optional deadline. Before the gateway deployment, the same 95-printing batch returned 503 downstream_circuit_open; its preceding trigger remains unknown. After the reviewed batch/circuit repairs, one bounded public sample returned 105 assets in 557ms. Historical listing-media cause, installed path and sustained reliability remain unconfirmed.",
       "sourceFiles": [
         "lib/stackrDomainAdapter.ts",
         "scripts/test-search-artwork-batching.ts",
@@ -650,7 +650,7 @@
         "Root typecheck/lint and six recovery scripts PASS",
         "Independent source review PASS",
         "Unsigned production iOS export with four exact assets PASS",
-        "Current public95-printing batch503 recorded; live latency NOT verified",
+        "Historical pre-deployment 95-printing batch503 retained. Later bounded public point returned105assets/557ms; no sustained or phone/p95 claim.",
         "docs/releases/gateway-live-delivery-20261018.json (bounded public read; not phone acceptance)"
       ],
       "delivery": {
@@ -719,7 +719,16 @@
     "mobileReleaseArtifactFilesVerified": 3607,
     "totalOriginalFoldersReversiblyRelocated": 37,
     "historicalFallbackFoldersRelocated": 1,
-    "historicalFallbackFilesPreserved": 3134
+    "historicalFallbackFilesPreserved": 3134,
+    "originalNamedRoots": {
+      "total": 60,
+      "relocated": 37,
+      "retained": 21,
+      "organizationDestination": 1,
+      "unresolvedAbsent": 1,
+      "locationGap": "D:/CodexLogoWork",
+      "wholePlanComplete": false
+    }
   },
   "limits": [
     "Phone build, API trace and full device timing not established by video",
@@ -753,8 +762,8 @@
     },
     "sourceSecretScan": {
       "passed": true,
-      "repositoryTextFiles": 3703,
-      "scope": "Final source/evidence scan after search batching, gateway repair and release-plan documentation"
+      "repositoryTextFiles": 3708,
+      "scope": "Current working source/evidence including both-plan completion audit; npm run ci:secret-scan passed. No runtime edits in this audit."
     },
     "localIosExport": "passed_exact_four_exported_assets_verified",
     "nativeSigned": false,
@@ -810,10 +819,19 @@
           "url": "https://github.com/tberridge86/Stackr/actions/runs/39146845332"
         }
       ],
-      "readyForGuardedGatewayDispatch": true,
+      "readyForGuardedGatewayDispatch": false,
       "failed": [],
       "sourceTreeSameAsReviewedHead": true,
-      "deployed": false
+      "deployed": true,
+      "deploymentStateAtCiCapture": false,
+      "readyForGuardedGatewayDispatchAtCiCapture": true,
+      "deploymentEvidence": "docs/releases/gateway-live-delivery-20261018.json",
+      "currentDeploymentStateRecordedAt": "2026-10-18T17:36:00.110Z"
+    },
+    "historicalSourceSecretScanBeforeCompletionAudit": {
+      "passed": true,
+      "repositoryTextFiles": 3703,
+      "scope": "Final source/evidence scan after search batching, gateway repair and release-plan documentation"
     }
   },
   "pullRequest": "https://github.com/tberridge86/Stackr/pull/409",
@@ -888,5 +906,6 @@
     "completed": true,
     "appNativePublication": false
   },
-  "phoneClosedIssues": 0
+  "phoneClosedIssues": 0,
+  "completionAudit": "docs/releases/both-plans-completion-audit-20261018.md"
 }
