@@ -14,7 +14,7 @@
     "phoneClosedIssues": 0,
     "relevantSourceRepairEntriesMerged": 15,
     "videoIssues": 23,
-    "rootsReversiblyRelocated": 37,
+    "rootsReversiblyRelocated": 38,
     "permanentDeletionPerformed": false,
     "reclaimedBytes": 0
   },
@@ -614,10 +614,14 @@
     {
       "id": "W06",
       "requirement": "Account for every folder in the original owner list",
-      "state": "all60_mapped_one_location_unresolved",
-      "satisfiedInFull": false,
-      "remaining": "The exact 60 original paths are now mapped: 38 verified relocations, 20 retained old roots, one organization destination and one absent unresolved original, D:/CodexLogoWork. Six missing map rows were corrected with before copies retained. Mapping does not close the unresolved location or consolidation.",
-      "owner": "Tif"
+      "state": "all60_accounted_one_owner_excluded_unrelated",
+      "satisfiedInFull": true,
+      "remaining": "Folder accounting is complete: 38 verified relocations, 20 retained old roots, one organization destination and one owner-excluded unrelated folder, D:/CodexLogoWork. Stackr-relevant denominator is 59; consolidation of retained work remains incomplete.",
+      "owner": "Tif",
+      "evidence": {
+        "privatePath": "evidence/consolidation-20261018/owner-scope-correction-codexlogowork/owner-scope-reply.json",
+        "sha256": "454b9490c612e2f26a68f9032182d26d87f74a288d4a4bb2bfc205301b6ea4d9"
+      }
     },
     {
       "id": "W07",
@@ -654,9 +658,9 @@
     {
       "id": "W11",
       "requirement": "Maintain a clear current map and restart record",
-      "state": "current_state_corrected_unresolved_locations_explicit",
+      "state": "current_map_accounts_for_owner_scope_correction",
       "satisfiedInFull": true,
-      "remaining": "Current map includes all 60 original paths and the unresolved location explicitly. Handoff records distinguish approval received from execution held and preserve historical observations. Archived-worktree restoration tools remain available.",
+      "remaining": "Current map accounts for all 60 listed paths, including the owner-excluded unrelated folder. Earlier unresolved-location evidence remains historical; no deleted or preserved contents are inferred.",
       "owner": "Tif"
     }
   ],
@@ -820,12 +824,14 @@
     "relocatedWithRecordedProof": 38,
     "retainedDependencyDataOrUnfinishedWork": 20,
     "existingOrganizationDestination": 1,
-    "unmappedUnresolvedOriginal": 1,
+    "unmappedUnresolvedOriginal": 0,
     "originalMapRowsPresent": 54,
     "originalMapRowsMissing": 6,
     "namedOriginalPathsStillPresentIncludingOrganizationDestination": 21,
     "namedOldRootsStillPresentExcludingOrganizationDestination": 20,
-    "originalPathsAbsent": 39
+    "originalPathsAbsent": 39,
+    "ownerExcludedUnrelated": 1,
+    "stackrRelevantOriginalPaths": 59
   },
   "originalNamedPaths": 60,
   "remainingOriginalRoots": [
@@ -1069,24 +1075,20 @@
       "nextAction": "Resolve the documented hold, preserve the required cohort and verify restoration before any relocation. Add the missing current-map row before claiming map completion."
     }
   ],
-  "unresolvedOriginals": [
-    {
-      "original": "D:/CodexLogoWork",
-      "originalMetadata": {
-        "exists": false,
-        "errorCode": "ENOENT"
-      },
-      "nextAction": "Locate a historical move/preservation receipt or exact replacement path for this named original; reconcile it before any completion or deletion claim. Absence alone is not evidence of loss or safe disposal."
-    }
-  ],
+  "unresolvedOriginals": [],
   "mapCorrection": {
     "privatePath": "evidence/consolidation-20261018/completion-audit-20261018/map-reconciliation.json",
     "sha256": "1191fe3fd594c6b54740540ea9fa6d598e726102cae8e68d2d5baba5991f7f18",
     "currentlyMappedOriginalPaths": 60,
-    "unresolvedLocations": 1
+    "unresolvedLocations": 0,
+    "ownerExcludedUnrelated": 1,
+    "ownerScopeCorrection": {
+      "privatePath": "evidence/consolidation-20261018/owner-scope-correction-codexlogowork/owner-scope-reply.json",
+      "sha256": "454b9490c612e2f26a68f9032182d26d87f74a288d4a4bb2bfc205301b6ea4d9"
+    }
   },
   "continuation": {
-    "recordedAt": "2026-10-18T18:38:57.998Z",
+    "recordedAt": "2026-10-18T19:07:19.457Z",
     "source": "b379c5c48b4cdbe9f169c739467e362be93f3a0e",
     "homeSourceRepair": "d0f9e74aa099a4805383d1fabb4b5e6f91e59cdb",
     "regularNovemberCover": "f047a5f577126502767e88cdf6d491c467914fcc",
@@ -1096,6 +1098,31 @@
     "phoneClosedIssues": 0,
     "moreRecentSourceEvidence": "docs/releases/remaining-repairs-verification-20261018.json",
     "workspaceEvidence": "docs/releases/workspace-preservation-20261018.json",
-    "historicalSnapshotRetained": "Original source/evidence observations remain the earlier audit; current issue stages use video-repair-register-20261018.json."
-  }
+    "historicalSnapshotRetained": "Original source/evidence observations remain the earlier audit; current issue stages use video-repair-register-20261018.json.",
+    "ownerScopeCorrection": {
+      "privatePath": "evidence/consolidation-20261018/owner-scope-correction-codexlogowork/owner-scope-reply.json",
+      "sha256": "454b9490c612e2f26a68f9032182d26d87f74a288d4a4bb2bfc205301b6ea4d9"
+    }
+  },
+  "historicalUnresolvedOriginalsBeforeOwnerCorrection": [
+    {
+      "original": "D:/CodexLogoWork",
+      "originalMetadata": {
+        "exists": false,
+        "errorCode": "ENOENT"
+      },
+      "nextAction": "Locate a historical move/preservation receipt or exact replacement path for this named original; reconcile it before any completion or deletion claim. Absence alone is not evidence of loss or safe disposal."
+    }
+  ],
+  "ownerExcludedOriginals": [
+    {
+      "original": "D:/CodexLogoWork",
+      "classification": "owner_excluded_unrelated",
+      "locationKnown": false,
+      "evidence": {
+        "privatePath": "evidence/consolidation-20261018/owner-scope-correction-codexlogowork/owner-scope-reply.json",
+        "sha256": "454b9490c612e2f26a68f9032182d26d87f74a288d4a4bb2bfc205301b6ea4d9"
+      }
+    }
+  ]
 }

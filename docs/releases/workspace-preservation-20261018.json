@@ -361,9 +361,17 @@
     "relocatedWithRecordedProof": 38,
     "retainedOldRoots": 20,
     "organizationDestination": 1,
-    "unresolvedAbsentOriginals": 1,
-    "unresolvedPath": "D:/CodexLogoWork",
-    "consolidationComplete": false
+    "unresolvedAbsentOriginals": 0,
+    "consolidationComplete": false,
+    "stackrRelevant": 59,
+    "ownerExcludedUnrelated": 1,
+    "excludedPaths": [
+      "D:/CodexLogoWork"
+    ],
+    "ownerScopeCorrection": {
+      "privatePath": "evidence/consolidation-20261018/owner-scope-correction-codexlogowork/owner-scope-reply.json",
+      "sha256": "454b9490c612e2f26a68f9032182d26d87f74a288d4a4bb2bfc205301b6ea4d9"
+    }
   },
   "completionAudit": "docs/releases/both-plans-completion-audit-20261018.md",
   "pricingIdentityContinuation": {
