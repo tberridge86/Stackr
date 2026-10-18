@@ -26,14 +26,14 @@ function extract(file, name, scope) {
 
 // Execute the actual adapter's control flow with a stalled image manifest.
 const manifest = deferred(); let early, calls = 0, settled = false;
-const client = { search: async () => ({ data: { results: [{ type: 'card', card: { cardId: 'ja-printing', language: 'ja' } }] } }) };
+const client = { search: async () => ({ data: { results: [{ type: 'card', card: { cardId: 'ja-printing', language: 'ja' } }] } }),
+  assetManifest: (query) => { calls++; assert.deepEqual(query.printingIds, ['ja-printing']); return manifest.promise; } };
 const search = extract('lib/stackrDomainAdapter.ts', 'searchStackrCards', {
   ...optionalExports,
   stackrApiClient: client, shouldUseStackrApi: () => true, toStackrApiLanguage: x => x,
   UUID_PATTERN: /^[0-9a-f-]{36}$/,
   stackrCardToLegacyCard: (card, assets = []) => ({ ...card, assets }),
   primaryCardImageAsset: () => null, embeddedCardImageAssets: () => [],
-  fetchStackrAssetsForPrinting: () => { calls++; return manifest.promise; },
 });
 const pending = search('SV2a 157', { language: 'ja', onCanonicalResults: rows => { early = rows; } }).then(rows => { settled = true; return rows; });
 await tick(); assert.equal(early[0].cardId, 'ja-printing'); assert.equal(early[0].language, 'ja');
@@ -42,17 +42,17 @@ manifest.reject(new Error('optional image service offline'));
 assert.equal((await pending)[0].cardId, 'ja-printing', 'artwork failure cannot erase matched cards');
 
 let activeManifests = 0;
-const stalledClient = { search: async () => ({ data: { results: Array.from({ length: 20 }, (_, i) => ({ type: 'card', card: { cardId: `card-${i}` } })) } }) };
+const stalledClient = { search: async () => ({ data: { results: Array.from({ length: 20 }, (_, i) => ({ type: 'card', card: { cardId: `card-${i}` } })) } }),
+  assetManifest: (query) => { activeManifests++; assert.equal(query.printingIds.length, 20); return new Promise(() => {}); } };
 const stalledSearch = extract('lib/stackrDomainAdapter.ts', 'searchStackrCards', {
   ...optionalExports, stackrApiClient: stalledClient, shouldUseStackrApi: () => true, toStackrApiLanguage: x => x,
   UUID_PATTERN: /^[0-9a-f-]{36}$/, stackrCardToLegacyCard: card => card,
   primaryCardImageAsset: () => null, embeddedCardImageAssets: () => [],
-  fetchStackrAssetsForPrinting: () => { activeManifests++; return new Promise(() => {}); },
 });
 const boundedStarted = Date.now();
 assert.equal((await stalledSearch('Mew')).length, 20, 'stalled optional artwork cannot erase or indefinitely hold card search matches');
 assert.ok(Date.now() - boundedStarted < 3_000, 'optional images respect the shared two-second deadline');
-assert.equal(activeManifests, 4, 'missing images are fetched in bounded batches, not twenty simultaneous requests');
+assert.equal(activeManifests, 1, 'the visible search page shares one bounded printing-ID manifest request');
 
 const energyRequests = [];
 client.search = async input => { energyRequests.push(input); return { data: { results: [] } }; };

@@ -935,6 +935,13 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   const artworkRequestRef = useRef<AbortController | null>(null);
   const isOwner = Boolean(userId && binder?.user_id === userId);
   const isReadOnly = routeReadOnly || reopenStatus !== null || (Boolean(binder) && (!isOwner || !ownershipReady));
+  const readOnlyMessage = reopenStatus
+    ? 'Saved binder - read only until ownership is checked'
+    : !ownershipReady
+      ? 'Checking ownership - changes are disabled'
+      : userId && binder?.user_id && binder.user_id !== userId
+        ? "Viewing another collector's binder - read only"
+        : 'Read-only binder';
 
   useLayoutEffect(() => { retrievalTraceRef.current?.committedRows(cards); }, [cards]);
   useEffect(() => { if (ownershipReady && !isReadOnly) retrievalTraceRef.current?.editable(); }, [ownershipReady, isReadOnly]);
@@ -1097,6 +1104,12 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       { accountGeneration: accountGenerationRef.current, requestId: loadRequestRef.current },
       { accountGeneration, requestId },
     );
+    const applyArtwork = (enriched: BinderCardRecord[], isEligible = () => true) => {
+      const canApply = () => isEligible() && isCurrentRequest() && !artworkRequest.signal.aborted;
+      if (!canApply()) return;
+      setCards((current) => canApply() ? mergeBinderArtwork(current, enriched) : current);
+      setSelectedCard((current) => current && canApply() ? mergeBinderArtwork([current], enriched)[0] : current);
+    };
 
     if (forceRefresh) {
       retainBinderPreviewDuringRefresh(() => {
@@ -1127,6 +1140,13 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         setOwnershipReady(false);
         setReopenStatus({ savedAt: saved.savedAt, state: refreshState });
         setLoading(false);
+        // Saved facts remain useful even when the live ownership read fails.
+        // Recover only exact artwork, without enabling edits or replacing facts.
+        const applyPreviewArtwork = (enriched: BinderCardRecord[]) => {
+          applyArtwork(enriched, () => previewAllowed && previewState.snapshot === saved);
+        };
+        void attachBinderCatalogueArtwork(saved.cards, artworkRequest.signal, applyPreviewArtwork)
+          .then(applyPreviewArtwork).catch(() => undefined);
       }).catch(() => undefined);
       setShowcaseRows([]);
       setOwnedVariants(new Map());
@@ -1175,16 +1195,11 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       if (!previewState.snapshot) setBinder(binderData);
       setIsPublic(Boolean(binderData?.is_public));
 
-      const [customNameArtKey, binderCards] = await withPersonalDataReadTimeout(() => Promise.all([
-        binderData.type === 'custom'
-          ? getCustomBinderNameArtKeyForBinder(binderData.id, binderData.name)
-          : Promise.resolve(null),
-        measureAsync(
+      const binderCards = await withPersonalDataReadTimeout(() => measureAsync(
           'binder.fetchBinderCards',
           () => fetchBinderCards(binderId, { includePrices: false, includeAssets: false }),
           { binderId }
-        ),
-      ]));
+        ));
       if (!isCurrentRequest()) return;
 
       const snapshotScope = user ? binderReopenScope(user.id) : null;
@@ -1212,7 +1227,14 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       const displayCards = previewState.snapshot ? mergeBinderArtwork(binderCards, previewState.snapshot.cards) : binderCards;
       if (completeOwnerView && snapshotScope) binderReopenCache.save(snapshotScope, binderData, displayCards, reopenLease, savedAt, snapshotOptions);
       setBinder(binderData);
-      setCustomNameArtKey(customNameArtKey);
+      setCustomNameArtKey(null);
+      if (binderData.type === 'custom') {
+        void readOptionalCatalogueEnrichment(
+          () => getCustomBinderNameArtKeyForBinder(binderData.id, binderData.name), artworkRequest.signal,
+        ).then((key) => {
+          if (isCurrentRequest() && !artworkRequest.signal.aborted) setCustomNameArtKey(key);
+        }).catch(() => undefined);
+      }
 
       // Saved rows are already presentation-safe fallbacks. Render them before
       // optional ownership/showcase reads so a later enrichment failure cannot
@@ -1221,11 +1243,6 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       setCards(displayCards);
       setLoading(false);
 
-      const applyArtwork = (enriched: BinderCardRecord[]) => {
-        if (!isCurrentRequest() || artworkRequest.signal.aborted) return;
-        setCards((current) => isCurrentRequest() && !artworkRequest.signal.aborted ? mergeBinderArtwork(current, enriched) : current);
-        setSelectedCard((current) => current && isCurrentRequest() && !artworkRequest.signal.aborted ? mergeBinderArtwork([current], enriched)[0] : current);
-      };
       void attachBinderCatalogueArtwork(binderCards, artworkRequest.signal, applyArtwork).then((enriched) => {
         applyArtwork(enriched);
         if (completeOwnerView && snapshotScope && isCurrentRequest() && !artworkRequest.signal.aborted) {
@@ -3809,7 +3826,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
             }}>
               <Ionicons name="eye-outline" size={17} color={theme.colors.textSoft} />
               <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700', flex: 1 }}>
-                Viewing another collector&apos;s binder - read only
+                {readOnlyMessage}
               </Text>
             </View>
           )}

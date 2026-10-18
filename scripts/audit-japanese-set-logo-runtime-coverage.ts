@@ -77,7 +77,7 @@ function sourceLogos(path: string): { logos: Logo[]; aliases: Record<string, str
 export function auditJapaneseSetLogoRuntimeCoverage(args: { evidencePath?: string; manifestPath?: string; addendumPath?: string; runtimeSourcePath?: string; outputDir: string; expectedTargetSetCount?: number }) {
   const evidencePath = resolve(args.evidencePath ?? '.tmp/canonical-evidence/current-gap-audit-20260903-v3/canonical-catalogue-row-evidence.jsonl');
   const manifestPath = resolve(args.manifestPath ?? 'assets/rev2/11-japanese-set-logo/manifest.json');
-  const addendumPath = resolve(args.addendumPath ?? 'assets/rev2/11-japanese-set-logo/storm-m6-20261017.json');
+  const addendumPath = resolve(args.addendumPath ?? 'assets/rev2/11-japanese-set-logo/storm-m6-owner-supplied-20261018.json');
   const runtimeSourcePath = resolve(args.runtimeSourcePath ?? 'lib/japaneseSetLogos.ts');
   if (!existsSync(evidencePath) || statSync(evidencePath).size > MAX_BYTES) throw new Error('Canonical evidence ledger is missing or too large.');
   const manifest = json(manifestPath, 'Japanese logo manifest');
@@ -87,9 +87,9 @@ export function auditJapaneseSetLogoRuntimeCoverage(args: { evidencePath?: strin
   const addendum = json(addendumPath, 'Storm M6 logo addendum');
   if (addendum.schemaVersion !== 1 || addendum.language !== 'ja' || addendum.setCode !== 'M6'
     || addendum.setId !== '903d5baa-27c7-5690-b1d7-2395c770204a'
-    || addendum.assetPath !== 'assets/rev2/11-japanese-set-logo/logos-owner-approved-20261017/m6.webp'
-    || typeof addendum.sha256 !== 'string' || !/^[a-f0-9]{64}$/.test(addendum.sha256)
-    || typeof addendum.permissionRecord !== 'string' || !/^catalogue\/rights-reviews\/[^/]+\.json$/.test(addendum.permissionRecord)
+    || addendum.assetPath !== 'assets/rev2/11-japanese-set-logo/logos-owner-supplied-20261018/m6.png'
+    || addendum.sha256 !== '383905581374e6a41be583303354be84a34891d52f8b6420ea632ff61a07f7ba'
+    || addendum.permissionRecord !== 'catalogue/rights-reviews/stackr-m6-owner-supplied-set-logo.2026-10-18.json'
     || addendum.existingManifestUnchanged !== true) throw new Error('Storm M6 logo addendum has invalid identity, asset or permission binding.');
   const inventory = [...manifestLogos as Logo[], { key: 'm6', normalizedKey: 'm6', code: 'M6', assetPath: addendum.assetPath }];
   const manifestByKey = new Map(inventory.map((logo) => [logo.normalizedKey, logo]));

@@ -1,0 +1,667 @@
+{
+  "schemaVersion": "stackr-native47-upgrade-continuing-owner-attestation-v1",
+  "recordedAt": "2026-10-10T18:29:25.874Z",
+  "status": "OWNER_ATTESTED",
+  "priorOwnerStatement": "I HAVE PERMISSION - WE HGAVE BEEN AROUND THIS",
+  "priorQuestionContext": "The original concrete permission question named seven official replacement images. Its exact prior record is retained; no original global grant is inferred.",
+  "priorEvidence": [
+    "outputs/set-logo-seven-corrected-2026-10-10/owner-permission-attestation.json",
+    "outputs/set-logo-chinese-enhanced40-publication-2026-10-10/owner-publication-attestation.json",
+    "outputs/set-logo-three-pack-cleanup-2026-10-10/owner-continuation-attestation.json"
+  ],
+  "currentHumanRequest": "go through all 47 and upgrade them and enhance them",
+  "continuationInterpretation": "Continuing owner-attested artwork permission plus this explicit all47 upgrade request supports the exact verified native sources and conventional derivatives below. It does not assert independently audited licensing, a global official-source grant or an unknown card printing/SKU.",
+  "reviewedScope": [
+    {
+      "setId": "ec980234-74f1-4b88-bafa-a8c84ab36d38",
+      "setCode": "S4",
+      "language": "zh-tw",
+      "previousSha256": "70d9f6638102d973573a14ef61b7aa7aeae5768a22589fda1d1fe4ce02d6645a",
+      "changed": true
+    },
+    {
+      "setId": "52d0226c-123a-4b62-bcc4-0433b5afb56f",
+      "setCode": "S8a",
+      "language": "zh-tw",
+      "previousSha256": "9cac76dd6ace59531616908bff11eb2e0078e7852e3035b2663c4d1a7f4f3771",
+      "changed": false
+    },
+    {
+      "setId": "9ebab1ca-0ebf-429c-83ed-9fe6735f9832",
+      "setCode": "SC1a",
+      "language": "zh-tw",
+      "previousSha256": "255d0a60322fdd62c56fb965e6d8108b8efd3041a7e082fc2a186f10b7f53123",
+      "changed": true
+    },
+    {
+      "setId": "205ab185-9052-4965-b9f0-20fe44b7b61f",
+      "setCode": "SC1b",
+      "language": "zh-tw",
+      "previousSha256": "1d521dd8cb1042c0e14ac44b2d68ab68eeb7cdda7d1049993487f4d27ede9896",
+      "changed": true
+    },
+    {
+      "setId": "4b4beb82-d593-4c0b-850f-3197e7dd0ac5",
+      "setCode": "SC1D",
+      "language": "zh-tw",
+      "previousSha256": "b6ada36d7c7fa8b5d0f36563f1e913119a0290409c2630fa9d06cadc974c10b0",
+      "changed": true
+    },
+    {
+      "setId": "8c05228d-e60d-46c6-888b-c13d4b51660d",
+      "setCode": "SC2a",
+      "language": "zh-tw",
+      "previousSha256": "e3272211a26cce1e0bc366e00d23470073144378ac6bcd8bbff3243b6739f06c",
+      "changed": true
+    },
+    {
+      "setId": "f3b1c12f-8002-41e4-b682-9109c6628a71",
+      "setCode": "SC2b",
+      "language": "zh-tw",
+      "previousSha256": "1eec75e1bd209fa4b1fd1085b26dc7f5eb86113e637654519372e7cf06500f35",
+      "changed": true
+    },
+    {
+      "setId": "d14fde0e-c786-41d0-93ef-6dc69cef94d0",
+      "setCode": "SC2D",
+      "language": "zh-tw",
+      "previousSha256": "f371c297719f077cb14d7bc2cfbf7d614bfabfcbbc1cb0f575af6ebdf19adffe",
+      "changed": true
+    },
+    {
+      "setId": "41251d8a-6a1c-4f91-8e84-22e2fe7737fd",
+      "setCode": "SCA",
+      "language": "zh-tw",
+      "previousSha256": "f9d3eac266e81cd3927f6d54d86e0b7a3d67c9e5fabc7fc229a537a35d82757d",
+      "changed": false
+    },
+    {
+      "setId": "5578c7d0-f386-4945-b651-65dd2f3ee2d3",
+      "setCode": "SCB",
+      "language": "zh-tw",
+      "previousSha256": "f0f1650873336472d160985db78afce29fbef1f035bd04b8f669835c0ec6997f",
+      "changed": false
+    },
+    {
+      "setId": "c816b27f-f145-413b-b971-3f7b1542f24c",
+      "setCode": "SCC",
+      "language": "zh-tw",
+      "previousSha256": "ccdfa20c0f990862f39d3063c1534cea76c5004c699c362c89cb2be993d02daa",
+      "changed": false
+    },
+    {
+      "setId": "70184f97-2d37-457a-8ae4-21a4b40d270c",
+      "setCode": "SCD",
+      "language": "zh-tw",
+      "previousSha256": "81cbcf969884a6ef486715c73bfe9dd198f7c137957dfa9a924720310f6219d8",
+      "changed": false
+    },
+    {
+      "setId": "749e4fbd-3eda-46e3-8a89-c6244595e6a2",
+      "setCode": "SI",
+      "language": "zh-tw",
+      "previousSha256": "77a1a71ec6cff117f4fdd87c07e5ad7bdd53ca1292cd0c14158e25abbdbf9e4d",
+      "changed": true
+    },
+    {
+      "setId": "9932f014-e867-49a3-8597-424386f59ba5",
+      "setCode": "SN",
+      "language": "zh-tw",
+      "previousSha256": "cdf664b18c946ef50f3e3b14c18e8de96bb32d9568b34512de9582e8790007ba",
+      "changed": true
+    },
+    {
+      "setId": "25b5a960-6481-497d-86b8-b0845a504501",
+      "setCode": "SV-P",
+      "language": "zh-tw",
+      "previousSha256": "e7e7916d42e7eccf84dd9c894b07dde77c499779ccc95c099c843494219360ae",
+      "changed": false
+    },
+    {
+      "setId": "f3d6f626-76dc-40f6-b20c-f37f76de7a69",
+      "setCode": "SV1a",
+      "language": "zh-tw",
+      "previousSha256": "27b99160a57f5f830deb59b1feb982916d718355d1c6f33e116d12277eadd7b1",
+      "changed": false
+    },
+    {
+      "setId": "8ea4465e-f94f-4cb8-af60-8b7e954400b9",
+      "setCode": "SV2D",
+      "language": "zh-tw",
+      "previousSha256": "e3cbdf00dfc666da3fe911528ebf7fddcd4c344500cecffde6602758135f397d",
+      "changed": true
+    },
+    {
+      "setId": "0dbaa91f-c0c6-497d-8ef0-fc4370c5ed8a",
+      "setCode": "SV3",
+      "language": "zh-tw",
+      "previousSha256": "5e6bc9166ecec4434b4220882816a2734bebbc17cec400dc651263f368a3d887",
+      "changed": true
+    },
+    {
+      "setId": "16b683e4-6270-4625-9fae-b2478a08c659",
+      "setCode": "SV3a",
+      "language": "zh-tw",
+      "previousSha256": "341ecea7b54e3d6972d494dd125da581fbcb45408bfda026152ede0538ef803b",
+      "changed": true
+    },
+    {
+      "setId": "34f73eff-5db3-4617-bd57-73421edebb86",
+      "setCode": "SV4a",
+      "language": "zh-tw",
+      "previousSha256": "b37da789eef1ea07f57a5b97a3798d5b5f6de165d576b09e664ad215fd502d86",
+      "changed": true
+    },
+    {
+      "setId": "15442620-179d-4442-a040-d9fa0060c7e4",
+      "setCode": "SV4K",
+      "language": "zh-tw",
+      "previousSha256": "f085fe1df697071e764bca7600c54231ce7e0cc42e2f6815c7e339d202dc61a3",
+      "changed": false
+    },
+    {
+      "setId": "2abc3c6e-7715-4f79-900f-a2c567e4e1c9",
+      "setCode": "SV4M",
+      "language": "zh-tw",
+      "previousSha256": "dac4b2fdd44f2d750b855e37f837af64e893df018041154bcea7fe71b754e95d",
+      "changed": true
+    },
+    {
+      "setId": "8dc60098-a384-4259-88b9-d2efa74b5a1d",
+      "setCode": "SV5a",
+      "language": "zh-tw",
+      "previousSha256": "163b66e4a54f95fcd86afda631c732e3c0624b291f05418733c375978d4e239a",
+      "changed": false
+    },
+    {
+      "setId": "2cc9e59f-b9d6-42db-9426-d5d18faab0c9",
+      "setCode": "SV5K",
+      "language": "zh-tw",
+      "previousSha256": "5754269a46cab4565c606edf23452d8d5dceb15947bdf71da2d842063f1d4761",
+      "changed": true
+    },
+    {
+      "setId": "6979a86e-8439-443d-b8b3-b9e2ebfb0bd3",
+      "setCode": "SV5M",
+      "language": "zh-tw",
+      "previousSha256": "3a3131683e11fb9fc693278c3a3c6b44320fd6be43a182476c81ad267535c059",
+      "changed": true
+    },
+    {
+      "setId": "b933f0ba-40ac-4846-80ee-74c4a2b1cf71",
+      "setCode": "SV6",
+      "language": "zh-tw",
+      "previousSha256": "113999c305d74060d273efd82fbd92ee1af5a2fc0636b5fef86e8e270c0d7a02",
+      "changed": true
+    },
+    {
+      "setId": "adcb6f6c-95f3-4a55-b9e5-464ed79a1ac3",
+      "setCode": "SV6a",
+      "language": "zh-tw",
+      "previousSha256": "e7fe70ece9eb557e86df865c5c1511a9dffee63e484b9d4e3c3e1256bb44a669",
+      "changed": true
+    },
+    {
+      "setId": "bf50694e-8be5-4fa4-a77e-6fdb73ec17ac",
+      "setCode": "SV7",
+      "language": "zh-tw",
+      "previousSha256": "600bb7ef28c7185b50304ebf41a2ce7ea66693c786720093ca8779c3e19f3625",
+      "changed": true
+    },
+    {
+      "setId": "e044ea13-4498-4aa8-b46c-71bcc203bc89",
+      "setCode": "SV7a",
+      "language": "zh-tw",
+      "previousSha256": "449622ab8fb5b52a8ba9bacac526a931c68491fb348a4def7205b146590814fa",
+      "changed": true
+    },
+    {
+      "setId": "d53eee17-75b8-48a8-bde5-50ac129a3558",
+      "setCode": "SV8a",
+      "language": "zh-tw",
+      "previousSha256": "e3a2ceed09530c38b84bec009f3bc01a754ee99bc9d31234cc7368c468f35fc3",
+      "changed": true
+    },
+    {
+      "setId": "cd44897f-ea2e-4f63-b662-e4ddce1ac7e7",
+      "setCode": "SV9",
+      "language": "zh-tw",
+      "previousSha256": "376bfb009d8c89a0222733d87b9c6f2869b6a2d2ed663726d0adbde577bc5cb0",
+      "changed": true
+    },
+    {
+      "setId": "664d717f-745d-4178-ae4f-5863ae558a2f",
+      "setCode": "SV9a",
+      "language": "zh-tw",
+      "previousSha256": "c74702d929f8df6967c14485e5c4fbaa997cd42aeec8cc7fe7ddbb5c48af5512",
+      "changed": true
+    },
+    {
+      "setId": "bb1ba963-5030-4f3f-8f06-dee6c668fb05",
+      "setCode": "SVAL",
+      "language": "zh-tw",
+      "previousSha256": "59fbce608670767ead84ff92fb30e66205efec11c053576111f001b96a854974",
+      "changed": true
+    },
+    {
+      "setId": "005e4850-7601-4765-b538-290882ded6d8",
+      "setCode": "SVAM",
+      "language": "zh-tw",
+      "previousSha256": "4353a8f49afe4c01b650d721aaf63fa552e37d594dd3c4b07cd60484a18a4131",
+      "changed": true
+    },
+    {
+      "setId": "2f9aa179-e91b-4643-84d6-968944833c66",
+      "setCode": "SVAW",
+      "language": "zh-tw",
+      "previousSha256": "1272886078f6021e14551aa3336c207c4e0e24592b3944e26599081184169833",
+      "changed": true
+    },
+    {
+      "setId": "88d9f4ce-d66f-46c6-9c98-cadcdbe617ff",
+      "setCode": "SVB",
+      "language": "zh-tw",
+      "previousSha256": "47101bd9fbb2532be9364bbf8cdf6fc56bbdd58fd449197ffa3f74ea3f20e26b",
+      "changed": true
+    },
+    {
+      "setId": "471359a2-3314-463e-aea4-d5c302663333",
+      "setCode": "SVEL",
+      "language": "zh-tw",
+      "previousSha256": "0ef676fcb429ede01c5563f43d6d1d4db804782af7e9da67639d137c73d61a06",
+      "changed": true
+    },
+    {
+      "setId": "afefc691-41e8-4ac7-97d8-776ded533215",
+      "setCode": "SVEM",
+      "language": "zh-tw",
+      "previousSha256": "540eb1f5566ec43af7159b41ab0d6837e8ad168ec6968a173684e3aefc44eb23",
+      "changed": true
+    },
+    {
+      "setId": "c1728b7e-684e-445f-a12b-4f7b2dcc8fba",
+      "setCode": "SVHK",
+      "language": "zh-tw",
+      "previousSha256": "90b94e717e117826abc5335ca7f2ffc5f9bd6eabcb31d6e5148f52890a4af61e",
+      "changed": true
+    },
+    {
+      "setId": "d72c9fe3-b3d5-4a4d-9fcc-eb7cca2a88bc",
+      "setCode": "SVHM",
+      "language": "zh-tw",
+      "previousSha256": "373f3b92efb1c7ead37bcbc2c109dda2756b47566d9c5d1cbab866b28488e7a6",
+      "changed": true
+    },
+    {
+      "setId": "05597373-2080-4842-bb67-c314e884f856",
+      "setCode": "SV8",
+      "language": "zh-tw",
+      "previousSha256": "cbc6e6cac438744b77bed4231a0491d3c5b6599a587a59962f92ed3d1d9ffff7",
+      "changed": false
+    },
+    {
+      "setId": "4f84057b-edcf-4523-967c-5997ae696987",
+      "setCode": "SV10",
+      "language": "zh-tw",
+      "previousSha256": "cef902ae715ba078286c6b47cabda824a126b1caa790e42dfe8f773f600e7f79",
+      "changed": false
+    },
+    {
+      "setId": "319b65a2-a424-4273-bfff-6c18965ab00a",
+      "setCode": "SVF",
+      "language": "zh-tw",
+      "previousSha256": "d3fd0c291ccdc20812c90f47569d4081d4424e8db76d6e966b27971ecba49178",
+      "changed": false
+    },
+    {
+      "setId": "3c0c1ae1-7d62-4384-97f1-734ff9460162",
+      "setCode": "SV2a",
+      "language": "zh-tw",
+      "previousSha256": "36775af66f6a912d367510769c7642498eed392d4a43d36da6af32ad8b10bafd",
+      "changed": false
+    },
+    {
+      "setId": "86911534-c30a-4701-9443-2eb4916d2fe8",
+      "setCode": "SDL",
+      "language": "zh-tw",
+      "previousSha256": "9d3ca8195b6dd4f89ac18a21932658760346a1da5b3db1580b99395549e6d09e",
+      "changed": false
+    },
+    {
+      "setId": "8f6936bf-5b7c-4072-9331-e85f423ade80",
+      "setCode": "SDP",
+      "language": "zh-tw",
+      "previousSha256": "26bc910ec78153c1c2d16441022c151922c3f24fe56bec0539efe23a3b02a815",
+      "changed": false
+    },
+    {
+      "setId": "1ff38683-60fc-448a-9e8e-f6096dd8608b",
+      "setCode": "SDM",
+      "language": "zh-tw",
+      "previousSha256": "93cb33d4e1d7cd139ba181c7d86a79e7d71438af8f24a642b16d2d49fc5c9c72",
+      "changed": false
+    }
+  ],
+  "sourceScope": [
+    {
+      "setId": "ec980234-74f1-4b88-bafa-a8c84ab36d38",
+      "setCode": "S4",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archive/card/sword_shield_series/sword_shield_s4.html",
+      "url": "https://asia.pokemon-card.com/tw/archive/common/assets_c/2020/09/S4_650x488-thumb-650x488-15304.png",
+      "originalSha256": "14c3efe75f762a1826e10c68c39aa33de38b1651846ffa69b8f37c85108affdb",
+      "derivativeSha256": "34cfc9cb1916c4e325965e87b8c8f1b51954233bbe2c9928df0f7e532a6f878a",
+      "acquisitionEvidence": "older-acquisition-authority.json"
+    },
+    {
+      "setId": "9ebab1ca-0ebf-429c-83ed-9fe6735f9832",
+      "setCode": "SC1a",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archive/card/sword_shield_series/sword_shield_sc1a.html",
+      "url": "https://asia.pokemon-card.com/tw/archive/common/assets_c/2020/06/dddae742ba1840663de5b1b3457019cb9b336358-thumb-650x488-14550.png",
+      "originalSha256": "580c1934814d62404959dd35016b6d2c6f23f9fd54908f8edbdc2b6cb72612b4",
+      "derivativeSha256": "06eecf0c35855fccc000b5b690c2e0720095f750598cedb42198644f804ebd7d",
+      "acquisitionEvidence": "older-acquisition-authority.json"
+    },
+    {
+      "setId": "205ab185-9052-4965-b9f0-20fe44b7b61f",
+      "setCode": "SC1b",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archive/card/sword_shield_series/sword_shield_sc1b.html",
+      "url": "https://asia.pokemon-card.com/tw/archive/common/assets_c/2020/06/c5f87626cb140e6e2dec49dd0f19f7d578d6512b-thumb-650x488-14544.png",
+      "originalSha256": "6ca026b87710a2790e67356cc0fc52f14af864da165c3eeba82537a2df87a485",
+      "derivativeSha256": "83c20e960f9aaeb09ef567fd76dd6b22b7a29d3c0a414fd859a1af3d04c1c299",
+      "acquisitionEvidence": "older-acquisition-authority.json"
+    },
+    {
+      "setId": "4b4beb82-d593-4c0b-850f-3197e7dd0ac5",
+      "setCode": "SC1D",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archive/card/sword_shield_series/sword_shield_sc1d.html",
+      "url": "https://asia.pokemon-card.com/tw/archive/common/assets_c/2020/06/333e4237e6b9a9615ef8ac59a521cbbc24914d8c-thumb-650x488-14556.png",
+      "originalSha256": "1744bb8f49753388871b154d296fa7faa788fa1c2b2631b416ec579344b43680",
+      "derivativeSha256": "e0b46ba0b4dffacb9ae4123116caf951337d5518d551e3d36ae7138afa23f00f",
+      "acquisitionEvidence": "older-acquisition-authority.json"
+    },
+    {
+      "setId": "8c05228d-e60d-46c6-888b-c13d4b51660d",
+      "setCode": "SC2a",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archive/card/sword_shield_series/sword_shield_sc2a.html",
+      "url": "https://asia.pokemon-card.com/tw/archive/common/assets_c/2020/07/thumb_setA-thumb-650x488-14937.png",
+      "originalSha256": "957a344e546b931032bfd839297ae26f9632d0e40fee32f91d8dcbc93842030b",
+      "derivativeSha256": "1ce3cb51165e8dd33534d6e26d5120cab10eee411a404f2dabe944b0b2f04870",
+      "acquisitionEvidence": "older-acquisition-authority.json"
+    },
+    {
+      "setId": "f3b1c12f-8002-41e4-b682-9109c6628a71",
+      "setCode": "SC2b",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archive/card/sword_shield_series/sword_shield_sc2b.html",
+      "url": "https://asia.pokemon-card.com/tw/archive/common/assets_c/2020/07/thumb_setB-thumb-650x488-14935.png",
+      "originalSha256": "e756f0eef9656d21e64240f4517b57c41afabfba791a9ac190c5037e062713a7",
+      "derivativeSha256": "6f9e71e257b3ec28e3cbc2fe47523cd581276bc86c8896ea024d8511b141a17c",
+      "acquisitionEvidence": "older-acquisition-authority.json"
+    },
+    {
+      "setId": "d14fde0e-c786-41d0-93ef-6dc69cef94d0",
+      "setCode": "SC2D",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archive/card/sword_shield_series/sword_shield_sc2d.html",
+      "url": "https://asia.pokemon-card.com/tw/archive/common/assets_c/2020/07/thumb_deck-thumb-650x488-14938.png",
+      "originalSha256": "b0e6c1bf35be207239b28a07883049c2a73f31e45e4640bbde91a6a871ff7f13",
+      "derivativeSha256": "1db127708c0ac6895667ee9eccad53bcfe59eada5aeaf34f2da4bcdcc95963eb",
+      "acquisitionEvidence": "older-acquisition-authority.json"
+    },
+    {
+      "setId": "749e4fbd-3eda-46e3-8a89-c6244595e6a2",
+      "setCode": "SI",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archive/special/card/si/",
+      "url": "https://asia.pokemon-card.com/tw/archive/special/card/si/assets/images/main-logo-1.png",
+      "originalSha256": "dcf4f7cfc3451b6fe59264b7cd0542ceca8f6617e4b0eddbd2fdb67890688cfc",
+      "derivativeSha256": "485a9ddf9625d87f57536c3f817cc0fc310e12ddf1f0657c68b0f61cf7af66ab",
+      "acquisitionEvidence": "older-acquisition-authority.json"
+    },
+    {
+      "setId": "9932f014-e867-49a3-8597-424386f59ba5",
+      "setCode": "SN",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archives/3776/",
+      "url": "https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2022/09/tw_news_anniversary_SN_Deck_pkg.png",
+      "originalSha256": "7549b497ee6a6873de19717b5d2ac629bdd5a5b44b44df27b36465cc6421a36c",
+      "derivativeSha256": "58afc107ba64e4f1560977a8c501f10038980000674684a02fde19d9dab14a9f",
+      "acquisitionEvidence": "additional-acquisition-authority.json"
+    },
+    {
+      "setId": "8ea4465e-f94f-4cb8-af60-8b7e954400b9",
+      "setCode": "SV2D",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archives/5065/",
+      "url": "https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2023/03/tw_news_SV2_D_Booster_PKG.png",
+      "originalSha256": "e4e1177360521dbcb01232bf692489b5dba95c874ac2bd0ed12045aa0ec00226",
+      "derivativeSha256": "9c9489a7d7bfd3d97db6340940b79752b961d8bd3ebe81dbd134358de1c882b5",
+      "acquisitionEvidence": "modern-acquisition-authority.json"
+    },
+    {
+      "setId": "0dbaa91f-c0c6-497d-8ef0-fc4370c5ed8a",
+      "setCode": "SV3",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archive/special/card/sv3/",
+      "url": "https://asia.pokemon-card.com/tw/archive/special/card/sv3/assets/images/product-image-1.png",
+      "originalSha256": "1a5b29801a947ddca85968c64f2e0946b1abc96a957950a297a908d8fefb0c54",
+      "derivativeSha256": "1059780e843d0d97252dd2acb0dadb8a5737a0057ed288b28157e01794ead726",
+      "acquisitionEvidence": "modern-acquisition-authority.json"
+    },
+    {
+      "setId": "16b683e4-6270-4625-9fae-b2478a08c659",
+      "setCode": "SV3a",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archives/5943/",
+      "url": "https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2023/08/tw_news_sv3a_pkg.png",
+      "originalSha256": "d2c0b26bbfd536fdd3910ec854dba6e51ba5055bdf868eac544e53d85705a602",
+      "derivativeSha256": "9ea4c647ce2e718aa64d2555b7c35fe6a363b4491431cec21f5c71002b581378",
+      "acquisitionEvidence": "modern-acquisition-authority.json"
+    },
+    {
+      "setId": "34f73eff-5db3-4617-bd57-73421edebb86",
+      "setCode": "SV4a",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archive/special/card/sv4a/",
+      "url": "https://asia.pokemon-card.com/tw/archive/special/card/sv4a/assets/images/product-image-1.png",
+      "originalSha256": "7990c8f0ebaf535ceaa16bd696b72803852922df6ceba998cc850e1f2537fdff",
+      "derivativeSha256": "0cc4dc74340bcce42cf103d423b887f261de6ba510bb789559d0d9f86ff5b1e8",
+      "acquisitionEvidence": "modern-acquisition-authority.json"
+    },
+    {
+      "setId": "2abc3c6e-7715-4f79-900f-a2c567e4e1c9",
+      "setCode": "SV4M",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archive/special/card/sv4/",
+      "url": "https://asia.pokemon-card.com/tw/archive/special/card/sv4/assets/images/product-image-2.png",
+      "originalSha256": "5729b51e97b1cdb2bd345379a1f6289d50305308fec40db1569783c261c82d5d",
+      "derivativeSha256": "14944ae03b068d07c76277da050801d7fb8d60d81fe567f530518e5a51475353",
+      "acquisitionEvidence": "modern-acquisition-authority.json"
+    },
+    {
+      "setId": "2cc9e59f-b9d6-42db-9426-d5d18faab0c9",
+      "setCode": "SV5K",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archive/special/card/sv5/",
+      "url": "https://asia.pokemon-card.com/tw/archive/special/card/sv5/assets/images/product-image-1.png",
+      "originalSha256": "ff2d86bccbdaf3cdb8dade7fe6d4ca301d9e8ffbb7a4f920c7a8e57ae81ce1c5",
+      "derivativeSha256": "b20e6360c1f4dbf63fe3016f8bf4587dfffc1a794e5b741b56017931c25e49b0",
+      "acquisitionEvidence": "modern-acquisition-authority.json"
+    },
+    {
+      "setId": "6979a86e-8439-443d-b8b3-b9e2ebfb0bd3",
+      "setCode": "SV5M",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archive/special/card/sv5/",
+      "url": "https://asia.pokemon-card.com/tw/archive/special/card/sv5/assets/images/product-image-2.png",
+      "originalSha256": "6a48ff5b07b62d899554bd5eb584276cacba0b3ea9bd66c3d173f8e43d56e9d9",
+      "derivativeSha256": "f2eeb36344bd9a8fe60e050fdcd75da4e38e5ed95b76b4e4dd685c394b8dbe15",
+      "acquisitionEvidence": "modern-acquisition-authority.json"
+    },
+    {
+      "setId": "b933f0ba-40ac-4846-80ee-74c4a2b1cf71",
+      "setCode": "SV6",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archive/special/card/sv6/",
+      "url": "https://asia.pokemon-card.com/tw/archive/special/card/sv6/assets/images/product-image-1.png",
+      "originalSha256": "de16acfb6610721718677bb1ad64ac1c2fb11ef85ab0ab34adbc85b392c2e38a",
+      "derivativeSha256": "4cf961f5c1529247bd69603480037e72a8ff6f3355cd78f6b5d0d0edd14696cb",
+      "acquisitionEvidence": "modern-acquisition-authority.json"
+    },
+    {
+      "setId": "adcb6f6c-95f3-4a55-b9e5-464ed79a1ac3",
+      "setCode": "SV6a",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archives/7855/",
+      "url": "https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2024/05/tw_news_SV6a_pkg.png",
+      "originalSha256": "1a6f0c75fb1b82954751e195236315c11a8191a74e6af2655ff2dbf25aee0c3c",
+      "derivativeSha256": "c096f488d1c7cbd9c77a6cd13ae931a8d5bbfa951dd82fabd1be2c41727313fd",
+      "acquisitionEvidence": "modern-acquisition-authority.json"
+    },
+    {
+      "setId": "bf50694e-8be5-4fa4-a77e-6fdb73ec17ac",
+      "setCode": "SV7",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archive/special/card/sv7/",
+      "url": "https://asia.pokemon-card.com/tw/archive/special/card/sv7/assets/images/product-image-1.png",
+      "originalSha256": "11c0dee2cf9e5b17bdc2bcfbe825dc692f0be35e8f2f16a7dadbe4cff8daa268",
+      "derivativeSha256": "b1e7e1db50fdcaafd393c5eb91b1f61107f735723573012c58a83231f3d8c9cd",
+      "acquisitionEvidence": "modern-acquisition-authority.json"
+    },
+    {
+      "setId": "e044ea13-4498-4aa8-b46c-71bcc203bc89",
+      "setCode": "SV7a",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archives/8502/",
+      "url": "https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2024/08/tw_news_SV7a_supply_pillow_img.png",
+      "originalSha256": "0e14a7ce1e37680cdec4e3d3b68f1f3e93e0edb19e54ac37bfe6f1379b4239a6",
+      "derivativeSha256": "a4118aa94e4d2f05370cc958603423e9745bc7c7e59aa298ab8b2814a85b59f7",
+      "acquisitionEvidence": "modern-acquisition-authority.json"
+    },
+    {
+      "setId": "d53eee17-75b8-48a8-bde5-50ac129a3558",
+      "setCode": "SV8a",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archive/special/card/sv8a/",
+      "url": "https://asia.pokemon-card.com/tw/archive/special/card/sv8a/assets/images/product-image-1.png",
+      "originalSha256": "04c7cd9beee712e0a076b257f81b1a1c4d00885d39560255513238c0490206ec",
+      "derivativeSha256": "453af923a34edc007f0f53793fee57bb5c3048f0f80a0cb6f4b0b9d675fa7006",
+      "acquisitionEvidence": "modern-acquisition-authority.json"
+    },
+    {
+      "setId": "cd44897f-ea2e-4f63-b662-e4ddce1ac7e7",
+      "setCode": "SV9",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archive/special/card/sv9/",
+      "url": "https://asia.pokemon-card.com/tw/archive/special/card/sv9/assets/images/infoProduct-img-1.png",
+      "originalSha256": "9c61ac4a222eaca60d2c5e1431b7573cc80a7752c4acbcff61999fd857b9f24d",
+      "derivativeSha256": "6b5f779a7449ed770b1ffe0953bc2ac2eb5f4a38a0fcf5605896be385954a4fa",
+      "acquisitionEvidence": "modern-acquisition-authority.json"
+    },
+    {
+      "setId": "664d717f-745d-4178-ae4f-5863ae558a2f",
+      "setCode": "SV9a",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archives/9823/",
+      "url": "https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2025/02/tw_news_SV9a_pkg.png",
+      "originalSha256": "efcfec22f3f34f2d2721d74ad2808294ddbd2695ca1109314481bd8b8f9f7588",
+      "derivativeSha256": "9419f4174d3264b848a66e1518786289062bd158d4fbe2d61021edc2498d804b",
+      "acquisitionEvidence": "modern-acquisition-authority.json"
+    },
+    {
+      "setId": "bb1ba963-5030-4f3f-8f06-dee6c668fb05",
+      "setCode": "SVAL",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archive/special/card/sva/",
+      "url": "https://asia.pokemon-card.com/tw/archive/special/card/sva/assets/images/startset-head-2-1.png",
+      "originalSha256": "801d8ce75d2d2aba9c25ff88d532a2d9c271e44d529f0566c2014467e2d2f139",
+      "derivativeSha256": "df502c14a6480c077f26fa8187cd5058e3b6462cbdf643acb40395a2697eb1e9",
+      "acquisitionEvidence": "additional-acquisition-authority.json"
+    },
+    {
+      "setId": "005e4850-7601-4765-b538-290882ded6d8",
+      "setCode": "SVAM",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archive/special/card/sva/",
+      "url": "https://asia.pokemon-card.com/tw/archive/special/card/sva/assets/images/startset-head-1-1.png",
+      "originalSha256": "5ab7963e988b311947ce37207abdffb06c4d40f59aa1c67d9f35473416135bed",
+      "derivativeSha256": "609f23c4b6ac9c6d7952d54153441f9b29db61d1f13e19851f82718a9af97404",
+      "acquisitionEvidence": "additional-acquisition-authority.json"
+    },
+    {
+      "setId": "2f9aa179-e91b-4643-84d6-968944833c66",
+      "setCode": "SVAW",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archive/special/card/sva/",
+      "url": "https://asia.pokemon-card.com/tw/archive/special/card/sva/assets/images/startset-head-3-1.png",
+      "originalSha256": "47968065bb649ac7d08fc603be98531bffbb0a2ee10a77add37f535004cb54f4",
+      "derivativeSha256": "8fc3d4f9cbbfea509bf5b0ac1eccb552b13c763e6a6cea721b34325dddfb7173",
+      "acquisitionEvidence": "additional-acquisition-authority.json"
+    },
+    {
+      "setId": "88d9f4ce-d66f-46c6-9c98-cadcdbe617ff",
+      "setCode": "SVB",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archives/4686/",
+      "url": "https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2023/02/tw_news_SVB_Box_TWHK.png",
+      "originalSha256": "4adcc7ed5ff4611febcc3783dd7f7be2ba03b6e6303c0a909d6f084367f1fdb1",
+      "derivativeSha256": "5c9fb8aaefb0f6d732ac57f434a9dba02a5c877418941a8db9949b429201405a",
+      "acquisitionEvidence": "older-acquisition-authority.json"
+    },
+    {
+      "setId": "471359a2-3314-463e-aea4-d5c302663333",
+      "setCode": "SVEL",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archives/5950/",
+      "url": "https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2023/08/tw_news_sve_SVELpkg.png",
+      "originalSha256": "657a6779ad72a579092a99ffbd912a30016929564c679719a163f87a0f39bc6b",
+      "derivativeSha256": "9e78bc0d6adf9c65295468f12ed61e7b24649ebe5af43337cdb14280f707bcc5",
+      "acquisitionEvidence": "older-acquisition-authority.json"
+    },
+    {
+      "setId": "afefc691-41e8-4ac7-97d8-776ded533215",
+      "setCode": "SVEM",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archives/5950/",
+      "url": "https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2023/08/tw_news_sve_SVEMpkg.png",
+      "originalSha256": "ee8b7b6ce5d719a0cf27324db2e424eb54adeb33ec73befae56f79f1608d045c",
+      "derivativeSha256": "5b502da2511963ea81d17f8ab9b6fe7a00336cb714d44fe5ab5589ca5096407e",
+      "acquisitionEvidence": "older-acquisition-authority.json"
+    },
+    {
+      "setId": "c1728b7e-684e-445f-a12b-4f7b2dcc8fba",
+      "setCode": "SVHK",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archives/6930/",
+      "url": "https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2023/12/tw_news_SVHK_PKG.png",
+      "originalSha256": "9e6de59c762877842c330639f463229172b610fc208bad0f3d8de7f4bb6691fc",
+      "derivativeSha256": "32d67b97c72661e53a8749b8ec77f131f8f5d666dd4931dc0f0af5dd930afee1",
+      "acquisitionEvidence": "older-acquisition-authority.json"
+    },
+    {
+      "setId": "d72c9fe3-b3d5-4a4d-9fcc-eb7cca2a88bc",
+      "setCode": "SVHM",
+      "language": "zh-tw",
+      "page": "https://asia.pokemon-card.com/tw/archives/6930/",
+      "url": "https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2023/12/tw_news_SVHM_PKG.png",
+      "originalSha256": "d3e01d68e8b3fe5e1561969b0d86694a146473f4fdf5994411dda37fc606df75",
+      "derivativeSha256": "90c1b94d1ed87e8a05c30708e88fc3972d747a21fc190e7ffdaf5652db218a07",
+      "acquisitionEvidence": "older-acquisition-authority.json"
+    }
+  ],
+  "capabilities": [
+    "exact_verified_source_acquisition",
+    "immutable_original_and_derivative_preservation",
+    "conventional_cleanup_and_exact_cropping",
+    "production_and_configured_staging_supersession",
+    "bundled_app_display"
+  ],
+  "aiRedrawAllowed": false,
+  "globalSourceRegistryChanged": false,
+  "independentlyAuditedLicence": false
+}

@@ -1,4 +1,5 @@
 import type { ImageSourcePropType } from 'react-native';
+import { getPokemonSetLanguageFromPrefixedId, normalizePokemonSetReferenceForLookup } from './pokemonSetIdentity';
 
 export type TraditionalChineseSetLogoLookupInput = {
   id?: string | null;
@@ -59,15 +60,48 @@ const TRADITIONAL_CHINESE_SET_LOGOS: Record<string, TraditionalChineseSetLogoMat
   '34e5af6e-66d0-4fea-98ce-b1fa1ec1d1dd': { setId: '34e5af6e-66d0-4fea-98ce-b1fa1ec1d1dd', source: require('../assets/rev2/12-traditional-chinese-set-logo/logos-hires-20261016/svp1.webp') as ImageSourcePropType },
 };
 
+// Exact owner-approved native booster packaging is set-identification artwork,
+// not a standalone set logo. Keep it out of the logo-only resolver below.
+const TRADITIONAL_CHINESE_SET_PACK_ART: Record<string, TraditionalChineseSetLogoMatch> = {
+  'cd44897f-ea2e-4f63-b662-e4ddce1ac7e7': { setId: 'cd44897f-ea2e-4f63-b662-e4ddce1ac7e7', source: require('../assets/rev2/12-traditional-chinese-set-logo/owner-supplied-pack-art-20261018/sv9.png') as ImageSourcePropType },
+  '664d717f-745d-4178-ae4f-5863ae558a2f': { setId: '664d717f-745d-4178-ae4f-5863ae558a2f', source: require('../assets/rev2/12-traditional-chinese-set-logo/owner-supplied-pack-art-20261018/sv9a.png') as ImageSourcePropType },
+  '4f84057b-edcf-4523-967c-5997ae696987': { setId: '4f84057b-edcf-4523-967c-5997ae696987', source: require('../assets/rev2/12-traditional-chinese-set-logo/owner-supplied-pack-art-20261018/sv10.png') as ImageSourcePropType },
+};
+
 function isTraditionalChineseLanguage(language?: string | null) {
   return ['zh-tw', 'zh-hant'].includes(String(language ?? '').trim().toLowerCase().replace(/_/g, '-'));
+}
+
+function getTraditionalChineseSetIdentity(
+  input?: TraditionalChineseSetLogoLookupInput | null,
+  fallbackLanguage?: string | null,
+): string | null {
+  if (!input) return null;
+  const reference = String(input.id ?? input.setId ?? '').trim();
+  const prefixedLanguage = getPokemonSetLanguageFromPrefixedId(reference);
+  const language = input.language ?? fallbackLanguage;
+  // Saved set references may retain their language prefix. Resolve the same
+  // exact UUID while refusing a prefix or explicit language from another lane.
+  if (prefixedLanguage && prefixedLanguage !== 'zh-tw') return null;
+  if (language != null && !isTraditionalChineseLanguage(language)) return null;
+  if (!isTraditionalChineseLanguage(language) && prefixedLanguage !== 'zh-tw') return null;
+  return normalizePokemonSetReferenceForLookup(reference).toLowerCase();
 }
 
 export function getTraditionalChineseSetLogoSourceForSet(
   input?: TraditionalChineseSetLogoLookupInput | null,
   fallbackLanguage?: string | null,
 ): ImageSourcePropType | null {
-  if (!input || !isTraditionalChineseLanguage(input.language ?? fallbackLanguage)) return null;
-  const setId = String(input.id ?? input.setId ?? '').trim().toLowerCase();
+  const setId = getTraditionalChineseSetIdentity(input, fallbackLanguage);
+  if (!setId) return null;
   return TRADITIONAL_CHINESE_SET_LOGOS[setId]?.source ?? null;
+}
+
+export function getTraditionalChineseSetArtworkSourceForSet(
+  input?: TraditionalChineseSetLogoLookupInput | null,
+  fallbackLanguage?: string | null,
+): ImageSourcePropType | null {
+  const setId = getTraditionalChineseSetIdentity(input, fallbackLanguage);
+  if (!setId) return null;
+  return TRADITIONAL_CHINESE_SET_LOGOS[setId]?.source ?? TRADITIONAL_CHINESE_SET_PACK_ART[setId]?.source ?? null;
 }

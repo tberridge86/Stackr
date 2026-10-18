@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-18T14:24:32.276Z",
+  "files": {
+    "gateway/src/proxy.js": "9f1d6bf32dc3af70051d3fe062fe45ffbf52fa2e5a491103258f1f7e994a7dd5",
+    "gateway/test/circuit-isolation.test.mjs": "c429243f2145b8c66a5d9e87aa00fc6229d657dd4b4c7583f836af2be3e15d77"
+  },
+  "confirmedSourceCause": "All backend routes shared circuit:backend. Five failed optional asset-manifest requests could open or successful optional reads could reset the same protective circuit used by essential facts.",
+  "repair": "Use one additional fixed circuit:backend:asset_manifest key for the registered backend asset_manifest route. All other targets retain their existing key and cooldown state.",
+  "preserved": [
+    "Five failed requests threshold and30-second opening",
+    "Two GET attempts and one POST attempt",
+    "Other backend facts share existing protection",
+    "Recognition target protection",
+    "Authentication, signing, request bodies, route/query validation, timeouts, cache and private response rules",
+    "Existing open backend state expires normally; no forced state reset"
+  ],
+  "localRegression": {
+    "originalProxy": {
+      "failed": 4,
+      "passed": 0
+    },
+    "repairedProxy": {
+      "failed": 0,
+      "passed": 4
+    },
+    "actualModules": [
+      "proxyRequest",
+      "matchRoute",
+      "GatewayState"
+    ],
+    "downstream": "Mock only; no remote calls",
+    "scenarios": [
+      "Asset HTTP failures leave healthy facts usable while assets fail fast",
+      "Backend failures still protect other facts without blocking assets",
+      "Asset transport failures preserve retry and breaker behavior",
+      "Recognition circuit remains separate; finite static groups"
+    ]
+  },
+  "validation": {
+    "fullGatewayTests": {
+      "command": "npm --prefix gateway test",
+      "passed": 55,
+      "failed": 0,
+      "skipped": 0
+    },
+    "dependencyRecovery": "Initial full test load lacked jose; restored exact gateway lockfile with npm ci, no manifest or lockfile changes, then full suite passed.",
+    "localBuild": {
+      "command": "npm --prefix gateway run build",
+      "wrangler": "4.131.1",
+      "dryRun": true,
+      "uploaded": false,
+      "totalKiB": 83.05,
+      "gzipKiB": 25.42
+    },
+    "independentReview": {
+      "status": "PASS",
+      "focusedTestsIndependentlyPassed": 4,
+      "sourceReadOnly": true
+    },
+    "sourceSecretScan": {
+      "passed": true,
+      "files": 3703,
+      "scope": "Final source/evidence scan"
+    }
+  },
+  "liveObservation": {
+    "at": "2026-10-18T14:17:40.340Z",
+    "code": "downstream_circuit_open",
+    "status": 503,
+    "elapsedMs": 426,
+    "requestId": "727fa75b-49d9-47b7-aca0-066c80c441ba",
+    "scope": "One95-printing asset-manifest GET; preceding failure sequence was not captured. This source coupling is not established as that historical trigger."
+  },
+  "delivery": {
+    "implemented": true,
+    "locallyTested": true,
+    "independentlyReviewed": true,
+    "committed": true,
+    "merged": false,
+    "deployed": false,
+    "phoneVerified": false
+  },
+  "releaseBoundary": "Gateway-only publication requires matching explicit owner approval and exact source/CI/rollback attestation. No backend deployment, credential change, database script, price refresh, worker restart or native publication is included.",
+  "remaining": [
+    "Exact reviewed candidate hosted checks",
+    "Explicit publication approval",
+    "Successful bounded public fact/image reads after publication",
+    "Installed-phone journeys and required latency sample sizes"
+  ],
+  "sourceCommit": "8b5ebc753ade3feaf574b21a8b6b01efa79ad582",
+  "rollbackObservation": {
+    "report": "docs/releases/gateway-circuit-release-plan-20261018.md",
+    "deploymentId": "946af123-25ca-4a8b-89f1-e441b52f8bb0",
+    "versionId": "71032825-4494-46c2-82b0-de3a21d6953d",
+    "tag": "gateway-privacy-ea8190f3a0bda642e266438b68f19d4f398f7845",
+    "durableObjectNamespaceVerified": true,
+    "sourceTagRuntimeDiff": "Only gateway/src/proxy.js circuit isolation",
+    "freshPredeploymentAttestationStillRequired": true
+  }
+}

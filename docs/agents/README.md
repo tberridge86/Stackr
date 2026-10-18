@@ -1,5 +1,13 @@
 # Stackr specialist ownership
 
+The owner's 18 October 2026 repair and consolidation instruction now uses
+`D:/Stackr` on `codex/stackr-repair-consolidation-20261018` as the single active
+integration branch. Preserve older checkouts and private evidence under
+`D:/Stackr-organization`; do not merge every old branch blindly. Use the video
+issue register in `docs/releases/video-repair-register-20261018.json` alongside
+the existing repair queue. Older branch names and revisions below are historical
+evidence, not instructions to return to an obsolete checkout.
+
 Established 10 September 2026 at the owner's request. The initial review used
 GitHub main `6f439fd9bcf31dc69adbf55e4ebe6c4785e77b1e` and identified candidate PR
 [#168](https://github.com/tberridge86/Stackr/pull/168), head

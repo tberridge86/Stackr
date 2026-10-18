@@ -9,8 +9,11 @@ explicit production-readiness request resumes authorized work in this chat.
 The native saved goal runner still reports paused until its supported
 user-controlled resume mechanism is used; do not claim automatic continuation.
 
-Use the active integration checkout
-`D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/tif-readiness-integration`.
+Use the independent integration repository `D:/Stackr`, on
+`codex/stackr-repair-consolidation-20261018`, as directed by the owner on
+18 October 2026. The previous integration checkout
+`D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/tif-readiness-integration`
+is preserved historical work; do not continue repairs there.
 `D:/Stackr-release-recovery-20261009` remains historical reading evidence.
 The original `D:/Stackr-1` contains extensive unfinished work: preserve it, and
 inspect named local files only when comparing a demonstrated delivery gap.
@@ -59,4 +62,7 @@ Notify only for a material verified repair, completion, failure or required
 human action. Send no external messages. Do not reactivate the removed catalogue
 reporting automation or change application price-worker schedules.
 
-Keep temporary files and caches on D:; the C: drive has little free space.
+Keep temporary files and caches under `D:/Stackr-organization/active-runtime`;
+the C: drive has little free space. Preserve recovery material privately under
+`D:/Stackr-organization/preserved-work`. Inventory and binary patches are not
+complete recovery snapshots. Verify restoration before retiring old checkouts.

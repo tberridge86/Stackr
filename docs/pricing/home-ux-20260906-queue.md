@@ -69,4 +69,6 @@ Before a signed release, review the final combined commit/CI, perform normal nat
 
 The pre-integration pricing candidate is retained at commit `bb2a221` (with pricing code based on `e33855e`). The originally approved Home source remains frozen at `D:/Stackr-release-queue/home-20260906/source`; its [17-file manifest](home-ux-20260906-manifest.json) is historical snapshot evidence, not the integrated app manifest.
 
+Current location (18 October consolidation): `D:/Stackr-organization/evidence/source-release-packets-20261018/Stackr-release-queue/home-20260906/source`. All 17 manifest hashes and the full 20-file packet were preserved and independently restored before an actual move/back/move check. The original manifest paths remain historical; this relocation does not apply the old source over current pricing safeguards or close delivery acceptance.
+
 The pre-visual-change fallback at `D:/Stackr-fallbacks/before-home-value-priority-20260906/source` and the earlier full fallback at `D:/Stackr-fallbacks/before-ux-refresh-20260905` are untouched. Any recovery must compare subsequent changes and restore selectively after direction; never reset or clean the shared workspace.
