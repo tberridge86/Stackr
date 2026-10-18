@@ -1,0 +1,704 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-18T10:27:13.651Z",
+  "sourceVideo": {
+    "fileName": "WhatsApp Video 2026-10-18 at 09.12.30.mp4",
+    "sha256": "a29ad89ce8cec90b3dfa299c5a951ff4b60d686187f5a27c03a4e6175d1e859c",
+    "durationSeconds": 292,
+    "numericBuild": null,
+    "network": "Wi-Fi visible; conditions unmeasured",
+    "timestampPrecision": "Approximately +/-2.5 seconds",
+    "speech": "No reliable speech detected; review is visual"
+  },
+  "coordinator": "Tif / root",
+  "workingDirectory": "D:/Stackr",
+  "branch": "codex/stackr-repair-consolidation-20261018",
+  "baseRevision": "f9350f896375ffac84a22ca2f7a4ec7654538091",
+  "completionRule": "An issue closes only after its affected installed-device journey passes; local source checks are separate.",
+  "issues": [
+    {
+      "id": "V01",
+      "videoTime": "00:12",
+      "issue": "Home card image and verified name missing",
+      "owner": "stackr_artwork",
+      "resolution": "Trace the exact Home printing; restore accepted image and verified name while preserving native identity.",
+      "closureCriterion": "Correct exact-printing Home tile renders.",
+      "state": "blocked_exact_printing_identity",
+      "cause": "The visible Home tile does not expose a reliable exact printing ID; generic saved text cannot establish a verified translation or image.",
+      "sourceFiles": [],
+      "repairCommit": null,
+      "validation": [],
+      "delivery": {
+        "implemented": false,
+        "tested": false,
+        "independentlyReviewed": false,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "remainingBlocker": "Need the affected account/card identity and installed-Home rendering; no invented replacement."
+    },
+    {
+      "id": "V02",
+      "videoTime": "00:12-00:22",
+      "issue": "Partial Home valuation and unavailable duplicate prices",
+      "owner": "stackr_pricing",
+      "resolution": "Separate unavailable, stale, unresolved and failed stored reads; preserve exact price evidence and quantities.",
+      "closureCriterion": "Owned totals reconcile with labelled price coverage.",
+      "state": "live_pricing_diagnosis_pending",
+      "cause": "Missing quotes and retrieval failures remain distinct. Two live pricing workers reported database statement timeouts; exact owned-card coverage is not proven.",
+      "sourceFiles": [],
+      "repairCommit": null,
+      "validation": [],
+      "delivery": {
+        "implemented": false,
+        "tested": false,
+        "independentlyReviewed": false,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "remainingBlocker": "Read-only production diagnosis requested; provider refresh and account-level reconciliation remain pending."
+    },
+    {
+      "id": "V03",
+      "videoTime": "00:37",
+      "issue": "Market cards and last-refresh metadata unavailable",
+      "owner": "stackr_pricing",
+      "resolution": "Distinguish absent refresh metadata from failed retrieval and expose read recovery.",
+      "closureCriterion": "Real status/freshness and retry work without implicit provider refresh.",
+      "state": "local_repair_tested",
+      "cause": "The screen repeated market reads and conflated missing observations/refresh metadata. It now reads one bounded stored sample, exposes Retry and labels provider freshness unavailable.",
+      "sourceFiles": [
+        "app/value-history.tsx",
+        "lib/valueHistoryRead.ts"
+      ],
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "validation": [
+        "scripts/test-value-history-recovery.ts"
+      ],
+      "delivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "remainingBlocker": "Real provider-refresh metadata is absent from this response; installed-phone acceptance pending."
+    },
+    {
+      "id": "V04",
+      "videoTime": "00:37-00:47",
+      "issue": "General-market movers unavailable",
+      "owner": "stackr_pricing",
+      "resolution": "Read comparable stored observations; retain explicit insufficient-history states.",
+      "closureCriterion": "Eligible movers display or a verified history gap is explained.",
+      "state": "local_repair_tested",
+      "cause": "Same-day paired observations were discarded and optional previews delayed facts. Preserve exact paired estimates and reject conflicting variant comparisons.",
+      "sourceFiles": [
+        "app/value-history.tsx",
+        "lib/valueHistoryRead.ts"
+      ],
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "validation": [
+        "scripts/test-value-history-recovery.ts"
+      ],
+      "delivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "remainingBlocker": "Eligible stored observations and phone results must be verified; one observation never establishes a mover."
+    },
+    {
+      "id": "V05",
+      "videoTime": "00:42-00:47",
+      "issue": "Collection movers remains loading",
+      "owner": "stackr_pricing",
+      "resolution": "Bound account-scoped retrieval and reject stale account/request callbacks.",
+      "closureCriterion": "Populated, empty, insufficient-history and retryable error states settle.",
+      "state": "local_repair_tested",
+      "cause": "Unbounded per-binder/per-card history fan-out could leave collection movers loading. The lane now settles independently with bounded recovery and honest absence of per-card history.",
+      "sourceFiles": [
+        "app/value-history.tsx",
+        "lib/valueHistoryRead.ts"
+      ],
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "validation": [
+        "scripts/test-value-history-recovery.ts"
+      ],
+      "delivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "remainingBlocker": "Prepared aggregate history does not establish individual collection movers; live and phone evidence pending."
+    },
+    {
+      "id": "V06",
+      "videoTime": "00:42-00:47",
+      "issue": "Collection-history chart remains loading",
+      "owner": "stackr_pricing",
+      "resolution": "Use existing comparable prepared collection trend; recover separately from current valuation.",
+      "closureCriterion": "Real scoped points render with range changes, errors and account isolation tested.",
+      "state": "local_repair_tested",
+      "cause": "The former path discarded genuine aggregate history. Use validated prepared trends and owner-bound Home v4 saved observations, with range support, saved provenance and account-generation guards.",
+      "sourceFiles": [
+        "app/value-history.tsx",
+        "lib/valueHistoryRead.ts"
+      ],
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "validation": [
+        "scripts/test-value-history-recovery.ts"
+      ],
+      "delivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "remainingBlocker": "Prepared-route configuration and live scope remain unverified. Saved observations are explicitly not a fresh holdings check; phone ranges/plot/haptics pending."
+    },
+    {
+      "id": "V07",
+      "videoTime": "00:52 onward",
+      "issue": "Binder total/progress unavailable",
+      "owner": "stackr_performance",
+      "resolution": "Recover canonical totals independently of optional imagery/prices; preserve standard/master denominators.",
+      "closureCriterion": "Correct totals and owned quantities survive navigation.",
+      "state": "local_repair_tested",
+      "cause": "Legacy set codes were looked up only as canonical IDs and verified enriched totals were unused. Added exact language-scoped source-ID lookup and proven metadata fallback.",
+      "sourceFiles": [
+        "app/(tabs)/binder.tsx"
+      ],
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "validation": [
+        "scripts/test-binder-library-value-recovery.ts",
+        "scripts/test-binder-library-progress-runtime.ts"
+      ],
+      "delivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "remainingBlocker": "Installed standard/master denominators and navigation acceptance pending."
+    },
+    {
+      "id": "V08",
+      "videoTime": "00:52 onward",
+      "issue": "Binder prices unavailable despite owned cards",
+      "owner": "stackr_pricing",
+      "resolution": "Read exact stored quote coverage and justified subtotals independently of facts.",
+      "closureCriterion": "Supported values render with honest remaining-unpriced coverage.",
+      "state": "local_repair_tested",
+      "cause": "Price request failures were reduced to no-quote summaries. Added truthful errors, retained transient values, any-denial cache clearing and query-owned cancellation; overlapping shared loads no longer erase valid values.",
+      "sourceFiles": [
+        "app/(tabs)/binder.tsx"
+      ],
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "validation": [
+        "scripts/test-binder-library-value-recovery.ts",
+        "scripts/test-binder-library-progress-runtime.ts"
+      ],
+      "delivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "remainingBlocker": "Actual provider quotes/freshness remain incomplete; old-account queued work is bounded by query cancellation/deadline; phone evidence pending."
+    },
+    {
+      "id": "V09",
+      "videoTime": "00:58-01:14;04:27 onward",
+      "issue": "Binder opening remains on loader",
+      "owner": "root",
+      "resolution": "Separate required auth/content reads from optional custom art and saved-preview imagery.",
+      "closureCriterion": "Repeated open, cancellation, bounded failure and retry pass on installed build.",
+      "state": "local_repair_tested",
+      "cause": "Saved content waited on live reads and optional name artwork could block usable facts. Show guarded saved previews and hydrate imagery independently; optional names no longer block facts.",
+      "sourceFiles": [
+        "features/binder/BinderDetailScreen.tsx"
+      ],
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "validation": [
+        "scripts/test-binder-reopen.mjs"
+      ],
+      "delivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "remainingBlocker": "Live Storm facts also returned downstream_timeout in a bounded public read. Database diagnosis and repeated installed-binder journeys pending."
+    },
+    {
+      "id": "V10",
+      "videoTime": "01:22",
+      "issue": "Saved binder cannot confirm live ownership",
+      "owner": "root",
+      "resolution": "Keep owner-scoped saved facts and separate successful ownership confirmation from image recovery.",
+      "closureCriterion": "Live owner check succeeds where available; failed verification stays read-only.",
+      "state": "local_repair_tested",
+      "cause": "Saved display readiness is independent of live ownership confirmation. Existing mutation guards are preserved and ownership remains explicit.",
+      "sourceFiles": [
+        "features/binder/BinderDetailScreen.tsx"
+      ],
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "validation": [
+        "scripts/test-binder-reopen.mjs"
+      ],
+      "delivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "remainingBlocker": "Successful live ownership confirmation on the installed account is not established by fixtures."
+    },
+    {
+      "id": "V11",
+      "videoTime": "01:22",
+      "issue": "Saved preview says another collector",
+      "owner": "root",
+      "resolution": "Use separate saved, pending, confirmed foreign-owner and explicit read-only wording.",
+      "closureCriterion": "Labels are correct and mutation/account guards remain intact.",
+      "state": "local_repair_tested",
+      "cause": "All read-only states shared foreign-owner wording. Distinguish saved, pending ownership, verified foreign ownership and explicit read-only views.",
+      "sourceFiles": [
+        "features/binder/BinderDetailScreen.tsx"
+      ],
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "validation": [
+        "scripts/test-binder-reopen.mjs"
+      ],
+      "delivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "remainingBlocker": "Own/shared/forced-read-only phone acceptance pending."
+    },
+    {
+      "id": "V12",
+      "videoTime": "01:22-01:43",
+      "issue": "Storm cards have No image alongside facts",
+      "owner": "root",
+      "resolution": "Start exact-artwork recovery for saved previews; distinguish missing URI, metadata and decode failures.",
+      "closureCriterion": "Correct images render for declared exact-printing sample; unresolved sources explicit.",
+      "state": "local_repair_tested",
+      "cause": "Serialized saved views lost the WeakMap fact handle, so actual image recovery made zero requests. Recover complete public facts per exact set/language and prove printing/version/number/finish; use whole-set image pagination even for saved subsets.",
+      "sourceFiles": [
+        "features/binder/BinderDetailScreen.tsx",
+        "lib/stackrDomainAdapter.ts"
+      ],
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "validation": [
+        "scripts/test-saved-binder-artwork-recovery.ts",
+        "scripts/test-preferred-set-artwork.ts",
+        "scripts/test-binder-reopen.mjs"
+      ],
+      "delivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "remainingBlocker": "Source regression fixed; actual Storm image responses and visible phone images remain pending, with a live factual-read timeout recorded."
+    },
+    {
+      "id": "V13",
+      "videoTime": "01:22-01:43",
+      "issue": "Some stored estimates explicitly stale",
+      "owner": "stackr_pricing",
+      "resolution": "Preserve stale status/provider identity and prepare the existing approved refresh path.",
+      "closureCriterion": "Eligible fresh evidence replaces stale only after authorised live processing.",
+      "state": "live_pricing_diagnosis_pending",
+      "cause": "Stale estimates remain labelled; fresh provider evidence was not fabricated. Live pricing workers reported statement timeouts.",
+      "sourceFiles": [],
+      "repairCommit": null,
+      "validation": [],
+      "delivery": {
+        "implemented": false,
+        "tested": false,
+        "independentlyReviewed": false,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "remainingBlocker": "Diagnosis and approved pricing workflow needed before fresh evidence and exact-variant phone checks."
+    },
+    {
+      "id": "V14",
+      "videoTime": "00:52;02:12",
+      "issue": "Japanese-only Storm logo selected instead of supplied English-lettered logo",
+      "owner": "stackr_artwork",
+      "resolution": "Bind exact owner-supplied M6 PNG from remaining-98 pack without modifying original pixels; preserve previous asset.",
+      "closureCriterion": "Resolver, exported/signed bytes and installed app display the selected original.",
+      "state": "local_repair_tested",
+      "cause": "Bundled Japanese-only M6 artwork took precedence over remote assets. Select the unchanged supplied English-lettered PNG; exact owner permission was explicitly confirmed on 18 October.",
+      "sourceFiles": [
+        "lib/japaneseSetLogos.ts",
+        "assets/rev2/11-japanese-set-logo/storm-m6-owner-supplied-20261018.json",
+        "catalogue/rights-reviews/stackr-m6-owner-supplied-set-logo.2026-10-18.json"
+      ],
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "validation": [
+        "scripts/test-japanese-set-logo-runtime-lookup.ts",
+        "scripts/test-audit-japanese-set-logo-runtime-coverage.ts",
+        "docs/releases/ios-export-asset-verification-20261018.json"
+      ],
+      "delivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "remainingBlocker": "Local production export exact bytes verified; signed/native delivery, actual API response and Discover/binder/set phone rendering remain pending. Previous immutable asset retained."
+    },
+    {
+      "id": "V15",
+      "videoTime": "02:17",
+      "issue": "Newest Traditional Chinese rows show generic logos",
+      "owner": "stackr_artwork",
+      "resolution": "Reconcile exact TC identities with approved sources and diagnose manifest delivery; reject borrowed EN/JA artwork.",
+      "closureCriterion": "Each declared TC row renders exact verified logo on device.",
+      "state": "local_repair_tested",
+      "cause": "Newest SV9/SV9a/SV10 entries lacked selected artwork. Verified supplied native pack art is available as product artwork fallback, with strict Traditional Chinese identity; it is not relabelled a standalone logo.",
+      "sourceFiles": [
+        "lib/traditionalChineseSetLogos.ts",
+        "lib/localSetArtwork.ts",
+        "assets/rev2/12-traditional-chinese-set-logo/owner-supplied-three-pack-art-20261018.json"
+      ],
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "validation": [
+        "scripts/test-traditional-chinese-hires-logos.ts",
+        "scripts/test-official-english-set-logo-runtime-lookup.cjs",
+        "docs/releases/ios-export-asset-verification-20261018.json"
+      ],
+      "delivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "remainingBlocker": "Signed/native delivery, API artwork availability and actual Discover/binder rendering pending."
+    },
+    {
+      "id": "V16",
+      "videoTime": "02:27",
+      "issue": "November2023CoroCoro issue has no cover",
+      "owner": "stackr_artwork",
+      "resolution": "Verify exact regular monthly edition source and acquisition/display evidence before binding.",
+      "closureCriterion": "Correct exact-edition cover renders or named source/rights blocker remains.",
+      "state": "blocked_verified_cover_source",
+      "cause": "Named November 2023 cover leads exist, but exact regular-versus-special edition and source permission/acquisition remain unresolved.",
+      "sourceFiles": [
+        "docs/releases/corocoro-cover-source-evidence-20261016.json"
+      ],
+      "repairCommit": null,
+      "validation": [],
+      "delivery": {
+        "implemented": false,
+        "tested": false,
+        "independentlyReviewed": false,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "remainingBlocker": "Verified exact cover and permissible source required before import; placeholder stays explicit."
+    },
+    {
+      "id": "V17",
+      "videoTime": "02:57-03:12",
+      "issue": "Wartortle waits then returns16partial cards",
+      "owner": "stackr_performance",
+      "resolution": "Keep facts progressive, preserve canonical failure and retry pagination without false completeness.",
+      "closureCriterion": "Declared complete population or actionable partial recovery verified.",
+      "state": "partial_recovery_tested",
+      "cause": "The canonical-failure fallback can show only retained cards. Error/retry propagation is repaired, while a fallback count is never declared catalogue completeness.",
+      "sourceFiles": [
+        "lib/pokedexCollection.ts",
+        "app/pokemon/[id].tsx"
+      ],
+      "repairCommit": null,
+      "validation": [
+        "scripts/test-pokedex-partial-results.ts",
+        "scripts/test-pokedex-loading.ts"
+      ],
+      "delivery": {
+        "implemented": false,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "remainingBlocker": "Recover and reconcile actual canonical Wartortle population; fallback availability is not a complete result."
+    },
+    {
+      "id": "V18",
+      "videoTime": "02:57-03:12",
+      "issue": "Pokédex ownership remains loading",
+      "owner": "stackr_performance",
+      "resolution": "Treat private ownership independently from factual-card count.",
+      "closureCriterion": "Owner-specific success/error/retry settles without false zero ownership.",
+      "state": "existing_boundary_checks_passed",
+      "cause": "Ownership remains an independent account-scoped request. No source cause specific to the recorded ownership delay is established.",
+      "sourceFiles": [
+        "app/pokemon/[id].tsx"
+      ],
+      "repairCommit": null,
+      "validation": [
+        "scripts/test-pokedex-account-boundary.ts"
+      ],
+      "delivery": {
+        "implemented": false,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "remainingBlocker": "Installed ownership success/failure/Retry independently of catalogue loading remains pending."
+    },
+    {
+      "id": "V19",
+      "videoTime": "03:12-03:22",
+      "issue": "Pokédex pictures arrive after facts",
+      "owner": "stackr_performance",
+      "resolution": "Verify bounded exact-artwork hydration and preserve useful facts while images decode.",
+      "closureCriterion": "Declared image sample decodes with honest persistent failure recovery.",
+      "state": "image_delivery_diagnosis_open",
+      "cause": "Facts remain usable before optional artwork. The exact recorded picture delay is not proved to share the binder serialization cause.",
+      "sourceFiles": [],
+      "repairCommit": null,
+      "validation": [],
+      "delivery": {
+        "implemented": false,
+        "tested": false,
+        "independentlyReviewed": false,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "remainingBlocker": "Verify exact Pokédex image candidates, response/decoding failures and bounded installed hydration; no guessed image substitution."
+    },
+    {
+      "id": "V20",
+      "videoTime": "03:12",
+      "issue": "Partial Pokédex fallback can omit Retry",
+      "owner": "stackr_performance",
+      "resolution": "Propagate canonical failure through existing PokedexCardsProgress.error while retaining partial cards.",
+      "closureCriterion": "Actual screen Retry recovers and clears error; stale account/query replies rejected.",
+      "state": "local_repair_tested",
+      "cause": "Canonical fallback dropped the existing progress.error field. Retained cards now preserve the canonical error so existing Retry appears; success clears it.",
+      "sourceFiles": [
+        "lib/pokedexCollection.ts"
+      ],
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "validation": [
+        "scripts/test-pokedex-partial-results.ts"
+      ],
+      "delivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "remainingBlocker": "Actual recording fallback path was not established; physical canonical recovery/completeness pending."
+    },
+    {
+      "id": "V21",
+      "videoTime": "03:52-04:07",
+      "issue": "Pikachu card search fails while sets/listings return",
+      "owner": "stackr_performance",
+      "resolution": "Keep independent useful groups and trace failed current factual-card read.",
+      "closureCriterion": "Current-query cards and explicit Retry recover correctly.",
+      "state": "current_search_recovery_checks_passed",
+      "cause": "Independent search groups and factual-card failures remain separate. Current-query retries and settled/superseded callback guards have regression coverage; the live recorded request cause is not proved.",
+      "sourceFiles": [
+        "lib/searchRecovery.ts"
+      ],
+      "repairCommit": null,
+      "validation": [
+        "scripts/test-search-recovery.ts",
+        "scripts/test-search-settlement-runtime.ts"
+      ],
+      "delivery": {
+        "implemented": false,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "remainingBlocker": "Trace/retest actual Pikachu factual-card failure on the delivered phone build."
+    },
+    {
+      "id": "V22",
+      "videoTime": "04:12-04:22",
+      "issue": "Search reports Cards100 while showing load failure",
+      "owner": "stackr_performance",
+      "resolution": "Preserve retained-result versus refreshed-result wording; clear factual error only after current factual success.",
+      "closureCriterion": "Failure/partial/success labels and superseded callback guards pass.",
+      "state": "local_repair_tested",
+      "cause": "Retained cards retained initial-load failure wording. Recovery now preserves refresh-versus-load wording without clearing errors before current factual success.",
+      "sourceFiles": [
+        "lib/searchRecovery.ts"
+      ],
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "validation": [
+        "scripts/test-search-recovery.ts",
+        "scripts/test-search-settlement-runtime.ts"
+      ],
+      "delivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "remainingBlocker": "Delivered-screen retained/fresh/error transitions and rapid searches remain pending."
+    },
+    {
+      "id": "V23",
+      "videoTime": "03:57-04:22",
+      "issue": "Search cards and listing media show placeholders",
+      "owner": "stackr_artwork",
+      "resolution": "Separate exact card artwork from listing-media mapping and transport/decode failures.",
+      "closureCriterion": "Available thumbnails render without blocking facts; real gaps explicit.",
+      "state": "image_delivery_diagnosis_open",
+      "cause": "Card catalogue artwork and listing media have separate sources. The recording does not establish exact absent URI, rejected candidate or failed decode.",
+      "sourceFiles": [],
+      "repairCommit": null,
+      "validation": [],
+      "delivery": {
+        "implemented": false,
+        "tested": false,
+        "independentlyReviewed": false,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "remainingBlocker": "Identify affected cards/listing media and verify actual thumbnails; do not borrow another printing image."
+    }
+  ],
+  "additionalAcceptance": [
+    "March1999CoroCoro two exact linked references and opening/replay",
+    "FinalPikachu exact printing, full inspection and tactile haptics",
+    "Standard/master binder denominators",
+    "Preserve populated Home and language-correct Discover lists"
+  ],
+  "workspace": {
+    "canonicalCode": "D:/Stackr",
+    "preservedWork": "D:/Stackr-organization",
+    "legacyPrimary": "D:/Stackr-1",
+    "legacyPrimaryMigration": "Hold until all dependent Git pointers and restoration are verified",
+    "deletion": "Exact verified deletion list requires approval; no blanket deletion",
+    "cacheRoot": "D:/Stackr-organization/active-runtime",
+    "registeredGitHeadsRestored": 104,
+    "oldRootSourceFoldersArchived": 3,
+    "sourceFolderFilesVerified": 578,
+    "permanentDeletionPerformed": false,
+    "primaryWorkingFilesRestored": {
+      "files": 3677,
+      "bytes": 2295652088,
+      "exactStagedIndex": true,
+      "unstagedPatchApplicable": true,
+      "allNecessaryIgnoredMaterialPreserved": false
+    }
+  },
+  "limits": [
+    "Phone build, API trace and full device timing not established by video",
+    "API successes do not establish image delivery or private binder acceptance",
+    "Source/rights ambiguity stays explicit; no invented artwork or quotes"
+  ],
+  "independentReview": {
+    "status": "scoped_source_changes_reviewed",
+    "deviceAcceptance": false,
+    "resolvedFindings": [
+      "Exact owner Storm permission",
+      "Lossless Git patch bytes",
+      "Shared binder query cancellation race",
+      "Mixed access-denial precedence",
+      "Serialized saved artwork handle loss",
+      "Saved-subset artwork pagination"
+    ],
+    "physicalPhoneEvidence": null
+  },
+  "runtimeRevision": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+  "validation": {
+    "typecheck": "passed",
+    "lint": {
+      "errors": 0,
+      "warnings": 8
+    },
+    "changedSourceLint": {
+      "errors": 0,
+      "warnings": 16
+    },
+    "sourceSecretScan": {
+      "passed": true,
+      "repositoryTextFiles": 3684
+    },
+    "localIosExport": "passed_exact_four_exported_assets_verified",
+    "nativeSigned": false,
+    "installedPhone": "pending",
+    "performanceSample": "unmeasured; no p95 claim",
+    "exportReceipt": "docs/releases/ios-export-asset-verification-20261018.json"
+  }
+}

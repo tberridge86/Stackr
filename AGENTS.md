@@ -1,5 +1,34 @@
 # Stackr agent ownership
 
+## Current repair and consolidation workspace (18 October 2026)
+
+Use the independent repository `D:/Stackr` and the single integration branch
+`codex/stackr-repair-consolidation-20261018`. Tif coordinates both the video
+repairs and workspace consolidation. Keep preserved work, source assets and
+private evidence under `D:/Stackr-organization`. The old `D:/Stackr-1` repository
+and its linked checkouts remain recovery sources until their commits, tracked
+changes, untracked files and necessary ignored material have been preserved and
+restoration verified. Migrate the original shared Git repository last.
+
+Run npm commands from this repository root unless explicitly targeting a
+subproject. Search tracked source first and avoid generated/cache/data trees
+unless directly relevant. TypeScript changes require `npm run typecheck` and
+`npm run lint`; backend TypeScript also requires `npm run typecheck:backend`,
+and gateway changes require `npm --prefix gateway test`. Use narrow regressions.
+
+Keep at most two helpers alongside the coordinator. Assign exclusive file
+ownership, preserve other edits and obtain independent review for substantial
+logic, identity, pricing and account-boundary changes. Live deployments,
+provider price refreshes, remote database scripts, catalogue mutations and production or
+staging jobs retain explicit approval boundaries. Exact artwork replacements
+retain the owner's standing operational authority and per-source rights gates.
+Permanent cleanup uses an exact approved path list after recovery verification;
+an old or clean checkout is not proof that its contents are disposable.
+
+The current issue register is `docs/releases/video-repair-register-20261018.json`.
+Local repairs, checks, review, merge, publication and installed-phone acceptance
+are separate milestones. No video issue closes on source tests alone.
+
 Read `docs/agents/README.md` before work, then the relevant specialist brief in
 `docs/agents/`. These briefs define the five ownership areas requested by Jack:
 release delivery, pricing, performance and retrieval, backend hygiene, and

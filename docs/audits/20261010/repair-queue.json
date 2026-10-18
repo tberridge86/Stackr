@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-17T12:22:55.502Z",
-  "coordinator": "root",
-  "workingDirectory": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/tif-readiness-integration",
-  "branch": "codex/build58-set-card-retrieval-20261017",
-  "auditedBaseRevision": "5da3ba5edd07d0390f5169d5a6713c7cbfd3a0b1",
+  "updatedAt": "2026-10-18T10:24:47.017Z",
+  "coordinator": "Tif / root",
+  "workingDirectory": "D:/Stackr",
+  "branch": "codex/stackr-repair-consolidation-20261018",
+  "auditedBaseRevision": "f9350f896375ffac84a22ca2f7a4ec7654538091",
   "protocol": ".codex/AUDIT_PROTOCOL.md",
   "auditStatus": {
     "coding": "completed",
@@ -25,13 +25,13 @@
     "lastPassStartedAt": "2026-10-11T08:12:47Z",
     "currentWork": {
       "owner": "root",
-      "status": "sme_review_completed_source_committed_release_and_acceptance_pending",
-      "runtimeRevision": "f3042f985ba1269ed25144f2c28d3e7ef2f09cbd",
-      "checkedHead": "d690822b496cdd686a4e683e7dba919e00621226",
-      "report": "docs/releases/tif-sme-source-queue-review-20261012.md",
-      "pullRequest": "https://github.com/tberridge86/Stackr/pull/337",
-      "independentReview": "Reviewed source/test fixes retained; independent queue and Git inventories reconciled against exact ancestry.",
-      "nextAction": "Carry the reviewed candidate through its approved release lane and actual phone acceptance; separately review the five source/coverage records and legacy unreviewed candidates. Do not mark the app complete or blanket-commit historical WIP."
+      "status": "reviewed_local_video_repairs_and_reversible_workspace_consolidation_in_progress",
+      "runtimeRevision": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "report": "docs/releases/repair-consolidation-20261018.md",
+      "issueRegister": "docs/releases/video-repair-register-20261018.json",
+      "independentReview": "Scoped runtime and preservation-tool findings resolved; phone/live acceptance remains open.",
+      "nextAction": "Finish recovery-backed consolidation and matching draft PR. Remote read-only SQL awaits explicit owner approval; live promotion and installed-device closure remain separate.",
+      "schedulerCreated": false
     },
     "lastObservedPullRequest": {
       "url": "https://github.com/tberridge86/Stackr/pull/337",
@@ -43,7 +43,8 @@
       "applicableChecks": "10 succeeded, 0 failed/pending, 2 skipped; full-platform and live-canary skips are not passes",
       "merged": false,
       "requiresReconciliation": false,
-      "mergeCanTriggerLiveDeployment": true
+      "mergeCanTriggerLiveDeployment": true,
+      "observationState": "historical_observation_not_rechecked_by_20261018_consolidation"
     },
     "lastPassCompletedAt": "2026-10-11T16:37:41.948Z",
     "lastPassOutcome": "Eight resumed source findings repaired/reviewed; bounded Marnie SQL/inverse preparation reviewed but canonical/runtime delivery unresolved; ten targets not accepted",
@@ -76,9 +77,39 @@
       "requiresReconciliation": true,
       "mergeCanTriggerLiveDeployment": true,
       "observationState": "historical_prepublication_snapshot_not_final_checks"
+    },
+    "previousCurrentWork20261018": {
+      "owner": "root",
+      "status": "sme_review_completed_source_committed_release_and_acceptance_pending",
+      "runtimeRevision": "f3042f985ba1269ed25144f2c28d3e7ef2f09cbd",
+      "checkedHead": "d690822b496cdd686a4e683e7dba919e00621226",
+      "report": "docs/releases/tif-sme-source-queue-review-20261012.md",
+      "pullRequest": "https://github.com/tberridge86/Stackr/pull/337",
+      "independentReview": "Reviewed source/test fixes retained; independent queue and Git inventories reconciled against exact ancestry.",
+      "nextAction": "Carry the reviewed candidate through its approved release lane and actual phone acceptance; separately review the five source/coverage records and legacy unreviewed candidates. Do not mark the app complete or blanket-commit historical WIP."
     }
   },
   "issues": [
+    {
+      "id": "VIDEO-REPAIR-CONSOLIDATION-20261018",
+      "severity": "P1",
+      "owner": "Tif / root",
+      "status": "reviewed_local_repairs_consolidation_in_progress_live_and_phone_acceptance_open",
+      "summary": "Implement both owner plans: all23video issues and one clean independent D:/Stackr integration branch with lossless preservation before old-folder cleanup.",
+      "evidence": "docs/releases/repair-consolidation-20261018.md",
+      "issueRegister": "docs/releases/video-repair-register-20261018.json",
+      "runtimeRevision": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "validation": [
+        "Root typecheck passed; lint0errors8existingwarnings",
+        "Focused actual-screen, serializer, pagination, concurrency/account and artwork regressions passed",
+        "Final local iOS export passed; four exact selected asset bytes verified",
+        "Independent Git restoration contains all104registeredheads;3677primaryworkingfiles restored exactly"
+      ],
+      "closedVideoIssues": 0,
+      "liveDeployment": false,
+      "deviceVerified": false,
+      "nextAction": "Complete recovery-backed archive registry; obtain explicit approval for bounded remote read-only SQL; then resolve demonstrated live causes and deliver/retest on the confirmed installed phone build."
+    },
     {
       "id": "CATALOGUE-MANIFEST-READ-PHASE-20261017",
       "severity": "P1",
@@ -3044,5 +3075,12 @@
     "pullRequest": "https://github.com/tberridge86/Stackr/pull/337",
     "independentReview": "Reviewed source/test fixes retained; independent queue and Git inventories reconciled against exact ancestry.",
     "nextAction": "Carry the reviewed candidate through its approved release lane and actual phone acceptance; separately review the five source/coverage records and legacy unreviewed candidates. Do not mark the app complete or blanket-commit historical WIP."
+  },
+  "previousCoordination": {
+    "updatedAt": "2026-10-17T12:22:55.502Z",
+    "coordinator": "root",
+    "workingDirectory": "D:/Stackr-recovery-artifacts-20261009/runtime-temp/worktrees/tif-readiness-integration",
+    "branch": "codex/build58-set-card-retrieval-20261017",
+    "auditedBaseRevision": "5da3ba5edd07d0390f5169d5a6713c7cbfd3a0b1"
   }
 }
