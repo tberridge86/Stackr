@@ -13,6 +13,7 @@ import * as optionalCatalogueEnrichment from '../lib/optionalCatalogueEnrichment
 import * as cardArtworkPresentation from '../lib/cardArtworkPresentation';
 import * as chineseCatalogueCorrection from '../lib/chineseCatalogueCorrection';
 import * as stackrSetRetrieval from '../lib/stackrSetRetrieval';
+import * as stackrPreferredSetArtwork from '../lib/stackrPreferredSetArtwork';
 
 const PRISMATIC_ID = 'fb3cd93c-9006-42f5-b026-96a9fedcf269';
 const prismatic = {
@@ -60,6 +61,7 @@ async function main() {
   const dependencies: Record<string, unknown> = {
     './chineseCatalogueCorrection': chineseCatalogueCorrection,
     './stackrSetRetrieval': stackrSetRetrieval,
+    './stackrPreferredSetArtwork': stackrPreferredSetArtwork,
     './cardArtworkPresentation': cardArtworkPresentation,
     './stackrCatalogueCache': { getPersistentStackrSetFactsStore: async () => null },
     './stackrApiV1': { stackrApiClient: defaultClient },
