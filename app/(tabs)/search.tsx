@@ -83,7 +83,8 @@ import { stackrTabContentPadding } from '../../lib/stackrSizing';
 import { getIncrementalListWindow } from '../../lib/performance';
 import { supabase } from '../../lib/supabase';
 import { sanitizeGate0CommerceCopy } from '../../lib/gate0CommerceCopy';
-import { sanitizeMarketplaceListingPresentationFields } from '../../lib/marketplacePresentation';
+import { getMarketplaceListingThumbnail, sanitizeMarketplaceListingPresentationFields } from '../../lib/marketplacePresentation';
+import { fetchListingSearchWithMedia } from '../../lib/listingSearchMedia';
 import { useCataloguePriceOverlay } from '../../lib/useCataloguePriceOverlay';
 
 type SearchCategory = 'all' | 'cards' | 'sets' | 'sealed' | 'graded' | 'collectors' | ListingCategoryKey;
@@ -1046,18 +1047,20 @@ export default function GlobalSearchScreen() {
       .select('id, collector_name, avatar_url')
       .ilike('collector_name', `%${primary}%`)
       .limit(8));
-    let listingsQuery = supabase
-      .from('user_card_flags')
-      .select('id, card_id, set_id, product_name, product_type, pricing_mode, grade_company, grade, asking_price, trade_only, listing_status, condition, listing_images, official_image_url, created_at')
-      .eq('flag_type', 'trade')
-      .or('listing_status.eq.active,listing_status.is.null')
-      .or(`product_name.ilike.%${primary}%,card_id.ilike.%${primary}%,set_id.ilike.%${primary}%,product_type.ilike.%${primary}%,grade_company.ilike.%${primary}%,grade.ilike.%${primary}%,condition.ilike.%${primary}%`);
+    const listingsPromise: Promise<any> = fetchListingSearchWithMedia((select) => {
+      let listingsQuery = supabase
+        .from('user_card_flags')
+        .select(select)
+        .eq('flag_type', 'trade')
+        .or('listing_status.eq.active,listing_status.is.null')
+        .or(`product_name.ilike.%${primary}%,card_id.ilike.%${primary}%,set_id.ilike.%${primary}%,product_type.ilike.%${primary}%,grade_company.ilike.%${primary}%,grade.ilike.%${primary}%,condition.ilike.%${primary}%`);
 
-    if (listingProductTypeFilter) {
-      listingsQuery = listingsQuery.eq('product_type', listingProductTypeFilter);
-    }
+      if (listingProductTypeFilter) {
+        listingsQuery = listingsQuery.eq('product_type', listingProductTypeFilter);
+      }
 
-    const listingsPromise: Promise<any> = Promise.resolve(listingsQuery.limit(18));
+      return listingsQuery.limit(18);
+    }, () => requestId === requestRef.current);
 
     const [correctionFirst, cardsFirst, setsFirst, productsFirst, profilesFirst, listingsFirst] = await Promise.all([
       settleWithin(correctionPromise, 180),
@@ -2153,7 +2156,7 @@ function mapListingResult(listing: any): ListingResult {
         : null,
       safeListing.condition,
     ].filter(Boolean).join(' · ') || null,
-    imageUri: safeListing.official_image_url ?? safeListing.listing_images?.[0] ?? null,
+    imageUri: getMarketplaceListingThumbnail(safeListing),
     price: safeListing.asking_price == null ? null : Number(safeListing.asking_price),
     modeLabel: isTrade ? 'Trade' : 'Offers',
     cardId: safeListing.card_id ?? null,

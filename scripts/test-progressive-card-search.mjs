@@ -7,6 +7,8 @@ vm.runInNewContext(ts.transpileModule(fs.readFileSync('lib/optionalCatalogueEnri
 const normalizationExports = {};
 vm.runInNewContext(ts.transpileModule(fs.readFileSync('lib/searchNormalisation.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText, { exports: normalizationExports });
 const { expandSearchQuery, normaliseSearchText } = normalizationExports;
+const listingSearchMediaExports = {};
+vm.runInNewContext(ts.transpileModule(fs.readFileSync('lib/listingSearchMedia.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText, { exports: listingSearchMediaExports });
 
 const tick = () => new Promise(setImmediate);
 function deferred() { let resolve, reject; const promise = new Promise((a, b) => { resolve = a; reject = b; }); return { promise, resolve, reject }; }
@@ -98,6 +100,7 @@ assert.match(
 const query = { select() { return this; }, ilike() { return this; }, eq() { return this; }, or() { return this; }, limit: async () => ({ data: [] }) };
 const noop = () => {};
 const run = extract('app/(tabs)/search.tsx', 'runSearch', {
+  ...listingSearchMediaExports,
   requestRef, previousSearchRef, category: 'all', selectedLanguage: 'ja', searchIdentityEpoch: 0,
   EMPTY_RESULTS, SEARCH_FIRST_PAINT_BUDGET_MS: 1,
   setResults: value => { state = typeof value === 'function' ? value(state) : value; },

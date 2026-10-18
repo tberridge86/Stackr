@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import ts from 'typescript';
+import { fetchListingSearchWithMedia } from '../lib/listingSearchMedia';
 
 type Deferred<T> = { promise: Promise<T>; resolve: (value: T) => void; reject: (reason: unknown) => void };
 
@@ -130,6 +131,7 @@ function createHarness(timers: FakeTimers, options: {
     { SEARCH_FINAL_SETTLEMENT_TIMEOUT_MS: 5, setTimeout: timers.setTimeout, clearTimeout: timers.clearTimeout },
   );
   const run = extract<(query: string, force?: boolean) => Promise<void>>('runSearch', {
+    fetchListingSearchWithMedia,
     requestRef,
     previousSearchRef,
     category,

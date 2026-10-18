@@ -244,6 +244,23 @@ export function sanitizeMarketplaceListingMedia(value: unknown): any[] | null {
   });
 }
 
+export function getMarketplaceListingThumbnail(row: Record<string, unknown>): string | null {
+  const official = sanitizeMarketplaceMediaUrl(row.official_image_url);
+  if (official) return official;
+  if (Array.isArray(row.listing_images)) {
+    for (const image of row.listing_images) {
+      const url = sanitizeMarketplaceMediaUrl(image);
+      if (url) return url;
+    }
+  }
+  const front = sanitizeMarketplaceMediaUrl(row.seller_front_image_url);
+  if (front) return front;
+  const media = sanitizeMarketplaceListingMedia(row.listing_media) ?? [];
+  const primary = media.find((item) => item.role === 'seller'
+    && ['front', 'slab_front', 'packaging_front'].includes(item.slot));
+  return primary?.url ?? media[0]?.url ?? sanitizeMarketplaceMediaUrl(row.seller_back_image_url);
+}
+
 export function sanitizeMarketplaceListingPresentationFields<T extends Record<string, any>>(
   row: T,
 ): T {
