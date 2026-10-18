@@ -12,6 +12,7 @@ import { fetchPreferredStackrSets, fetchStackrPriceSnapshots, fetchStackrSet } f
 import { resolveBinderSetIdentity } from './binderSetIdentity';
 import { createSavedBinderCardMatcher, normalizeBinderCollectorNumber } from './binderCardIdentity';
 import { mergeBinderArtwork } from './stackrSetRetrieval';
+import { getPreferredSetArtworkReassignments } from './stackrPreferredSetArtwork';
 import { positiveCatalogueCount, preserveUnmatchedBinderRows } from './binderCataloguePresentation';
 import { enforceSetVisualRuntimePolicy } from './providerSetMarkRuntimePolicy';
 import { selectTcgdexReferencePersistenceImage } from './tcgdexReferencePersistence';
@@ -1570,7 +1571,8 @@ export async function attachBinderCatalogueArtwork(
     const enriched = rows.map((row) => {
       const identity = artworkIdentity(row.card);
       const display = identity ? byId.get(identity) : null;
-      if (!display || (!display.images.small && !display.images.large)) return row;
+      if (!display || (!display.images.small && !display.images.large
+        && !getPreferredSetArtworkReassignments(display.raw_data).length)) return row;
       return { ...row, card: display };
     });
     // Share the screen's image-only merge so inspection, provenance and tiles

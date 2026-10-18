@@ -5,7 +5,7 @@ import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
 import { snapshotBinderView, isCompleteBinderSnapshot } from '../lib/binderReopenSnapshot';
 import { createSetFactsReader, loadCompleteSetPages, mergeBinderArtwork } from '../lib/stackrSetRetrieval';
-import { readPreferredSetArtwork } from '../lib/stackrPreferredSetArtwork';
+import { copyPreferredSetArtworkReassignments, getPreferredSetArtworkReassignments, readPreferredSetArtwork, rememberPreferredSetArtworkObservation } from '../lib/stackrPreferredSetArtwork';
 import { readOptionalCatalogueEnrichment, throwIfOptionalCatalogueReadAborted } from '../lib/optionalCatalogueEnrichment';
 import { getBinderCatalogueInspectionImages } from '../lib/binderCataloguePresentation';
 import { getCardArtworkPresentation, resolveCardArtwork } from '../lib/cardArtworkPresentation';
@@ -79,6 +79,7 @@ function harness(population = facts) {
   const context: any = { exports, Map, Set, WeakMap, JSON, Error, String, Number, Array,
     UUID_PATTERN: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
     canonicalArtworkFacts: new WeakMap(), stackrApiClient: client, resolveCardArtwork,
+    copyPreferredSetArtworkReassignments, getPreferredSetArtworkReassignments, rememberPreferredSetArtworkObservation,
     toStackrApiLanguage: (language: string) => ['ja', 'en', 'zh-Hans', 'zh-Hant', 'ko'].includes(language) ? language : null,
     getPokemonSetLanguageFromPrefixedId: () => null,
     correctedChineseSetContext: (reference: string, language: string) => ({ reference, language }),

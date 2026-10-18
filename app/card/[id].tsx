@@ -245,8 +245,11 @@ export default function CardDetailScreen() {
           // Keep the original model: provider image overlays are intentionally
           // non-enumerable and must not be copied through an object spread.
           setCard(current => isCurrent() ? found ?? null : current);
-          if (foundInCache && found && !found.images?.small && !found.images?.large) {
-            setArtworkLoading(true);
+          if (foundInCache && found && (found.raw_data?.stackr?.canonical === true
+            || (!found.images?.small && !found.images?.large))) {
+            // Canonical cached images keep first paint while the bounded
+            // preferred read checks replacements and exact reassociations.
+            setArtworkLoading(!found.images?.small && !found.images?.large);
             // The enrichment WeakMap accepts canonical facts only; unsupported
             // cached legacy rows simply yield no artwork and retain their facts.
             const canonicalFacts = found as CanonicalPokemonCard;
@@ -257,7 +260,7 @@ export default function CardDetailScreen() {
                 const merged = mergeSetCardArtwork([current as CanonicalPokemonCard], enriched)[0];
                 return merged ? merged as PokemonCard : current;
               });
-            }).catch(() => undefined).finally(() => { setArtworkLoading(current => isCurrent() ? false : current); });
+            }).catch(() => undefined).finally(() => { if (isCurrent()) setArtworkLoading(false); });
           } else setArtworkLoading(current => isCurrent() ? false : current);
         }
       } catch (err) {

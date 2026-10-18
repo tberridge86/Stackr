@@ -1,6 +1,6 @@
 import { createSetFactsReader, loadCompleteSetPages } from './stackrSetRetrieval';
 import { correctedChineseSetContext } from './chineseCatalogueCorrection';
-import { readPreferredSetArtwork } from './stackrPreferredSetArtwork';
+import { copyPreferredSetArtworkReassignments, getPreferredSetArtworkReassignments, readPreferredSetArtwork, rememberPreferredSetArtworkObservation } from './stackrPreferredSetArtwork';
 import { resolveCardArtwork } from './cardArtworkPresentation';
 import { getPublishedSetCoverFallback, getPublishedSetLogoFallback } from './publishedSetLogoFallbacks';
 import { getPersistentStackrSetFactsStore } from './stackrCatalogueCache';
@@ -481,14 +481,14 @@ function embeddedCardImageAssets(card: StackrCard) {
   for (const variant of card.variants) {
     const asset = variant.image;
     if (!asset?.assetId) continue;
-    byId.set(asset.assetId, asset);
+    byId.set(JSON.stringify([asset.assetId, asset.cardId, asset.variantId]), asset);
   }
   return [...byId.values()];
 }
 
 function primaryCardImageAsset(card: StackrCard, assets: StackrCatalogueAsset[]) {
   const presentation = resolveCardArtwork(card, assets);
-  return assets.find((asset) => asset.assetId === presentation.assetId);
+  return assets.find((asset) => asset.assetId === presentation.assetId && asset.variantId === presentation.sourceVariantId);
 }
 
 function canonicalSetCardIdentity(card: StackrCard) {
@@ -624,7 +624,10 @@ export function stackrCardToLegacyCard(card: StackrCard, assets: StackrCatalogue
     variant.imageVariantId,
     variant.sameArtworkAsVariantId,
   ]).filter((value): value is string => Boolean(value)));
-  const allAssets = [...embeddedCardImageAssets(card), ...assets];
+  const reassignments = getPreferredSetArtworkReassignments(card);
+  const allAssets = [...embeddedCardImageAssets(card), ...assets].filter(asset => !reassignments.some(evidence => (
+    asset.assetId === evidence.assetId && asset.variantId === evidence.previousVariantId
+  )));
   const cardAssets = allAssets.filter((asset) => asset.cardId === card.cardId || relevantVariantIds.has(asset.variantId ?? ''));
   const primary = primaryCardImageAsset(card, cardAssets);
   const artwork = resolveCardArtwork(card, cardAssets);
@@ -734,6 +737,7 @@ export function stackrCardToLegacyCard(card: StackrCard, assets: StackrCatalogue
     },
   };
   canonicalArtworkFacts.set(mapped.raw_data, card);
+  copyPreferredSetArtworkReassignments(card, mapped.raw_data);
   return mapped;
 }
 
@@ -1260,6 +1264,7 @@ export async function fetchStackrCard(
   // only the presentation selection; cached catalogue facts remain unchanged.
   const selectedCard = resolved.variantId === resolved.card.defaultVariantId ? resolved.card
     : { ...resolved.card, defaultVariantId: resolved.variantId };
+  copyPreferredSetArtworkReassignments(resolved.card, selectedCard);
   const embeddedAssets = embeddedCardImageAssets(selectedCard);
   // Only verified printing/variant facts can end a caller's essential loading
   // phase; the returned promise still includes the existing optional artwork.
@@ -1702,10 +1707,13 @@ export async function enrichStackrCardArtworkFromFacts(
         || !expected.canonicalId || expected.canonicalId !== actual.canonicalId
         || expected.imageVariantId !== actual.imageVariantId
         || (expected.finishCode ?? null) !== (actual.finishCode ?? null)) continue;
-      canonicalArtworkFacts.set(saved.raw_data, fact);
-      matched.push(fact);
+      const observed = { ...fact };
+      rememberPreferredSetArtworkObservation(observed, saved.raw_data.presentation?.artwork);
+      canonicalArtworkFacts.set(saved.raw_data, observed);
+      matched.push(observed);
     }
-    await enrichGroup(matched, recovered.cards);
+    const selected = new Map(matched.map(fact => [fact.cardId, fact]));
+    await enrichGroup(matched, recovered.cards.map(fact => selected.get(fact.cardId) ?? fact));
   }
   return enriched;
 }

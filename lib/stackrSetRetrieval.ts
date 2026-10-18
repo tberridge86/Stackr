@@ -1,4 +1,5 @@
 import type { StackrCard } from './stackrApiV1';
+import { copyPreferredSetArtworkReassignments, getPreferredSetArtworkReassignments } from './stackrPreferredSetArtwork';
 
 /** Public catalogue facts only. Private collection state must never enter this store. */
 export type SetFactsKey = { namespace: string; setId: string; language: string; expectedCount: number };
@@ -236,8 +237,17 @@ export function mergeBinderArtwork<T extends { id: string; card_id: string; set_
     if (!enriched) return row;
     const small = enriched.card?.images?.small;
     const large = enriched.card?.images?.large;
-    if (!small && !large) return row;
-    const card = { ...row.card, images: { ...row.card?.images, small: small ?? row.card?.images?.small, large: large ?? row.card?.images?.large } };
+    const reassignments = getPreferredSetArtworkReassignments(enriched.card?.raw_data);
+    const currentIdentity = row.card?.raw_data?.stackr;
+    const selected = currentIdentity?.variants?.find((variant: any) => variant.variantId === currentIdentity.defaultVariantId);
+    const priorArtwork = row.card?.raw_data?.presentation?.artwork;
+    const invalidated = reassignments.some(evidence => (
+      (selected?.image?.assetId === evidence.assetId && selected.image.variantId === evidence.previousVariantId)
+      || (priorArtwork?.assetId === evidence.assetId && priorArtwork.sourceVariantId === evidence.previousVariantId)
+    ));
+    if (!small && !large && !invalidated) return row;
+    const card = { ...row.card, images: invalidated ? { small: small ?? large ?? null, large: large ?? small ?? null }
+      : { ...row.card?.images, small: small ?? row.card?.images?.small, large: large ?? row.card?.images?.large } };
     // Image provenance and fallback renditions travel with the new image, while
     // canonical finish facts and every private field remain the current values.
     const artworkMetadata = enriched.card?.raw_data?.presentation?.artwork;
@@ -250,10 +260,22 @@ export function mergeBinderArtwork<T extends { id: string; card_id: string; set_
       // Display-only provider overlays remain nonserializable below.
       card.raw_data = { ...card.raw_data, images: card.images };
     }
+    if (invalidated && currentIdentity?.variants) {
+      card.raw_data = { ...card.raw_data, stackr: { ...currentIdentity, variants: currentIdentity.variants.map((variant: any) => {
+        const stale = reassignments.some(evidence => variant.image?.assetId === evidence.assetId
+          && variant.image.variantId === evidence.previousVariantId);
+        const updated = enriched.card?.raw_data?.stackr?.variants?.find((candidate: any) => candidate.variantId === variant.variantId
+          && candidate.canonicalId === variant.canonicalId && candidate.imageVariantId === variant.imageVariantId);
+        return stale && updated ? { ...variant, image: updated.image ?? null } : variant;
+      }) } };
+      copyPreferredSetArtworkReassignments(enriched.card.raw_data, card.raw_data);
+    }
     // Preserve display-only provider overlays instead of making them serializable.
     if (Object.getOwnPropertyDescriptor(enriched.card, 'images')?.enumerable === false) {
       Object.defineProperty(card, 'images', { value: card.images, enumerable: false, configurable: true, writable: false });
     }
-    return { ...row, card };
+    const imageUrl = invalidated && reassignments.some(evidence => evidence.previousImageUrls.includes(row.image_url ?? ''))
+      ? null : row.image_url;
+    return { ...row, card, ...(imageUrl !== row.image_url ? { image_url: imageUrl } : {}) };
   });
 }
