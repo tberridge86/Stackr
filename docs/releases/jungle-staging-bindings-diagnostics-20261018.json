@@ -54,5 +54,20 @@
     "activeFirstEditionCandidateFound": false,
     "beforeRowsSha256": "696d6eeb94ee1606509a7ac4aa7824db30c4e89a6a9475de2b3b3fbf22af3348"
   },
-  "additionalSqlOrWriteAuthority": false
+  "additionalSqlOrWriteAuthority": false,
+  "exactHistoryFollowup": {
+    "state": "REVIEWED_ONE_READ_OWNER_APPROVAL_PENDING",
+    "script": "docs/releases/jungle-staging-history-read-only-20261018.sql",
+    "sha256": "f01234bb92dfff2efc5e152b6986fc53a60ecbf376d6233dbafa0646e6e924b6",
+    "queryCount": 1,
+    "readOnly": true,
+    "statementTimeout": "5s",
+    "collectorOrPriceRows": false,
+    "independentReview": {
+      "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/staging-rehearsal-preparation-v5/root-independent-read-only-review.json",
+      "sha256": "87d3eb37570d5aa426a4337679a0c84bb3e17f1b629e31bccfe232043d715857"
+    },
+    "executed": false,
+    "mutationAuthority": false
+  }
 }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-18T20:30:22.209Z",
+  "observedAt": "2026-10-18T20:49:57.232Z",
   "ownerRequest": "Ensure BOTH plans have satisfied the work listed before TestFlight.",
   "sourceHeadAudited": "bfeac49e05c596301e8bb4727665216066625a44",
   "branch": "codex/stackr-repair-consolidation-20261018",
@@ -938,7 +938,7 @@
       "requirement": "Consolidate under D:/Stackr-organization with reversible recovery",
       "state": "partially_satisfied",
       "satisfiedInFull": false,
-      "remaining": "39 verified reversible relocations with preservation/restoration proof; actual inverse moves were rehearsed where recorded. The three artwork roots have copy/restoration and rollback evidence, not a recorded physical inverse-move rehearsal. Further original roots remain; relocation retains bytes and is not reclamation.",
+      "remaining": "40 verified reversible relocations with preservation/restoration proof; actual inverse moves were rehearsed where recorded. The three artwork roots have copy/restoration and rollback evidence, not a recorded physical inverse-move rehearsal. Further original roots remain; relocation retains bytes and is not reclamation.",
       "owner": "Tif"
     },
     {
@@ -946,7 +946,7 @@
       "requirement": "Account for every folder in the original owner list",
       "state": "all60_accounted_one_owner_excluded_unrelated",
       "satisfiedInFull": true,
-      "remaining": "Folder accounting is complete: 39 verified relocations, 19 retained old roots, one organization destination and one owner-excluded unrelated folder, D:/CodexLogoWork. Stackr-relevant denominator is 59; consolidation of retained work remains incomplete.",
+      "remaining": "Folder accounting is complete: 40 verified relocations, 18 retained old roots, one organization destination and one owner-excluded unrelated folder, D:/CodexLogoWork. Stackr-relevant denominator is 59; consolidation of retained work remains incomplete.",
       "owner": "Tif",
       "evidence": {
         "privatePath": "evidence/consolidation-20261018/owner-scope-correction-codexlogowork/owner-scope-reply.json",
@@ -1147,44 +1147,41 @@
     "sha256": "714099dd3456675f74e4ae5e8df9427349e4a71d15ad76985db1743667499d52"
   },
   "originalFolderCoverage": {
-    "privatePath": "evidence/consolidation-20261018/recognition-capture-vault-20261018-v2/current-owner-folder-placement.json",
-    "sha256": "feffac47ff2f9dbea88b91a7cb8c1aa70e0fdf0a90251ddf6cd4c778ed2c0801"
+    "privatePath": "evidence/consolidation-20261018/stage6-captures-preservation-20261018/move-preparation-v2/current-owner-folder-placement.json",
+    "sha256": "e363aa5e82e48f6fc4354bedbba77a482d825d1836f64c13e90b15d74da54f1a"
   },
   "originalFolderCounts": {
-    "relocatedWithRecordedProof": 39,
-    "retainedDependencyDataOrUnfinishedWork": 19,
+    "relocatedWithRecordedProof": 40,
+    "retainedDependencyDataOrUnfinishedWork": 18,
     "existingOrganizationDestination": 1,
     "ownerExcludedUnrelated": 1,
     "unmappedUnresolvedOriginal": 0,
     "originalMapRowsPresent": 60,
     "originalMapRowsMissing": 0,
-    "namedOriginalPathsStillPresentIncludingOrganizationDestination": 20,
-    "namedOldRootsStillPresentExcludingOrganizationDestination": 19,
-    "originalPathsAbsent": 40,
+    "namedOriginalPathsStillPresentIncludingOrganizationDestination": 19,
+    "namedOldRootsStillPresentExcludingOrganizationDestination": 18,
+    "originalPathsAbsent": 41,
     "stackrRelevantOriginalPaths": 59
   },
   "originalNamedPaths": 60,
   "remainingOriginalRoots": [
     {
       "original": "D:/Stackr-recovery-artifacts-20261009",
-      "mapRowPresent": false,
+      "mapRowPresent": true,
       "hold": "Twelve nested registered worktrees, a current audit-protocol pointer and source/runtime evidence need coordinated Git/path migration.",
       "capturedCohort": null,
-      "nextAction": "Resolve the documented hold, preserve the required cohort and verify restoration before any relocation. Add the missing current-map row before claiming map completion."
-    },
-    {
-      "original": "D:/Stackr-stage6-captures",
-      "mapRowPresent": true,
-      "hold": "Five language datasets need labels, provenance and benchmark path preservation.",
-      "capturedCohort": null,
-      "nextAction": "Resolve the documented hold, preserve the required cohort and verify restoration before any relocation."
+      "nextAction": "Resolve the documented hold, preserve the required cohort and verify restoration before any relocation.",
+      "currentLocation": "D:/Stackr-recovery-artifacts-20261009",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
     },
     {
       "original": "D:/Stackr-runtime",
       "mapRowPresent": true,
       "hold": "Python virtual environment embeds its D-root path; recreate or audit consumers before moving.",
       "capturedCohort": null,
-      "nextAction": "Resolve the documented hold, preserve the required cohort and verify restoration before any relocation."
+      "nextAction": "Resolve the documented hold, preserve the required cohort and verify restoration before any relocation.",
+      "currentLocation": "D:\\Stackr-runtime",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
     },
     {
       "original": "D:/Stackr-release-hardening-2026-08-19",
@@ -1200,7 +1197,9 @@
         "allNecessaryIgnoredMaterialPreserved": false,
         "scope": "Only the recorded captured cohort; not a complete whole-root preservation claim"
       },
-      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder."
+      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder.",
+      "currentLocation": "D:\\Stackr-release-hardening-2026-08-19",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
     },
     {
       "original": "D:/Stackr-rc-closure-20260824",
@@ -1216,7 +1215,9 @@
         "allNecessaryIgnoredMaterialPreserved": false,
         "scope": "Only the recorded captured cohort; not a complete whole-root preservation claim"
       },
-      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder."
+      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder.",
+      "currentLocation": "D:\\Stackr-rc-closure-20260824",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
     },
     {
       "original": "D:/Stackr-release-validation-20260824",
@@ -1232,7 +1233,9 @@
         "allNecessaryIgnoredMaterialPreserved": false,
         "scope": "Only the recorded captured cohort; not a complete whole-root preservation claim"
       },
-      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder."
+      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder.",
+      "currentLocation": "D:\\Stackr-release-validation-20260824",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
     },
     {
       "original": "D:/Stackr-mobile-release-candidate-20260824",
@@ -1248,28 +1251,36 @@
         "allNecessaryIgnoredMaterialPreserved": false,
         "scope": "Only the recorded captured cohort; not a complete whole-root preservation claim"
       },
-      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder."
+      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder.",
+      "currentLocation": "D:\\Stackr-mobile-release-candidate-20260824",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
     },
     {
       "original": "D:/CodexTemp",
       "mapRowPresent": true,
       "hold": "Contains Stackr scan evidence and unrelated iCloud research; whole-root movement is outside the Stackr-only scope.",
       "capturedCohort": null,
-      "nextAction": "Resolve the documented hold, preserve the required cohort and verify restoration before any relocation."
+      "nextAction": "Resolve the documented hold, preserve the required cohort and verify restoration before any relocation.",
+      "currentLocation": "D:\\CodexTemp",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
     },
     {
       "original": "D:/Stackr-pilot-data",
       "mapRowPresent": true,
       "hold": "Preserve indexes, labels, datasets, provenance and consumer/cache path relationships.",
       "capturedCohort": null,
-      "nextAction": "Map actual launcher/runtime overrides, then budget a linked index/cache or large-archive preservation cohort. No disposable or move-ready classification."
+      "nextAction": "Map actual launcher/runtime overrides, then budget a linked index/cache or large-archive preservation cohort. No disposable or move-ready classification.",
+      "currentLocation": "D:\\Stackr-pilot-data",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
     },
     {
       "original": "D:/Stackr-model-evaluation",
       "mapRowPresent": true,
       "hold": "Current model packaging names its ONNX path; nested Git repository and model/venv provenance need preservation and path migration.",
       "capturedCohort": null,
-      "nextAction": "Resolve the documented hold, preserve the required cohort and verify restoration before any relocation."
+      "nextAction": "Resolve the documented hold, preserve the required cohort and verify restoration before any relocation.",
+      "currentLocation": "D:\\Stackr-model-evaluation",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
     },
     {
       "original": "D:/Stackr-next-testflight-20260906",
@@ -1285,7 +1296,9 @@
         "allNecessaryIgnoredMaterialPreserved": false,
         "scope": "Only the recorded captured cohort; not a complete whole-root preservation claim"
       },
-      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder."
+      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder.",
+      "currentLocation": "D:\\Stackr-next-testflight-20260906",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
     },
     {
       "original": "D:/Stackr-native-aaae6ac-20260910",
@@ -1301,7 +1314,9 @@
         "allNecessaryIgnoredMaterialPreserved": false,
         "scope": "Only the recorded captured cohort; not a complete whole-root preservation claim"
       },
-      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder."
+      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder.",
+      "currentLocation": "D:\\Stackr-native-aaae6ac-20260910",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
     },
     {
       "original": "D:/Stackr-visual-acceptance-20260910",
@@ -1317,7 +1332,9 @@
         "allNecessaryIgnoredMaterialPreserved": false,
         "scope": "Only the recorded captured cohort; not a complete whole-root preservation claim"
       },
-      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder."
+      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder.",
+      "currentLocation": "D:\\Stackr-visual-acceptance-20260910",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
     },
     {
       "original": "D:/Stackr-build37-feedback-20260912",
@@ -1333,7 +1350,9 @@
         "allNecessaryIgnoredMaterialPreserved": false,
         "scope": "Only the recorded captured cohort; not a complete whole-root preservation claim"
       },
-      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder."
+      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder.",
+      "currentLocation": "D:\\Stackr-build37-feedback-20260912",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
     },
     {
       "original": "D:/Stackr-integrated-candidate-20260912",
@@ -1349,7 +1368,9 @@
         "allNecessaryIgnoredMaterialPreserved": false,
         "scope": "Only the recorded captured cohort; not a complete whole-root preservation claim"
       },
-      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder."
+      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder.",
+      "currentLocation": "D:\\Stackr-integrated-candidate-20260912",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
     },
     {
       "original": "D:/Stackr-1",
@@ -1365,11 +1386,13 @@
         "allNecessaryIgnoredMaterialPreserved": false,
         "scope": "Only the recorded captured cohort; not a complete whole-root preservation claim"
       },
-      "nextAction": "Migrate last after all dependent Git/worktree/runtime/restore paths and necessary ignored material have preservation and restoration proof."
+      "nextAction": "Migrate last after all dependent Git/worktree/runtime/restore paths and necessary ignored material have preservation and restoration proof.",
+      "currentLocation": "D:\\Stackr-1",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
     },
     {
       "original": "D:/Stackr-release-recovery-20261009",
-      "mapRowPresent": false,
+      "mapRowPresent": true,
       "hold": null,
       "capturedCohort": {
         "file": "D:/Stackr-organization/preserved-work/consolidation-20261018-content/combined-summary.json",
@@ -1381,21 +1404,27 @@
         "allNecessaryIgnoredMaterialPreserved": false,
         "scope": "Only the recorded captured cohort; not a complete whole-root preservation claim"
       },
-      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder. Add the missing current-map row before claiming map completion."
+      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder.",
+      "currentLocation": "D:/Stackr-release-recovery-20261009",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
     },
     {
       "original": "D:/Stackr-chinese-partial-dependencies-20261010",
-      "mapRowPresent": false,
+      "mapRowPresent": true,
       "hold": "177 package directories without root manifest; reproducibility, consumers and local patches are unverified.",
       "capturedCohort": null,
-      "nextAction": "Resolve the documented hold, preserve the required cohort and verify restoration before any relocation. Add the missing current-map row before claiming map completion."
+      "nextAction": "Resolve the documented hold, preserve the required cohort and verify restoration before any relocation.",
+      "currentLocation": "D:/Stackr-chinese-partial-dependencies-20261010",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
     },
     {
       "original": "D:/Stackr-chinese-release-tools-20261010",
-      "mapRowPresent": false,
+      "mapRowPresent": true,
       "hold": "Nested registered ios-source worktree and dependency junction to release-recovery need coordinated migration.",
       "capturedCohort": null,
-      "nextAction": "Resolve the documented hold, preserve the required cohort and verify restoration before any relocation. Add the missing current-map row before claiming map completion."
+      "nextAction": "Resolve the documented hold, preserve the required cohort and verify restoration before any relocation.",
+      "currentLocation": "D:/Stackr-chinese-release-tools-20261010",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
     }
   ],
   "unresolvedOriginals": [],
@@ -1555,5 +1584,35 @@
     "stagingBindingSelected": false,
     "next": "Prepare an exact separately reviewed staging rollback rehearsal; remote rehearsal and production association change remain unapproved.",
     "testFlightHeld": true
+  },
+  "historicalOriginalFolderCoverageBeforeStage6": {
+    "privatePath": "evidence/consolidation-20261018/recognition-capture-vault-20261018-v2/current-owner-folder-placement.json",
+    "sha256": "feffac47ff2f9dbea88b91a7cb8c1aa70e0fdf0a90251ddf6cd4c778ed2c0801"
+  },
+  "stage6CaptureContinuation": {
+    "recordedAt": "2026-10-18T20:49:57.232Z",
+    "original": "D:/Stackr-stage6-captures",
+    "current": "D:/Stackr-organization/data-and-models/Stackr-stage6-captures",
+    "files": 177,
+    "bytes": 190823656,
+    "directories": 26,
+    "fullSnapshotAndRestoration": true,
+    "actualInverseAndReplay": true,
+    "originalLauncherPreserved": true,
+    "launcherCurrent": "D:\\Stackr-organization\\evidence\\consolidation-20261018\\stage6-captures-preservation-20261018\\move-preparation-v2\\retired-original\\Start-Stackr-Capture.cmd.preserved",
+    "commonGitControlsUnchanged": true,
+    "labelsAndConsentUnchanged": true,
+    "sevenManaphyContradictionsRetained": true,
+    "mappedUseNote": "evidence/consolidation-20261018/stage6-captures-preservation-20261018/move-preparation-v2/named-use-note.md",
+    "receipt": {
+      "privatePath": "evidence/consolidation-20261018/stage6-captures-preservation-20261018/move-preparation-v2/execution-03a4e93fcc8a44e8bcfe6aa197b8fe4a/outcome.json",
+      "sha256": "847ed4c1dc38f5b21a0b4c59c333d6e7158dcd11a596c4d0121450e21d54f507"
+    },
+    "currentOwnerFolderCoverage": {
+      "privatePath": "evidence/consolidation-20261018/stage6-captures-preservation-20261018/move-preparation-v2/current-owner-folder-placement.json",
+      "sha256": "e363aa5e82e48f6fc4354bedbba77a482d825d1836f64c13e90b15d74da54f1a"
+    },
+    "sourceDirectoryAbsent": true,
+    "permanentDeletion": false
   }
 }
