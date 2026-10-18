@@ -1,0 +1,65 @@
+{
+  "recordedAt": "2026-10-18T22:42:41.743Z",
+  "scope": "Node test environment compatibility for the separately integrated icons; no app runtime edits",
+  "failedHostedRevision": "067f51f7a52a054e260ff71ed7f3729b72478463",
+  "confirmedFailures": [
+    {
+      "job": "candidate-tests",
+      "cause": "Strict actual-screen dependency map lacked StackrFunctionalIcon",
+      "run": "39172387071",
+      "jobId": "117807980531"
+    },
+    {
+      "job": "lint-type-unit",
+      "cause": "Node component harness needed an SVG adapter instead of importing native Flow sources",
+      "run": "39172387066",
+      "jobId": "117807981050"
+    }
+  ],
+  "repairs": [
+    "Add one explicit image leaf to the existing strict screen dependency map; all unknown-import assertions remain",
+    "Render SVG and Path through local DOM adapters alongside existing native/web platform adapters"
+  ],
+  "files": [
+    {
+      "path": "scripts/test-value-history-recovery.ts",
+      "localWorkingSha256": "746e3e1ba0932e952826b086eee92c627c2e13fa8190836ca9827677c9be269a"
+    },
+    {
+      "path": "scripts/test-ui-standardisation.cjs",
+      "localWorkingSha256": "b20b62aead907dca28a9d1f8875fee330233c9cd09c83eb9c9e26662e8ffe01c"
+    }
+  ],
+  "validation": {
+    "directValueHistory": {
+      "exitCode": 0
+    },
+    "directUiContracts": {
+      "exitCode": 0,
+      "toolSession": 15987
+    },
+    "typecheck": {
+      "exitCode": 0,
+      "toolSession": 68056
+    },
+    "lint": {
+      "exitCode": 0,
+      "errors": 0,
+      "existingWarnings": 8,
+      "toolSession": 78065
+    },
+    "feedbackRecovery": {
+      "exitCode": 0,
+      "toolSession": 23053
+    },
+    "nextBetaFixes": {
+      "exitCode": 0,
+      "toolSession": 10808
+    }
+  },
+  "hostedSuccessor": "pending_after_push",
+  "unsignedRuntimeStill": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
+  "testFlightHeld": true,
+  "nativePublished": false,
+  "phoneVerified": false
+}
