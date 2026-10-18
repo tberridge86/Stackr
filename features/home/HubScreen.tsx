@@ -117,11 +117,23 @@ import {
   serializeHomeCollectionCache,
 } from '../../lib/homeCollectionCache';
 
-const fetchHomeDisplayCardRows = async (cardIds: string[]) => (
-  hydrateCardReferenceRowMapWithLiveTcgdexReferences(
-    await fetchStackrCardRows(cardIds), attachLiveTcgdexCardReferences,
-  )
-);
+type HomeDisplayCardRows = Awaited<ReturnType<typeof fetchStackrCardRows>>;
+
+const fetchHomeDisplayCardRows = async (
+  cardIds: string[],
+  onFactsReady?: (rows: HomeDisplayCardRows) => void,
+): Promise<HomeDisplayCardRows> => {
+  const rows = await withPersonalDataReadTimeout(() => fetchStackrCardRows(cardIds));
+  if (onFactsReady) {
+    // Apply the same fail-closed image projection without a provider read, so
+    // facts can paint while only live-validated artwork is still pending.
+    const facts = await hydrateCardReferenceRowMapWithLiveTcgdexReferences(rows, async (cards) => cards, 0);
+    onFactsReady(facts);
+  }
+  return withPersonalDataReadTimeout(() => (
+    hydrateCardReferenceRowMapWithLiveTcgdexReferences(rows, attachLiveTcgdexCardReferences)
+  ));
+};
 
 // ===============================
 // TYPES
@@ -837,7 +849,10 @@ const activityTypeForFeedType = (type?: string | null): HomeActivityItem['activi
   return 'generic';
 };
 
-const enrichActivityItemsWithCardImages = async (items: HomeActivityItem[]): Promise<HomeActivityItem[]> => {
+const enrichActivityItemsWithCardImages = async (
+  items: HomeActivityItem[],
+  onFactsReady?: (items: HomeActivityItem[]) => void,
+): Promise<HomeActivityItem[]> => {
   const cardIds = [
     ...new Set(
       items
@@ -848,9 +863,8 @@ const enrichActivityItemsWithCardImages = async (items: HomeActivityItem[]): Pro
 
   if (!cardIds.length) return items;
 
-  try {
-    const officialCards = await fetchHomeDisplayCardRows(cardIds);
-
+  let latestItems = items;
+  const applyCardRows = (officialCards: HomeDisplayCardRows): HomeActivityItem[] => {
     const activityImageByCardId = new Map<string, { small: string | null; large: string | null; candidates: string[]; cacheKey: string | null }>();
     const cardNameByCardId = new Map<string, string>();
     const cardMetadataByCardId = new Map<string, ReturnType<typeof getHomeCardDisplayMetadata>>();
@@ -905,9 +919,17 @@ const enrichActivityItemsWithCardImages = async (items: HomeActivityItem[]): Pro
           : item.title,
       };
     });
+  };
+
+  try {
+    const officialCards = await fetchHomeDisplayCardRows(cardIds, (facts) => {
+      latestItems = applyCardRows(facts);
+      onFactsReady?.(latestItems);
+    });
+    return applyCardRows(officialCards);
   } catch (error) {
     console.log('Failed to enrich home activity cards', error);
-    return items;
+    return latestItems;
   }
 };
 
@@ -2135,8 +2157,38 @@ export default function HubScreen() {
     const requestId = ++homeChaseRequestRef.current;
     setChaseLoading(true);
     setChaseError(null);
+    const revokeDeniedRequest = (error: unknown) => {
+      if (homeChaseRequestRef.current !== requestId || !isKnownAuthDenial(error)) return false;
+      // Revoke the request before clearing its private data: facts, artwork or
+      // prices still in flight must not restore rows after access was denied.
+      homeChaseRequestRef.current += 1;
+      homeChaseListingsRequestRef.current += 1;
+      setChaseCards([]);
+      setSelectedChaseKey(null);
+      setChaseListingsByKey({});
+      setChaseListingsLoading(false);
+      setChaseListingsError(null);
+      setChaseError('Chase access could not be confirmed. Please try again.');
+      setChaseLoading(false);
+      return true;
+    };
+    const readSavedChaseRows = async <T extends { error: unknown },>(query: PromiseLike<T>): Promise<T> => {
+      try {
+        const result = await query;
+        if (result.error) {
+          // PostgREST carries HTTP status on the response, outside its error.
+          revokeDeniedRequest(result);
+          throw result.error;
+        }
+        return result;
+      } catch (error) {
+        revokeDeniedRequest(error);
+        throw error;
+      }
+    };
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await withPersonalDataReadTimeout(() => supabase.auth.getUser());
+      if (userError) throw userError;
       if (!user) {
         if (homeChaseRequestRef.current === requestId) setChaseCards([]);
         return;
@@ -2146,33 +2198,31 @@ export default function HubScreen() {
         homeChaseRequestRef.current === requestId
         && homeSessionUserIdRef.current === trustedUserId
       );
+      if (!isCurrentRequest()) return;
 
-      const [wishlistResult, watchlistResult, showcaseResult] = await Promise.all([
-        supabase
+      const [wishlistResult, watchlistResult, showcaseResult] = await withPersonalDataReadTimeout((signal) => Promise.all([
+        readSavedChaseRows(supabase
           .from('user_card_flags')
           .select('id, card_id, set_id, asking_price, market_estimate, created_at')
           .eq('user_id', user.id)
           .eq('flag_type', 'wishlist')
           .order('created_at', { ascending: false })
-          .limit(30),
-        supabase
+          .limit(30).abortSignal(signal)),
+        readSavedChaseRows(supabase
           .from('market_watchlist')
           .select('id, card_id, set_id, created_at')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
-          .limit(30),
-        supabase
+          .limit(30).abortSignal(signal)),
+        readSavedChaseRows(supabase
           .from('binder_card_showcases')
           .select('id, card_id, set_id, sort_order')
           .eq('user_id', user.id)
           .eq('showcase_type', 'chase')
           .order('sort_order', { ascending: true })
-          .limit(30),
-      ]);
-
-      if (wishlistResult.error) throw wishlistResult.error;
-      if (watchlistResult.error) throw watchlistResult.error;
-      if (showcaseResult.error) throw showcaseResult.error;
+          .limit(30).abortSignal(signal)),
+      ]));
+      if (!isCurrentRequest()) return;
 
       const mergedRows: any[] = [];
       const seen = new Set<string>();
@@ -2191,56 +2241,82 @@ export default function HubScreen() {
       }
 
       const cardIds = [...new Set(mergedRows.map((row) => row.card_id))];
-      const [officialCardMap, priceMap] = await Promise.all([
-        fetchHomeDisplayCardRows(cardIds),
-        fetchStackrPriceSnapshots(cardIds),
-      ]);
-
-      if (!isCurrentRequest()) return;
-      setChaseCards(mergedRows.map((row) => {
-        const officialCard = officialCardMap.get(row.card_id) ?? null;
-        const estimated = row.market_estimate ?? row.asking_price ?? priceMap.get(row.card_id)?.market_central ?? null;
-        const cardNumber = officialCard?.number ?? null;
-        const setId = officialCard?.set_id ?? row.set_id ?? null;
-        const officialImages = getPokemonCardImageUrls(row.card_id, setId, cardNumber);
-        const rawImages = (officialCard?.raw_data as any)?.images ?? null;
-        const officialImage =
-          officialCard?.image_small ??
-          officialCard?.image_large ??
-          rawImages?.small ??
-          rawImages?.large ??
-          officialImages.small ??
-          officialImages.large ??
-          null;
-        return {
-          cardId: row.card_id,
-          setId,
-          name: officialCard?.name ?? row.card_id,
-          setName: (officialCard?.raw_data as any)?.set?.name ?? row.set_id ?? 'Wanted card',
-          ...getHomeCardDisplayMetadata({
-            id: row.card_id,
+      let officialCardMap: HomeDisplayCardRows | null = null;
+      let priceMap: Awaited<ReturnType<typeof fetchStackrPriceSnapshots>> | null = null;
+      const publishCards = () => {
+        if (!isCurrentRequest() || !officialCardMap) return;
+        const facts = officialCardMap;
+        setChaseCards((current) => mergedRows.map((row) => {
+          const officialCard = facts.get(row.card_id) ?? null;
+          const cardNumber = officialCard?.number ?? null;
+          const setId = officialCard?.set_id ?? row.set_id ?? null;
+          // Keep the last estimate only for the same reference and set while its
+          // new snapshot is pending. A different printing never inherits it.
+          const prior = priceMap === null
+            ? current.find((card) => card.cardId === row.card_id && card.setId === setId)?.estimatedValue
+            : null;
+          const estimated = row.market_estimate ?? row.asking_price ?? priceMap?.get(row.card_id)?.market_central ?? prior ?? null;
+          const officialImages = getPokemonCardImageUrls(row.card_id, setId, cardNumber);
+          const rawImages = (officialCard?.raw_data as any)?.images ?? null;
+          const officialImage =
+            officialCard?.image_small ??
+            officialCard?.image_large ??
+            rawImages?.small ??
+            rawImages?.large ??
+            officialImages.small ??
+            officialImages.large ??
+            null;
+          return {
+            cardId: row.card_id,
             setId,
-            name: officialCard?.name,
-            setName: (officialCard?.raw_data as any)?.set?.name,
-            number: cardNumber,
-            language: officialCard?.language,
-            raw: officialCard?.raw_data as Record<string, any> | null,
-          }),
-          number: cardNumber,
-          rarity: officialCard?.rarity ?? null,
-          imageUrl: officialImage ?? null,
-          inspectionRequest: getHomeCatalogueInspectionRequest({
             name: officialCard?.name ?? row.card_id,
-            language: officialCard?.language ?? null,
-            rawData: officialCard?.raw_data,
-            imageUrl: officialImage,
-          }),
-          estimatedValue: typeof estimated === 'number' ? estimated : estimated == null ? null : Number(estimated),
-        };
-      }));
+            setName: (officialCard?.raw_data as any)?.set?.name ?? row.set_id ?? 'Wanted card',
+            ...getHomeCardDisplayMetadata({
+              id: row.card_id,
+              setId,
+              name: officialCard?.name,
+              setName: (officialCard?.raw_data as any)?.set?.name,
+              number: cardNumber,
+              language: officialCard?.language,
+              raw: officialCard?.raw_data as Record<string, any> | null,
+            }),
+            number: cardNumber,
+            rarity: officialCard?.rarity ?? null,
+            imageUrl: officialImage ?? null,
+            inspectionRequest: getHomeCatalogueInspectionRequest({
+              name: officialCard?.name ?? row.card_id,
+              language: officialCard?.language ?? null,
+              rawData: officialCard?.raw_data,
+              imageUrl: officialImage,
+            }),
+            estimatedValue: typeof estimated === 'number' ? estimated : estimated == null ? null : Number(estimated),
+          };
+        }));
+        setChaseLoading(false);
+      };
+      await Promise.all([
+        fetchHomeDisplayCardRows(cardIds, (facts) => {
+          officialCardMap = facts;
+          publishCards();
+        }).then((cards) => {
+          officialCardMap = cards;
+          publishCards();
+        }).catch((error) => {
+          revokeDeniedRequest(error);
+          throw error;
+        }),
+        withPersonalDataReadTimeout(() => fetchStackrPriceSnapshots(cardIds)).then((prices) => {
+          priceMap = prices;
+          publishCards();
+        }).catch((error) => {
+          revokeDeniedRequest(error);
+          throw error;
+        }),
+      ]);
     } catch (error) {
       console.log('Failed to load home chase cards', error);
       if (homeChaseRequestRef.current !== requestId) return;
+      if (revokeDeniedRequest(error)) return;
       // Retain this session's last successful cards; account changes clear them separately.
       setChaseError('Could not refresh chase cards.');
     } finally {
@@ -2399,7 +2475,9 @@ export default function HubScreen() {
       setRecentActivity(combined);
       // The event is usable before optional artwork; stale enrichment cannot
       // replace a newer history read or cross an account change.
-      void enrichActivityItemsWithCardImages(combined).then((enriched) => {
+      void enrichActivityItemsWithCardImages(combined, (facts) => {
+        if (isCurrentRequest()) setRecentActivity(facts);
+      }).then((enriched) => {
         if (isCurrentRequest()) setRecentActivity(enriched);
       }).catch((error) => console.log('Failed to enrich home activity cards', error));
     } catch (error) {

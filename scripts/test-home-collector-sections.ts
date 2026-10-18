@@ -33,6 +33,7 @@ const mocks: Record<string, unknown> = {
   './StackrNavigationIcon': { StackrNavigationIcon: element('StackrNavigationIcon') },
   './StackrBrowseControls': { StackrBinderButton: (props: { label: string; onPress: () => void }) => reactMock.createElement('TouchableOpacity', { onPress: props.onPress, accessibilityLabel: props.label }, props.label) },
   './StackrImage': { StackrImage: element('StackrImage') },
+  './StackrLoadingIndicator': { StackrLoadingIndicator: element('StackrLoadingIndicator') },
   './Text': { Text: element('Text') },
   './BinderModeBadge': { BinderModeIconBadge: element('BinderModeIconBadge') },
   './StackrActionButton': { StackrActionButton: element('StackrActionButton') },
@@ -199,6 +200,24 @@ assert.match(text(chaseSheet), /browse-only listing/);
 assert.match(text(chaseSheet), /guide price £0\.00/);
 assert.deepEqual(findButton(chaseSheet, 'Select Oddish, Japanese')?.props.accessibilityState, { selected: true });
 assert.ok(findButton(chaseSheet, 'View selected chase card'));
+
+const chaseRecoveryProps = {
+  visible: true, items: [{ ...foreignCard, estimatedValue: 42 }], selectedCardId: foreignCard.cardId,
+  listings: [], listingsLoading: false,
+  onClose() {}, onSelectCard() {}, onViewCard() {}, onViewListing() {}, onBrowseMarketplace() {}, onAddChase() {}, onRetryListings() {},
+};
+for (const isLoading of [false, true]) {
+  const partial = expand(ChaseCardsSheet({ ...chaseRecoveryProps, isLoading, error: 'Could not refresh chase cards.' }));
+  assert.match(text(partial), /Oddish/, 'usable chase facts stay visible during a refresh or optional failure');
+  assert.match(text(partial), /Est\. £42\.00/, 'a retained estimate remains labelled');
+  assert.match(text(partial), /Could not refresh chase cards\./, 'retained facts do not hide the failed refresh');
+  assert.doesNotMatch(text(partial), /Loading chase cards|Could not load chase cards/);
+  assert.ok(findButton(partial, 'View selected chase card'), 'the current card remains actionable');
+}
+const emptyChaseError = expand(ChaseCardsSheet({ ...chaseRecoveryProps, items: [], isLoading: false, error: 'Offline' }));
+assert.match(text(emptyChaseError), /Could not load chase cards/);
+const emptyChaseLoading = expand(ChaseCardsSheet({ ...chaseRecoveryProps, items: [], isLoading: true }));
+assert.match(text(emptyChaseLoading), /Loading chase cards/);
 
 const homeSource = readFileSync(resolve('features/home/HubScreen.tsx'), 'utf8');
 assert.ok(homeSource.indexOf('<HomeCollectionHero') < homeSource.indexOf('<ValueTrackerCard'), 'Collection content must precede optional value detail.');

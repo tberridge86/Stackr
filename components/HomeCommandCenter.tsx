@@ -1420,13 +1420,13 @@ export function ChaseCardsSheet({
             </TouchableOpacity>
           </View>
 
-          {isLoading ? (
+          {isLoading && items.length === 0 ? (
             <View style={[styles.chaseSheetStateCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
               <ActivityIndicator color={HOME_HERO_PRIMARY} />
               <Text style={[styles.chaseSheetStateTitle, { color: theme.colors.text }]}>Loading chase cards</Text>
               <Text style={[styles.chaseSheetStateCopy, { color: theme.colors.textSoft }]}>Getting your hunt list ready.</Text>
             </View>
-          ) : error ? (
+          ) : error && items.length === 0 ? (
             <View style={[styles.chaseSheetStateCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
               <Ionicons name="alert-circle-outline" size={26} color={HOME_HERO_PRIMARY} />
               <Text style={[styles.chaseSheetStateTitle, { color: theme.colors.text }]}>Could not load chase cards</Text>
@@ -1448,6 +1448,7 @@ export function ChaseCardsSheet({
               showsVerticalScrollIndicator={false}
               contentContainerStyle={[styles.chaseSheetScrollContent, { paddingBottom: insets.bottom + 28 }]}
             >
+              {error ? <Text style={[styles.chaseSheetStateCopy, { color: theme.colors.textSoft }]}>{error}</Text> : null}
               <View style={[styles.chaseSummaryCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
                 <View>
                   <Text style={[styles.chaseSummaryValue, { color: theme.colors.text }]}>{items.length}</Text>

@@ -8,13 +8,17 @@ import * as homeCache from '../lib/homeCollectionCache';
 import * as prepared from '../lib/preparedCollectionValuation';
 import * as pricingState from '../lib/collectionPricingState';
 import * as stablePrices from '../lib/stableCollectionPrices';
+import * as cardReferences from '../lib/scanCardReferenceHydration';
+import { getHomeCardDisplayMetadata } from '../lib/homeCardDisplayMetadata';
+import { resolveTcgdexControlledCardReference } from '../lib/tcgdexControlledCardReference';
 import type { fetchHomeSavedCollection } from '../lib/homeSavedCollection';
 
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 const deferred = <T,>() => {
   let resolve!: (value: T) => void;
-  const promise = new Promise<T>((done) => { resolve = done; });
-  return { promise, resolve };
+  let reject!: (reason: Error) => void;
+  const promise = new Promise<T>((done, fail) => { resolve = done; reject = fail; });
+  return { promise, resolve, reject };
 };
 const emptySaved = (): Awaited<ReturnType<typeof fetchHomeSavedCollection>> => ({ binders: [], ownedRows: [], cardsByBinder: new Map() });
 const summary = (value: number) => ({ total: value, totalUnits: 1, pricedUnits: 1,
@@ -34,7 +38,8 @@ assert.ok(renderStart > 0);
 const source = homeSource.slice(0, renderStart) + `
   return React.createElement('HomeState', { collectionTotal, collectionPricingSummary,
     ownedCardCount, activeBinder, chartData, collectionPricingWarning, collectionValueError,
-    collectionValueLoading, homeDataError, chaseLoading, activityLoading, recentActivity, chaseCards,
+    collectionValueLoading, homeDataError, chaseLoading, chaseError, activityLoading, activityError,
+    recentActivity, chaseCards, reloadChase: loadChaseCards, reloadActivity: loadRecentActivity,
     restore: applyCachedHomeCollection, refresh: loadCollectionValue });
 }
 `;
@@ -45,6 +50,12 @@ const compiled = ts.transpileModule(source, { compilerOptions: {
 const deadlineSource = ts.transpileModule(readFileSync('lib/personalDataRead.ts', 'utf8'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText;
+const authSource = readFileSync('components/auth-context.tsx', 'utf8');
+const authDenialModule = { exports: {} as Record<string, any> };
+vm.runInNewContext(ts.transpileModule(authSource.slice(
+  authSource.indexOf('function isStaleAuthError('), authSource.indexOf('export function getCachedReadSession('),
+), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText,
+{ module: authDenialModule, exports: authDenialModule.exports });
 
 async function harness(options: {
   owner?: string;
@@ -57,8 +68,15 @@ async function harness(options: {
   valuation?: () => Promise<any>;
   localSetting?: (key: string) => Promise<string | null>;
   customNameArt?: () => Promise<string | null>;
+  chaseRows?: (owner: string) => Promise<any[]>;
+  chaseRead?: (table: string, owner: string) => Promise<any>;
+  activityRows?: (owner: string) => Promise<any[]>;
+  cards?: (ids: string[], call: number, owner: string) => Promise<Map<string, any>>;
+  prices?: (ids: string[], call: number, owner: string) => Promise<Map<string, any>>;
+  references?: (cards: any[], budget: number) => Promise<any[]>;
 } = {}) {
   let owner = options.owner ?? 'owner-a', focused = true, authCalls = 0, now = 0, nextTimer = 0;
+  let cardCalls = 0, priceCalls = 0, stateWrites = 0;
   let listener: ((event: string, session: any) => void) | null = null;
   const timers = new Map<number, { due: number; action: () => void }>();
   const interactions: { action: () => void; cancelled: boolean }[] = [];
@@ -81,8 +99,20 @@ async function harness(options: {
     },
     from(table: string) {
       tableReads.push(table);
+      const filters = new Map<string, unknown>();
+      let columns = '';
       const query: any = new Proxy({}, { get(_target, name) {
-        if (name === 'then') return (resolve: (value: unknown) => void) => resolve({ data: [], error: null });
+        if (name === 'then') return (resolve: (value: unknown) => void, reject: (error: unknown) => void) => {
+          const isChaseRead = (table === 'user_card_flags' && filters.get('flag_type') === 'wishlist')
+            || (table === 'binder_card_showcases' && filters.get('showcase_type') === 'chase')
+            || (table === 'market_watchlist' && columns === 'id, card_id, set_id, created_at');
+          if (isChaseRead && options.chaseRead) return options.chaseRead(table, String(filters.get('user_id'))).then(resolve, reject);
+          const rows = table === 'user_card_flags' && filters.get('flag_type') === 'wishlist'
+            ? options.chaseRows?.(String(filters.get('user_id'))) ?? Promise.resolve([]) : Promise.resolve([]);
+          return rows.then(data => resolve({ data, error: null }), reject);
+        };
+        if (name === 'select') return (value: string) => { columns = value; return query; };
+        if (name === 'eq') return (key: string, value: unknown) => { filters.set(key, value); return query; };
         return () => query;
       } });
       return query;
@@ -90,7 +120,10 @@ async function harness(options: {
   };
   const feedback = { hiddenInsightIds: [], showLessTopics: {}, showMoreTopics: {} };
   const deps: Record<string, any> = {
-    react: React,
+    react: { ...React, useState<T,>(initial: T) {
+      const [value, setValue] = React.useState(initial);
+      return [value, (next: React.SetStateAction<T>) => { stateWrites++; setValue(next); }];
+    } },
     'react-native': { useWindowDimensions: () => ({ width: 390 }), InteractionManager: {
       runAfterInteractions(action: () => void) { const task = { action, cancelled: false }; interactions.push(task); return { cancel() { task.cancelled = true; } }; },
     } },
@@ -106,7 +139,7 @@ async function harness(options: {
     '../../components/theme-context': { useTheme: () => ({ theme: { colors: {} }, isDark: false }) },
     '../../components/app-mode-context': { useAppMode: () => ({ hydrated: false, hasChosenMode: true, premiumSellerAccess: { allowed: false } }) },
     '../../components/auth-context': { useAuth: () => ({ user: owner ? { id: owner } : null }),
-      isKnownAuthDenial: (error: { status?: number } | null) => error?.status === 401 || error?.status === 403 },
+      isKnownAuthDenial: authDenialModule.exports.isKnownAuthDenial },
     '../../components/profile-context': { useProfile: () => ({ profile: null }) },
     '../../components/HomeCommandCenter': { HOME_TOKENS: { layout: {} } },
     '../../lib/supabase': { supabase },
@@ -129,13 +162,23 @@ async function harness(options: {
       callbacks?.onBindersReady?.(result.binders);
       return result;
     } },
-    '../../lib/homeActivity': { readRecentHomeActivityRows: async () => [] },
+    '../../lib/homeActivity': { readRecentHomeActivityRows: async (_client: unknown, id: string) => options.activityRows?.(id) ?? [] },
     '../../lib/customBinderNameArt': { getCustomBinderNameArtKeyForBinder: options.customNameArt ?? (async () => null) },
     '../../lib/binders': { fetchBinders: async () => [], fetchBinderCards: async () => [] },
-    '../../lib/stackrDomainAdapter': { fetchStackrCardRows: async () => new Map(), fetchStackrPriceSnapshots: async () => new Map() },
+    '../../lib/stackrDomainAdapter': {
+      fetchStackrCardRows: async (ids: string[]) => options.cards?.(ids, ++cardCalls, owner) ?? new Map(),
+      fetchStackrPriceSnapshots: async (ids: string[]) => options.prices?.(ids, ++priceCalls, owner) ?? new Map(),
+    },
+    '../../lib/scanCardReferenceHydration': cardReferences,
+    '../../lib/pokemonTcg': { getPokemonCardImageUrls: () => ({}),
+      attachLiveTcgdexCardReferences: options.references ?? (async (cards: any[]) => cards) },
+    '../../lib/cardArtworkPresentation': { getCardArtworkPresentation: () => null },
+    '../../lib/homeCardDisplayMetadata': { getHomeCardDisplayMetadata },
+    '../../lib/gate0CommerceCopy': { sanitizeGate0CommerceCopy: (copy: string | null, fallback: string | null) => copy ?? fallback },
     '../../lib/mintyPreferences': { useMintyPreferences: () => ({ settings: {}, save: async () => {} }) },
     '../../lib/mintyInsights': { DEFAULT_MINTY_FEEDBACK_PROFILE: feedback, DEFAULT_MINTY_PERSONALISATION_SETTINGS: {},
-      buildMintyHomeInsight: () => ({}), sanitizeMintyInsightForGate0: (value: unknown) => value },
+      buildMintyHomeInsight: () => ({}), sanitizeMintyInsightForGate0: (value: unknown) => value,
+      isGate0CommerceActivity: () => false },
     '../../lib/mintyInsightService': { loadMintyInsight: async () => { mintyReads.push(owner); return {}; } },
     '../../lib/stackrSizing': { getStackrHomeWordmarkWidth: () => 100 },
     '../../lib/stackrApiV1': { stackrApiClient: { collectionValuation: options.valuation ?? (async () => ({ data: { state: 'ready', summary: {
@@ -171,6 +214,7 @@ async function harness(options: {
   await settle(); await tick();
   return {
     reads, savedReads, tableReads, mintyReads, preloads, warmedViews, warnings, settle, tick,
+    stateWrites: () => stateWrites,
     state: () => root.root.findByType('HomeState' as any).props,
     async auth(id: string, event = 'SIGNED_IN') { owner = id; await act(async () => { listener?.(event, id ? { user: { id }, expires_at: Date.now() / 1000 + 3600 } : null); }); await tick(); },
     async focus(value: boolean) { focused = value; await act(async () => { root.update(screen()); }); },
@@ -179,7 +223,369 @@ async function harness(options: {
   };
 }
 
+// Synthetic private rows exercise the real Home loaders. They identify no
+// printing from the owner's video and establish no live catalogue coverage.
+const fixtureReference = 'home-fixture-variant';
+const fixtureSet = 'home-fixture-set';
+const fixtureName = 'テストカード';
+const unvalidatedImage = 'https://assets.tcgdex.net/ja/cards/home-fixture/007/high.webp';
+const fixtureCard = () => ({
+  id: 'home-fixture-printing', name: fixtureName, number: '007', set_id: fixtureSet, language: 'ja',
+  image_small: unvalidatedImage, image_large: unvalidatedImage,
+  raw_data: { english_display_name: 'Home fixture', images: { small: unvalidatedImage, large: unvalidatedImage },
+    stackr: { cardId: 'home-fixture-printing' }, set: { id: fixtureSet, name: '合成テストセット' } },
+});
+const fixtureCards = () => new Map([[fixtureReference, fixtureCard()]]);
+const fixtureChase = () => [{ card_id: fixtureReference, set_id: fixtureSet }];
+const fixtureActivity = () => [{ id: 'home-fixture-event', title: 'Added Unknown item', card_id: fixtureReference,
+  set_id: fixtureSet, created_at: '2026-10-18T12:00:00Z', type: 'binder_add' }];
+const fixturePrice = (value: number) => new Map([[fixtureReference, {
+  card_id: 'home-fixture-printing', variant_id: fixtureReference, market_central: value, currency: 'GBP',
+  evidence_status: 'market_estimate', snapshot_at: '2026-10-18T12:00:00Z',
+}]]);
+const validatedFixtureImages = (cards: any[]) => {
+  const reference = resolveTcgdexControlledCardReference({ language: 'ja', providerCardId: 'home-fixture-007',
+    providerSetId: 'home-fixture', localId: '007', providerImageBase: 'https://assets.tcgdex.net/ja/cards/home-fixture/007',
+    provenance: 'tcgdex_live_or_ttl_cached_provider_card_record' });
+  assert.ok(reference);
+  return cards.map(card => ({ ...card, images: { small: reference.uri, large: reference.uri } }));
+};
+
+async function homeDisplayRecovery() {
+  const savedRows = deferred<any[]>(), facts = deferred<Map<string, any>>();
+  const provider = deferred<void>(), prices = deferred<Map<string, any>>();
+  const progressive = await harness({ cache: async () => null,
+    chaseRows: () => savedRows.promise, activityRows: async () => fixtureActivity(),
+    cards: () => facts.promise, prices: () => prices.promise,
+    references: async cards => { await provider.promise; return validatedFixtureImages(cards); },
+  });
+  await progressive.interactions(); await progressive.tick(180);
+  assert.equal(progressive.state().recentActivity.length, 1, 'raw activity publishes before catalogue facts');
+  assert.equal(progressive.state().recentActivity[0].cardName, null);
+  savedRows.resolve(fixtureChase()); await progressive.settle();
+  assert.equal(progressive.state().chaseCards.length, 0, 'a pending facts read must not invent card metadata');
+  facts.resolve(fixtureCards()); await progressive.settle();
+  assert.equal(progressive.state().chaseCards[0]?.name, fixtureName,
+    'usable chase facts must publish while controlled provider references and snapshots are independently held');
+  assert.equal(progressive.state().chaseLoading, false, 'optional reads cannot keep usable chase facts loading');
+  assert.equal(progressive.state().recentActivity[0].cardName, fixtureName,
+    'activity names must publish before optional provider references');
+  for (const card of [progressive.state().chaseCards[0], progressive.state().recentActivity[0]]) {
+    assert.equal(card.englishName, 'Home fixture');
+    assert.equal(card.cardId, fixtureReference);
+    assert.equal(card.setId, fixtureSet);
+    assert.ok(!card.imageUrl, 'unvalidated TCGdex artwork must remain suppressed during facts-first publication');
+  }
+  assert.equal(progressive.state().chaseCards[0].estimatedValue, null);
+  prices.resolve(fixturePrice(42)); await progressive.settle();
+  assert.equal(progressive.state().chaseCards[0].estimatedValue, 42, 'stored snapshots publish while provider art remains held');
+  provider.resolve(); await progressive.settle();
+  assert.match(progressive.state().chaseCards[0].imageUrl, /\/low\.webp$/);
+  assert.match(progressive.state().recentActivity[0].imageUrl, /\/low\.webp$/);
+  assert.equal(progressive.state().chaseCards[0].estimatedValue, 42, 'later artwork retains the exact-reference snapshot');
+  assert.equal(progressive.state().chaseError, null);
+  assert.deepEqual(progressive.warnings, []);
+  await progressive.close();
+
+  for (const failure of ['price', 'artwork'] as const) {
+    const pendingFacts = deferred<Map<string, any>>(), pendingPrice = deferred<Map<string, any>>();
+    const pendingArtwork = deferred<void>();
+    const failed = await harness({ chaseRows: async () => fixtureChase(), activityRows: async () => fixtureActivity(),
+      cards: () => pendingFacts.promise, prices: () => pendingPrice.promise,
+      references: async cards => { await pendingArtwork.promise; return validatedFixtureImages(cards); },
+    });
+    await failed.interactions(); await failed.tick(180);
+    if (failure === 'price') {
+      pendingPrice.reject(new Error('Synthetic snapshot failure')); await failed.settle();
+      assert.match(failed.state().chaseError, /Could not refresh/);
+    }
+    pendingFacts.resolve(fixtureCards()); await failed.settle();
+    assert.equal(failed.state().chaseCards[0].name, fixtureName);
+    if (failure === 'artwork') {
+      pendingPrice.resolve(fixturePrice(42)); await failed.settle();
+      pendingArtwork.reject(new Error('Synthetic artwork failure'));
+    } else {
+      pendingArtwork.resolve();
+    }
+    await failed.settle();
+    assert.equal(failed.state().chaseCards[0].name, fixtureName);
+    assert.equal(failed.state().recentActivity[0].cardName, fixtureName, 'optional failure retains activity facts instead of raw-event placeholders');
+    assert.equal(failed.state().chaseLoading, false);
+    assert.equal(failed.state().chaseCards[0].estimatedValue, failure === 'price' ? null : 42);
+    assert.match(failed.state().chaseError, /Could not refresh/, 'publishing facts cannot clear an optional-read failure');
+    await failed.close();
+  }
+
+  const timedArtwork = deferred<void>(), timedPrice = deferred<Map<string, any>>();
+  const timed = await harness({ chaseRows: async () => fixtureChase(), activityRows: async () => fixtureActivity(),
+    cards: async () => fixtureCards(), prices: () => timedPrice.promise,
+    references: async cards => { await timedArtwork.promise; return validatedFixtureImages(cards); },
+  });
+  await timed.interactions(); await timed.tick(180);
+  assert.equal(timed.state().chaseCards[0].name, fixtureName);
+  await timed.tick(10_000);
+  assert.match(timed.state().chaseError, /Could not refresh/);
+  assert.equal(timed.state().recentActivity[0].cardName, fixtureName);
+  const timedWrites = timed.stateWrites();
+  timedArtwork.resolve(); timedPrice.resolve(fixturePrice(99)); await timed.settle();
+  assert.equal(timed.stateWrites(), timedWrites, 'late timed-out optional reads cannot publish');
+  assert.equal(timed.state().chaseCards[0].estimatedValue, null);
+  assert.ok(!timed.state().chaseCards[0].imageUrl);
+  await timed.close();
+
+  const lateFacts = deferred<Map<string, any>>();
+  let lateProviderCalls = 0;
+  const factsTimeout = await harness({ chaseRows: async () => fixtureChase(), activityRows: async () => fixtureActivity(),
+    cards: () => lateFacts.promise, references: async cards => { lateProviderCalls++; return cards; },
+  });
+  await factsTimeout.interactions(); await factsTimeout.tick(180); await factsTimeout.tick(10_000);
+  assert.equal(factsTimeout.state().chaseLoading, false);
+  assert.match(factsTimeout.state().chaseError, /Could not refresh/);
+  assert.equal(factsTimeout.state().chaseCards.length, 0);
+  assert.equal(factsTimeout.state().recentActivity.length, 1, 'failed facts do not hide already usable raw activity');
+  const factsWrites = factsTimeout.stateWrites();
+  lateFacts.resolve(fixtureCards()); await factsTimeout.settle();
+  assert.equal(factsTimeout.stateWrites(), factsWrites, 'late facts cannot publish after their read deadline');
+  assert.equal(lateProviderCalls, 0, 'timed-out facts cannot start unnecessary provider work');
+  await factsTimeout.close();
+
+  let refreshRound = 0;
+  const retryPrice = deferred<Map<string, any>>();
+  const retained = await harness({ chaseRows: async () => fixtureChase(), cards: async () => fixtureCards(),
+    prices: async () => refreshRound ? retryPrice.promise : fixturePrice(42),
+  });
+  await retained.interactions(); await retained.tick(180);
+  assert.equal(retained.state().chaseCards[0].estimatedValue, 42);
+  refreshRound = 1;
+  await act(async () => { void retained.state().reloadChase(); }); await retained.settle();
+  assert.equal(retained.state().chaseCards[0].estimatedValue, 42, 'same-reference facts retain the prior estimate while its snapshot refresh is held');
+  retryPrice.reject(new Error('Synthetic retry failure')); await retained.settle();
+  assert.equal(retained.state().chaseCards[0].estimatedValue, 42);
+  assert.match(retained.state().chaseError, /Could not refresh/);
+  await retained.close();
+
+  let printingRound = 0;
+  const changedPrice = deferred<Map<string, any>>();
+  const changed = await harness({ chaseRows: async () => fixtureChase(),
+    cards: async () => printingRound ? new Map([[fixtureReference, { ...fixtureCard(), set_id: 'different-synthetic-set' }]]) : fixtureCards(),
+    prices: async () => printingRound ? changedPrice.promise : fixturePrice(42),
+  });
+  await changed.interactions(); await changed.tick(180);
+  printingRound = 1;
+  await act(async () => { void changed.state().reloadChase(); }); await changed.settle();
+  assert.equal(changed.state().chaseCards[0].setId, 'different-synthetic-set');
+  assert.equal(changed.state().chaseCards[0].estimatedValue, null, 'a changed printing cannot inherit the prior estimate');
+  changedPrice.resolve(new Map()); await changed.settle(); await changed.close();
+
+  for (const heldAt of ['facts', 'optional'] as const) {
+    let round = 0;
+    const staleFacts = deferred<Map<string, any>>(), stalePrice = deferred<Map<string, any>>(), staleArtwork = deferred<void>();
+    const currentName = 'Current synthetic card';
+    const superseded = await harness({ chaseRows: async () => fixtureChase(), activityRows: async () => fixtureActivity(),
+      cards: async () => round ? new Map([[fixtureReference, { ...fixtureCard(), name: currentName }]]) : staleFacts.promise,
+      prices: async () => round ? fixturePrice(88) : stalePrice.promise,
+      references: async cards => { if (cards[0]?.name === fixtureName) await staleArtwork.promise; return cards; },
+    });
+    await superseded.interactions(); await superseded.tick(180);
+    if (heldAt === 'optional') { staleFacts.resolve(fixtureCards()); await superseded.settle(); }
+    round = 1;
+    await act(async () => { void superseded.state().reloadChase(); void superseded.state().reloadActivity(); });
+    await superseded.settle();
+    assert.equal(superseded.state().chaseCards[0].name, currentName);
+    assert.equal(superseded.state().chaseCards[0].estimatedValue, 88);
+    const writes = superseded.stateWrites();
+    staleFacts.resolve(fixtureCards()); stalePrice.resolve(fixturePrice(1)); staleArtwork.resolve(); await superseded.settle();
+    assert.equal(superseded.stateWrites(), writes, `superseded ${heldAt} cannot publish state`);
+    assert.equal(superseded.state().recentActivity[0].cardName, currentName);
+    await superseded.close();
+  }
+
+  let accountRound = 0;
+  const oldAccountArtwork = deferred<void>(), oldAccountPrices = deferred<Map<string, any>>();
+  const account = await harness({ chaseRows: async () => fixtureChase(), activityRows: async () => fixtureActivity(),
+    cards: async () => new Map([[fixtureReference, { ...fixtureCard(), name: accountRound ? `Synthetic account round ${accountRound}` : fixtureName }]]),
+    prices: async () => accountRound ? fixturePrice(80 + accountRound) : oldAccountPrices.promise,
+    references: async cards => { if (cards[0]?.name === fixtureName) await oldAccountArtwork.promise; return cards; },
+  });
+  await account.interactions(); await account.tick(180);
+  accountRound = 1; await account.auth('owner-b');
+  assert.equal(account.state().chaseCards.length, 0, 'account changes clear the prior private chase rows');
+  await account.interactions(); await account.tick(180);
+  accountRound = 2; await account.auth('owner-a'); await account.interactions(); await account.tick(180);
+  assert.equal(account.state().chaseCards[0].name, 'Synthetic account round 2');
+  assert.equal(account.state().chaseCards[0].estimatedValue, 82);
+  const accountWrites = account.stateWrites();
+  oldAccountArtwork.resolve(); oldAccountPrices.resolve(fixturePrice(1)); await account.settle();
+  assert.equal(account.stateWrites(), accountWrites, 'old A requests remain invalid after A → B → A');
+  assert.equal(account.state().recentActivity[0].cardName, 'Synthetic account round 2');
+  await account.close();
+
+  for (const heldAt of ['facts', 'optional'] as const) {
+    const unmountedFacts = deferred<Map<string, any>>(), unmountedArtwork = deferred<void>(), unmountedPrice = deferred<Map<string, any>>();
+    const unmounted = await harness({ chaseRows: async () => fixtureChase(), activityRows: async () => fixtureActivity(),
+      cards: () => unmountedFacts.promise, prices: () => unmountedPrice.promise,
+      references: async cards => { await unmountedArtwork.promise; return validatedFixtureImages(cards); },
+    });
+    await unmounted.interactions(); await unmounted.tick(180);
+    if (heldAt === 'optional') { unmountedFacts.resolve(fixtureCards()); await unmounted.settle(); }
+    await unmounted.close();
+    const unmountedWrites = unmounted.stateWrites();
+    unmountedFacts.resolve(fixtureCards()); unmountedArtwork.resolve(); unmountedPrice.resolve(fixturePrice(99)); await unmounted.settle();
+    assert.equal(unmounted.stateWrites(), unmountedWrites, `unmounted Home cannot receive late ${heldAt} setters`);
+  }
+
+  let accessDenied = false;
+  const denied = await harness({ chaseRows: async () => fixtureChase(), cards: async () => fixtureCards(), prices: async () => fixturePrice(42),
+    authRead: async (_call, id) => accessDenied
+      ? { data: { user: null }, error: { status: 401, message: 'Synthetic denial' } }
+      : { data: { user: { id } }, error: null },
+  });
+  await denied.interactions(); await denied.tick(180);
+  assert.equal(denied.state().chaseCards.length, 1);
+  accessDenied = true;
+  await act(async () => { await denied.state().reloadChase(); });
+  assert.equal(denied.state().chaseCards.length, 0, 'known access denial revokes private chase rows');
+  assert.match(denied.state().chaseError, /access could not be confirmed/i);
+  accessDenied = false;
+  await act(async () => { await denied.state().reloadChase(); });
+  assert.equal(denied.state().chaseCards[0].estimatedValue, 42, 'an explicit authorised retry recovers the current facts and snapshot');
+  assert.equal(denied.state().chaseError, null);
+  await denied.close();
+  console.log('Home progressive display passed: facts-first, controlled images, independent snapshots, optional failures/deadlines, retained estimate scope, supersession, A → B → A and unmount.');
+}
+
+async function homeChaseDenialRecovery() {
+  const denial = (status: number) => Object.assign(new Error('Synthetic access denial'), { status });
+  for (const status of [401, 403]) {
+    for (const mode of ['response', 'rejection'] as const) {
+      for (const table of ['user_card_flags', 'market_watchlist', 'binder_card_showcases']) {
+        let revoked = false;
+        const denied = await harness({ cards: async () => fixtureCards(), prices: async () => fixturePrice(42),
+          chaseRead: async requestedTable => {
+            if (revoked && requestedTable === table) {
+              if (mode === 'rejection') throw denial(status);
+              // PostgREST puts HTTP status on the response, outside its error.
+              return { data: null, status, error: { code: '42501', message: `permission denied for table ${table}`, details: '', hint: '' } };
+            }
+            return { data: requestedTable === 'user_card_flags' ? fixtureChase() : [], status: 200, error: null };
+          },
+        });
+        await denied.interactions(); await denied.tick(180);
+        assert.equal(denied.state().chaseCards[0].estimatedValue, 42);
+        revoked = true;
+        await act(async () => { await denied.state().reloadChase(); });
+        assert.equal(denied.state().chaseCards.length, 0, `${table} ${status} ${mode} must revoke retained private chase cards`);
+        assert.equal(denied.state().chaseLoading, false);
+        assert.match(denied.state().chaseError, /access could not be confirmed/i);
+        revoked = false;
+        await act(async () => { await denied.state().reloadChase(); });
+        assert.equal(denied.state().chaseCards[0].estimatedValue, 42, 'an authorised new request recovers after saved-row denial');
+        assert.equal(denied.state().chaseError, null);
+        await denied.close();
+      }
+    }
+
+    for (const mode of ['response', 'rejection'] as const) {
+      let rejectAuth = false;
+      const authDenied = await harness({ chaseRows: async () => fixtureChase(), cards: async () => fixtureCards(), prices: async () => fixturePrice(42),
+        authRead: async (_call, id) => {
+          if (!rejectAuth) return { data: { user: { id } }, error: null };
+          if (mode === 'rejection') throw denial(status);
+          return { data: { user: null }, error: denial(status) };
+        },
+      });
+      await authDenied.interactions(); await authDenied.tick(180);
+      rejectAuth = true;
+      await act(async () => { await authDenied.state().reloadChase(); });
+      assert.equal(authDenied.state().chaseCards.length, 0, `auth ${status} ${mode} revokes retained chase facts`);
+      assert.match(authDenied.state().chaseError, /access could not be confirmed/i);
+      await authDenied.close();
+    }
+
+    for (const deniedRead of ['price', 'artwork'] as const) {
+      let refresh = false;
+      const pendingPrice = deferred<Map<string, any>>(), pendingArtwork = deferred<void>();
+      const optional = await harness({ chaseRows: async () => fixtureChase(), cards: async () => fixtureCards(),
+        prices: async () => refresh ? pendingPrice.promise : fixturePrice(42),
+        references: async cards => { if (refresh) await pendingArtwork.promise; return cards; },
+      });
+      await optional.interactions(); await optional.tick(180);
+      refresh = true;
+      await act(async () => { void optional.state().reloadChase(); }); await optional.settle();
+      assert.equal(optional.state().chaseCards[0].estimatedValue, 42, 'current facts paint before optional denial');
+      if (deniedRead === 'price') pendingPrice.reject(denial(status)); else pendingArtwork.reject(denial(status));
+      await optional.settle();
+      assert.equal(optional.state().chaseCards.length, 0, `post-facts ${deniedRead} ${status} revokes private chase data`);
+      assert.match(optional.state().chaseError, /access could not be confirmed/i);
+      const writes = optional.stateWrites();
+      if (deniedRead === 'price') pendingArtwork.resolve(); else pendingPrice.resolve(fixturePrice(99));
+      await optional.settle();
+      assert.equal(optional.stateWrites(), writes, 'late optional completion cannot repopulate a denied request');
+      refresh = false;
+      await act(async () => { await optional.state().reloadChase(); });
+      assert.equal(optional.state().chaseCards[0].estimatedValue, 42);
+      assert.equal(optional.state().chaseError, null);
+      await optional.close();
+    }
+  }
+
+  const lateFacts = deferred<Map<string, any>>(), deniedPrice = deferred<Map<string, any>>();
+  const beforeFacts = await harness({ chaseRows: async () => fixtureChase(), cards: () => lateFacts.promise, prices: () => deniedPrice.promise });
+  await beforeFacts.interactions(); await beforeFacts.tick(180);
+  deniedPrice.reject(denial(403)); await beforeFacts.settle();
+  const beforeFactsWrites = beforeFacts.stateWrites();
+  lateFacts.resolve(fixtureCards()); await beforeFacts.settle();
+  assert.equal(beforeFacts.stateWrites(), beforeFactsWrites, 'late facts cannot repopulate a request denied before its facts arrived');
+  assert.equal(beforeFacts.state().chaseCards.length, 0);
+  await beforeFacts.close();
+
+  const ordinaryFailure = deferred<Map<string, any>>(), laterDenial = deferred<void>();
+  const race = await harness({ chaseRows: async () => fixtureChase(), cards: async () => fixtureCards(), prices: () => ordinaryFailure.promise,
+    references: async cards => { await laterDenial.promise; return cards; },
+  });
+  await race.interactions(); await race.tick(180);
+  ordinaryFailure.reject(new Error('Synthetic temporary snapshot failure')); await race.settle();
+  assert.equal(race.state().chaseCards[0].name, fixtureName, 'ordinary errors retain facts');
+  laterDenial.reject(denial(403)); await race.settle();
+  assert.equal(race.state().chaseCards.length, 0, 'a later denial still revokes when another optional read already failed');
+  await race.close();
+
+  let savedRound = 0;
+  const lateSavedDenial = deferred<any>();
+  const savedRace = await harness({ cards: async () => fixtureCards(), prices: async () => fixturePrice(42),
+    chaseRead: async table => {
+      if (savedRound) {
+        if (table === 'user_card_flags') throw new Error('Synthetic temporary saved-row failure');
+        if (table === 'market_watchlist') return lateSavedDenial.promise;
+      }
+      return { data: table === 'user_card_flags' ? fixtureChase() : [], status: 200, error: null };
+    },
+  });
+  await savedRace.interactions(); await savedRace.tick(180);
+  savedRound = 1;
+  await act(async () => { await savedRace.state().reloadChase(); });
+  assert.equal(savedRace.state().chaseCards[0].estimatedValue, 42, 'ordinary saved-query rejection retains the previous estimate');
+  lateSavedDenial.resolve({ data: null, status: 403, error: { code: '42501', message: 'permission denied for table market_watchlist' } });
+  await savedRace.settle();
+  assert.equal(savedRace.state().chaseCards.length, 0, 'late saved-query denial revokes after an earlier ordinary query failure');
+  assert.match(savedRace.state().chaseError, /access could not be confirmed/i);
+  await savedRace.close();
+
+  let jwtDenied = false;
+  const jwt = await harness({ chaseRows: async () => fixtureChase(), cards: async () => fixtureCards(), prices: async () => fixturePrice(42),
+    authRead: async (_call, id) => ({ data: { user: jwtDenied ? null : { id } },
+      error: jwtDenied ? { code: 'bad_jwt', message: 'Synthetic JWT denial' } : null }),
+  });
+  await jwt.interactions(); await jwt.tick(180); jwtDenied = true;
+  await act(async () => { await jwt.state().reloadChase(); });
+  assert.equal(jwt.state().chaseCards.length, 0, 'the production JWT denial classifier remains authoritative without HTTP status');
+  await jwt.close();
+  console.log('Home Chase denial recovery passed: real-shaped 401/403 table responses, rejections, thrown auth, post-facts denial, late callbacks and authorised retry.');
+}
+
 async function main() {
+  await homeChaseDenialRecovery();
+  await homeDisplayRecovery();
   const savedCustom = async (): Promise<ReturnType<typeof emptySaved>> => ({ ...emptySaved(), binders: [{
     id: '00000000-0000-4000-8000-000000000001', user_id: 'owner-a', name: 'Saved custom binder',
     color: '#000', type: 'custom', is_public: false, source_set_id: null, created_at: '2026-10-12T12:00:00Z',
