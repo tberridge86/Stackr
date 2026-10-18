@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-18T18:56:14.696Z",
+  "updatedAt": "2026-10-18T19:15:21.952Z",
   "sourceVideo": {
     "fileName": "WhatsApp Video 2026-10-18 at 09.12.30.mp4",
     "sha256": "a29ad89ce8cec90b3dfa299c5a951ff4b60d686187f5a27c03a4e6175d1e859c",
@@ -349,7 +349,8 @@
         "scripts/test-saved-binder-artwork-recovery.ts",
         "scripts/test-preferred-set-artwork.ts",
         "scripts/test-binder-reopen.mjs",
-        "docs/releases/gateway-live-delivery-20261018.json (bounded public read; not phone acceptance)"
+        "docs/releases/gateway-live-delivery-20261018.json (bounded public read; not phone acceptance)",
+        "docs/releases/storm-image-delivery-20261018.json (113fresh file responses; not phone rendering)"
       ],
       "delivery": {
         "implemented": true,
@@ -360,7 +361,7 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Later bounded M6facts/preferred reads returned113eligible shared printing-face references; two exact original images decoded/hash checked. Captured client replay113inspectable/0manifestrequests. A separate whole-set manifest returned504; cause unresolved. Full113image-download and installed-phone acceptance remain open.",
+      "remainingBlocker": "All113captured M6preferred shared printing-face image URLs now return200with exact hashes/bytes/dimensions and decode successfully. Captured client replay113inspectable/0manifestrequests remains distinct. Historical whole-set manifest504 cause and installed-phone acceptance remain open.",
       "additionalSourceRepair": {
         "revision": "d59c3a6e6f48fbb106866ed9e51edd2e0486a0b9",
         "files": [
@@ -373,6 +374,13 @@
         "independentlyReviewed": true,
         "merged": false,
         "scope": "Full-resolution/provenance merge, live subset full-population pagination, non-sliding metadataTTL;113captured preferred references replay correctly."
+      },
+      "fullCapturedImageDelivery": {
+        "document": "docs/releases/storm-image-delivery-20261018.json",
+        "requests": 113,
+        "verifiedFiles": 113,
+        "sourceApiCapturedEarlier": true,
+        "phoneVerified": false
       }
     },
     {

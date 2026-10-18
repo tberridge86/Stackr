@@ -137,18 +137,26 @@
   "boundedStormEvidence": {
     "factualPrintings": 113,
     "preferredArtworkEligible": 113,
-    "decodedOriginalFiles": 2,
+    "decodedOriginalFiles": 113,
     "actualMapperReplay": {
       "inputPrintings": 113,
       "inspectableReferences": 113,
       "manifestRequests": 0
     },
-    "interpretation": "Approved shared printing-face references, not exact physical-finish photographs. Two original image responses were decoded/hash checked; the replay is captured DTOs through actual client logic, not113downloads or phone rendering.",
+    "interpretation": "All113captured approved shared printing-face references freshly fetched, hash/byte/dimension matched and decoded. Earlier two-file sample and113actual-client replay retained; exact physical finishes and phone rendering remain unverified.",
     "separateWholeSetManifest": {
       "status": 504,
       "elapsedMs": 8228,
       "causeEstablished": false,
       "retried": false
+    },
+    "previousDecodedOriginalFiles": 2,
+    "fullCapturedCohortDelivery": {
+      "document": "docs/releases/storm-image-delivery-20261018.json",
+      "requests": 113,
+      "sha256BytesDimensionsDecoded": 113,
+      "collectorScope": "113capturedM6printingfacereferences",
+      "phoneVerified": false
     }
   },
   "remaining": {
