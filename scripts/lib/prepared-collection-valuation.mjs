@@ -252,11 +252,18 @@ export async function prepareCollectionValuation({ supabase, service, ownerId, p
       && references.includes(i.external_id) && (!binder.language || i.language_code===binder.language)).map((i)=>i.set_id)]);
     return [binder.id,catalogue.filter((c)=>setIds.has(c.set_id) && (!binder.language || c.language_code===binder.language))];
   }));
-  // Custom binders need prices for their owned cards only. Full-set prices are
-  // used exclusively by official binders' standard/master-set totals; reading
-  // every other card in a custom binder's source sets creates unused RPC work.
-  const allIds = unique([...variantIds,...generalVariantIds,...inputs.binders.filter((b)=>b.type==='official')
-    .flatMap((b)=>(membersByBinder.get(b.id)??[]).map((c)=>c.variant_id))]);
+  // Read the identities actually used by official standard/master summaries,
+  // including their same-printing general bases. Other editions in the source
+  // set cannot affect those totals. Owned identities remain a separate union,
+  // including holdings outside a binder's selected edition.
+  const setPriceCandidatesByBinder = new Map(inputs.binders.filter((b)=>b.type==='official').map((b)=>{
+    const members=membersByBinder.get(b.id)??[];
+    return [b.id,{standard:generalSetPriceCandidates(members,'standard',b.edition),
+      master:generalSetPriceCandidates(members,'master',b.edition)}];
+  }));
+  const setPriceIds = [...setPriceCandidatesByBinder.values()].flatMap(({standard,master})=>[...standard,...master]
+    .flatMap((unit)=>[unit.variantId,...(unit.generalBaseCandidates??[]).map((candidate)=>candidate.baseVariantId)]).filter(Boolean));
+  const allIds = unique([...variantIds,...generalVariantIds,...setPriceIds]);
   for (let offset=0;offset<allIds.length;offset+=200) {
     const ids=allIds.slice(offset,offset+200);
     const response=await measured('stored_exact_prices',()=>service.storedExactPrices(ids));
@@ -318,8 +325,9 @@ export async function prepareCollectionValuation({ supabase, service, ownerId, p
     binders: inputs.binders.map((b) => {
       const owned = generalResolved.filter((u) => u.binderIds.includes(b.id));
       const members = membersByBinder.get(b.id) ?? [];
-      const standard = chooseGeneralPriceUnits(generalSetPriceCandidates(members,'standard',b.edition), prices);
-      const master = chooseGeneralPriceUnits(generalSetPriceCandidates(members,'master',b.edition), prices);
+      const candidates = setPriceCandidatesByBinder.get(b.id);
+      const standard = chooseGeneralPriceUnits(candidates?.standard??[], prices);
+      const master = chooseGeneralPriceUnits(candidates?.master??[], prices);
       return { binderId: b.id, owned: summarisePreparedUnits(owned,outcomes,prices,Date.now(),{ general: true }),
         standardSet: b.type==='official'&&members.length ? summarisePreparedUnits(standard,outcomes,prices,Date.now(),{ general: true }) : null,
         masterSet: b.type==='official'&&members.length ? summarisePreparedUnits(master,outcomes,prices,Date.now(),{ general: true }) : null };
