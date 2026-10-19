@@ -49,6 +49,7 @@ import { attachLiveTcgdexCardReferences, getPokemonCardImageUrls } from '../../l
 import { getCardArtworkPresentation } from '../../lib/cardArtworkPresentation';
 import { stackrBrand } from '../../lib/stackrBrand';
 import { stackrIcons } from '../../lib/stackrIcons';
+import { STACKR_ICON_OUTLINE, StackrNavigationIcon } from '../../components/StackrNavigationIcon';
 import { getStackrHomeWordmarkWidth, stackrLogoSizes, stackrTabContentPadding } from '../../lib/stackrSizing';
 import {
   ChaseCardsSheet,
@@ -233,6 +234,7 @@ const HUB_TIP_ITEMS = [
   },
   {
     icon: 'trending-up-outline' as const,
+    imageIcon: stackrIcons.marketMovers,
     title: 'Top movers',
     body: 'Spot the cards causing your value to rise or fall.',
   },
@@ -3169,13 +3171,13 @@ export default function HubScreen() {
             </View>
 
             {[
-              { icon: 'scan-outline' as const, text: 'Scan stock out to keep inventory accurate' },
-              { icon: 'bar-chart-outline' as const, text: 'Keep inventory accurate on the go' },
-              { icon: 'storefront-outline' as const, text: 'Built for conventions, events and higher-volume sellers' },
+              { icon: 'scan-outline' as const, stackrIcon: 'outbound' as const, text: 'Scan stock out to keep inventory accurate' },
+              { icon: 'bar-chart-outline' as const, stackrIcon: 'inventory' as const, text: 'Keep inventory accurate on the go' },
+              { icon: 'storefront-outline' as const, stackrIcon: 'market' as const, text: 'Built for conventions, events and higher-volume sellers' },
             ].map((item) => (
               <View key={item.text} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                 <View style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: `${theme.colors.primary}12`, alignItems: 'center', justifyContent: 'center' }}>
-                  <Ionicons name={item.icon} size={20} color={theme.colors.primary} />
+                  <StackrNavigationIcon name={item.stackrIcon} size={20} color={theme.dark ? theme.colors.text : STACKR_ICON_OUTLINE} accentColor={theme.colors.primary} />
                 </View>
                 <Text style={{ flex: 1, color: theme.colors.text, fontSize: 13, fontWeight: '800', lineHeight: 18 }}>{item.text}</Text>
               </View>

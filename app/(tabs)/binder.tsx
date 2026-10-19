@@ -1624,7 +1624,7 @@ export default function BinderLibraryScreen() {
         items={[
           { icon: 'book-outline', title: 'Track ownership', body: 'Open a binder to mark cards owned or missing.' },
           { icon: 'albums-outline', imageIcon: BINDER_MODE_BADGE_SOURCES.master, title: 'Master sets', body: 'Use Master Set mode inside a binder to track variants.' },
-          { icon: 'camera-outline', title: 'Scan cards', body: 'Jump straight into the scanner from this screen.' },
+          { icon: 'camera-outline', imageIcon: stackrIcons.scanCard, title: 'Scan cards', body: 'Jump straight into the scanner from this screen.' },
         ]}
       />
       <View style={{ flex: 1, paddingHorizontal: PADDING, paddingTop: 8 }}>
