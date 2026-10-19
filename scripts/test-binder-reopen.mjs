@@ -34,10 +34,14 @@ function storeHarness() {
 await test('complete snapshots reopen from memory and persisted storage without any network loader', async () => {
   const store = storeHarness(); const cache = createBinderReopenCache({ store: async () => store, now: () => 1000 });
   assert(cache.save(scope, binder, cards(), cache.lease())); await cache.flush();
-  const first = await cache.read(scope, binder.id); assert.equal(first.cards.length, 124); assert.equal(first.cards[0].owned_quantity, 4);
+  const sources = [];
+  const first = await cache.read(scope, binder.id, source => sources.push(source)); assert.equal(first.cards.length, 124); assert.equal(first.cards[0].owned_quantity, 4);
+  assert.deepEqual(sources, ['memory']);
+  assert.equal((await cache.read(scope, binder.id, () => { throw new Error('diagnostic'); })).cards.length, 124, 'diagnostics cannot fail a saved view');
   first.cards[0].notes = 'changed'; assert.equal((await cache.read(scope, binder.id)).cards[0].notes, 'saved note');
   const reopened = createBinderReopenCache({ store: async () => store, now: () => 2000 });
-  assert.equal((await reopened.read(scope, binder.id)).savedAt, 1000); assert.equal(store.writes, 1);
+  assert.equal((await reopened.read(scope, binder.id, source => sources.push(source))).savedAt, 1000); assert.equal(store.writes, 1);
+  assert.deepEqual(sources, ['memory', 'persisted']);
 });
 await test('expired network TTL does not erase a last-complete snapshot; hard retention limit still applies', async () => {
   const store = storeHarness(); let now = 1000;

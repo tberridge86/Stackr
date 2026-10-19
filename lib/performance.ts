@@ -87,49 +87,207 @@ export function getIncrementalListWindow(
   };
 }
 
-export type BinderRetrievalObservation = {
-  sequence: number;
-  start: 'screen-load';
-  source: 'network' | 'local-preview' | null;
-  catalogueComplete: boolean;
-  cards: number;
-  modelReadyMs: number | null;
-  visibleContentMs: number | null;
-  ownershipEditableMs: number | null;
-  cancelled: boolean;
+export type RetrievalOrigin = 'tap' | 'input' | 'filter' | 'retry' | 'route' | 'screen-load' | 'inspection-request';
+export type RetrievalCondition = {
+  network: 'unverified' | 'wifi' | 'mobile' | 'offline';
+  cache: 'unverified' | 'memory' | 'persisted' | 'cold' | 'expired';
 };
-const binderRetrievalObservations: BinderRetrievalObservation[] = [];
-let binderRetrievalSequence = 0;
-/** Bounded device-local diagnostics; no account, binder, card identifiers or remote submission. */
-export function getBinderRetrievalObservations(): BinderRetrievalObservation[] {
-  return binderRetrievalObservations.map((observation) => ({ ...observation }));
-}
-export function beginBinderRetrieval(clock = () => globalThis.performance?.now?.() ?? Date.now()) {
-  const started = clock();
-  const observation: BinderRetrievalObservation = {
-    sequence: ++binderRetrievalSequence, start: 'screen-load', source: null, catalogueComplete: false, cards: 0,
-    modelReadyMs: null, visibleContentMs: null, ownershipEditableMs: null, cancelled: false,
-  };
-  binderRetrievalObservations.push(observation);
-  if (binderRetrievalObservations.length > 32) binderRetrievalObservations.shift();
-  let currentRows = new Set<unknown>();
-  const elapsed = () => Math.max(0, clock() - started);
+let retrievalCondition: RetrievalCondition = { network: 'unverified', cache: 'unverified' };
+export function getRetrievalCondition(): RetrievalCondition { return { ...retrievalCondition }; }
+/** Labels supplied by the phone tester; changing a label does not clear caches or establish network conditions. */
+export function setRetrievalCondition(condition: RetrievalCondition) { retrievalCondition = { ...condition }; }
+export type RetrievalSource = 'memory' | 'persisted' | 'network' | 'local-preview';
+export type RetrievalPhase = 'auth-ready' | 'binder-ready' | 'facts-ready' | 'facts-committed' | 'visible-rows'
+  | 'network-complete' | 'card-source-ready' | 'ownership-ready' | 'artwork-ready' | 'thumbnail-loaded' | 'thumbnail-displayed'
+  | 'detail-loaded' | 'detail-displayed' | 'prices-ready' | 'facts-settled' | 'settled';
+export type RetrievalFailure = 'access' | 'facts' | 'ownership' | 'artwork' | 'prices' | 'source';
+export type RetrievalImageEvent = {
+  phase: 'loaded' | 'displayed' | 'retry' | 'failed';
+  rendition: 'thumbnail' | 'detail';
+  attempt: number;
+  terminal?: boolean;
+  cache?: 'memory' | 'disk' | 'none' | 'unknown';
+  width?: number;
+  height?: number;
+};
+export type RetrievalObservation = {
+  sequence: number;
+  journey: 'binder' | 'search' | 'inspection';
+  origin: RetrievalOrigin;
+  source: RetrievalSource | null;
+  phasesMs: Partial<Record<RetrievalPhase, number>>;
+  outcome: 'pending' | 'success' | 'partial' | 'failure' | 'cancelled';
+  /** Factual settlement never means optional artwork, ownership or prices have finished. */
+  settlementScope: 'facts-only' | 'inspection-image';
+  failures: RetrievalFailure[];
+  cards: number;
+  catalogueComplete: boolean;
+  condition: RetrievalCondition;
+  images: { loaded: number; displayed: number; retries: number; failed: number;
+    cache: Record<'memory' | 'disk' | 'none' | 'unknown', number>;
+    firstLoadedDimensions: Partial<Record<'thumbnail' | 'detail', { width: number; height: number }>> };
+};
+const RETRIEVAL_OBSERVATION_LIMIT = 256;
+const retrievalObservations: RetrievalObservation[] = [];
+let retrievalSequence = 0;
+let droppedObservations = 0;
+let retrievalGeneration = 0;
+const retrievalClock = () => globalThis.performance?.now?.() ?? Date.now();
+const copyRetrieval = (value: RetrievalObservation): RetrievalObservation => ({
+  ...value, phasesMs: { ...value.phasesMs }, failures: [...value.failures],
+  condition: { ...value.condition },
+  images: { ...value.images, cache: { ...value.images.cache }, firstLoadedDimensions: {
+    ...(value.images.firstLoadedDimensions.thumbnail ? { thumbnail: { ...value.images.firstLoadedDimensions.thumbnail } } : {}),
+    ...(value.images.firstLoadedDimensions.detail ? { detail: { ...value.images.firstLoadedDimensions.detail } } : {}),
+  } },
+});
+
+/** Export each measurement block before the bounded window fills. No identifiers, URLs or queries are retained. */
+export function exportRetrievalObservations() {
+  if (pendingBinderTap && retrievalClock() - pendingBinderTap.started > 15_000) {
+    pendingBinderTap.trace.cancel(); pendingBinderTap = null;
+  }
   return {
-    model(rows: readonly unknown[], source: 'network' | 'local-preview', complete = true) {
-      if (observation.cancelled) return;
-      currentRows = new Set(rows);
-      if (observation.modelReadyMs == null && rows.length) {
-        observation.modelReadyMs = elapsed(); observation.cards = rows.length; observation.source = source; observation.catalogueComplete = complete;
+    schemaVersion: 1, measurement: 'device-local-js-callbacks' as const,
+    capacity: RETRIEVAL_OBSERVATION_LIMIT, droppedObservations,
+    observations: retrievalObservations.map(copyRetrieval),
+  };
+}
+export function resetRetrievalObservations() {
+  retrievalGeneration++;
+  pendingBinderTap?.trace.cancel();
+  pendingBinderTap = null;
+  retrievalObservations.length = 0;
+  droppedObservations = 0;
+}
+
+export function beginRetrieval(journey: RetrievalObservation['journey'], origin: RetrievalOrigin, clock = retrievalClock) {
+  const started = clock();
+  const generation = retrievalGeneration;
+  const observation: RetrievalObservation = { sequence: ++retrievalSequence, journey, origin, source: null,
+    phasesMs: {}, outcome: 'pending', settlementScope: journey === 'inspection' ? 'inspection-image' : 'facts-only', failures: [], cards: 0, catalogueComplete: false,
+    condition: { ...retrievalCondition },
+    images: { loaded: 0, displayed: 0, retries: 0, failed: 0, cache: { memory: 0, disk: 0, none: 0, unknown: 0 }, firstLoadedDimensions: {} } };
+  retrievalObservations.push(observation);
+  if (retrievalObservations.length > RETRIEVAL_OBSERVATION_LIMIT) {
+    retrievalObservations.shift();
+    droppedObservations++;
+  }
+  let active = true;
+  const isActive = () => active && generation === retrievalGeneration;
+  const phase = (name: RetrievalPhase) => {
+    if (isActive()) observation.phasesMs[name] ??= Math.max(0, clock() - started);
+  };
+  return {
+    phase,
+    pending() { return isActive() && observation.outcome === 'pending'; },
+    source(source: RetrievalSource) { if (isActive()) observation.source ??= source; },
+    image(event: RetrievalImageEvent) {
+      if (!isActive()) return;
+      if (event.phase === 'loaded') {
+        observation.images.loaded++;
+        observation.images.cache[event.cache ?? 'unknown']++;
+        if (Number.isFinite(event.width) && Number.isFinite(event.height) && event.width! > 0 && event.height! > 0) {
+          observation.images.firstLoadedDimensions[event.rendition] ??= { width: event.width!, height: event.height! };
+        }
+        phase(event.rendition === 'detail' ? 'detail-loaded' : 'thumbnail-loaded');
+      } else if (event.phase === 'displayed') {
+        observation.images.displayed++;
+        phase(event.rendition === 'detail' ? 'detail-displayed' : 'thumbnail-displayed');
+        if (journey === 'inspection') {
+          phase('settled');
+          observation.outcome = observation.failures.length ? 'partial' : 'success';
+        }
+      } else if (event.phase === 'retry') observation.images.retries++;
+      else {
+        observation.images.failed++;
+        if (event.terminal && !observation.failures.includes('artwork')) observation.failures.push('artwork');
+        if (event.terminal && observation.outcome === 'success') observation.outcome = 'partial';
+        if (event.terminal && journey === 'inspection') {
+          phase('settled');
+          observation.outcome = observation.images.displayed > 0 ? 'partial' : 'failure';
+        }
       }
     },
-    committedRows(rows: readonly unknown[]) { if (!observation.cancelled) currentRows = new Set(rows); },
+    facts(cards: number, source: RetrievalSource, complete = false) {
+      if (!isActive()) return;
+      observation.cards = cards;
+      observation.catalogueComplete = complete;
+      observation.source ??= source;
+      if (cards > 0 && observation.outcome === 'failure') observation.outcome = 'partial';
+      if (cards > 0) phase('facts-ready');
+      if (source === 'network' && complete) phase('network-complete');
+    },
+    fail(failure: RetrievalFailure) {
+      if (!isActive()) return;
+      if (!observation.failures.includes(failure)) observation.failures.push(failure);
+      if (observation.outcome === 'success') observation.outcome = 'partial';
+    },
+    settle(usable = observation.cards > 0) {
+      if (!isActive()) return;
+      // Optional callbacks remain independent and can update the observed status.
+      // This endpoint must never be read as completion of those optional requests.
+      phase(journey === 'inspection' ? 'settled' : 'facts-settled');
+      observation.outcome = observation.failures.length ? (usable ? 'partial' : 'failure') : 'success';
+    },
+    cancel() {
+      if (active && observation.outcome === 'pending') observation.outcome = 'cancelled';
+      active = false;
+    },
+  };
+}
+
+export type BinderRetrievalObservation = {
+  sequence: number; start: RetrievalOrigin; source: RetrievalSource | null; catalogueComplete: boolean; cards: number;
+  modelReadyMs: number | null; visibleContentMs: number | null; ownershipEditableMs: number | null;
+  networkCompleteMs: number | null; cancelled: boolean;
+};
+/** Compatibility view; visibleContentMs is JS viewability, never a native paint measurement. */
+export function getBinderRetrievalObservations(): BinderRetrievalObservation[] {
+  return retrievalObservations.filter(value => value.journey === 'binder').map(value => ({
+    sequence: value.sequence, start: value.origin, source: value.source, catalogueComplete: value.catalogueComplete,
+    cards: value.cards, modelReadyMs: value.phasesMs['facts-ready'] ?? null,
+    visibleContentMs: value.phasesMs['visible-rows'] ?? null, ownershipEditableMs: value.phasesMs['ownership-ready'] ?? null,
+    networkCompleteMs: value.phasesMs['network-complete'] ?? null, cancelled: value.outcome === 'cancelled',
+  }));
+}
+
+type BinderTrace = ReturnType<typeof createBinderRetrieval>;
+let pendingBinderTap: { binderId: string; started: number; trace: BinderTrace } | null = null;
+/** The transient routing key is never included in exported diagnostics. */
+export function startBinderRetrieval(binderId: string) {
+  pendingBinderTap?.trace.cancel();
+  pendingBinderTap = { binderId, started: retrievalClock(), trace: createBinderRetrieval(retrievalClock, 'tap') };
+}
+export function beginBinderRetrieval(clock = retrievalClock, binderId?: string) {
+  const pending = pendingBinderTap;
+  pendingBinderTap = null;
+  if (pending && pending.binderId === binderId && retrievalClock() - pending.started <= 15_000) return pending.trace;
+  pending?.trace.cancel();
+  return createBinderRetrieval(clock, 'screen-load');
+}
+function createBinderRetrieval(clock: () => number, origin: RetrievalOrigin) {
+  const trace = beginRetrieval('binder', origin, clock);
+  let currentRows = new Set<unknown>();
+  let hasModel = false;
+  let active = true;
+  return {
+    ...trace,
+    model(rows: readonly unknown[], source: RetrievalSource, complete = true) {
+      if (!active) return;
+      currentRows = new Set(rows);
+      hasModel ||= rows.length > 0;
+      trace.facts(rows.length, source, complete);
+    },
+    committedRows(rows: readonly unknown[]) {
+      if (!active) return;
+      currentRows = new Set(rows);
+      if (rows.length && hasModel) trace.phase('facts-committed');
+    },
     visible(rows: readonly unknown[]) {
-      if (!observation.cancelled && observation.modelReadyMs != null && observation.visibleContentMs == null
-        && rows.some((row) => currentRows.has(row))) observation.visibleContentMs = elapsed();
+      if (active && hasModel && rows.some(row => currentRows.has(row))) trace.phase('visible-rows');
     },
-    editable() {
-      if (!observation.cancelled && observation.ownershipEditableMs == null) observation.ownershipEditableMs = elapsed();
-    },
-    cancel() { observation.cancelled = true; currentRows.clear(); },
+    editable() { trace.phase('ownership-ready'); },
+    cancel() { active = false; currentRows.clear(); trace.cancel(); },
   };
 }

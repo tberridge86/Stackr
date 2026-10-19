@@ -1087,7 +1087,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   const load = useCallback(async (forceRefresh = false) => {
     if (!binderId) return;
     retrievalTraceRef.current?.cancel();
-    const retrievalTrace = beginBinderRetrieval();
+    const retrievalTrace = beginBinderRetrieval(undefined, binderId);
     retrievalTraceRef.current = retrievalTrace;
     const reopenLease = binderReopenCache.lease();
     const previewState = { snapshot: null as BinderReopenSnapshot | null };
@@ -1127,7 +1127,8 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       setCards([]);
       setReopenStatus(null);
       // Do not await optional disk I/O, session refresh or snapshot parsing on the network path.
-      void readBinderReopenPreview(binderId).then((saved) => {
+      let previewSource: 'memory' | 'persisted' | 'local-preview' = 'local-preview';
+      void readBinderReopenPreview(binderId, source => { previewSource = source; }).then((saved) => {
         if (!saved || !previewAllowed || !isCurrentRequest()
           || (activeAccountIdRef.current && activeAccountIdRef.current !== saved.accountId)) return;
         previewState.snapshot = saved;
@@ -1135,7 +1136,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         setUserId(saved.accountId);
         setIsPublic(Boolean(saved.binder.is_public));
         setCustomNameArtKey(null);
-        retrievalTrace.model(saved.cards, 'local-preview');
+        retrievalTrace.model(saved.cards, previewSource);
         setCards(saved.cards);
         setSelectedCard(null);
         setOwnershipReady(false);
@@ -1159,15 +1160,16 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       const [{ data: { user } }, binderData] = await withPersonalDataReadTimeout(() => Promise.all([
         supabase.auth.getUser().then((result) => {
           if (result.error) throw result.error;
+          retrievalTrace.phase('auth-ready');
           return result;
         }),
         measureAsync(
           'binder.fetchBinderById',
           () => fetchBinderById(binderId, { includeAssets: false }),
-          { binderId }
         ),
       ]));
       if (!isCurrentRequest()) return;
+      retrievalTrace.phase('binder-ready');
       if (previewState.snapshot && previewState.snapshot.accountId !== user?.id) {
         previewAllowed = false;
         previewState.snapshot = null;
@@ -1182,6 +1184,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       setUserId(user?.id ?? null);
 
       if (!binderData || (binderData.user_id !== user?.id && !binderData.is_public)) {
+        retrievalTrace.fail('access');
         previewAllowed = false;
         binderReopenCache.invalidate();
         setReopenStatus(null);
@@ -1199,7 +1202,6 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       const binderCards = await withPersonalDataReadTimeout(() => measureAsync(
           'binder.fetchBinderCards',
           () => fetchBinderCards(binderId, { includePrices: false, includeAssets: false }),
-          { binderId }
         ));
       if (!isCurrentRequest()) return;
 
@@ -1216,6 +1218,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         || binderCards.some((card) => card.catalogue_incomplete)
         || (typeof expected === 'number' && expected > 0 && new Set(binderCards.filter((card) => card.catalogue_match_status === 'catalogue').map((card) => card.card?.id)).size < expected));
       if (incompleteRefresh) {
+        retrievalTrace.fail('facts');
         refreshState = 'incomplete';
         if (previewState.snapshot) {
           setReopenStatus({ savedAt: previewState.snapshot.savedAt, state: 'incomplete' });
@@ -1240,17 +1243,21 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       // Saved rows are already presentation-safe fallbacks. Render them before
       // optional ownership/showcase reads so a later enrichment failure cannot
       // make an older, unresolved binder look empty.
-      retrievalTrace.model(binderCards, 'network', typeof expected === 'number' && expected > 0 && !incompleteRefresh);
+      retrievalTrace.model(binderCards, 'network', !incompleteRefresh && (binderData.type === 'custom' || typeof expected === 'number' && expected > 0));
       setCards(displayCards);
       setLoading(false);
 
       void attachBinderCatalogueArtwork(binderCards, artworkRequest.signal, applyArtwork).then((enriched) => {
         applyArtwork(enriched);
+        if (isCurrentRequest() && !artworkRequest.signal.aborted) retrievalTrace.phase('artwork-ready');
         if (completeOwnerView && snapshotScope && isCurrentRequest() && !artworkRequest.signal.aborted) {
           binderReopenCache.save(snapshotScope, binderData, mergeBinderArtwork(displayCards, enriched), reopenLease, savedAt, snapshotOptions);
         }
       }).catch((error) => {
-        if (isCurrentRequest() && !artworkRequest.signal.aborted) console.log('Binder artwork unavailable:', error);
+        if (isCurrentRequest() && !artworkRequest.signal.aborted) {
+          retrievalTrace.fail('artwork');
+          console.log('Binder artwork unavailable:', error);
+        }
       });
       void attachBinderSetArtwork(binderData).then((enriched) => {
         if (!isCurrentRequest() || artworkRequest.signal.aborted) return;
@@ -1290,11 +1297,15 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
             defaultCondition: binderData.default_condition,
             defaultGradeCompany: binderData.default_grade_company, defaultGrade: binderData.default_grade,
           }, stackrApiClient, () => isCurrentRequest() && !artworkRequest.signal.aborted);
-          if (isCurrentRequest() && !artworkRequest.signal.aborted) applyPrices(priced.rows);
+          if (isCurrentRequest() && !artworkRequest.signal.aborted) {
+            applyPrices(priced.rows);
+            if (priced.failure) retrievalTrace.fail('prices');
+            else retrievalTrace.phase('prices-ready');
+          }
           return { failure: priced.failure };
         },
         onError: (error) => {
-          if (isCurrentRequest()) console.log('Failed to attach binder prices', error);
+          if (isCurrentRequest()) { retrievalTrace.fail('prices'); console.log('Failed to attach binder prices', error); }
         },
       });
       visiblePriceReaderRef.current = priceReader;
@@ -1395,6 +1406,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         setOwnershipReady(!incompleteRefresh);
       })().catch((error) => {
         if (isCurrentRequest()) {
+          retrievalTrace.fail('ownership');
           console.log('Failed to load binder ownership', error);
           if (binderData.user_id === user.id) {
             Alert.alert(
@@ -1406,6 +1418,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       });
     } catch (error) {
       if (isCurrentRequest()) {
+        retrievalTrace.fail(isBinderAccessDenied(error) ? 'access' : 'facts');
         refreshState = 'offline';
         if (isBinderAccessDenied(error)) {
           previewAllowed = false;
@@ -1424,7 +1437,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         }
       }
     } finally {
-      if (isCurrentRequest()) setLoading(false);
+      if (isCurrentRequest()) { retrievalTrace.settle(); setLoading(false); }
     }
   }, [binderId]);
 
@@ -3141,6 +3154,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
               rawData={item.card}
               editionHint={imageEditionHint}
               sourceSize="small"
+              onDiagnostic={retrievalTraceRef.current?.image}
               resolveRemoteEdition={false}
               style={{ width: '100%', height: '100%' }}
               resizeMode="contain"

@@ -5,6 +5,7 @@ import ts from 'typescript';
 import * as candidates from '../lib/stackrImageCandidates';
 import * as policy from '../lib/tcgdexControlledCardReference';
 import * as sizing from '../lib/stackrSizing';
+import type { RetrievalImageEvent } from '../lib/performance';
 
 // Render the actual component with minimal host/hooks doubles, then deliver
 // image errors and changed props. This is component logic, not a native decode.
@@ -38,9 +39,18 @@ function find(node: any, type: string): any {
   return null;
 }
 function render(props: any) { cursor = 0; effects = []; const tree = exports.StackrImage(props); for (const effect of effects) effect(); return tree; }
+const diagnostics: RetrievalImageEvent[] = [];
 const props = { uri: 'https://approved.example/grid.webp', fullUri: 'https://approved.example/detail.webp',
-  fallbackUris: ['https://approved.example/original.jpg'], cacheKey: 'printing' };
+  fallbackUris: ['https://approved.example/original.jpg'], cacheKey: 'printing', onDiagnostic: (event: RetrievalImageEvent) => diagnostics.push(event) };
 let tree = render(props); const staleError = find(tree, 'ExpoImage').props.onError;
+const staleLoad = find(tree, 'ExpoImage').props.onLoad;
+const staleDisplay = find(tree, 'ExpoImage').props.onDisplay;
+find(tree, 'ExpoImage').props.onLoad({ cacheType: 'memory', source: { width: 245, height: 342, url: 'PRIVATE_SIGNED_URL' } });
+assert.equal(diagnostics.length, 1);
+assert.equal(diagnostics[0].phase, 'loaded', 'decode/load must not imply a display callback');
+find(tree, 'ExpoImage').props.onDisplay();
+assert.equal(diagnostics[1].phase, 'displayed');
+assert.doesNotMatch(JSON.stringify(diagnostics), /PRIVATE_SIGNED_URL|https:|printing/);
 for (const expected of [props.uri, props.fullUri, props.fallbackUris[0]]) {
   let image = find(tree, 'ExpoImage'); assert.equal(image.props.source.uri, expected);
   assert.equal(image.props.source.cacheKey, `printing:${expected}:retry-0`, 'each rendition has a distinct first-attempt cache entry');
@@ -51,10 +61,16 @@ for (const expected of [props.uri, props.fullUri, props.fallbackUris[0]]) {
   image.props.onError(); tree = render(props);
 }
 assert.equal(find(tree, 'ExpoImage'), null); assert(find(tree, 'Icon'), 'exhaustion has an honest image placeholder');
+assert.equal(diagnostics.filter(event => event.phase === 'retry').length, 3);
+assert.equal(diagnostics.filter(event => event.phase === 'failed').length, 3);
+assert.equal(diagnostics.filter(event => event.phase === 'failed' && event.terminal).length, 1, 'only exhausted exact candidates are terminal');
 tree = render({ ...props, uri: 'https://approved.example/new-grid.webp' });
 assert.equal(find(tree, 'ExpoImage').props.source.uri, 'https://approved.example/new-grid.webp');
 staleError(); tree = render({ ...props, uri: 'https://approved.example/new-grid.webp' });
 assert.equal(find(tree, 'ExpoImage').props.source.uri, 'https://approved.example/new-grid.webp', 'late errors cannot poison corrected artwork');
+const beforeLateCallbacks = diagnostics.length;
+staleLoad(); staleDisplay();
+assert.equal(diagnostics.length, beforeLateCallbacks, 'superseded image callbacks cannot mark a newer source');
 const shapedProps = { ...props, uri: 'https://approved.example/new-grid.webp', cardShape: true, contentFit: 'contain' };
 tree = render(shapedProps);
 tree.props.onLayout({ nativeEvent: { layout: { width: 200, height: 250 } } });
@@ -69,4 +85,12 @@ assert.deepEqual({ width: mergedFrame.width, height: mergedFrame.height, left: m
 assert.equal(frame.overflow, 'hidden'); assert.equal(frame.borderRadius, 8.1);
 assert.equal(shapedImage.props.contentFit, 'contain', 'card edges preserve printed borders');
 assert.equal(shapedImage.props.source.uri, shapedProps.uri, 'silhouette clipping does not replace source artwork');
+tree = render({ ...props, preserveDetail: true });
+find(tree, 'ExpoImage').props.onLoad({ cacheType: 'disk', source: { width: 1000, height: 1400 } });
+assert.equal(diagnostics.at(-1)?.rendition, 'detail');
+assert.equal(diagnostics.at(-1)?.width, 1000);
+let deliveredLoads = 0;
+tree = render({ ...props, uri: 'https://approved.example/diagnostic.webp', onDiagnostic: () => { throw new Error('diagnostic'); }, onLoad: () => { deliveredLoads++; } });
+assert.doesNotThrow(() => find(tree, 'ExpoImage').props.onLoad());
+assert.equal(deliveredLoads, 1, 'failed diagnostics cannot block the existing load callback');
 console.log('Actual StackrImage retries each exact rendition once, advances only through vetted same-printing candidates, stops honestly, and recovers on corrected props.');

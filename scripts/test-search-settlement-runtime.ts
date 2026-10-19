@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import ts from 'typescript';
 import { fetchListingSearchWithMedia } from '../lib/listingSearchMedia';
+import { beginRetrieval, exportRetrievalObservations, resetRetrievalObservations } from '../lib/performance';
 
 type Deferred<T> = { promise: Promise<T>; resolve: (value: T) => void; reject: (reason: unknown) => void };
 
@@ -87,6 +88,7 @@ function createHarness(timers: FakeTimers, options: {
   deferGroups?: boolean; deferCanonical?: boolean; deferCache?: boolean; deferResultUpdates?: boolean;
   ownedRows?: { card_id: string; quantity: number }[];
   productListingStats?: Map<string, { count: number; lowest: number | null }>;
+  clock?: () => number;
 } = {}): Harness {
   const EMPTY_RESULTS = { cards: [], sets: [], sealed: [], collectors: [], listings: [], graded: [] };
   const requestRef = { current: 0 };
@@ -131,6 +133,8 @@ function createHarness(timers: FakeTimers, options: {
     { SEARCH_FINAL_SETTLEMENT_TIMEOUT_MS: 5, setTimeout: timers.setTimeout, clearTimeout: timers.clearTimeout },
   );
   const run = extract<(query: string, force?: boolean) => Promise<void>>('runSearch', {
+    beginRetrieval: (journey: Parameters<typeof beginRetrieval>[0], origin: Parameters<typeof beginRetrieval>[1]) => beginRetrieval(journey, origin, options.clock),
+    searchTraceRef: { current: null }, pendingSearchTraceRef: { current: null }, searchCommitTraceRef: { current: null },
     fetchListingSearchWithMedia,
     requestRef,
     previousSearchRef,
@@ -398,6 +402,28 @@ async function testStaleBoundaries() {
 }
 
 async function main() {
+  resetRetrievalObservations();
+  let now = 0;
+  const measured = createHarness(new FakeTimers(), { deferCanonical: true, deferGroups: true, clock: () => now });
+  const measuredRun = measured.run('Pikachu');
+  await flush();
+  now = 25;
+  measured.publishCanonical([{ id: 'measured-card' }]);
+  now = 30;
+  measured.cards.resolve([{ id: 'measured-card' }]);
+  await flush();
+  let measurement = exportRetrievalObservations().observations.at(-1)!;
+  assert.equal(measurement.phasesMs['network-complete'], 25, 'factual completion precedes optional artwork and unrelated groups');
+  assert.equal(measurement.phasesMs['card-source-ready'], 30, 'card source/enrichment completion has its own endpoint');
+  assert.equal(measurement.outcome, 'pending', 'unrelated groups have not settled');
+  now = 1000;
+  measured.sets.resolve([]); measured.products.resolve([]);
+  measured.profiles.resolve({ data: [] }); measured.listings.resolve({ data: [] });
+  await measuredRun;
+  measurement = exportRetrievalObservations().observations.at(-1)!;
+  assert.equal(measurement.phasesMs['network-complete'], 25);
+  assert.equal(measurement.phasesMs['facts-settled'], 1000);
+  assert.equal(measurement.settlementScope, 'facts-only');
   await testIndependentReadyGroups();
   await testIndependentEmptyFailureAndInvalidation();
   await testTimeoutRuntimePath();

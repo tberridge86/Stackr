@@ -31,7 +31,7 @@ assert.match(viewer,/displayedArtworkUri = fullLoaded && request\.fullImageUri \
 assert.match(viewer,/resolvePrintingMaterial\(profile, displayedArtworkUri, REVIEWED_PRINTING_MATERIALS\)/);
 assert.match(viewer,/foilHaptics=\{hasVerifiedMaterial && lightingEnabled\}/,'foil haptics require a verified material, not merely a finish label');
 assert.match(viewer,/width - 32/,'portrait showcase allows the card to dominate the available width');
-assert.match(viewer,/no verified material pack for this printing yet/,'unsupported finishes remain explicit');
+assert.match(viewer,/Catalogue artwork · lighting preview unavailable/,'unsupported finishes retain the explicit unavailable lighting message');
 
 const preview = fs.readFileSync('components/InteractiveCardPreview.tsx','utf8');
 assert.match(preview,/nextCardFoilHapticState|FoilCrossingHaptics/);

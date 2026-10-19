@@ -202,6 +202,7 @@ export function SearchCardRailItem({
   ownedQuantity,
   onPress,
   inspectionRequest,
+  onImageDiagnostic,
 }: {
   name: string;
   imageUri?: string | null;
@@ -221,6 +222,7 @@ export function SearchCardRailItem({
   ownedQuantity?: number;
   onPress: () => void;
   inspectionRequest?: CardInspectionRequest;
+  onImageDiagnostic?: (event: import('../../lib/performance').RetrievalImageEvent) => void;
 }) {
   const { theme } = useTheme();
   const { inspectCard } = useCardInspection();
@@ -255,6 +257,7 @@ export function SearchCardRailItem({
           fullUri={fullImageUri}
           fallbackUris={imageFallbackUris}
           cacheKey={imageCacheKey}
+          onDiagnostic={onImageDiagnostic}
           contentFit="contain"
           cardShape
           rounded={13}
@@ -515,6 +518,7 @@ export function SearchCardResult({
   ownedQuantity,
   onPress,
   inspectionRequest,
+  onImageDiagnostic,
 }: {
   name: string;
   imageUri?: string | null;
@@ -527,6 +531,7 @@ export function SearchCardResult({
   ownedQuantity?: number;
   onPress: () => void;
   inspectionRequest?: CardInspectionRequest;
+  onImageDiagnostic?: (event: import('../../lib/performance').RetrievalImageEvent) => void;
 }) {
   const { theme } = useTheme();
   return (
@@ -541,6 +546,7 @@ export function SearchCardResult({
         <View style={{ width: 58, height: 80, borderRadius: 9, overflow: 'hidden', backgroundColor: theme.colors.surface }}>
           <StackrImage
             uri={imageUri}
+            onDiagnostic={onImageDiagnostic}
             contentFit="contain"
             cardShape
             rounded={9}

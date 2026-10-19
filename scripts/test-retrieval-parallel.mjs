@@ -160,7 +160,7 @@ function screenHarness() {
     createVisibleBinderPriceReader,
     stackrApiClient: {},
     retrievalTraceRef: { current: null },
-    beginBinderRetrieval: () => ({ cancel() {}, model() {} }),
+    beginBinderRetrieval: () => ({ cancel() {}, model() {}, phase() {}, fail() {}, settle() {} }),
     binderReopenCache: { lease: () => 0, save: () => false, invalidate: () => {} },
     binderReopenScope: (accountId) => ({ namespace: 'fixture', accountId }),
     readBinderReopenPreview: async () => null,

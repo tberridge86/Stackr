@@ -4,6 +4,7 @@ import { runInNewContext } from 'node:vm';
 import React from 'react';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import ts from 'typescript';
+import * as performance from '../lib/performance';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -56,6 +57,7 @@ async function main() {
   };
   const latestCacheRead = (userId: string) => cacheReads.get(userId)?.at(-1);
   const authModule = compile('components/auth-context.tsx', {
+    '../lib/performance': performance,
     react: React,
     '@react-native-async-storage/async-storage': { getAllKeys: async () => [], multiRemove: async () => {} },
     '../lib/startup': { withStartupTimeout: (promise: Promise<unknown>) => promise },

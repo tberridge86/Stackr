@@ -12,6 +12,7 @@ import { resolvePrintingMaterial } from '../lib/cardPrintingMaterial';
 import { REVIEWED_PRINTING_MATERIALS } from '../lib/cardPrintingMaterialRegistry';
 import { stackrCardImageSizes } from '../lib/stackrSizing';
 import { stackrHaptics } from '../lib/haptics';
+import type { RetrievalImageEvent } from '../lib/performance';
 import { InteractiveCardPreview } from './InteractiveCardPreview';
 import { CardInspectionStage, CARD_INSPECTION_STAGE_INSETS } from './CardInspectionStage';
 import { StackrImage } from './StackrImage';
@@ -26,8 +27,9 @@ class MaterialBoundary extends React.Component<{ children: React.ReactNode; onUn
   render() { return this.state.failed ? null : this.props.children; }
 }
 
-export default function CardInspectionViewer({ request, onClose }: {
+export default function CardInspectionViewer({ request, onClose, onDiagnostic }: {
   request: CardInspectionRequest; onClose: (action?: () => void) => void;
+  onDiagnostic?: (event: RetrievalImageEvent) => void;
 }) {
   const router = useRouter();
   const { width, height, fontScale } = useWindowDimensions();
@@ -93,6 +95,7 @@ export default function CardInspectionViewer({ request, onClose }: {
                   artworkUri={displayedArtworkUri} width={cardWidth} height={cardHeight} onUnavailable={onUnavailable} /></Suspense>
               </MaterialBoundary> : null}>
               <StackrImage cardShape uri={request.imageUri} fullUri={request.fullImageUri} contentFit="contain"
+                onDiagnostic={onDiagnostic}
                 rounded={14} placeholderColor="transparent" priority="high" transition={0} style={StyleSheet.absoluteFill}
                 accessibilityLabel={`${request.card.name ?? 'Pokémon card'}, catalogue artwork`}
                 onSourceChange={setBaseArtworkUri}
@@ -100,6 +103,7 @@ export default function CardInspectionViewer({ request, onClose }: {
               {imageLoaded && request.fullImageUri && request.fullImageUri !== request.imageUri ?
                 <View pointerEvents="none" accessible={false} style={[StyleSheet.absoluteFill, { opacity: fullLoaded ? 1 : 0 }]}>
                   <StackrImage cardShape uri={request.fullImageUri} contentFit="contain" rounded={14} priority="high" transition={0}
+                    onDiagnostic={event => onDiagnostic?.({ ...event, rendition: 'detail' })}
                     placeholderColor="transparent" style={StyleSheet.absoluteFill} showFallbackIcon={false} onLoad={() => setFullLoaded(true)} />
                 </View> : null}
             </InteractiveCardPreview>

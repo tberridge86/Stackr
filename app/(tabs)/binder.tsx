@@ -3,6 +3,7 @@ import { STACKR_ICON_OUTLINE, StackrNavigationIcon } from '../../components/Stac
 import { StackrBinderButton, StackrBrowseFilterSheet, StackrBrowseFilterGroup } from '../../components/StackrBrowseControls';
 import { useTheme } from '../../components/theme-context';
 import { stackrHaptics } from '../../lib/haptics';
+import { stackrListPerformance, startBinderRetrieval } from '../../lib/performance';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import {
@@ -75,7 +76,6 @@ import { sha256Text } from '../../lib/collectionRequestHash';
 import { numericTextStyle, typeScale } from '../../lib/typography';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
-import { stackrListPerformance } from '../../lib/performance';
 import { ROUTES } from '../../lib/routes';
 import { stackrQueryClient, stackrQueryKeys, stackrQueryTiming } from '../../lib/stackrQuery';
 import {
@@ -591,6 +591,7 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
       router.replace('/');
       return;
     }
+    startBinderRetrieval(item.id);
     router.push({ pathname: '/binder/[id]', params: readOnly ? { id: item.id, readOnly: 'true' } : { id: item.id } });
   };
 
