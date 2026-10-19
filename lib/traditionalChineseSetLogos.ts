@@ -57,7 +57,7 @@ const TRADITIONAL_CHINESE_SET_LOGOS: Record<string, TraditionalChineseSetLogoMat
   '0c790038-ee1a-411f-bd9c-fed9238c1c42': { setId: '0c790038-ee1a-411f-bd9c-fed9238c1c42', source: require('../assets/rev2/12-traditional-chinese-set-logo/logos-hires-20261016/sv2p.webp') as ImageSourcePropType },
   '0c39417c-7e51-4c2e-83a4-e7180ff18ed1': { setId: '0c39417c-7e51-4c2e-83a4-e7180ff18ed1', source: require('../assets/rev2/12-traditional-chinese-set-logo/logos-hires-20261016/svc.webp') as ImageSourcePropType },
   'aeacc226-2669-41be-87af-adb0792b6a26': { setId: 'aeacc226-2669-41be-87af-adb0792b6a26', source: require('../assets/rev2/12-traditional-chinese-set-logo/logos-hires-20261016/svd.webp') as ImageSourcePropType },
-  '34e5af6e-66d0-4fea-98ce-b1fa1ec1d1dd': { setId: '34e5af6e-66d0-4fea-98ce-b1fa1ec1d1dd', source: require('../assets/rev2/12-traditional-chinese-set-logo/logos-hires-20261016/svp1.webp') as ImageSourcePropType },
+  '34e5af6e-66d0-4fea-98ce-b1fa1ec1d1dd': { setId: '34e5af6e-66d0-4fea-98ce-b1fa1ec1d1dd', source: require('../assets/rev2/12-traditional-chinese-set-logo/logos-native-source-20261019/svp1.png') as ImageSourcePropType },
 };
 
 // Exact owner-approved native booster packaging is set-identification artwork,

@@ -7,7 +7,7 @@
   "oldSixMarkManifestUnchanged": true,
   "preparedLogoCount": 36,
   "additionalUnboundAnniversaryImages": 2,
-  "aiEnhancedLogoCount": 35,
+  "aiEnhancedLogoCount": 34,
   "officialHighResolutionOriginalCount": 1,
   "upstreamLicenceClaimCreated": false,
   "deliveryMode": "bundled_app_presentation",
@@ -580,17 +580,22 @@
       "setId": "34e5af6e-66d0-4fea-98ce-b1fa1ec1d1dd",
       "setCode": "SVP1",
       "language": "zh-tw",
-      "assetPath": "assets/rev2/12-traditional-chinese-set-logo/logos-hires-20261016/svp1.webp",
-      "sha256": "3f9e60d5c6e6225a60c6ac8d0b1bc75794860b101318e3ed3a9cd82b0574272f",
-      "width": 2171,
-      "height": 724,
-      "bytes": 477674,
-      "origin": "ai_enhanced_derivative",
+      "assetPath": "assets/rev2/12-traditional-chinese-set-logo/logos-native-source-20261019/svp1.png",
+      "sha256": "2f2acbc19616479cc93d22b4923f33a45b05c9debc82c30d94dfa3b9e3f5045d",
+      "width": 1440,
+      "height": 270,
+      "bytes": 382199,
+      "origin": "official_source_crop",
       "isOfficialHighResolutionOriginal": false,
       "sourceUrl": "https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2023/04/tw_news_SVP1_SV2bundle_PKG_0316.png",
-      "referenceSha256": "49a617bb3d1823f10ab9d5f0c8d3e952a0ca42fc01e5639bd1fbf522858e3237",
-      "sourceBatch": "LOGO-HIRES-003",
-      "exactIdentityBasis": "Existing canonical UUID and zh-tw printed set code; source mark matched to that code."
+      "sourceSha256": "28335c48835c4f47a8b58554394b65b5a7ba813a85c8ddbd645733d5812ee6cc",
+      "sourceBatch": "SVP1-NATIVE-SOURCE-20261019",
+      "exactIdentityBasis": "Exact owner-approved source and native title; retained integer pixels; existing canonical UUID/zh-tw/SVP1 binding and ordinary set response agree.",
+      "provenancePath": "assets/rev2/12-traditional-chinese-set-logo/logos-native-source-20261019/provenance.json",
+      "provenanceSha256": "b326b08d170df6e4d14ffeb8a09aabf90c338bdc3a0edf87a64fdd88f686ec44",
+      "permissionRecord": "catalogue/rights-reviews/svp1-native-title-owner-exact32.2026-10-19.json",
+      "replacementReceipt": "docs/releases/svp1-native-title-replacement-20261019.md"
     }
-  ]
+  ],
+  "officialSourceCropCount": 1
 }
