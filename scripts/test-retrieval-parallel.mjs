@@ -151,12 +151,17 @@ visit(screenAst); assert(callback, 'actual binder screen loader must be testable
 const compiledCallback = ts.transpileModule(`export const load = ${callback};`, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
 function screenHarness() {
   const auth = deferred(); const record = deferred(); const cards = deferred();
-  const calls = { auth: 0, record: 0, cards: 0, artwork: 0, prices: 0, priceRows: 0 };
+  const calls = { auth: 0, record: 0, cards: 0, artwork: 0, prices: 0, priceRows: 0, showcase: 0 };
   const state = { loading: null, cards: [], ownershipReady: false };
   const never = () => new Promise(() => {});
   const context = { exports: {}, console, AbortController, binderId: 'binder',
     withPersonalDataReadTimeout,
     visiblePriceReaderRef: { current: null }, visiblePriceIdsRef: { current: [] },
+    currentBinderIdRef: { current: 'binder' },
+    showcaseReadRef: { current: 0 }, showcaseAbortRef: { current: null },
+    showcaseReadyRef: { current: false }, showcaseRowsRef: { current: [] },
+    setShowcaseStatus: () => {},
+    loadShowcase: () => { calls.showcase++; return never(); },
     createVisibleBinderPriceReader,
     stackrApiClient: {},
     retrievalTraceRef: { current: null },
@@ -170,7 +175,7 @@ function screenHarness() {
     setReopenStatus: () => {}, setSelectedCard: () => {},
     accountGenerationRef: { current: 0 }, loadRequestRef: { current: 0 }, artworkRequestRef: { current: null }, activeAccountIdRef: { current: null },
     isCurrentAccountRequest: (a, b) => a.accountGeneration === b.accountGeneration && a.requestId === b.requestId,
-    supabase: { auth: { getUser: () => { calls.auth++; return auth.promise; } }, from: () => { const q = { select: () => q, eq: () => q, in: () => q, order: () => q, then: () => never() }; return q; } },
+    supabase: { auth: { getUser: () => { calls.auth++; return auth.promise; } }, from: () => { const q = { select: () => q, eq: () => q, in: () => q, order: () => q, limit: () => q, gt: () => q, abortSignal: () => q, then: () => never() }; return q; } },
     measureAsync: (_name, work) => work(),
     fetchBinderById: (_id, options) => { calls.record++; assert.equal(options.includeAssets, false); return record.promise; },
     fetchBinderCards: (_id, options) => { calls.cards++; assert.equal(options.includeAssets, false); assert.equal(options.includePrices, false); return cards.promise; },
@@ -200,7 +205,11 @@ await test('actual screen overlaps authentication and binder lookup, then render
   const rows = catalogue.map((card) => ({ ...card, card_id: card.id, set_id: 'sv08' })); h.cards.resolve(rows); await pending;
   assert.equal(h.state.cards.length, 252); assert.equal(h.state.loading, false);
   assert.equal(h.calls.artwork, 1); assert.equal(h.calls.prices, 1); assert.equal(h.state.ownershipReady, false, 'editing stays gated while detailed ownership is pending');
+  assert.equal(h.calls.showcase, 1, 'optional placement starts without blocking useful card facts');
   assert.equal(h.calls.priceRows, 12, 'the actual screen must not price all 252 slots at startup');
+  h.context.loadRequestRef.current++;
+  h.context.artworkRequestRef.current?.abort();
+  await tick();
 });
 
 await test('actual screen retains private-binder denial after overlapping reads', async () => {
