@@ -142,6 +142,7 @@ async function harness(options: {
       isKnownAuthDenial: authDenialModule.exports.isKnownAuthDenial },
     '../../components/profile-context': { useProfile: () => ({ profile: null }) },
     '../../components/HomeCommandCenter': { HOME_TOKENS: { layout: {} } },
+    '../../lib/stackrIcons': { stackrIcons: { marketMovers: 1 } },
     '../../lib/supabase': { supabase },
     '../../lib/personalDataRead': deadlineModule.exports,
     '../../lib/homeCollectionCache': homeCache,
