@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-19T00:14:08.871Z",
+  "updatedAt": "2026-10-19T00:25:47.838Z",
   "sourceVideo": {
     "fileName": "WhatsApp Video 2026-10-18 at 09.12.30.mp4",
     "sha256": "a29ad89ce8cec90b3dfa299c5a951ff4b60d686187f5a27c03a4e6175d1e859c",
@@ -1360,8 +1360,8 @@
       "scope": "Exact pushed source snapshot. Subsequent documentation commits need their own hosted status; skipped release/canary gates do not prove delivery or phone acceptance."
     },
     "feedbackRecovery": "PASS; six scripts",
-    "localIosExportSource": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
-    "localIosBundleSha256": "c5e4e3f99c8f04e0508368b2c2d58453e5137f09bac49f133c489d1a840f6541",
+    "localIosExportSource": "4e5715f5e93a962c8f39e09e773be183c53059f1",
+    "localIosBundleSha256": "01c1acffa251c846f3d22df7b590fbe49deddf8b23e0b3a2425c506897fcdb7a",
     "gateway": {
       "passed": 55,
       "failed": 0,
@@ -1443,24 +1443,25 @@
       "scope": "Historical unsigned package snapshot retained."
     },
     "currentUnsignedIos": {
-      "exportedSource": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
-      "runtimeRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+      "exportedSource": "4e5715f5e93a962c8f39e09e773be183c53059f1",
+      "runtimeRevision": "d70a222ac548ba6c7830163e94897fdc7e0cda6d",
       "preservedIconCommits": [
         "4fd177443d1e2f0a12e296728293d113c6a81f25",
         "c85fa68f4e6dc7d62b290a76df59bd24d05446b3"
       ],
       "bundle": {
-        "path": "_expo/static/js/ios/entry-42dd80153c3289eb216419c5ede080c9.hbc",
-        "sha256": "c5e4e3f99c8f04e0508368b2c2d58453e5137f09bac49f133c489d1a840f6541",
-        "bytes": 11804174
+        "path": "_expo/static/js/ios/entry-4839279ecc1cf077387fb0b3ef555bcb.hbc",
+        "sha256": "01c1acffa251c846f3d22df7b590fbe49deddf8b23e0b3a2425c506897fcdb7a",
+        "bytes": 11804397
       },
       "exactUniqueAssetsVerified": 74,
       "listingMediaHelpersPackaged": true,
       "iconComponentHelpersPackaged": true,
       "exactSvgPathsPackaged": 44,
+      "collectionPriceIdentityGuardPackaged": true,
       "receipt": {
-        "privatePath": "evidence/consolidation-20261018/combined-icons-ios-export-v1/asset-verification.json",
-        "sha256": "7b6754daa17475758abba077cc3a0423ccf9e5cbf75803bfbefc3ec1ae085b49"
+        "privatePath": "evidence/consolidation-20261018/pricing-identity-ios-export-v1/asset-verification.json",
+        "sha256": "8f539fb0841b53255a40caf9077e6d31d0bb159dfab1371dcce9c14098360475"
       },
       "nativeSigned": false,
       "uploaded": false,
@@ -1521,6 +1522,33 @@
         "sha256": "102688189323a588b223576b598d74f779d7b4050207cf86fd5dd920cc1f5871"
       },
       "sourceRevision": "9d33a7032b3bf55551ca8c52972c329ccc250a68"
+    },
+    "previousUnsignedIosBeforePricingIdentity": {
+      "exportedSource": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
+      "runtimeRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+      "preservedIconCommits": [
+        "4fd177443d1e2f0a12e296728293d113c6a81f25",
+        "c85fa68f4e6dc7d62b290a76df59bd24d05446b3"
+      ],
+      "bundle": {
+        "path": "_expo/static/js/ios/entry-42dd80153c3289eb216419c5ede080c9.hbc",
+        "sha256": "c5e4e3f99c8f04e0508368b2c2d58453e5137f09bac49f133c489d1a840f6541",
+        "bytes": 11804174
+      },
+      "exactUniqueAssetsVerified": 74,
+      "listingMediaHelpersPackaged": true,
+      "iconComponentHelpersPackaged": true,
+      "exactSvgPathsPackaged": 44,
+      "receipt": {
+        "privatePath": "evidence/consolidation-20261018/combined-icons-ios-export-v1/asset-verification.json",
+        "sha256": "7b6754daa17475758abba077cc3a0423ccf9e5cbf75803bfbefc3ec1ae085b49"
+      },
+      "nativeSigned": false,
+      "uploaded": false,
+      "submitted": false,
+      "published": false,
+      "phoneVerified": false,
+      "testFlightHeld": true
     }
   },
   "pullRequest": "https://github.com/tberridge86/Stackr/pull/409",
@@ -1635,7 +1663,7 @@
     "productionWritesAuthorized": false,
     "testFlightHeld": true
   },
-  "currentRuntimeSourceCandidate": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+  "currentRuntimeSourceCandidate": "d70a222ac548ba6c7830163e94897fdc7e0cda6d",
   "currentJungleProductionProposal": {
     "document": "docs/releases/jungle-production-image-correction-20261018.json",
     "sqlAndOperationsReviewed": true,
@@ -1649,5 +1677,12 @@
     "sha256": "8d097ca23883066246f4861b6ce3e4816570495b919baafacbb908e4284c5c41",
     "sourceRevision": "9d33a7032b3bf55551ca8c52972c329ccc250a68",
     "testOnly": true
+  },
+  "currentAppPlanAssessment": {
+    "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/app-remaining-plans-assessment-20261019/review.json",
+    "sha256": "169736908ff434f92704bb834d73187c16be29e856c2c60bc6ef11e4b753610b",
+    "confirmedUnblockedRuntimeRepairMissing": false,
+    "phoneClosedIssues": 0,
+    "testFlightHeld": true
   }
 }

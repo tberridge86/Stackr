@@ -64,11 +64,11 @@
       "nativePublished": false,
       "phoneAccepted": false,
       "satisfiedInFull": false,
-      "remaining": "Both approved bounded diagnostic sets completed; no timeout cause, missing index or exact owned-card freshness/coverage is established. No price refresh or worker restart performed; phone evidence remains open.",
+      "remaining": "One saved worker timeout occurred in optional coverage reporting and later saved reports recovered; the SQL performance cause for every historical timeout remains unconfirmed. Exact owned-card quote coverage/freshness and phone evidence remain unverified. No price refresh or job restart performed.",
       "repairCommit": null,
       "sourceFiles": [],
       "checks": [],
-      "confirmedCauseOrSourceGap": "Missing quotes and retrieval failures remain distinct. Two live pricing workers reported database statement timeouts; exact owned-card coverage is not proven.",
+      "confirmedCauseOrSourceGap": "Missing quotes and retrieval failures remain distinct. Saved worker evidence identifies one historical optional coverage-report RPC timeout after durable sweep checkpoints; five later reports in that saved window succeeded. Exact owner quote coverage and the causes of other historical timeouts remain unproved.",
       "currentDelivery": {
         "implemented": false,
         "tested": false,
@@ -89,6 +89,32 @@
         "independentlyReviewed": true,
         "merged": false,
         "scope": "Truthful missing/unknown/stale freshness and partial-coverage labels; no live quote retrieval or refresh proof."
+      },
+      "responseIdentityRepair": {
+        "repairCommit": "d70a222ac548ba6c7830163e94897fdc7e0cda6d",
+        "sourceFiles": [
+          "lib/collectionPricingApi.ts",
+          "scripts/test-collection-pricing-api.ts",
+          "scripts/test-binder-pricing.ts",
+          "scripts/test-collection-price-backpressure.mjs"
+        ],
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "nativePublished": false,
+        "deviceVerified": false,
+        "receipt": "docs/releases/collection-pricing-response-identity-20261019.json",
+        "scope": "Reject mismatched/missing stored-response variant/product/currency without inventing values; exact owner coverage remains unverified."
+      },
+      "savedWorkerEvidenceClarification": {
+        "report": {
+          "privatePath": "evidence/consolidation-20261018/remaining-pricing-cause-20261019/report.md",
+          "sha256": "b57c08415ae78f368ab9aff96bfadf47aaf22d0bf37f98078116fc741fb44840"
+        },
+        "optionalDiagnosticTimeoutIsNotAllPricingFailure": true,
+        "exactOwnedCoverageProven": false,
+        "newRemoteCalls": 0
       }
     },
     {
@@ -444,11 +470,11 @@
       "nativePublished": false,
       "phoneAccepted": false,
       "satisfiedInFull": false,
-      "remaining": "Both approved bounded diagnostic sets completed; no timeout cause, missing index or exact owned-card freshness/coverage is established. No price refresh or worker restart performed; phone evidence remains open.",
+      "remaining": "One saved worker timeout occurred in optional coverage reporting and later saved reports recovered; the SQL performance cause for every historical timeout remains unconfirmed. Exact owned-card quote coverage/freshness and phone evidence remain unverified. No price refresh or job restart performed.",
       "repairCommit": null,
       "sourceFiles": [],
       "checks": [],
-      "confirmedCauseOrSourceGap": "Stale estimates remain labelled; fresh provider evidence was not fabricated. Live pricing workers reported statement timeouts.",
+      "confirmedCauseOrSourceGap": "Stale estimates remain labelled until fresh exact provider evidence exists. One saved worker timeout is specifically an optional coverage-report RPC after durable work, followed by five successful report reads in that window; it does not prove an ongoing pricing outage or complete owner coverage.",
       "currentDelivery": {
         "implemented": false,
         "tested": false,
@@ -469,6 +495,32 @@
         "independentlyReviewed": true,
         "merged": false,
         "scope": "Truthful missing/unknown/stale freshness and partial-coverage labels; no live quote retrieval or refresh proof."
+      },
+      "responseIdentityRepair": {
+        "repairCommit": "d70a222ac548ba6c7830163e94897fdc7e0cda6d",
+        "sourceFiles": [
+          "lib/collectionPricingApi.ts",
+          "scripts/test-collection-pricing-api.ts",
+          "scripts/test-binder-pricing.ts",
+          "scripts/test-collection-price-backpressure.mjs"
+        ],
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "nativePublished": false,
+        "deviceVerified": false,
+        "receipt": "docs/releases/collection-pricing-response-identity-20261019.json",
+        "scope": "Reject mismatched/missing stored-response variant/product/currency without inventing values; exact owner coverage remains unverified."
+      },
+      "savedWorkerEvidenceClarification": {
+        "report": {
+          "privatePath": "evidence/consolidation-20261018/remaining-pricing-cause-20261019/report.md",
+          "sha256": "b57c08415ae78f368ab9aff96bfadf47aaf22d0bf37f98078116fc741fb44840"
+        },
+        "optionalDiagnosticTimeoutIsNotAllPricingFailure": true,
+        "exactOwnedCoverageProven": false,
+        "newRemoteCalls": 0
       }
     },
     {
@@ -1026,7 +1078,7 @@
       "requirement": "Promised artwork visible through configured API or concrete blockers disclosed before TestFlight",
       "owner": "stackr_artwork",
       "satisfiedInFull": false,
-      "remaining": "Exact Storm logo API is verified. The promised 73 assets are not yet checked in a signed app. Earlier tracked artwork backlog of 970, 43 held researched originals and four exact sampled card-art gaps remain disclosed; whole batch not reverified."
+      "remaining": "Exact Storm logo API is verified. All 74 distinct promised assets passed the unsigned iOS export from 4e5715f; signed-app bytes, configured-API visibility for all promised batches and phone acceptance remain pending. The earlier tracked artwork backlog of 970, 43 held researched originals and four exact sampled card-art gaps remain disclosed; the whole batch has not been reverified."
     }
   ],
   "consolidation": [
@@ -1262,7 +1314,7 @@
     "Prioritise exact card/binder retrieval and ownership gaps, then approved exact artwork/logo delivery, then supported prices/history; record the exact account/identity/source or authority needed for blocked work.",
     "Continue dependency-aware preservation and consolidation. Reconcile valuable unique work against current source before selectively integrating any needed changes; retained snapshots alone do not prove integration. Migrate the original shared repository last. Prepare an exact proven cleanup list before requesting its approval.",
     "Keep TestFlight held while the owner completion condition remains unsatisfied. Existing approval persists and is not new SQL, pricing or deletion authority.",
-    "When the owner condition is resolved, fresh existing delivery gates and signed73 verification are still required for that exact native build. Installed Wi-Fi/mobile journeys and performance cohorts remain separate acceptance."
+    "When the owner condition is resolved, fresh existing delivery gates and signed verification of all 74 distinct promised assets are still required for that exact native build. Installed Wi-Fi/mobile journeys and performance cohorts remain separate acceptance."
   ],
   "limitations": [
     "This audits both specified plans, not every feature in broader production-readiness briefs.",
@@ -1629,7 +1681,7 @@
       "quoteScope": "printing_level_blended",
       "fullCatalogueCurrent": false
     },
-    "interpretation": "Reported run progress does not establish new writes, complete catalogue coverage, exact owned-card or finish-specific quotes, or closure of V02/V08/V13. Earlier statement timeout is still present in the bounded window; its cause remains unconfirmed.",
+    "interpretation": "Reported run progress does not establish new writes, complete catalogue coverage, exact owned-card or finish-specific quotes, or closure of V02/V08/V13. One saved timeout is specifically an optional catalogue_bulk_price_coverage_page coverage-report RPC followed by five successful saved report reads in that window. Other historical timeout causes and exact owned-card coverage remain unproved.",
     "phoneAccepted": false
   },
   "currentJungleStagingReadExecution": {
@@ -1786,24 +1838,25 @@
     "scope": "Exact pushed 7623fea hosted checks; later documentation commits require fresh hosted status. No release or phone acceptance."
   },
   "currentUnsignedIos": {
-    "exportedSource": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
-    "runtimeRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+    "exportedSource": "4e5715f5e93a962c8f39e09e773be183c53059f1",
+    "runtimeRevision": "d70a222ac548ba6c7830163e94897fdc7e0cda6d",
     "preservedIconCommits": [
       "4fd177443d1e2f0a12e296728293d113c6a81f25",
       "c85fa68f4e6dc7d62b290a76df59bd24d05446b3"
     ],
     "bundle": {
-      "path": "_expo/static/js/ios/entry-42dd80153c3289eb216419c5ede080c9.hbc",
-      "sha256": "c5e4e3f99c8f04e0508368b2c2d58453e5137f09bac49f133c489d1a840f6541",
-      "bytes": 11804174
+      "path": "_expo/static/js/ios/entry-4839279ecc1cf077387fb0b3ef555bcb.hbc",
+      "sha256": "01c1acffa251c846f3d22df7b590fbe49deddf8b23e0b3a2425c506897fcdb7a",
+      "bytes": 11804397
     },
     "exactUniqueAssetsVerified": 74,
     "listingMediaHelpersPackaged": true,
     "iconComponentHelpersPackaged": true,
     "exactSvgPathsPackaged": 44,
+    "collectionPriceIdentityGuardPackaged": true,
     "receipt": {
-      "privatePath": "evidence/consolidation-20261018/combined-icons-ios-export-v1/asset-verification.json",
-      "sha256": "7b6754daa17475758abba077cc3a0423ccf9e5cbf75803bfbefc3ec1ae085b49"
+      "privatePath": "evidence/consolidation-20261018/pricing-identity-ios-export-v1/asset-verification.json",
+      "sha256": "8f539fb0841b53255a40caf9077e6d31d0bb159dfab1371dcce9c14098360475"
     },
     "nativeSigned": false,
     "uploaded": false,
@@ -2193,5 +2246,39 @@
       "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-9d33a70-final.json",
       "sha256": "102688189323a588b223576b598d74f779d7b4050207cf86fd5dd920cc1f5871"
     }
+  },
+  "previousUnsignedIosBeforePricingIdentity": {
+    "exportedSource": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
+    "runtimeRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+    "preservedIconCommits": [
+      "4fd177443d1e2f0a12e296728293d113c6a81f25",
+      "c85fa68f4e6dc7d62b290a76df59bd24d05446b3"
+    ],
+    "bundle": {
+      "path": "_expo/static/js/ios/entry-42dd80153c3289eb216419c5ede080c9.hbc",
+      "sha256": "c5e4e3f99c8f04e0508368b2c2d58453e5137f09bac49f133c489d1a840f6541",
+      "bytes": 11804174
+    },
+    "exactUniqueAssetsVerified": 74,
+    "listingMediaHelpersPackaged": true,
+    "iconComponentHelpersPackaged": true,
+    "exactSvgPathsPackaged": 44,
+    "receipt": {
+      "privatePath": "evidence/consolidation-20261018/combined-icons-ios-export-v1/asset-verification.json",
+      "sha256": "7b6754daa17475758abba077cc3a0423ccf9e5cbf75803bfbefc3ec1ae085b49"
+    },
+    "nativeSigned": false,
+    "uploaded": false,
+    "submitted": false,
+    "published": false,
+    "phoneVerified": false,
+    "testFlightHeld": true
+  },
+  "currentAppPlanAssessment": {
+    "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/app-remaining-plans-assessment-20261019/review.json",
+    "sha256": "169736908ff434f92704bb834d73187c16be29e856c2c60bc6ef11e4b753610b",
+    "confirmedUnblockedRuntimeRepairMissing": false,
+    "phoneClosedIssues": 0,
+    "testFlightHeld": true
   }
 }
