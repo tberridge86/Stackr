@@ -21,6 +21,7 @@ async function main() {
     plugins: [{ name: 'local-platform-adapters', setup(build) {
       build.onResolve({ filter: /^react-native$/ }, () => ({ path: 'rn', namespace: 'adapter' }));
       build.onResolve({ filter: /^@expo\/vector-icons$/ }, () => ({ path: 'icons', namespace: 'adapter' }));
+      build.onResolve({ filter: /^react-native-svg$/ }, () => ({ path: 'svg', namespace: 'adapter' }));
       build.onResolve({ filter: /^react-native-safe-area-context$/ }, () => ({ path: 'insets', namespace: 'adapter' }));
       build.onLoad({ filter: /.*/, namespace: 'adapter' }, ({ path: name }) => ({
         resolveDir: process.cwd(),
@@ -38,7 +39,11 @@ async function main() {
           };` : name === 'icons' ? `
           const React = require('react');
           exports.Ionicons = () => React.createElement('span', {'aria-hidden': true});
-          exports.Ionicons.glyphMap = {};` : `exports.useSafeAreaInsets = () => ({top:0,bottom:0,left:0,right:0});`,
+          exports.Ionicons.glyphMap = {};` : name === 'svg' ? `
+          import React from 'react';
+          export default function Svg({accessible, ...props}) { return React.createElement('svg', props); }
+          export function Path(props) { return React.createElement('path', props); }
+          ` : `exports.useSafeAreaInsets = () => ({top:0,bottom:0,left:0,right:0});`,
       }));
     } }],
   });

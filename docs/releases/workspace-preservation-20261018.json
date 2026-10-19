@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-18T14:38:13.916Z",
+  "observedAt": "2026-10-19T05:16:03.866Z",
   "canonicalRepository": "D:/Stackr",
   "branch": "codex/stackr-repair-consolidation-20261018",
   "privateEvidenceRoot": "D:/Stackr-organization",
@@ -26,9 +26,9 @@
     "nativeAbsentIndex": "Original absent index and initialization locks retained; scratch restoration reproduces actual source state"
   },
   "relocatedCodingFolders": {
-    "count": 25,
+    "count": 31,
     "cleanLinkedWorktrees": 18,
-    "dirtyLinkedWorktrees": 5,
+    "dirtyLinkedWorktrees": 11,
     "independentRepositories": 2,
     "dirtyIndependentRepositories": 1,
     "everyInverseMoveRehearsed": true,
@@ -49,7 +49,8 @@
     "relocatedFiles": 578,
     "relocatedBytes": 1106823876,
     "independentCopyAndRestoreVerified": true,
-    "publicationAndPhoneAcceptance": "Pending; preservation does not establish delivery"
+    "publicationAndPhoneAcceptance": "Preservation is not delivery. Exact M6 logo has a separate API-verified publication receipt; remaining promised assets and signed/phone evidence retain their separate gates.",
+    "inverseMoveRehearsal": "Not recorded for these three source-artwork roots; independent copy/restoration, moved-and-verified receipt and rollback instructions are retained."
   },
   "separateEvidenceFolders": {
     "folders": 2,
@@ -126,7 +127,7 @@
     },
     {
       "relativePath": "evidence/consolidation-20261018/remaining-data-roots.json",
-      "sha256": "a07e07a76d6db8c7c49b8ac3f983f61190e603c36fb2b0bea60f60aa1ab9dc8b"
+      "sha256": "3392ac9ea7429a5190e671ce4bbb4c7f38718fe6e7dd9eb2d38fcc232a2b1b8c"
     },
     {
       "relativePath": "preserved-work/small-evidence-20261018/receipt.json",
@@ -247,6 +248,42 @@
     {
       "relativePath": "preserved-work/mobile-rc-artifacts-20261018/shortcut-relocation.json",
       "sha256": "e5130e3df39d080f3da45d8ee21fc7a03df406d16a168e9298d47d2cb696d0e6"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/fallback-preservation-initial-stop.json",
+      "sha256": "527c2ad332d4583e36aaec3d7ec703df0626bc31a131d3895f0a771ec5dfc9f6"
+    },
+    {
+      "relativePath": "preserved-work/fallback-snapshots-20261018/receipt.json",
+      "sha256": "839cd774197f7105a211de29acb0f985cc7e6a7ac6ab28fa642a5c529ab06f0a"
+    },
+    {
+      "relativePath": "preserved-work/fallback-snapshots-20261018/source-inventory.json",
+      "sha256": "4e42cd8238b41be1c041e648872167524f9ee0e6e1dbe1f35af083f28774402f"
+    },
+    {
+      "relativePath": "preserved-work/fallback-snapshots-20261018/relocation-receipts/outcome.json",
+      "sha256": "ed435f83fee5084e7d9381fd667711d797f04ed1425d49170e92c78f32dc03b3"
+    },
+    {
+      "relativePath": "preserved-work/fallback-snapshots-20261018/independent-guard-review.json",
+      "sha256": "7132e4014c302791c4297382d651dc83835527eb64c03e406a9cfb94b63c06bb"
+    },
+    {
+      "relativePath": "active-runtime/repair-consolidation-20261018/fallback-move-guard-fixture/result.json",
+      "sha256": "afe2196480eb2986aa1c9058cf77bb8d15058a0646bb9b6516956672363bf55d"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/completion-audit-20261018/original-folder-coverage.json",
+      "sha256": "0fbcb5ac47e2e151a55cc4e8cc02904796b04d97649de20b28ef3d585c599a11"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/completion-audit-20261018/map-reconciliation.json",
+      "sha256": "1191fe3fd594c6b54740540ea9fa6d598e726102cae8e68d2d5baba5991f7f18"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/completion-audit-20261018/independent-review.json",
+      "sha256": "714099dd3456675f74e4ae5e8df9427349e4a71d15ad76985db1743667499d52"
     }
   ],
   "scope": "Sanitized receipt summary. File-copy counts overlap between checkouts and cohorts; do not add them as unique files or claim complete whole-drive backup.",
@@ -284,8 +321,8 @@
     "inverseMovesVerified": true,
     "sourceAppliedOverCurrentApp": false
   },
-  "totalOriginalFoldersReversiblyRelocated": 36,
-  "folderCountScope": "25 Git checkouts +3 native source snapshots +3 artwork folders +2 evidence folders +1 protected backup +1 historical release packet +1 mobile release artifact folder. Cohort bytes overlap retained copies; no unique-byte or disk-reclaimed claim.",
+  "totalOriginalFoldersReversiblyRelocated": 47,
+  "folderCountScope": "26 Git checkouts +3 native source snapshots +3 artwork folders +2 evidence folders +1 protected backup +1 historical release packet +1 mobile release artifact folder. Cohort bytes overlap retained copies; no unique-byte or disk-reclaimed claim. +1 historical fallback root containing5checkpoints/frozenpreview.",
   "mobileReleaseArtifacts": {
     "foldersRelocated": 1,
     "files": 3607,
@@ -303,5 +340,560 @@
     "nativePublished": false,
     "failedV1": "Stopped before first move because a parsed DateTime was coerced through the current locale; original and both copies intact. All v1 proof retained.",
     "correctedV2": "Direct UTC ticks for typed dates and strict invariant ISO parsing;34focused cases passed underenGB/enUS and independently reran. Full fresh source verification and all six move guards passed."
+  },
+  "historicalFallbackSnapshots": {
+    "foldersRelocated": 1,
+    "containedCheckpoints": 5,
+    "files": 3134,
+    "bytes": 276884297,
+    "directories": 261,
+    "independentExactCopies": 2,
+    "sourceOverlay": false,
+    "allSixFreshHashAndStructureChecksPassed": true,
+    "inverseMoveVerified": true,
+    "consumerCheck": "No direct non-PowerShell command line or documented8098/4174/4181 listener before each leg; cwd/environments uninspected.",
+    "packagedPreviewAssetsPreserved": true
+  },
+  "originalNamedRoots": {
+    "total": 60,
+    "currentlyMapped": 60,
+    "relocatedWithRecordedProof": 47,
+    "retainedOldRoots": 11,
+    "organizationDestination": 1,
+    "unresolvedAbsentOriginals": 0,
+    "consolidationComplete": false,
+    "stackrRelevant": 59,
+    "ownerExcludedUnrelated": 1,
+    "excludedPaths": [
+      "D:/CodexLogoWork"
+    ],
+    "ownerScopeCorrection": {
+      "privatePath": "evidence/consolidation-20261018/owner-scope-correction-codexlogowork/owner-scope-reply.json",
+      "sha256": "454b9490c612e2f26a68f9032182d26d87f74a288d4a4bb2bfc205301b6ea4d9"
+    }
+  },
+  "completionAudit": "docs/releases/both-plans-completion-audit-20261018.md",
+  "pricingIdentityContinuation": {
+    "source": "D:/Stackr-pricing-identity-20260907",
+    "current": "D:/Stackr-organization/archive/consolidated-worktrees-20261018/Stackr-pricing-identity-20260907",
+    "files": 25118,
+    "bytes": 1272800021,
+    "directories": 4719,
+    "independentExactCopies": 2,
+    "rawIndexPreservedImmutably": true,
+    "logicalIndexVerified": true,
+    "allSixFullPhysicalAndGitGuardsPassed": true,
+    "inverseMoveVerified": true,
+    "restoreWhatIfPassed": true,
+    "restoreWhatIfScope": "Compatibility check only; full physical restoration proven separately by the guarded actual inverse move.",
+    "outcome": {
+      "file": "D:/Stackr-organization/evidence/consolidation-20261018/remaining-coding-roots-20261018/move-execution-3a6c8bb235084a28bd9495e8c632da16/outcome.json",
+      "sha256": "8d3247125c6d9115366481c8a2ac63c65743d1bb7f43fd5f8074975a51b4c8d0"
+    },
+    "registration": {
+      "file": "D:/Stackr-organization/evidence/consolidation-20261018/remaining-coding-roots-20261018/pricing-relocation-registration.json",
+      "sha256": "69c0f09aa20b9f383b36f31bd1399be92c6695fd3e914ea29c6ed62b7f1439f8"
+    },
+    "permanentDeletion": false
+  },
+  "recognitionCaptureVaultContinuation": {
+    "recordedAt": "2026-10-18T19:58:09.527Z",
+    "original": "D:/Stackr-recognition-captures",
+    "current": "D:/Stackr-organization/data-and-models/Stackr-recognition-captures",
+    "files": 13,
+    "bytes": 13821,
+    "directories": 8,
+    "fullSnapshotAndRestoration": true,
+    "actualInverseAndReplay": true,
+    "policiesAndQuarantineSemanticsUnchanged": true,
+    "mappedUseNoteRequired": true,
+    "originalFailedTimestampAttemptRetained": true,
+    "receipt": {
+      "privatePath": "evidence/consolidation-20261018/recognition-capture-vault-20261018-v2/move-execution-682ff69f04414e66a5d475f960667c4e/outcome.json",
+      "sha256": "21db48e64eb795699df5de362a1694d89132eec0e9c023b9ba7bde452d7ffa6e"
+    },
+    "currentOwnerFolderCoverage": {
+      "privatePath": "evidence/consolidation-20261018/recognition-capture-vault-20261018-v2/current-owner-folder-placement.json",
+      "sha256": "feffac47ff2f9dbea88b91a7cb8c1aa70e0fdf0a90251ddf6cd4c778ed2c0801"
+    },
+    "sourceDirectoryAbsent": true,
+    "permanentDeletion": false
+  },
+  "stage6CaptureContinuation": {
+    "recordedAt": "2026-10-18T20:49:57.232Z",
+    "original": "D:/Stackr-stage6-captures",
+    "current": "D:/Stackr-organization/data-and-models/Stackr-stage6-captures",
+    "files": 177,
+    "bytes": 190823656,
+    "directories": 26,
+    "fullSnapshotAndRestoration": true,
+    "actualInverseAndReplay": true,
+    "originalLauncherPreserved": true,
+    "launcherCurrent": "D:\\Stackr-organization\\evidence\\consolidation-20261018\\stage6-captures-preservation-20261018\\move-preparation-v2\\retired-original\\Start-Stackr-Capture.cmd.preserved",
+    "commonGitControlsUnchanged": true,
+    "labelsAndConsentUnchanged": true,
+    "sevenManaphyContradictionsRetained": true,
+    "mappedUseNote": "evidence/consolidation-20261018/stage6-captures-preservation-20261018/move-preparation-v2/named-use-note.md",
+    "receipt": {
+      "privatePath": "evidence/consolidation-20261018/stage6-captures-preservation-20261018/move-preparation-v2/execution-03a4e93fcc8a44e8bcfe6aa197b8fe4a/outcome.json",
+      "sha256": "847ed4c1dc38f5b21a0b4c59c333d6e7158dcd11a596c4d0121450e21d54f507"
+    },
+    "currentOwnerFolderCoverage": {
+      "privatePath": "evidence/consolidation-20261018/stage6-captures-preservation-20261018/move-preparation-v2/current-owner-folder-placement.json",
+      "sha256": "e363aa5e82e48f6fc4354bedbba77a482d825d1836f64c13e90b15d74da54f1a"
+    },
+    "sourceDirectoryAbsent": true,
+    "permanentDeletion": false
+  },
+  "historicalRemainingGateSupersededByOwnerExclusion": {
+    "gate": "Resolve the absent original D:/CodexLogoWork location; do not infer deletion or loss from absence or claim all original folders consolidated",
+    "ownerAnswer": "codex logo work was irrelevant top stackr",
+    "reason": "Owner explicitly excluded this unrelated folder; it is not an unresolved Stackr location."
+  },
+  "nativeInitializingRelocation": {
+    "recordedAt": "2026-10-18T21:17:32.911Z",
+    "original": "D:/Stackr-native-aaae6ac-20260910",
+    "current": "D:/Stackr-organization/archive/initializing-worktrees-20261018/Stackr-native-aaae6ac-20260910",
+    "files": 242,
+    "bytes": 106910711,
+    "directories": 47,
+    "payloadCopiesVerified": 241,
+    "physicalInverseAndReplayVerified": true,
+    "initializationStatePreserved": true,
+    "indexStillAbsent": true,
+    "sharedMainControlsUnchanged": true,
+    "receipt": {
+      "privatePath": "evidence/consolidation-20261018/native-aaae6ac-initialization-assessment/move-preparation-v2/execution-16a49636-a147-418c-bb68-0711726f2e2a/outcome.json",
+      "sha256": "d0a4fd7aecab4b04fd22521170ea8ed64bc042f3f8d502bf6dc5a7fe89ebb565"
+    },
+    "restore": {
+      "type": "initializing-worktree-separate-reviewed-restore",
+      "instructions": "evidence/consolidation-20261018/native-aaae6ac-initialization-assessment/move-preparation-v2/REVIEW-AND-NATIVE-RESTORE.md",
+      "instructionsSha256": "e1b2c21b61a3539019a9c2e07fcb03a0b2d33d4b80d7d593555b930c5353bbea",
+      "helper": "evidence/consolidation-20261018/native-aaae6ac-initialization-assessment/move-preparation-v2/restore-initializing-native.cjs",
+      "helperSha256": "26c7cab4ecd0a0b1a644239eef4be2c113b412467dbe57cad35dc90f9bc651f4",
+      "standardRestoreScriptSupported": false,
+      "originalSharedCommonRequired": "D:/Stackr-1/.git",
+      "requiresNewExactRestoreApproval": true
+    },
+    "sourceDirectoryAbsent": true,
+    "permanentDeletion": false
+  },
+  "additionalNecessaryCohorts": [
+    {
+      "source": "D:/Stackr-visual-acceptance-20260910",
+      "files": 31,
+      "bytes": 745912,
+      "scope": "30 necessary output files plus lint cache and empty output directory",
+      "receipt": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/visual-acceptance-assessment-20261018/added-output-backup-v1/outcome.json",
+        "sha256": "8063d20d7265628f4dd31126dd80f3355e2f6440bf7989c73eb788e41adff2e0"
+      },
+      "threeIndependentHashesEqual": true,
+      "sourceUnchanged": true,
+      "sourceMoved": false,
+      "wholeRootBackedUp": false,
+      "dependenciesBackedUp": false,
+      "historicalAtCapture": true,
+      "currentSourceMoved": true
+    },
+    {
+      "source": "D:/CodexTemp/Stackr-iPhone-scan-20260903",
+      "files": 170,
+      "bytes": 78234155,
+      "directories": 17,
+      "scope": "Only the named Stackr scan folder; unrelated siblings untouched",
+      "receipt": {
+        "privatePath": "evidence/consolidation-20261018/codextemp-iphone-scan-preservation-v1/outcome.json",
+        "sha256": "37855f20c38ba9d039395be714f8c2167983050b7550f21e588b133913ddabd5"
+      },
+      "threeIndependentHashesEqual": true,
+      "sourceUnchanged": true,
+      "sourceMoved": false,
+      "fullSecurityAndAlternateStreamBackupClaimed": false
+    },
+    {
+      "source": "D:/Stackr-chinese-partial-dependencies-20261010",
+      "files": 2513,
+      "bytes": 26114058,
+      "directories": 712,
+      "scope": "Whole named partial dependency tree, no links",
+      "wholeRootBackedUp": true,
+      "receipt": {
+        "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-preservation-v1/outcome.json",
+        "sha256": "de2b7262ed420ac722df14453010decc5a287072f5267655c9270591a65ffd59"
+      },
+      "threeIndependentHashesEqual": true,
+      "sourceUnchanged": true,
+      "sourceMoved": false,
+      "historicalAtCapture": true,
+      "currentSourceMoved": true,
+      "currentPath": "D:\\Stackr-organization\\archive\\dependency-snapshots-20261019\\Stackr-chinese-partial-dependencies-20261010"
+    },
+    {
+      "source": "Selected SigLIP2 model and corresponding pinned gallery",
+      "files": 4,
+      "bytes": 549168578,
+      "scope": "Exact four artifacts only, not full model or Python runtime",
+      "wholeRootBackedUp": false,
+      "preservedPathsAcceptedByExistingPackager": true,
+      "receipt": {
+        "privatePath": "evidence/consolidation-20261018/model-artifact-path-preparation-v1/selected-copy-outcome.json",
+        "sha256": "5330b79d7376d21106c14d835d8e648e81ce070d1fd28671c853b4f891dc167a"
+      },
+      "threeIndependentHashesEqual": true,
+      "sourceUnchanged": true,
+      "sourceMoved": false
+    },
+    {
+      "source": "D:/Stackr-1/.cache/npm/_npx/8a74c048636603b8",
+      "files": 15633,
+      "bytes": 122118474,
+      "directories": 1872,
+      "scope": "Complete EAS CLI23.2.0runtime, both independent preserved copies pass local --version",
+      "wholeRootBackedUp": true,
+      "nativeOperationPerformed": false,
+      "receipt": {
+        "privatePath": "evidence/consolidation-20261018/eas-cli-preservation-v1/outcome.json",
+        "sha256": "bcf8a9a73b727bb1af833df51c1ff8e04030b2ea26340641a69fe45e6a40ea5d"
+      },
+      "threeIndependentHashesEqual": true,
+      "sourceUnchanged": true,
+      "sourceMoved": false
+    }
+  ],
+  "visualAtomicOriginalDirectoryContinuation": {
+    "registeredAt": "2026-10-18T22:18:16.139Z",
+    "original": "D:\\Stackr-visual-acceptance-20260910",
+    "current": "D:\\Stackr-organization\\archive\\consolidated-worktrees-20261018\\Stackr-visual-acceptance-20260910",
+    "preservationContract": "ATOMIC_ORIGINAL_TREE_RETENTION_V3",
+    "originalPhysicalDirectory": {
+      "device": "437697643",
+      "fileId": "281474978649203",
+      "birthtimeNs": "1789058641753471200",
+      "mode": 16822
+    },
+    "physicalMoveReturnReplayPassed": true,
+    "importantGitIndexControlsAndWipPreserved": true,
+    "independentlyRestoredNecessaryOutputFiles": 31,
+    "independentlyRestoredUntrackedWipFiles": 1,
+    "historicalWholeTree": {
+      "files": 55386,
+      "bytes": 1869093075,
+      "directories": 8737,
+      "freshFullTreeEqualityClaimed": false
+    },
+    "historicalDependencyCohort": {
+      "files": 51932,
+      "bytes": 779323200,
+      "ordinaryOriginalEntriesRetainedPhysically": true,
+      "independentlyBackedUp": false,
+      "reconstructed": false,
+      "deletionAllowed": false
+    },
+    "outcome": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/visual-acceptance-assessment-20261018/preparation-v3-atomic-original/execution-b065e030-1774-4661-9a1e-1b99e5a3150b/outcome.json",
+      "sha256": "e4c599dd2c3e12446b5701518bd4198493adf61239626de3027d314603325954"
+    },
+    "verification": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/visual-acceptance-assessment-20261018/preparation-v3-atomic-original/root-verified-outcome.json",
+      "sha256": "d4b00b217f350a69231757b9800fd0ec78b5cee4dd3d00b1cc3b5abb24ee5d6c"
+    },
+    "review": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/visual-atomic-original-implementation-review-v3-bounded-completion-review.json",
+      "sha256": "7408c542ceb4b8804a81c85e358153c73d88a38eee18757681ae80dfb46cfca0"
+    },
+    "restore": {
+      "type": "atomic-original-directory-retention-v3",
+      "helper": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/visual-acceptance-assessment-20261018/preparation-v3-atomic-original/restore-visual.cjs",
+        "sha256": "7436b9e7b31871c8b2f57caed265477df3b81e3294a8774b9f3fe37ed93dbbb0"
+      },
+      "instructions": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/visual-acceptance-assessment-20261018/preparation-v3-atomic-original/REVIEW-AND-RESTORE.md",
+        "sha256": "7f8c0d852544b21133b53e665331db6f0a6894a4bd8c4f77174ab73f95776d22"
+      },
+      "standardGenericRestoreSupported": false,
+      "originalSharedCommonRequired": "D:/Stackr-1/.git",
+      "requiresCurrentExactLocalReview": true,
+      "historicalPlanMustNotBeSilentlyRebound": true
+    },
+    "sourceDirectoryAbsent": true,
+    "permanentDeletion": false
+  },
+  "rcOriginalDirectoryContinuation": {
+    "registeredAt": "2026-10-18T23:28:28.432Z",
+    "original": "D:\\Stackr-rc-closure-20260824",
+    "current": "D:\\Stackr-organization\\archive\\consolidated-worktrees-20261018\\Stackr-rc-closure-20260824",
+    "preservationContract": "ATOMIC_ORIGINAL_TREE_RETENTION_V3",
+    "originalPhysicalDirectory": {
+      "device": "437697643",
+      "fileId": "281474977706047",
+      "birthtimeNs": "1787549656142849200"
+    },
+    "physicalMoveReturnReplayPassed": true,
+    "independentlyRestoredImportantFiles": 4475,
+    "independentlyRestoredImportantBytes": 1683454155,
+    "importantCohort": {
+      "workingFiles": 4398,
+      "workingBytes": 1672291865,
+      "additionalFiles": 77,
+      "additionalBytes": 11162290
+    },
+    "historicalWholeTree": {
+      "files": 63290,
+      "bytes": 2786649904,
+      "freshFullTreeEqualityClaimed": false
+    },
+    "ordinaryOriginalDependencyEntriesRetainedPhysically": true,
+    "independentDependencyBackup": false,
+    "dependencyDeletionAllowed": false,
+    "outcome": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/execution-53494dd4-36e8-4b6c-b1e0-71eda9fd7a33/outcome.json",
+      "sha256": "e1939002d54fe1605556eb65250664c6b2802f86287c86796b678288cec10c97"
+    },
+    "verification": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/root-verified-outcome-v2.json",
+      "sha256": "ed43762efe58f4969404d8752c825f11addec60ad88d8f1111a3914b95dc875b"
+    },
+    "review": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/rc-operational-amendment-review-v2-bounded-completion-review.json",
+      "sha256": "11bc759296445c69320844a7f00c3df5c0d81dc250d3ceba40be252068c03050"
+    },
+    "restore": {
+      "type": "atomic-original-directory-retention-v3",
+      "helper": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/restore-rc-v2.cjs",
+        "sha256": "debc49447354bc754b1a049cafc28ae5590fb22b570eb35a68e6cb23ff8c64d1"
+      },
+      "guard": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/rc-move-v2.cjs",
+        "sha256": "f2f40dbf3c77c1561dd3aa8cdbad6c5c82378400f461215e8ce0ccf1a2dd92ee"
+      },
+      "instructions": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/REVIEW.md",
+        "sha256": "1065b5accbb2adb6687abe55e239052351ba51794bcb9dfe9fb73f96deba5d87"
+      },
+      "standardGenericRestoreSupported": false,
+      "originalSharedCommonRequired": "D:/Stackr-1/.git",
+      "requiresCurrentExactLocalReview": true,
+      "historicalPlanMustNotBeSilentlyRebound": true
+    },
+    "sourceDirectoryAbsent": true,
+    "permanentDeletion": false
+  },
+  "releaseValidationRawContinuation": {
+    "registeredAt": "2026-10-18T23:54:28.319Z",
+    "original": "D:\\Stackr-release-validation-20260824",
+    "current": "D:\\Stackr-organization\\archive\\consolidated-worktrees-20261018\\Stackr-release-validation-20260824",
+    "preservationContract": "raw-preservation-v1",
+    "originalPhysicalDirectory": {
+      "device": "437697643",
+      "fileId": "281474977803306",
+      "birthtimeNs": "1787552994935213600"
+    },
+    "physicalMoveReturnReplayPassed": true,
+    "independentlyRestoredFiles": 45014,
+    "independentlyRestoredBytes": 1400526778,
+    "requiredGitObjects": 6660,
+    "requiredGitObjectBytes": 827267302,
+    "rawIndexSha256": "9d974eb982200fd2b580dcf2d1b1229b0572aac723ff43b3d2c13e0f7e8dd635",
+    "sourceHead": "50ef37dece1fb19eeacfe5906c8f9335e6560f4f",
+    "rawProof": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/raw-preservation-completion-v1/raw-preservation-proof-continuity-v4.json",
+      "sha256": "9f12286287dcbfe8858b9ecea0fb327dec8367255590569753e49a3d0746992f"
+    },
+    "preservationAcceptance": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/release-validation-continuity-final-acceptance-v4-bounded-completion-review.json",
+      "sha256": "bda12d394ea83aab96eefbac1637878c3a48b7af376b36abdac869e73d40a018"
+    },
+    "priorLogicalWorkflowCompleted": false,
+    "sourceStatusOrDiffWorkflowClaimed": false,
+    "bodyHashesFromAcceptedPreservation": true,
+    "freshBodyRehashClaimed": false,
+    "currentPhysicalContinuityAndMembershipPassed": true,
+    "outgoingDependencyJunction": {
+      "relative": "gateway/node_modules",
+      "target": "D:/Stackr-1/gateway/node_modules",
+      "targetBodiesBackedUpByThisProof": false
+    },
+    "outcome": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/preflight-a24dbdc2-855b-462e-bce7-1f2d40dc33ec/outcome.json",
+      "sha256": "644e91742cbe0827ee2c849f7abea0cc69b41da4dd6d13033869aed5142403fd"
+    },
+    "verification": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/root-verified-outcome-v4.json",
+      "sha256": "ea74d7f73f2cd8528824190a6f806c83b22dc91a01134daed624b29b53d47159"
+    },
+    "review": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/release-target-hdd-scheduling-review-v4-bounded-completion-review.json",
+      "sha256": "ddcee781b755147f8668505dd63c9c5cbffc248fd183a69008410f2f500d0de8"
+    },
+    "restore": {
+      "type": "raw-preservation-v1",
+      "helper": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/restore-release.cjs",
+        "sha256": "9f303ac011f0f2c0115ab81bd23b42edb3af8ac46a3f560c7c32b67bfa8a05c9"
+      },
+      "guard": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/release-move.cjs",
+        "sha256": "8fb72af45e67a8910aa37f1f31275a85644a07736cc703e8015bdb8b7062c00a"
+      },
+      "bindingCapture": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/capture-root-binding.cjs",
+        "sha256": "f21acf3e76c8db77ced6b63f94c0c47a405b0b5a5fdfe4629843aec1f3f4c7b3"
+      },
+      "instructions": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/REVIEW-AND-RESTORE.md",
+        "sha256": "4875ab2efe90a0a554d611f6c24b7448725f86f00854d750a9dddce01e5d0add"
+      },
+      "plan": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/move-plan-prepared.json",
+        "sha256": "0cb115c4f87cdaa0124b1cffcf223cf042cdda5dd23902839f3ee57ab77ad556"
+      },
+      "standardGenericRestoreSupported": false,
+      "originalSharedCommonRequired": "D:/Stackr-1/.git",
+      "requiresCurrentExactLocalReview": true,
+      "requiresFreshRestoreBinding": true,
+      "bindingInvocation": "capture-root-binding.cjs --restore <actual-current-canonical-HEAD>",
+      "requiresSeparateCurrentRootGrant": true,
+      "requiresExactSuccessfulArchiveIntentAndOutcome": true,
+      "historicalPlanMustNotBeSilentlyRebound": true,
+      "noAutomaticRetryOrRollback": true
+    },
+    "sourceDirectoryAbsent": true,
+    "permanentDeletion": false
+  },
+  "chinesePartialDirectoryContinuation": {
+    "registeredAt": "2026-10-19T00:12:44.856Z",
+    "original": "D:\\Stackr-chinese-partial-dependencies-20261010",
+    "current": "D:\\Stackr-organization\\archive\\dependency-snapshots-20261019\\Stackr-chinese-partial-dependencies-20261010",
+    "preservationContract": "independent-triple-hash-metadata-continuity-v1",
+    "originalPhysicalDirectory": {
+      "dev": "437697643",
+      "ino": "281474978986676",
+      "birthtimeNs": "1791670573323716300",
+      "mode": "16822"
+    },
+    "physicalMoveReturnReplayPassed": true,
+    "independentlyRestoredFiles": 2513,
+    "independentlyRestoredBytes": 26114058,
+    "directories": 712,
+    "links": 0,
+    "priorBodyHashReceipt": {
+      "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-preservation-v1/outcome.json",
+      "sha256": "de2b7262ed420ac722df14453010decc5a287072f5267655c9270591a65ffd59"
+    },
+    "freshBodyRehashClaimed": false,
+    "fullCurrentMembershipAndMetadataContinuityPassed": true,
+    "dependencyPackageHealthOrReproductionClaimed": false,
+    "sourceGitCommands": 0,
+    "outcome": {
+      "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-relocation-20261019-v3/preflight-abec0eda-e53d-4dc9-be92-1f7567b4544e/outcome.json",
+      "sha256": "69b080676ad9a63aea46eeea3f3e262745ab3f69eb93e072b846354f7723c5a2"
+    },
+    "verification": {
+      "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-relocation-20261019-v3/root-verified-outcome-v3.json",
+      "sha256": "36f3f5a5022ba389805f82cacba6605bb0033275dfaa09ee2e6ea74105d7d51d"
+    },
+    "review": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/chinese-native-pin-review-v3/review.json",
+      "sha256": "11b17d2158e3e9d4994ceb04e90f07dc85f4007a4826413321c854cfcbc829ec"
+    },
+    "restore": {
+      "type": "independent-triple-hash-metadata-continuity-v1",
+      "helper": {
+        "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-relocation-20261019-v3/restore-directory.cjs",
+        "sha256": "ba130652a3064ca69d8553992ec4bc5edfe27d74341e905c72f97466e507d1c3"
+      },
+      "guard": {
+        "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-relocation-20261019-v3/relocate-directory.cjs",
+        "sha256": "767208b0c2935d0e08ffea470c60ffce7640994fb1fadf2038eb9ad4f06eb33b"
+      },
+      "canonicalBindingCapture": {
+        "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-relocation-20261019-v3/capture-root-binding.cjs",
+        "sha256": "d5be0f9a6826b193f876f501322c3e6099e3d1889ccf757e0afe15d50f4c2f00"
+      },
+      "resourceBindingCapture": {
+        "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-relocation-20261019-v3/capture-parent-config-bindings.cjs",
+        "sha256": "fed7927179e253f8552bed9b442a2f8990f25674211e1645d88c9a91e4f26414"
+      },
+      "instructions": {
+        "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-relocation-20261019-v3/REVIEW-AND-RESTORE.md",
+        "sha256": "c4ea3244961bf77ba36c39a85a5d2d178efd78590e4356201d0649a60fc1669d"
+      },
+      "standardGenericRestoreSupported": false,
+      "requiresCurrentExactLocalReview": true,
+      "requiresFreshCanonicalAndResourceBindings": true,
+      "requiresSeparateRestorePreflightAndGrant": true,
+      "requiresSuccessfulArchiveIntentAndOutcomeHashes": true,
+      "consumerScopeCurrentlyRequiresOriginalCommon": "D:/Stackr-1/.git",
+      "requiresAdditiveConsumerAdapterAfterCommonMigration": true,
+      "historicalPlanMustNotBeSilentlyRebound": true,
+      "noAutomaticRetryOrRollback": true
+    },
+    "sourceDirectoryAbsent": true,
+    "permanentDeletion": false
+  },
+  "build37IntegratedContinuation": {
+    "registeredAt": "2026-10-19T04:13:41.900Z",
+    "roots": [
+      {
+        "name": "Stackr-build37-feedback-20260912",
+        "original": "D:\\Stackr-build37-feedback-20260912",
+        "current": "D:\\Stackr-organization\\archive\\consolidated-worktrees-20261018\\Stackr-build37-feedback-20260912",
+        "exactOriginalDirectoryRetained": true,
+        "moveReturnReplayPassed": true,
+        "independentlyRestoredImportantFiles": 4029
+      },
+      {
+        "name": "Stackr-integrated-candidate-20260912",
+        "original": "D:\\Stackr-integrated-candidate-20260912",
+        "current": "D:\\Stackr-organization\\archive\\consolidated-worktrees-20261018\\Stackr-integrated-candidate-20260912",
+        "exactOriginalDirectoryRetained": true,
+        "moveReturnReplayPassed": true,
+        "independentlyRestoredImportantFiles": 5189
+      }
+    ],
+    "officialGitMoves": 6,
+    "originalEdgeTransactionCompleted": false,
+    "separateHistoricalFourPlusNewTwoEdgeCompletion": true,
+    "registration": {
+      "privatePath": "evidence/consolidation-20261018/edge-reviewed-forward-replay-20261019/relocation-registration.json",
+      "sha256": "d07f8af84ad8ee0238c25cca3291ff16d24b6224a0bc68d83ab33fe7fe281f1e"
+    },
+    "independentReview": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/build37-integrated-completion-review-20261019/review.json",
+      "sha256": "555e2883b85279641391870ecd103798fadc5bf8cda95e04fa9253ed30258cd4"
+    },
+    "ordinaryDependencyEntriesRetainedInOriginalDirectories": true,
+    "independentDependencyBackupClaimed": false,
+    "currentTypedRestoreRequiresFreshBindingsAndReview": true,
+    "permanentDeletion": false
+  },
+  "reportOutputPathConsolidation": {
+    "files": [
+      "scripts/collect-public-catalogue-coverage.ts",
+      "scripts/collect-four-language-coverage-baseline.ts",
+      "scripts/test-collect-public-catalogue-coverage.ts"
+    ],
+    "outputRoot": "D:/Stackr-organization/active-runtime/four-language-coverage",
+    "historicalInputDefaultsChanged": false,
+    "datedInputsStillRequirePreservationAndExplicitOverridesAfterPrimaryMigration": true,
+    "sourceReview": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/report-output-path-review-20261019/review.json",
+      "sha256": "8736658dd91638f0f3dd311d53e788c38ea16c09b28136edbe06928a5265ee28"
+    },
+    "requiredChecks": {
+      "privatePath": "evidence/consolidation-20261018/validation/report-output-paths-20261019/required-checks.json",
+      "sha256": "5b892d9df8379cfc79a8d8d7402ecc55c40be4980c74de52caf239fbf39fb682"
+    },
+    "narrowTestsPassed": true,
+    "typecheckPassed": true,
+    "lintPassed": true,
+    "existingLintWarnings": 8,
+    "actualCollectorOrNetworkRun": false,
+    "appOrBackendRuntimeChanged": false,
+    "nativeBuildOrSubmission": false
   }
 }

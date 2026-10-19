@@ -14,6 +14,7 @@ import {
 import { useTheme } from './theme-context';
 import { stackrCardImageSizes } from '../lib/stackrSizing';
 import { nextStackrImageCandidate, stackrImageCandidates } from '../lib/stackrImageCandidates';
+import type { RetrievalImageEvent } from '../lib/performance';
 import {
   enforceTcgdexRuntimeImagePolicy,
   isTcgdexControlledCardReferenceUrl,
@@ -48,6 +49,8 @@ type StackrImageProps = {
   onLoad?: () => void;
   onError?: () => void;
   onSourceChange?: (uri: string | null) => void;
+  /** Anonymous native image callbacks; a display event is distinct from decoding/loading. */
+  onDiagnostic?: (event: RetrievalImageEvent) => void;
   /** Retain source pixels for enlarged card inspection and pinch zoom. */
   preserveDetail?: boolean;
 };
@@ -145,6 +148,7 @@ function StackrImageBase({
   onLoad,
   onError,
   onSourceChange,
+  onDiagnostic,
   preserveDetail = false,
 }: StackrImageProps) {
   const [cardFrame, setCardFrame] = React.useState<{ width: number; height: number } | null>(null);
@@ -174,6 +178,16 @@ function StackrImageBase({
   // Renditions need distinct cache entries. A failed thumbnail must not poison
   // a supplied full-size fallback that uses the same card-level cache key.
   const retryAttempt = candidate && retryState.setKey === candidateSetKey ? retryState.attempts[candidate.key] ?? 0 : 0;
+  const diagnosticKey = `${candidateSetKey}:${candidate?.key ?? ''}:${retryAttempt}`;
+  const activeDiagnosticRef = React.useRef(diagnosticKey);
+  activeDiagnosticRef.current = diagnosticKey;
+  const diagnostic = (phase: RetrievalImageEvent['phase'], details: Partial<RetrievalImageEvent> = {}) => {
+    if (activeDiagnosticRef.current !== diagnosticKey) return;
+    try {
+      onDiagnostic?.({ phase, rendition: preserveDetail || Boolean(fullUri && fullUri !== uri && remoteUri === fullUri) ? 'detail' : 'thumbnail',
+        attempt: retryAttempt + 1, ...details });
+    } catch { /* Optional diagnostics cannot interrupt image delivery. */ }
+  };
   const imageSource = remoteUri && resolvedSource && typeof resolvedSource === 'object'
     ? { ...resolvedSource, cacheKey: cacheKey ? `${cacheKey}:${remoteUri}:retry-${retryAttempt}` : `${remoteUri}:retry-${retryAttempt}` }
     : resolvedSource;
@@ -235,7 +249,11 @@ function StackrImageBase({
           transition={transition}
           recyclingKey={remoteUri ?? cacheKey ?? undefined}
           accessibilityLabel={accessibilityLabel}
-          onLoad={() => onLoad?.()}
+          onLoad={event => {
+            diagnostic('loaded', { cache: event?.cacheType ?? 'unknown', width: event?.source?.width, height: event?.source?.height });
+            onLoad?.();
+          }}
+          onDisplay={() => diagnostic('displayed')}
           onError={() => {
             if (!candidate || activeCandidateSetRef.current !== candidateSetKey) return;
             const attempts = retryState.setKey === candidateSetKey ? retryState.attempts[candidate.key] ?? 0 : 0;
@@ -243,12 +261,15 @@ function StackrImageBase({
             // from a genuinely unavailable rendition. We never jump to artwork from
             // another printing: only the already-vetted candidate list may follow.
             if (isRemoteImage && attempts < 1) {
+              diagnostic('retry');
               setRetryState((previous) => ({
                 setKey: candidateSetKey,
                 attempts: { ...(previous.setKey === candidateSetKey ? previous.attempts : {}), [candidate.key]: attempts + 1 },
               }));
               return;
             }
+            diagnostic('failed', { terminal: !nextStackrImageCandidate(candidates,
+              [...(failures.setKey === candidateSetKey ? failures.keys : []), candidate.key]) });
             setFailures((previous) => ({
               setKey: candidateSetKey,
               keys: [...new Set([

@@ -1,3 +1,4 @@
+import { StackrFunctionalIcon } from '../../components/StackrFunctionalIcon';
 import { StackrBrowseToolbar } from '../../components/StackrBrowseControls';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
@@ -48,6 +49,7 @@ import {
   type PokemonCatalogueLanguageCode,
 } from '../../components/PokemonLanguageBadge';
 import { StackrScreen } from '../../components/StackrScreen';
+import { StackrButton } from '../../components/StackrControls';
 import { formatSlabCompanyLabel } from '../../components/SlabStickerLabel';
 import { useProfile } from '../../components/profile-context';
 import { useAppMode } from '../../components/app-mode-context';
@@ -1831,22 +1833,12 @@ export default function TheMarketTab() {
       {canPublishListing && workspace === 'myListings' ? (
         <>
           {renderListingDraftCard()}
-          <TouchableOpacity
+          <StackrButton
+            label="Create Listing"
+            variant="primary"
+            icon="add"
             onPress={() => router.push('/listing/new' as any)}
-            activeOpacity={0.84}
-            style={{
-              minHeight: 42,
-              borderRadius: 14,
-              backgroundColor: theme.colors.primary,
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexDirection: 'row',
-              gap: 7,
-            }}
-          >
-            <Ionicons name="add" size={18} color="#FFFFFF" />
-            <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '900' }}>Create Listing</Text>
-          </TouchableOpacity>
+          />
         </>
       ) : null}
 
@@ -2907,7 +2899,7 @@ function ListingDetailModal({
                   borderColor: saved ? `${theme.colors.primary}55` : theme.colors.border,
                 }}
               >
-                <Image
+                <StackrFunctionalIcon
                   source={stackrIcons.favorite}
                   resizeMode="contain"
                   style={{ width: 24, height: 24, opacity: saved ? 1 : 0.72 }}
@@ -3180,7 +3172,7 @@ function DetailBadge({
       }}
     >
       {imageIcon ? (
-        <Image
+        <StackrFunctionalIcon
           source={imageIcon}
           resizeMode="contain"
           style={{ width: 17, height: 17 }}

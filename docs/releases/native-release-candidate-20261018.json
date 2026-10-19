@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "preparedAt": "2026-10-18T17:08:35.660Z",
+  "approval": "Direct human native approval received; execution subsequently held for owner completion audit of both plans.",
+  "frozenSource": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
+  "profile": "production",
+  "channel": "production",
+  "runtimeVersion": "1.0.6",
+  "appVersion": "1.0.6",
+  "bundleIdentifier": "com.tommo86.Stackr",
+  "ownerRecognitionEnabled": false,
+  "expectedBackendSha": "f9350f896375ffac84a22ca2f7a4ec7654538091",
+  "gatewayVersion": "56f04b7f-0692-4d8f-a9ae-0963442e57b8",
+  "runtimeConfigPreflightPassed": true,
+  "appSourceExactlyMatchesVerifiedExport66156ca": true,
+  "unsignedExportReceipt": "docs/releases/ios-export-asset-verification-20261018.json",
+  "mainCi": [
+    {
+      "name": "Stackr Platform CI",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/39146845272"
+    },
+    {
+      "name": "Stackr Gateway CI",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/39146845248"
+    },
+    {
+      "name": "Owner Pricing Identity Tests",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/39146845332"
+    }
+  ],
+  "workflow": "build-owner-ios-release.yml",
+  "workflowBuildProfileMustBeExplicit": "production",
+  "githubExpoTokenNamePresent": false,
+  "credentialValuesRead": false,
+  "releaseRoute": "Existing local EAS23.2.0 route using the same account identity as delivered59; one immutable normal-production build request and exact-ID internal Team (Expo) submission after fresh gates.",
+  "newBuildNumber": null,
+  "remoteAutoIncrement": true,
+  "fullFreshNativeDeliveryGatePassed": false,
+  "remainingBeforeAnyBuild": [
+    "Resolve the later owner condition: review both plans against their listed work and retain unmet source, data and consolidation requirements explicitly. Native execution remains held.",
+    "Fresh existing full native delivery gate, including anonymous publishable-key activity schema checks at limit0; no collector rows or SQL writes",
+    "Exactly one build request with source/profile/channel/runtime/number readback"
+  ],
+  "afterBuildBeforeSubmission": [
+    "Read back FINISHED exact EAS build ID/source/profile/channel/runtime/actual assigned number",
+    "Inspect actual signed archive and verify promised assets including exact English Storm hash and3TraditionalChinese pack-art files",
+    "Submit exact verified ID using production profile to existing internal Team (Expo); verify Apple processing/group availability; preserve59"
+  ],
+  "outstandingArtworkDisclosure": {
+    "trackingPullRequest": "https://github.com/tberridge86/Stackr/pull/339",
+    "trackingRecordOnly": true,
+    "previousRecordedFixedListTotal": 2944,
+    "previousRecordedLiveVerified": 1974,
+    "previousRecordedRemaining": 970,
+    "followups": 963,
+    "ordinarySourceSearches": 7,
+    "researchOriginalsHeld": 43,
+    "currentWholeBatchReverified": false,
+    "doNotMergeTrackingPr": true
+  },
+  "otherOpenAcceptance": [
+    "Two exact Pikachu artwork gaps and two earlier Wartortle gaps",
+    "Unidentified Home printing; November2023 cover is source/import/unsigned-export verified, signed/phone proof pending.",
+    "Private binder/account counts/values/history/movers and listingmedia",
+    "Recorded physical journeys overWiFi/mobiledata, inspection/haptics, required performance samples"
+  ],
+  "newNativePublished": false,
+  "phoneClosedIssues": 0,
+  "excluded": [
+    "OTA/publicAppStore/externaltester expansion",
+    "New database/catalogue mutations or arbitrary diagnostic SQL",
+    "Providerprice refreshes/job restarts/credential changes/permanent deletion"
+  ],
+  "preparationReviewed": true,
+  "preparationReviewScope": "Prepared local guards and offline validation only; real native gates/build/signed archive/phone remain pending.",
+  "githubEnvironmentExpoTokenNamePresent": false,
+  "localReadOnlyIdentityVerified": true,
+  "localIdentityObservation": "2026-10-18T17:16:33.502Z",
+  "localSourceWorktree": "D:/Stackr-organization/active-runtime/repair-consolidation-20261018/native-release-source-4e405d7",
+  "preparedExactBundledAssets": 73,
+  "offlineValidation": {
+    "launcherAndValidatorCases": 101,
+    "unknownOutcomeHoldCases": 5,
+    "syntheticArchiveCases": 10,
+    "syntaxChecks": 14,
+    "remoteCalls": 0,
+    "actualSignedArchiveVerified": false
+  },
+  "preSubmissionFreshness": "Separate successful public/API/history-limit0 receipt under10minutes old, bound to original build intent and actual signed proof; no repeat export or rewritten initial receipts.",
+  "approvalScopeRequested": [
+    "One normal-production exact4e source build after existing full fresh delivery gates",
+    "Read-only delivery checks before build and submission, including anonymous history schema requests withlimit0/no collector rows",
+    "Verify actual signed73assets and submit exactly that finished build ID to existing internal Team (Expo)",
+    "Read back Apple processing and existing group availability; retain delivered59"
+  ],
+  "evidenceDigests": [
+    {
+      "relativePath": "evidence/consolidation-20261018/native-release-20261018/prepared-files-sha256.json",
+      "sha256": "eda78e4feb826a363885272aa50c8e5520627831236283d1288eebbc4e6d7b1f"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/native-release-20261018/independent-helper-review.receipt.json",
+      "sha256": "7ba1fbd527a81f27f71d0bda0a282415103747b7b1170576b9e4867f67e633d7"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/native-release-20261018/offline-validation.json",
+      "sha256": "8439fe0e08b68213bc441c1553dd61f08383b456368bae73a617daa02c5f2755"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/gateway-release-20261018/native-source-checkout.json",
+      "sha256": "5558bf4dd900d07e49e98fc6e62d535a5b73cdca2679232226332640f5307533"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/gateway-release-20261018/native-local-route-readiness.json",
+      "sha256": "b02d824fab2be958d446aa7e836cf350668ac058cada7bc32d2c7f4a5af74cf7"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/gateway-release-20261018/native-local-route-readiness-followup.json",
+      "sha256": "b3880c27036deaa91036a558980a4019fa5c6e52c584dd3f9520a33c5a9bdebd"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/native-release-20261018/native-approval-question.json",
+      "sha256": "7d68812d0e35339223675af78ae920c904258af4745939cdf9c1b97607dd961c"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/native-release-20261018/approval.received.json",
+      "sha256": "ea729e9dbfefa9750ccbafde2714eb3247de169ca33596cb69e49a986dc1a0fe"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/native-release-20261018/owner-query-hold.json",
+      "sha256": "59d4b4a5ed3c80f7aeb6bff7d1b857ada93127151de89f89ec3239c02b73ce34"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/completion-audit-20261018/owner-clarification.json",
+      "sha256": "4c6fc8008d1286955a212dc0bf59019a30527f9e2968c7f3b71cb5de305514b8"
+    }
+  ],
+  "primaryMigrationHold": "Existing cached EAS CLI still resides under D:/Stackr-1; retain it and the original primary until native delivery or separately tested runtime relocation and all remaining dependency repairs.",
+  "approvalAtPreparation": "requested; awaiting direct human answer",
+  "currentStateObservedAt": "2026-10-18T18:14:55.933Z",
+  "executionState": "held_until_remaining_repairs_verified",
+  "newApprovalReceived": true,
+  "ownerCompletionAudit": "docs/releases/both-plans-completion-audit-20261018.md",
+  "supersedingSource": {
+    "revision": "c310ccd362efdbbe9133f726dda429c58506c15f",
+    "runtimeRepair": "d59c3a6e6f48fbb106866ed9e51edd2e0486a0b9",
+    "coverRepair": "f047a5f577126502767e88cdf6d491c467914fcc",
+    "prepared4eIsHistorical": true,
+    "promisedAssets": 74,
+    "unsignedExportedSource": "f047a5f577126502767e88cdf6d491c467914fcc",
+    "actualUnsignedAssetsVerified": 74,
+    "signedAssetsVerified": false,
+    "buildRequested": false,
+    "submissionRequested": false,
+    "verificationRecord": "docs/releases/remaining-repairs-verification-20261018.json"
+  },
+  "currentContinuation": {
+    "recordedAt": "2026-10-18T18:38:57.998Z",
+    "source": "b379c5c48b4cdbe9f169c739467e362be93f3a0e",
+    "homeRepair": "d0f9e74aa099a4805383d1fabb4b5e6f91e59cdb",
+    "unsignedExportSource": "d0f9e74aa099a4805383d1fabb4b5e6f91e59cdb",
+    "exactAssets": 74,
+    "signed": false,
+    "uploaded": false,
+    "submitted": false,
+    "testFlightHeld": true,
+    "verification": "docs/releases/remaining-repairs-verification-20261018.json",
+    "historicalFrozenPreparationUnchanged": true
+  },
+  "latestUnsignedIntegrationVerification": {
+    "recordedAt": "2026-10-18T19:33:01.184Z",
+    "sourceRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
+    "sourceTree": "ca671a57f5f4841a12688aae1af2c7192845e08f",
+    "document": "docs/releases/artwork-reassignment-repair-20261018.json",
+    "exactPromisedAssets": 74,
+    "nativeSigned": false,
+    "submitted": false,
+    "phoneVerified": false,
+    "changesPriorApprovedNativeGrant": false,
+    "testFlightHeld": true
+  }
+}

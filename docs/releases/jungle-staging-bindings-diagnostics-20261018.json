@@ -1,0 +1,95 @@
+{
+  "recordedAt": "2026-10-18T20:39:04.753Z",
+  "state": "APPROVED_FIVE_READS_COMPLETED_STAGING_PARITY_HOLD",
+  "target": {
+    "id": "lmwfhvexfcoyeuoyrlco",
+    "name": "Stackr me5 staging",
+    "metadataStatus": "ACTIVE_HEALTHY",
+    "observedAt": "2026-10-18T19:32:08.479Z",
+    "sqlAccessOrContentsVerified": false
+  },
+  "script": "docs/releases/jungle-staging-bindings-read-only-20261018.sql",
+  "scriptSha256": "169171f1d862af03cb476411bda6b8c24edd7538ab295ddf48eca68e0689c2bb",
+  "queries": 5,
+  "statementSeconds": 5,
+  "lockSeconds": 1,
+  "idleSeconds": 15,
+  "collectorOrPriceRows": false,
+  "writes": false,
+  "executionApproved": true,
+  "executed": true,
+  "independentReview": {
+    "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/jungle-staging-binding-read-review-v1.json",
+    "sha256": "344d27eaf97cbd7ae630122050fb2401c053c7300fb723b939198fe8e6ef9d50"
+  },
+  "exactSplitPlan": {
+    "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/staging-binding-preparation/read-only-execution-plan.json",
+    "sha256": "b56aee61cfd9e865641b1848be2d7f72b1667ed27bad7d3cee73f5f24c1a5937"
+  },
+  "testFlightHeld": true,
+  "historicalPreparedState": "REVIEWED_READ_ONLY_PROPOSAL_OWNER_AUTHORIZATION_PENDING",
+  "remoteSqlCalls": 5,
+  "successfulSqlCalls": 5,
+  "executionEvidence": {
+    "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/staging-binding-execution-20261018/execution-summary.json",
+    "sha256": "9d4d34318357636aa1d4a333570fdb65aeea8674ffcdb2d3d2d3086453910950"
+  },
+  "actualContext": {
+    "transactionReadOnly": "on",
+    "statementTimeout": "5s",
+    "serverVersion": "17.6"
+  },
+  "discovery": {
+    "decision": "HOLD",
+    "holdReasons": [
+      "HOLD_ASSET_MISSING_MULTIPLE_OR_OVERFLOW",
+      "HOLD_VARIANT_MISSING_MULTIPLE_OR_OVERFLOW",
+      "HOLD_VARIANT_IDENTITY_OR_EDITION_DIFFERS",
+      "HOLD_EXISTING_ALIAS_OR_ASSET_BINDING_DIFFERS",
+      "HOLD_EXACT_PUBLISHED_MEMBERSHIP_MISSING"
+    ],
+    "stagingBinding": null,
+    "matchingNondeletedObjects": 2,
+    "activeCandidateVariants": 1,
+    "activeFirstEditionCandidateFound": false,
+    "beforeRowsSha256": "696d6eeb94ee1606509a7ac4aa7824db30c4e89a6a9475de2b3b3fbf22af3348"
+  },
+  "additionalSqlOrWriteAuthority": false,
+  "exactHistoryFollowup": {
+    "state": "APPROVED_ONE_READ_COMPLETED_HISTORICAL_KEY_COLLISION_HOLD",
+    "script": "docs/releases/jungle-staging-history-read-only-20261018.sql",
+    "sha256": "f01234bb92dfff2efc5e152b6986fc53a60ecbf376d6233dbafa0646e6e924b6",
+    "queryCount": 1,
+    "readOnly": true,
+    "statementTimeout": "5s",
+    "collectorOrPriceRows": false,
+    "independentReview": {
+      "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/staging-rehearsal-preparation-v5/root-independent-read-only-review.json",
+      "sha256": "87d3eb37570d5aa426a4337679a0c84bb3e17f1b629e31bccfe232043d715857"
+    },
+    "executed": true,
+    "mutationAuthority": false,
+    "executionApproved": true,
+    "remoteSqlCalls": 1,
+    "successfulSqlCalls": 1,
+    "remoteWrites": 0,
+    "approvalScopeConsumed": true,
+    "evidence": {
+      "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/staging-history-read-execution-20261018/query-outcome.json",
+      "sha256": "82c4aae23557642b2594e5f9e6481b65042aa1e0753abdf35b84f75ee5215ca3"
+    },
+    "summary": {
+      "historicalVariantCount": 1,
+      "taxonomyCount": 2,
+      "finishCount": 2,
+      "affectedTriggerCount": 1,
+      "evidenceSha256": "5380adb34ae1d27c8d8ea83f13b854913e24a1fa8ac45f25ec8e71f722b10d8e",
+      "fixtureUuidCollision": false,
+      "canonicalOrPrintingVariantCollision": true,
+      "variantOverflow": false,
+      "taxonomyMissing": false,
+      "anyListedBlocker": true
+    },
+    "additionalSqlOrWriteAuthority": false
+  }
+}

@@ -80,10 +80,11 @@ import { ROUTES } from '../../lib/routes';
 import { searchIcons } from '../../lib/searchIcons';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
-import { getIncrementalListWindow } from '../../lib/performance';
+import { beginRetrieval, getIncrementalListWindow, type RetrievalOrigin } from '../../lib/performance';
 import { supabase } from '../../lib/supabase';
 import { sanitizeGate0CommerceCopy } from '../../lib/gate0CommerceCopy';
-import { sanitizeMarketplaceListingPresentationFields } from '../../lib/marketplacePresentation';
+import { getMarketplaceListingThumbnail, sanitizeMarketplaceListingPresentationFields } from '../../lib/marketplacePresentation';
+import { fetchListingSearchWithMedia } from '../../lib/listingSearchMedia';
 import { useCataloguePriceOverlay } from '../../lib/useCataloguePriceOverlay';
 
 type SearchCategory = 'all' | 'cards' | 'sets' | 'sealed' | 'graded' | 'collectors' | ListingCategoryKey;
@@ -734,8 +735,23 @@ export default function GlobalSearchScreen() {
   const [focusedResultLimit, setFocusedResultLimit] = useState(searchResultWindow.initialCount);
   const searchListRef = useRef<FlatList<number>>(null);
   const requestRef = useRef(0);
+  const searchTraceRef = useRef<ReturnType<typeof beginRetrieval> | null>(null);
+  const pendingSearchTraceRef = useRef<{ input: string; trace: ReturnType<typeof beginRetrieval> } | null>(null);
+  const searchCommitTraceRef = useRef<{ trace: ReturnType<typeof beginRetrieval>; cards: SearchResults['cards'] } | null>(null);
+  const trackSearchAction = useCallback((origin: RetrievalOrigin, input = query) => {
+    searchTraceRef.current?.cancel();
+    pendingSearchTraceRef.current?.trace.cancel();
+    pendingSearchTraceRef.current = { input: input.trim(), trace: beginRetrieval('search', origin) };
+  }, [query]);
+  useEffect(() => {
+    const committed = searchCommitTraceRef.current;
+    if (committed?.cards === results.cards && results.cards.length) committed.trace.phase('facts-committed');
+  }, [results.cards]);
   const previousSearchRef = useRef<{ key: string; results: SearchResults } | null>(null);
   const [searchIdentityEpoch, setSearchIdentityEpoch] = useState(0);
+  useEffect(() => () => {
+    searchTraceRef.current?.cancel(); pendingSearchTraceRef.current?.trace.cancel();
+  }, [searchIdentityEpoch]);
   const lastParamSignatureRef = useRef('');
   const recentSearchMountedRef = useRef(true);
   const observedRecentSearchUserIdRef = useRef<string | null | undefined>(undefined);
@@ -914,14 +930,15 @@ export default function GlobalSearchScreen() {
     lastParamSignatureRef.current = signature;
 
     if (profileShowcaseSlot) {
+      trackSearchAction('route', paramQuery ?? '');
       setCategory(isSearchCategory(paramCategory) ? paramCategory : getProfileShowcaseSearchConfig(profileShowcaseSlot).category);
       setQuery(paramQuery ?? '');
       return;
     }
 
     if (isSearchCategory(paramCategory)) setCategory(paramCategory);
-    if (paramQuery != null) setQuery(paramQuery);
-  }, [paramCategory, paramQuery, profileShowcaseSlot]);
+    if (paramQuery != null) { trackSearchAction('route', paramQuery); setQuery(paramQuery); }
+  }, [paramCategory, paramQuery, profileShowcaseSlot, trackSearchAction]);
 
   const rememberSearch = useCallback(async (value?: string) => {
     const trimmed = (value ?? query).trim();
@@ -958,6 +975,10 @@ export default function GlobalSearchScreen() {
     const requestId = ++requestRef.current;
 
     if (trimmed.length < 2 && category !== 'sets') {
+      searchTraceRef.current?.cancel();
+      if (pendingSearchTraceRef.current?.input === trimmed) {
+        pendingSearchTraceRef.current.trace.cancel(); pendingSearchTraceRef.current = null;
+      }
       previousSearchRef.current = null;
       setResults(EMPTY_RESULTS);
       setErrors({});
@@ -966,6 +987,13 @@ export default function GlobalSearchScreen() {
       setRefreshing(false);
       return;
     }
+
+    const pendingTrace = pendingSearchTraceRef.current;
+    const usesAction = !force && pendingTrace?.input === trimmed && pendingTrace.trace.pending();
+    const retrievalTrace = usesAction ? pendingTrace.trace : beginRetrieval('search', force ? 'retry' : 'route');
+    if (usesAction) pendingSearchTraceRef.current = null;
+    searchTraceRef.current?.cancel();
+    searchTraceRef.current = retrievalTrace;
 
     if (trimmed.length < 2 && category === 'sets') {
       previousSearchRef.current = null;
@@ -977,12 +1005,14 @@ export default function GlobalSearchScreen() {
       try {
         const sets = await searchSetsQuick('', [], selectedLanguage);
         if (requestId !== requestRef.current) return;
+        retrievalTrace.phase('network-complete');
         setResults({ ...EMPTY_RESULTS, sets });
       } catch {
         if (requestId !== requestRef.current) return;
+        retrievalTrace.fail('facts');
         setErrors({ sets: 'Set results could not be loaded.' });
       } finally {
-        if (requestId === requestRef.current) { setLoading(false); setRefreshing(false); }
+        if (requestId === requestRef.current) { retrievalTrace.settle(); setLoading(false); setRefreshing(false); }
       }
       return;
     }
@@ -994,7 +1024,6 @@ export default function GlobalSearchScreen() {
     setRefreshing(force);
     setErrors({});
 
-    const startedAt = Date.now();
     const expandedQueries = expandSearchQuery(trimmed);
     const primary = expandedQueries[0] ?? trimmed;
     const normalisedTerms = expandedQueries.map(normaliseSearchText);
@@ -1017,6 +1046,8 @@ export default function GlobalSearchScreen() {
       if (!acceptingEarlyCards || requestId !== requestRef.current || canonicalCards !== null || !cachedRows?.length) return;
       const cards = mapCardResults(cachedRows);
       canonicalCards = cards;
+      retrievalTrace.facts(cards.length, 'persisted');
+      searchCommitTraceRef.current = { trace: retrievalTrace, cards };
       setResults((current) => acceptingEarlyCards && requestId === requestRef.current
         ? { ...current, cards } : current);
     });
@@ -1030,12 +1061,19 @@ export default function GlobalSearchScreen() {
       skipNameCorrection: true,
       onCanonicalResults: (rows) => {
         if (!acceptingEarlyCards || requestId !== requestRef.current) return;
+        // The factual API response precedes optional manifest/image enrichment.
+        retrievalTrace.phase('network-complete');
         const cards = mapCardResults(rows);
         canonicalCards = cards;
+        retrievalTrace.facts(cards.length, 'network');
+        searchCommitTraceRef.current = { trace: retrievalTrace, cards };
         setResults((current) => acceptingEarlyCards && requestId === requestRef.current
           ? { ...current, cards } : current);
         void writeCachedCanonicalSearch(primary, selectedLanguage, rows).catch(() => {});
       },
+    }).then((rows) => {
+      if (acceptingEarlyCards && requestId === requestRef.current) retrievalTrace.phase('card-source-ready');
+      return rows;
     });
     const setsPromise = searchSetsQuick(primary, normalisedTerms, selectedLanguage);
     const productsPromise = shouldSearchProducts
@@ -1046,18 +1084,20 @@ export default function GlobalSearchScreen() {
       .select('id, collector_name, avatar_url')
       .ilike('collector_name', `%${primary}%`)
       .limit(8));
-    let listingsQuery = supabase
-      .from('user_card_flags')
-      .select('id, card_id, set_id, product_name, product_type, pricing_mode, grade_company, grade, asking_price, trade_only, listing_status, condition, listing_images, official_image_url, created_at')
-      .eq('flag_type', 'trade')
-      .or('listing_status.eq.active,listing_status.is.null')
-      .or(`product_name.ilike.%${primary}%,card_id.ilike.%${primary}%,set_id.ilike.%${primary}%,product_type.ilike.%${primary}%,grade_company.ilike.%${primary}%,grade.ilike.%${primary}%,condition.ilike.%${primary}%`);
+    const listingsPromise: Promise<any> = fetchListingSearchWithMedia((select) => {
+      let listingsQuery = supabase
+        .from('user_card_flags')
+        .select(select)
+        .eq('flag_type', 'trade')
+        .or('listing_status.eq.active,listing_status.is.null')
+        .or(`product_name.ilike.%${primary}%,card_id.ilike.%${primary}%,set_id.ilike.%${primary}%,product_type.ilike.%${primary}%,grade_company.ilike.%${primary}%,grade.ilike.%${primary}%,condition.ilike.%${primary}%`);
 
-    if (listingProductTypeFilter) {
-      listingsQuery = listingsQuery.eq('product_type', listingProductTypeFilter);
-    }
+      if (listingProductTypeFilter) {
+        listingsQuery = listingsQuery.eq('product_type', listingProductTypeFilter);
+      }
 
-    const listingsPromise: Promise<any> = Promise.resolve(listingsQuery.limit(18));
+      return listingsQuery.limit(18);
+    }, () => requestId === requestRef.current);
 
     const [correctionFirst, cardsFirst, setsFirst, productsFirst, profilesFirst, listingsFirst] = await Promise.all([
       settleWithin(correctionPromise, 180),
@@ -1144,14 +1184,6 @@ export default function GlobalSearchScreen() {
     setLoading(firstPhaseStillLoading);
     setRefreshing(force && firstPhaseStillLoading);
 
-    console.log('Search first results rendered', {
-      query: trimmed,
-      elapsedMs: Date.now() - startedAt,
-      cards: firstResults.cards.length,
-      sets: firstResults.sets.length,
-      listings: firstResults.listings.length + firstResults.graded.length,
-    });
-
     // A ready group must not wait for an unrelated source's final deadline.
     // Keep the existing final reconciliation, error copy and same-query recovery.
     const publishReadyGroups = (groups: Partial<SearchResults>, groupErrors: SearchErrorState = {}) => {
@@ -1228,6 +1260,7 @@ export default function GlobalSearchScreen() {
     if (cardsResult.status === 'fulfilled') {
       cardsForHydration = cardsResult.value ?? [];
       next.cards = mapCardResults(cardsForHydration);
+      retrievalTrace.facts(next.cards.length, 'network');
     } else if (canonicalCards !== null) {
       next.cards = canonicalCards;
       // Cached or early canonical rows remain useful, but they must not make
@@ -1274,6 +1307,9 @@ export default function GlobalSearchScreen() {
     }
 
     const recovered = retainFailedSearchGroups(next, nextErrors, previous, { cards: canonicalCards !== null });
+    if (Object.keys(nextErrors).length) retrievalTrace.fail(nextErrors.cards ? 'facts' : 'source');
+    searchCommitTraceRef.current = { trace: retrievalTrace, cards: recovered.cards };
+    retrievalTrace.settle(Object.values(recovered).some(rows => rows.length > 0));
     previousSearchRef.current = { key: searchKey, results: recovered };
     setResults(recovered);
     setErrors(nextErrors);
@@ -1594,7 +1630,7 @@ export default function GlobalSearchScreen() {
                   <RecentSearchPill
                     key={item}
                     label={item}
-                    onPress={() => setQuery(item)}
+                    onPress={() => { trackSearchAction('tap', item); setQuery(item); }}
                     onRemove={() => removeRecentSearch(item)}
                   />
                 ))}
@@ -1662,6 +1698,7 @@ export default function GlobalSearchScreen() {
           {visibleResults.cards.map((card) => (
             <SearchCardRailItem
               key={card.id}
+              onImageDiagnostic={searchCommitTraceRef.current?.trace.image}
               name={card.name}
               imageUri={card.imageUri}
               fullImageUri={card.fullImageUri}
@@ -1897,7 +1934,7 @@ export default function GlobalSearchScreen() {
               <StackrBrowseToolbar
                 horizontalInset={0}
                 search={query}
-                onSearchChange={setQuery}
+                onSearchChange={value => { trackSearchAction('input', value); setQuery(value); }}
                 onSubmitSearch={() => { void rememberSearch(); }}
                 loading={loading}
                 placeholder={showcaseConfig?.placeholder ?? 'Search cards, sets or sealed products'}
@@ -1914,7 +1951,7 @@ export default function GlobalSearchScreen() {
                       accessibilityRole="tab"
                       accessibilityLabel={language.key === 'all' ? 'All set languages' : `${language.label} sets`}
                       accessibilityState={{ selected: active }}
-                      onPress={() => { requestRef.current += 1; setFocusedResultLimit(searchResultWindow.initialCount); setSelectedLanguage(language.key); }}
+                      onPress={() => { trackSearchAction('filter'); requestRef.current += 1; setFocusedResultLimit(searchResultWindow.initialCount); setSelectedLanguage(language.key); }}
                       activeOpacity={0.8}
                       style={{ minHeight: 42, paddingHorizontal: 12, borderRadius: 21, borderWidth: 1,
                         borderColor: active ? theme.colors.primary : theme.colors.border,
@@ -1928,8 +1965,10 @@ export default function GlobalSearchScreen() {
               ) : null}
 
               {suggestion ? (
-                <TouchableOpacity onPress={() => setQuery(suggestion)} activeOpacity={0.82} style={{ alignSelf: 'flex-start' }}>
-                  <Text style={{ color: theme.colors.primary, fontSize: 11.5, lineHeight: 15, fontWeight: '900' }}>
+                <TouchableOpacity onPress={() => { trackSearchAction('tap', suggestion); setQuery(suggestion); }} activeOpacity={0.82}
+                  accessibilityRole="button" accessibilityLabel={`Search for ${suggestion} instead`}
+                  style={{ alignSelf: 'flex-start', minHeight: 48, minWidth: 48, justifyContent: 'center', paddingVertical: 12, paddingHorizontal: 4 }}>
+                  <Text style={{ color: theme.colors.primary, fontSize: 14, lineHeight: 20, fontWeight: '700' }}>
                     {`Search for "${suggestion}" instead`}
                   </Text>
                 </TouchableOpacity>
@@ -1988,7 +2027,7 @@ export default function GlobalSearchScreen() {
                 imageIcon={item.imageIcon}
                 icon={item.imageIcon ? undefined : item.icon}
                 active={category === item.key}
-                onPress={() => { setCategory(item.key); setFilterTypeExpanded(false); }}
+                onPress={() => { trackSearchAction('filter'); setCategory(item.key); setFilterTypeExpanded(false); }}
               />
             ))}
           </View>
@@ -2004,7 +2043,7 @@ export default function GlobalSearchScreen() {
                 label={language.label}
                 leading={language.flagLanguage ? <PokemonLanguageFlagIcon language={language.flagLanguage} size={16} decorative /> : undefined}
                 active={selectedLanguage === language.key}
-                onPress={() => setSelectedLanguage(language.key)}
+                onPress={() => { trackSearchAction('filter'); setSelectedLanguage(language.key); }}
               />
             ))}
           </View>
@@ -2153,7 +2192,7 @@ function mapListingResult(listing: any): ListingResult {
         : null,
       safeListing.condition,
     ].filter(Boolean).join(' · ') || null,
-    imageUri: safeListing.official_image_url ?? safeListing.listing_images?.[0] ?? null,
+    imageUri: getMarketplaceListingThumbnail(safeListing),
     price: safeListing.asking_price == null ? null : Number(safeListing.asking_price),
     modeLabel: isTrade ? 'Trade' : 'Offers',
     cardId: safeListing.card_id ?? null,

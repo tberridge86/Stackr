@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-18T14:22:14.047Z",
+  "updatedAt": "2026-10-18T19:33:01.184Z",
   "coordinator": "Tif / root",
   "workingDirectory": "D:/Stackr",
   "branch": "codex/stackr-repair-consolidation-20261018",
@@ -25,14 +25,44 @@
     "lastPassStartedAt": "2026-10-11T08:12:47Z",
     "currentWork": {
       "owner": "root",
-      "status": "local_repairs_and_storm_api_artwork_verified_native_phone_acceptance_open",
+      "status": "completion_audited_both_plans_incomplete_native_execution_held",
       "runtimeRevision": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
       "report": "docs/releases/repair-consolidation-20261018.md",
       "issueRegister": "docs/releases/video-repair-register-20261018.json",
-      "independentReview": "Scoped runtime and preservation-tool findings resolved; phone/live acceptance remains open.",
-      "nextAction": "Deliver the reviewed native candidate through its matching approval lane, resolve exact identity/source/data blockers and replay confirmed phone journeys; preserve remaining consolidation gates and migrate original primary last.",
+      "independentReview": "PASS source, live gateway/public bounded evidence and37folderproof; final coordination-state finding corrected. No phone acceptance.",
+      "nextAction": "Both-plan completion audit confirms unmet work. Continue permitted card/binder retrieval and exact artwork/source repairs, then supported valuation/history; continue dependency-aware preservation and consolidation, with original primary last. Keep native execution held and retain the existing grant. Do not treat this audit as new SQL, price refresh, job, catalogue mutation or deletion authority.",
       "schedulerCreated": false,
-      "pullRequest": "https://github.com/tberridge86/Stackr/pull/409"
+      "pullRequest": "https://github.com/tberridge86/Stackr/pull/409",
+      "mergedMainRevision": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
+      "liveDeployment": true,
+      "gatewayDeliveryReceipt": "docs/releases/gateway-live-delivery-20261018.json",
+      "gatewayVersionId": "56f04b7f-0692-4d8f-a9ae-0963442e57b8",
+      "gatewayDeploymentId": "edc59e4a-b404-449d-a26a-e61784ceacfd",
+      "gatewayReleaseRun": "https://github.com/tberridge86/Stackr/actions/runs/39147311549",
+      "totalOriginalFoldersReversiblyRelocated": 37,
+      "ownerReportedInstalledPhoneBuild": 59,
+      "newNativeBuildCreated": false,
+      "deviceVerified": false,
+      "closedVideoIssues": 0,
+      "nativePreparation": {
+        "report": "docs/releases/native-release-candidate-20261018.json",
+        "reviewed": true,
+        "exactSource": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
+        "profile": "production",
+        "localIdentityVerified": true,
+        "promisedSignedAssets": 73,
+        "nativeApproval": "received_execution_held_for_later_owner_completion_review",
+        "realBuildStarted": false
+      },
+      "completionAudit": "docs/releases/both-plans-completion-audit-20261018.md",
+      "bothPlansSatisfiedInFull": false,
+      "originalFolderCoverage": {
+        "total": 60,
+        "relocated": 37,
+        "retained": 21,
+        "organizationDestination": 1,
+        "unresolvedAbsent": 1
+      }
     },
     "lastObservedPullRequest": {
       "url": "https://github.com/tberridge86/Stackr/pull/337",
@@ -95,7 +125,7 @@
       "id": "VIDEO-REPAIR-CONSOLIDATION-20261018",
       "severity": "P1",
       "owner": "Tif / root",
-      "status": "local_repairs_and_storm_api_artwork_verified_native_phone_acceptance_open",
+      "status": "completion_audited_both_plans_incomplete_native_execution_held",
       "summary": "Implement both owner plans: all 23 video issues and one clean independent D:/Stackr integration branch with lossless preservation before old-folder cleanup.",
       "evidence": "docs/releases/repair-consolidation-20261018.md",
       "issueRegister": "docs/releases/video-repair-register-20261018.json",
@@ -106,18 +136,50 @@
         "Final local iOS export passed; four exact selected asset bytes verified",
         "At ad063a7, ten hosted checks passed; two release/canary jobs skipped",
         "All 104 registered commit heads restored and protected; all 18 captured working snapshots restored exactly",
-        "25 coding folders reversibly archived; 7760 necessary ignored evidence files have separate exact copies"
+        "25 coding folders reversibly archived; 7760 necessary ignored evidence files have separate exact copies",
+        "Approved df8d86d12applicablechecksPASS/2skipped; exactmerged4ePlatform/Gateway/OwnerIdentity workflowsPASS",
+        "Approvedgatewayrun39147311549liveat100%; independentroute/runtime/DO/privacy/evidencereviewPASS",
+        "EightboundedpublicGETsall200; exactStormPNG/1strictcardthumbdecoded;95IDbatch105assets557ms;Wartortle42",
+        "37originalrootsreversiblyrelocated;5historicalfallbackcheckpoints3134files276884297B have2exactcopies and6freshmoveguards",
+        "CurrentSept27identityRPCisolatedPGlitetest+3negativecontrolsPASS; no runtimeSQLoptimization"
       ],
       "closedVideoIssues": 0,
-      "liveDeployment": false,
+      "liveDeployment": true,
       "deviceVerified": false,
-      "nextAction": "Deliver the reviewed native candidate through its matching approval lane, resolve exact identity/source/data blockers and replay confirmed phone journeys; preserve remaining consolidation gates and migrate original primary last.",
+      "nextAction": "Both-plan completion audit confirms unmet work. Continue permitted card/binder retrieval and exact artwork/source repairs, then supported valuation/history; continue dependency-aware preservation and consolidation, with original primary last. Keep native execution held and retain the existing grant. Do not treat this audit as new SQL, price refresh, job, catalogue mutation or deletion authority.",
       "pullRequest": "https://github.com/tberridge86/Stackr/pull/409",
       "liveReadDiagnostics": "docs/releases/live-read-diagnostics-20261018.json",
       "preservationSummary": "docs/releases/workspace-preservation-20261018.json",
       "productionDiagnostics": "docs/releases/production-diagnostics-20261018.json",
       "stormPublication": "docs/releases/storm-m6-publication-20261018.json",
-      "productionDiagnosticsFollowup": "docs/releases/production-diagnostics-followup-20261018.json"
+      "productionDiagnosticsFollowup": "docs/releases/production-diagnostics-followup-20261018.json",
+      "mergedMainRevision": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
+      "gatewayDeliveryReceipt": "docs/releases/gateway-live-delivery-20261018.json",
+      "gatewayVersionId": "56f04b7f-0692-4d8f-a9ae-0963442e57b8",
+      "gatewayDeploymentId": "edc59e4a-b404-449d-a26a-e61784ceacfd",
+      "gatewayReleaseRun": "https://github.com/tberridge86/Stackr/actions/runs/39147311549",
+      "totalOriginalFoldersReversiblyRelocated": 37,
+      "ownerReportedInstalledPhoneBuild": 59,
+      "newNativeBuildCreated": false,
+      "nativePreparation": {
+        "report": "docs/releases/native-release-candidate-20261018.json",
+        "reviewed": true,
+        "exactSource": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
+        "profile": "production",
+        "localIdentityVerified": true,
+        "promisedSignedAssets": 73,
+        "nativeApproval": "received_execution_held_for_later_owner_completion_review",
+        "realBuildStarted": false
+      },
+      "completionAudit": "docs/releases/both-plans-completion-audit-20261018.md",
+      "bothPlansSatisfiedInFull": false,
+      "originalFolderCoverage": {
+        "total": 60,
+        "relocated": 37,
+        "retained": 21,
+        "organizationDestination": 1,
+        "unresolvedAbsent": 1
+      }
     },
     {
       "id": "CATALOGUE-MANIFEST-READ-PHASE-20261017",
@@ -140,7 +202,15 @@
       ],
       "productionRootCauseEstablished": false,
       "newLiveReleaseApproved": false,
-      "nextAction": "Freeze reviewed candidate in draftPR and verify fresh exact-head hosted CI. A new server diagnostic release and single filtered app-log read require separate matching owner approval."
+      "nextAction": "Freeze reviewed candidate in draftPR and verify fresh exact-head hosted CI. A new server diagnostic release and single filtered app-log read require separate matching owner approval.",
+      "latestBoundedPublicObservation": {
+        "observedAt": "2026-10-18T17:06:03.149Z",
+        "status": 200,
+        "elapsedMs": 1071,
+        "backendSource": "f9350f896375ffac84a22ca2f7a4ec7654538091",
+        "scope": "One current publiccatalogue sample; historicaltimeoutcause and sustainedreliability remain open.",
+        "receipt": "D:/Stackr-organization/evidence/consolidation-20261018/gateway-release-20261018/native-candidate-public-preflight.json"
+      }
     },
     {
       "id": "RELEASE-SMOKE-FAIL-FAST-20261017",
@@ -2531,6 +2601,42 @@
       },
       "implementationRevision": "33ac0437e66dd281f3ed73c2f75e8b556c58e0ff",
       "reviewCategory": "scoped_repair_present_delivery_or_acceptance_remaining"
+    },
+    {
+      "id": "JUNGLE-WARM-01",
+      "severity": "P2",
+      "owner": "stackr_coding",
+      "status": "committed_reviewed_unsigned_export_verified_native_phone_pending",
+      "summary": "Preferred merging and legacy image-only merges retained the old nonempty image after an approved exact reassignment. Serialized saved recovery lost the prior binding comparison, and imageful cached Card Detail skipped optional revalidation.",
+      "files": [
+        "lib/stackrPreferredSetArtwork.ts",
+        "lib/stackrDomainAdapter.ts",
+        "lib/binders.ts",
+        "lib/stackrSetRetrieval.ts",
+        "lib/pokemonTcg.ts",
+        "app/card/[id].tsx"
+      ],
+      "implementationRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
+      "evidence": "docs/releases/artwork-reassignment-repair-20261018.json",
+      "validation": [
+        "Actual JSON/snapshot facts-only enrichment and attacher full/selected-only pages",
+        "Actual cached Card Detail revalidation, failure, account/route/abort cases",
+        "Root typecheck/lint/wired master lane and independent V2 review PASS",
+        "Unsigned iOS export with74exactassets PASS"
+      ],
+      "delivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "committed": true,
+        "unsignedExportVerified": true,
+        "merged": false,
+        "deployed": false,
+        "nativeSigned": false,
+        "published": false,
+        "phoneVerified": false
+      },
+      "nextAction": "Retain TestFlight hold; live one-association proposal and missing normal source remain separate. Verify eventual signed delivery and installed journeys."
     }
   ],
   "integrationBaseRevision": "599c776f12201470273574c4d5f9f01632609dc1",
@@ -2784,7 +2890,7 @@
   ],
   "currentWork": {
     "owner": "Tif / root",
-    "status": "source_repairs_tested_reviewed_gateway_release_prepared_hosted_checks_pending",
+    "status": "completion_audited_both_plans_incomplete_native_execution_held",
     "workingDirectory": "D:/Stackr",
     "branch": "codex/stackr-repair-consolidation-20261018",
     "runtimeRevision": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
@@ -2793,17 +2899,49 @@
     "preservationSummary": "docs/releases/workspace-preservation-20261018.json",
     "archivedCodingFolders": 25,
     "closedVideoIssues": 0,
-    "liveSqlApproval": "Prepared diagnostics approved and completed; no arbitrary new SQL or deployment approval",
-    "liveDeployment": false,
+    "liveSqlApproval": "Both approved diagnostic scripts completed. Exact supplied M6 artwork and gateway grant already executed. A separate native grant was subsequently received, then held for the owner completion audit. No arbitrary new SQL, price refresh, job restart, credential change or deletion authority.",
+    "liveDeployment": true,
     "newNativeBuildCreated": false,
     "deviceVerified": false,
-    "nextAction": "Finish exact-current-head hosted checks and obtain explicit reviewed PR merge/gateway-only deployment approval using the guarded existing lane. Preserve live503 and origin-timeout gaps; no native publication or new SQL/price/job authority.",
+    "nextAction": "Both-plan completion audit confirms unmet work. Continue permitted card/binder retrieval and exact artwork/source repairs, then supported valuation/history; continue dependency-aware preservation and consolidation, with original primary last. Keep native execution held and retain the existing grant. Do not treat this audit as new SQL, price refresh, job, catalogue mutation or deletion authority.",
     "productionDiagnostics": "docs/releases/production-diagnostics-20261018.json",
     "additionalRuntimeRevision": "66156ca9893e8767a4e594173f63accae015354e",
     "stormPublication": "docs/releases/storm-m6-publication-20261018.json",
     "searchArtworkRepair": "docs/releases/search-artwork-batching-20261018.json",
-    "totalOriginalFoldersReversiblyRelocated": 36,
-    "gatewayRevision": "8b5ebc753ade3feaf574b21a8b6b01efa79ad582"
+    "totalOriginalFoldersReversiblyRelocated": 37,
+    "gatewayRevision": "8b5ebc753ade3feaf574b21a8b6b01efa79ad582",
+    "mergedMainRevision": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
+    "gatewayDeliveryReceipt": "docs/releases/gateway-live-delivery-20261018.json",
+    "gatewayVersionId": "56f04b7f-0692-4d8f-a9ae-0963442e57b8",
+    "gatewayDeploymentId": "edc59e4a-b404-449d-a26a-e61784ceacfd",
+    "gatewayReleaseRun": "https://github.com/tberridge86/Stackr/actions/runs/39147311549",
+    "ownerReportedInstalledPhoneBuild": 59,
+    "currentSqlRegressionCoverage": {
+      "test": "scripts/test-asset-manifest-card-image-equivalence.mjs",
+      "sha256": "9326cce3d608d38426f79552cef41aedd2303d7cf0312d15e7c0556f28aa5dff",
+      "independentReview": "PASS",
+      "remoteDatabaseExecution": false,
+      "runtimeSqlChanged": false
+    },
+    "nativePreparation": {
+      "report": "docs/releases/native-release-candidate-20261018.json",
+      "reviewed": true,
+      "exactSource": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
+      "profile": "production",
+      "localIdentityVerified": true,
+      "promisedSignedAssets": 73,
+      "nativeApproval": "received_execution_held_for_later_owner_completion_review",
+      "realBuildStarted": false
+    },
+    "completionAudit": "docs/releases/both-plans-completion-audit-20261018.md",
+    "bothPlansSatisfiedInFull": false,
+    "originalFolderCoverage": {
+      "total": 60,
+      "relocated": 37,
+      "retained": 21,
+      "organizationDestination": 1,
+      "unresolvedAbsent": 1
+    }
   },
   "completionGoal": {
     "threadId": "01a12a4c-4b1a-7823-b948-148c90d7cd8e",

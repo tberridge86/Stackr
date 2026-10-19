@@ -33,6 +33,7 @@ const dependencies: Record<string, unknown> = {
   '../lib/stackrSizing': { stackrCardImageSizes: { cardAspectRatio: 630 / 880 } },
   '../lib/haptics': { stackrHaptics: { selection: () => { selections++; } } },
   './StackrImage': { StackrImage: 'Image' },
+  './CardInspectionStage': { CardInspectionStage: 'Stage', CARD_INSPECTION_STAGE_INSETS: { horizontal: 24, top: 24, bottom: 36 } },
   './Text': { Text: 'Text' },
   './InteractiveCardPreview': { InteractiveCardPreview: (props: any) => {
     preview = props;

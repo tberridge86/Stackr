@@ -5,6 +5,7 @@ import React from 'react';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import ts from 'typescript';
 import { readOptionalCatalogueEnrichment } from '../lib/optionalCatalogueEnrichment';
+import { copyPreferredSetArtworkReassignments } from '../lib/stackrPreferredSetArtwork';
 import {
   defineTcgdexRuntimeImageOverlay, enforceTcgdexRuntimeImagePolicy,
   isTcgdexControlledCardReferenceSourceEnabled,
@@ -71,7 +72,7 @@ function pipeline(reference: string, missing = false, invalidVariant = false, de
       stackr: { cardId: value.cardId, defaultVariantId: value.defaultVariantId } },
   });
   const fetchStackrCard = extract<any>('lib/stackrDomainAdapter.ts', 'fetchStackrCard', {
-    stackrApiClient: {}, shouldUseStackrApi: () => true,
+    stackrApiClient: {}, shouldUseStackrApi: () => true, copyPreferredSetArtworkReassignments,
     resolveCachedStackrCard: async () => {
       if (deferFacts) await facts.promise;
       return missing ? null : ({ card: canonical, variantId: invalidVariant ? 'absent' : selected });
@@ -133,6 +134,7 @@ async function screenContract() {
   };
   const theme = { colors: new Proxy({}, { get: () => '#123456' }) };
   const dependencies: Record<string, any> = {
+    '../../components/StackrFunctionalIcon': { StackrFunctionalIcon: 'Image' },
     react: React, 'react-native': native,
     'react-native-safe-area-context': { useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) },
     'expo-router': { Stack: { Screen: 'StackScreen' }, router: { canGoBack: () => true, back() {}, replace() {}, push() {} }, useLocalSearchParams: () => params },

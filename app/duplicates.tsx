@@ -549,6 +549,7 @@ function DuplicateActionsSheet({
                   <StackrButton
                     label="Create beta listing"
                     variant="primary"
+                    stackrIcon="listings"
                     icon="storefront-outline"
                     onPress={() => onCreateListing(item)}
                   />
@@ -556,6 +557,7 @@ function DuplicateActionsSheet({
                 <StackrButton
                   label="View card"
                   variant="secondary"
+                  stackrIcon="discover"
                   icon="albums-outline"
                   onPress={() => onViewCard(item)}
                 />
@@ -714,6 +716,7 @@ export default function DuplicatesScreen() {
           <Text style={[styles.subtitle, { color: theme.colors.textSoft }]}>Extra cards in your collection</Text>
         </View>
         <StackrIconButton
+          stackrIcon={searchOpen ? undefined : 'search'}
           icon={searchOpen ? 'close-outline' : 'search-outline'}
           label={searchOpen ? 'Close duplicate search' : 'Search duplicates'}
           selected={searchOpen}
@@ -839,7 +842,7 @@ export default function DuplicatesScreen() {
             }
             ListEmptyComponent={
               <StackrEmptyState
-                icon={searchQuery ? 'search-outline' : 'copy-outline'}
+                stackrIcon={searchQuery ? 'search' : 'duplicates'}
                 title={searchQuery ? 'No matches found' : 'No duplicates yet'}
                 body={searchQuery ? 'Try a different card, set or binder name.' : 'Extra copies you scan or add will appear here.'}
                 actionLabel={searchQuery ? 'Clear search' : 'Scan cards'}

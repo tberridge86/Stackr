@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Linking, Platform, Pressable, Switch, TextInput, View } from 'react-native';
+import { Alert, Linking, Platform, Pressable, Share, Switch, TextInput, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
@@ -10,6 +10,7 @@ import { useTheme } from '../components/theme-context';
 import { useAuth } from '../components/auth-context';
 import { searchHelp, supportContext, supportDraftKey, supportEmailUrl, SUPPORT_EMAIL, SUPPORT_URL } from '../lib/supportHelp';
 import { testStackrHaptics } from '../lib/haptics';
+import { exportRetrievalObservations, getRetrievalCondition, resetRetrievalObservations, setRetrievalCondition, type RetrievalCondition } from '../lib/performance';
 
 export default function HelpScreen() {
   const params = useLocalSearchParams();
@@ -25,6 +26,7 @@ export default function HelpScreen() {
   const [diagnostics, setDiagnostics] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [measurementCondition, setMeasurementCondition] = useState(getRetrievalCondition);
   const busyRef = useRef(false);
   const mounted = useRef(true);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
@@ -32,6 +34,25 @@ export default function HelpScreen() {
   const text = ready ? draft.text : '';
   const inputStyle = { backgroundColor: theme.colors.card, color: theme.colors.text, borderColor: theme.colors.border, borderWidth: 1, borderRadius: 12, padding: 14, fontSize: 15 };
   const diagnosticText = `App: ${Constants.nativeAppVersion ?? Constants.expoConfig?.version ?? 'development'} (${Constants.nativeBuildVersion ?? 'preview'})\nOS: ${Platform.OS} ${Platform.Version}\nUpdate: ${Updates.updateId ?? 'embedded / preview'}`;
+  const labelMeasurement = (next: RetrievalCondition) => {
+    setRetrievalCondition(next);
+    setMeasurementCondition(next);
+  };
+  const shareMeasurements = async () => {
+    try {
+      await Share.share({ title: 'Stackr load measurements', message: JSON.stringify({
+        ...exportRetrievalObservations(),
+        environment: {
+          appVersion: Constants.nativeAppVersion ?? Constants.expoConfig?.version ?? 'unverified',
+          build: Constants.nativeBuildVersion ?? 'unverified',
+          platform: Platform.OS, osVersion: String(Platform.Version),
+          deviceModel: Constants.platform?.ios?.model ?? 'unverified',
+          updateReference: Updates.updateId ?? 'embedded / unverified',
+          observedAt: new Date().toISOString(),
+        },
+      }, null, 2) });
+    } catch { if (mounted.current) setMessage('Could not open sharing. The measurements remain on this device.'); }
+  };
 
   useEffect(() => {
     if (loading) return;
@@ -80,6 +101,21 @@ export default function HelpScreen() {
       <UtilityRow title="Test touch feedback" onPress={() => { void testStackrHaptics().then(result => Alert.alert('Touch feedback', result === 'disabled' ? 'Touch feedback is off in Settings.' : result === 'requested' ? 'A short vibration was requested. If you felt nothing, check device haptics and Low Power Mode.' : 'Touch feedback is unavailable in this installation.')); }} />
       <UtilityRow title="Login and password recovery" onPress={() => router.push('/login')} />
       <UtilityRow title="Support website" onPress={() => { void Linking.openURL(SUPPORT_URL).catch(() => setMessage('Could not open the support website. Try again when connected.')); }} />
+    </UtilityGroup>
+    <UtilityGroup title="Load measurements">
+      <UtilityRow title="Network label" detail={`${measurementCondition.network}. Tap to change before a test journey.`} onPress={() => {
+        const values: RetrievalCondition['network'][] = ['unverified', 'wifi', 'mobile', 'offline'];
+        labelMeasurement({ ...measurementCondition, network: values[(values.indexOf(measurementCondition.network) + 1) % values.length] });
+      }} />
+      <UtilityRow title="Cache label" detail={`${measurementCondition.cache}. This label does not clear or warm caches.`} onPress={() => {
+        const values: RetrievalCondition['cache'][] = ['unverified', 'memory', 'persisted', 'cold', 'expired'];
+        labelMeasurement({ ...measurementCondition, cache: values[(values.indexOf(measurementCondition.cache) + 1) % values.length] });
+      }} />
+      <UtilityRow title="Share load measurements" detail="Export each test block before 256 observations. No search terms, card IDs or account IDs." onPress={() => { void shareMeasurements(); }} />
+      <UtilityRow title="Reset load measurements" detail="Clears only these measurements, without changing your cards or caches." onPress={() => {
+        resetRetrievalObservations(); setMessage('Load measurements reset on this device.');
+      }} />
+      <Text style={{ padding: 16, fontSize: 13, lineHeight: 20 }}>Labels are supplied by the tester. These callback timings do not prove when a frame was painted or how feedback felt on the phone.</Text>
     </UtilityGroup>
     <Text accessibilityRole="header" style={{ fontSize: 20, fontWeight: '800', marginBottom: 10 }}>Contact support</Text>
     <Text style={{ color: theme.colors.textSoft, lineHeight: 20, marginBottom: 12 }}>Describe what happened and what you expected. Do not include passwords, payment details or recovery codes.</Text>

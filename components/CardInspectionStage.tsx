@@ -2,6 +2,8 @@ import React from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Defs, Ellipse, RadialGradient, Rect, Stop } from 'react-native-svg';
 
+export const CARD_INSPECTION_STAGE_INSETS = { horizontal: 24, top: 24, bottom: 36 } as const;
+
 /** Quiet light behind the artwork, with room for the card's shadow and tilt. */
 export function CardInspectionStage({ children, style }: { children: React.ReactNode; style?: StyleProp<ViewStyle> }) {
   const id = `stage${React.useId().replace(/[^a-zA-Z0-9]/g, '')}`;
@@ -27,4 +29,9 @@ export function CardInspectionStage({ children, style }: { children: React.React
   );
 }
 
-const styles = StyleSheet.create({ stage: { padding: 24, paddingBottom: 36, alignItems: 'center', borderRadius: 28, overflow: 'hidden', backgroundColor: '#101827' } });
+const styles = StyleSheet.create({ stage: {
+  paddingHorizontal: CARD_INSPECTION_STAGE_INSETS.horizontal,
+  paddingTop: CARD_INSPECTION_STAGE_INSETS.top,
+  paddingBottom: CARD_INSPECTION_STAGE_INSETS.bottom,
+  alignItems: 'center', borderRadius: 28, overflow: 'hidden', backgroundColor: '#101827',
+} });

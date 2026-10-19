@@ -1,11 +1,25 @@
 # 18 October video repairs and workspace consolidation
 
+The owner requested a completion check of **both plans before TestFlight**.
+The [requirement-by-requirement audit](both-plans-completion-audit-20261018.md)
+records the remaining source, data, delivery, phone and consolidation work.
+Neither plan is fully satisfied. Native approval was received, then execution
+was held for this review; no new build or submission has started.
+
 Tif coordinates both approved plans in the independent `D:/Stackr` repository,
 on `codex/stackr-repair-consolidation-20261018`. The initial runtime repair is
 `bb9f41030a63274f79004e787ab9bb2f5a2fc89d`; search artwork batching is
 `66156ca9893e8767a4e594173f63accae015354e` and gateway circuit isolation is
 `8b5ebc753ade3feaf574b21a8b6b01efa79ad582`, based on remote main
 `f9350f896375ffac84a22ca2f7a4ec7654538091`.
+
+PR #409 merged as `4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07` after the
+owner's explicit approval. The approved gateway-only release is live at that
+revision. The owner reports installed TestFlight **59**; its retained signed
+archive uses the earlier `f9350f8` client and old Storm logo. App-side repairs
+remain unsigned and unpublished. See the
+[live release receipt](gateway-live-delivery-20261018.json) and
+[build 59 reference](phone-build59-reference-20261018.json).
 
 The [23-issue register](video-repair-register-20261018.json) is the closure
 record. It distinguishes demonstrated source causes, live diagnosis, exact
@@ -17,6 +31,13 @@ identify a numeric phone build. Approximate timestamps refer to the 292-second
 
 ## Implemented repairs
 
+- Home publishes canonical card facts and names before optional artwork and
+  prices finish. Loaded details remain usable during recovery. Raw and late
+  permission denials clear retained private state and invalidate pending work.
+  The owner confirms the blank tile eventually becomes Varoom; its exact
+  printing and installed rendering remain open. Commit`d0f9e74` passes focused
+  regressions, typecheck/lint, independent review and an unsigned iOS export
+  containing all74 required assets. No signed build or submission has started.
 - Saved binders hydrate images independently of live ownership confirmation.
   Serialization had lost private canonical artwork handles. Recovery now reads
   complete canonical facts for the saved set/language, validates the saved
@@ -53,8 +74,8 @@ identify a numeric phone build. Approximate timestamps refer to the 292-second
 - Optional asset manifests have a separate fixed gateway circuit. Five failed
   image requests can no longer block healthy factual routes or reset their
   failure count. Existing failure thresholds, cooldowns, retries, authentication
-  and cache rules remain. This gateway change is locally tested and reviewed;
-  it has not been deployed.
+  and cache rules remain. This gateway change is tested, reviewed, merged and
+  deployed through the existing guarded release process.
 
 ## Validation and delivery
 
@@ -70,11 +91,12 @@ locked dependencies. The existing local Worker dry-run build also passed;
 no upload occurred. No backend runtime files changed in this candidate.
 
 The existing candidate workflows now run `npm run test:feedback-recovery`,
-covering six focused recovery regressions. At earlier source/evidence revision
-`ad063a7c4357b1fd3de05f7d06893755b6cd20ab`, all ten applicable hosted checks
-passed. The release-candidate and canary-API jobs were skipped; they are not
-passes or live-delivery evidence. The draft review is
-[PR #409](https://github.com/tberridge86/Stackr/pull/409).
+covering six focused recovery regressions. At approved revision `df8d86d`, all
+12 applicable hosted checks passed; release-candidate and canary-API jobs were
+skipped. Exact merged-main Platform CI, Gateway CI and Owner Pricing Identity
+workflows then passed before dispatch. The reviewed changes are merged in
+[PR #409](https://github.com/tberridge86/Stackr/pull/409). Skips and source tests
+remain separate from live delivery.
 
 Independent review findings were repaired and rechecked: exact Storm permission,
 lossless raw Git patch capture, shared-query cancellation, mixed access-denial
@@ -88,10 +110,33 @@ metadata. Bundle SHA-256:
 `d2f8302a0f99026e284387224cef9f51ef3a5aad85014360ec782d897ef251db`,
 exported from search runtime revision `66156ca`. The previous export is retained.
 This is an unsigned local export. The exact M6 API/image response was separately
-verified; broader image delivery, merge, signed native publication and
-installed-iPhone Wi-Fi/mobile journeys remain separate gates.
+verified. Merge and gateway publication subsequently completed; broader image
+coverage, signed native publication and installed-iPhone Wi-Fi/mobile journeys
+remain separate gates.
 Existing performance targets and required sample sizes remain unchanged and
 unmeasured by this work; no percentile claim is made.
+
+The [normal-production native candidate](native-release-candidate-20261018.json)
+is prepared for already merged source `4e405d7`, separately from the deployed
+backend `f9350f8`. Its app/configuration bytes match the verified export. The
+existing local EAS 23.2.0 route confirmed the same account identity as delivered
+59; an initial 30-second metadata timeout is retained beside the successful
+bounded follow-up. All 17 prepared files and 15 executable/configuration helper
+hashes passed independent review. Offline validation passed 101 launcher cases,
+five unknown-outcome holds, ten synthetic archive cases and 14 syntax checks.
+No native build or submission has started. Separate publishing approval was
+received after preparation and review. The owner's later instruction requires
+checking both plans against their listed work first, so execution remains held.
+
+The approved execution would run fresh existing delivery gates, verify all 73
+promised assets in the actual signed app, then submit that exact finished build
+ID to the existing internal Team (Expo). A separate fresh public/mobile/history
+check is required before submission after a long build. Initial receipts and
+unknown outcomes remain immutable. The history schema reads return no collector
+rows. Normal production preserves build 59's audience; the owner-recognition
+profile is separate. The actual next build number comes from fresh inventory.
+The earlier 970-item artwork backlog recorded in PR #339 remains disclosed and
+has not been reverified as a whole batch or closed by this candidate.
 
 ## Live and source gaps
 
@@ -191,7 +236,7 @@ absence is not proof of a healthy origin. The
 [search repair receipt](search-artwork-batching-20261018.json) retains the failed
 live probe alongside local validation.
 
-Read-only gateway metadata identifies production deployment
+Before the approved release, read-only gateway metadata identified deployment
 `946af123-25ca-4a8b-89f1-e441b52f8bb0`, version
 `71032825-4494-46c2-82b0-de3a21d6953d`, at 100% traffic, tagged to source
 `ea8190f3a0bda642e266438b68f19d4f398f7845`. Its durable-object namespace matches
@@ -199,6 +244,38 @@ the existing release guard. The only gateway runtime difference between that
 tagged source and this candidate is the reviewed proxy circuit change. The
 [gateway release plan](gateway-circuit-release-plan-20261018.md) retains exact
 approval, current-main checks, rollback and post-deployment verification gates.
+
+The owner explicitly approved the merge and gateway deployment. Guarded run
+[39147311549](https://github.com/tberridge86/Stackr/actions/runs/39147311549)
+completed successfully. Version `56f04b7f-0692-4d8f-a9ae-0963442e57b8` is at
+100% under deployment `edc59e4a-b404-449d-a26a-e61784ceacfd`, tagged to merged
+source `4e405d7`. Health/readiness returned 200; all four anonymous private-price
+checks returned 401, including the rejected refresh request. No provider refresh
+occurred. Fresh custom-domain, runtime, observability and durable-object checks
+and independent release review passed. No backend, native, database, credential
+or job change was included, and rollback was not needed.
+
+A single reviewed eight-GET public capture then returned HTTP 200 throughout.
+The exact Storm PNG decoded at 1280x544 and matched all 900649 supplied bytes.
+The same 95-printing Pikachu image batch that earlier returned 503 now returned
+105 assets in 557ms (558ms whole manifest stage, within the unchanged two-second
+optional deadline). The unchanged resolver accepted artwork for 98/100 factual
+rows: 63 exact and 35 approved shared. Only one stricter same-printing/default-
+variant thumbnail was fetched and decoded; resolver eligibility does not prove
+98 successful image downloads. Jungle #60 first-edition and My First Battle #17
+normal remain exact artwork gaps. Wartortle returned 16 and 38 rows across two
+pages, 42 distinct printings across four current published versions. This is
+not a universal inventory denominator. Pikachu facts took 3532ms in this one
+sample. These points do not establish sustained recovery, historical causality,
+performance percentiles or phone rendering. The live release receipt preserves
+the exact evidence, limits and remaining gaps.
+
+The asset-manifest regression was also corrected to execute the current
+September 27 identity RPC in isolated in-memory PostgreSQL, rather than relying
+on the older September 6 fixture. Printing/variant membership, rights and
+publication exclusions, multi-version cursors and three negative controls pass.
+This changes test coverage only; no query optimization or live latency cause is
+claimed.
 
 Home's unidentified Japanese printing, the exact November 2023 CoroCoro cover
 and rights, broader expected Wartortle population, affected listing media,
@@ -328,3 +405,36 @@ deletion or disk-space recovery claim.
 Before a release, also reconcile existing promised artwork batches, including
 the original-front batch tracked in PR #339. This candidate's local assets do
 not silently close or replace earlier delivery obligations.
+
+The five historical fallbacks and frozen preview have now moved together under
+`archive/fallback-snapshots-20261018/Stackr-fallbacks`: 3134 files, 276884297
+bytes and 261 directories including the root. Two exact copies and six fresh
+hash/structure checks across an actual move/back/move passed. Packaged preview
+fonts/assets named `node_modules` were retained. Independent review caught and
+resolved missing ancestor/occupancy protection and stale consumer checks before
+any move; a six-case Windows fixture passed the revised guards. No documented
+preview listener or direct command-line consumer was observed immediately before
+each leg; process working directories and environments were not inspected.
+These are recovery checkpoints containing historical uncommitted work, not
+source to overlay onto the maintained app. Their selective-restoration guidance
+remains with the originals. This brings the total to **37 original folders
+reversibly relocated**; no permanent deletion or space recovery is claimed.
+
+
+The resumed repair batch is committed separately from the earlier completion
+audit. Revision d59c3a6 repairs exact binder artwork inspection/provenance,
+live-subset pagination and metadata cache expiry; price labels now retain
+unknown/stale freshness under partial coverage. Revision f047a5f binds the
+owner-approved, exact regular November2023 CoroCoro cover to the existing issue.
+The original81-cover pack is unchanged. Full typecheck/lint, seven cover checks
+and independent app/cover reviews pass.
+
+The actual local unsigned iOS export from f047a5f now verifies **74 exact assets**,
+including the English-lettered Storm logo,27monthly covers,36retained Chinese
+logos and3pack-art fallbacks. The active verifier replaces its old26-cover/old
+logo expectation and rejects four controlled missing/corrupt export cases.
+See [current repair evidence](remaining-repairs-verification-20261018.json).
+This is unsigned local proof: no TestFlight build/upload/submission started.
+The earlier4e native preparation remains historical and must not be reused as
+proof for these later repairs. All phone-level closure and remaining data,
+identity, source-batch and consolidation gates remain open.

@@ -14,8 +14,11 @@ const baseInput = (overrides: Partial<CollectionPriceInput> = {}): CollectionPri
   ...overrides,
 });
 
-const price = (central: number | null) => ({
+const price = (central: number | null, variantId = 'only-variant', productType = 'raw_card') => ({
   data: {
+    variantId,
+    productType,
+    currency: 'GBP',
     estimates: { central },
     status: central == null ? 'unavailable' : 'recent_sold_value',
     freshness: 'fresh',
@@ -41,7 +44,7 @@ const requests: any[] = [];
 const client = {
   cardPrice: async (variantId: string, query: any) => {
     requests.push({ variantId, query });
-    return price(12.34);
+    return price(12.34, variantId, query.productType);
   },
 };
 
@@ -55,6 +58,33 @@ const singleVariantResolver = async () => ({
 });
 
 async function main() {
+  for (const [name, identity] of [
+    ['different variant', { variantId: 'another-variant' }],
+    ['different product', { productType: 'graded_card' }],
+    ['different currency', { currency: 'USD' }],
+    ['missing variant', { variantId: undefined }],
+    ['missing product', { productType: undefined }],
+    ['missing currency', { currency: undefined }],
+  ] as const) {
+    const [mismatched] = await loadCollectionPrices([baseInput()], {
+      client: { cardPrice: async () => ({ data: { ...price(12.34).data, ...identity } }) } as any,
+      resolver: singleVariantResolver as any,
+    });
+    assert.equal(mismatched.central, null, `${name} cannot contribute to an owned GBP valuation`);
+    assert.equal(mismatched.status, 'unavailable');
+    assert.match(mismatched.requestError ?? '', /requested card variant, product type or currency/i);
+  }
+  let siblingReads = 0;
+  const identitySiblings = await loadCollectionPrices([baseInput({ key: 'mismatched' }), baseInput({ key: 'healthy' })], {
+    concurrency: 1,
+    resolver: singleVariantResolver as any,
+    client: { cardPrice: async () => ({ data: { ...price(9.25).data,
+      currency: ++siblingReads === 1 ? 'EUR' : 'GBP' } }) } as any,
+  });
+  assert.equal(identitySiblings[0].central, null, 'A mismatch must remain unavailable');
+  assert.equal(identitySiblings[1].central, 9.25, 'An identity mismatch must not discard a healthy sibling');
+  assert.equal(siblingReads, 2, 'An item identity mismatch does not create a systemic service failure');
+
   const [exactVariant] = await loadCollectionPrices([baseInput({ variantCode: 'Reverse Holo' })], {
     client: client as any,
     resolver: resolver as any,
@@ -85,7 +115,7 @@ async function main() {
   const [holoOnlyNormal] = await loadCollectionPrices([baseInput({ variantCode: 'normal' })], {
     client: { cardPrice: async (variantId: string, query: any) => {
       generalBaseRequests.push({ variantId, query });
-      return price(6.5);
+      return price(6.5, variantId, query.productType);
     } } as any,
     resolver: holoOnlyResolver as any,
   });
@@ -98,7 +128,7 @@ async function main() {
     productType: 'raw_card', currency: 'GBP', condition: 'raw_near_mint', grader: undefined, grade: undefined, estimateMode: 'general',
   } }]);
   const [missingReverseHolo] = await loadCollectionPrices([baseInput({ variantCode: 'reverse_holo' })], {
-    client: { cardPrice: async () => price(6.5) } as any,
+    client: { cardPrice: async (variantId: string) => price(6.5, variantId) } as any,
     resolver: holoOnlyResolver as any,
   });
   assert.equal(missingReverseHolo.pricingKind, 'general', 'Any absent raw/NM finish uses only the labelled same-card general base.');
@@ -138,7 +168,7 @@ assert.equal(
   const guardedClient = {
     cardPrice: async (...args: any[]) => {
       guardedRequests.push(args);
-      return price(10);
+      return price(10, args[0], args[1].productType);
     },
   };
   const [unknownCondition] = await loadCollectionPrices([baseInput({ condition: 'Display case' })], {
@@ -225,10 +255,27 @@ assert.equal(
   assert.equal(general.pricingKind, 'general', 'Only an explicit fallback marker can make a returned quote general.');
   assert.equal(general.fallbackEstimate?.identityKey, null, 'Printing-level estimates may not name a different canonical identity.');
 
+  const [staleGeneral] = await loadCollectionPrices([baseInput()], {
+    client: { cardPrice: async () => ({ data: { ...price(7).data, freshness: 'stale',
+      quoteScope: 'printing_level', fallbackEstimate: { identityKey: null, reason: 'same_printing_base_quote', exact: false } } }) } as any,
+    resolver: singleVariantResolver as any,
+  });
+  assert.equal(staleGeneral.central, 7, 'A matching stale general estimate remains usable with its honest label');
+  assert.equal(staleGeneral.pricingKind, 'general');
+  assert.equal(staleGeneral.freshness, 'stale');
+  assert.equal(staleGeneral.calculatedAt, '2026-09-05T10:00:00.000Z');
+  const [unavailableExact] = await loadCollectionPrices([baseInput()], {
+    client: { cardPrice: async () => price(null) } as any,
+    resolver: singleVariantResolver as any,
+  });
+  assert.equal(unavailableExact.central, null, 'A matching unavailable quote must not become zero');
+  assert.equal(unavailableExact.status, 'unavailable');
+  assert.equal(unavailableExact.requestError, null, 'A genuine missing quote is distinct from a failed request');
+
   const flakyClient = {
     cardPrice: async (variantId: string) => {
       if (variantId === 'broken-variant') throw new Error('test request failure');
-      return price(8);
+      return price(8, variantId);
     },
   };
   const flakyResolver = async (reference: string) => ({

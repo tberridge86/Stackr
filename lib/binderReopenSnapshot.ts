@@ -20,6 +20,7 @@ export type BinderReopenStore = {
   clear(): Promise<void>;
 };
 export const BINDER_REOPEN_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+export type BinderReopenCacheSource = 'memory' | 'persisted';
 const MAX_BYTES = 8 * 1024 * 1024;
 const MAX_ENTRY_BYTES = 2 * 1024 * 1024;
 const MAX_ENTRIES = 8;
@@ -161,10 +162,14 @@ export function createBinderReopenCache(options: { store: () => Promise<BinderRe
   };
   return {
     lease() { return generation; },
-    async read(scope: BinderReopenScope, binderId: string): Promise<BinderReopenSnapshot | null> {
+    async read(scope: BinderReopenScope, binderId: string, onSource?: (source: BinderReopenCacheSource) => void): Promise<BinderReopenSnapshot | null> {
+      const observed = (snapshot: BinderReopenSnapshot, source: BinderReopenCacheSource) => {
+        try { onSource?.(source); } catch { /* Diagnostics cannot fail a saved view. */ }
+        return copy(snapshot);
+      };
       const lease = generation;
       const cached = memory.get(key(scope, binderId));
-      if (cached && isCompleteBinderSnapshot(cached.snapshot, scope, binderId, now())) return copy(cached.snapshot);
+      if (cached && isCompleteBinderSnapshot(cached.snapshot, scope, binderId, now())) return observed(cached.snapshot, 'memory');
       if (!diskAllowed) return null;
       try {
         const store = await options.store();
@@ -175,9 +180,9 @@ export function createBinderReopenCache(options: { store: () => Promise<BinderRe
         const snapshot = snapshotBinderView(scope, stored.binder, stored.cards, stored.savedAt, { customSource: stored.customSource });
         if (!isCompleteBinderSnapshot(snapshot, scope, binderId, now())) return null;
         const newer = memory.get(key(scope, binderId))?.snapshot;
-        if (newer && newer.savedAt >= snapshot.savedAt && isCompleteBinderSnapshot(newer, scope, binderId, now())) return copy(newer);
+        if (newer && newer.savedAt >= snapshot.savedAt && isCompleteBinderSnapshot(newer, scope, binderId, now())) return observed(newer, 'memory');
         remember(snapshot);
-        return copy(snapshot);
+        return observed(snapshot, 'persisted');
       } catch { return null; }
     },
     save(scope: BinderReopenScope, binder: BinderRecord, cards: BinderCardRecord[], lease: number, savedAt = now(), saveOptions: BinderReopenSaveOptions = {}) {

@@ -32,7 +32,7 @@ const [trustedQuote] = await loadCollectionPrices([input], {
   resolver: async () => { resolverCalls += 1; throw new Error('canonical facts must avoid alias resolution'); },
   client: { cardPrice: async (variantId: string) => {
     quotedVariant = variantId;
-    return { data: { estimates: { central: 12.5 }, status: 'recent_sold_value', freshness: 'fresh', calculatedAt: '2026-09-12T10:00:00Z', staleAfter: null, unavailableReason: null } };
+    return { data: { variantId, productType: 'raw_card', currency: 'GBP', estimates: { central: 12.5 }, status: 'recent_sold_value', freshness: 'fresh', calculatedAt: '2026-09-12T10:00:00Z', staleAfter: null, unavailableReason: null } };
   } } as any,
 });
 assert.equal(resolverCalls, 0, 'trusted canonical facts bypass redundant alias resolution');

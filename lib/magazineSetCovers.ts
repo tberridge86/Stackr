@@ -103,6 +103,19 @@ function corocoroComicIssues(): MagazineSetCoverMetadata[] {
 export const MAGAZINE_SET_COVER_METADATA: readonly MagazineSetCoverMetadata[] = Object.freeze([
   ...corocoroComicIssues(),
   {
+    key: 'corocoro-comic-2023-11',
+    name: 'CoroCoro Comic — November 2023',
+    nativePublicationName: '月刊コロコロコミック',
+    englishPublicationName: 'CoroCoro Comic',
+    language: 'ja',
+    issueLabel: 'November 2023',
+    stableIds: [
+      'ja:magazine:corocoro-comic:2023-11', 'magazine:corocoro-comic:2023-11',
+      'corocoro-comic:2023-11', 'corocoro-comic-2023-11', 'corocoro-2023-11',
+    ],
+    exactNames: ['CoroCoro Comic (November 2023)', 'CoroCoro Comic — November 2023', '月刊コロコロコミック 2023年11月号'],
+  },
+  {
     key: 'corocoro-ichiban-2021-06',
     name: 'CoroCoro Ichiban! — June 2021',
     nativePublicationName: 'コロコロイチバン！',

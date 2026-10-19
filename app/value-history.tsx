@@ -1,3 +1,4 @@
+import { StackrFunctionalIcon } from '../components/StackrFunctionalIcon';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -337,7 +338,7 @@ function StackrAssetIcon({
       accessibilityRole="image"
       accessibilityLabel={label}
     >
-      <Image
+      <StackrFunctionalIcon
         source={source}
         resizeMode="contain"
         style={{ width: size * 0.76, height: size * 0.76 }}

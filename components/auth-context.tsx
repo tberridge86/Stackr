@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useRef, useSt
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 import { withStartupTimeout } from '../lib/startup';
+import { resetRetrievalObservations } from '../lib/performance';
 
 type AuthContextType = {
   user: any;
@@ -85,7 +86,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const knownAuthDenialRef = useRef(false);
   const cachedReadSessionEpochRef = useRef(0);
   const cachedReadSessionRef = useRef<CachedReadSession | null>(cachedReadSession);
+  const diagnosticAccountRef = useRef<string | null | undefined>(undefined);
   cachedReadSessionRef.current = cachedReadSession;
+  const observeDiagnosticAccount = useCallback((accountId: string | null, signedOut = false) => {
+    if (signedOut || (diagnosticAccountRef.current !== undefined && diagnosticAccountRef.current !== accountId)) {
+      resetRetrievalObservations();
+    }
+    diagnosticAccountRef.current = accountId;
+  }, []);
 
   const updateCachedReadSession = useCallback((next: Omit<CachedReadSession, 'epoch'> | null) => {
     const value = next ? { ...next, epoch: ++cachedReadSessionEpochRef.current } : null;
@@ -105,6 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (authError) throw authError;
 
       const currentUser = data.user ?? null;
+      observeDiagnosticAccount(currentUser?.id ?? null);
       setUser(currentUser);
       if (!currentUser || cachedReadSessionRef.current?.userId !== currentUser.id) {
         updateCachedReadSession(null);
@@ -113,6 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (authError) {
       if (!mountedRef.current || requestId !== requestSequence.current) return;
       if (isKnownAuthDenial(authError)) {
+        observeDiagnosticAccount(null, true);
         knownAuthDenialRef.current = true;
         updateCachedReadSession(null);
         setUser(null);
@@ -124,9 +134,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       if (mountedRef.current && requestId === requestSequence.current) setLoading(false);
     }
-  }, [updateCachedReadSession]);
+  }, [observeDiagnosticAccount, updateCachedReadSession]);
 
   useEffect(() => {
+    resetRetrievalObservations();
     mountedRef.current = true;
     const { data: listener } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -137,6 +148,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (event !== 'INITIAL_SESSION') hasNonInitialAuthEventRef.current = true;
         if (event === 'INITIAL_SESSION' && knownAuthDenialRef.current) return;
         const sessionUser = session?.user ?? null;
+        observeDiagnosticAccount(sessionUser?.id ?? null, event === 'SIGNED_OUT');
         const localReadSession = getCachedReadSession(session);
         if (event !== 'INITIAL_SESSION') {
           requestSequence.current += 1;
@@ -158,7 +170,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       requestSequence.current += 1;
       listener.subscription.unsubscribe();
     };
-  }, [refreshAuth, updateCachedReadSession]);
+  }, [observeDiagnosticAccount, refreshAuth, updateCachedReadSession]);
 
   return (
     <AuthContext.Provider value={{ user, loading, error, cachedReadSession, refreshAuth }}>

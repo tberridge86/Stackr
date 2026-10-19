@@ -19,6 +19,7 @@ type StackrScreenHeaderProps = {
   title: string;
   subtitle?: string;
   rightIcon?: keyof typeof Ionicons.glyphMap;
+  rightAccessibilityLabel?: string;
   onRightPress?: () => void;
   variant?: 'compact' | 'hero';
   showLogo?: boolean;
@@ -29,6 +30,7 @@ export function StackrScreenHeader({
   title,
   subtitle,
   rightIcon = 'notifications-outline',
+  rightAccessibilityLabel,
   onRightPress,
   variant = 'compact',
   showLogo = false,
@@ -48,7 +50,18 @@ export function StackrScreenHeader({
           ? stackrIcons.profile
           : rightIcon === 'search-outline'
             ? stackrIcons.searchCard
-            : null;
+            : rightIcon === 'storefront-outline'
+              ? stackrIcons.marketplace
+              : null;
+  const actionLabel = rightAccessibilityLabel ?? (
+    rightIcon === 'notifications-outline' ? 'Open notifications'
+      : rightIcon === 'information-circle-outline' ? 'Open information'
+        : rightIcon === 'person-circle-outline' ? 'Open profile'
+          : rightIcon === 'search-outline' ? 'Search cards'
+            : rightIcon === 'storefront-outline' ? 'Open Market'
+              : `${title} actions`
+  );
+  const actionSize = Math.max(48, stackrActionIconSizes.headerTouch);
 
   return (
     <View style={{ position: 'relative', paddingTop: 2, paddingBottom: 12, overflow: 'visible' }}>
@@ -73,10 +86,12 @@ export function StackrScreenHeader({
         )}
         <Pressable
           onPress={onRightPress}
+          accessibilityRole="button"
+          accessibilityLabel={actionLabel}
           style={{
-            width: stackrActionIconSizes.headerTouch,
-            height: stackrActionIconSizes.headerTouch,
-            borderRadius: stackrActionIconSizes.headerTouch / 2,
+            width: actionSize,
+            height: actionSize,
+            borderRadius: actionSize / 2,
             flexShrink: 0,
             marginLeft: 8,
             alignItems: 'center',

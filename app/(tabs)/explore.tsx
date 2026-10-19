@@ -1,7 +1,7 @@
 import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import { getSimplifiedChineseSetLogoSourceForSet } from '../../lib/simplifiedChineseSetLogos';
 import { StackrBrowseToolbar, StackrBrowseFilterSheet, StackrBrowseFilterGroup } from '../../components/StackrBrowseControls';
-import { StackrNavigationIcon } from '../../components/StackrNavigationIcon';
+import { STACKR_ICON_OUTLINE, StackrNavigationIcon } from '../../components/StackrNavigationIcon';
 import { groupDiscoverSets as groupSetsBySeries, isDiscoverDateGroup } from '../../lib/discoverSetGroups';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
@@ -369,7 +369,7 @@ function SetCard({
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-              <StackrNavigationIcon name="collection" color={theme.colors.primary} size={20} />
+              <StackrNavigationIcon name="collection" color={theme.dark ? theme.colors.text : STACKR_ICON_OUTLINE} accentColor={theme.colors.primary} size={20} />
               <Text style={{ color: theme.colors.primary, fontSize: 13, fontWeight: '700' }}>Binder</Text>
             </View>
           </TouchableOpacity>

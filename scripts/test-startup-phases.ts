@@ -4,6 +4,7 @@ import { runInNewContext } from 'node:vm';
 import React from 'react';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import ts from 'typescript';
+import * as performance from '../lib/performance';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const tick = () => new Promise<void>(resolve => setImmediate(resolve));
@@ -121,6 +122,7 @@ async function main() {
   // The real auth provider must not launch notifications in either restore path.
   const userResponse = deferred<any>(); let listener!: (event: string, session: any) => void; let latestAuth: any;
   const authModule = compile('components/auth-context.tsx', {
+    '../lib/performance': performance,
     react: React, '@react-native-async-storage/async-storage': { getAllKeys: async () => [], multiRemove: async () => {} },
     '../lib/startup': { withStartupTimeout: (promise: unknown) => promise },
     '../lib/supabase': { supabase: { auth: {
@@ -135,6 +137,18 @@ async function main() {
   assert.equal(latestAuth.loading, true, 'local restore does not bypass server verification');
   await act(async () => { userResponse.resolve({ data: { user: { id: 'a' } }, error: null }); await tick(); });
   assert.equal(latestAuth.loading, false);
+  const oldAccountTrace = performance.beginRetrieval('binder', 'tap');
+  await act(async () => { listener('TOKEN_REFRESHED', { user: { id: 'a' } }); });
+  assert.equal(performance.exportRetrievalObservations().observations.length, 1, 'same-account token refresh preserves its measurement block');
+  await act(async () => { listener('SIGNED_IN', { user: { id: 'b' } }); });
+  assert.equal(performance.exportRetrievalObservations().observations.length, 0, 'account switch clears prior journey counts and timings');
+  const currentAccountTrace = performance.beginRetrieval('binder', 'tap');
+  oldAccountTrace.facts(99, 'network', true); oldAccountTrace.settle();
+  assert.equal(oldAccountTrace.pending(), false);
+  assert.equal(performance.exportRetrievalObservations().observations[0].cards, 0);
+  await act(async () => { listener('SIGNED_OUT', null); });
+  assert.equal(performance.exportRetrievalObservations().observations.length, 0);
+  assert.equal(currentAccountTrace.pending(), false, 'sign-out invalidates already issued diagnostic handles');
   await act(async () => { provider.unmount(); });
   console.log('Startup phases passed: route/layout handoff, recovery, cancellation, deferred SDK, deduplication and account-safe push registration.');
 }

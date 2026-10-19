@@ -1,9 +1,9 @@
+import { StackrFunctionalIcon } from './StackrFunctionalIcon';
 import { StackrBinderButton } from "./StackrBrowseControls";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { StackrLoadingIndicator as ActivityIndicator } from './StackrLoadingIndicator';
 import {
-  Image,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -320,7 +320,7 @@ function EmptyCollection({
       ]}
     >
       <View style={[styles.emptyIcon, { backgroundColor: theme.colors.semantic.selectedState }]}>
-        <Image
+        <StackrFunctionalIcon
           source={stackrIcons.binders}
           style={styles.brandIcon}
           resizeMode="contain"

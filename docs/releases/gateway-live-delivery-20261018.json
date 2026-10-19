@@ -1,0 +1,299 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-18T17:04:56.360Z",
+  "pullRequest": "https://github.com/tberridge86/Stackr/pull/409",
+  "approvedHead": "df8d86dbc509d12bfc4fed6c317aee3450406721",
+  "mergedMainRevision": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
+  "workflow": {
+    "runId": 39147311549,
+    "attempt": 1,
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/39147311549",
+    "conclusion": "success"
+  },
+  "deployment": {
+    "id": "edc59e4a-b404-449d-a26a-e61784ceacfd",
+    "createdOn": "2026-10-18T16:58:45.169586Z",
+    "versions": [
+      {
+        "version_id": "56f04b7f-0692-4d8f-a9ae-0963442e57b8",
+        "percentage": 100
+      }
+    ]
+  },
+  "version": {
+    "id": "56f04b7f-0692-4d8f-a9ae-0963442e57b8",
+    "tag": "gateway-privacy-4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07"
+  },
+  "rollbackTarget": {
+    "deploymentId": "946af123-25ca-4a8b-89f1-e441b52f8bb0",
+    "versionId": "71032825-4494-46c2-82b0-de3a21d6953d",
+    "tag": "gateway-privacy-ea8190f3a0bda642e266438b68f19d4f398f7845"
+  },
+  "routeRuntimeObservabilityAndDurableObjectVerified": true,
+  "privacySmoke": {
+    "ok": true,
+    "checks": [
+      {
+        "name": "gateway_health",
+        "status": 200,
+        "requestId": "84224465-04cd-4fa4-9114-aa9d3fc19f6c"
+      },
+      {
+        "name": "gateway_ready",
+        "status": 200,
+        "requestId": "e47158a2-ddf6-4d34-9919-f2c8076fbb35"
+      },
+      {
+        "name": "anonymous_exact_price",
+        "status": 401,
+        "requestId": "4696cde5-61e6-4062-b765-59b722317bf9"
+      },
+      {
+        "name": "anonymous_price_history",
+        "status": 401,
+        "requestId": "3c991a36-31c2-4262-a087-dbf0c73d4b3f"
+      },
+      {
+        "name": "anonymous_market_movers",
+        "status": 401,
+        "requestId": "49f352c2-6e3c-49af-9679-4f0aa41140a7"
+      },
+      {
+        "name": "anonymous_provider_refresh",
+        "status": 401,
+        "requestId": "a93ebe58-06e8-463e-ac47-d6e4ae9a9c9b"
+      }
+    ]
+  },
+  "independentReleaseReview": "PASS; exact run/artifact and fresh route/runtime/DO attestation",
+  "independentPublicEvidenceReview": "PASS; original ledgers and cached unchanged-resolver replay",
+  "publicVerification": {
+    "schemaVersion": "stackr-gateway-release-sanitized-public-verification-v1",
+    "capturedFrom": "2026-10-18T17:00:19.233Z",
+    "capturedThrough": "2026-10-18T17:00:29.489Z",
+    "releaseIdentity": "run39147311549/attempt1;main4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07;deploymentedc59e4a-b404-449d-a26a-e61784ceacfd;version56f04b7f-0692-4d8f-a9ae-0963442e57b8;100percent",
+    "scope": {
+      "requests": 8,
+      "maximum": 10,
+      "method": "GET",
+      "sequential": true,
+      "retries": 0,
+      "timeoutEachMs": 12000,
+      "unauthenticated": true,
+      "cacheBusting": false,
+      "remoteWrites": false,
+      "additionalProbeAfterward": false
+    },
+    "results": [
+      {
+        "label": "storm-facts",
+        "status": 200,
+        "elapsedMs": 1946,
+        "requestId": "1cb5d2fb-4764-491d-8781-807893ff94df",
+        "error": null
+      },
+      {
+        "label": "storm-logo-manifest",
+        "status": 200,
+        "elapsedMs": 1501,
+        "requestId": "5cb4c1ee-509a-45af-b395-b3caba66b7d2",
+        "error": null
+      },
+      {
+        "label": "storm-source-png",
+        "status": 200,
+        "elapsedMs": 265,
+        "requestId": null,
+        "error": null
+      },
+      {
+        "label": "pikachu-facts",
+        "status": 200,
+        "elapsedMs": 3532,
+        "requestId": "a001fb30-086f-4d99-8e87-4dce985731d2",
+        "error": null
+      },
+      {
+        "label": "pikachu-batch-manifest-01",
+        "status": 200,
+        "elapsedMs": 557,
+        "requestId": "94caa234-5610-4aae-8a1f-debf2f576b9e",
+        "error": null
+      },
+      {
+        "label": "exact-card-grid-01",
+        "status": 200,
+        "elapsedMs": 635,
+        "requestId": null,
+        "error": null
+      },
+      {
+        "label": "wartortle-facts-01",
+        "status": 200,
+        "elapsedMs": 905,
+        "requestId": "6f6d8a62-b851-46ad-ac52-082c90fa2bd0",
+        "error": null
+      },
+      {
+        "label": "wartortle-facts-02",
+        "status": 200,
+        "elapsedMs": 553,
+        "requestId": "d45b8c98-2b2c-47ea-835f-4f1ff5b5513d",
+        "error": null
+      }
+    ],
+    "storm": {
+      "factsSampleRows": 3,
+      "factsSampleHasNextCursor": true,
+      "setLogoAssetCount": 1,
+      "exactOwnerAssetReturned": true,
+      "normalAppManifestUrl": true,
+      "manifestCursor": null,
+      "png": {
+        "status": 200,
+        "bytes": 900649,
+        "sha256": "383905581374e6a41be583303354be84a34891d52f8b6420ea632ff61a07f7ba",
+        "width": 1280,
+        "height": 544,
+        "decoded": true,
+        "hashMatchesDeclared": true
+      },
+      "manifestCacheHeaders": {
+        "content-type": "application/json; charset=utf-8",
+        "cache-control": "public, max-age=60, stale-while-revalidate=300, stale-if-error=300",
+        "etag": "W/\"I7g6R2IHdNN_iA6esb_NAbFvvJBNamCqLljIwamgS5U\"",
+        "age": null,
+        "cf-cache-status": "DYNAMIC",
+        "x-request-id": "5cb4c1ee-509a-45af-b395-b3caba66b7d2",
+        "cf-ray": "a4c9194c0a54edfa-LHR",
+        "server-timing": null
+      }
+    },
+    "pikachu": {
+      "factualRows": 100,
+      "uniquePrintingIds": 95,
+      "embeddedVariantImages": 0,
+      "factualElapsedMs": 3532,
+      "pinnedBatchPrintingIds": 95,
+      "returnedManifestAssets": 105,
+      "manifestElapsedMs": 557,
+      "wholeManifestStageElapsedMs": 558,
+      "currentOptionalDeadlineMs": 2000,
+      "withinDeadlineInThisSample": true,
+      "manifestRemainingCursor": null,
+      "manifestPagesExhausted": true,
+      "resolverRows": {
+        "total": 100,
+        "eligible": 98,
+        "exact": 63,
+        "approvedShared": 35,
+        "missing": 2
+      },
+      "actualDecodedStricterThumbnail": {
+        "count": 1,
+        "cardId": "aad7533b-d31f-4ab3-be1c-13e441b57f57",
+        "selectedVariantId": "4d6b4549-6d6c-4ace-a4cc-72877ba29401",
+        "sourceVariantId": "4d6b4549-6d6c-4ace-a4cc-72877ba29401",
+        "assetId": "acquire:card_image:4d6b4549-6d6c-4ace-a4cc-72877ba29401",
+        "role": "card-grid",
+        "kind": "exact",
+        "status": 200,
+        "bytes": 15258,
+        "width": 240,
+        "height": 330,
+        "sha256": "129ce674ba76bad4dc0ba64978d99551dc980992828fe576ec1fbd9a906566f7",
+        "hashMatchesDeclared": true,
+        "elapsedMs": 635
+      },
+      "thumbnailScope": "98/100 is resolver eligibility, not fetched-image success. Only one image met the additional exact same-printing/default-variant/cardId/declared-hash/public-host gate; its bytes were fetched and decoded. No second substitute or provider image was requested.",
+      "missingArtworkFile": "missing-artwork-review.json",
+      "manifestCacheHeaders": {
+        "content-type": "application/json; charset=utf-8",
+        "cache-control": "public, max-age=60, stale-while-revalidate=300, stale-if-error=300",
+        "etag": "W/\"H8evBD4SVy-LgCflEX_ciP7oLzkPvxLG6s5AcRri620\"",
+        "age": null,
+        "cf-cache-status": "DYNAMIC",
+        "x-request-id": "94caa234-5610-4aae-8a1f-debf2f576b9e",
+        "cf-ray": "a4c9196dca16edfa-LHR",
+        "server-timing": null
+      },
+      "pointComparison": {
+        "priorCapture": "2026-10-18T14:17:40.340Z",
+        "priorStatus": 503,
+        "priorCode": "downstream_circuit_open",
+        "priorElapsedMs": 426,
+        "currentStatus": 200,
+        "currentReturnedAssets": 105,
+        "currentElapsedMs": 557,
+        "interpretation": "Two point observations for the same pinned95-printing batch. This does not prove a historical causal chain, database recovery cause or latency distribution."
+      }
+    },
+    "wartortle": {
+      "pageRows": [
+        16,
+        38
+      ],
+      "uniquePrintings": 42,
+      "catalogueVersionIds": [
+        "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      ],
+      "sourcePagesExhausted": true,
+      "remainingCursor": null,
+      "scope": "Current published species route across these four catalogue versions;42 is not a universal Wartortle inventory denominator."
+    },
+    "remaining": [
+      "Two exact Pikachu artwork gaps remain as recorded; missing/rejected manifests do not establish whole-storage absence.",
+      "Pikachu facts took3532ms in this single sample. No changed performance target, p95 or phone timing is established.",
+      "An API/decoded-image success does not prove installed-phone rendering. Owner-reported installed59 retains its old bundled/native client until separate native delivery; recording numeric build remains unknown.",
+      "This capture does not exercise accounts, binders, listing media, prices, providers, local/owner recognition or all catalogue rows."
+    ],
+    "frozenInputs": {
+      "helperSha256": "5a689416ed5963f03d31e1eb48440725f06419f2250414e17afb506ec79de8a4",
+      "planSha256": "39cd0fcd3789709e815167b98ec1f8ad3ac9e880e8a1877b97bab456804d1d55",
+      "reviewBundleSha256": "f04ad09ac5e1fd17cb893c9bbb0d7cd4f204aece31aaaee83a66f0511c3ccd72",
+      "rootGoSha256": "4663e26889ccfa14ac6d8aa2e58bf1db980644890838327fed10317806f5de2c",
+      "outcomeSha256": "ba7f9143ccf25404218f68c552f138b7ef512973b55a5c3041fcb0fb623f551f",
+      "resultLedgerSha256": "f8131c18fd99a5b27cacc09f73989fb14011ab9f832f0ee319423a6e097855af"
+    },
+    "originalResultLedgerVerified": true,
+    "headersSanitized": true,
+    "phoneVerified": false,
+    "p95Measured": false,
+    "fullCatalogueMeasured": false
+  },
+  "backendDeployed": false,
+  "nativePublished": false,
+  "phoneVerified": false,
+  "performanceTargetsMeasured": false,
+  "privateReceiptDigests": [
+    {
+      "relativePath": "evidence/consolidation-20261018/gateway-release-20261018/live-release-verified.json",
+      "sha256": "70f627e8be45d81a61b1c57178b332909bc3c6166fdb4236250f53af17115a25"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/gateway-release-20261018/public-verification/sanitized-summary.json",
+      "sha256": "7dcf713a0d83aa0e6d2e58d69a6865e73d935a5f3231df38297afcfadfbce80f"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/gateway-release-20261018/public-verification/missing-artwork-review.json",
+      "sha256": "edd8d9330e73eac38fcba26b1b63a44dacff80580eabfa32e15f2526036a7efb"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/gateway-release-20261018/public-verification/outcome.json",
+      "sha256": "ba7f9143ccf25404218f68c552f138b7ef512973b55a5c3041fcb0fb623f551f"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/gateway-release-20261018/public-verification/result-hashes.json",
+      "sha256": "f8131c18fd99a5b27cacc09f73989fb14011ab9f832f0ee319423a6e097855af"
+    }
+  ],
+  "remaining": [
+    "Native app repairs remain unsigned/unpublished; owner-reported installed59 contains old client and Storm bundle.",
+    "The two captured Pikachu gaps and two earlier Wartortle gaps remain identity/source blockers.",
+    "Pikachu facts3532ms is a single observation; previous intermittent timeouts and required performance distribution remain open.",
+    "No account/binder/history/price/listing media or tactile journey was verified by these public reads."
+  ]
+}

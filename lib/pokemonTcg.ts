@@ -34,6 +34,7 @@ import {
 } from './pokemonSetIdentity';
 import { getEnglishSetReferenceAliases } from './englishSetIdentity';
 import { cacheNonEmptyCatalogueRows, readNonEmptyCatalogueRows } from './resilientCatalogueRead';
+import { copyPreferredSetArtworkReassignments, getPreferredSetArtworkReassignments } from './stackrPreferredSetArtwork';
 import {
   fetchForeignPokemonCard,
   fetchForeignPokemonSet,
@@ -154,20 +155,30 @@ export function mergeSetCardArtwork(current: PokemonCard[], incoming: PokemonCar
   const artwork = new Map<string, PokemonCard>();
   for (const card of incoming) {
     const identity = setCardArtworkIdentity(card);
-    if (identity && (card.images?.small || card.images?.large)) artwork.set(identity, card);
+    if (identity && (card.images?.small || card.images?.large
+      || getPreferredSetArtworkReassignments(card.raw_data).length)) artwork.set(identity, card);
   }
   return current.map((card) => {
     const identity = setCardArtworkIdentity(card);
     const enriched = identity ? artwork.get(identity) : null;
     if (!enriched) return card;
-    const images = {
+    const currentRaw = card.raw_data ?? {};
+    const enrichedRaw = enriched.raw_data ?? {};
+    const reassignments = getPreferredSetArtworkReassignments(enrichedRaw);
+    const selected = currentRaw.stackr?.variants?.find((variant: any) => variant.variantId === currentRaw.stackr.defaultVariantId);
+    const priorArtwork = currentRaw.presentation?.artwork;
+    const invalidated = reassignments.some(evidence => (
+      (selected?.image?.assetId === evidence.assetId && selected.image.variantId === evidence.previousVariantId)
+      || (priorArtwork?.assetId === evidence.assetId && priorArtwork.sourceVariantId === evidence.previousVariantId)
+    ));
+    if (!enriched.images?.small && !enriched.images?.large && !invalidated) return card;
+    const images = invalidated ? { small: enriched.images?.small ?? enriched.images?.large,
+      large: enriched.images?.large ?? enriched.images?.small } : {
       ...card.images,
       small: enriched.images?.small ?? card.images?.small,
       large: enriched.images?.large ?? card.images?.large,
     };
-    const currentRaw = card.raw_data ?? {};
-    const enrichedRaw = enriched.raw_data ?? {};
-    return {
+    const result = {
       ...card,
       images,
       raw_data: {
@@ -176,11 +187,22 @@ export function mergeSetCardArtwork(current: PokemonCard[], incoming: PokemonCar
         presentation: {
           ...currentRaw.presentation,
           artwork: enrichedRaw.presentation?.artwork ?? currentRaw.presentation?.artwork,
-          selected_image_variant_id: enrichedRaw.presentation?.selected_image_variant_id
-            ?? currentRaw.presentation?.selected_image_variant_id,
+          selected_image_variant_id: invalidated ? enrichedRaw.presentation?.selected_image_variant_id ?? null
+            : enrichedRaw.presentation?.selected_image_variant_id ?? currentRaw.presentation?.selected_image_variant_id,
         },
       },
     };
+    if (invalidated && currentRaw.stackr?.variants) {
+      result.raw_data.stackr = { ...currentRaw.stackr, variants: currentRaw.stackr.variants.map((variant: any) => {
+        const stale = reassignments.some(evidence => variant.image?.assetId === evidence.assetId
+          && variant.image.variantId === evidence.previousVariantId);
+        const updated = enrichedRaw.stackr?.variants?.find((candidate: any) => candidate.variantId === variant.variantId
+          && candidate.canonicalId === variant.canonicalId && candidate.imageVariantId === variant.imageVariantId);
+        return stale && updated ? { ...variant, image: updated.image ?? null } : variant;
+      }) };
+      copyPreferredSetArtworkReassignments(enrichedRaw, result.raw_data);
+    }
+    return result;
   });
 }
 

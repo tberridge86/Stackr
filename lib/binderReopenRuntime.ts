@@ -2,7 +2,7 @@ import { supabase } from './supabase';
 import { MOBILE_RUNTIME_CONFIG } from './mobileRuntimeConfig';
 import { stackrApiClient } from './stackrApiV1';
 import { subscribeRequestCacheInvalidation } from './requestCache';
-import { BINDER_REOPEN_STORED_BYTES, BINDER_REOPEN_STORED_ENTRIES, createBinderReopenCache, type BinderReopenScope, type BinderReopenStore } from './binderReopenSnapshot';
+import { BINDER_REOPEN_STORED_BYTES, BINDER_REOPEN_STORED_ENTRIES, createBinderReopenCache, type BinderReopenCacheSource, type BinderReopenScope, type BinderReopenStore } from './binderReopenSnapshot';
 import { fetchBinderById, fetchBinderCards, type BinderCardRecord, type BinderRecord } from './binders';
 
 declare const require: (name: string) => any;
@@ -64,12 +64,12 @@ supabase.auth.onAuthStateChange((event, session) => {
 });
 
 /** Local session selects a saved read-only view, never authorises a server read/write. */
-export async function readBinderReopenPreview(binderId: string) {
+export async function readBinderReopenPreview(binderId: string, onSource?: (source: BinderReopenCacheSource) => void) {
   const lease = binderReopenCache.lease();
   const { data: { session }, error } = await supabase.auth.getSession();
   if (error || !session?.user?.id || !session.expires_at || session.expires_at * 1000 <= Date.now()) return null;
   if (lease !== binderReopenCache.lease()) return null;
-  const snapshot = await binderReopenCache.read(binderReopenScope(session.user.id), binderId);
+  const snapshot = await binderReopenCache.read(binderReopenScope(session.user.id), binderId, onSource);
   return lease === binderReopenCache.lease() && session.expires_at * 1000 > Date.now() ? snapshot : null;
 }
 

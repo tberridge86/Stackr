@@ -6,6 +6,7 @@ import { stackrRadii, stackrSpacing } from '../lib/theme';
 import { Text } from './Text';
 import { StackrButton, type StackrButtonVariant } from './StackrControls';
 import { useTheme } from './theme-context';
+import { STACKR_ICON_OUTLINE, StackrNavigationIcon, type StackrNavigationIconName } from './StackrNavigationIcon';
 
 type IconName = keyof typeof Ionicons.glyphMap;
 type StateTone = 'neutral' | 'info' | 'success' | 'warning' | 'error';
@@ -32,6 +33,7 @@ export function StackrStateBlock({
   title,
   body,
   icon,
+  stackrIcon,
   tone = 'neutral',
   actionLabel,
   onAction,
@@ -44,6 +46,7 @@ export function StackrStateBlock({
   title: string;
   body?: string | null;
   icon?: IconName;
+  stackrIcon?: StackrNavigationIconName;
   tone?: StateTone;
   actionLabel?: string;
   onAction?: () => void;
@@ -83,7 +86,11 @@ export function StackrStateBlock({
           borderColor: `${color}42`,
         }}
       >
-        <Ionicons name={icon ?? toneIcon[tone]} size={23} color={color} />
+        {stackrIcon ? (
+          <StackrNavigationIcon name={stackrIcon} size={23}
+            color={tone === 'neutral' ? theme.dark ? theme.colors.text : STACKR_ICON_OUTLINE : color}
+            accentColor={color} />
+        ) : <Ionicons name={icon ?? toneIcon[tone]} size={23} color={color} />}
       </View>
       <View accessibilityRole={tone === 'error' ? 'alert' : 'summary'} accessibilityLiveRegion={(live ?? tone === 'error') ? 'polite' : 'none'}>
         <Text style={{ color: theme.colors.text, fontSize: 18, lineHeight: 23, fontWeight: '900', textAlign: 'center' }}>

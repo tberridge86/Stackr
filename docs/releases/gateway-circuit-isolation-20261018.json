@@ -77,16 +77,16 @@
     "locallyTested": true,
     "independentlyReviewed": true,
     "committed": true,
-    "merged": false,
-    "deployed": false,
-    "phoneVerified": false
+    "merged": true,
+    "deployed": true,
+    "phoneVerified": false,
+    "liveDeliveryReceipt": "docs/releases/gateway-live-delivery-20261018.json"
   },
   "releaseBoundary": "Gateway-only publication requires matching explicit owner approval and exact source/CI/rollback attestation. No backend deployment, credential change, database script, price refresh, worker restart or native publication is included.",
   "remaining": [
-    "Exact reviewed candidate hosted checks",
-    "Explicit publication approval",
-    "Successful bounded public fact/image reads after publication",
-    "Installed-phone journeys and required latency sample sizes"
+    "Installed-phone journeys",
+    "Unresolved exact artwork and account/listing/valuation evidence",
+    "Required latency sample sizes and intermittent origin reliability"
   ],
   "sourceCommit": "8b5ebc753ade3feaf574b21a8b6b01efa79ad582",
   "rollbackObservation": {
@@ -96,6 +96,26 @@
     "tag": "gateway-privacy-ea8190f3a0bda642e266438b68f19d4f398f7845",
     "durableObjectNamespaceVerified": true,
     "sourceTagRuntimeDiff": "Only gateway/src/proxy.js circuit isolation",
-    "freshPredeploymentAttestationStillRequired": true
+    "freshPredeploymentAttestationStillRequired": false
+  },
+  "postDeployment": {
+    "revision": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
+    "version": {
+      "id": "56f04b7f-0692-4d8f-a9ae-0963442e57b8",
+      "tag": "gateway-privacy-4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07"
+    },
+    "deployment": {
+      "id": "edc59e4a-b404-449d-a26a-e61784ceacfd",
+      "createdOn": "2026-10-18T16:58:45.169586Z",
+      "versions": [
+        {
+          "version_id": "56f04b7f-0692-4d8f-a9ae-0963442e57b8",
+          "percentage": 100
+        }
+      ]
+    },
+    "privacySmokePassed": true,
+    "publicManifest95Ids105Assets557ms": true,
+    "receipt": "docs/releases/gateway-live-delivery-20261018.json"
   }
 }

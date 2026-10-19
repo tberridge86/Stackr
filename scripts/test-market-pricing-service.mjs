@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { mock } from 'node:test';
 import { readFileSync } from 'node:fs';
 import express from 'express';
 import createV1Router from '../backend/routes/v1.js';
@@ -1527,6 +1528,10 @@ async function assertExactProviderDailySnapshotConflictHandling() {
   const source = { id: '44444444-4444-4444-8444-444444444444', code: 'tcgdex', active: true, licence_status: 'approved', deprecated_at: null };
   const version = { id: '33333333-3333-4333-8333-333333333333', status: 'published', language_code: 'en', deprecated_at: null, superseded_by_version_id: null };
   const now = new Date();
+  const utcDayStart = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  // Keep same-day retrieval fixtures inside their day; provider timestamps retain their ordering.
+  const sameUtcDaySnapshotAt = (offset) => new Date(Math.max(utcDayStart,
+    Math.min(now.getTime() + offset, utcDayStart + 24 * 60 * 60_000 - 1))).toISOString();
   const fixture = (variantId) => {
     const metadata = {
       variant_id: variantId, printing_id: '66666666-6666-4666-8666-666666666666', language_code: 'en',
@@ -1544,7 +1549,7 @@ async function assertExactProviderDailySnapshotConflictHandling() {
       canonical_identity_key: identity.identityKey, pricing_identity_json: { ...identity, canonicalVariantId: variantId, canonical_variant_id: variantId },
       tcgdex_card_id: 'base3-4', tcgdex_price: 11, price_source: 'tcgdex_market', primary_source: 'tcgdex', price_type: 'market_estimate', proven_last_sold: false,
       tcgdex_price_updated_at: new Date(now.getTime() + 60_000).toISOString(), methodology_version: null,
-      calculated_at: new Date(now.getTime() + 60_000).toISOString(), snapshot_at: new Date(now.getTime() + 60_000).toISOString(), stale_after: new Date(now.getTime() + 7 * 60 * 60_000).toISOString(), is_stale: false,
+      calculated_at: new Date(now.getTime() + 60_000).toISOString(), snapshot_at: sameUtcDaySnapshotAt(60_000), stale_after: new Date(now.getTime() + 7 * 60 * 60_000).toISOString(), is_stale: false,
       ...overrides,
     });
     const provider = async () => ({ providerCardId: 'base3-4', language: 'en', number: '4/102', price: 12.5, priceSource: 'tcgdex_market', pricingUpdatedAt: now.toISOString(), raw: { id: 'base3-4' } });
@@ -1589,7 +1594,7 @@ async function assertExactProviderDailySnapshotConflictHandling() {
 
   const olderProviderId = '22222222-2222-4222-8222-222222222222';
   const olderProvider = fixture(olderProviderId);
-  const olderProviderDb = createSnapshotSupabase({ metadata: olderProvider.metadata, snapshots: [olderProvider.snapshot({ tcgdex_price_updated_at: new Date(now.getTime() - 60_000).toISOString(), snapshot_at: new Date(now.getTime() + 60_000).toISOString(), calculated_at: new Date(now.getTime() + 60_000).toISOString() })], insertErrors: [{ code: '23505' }], tcgdexSource: source, publishedVersion: version, approvedTcgdexAliases: olderProvider.aliases });
+  const olderProviderDb = createSnapshotSupabase({ metadata: olderProvider.metadata, snapshots: [olderProvider.snapshot({ tcgdex_price_updated_at: new Date(now.getTime() - 60_000).toISOString(), snapshot_at: sameUtcDaySnapshotAt(60_000), calculated_at: new Date(now.getTime() + 60_000).toISOString() })], insertErrors: [{ code: '23505' }], tcgdexSource: source, publishedVersion: version, approvedTcgdexAliases: olderProvider.aliases });
   const olderProviderResult = await createMarketPricingService({ supabase: olderProviderDb, fetchTcgdexNormalCardPrice: olderProvider.provider }).refreshExactProviderEstimate(olderProviderId, input);
   assert.equal(olderProviderResult.estimates.central, 12.5, 'a later retrieval with an older provider timestamp cannot displace a fresher incoming provider quote');
   assert.equal(olderProviderDb.updates.length, 1);
@@ -1597,9 +1602,9 @@ async function assertExactProviderDailySnapshotConflictHandling() {
   const racedId = '30303030-3030-4030-8030-303030303030';
   const raced = fixture(racedId);
   const racedDb = createSnapshotSupabase({
-    metadata: raced.metadata, snapshots: [raced.snapshot({ tcgdex_price_updated_at: new Date(now.getTime() - 60_000).toISOString(), calculated_at: new Date(now.getTime() - 60_000).toISOString(), snapshot_at: new Date(now.getTime() - 60_000).toISOString() })], insertErrors: [{ code: '23505' }], tcgdexSource: source, publishedVersion: version, approvedTcgdexAliases: raced.aliases,
+    metadata: raced.metadata, snapshots: [raced.snapshot({ tcgdex_price_updated_at: new Date(now.getTime() - 60_000).toISOString(), calculated_at: new Date(now.getTime() - 60_000).toISOString(), snapshot_at: sameUtcDaySnapshotAt(-60_000) })], insertErrors: [{ code: '23505' }], tcgdexSource: source, publishedVersion: version, approvedTcgdexAliases: raced.aliases,
     onSnapshotUpdate: ({ value, snapshotRows }) => {
-      Object.assign(snapshotRows[0], { ...value, tcgdex_price: 13, tcgdex_price_updated_at: new Date(now.getTime() + 120_000).toISOString(), calculated_at: new Date(now.getTime() + 120_000).toISOString(), snapshot_at: new Date(now.getTime() + 120_000).toISOString() });
+      Object.assign(snapshotRows[0], { ...value, tcgdex_price: 13, tcgdex_price_updated_at: new Date(now.getTime() + 120_000).toISOString(), calculated_at: new Date(now.getTime() + 120_000).toISOString(), snapshot_at: sameUtcDaySnapshotAt(120_000) });
       return [];
     },
   });
@@ -1647,28 +1652,45 @@ async function assertNormalProviderFetchAbortsAndClearsInflight() {
   }
 }
 
-assertMigrationShape();
-assertOpenApiAndClientContract();
-assertPricingMathAndTitleValidation();
-await assertEbayAdapterBoundary();
-await assertRoutes();
-await assertInvalidServiceInput();
-await assertGradedPriceRequiresExactIdentity();
-await assertHistoryKeepsExactRawScope();
-await assertLabelledLegacySnapshotFallback();
-await assertOptInGeneralStoredPrices();
-await assertNormalVariantProviderBaseSnapshotIdentity();
-await assertLatestExactSnapshotBatchAvoidsAliasResolution();
-await assertRawPriceDefaultsNearMint();
-await assertCanonicalSnapshotLabelsAndBasis();
-await assertManualRefreshIdentityAndGate();
-await assertIdentityAwareDenseRangeHistory();
-await assertPagedRangeHistoryKeepsBaseline();
-await assertExactOwnerProviderRefresh();
-await assertExactEnglishFinishProviderRefresh();
-await assertSingleHoloProviderRefresh('ja');
-await assertSingleHoloProviderRefresh('en');
-await assertExactProviderDailySnapshotConflictHandling();
-await assertNormalProviderFetchAbortsAndClearsInflight();
+// Calendar-dependent fixtures use one logical instant across setup and service reads.
+mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 9, 18, 12) });
+try {
+  assertMigrationShape();
+  assertOpenApiAndClientContract();
+  assertPricingMathAndTitleValidation();
+  await assertEbayAdapterBoundary();
+  await assertRoutes();
+  await assertInvalidServiceInput();
+  await assertGradedPriceRequiresExactIdentity();
+  await assertHistoryKeepsExactRawScope();
+  await assertLabelledLegacySnapshotFallback();
+  await assertOptInGeneralStoredPrices();
+  await assertNormalVariantProviderBaseSnapshotIdentity();
+  await assertLatestExactSnapshotBatchAvoidsAliasResolution();
+  await assertRawPriceDefaultsNearMint();
+  await assertCanonicalSnapshotLabelsAndBasis();
+  await assertManualRefreshIdentityAndGate();
+  await assertIdentityAwareDenseRangeHistory();
+  await assertPagedRangeHistoryKeepsBaseline();
+  await assertExactOwnerProviderRefresh();
+  await assertExactEnglishFinishProviderRefresh();
+  await assertSingleHoloProviderRefresh('ja');
+  await assertSingleHoloProviderRefresh('en');
+  // Separate logical days avoid sharing the production five-minute refresh cooldown.
+  for (const fixtureTime of [
+    Date.UTC(2026, 9, 18, 12),
+    Date.UTC(2026, 9, 19, 23, 58, 4, 105),
+    Date.UTC(2026, 9, 20, 23, 59, 59, 999),
+    Date.UTC(2026, 9, 22),
+    Date.UTC(2026, 9, 23, 0, 0, 0, 1),
+    Date.UTC(2026, 9, 24, 0, 0, 59, 999),
+  ]) {
+    mock.timers.setTime(fixtureTime);
+    await assertExactProviderDailySnapshotConflictHandling();
+  }
+  await assertNormalProviderFetchAbortsAndClearsInflight();
 
-console.log('Market pricing service tests passed.');
+  console.log('Market pricing service tests passed.');
+} finally {
+  mock.timers.reset();
+}

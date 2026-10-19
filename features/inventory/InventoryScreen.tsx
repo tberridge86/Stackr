@@ -52,6 +52,7 @@ import { attachLiveTcgdexCardReferences, getPokemonSetLogoUrl } from '../../lib/
 import { hydrateScanCardRowsWithLiveTcgdexReferences } from '../../lib/scanCardReferenceHydration';
 import { ROUTES } from '../../lib/routes';
 import { stackrIcons } from '../../lib/stackrIcons';
+import { StackrNavigationIcon } from '../../components/StackrNavigationIcon';
 import { stackrCardImageSizes, stackrTabContentPadding } from '../../lib/stackrSizing';
 import { stackrListPerformance } from '../../lib/performance';
 import {
@@ -596,7 +597,7 @@ function VaultTerminalPanel({
             backgroundColor: activeColor,
           }}
         >
-          <Ionicons name="scan-outline" size={23} color="#FFFFFF" />
+          <StackrNavigationIcon name="scan" size={23} color="#FFFFFF" />
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: '900' }}>{scanLabel}</Text>
@@ -2429,8 +2430,8 @@ export default function InventoryScreen() {
         title="Seller Mode"
         subtitle="Scan stock in, build out carts, and keep an audit trail."
         items={[
-          { icon: 'scan-outline', title: 'Stock In', body: 'Scan purchases, trade-ins, consignment, or store intake into a reviewable batch.' },
-          { icon: 'log-out-outline', title: 'Stock Out', body: 'Build an out cart for sales, trades, transfers, or lost or damaged stock.' },
+          { icon: 'scan-outline', imageIcon: stackrIcons.inbound, title: 'Stock In', body: 'Scan purchases, trade-ins, consignment, or store intake into a reviewable batch.' },
+          { icon: 'log-out-outline', imageIcon: stackrIcons.outbound, title: 'Stock Out', body: 'Build an out cart for sales, trades, transfers, or lost or damaged stock.' },
           { icon: 'time-outline', title: 'Audit trail', body: 'Committed inventory movements keep reason and value context where supported.' },
         ]}
       />

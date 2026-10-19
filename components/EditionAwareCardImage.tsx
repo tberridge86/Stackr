@@ -7,6 +7,7 @@ import { Text } from './Text';
 import { StackrImage } from './StackrImage';
 import { CardFinishArtwork } from './CardFinishArtwork';
 import type { CardFinishMetadata } from '../lib/cardFinishProfiles';
+import type { RetrievalImageEvent } from '../lib/performance';
 
 type Props = {
   uri?: string | null;
@@ -24,6 +25,7 @@ type Props = {
   imageStyle?: StyleProp<ImageStyle>;
   resizeMode?: ImageProps['resizeMode'];
   onReferenceImageChange?: (shared: boolean) => void;
+  onDiagnostic?: (event: RetrievalImageEvent) => void;
   cropToCard?: boolean;
   fallback?: React.ReactNode;
   finishMetadata?: CardFinishMetadata;
@@ -35,7 +37,7 @@ function isForeignLanguage(language: unknown) {
   return Boolean(value && value !== 'en' && value !== 'english' && !value.startsWith('en-'));
 }
 
-function EditionAwareCardImageBase({ uri, fullUri, fallbackUri, cardId, language, rawData, editionHint, sourceSize = 'large', style, imageStyle, resizeMode = 'contain', onReferenceImageChange, cropToCard = false, fallback, finishMetadata, isSlabbed }: Props) {
+function EditionAwareCardImageBase({ uri, fullUri, fallbackUri, cardId, language, rawData, editionHint, sourceSize = 'large', style, imageStyle, resizeMode = 'contain', onReferenceImageChange, onDiagnostic, cropToCard = false, fallback, finishMetadata, isSlabbed }: Props) {
   const rawVariantUri = React.useMemo(() => getEditionVariantImageUrl(rawData, editionHint, sourceSize), [editionHint, rawData, sourceSize]);
   const foreign = isForeignLanguage(language ?? rawData?.language);
   // Only exact supplied catalogue artwork and an explicitly tagged local variant
@@ -59,6 +61,7 @@ function EditionAwareCardImageBase({ uri, fullUri, fallbackUri, cardId, language
       fallbackUris={!foreign && !hasSourceVariant ? artwork?.candidates.map((candidate) => candidate.uri) : undefined}
       cacheKey={[String(language ?? rawData?.language ?? 'en').toLowerCase(), cardId ?? 'unknown', sourceSize].join(':')}
       onSourceChange={handleSourceChange}
+      onDiagnostic={onDiagnostic}
       style={styles.image}
       imageStyle={imageStyle}
       contentFit={contentFit}

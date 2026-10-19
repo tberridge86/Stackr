@@ -202,6 +202,7 @@ export function SearchCardRailItem({
   ownedQuantity,
   onPress,
   inspectionRequest,
+  onImageDiagnostic,
 }: {
   name: string;
   imageUri?: string | null;
@@ -221,6 +222,7 @@ export function SearchCardRailItem({
   ownedQuantity?: number;
   onPress: () => void;
   inspectionRequest?: CardInspectionRequest;
+  onImageDiagnostic?: (event: import('../../lib/performance').RetrievalImageEvent) => void;
 }) {
   const { theme } = useTheme();
   const { inspectCard } = useCardInspection();
@@ -255,6 +257,7 @@ export function SearchCardRailItem({
           fullUri={fullImageUri}
           fallbackUris={imageFallbackUris}
           cacheKey={imageCacheKey}
+          onDiagnostic={onImageDiagnostic}
           contentFit="contain"
           cardShape
           rounded={13}
@@ -515,6 +518,7 @@ export function SearchCardResult({
   ownedQuantity,
   onPress,
   inspectionRequest,
+  onImageDiagnostic,
 }: {
   name: string;
   imageUri?: string | null;
@@ -527,6 +531,7 @@ export function SearchCardResult({
   ownedQuantity?: number;
   onPress: () => void;
   inspectionRequest?: CardInspectionRequest;
+  onImageDiagnostic?: (event: import('../../lib/performance').RetrievalImageEvent) => void;
 }) {
   const { theme } = useTheme();
   return (
@@ -541,6 +546,7 @@ export function SearchCardResult({
         <View style={{ width: 58, height: 80, borderRadius: 9, overflow: 'hidden', backgroundColor: theme.colors.surface }}>
           <StackrImage
             uri={imageUri}
+            onDiagnostic={onImageDiagnostic}
             contentFit="contain"
             cardShape
             rounded={9}
@@ -763,35 +769,40 @@ export function RecentSearchPill({
 }) {
   const { theme } = useTheme();
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.82}
+    <View
       style={{
-        height: 32,
-        maxWidth: 188,
+        minHeight: 48,
+        maxWidth: 236,
         borderRadius: 12,
         borderWidth: 1,
         borderColor: theme.colors.border,
         backgroundColor: theme.colors.card,
-        paddingLeft: 10,
-        paddingRight: 6,
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 6,
       }}
     >
-      <Ionicons name={searchIcons.recent} size={14} color={theme.colors.textSoft} />
-      <Text
-        numberOfLines={1}
-        ellipsizeMode="tail"
-        style={{ flexShrink: 1, color: theme.colors.text, fontSize: 12, lineHeight: 15, fontWeight: '900' }}
+      <TouchableOpacity
+        onPress={onPress}
+        activeOpacity={0.82}
+        accessibilityRole="button"
+        accessibilityLabel={`Search for ${label}`}
+        style={{ minHeight: 48, minWidth: 48, flexShrink: 1, paddingLeft: 10, paddingRight: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }}
       >
-        {label}
-      </Text>
-      <TouchableOpacity onPress={onRemove} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} accessibilityRole="button" accessibilityLabel={`Remove ${label} from recent searches`}>
-        <Ionicons name="close" size={14} color={theme.colors.textSoft} />
+        <Ionicons name={searchIcons.recent} size={14} color={theme.colors.textSoft} />
+        <Text
+          numberOfLines={1}
+          ellipsizeMode="tail"
+          style={{ flexShrink: 1, color: theme.colors.text, fontSize: 14, lineHeight: 20, fontWeight: '700' }}
+        >
+          {label}
+        </Text>
       </TouchableOpacity>
-    </TouchableOpacity>
+      <TouchableOpacity onPress={onRemove} activeOpacity={0.82}
+        accessibilityRole="button" accessibilityLabel={`Remove ${label} from recent searches`}
+        style={{ width: 48, height: 48, alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <Ionicons name="close" size={16} color={theme.colors.textSoft} />
+      </TouchableOpacity>
+    </View>
   );
 }
 

@@ -1,3 +1,4 @@
+import { STACKR_ICON_OUTLINE, StackrNavigationIcon } from '../StackrNavigationIcon';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
@@ -484,7 +485,7 @@ export function ValueComparisonCard({
   return (
     <View style={[styles.valueCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
       <View style={styles.valueCardHeader}>
-        <Ionicons name="analytics-outline" size={18} color={theme.colors.primary} />
+        <StackrNavigationIcon name="priceBuilder" size={18} color={theme.dark ? theme.colors.text : STACKR_ICON_OUTLINE} accentColor={theme.colors.primary} />
         <Text style={[styles.valueCardTitle, { color: theme.colors.text }]}>Estimated value</Text>
       </View>
       <Text style={[styles.valueEstimate, { color: theme.colors.text }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.58}>

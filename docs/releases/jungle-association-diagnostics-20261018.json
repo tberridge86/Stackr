@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-18T18:56:14.696Z",
+  "approvedFile": "docs/releases/jungle-association-read-only-20261018.sql",
+  "approvedFileSha256": "578da6c472a7b3dade1079f08be33c1e4caa2ad67754f1668a83150e281ffc72",
+  "ownerApprovalReceived": true,
+  "execution": {
+    "calls": 5,
+    "success": [
+      1,
+      2,
+      3
+    ],
+    "statementTimeouts": [
+      4,
+      5
+    ],
+    "statementTimeoutSeconds": 5,
+    "lockTimeoutSeconds": 1,
+    "retries": 0,
+    "readOnly": true,
+    "writes": false,
+    "collectorRows": 0,
+    "providerRefresh": false,
+    "jobs": false,
+    "native": false
+  },
+  "confirmed": {
+    "publicAssetId": "0d6fe9c6-58c6-46a3-8f13-88c4352b8791",
+    "internalAssetIdResolved": true,
+    "printingId": "7f7c3925-368d-4cbc-8e37-415b6ceb4bda",
+    "currentPublication": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "selectedFirstEdition": "2f89247e-d3cd-4ec0-88e3-baff0f60252c",
+    "actualNormalAlias": "ccac455c-42b0-4344-9fd1-285ed8756e75",
+    "aliasExistsInDatabase": true,
+    "currentApiHasBothVariants": true,
+    "currentDefaultVariant": "normal",
+    "assetAndSourceStoredApproval": "approved",
+    "underlyingLicenceIndependentlyVerified": false,
+    "immutableOriginalSha256": "a76fe3dcd6a1d16129a1628975a574318d96258c1803fad9114c5401267a9133",
+    "originalDimensions": [
+      600,
+      825
+    ],
+    "freshDecodedImages": 4,
+    "rootVisualObservation": "Original visibly has English Pikachu,50HP,Jungleflower,60/64,1EDITIONstamp and KenSugimori. Provider normal identifier does not establish physical edition."
+  },
+  "boundedApi": {
+    "cardHttpStatus": 200,
+    "printingManifestHttpStatus": 200,
+    "returnedAssets": 1,
+    "nextCursor": null,
+    "meaning": "One fresh configured app API sample; not a measured performance cohort, every publication or installed rendering."
+  },
+  "proposedCorrection": {
+    "state": "PREPARATION_AND_REVIEW;NO_LIVE_WRITE",
+    "maximumAssociationRows": 1,
+    "canonicalVariantUpdates": 0,
+    "immutableAssetUpdates": 0,
+    "normalImpact": "The existing normal-associated image visibly shows first edition. Rebinding it to exactfirstedition removes the current normal image association; retain an explicit normal artwork gap and reject edition sharing.",
+    "next": "V4 exactexistingapproval evidence branch and fullactualtwo-variant/defaultnormal replay, staging-path rehearsal, independent concretewrite review and matching authorization."
+  },
+  "privateEvidence": {
+    "execution": {
+      "file": "D:/Stackr-organization/evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/read-execution-completed.json",
+      "sha256": "53acb7ec75a80d9579f4e43a9598e5879c5c61f103f669c2188d306abb3474ab"
+    },
+    "freshReadReview": {
+      "file": "D:/Stackr-organization/evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/fresh-read-review.json",
+      "sha256": "7fdaa058c449a8b57456223ac7f58268b6195a90744e1477bc5cfe265912554b"
+    },
+    "api": {
+      "file": "D:/Stackr-organization/evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/current-api/receipt.json",
+      "sha256": "d862327e31000d21d38152a3af9cb9241a44c27787ca2ae5bf7455095d1cb3cf"
+    },
+    "decodedBytes": {
+      "file": "D:/Stackr-organization/evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/current-api/verified-existing-images/receipt.json",
+      "sha256": "656c9e267216e37b725db6c7740c7840c57a3f6e8e173d500ad529d958dde8f2"
+    },
+    "independentReview": {
+      "file": "D:/Stackr-organization/evidence/consolidation-20261018/remaining-repairs-review-20261018/jungle-v3-and-fresh-data-review.json",
+      "sha256": "e2624e362002dea32047361a2eba9865f1c775d27364aaab5c23a816d4028ceb"
+    }
+  },
+  "limits": [
+    "The generic manifest-view statements timedout; no rootcause or missingindex is established.",
+    "Current runtime identityRPC route returnedmetadata successfully; genericSQLtimeouts are not a universal API failure.",
+    "Five independent read-only transactions do not form a simultaneous snapshot; a future write must recheck exactschema/fullrowpins.",
+    "Stored approvals support unchanged-object reuse in their actual scope; no new underlying or provider-wide licence is inferred.",
+    "No source image or catalogue record changed and no phone issue closed."
+  ],
+  "testFlightHeld": true
+}

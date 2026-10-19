@@ -47,7 +47,8 @@ function compileModule(
     __DEV__: false,
     ...runtimeGlobals,
     require: (name: string) => {
-      if (/^\.\.\/assets\/Pokemon_Magazine_Cover_Art_PNGs\/CoroCoro Comic\//.test(name)) {
+      if (/^\.\.\/assets\/Pokemon_Magazine_Cover_Art_PNGs\/CoroCoro Comic\//.test(name)
+        || name === '../assets/magazine-covers/2023-11-corocoro-regular.jpg') {
         return `asset:${name}`;
       }
       assert.ok(name in dependencies, `${path} unexpectedly imports ${name}`);
@@ -179,6 +180,17 @@ async function run() {
   assert.equal(countStackrImages(combinedCover), 0, 'An unapproved combined-issue cover source must remain a labelled placeholder');
   await act(async () => combinedCover.unmount());
 
+  let novemberCover!: ReactTestRenderer;
+  await act(async () => {
+    novemberCover = create(React.createElement(CorocoroIssueCover, { issueGroup: getCorocoroIssueGroup('monthly:2023-11')! }));
+  });
+  assert.equal(countStackrImages(novemberCover), 1, 'The existing November issue selects its newly approved cover');
+  const novemberImage = novemberCover.root.find(node => String(node.type) === 'StackrImage');
+  assert.equal(novemberImage.props.source, 'asset:../assets/magazine-covers/2023-11-corocoro-regular.jpg');
+  assert.equal(novemberImage.props.uri, undefined, 'The exact released cover remains available without a network image read');
+  assert.ok(novemberCover.root.findAll(node => String(node.type) === 'Text').some(node => node.children.join('') === 'Issue cover'));
+  await act(async () => novemberCover.unmount());
+
   const defaultRoute = await mount({});
   assert.equal(defaultRoute.root.findAllByType(CorocoroIssueCover).length, 3,
     'Discover opens a three-publication library, not the 34-issue grid');
@@ -190,8 +202,8 @@ async function run() {
   assert.equal(getCorocoroIssuesForPublication('monthly').length, 34);
   assert.equal(monthlyRoute.root.findAllByType(CorocoroIssueCover).length, 34,
     'The monthly selection mounts each exact documented monthly issue once');
-  assert.equal(countStackrImages(monthlyRoute), 26,
-    'Only the 26 exact supplied monthly covers are rendered; the remainder retain placeholders');
+  assert.equal(countStackrImages(monthlyRoute), 27,
+    'The 26 supplied covers and approved November2023 cover render; the remainder retain placeholders');
 
   const issueRoute = await mount({ issue: 'monthly:2001-05' });
   assert.equal(issueRoute.root.findAllByType(CorocoroIssueCover).length, 1,

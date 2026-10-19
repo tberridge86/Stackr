@@ -82,7 +82,7 @@ assert.match(editionImageComponent, /language\?: string \| null/, 'language is p
 assert.match(editionImageComponent, /!foreign && !hasSourceVariant/, 'foreign cards do not borrow shared artwork fallbacks');
 assert.match(editionImageComponent, /!foreign && Boolean\(editionHint/, 'foreign card images never receive English visual overlays');
 const binderScreen = readFileSync('features/binder/BinderDetailScreen.tsx', 'utf8');
-assert.match(binderScreen, /sourceSize="small"\s+resolveRemoteEdition=\{false\}/, 'ordinary binder grid cards do not amplify optional edition resolver reads');
+assert.match(binderScreen, /sourceSize="small"(?:\s+onDiagnostic=\{[^\r\n]*\})?\s+resolveRemoteEdition=\{false\}/, 'ordinary binder grid cards do not amplify optional edition resolver reads');
 assert.match(binderScreen, /sourceSize="large"\s+onReferenceImageChange/, 'binder modal detail retains its exact-edition resolver path');
 
 console.log('Edition-aware image selection checks passed.');

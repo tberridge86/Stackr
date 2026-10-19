@@ -1,6 +1,6 @@
 import { createSetFactsReader, loadCompleteSetPages } from './stackrSetRetrieval';
 import { correctedChineseSetContext } from './chineseCatalogueCorrection';
-import { readPreferredSetArtwork } from './stackrPreferredSetArtwork';
+import { copyPreferredSetArtworkReassignments, getPreferredSetArtworkReassignments, readPreferredSetArtwork, rememberPreferredSetArtworkObservation } from './stackrPreferredSetArtwork';
 import { resolveCardArtwork } from './cardArtworkPresentation';
 import { getPublishedSetCoverFallback, getPublishedSetLogoFallback } from './publishedSetLogoFallbacks';
 import { getPersistentStackrSetFactsStore } from './stackrCatalogueCache';
@@ -481,14 +481,14 @@ function embeddedCardImageAssets(card: StackrCard) {
   for (const variant of card.variants) {
     const asset = variant.image;
     if (!asset?.assetId) continue;
-    byId.set(asset.assetId, asset);
+    byId.set(JSON.stringify([asset.assetId, asset.cardId, asset.variantId]), asset);
   }
   return [...byId.values()];
 }
 
 function primaryCardImageAsset(card: StackrCard, assets: StackrCatalogueAsset[]) {
   const presentation = resolveCardArtwork(card, assets);
-  return assets.find((asset) => asset.assetId === presentation.assetId);
+  return assets.find((asset) => asset.assetId === presentation.assetId && asset.variantId === presentation.sourceVariantId);
 }
 
 function canonicalSetCardIdentity(card: StackrCard) {
@@ -624,7 +624,10 @@ export function stackrCardToLegacyCard(card: StackrCard, assets: StackrCatalogue
     variant.imageVariantId,
     variant.sameArtworkAsVariantId,
   ]).filter((value): value is string => Boolean(value)));
-  const allAssets = [...embeddedCardImageAssets(card), ...assets];
+  const reassignments = getPreferredSetArtworkReassignments(card);
+  const allAssets = [...embeddedCardImageAssets(card), ...assets].filter(asset => !reassignments.some(evidence => (
+    asset.assetId === evidence.assetId && asset.variantId === evidence.previousVariantId
+  )));
   const cardAssets = allAssets.filter((asset) => asset.cardId === card.cardId || relevantVariantIds.has(asset.variantId ?? ''));
   const primary = primaryCardImageAsset(card, cardAssets);
   const artwork = resolveCardArtwork(card, cardAssets);
@@ -734,6 +737,7 @@ export function stackrCardToLegacyCard(card: StackrCard, assets: StackrCatalogue
     },
   };
   canonicalArtworkFacts.set(mapped.raw_data, card);
+  copyPreferredSetArtworkReassignments(card, mapped.raw_data);
   return mapped;
 }
 
@@ -1000,8 +1004,10 @@ async function fetchCanonicalSetCardFacts(
     if (prefixLanguage && apiLanguage && prefixLanguage !== apiLanguage) throw new Error('Conflicting catalogue language');
     let expectedCount = Number(options.minimumCardCount ?? 0);
     if (!apiLanguage || !Number.isSafeInteger(expectedCount) || expectedCount < 1) {
-      const set = (await client.set(setId, { signal })).data.set;
+      const cachedSet = rememberedSet(client, setId);
+      const set = cachedSet ?? (await client.set(setId, { signal })).data.set;
       if (apiLanguage && apiLanguage !== set.languageCode) throw new Error('Conflicting catalogue language');
+      if (!cachedSet) rememberSet(client, set);
       apiLanguage = set.languageCode;
       // A printed count excludes secret cards for sets such as Prismatic
       // Evolutions. This facts lane validates exact completion, so it must
@@ -1258,6 +1264,7 @@ export async function fetchStackrCard(
   // only the presentation selection; cached catalogue facts remain unchanged.
   const selectedCard = resolved.variantId === resolved.card.defaultVariantId ? resolved.card
     : { ...resolved.card, defaultVariantId: resolved.variantId };
+  copyPreferredSetArtworkReassignments(resolved.card, selectedCard);
   const embeddedAssets = embeddedCardImageAssets(selectedCard);
   // Only verified printing/variant facts can end a caller's essential loading
   // phase; the returned promise still includes the existing optional artwork.
@@ -1649,7 +1656,36 @@ export async function enrichStackrCardArtworkFromFacts(
     enriched.push(...await enrichCanonicalSetCards({ setId: facts[0].set.setId, cards: selected(preferred) }, client, signal));
     onProgress?.(enriched);
   };
-  for (const facts of groups.values()) await enrichGroup(facts);
+  for (const facts of groups.values()) {
+    throwIfOptionalCatalogueReadAborted(signal);
+    const hasCurrentArtwork = facts.every((fact) => primaryCardImageAsset(fact, embeddedCardImageAssets(fact)));
+    const knownTotal = Number(rememberedSet(client, facts[0].set.setId)?.total);
+    const isKnownComplete = Number.isSafeInteger(knownTotal) && knownTotal > 0
+      && knownTotal === new Set(facts.map((fact) => fact.cardId)).size;
+    if (hasCurrentArtwork || isKnownComplete) {
+      await enrichGroup(facts);
+      continue;
+    }
+    // A live custom binder/card detail can retain a valid in-memory fact while
+    // selecting only one printing from a later whole-set artwork page. Read the
+    // shared complete facts cache only when its population is not already known
+    // complete. This extra optional read is capped at seven seconds; existing
+    // artwork and complete set views above do not wait for it. They still run
+    // preferred enrichment so a sharper approved replacement can supersede it.
+    const recovered = await readOptionalCatalogueEnrichment((recoverySignal) => fetchCanonicalSetCardFacts(
+      facts[0].set.setId, facts[0].languageCode, client, recoverySignal, { includeAssets: false },
+    ), signal, 7000);
+    throwIfOptionalCatalogueReadAborted(signal);
+    const selected = new Map(facts.map((fact) => [fact.cardId, fact]));
+    let population = facts;
+    if (recovered && recovered.cards.every((fact) => fact.catalogueVersionId === facts[0].catalogueVersionId)) {
+      const recoveredIds = new Set(recovered.cards.map((fact) => fact.cardId));
+      if (facts.every((fact) => recoveredIds.has(fact.cardId))) {
+        population = recovered.cards.map((fact) => selected.get(fact.cardId) ?? fact);
+      }
+    }
+    await enrichGroup(facts, population);
+  }
   for (const [key, savedCards] of savedGroups) {
     throwIfOptionalCatalogueReadAborted(signal);
     const [setId, language] = JSON.parse(key) as [string, StackrApiLanguageCode];
@@ -1671,10 +1707,13 @@ export async function enrichStackrCardArtworkFromFacts(
         || !expected.canonicalId || expected.canonicalId !== actual.canonicalId
         || expected.imageVariantId !== actual.imageVariantId
         || (expected.finishCode ?? null) !== (actual.finishCode ?? null)) continue;
-      canonicalArtworkFacts.set(saved.raw_data, fact);
-      matched.push(fact);
+      const observed = { ...fact };
+      rememberPreferredSetArtworkObservation(observed, saved.raw_data.presentation?.artwork);
+      canonicalArtworkFacts.set(saved.raw_data, observed);
+      matched.push(observed);
     }
-    await enrichGroup(matched, recovered.cards);
+    const selected = new Map(matched.map(fact => [fact.cardId, fact]));
+    await enrichGroup(matched, recovered.cards.map(fact => selected.get(fact.cardId) ?? fact));
   }
   return enriched;
 }

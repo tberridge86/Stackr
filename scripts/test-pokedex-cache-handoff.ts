@@ -51,6 +51,7 @@ function harness(cache: Promise<string | null>) {
     react: React, 'react-native': native,
     '../../components/theme-context': { useTheme: () => ({ theme: { colors: new Proxy({}, { get: () => '#112233' }) } }) },
     '../../components/StackrLoadingIndicator': { StackrLoadingIndicator: 'Loading' },
+    '../../components/StackrFunctionalIcon': { StackrFunctionalIcon: 'Image' },
     '@react-native-async-storage/async-storage': { getItem: () => cache, setItem: async (_key: string, value: string) => { writes.push(value); } },
     '../../components/Text': { Text: 'Text' }, '../../components/FeatureTipModal': { FeatureTipGate: 'Tip' },
     'expo-router': { router: { push: () => undefined } }, 'react-native-safe-area-context': { useSafeAreaInsets: () => ({ bottom: 0 }) },

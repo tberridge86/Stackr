@@ -1,3 +1,4 @@
+import { StackrFunctionalIcon } from '../../components/StackrFunctionalIcon';
 import { CardDetailInspectSurface } from '../../components/InteractiveCardInspectPressable';
 import { StackrCardArtworkFallback } from '../../components/StackrArtworkFallback';
 import { stackrCardImageSizes } from '../../lib/stackrSizing';
@@ -10,8 +11,7 @@ import {
   ScrollView,
   Alert,
   FlatList,
-  Image,
-} from 'react-native';
+  } from 'react-native';
 import { Text } from '../../components/Text';
 import { StackrBackButton } from '../../components/StackrBackButton';
 import { StackrCardIdentity } from '../../components/StackrCardIdentity';
@@ -1432,7 +1432,7 @@ function ScanResultScreen() {
                   {chaseSaving ? (
                     <ActivityIndicator size="small" color={theme.colors.primary} />
                   ) : (
-                    <Image source={stackrIcons.chase} style={{ width: 20, height: 20 }} resizeMode="contain" />
+                    <StackrFunctionalIcon source={stackrIcons.chase} style={{ width: 20, height: 20 }} resizeMode="contain" />
                   )}
                   <Text style={{ color: theme.colors.primary, fontWeight: '900', fontSize: 13 }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.82}>
                     {selectedIsChase ? 'Remove Chase' : 'Add to Chase'}

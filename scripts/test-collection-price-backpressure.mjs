@@ -16,6 +16,7 @@ const match = {
   card: { variants: [{ variantId, variantCode: 'normal' }] },
 };
 const priced = { data: {
+  variantId, productType: 'raw_card', currency: 'GBP',
   estimates: { central: 1.25 }, status: 'legacy_cached_market_estimate', freshness: 'source_timestamped',
   calculatedAt: '2026-09-11T17:00:00Z', staleAfter: null, unavailableReason: null,
 } };

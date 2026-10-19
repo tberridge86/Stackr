@@ -1,3 +1,4 @@
+import { StackrFunctionalIcon } from '../../components/StackrFunctionalIcon';
 import { useTheme } from '../../components/theme-context';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
@@ -450,7 +451,7 @@ export default function PokedexScreen() {
         ]}
       >
         <View style={styles.regionIconFrame}>
-          <Image
+          <StackrFunctionalIcon
             source={source}
             style={styles.regionIcon}
             resizeMode="contain"
@@ -513,7 +514,7 @@ export default function PokedexScreen() {
         title="Pokédex collection"
         subtitle="Track cards by Pokémon, not just by set."
         items={[
-          { icon: 'albums-outline', title: 'All cards', body: 'Tap a Pokémon to see every card for that Pokémon across all sets.' },
+          { icon: 'albums-outline', imageIcon: stackrIcons.setDiscovery, title: 'All cards', body: 'Tap a Pokémon to see every card for that Pokémon across all sets.' },
           { icon: 'checkmark-circle-outline', title: 'Ownership', body: 'Mark cards owned inside each Pokémon page to build a Pokémon collection.' },
           { icon: 'sync-outline', title: 'Binder sync', body: 'Cards owned in your binders also count here, without creating extra binders.' },
         ]}

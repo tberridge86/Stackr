@@ -4,6 +4,7 @@ import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
 import { resolveCardArtwork } from '../lib/cardArtworkPresentation';
 import { readOptionalCatalogueEnrichment, throwIfOptionalCatalogueReadAborted } from '../lib/optionalCatalogueEnrichment';
+import { copyPreferredSetArtworkReassignments, getPreferredSetArtworkReassignments } from '../lib/stackrPreferredSetArtwork';
 
 const source = readFileSync('lib/stackrDomainAdapter.ts', 'utf8');
 const tree = ts.createSourceFile('adapter.ts', source, ts.ScriptTarget.Latest, true);
@@ -44,6 +45,7 @@ function harness(cards: any[], read: (query: any, signal?: AbortSignal) => Promi
     UUID_PATTERN: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
     toStackrApiLanguage: (language: string) => language ?? null, resolveCardArtwork,
     readOptionalCatalogueEnrichment, throwIfOptionalCatalogueReadAborted,
+    copyPreferredSetArtworkReassignments, getPreferredSetArtworkReassignments,
     buildForeignCardPresentation: (input: any) => ({ name: input.name, setName: input.set.name,
       languageLabel: input.language, isForeign: input.language !== 'en', details: { supertype: null, subtypes: [] } }),
   });

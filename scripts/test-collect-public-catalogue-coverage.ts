@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { relative, resolve } from 'node:path';
 import { resolveOutputDirectory, summariseSet } from './collect-public-catalogue-coverage';
 
 const set = { setId: 'set-a', languageCode: 'ja', setCode: 'S1', nativeName: 'セット', englishDisplayName: 'Set', total: 2, printedTotal: 1 };
@@ -24,4 +25,11 @@ assert.equal(unavailable.actualDistinctCards, null);
 assert.equal(unavailable.cardGaps, null);
 assert.equal(unavailable.cardsEndpoint.status, 'unavailable');
 assert.throws(() => resolveOutputDirectory('D:/outside-four-language-coverage'), /Output must be a new/);
+const privateRoot = resolve('D:/Stackr-organization/active-runtime/four-language-coverage');
+const currentOutput = resolveOutputDirectory();
+assert.match(relative(privateRoot, currentOutput), /^20260905-public-api-/);
+assert.equal(resolveOutputDirectory(resolve(privateRoot, '20260905-public-api-fixture')), resolve(privateRoot, '20260905-public-api-fixture'));
+assert.throws(() => resolveOutputDirectory('D:/Stackr-1/.tmp/four-language-coverage/20260905-public-api-fixture'), /Output must be a new/);
+assert.throws(() => resolveOutputDirectory(resolve(privateRoot, '..', '20260905-public-api-escape')), /Output must be a new/);
+assert.throws(() => resolveOutputDirectory(privateRoot), /Output must be a new/);
 console.log('Public catalogue coverage collector tests passed.');

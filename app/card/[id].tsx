@@ -1,3 +1,4 @@
+import { StackrFunctionalIcon } from '../../components/StackrFunctionalIcon';
 import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import { getCorocoroIssuesForCard, formatCorocoroIssueGroup } from '../../lib/corocoroIssueArchive';
 import { useCardInspection } from '../../components/CardInspectionProvider';
@@ -245,8 +246,11 @@ export default function CardDetailScreen() {
           // Keep the original model: provider image overlays are intentionally
           // non-enumerable and must not be copied through an object spread.
           setCard(current => isCurrent() ? found ?? null : current);
-          if (foundInCache && found && !found.images?.small && !found.images?.large) {
-            setArtworkLoading(true);
+          if (foundInCache && found && (found.raw_data?.stackr?.canonical === true
+            || (!found.images?.small && !found.images?.large))) {
+            // Canonical cached images keep first paint while the bounded
+            // preferred read checks replacements and exact reassociations.
+            setArtworkLoading(!found.images?.small && !found.images?.large);
             // The enrichment WeakMap accepts canonical facts only; unsupported
             // cached legacy rows simply yield no artwork and retain their facts.
             const canonicalFacts = found as CanonicalPokemonCard;
@@ -257,7 +261,7 @@ export default function CardDetailScreen() {
                 const merged = mergeSetCardArtwork([current as CanonicalPokemonCard], enriched)[0];
                 return merged ? merged as PokemonCard : current;
               });
-            }).catch(() => undefined).finally(() => { setArtworkLoading(current => isCurrent() ? false : current); });
+            }).catch(() => undefined).finally(() => { if (isCurrent()) setArtworkLoading(false); });
           } else setArtworkLoading(current => isCurrent() ? false : current);
         }
       } catch (err) {
@@ -629,6 +633,7 @@ export default function CardDetailScreen() {
 
       <StackrButton
         label="Inspect card"
+        stackrIcon="scan"
         icon="scan-outline"
         variant="secondary"
         onPress={() => inspectCard({
@@ -642,7 +647,7 @@ export default function CardDetailScreen() {
         accessibilityLabel={`Inspect ${presentation.name}`}
         style={{ marginBottom: 12 }}
       />
-      <StackrButton label="Add to collection" icon="albums-outline" variant="primary" loading={collectionBusy} disabled={collectionBusy} onPress={() => { void openCollectionReview(); }} style={{ marginBottom: 12 }} />
+      <StackrButton label="Add to collection" stackrIcon="collection" icon="albums-outline" variant="primary" loading={collectionBusy} disabled={collectionBusy} onPress={() => { void openCollectionReview(); }} style={{ marginBottom: 12 }} />
       {collectionError ? <View style={{ marginBottom: 12, gap: 8 }}>
         <Text accessibilityRole="alert" style={{ color: theme.colors.text, lineHeight: 20 }}>{collectionError}</Text>
         <StackrButton label={collectionSignIn ? 'Sign in' : 'Open saved reviews'} onPress={() => router.push((collectionSignIn ? '/(auth)/login' : '/(tabs)/scan-hub') as any)} />
@@ -956,7 +961,7 @@ export default function CardDetailScreen() {
             isWishlisted ? styles.chaseButtonActive : styles.chaseButton,
           ]}
         >
-          <Image source={stackrIcons.chase} style={styles.chaseButtonIcon} resizeMode="contain" />
+          <StackrFunctionalIcon source={stackrIcons.chase} style={styles.chaseButtonIcon} resizeMode="contain" />
           <Text style={[styles.showcaseButtonText, isWishlisted && styles.chaseButtonActiveText]}>
             {isWishlisted ? 'Remove from Chase' : 'Add to Chase'}
           </Text>

@@ -65,6 +65,7 @@ function harness(options: {
     'react-native': { ...Object.fromEntries(['Image', 'RefreshControl', 'ScrollView', 'TouchableOpacity', 'View'].map((name) => [name, name])),
       StyleSheet: { create: (value: any) => value, hairlineWidth: 1 }, useWindowDimensions: () => ({ width: 390, fontScale: 1 }) },
     'react-native-safe-area-context': { SafeAreaView: 'SafeArea' },
+    '../components/StackrFunctionalIcon': { StackrFunctionalIcon: 'Image' },
     '@react-native-async-storage/async-storage': { getItem: () => options.stored?.() ?? Promise.resolve(null) },
     'react-native-svg': { default: 'Svg', Defs: 'Defs', LinearGradient: 'Gradient', Path: 'Path', Stop: 'Stop' },
     '../components/StackrLoadingIndicator': { StackrLoadingIndicator: 'Spinner' }, '../components/Text': { Text: 'Text' },

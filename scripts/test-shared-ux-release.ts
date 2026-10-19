@@ -55,6 +55,7 @@ function loadComponent(relativePath: string): Record<string, any> {
       SafeAreaInsetsContext: { Provider: 'InsetsProvider' },
     },
     './Text': { Text: 'StackrText' },
+    './StackrFunctionalIcon': { StackrFunctionalIcon: 'Image' },
     './theme-context': { useTheme: () => ({ theme: { colors: { text: '#123', bg: '#fff' } } }) },
     '../lib/typography': typography,
     '../lib/stackrSizing': { stackrActionIconSizes: {} },
