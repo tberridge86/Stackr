@@ -1,0 +1,63 @@
+{
+  "recordedAt": "2026-10-19T00:14:08.871Z",
+  "sourceRevision": "9d33a7032b3bf55551ca8c52972c329ccc250a68",
+  "baseRevision": "943e1043f3764972f49ad8e1a730241bc3fe93ec",
+  "file": "scripts/test-market-pricing-service.mjs",
+  "scope": "Test-only UTC calendar correction; production pricing code unchanged.",
+  "confirmedFailure": "A same-day race fixture used now+120seconds as snapshot retrieval time and crossed UTC midnight; an independent dense-history fixture also merged two intended sample buckets near midnight.",
+  "repair": "Use a Date-only logical clock for relative fixtures, reset it in finally, and explicitly run existing same-day conflict assertions at six midnight-boundary instants on separate logical days. Clamp only same-day retrieval fixture times; keep provider timestamps and negative prior-day case.",
+  "existingAssertionsRetained": true,
+  "realTimersRetained": true,
+  "dailyConflictClockCases": 6,
+  "independentReview": {
+    "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/pricing-daily-fixture-review/review.json",
+    "sha256": "de1fe12118d1272d08f3870b5623a0d07a8f414fa370f5111f9c22fb2abf5924"
+  },
+  "independentClockLifecycleCases": 10,
+  "localPricingGroup": {
+    "exitCode": 0,
+    "receipt": {
+      "privatePath": "evidence/consolidation-20261018/pricing-daily-fixture-boundary-20261019/pricing-check.json",
+      "sha256": "396bf00b3f1ee38de3b225ea09537bdae858bbff4e2f4d5b0a924fc6b8a0636a"
+    }
+  },
+  "lint": {
+    "exitCode": 0,
+    "existingWarnings": 8,
+    "receipt": {
+      "privatePath": "evidence/consolidation-20261018/pricing-daily-fixture-boundary-20261019/lint-check.json",
+      "sha256": "71f94fb66a3a9ffaede729a50987c9797a16388d2d7b9aacae0c4837ecf06385"
+    }
+  },
+  "hostedExactSource": {
+    "success": 11,
+    "failure": 0,
+    "pending": 0,
+    "normalSkips": 2,
+    "receipt": {
+      "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-9d33a70-final.json",
+      "sha256": "102688189323a588b223576b598d74f779d7b4050207cf86fd5dd920cc1f5871"
+    }
+  },
+  "olderFailedCi": {
+    "source": "943e1043f3764972f49ad8e1a730241bc3fe93ec",
+    "receipt": {
+      "privatePath": "evidence/consolidation-20261018/pricing-daily-fixture-boundary-20261019/hosted-943e104-calendar-failure.json",
+      "sha256": "515862494c1df20fcab60b6676e4d344a1aa540eda6daef4ce47c67059fc8e03"
+    },
+    "blindRetry": false
+  },
+  "trackedChangesSinceUnsignedPackage": [
+    "docs/releases/both-plans-completion-audit-20261018.json",
+    "docs/releases/both-plans-completion-audit-20261018.md",
+    "docs/releases/video-repair-register-20261018.json",
+    "docs/releases/workspace-preservation-20261018.json",
+    "scripts/test-market-pricing-service.mjs"
+  ],
+  "trackedApplicationAndBackendSourcesUnchangedSinceUnsignedSource": "4e5715f5e93a962c8f39e09e773be183c53059f1",
+  "freshBundleBuiltForThisTestChange": false,
+  "phoneIssueClosed": false,
+  "testFlightHeld": true,
+  "productionDatabaseCalls": 0,
+  "providerRefreshes": 0
+}

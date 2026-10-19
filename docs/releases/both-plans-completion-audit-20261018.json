@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-18T23:54:28.319Z",
+  "observedAt": "2026-10-19T00:14:08.871Z",
   "ownerRequest": "Ensure BOTH plans have satisfied the work listed before TestFlight.",
   "sourceHeadAudited": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
   "branch": "codex/stackr-repair-consolidation-20261018",
@@ -1067,7 +1067,7 @@
       "requirement": "Consolidate under D:/Stackr-organization with reversible recovery",
       "state": "partially_satisfied",
       "satisfiedInFull": false,
-      "remaining": "44 verified reversible relocations with preservation/restoration proof; actual inverse moves were rehearsed where recorded. The three artwork roots have copy/restoration and rollback evidence, not a recorded physical inverse-move rehearsal. Further original roots remain; relocation retains bytes and is not reclamation.",
+      "remaining": "45 verified reversible relocations with preservation/restoration proof; actual inverse moves were rehearsed where recorded. The three artwork roots have copy/restoration and rollback evidence, not a recorded physical inverse-move rehearsal. Further original roots remain; relocation retains bytes and is not reclamation.",
       "owner": "Tif"
     },
     {
@@ -1075,7 +1075,7 @@
       "requirement": "Account for every folder in the original owner list",
       "state": "all60_accounted_one_owner_excluded_unrelated",
       "satisfiedInFull": true,
-      "remaining": "Folder accounting is complete: 44 verified relocations, 14 retained old roots, one organization destination and one owner-excluded unrelated folder, D:/CodexLogoWork. Stackr-relevant denominator is 59; consolidation of retained work remains incomplete.",
+      "remaining": "Folder accounting is complete: 45 verified relocations, 13 retained old roots, one organization destination and one owner-excluded unrelated folder, D:/CodexLogoWork. Stackr-relevant denominator is 59; consolidation of retained work remains incomplete.",
       "owner": "Tif",
       "evidence": {
         "privatePath": "evidence/consolidation-20261018/owner-scope-correction-codexlogowork/owner-scope-reply.json",
@@ -1276,20 +1276,20 @@
     "sha256": "714099dd3456675f74e4ae5e8df9427349e4a71d15ad76985db1743667499d52"
   },
   "originalFolderCoverage": {
-    "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/current-owner-folder-placement.json",
-    "sha256": "ac5139d2591952b9fb59789a1ff3f5731593dc864fff5c9d802b8793267c11d9"
+    "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-relocation-20261019-v3/current-owner-folder-placement.json",
+    "sha256": "c3105b081e36d1b62039b88f84b26ceb5b03d92d4c70a7aef211e35d0f8643ae"
   },
   "originalFolderCounts": {
-    "relocatedWithRecordedProof": 44,
-    "retainedDependencyDataOrUnfinishedWork": 14,
+    "relocatedWithRecordedProof": 45,
+    "retainedDependencyDataOrUnfinishedWork": 13,
     "existingOrganizationDestination": 1,
     "ownerExcludedUnrelated": 1,
     "unmappedUnresolvedOriginal": 0,
     "originalMapRowsPresent": 60,
     "originalMapRowsMissing": 0,
-    "namedOriginalPathsStillPresentIncludingOrganizationDestination": 15,
-    "namedOldRootsStillPresentExcludingOrganizationDestination": 14,
-    "originalPathsAbsent": 45,
+    "namedOriginalPathsStillPresentIncludingOrganizationDestination": 14,
+    "namedOldRootsStillPresentExcludingOrganizationDestination": 13,
+    "originalPathsAbsent": 46,
     "stackrRelevantOriginalPaths": 59
   },
   "originalNamedPaths": 60,
@@ -1463,15 +1463,6 @@
       },
       "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder.",
       "currentLocation": "D:/Stackr-release-recovery-20261009",
-      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
-    },
-    {
-      "original": "D:/Stackr-chinese-partial-dependencies-20261010",
-      "mapRowPresent": true,
-      "hold": "177 package directories without root manifest; reproducibility, consumers and local patches are unverified.",
-      "capturedCohort": null,
-      "nextAction": "Resolve the documented hold, preserve the required cohort and verify restoration before any relocation.",
-      "currentLocation": "D:/Stackr-chinese-partial-dependencies-20261010",
       "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
     },
     {
@@ -2114,5 +2105,93 @@
     "signed": false,
     "submitted": false,
     "phoneVerified": false
+  },
+  "chinesePartialDirectoryContinuation": {
+    "registeredAt": "2026-10-19T00:12:44.856Z",
+    "original": "D:\\Stackr-chinese-partial-dependencies-20261010",
+    "current": "D:\\Stackr-organization\\archive\\dependency-snapshots-20261019\\Stackr-chinese-partial-dependencies-20261010",
+    "preservationContract": "independent-triple-hash-metadata-continuity-v1",
+    "originalPhysicalDirectory": {
+      "dev": "437697643",
+      "ino": "281474978986676",
+      "birthtimeNs": "1791670573323716300",
+      "mode": "16822"
+    },
+    "physicalMoveReturnReplayPassed": true,
+    "independentlyRestoredFiles": 2513,
+    "independentlyRestoredBytes": 26114058,
+    "directories": 712,
+    "links": 0,
+    "priorBodyHashReceipt": {
+      "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-preservation-v1/outcome.json",
+      "sha256": "de2b7262ed420ac722df14453010decc5a287072f5267655c9270591a65ffd59"
+    },
+    "freshBodyRehashClaimed": false,
+    "fullCurrentMembershipAndMetadataContinuityPassed": true,
+    "dependencyPackageHealthOrReproductionClaimed": false,
+    "sourceGitCommands": 0,
+    "outcome": {
+      "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-relocation-20261019-v3/preflight-abec0eda-e53d-4dc9-be92-1f7567b4544e/outcome.json",
+      "sha256": "69b080676ad9a63aea46eeea3f3e262745ab3f69eb93e072b846354f7723c5a2"
+    },
+    "verification": {
+      "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-relocation-20261019-v3/root-verified-outcome-v3.json",
+      "sha256": "36f3f5a5022ba389805f82cacba6605bb0033275dfaa09ee2e6ea74105d7d51d"
+    },
+    "review": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/chinese-native-pin-review-v3/review.json",
+      "sha256": "11b17d2158e3e9d4994ceb04e90f07dc85f4007a4826413321c854cfcbc829ec"
+    },
+    "restore": {
+      "type": "independent-triple-hash-metadata-continuity-v1",
+      "helper": {
+        "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-relocation-20261019-v3/restore-directory.cjs",
+        "sha256": "ba130652a3064ca69d8553992ec4bc5edfe27d74341e905c72f97466e507d1c3"
+      },
+      "guard": {
+        "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-relocation-20261019-v3/relocate-directory.cjs",
+        "sha256": "767208b0c2935d0e08ffea470c60ffce7640994fb1fadf2038eb9ad4f06eb33b"
+      },
+      "canonicalBindingCapture": {
+        "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-relocation-20261019-v3/capture-root-binding.cjs",
+        "sha256": "d5be0f9a6826b193f876f501322c3e6099e3d1889ccf757e0afe15d50f4c2f00"
+      },
+      "resourceBindingCapture": {
+        "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-relocation-20261019-v3/capture-parent-config-bindings.cjs",
+        "sha256": "fed7927179e253f8552bed9b442a2f8990f25674211e1645d88c9a91e4f26414"
+      },
+      "instructions": {
+        "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-relocation-20261019-v3/REVIEW-AND-RESTORE.md",
+        "sha256": "c4ea3244961bf77ba36c39a85a5d2d178efd78590e4356201d0649a60fc1669d"
+      },
+      "standardGenericRestoreSupported": false,
+      "requiresCurrentExactLocalReview": true,
+      "requiresFreshCanonicalAndResourceBindings": true,
+      "requiresSeparateRestorePreflightAndGrant": true,
+      "requiresSuccessfulArchiveIntentAndOutcomeHashes": true,
+      "consumerScopeCurrentlyRequiresOriginalCommon": "D:/Stackr-1/.git",
+      "requiresAdditiveConsumerAdapterAfterCommonMigration": true,
+      "historicalPlanMustNotBeSilentlyRebound": true,
+      "noAutomaticRetryOrRollback": true
+    },
+    "sourceDirectoryAbsent": true,
+    "permanentDeletion": false
+  },
+  "calendarFixtureCorrection": {
+    "file": "docs/releases/pricing-fixture-clock-correction-20261019.json",
+    "sha256": "8d097ca23883066246f4861b6ce3e4816570495b919baafacbb908e4284c5c41",
+    "sourceRevision": "9d33a7032b3bf55551ca8c52972c329ccc250a68",
+    "testOnly": true
+  },
+  "latestVerifiedCommittedSource": {
+    "sourceRevision": "9d33a7032b3bf55551ca8c52972c329ccc250a68",
+    "success": 11,
+    "failure": 0,
+    "pending": 0,
+    "normalSkips": 2,
+    "receipt": {
+      "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-9d33a70-final.json",
+      "sha256": "102688189323a588b223576b598d74f779d7b4050207cf86fd5dd920cc1f5871"
+    }
   }
 }
