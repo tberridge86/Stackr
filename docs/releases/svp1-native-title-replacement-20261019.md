@@ -54,9 +54,24 @@ parameter and remains retained; it was not an app defect.
 Public `assets: []` does not prove canonical prior-link absence or a published
 catalogue version. A private, non-executable exact-one publication intent is in
 `D:/Stackr-organization/evidence/consolidation-20261018/svp1-native-title-replacement-preparation-20261019/`.
-The coordinator's separate four-read canonical preflight preparation remains
-unexecuted and pending independent review and the applicable remote-script
-authority. The intent contains no executable SQL or publication builder.
+The coordinator's four-read canonical preflight passed independent review and
+received explicit owner approval. All four exact production calls ran once:
+canonical identity/published membership, candidate keys and controlled storage
+metadata succeeded; the complete effective logo-link query reached its unchanged
+five-second statement limit. Its prior-link state remains unknown. The timeout
+was retained without retrying the query or raising the limit. The intent contains
+no executable publication builder.
+
+The production diagnostic receipt is
+`4176fe2a04592944ac37e188d968156ed94ed976c520de05f8be754c9a696442`.
+A scoped equivalent successor for the failed read passed local PostgreSQL
+comparisons and independent review. Its separately approved single production
+call also timed out at the unchanged five-second limit. That approval is consumed;
+receipt `6d18e31cc460fdb70d8e164c44d7fe89d1f43bd80bd523065944b927eaabd653`.
+No runtime improvement or complete prior-link state was obtained. Saved index
+definitions and an older public-logo plan do not establish this timeout's cause.
+A nonexecuting plan check for the exact failed query has been prepared and
+independently reviewed; it needs its own approval before execution.
 
 Publication-qualified batch: empty. Catalogue writes, uploads and publication:
 zero. Actual API/app image verification and phone acceptance remain outstanding.
@@ -70,8 +85,10 @@ The existing regression checks the exact PNG binding,
 native dimensions, immutable hashes, source/crop provenance, focused permission
 scope, retained rollback file and existing identity/language boundaries. It keeps
 the previous path rule for the other 35 additions. Typecheck, lint and independent
-review remain with the coordinator after changes settle; no full build is
-dispatched by this work.
+review passed before source integration in main `43d7a91b868ea4337c6967813a521ba46747a434`.
+All eight applicable checks passed on that merged revision; delivery receipt
+`3c4dc88431d0e9b8dfb7efe936f2166ffb662d137147ab97e0f9b20de412f5c0`.
+No full native build was dispatched by this work.
 
 The first local run passed the new SVP1 assertions and then exposed two existing
 nested pack permission receipts converted from LF to CRLF by checkout. Both
