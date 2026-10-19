@@ -332,6 +332,7 @@ function getPreviewSetSupportingName(card: CardPreviewResult | null | undefined,
 }
 
 type ShowcaseType = 'favorite' | 'chase';
+type ShowcaseMutation = { accountId: string; binderId: string; accountGeneration: number; loadRequest: number };
 
 type ShowcaseRow = {
   id: string;
@@ -894,6 +895,14 @@ export default function BinderDetailScreen() {
   const [modalTcgFallbackPrice, setModalTcgFallbackPrice] = useState<TcgFallbackPrice | null>(null);
 
   const [showcaseRows, setShowcaseRows] = useState<ShowcaseRow[]>([]);
+  const [showcaseStatus, setShowcaseStatus] = useState<'loading' | 'ready' | 'saving' | 'error'>('loading');
+  const showcaseRowsRef = useRef<ShowcaseRow[]>([]);
+  const showcaseReadyRef = useRef(false);
+  const showcaseReadRef = useRef(0);
+  const showcaseAbortRef = useRef<AbortController | null>(null);
+  const showcaseMutationRef = useRef<ShowcaseMutation | null>(null);
+  const currentBinderIdRef = useRef(binderId);
+  currentBinderIdRef.current = binderId;
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [addSearch, setAddSearch] = useState('');
@@ -1084,6 +1093,43 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   // LOAD
   // ===============================
 
+  const loadShowcase = useCallback(async (accountId: string) => {
+    if (!binderId || activeAccountIdRef.current !== accountId || artworkRequestRef.current?.signal.aborted) return;
+    const accountGeneration = accountGenerationRef.current;
+    const loadRequest = loadRequestRef.current;
+    const request = ++showcaseReadRef.current;
+    showcaseAbortRef.current?.abort();
+    showcaseReadyRef.current = false;
+    setShowcaseStatus('loading');
+    // Only a write in this account/binder generation can defer this read.
+    const mutation = showcaseMutationRef.current;
+    if (mutation && (mutation.accountId !== accountId || mutation.binderId !== binderId
+      || mutation.accountGeneration !== accountGeneration)) showcaseMutationRef.current = null;
+    // A same-scope write will request a fresh read after its server response.
+    if (showcaseMutationRef.current) return;
+    const controller = new AbortController();
+    showcaseAbortRef.current = controller;
+    const isCurrent = () => request === showcaseReadRef.current && loadRequest === loadRequestRef.current
+      && accountGeneration === accountGenerationRef.current && activeAccountIdRef.current === accountId
+      && currentBinderIdRef.current === binderId && !controller.signal.aborted;
+    try {
+      const result = await withPersonalDataReadTimeout((signal) => supabase
+        .from('binder_card_showcases').select('*').eq('user_id', accountId).eq('binder_id', binderId)
+        .order('sort_order', { ascending: true }).abortSignal(signal), { signal: controller.signal });
+      if (!isCurrent()) return;
+      if (result.error) throw result.error;
+      const rows = (result.data ?? []) as ShowcaseRow[];
+      showcaseRowsRef.current = rows;
+      showcaseReadyRef.current = true;
+      setShowcaseRows((previous) => isCurrent() ? rows : previous);
+      setShowcaseStatus((previous) => isCurrent() ? 'ready' : previous);
+    } catch (error) {
+      if (!isCurrent()) return;
+      console.log('Failed to load binder showcases', error);
+      setShowcaseStatus('error');
+    }
+  }, [binderId]);
+
   const load = useCallback(async (forceRefresh = false) => {
     if (!binderId) return;
     retrievalTraceRef.current?.cancel();
@@ -1095,6 +1141,11 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     let refreshState: 'refreshing' | 'offline' | 'incomplete' = 'refreshing';
     const accountGeneration = accountGenerationRef.current;
     const requestId = ++loadRequestRef.current;
+    showcaseReadRef.current += 1;
+    showcaseAbortRef.current?.abort();
+    showcaseReadyRef.current = false;
+    showcaseRowsRef.current = [];
+    setShowcaseStatus('loading');
     visiblePriceReaderRef.current?.dispose();
     visiblePriceReaderRef.current = null;
     visiblePriceIdsRef.current = [];
@@ -1222,6 +1273,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         refreshState = 'incomplete';
         if (previewState.snapshot) {
           setReopenStatus({ savedAt: previewState.snapshot.savedAt, state: 'incomplete' });
+          setShowcaseStatus('error');
           return; // A partial refresh cannot erase a complete saved view or enable editing.
         }
       } else {
@@ -1315,8 +1367,13 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         setOwnedVariants(new Map());
         setVariantManagedCards(new Set());
         setOwnershipReady(true);
+        setShowcaseStatus('ready');
         return;
       }
+
+      // Showcase placement is optional presentation; it must not hold ownership
+      // confirmation or editing when the essential private reads have finished.
+      void loadShowcase(user.id);
 
       void (async () => {
         const cardIds = binderCards.map((card) => card.card_id);
@@ -1324,13 +1381,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         const binderVariantCardKeys = new Set(
           binderCards.map((card) => getVariantCardKey(card.card_id, card.set_id))
         );
-        const [showcaseResult, userBindersResult, variantQuantityResult] = await Promise.all([
-          supabase
-            .from('binder_card_showcases')
-            .select('*')
-            .eq('user_id', user.id)
-            .eq('binder_id', binderId)
-            .order('sort_order', { ascending: true }),
+        const [userBindersResult, variantQuantityResult] = await Promise.all([
           supabase
             .from('binders')
             .select('id')
@@ -1345,12 +1396,6 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
             : Promise.resolve({ data: [], error: null }),
         ]);
         if (!isCurrentRequest()) return;
-
-        if (showcaseResult.error) {
-          console.log('Failed to load binder showcases', showcaseResult.error);
-        } else {
-          setShowcaseRows((showcaseResult.data ?? []) as ShowcaseRow[]);
-        }
 
         if (userBindersResult.error) throw userBindersResult.error;
         const userBinderIds = (userBindersResult.data ?? []).map((row) => row.id).filter(Boolean);
@@ -1418,6 +1463,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       });
     } catch (error) {
       if (isCurrentRequest()) {
+        setShowcaseStatus('error');
         retrievalTrace.fail(isBinderAccessDenied(error) ? 'access' : 'facts');
         refreshState = 'offline';
         if (isBinderAccessDenied(error)) {
@@ -1439,7 +1485,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     } finally {
       if (isCurrentRequest()) { retrievalTrace.settle(); setLoading(false); }
     }
-  }, [binderId]);
+  }, [binderId, loadShowcase]);
 
   useEffect(() => {
     let reloadTimer: ReturnType<typeof setTimeout> | null = null;
@@ -1457,6 +1503,12 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       if (reloadTimer) clearTimeout(reloadTimer);
       accountGenerationRef.current += 1;
       loadRequestRef.current += 1;
+      showcaseReadRef.current += 1;
+      showcaseAbortRef.current?.abort();
+      showcaseReadyRef.current = false;
+      showcaseRowsRef.current = [];
+      showcaseMutationRef.current = null;
+      setShowcaseStatus('loading');
       artworkRequestRef.current?.abort();
       visiblePriceReaderRef.current?.dispose();
       retrievalTraceRef.current?.cancel();
@@ -1502,6 +1554,9 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       load();
       return () => {
         loadRequestRef.current += 1;
+        showcaseReadRef.current += 1;
+        showcaseAbortRef.current?.abort();
+        showcaseReadyRef.current = false;
         artworkRequestRef.current?.abort();
         visiblePriceReaderRef.current?.dispose();
         retrievalTraceRef.current?.cancel();
@@ -1882,21 +1937,53 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     );
   };
 
+  const isShowcaseScopeCurrent = (mutation: ShowcaseMutation) => currentBinderIdRef.current === mutation.binderId
+    && activeAccountIdRef.current === mutation.accountId && accountGenerationRef.current === mutation.accountGeneration;
+  const beginShowcaseMutation = (requireReady = true) => {
+    const accountId = activeAccountIdRef.current;
+    if (isReadOnly || !accountId || !binderId || binder?.user_id !== accountId || currentBinderIdRef.current !== binderId
+      || showcaseMutationRef.current || (requireReady && !showcaseReadyRef.current)) return null;
+    const mutation = { accountId, binderId, accountGeneration: accountGenerationRef.current, loadRequest: loadRequestRef.current };
+    showcaseMutationRef.current = mutation;
+    showcaseReadyRef.current = false;
+    showcaseReadRef.current += 1;
+    showcaseAbortRef.current?.abort();
+    setShowcaseStatus('saving');
+    return mutation;
+  };
+  const finishShowcaseMutation = (mutation: ShowcaseMutation, refresh = false) => {
+    if (showcaseMutationRef.current !== mutation) return;
+    showcaseMutationRef.current = null;
+    if (!isShowcaseScopeCurrent(mutation)) return;
+    if (refresh || mutation.loadRequest !== loadRequestRef.current) {
+      void loadShowcase(mutation.accountId);
+    } else {
+      showcaseReadyRef.current = true;
+      setShowcaseStatus('ready');
+    }
+  };
+
   const toggleShowcase = async (item: BinderCardWithDetails, type: ShowcaseType) => {
-    if (isReadOnly) return;
+    if (isReadOnly || !showcaseReadyRef.current || showcaseMutationRef.current) return;
+    const existing = showcaseRowsRef.current.find((row) => row.card_id === item.card_id
+      && row.set_id === item.set_id && row.showcase_type === type);
+    const currentRows = showcaseRowsRef.current.filter((row) => row.showcase_type === type);
+    if (!existing && currentRows.length >= 3) {
+      Alert.alert(type === 'favorite' ? 'Showcase limit reached' : 'Chase card limit reached',
+        type === 'favorite' ? 'You can only choose 3 showcase cards per set.' : 'You can only choose 3 chase cards per set.');
+      return;
+    }
+    const mutation = beginShowcaseMutation();
+    if (!mutation) return;
+    const isCurrent = () => isShowcaseScopeCurrent(mutation) && mutation.loadRequest === loadRequestRef.current;
+    let refresh = false;
 
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
       if (!user) throw new Error('You must be signed in.');
       if (!binderId) throw new Error('Missing binder ID.');
-
-      const existing = showcaseRows.find(
-        (row) =>
-          row.card_id === item.card_id &&
-          row.set_id === item.set_id &&
-          row.showcase_type === type
-      );
+      if (user.id !== mutation.accountId || !isCurrent()) return;
 
       if (existing) {
         const { error } = await supabase
@@ -1904,19 +1991,9 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           .delete()
           .eq('id', existing.id);
         if (error) throw error;
-        setShowcaseRows((prev) => prev.filter((row) => row.id !== existing.id));
-        return;
-      }
-
-      const currentRows = showcaseRows.filter((row) => row.showcase_type === type);
-
-      if (currentRows.length >= 3) {
-        Alert.alert(
-          type === 'favorite' ? 'Showcase limit reached' : 'Chase card limit reached',
-          type === 'favorite'
-            ? 'You can only choose 3 showcase cards per set.'
-            : 'You can only choose 3 chase cards per set.'
-        );
+        if (!isCurrent()) return;
+        showcaseRowsRef.current = showcaseRowsRef.current.filter((row) => row.id !== existing.id);
+        setShowcaseRows((prev) => isCurrent() ? prev.filter((row) => row.id !== existing.id) : prev);
         return;
       }
 
@@ -1934,17 +2011,26 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         .single();
 
       if (error) throw error;
-      setShowcaseRows((prev) => [...prev, data as ShowcaseRow]);
+      if (!isCurrent()) return;
+      showcaseRowsRef.current = [...showcaseRowsRef.current, data as ShowcaseRow];
+      setShowcaseRows((prev) => isCurrent() ? [...prev, data as ShowcaseRow] : prev);
     } catch (error: any) {
+      refresh = true;
+      if (!isCurrent()) return;
       console.log('Failed to update showcase', error);
       Alert.alert('Could not update showcase', error?.message ?? 'Something went wrong.');
+    } finally {
+      finishShowcaseMutation(mutation, refresh);
     }
   };
 
   const reorderShowcase = async (type: ShowcaseType, orderedItems: BinderCardWithDetails[]) => {
-    if (isReadOnly) return;
+    const mutation = beginShowcaseMutation();
+    if (!mutation) return;
+    const isCurrent = () => isShowcaseScopeCurrent(mutation) && mutation.loadRequest === loadRequestRef.current;
+    let refresh = false;
 
-    const rowsForType = showcaseRows.filter((row) => row.showcase_type === type);
+    const rowsForType = showcaseRowsRef.current.filter((row) => row.showcase_type === type);
 
     const updatedRows = rowsForType.map((row) => {
       const nextIndex = orderedItems.findIndex(
@@ -1953,13 +2039,11 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       return { ...row, sort_order: nextIndex >= 0 ? nextIndex : row.sort_order };
     });
 
-    setShowcaseRows((prev) => [
-      ...prev.filter((row) => row.showcase_type !== type),
-      ...updatedRows,
-    ]);
+    showcaseRowsRef.current = [...showcaseRowsRef.current.filter((row) => row.showcase_type !== type), ...updatedRows];
+    setShowcaseRows((prev) => isCurrent() ? [...prev.filter((row) => row.showcase_type !== type), ...updatedRows] : prev);
 
     try {
-      await Promise.all(
+      const results = await Promise.allSettled(
         updatedRows.map((row) =>
           supabase
             .from('binder_card_showcases')
@@ -1967,10 +2051,15 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
             .eq('id', row.id)
         )
       );
+      const failed = results.find((result) => result.status === 'rejected' || result.value.error);
+      if (failed) throw failed.status === 'rejected' ? failed.reason : failed.value.error;
     } catch (error) {
+      refresh = true;
+      if (!isCurrent()) return;
       console.log('Failed to reorder showcase', error);
       Alert.alert('Error', 'Could not save showcase order.');
-      load();
+    } finally {
+      finishShowcaseMutation(mutation, refresh);
     }
   };
 
@@ -2132,13 +2221,24 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           text: 'Remove',
           style: 'destructive',
           onPress: async () => {
+            // Removing a custom card also changes placement. It may proceed
+            // without a loaded Chase list, but must invalidate/reconcile that read.
+            const mutation = beginShowcaseMutation(false);
+            if (!mutation) {
+              Alert.alert('Could not remove card', showcaseMutationRef.current
+                ? 'Your Chase list is being saved. Wait for it to finish, then try removing this card again.'
+                : 'Reopen this binder to check ownership before removing the card.');
+              return;
+            }
+            const isCurrent = () => isShowcaseScopeCurrent(mutation) && mutation.loadRequest === loadRequestRef.current;
             const previousCards = cards;
-            const previousShowcaseRows = showcaseRows;
+            const previousShowcaseRows = showcaseRowsRef.current;
 
             try {
               setCards((prev) => prev.filter((card) => card.id !== item.id));
+              showcaseRowsRef.current = previousShowcaseRows.filter((row) => !(row.card_id === item.card_id && row.set_id === item.set_id));
               setShowcaseRows((prev) =>
-                prev.filter((row) => !(row.card_id === item.card_id && row.set_id === item.set_id))
+                isCurrent() ? prev.filter((row) => !(row.card_id === item.card_id && row.set_id === item.set_id)) : prev
               );
 
               const { error } = await supabase
@@ -2148,6 +2248,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                 .eq('binder_id', binder.id);
 
               if (error) throw error;
+              if (!isShowcaseScopeCurrent(mutation)) return;
 
               await supabase
                 .from('binder_card_showcases')
@@ -2156,6 +2257,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                 .eq('card_id', item.card_id)
                 .eq('set_id', item.set_id);
 
+              if (!isCurrent()) return;
               if (selectedCard?.id === item.id) {
                 setDetailVisible(false);
                 setSelectedCard(null);
@@ -2163,10 +2265,21 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
               showToast('Card removed from binder');
             } catch (error) {
+              if (!isCurrent()) return;
               console.log('Failed to remove custom binder card', error);
               setCards(previousCards);
+              showcaseRowsRef.current = previousShowcaseRows;
               setShowcaseRows(previousShowcaseRows);
               Alert.alert('Could not remove card', 'Please try again.');
+            } finally {
+              if (showcaseMutationRef.current === mutation && isShowcaseScopeCurrent(mutation)
+                && mutation.loadRequest !== loadRequestRef.current) {
+                // A reload may have captured facts before the deletion finished.
+                // Refresh both those facts and placement after the writes settle.
+                showcaseMutationRef.current = null;
+                invalidateBinderCaches(mutation.binderId);
+                void load();
+              } else finishShowcaseMutation(mutation, true);
             }
           },
         },
@@ -3013,7 +3126,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           </Text>
           {isChase ? (
             <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 17, fontWeight: '700' }} numberOfLines={1}>
-              {data.length} card{data.length === 1 ? '' : 's'} you are hunting
+              {showcaseStatus === 'ready' ? `${data.length} card${data.length === 1 ? '' : 's'} you are hunting` : 'Your Chase list is being checked'}
             </Text>
           ) : null}
           </View>
@@ -3029,7 +3142,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
             fontSize: 12,
             fontWeight: '900',
           }}>
-            {data.length} card{data.length !== 1 ? 's' : ''}
+            {showcaseStatus === 'ready' ? `${data.length} card${data.length !== 1 ? 's' : ''}` : '—'}
           </Text>
           <Ionicons
             name={collapsed ? 'chevron-forward' : 'chevron-down'}
@@ -3039,13 +3152,27 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         </View>
       </TouchableOpacity>
 
+      {showcaseStatus !== 'ready' ? (
+        <View style={{ gap: 4, paddingVertical: 6 }}>
+          <Text testID="binder-showcase-status" accessibilityLiveRegion="polite" style={{ color: theme.colors.textSoft, fontSize: 12 }}>
+            {showcaseStatus === 'error' ? 'Chase list unavailable. Other card controls remain available when ownership is checked.'
+              : showcaseStatus === 'saving' ? 'Saving Chase list…' : 'Loading Chase list…'}
+          </Text>
+          {showcaseStatus === 'error' && userId ? (
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel="Retry Chase list" onPress={() => void loadShowcase(userId)}
+              style={{ minHeight: 44, justifyContent: 'center', alignSelf: 'flex-start', paddingHorizontal: 8 }}>
+              <Text style={{ color: theme.colors.primary, fontWeight: '700' }}>Retry Chase list</Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
+      ) : null}
       {!collapsed && (
         <DraggableFlatList
           data={data}
           horizontal
           keyExtractor={(item) => `${type}-${item.set_id}-${item.card_id}`}
           renderItem={renderToploaderCard}
-          onDragEnd={({ data: newData }) => !isReadOnly && reorderShowcase(type, newData)}
+          onDragEnd={({ data: newData }) => !isReadOnly && showcaseStatus === 'ready' && reorderShowcase(type, newData)}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={isChase ? { paddingTop: 4, paddingBottom: 2, paddingRight: 10 } : undefined}
         />
@@ -3612,12 +3739,14 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     },
     ...(!isReadOnly ? [
       {
-        label: isShowcased(quickActionCard, 'chase') ? 'Remove from Chase' : 'Add to Chase',
-        subtitle: isShowcased(quickActionCard, 'chase')
+        label: showcaseStatus === 'error' ? 'Retry Chase list' : showcaseStatus !== 'ready' ? 'Chase list pending'
+          : isShowcased(quickActionCard, 'chase') ? 'Remove from Chase' : 'Add to Chase',
+        subtitle: showcaseStatus !== 'ready' ? 'Load your saved Chase list before changing its cards.' : isShowcased(quickActionCard, 'chase')
           ? 'Take this card out of your chase list.'
           : 'Keep this card in your chase list.',
         imageIcon: stackrIcons.chase,
-        onPress: () => void toggleShowcase(quickActionCard, 'chase'),
+        disabled: showcaseStatus === 'loading' || showcaseStatus === 'saving',
+        onPress: () => showcaseStatus === 'error' && userId ? void loadShowcase(userId) : void toggleShowcase(quickActionCard, 'chase'),
       },
       ...(binder?.type === 'custom' ? [
         {
@@ -3625,6 +3754,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           subtitle: 'Remove this card from the custom binder.',
           icon: 'trash-outline' as const,
           destructive: true,
+          disabled: showcaseMutationRef.current !== null,
           onPress: () => handleRemoveCustomBinderCard(quickActionCard),
         },
       ] : []),

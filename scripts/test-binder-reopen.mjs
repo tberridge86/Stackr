@@ -124,18 +124,23 @@ await test('visible content and edit readiness are different measurements; stale
 // Execute actual screen load callback, with native viewability itself deliberately not simulated as a paint claim.
 const source = fs.readFileSync('features/binder/BinderDetailScreen.tsx', 'utf8');
 const ast = ts.createSourceFile('screen.tsx', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX); let callback, authEffect, readOnlyCopy;
+const actualCallbacks = new Map();
+const callbackNames = ['loadShowcase', 'load', 'isShowcaseScopeCurrent', 'beginShowcaseMutation', 'finishShowcaseMutation', 'toggleShowcase', 'reorderShowcase', 'handleRemoveCustomBinderCard'];
 function visit(n) {
   if (ts.isVariableDeclaration(n) && n.name.getText(ast) === 'load' && ts.isCallExpression(n.initializer)) callback = n.initializer.arguments[0].getText(ast);
+  if (ts.isVariableDeclaration(n) && callbackNames.includes(n.name.getText(ast))) {
+    actualCallbacks.set(n.name.getText(ast), (ts.isCallExpression(n.initializer) ? n.initializer.arguments[0] : n.initializer).getText(ast));
+  }
   if (ts.isVariableDeclaration(n) && n.name.getText(ast) === 'readOnlyMessage') readOnlyCopy = n.initializer.getText(ast);
   if (ts.isCallExpression(n) && n.expression.getText(ast) === 'useEffect' && n.arguments[0]?.getText(ast).includes('supabase.auth.onAuthStateChange')) authEffect = n.arguments[0].getText(ast);
   ts.forEachChild(n, visit);
 }
 visit(ast); assert(callback);
-const code = ts.transpileModule(`export const load = ${callback};`, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
+const code = ts.transpileModule(`${callbackNames.map(name => `export const ${name} = ${actualCallbacks.get(name)};`).join('\n')}\nexport const authEffect = ${authEffect};`, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
 const deadlineCode = ts.transpileModule(fs.readFileSync('lib/personalDataRead.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
-function screenHarness() {
+function screenHarness(options = {}) {
   const auth = deferred(), record = deferred(), network = deferred(), disk = deferred();
-  const state = { binder: null, cards: [], loading: null, error: null, ownershipReady: false, status: null }; let saves = 0, invalidations = 0;
+  const state = { binder: null, cards: [], loading: null, error: null, ownershipReady: false, status: null, showcases: [], showcaseStatus: 'loading', userId: null, alerts: [] }; let saves = 0, invalidations = 0;
   const timers = new Map(); let timerId = 0;
   const deadline = { exports: {} };
   vm.runInNewContext(deadlineCode, { exports: deadline.exports, AbortController,
@@ -147,6 +152,7 @@ function screenHarness() {
     createVisibleBinderPriceReader: () => ({ request: () => {}, dispose: () => {} }),
     mergeBinderArtwork,
     accountGenerationRef: { current: 0 }, loadRequestRef: { current: 0 }, artworkRequestRef: { current: null }, activeAccountIdRef: { current: scope.accountId }, retrievalTraceRef: { current: null },
+    showcaseRowsRef: { current: [] }, showcaseReadyRef: { current: false }, showcaseReadRef: { current: 0 }, showcaseAbortRef: { current: null }, showcaseMutationRef: { current: null }, currentBinderIdRef: { current: binder.id },
     beginBinderRetrieval, isCompleteBinderSnapshot, binderReopenScope: () => scope, readBinderReopenPreview: () => disk.promise,
     withPersonalDataReadTimeout: deadline.exports.withPersonalDataReadTimeout,
     readOptionalCatalogueEnrichment: (work) => Promise.resolve().then(work),
@@ -155,17 +161,40 @@ function screenHarness() {
     isBinderAccessDenied: error => error?.status === 403 || error?.status === 401,
     isCurrentAccountRequest: (a, b) => a.accountGeneration === b.accountGeneration && a.requestId === b.requestId,
     measureAsync: (_name, work) => work(), fetchBinderById: () => record.promise, fetchBinderCards: () => network.promise,
-    supabase: { auth: { getUser: () => auth.promise }, from: () => { const q = { select: () => q, eq: () => q, in: () => q, order: () => q, then: () => never() }; return q; } },
+    supabase: { auth: { getUser: () => auth.promise }, from: table => {
+      const request = { operation: 'select', payload: null, filters: [] };
+      const q = { select: () => q, eq: (key, value) => { request.filters.push([key, value]); return q; }, in: () => q, order: () => q, abortSignal: () => q, single: () => q,
+        insert: payload => { request.operation = 'insert'; request.payload = payload; return q; },
+        delete: () => { request.operation = 'delete'; return q; }, update: payload => { request.operation = 'update'; request.payload = payload; return q; },
+        then: (resolve, reject) => (options.read ? Promise.resolve().then(() => options.read(table, request)) : never()).then(resolve, reject) };
+      return q;
+    } },
     attachBinderCatalogueArtwork: never, attachBinderSetArtwork: never, attachLatestSnapshotPrices: never, getVariantCardKey: (c, s) => `${s}:${c}`,
     getCustomBinderNameArtKeyForBinder: async () => null,
     setCards: v => { state.cards = typeof v === 'function' ? v(state.cards) : v; }, setLoading: v => state.loading = v,
     setLoadError: v => state.error = v,
     setBinder: v => state.binder = v, setOwnershipReady: v => state.ownershipReady = v, setReopenStatus: v => state.status = v,
-    setUserId: () => {}, setIsPublic: () => {}, setCustomNameArtKey: () => {}, setSelectedCard: () => {},
-    setShowcaseRows: () => {}, setOwnedVariants: () => {}, setVariantManagedCards: () => {}, Alert: { alert: () => {} },
+    setUserId: value => { state.userId = value; }, setIsPublic: () => {}, setCustomNameArtKey: () => {}, setSelectedCard: () => {}, setDetailVisible: () => {},
+    setShowcaseRows: value => { state.showcases = typeof value === 'function' ? value(state.showcases) : value; },
+    setShowcaseStatus: value => { state.showcaseStatus = typeof value === 'function' ? value(state.showcaseStatus) : value; },
+    setOwnedVariants: () => {}, setVariantManagedCards: () => {}, Alert: { alert: (...args) => state.alerts.push(args) },
+    selectedCard: null, getBinderCardDisplayName: () => 'Fixture', showToast: () => {},
   };
-  vm.runInNewContext(code, runtime);
-  return { auth, record, network, disk, state, runtime, savedArgs, load: runtime.exports.load,
+  Object.defineProperties(runtime, {
+    binder: { get: () => state.binder }, cards: { get: () => state.cards }, showcaseRows: { get: () => state.showcases },
+    isReadOnly: { get: () => state.status !== null || !state.ownershipReady || state.binder?.user_id !== state.userId },
+  });
+  const renderRoute = routeBinderId => {
+    runtime.binderId = routeBinderId;
+    runtime.currentBinderIdRef.current = routeBinderId;
+    runtime.exports = {};
+    // Each render has its own binderId closure; component refs/state remain shared.
+    vm.runInNewContext(`(function(binderId) { ${code} })(binderId);`, runtime);
+    return runtime.exports;
+  };
+  renderRoute(binder.id);
+  return { auth, record, network, disk, state, runtime, savedArgs, renderRoute, load: runtime.exports.load,
+    readShowcase: runtime.exports.loadShowcase, toggleShowcase: runtime.exports.toggleShowcase, removeCard: runtime.exports.handleRemoveCustomBinderCard,
     async deadline() { for (const [id, action] of [...timers]) { timers.delete(id); action(); } await tick(); },
     get saves() { return saves; }, get invalidations() { return invalidations; } };
 }
@@ -235,6 +264,287 @@ await test('optional custom binder name artwork cannot hold usable card facts', 
   const visibleBeforeCustomArt = h.state.cards.length;
   customArt.resolve('custom-art'); await pending;
   assert.equal(visibleBeforeCustomArt, 2, 'optional local artwork cannot block the card model');
+});
+function completeOwnershipRead(table) {
+  return { data: table === 'binders' ? [{ id: binder.id }] : [], error: null };
+}
+async function openWithCompleteFacts(h, record = binder) {
+  const pending = h.load(); h.disk.resolve(null);
+  h.auth.resolve({ data: { user: { id: scope.accountId } } }); h.record.resolve(record);
+  h.network.resolve(cards()); await pending; await tick();
+}
+await test('optional showcase cannot delay successful essential ownership or disable it on failure', async () => {
+  const showcase = deferred(); const reads = [];
+  const h = screenHarness({ read: table => {
+    reads.push(table);
+    return table === 'binder_card_showcases' ? showcase.promise : completeOwnershipRead(table);
+  } });
+  await openWithCompleteFacts(h);
+  assert.equal(h.state.cards.length, 124); assert.equal(h.state.loading, false);
+  assert(reads.includes('binder_cards'), 'essential collection ownership must dispatch without waiting for showcase');
+  assert.equal(h.state.ownershipReady, true, 'successful ownership must enable editing while showcase is still pending');
+  assert.equal(h.runtime.isReadOnly, false, 'ordinary card editing stays independent of Chase placement readiness');
+  assert.equal(h.runtime.showcaseReadyRef.current, false);
+  await h.toggleShowcase(cards()[0], 'chase');
+  assert.equal(reads.filter(table => table === 'binder_card_showcases').length, 1, 'pending placement may read, but must not insert or delete');
+  showcase.resolve({ data: null, error: { status: 503, message: 'optional showcase unavailable' } }); await tick();
+  assert.equal(h.state.ownershipReady, true); assert.equal(h.state.alerts.length, 0);
+  assert.equal(h.state.showcaseStatus, 'error');
+});
+await test('optional showcase deadline settles independently and rejects late ignored-cancellation data', async () => {
+  const showcase = deferred();
+  const h = screenHarness({ read: table => table === 'binder_card_showcases' ? showcase.promise : completeOwnershipRead(table) });
+  await openWithCompleteFacts(h); await h.deadline();
+  assert.equal(h.state.ownershipReady, true); assert.equal(h.state.alerts.length, 0);
+  assert.equal(h.state.showcaseStatus, 'error');
+  showcase.resolve({ data: [{ id: 'after-deadline' }], error: null }); await tick();
+  assert.equal(h.state.showcases.length, 0, 'a response after the optional deadline cannot repaint the screen');
+});
+await test('late optional showcase cannot repaint a newer retry or invalidated account', async () => {
+  const previous = deferred(), current = deferred(); let showcaseReads = 0;
+  const h = screenHarness({ read: table => table === 'binder_card_showcases'
+    ? (++showcaseReads === 1 ? previous.promise : current.promise) : completeOwnershipRead(table) });
+  await openWithCompleteFacts(h);
+  await h.load(true); await tick();
+  current.resolve({ data: [{ id: 'current-retry' }], error: null }); await tick();
+  previous.resolve({ data: [{ id: 'obsolete-retry' }], error: null }); await tick();
+  assert.equal(h.state.showcases.length, 1); assert.equal(h.state.showcases[0].id, 'current-retry');
+  assert.equal(h.state.ownershipReady, true);
+
+  const accountShowcase = deferred();
+  const account = screenHarness({ read: table => table === 'binder_card_showcases' ? accountShowcase.promise : completeOwnershipRead(table) });
+  await openWithCompleteFacts(account);
+  account.runtime.accountGenerationRef.current++;
+  account.runtime.activeAccountIdRef.current = 'new-owner';
+  account.runtime.setShowcaseRows([]);
+  accountShowcase.resolve({ data: [{ id: 'old-account' }], error: null }); await tick();
+  assert.equal(account.state.showcases.length, 0, 'an account-invalidated response must not restore private showcase placement');
+});
+await test('successful optional showcase never authorises failed mandatory ownership', async () => {
+  for (const failedTable of ['binders', 'binder_cards', 'user_card_variants']) {
+    const h = screenHarness({ read: table => table === failedTable
+      ? { data: null, error: { message: 'mandatory ownership unavailable' } }
+      : table === 'binder_card_showcases' ? { data: [{ id: 'optional-success' }], error: null } : completeOwnershipRead(table) });
+    await openWithCompleteFacts(h); await tick();
+    assert.equal(h.state.cards.length, 124, 'failed supplemental ownership must retain useful card facts');
+    assert.equal(h.state.ownershipReady, false, `${failedTable} failure must keep editing disabled`);
+    assert.equal(h.state.alerts.length, 1);
+  }
+});
+await test('a failed Chase read exposes retry and successful retry permits a write without older-read erasure', async () => {
+  const old = deferred(), fresh = deferred(); let reads = 0, writes = 0;
+  const added = { id: 'newly-saved-row', binder_id: binder.id, user_id: scope.accountId, card_id: cards()[0].card_id, set_id: 'sv08', showcase_type: 'chase', sort_order: 0 };
+  const h = screenHarness({ read: (table, request) => {
+    if (table !== 'binder_card_showcases') return completeOwnershipRead(table);
+    if (request.operation === 'insert') { writes++; return { data: added, error: null }; }
+    return ++reads === 1 ? old.promise : fresh.promise;
+  } });
+  await openWithCompleteFacts(h);
+  const retry = h.readShowcase(scope.accountId); await tick();
+  fresh.resolve({ data: [], error: null }); await retry;
+  assert.equal(h.runtime.showcaseReadyRef.current, true);
+  await h.toggleShowcase(cards()[0], 'chase');
+  assert.equal(writes, 1); assert.equal(h.state.showcases[0].id, added.id);
+  old.resolve({ data: [], error: null }); await tick();
+  assert.equal(h.state.showcases.length, 1, 'late empty baseline must not erase a persisted placement');
+  assert.equal(h.state.showcases[0].id, added.id);
+
+  let failures = 0;
+  const failed = screenHarness({ read: (table, request) => table !== 'binder_card_showcases' ? completeOwnershipRead(table)
+    : request.operation === 'select' && ++failures === 1 ? { data: null, error: { status: 503 } } : { data: [], error: null } });
+  await openWithCompleteFacts(failed);
+  assert.equal(failed.state.showcaseStatus, 'error'); assert.equal(failed.runtime.isReadOnly, false);
+  await failed.readShowcase(scope.accountId);
+  assert.equal(failed.state.showcaseStatus, 'ready'); assert.equal(failed.runtime.showcaseReadyRef.current, true);
+  assert.match(source, /accessibilityLabel="Retry Chase list"/);
+});
+await test('a same-account full Retry overlapping placement insertion reconciles only after the write settles', async () => {
+  const insertion = deferred(); let stored = [], reads = 0, writes = 0;
+  const h = screenHarness({ read: (table, request) => {
+    if (table !== 'binder_card_showcases') return completeOwnershipRead(table);
+    if (request.operation === 'insert') { writes++; return insertion.promise; }
+    reads++; return { data: stored, error: null };
+  } });
+  await openWithCompleteFacts(h);
+  const update = h.toggleShowcase(cards()[0], 'chase'); await tick();
+  assert.equal(writes, 1);
+  await h.load(true); await tick();
+  assert.equal(h.runtime.isReadOnly, false); assert.equal(h.runtime.showcaseReadyRef.current, false);
+  assert.equal(reads, 1, 'reload must not publish a pre-write placement snapshot');
+  stored = [{ id: 'committed-after-retry', binder_id: binder.id, user_id: scope.accountId, card_id: cards()[0].card_id, set_id: 'sv08', showcase_type: 'chase', sort_order: 0 }];
+  insertion.resolve({ data: stored[0], error: null }); await update; await tick();
+  assert.equal(reads, 2); assert.equal(h.state.showcaseStatus, 'ready');
+  assert.equal(h.state.showcases[0].id, 'committed-after-retry');
+});
+await test('actual sign-out callback rejects late placement read and mutation results', async () => {
+  const insertion = deferred();
+  const h = screenHarness({ read: (table, request) => table !== 'binder_card_showcases' ? completeOwnershipRead(table)
+    : request.operation === 'insert' ? insertion.promise : { data: [], error: null } });
+  await openWithCompleteFacts(h);
+  const update = h.toggleShowcase(cards()[0], 'chase'); await tick();
+  let listener;
+  h.runtime.supabase.auth.onAuthStateChange = callback => { listener = callback; return { data: { subscription: { unsubscribe() {} } } }; };
+  const cleanup = h.runtime.exports.authEffect();
+  listener('SIGNED_OUT', null);
+  insertion.resolve({ data: { id: 'old-owner-insert' }, error: null }); await update;
+  assert.equal(h.state.showcases.length, 0); assert.equal(h.runtime.showcaseReadyRef.current, false);
+  assert.equal(h.state.binder, null); assert.equal(h.state.userId, null); cleanup();
+
+  const pendingRead = deferred();
+  const account = screenHarness({ read: table => table === 'binder_card_showcases' ? pendingRead.promise : completeOwnershipRead(table) });
+  await openWithCompleteFacts(account);
+  account.runtime.supabase.auth.onAuthStateChange = callback => { listener = callback; return { data: { subscription: { unsubscribe() {} } } }; };
+  const readCleanup = account.runtime.exports.authEffect(); listener('SIGNED_OUT', null);
+  pendingRead.resolve({ data: [{ id: 'old-owner-read' }], error: null }); await tick();
+  assert.equal(account.state.showcases.length, 0); assert.equal(account.runtime.showcaseReadyRef.current, false); readCleanup();
+});
+await test('custom-card removal during pending placement invalidates the old read and reconciles after deletion', async () => {
+  const old = deferred(); let selects = 0, cardDeletes = 0, placementDeletes = 0;
+  const h = screenHarness({ read: (table, request) => {
+    if (request.operation === 'delete') {
+      if (table === 'binder_cards') cardDeletes++;
+      else if (table === 'binder_card_showcases') placementDeletes++;
+      return { data: null, error: null };
+    }
+    return table === 'binder_card_showcases' ? ++selects === 1 ? old.promise : { data: [], error: null } : completeOwnershipRead(table);
+  } });
+  await openWithCompleteFacts(h, { ...binder, type: 'custom', source_set_id: null });
+  assert.equal(h.runtime.showcaseReadyRef.current, false); assert.equal(h.runtime.isReadOnly, false);
+  await h.removeCard(cards()[0]);
+  const confirm = h.state.alerts.at(-1)[2].find(button => button.text === 'Remove');
+  await confirm.onPress(); await tick();
+  old.resolve({ data: [{ id: 'removed-card-placement', card_id: cards()[0].card_id, set_id: 'sv08', showcase_type: 'chase' }], error: null }); await tick();
+  assert.equal(cardDeletes, 1); assert.equal(placementDeletes, 1); assert.equal(selects, 2);
+  assert.equal(h.state.cards.length, 123); assert.equal(h.state.showcases.length, 0);
+  assert.equal(h.state.showcaseStatus, 'ready');
+});
+await test('same-account Retry during custom deletion completes placement cleanup and reloads post-delete facts', async () => {
+  const deletion = deferred(); let removed = false, cardDeletes = 0, placementDeletes = 0, selects = 0;
+  const h = screenHarness({ read: (table, request) => {
+    if (request.operation === 'delete') {
+      if (table === 'binder_cards') { cardDeletes++; return deletion.promise; }
+      placementDeletes++; return { data: null, error: null };
+    }
+    if (table === 'binder_card_showcases') { selects++; return { data: [], error: null }; }
+    return completeOwnershipRead(table);
+  } });
+  await openWithCompleteFacts(h, { ...binder, type: 'custom', source_set_id: null });
+  h.runtime.fetchBinderCards = async () => removed ? cards().slice(1) : cards();
+  await h.removeCard(cards()[0]);
+  const confirm = h.state.alerts.at(-1)[2].find(button => button.text === 'Remove');
+  const removal = confirm.onPress(); await tick();
+  await h.load(true); await tick();
+  assert.equal(h.state.cards.length, 124, 'the overlapping read captured facts before deletion settled');
+  assert.equal(selects, 1, 'placement cannot become authoritative during the pending write');
+  removed = true; deletion.resolve({ data: null, error: null }); await removal; await tick(); await tick();
+  assert.equal(cardDeletes, 1); assert.equal(placementDeletes, 1, 'same-scope Retry must not skip the cleanup after the committed card deletion');
+  assert.equal(selects, 2); assert.equal(h.state.showcaseStatus, 'ready'); assert.equal(h.state.showcases.length, 0);
+  assert.equal(h.state.cards.length, 123, 'a post-delete refresh must replace facts captured before the write');
+});
+await test('confirmed custom Remove explains a concurrent placement save and works when that save settles', async () => {
+  const insertion = deferred(); let stored = [], cardDeletes = 0;
+  const h = screenHarness({ read: (table, request) => {
+    if (request.operation === 'insert') return insertion.promise;
+    if (request.operation === 'delete') {
+      if (table === 'binder_cards') cardDeletes++;
+      else stored = [];
+      return { data: null, error: null };
+    }
+    return table === 'binder_card_showcases' ? { data: stored, error: null } : completeOwnershipRead(table);
+  } });
+  await openWithCompleteFacts(h, { ...binder, type: 'custom', source_set_id: null });
+  await h.removeCard(cards()[0]); const confirm = h.state.alerts.at(-1)[2].find(button => button.text === 'Remove');
+  const update = h.toggleShowcase(cards()[0], 'chase'); await tick();
+  await confirm.onPress();
+  assert.equal(cardDeletes, 0); assert.match(h.state.alerts.at(-1)[1], /being saved/);
+  stored = [{ id: 'placed-before-removal', binder_id: binder.id, user_id: scope.accountId, card_id: cards()[0].card_id, set_id: 'sv08', showcase_type: 'chase', sort_order: 0 }];
+  insertion.resolve({ data: stored[0], error: null }); await update;
+  await confirm.onPress(); await tick();
+  assert.equal(cardDeletes, 1); assert.equal(h.state.cards.length, 123); assert.equal(h.state.showcases.length, 0);
+});
+await test('account invalidation during custom deletion prevents a later placement write or view restoration', async () => {
+  const deletion = deferred(); let placementDeletes = 0;
+  const h = screenHarness({ read: (table, request) => {
+    if (request.operation === 'delete') {
+      if (table === 'binder_cards') return deletion.promise;
+      placementDeletes++; return { data: null, error: null };
+    }
+    return table === 'binder_card_showcases' ? { data: [], error: null } : completeOwnershipRead(table);
+  } });
+  await openWithCompleteFacts(h, { ...binder, type: 'custom', source_set_id: null });
+  await h.removeCard(cards()[0]); const removal = h.state.alerts.at(-1)[2].find(button => button.text === 'Remove').onPress(); await tick();
+  let listener;
+  h.runtime.supabase.auth.onAuthStateChange = callback => { listener = callback; return { data: { subscription: { unsubscribe() {} } } }; };
+  const cleanup = h.runtime.exports.authEffect(); listener('SIGNED_OUT', null);
+  deletion.resolve({ data: null, error: null }); await removal; await tick();
+  assert.equal(placementDeletes, 0); assert.equal(h.state.cards.length, 0); assert.equal(h.state.showcases.length, 0);
+  assert.equal(h.state.binder, null); cleanup();
+});
+await test('confirmed placement enforces its existing limit and permits removal of a known row', async () => {
+  const saved = cards(3).map((card, index) => ({ id: `placed-${index}`, binder_id: binder.id, user_id: scope.accountId, card_id: card.card_id, set_id: card.set_id, showcase_type: 'chase', sort_order: index }));
+  let inserts = 0, deletes = 0;
+  const h = screenHarness({ read: (table, request) => {
+    if (table !== 'binder_card_showcases') return completeOwnershipRead(table);
+    if (request.operation === 'insert') inserts++;
+    if (request.operation === 'delete') deletes++;
+    return { data: request.operation === 'select' ? saved : null, error: null };
+  } });
+  await openWithCompleteFacts(h);
+  await h.toggleShowcase(cards(4)[3], 'chase');
+  assert.equal(inserts, 0); assert.match(h.state.alerts.at(-1)[0], /limit reached/);
+  await h.toggleShowcase(cards()[0], 'chase');
+  assert.equal(deletes, 1); assert.equal(h.state.showcases.length, 2); assert.equal(h.runtime.showcaseReadyRef.current, true);
+});
+await test('new binder route loads placement independently of an old-scope pending insert', async () => {
+  const oldInsert = deferred(); const nextId = uuid(9910); let nextReads = 0, nextInserts = 0;
+  const nextBinder = { ...binder, id: nextId };
+  const nextCards = cards().map(row => ({ ...row, binder_id: nextId }));
+  const h = screenHarness({ read: (table, request) => {
+    if (table !== 'binder_card_showcases') return completeOwnershipRead(table);
+    if (request.operation === 'insert') {
+      if (request.payload.binder_id === binder.id) return oldInsert.promise;
+      assert.equal(request.payload.binder_id, nextId); nextInserts++;
+      return { data: { ...request.payload, id: 'new-binder-placement' }, error: null };
+    }
+    const requestedBinder = request.filters.find(([key]) => key === 'binder_id')?.[1];
+    if (requestedBinder === nextId) nextReads++;
+    return { data: [], error: null };
+  } });
+  await openWithCompleteFacts(h);
+  const previousUpdate = h.toggleShowcase(cards()[0], 'chase'); await tick();
+  assert(h.runtime.showcaseMutationRef.current, 'old binder insert remains pending');
+  const next = h.renderRoute(nextId);
+  h.runtime.fetchBinderById = async requested => { assert.equal(requested, nextId); return nextBinder; };
+  h.runtime.fetchBinderCards = async requested => { assert.equal(requested, nextId); return nextCards; };
+  await next.load(); await tick(); await h.deadline();
+  assert.equal(nextReads, 1, 'new binder must issue its SELECT before the old binder write settles');
+  assert.equal(h.state.binder.id, nextId); assert.equal(h.runtime.isReadOnly, false);
+  assert.equal(h.state.showcaseStatus, 'ready'); assert.equal(h.runtime.showcaseReadyRef.current, true);
+  oldInsert.resolve({ data: { id: 'old-binder-placement', binder_id: binder.id }, error: null }); await previousUpdate; await tick();
+  assert.equal(h.state.binder.id, nextId); assert.equal(h.state.showcases.length, 0);
+  assert.equal(h.state.showcaseStatus, 'ready'); assert.equal(nextReads, 1, 'old completion cannot restart or replace the new scope');
+  await next.toggleShowcase(nextCards[0], 'chase');
+  assert.equal(nextInserts, 1); assert.equal(h.state.showcases[0].id, 'new-binder-placement');
+});
+await test('reorder waits for every dispatched write after one hard rejection before unlocking and reconciling', async () => {
+  const delayed = deferred(); let writes = 0, reads = 0;
+  const saved = cards(2).map((card, index) => ({ id: 'reorder-' + index, binder_id: binder.id, user_id: scope.accountId, card_id: card.card_id, set_id: card.set_id, showcase_type: 'chase', sort_order: index }));
+  const h = screenHarness({ read: (table, request) => {
+    if (table !== 'binder_card_showcases') return completeOwnershipRead(table);
+    if (request.operation === 'update') return ++writes === 1 ? Promise.reject(new Error('first update transport rejected')) : delayed.promise;
+    reads++; return { data: saved, error: null };
+  } });
+  await openWithCompleteFacts(h);
+  const reorder = h.runtime.exports.reorderShowcase('chase', cards(2).reverse()); await tick();
+  assert.equal(writes, 2); assert.equal(reads, 1);
+  assert(h.runtime.showcaseMutationRef.current, 'a hard rejection must not release the lock while another dispatched update is pending');
+  assert.equal(h.runtime.showcaseReadyRef.current, false);
+  await h.readShowcase(scope.accountId); await tick();
+  assert.equal(reads, 1, 'Retry cannot read a generation while a dispatched reorder update remains unsettled');
+  delayed.resolve({ data: null, error: null }); await reorder; await tick();
+  assert.equal(reads, 2); assert.equal(h.state.showcaseStatus, 'ready');
+  assert.equal(h.runtime.showcaseMutationRef.current, null); assert.equal(h.runtime.showcaseReadyRef.current, true);
+  assert.equal(h.state.alerts.length, 1, 'the rejected update remains a reported failure after all writes settle');
 });
 await test('actual screen renders a complete read-only saved view before auth or ownership network replies', async () => {
   const h = screenHarness(); h.load(); h.disk.resolve(snapshot()); await tick();
