@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-19T20:32:13.754Z",
+  "updatedAt": "2026-10-19T20:45:11.724Z",
   "sourceVideo": {
     "fileName": "WhatsApp Video 2026-10-18 at 09.12.30.mp4",
     "sha256": "a29ad89ce8cec90b3dfa299c5a951ff4b60d686187f5a27c03a4e6175d1e859c",
@@ -112,6 +112,43 @@
         "optionalDiagnosticTimeoutIsNotAllPricingFailure": true,
         "exactOwnedCoverageProven": false,
         "newRemoteCalls": 0
+      },
+      "selectedEditionStoredReadRepair": {
+        "revision": "27bdabf0bd690450813260ec36a24d19b6c51375",
+        "isolatedRevision": "c0f14f71380a1d7f243e04cce43e146ddb218f8b",
+        "files": [
+          "scripts/lib/prepared-collection-valuation.mjs",
+          "scripts/test-catalogue-pricing.mjs"
+        ],
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false,
+        "baseline": {
+          "fixture": "200 regular and 200 First Edition variants, regular official binder",
+          "storedIds": 400,
+          "storedBatches": 2
+        },
+        "repaired": {
+          "storedIds": 200,
+          "storedBatches": 1,
+          "completeSummaryComparisonPassed": true
+        },
+        "reviewSha256": "79c6b3d7bf3504fdd9b4731f78af5d3c39655fec78e03a362f99520364220d16",
+        "scope": "Remove provably unused set-edition quote/state lookups; keep all owned exact/general identities and necessary general bases, quantities, <=200 cap and fail-closed publication. No measured phone speed, exact holdings coverage or SQL cancellation cure.",
+        "deliveryHold": "Draft PR413; main merge matches a live apply-worker watch path. Matching explicit worker-effects approval required."
+      },
+      "freshStoredReadTriage": {
+        "evidenceSha256": "7dcc3f1188882f244b6848b60558d66b08e01ae6f18c9e39a6edf4087beb8285",
+        "confirmed": "Fresh worker stored_exact_prices SQLSTATE57014 query cancellation before valuation publication.",
+        "unconfirmed": "Cancellation origin, runtime plan, exact holdings coverage/freshness and installed phone totals.",
+        "diagnosticProposalSha256": "8b656e9659c77b7b53038f3d7a5963eb557f0f38e82072a99bcf6cec0005dbd4",
+        "diagnosticReviewSha256": "0d65bafff5c79074016214a1217c372f61d87122862d1cf5a9013b9f386066d0",
+        "newRemoteSqlCalls": 0,
+        "newReadApproval": "PENDING"
       }
     },
     {
@@ -338,6 +375,43 @@
         "deviceVerified": false,
         "receipt": "docs/releases/collection-pricing-response-identity-20261019.json",
         "scope": "Reject mismatched/missing stored-response variant/product/currency without inventing values; exact owner coverage remains unverified."
+      },
+      "selectedEditionStoredReadRepair": {
+        "revision": "27bdabf0bd690450813260ec36a24d19b6c51375",
+        "isolatedRevision": "c0f14f71380a1d7f243e04cce43e146ddb218f8b",
+        "files": [
+          "scripts/lib/prepared-collection-valuation.mjs",
+          "scripts/test-catalogue-pricing.mjs"
+        ],
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false,
+        "baseline": {
+          "fixture": "200 regular and 200 First Edition variants, regular official binder",
+          "storedIds": 400,
+          "storedBatches": 2
+        },
+        "repaired": {
+          "storedIds": 200,
+          "storedBatches": 1,
+          "completeSummaryComparisonPassed": true
+        },
+        "reviewSha256": "79c6b3d7bf3504fdd9b4731f78af5d3c39655fec78e03a362f99520364220d16",
+        "scope": "Remove provably unused set-edition quote/state lookups; keep all owned exact/general identities and necessary general bases, quantities, <=200 cap and fail-closed publication. No measured phone speed, exact holdings coverage or SQL cancellation cure.",
+        "deliveryHold": "Draft PR413; main merge matches a live apply-worker watch path. Matching explicit worker-effects approval required."
+      },
+      "freshStoredReadTriage": {
+        "evidenceSha256": "7dcc3f1188882f244b6848b60558d66b08e01ae6f18c9e39a6edf4087beb8285",
+        "confirmed": "Fresh worker stored_exact_prices SQLSTATE57014 query cancellation before valuation publication.",
+        "unconfirmed": "Cancellation origin, runtime plan, exact holdings coverage/freshness and installed phone totals.",
+        "diagnosticProposalSha256": "8b656e9659c77b7b53038f3d7a5963eb557f0f38e82072a99bcf6cec0005dbd4",
+        "diagnosticReviewSha256": "0d65bafff5c79074016214a1217c372f61d87122862d1cf5a9013b9f386066d0",
+        "newRemoteSqlCalls": 0,
+        "newReadApproval": "PENDING"
       }
     },
     {
@@ -620,6 +694,43 @@
         "optionalDiagnosticTimeoutIsNotAllPricingFailure": true,
         "exactOwnedCoverageProven": false,
         "newRemoteCalls": 0
+      },
+      "selectedEditionStoredReadRepair": {
+        "revision": "27bdabf0bd690450813260ec36a24d19b6c51375",
+        "isolatedRevision": "c0f14f71380a1d7f243e04cce43e146ddb218f8b",
+        "files": [
+          "scripts/lib/prepared-collection-valuation.mjs",
+          "scripts/test-catalogue-pricing.mjs"
+        ],
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false,
+        "baseline": {
+          "fixture": "200 regular and 200 First Edition variants, regular official binder",
+          "storedIds": 400,
+          "storedBatches": 2
+        },
+        "repaired": {
+          "storedIds": 200,
+          "storedBatches": 1,
+          "completeSummaryComparisonPassed": true
+        },
+        "reviewSha256": "79c6b3d7bf3504fdd9b4731f78af5d3c39655fec78e03a362f99520364220d16",
+        "scope": "Remove provably unused set-edition quote/state lookups; keep all owned exact/general identities and necessary general bases, quantities, <=200 cap and fail-closed publication. No measured phone speed, exact holdings coverage or SQL cancellation cure.",
+        "deliveryHold": "Draft PR413; main merge matches a live apply-worker watch path. Matching explicit worker-effects approval required."
+      },
+      "freshStoredReadTriage": {
+        "evidenceSha256": "7dcc3f1188882f244b6848b60558d66b08e01ae6f18c9e39a6edf4087beb8285",
+        "confirmed": "Fresh worker stored_exact_prices SQLSTATE57014 query cancellation before valuation publication.",
+        "unconfirmed": "Cancellation origin, runtime plan, exact holdings coverage/freshness and installed phone totals.",
+        "diagnosticProposalSha256": "8b656e9659c77b7b53038f3d7a5963eb557f0f38e82072a99bcf6cec0005dbd4",
+        "diagnosticReviewSha256": "0d65bafff5c79074016214a1217c372f61d87122862d1cf5a9013b9f386066d0",
+        "newRemoteSqlCalls": 0,
+        "newReadApproval": "PENDING"
       }
     },
     {
@@ -2057,5 +2168,13 @@
     "backendMarketRepairStillHeld": true,
     "nativePublished": false,
     "phoneVerified": false
+  },
+  "latestPricingSourceCandidate": {
+    "revision": "27bdabf0bd690450813260ec36a24d19b6c51375",
+    "pullRequest": "https://github.com/tberridge86/Stackr/pull/413",
+    "state": "REVIEWED_LOCAL_SOURCE_UNMERGED_LIVE_WORKER_EFFECTS_HELD",
+    "mainBase": "1c53fe48a971abe0e32c540377af553e62c52f4c",
+    "testFlightHeld": true,
+    "phoneAcceptanceClosed": 0
   }
 }
