@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-19T07:09:36.737Z",
+  "updatedAt": "2026-10-19T18:25:13.693Z",
   "sourceVideo": {
     "fileName": "WhatsApp Video 2026-10-18 at 09.12.30.mp4",
     "sha256": "a29ad89ce8cec90b3dfa299c5a951ff4b60d686187f5a27c03a4e6175d1e859c",
@@ -567,12 +567,30 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "The current 83 published zh-tw set IDs are reconciled: 42 bundled marks and 47 approved public artwork metadata rows overlap on six IDs; all 47 public hashes match the named supplied manifest. All 47 existing approved public artwork objects passed full-body hash, dimension and decode checks in two batches (3 earlier, 44 later). No additional missing approved supplied mapping is demonstrated. This does not establish 83 standalone logos or HD originals: 35 bundled marks are generated derivatives, and public artwork includes packages and representatives with limited SKU scope. The exact video-row cohort remains unidentified. V15 stays open for configured-app delivery, exact signed bytes, Discover/set/binder rendering and Wi-Fi/mobile-data, cold, saved/offline and retry acceptance; TestFlight remains held.",
+      "remainingBlocker": "The current 83 published zh-tw set IDs are reconciled: 42 bundled marks and 47 approved public artwork metadata rows overlap on six IDs; all 47 public hashes match the named supplied manifest. All 47 existing approved public artwork objects passed full-body hash, dimension and decode checks in two batches (3 earlier, 44 later). No additional missing approved supplied mapping is demonstrated. Replay of the original recording now identifies the affected rows as SV10 Glory of the Rocket Gang, SV9a Hot Wind Arena and SV9 Battle Partners; the existing exact native pack-art fallbacks cover all three in merged main ddbdb57. This does not establish 83 standalone logos or HD originals: 35 bundled marks are generated derivatives, and public artwork includes packages and representatives with limited SKU scope. V15 stays open for configured-app delivery, exact signed bytes, Discover/set/binder rendering and Wi-Fi/mobile-data, cold, saved/offline and retry acceptance; TestFlight remains held.",
+      "exactVideoCohort": {
+        "identified": true,
+        "source": "docs/releases/video-v15-exact-row-identification-20261019.md",
+        "privateReceipt": "evidence/consolidation-20261018/video-desktop-replay-20261019/v15-exact-video-cohort.json",
+        "sha256": "1822973433820174468a88653405b2136167e7d86b3be9e12772ab95b521acac",
+        "decisiveSeconds": [
+          136,
+          139
+        ],
+        "setIds": [
+          "4f84057b-edcf-4523-967c-5997ae696987",
+          "664d717f-745d-4178-ae4f-5863ae558a2f",
+          "cd44897f-ea2e-4f63-b662-e4ddce1ac7e7"
+        ],
+        "identityBasis": "Visible language, title prefix, full release date and displayed total uniquely match saved factual set metadata. The video does not expose UUIDs.",
+        "nativeCandidateVerified": false,
+        "phoneClosed": false
+      },
       "current83SetSourceReconciliation": {
         "privatePath": "evidence/consolidation-20261018/traditional-chinese-remaining-reconciliation-20261019/handoff.json",
         "sha256": "1bfa99caee4d4a5dad1e5e0d62b5ed7165c765e3972856d5fcb128f3e34b440c",
         "sourceReconciliationCompleteForDeclared83": true,
-        "exactVideoRowsIdentified": false,
+        "exactVideoRowsIdentified": true,
         "newRuntimeRepairDemonstrated": false,
         "phoneClosed": false,
         "independentReview": {
