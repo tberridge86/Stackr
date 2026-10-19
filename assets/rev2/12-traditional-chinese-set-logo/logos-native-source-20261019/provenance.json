@@ -1,0 +1,153 @@
+{
+  "schemaVersion": "stackr-exact-native-set-title-source-crop-v1",
+  "recordedAt": "2026-10-19T18:38:58.637Z",
+  "target": {
+    "setId": "34e5af6e-66d0-4fea-98ce-b1fa1ec1d1dd",
+    "setCode": "SVP1",
+    "language": "zh-tw",
+    "nativeTitle": "ex特別組合",
+    "assetType": "set_logo"
+  },
+  "origin": "official_source_crop",
+  "sourceAttribution": {
+    "sourceName": "Official Pokémon Taiwan image, under the exact owner-attested source/use permission",
+    "sourceUrl": "https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2023/04/tw_news_SVP1_SV2bundle_PKG_0316.png",
+    "embeddedMarksAndWhiteBorderPreserved": true,
+    "upstreamLicensorInvented": false,
+    "additionalContractualAttributionWordingInvented": false
+  },
+  "source": {
+    "url": "https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2023/04/tw_news_SVP1_SV2bundle_PKG_0316.png",
+    "path": "D:/Stackr-organization/evidence/consolidation-20261018/traditional-chinese-exact32-three-title-crop-qualification-20261019/svp1-original.png",
+    "bytes": 6613990,
+    "sha256": "28335c48835c4f47a8b58554394b65b5a7ba813a85c8ddbd645733d5812ee6cc",
+    "width": 2020,
+    "height": 2841,
+    "format": "png",
+    "retrievedAt": "2026-10-19T18:02:20.755Z",
+    "httpStatus": 200,
+    "unmodifiedOriginal": true,
+    "retainedLocalOriginal": true,
+    "captureReceipt": {
+      "path": "D:/Stackr-organization/evidence/consolidation-20261018/traditional-chinese-exact32-three-title-crop-qualification-20261019/svp1-capture.json",
+      "bytes": 1216,
+      "sha256": "8598080d25de457203ecc84974df210d7260072424a587529fdf8cae70905afc"
+    }
+  },
+  "derivative": {
+    "assetPath": "assets/rev2/12-traditional-chinese-set-logo/logos-native-source-20261019/svp1.png",
+    "sha256": "2f2acbc19616479cc93d22b4923f33a45b05c9debc82c30d94dfa3b9e3f5045d",
+    "bytes": 382199,
+    "width": 1440,
+    "height": 270,
+    "mimeType": "image/png",
+    "rectangle": {
+      "left": 300,
+      "top": 2440,
+      "width": 1440,
+      "height": 270
+    },
+    "transforms": [
+      "integer_rectangle_extraction",
+      "lossless_png_encoding"
+    ],
+    "retainedPixelsExact": true,
+    "decodedRgbaSha256": "22058b67b0ca61322bebb94a7e9005dbc0cc0aa542431ce23e2a6958939e4844",
+    "pixelProofAlgorithm": "Whole-source RGBA row-stride copy equals whole candidate decode.",
+    "resized": false,
+    "sharpened": false,
+    "alphaEdited": false,
+    "generated": false,
+    "originalMetallicBackgroundRetained": true,
+    "standaloneAlphaWordmark": false
+  },
+  "permissionRecord": {
+    "path": "catalogue/rights-reviews/svp1-native-title-owner-exact32.2026-10-19.json",
+    "sha256": "17428c47b4e69bc98fe55e9215129e503694b3181b13b2f4a4cc5efef844b0ad"
+  },
+  "ownerPermissionReceipt": {
+    "path": "D:/Stackr-organization/evidence/consolidation-20261018/traditional-chinese-remaining-reconciliation-20261019/official-source-authority-proposal-20261019/owner-permission-and-source-eligibility-20261019/owner-permission-receipt.json",
+    "bytes": 10196,
+    "sha256": "7f07676cd46768956726c15619b74cc1c25d422f9d95ea52d04fddf3ee9a63d1"
+  },
+  "originalProposal": {
+    "path": "D:/Stackr-organization/evidence/consolidation-20261018/traditional-chinese-remaining-reconciliation-20261019/official-source-authority-proposal-20261019/exact32-non-executable-source-proposal.json",
+    "bytes": 66775,
+    "sha256": "37285e6cc0df364a3a42d418d7f026fabc7d09f53043a65ea3311e847c4c58ed"
+  },
+  "qualification": {
+    "frozenIndependentReview": {
+      "path": "D:/Stackr-organization/evidence/consolidation-20261018/remaining-repairs-review-20261018/three-native-title-crops-artwork-review-20261019/handoff.json",
+      "bytes": 5533,
+      "sha256": "92052a311c4abf590d63b521b735a2216d08c25c7a5c0c0ed725652a0d677726"
+    },
+    "decision": "LOCAL_ARTWORK_SOURCE_AND_ROLE_QUALIFIED",
+    "genuineBetterOriginalBasis": "Native contour and glyph fidelity; clean continuous outer white border without selected-derivative extraction remnants.",
+    "quantitativeSharpnessGainEstablished": false,
+    "officialHighResolutionOriginalClaimed": false,
+    "higherNativeResolutionThanSelectedEstablished": false
+  },
+  "rollback": {
+    "priorAsset": {
+      "setId": "34e5af6e-66d0-4fea-98ce-b1fa1ec1d1dd",
+      "setCode": "SVP1",
+      "language": "zh-tw",
+      "assetPath": "assets/rev2/12-traditional-chinese-set-logo/logos-hires-20261016/svp1.webp",
+      "sha256": "3f9e60d5c6e6225a60c6ac8d0b1bc75794860b101318e3ed3a9cd82b0574272f",
+      "width": 2171,
+      "height": 724,
+      "bytes": 477674,
+      "origin": "ai_enhanced_derivative",
+      "isOfficialHighResolutionOriginal": false,
+      "sourceUrl": "https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2023/04/tw_news_SVP1_SV2bundle_PKG_0316.png",
+      "referenceSha256": "49a617bb3d1823f10ab9d5f0c8d3e952a0ca42fc01e5639bd1fbf522858e3237",
+      "sourceBatch": "LOGO-HIRES-003",
+      "exactIdentityBasis": "Existing canonical UUID and zh-tw printed set code; source mark matched to that code."
+    },
+    "priorFilePreserved": {
+      "assetPath": "assets/rev2/12-traditional-chinese-set-logo/logos-hires-20261016/svp1.webp",
+      "sha256": "3f9e60d5c6e6225a60c6ac8d0b1bc75794860b101318e3ed3a9cd82b0574272f",
+      "bytes": 477674,
+      "immutable": true,
+      "deletedOrOverwritten": false
+    },
+    "restoreRuntimeRequire": "require('../assets/rev2/12-traditional-chinese-set-logo/logos-hires-20261016/svp1.webp')",
+    "replaceRuntimeRequire": "require('../assets/rev2/12-traditional-chinese-set-logo/logos-native-source-20261019/svp1.png')",
+    "restoreManifestEntry": {
+      "setId": "34e5af6e-66d0-4fea-98ce-b1fa1ec1d1dd",
+      "setCode": "SVP1",
+      "language": "zh-tw",
+      "assetPath": "assets/rev2/12-traditional-chinese-set-logo/logos-hires-20261016/svp1.webp",
+      "sha256": "3f9e60d5c6e6225a60c6ac8d0b1bc75794860b101318e3ed3a9cd82b0574272f",
+      "width": 2171,
+      "height": 724,
+      "bytes": 477674,
+      "origin": "ai_enhanced_derivative",
+      "isOfficialHighResolutionOriginal": false,
+      "sourceUrl": "https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2023/04/tw_news_SVP1_SV2bundle_PKG_0316.png",
+      "referenceSha256": "49a617bb3d1823f10ab9d5f0c8d3e952a0ca42fc01e5639bd1fbf522858e3237",
+      "sourceBatch": "LOGO-HIRES-003",
+      "exactIdentityBasis": "Existing canonical UUID and zh-tw printed set code; source mark matched to that code."
+    },
+    "previousAggregateCounts": {
+      "aiEnhancedLogoCount": 35,
+      "officialHighResolutionOriginalCount": 1,
+      "officialSourceCropCount": 0
+    },
+    "instructions": "Restore only this exact UUID runtime require and manifest entry; recompute origin counts from selected rows. Preserve unrelated later changes and both immutable asset files. No remote rollback is implied."
+  },
+  "legacyReference": {
+    "sha256": "49a617bb3d1823f10ab9d5f0c8d3e952a0ca42fc01e5639bd1fbf522858e3237",
+    "rawOriginalHashMatches": false,
+    "transformBridgeEstablished": false,
+    "newSourceToCropProofDoesNotEstablishLegacyBridge": true
+  },
+  "delivery": {
+    "mode": "bundled_app_presentation",
+    "locallySelected": true,
+    "publicApiAssetPublicationProved": false,
+    "canonicalPriorLinkEnvelopeCaptured": false,
+    "phoneAcceptanceProved": false,
+    "testFlight": "HELD"
+  }
+}

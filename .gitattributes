@@ -6,6 +6,8 @@
 /docs/third-party/tcgdex-card-reference-notice.md text eol=lf
 /catalogue/*.json text eol=lf
 /catalogue/rights-evidence/*.json text eol=lf
+/catalogue/rights-evidence/traditional-chinese-three-pack-art-20261018/*.json text eol=lf
+/assets/rev2/12-traditional-chinese-set-logo/logos-native-source-20261019/provenance.json text eol=lf
 /tools/queue1-publish-20260927/cohort.json text eol=lf
 /catalogue/rights-reviews/*.json text eol=lf
 /lib/generated/*.generated.ts text eol=lf

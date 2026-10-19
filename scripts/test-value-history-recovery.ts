@@ -188,6 +188,81 @@ async function run() {
   assert.match(unavailable.text(), /holdings and price freshness have not been rechecked/);
   assert.equal(unavailable.nodes().find((node) => node.type?.name === 'ValueHistoryChart').props.points.length, 2);
   unavailable.switchAuth('B', 2); await unavailable.flush(); assert.doesNotMatch(unavailable.text(), /£52\.00/, 'The saved cache envelope must match the active owner.'); unavailable.unmount();
+  const pendingResponse = { state: 'pending' as const, requestedCollectionRevision: 'holdings-1', summary: null, refreshRequest: null };
+  const preparation = deferred<any>();
+  const savedFirst = harness({ collection: () => preparation.promise, stored: async () => storedRaw });
+  savedFirst.render(); await savedFirst.flush();
+  assert.equal(savedFirst.nodes().find((node) => node.type?.name === 'ValueHistoryChart').props.points.length, 2);
+  preparation.resolve(pendingResponse); await savedFirst.flush();
+  assert.match(savedFirst.text(), /£52\.00/, 'Pending preparation cannot erase validated same-owner saved history.');
+  assert.match(savedFirst.text(), /Last saved/); assert.match(savedFirst.text(), /holdings and price freshness have not been rechecked/);
+  assert.match(savedFirst.text(), /valuation is being prepared/);
+  assert.equal(savedFirst.nodes().find((node) => node.type?.name === 'ValueHistoryChart').props.points.length, 2);
+  savedFirst.switchAuth('B', 2); await savedFirst.flush();
+  assert.doesNotMatch(savedFirst.text(), /£52\.00/, 'Pending preparation cannot carry another owner\'s saved history.'); savedFirst.unmount();
+
+  const pendingDisk = deferred<string | null>(); let preparationFinished = false;
+  const pendingFirst = harness({ collection: async () => preparationFinished ? prepared(23) : pendingResponse, stored: () => pendingDisk.promise });
+  pendingFirst.render(); await pendingFirst.flush(); assert.match(pendingFirst.text(), /valuation is being prepared/);
+  pendingDisk.resolve(storedRaw); await pendingFirst.flush();
+  assert.match(pendingFirst.text(), /£52\.00/, 'A pending response must not suppress a later owner-verified saved cache.');
+  assert.match(pendingFirst.text(), /Last saved/); assert.match(pendingFirst.text(), /valuation is being prepared/);
+  assert.equal(pendingFirst.nodes().find((node) => node.type?.name === 'ValueHistoryChart').props.points.length, 2);
+  preparationFinished = true; pendingFirst.retry('Retry collection value history').props.onPress(); await pendingFirst.flush();
+  assert.match(pendingFirst.text(), /£23\.00/); assert.doesNotMatch(pendingFirst.text(), /Last saved|valuation is being prepared/,
+    'A genuine current prepared valuation supersedes the saved fallback.'); pendingFirst.unmount();
+
+  let savedDiskReads = 0; const retryDiskHang = deferred<string | null>();
+  const savedRetry = harness({ collection: async () => pendingResponse, stored: () => ++savedDiskReads === 1
+    ? Promise.resolve(storedRaw) : savedDiskReads === 2 ? retryDiskHang.promise : Promise.resolve(null) });
+  savedRetry.render(); await savedRetry.flush(); assert.match(savedRetry.text(), /£52\.00/);
+  savedRetry.retry('Retry collection value history').props.onPress(); await savedRetry.flush();
+  assert.match(savedRetry.text(), /£52\.00/, 'Saved origin persists across same-scope Retry even when its next disk read hangs.');
+  assert.match(savedRetry.text(), /Last saved/); assert.match(savedRetry.text(), /valuation is being prepared/);
+  assert.equal(savedRetry.nodes().find((node) => node.type?.name === 'ValueHistoryChart').props.points.length, 2);
+  savedRetry.retry('Retry collection value history').props.onPress(); await savedRetry.flush();
+  assert.match(savedRetry.text(), /£52\.00/, 'A null disk read on another same-scope Retry cannot erase validated displayed saved history.');
+  assert.match(savedRetry.text(), /holdings and price freshness have not been rechecked/);
+  assert.equal(savedRetry.nodes().find((node) => node.type?.name === 'ValueHistoryChart').props.points.length, 2);
+  savedRetry.unmount(); retryDiskHang.resolve(storedRaw); await tick();
+
+  let newlyPending = false;
+  const preparedThenPending = harness({ collection: async () => newlyPending ? pendingResponse : prepared(24) });
+  preparedThenPending.render(); await preparedThenPending.flush(); assert.match(preparedThenPending.text(), /£24\.00/);
+  newlyPending = true; preparedThenPending.retry('Retry collection value history').props.onPress(); await preparedThenPending.flush();
+  assert.doesNotMatch(preparedThenPending.text(), /£24\.00/, 'Only explicitly saved cache history survives a no-summary pending response.');
+  assert.equal(preparedThenPending.nodes().find((node) => node.type?.name === 'ValueHistoryChart'), undefined); preparedThenPending.unmount();
+
+  const emptyResponse = prepared();
+  Object.assign(emptyResponse.summary, { total: null, totalUnits: 0, pricedUnits: 0, distinctPriceIdentities: 0,
+    freshUnits: 0, olderPriceUnits: 0, unpricedUnits: 0, unsupported: 0 });
+  emptyResponse.summary.trend.points = []; emptyResponse.summary.trend.eligible = false;
+  const emptyDisk = deferred<string | null>();
+  const authoritativeEmpty = harness({ collection: async () => emptyResponse, stored: () => emptyDisk.promise });
+  authoritativeEmpty.render(); await authoritativeEmpty.flush(); emptyDisk.resolve(storedRaw); await authoritativeEmpty.flush();
+  assert.doesNotMatch(authoritativeEmpty.text(), /£52\.00|Last saved/, 'An authoritative empty current collection cannot revive old saved holdings.');
+  assert.equal(authoritativeEmpty.nodes().find((node) => node.type?.name === 'ValueHistoryChart'), undefined); authoritativeEmpty.unmount();
+  const mismatchResponse = prepared(999); mismatchResponse.requestedCollectionRevision = 'changed-holdings';
+  const mismatchDisk = deferred<string | null>();
+  const authoritativeMismatch = harness({ collection: async () => mismatchResponse, stored: () => mismatchDisk.promise });
+  authoritativeMismatch.render(); await authoritativeMismatch.flush(); mismatchDisk.resolve(storedRaw); await authoritativeMismatch.flush();
+  assert.doesNotMatch(authoritativeMismatch.text(), /£52\.00|£999\.00|Last saved/, 'A revision mismatch stays unavailable and blocks old-cache substitution.');
+  assert.equal(authoritativeMismatch.nodes().find((node) => node.type?.name === 'ValueHistoryChart'), undefined); authoritativeMismatch.unmount();
+  let denyPending = false;
+  const pendingDenial = harness({ collection: () => denyPending
+    ? Promise.reject(Object.assign(new Error('denied pending fixture'), { status: 403 })) : Promise.resolve(pendingResponse), stored: async () => storedRaw });
+  pendingDenial.render(); await pendingDenial.flush(); assert.match(pendingDenial.text(), /£52\.00/);
+  denyPending = true; pendingDenial.retry('Retry collection value history').props.onPress(); await pendingDenial.flush();
+  assert.doesNotMatch(pendingDenial.text(), /£52\.00|Last saved/, 'An access denial clears saved history retained during preparation.');
+  assert.match(pendingDenial.text(), /access could not be verified/); pendingDenial.unmount();
+  let marketDenied = false;
+  const pendingMarketDenial = harness({ market: () => marketDenied
+    ? Promise.reject(Object.assign(new Error('denied market fixture'), { status: 401 })) : Promise.resolve([marketRow()]),
+  collection: async () => pendingResponse, stored: async () => storedRaw });
+  pendingMarketDenial.render(); await pendingMarketDenial.flush(); assert.match(pendingMarketDenial.text(), /£52\.00/);
+  marketDenied = true; pendingMarketDenial.retry('Retry collection value history').props.onPress(); await pendingMarketDenial.flush();
+  assert.doesNotMatch(pendingMarketDenial.text(), /£52\.00|Last saved/, 'A market-lane denial also clears pending saved collection history.');
+  assert.match(pendingMarketDenial.text(), /access could not be verified/); pendingMarketDenial.unmount();
   const slowDisk = deferred<string | null>();
   const freshWins = harness({ stored: () => slowDisk.promise }); freshWins.render(); await freshWins.flush();
   slowDisk.resolve(storedRaw); await tick(); freshWins.render(); assert.match(freshWins.text(), /£12\.00/); assert.doesNotMatch(freshWins.text(), /Last saved/); freshWins.unmount();

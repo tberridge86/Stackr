@@ -1,0 +1,101 @@
+{
+  "schemaVersion": "stackr-scoped-local-set-artwork-owner-attestation-v1",
+  "decisionId": "svp1-native-title-owner-exact32:2026-10-19",
+  "classification": "amber",
+  "status": "authorized_on_existing_exact_owner_attestation",
+  "recordedDate": "2026-10-19",
+  "activationAuthorized": true,
+  "publicRuntimeDisplayAuthorized": true,
+  "assetPersistenceAuthorized": true,
+  "cropDerivationAuthorized": true,
+  "canonicalDatabaseWriteAuthorized": false,
+  "scope": {
+    "setId": "34e5af6e-66d0-4fea-98ce-b1fa1ec1d1dd",
+    "setCode": "SVP1",
+    "language": "zh-tw",
+    "sourceUrl": "https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2023/04/tw_news_SVP1_SV2bundle_PKG_0316.png",
+    "assetType": "set_logo",
+    "displayRole": "bundled_set_identification_title_mark",
+    "assetCount": 1,
+    "assetPath": "assets/rev2/12-traditional-chinese-set-logo/logos-native-source-20261019/svp1.png",
+    "sha256": [
+      "2f2acbc19616479cc93d22b4923f33a45b05c9debc82c30d94dfa3b9e3f5045d"
+    ],
+    "originalSourceSha256": "28335c48835c4f47a8b58554394b65b5a7ba813a85c8ddbd645733d5812ee6cc",
+    "provenancePath": "assets/rev2/12-traditional-chinese-set-logo/logos-native-source-20261019/provenance.json",
+    "allowedUses": [
+      "save_exact_source_original",
+      "display_in_Stackr",
+      "crop_for_Stackr_display",
+      "bundle_exact_reviewed_crop_bytes"
+    ],
+    "excludedUses": [
+      "blanket_official_provider_activation",
+      "unknown_identity_substitution",
+      "new_external_source_acquisition",
+      "new_artwork_generation",
+      "model_training",
+      "embedding",
+      "standalone_export"
+    ]
+  },
+  "ownerEvidence": {
+    "evidenceType": "derived_exact_one_binding_from_direct_human_source_permission_attestation",
+    "originalReceipt": {
+      "path": "D:/Stackr-organization/evidence/consolidation-20261018/traditional-chinese-remaining-reconciliation-20261019/official-source-authority-proposal-20261019/owner-permission-and-source-eligibility-20261019/owner-permission-receipt.json",
+      "bytes": 10196,
+      "sha256": "7f07676cd46768956726c15619b74cc1c25d422f9d95ea52d04fddf3ee9a63d1"
+    },
+    "originalProposal": {
+      "path": "D:/Stackr-organization/evidence/consolidation-20261018/traditional-chinese-remaining-reconciliation-20261019/official-source-authority-proposal-20261019/exact32-non-executable-source-proposal.json",
+      "bytes": 66775,
+      "sha256": "37285e6cc0df364a3a42d418d7f026fabc7d09f53043a65ea3311e847c4c58ed"
+    },
+    "recordedAt": "2026-10-19T06:17:04.144Z",
+    "exactQuestion": "Does your artwork permission cover saving, displaying and cropping the official Pokémon Taiwan images in this exact 32-set source list? The existing receipt covers a different batch. Your AGENTS.md says standing operational approval does not establish missing source licence evidence.",
+    "exactAnswer": "Yes, my permission covers those exact sources and uses",
+    "authorityNature": "owner_attested_permission_for_exact_sources_and_uses",
+    "exactBinding": {
+      "setId": "34e5af6e-66d0-4fea-98ce-b1fa1ec1d1dd",
+      "setCode": "SVP1",
+      "language": "zh-tw",
+      "sourceUrl": "https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2023/04/tw_news_SVP1_SV2bundle_PKG_0316.png"
+    },
+    "originalPermittedUses": [
+      "save_exact_source_original",
+      "display_in_Stackr",
+      "crop_for_Stackr_display"
+    ],
+    "blanketOfficialSourceAuthority": false,
+    "independentlyAuditedUpstreamLicence": false
+  },
+  "verification": {
+    "exactSourceAndCropHashesVerified": true,
+    "retainedPixelsExact": true,
+    "nativeLanguageAndTitleReviewed": true,
+    "localArtworkReview": {
+      "path": "D:/Stackr-organization/evidence/consolidation-20261018/remaining-repairs-review-20261018/three-native-title-crops-artwork-review-20261019/handoff.json",
+      "bytes": 5533,
+      "sha256": "92052a311c4abf590d63b521b735a2216d08c25c7a5c0c0ed725652a0d677726"
+    },
+    "representation": "Opaque native title crop with original metallic background; no alpha removal. Background tradeoff explicitly accepted by independent local review.",
+    "officialHighResolutionMasterClaimed": false,
+    "measuredSharpnessImprovementClaimed": false
+  },
+  "attribution": {
+    "sourceName": "Official Pokémon Taiwan image, under the exact owner-attested source/use permission",
+    "sourceUrl": "https://asia.pokemon-card.com/tw/wp-content/uploads/sites/2/2023/04/tw_news_SVP1_SV2bundle_PKG_0316.png",
+    "embeddedMarksAndWhiteBorderPreserved": true,
+    "upstreamLicensorInvented": false,
+    "additionalContractualAttributionWordingInvented": false
+  },
+  "boundaries": {
+    "globalSourceRegistryUnchanged": true,
+    "newExternalAcquisitionPerformed": false,
+    "previousImmutableAssetPreserved": true,
+    "newBackendOrNativePublicationAuthorizedByThisRecord": false,
+    "publicationQualifiedBatch": [],
+    "apiDeliveryProved": false,
+    "phoneAcceptanceProved": false
+  }
+}
