@@ -344,6 +344,157 @@ async function assertInvalidServiceInput() {
   );
 }
 
+async function assertMarketMoversRetainsBothBoundedExtremes() {
+  const row = (index, change, overrides = {}) => ({
+    market_identity_id: `10000000-0000-4000-8000-${String(index).padStart(12, '0')}`,
+    variant_id: `20000000-0000-4000-8000-${String(index).padStart(12, '0')}`,
+    sealed_product_variant_id: null, product_kind: 'raw_card', display_currency_code: 'GBP',
+    current_estimate: change == null ? 100 : 100 + change, previous_estimate: 100,
+    percentage_change: change, confidence_score: 0.6, confidence_label: 'medium',
+    calculated_at: '2026-10-18T09:00:00.000Z', previous_calculated_at: '2026-10-17T09:00:00.000Z',
+    ...overrides,
+  });
+  const fixture = (population, options = {}) => {
+    const calls = [];
+    const counts = { started: 0, settled: 0, returned: 0, providers: 0 };
+    const supabase = { schema(schema) {
+      assert.equal(schema, 'api', 'movers read only the stored API projection');
+      return { from(name) {
+        assert.equal(name, 'market_movers', 'movers cannot read holdings, provider tables or refresh queues');
+        const call = { filters: [], orders: [], limit: null };
+        calls.push(call);
+        const query = {
+          select(columns) { assert.equal(columns, '*'); return query; },
+          eq(column, value) { call.filters.push([column, value]); return query; },
+          order(column, order) { call.orders.push([column, order]); return query; },
+          limit(limit) { call.limit = limit; return query; },
+          then(resolve, reject) {
+            return (async () => {
+              counts.started++;
+              try {
+                if (options.gate) await options.gate;
+                const ascending = call.orders[0][1].ascending;
+                if (options.errorDirection === ascending) return { data: null, error: options.error };
+                let rows = population.filter((item) => call.filters.every(([column, value]) => item[column] === value));
+                rows.sort((a, b) => {
+                  for (const [column, order] of call.orders) {
+                    const left = a[column]; const right = b[column];
+                    if (left == null || right == null) {
+                      if (left == null && right == null) continue;
+                      return (left == null ? 1 : -1) * (order.nullsFirst ? -1 : 1);
+                    }
+                    const difference = typeof left === 'number' && typeof right === 'number'
+                      ? left - right : String(left).localeCompare(String(right));
+                    if (difference) return difference * (order.ascending === false ? -1 : 1);
+                  }
+                  return 0;
+                });
+                rows = rows.slice(0, call.limit).map((item) => ({ ...item }));
+                if (options.transform) rows = options.transform(rows, ascending);
+                counts.returned += rows.length;
+                return { data: rows, error: null };
+              } finally { counts.settled++; }
+            })().then(resolve, reject);
+          },
+        };
+        return query;
+      } };
+    } };
+    const service = createMarketPricingService({ supabase, refreshEnabled: false,
+      fetchTcgdexNormalCardPrice: async () => { counts.providers++; throw new Error('Forbidden provider read.'); } });
+    return { service, calls, counts };
+  };
+  const input = { productType: 'raw_card', currency: 'GBP', limit: 100 };
+  const read = async (population, overrides = {}) => {
+    const db = fixture(population);
+    const requested = { ...input, ...overrides };
+    const result = await db.service.marketMovers(requested);
+    const expectedLimit = Math.min(requested.limit, 100);
+    assert.equal(db.calls.length, 2, 'exactly two bounded stored reads supply both extremes');
+    assert.equal(db.counts.started, 2); assert.equal(db.counts.settled, 2);
+    assert.ok(db.counts.returned <= 2 * (expectedLimit + 1));
+    assert.ok(result.movers.length <= expectedLimit);
+    assert.deepEqual(result.pagination, { limit: expectedLimit, nextCursor: null }, 'movers remains a bounded sample without cursor pagination');
+    for (const call of db.calls) {
+      assert.equal(call.limit, expectedLimit + 1);
+      assert.deepEqual(call.filters, [['display_currency_code', 'GBP'], ['product_kind', requested.productType]]);
+      assert.deepEqual(call.orders[1], ['market_identity_id', { ascending: true }], 'equal percentages have deterministic database ordering');
+      assert.equal(call.orders[0][1].nullsFirst, false);
+    }
+    assert.equal(db.counts.providers, 0);
+    return result.movers;
+  };
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => { throw new Error('Network forbidden in stored mover fixtures.'); };
+  try {
+    const rises = Array.from({ length: 150 }, (_, i) => row(i + 1, i + 1));
+    const falls = Array.from({ length: 150 }, (_, i) => row(i + 151, -1 - i / 2));
+    const mixed = await read([...rises, row(500, -50)]);
+    assert.equal(mixed.length, 100);
+    assert.equal(mixed.filter((item) => item.percentageChange < 0).length, 1, 'a genuine fall survives more than 100 positive comparisons');
+    const inverse = await read([...falls, row(501, 50)]);
+    assert.equal(inverse.filter((item) => item.percentageChange > 0).length, 1, 'a genuine rise survives more than 100 falls');
+    const balanced = await read([...rises, ...falls]);
+    assert.equal(balanced.filter((item) => item.percentageChange > 0).length, 50);
+    assert.equal(balanced.filter((item) => item.percentageChange < 0).length, 50);
+    assert.equal((await read(rises)).length, 100, 'one available direction fills otherwise unused slots');
+    assert.equal((await read(falls)).length, 100);
+    assert.equal((await read([], { limit: 2 })).length, 0, 'verified empty is still empty');
+    const small = [row(1, 10), row(2, -30), row(3, 20), row(4, -5), row(5, 0)];
+    assert.deepEqual((await read(small, { limit: 1 })).map((item) => item.percentageChange), [-30], 'limit one chooses the strongest absolute percentage');
+    assert.deepEqual((await read(small, { limit: 2 })).map((item) => item.percentageChange), [20, -30]);
+    assert.deepEqual((await read(small, { limit: 3 })).map((item) => item.percentageChange), [20, 10, -30], 'odd capacity takes the next strongest remaining comparison');
+    assert.equal((await read(small, { limit: 1000 })).length, 5, 'caller limits above 100 remain clamped');
+    const ties = [row(3, -10), row(2, 10), row(1, 10), row(4, -10)];
+    assert.deepEqual((await read(ties, { limit: 2 })).map((item) => item.variantId), [row(1, 10).variant_id, row(3, -10).variant_id]);
+    assert.deepEqual((await read([...ties].reverse(), { limit: 2 })).map((item) => item.variantId), [row(1, 10).variant_id, row(3, -10).variant_id]);
+    assert.equal((await read([small[0], small[0], small[1]], { limit: 10 })).length, 2, 'identical overlaps collapse under exact market identity');
+    const sameVariant = [row(1, 10), row(2, -10, { variant_id: row(1, 10).variant_id })];
+    assert.equal((await read(sameVariant, { limit: 10 })).length, 2, 'different condition identities sharing one raw variant are retained separately');
+    assert.equal((await read(sameVariant.map((item) => ({ ...item, product_kind: 'graded_card' })), { productType: 'graded_card', limit: 10 })).length, 2,
+      'different grade identities sharing a variant are not collapsed');
+    const nulls = await read([row(1, 0), row(2, null, { current_estimate: 0, previous_estimate: 0 }),
+      row(3, null, { previous_estimate: null })], { limit: 10 });
+    assert.equal(nulls.find((item) => item.variantId === row(1, 0).variant_id).percentageChange, 0);
+    assert.equal(nulls.find((item) => item.variantId === row(2, null).variant_id).currentEstimate, 0, 'known zero remains numeric zero');
+    assert.equal(nulls.find((item) => item.variantId === row(3, null).variant_id).previousEstimate, null, 'missing evidence never becomes zero');
+    assert.deepEqual((await read([row(2, 0), row(1, 0)], { limit: 1 })).map((item) => item.variantId), [row(1, 0).variant_id], 'unchanged-only samples remain available');
+    assert.equal((await read([row(1, 1), row(2, -90, { display_currency_code: 'USD' }), row(3, 90, { product_kind: 'graded_card' })])).length, 1,
+      'currency and product constraints apply before both query caps');
+    const allProducts = fixture([row(1, 1), row(2, -1, { product_kind: 'graded_card' })]);
+    assert.equal((await allProducts.service.marketMovers({ currency: 'GBP', limit: 10 })).movers.length, 2);
+    assert.ok(allProducts.calls.every((call) => call.filters.length === 1), 'omitting the optional product selector preserves its existing contract');
+
+    let release; const gate = new Promise((resolve) => { release = resolve; });
+    const parallel = fixture(small, { gate });
+    const pending = parallel.service.marketMovers(input);
+    try { await new Promise((resolve) => setImmediate(resolve)); assert.equal(parallel.counts.started, 2, 'both stored reads start before either is allowed to settle'); }
+    finally { release(); await pending; }
+    for (const direction of [false, true]) {
+      const failure = Object.assign(new Error('fixture read failure'), { status: 503 });
+      const failed = fixture(small, { errorDirection: direction, error: failure });
+      await assert.rejects(() => failed.service.marketMovers(input), (error) => error === failure,
+        'a failed direction is a retryable failure, never a partial successful or empty sample');
+      assert.equal(failed.counts.settled, 2, 'both reads are observed even when one fails');
+    }
+    const denial = Object.assign(new Error('fixture denied'), { status: 403 });
+    await assert.rejects(() => fixture(small, { errorDirection: true, error: denial }).service.marketMovers(input), (error) => error === denial,
+      'authentication failure must not become empty prices');
+    const conflict = fixture(small, { transform: (rows, ascending) => rows.map((item) => ascending && item.market_identity_id === small[0].market_identity_id
+      ? { ...item, current_estimate: item.current_estimate + 1 } : item) });
+    await assert.rejects(() => conflict.service.marketMovers(input), (error) => error.status === 503 && error.code === 'market_comparison_changed',
+      'disagreeing concurrent evidence for the same exact identity must not select an arbitrary price');
+    const invalid = fixture([row(1, 1, { market_identity_id: null })]);
+    await assert.rejects(() => invalid.service.marketMovers(input), (error) => error.status === 503 && error.code === 'market_comparison_read_invalid');
+    const overflow = fixture(small, { transform: (rows) => [...rows, ...rows, ...rows] });
+    await assert.rejects(() => overflow.service.marketMovers({ ...input, limit: 2 }), (error) => error.status === 503 && error.code === 'market_comparison_read_invalid');
+    const badInput = fixture([]);
+    await assert.rejects(() => badInput.service.marketMovers({ limit: 0 }), (error) => error.status === 400);
+    await assert.rejects(() => badInput.service.marketMovers({ productType: 'unknown' }), (error) => error.status === 400);
+    assert.equal(badInput.calls.length, 0, 'invalid input cannot start either stored read');
+  } finally { globalThis.fetch = originalFetch; }
+}
+
 async function assertGradedPriceRequiresExactIdentity() {
   const variantId = '90909090-9090-4909-8909-909090909090';
   const estimate = (grader, grade, amount, calculatedAt) => ({
@@ -1661,6 +1812,7 @@ try {
   await assertEbayAdapterBoundary();
   await assertRoutes();
   await assertInvalidServiceInput();
+  await assertMarketMoversRetainsBothBoundedExtremes();
   await assertGradedPriceRequiresExactIdentity();
   await assertHistoryKeepsExactRawScope();
   await assertLabelledLegacySnapshotFallback();
