@@ -573,13 +573,16 @@ function EmptyMovers({ message }: { message: string }) {
 type ValueHistoryState = {
   scope: string;
   market: ReturnType<typeof marketValueHistory> & { loaded: boolean; loading: boolean; error: string | null; previewError: string | null };
-  collection: ReturnType<typeof collectionValueHistory> & { loaded: boolean; loading: boolean; error: string | null };
+  collection: ReturnType<typeof collectionValueHistory> & {
+    loaded: boolean; loading: boolean; error: string | null; fromSavedCache: boolean; preparationPending: boolean;
+  };
 };
 function emptyValueHistoryState(scope: string): ValueHistoryState {
   return { scope,
     market: { movers: [], trackedCards: 0, calculatedAt: null, loaded: false, loading: true, error: null, previewError: null },
     collection: { total: null, pointsByRange: { '7D': [], '30D': [], '6M': [], '12M': [] }, coverage: '',
-      calculatedAt: null, historyAvailable: false, loaded: false, loading: true, error: null },
+      calculatedAt: null, historyAvailable: false, loaded: false, loading: true, error: null,
+      fromSavedCache: false, preparationPending: false },
   };
 }
 
@@ -678,6 +681,7 @@ export default function ValueHistoryScreen() {
       return true;
     };
     let authoritativeCollectionSettled = false;
+    let collectionPreparationPending = false;
     // The same owner's Home cache can provide labelled saved history while a
     // prepared-summary route is absent or slow. Fresh results always win.
     void withValueHistoryDeadline(() => AsyncStorage.getItem(getHomeCollectionCacheKey(userId)), VALUE_HISTORY_PREVIEW_TIMEOUT_MS)
@@ -685,7 +689,8 @@ export default function ValueHistoryScreen() {
         if (!raw || !isCurrent() || authoritativeCollectionSettled) return;
         const saved = savedCollectionValueHistory(parseHomeCollectionCache(raw, userId));
         if (!saved) return;
-        publish((previous) => ({ ...previous, collection: { ...previous.collection, ...saved, loaded: true, loading: false } }));
+        publish((previous) => ({ ...previous, collection: { ...previous.collection, ...saved, loaded: true, loading: false,
+          fromSavedCache: true, preparationPending: collectionPreparationPending } }));
       }).catch(() => {});
     const loadGeneralMarket = async () => {
       try {
@@ -719,8 +724,18 @@ export default function ValueHistoryScreen() {
         const response = await withValueHistoryDeadline(() => stackrApiClient.collectionValuation(), VALUE_HISTORY_READ_TIMEOUT_MS);
         if (!isCurrent()) return;
         const result = collectionValueHistory(response.data);
+        if (!response.data.summary) {
+          // A queued generation has no current valuation to supersede the
+          // owner's explicitly labelled, validated saved observations.
+          collectionPreparationPending = true;
+          publish((previous) => ({ ...previous, collection: previous.collection.fromSavedCache
+            ? { ...previous.collection, loading: false, error: null, preparationPending: true }
+            : { ...result, loaded: true, loading: false, error: null, fromSavedCache: false, preparationPending: true } }));
+          return;
+        }
         authoritativeCollectionSettled = true;
-        publish((previous) => ({ ...previous, collection: { ...result, loaded: true, loading: false, error: null } }));
+        publish((previous) => ({ ...previous, collection: { ...result, loaded: true, loading: false, error: null,
+          fromSavedCache: false, preparationPending: false } }));
       } catch (error) {
         if (handleDenial(error)) return;
         publish((previous) => ({ ...previous, collection: { ...previous.collection, loading: false,
@@ -877,6 +892,11 @@ export default function ValueHistoryScreen() {
               ) : null}
               {collectionCoverage ? (
                 <Text style={[styles.historyStateCopy, { color: theme.colors.textSoft }]}>{collectionCoverage}</Text>
+              ) : null}
+              {collection.fromSavedCache && collection.preparationPending ? (
+                <Text style={[styles.historyStateCopy, { color: theme.colors.textSoft }]}>
+                  Your current collection valuation is being prepared. Saved history remains visible.
+                </Text>
               ) : null}
               {collectionError ? (
                 <Text accessibilityRole="alert" style={[styles.historyStateCopy, { color: theme.colors.textSoft }]}>{collectionError}</Text>
