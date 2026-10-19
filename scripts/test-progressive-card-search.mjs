@@ -9,6 +9,8 @@ vm.runInNewContext(ts.transpileModule(fs.readFileSync('lib/searchNormalisation.t
 const { expandSearchQuery, normaliseSearchText } = normalizationExports;
 const listingSearchMediaExports = {};
 vm.runInNewContext(ts.transpileModule(fs.readFileSync('lib/listingSearchMedia.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText, { exports: listingSearchMediaExports });
+const performanceExports = {};
+vm.runInNewContext(ts.transpileModule(fs.readFileSync('lib/performance.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText, { exports: performanceExports });
 
 const tick = () => new Promise(setImmediate);
 function deferred() { let resolve, reject; const promise = new Promise((a, b) => { resolve = a; reject = b; }); return { promise, resolve, reject }; }
@@ -101,6 +103,8 @@ const query = { select() { return this; }, ilike() { return this; }, eq() { retu
 const noop = () => {};
 const run = extract('app/(tabs)/search.tsx', 'runSearch', {
   ...listingSearchMediaExports,
+  beginRetrieval: performanceExports.beginRetrieval,
+  searchTraceRef: { current: null }, pendingSearchTraceRef: { current: null }, searchCommitTraceRef: { current: null },
   requestRef, previousSearchRef, category: 'all', selectedLanguage: 'ja', searchIdentityEpoch: 0,
   EMPTY_RESULTS, SEARCH_FIRST_PAINT_BUDGET_MS: 1,
   setResults: value => { state = typeof value === 'function' ? value(state) : value; },
