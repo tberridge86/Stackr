@@ -1376,79 +1376,142 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       void loadShowcase(user.id);
 
       void (async () => {
-        const cardIds = binderCards.map((card) => card.card_id);
-        const setIds = Array.from(new Set(binderCards.map((card) => card.set_id).filter(Boolean)));
-        const binderVariantCardKeys = new Set(
-          binderCards.map((card) => getVariantCardKey(card.card_id, card.set_id))
-        );
-        const [userBindersResult, variantQuantityResult] = await Promise.all([
-          supabase
-            .from('binders')
-            .select('id')
-            .eq('user_id', user.id),
-          cardIds.length > 0
-            ? supabase
-                .from('user_card_variants')
-                .select('card_id, set_id, variant, quantity')
-                .eq('user_id', user.id)
-                .in('card_id', cardIds)
-                .in('set_id', setIds)
-            : Promise.resolve({ data: [], error: null }),
-        ]);
-        if (!isCurrentRequest()) return;
-
-        if (userBindersResult.error) throw userBindersResult.error;
-        const userBinderIds = (userBindersResult.data ?? []).map((row) => row.id).filter(Boolean);
-        const { data: ownedRows, error: ownedRowsError } = userBinderIds.length
-          ? await supabase
-              .from('binder_cards')
-              .select('card_id, set_id')
-              .in('binder_id', userBinderIds)
-              .eq('owned', true)
-          : { data: [], error: null };
-        if (!isCurrentRequest()) return;
-        if (ownedRowsError) throw ownedRowsError;
-
-        const nextGlobalOwnedKeys = new Set(
-          (ownedRows ?? []).map((row) => `${row.set_id}:${row.card_id}`)
-        );
-        setCards((currentCards) => currentCards.map((card) => ({
-          ...card,
-          owned: card.owned || nextGlobalOwnedKeys.has(`${card.set_id}:${card.card_id}`),
-        })));
-
-        let variantRows = (variantQuantityResult.data ?? []) as {
-          card_id: string;
-          set_id?: string | null;
-          variant: string;
-          quantity?: number | null;
-        }[];
-        if (variantQuantityResult.error && cardIds.length > 0) {
-          const fallback = await supabase
-            .from('user_card_variants')
-            .select('card_id, set_id, variant')
-            .eq('user_id', user.id)
-            .in('card_id', cardIds)
-            .in('set_id', setIds);
+        const ownershipRequest = new AbortController();
+        try {
+          const cardIds = [...new Set(binderCards.map((card) => card.card_id))];
+          const binderVariantCardKeys = new Set(
+            binderCards.map((card) => getVariantCardKey(card.card_id, card.set_id))
+          );
+          // Reuse the existing id-ordered ownership keyset pattern. A short page
+          // may be a server cap, so only a definitive empty page completes a chunk.
+          const { ownedRows, variantRows } = await withPersonalDataReadTimeout(async () => {
+            let requests = 0;
+            const assertCurrent = () => {
+              if (!isCurrentRequest() || ownershipRequest.signal.aborted || artworkRequest.signal.aborted
+                || activeAccountIdRef.current !== user.id || currentBinderIdRef.current !== binderId) {
+                const error = new Error('Binder ownership request was cancelled.');
+                error.name = 'AbortError';
+                throw error;
+              }
+            };
+            const chunks = (values: string[]) => {
+              const result: string[][] = [];
+              for (let index = 0; index < values.length; index += 100) result.push(values.slice(index, index + 100));
+              return result;
+            };
+            const identities = chunks(cardIds).flatMap((ids) => {
+              const selectedIds = new Set(ids);
+              const sets = [...new Set(binderCards.filter((card) => selectedIds.has(card.card_id)).map((card) => card.set_id))];
+              if (ids.some((id) => !id) || sets.some((id) => !id)) throw new Error('Binder ownership identities are incomplete. Please retry.');
+              return chunks(sets).map((setIds) => ({ cardIds: ids, setIds }));
+            });
+            type OwnershipRow = { id: string; user_id?: string; binder_id?: string; card_id?: string; set_id?: string; owned?: boolean; variant?: string; quantity?: number | null };
+            const readPages = async (
+              page: (after: string | null) => PromiseLike<{ data: OwnershipRow[] | null; error: unknown }>,
+              seen: Set<string>, accepts: (row: OwnershipRow) => boolean,
+            ): Promise<{ rows: OwnershipRow[]; error: unknown }> => {
+              const rows: OwnershipRow[] = [];
+              let after: string | null = null;
+              for (;;) {
+                assertCurrent();
+                if (++requests > 256) throw new Error('Binder ownership exceeded its safe request limit. Please retry.');
+                const result = await page(after);
+                assertCurrent();
+                if (result.error) return { rows: [], error: result.error };
+                if (!Array.isArray(result.data) || result.data.length > 200) throw new Error('Binder ownership response was incomplete. Please retry.');
+                if (!result.data.length) return { rows, error: null };
+                for (const row of result.data) {
+                  const id = typeof row?.id === 'string' ? row.id.toLowerCase() : '';
+                  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id)
+                    || (after !== null && id <= after) || seen.has(id) || !accepts(row)) {
+                    throw new Error('Binder ownership pagination could not be verified. Please retry.');
+                  }
+                  seen.add(id);
+                  rows.push(row);
+                  after = id;
+                }
+              }
+            };
+            const scopeQuery = (query: any, after: string | null) => {
+              const ordered = query.order('id', { ascending: true }).limit(200).abortSignal(ownershipRequest.signal);
+              return after ? ordered.gt('id', after) : ordered;
+            };
+            const savedOwnership = async () => {
+              if (!identities.length) return [];
+              const directory = await readPages((after) => scopeQuery(supabase.from('binders').select('id,user_id')
+                .eq('user_id', user.id), after), new Set(), (row) => row.user_id === user.id);
+              if (directory.error) throw directory.error;
+              const seen = new Set<string>();
+              const rows: OwnershipRow[] = [];
+              for (const ids of chunks(directory.rows.map((row) => row.id))) {
+                for (const identity of identities) {
+                  const result = await readPages((after) => scopeQuery(supabase.from('binder_cards')
+                    .select('id,binder_id,card_id,set_id,owned').in('binder_id', ids).eq('owned', true)
+                    .in('card_id', identity.cardIds).in('set_id', identity.setIds), after), seen,
+                  (row) => Boolean(row.owned === true && row.binder_id && ids.includes(row.binder_id)
+                    && row.card_id && identity.cardIds.includes(row.card_id) && row.set_id && identity.setIds.includes(row.set_id)));
+                  if (result.error) throw result.error;
+                  rows.push(...result.rows.filter((row) => binderVariantCardKeys.has(getVariantCardKey(row.card_id!, row.set_id!))));
+                }
+              }
+              return rows;
+            };
+            const variantOwnership = async () => {
+              const projection = async (columns: string) => {
+                const rows: OwnershipRow[] = [];
+                const seen = new Set<string>();
+                for (const identity of identities) {
+                  const result = await readPages((after) => scopeQuery(supabase.from('user_card_variants').select(columns)
+                    .eq('user_id', user.id).in('card_id', identity.cardIds).in('set_id', identity.setIds), after), seen,
+                  (row) => Boolean(row.user_id === user.id && row.card_id && identity.cardIds.includes(row.card_id)
+                    && row.set_id && identity.setIds.includes(row.set_id) && typeof row.variant === 'string'));
+                  if (result.error) return { rows: [], error: result.error };
+                  rows.push(...result.rows.filter((row) => binderVariantCardKeys.has(getVariantCardKey(row.card_id!, row.set_id!))));
+                }
+                return { rows, error: null };
+              };
+              let result = await projection('id,user_id,card_id,set_id,variant,quantity');
+              const error = result.error as { code?: string; message?: string } | null;
+              const missingQuantity = error && (error.code === '42703' || error.code === 'PGRST204')
+                && /\bquantity\b/i.test(error.message ?? '') && /\bcolumn\b/i.test(error.message ?? '')
+                && /does not exist|could not find|not found/i.test(error.message ?? '');
+              if (missingQuantity && identities.length) result = await projection('id,user_id,card_id,set_id,variant');
+              if (result.error) throw result.error;
+              return result.rows;
+            };
+            const [saved, variants] = await Promise.all([savedOwnership(), variantOwnership()]);
+            assertCurrent();
+            return { ownedRows: saved, variantRows: variants };
+          }, { signal: artworkRequest.signal });
           if (!isCurrentRequest()) return;
-          if (fallback.error) throw fallback.error;
-          variantRows = (fallback.data ?? []) as typeof variantRows;
+
+          const nextGlobalOwnedKeys = new Set(
+            (ownedRows ?? []).map((row) => `${row.set_id}:${row.card_id}`)
+          );
+          setCards((currentCards) => !isCurrentRequest() ? currentCards : currentCards.map((card) => ({
+            ...card,
+            owned: card.owned || nextGlobalOwnedKeys.has(`${card.set_id}:${card.card_id}`),
+          })));
+
+          const typedVariantRows = variantRows.filter((row) =>
+            Boolean(row.set_id) && binderVariantCardKeys.has(getVariantCardKey(row.card_id!, row.set_id ?? ''))
+          );
+
+          setOwnedVariants(new Map(
+            typedVariantRows.map((row) => [
+              getVariantKey(row.card_id!, row.set_id ?? '', row.variant!),
+              Math.max(1, Number(row.quantity ?? 1)),
+            ])
+          ));
+          setVariantManagedCards(new Set(
+            typedVariantRows.map((row) => getVariantCardKey(row.card_id!, row.set_id ?? ''))
+          ));
+          setOwnershipReady(!incompleteRefresh);
+        } finally {
+          // Includes failure/deadline: a sibling read cannot keep paging or
+          // publish after this logical ownership request has settled.
+          ownershipRequest.abort();
         }
-
-        const typedVariantRows = variantRows.filter((row) =>
-          Boolean(row.set_id) && binderVariantCardKeys.has(getVariantCardKey(row.card_id, row.set_id ?? ''))
-        );
-
-        setOwnedVariants(new Map(
-          typedVariantRows.map((row) => [
-            getVariantKey(row.card_id, row.set_id ?? '', row.variant),
-            Math.max(1, Number(row.quantity ?? 1)),
-          ])
-        ));
-        setVariantManagedCards(new Set(
-          typedVariantRows.map((row) => getVariantCardKey(row.card_id, row.set_id ?? ''))
-        ));
-        setOwnershipReady(!incompleteRefresh);
       })().catch((error) => {
         if (isCurrentRequest()) {
           retrievalTrace.fail('ownership');

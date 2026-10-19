@@ -123,9 +123,9 @@ await test('visible content and edit readiness are different measurements; stale
 
 // Execute actual screen load callback, with native viewability itself deliberately not simulated as a paint claim.
 const source = fs.readFileSync('features/binder/BinderDetailScreen.tsx', 'utf8');
-const ast = ts.createSourceFile('screen.tsx', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX); let callback, authEffect, readOnlyCopy;
+const ast = ts.createSourceFile('screen.tsx', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX); let callback, authEffect, readOnlyCopy, focusCleanup, ownedCountLoop;
 const actualCallbacks = new Map();
-const callbackNames = ['loadShowcase', 'load', 'isShowcaseScopeCurrent', 'beginShowcaseMutation', 'finishShowcaseMutation', 'toggleShowcase', 'reorderShowcase', 'handleRemoveCustomBinderCard'];
+const callbackNames = ['getVariantKey', 'loadShowcase', 'load', 'isShowcaseScopeCurrent', 'beginShowcaseMutation', 'finishShowcaseMutation', 'toggleShowcase', 'reorderShowcase', 'handleRemoveCustomBinderCard'];
 function visit(n) {
   if (ts.isVariableDeclaration(n) && n.name.getText(ast) === 'load' && ts.isCallExpression(n.initializer)) callback = n.initializer.arguments[0].getText(ast);
   if (ts.isVariableDeclaration(n) && callbackNames.includes(n.name.getText(ast))) {
@@ -133,14 +133,18 @@ function visit(n) {
   }
   if (ts.isVariableDeclaration(n) && n.name.getText(ast) === 'readOnlyMessage') readOnlyCopy = n.initializer.getText(ast);
   if (ts.isCallExpression(n) && n.expression.getText(ast) === 'useEffect' && n.arguments[0]?.getText(ast).includes('supabase.auth.onAuthStateChange')) authEffect = n.arguments[0].getText(ast);
+  if (ts.isCallExpression(n) && n.expression.getText(ast) === 'useFocusEffect') {
+    focusCleanup = n.arguments[0].arguments[0].body.statements.find(ts.isReturnStatement).expression.getText(ast);
+  }
+  if (ts.isForOfStatement(n) && n.expression.getText(ast) === 'displayCards') ownedCountLoop = n.getText(ast);
   ts.forEachChild(n, visit);
 }
 visit(ast); assert(callback);
-const code = ts.transpileModule(`${callbackNames.map(name => `export const ${name} = ${actualCallbacks.get(name)};`).join('\n')}\nexport const authEffect = ${authEffect};`, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
+const code = ts.transpileModule(`${callbackNames.map(name => `export const ${name} = ${actualCallbacks.get(name)};`).join('\n')}\nexport const authEffect = ${authEffect};\nexport const cancelFocus = ${focusCleanup};`, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
 const deadlineCode = ts.transpileModule(fs.readFileSync('lib/personalDataRead.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
 function screenHarness(options = {}) {
   const auth = deferred(), record = deferred(), network = deferred(), disk = deferred();
-  const state = { binder: null, cards: [], loading: null, error: null, ownershipReady: false, status: null, showcases: [], showcaseStatus: 'loading', userId: null, alerts: [] }; let saves = 0, invalidations = 0;
+  const state = { binder: null, cards: [], loading: null, error: null, ownershipReady: false, status: null, showcases: [], showcaseStatus: 'loading', userId: null, ownedVariants: new Map(), variantManagedCards: new Set(), alerts: [] }; let saves = 0, invalidations = 0;
   const timers = new Map(); let timerId = 0;
   const deadline = { exports: {} };
   vm.runInNewContext(deadlineCode, { exports: deadline.exports, AbortController,
@@ -162,11 +166,20 @@ function screenHarness(options = {}) {
     isCurrentAccountRequest: (a, b) => a.accountGeneration === b.accountGeneration && a.requestId === b.requestId,
     measureAsync: (_name, work) => work(), fetchBinderById: () => record.promise, fetchBinderCards: () => network.promise,
     supabase: { auth: { getUser: () => auth.promise }, from: table => {
-      const request = { operation: 'select', payload: null, filters: [] };
-      const q = { select: () => q, eq: (key, value) => { request.filters.push([key, value]); return q; }, in: () => q, order: () => q, abortSignal: () => q, single: () => q,
+      const request = { operation: 'select', payload: null, filters: [], columns: null, after: null, limit: null, order: [], signal: null };
+      const q = { select: columns => { request.columns = columns; return q; }, eq: (key, value) => { request.filters.push([key, value]); return q; },
+        in: (key, value) => { request.filters.push([key, value]); return q; }, order: (key, options) => { request.order.push([key, options]); return q; },
+        limit: value => { request.limit = value; return q; }, gt: (key, value) => { assert.equal(key, 'id'); request.after = value; return q; },
+        abortSignal: signal => { request.signal = signal; return q; }, single: () => q,
         insert: payload => { request.operation = 'insert'; request.payload = payload; return q; },
         delete: () => { request.operation = 'delete'; return q; }, update: payload => { request.operation = 'update'; request.payload = payload; return q; },
-        then: (resolve, reject) => (options.read ? Promise.resolve().then(() => options.read(table, request)) : never()).then(resolve, reject) };
+        then: (resolve, reject) => (options.read ? Promise.resolve().then(() => options.read(table, request)).then(result => {
+          if (options.rawPages || !Array.isArray(result?.data)) return result;
+          let data = result.data;
+          if (request.after !== null) data = data.filter(row => row.id > request.after);
+          if (request.limit !== null) data = data.slice(0, request.limit);
+          return { ...result, data };
+        }) : never()).then(resolve, reject) };
       return q;
     } },
     attachBinderCatalogueArtwork: never, attachBinderSetArtwork: never, attachLatestSnapshotPrices: never, getVariantCardKey: (c, s) => `${s}:${c}`,
@@ -177,7 +190,7 @@ function screenHarness(options = {}) {
     setUserId: value => { state.userId = value; }, setIsPublic: () => {}, setCustomNameArtKey: () => {}, setSelectedCard: () => {}, setDetailVisible: () => {},
     setShowcaseRows: value => { state.showcases = typeof value === 'function' ? value(state.showcases) : value; },
     setShowcaseStatus: value => { state.showcaseStatus = typeof value === 'function' ? value(state.showcaseStatus) : value; },
-    setOwnedVariants: () => {}, setVariantManagedCards: () => {}, Alert: { alert: (...args) => state.alerts.push(args) },
+    setOwnedVariants: value => { state.ownedVariants = value; }, setVariantManagedCards: value => { state.variantManagedCards = value; }, Alert: { alert: (...args) => state.alerts.push(args) },
     selectedCard: null, getBinderCardDisplayName: () => 'Fixture', showToast: () => {},
   };
   Object.defineProperties(runtime, {
@@ -266,7 +279,7 @@ await test('optional custom binder name artwork cannot hold usable card facts', 
   assert.equal(visibleBeforeCustomArt, 2, 'optional local artwork cannot block the card model');
 });
 function completeOwnershipRead(table) {
-  return { data: table === 'binders' ? [{ id: binder.id }] : [], error: null };
+  return { data: table === 'binders' ? [{ id: binder.id, user_id: scope.accountId }] : [], error: null };
 }
 async function openWithCompleteFacts(h, record = binder) {
   const pending = h.load(); h.disk.resolve(null);
@@ -545,6 +558,212 @@ await test('reorder waits for every dispatched write after one hard rejection be
   assert.equal(reads, 2); assert.equal(h.state.showcaseStatus, 'ready');
   assert.equal(h.runtime.showcaseMutationRef.current, null); assert.equal(h.runtime.showcaseReadyRef.current, true);
   assert.equal(h.state.alerts.length, 1, 'the rejected update remains a reported failure after all writes settle');
+});
+function ownershipPages(options = {}) {
+  const queries = []; let active = 0, maximumActive = 0;
+  const population = {
+    binders: options.binders ?? [{ id: binder.id, user_id: scope.accountId }],
+    binder_cards: options.saved ?? [], user_card_variants: options.variants ?? [],
+  };
+  const h = screenHarness({ rawPages: true, read: (table, request) => {
+    if (table === 'binder_card_showcases') return { data: [], error: null };
+    assert.equal(request.operation, 'select'); assert.equal(request.limit, 200);
+    assert.equal(request.order.length, 1); assert.equal(request.order[0][0], 'id'); assert.equal(request.order[0][1].ascending, true);
+    assert(request.signal);
+    for (const [, value] of request.filters) if (Array.isArray(value)) assert(value.length <= 100);
+    const observed = { table, ...request, returned: null }; queries.push(observed);
+    active++; maximumActive = Math.max(maximumActive, active);
+    const custom = options.override?.(table, request, queries);
+    const work = custom !== undefined ? custom : (() => {
+      let rows = population[table] ?? [];
+      for (const [key, value] of request.filters) rows = rows.filter(row => Array.isArray(value) ? value.includes(row[key]) : row[key] === value);
+      rows = [...rows].sort((left, right) => left.id < right.id ? -1 : left.id > right.id ? 1 : 0);
+      if (request.after !== null) rows = rows.filter(row => row.id > request.after);
+      rows = rows.slice(0, Math.min(request.limit, options.cap ?? 200));
+      const columns = request.columns.split(',');
+      return { data: rows.map(row => Object.fromEntries(columns.map(column => [column, row[column]]))), error: null };
+    })();
+    return Promise.resolve(work).then(result => {
+      observed.returned = result.data?.length ?? null;
+      return result;
+    }).finally(() => { active--; });
+  } });
+  return { h, queries, get active() { return active; }, get maximumActive() { return maximumActive; } };
+}
+async function openOwnership(fixture, facts = cards().map(row => ({ ...row, owned: false })), record = binder) {
+  const h = fixture.h;
+  const pending = h.load(); h.disk.resolve(null);
+  h.auth.resolve({ data: { user: { id: scope.accountId } } }); h.record.resolve(record); h.network.resolve(facts);
+  await pending; await tick(); await tick();
+}
+function standardOwnership(h) {
+  assert(ownedCountLoop);
+  const context = { exports: {}, displayCards: h.state.cards, ownedVariants: h.state.ownedVariants,
+    masterSetEnabled: false };
+  vm.runInNewContext(`let ownedCount = 0, countedSlotTotal = 0; ${ownedCountLoop}\nexports.value = { ownedCount, countedSlotTotal };`, context);
+  return context.exports.value;
+}
+function assertOwnershipFailure(fixture) {
+  assert.equal(fixture.h.state.cards.length, 124, 'partial ownership must retain useful card facts');
+  assert.equal(fixture.h.state.ownershipReady, false); assert.equal(fixture.h.runtime.isReadOnly, true);
+  assert.equal(fixture.h.state.ownedVariants.size, 0); assert.equal(fixture.h.state.variantManagedCards.size, 0);
+  assert.equal(fixture.h.state.alerts.length, 1); assert(fixture.queries.every(query => query.signal.aborted));
+  assert(fixture.maximumActive <= 2, 'logical ownership fan-out must stay bounded');
+}
+await test('owned cards and owner directory both recover beyond1000 rows with cross-binder ownership preserved', async () => {
+  const manyBinders = [{ id: binder.id, user_id: scope.accountId }, ...Array.from({ length: 1000 }, (_, index) => ({ id: uuid(300000 + index), user_id: scope.accountId }))];
+  const sourceCards = cards(); const other = manyBinders.at(-1).id;
+  const saved = Array.from({ length: 1001 }, (_, index) => ({ id: uuid(100000 + index), binder_id: other,
+    card_id: index === 1000 ? sourceCards[123].card_id : sourceCards[index % 123].card_id, set_id: 'sv08', owned: true }));
+  saved.push({ id: uuid(200000), binder_id: other, card_id: 'irrelevant-printing', set_id: 'another-set', owned: true });
+  const fixture = ownershipPages({ binders: manyBinders, saved, cap: 73 });
+  await openOwnership(fixture);
+  assert.equal(fixture.h.state.ownershipReady, true); assert.equal(fixture.h.state.alerts.length, 0);
+  assert.equal(fixture.h.state.cards[123].owned, true, 'the tail printing is owned in a different binder');
+  assert.equal(standardOwnership(fixture.h).ownedCount, 124); assert.equal(standardOwnership(fixture.h).countedSlotTotal, 124);
+  assert.equal(fixture.queries.filter(query => query.table === 'binders').reduce((sum, query) => sum + query.returned, 0), 1001);
+  assert.equal(fixture.queries.filter(query => query.table === 'binder_cards').reduce((sum, query) => sum + query.returned, 0), 1001, 'scope filters exclude unrelated holdings');
+  assert(fixture.queries.some(query => query.table === 'binders' && query.after && query.returned === 0));
+  assert(fixture.maximumActive <= 2); assert.equal(fixture.active, 0);
+});
+await test('positive variant quantities beyond1000 matching ledger rows survive lower-cap pages', async () => {
+  const sourceCards = cards();
+  const variants = Array.from({ length: 1000 }, (_, index) => ({ id: uuid(400000 + index), user_id: scope.accountId,
+    card_id: sourceCards[index % 123].card_id, set_id: 'sv08', variant: 'normal', quantity: 1 }));
+  variants.push({ id: uuid(401001), user_id: scope.accountId, card_id: sourceCards[123].card_id, set_id: 'sv08', variant: 'reverseHolofoil', quantity: 7 });
+  const fixture = ownershipPages({ variants, cap: 37 }); await openOwnership(fixture);
+  assert.equal(fixture.h.state.ownedVariants.get(`sv08:${sourceCards[123].card_id}:reverseHolofoil`), 7);
+  assert.equal(fixture.h.state.variantManagedCards.has(`sv08:${sourceCards[123].card_id}`), true);
+  assert.equal(standardOwnership(fixture.h).ownedCount, 124); assert.equal(standardOwnership(fixture.h).countedSlotTotal, 124);
+  assert.equal(fixture.queries.filter(query => query.table === 'user_card_variants').reduce((sum, query) => sum + query.returned, 0), 1001);
+  assert.equal(fixture.h.state.ownershipReady, true); assert.equal(fixture.active, 0);
+});
+await test('a one-row server cap continues until definitive empty while genuine zero remains valid', async () => {
+  const sourceCards = cards(); const saved = sourceCards.slice(0, 3).map((card, index) => ({ id: uuid(500000 + index), binder_id: binder.id, card_id: card.card_id, set_id: 'sv08', owned: true }));
+  const fixture = ownershipPages({ saved, cap: 1 }); await openOwnership(fixture);
+  assert.equal(standardOwnership(fixture.h).ownedCount, 3); assert.equal(fixture.h.state.ownershipReady, true);
+  const matching = fixture.queries.filter(query => query.table === 'binder_cards' && query.filters.find(([key]) => key === 'card_id')[1].includes(sourceCards[0].card_id));
+  assert.deepEqual(matching.map(query => query.returned), [1, 1, 1, 0]);
+  const zero = ownershipPages({ cap: 1 }); await openOwnership(zero);
+  assert.equal(zero.h.state.ownershipReady, true); assert.equal(standardOwnership(zero.h).ownedCount, 0);
+  const empty = ownershipPages(); await openOwnership(empty, [], { ...binder, type: 'custom', source_set_id: null });
+  assert.equal(empty.h.state.ownershipReady, true); assert.equal(empty.queries.length, 0);
+});
+await test('an exact full page requires its next empty page and readiness waits for the last source', async () => {
+  const finalPage = deferred(); const sourceCards = cards();
+  const saved = Array.from({ length: 200 }, (_, index) => ({ id: uuid(510000 + index), binder_id: binder.id, card_id: sourceCards[0].card_id, set_id: 'sv08', owned: true }));
+  const fixture = ownershipPages({ saved, override: (table, request) => table === 'binder_cards' && request.after ? finalPage.promise : undefined });
+  await openOwnership(fixture);
+  assert.equal(fixture.h.state.ownershipReady, false); assert.equal(fixture.h.state.cards[0].owned, false);
+  finalPage.resolve({ data: [], error: null }); await tick(); await tick();
+  assert.equal(fixture.h.state.ownershipReady, true); assert.equal(fixture.h.state.cards[0].owned, true); assert.equal(fixture.active, 0);
+});
+await test('quantity compatibility discards every partial primary row before paginating its fallback', async () => {
+  const sourceCards = cards(); const variants = sourceCards.slice(0, 2).map((card, index) => ({ id: uuid(520000 + index), user_id: scope.accountId, card_id: card.card_id, set_id: 'sv08', variant: 'normal', quantity: index ? 8 : 99 }));
+  const fixture = ownershipPages({ variants, cap: 1, override: (table, request) => table === 'user_card_variants' && request.columns.includes('quantity') && request.after
+    ? { data: null, error: { code: '42703', message: 'column user_card_variants.quantity does not exist' } } : undefined });
+  await openOwnership(fixture);
+  assert.equal(fixture.h.state.ownershipReady, true); assert.equal(fixture.h.state.ownedVariants.size, 2);
+  for (const card of sourceCards.slice(0, 2)) assert.equal(fixture.h.state.ownedVariants.get(`sv08:${card.card_id}:normal`), 1, 'compatibility quantity remains one, never the discarded99');
+  assert(fixture.queries.some(query => query.table === 'user_card_variants' && !query.columns.includes('quantity') && query.after && query.returned === 0));
+});
+await test('general, authentication and timeout variant failures cannot become compatibility quantity one', async () => {
+  const card = cards()[0];
+  const variants = [{ id: uuid(525000), user_id: scope.accountId, card_id: card.card_id, set_id: 'sv08', variant: 'normal', quantity: 7 }];
+  for (const error of [
+    { code: 'PGRST003', message: 'Timed out acquiring a connection' },
+    { code: '42501', message: 'permission denied' },
+    { code: 'PGRST301', message: 'JWT expired' },
+    { status: 403, message: 'access denied' },
+    { code: 'XX000', message: 'unknown backend error' },
+    { code: '42703', message: 'column user_card_variants.set_id does not exist' },
+    { code: 'PGRST204', message: "Could not find the 'variant' column in the schema cache" },
+    { code: 'PGRST204', message: 'quantity column query timed out' },
+  ]) {
+    const fixture = ownershipPages({ variants, override: (table, request) => table === 'user_card_variants' && request.columns.includes('quantity')
+      ? { data: null, error } : undefined });
+    await openOwnership(fixture); assertOwnershipFailure(fixture);
+    assert.equal(fixture.queries.filter(query => query.table === 'user_card_variants' && !query.columns.includes('quantity')).length, 0,
+      'a successful quantity-less response would invent one after a genuine failure');
+    assert.equal(fixture.active, 0);
+  }
+});
+await test('recognised PostgREST missing quantity-column evidence permits the compatibility projection', async () => {
+  const card = cards()[0];
+  const fixture = ownershipPages({ variants: [{ id: uuid(526000), user_id: scope.accountId, card_id: card.card_id, set_id: 'sv08', variant: 'normal', quantity: 7 }],
+    override: (table, request) => table === 'user_card_variants' && request.columns.includes('quantity')
+      ? { data: null, error: { code: 'PGRST204', message: "Could not find the 'quantity' column of 'user_card_variants' in the schema cache" } } : undefined });
+  await openOwnership(fixture);
+  assert.equal(fixture.h.state.ownershipReady, true); assert.equal(fixture.h.state.ownedVariants.get('sv08:' + card.card_id + ':normal'), 1);
+  assert.equal(fixture.h.state.alerts.length, 0); assert.equal(fixture.active, 0);
+});
+await test('a second-page ownership failure cannot publish partial maps or enable editing', async () => {
+  const fixture = ownershipPages({ cap: 1, binders: [{ id: binder.id, user_id: scope.accountId }, { id: uuid(530000), user_id: scope.accountId }],
+    override: (table, request) => table === 'binders' && request.after ? { data: null, error: { message: 'second directory page failed' } } : undefined });
+  await openOwnership(fixture); assertOwnershipFailure(fixture); assert.equal(fixture.active, 0);
+});
+await test('malformed, overlapping, foreign and oversized ownership pages fail without compatibility substitution', async () => {
+  const valid = { id: binder.id, user_id: scope.accountId };
+  for (const bad of [
+    () => ({ data: null, error: null }),
+    () => ({ data: [{ ...valid, id: 'not-a-uuid' }], error: null }),
+    () => ({ data: [valid, valid], error: null }),
+    () => ({ data: [valid], error: null }), // the next page repeats the same key
+    () => ({ data: [{ ...valid, id: uuid(9900) }, valid], error: null }),
+    () => ({ data: [{ ...valid, user_id: 'another-owner' }], error: null }),
+    () => ({ data: Array.from({ length: 201 }, (_, index) => ({ id: uuid(540000 + index), user_id: scope.accountId })), error: null }),
+  ]) {
+    const fixture = ownershipPages({ override: table => table === 'binders' ? bad() : undefined });
+    await openOwnership(fixture); assertOwnershipFailure(fixture); assert.equal(fixture.active, 0);
+  }
+  const foreign = ownershipPages({ override: table => table === 'user_card_variants' ? { data: [{ id: uuid(550000), user_id: scope.accountId, card_id: 'outside-filter', set_id: 'sv08', variant: 'normal', quantity: 3 }], error: null } : undefined });
+  await openOwnership(foreign); assertOwnershipFailure(foreign);
+  assert.equal(foreign.queries.filter(query => query.table === 'user_card_variants' && !query.columns.includes('quantity')).length, 0);
+});
+await test('the shared ownership request budget fails explicitly at256 dispatched pages', async () => {
+  let directoryPages = 0;
+  const fixture = ownershipPages({ override: table => table === 'binders'
+    ? { data: [{ id: uuid(600000 + directoryPages++), user_id: scope.accountId }], error: null } : undefined });
+  await openOwnership(fixture); assertOwnershipFailure(fixture);
+  assert.equal(fixture.queries.length, 256); assert.match(fixture.h.state.alerts[0][0], /Ownership details unavailable/);
+  assert.equal(fixture.active, 0);
+});
+await test('whole-read timeout aborts the other lane and ignored abort cannot dispatch another page', async () => {
+  const delayed = deferred();
+  const fixture = ownershipPages({ override: table => table === 'binders' ? delayed.promise : undefined });
+  await openOwnership(fixture); await fixture.h.deadline(); await tick();
+  assertOwnershipFailure(fixture); const requests = fixture.queries.length;
+  delayed.resolve({ data: [{ id: binder.id, user_id: scope.accountId }], error: null }); await tick(); await tick();
+  assert.equal(fixture.queries.length, requests); assert.equal(fixture.h.state.ownershipReady, false); assert.equal(fixture.active, 0);
+});
+await test('source failure aborts an in-flight sibling and prevents its late success from paging', async () => {
+  const delayed = deferred();
+  const fixture = ownershipPages({ override: table => table === 'binders' ? { data: null, error: { message: 'directory failed' } }
+    : table === 'user_card_variants' ? delayed.promise : undefined });
+  await openOwnership(fixture); assertOwnershipFailure(fixture); const requests = fixture.queries.length;
+  delayed.resolve({ data: [{ id: uuid(610000), user_id: scope.accountId, card_id: cards()[0].card_id, set_id: 'sv08', variant: 'normal', quantity: 9 }], error: null });
+  await tick(); await tick();
+  assert.equal(fixture.queries.length, requests); assert.equal(fixture.h.state.ownedVariants.size, 0); assert.equal(fixture.active, 0);
+});
+await test('actual navigation and account cancellation between ownership pages reject late ignored-abort data', async () => {
+  for (const kind of ['navigation', 'account']) {
+    const delayed = deferred();
+    const fixture = ownershipPages({ override: (table, request) => table === 'binders' && request.after ? delayed.promise : undefined });
+    await openOwnership(fixture);
+    let cleanup;
+    if (kind === 'navigation') fixture.h.runtime.exports.cancelFocus();
+    else {
+      let listener;
+      fixture.h.runtime.supabase.auth.onAuthStateChange = callback => { listener = callback; return { data: { subscription: { unsubscribe() {} } } }; };
+      cleanup = fixture.h.runtime.exports.authEffect(); listener('SIGNED_OUT', null);
+    }
+    await tick(); const requests = fixture.queries.length;
+    assert(fixture.queries.every(query => query.signal.aborted));
+    delayed.resolve({ data: [{ id: uuid(620000), user_id: scope.accountId }], error: null }); await tick(); await tick();
+    assert.equal(fixture.queries.length, requests); assert.equal(fixture.h.state.ownershipReady, false);
+    assert.equal(fixture.h.state.ownedVariants.size, 0); assert.equal(fixture.h.state.alerts.length, 0);
+    assert.equal(fixture.active, 0); cleanup?.();
+  }
 });
 await test('actual screen renders a complete read-only saved view before auth or ownership network replies', async () => {
   const h = screenHarness(); h.load(); h.disk.resolve(snapshot()); await tick();
