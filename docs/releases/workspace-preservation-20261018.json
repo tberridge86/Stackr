@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-19T00:12:44.856Z",
+  "observedAt": "2026-10-19T04:28:06.318Z",
   "canonicalRepository": "D:/Stackr",
   "branch": "codex/stackr-repair-consolidation-20261018",
   "privateEvidenceRoot": "D:/Stackr-organization",
@@ -26,9 +26,9 @@
     "nativeAbsentIndex": "Original absent index and initialization locks retained; scratch restoration reproduces actual source state"
   },
   "relocatedCodingFolders": {
-    "count": 29,
+    "count": 31,
     "cleanLinkedWorktrees": 18,
-    "dirtyLinkedWorktrees": 9,
+    "dirtyLinkedWorktrees": 11,
     "independentRepositories": 2,
     "dirtyIndependentRepositories": 1,
     "everyInverseMoveRehearsed": true,
@@ -321,7 +321,7 @@
     "inverseMovesVerified": true,
     "sourceAppliedOverCurrentApp": false
   },
-  "totalOriginalFoldersReversiblyRelocated": 45,
+  "totalOriginalFoldersReversiblyRelocated": 47,
   "folderCountScope": "26 Git checkouts +3 native source snapshots +3 artwork folders +2 evidence folders +1 protected backup +1 historical release packet +1 mobile release artifact folder. Cohort bytes overlap retained copies; no unique-byte or disk-reclaimed claim. +1 historical fallback root containing5checkpoints/frozenpreview.",
   "mobileReleaseArtifacts": {
     "foldersRelocated": 1,
@@ -357,8 +357,8 @@
   "originalNamedRoots": {
     "total": 60,
     "currentlyMapped": 60,
-    "relocatedWithRecordedProof": 45,
-    "retainedOldRoots": 13,
+    "relocatedWithRecordedProof": 47,
+    "retainedOldRoots": 11,
     "organizationDestination": 1,
     "unresolvedAbsentOriginals": 0,
     "consolidationComplete": false,
@@ -833,6 +833,42 @@
       "noAutomaticRetryOrRollback": true
     },
     "sourceDirectoryAbsent": true,
+    "permanentDeletion": false
+  },
+  "build37IntegratedContinuation": {
+    "registeredAt": "2026-10-19T04:13:41.900Z",
+    "roots": [
+      {
+        "name": "Stackr-build37-feedback-20260912",
+        "original": "D:\\Stackr-build37-feedback-20260912",
+        "current": "D:\\Stackr-organization\\archive\\consolidated-worktrees-20261018\\Stackr-build37-feedback-20260912",
+        "exactOriginalDirectoryRetained": true,
+        "moveReturnReplayPassed": true,
+        "independentlyRestoredImportantFiles": 4029
+      },
+      {
+        "name": "Stackr-integrated-candidate-20260912",
+        "original": "D:\\Stackr-integrated-candidate-20260912",
+        "current": "D:\\Stackr-organization\\archive\\consolidated-worktrees-20261018\\Stackr-integrated-candidate-20260912",
+        "exactOriginalDirectoryRetained": true,
+        "moveReturnReplayPassed": true,
+        "independentlyRestoredImportantFiles": 5189
+      }
+    ],
+    "officialGitMoves": 6,
+    "originalEdgeTransactionCompleted": false,
+    "separateHistoricalFourPlusNewTwoEdgeCompletion": true,
+    "registration": {
+      "privatePath": "evidence/consolidation-20261018/edge-reviewed-forward-replay-20261019/relocation-registration.json",
+      "sha256": "d07f8af84ad8ee0238c25cca3291ff16d24b6224a0bc68d83ab33fe7fe281f1e"
+    },
+    "independentReview": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/build37-integrated-completion-review-20261019/review.json",
+      "sha256": "555e2883b85279641391870ecd103798fadc5bf8cda95e04fa9253ed30258cd4"
+    },
+    "ordinaryDependencyEntriesRetainedInOriginalDirectories": true,
+    "independentDependencyBackupClaimed": false,
+    "currentTypedRestoreRequiresFreshBindingsAndReview": true,
     "permanentDeletion": false
   }
 }

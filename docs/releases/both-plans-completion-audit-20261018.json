@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-19T00:14:08.871Z",
+  "observedAt": "2026-10-19T04:28:06.318Z",
   "ownerRequest": "Ensure BOTH plans have satisfied the work listed before TestFlight.",
   "sourceHeadAudited": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
   "branch": "codex/stackr-repair-consolidation-20261018",
@@ -576,7 +576,7 @@
       "nativePublished": false,
       "phoneAccepted": false,
       "satisfiedInFull": false,
-      "remaining": "Three supplied pack-art fallbacks are implemented and correctly typed; this does not prove all affected Traditional Chinese set logos are replaced. Reconcile the exact affected sets and accepted assets, then verify configured API, signed native bytes and Discover/binder rendering.",
+      "remaining": "The current 83 published zh-tw set IDs are reconciled: 42 bundled marks and 47 approved public artwork metadata rows overlap on six IDs; all 47 public hashes match the named supplied manifest. Three existing image bodies matched and decoded; 44 were not fetched. No additional missing approved supplied mapping is demonstrated. This does not establish 83 standalone logos or HD originals: 35 bundled marks are generated derivatives, and public artwork includes packages and representatives with limited SKU scope. The exact video-row cohort remains unidentified. V15 stays open for configured-app delivery, exact signed bytes, Discover/set/binder rendering and Wi-Fi/mobile-data, cold, saved/offline and retry acceptance; TestFlight remains held.",
       "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
       "sourceFiles": [
         "lib/traditionalChineseSetLogos.ts",
@@ -597,6 +597,21 @@
         "deployed": false,
         "nativePublished": false,
         "deviceVerified": false
+      },
+      "current83SetSourceReconciliation": {
+        "privatePath": "evidence/consolidation-20261018/traditional-chinese-remaining-reconciliation-20261019/handoff.json",
+        "sha256": "1bfa99caee4d4a5dad1e5e0d62b5ed7165c765e3972856d5fcb128f3e34b440c",
+        "sourceReconciliationCompleteForDeclared83": true,
+        "exactVideoRowsIdentified": false,
+        "newRuntimeRepairDemonstrated": false,
+        "phoneClosed": false,
+        "independentReview": {
+          "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/traditional-chinese-v15-reconciliation-review-20261019/review.json",
+          "sha256": "ff9c29106f299ddec0738c3eebc66799245261bbf40fdbfda51f1ddfdb8cac7c"
+        },
+        "actualDecodedBodies": 3,
+        "publicBodiesNotFetched": 44,
+        "generatedDerivativeMarks": 35
       }
     },
     {
@@ -1119,7 +1134,7 @@
       "requirement": "Consolidate under D:/Stackr-organization with reversible recovery",
       "state": "partially_satisfied",
       "satisfiedInFull": false,
-      "remaining": "45 verified reversible relocations with preservation/restoration proof; actual inverse moves were rehearsed where recorded. The three artwork roots have copy/restoration and rollback evidence, not a recorded physical inverse-move rehearsal. Further original roots remain; relocation retains bytes and is not reclamation.",
+      "remaining": "47 verified reversible relocations with preservation/restoration proof; actual inverse moves were rehearsed where recorded. The three artwork roots have copy/restoration and rollback evidence, not a recorded physical inverse-move rehearsal. Further original roots remain; relocation retains bytes and is not reclamation.",
       "owner": "Tif"
     },
     {
@@ -1127,7 +1142,7 @@
       "requirement": "Account for every folder in the original owner list",
       "state": "all60_accounted_one_owner_excluded_unrelated",
       "satisfiedInFull": true,
-      "remaining": "Folder accounting is complete: 45 verified relocations, 13 retained old roots, one organization destination and one owner-excluded unrelated folder, D:/CodexLogoWork. Stackr-relevant denominator is 59; consolidation of retained work remains incomplete.",
+      "remaining": "Folder accounting is complete: 47 verified relocations, 11 retained old roots, one organization destination and one owner-excluded unrelated folder, D:/CodexLogoWork. Stackr-relevant denominator is 59; consolidation of retained work remains incomplete.",
       "owner": "Tif",
       "evidence": {
         "privatePath": "evidence/consolidation-20261018/owner-scope-correction-codexlogowork/owner-scope-reply.json",
@@ -1139,7 +1154,7 @@
       "requirement": "Repair dependent runtime, Git, launch and restore paths",
       "state": "partially_satisfied",
       "satisfiedInFull": false,
-      "remaining": "Seven dependency junctions repaired and prior entries kept. One pre-existing Wrangler target absent; Python/model/data consumers, nested worktrees and old dependency roots remain held.",
+      "remaining": "Seven dependency junctions repaired and prior entries kept. One pre-existing Wrangler target absent; Python/model/data consumers, nested worktrees and old dependency roots remain held. A separate exact Chinese-marks alias now reaches the same retained D:/Stackr-1 installation directly; its original junction object and failed/successful histories remain preserved separately.",
       "owner": "stackr_coding"
     },
     {
@@ -1328,20 +1343,20 @@
     "sha256": "714099dd3456675f74e4ae5e8df9427349e4a71d15ad76985db1743667499d52"
   },
   "originalFolderCoverage": {
-    "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-relocation-20261019-v3/current-owner-folder-placement.json",
-    "sha256": "c3105b081e36d1b62039b88f84b26ceb5b03d92d4c70a7aef211e35d0f8643ae"
+    "privatePath": "evidence/consolidation-20261018/edge-reviewed-forward-replay-20261019/current-owner-folder-placement.json",
+    "sha256": "1bbab46f8f43353d5a4cbcbfc08dfd5cb4e0edecf35081e5d02334b384b8cc85"
   },
   "originalFolderCounts": {
-    "relocatedWithRecordedProof": 45,
-    "retainedDependencyDataOrUnfinishedWork": 13,
+    "relocatedWithRecordedProof": 47,
+    "retainedDependencyDataOrUnfinishedWork": 11,
     "existingOrganizationDestination": 1,
     "ownerExcludedUnrelated": 1,
     "unmappedUnresolvedOriginal": 0,
     "originalMapRowsPresent": 60,
     "originalMapRowsMissing": 0,
-    "namedOriginalPathsStillPresentIncludingOrganizationDestination": 14,
-    "namedOldRootsStillPresentExcludingOrganizationDestination": 13,
-    "originalPathsAbsent": 46,
+    "namedOriginalPathsStillPresentIncludingOrganizationDestination": 12,
+    "namedOldRootsStillPresentExcludingOrganizationDestination": 11,
+    "originalPathsAbsent": 48,
     "stackrRelevantOriginalPaths": 59
   },
   "originalNamedPaths": 60,
@@ -1443,42 +1458,6 @@
       },
       "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder.",
       "currentLocation": "D:\\Stackr-next-testflight-20260906",
-      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
-    },
-    {
-      "original": "D:/Stackr-build37-feedback-20260912",
-      "mapRowPresent": true,
-      "hold": null,
-      "capturedCohort": {
-        "file": "D:/Stackr-organization/preserved-work/consolidation-20261018-content/combined-summary.json",
-        "sha256": "03c8a24a1b53c558104a2111882b911ea6b439d1104bf5dd4401ede25b0ffabc",
-        "capturedFiles": 1,
-        "capturedBytes": 8105,
-        "restoredFiles": 1,
-        "restoreExact": true,
-        "allNecessaryIgnoredMaterialPreserved": false,
-        "scope": "Only the recorded captured cohort; not a complete whole-root preservation claim"
-      },
-      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder.",
-      "currentLocation": "D:\\Stackr-build37-feedback-20260912",
-      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
-    },
-    {
-      "original": "D:/Stackr-integrated-candidate-20260912",
-      "mapRowPresent": true,
-      "hold": null,
-      "capturedCohort": {
-        "file": "D:/Stackr-organization/preserved-work/consolidation-20261018-content/combined-summary.json",
-        "sha256": "03c8a24a1b53c558104a2111882b911ea6b439d1104bf5dd4401ede25b0ffabc",
-        "capturedFiles": 1,
-        "capturedBytes": 20009,
-        "restoredFiles": 1,
-        "restoreExact": true,
-        "allNecessaryIgnoredMaterialPreserved": false,
-        "scope": "Only the recorded captured cohort; not a complete whole-root preservation claim"
-      },
-      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder.",
-      "currentLocation": "D:\\Stackr-integrated-candidate-20260912",
       "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
     },
     {
@@ -1601,9 +1580,20 @@
     "permanentDeletion": false
   },
   "currentHostedSourceChecks": {
-    "recordedAt": "2026-10-18T23:31:45.669Z",
-    "stateAtRecord": "PENDING_NEW_COMMITTED_PRICING_IDENTITY_SOURCE",
-    "lastPassedRevision": "0708673cde0ff60e8698b0053f77ff11b6de5dfb",
+    "recordedAt": "2026-10-19T04:28:06.318Z",
+    "stateAtRecord": "LAST_COMMITTED_SOURCE_PASSED_NEW_DOCUMENTATION_REVISION_NEEDS_OWN_CHECKS",
+    "lastPassedRevision": "898f6fbec07388f331f4cbd739c6b46d9a4c294f",
+    "lastPassed": {
+      "sourceRevision": "898f6fbec07388f331f4cbd739c6b46d9a4c294f",
+      "success": 11,
+      "failure": 0,
+      "pending": 0,
+      "normalSkips": 2,
+      "receipt": {
+        "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-898f6fb-final.json",
+        "sha256": "4e32f37da16ceb99e5feda92fc02ebafa58724607abdeea9110c2276af6fee1a"
+      }
+    },
     "sourceChecksAreNotPhoneAcceptance": true
   },
   "videoRegisterSynchronization": {
@@ -2237,14 +2227,14 @@
     "testOnly": true
   },
   "latestVerifiedCommittedSource": {
-    "sourceRevision": "9d33a7032b3bf55551ca8c52972c329ccc250a68",
+    "sourceRevision": "898f6fbec07388f331f4cbd739c6b46d9a4c294f",
     "success": 11,
     "failure": 0,
     "pending": 0,
     "normalSkips": 2,
     "receipt": {
-      "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-9d33a70-final.json",
-      "sha256": "102688189323a588b223576b598d74f779d7b4050207cf86fd5dd920cc1f5871"
+      "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-898f6fb-final.json",
+      "sha256": "4e32f37da16ceb99e5feda92fc02ebafa58724607abdeea9110c2276af6fee1a"
     }
   },
   "previousUnsignedIosBeforePricingIdentity": {
@@ -2280,5 +2270,56 @@
     "confirmedUnblockedRuntimeRepairMissing": false,
     "phoneClosedIssues": 0,
     "testFlightHeld": true
+  },
+  "build37IntegratedContinuation": {
+    "registeredAt": "2026-10-19T04:13:41.900Z",
+    "roots": [
+      {
+        "name": "Stackr-build37-feedback-20260912",
+        "original": "D:\\Stackr-build37-feedback-20260912",
+        "current": "D:\\Stackr-organization\\archive\\consolidated-worktrees-20261018\\Stackr-build37-feedback-20260912",
+        "exactOriginalDirectoryRetained": true,
+        "moveReturnReplayPassed": true,
+        "independentlyRestoredImportantFiles": 4029
+      },
+      {
+        "name": "Stackr-integrated-candidate-20260912",
+        "original": "D:\\Stackr-integrated-candidate-20260912",
+        "current": "D:\\Stackr-organization\\archive\\consolidated-worktrees-20261018\\Stackr-integrated-candidate-20260912",
+        "exactOriginalDirectoryRetained": true,
+        "moveReturnReplayPassed": true,
+        "independentlyRestoredImportantFiles": 5189
+      }
+    ],
+    "officialGitMoves": 6,
+    "originalEdgeTransactionCompleted": false,
+    "separateHistoricalFourPlusNewTwoEdgeCompletion": true,
+    "registration": {
+      "privatePath": "evidence/consolidation-20261018/edge-reviewed-forward-replay-20261019/relocation-registration.json",
+      "sha256": "d07f8af84ad8ee0238c25cca3291ff16d24b6224a0bc68d83ab33fe7fe281f1e"
+    },
+    "independentReview": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/build37-integrated-completion-review-20261019/review.json",
+      "sha256": "555e2883b85279641391870ecd103798fadc5bf8cda95e04fa9253ed30258cd4"
+    },
+    "ordinaryDependencyEntriesRetainedInOriginalDirectories": true,
+    "independentDependencyBackupClaimed": false,
+    "currentTypedRestoreRequiresFreshBindingsAndReview": true,
+    "permanentDeletion": false
+  },
+  "currentTraditionalChinese83SetReconciliation": {
+    "privatePath": "evidence/consolidation-20261018/traditional-chinese-remaining-reconciliation-20261019/handoff.json",
+    "sha256": "1bfa99caee4d4a5dad1e5e0d62b5ed7165c765e3972856d5fcb128f3e34b440c",
+    "sourceReconciliationCompleteForDeclared83": true,
+    "exactVideoRowsIdentified": false,
+    "newRuntimeRepairDemonstrated": false,
+    "phoneClosed": false,
+    "independentReview": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/traditional-chinese-v15-reconciliation-review-20261019/review.json",
+      "sha256": "ff9c29106f299ddec0738c3eebc66799245261bbf40fdbfda51f1ddfdb8cac7c"
+    },
+    "actualDecodedBodies": 3,
+    "publicBodiesNotFetched": 44,
+    "generatedDerivativeMarks": 35
   }
 }

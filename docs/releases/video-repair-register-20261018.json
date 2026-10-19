@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-19T00:25:47.838Z",
+  "updatedAt": "2026-10-19T04:28:06.318Z",
   "sourceVideo": {
     "fileName": "WhatsApp Video 2026-10-18 at 09.12.30.mp4",
     "sha256": "a29ad89ce8cec90b3dfa299c5a951ff4b60d686187f5a27c03a4e6175d1e859c",
@@ -567,7 +567,22 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Three supplied pack-art fallbacks are implemented and correctly typed; this does not prove all affected Traditional Chinese set logos are replaced. Reconcile the exact affected sets and accepted assets, then verify configured API, signed native bytes and Discover/binder rendering."
+      "remainingBlocker": "The current 83 published zh-tw set IDs are reconciled: 42 bundled marks and 47 approved public artwork metadata rows overlap on six IDs; all 47 public hashes match the named supplied manifest. Three existing image bodies matched and decoded; 44 were not fetched. No additional missing approved supplied mapping is demonstrated. This does not establish 83 standalone logos or HD originals: 35 bundled marks are generated derivatives, and public artwork includes packages and representatives with limited SKU scope. The exact video-row cohort remains unidentified. V15 stays open for configured-app delivery, exact signed bytes, Discover/set/binder rendering and Wi-Fi/mobile-data, cold, saved/offline and retry acceptance; TestFlight remains held.",
+      "current83SetSourceReconciliation": {
+        "privatePath": "evidence/consolidation-20261018/traditional-chinese-remaining-reconciliation-20261019/handoff.json",
+        "sha256": "1bfa99caee4d4a5dad1e5e0d62b5ed7165c765e3972856d5fcb128f3e34b440c",
+        "sourceReconciliationCompleteForDeclared83": true,
+        "exactVideoRowsIdentified": false,
+        "newRuntimeRepairDemonstrated": false,
+        "phoneClosed": false,
+        "independentReview": {
+          "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/traditional-chinese-v15-reconciliation-review-20261019/review.json",
+          "sha256": "ff9c29106f299ddec0738c3eebc66799245261bbf40fdbfda51f1ddfdb8cac7c"
+        },
+        "actualDecodedBodies": 3,
+        "publicBodiesNotFetched": 44,
+        "generatedDerivativeMarks": 35
+      }
     },
     {
       "id": "V16",
@@ -991,9 +1006,9 @@
     "workingSnapshotRootsRestored": 18,
     "capturedFileCopiesRestored": 13862,
     "capturedWorkingBytes": 4197961088,
-    "archivedCodingFolders": 29,
+    "archivedCodingFolders": 31,
     "archivedCleanLinkedWorktrees": 18,
-    "archivedPreservedDirtyLinkedWorktrees": 9,
+    "archivedPreservedDirtyLinkedWorktrees": 11,
     "archivedIndependentRepositories": 2,
     "separatelyPreservedIgnoredEvidenceFiles": 7760,
     "separatelyPreservedIgnoredEvidenceBytes": 3501108635,
@@ -1012,22 +1027,22 @@
     "nativeSourceBytesSeparatelyPreserved": 1754954518,
     "mobileReleaseArtifactFoldersRelocated": 1,
     "mobileReleaseArtifactFilesVerified": 3607,
-    "totalOriginalFoldersReversiblyRelocated": 45,
+    "totalOriginalFoldersReversiblyRelocated": 47,
     "historicalFallbackFoldersRelocated": 1,
     "historicalFallbackFilesPreserved": 3134,
     "originalNamedRoots": {
       "total": 60,
       "stackrRelevant": 59,
-      "relocated": 45,
-      "retained": 13,
+      "relocated": 47,
+      "retained": 11,
       "organizationDestination": 1,
       "ownerExcludedUnrelated": 1,
       "unresolvedAbsent": 0,
       "wholePlanComplete": false
     },
     "currentCoverage": {
-      "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-relocation-20261019-v3/current-owner-folder-placement.json",
-      "sha256": "c3105b081e36d1b62039b88f84b26ceb5b03d92d4c70a7aef211e35d0f8643ae"
+      "privatePath": "evidence/consolidation-20261018/edge-reviewed-forward-replay-20261019/current-owner-folder-placement.json",
+      "sha256": "1bbab46f8f43353d5a4cbcbfc08dfd5cb4e0edecf35081e5d02334b384b8cc85"
     },
     "visualAtomicOriginalDirectoryContinuation": {
       "registeredAt": "2026-10-18T22:18:16.139Z",
@@ -1300,6 +1315,42 @@
         "noAutomaticRetryOrRollback": true
       },
       "sourceDirectoryAbsent": true,
+      "permanentDeletion": false
+    },
+    "build37IntegratedContinuation": {
+      "registeredAt": "2026-10-19T04:13:41.900Z",
+      "roots": [
+        {
+          "name": "Stackr-build37-feedback-20260912",
+          "original": "D:\\Stackr-build37-feedback-20260912",
+          "current": "D:\\Stackr-organization\\archive\\consolidated-worktrees-20261018\\Stackr-build37-feedback-20260912",
+          "exactOriginalDirectoryRetained": true,
+          "moveReturnReplayPassed": true,
+          "independentlyRestoredImportantFiles": 4029
+        },
+        {
+          "name": "Stackr-integrated-candidate-20260912",
+          "original": "D:\\Stackr-integrated-candidate-20260912",
+          "current": "D:\\Stackr-organization\\archive\\consolidated-worktrees-20261018\\Stackr-integrated-candidate-20260912",
+          "exactOriginalDirectoryRetained": true,
+          "moveReturnReplayPassed": true,
+          "independentlyRestoredImportantFiles": 5189
+        }
+      ],
+      "officialGitMoves": 6,
+      "originalEdgeTransactionCompleted": false,
+      "separateHistoricalFourPlusNewTwoEdgeCompletion": true,
+      "registration": {
+        "privatePath": "evidence/consolidation-20261018/edge-reviewed-forward-replay-20261019/relocation-registration.json",
+        "sha256": "d07f8af84ad8ee0238c25cca3291ff16d24b6224a0bc68d83ab33fe7fe281f1e"
+      },
+      "independentReview": {
+        "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/build37-integrated-completion-review-20261019/review.json",
+        "sha256": "555e2883b85279641391870ecd103798fadc5bf8cda95e04fa9253ed30258cd4"
+      },
+      "ordinaryDependencyEntriesRetainedInOriginalDirectories": true,
+      "independentDependencyBackupClaimed": false,
+      "currentTypedRestoreRequiresFreshBindingsAndReview": true,
       "permanentDeletion": false
     }
   },
