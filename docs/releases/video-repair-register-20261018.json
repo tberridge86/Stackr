@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-19T18:25:13.693Z",
+  "updatedAt": "2026-10-19T19:07:30.316Z",
   "sourceVideo": {
     "fileName": "WhatsApp Video 2026-10-18 at 09.12.30.mp4",
     "sha256": "a29ad89ce8cec90b3dfa299c5a951ff4b60d686187f5a27c03a4e6175d1e859c",
@@ -38,14 +38,20 @@
         "implemented": true,
         "tested": true,
         "independentlyReviewed": true,
-        "merged": false,
+        "merged": true,
         "deployed": false,
         "nativePublished": false,
         "deviceVerified": false
       },
       "remainingBlocker": "Exact affected printing/subsurface and installed Home rendering remain unconfirmed. Verify the same eventual Varoom tile, account isolation and retry on the approved native candidate.",
       "ownerReply": "The blank tile eventually becomes Varoom (same tile). Earlier separate-working-comparator interpretation is superseded; exact printing fields remain unconfirmed.",
-      "additionalSecurityRepair": "Raw/late401/403/JWT permission denials clear retained private cards and selections, invalidate pending work and preserve the actual response status; review finding HOME-DENIAL-01 resolved with regressions."
+      "additionalSecurityRepair": "Raw/late401/403/JWT permission denials clear retained private cards and selections, invalidate pending work and preserve the actual response status; review finding HOME-DENIAL-01 resolved with regressions.",
+      "sourceMergeProof": {
+        "mainRevision": "55bb6445cb5c9e0a70cab0b4cfd176a2e2b44e10",
+        "privateReceipt": "evidence/consolidation-20261018/video-desktop-replay-20261019/pr411-main-delivery.json",
+        "sha256": "3ed568815bd135a8ae3d62cf3da6d371e94fd3e85d250a1fcfb5ace9493e3814",
+        "nativeOrPhoneAcceptanceImplied": false
+      }
     },
     {
       "id": "V02",
@@ -218,7 +224,17 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Prepared-route configuration and live scope remain unverified. Saved observations are explicitly not a fresh holdings check; phone ranges/plot/haptics pending."
+      "remainingBlocker": "Prepared-route configuration and live owner scope remain unverified. The pending/null saved-history regression is repaired and locally verified; saved observations still do not establish current holdings. Installed-phone ranges, plot, Retry and haptics remain pending.",
+      "additionalPendingSummaryRepair": {
+        "cause": "Contract-valid 200 pending with summary:null erased valid saved history and suppressed a late cache read.",
+        "repairCommit": "75012ea60ce777c96ae48409e402dc7865a35d4d",
+        "sourceEvidence": "docs/releases/value-history-pending-recovery-20261019.md",
+        "behavior": "Retain only validated owner-bound saved history across pending/null and same-scope Retry, with saved/unverified labels. Every non-null authoritative summary, including zero/empty/all-unpriced/mismatch, supersedes cache; account/epoch/generation/denial guards remain.",
+        "independentReviewSha256": "7834225ac4a6deec3acf48c835979fbe896ae7a34b8737c2dcf8087714506c06",
+        "requiredChecksSha256": "9aadca45b1e4ed15b1f7401eb636a8a663a094d1b0362b2f214d399f97136c20",
+        "nativePublished": false,
+        "phoneVerified": false
+      }
     },
     {
       "id": "V07",
@@ -567,7 +583,7 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "The current 83 published zh-tw set IDs are reconciled: 42 bundled marks and 47 approved public artwork metadata rows overlap on six IDs; all 47 public hashes match the named supplied manifest. All 47 existing approved public artwork objects passed full-body hash, dimension and decode checks in two batches (3 earlier, 44 later). No additional missing approved supplied mapping is demonstrated. Replay of the original recording now identifies the affected rows as SV10 Glory of the Rocket Gang, SV9a Hot Wind Arena and SV9 Battle Partners; the existing exact native pack-art fallbacks cover all three in merged main ddbdb57. This does not establish 83 standalone logos or HD originals: 35 bundled marks are generated derivatives, and public artwork includes packages and representatives with limited SKU scope. V15 stays open for configured-app delivery, exact signed bytes, Discover/set/binder rendering and Wi-Fi/mobile-data, cold, saved/offline and retry acceptance; TestFlight remains held.",
+      "remainingBlocker": "The current 83 published zh-tw set IDs are reconciled: 42 bundled marks and 47 approved public artwork metadata rows overlap on six IDs; all 47 public hashes match the named supplied manifest. All 47 existing approved public artwork objects passed full-body hash, dimension and decode checks in two batches (3 earlier, 44 later). No additional missing approved supplied mapping is demonstrated. Replay of the original recording now identifies the affected rows as SV10 Glory of the Rocket Gang, SV9a Hot Wind Arena and SV9 Battle Partners; the existing exact native pack-art fallbacks cover all three in merged main ddbdb57. This does not establish 83 standalone logos or HD originals. The reconciliation snapshot counted 35 generated bundled marks; the subsequent locally verified SVP1 native source crop reduces the selected generated count to 34, with no HD claim. Public artwork also includes packages and representatives with limited SKU scope. SVP1 canonical prior-link evidence and API publication remain pending separately from the three video rows. V15 stays open for configured-app delivery, exact signed bytes, Discover/set/binder rendering and Wi-Fi/mobile-data, cold, saved/offline and retry acceptance; TestFlight remains held.",
       "exactVideoCohort": {
         "identified": true,
         "source": "docs/releases/video-v15-exact-row-identification-20261019.md",
@@ -619,7 +635,20 @@
         "newSourceAcquisition": false,
         "phoneRenderingVerified": false,
         "hdOriginalsEstablished": false,
-        "scope": "All47 existing approved public artwork objects have saved full-body hash, dimension and decode checks: three earlier samples plus44 later GETs, with all identity/hash/role joins matching. The44 later requests read81361757bytes without persisting images. Signed-app and phone rendering, the exact visible video-row cohort, sharper originals and unknown physical/regional SKUs remain open."
+        "scope": "All47 existing approved public artwork objects have saved full-body hash, dimension and decode checks: three earlier samples plus44 later GETs, with all identity/hash/role joins matching. The44 later requests read81361757bytes without persisting images. Signed-app and phone rendering, sharper originals and unknown physical/regional SKUs remain open. The video-row identities were resolved separately by the Desktop replay recorded above."
+      },
+      "additionalNativeSourceCrop": {
+        "setId": "34e5af6e-66d0-4fea-98ce-b1fa1ec1d1dd",
+        "setCode": "SVP1",
+        "repairCommit": "81c7c401ec64efed0dbdbe86f07b2b6856bc8cd3",
+        "sourceEvidence": "docs/releases/svp1-native-title-replacement-20261019.md",
+        "priorGeneratedCount": 35,
+        "selectedGeneratedCount": 34,
+        "officialSourceCropCount": 1,
+        "apiPublished": false,
+        "nativePublished": false,
+        "phoneVerified": false,
+        "scope": "Separate source-fidelity improvement; not one of the three generic-icon video rows."
       }
     },
     {
@@ -651,12 +680,18 @@
         "implemented": true,
         "tested": true,
         "independentlyReviewed": true,
-        "merged": false,
+        "merged": true,
         "deployed": false,
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Exact bytes passed current unsigned iOS export. Signed app and installed-phone rendering remain pending; TestFlight stays held."
+      "remainingBlocker": "Cover bytes passed the saved unsigned iOS export. Export of the latest combined source, exact signed bytes and installed-phone rendering remain pending; TestFlight stays held.",
+      "sourceMergeProof": {
+        "mainRevision": "55bb6445cb5c9e0a70cab0b4cfd176a2e2b44e10",
+        "privateReceipt": "evidence/consolidation-20261018/video-desktop-replay-20261019/pr411-main-delivery.json",
+        "sha256": "3ed568815bd135a8ae3d62cf3da6d371e94fd3e85d250a1fcfb5ace9493e3814",
+        "nativeOrPhoneAcceptanceImplied": false
+      }
     },
     {
       "id": "V17",
