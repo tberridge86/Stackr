@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-19T05:16:03.865Z",
+  "updatedAt": "2026-10-19T07:09:36.737Z",
   "sourceVideo": {
     "fileName": "WhatsApp Video 2026-10-18 at 09.12.30.mp4",
     "sha256": "a29ad89ce8cec90b3dfa299c5a951ff4b60d686187f5a27c03a4e6175d1e859c",
@@ -857,15 +857,18 @@
       "remainingBlocker": "The historical public95-printing batch returned105assets in557ms;98/100 resolver rows were eligible and one exact thumbnail was decoded in that capture. Structured listing-media selection is now repaired and locally reviewed. Exact recorded listing identity, live media delivery, remaining exact Pikachu artwork, native publication and phone journeys remain open.",
       "additionalCatalogueFinding": {
         "id": "AR-JUNGLE60-EXACT-REBIND",
-        "state": "approved_staging_rollback_rehearsal_passed_production_repair_still_unapproved",
+        "state": "owner_approved_production_committed_configured_app_image_verified_phone_open",
         "evidence": "docs/releases/jungle-association-diagnostics-20261018.json",
-        "liveWrite": false,
+        "liveWrite": true,
         "normalGapDisclosed": true,
         "normalAliasAbsentNarrativeSuperseded": true,
         "stagingExecution": "docs/releases/jungle-staging-rehearsal-20261018.json",
-        "productionWrite": false,
+        "productionWrite": true,
         "productionFirstEditionVisibilityNotEstablishedByStaging": true,
-        "phoneVerified": false
+        "phoneVerified": false,
+        "historicalStateBeforeOwnerProductionApproval": "approved_staging_rollback_rehearsal_passed_production_repair_still_unapproved",
+        "productionFirstEditionVisibilityVerified": true,
+        "productionExecution": "docs/releases/jungle-production-image-correction-20261018.json"
       },
       "warmArtworkReassignmentRepair": {
         "sourceRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
@@ -1738,10 +1741,51 @@
   "currentJungleProductionProposal": {
     "document": "docs/releases/jungle-production-image-correction-20261018.json",
     "sqlAndOperationsReviewed": true,
-    "ownerApproved": false,
-    "productionExecuted": false,
+    "ownerApproved": true,
+    "productionExecuted": true,
     "normalImageGapDisclosed": true,
-    "testFlightHeld": true
+    "testFlightHeld": true,
+    "httpImageVerified": true,
+    "actualOutcome": {
+      "issue": "AR-JUNGLE60-EXACT-REBIND",
+      "ownerApproved": true,
+      "ownerAnswer": "Approve the one production image correction",
+      "productionExecuted": true,
+      "productionCommitted": true,
+      "databaseCalls": 1,
+      "associationRowsChanged": 1,
+      "fieldsChanged": [
+        "printing_id",
+        "variant_id"
+      ],
+      "httpImageVerified": true,
+      "firstEditionArtwork": "exact",
+      "regularEditionArtwork": "missing_explicitly",
+      "configuredAnonymousApiReads": 2,
+      "existingImmutableImageBodiesHashDimensionDecodePassed": 4,
+      "sourceImageBytesUnchanged": true,
+      "priceRefreshes": 0,
+      "jobActions": 0,
+      "rollbackAuthorized": false,
+      "phoneVerified": false,
+      "testFlightHeld": true,
+      "validation": {
+        "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/production-execution-v5-20261018/validation.json",
+        "sha256": "ce316e7864f6a044e5dd84501976a87da74706b099d6b8aa656082296cbabfa3"
+      },
+      "rawOutcome": {
+        "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/production-execution-v5-20261018/query-outcome.json",
+        "sha256": "5f108a4e577f0a6d6cd69d7901e8415619886037f6d4ed09449882c14e9f22c5"
+      },
+      "publicAppDelivery": {
+        "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/production-execution-v5-20261018/http-after/outcome.json",
+        "sha256": "2a0c73b0e4604afff3aa675f2bc20984c5cc10329cf7b03f41af2095441542d9"
+      },
+      "independentActualReview": {
+        "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/jungle-production-actual-outcome-review-20261019/review.json",
+        "sha256": "1245aab872844a3b5855b97758343b8f302587acb6ed2103a2a79a35fc553b91"
+      }
+    }
   },
   "calendarFixtureCorrection": {
     "file": "docs/releases/pricing-fixture-clock-correction-20261019.json",
@@ -1769,5 +1813,37 @@
     "newExactApprovedReplacementFound": false,
     "phoneClosureClaimed": false,
     "scope": "The finite follow-up found no new exact approved replacement among the inspected records. The five held source/printing targets remain explicit; five supplied enhancement manifests contain revisions of the same17 originals. No catalogue, source or phone closure was made."
+  },
+  "currentTraditionalChineseExact32SourceEligibility": {
+    "ownerAnswer": "Yes, my permission covers those exact sources and uses",
+    "permission": {
+      "privatePath": "evidence/consolidation-20261018/traditional-chinese-remaining-reconciliation-20261019/official-source-authority-proposal-20261019/owner-permission-and-source-eligibility-20261019/owner-permission-receipt.json",
+      "sha256": "7f07676cd46768956726c15619b74cc1c25d422f9d95ea52d04fddf3ee9a63d1"
+    },
+    "eligibility": {
+      "privatePath": "evidence/consolidation-20261018/traditional-chinese-remaining-reconciliation-20261019/official-source-authority-proposal-20261019/owner-permission-and-source-eligibility-20261019/handoff.json",
+      "sha256": "b46e5c995280711534df0729c2b3afb128c1fe15e1ebd8c5b1c44427b9d44046"
+    },
+    "independentSavedEvidenceReview": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/exact32-permission-eligibility-root-evidence-review-20261019.json",
+      "sha256": "beb6fdbe0f61618bd53a44a297c62e387c9f890a12450b8f9f5c9b9e95ebe83d"
+    },
+    "exactSetBindings": 32,
+    "officialUrlsHttp200AndDecoded": 26,
+    "selectedDerivativeBodyHashesMatched": 32,
+    "permissionSourceFactResolved": true,
+    "provenSharperEligibleReplacements": 0,
+    "replacementHolds": 32,
+    "newArtworkPublished": false,
+    "scope": "Permission covers the exact official Taiwan sources for saving, displaying and cropping. Existing selected derivatives are not demonstrated sharper replacements; identity, transform/provenance and title-crop holds remain. This proposal is separate from the47 existing approved public artwork objects."
+  },
+  "currentLocalRoundedIconIntegration": {
+    "revision": "067d62fdd28eb6ea91d1291ecbc715aebcad6c68",
+    "implementationRevision": "354a400348d4fc26b75053f7f91bc9fa987fcbb8",
+    "document": "docs/releases/icon-rounded-20261019.md",
+    "scope": "Separately integrated local presentation change, preserved by this workstream. Its web checks do not replace the earlier unsigned iOS receipt or phone acceptance.",
+    "published": false,
+    "unsignedIosForThisRevisionVerified": false,
+    "phoneVerified": false
   }
 }

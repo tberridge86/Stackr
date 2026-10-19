@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "preparedAt": "2026-10-18T21:37:20.702Z",
-  "state": "SQL_AND_OPERATIONS_REVIEWED_OWNER_PRODUCTION_APPROVAL_PENDING",
+  "state": "PRODUCTION_COMMITTED_CONFIGURED_APP_IMAGE_VERIFIED_PHONE_OPEN",
   "issue": "AR-JUNGLE60-EXACT-REBIND",
   "targetProject": "oakdbbzdqwurpjnoqhmu",
   "script": "docs/releases/jungle-production-image-correction-20261018.sql",
@@ -82,9 +82,50 @@
     "persistentChanges": 0,
     "returnedNoticeFixtures": false
   },
-  "ownerApproved": false,
-  "productionExecuted": false,
-  "httpImageVerified": false,
+  "ownerApproved": true,
+  "productionExecuted": true,
+  "httpImageVerified": true,
   "phoneVerified": false,
-  "testFlightHeld": true
+  "testFlightHeld": true,
+  "historicalPreparationState": "SQL_AND_OPERATIONS_REVIEWED_OWNER_PRODUCTION_APPROVAL_PENDING",
+  "actualProductionOutcome": {
+    "issue": "AR-JUNGLE60-EXACT-REBIND",
+    "ownerApproved": true,
+    "ownerAnswer": "Approve the one production image correction",
+    "productionExecuted": true,
+    "productionCommitted": true,
+    "databaseCalls": 1,
+    "associationRowsChanged": 1,
+    "fieldsChanged": [
+      "printing_id",
+      "variant_id"
+    ],
+    "httpImageVerified": true,
+    "firstEditionArtwork": "exact",
+    "regularEditionArtwork": "missing_explicitly",
+    "configuredAnonymousApiReads": 2,
+    "existingImmutableImageBodiesHashDimensionDecodePassed": 4,
+    "sourceImageBytesUnchanged": true,
+    "priceRefreshes": 0,
+    "jobActions": 0,
+    "rollbackAuthorized": false,
+    "phoneVerified": false,
+    "testFlightHeld": true,
+    "validation": {
+      "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/production-execution-v5-20261018/validation.json",
+      "sha256": "ce316e7864f6a044e5dd84501976a87da74706b099d6b8aa656082296cbabfa3"
+    },
+    "rawOutcome": {
+      "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/production-execution-v5-20261018/query-outcome.json",
+      "sha256": "5f108a4e577f0a6d6cd69d7901e8415619886037f6d4ed09449882c14e9f22c5"
+    },
+    "publicAppDelivery": {
+      "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/production-execution-v5-20261018/http-after/outcome.json",
+      "sha256": "2a0c73b0e4604afff3aa675f2bc20984c5cc10329cf7b03f41af2095441542d9"
+    },
+    "independentActualReview": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/jungle-production-actual-outcome-review-20261019/review.json",
+      "sha256": "1245aab872844a3b5855b97758343b8f302587acb6ed2103a2a79a35fc553b91"
+    }
+  }
 }
