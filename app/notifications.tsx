@@ -443,7 +443,8 @@ export default function NotificationsScreen() {
           title="Activity"
           accentText="ity"
           subtitle="Stay in the loop with The Market"
-          rightIcon="search-outline"
+          rightIcon="storefront-outline"
+          rightAccessibilityLabel="Open Market"
           onRightPress={() => router.push('/(tabs)/market' as any)}
         />
 

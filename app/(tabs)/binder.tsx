@@ -525,6 +525,7 @@ function BinderOptionsSheet({
 }
 
 function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirmDeleteBinder, readOnly = false, canOpenReadOnly, index, cardWidth, columns }: BinderCardProps) {
+  const { theme } = useTheme();
   const [optionsOpen, setOptionsOpen] = useState(false);
   const progress = counts[item.id] ?? EMPTY_BINDER_COUNT;
   const isOfficial = item.type === 'official';
@@ -548,7 +549,6 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
     BINDER_GRID_ARTWORK.maxWidth,
     Math.max(BINDER_GRID_ARTWORK.minWidth, innerWidth + 2)
   );
-  const nameIsLong = item.name.length > 24;
   const officialLogoHeight = isJapanese ? BINDER_GRID_JAPANESE_LOGO_HEIGHT : BINDER_GRID_ENGLISH_LOGO_HEIGHT;
   const officialLogoFrameHeight = officialLogoHeight + (isJapanese ? 14 : 8);
   const officialLogoWidth = isJapanese ? '100%' : '86%';
@@ -559,12 +559,8 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
         ? 108
         : 80
     : 58;
-  const fallbackNameFontSize = isJapanese
-    ? hasBinderLabel ? 15 : nameIsLong ? 15 : 17
-    : hasBinderLabel ? 9 : nameIsLong ? 9 : 10;
-  const fallbackNameLineHeight = isJapanese
-    ? hasBinderLabel ? 18 : nameIsLong ? 18 : 20
-    : hasBinderLabel ? 11 : nameIsLong ? 11 : 12;
+  const fallbackNameFontSize = isJapanese && !hasBinderLabel ? 17 : 16;
+  const fallbackNameLineHeight = isJapanese && !hasBinderLabel ? 22 : 21;
   const valueLabel = readOnly ? 'Saved binder' : value?.total != null ? `£${value.total.toFixed(2)}` : 'Price unavailable';
   const valueCaption = readOnly ? 'Connect to check prices' : value
     ? getCollectionPriceCoverageLabel(value)
@@ -659,9 +655,11 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
               alignSelf: 'center',
               marginTop: 3,
               minWidth: 38,
-              height: 18,
+              maxWidth: '100%',
+              minHeight: 22,
               paddingHorizontal: 10,
-              borderRadius: 9,
+              paddingVertical: 2,
+              borderRadius: 11,
               alignItems: 'center',
               justifyContent: 'center',
               overflow: 'hidden',
@@ -679,9 +677,10 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
               style={{
                 ...numericTextStyle,
                 color: '#FFFFFF',
-                fontSize: 9.5,
-                lineHeight: 12,
+                fontSize: 12,
+                lineHeight: 17,
                 fontWeight: '900',
+                textAlign: 'center',
               }}
             >
               {readOnly ? 'Saved' : knownTotal ? `${percentage}%` : 'Total unavailable'}
@@ -757,9 +756,6 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
         ) : null}
         {shouldShowNameText ? (
           <Text
-            numberOfLines={2}
-            adjustsFontSizeToFit
-            minimumFontScale={0.72}
             style={{
               ...typeScale.cardTitle,
               color: STACKR_BINDER_COLORS.navy,
@@ -773,15 +769,15 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
           </Text>
         ) : null}
         {!readOnly && counts[item.id] ? (
-          <Text numeric style={{ ...numericTextStyle, color: STACKR_BINDER_COLORS.textSoft, fontSize: 11, textAlign: 'center', marginTop: 4 }}>
+          <Text numeric style={{ ...numericTextStyle, color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, textAlign: 'center', marginTop: 4 }}>
             {isOfficial ? getBinderOwnedLabel(progress) : `${progress.owned} cards owned`}
           </Text>
         ) : null}
         <View style={{ marginTop: 5, backgroundColor: STACKR_BINDER_COLORS.softLavender, borderRadius: 12, borderWidth: 1, borderColor: STACKR_BINDER_COLORS.border, paddingHorizontal: 8, paddingVertical: 6, gap: 2 }}>
-          <Text numeric numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.82} style={{ ...numericTextStyle, color: STACKR_BINDER_COLORS.primary, fontSize: 12.5, lineHeight: 15, fontWeight: '900', textAlign: 'center' }}>
+          <Text numeric style={{ ...numericTextStyle, color: STACKR_BINDER_COLORS.primary, fontSize: 14, lineHeight: 19, fontWeight: '900', textAlign: 'center' }}>
             {valueLabel}
           </Text>
-          <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72} style={{ ...typeScale.caption, color: STACKR_BINDER_COLORS.textSoft, fontSize: 11.5, lineHeight: 14, fontWeight: '900', textAlign: 'center' }}>
+          <Text style={{ ...typeScale.caption, color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, fontWeight: '700', textAlign: 'center' }}>
             {valueCaption}{staleValue}
           </Text>
         </View>

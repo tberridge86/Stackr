@@ -13,6 +13,7 @@ import { REVIEWED_PRINTING_MATERIALS } from '../lib/cardPrintingMaterialRegistry
 import { stackrCardImageSizes } from '../lib/stackrSizing';
 import { stackrHaptics } from '../lib/haptics';
 import { InteractiveCardPreview } from './InteractiveCardPreview';
+import { CardInspectionStage, CARD_INSPECTION_STAGE_INSETS } from './CardInspectionStage';
 import { StackrImage } from './StackrImage';
 import { Text } from './Text';
 
@@ -45,8 +46,11 @@ export default function CardInspectionViewer({ request, onClose }: {
     cardId: request.card.id, selectedVariantId: request.selectedVariantId,
     languageCode: request.card.language, masks: VERIFIED_CARD_HOLO_MASKS,
   }), [request]);
-  const availableHeight = height - insets.top - insets.bottom - (landscape ? 88 : Math.min(360, 292 * fontScale));
-  const cardWidth = Math.max(1, Math.min(460, landscape ? width * 0.48 : width - 32, availableHeight * stackrCardImageSizes.cardAspectRatio));
+  const stagePaddingX = CARD_INSPECTION_STAGE_INSETS.horizontal * 2;
+  const stagePaddingY = CARD_INSPECTION_STAGE_INSETS.top + CARD_INSPECTION_STAGE_INSETS.bottom;
+  const availableHeight = height - insets.top - insets.bottom - (landscape ? 88 : Math.min(360, 292 * fontScale)) - 16;
+  const availableWidth = (landscape ? width * 0.48 - 32 : width - 32) - stagePaddingX;
+  const cardWidth = Math.max(1, Math.min(460, availableWidth, Math.max(1, availableHeight - stagePaddingY) * stackrCardImageSizes.cardAspectRatio));
   const cardHeight = cardWidth / stackrCardImageSizes.cardAspectRatio;
   const displayedArtworkUri = fullLoaded && request.fullImageUri ? request.fullImageUri : baseArtworkUri;
   const printingMaterial = useMemo(() => resolvePrintingMaterial(profile, displayedArtworkUri, REVIEWED_PRINTING_MATERIALS), [profile, displayedArtworkUri]);
@@ -79,7 +83,8 @@ export default function CardInspectionViewer({ request, onClose }: {
         </View>
       </View>
       <ScrollView contentContainerStyle={[styles.content, landscape && styles.landscapeContent]} bounces={false}>
-        <View style={[styles.stage, landscape && styles.landscapeStage, { minHeight: cardHeight + 32 }]}>
+        <View style={[styles.stage, landscape && styles.landscapeStage, { minHeight: cardHeight + stagePaddingY + 16 }]}>
+          <CardInspectionStage style={{ width: cardWidth + stagePaddingX }}>
           <View style={{ width: cardWidth, height: cardHeight }}>
             <InteractiveCardPreview resetKey={resetKey} onMotionPreference={setReduced} motionPaused={motionPaused || !imageLoaded}
               foilHaptics={hasVerifiedMaterial && lightingEnabled}
@@ -99,6 +104,7 @@ export default function CardInspectionViewer({ request, onClose }: {
                 </View> : null}
             </InteractiveCardPreview>
           </View>
+          </CardInspectionStage>
         </View>
         <View style={landscape ? styles.landscapeDetails : undefined}>
         <View style={styles.caption}>
@@ -125,13 +131,13 @@ export default function CardInspectionViewer({ request, onClose }: {
             style={({ pressed }) => [styles.control, lightingEnabled && motionEnabled && styles.controlActive,
               (!motionEnabled || unavailable || !imageLoaded || !hasVerifiedMaterial) && styles.disabled, pressed && styles.pressed]}>
             <Ionicons name="sunny-outline" size={21} color="#E1D5F6" />
-            <Text style={styles.controlLabel}>{hasVerifiedMaterial ? (lightingEnabled && motionEnabled ? 'Material on' : 'Material off') : 'Material unavailable'}</Text>
+            <Text style={styles.controlLabel}>{hasVerifiedMaterial ? (lightingEnabled && motionEnabled ? 'Lighting on' : 'Lighting off') : 'Lighting unavailable'}</Text>
           </Pressable>
         </View>
-        <Text style={styles.disclosure}>{unavailable ? 'Material rendering is unavailable. The catalogue artwork is unchanged.'
-          : printingMaterial ? `Reference-reviewed ${profile.identity?.finishCode ?? 'foil'} material · printing-level representation`
-            : profile.profile === 'plain' ? 'Catalogue artwork · non-foil printing'
-              : 'Catalogue artwork · no verified material pack for this printing yet'}</Text>
+        <Text style={styles.disclosure}>{unavailable ? 'Lighting preview unavailable. Showing catalogue artwork.'
+          : printingMaterial ? `Simulated lighting for this card version · ${(profile.identity?.finishCode ?? 'foil').replace(/_/g, ' ')}`
+            : profile.profile === 'plain' ? 'Catalogue artwork · non-foil card'
+              : 'Catalogue artwork · lighting preview unavailable'}</Text>
         <View style={styles.actions}>
           {request.onDetails ? <Pressable accessibilityRole="button" onPress={() => onClose(request.onDetails)} style={[styles.action, styles.primaryAction]}>
             <Text style={styles.primaryLabel}>Card details</Text><Ionicons name="chevron-forward" size={17} color="#29203A" /></Pressable> : null}
@@ -154,7 +160,7 @@ const styles = StyleSheet.create({
   iconButton: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center', borderRadius: 24 },
   content: { flexGrow: 1, paddingBottom: 10, justifyContent: 'center' },
   landscapeContent: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 },
-  landscapeStage: { paddingHorizontal: 24, flexShrink: 0 },
+  landscapeStage: { flexShrink: 0 },
   landscapeDetails: { flex: 1, maxWidth: 440 },
   stage: { alignItems: 'center', justifyContent: 'center', paddingVertical: 8 },
   caption: { alignItems: 'center', paddingHorizontal: 24, marginTop: 12, gap: 5 },
@@ -168,7 +174,7 @@ const styles = StyleSheet.create({
   controlLabel: { fontSize: 12, fontWeight: '600', color: '#E1D5F6' },
   disabled: { opacity: 0.45 },
   pressed: { opacity: 0.7 },
-  disclosure: { marginTop: 8, paddingHorizontal: 24, fontSize: 11, lineHeight: 16, color: '#B5A7C6', textAlign: 'center' },
+  disclosure: { marginTop: 8, paddingHorizontal: 24, fontSize: 12, lineHeight: 17, color: '#B5A7C6', textAlign: 'center' },
   actions: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 10, marginTop: 12, paddingHorizontal: 16 },
   action: { minHeight: 46, paddingHorizontal: 20, borderRadius: 23, borderWidth: 1, borderColor: 'rgba(218,202,239,0.2)',
     flexDirection: 'row', gap: 7, alignItems: 'center', justifyContent: 'center' },

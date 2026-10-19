@@ -1931,8 +1931,10 @@ export default function GlobalSearchScreen() {
               ) : null}
 
               {suggestion ? (
-                <TouchableOpacity onPress={() => setQuery(suggestion)} activeOpacity={0.82} style={{ alignSelf: 'flex-start' }}>
-                  <Text style={{ color: theme.colors.primary, fontSize: 11.5, lineHeight: 15, fontWeight: '900' }}>
+                <TouchableOpacity onPress={() => setQuery(suggestion)} activeOpacity={0.82}
+                  accessibilityRole="button" accessibilityLabel={`Search for ${suggestion} instead`}
+                  style={{ alignSelf: 'flex-start', minHeight: 48, minWidth: 48, justifyContent: 'center', paddingVertical: 12, paddingHorizontal: 4 }}>
+                  <Text style={{ color: theme.colors.primary, fontSize: 14, lineHeight: 20, fontWeight: '700' }}>
                     {`Search for "${suggestion}" instead`}
                   </Text>
                 </TouchableOpacity>

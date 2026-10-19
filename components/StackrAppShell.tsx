@@ -1,5 +1,5 @@
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { Stack, router, usePathname } from 'expo-router';
+import { Stack, router, usePathname, useRootNavigationState } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { TradeProvider } from './trade-context';
 import { CollectionProvider } from './collection-context';
@@ -17,6 +17,7 @@ import { StackrBackdrop } from './StackrBackdrop';
 import { STACKR_ICON_OUTLINE, StackrNavigationIcon, type StackrNavigationIconName } from './StackrNavigationIcon';
 import { typeScale } from '../lib/typography';
 import { COLLECTOR_TABS, SELLER_TABS } from '../lib/routes';
+import { canUseBrowsingBackGesture, resolveActiveStackrTab } from '../lib/stackrNavigationContext';
 import { stackrTabBarSizes } from '../lib/stackrSizing';
 import { stackrHaptics } from '../lib/haptics';
 import { CardInspectionProvider } from './CardInspectionProvider';
@@ -58,6 +59,7 @@ const PersistentTabBar = memo(function PersistentTabBar() {
   const { theme } = useTheme();
   const { mode } = useAppMode();
   const pathname = usePathname();
+  const navigationState = useRootNavigationState();
   const insets = useSafeAreaInsets();
   const tabs = mode === 'seller' ? SELLER_TABS : COLLECTOR_TABS;
 
@@ -68,46 +70,7 @@ const PersistentTabBar = memo(function PersistentTabBar() {
     ? insets.bottom + TAB_BAR_PADDING_BOTTOM_ANDROID
     : TAB_BAR_PADDING_BOTTOM_IOS;
 
-  const isActive = (tab: (typeof tabs)[number]) => {
-    const route = typeof tab.route === 'string' ? tab.route : String(tab.route.pathname ?? '');
-    if (tab.key === 'home') {
-      return pathname === '/' || pathname === '/(tabs)' || pathname === '/(tabs)/index';
-    }
-    if (tab.key === 'collection') {
-      return pathname.startsWith('/binder') || pathname.startsWith('/collection') || pathname === '/set' || pathname.startsWith('/set/') || pathname.startsWith('/pokemon') || pathname.startsWith('/duplicates') || pathname === '/(tabs)/binder';
-    }
-    if (tab.key === 'scan') return pathname.startsWith('/scan');
-    if (tab.key === 'market' || tab.key === 'listings') {
-      return pathname.startsWith('/(tabs)/market')
-        || pathname.startsWith('/market')
-        || pathname.startsWith('/trade')
-        || pathname.startsWith('/marketplace')
-        || pathname.startsWith('/market-place')
-        || pathname.startsWith('/offer')
-        || pathname.startsWith('/offers')
-        || pathname.startsWith('/listing')
-        || pathname.startsWith('/orders')
-        || pathname.startsWith('/watchlist')
-        || pathname.startsWith('/prices')
-        || pathname.startsWith('/price-builder');
-    }
-    if (tab.key === 'search') {
-      return pathname.startsWith('/(tabs)/search') || pathname.startsWith('/search') || pathname.startsWith('/product') || pathname.startsWith('/card') || pathname.startsWith('/explore');
-    }
-    if (tab.key === 'dashboard') {
-      return pathname === '/'
-        || pathname === '/(tabs)'
-        || pathname === '/(tabs)/index'
-        || pathname === '/seller'
-        || pathname === '/seller/index';
-    }
-    if (tab.key === 'inventory') return pathname.startsWith('/(tabs)/inventory') || pathname.startsWith('/inventory');
-    const publicRoute = route.replace('/(tabs)', '') || '/';
-    return pathname === route
-      || pathname.startsWith(`${route}/`)
-      || pathname === publicRoute
-      || pathname.startsWith(`${publicRoute}/`);
-  };
+  const activeTab = resolveActiveStackrTab(pathname, mode, navigationState);
 
   if (shouldHideShellControls(pathname)) return null;
 
@@ -129,7 +92,7 @@ const PersistentTabBar = memo(function PersistentTabBar() {
       elevation: 6,
     }}>
       {tabs.map((tab) => {
-        const active = isActive(tab);
+        const active = tab.key === activeTab;
         const frameSize = SECONDARY_TAB_FRAME_SIZE;
         const icon = TAB_ICONS[tab.key] ?? 'home';
         return (
@@ -214,9 +177,9 @@ function AppNavigation({ startupVisible, onReady }: StartupProps) {
                 <StartupReadySignal onReady={onReady} />
                 <StatusBar style="dark" />
                 <Stack
-                  screenOptions={{
+                  screenOptions={({ route }) => ({
                     headerShown: true,
-                    gestureEnabled: false,
+                    gestureEnabled: canUseBrowsingBackGesture(route.name),
                     fullScreenGestureEnabled: false,
                     headerStyle: { backgroundColor: 'transparent' },
                     headerBackground: () => (
@@ -230,7 +193,7 @@ function AppNavigation({ startupVisible, onReady }: StartupProps) {
                     headerBackButtonDisplayMode: 'minimal',
                     headerBackTitle: '',
                     contentStyle: { backgroundColor: theme.colors.bg },
-                  }}
+                  })}
                 >
                   <Stack.Screen name="index" options={{ headerShown: false }} />
                   <Stack.Screen name="(tabs)" options={{ headerShown: false, title: '' }} />
