@@ -43,6 +43,6 @@ Evidence is retained under `D:/Stackr-organization/evidence/readability-navigati
 
 The production material registry is empty in this candidate. Verified-lighting states were exercised with a test fixture only; no new material approval or physical-finish claim was introduced.
 
-**Independent navigation review is pending.** Separate agents are prohibited in this side conversation, so the implementation and tests above are self-verification. The focused resolver/gesture diff is ready for an independent reviewer; this document does not claim that review occurred.
+**Independent navigation review passed in the integration chat.** The coordinator independently inspected the resolver, route definitions and actual shell/gesture wiring and reran all128 focused checks successfully. See [the scoped review](readability-navigation-independent-review-20261019.md). The other presentation checks above remain the side chat's self-verification; installed-phone acceptance stays open.
 
 **iPhone acceptance is pending:** native edge-swipe, VoiceOver, device text scaling, physical haptics and detail-to-inspector transitions with real artwork. Local web previews cannot establish these results. Publication and TestFlight remain held.
