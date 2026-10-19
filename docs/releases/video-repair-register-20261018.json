@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-19T04:28:06.318Z",
+  "updatedAt": "2026-10-19T05:16:03.865Z",
   "sourceVideo": {
     "fileName": "WhatsApp Video 2026-10-18 at 09.12.30.mp4",
     "sha256": "a29ad89ce8cec90b3dfa299c5a951ff4b60d686187f5a27c03a4e6175d1e859c",
@@ -567,7 +567,7 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "The current 83 published zh-tw set IDs are reconciled: 42 bundled marks and 47 approved public artwork metadata rows overlap on six IDs; all 47 public hashes match the named supplied manifest. Three existing image bodies matched and decoded; 44 were not fetched. No additional missing approved supplied mapping is demonstrated. This does not establish 83 standalone logos or HD originals: 35 bundled marks are generated derivatives, and public artwork includes packages and representatives with limited SKU scope. The exact video-row cohort remains unidentified. V15 stays open for configured-app delivery, exact signed bytes, Discover/set/binder rendering and Wi-Fi/mobile-data, cold, saved/offline and retry acceptance; TestFlight remains held.",
+      "remainingBlocker": "The current 83 published zh-tw set IDs are reconciled: 42 bundled marks and 47 approved public artwork metadata rows overlap on six IDs; all 47 public hashes match the named supplied manifest. All 47 existing approved public artwork objects passed full-body hash, dimension and decode checks in two batches (3 earlier, 44 later). No additional missing approved supplied mapping is demonstrated. This does not establish 83 standalone logos or HD originals: 35 bundled marks are generated derivatives, and public artwork includes packages and representatives with limited SKU scope. The exact video-row cohort remains unidentified. V15 stays open for configured-app delivery, exact signed bytes, Discover/set/binder rendering and Wi-Fi/mobile-data, cold, saved/offline and retry acceptance; TestFlight remains held.",
       "current83SetSourceReconciliation": {
         "privatePath": "evidence/consolidation-20261018/traditional-chinese-remaining-reconciliation-20261019/handoff.json",
         "sha256": "1bfa99caee4d4a5dad1e5e0d62b5ed7165c765e3972856d5fcb128f3e34b440c",
@@ -582,6 +582,26 @@
         "actualDecodedBodies": 3,
         "publicBodiesNotFetched": 44,
         "generatedDerivativeMarks": 35
+      },
+      "approvedPublicDeliveryVerification": {
+        "outcome": {
+          "privatePath": "evidence/consolidation-20261018/traditional-chinese-remaining-reconciliation-20261019/remaining-approved-delivery-verification-20261019/outcome.json",
+          "sha256": "d792ddd3b872925d3debe339e689a8e49c9b9f8b3d413629696b9aa4675c34e8"
+        },
+        "independentReview": {
+          "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/exact-artwork-and-delivery-review-20261019/review.json",
+          "sha256": "a67b6d3736dc5eaef822658fe9a8941fdaeb3d864708c0d66e74465e8edac134"
+        },
+        "existingApprovedObjects": 47,
+        "earlierBodyChecks": 3,
+        "laterBodyChecks": 44,
+        "laterBytes": 81361757,
+        "allBodyHashesDimensionsAndDecodesPassed": true,
+        "imagesPersisted": false,
+        "newSourceAcquisition": false,
+        "phoneRenderingVerified": false,
+        "hdOriginalsEstablished": false,
+        "scope": "All47 existing approved public artwork objects have saved full-body hash, dimension and decode checks: three earlier samples plus44 later GETs, with all identity/hash/role joins matching. The44 later requests read81361757bytes without persisting images. Signed-app and phone rendering, the exact visible video-row cohort, sharper originals and unknown physical/regional SKUs remain open."
       }
     },
     {
@@ -1735,5 +1755,19 @@
     "confirmedUnblockedRuntimeRepairMissing": false,
     "phoneClosedIssues": 0,
     "testFlightHeld": true
+  },
+  "currentExactArtworkFollowup": {
+    "handoff": {
+      "privatePath": "evidence/consolidation-20261018/exact-card-artwork-followup-20261019/handoff.json",
+      "sha256": "311a38422cc13189fead8de4be987ae50a0c1d84af94d977d354f11bd5da2a50"
+    },
+    "independentReview": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/exact-artwork-and-delivery-review-20261019/review.json",
+      "sha256": "a67b6d3736dc5eaef822658fe9a8941fdaeb3d864708c0d66e74465e8edac134"
+    },
+    "heldExactTargets": 5,
+    "newExactApprovedReplacementFound": false,
+    "phoneClosureClaimed": false,
+    "scope": "The finite follow-up found no new exact approved replacement among the inspected records. The five held source/printing targets remain explicit; five supplied enhancement manifests contain revisions of the same17 originals. No catalogue, source or phone closure was made."
   }
 }

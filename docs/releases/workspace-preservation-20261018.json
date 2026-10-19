@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-19T04:28:06.318Z",
+  "observedAt": "2026-10-19T05:16:03.866Z",
   "canonicalRepository": "D:/Stackr",
   "branch": "codex/stackr-repair-consolidation-20261018",
   "privateEvidenceRoot": "D:/Stackr-organization",
@@ -870,5 +870,30 @@
     "independentDependencyBackupClaimed": false,
     "currentTypedRestoreRequiresFreshBindingsAndReview": true,
     "permanentDeletion": false
+  },
+  "reportOutputPathConsolidation": {
+    "files": [
+      "scripts/collect-public-catalogue-coverage.ts",
+      "scripts/collect-four-language-coverage-baseline.ts",
+      "scripts/test-collect-public-catalogue-coverage.ts"
+    ],
+    "outputRoot": "D:/Stackr-organization/active-runtime/four-language-coverage",
+    "historicalInputDefaultsChanged": false,
+    "datedInputsStillRequirePreservationAndExplicitOverridesAfterPrimaryMigration": true,
+    "sourceReview": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/report-output-path-review-20261019/review.json",
+      "sha256": "8736658dd91638f0f3dd311d53e788c38ea16c09b28136edbe06928a5265ee28"
+    },
+    "requiredChecks": {
+      "privatePath": "evidence/consolidation-20261018/validation/report-output-paths-20261019/required-checks.json",
+      "sha256": "5b892d9df8379cfc79a8d8d7402ecc55c40be4980c74de52caf239fbf39fb682"
+    },
+    "narrowTestsPassed": true,
+    "typecheckPassed": true,
+    "lintPassed": true,
+    "existingLintWarnings": 8,
+    "actualCollectorOrNetworkRun": false,
+    "appOrBackendRuntimeChanged": false,
+    "nativeBuildOrSubmission": false
   }
 }

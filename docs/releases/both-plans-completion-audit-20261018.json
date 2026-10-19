@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-19T04:28:06.318Z",
+  "observedAt": "2026-10-19T05:16:03.866Z",
   "ownerRequest": "Ensure BOTH plans have satisfied the work listed before TestFlight.",
   "sourceHeadAudited": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
   "branch": "codex/stackr-repair-consolidation-20261018",
@@ -2318,8 +2318,68 @@
       "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/traditional-chinese-v15-reconciliation-review-20261019/review.json",
       "sha256": "ff9c29106f299ddec0738c3eebc66799245261bbf40fdbfda51f1ddfdb8cac7c"
     },
-    "actualDecodedBodies": 3,
-    "publicBodiesNotFetched": 44,
-    "generatedDerivativeMarks": 35
+    "actualDecodedBodies": 47,
+    "publicBodiesNotFetched": 0,
+    "generatedDerivativeMarks": 35,
+    "historicalEarlierDecodedBodies": 3,
+    "approvedPublicDeliveryVerification": {
+      "outcome": {
+        "privatePath": "evidence/consolidation-20261018/traditional-chinese-remaining-reconciliation-20261019/remaining-approved-delivery-verification-20261019/outcome.json",
+        "sha256": "d792ddd3b872925d3debe339e689a8e49c9b9f8b3d413629696b9aa4675c34e8"
+      },
+      "independentReview": {
+        "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/exact-artwork-and-delivery-review-20261019/review.json",
+        "sha256": "a67b6d3736dc5eaef822658fe9a8941fdaeb3d864708c0d66e74465e8edac134"
+      },
+      "existingApprovedObjects": 47,
+      "earlierBodyChecks": 3,
+      "laterBodyChecks": 44,
+      "laterBytes": 81361757,
+      "allBodyHashesDimensionsAndDecodesPassed": true,
+      "imagesPersisted": false,
+      "newSourceAcquisition": false,
+      "phoneRenderingVerified": false,
+      "hdOriginalsEstablished": false,
+      "scope": "All47 existing approved public artwork objects have saved full-body hash, dimension and decode checks: three earlier samples plus44 later GETs, with all identity/hash/role joins matching. The44 later requests read81361757bytes without persisting images. Signed-app and phone rendering, the exact visible video-row cohort, sharper originals and unknown physical/regional SKUs remain open."
+    }
+  },
+  "currentExactArtworkFollowup": {
+    "handoff": {
+      "privatePath": "evidence/consolidation-20261018/exact-card-artwork-followup-20261019/handoff.json",
+      "sha256": "311a38422cc13189fead8de4be987ae50a0c1d84af94d977d354f11bd5da2a50"
+    },
+    "independentReview": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/exact-artwork-and-delivery-review-20261019/review.json",
+      "sha256": "a67b6d3736dc5eaef822658fe9a8941fdaeb3d864708c0d66e74465e8edac134"
+    },
+    "heldExactTargets": 5,
+    "newExactApprovedReplacementFound": false,
+    "phoneClosureClaimed": false,
+    "scope": "The finite follow-up found no new exact approved replacement among the inspected records. The five held source/printing targets remain explicit; five supplied enhancement manifests contain revisions of the same17 originals. No catalogue, source or phone closure was made."
+  },
+  "reportOutputPathConsolidation": {
+    "files": [
+      "scripts/collect-public-catalogue-coverage.ts",
+      "scripts/collect-four-language-coverage-baseline.ts",
+      "scripts/test-collect-public-catalogue-coverage.ts"
+    ],
+    "outputRoot": "D:/Stackr-organization/active-runtime/four-language-coverage",
+    "historicalInputDefaultsChanged": false,
+    "datedInputsStillRequirePreservationAndExplicitOverridesAfterPrimaryMigration": true,
+    "sourceReview": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/report-output-path-review-20261019/review.json",
+      "sha256": "8736658dd91638f0f3dd311d53e788c38ea16c09b28136edbe06928a5265ee28"
+    },
+    "requiredChecks": {
+      "privatePath": "evidence/consolidation-20261018/validation/report-output-paths-20261019/required-checks.json",
+      "sha256": "5b892d9df8379cfc79a8d8d7402ecc55c40be4980c74de52caf239fbf39fb682"
+    },
+    "narrowTestsPassed": true,
+    "typecheckPassed": true,
+    "lintPassed": true,
+    "existingLintWarnings": 8,
+    "actualCollectorOrNetworkRun": false,
+    "appOrBackendRuntimeChanged": false,
+    "nativeBuildOrSubmission": false
   }
 }
