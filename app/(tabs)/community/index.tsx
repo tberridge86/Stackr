@@ -1,3 +1,4 @@
+import { STACKR_ICON_OUTLINE, StackrNavigationIcon } from '../../../components/StackrNavigationIcon';
 import { StackrFunctionalIcon } from '../../../components/StackrFunctionalIcon';
 import { router, useLocalSearchParams } from 'expo-router';
 import { StackrBottomSheet } from '../../../components/StackrModalSystem';
@@ -1683,7 +1684,7 @@ export default function CommunityScreen() {
               {!liveLocalPlaces.length && localStoreResults.map(({ store, miles }) => (
                 <Pressable key={store.id} onPress={() => setSelectedShop(store)} style={styles.localStoreRow}>
                   <View style={styles.localStoreIcon}>
-                    <Ionicons name="storefront-outline" size={19} color={theme.colors.primary} />
+                    <StackrNavigationIcon name="market" size={19} color={theme.dark ? theme.colors.text : STACKR_ICON_OUTLINE} accentColor={theme.colors.primary} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.localEventTitle}>{store.name}</Text>

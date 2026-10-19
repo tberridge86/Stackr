@@ -633,6 +633,7 @@ export default function CardDetailScreen() {
 
       <StackrButton
         label="Inspect card"
+        stackrIcon="scan"
         icon="scan-outline"
         variant="secondary"
         onPress={() => inspectCard({
@@ -646,7 +647,7 @@ export default function CardDetailScreen() {
         accessibilityLabel={`Inspect ${presentation.name}`}
         style={{ marginBottom: 12 }}
       />
-      <StackrButton label="Add to collection" icon="albums-outline" variant="primary" loading={collectionBusy} disabled={collectionBusy} onPress={() => { void openCollectionReview(); }} style={{ marginBottom: 12 }} />
+      <StackrButton label="Add to collection" stackrIcon="collection" icon="albums-outline" variant="primary" loading={collectionBusy} disabled={collectionBusy} onPress={() => { void openCollectionReview(); }} style={{ marginBottom: 12 }} />
       {collectionError ? <View style={{ marginBottom: 12, gap: 8 }}>
         <Text accessibilityRole="alert" style={{ color: theme.colors.text, lineHeight: 20 }}>{collectionError}</Text>
         <StackrButton label={collectionSignIn ? 'Sign in' : 'Open saved reviews'} onPress={() => router.push((collectionSignIn ? '/(auth)/login' : '/(tabs)/scan-hub') as any)} />

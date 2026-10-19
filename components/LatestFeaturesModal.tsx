@@ -1,4 +1,6 @@
+import { stackrIcons } from '../lib/stackrIcons';
 import { Ionicons } from '@expo/vector-icons';
+import { type ImageSourcePropType } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import { usePathname } from 'expo-router';
@@ -8,6 +10,7 @@ import { FeatureTipModal } from './FeatureTipModal';
 
 type FeatureItem = {
   icon: React.ComponentProps<typeof Ionicons>['name'];
+  imageIcon?: ImageSourcePropType;
   title: string;
   body: string;
 };
@@ -20,16 +23,19 @@ const BETA_FEATURES: FeatureItem[] = [
   },
   {
     icon: 'albums-outline',
+    imageIcon: stackrIcons.binders,
     title: 'Binder improvements',
     body: 'Master set variants, ownership ticks, default condition handling, and value fixes have been tightened up.',
   },
   {
     icon: 'search-outline',
+    imageIcon: stackrIcons.pokedex,
     title: 'Pokedex collecting',
     body: 'Browse the Pokedex collection view to track cards by Pokemon.',
   },
   {
     icon: 'camera-outline',
+    imageIcon: stackrIcons.scanCard,
     title: 'Scanner updates',
     body: 'The scan flow now has clearer feedback and improved variant handling.',
   },

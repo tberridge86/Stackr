@@ -1218,7 +1218,7 @@ export function HomeOpportunitiesSection({
           <EmptyMessage icon="alert-circle-outline" title="Could not load collection updates" subtitle={error} actionLabel="Open chase list" onAction={onChase} />
         ) : (
           <EmptyMessage
-            icon="albums-outline"
+            navigationIcon="collection"
             title="No opportunities yet"
             subtitle="Add cards to binders or track chase cards to surface trades and market changes."
           />

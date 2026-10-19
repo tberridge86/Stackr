@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { STACKR_ICON_OUTLINE, StackrNavigationIcon } from '../../components/StackrNavigationIcon';
 import { router, useFocusEffect } from 'expo-router';
 import React, { useCallback, useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
@@ -80,14 +80,14 @@ export default function ScanWorkspace() {
       </View>;
       })}
       <View style={panel}>
-        <Ionicons name="scan-outline" size={32} color={theme.colors.primary} />
+        <StackrNavigationIcon name="scan" size={32} color={theme.dark ? theme.colors.text : STACKR_ICON_OUTLINE} accentColor={theme.colors.primary} />
         <Text accessibilityRole="header" style={{ color: theme.colors.text, fontSize: 22, fontWeight: '800' }}>Start with one card</Text>
         <Text style={{ color: theme.colors.textSoft, lineHeight: 21 }}>Check the exact card before choosing where to save it.</Text>
-        <StackrButton label="Start camera" icon="camera-outline" variant="primary" onPress={() => router.push('/scan' as any)} />
+        <StackrButton label="Start camera" stackrIcon="scan" icon="camera-outline" variant="primary" onPress={() => router.push('/scan' as any)} />
       </View>
-      <StackrButton label="Add without a camera" icon="search-outline" onPress={() => router.navigate('/(tabs)/search' as any)} />
+      <StackrButton label="Add without a camera" stackrIcon="search" icon="search-outline" onPress={() => router.navigate('/(tabs)/search' as any)} />
       <Text style={{ color: theme.colors.textSoft, lineHeight: 20 }}>Find a card in Search, then choose Add to collection on its details.</Text>
-      <StackrButton label="Scan into a binder" icon="albums-outline" onPress={() => router.navigate('/(tabs)/binder' as any)} />
+      <StackrButton label="Scan into a binder" stackrIcon="collection" icon="albums-outline" onPress={() => router.navigate('/(tabs)/binder' as any)} />
     </ScrollView>
   </StackrScreen>;
 }

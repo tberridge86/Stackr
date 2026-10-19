@@ -1,3 +1,5 @@
+import { stackrIcons } from '../../lib/stackrIcons';
+import { STACKR_ICON_OUTLINE, StackrNavigationIcon } from '../../components/StackrNavigationIcon';
 import { useTheme } from '../../components/theme-context';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
@@ -641,9 +643,9 @@ export default function PriceBuilderScreen() {
         title="Price Builder"
         subtitle="Build a quick, fair value for trades, bundles, or listings."
         items={[
-          { icon: 'search-outline', title: 'Add cards', body: 'Search cards, select them, then add them to the builder.' },
+          { icon: 'search-outline', imageIcon: stackrIcons.searchCard, title: 'Add cards', body: 'Search cards, select them, then add them to the builder.' },
           { icon: 'options-outline', title: 'Condition matters', body: 'Set condition and quantity to adjust estimated value.' },
-          { icon: 'calculator-outline', title: 'Compare totals', body: 'Use the Stackr low, central and high estimates as a guide.' },
+          { icon: 'calculator-outline', imageIcon: stackrIcons.priceBuilder, title: 'Compare totals', body: 'Use the Stackr low, central and high estimates as a guide.' },
         ]}
       />
 
@@ -943,7 +945,7 @@ export default function PriceBuilderScreen() {
               justifyContent: 'center',
               transform: [{ rotate: '-8deg' }],
             }}>
-              <Ionicons name="calculator-outline" size={23} color={theme.colors.primary} />
+              <StackrNavigationIcon name="priceBuilder" size={23} color={theme.dark ? theme.colors.text : STACKR_ICON_OUTLINE} accentColor={theme.colors.primary} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 15, lineHeight: 19 }}>

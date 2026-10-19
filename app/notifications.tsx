@@ -1,3 +1,4 @@
+import { STACKR_ICON_OUTLINE, StackrNavigationIcon } from '../components/StackrNavigationIcon';
 import { useTheme } from '../components/theme-context';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StackrLoadingIndicator as ActivityIndicator } from '../components/StackrLoadingIndicator';
@@ -714,7 +715,7 @@ export default function NotificationsScreen() {
                 borderWidth: 1,
                 borderColor: theme.colors.border,
               }}>
-                <Ionicons name="notifications-outline" size={34} color={theme.colors.textSoft} />
+                <StackrNavigationIcon name="notifications" size={34} color={theme.dark ? theme.colors.text : STACKR_ICON_OUTLINE} accentColor={theme.colors.primary} />
               </View>
 
               <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '900', marginBottom: 8 }}>

@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Text } from './Text';
 import { useTheme } from './theme-context';
+import { STACKR_ICON_OUTLINE, StackrNavigationIcon, type StackrNavigationIconName } from './StackrNavigationIcon';
 import { stackrControlTokens } from '../lib/stackrSizing';
 
 export { stackrControlTokens } from '../lib/stackrSizing';
@@ -22,6 +23,7 @@ export function StackrButton({
   onPress,
   variant = 'secondary',
   icon,
+  stackrIcon,
   disabled = false,
   loading = false,
   style,
@@ -32,6 +34,7 @@ export function StackrButton({
   onPress?: () => void;
   variant?: StackrButtonVariant;
   icon?: IconName;
+  stackrIcon?: StackrNavigationIconName;
   disabled?: boolean;
   loading?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -93,6 +96,10 @@ export function StackrButton({
     >
       {loading ? (
         <StackrLoadingIndicator size="small" color={fg} />
+      ) : stackrIcon ? (
+        <StackrNavigationIcon name={stackrIcon} size={isPrimary ? 21 : 19}
+          color={disabled || isPrimary || isDestructive ? fg : theme.dark ? theme.colors.text : STACKR_ICON_OUTLINE}
+          accentColor={disabled || isPrimary || isDestructive ? fg : theme.colors.primary} />
       ) : icon ? (
         <Ionicons name={icon} size={isPrimary ? 21 : 19} color={fg} />
       ) : null}
@@ -105,6 +112,7 @@ export function StackrButton({
 
 export function StackrIconButton({
   icon,
+  stackrIcon,
   onPress,
   label,
   selected = false,
@@ -112,6 +120,7 @@ export function StackrIconButton({
   style,
 }: {
   icon: IconName;
+  stackrIcon?: StackrNavigationIconName;
   onPress?: () => void;
   label: string;
   selected?: boolean;
@@ -144,7 +153,11 @@ export function StackrIconButton({
         style,
       ]}
     >
-      <Ionicons name={icon} size={22} color={selected ? theme.colors.primary : theme.colors.text} />
+      {stackrIcon ? (
+        <StackrNavigationIcon name={stackrIcon} size={22}
+          color={selected ? theme.colors.primary : theme.dark ? theme.colors.text : STACKR_ICON_OUTLINE}
+          accentColor={theme.colors.primary} />
+      ) : <Ionicons name={icon} size={22} color={selected ? theme.colors.primary : theme.colors.text} />}
     </TouchableOpacity>
   );
 }
