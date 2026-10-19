@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-19T19:07:30.316Z",
+  "updatedAt": "2026-10-19T20:32:13.754Z",
   "sourceVideo": {
     "fileName": "WhatsApp Video 2026-10-18 at 09.12.30.mp4",
     "sha256": "a29ad89ce8cec90b3dfa299c5a951ff4b60d686187f5a27c03a4e6175d1e859c",
@@ -12,7 +12,7 @@
   },
   "coordinator": "Tif / root",
   "workingDirectory": "D:/Stackr",
-  "branch": "codex/stackr-repair-consolidation-20261018",
+  "branch": "main",
   "baseRevision": "f9350f896375ffac84a22ca2f7a4ec7654538091",
   "completionRule": "An issue closes only after its affected installed-device journey passes; local source checks are separate.",
   "issues": [
@@ -84,7 +84,7 @@
         "implemented": true,
         "tested": true,
         "independentlyReviewed": true,
-        "merged": false,
+        "merged": true,
         "scope": "Truthful missing/unknown/stale freshness and partial-coverage labels; no live quote retrieval or refresh proof."
       },
       "responseIdentityRepair": {
@@ -98,7 +98,7 @@
         "implemented": true,
         "tested": true,
         "independentlyReviewed": true,
-        "merged": false,
+        "merged": true,
         "nativePublished": false,
         "deviceVerified": false,
         "receipt": "docs/releases/collection-pricing-response-identity-20261019.json",
@@ -150,7 +150,7 @@
       "resolution": "Read comparable stored observations; retain explicit insufficient-history states.",
       "closureCriterion": "Eligible movers display or a verified history gap is explained.",
       "state": "merged_native_publication_and_phone_acceptance_pending",
-      "cause": "Same-day paired observations were discarded and optional previews delayed facts. Preserve exact paired estimates and reject conflicting variant comparisons.",
+      "cause": "Same-day paired observations were discarded and optional previews delayed facts. Preserve exact paired estimates and reject conflicting variant comparisons. A separate actual-service regression confirmed that descending-only percentage sampling can omit every faller when rising comparisons fill the first page.",
       "sourceFiles": [
         "app/value-history.tsx",
         "lib/valueHistoryRead.ts"
@@ -168,7 +168,32 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Eligible stored observations and phone results must be verified; one observation never establishes a mover."
+      "remainingBlocker": "Eligible stored observations and phone results must be verified; one observation never establishes a mover.",
+      "additionalDirectionalSampleRepair": {
+        "repairCommit": "28787faa77a0384fc3a1b93ce141c41d5b08cb09",
+        "sourceFiles": [
+          "backend/lib/marketPricing/service.js",
+          "scripts/test-market-pricing-service.mjs"
+        ],
+        "sourceEvidence": "docs/releases/binder-market-followup-20261019.md",
+        "behavior": "Read both percentage extremes with identical currency/product scope; settle both reads, preserve exact market identities and return a bounded direction-balanced sample. Conflicting evidence or either read failure remains a retryable failure.",
+        "maximumRawRows": 202,
+        "maximumResponseRows": 100,
+        "mainMergeHold": "Fresh production config confirms two price-refresh workers follow main and watch /backend/**. Backend merge and delivery need approval covering the resulting live effects and performance canary. App repairs are isolated in PR414.",
+        "draftPullRequest": "https://github.com/tberridge86/Stackr/pull/413",
+        "independentReviewSha256": "a42fa89f298ce06c123c146d122c6a061855a1280c756bfc7046438e6fb56718",
+        "requiredChecksSha256": "d51527bcd8a2fee08e1e230c81e2a46294c2d9e027deb698a7e7c98153d2cb23",
+        "delivery": {
+          "implemented": true,
+          "tested": true,
+          "independentlyReviewed": true,
+          "merged": false,
+          "deployed": false,
+          "nativePublished": false,
+          "deviceVerified": false
+        },
+        "remaining": "Source integration and separately approved backend deployment remain pending; stored live evidence and phone acceptance are not established. Cash ranking remains within the percentage-selected sample."
+      }
     },
     {
       "id": "V05",
@@ -233,7 +258,13 @@
         "independentReviewSha256": "7834225ac4a6deec3acf48c835979fbe896ae7a34b8737c2dcf8087714506c06",
         "requiredChecksSha256": "9aadca45b1e4ed15b1f7401eb636a8a663a094d1b0362b2f214d399f97136c20",
         "nativePublished": false,
-        "phoneVerified": false
+        "phoneVerified": false,
+        "merged": true,
+        "sourceMergeProof": {
+          "mainRevision": "43d7a91b868ea4337c6967813a521ba46747a434",
+          "receiptSha256": "3c4dc88431d0e9b8dfb7efe936f2166ffb662d137147ab97e0f9b20de412f5c0",
+          "nativeOrPhoneAcceptanceImplied": false
+        }
       }
     },
     {
@@ -302,7 +333,7 @@
         "implemented": true,
         "tested": true,
         "independentlyReviewed": true,
-        "merged": false,
+        "merged": true,
         "nativePublished": false,
         "deviceVerified": false,
         "receipt": "docs/releases/collection-pricing-response-identity-20261019.json",
@@ -344,7 +375,7 @@
       "resolution": "Keep owner-scoped saved facts and separate successful ownership confirmation from image recovery.",
       "closureCriterion": "Live owner check succeeds where available; failed verification stays read-only.",
       "state": "merged_native_publication_and_phone_acceptance_pending",
-      "cause": "Saved display readiness is independent of live ownership confirmation. Existing mutation guards are preserved and ownership remains explicit.",
+      "cause": "Saved display readiness is independent of live ownership confirmation. Existing mutation guards are preserved and ownership remains explicit. Mandatory ownership confirmation also awaited optional Chase placement; the controlled source callback reproduced completed mandatory reads with ownership still pending until the optional request settled.",
       "sourceFiles": [
         "features/binder/BinderDetailScreen.tsx"
       ],
@@ -361,7 +392,84 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Successful live ownership confirmation on the installed account is not established by fixtures."
+      "remainingBlocker": "Successful live ownership confirmation on the installed account is not established by fixtures.",
+      "additionalOptionalPlacementRepair": {
+        "repairCommit": "752bd02ea99032ab2090474f51128ea42e660442",
+        "originalReviewedCommit": "a533b9a44e19a7bbd2a6759f2b480c090fa61d32",
+        "sourceByteEquivalenceSha256": "500318ec3c8473ec2af8199a95b3dbd8d8b9d5182fe08ad609a76b2913b8d10d",
+        "sourceFiles": [
+          "features/binder/BinderDetailScreen.tsx",
+          "scripts/test-binder-reopen.mjs"
+        ],
+        "sourceEvidence": "docs/releases/binder-market-followup-20261019.md",
+        "behavior": "Ownership settles independently of optional placement. Placement mutation has its own confirmed baseline, bounded read, error/Retry and saving state; late reads, binder/account switches, same-binder Retry, custom removal and all-dispatched reorder settlement are guarded.",
+        "canonicalCases": 41,
+        "includesRealSQLite": true,
+        "independentReviewSha256": "74aece6bad53d4e8dbca767b06c9e5b3553def1083c6d8b3f78cb7653698f8d5",
+        "requiredChecksSha256": "d51527bcd8a2fee08e1e230c81e2a46294c2d9e027deb698a7e7c98153d2cb23",
+        "delivery": {
+          "implemented": true,
+          "tested": true,
+          "independentlyReviewed": true,
+          "merged": true,
+          "deployed": false,
+          "nativePublished": false,
+          "deviceVerified": false
+        },
+        "remaining": "Source is merged with matching checks. Mandatory live ownership and installed tap-to-content/ownership acceptance remain open.",
+        "sourceMergeProof": {
+          "mainRevision": "e132ac2e664016b3b1b9d3cdc510b5aeb8bfd9ff",
+          "pullRequest": "https://github.com/tberridge86/Stackr/pull/414",
+          "receiptSha256": "75c2c77118640157b1ab5d5ea6ad0b6e17612d5a0ec3dbfc1af917751dfe47f5",
+          "prApplicablePassed": 10,
+          "mainApplicablePassed": 8,
+          "nativeOrPhoneAcceptanceImplied": false
+        }
+      },
+      "additionalOwnershipPaginationRepair": {
+        "repairCommit": "f785779b00f359e06df11d136aa066e75bc477cb",
+        "originalReviewedCommit": "abb81b657e770e1a1bab33e8c6935badf06b4aad",
+        "sourceByteEquivalenceSha256": "500318ec3c8473ec2af8199a95b3dbd8d8b9d5182fe08ad609a76b2913b8d10d",
+        "sourceFiles": [
+          "features/binder/BinderDetailScreen.tsx",
+          "scripts/test-binder-reopen.mjs"
+        ],
+        "sourceEvidence": "docs/releases/binder-market-followup-20261019.md",
+        "confirmedSourceCause": "Unpaginated binder directory, saved ownership and variant reads can stop at the server cap and publish ownership-ready with false missing cards or quantities. Controlled1001-row cases confirm the conditional defect; production cap and owner holdings were not queried.",
+        "behavior": "UUID-ordered pages stop only at definitive empty, with100-ID scopes, two lanes, shared256request budget and10second whole logical deadline. Full successful join required for ownership-ready; malformed/foreign/duplicate/failed/incomplete reads remain unverified. Quantity-less compatibility restricted to confirmed missing-quantity-column errors; partial primary discarded.",
+        "canonicalCases": 54,
+        "includesRealSQLite": true,
+        "independentReviewSha256": "3c5c0f134df69a438f3319497ff425a829de5e77182b5643acdcf6a55dd329f2",
+        "requiredChecksSha256": "3952aaad3c6bf28cb0c933a4c3abde05d31c7a4f9cc812f71ef4b93315e07c2a",
+        "hostedHarnessCorrection": {
+          "repairCommit": "bac2e8dd36a0cdbb71ab24dfb42133e8cc086454",
+          "originalReviewedCommit": "543014c3ab36f21bec92ad113c78f7b818315d7e",
+          "sourceFile": "scripts/test-retrieval-parallel.mjs",
+          "cause": "Existing extracted-loader fixture lacked newly required screen refs; initialcandidate-tests failed before exercising the repaired loader.",
+          "narrowActualCallbackCases": 12,
+          "passed": 12,
+          "receiptSha256": "2b89c750f63508053c042689021a6574b7e6b9e1f453d367ff0cdd83fecc83e0",
+          "productionSourceChanged": false
+        },
+        "delivery": {
+          "implemented": true,
+          "tested": true,
+          "independentlyReviewed": true,
+          "merged": true,
+          "deployed": false,
+          "nativePublished": false,
+          "deviceVerified": false
+        },
+        "remaining": "Installed-account ownership and exact quantities remain unverified. Source is merged with matching checks; no phone latency claim or canonical set-total cause forV07 is implied.",
+        "sourceMergeProof": {
+          "mainRevision": "e132ac2e664016b3b1b9d3cdc510b5aeb8bfd9ff",
+          "pullRequest": "https://github.com/tberridge86/Stackr/pull/414",
+          "receiptSha256": "75c2c77118640157b1ab5d5ea6ad0b6e17612d5a0ec3dbfc1af917751dfe47f5",
+          "prApplicablePassed": 10,
+          "mainApplicablePassed": 8,
+          "nativeOrPhoneAcceptanceImplied": false
+        }
+      }
     },
     {
       "id": "V11",
@@ -431,7 +539,7 @@
         "implemented": true,
         "tested": true,
         "independentlyReviewed": true,
-        "merged": false,
+        "merged": true,
         "scope": "Full-resolution/provenance merge, live subset full-population pagination, non-sliding metadataTTL;113captured preferred references replay correctly."
       },
       "fullCapturedImageDelivery": {
@@ -447,7 +555,7 @@
         "tested": true,
         "independentlyReviewed": true,
         "unsignedIosVerified": true,
-        "merged": false,
+        "merged": true,
         "nativePublished": false,
         "phoneVerified": false,
         "scope": "Fresh positive exact reassignment invalidates stale cached artwork; does not supply missing source images or identify the video printing."
@@ -484,7 +592,7 @@
         "implemented": true,
         "tested": true,
         "independentlyReviewed": true,
-        "merged": false,
+        "merged": true,
         "scope": "Truthful missing/unknown/stale freshness and partial-coverage labels; no live quote retrieval or refresh proof."
       },
       "responseIdentityRepair": {
@@ -498,7 +606,7 @@
         "implemented": true,
         "tested": true,
         "independentlyReviewed": true,
-        "merged": false,
+        "merged": true,
         "nativePublished": false,
         "deviceVerified": false,
         "receipt": "docs/releases/collection-pricing-response-identity-20261019.json",
@@ -648,7 +756,40 @@
         "apiPublished": false,
         "nativePublished": false,
         "phoneVerified": false,
-        "scope": "Separate source-fidelity improvement; not one of the three generic-icon video rows."
+        "scope": "Separate source-fidelity improvement; not one of the three generic-icon video rows.",
+        "merged": true,
+        "sourceMergeProof": {
+          "mainRevision": "43d7a91b868ea4337c6967813a521ba46747a434",
+          "receiptSha256": "3c4dc88431d0e9b8dfb7efe936f2166ffb662d137147ab97e0f9b20de412f5c0",
+          "nativeOrPhoneAcceptanceImplied": false
+        },
+        "readOnlyPreflight": {
+          "approvedCallsExecuted": 4,
+          "successfulOrdinals": [
+            1,
+            3,
+            4
+          ],
+          "failedOrdinal": 2,
+          "failure": "SQLSTATE57014, unchanged five-second statement limit",
+          "receiptSha256": "4176fe2a04592944ac37e188d968156ed94ed976c520de05f8be754c9a696442",
+          "completePriorLinksKnown": false,
+          "publicationEligible": false,
+          "scopedSuccessorReviewSha256": "3a80bd5a2016d78c34cbfb181df11b363593f7bdbf20a7c3633d847ff74e2bf2",
+          "scopedSuccessorApproval": "CONSUMED_ONCE",
+          "scopedSuccessorCallsExecuted": 1,
+          "scopedSuccessorResult": "SQLSTATE57014 at the unchanged five-second statement limit",
+          "scopedSuccessorOutcomeSha256": "6d18e31cc460fdb70d8e164c44d7fe89d1f43bd80bd523065944b927eaabd653",
+          "currentTimeoutCauseEstablished": false,
+          "proposedNonexecutingPlanRead": {
+            "sqlSha256": "c98cd0067e352e3146785d8f1a0053efe001d77deca79793c1eb87e6a3c96ed8",
+            "independentReviewSha256": "92aae199dc1daf288ba653681339089f6285368a25795e6e2884c542c794d53c",
+            "approval": "PENDING",
+            "remoteCalls": 0,
+            "analyze": false,
+            "scope": "Exact failed query; estimates only, no execution or prior-link absence proof"
+          }
+        }
       }
     },
     {
@@ -781,7 +922,7 @@
         "tested": true,
         "independentlyReviewed": true,
         "unsignedIosVerified": true,
-        "merged": false,
+        "merged": true,
         "nativePublished": false,
         "phoneVerified": false,
         "scope": "Fresh positive exact reassignment invalidates stale cached artwork; does not supply missing source images or identify the video printing."
@@ -929,7 +1070,7 @@
         "tested": true,
         "independentlyReviewed": true,
         "unsignedIosVerified": true,
-        "merged": false,
+        "merged": true,
         "nativePublished": false,
         "phoneVerified": false,
         "scope": "Fresh positive exact reassignment invalidates stale cached artwork; does not supply missing source images or identify the video printing."
@@ -1043,7 +1184,7 @@
           "implemented": true,
           "tested": true,
           "independentlyReviewed": true,
-          "merged": false,
+          "merged": true,
           "nativePublished": false,
           "phoneVerified": false,
           "unsignedCurrentRevisionExportPending": false,
@@ -1897,6 +2038,24 @@
     "scope": "Separately integrated local presentation change, preserved by this workstream. Its web checks do not replace the earlier unsigned iOS receipt or phone acceptance.",
     "published": false,
     "unsignedIosForThisRevisionVerified": false,
+    "phoneVerified": false
+  },
+  "branchMeaning": "Integration target; verified repairs use temporary follow-up branches before merging.",
+  "sourceAncestryVerification": {
+    "mainRevision": "43d7a91b868ea4337c6967813a521ba46747a434",
+    "uniqueRecordedCommits": 13,
+    "privateReceipt": "evidence/consolidation-20261018/validation/history-svp1-followup-20261019/register-source-ancestry-main43d7a91b.json",
+    "sha256": "359530e4ccaa527e95b82c5379044a07f9007b271708524fec27d696ecf67c92",
+    "scope": "Recorded commit ancestry only; native, deployment and phone acceptance are separate."
+  },
+  "latestAppOnlyIntegration": {
+    "mainRevision": "e132ac2e664016b3b1b9d3cdc510b5aeb8bfd9ff",
+    "pullRequest": "https://github.com/tberridge86/Stackr/pull/414",
+    "prApplicablePassed": 10,
+    "mainApplicablePassed": 8,
+    "receiptSha256": "75c2c77118640157b1ab5d5ea6ad0b6e17612d5a0ec3dbfc1af917751dfe47f5",
+    "backendMarketRepairStillHeld": true,
+    "nativePublished": false,
     "phoneVerified": false
   }
 }
