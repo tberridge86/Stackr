@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
+import { readOptionalCatalogueEnrichment } from '../lib/optionalCatalogueEnrichment';
 
 // Execute the complete screen with fixture hooks/sources. FlatList's empty
 // component is inspected only when its real data is empty; a hidden empty
@@ -35,12 +36,14 @@ const renderedText = (value: any) => renderedNodes(value).filter(node => node.ty
 function harness(options: {
   readCards?: (name: string, options: { onProgress: (progress: Progress) => void }) => Promise<Progress>;
   ownershipPending?: boolean;
+  metadataPending?: boolean;
 } = {}) {
   const slots: any[] = [];
   let cursor = 0;
   let effects: (() => void)[] = [];
   let tree: any;
   const requests: { name: string; publish: (progress: Progress) => void; resolve: (progress: Progress) => void }[] = [];
+  const metadataSignals: AbortSignal[] = [];
   const same = (a: any[], b: any[]) => a?.length === b?.length && a.every((item, index) => item === b[index]);
   const memo = (factory: () => any, deps: any[]) => {
     const index = cursor++;
@@ -89,14 +92,20 @@ function harness(options: {
     '../../lib/haptics': { stackrHaptics: { selection: async () => {}, cardPreview: async () => {} } },
     '../../components/CardInspectionProvider': { useCardInspection: () => ({ inspectCard() {} }) },
     '../../lib/cardInspection': { CARD_INSPECTION_LONG_PRESS_MS: 300 }, '../../lib/useCataloguePriceOverlay': { useCataloguePriceOverlay: (rows: any[]) => rows },
+    '../../lib/optionalCatalogueEnrichment': { readOptionalCatalogueEnrichment },
   };
   const exports: any = {};
   runInNewContext(ts.transpileModule(source, { compilerOptions: {
     module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React, esModuleInterop: true,
   } }).outputText, {
-    exports, Set, Map, console: { log() {} },
+    exports, Set, Map, AbortController, console: { log() {} },
     require: (name: string) => { assert.ok(name in dependencies, `Unexpected screen dependency: ${name}`); return dependencies[name]; },
-    fetch: async () => ({ ok: true, json: async () => ({ id: 26, name: 'raichu', types: [] }) }),
+    fetch: async (url: string, init?: { signal?: AbortSignal }) => {
+      assert.equal(url, 'https://pokeapi.co/api/v2/pokemon/26', 'metadata stays on the expected fixture route');
+      if (init?.signal) metadataSignals.push(init.signal);
+      if (options.metadataPending) return new Promise(() => {});
+      return { ok: true, json: async () => ({ id: 26, name: 'raichu', types: [] }) };
+    },
   });
   const render = () => { cursor = 0; tree = exports.default(); return tree; };
   const flush = async () => { const pending = effects; effects = []; pending.forEach(run => run()); await tick(); render(); };
@@ -104,7 +113,7 @@ function harness(options: {
   const list = () => nodes().find(node => node.type === 'FlatList');
   const retry = () => nodes().find(node => node.type === 'Pressable' && node.props.accessibilityLabel === 'Retry loading Pokémon cards');
   const track = () => nodes().find(node => node.type === 'View' && node.props.style?.fixtureStyleName === 'progressTrack');
-  return { render, flush, requests, nodes, list, retry, track, text: () => renderedText(tree),
+  return { render, flush, requests, metadataSignals, nodes, list, retry, track, text: () => renderedText(tree),
     tile: (item = cards[0]) => list().props.renderItem({ item }),
     unmount: () => slots.forEach(slot => slot?.cleanup?.()),
   };
@@ -217,6 +226,12 @@ async function run() {
   const empty = harness(); empty.render(); await empty.flush(); empty.requests[0].resolve({ cards: [], complete: true }); await tick(); empty.render();
   assert.equal(empty.list().props.data.length, 0); assert.match(empty.text(), /No cards found/); assert.match(empty.text(), /0 \/ 0/);
   assert.equal(empty.retry(), undefined); empty.unmount();
+  const cancelledMetadata = harness({ metadataPending: true }); cancelledMetadata.render(); await cancelledMetadata.flush();
+  assert.equal(cancelledMetadata.requests.length, 1, 'real optional metadata cannot block a known species factual request');
+  assert.equal(cancelledMetadata.metadataSignals.length, 1, 'the real helper supplies its bounded child signal to the fixture fetch');
+  assert.equal(cancelledMetadata.metadataSignals[0].aborted, false);
+  cancelledMetadata.unmount(); await tick();
+  assert.equal(cancelledMetadata.metadataSignals[0].aborted, true, 'unmount aborts pending metadata through the real helper');
   console.log('Pokédex actual screen passed: populated partial/error/retry, honest progress, stale callbacks, complete/empty and exact image props.');
 }
 run().catch(error => { console.error(error); process.exitCode = 1; });

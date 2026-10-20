@@ -33,6 +33,7 @@ import { useCardInspection } from '../../components/CardInspectionProvider';
 import { CARD_INSPECTION_LONG_PRESS_MS } from '../../lib/cardInspection';
 import { useCataloguePriceOverlay } from '../../lib/useCataloguePriceOverlay';
 import type { CataloguePriceDisplay } from '../../lib/cataloguePrices';
+import { readOptionalCatalogueEnrichment } from '../../lib/optionalCatalogueEnrichment';
 
 type PokemonData = {
   id: number;
@@ -127,6 +128,7 @@ export default function PokemonDetailScreen() {
 
   useEffect(() => {
     let active = true;
+    const metadataController = new AbortController();
 
     const applyCards = (progress: PokedexCardsProgress) => {
       if (!active) return;
@@ -148,8 +150,9 @@ export default function PokemonDetailScreen() {
       setCardsLoading(true);
       setCardsError(null);
       setCollectionComplete(false);
-      const routePokemon: PokemonData | null = routeName
-        ? { id: Number(id) || 0, name: routeName, types: [] }
+      const knownRouteName = routeName ?? speciesName;
+      const routePokemon: PokemonData | null = knownRouteName
+        ? { id: Number(id) || 0, name: knownRouteName, types: [] }
         : null;
       if (routePokemon && active) {
         setPokemon(routePokemon);
@@ -158,19 +161,13 @@ export default function PokemonDetailScreen() {
         setLoading(true);
       }
 
-      const metadata = (async (): Promise<PokemonData | null> => {
-        try {
-          const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
-          if (!response.ok) throw new Error(`PokeAPI returned ${response.status}`);
-          return await response.json() as PokemonData;
-        } catch (pokemonError) {
-          console.log('Pokedex Pokemon metadata lookup failed', {
-            id, routeName,
-            error: pokemonError instanceof Error ? pokemonError.message : String(pokemonError),
-          });
-          return null;
-        }
-      })();
+      // Display metadata is optional when the route already supplies the exact
+      // species name. Bound the entire response/body read even if abort is ignored.
+      const metadata = readOptionalCatalogueEnrichment(async (signal) => {
+        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`, { signal });
+        if (!response.ok) throw new Error(`PokeAPI returned ${response.status}`);
+        return await response.json() as PokemonData;
+      }, metadataController.signal).catch(() => null);
 
       try {
         const nextPokemon = routePokemon ?? await metadata;
@@ -212,6 +209,7 @@ export default function PokemonDetailScreen() {
 
     return () => {
       active = false;
+      metadataController.abort();
     };
   }, [id, retryEpoch, routeName, speciesName]);
 
@@ -390,7 +388,15 @@ export default function PokemonDetailScreen() {
     return (
       <SafeAreaView style={styles.safe}>
         <View style={styles.center}>
-          <Text style={{ color: theme.colors.text }}>Failed to load this Pokemon.</Text>
+          <Text style={{ color: theme.colors.text }}>{cardsError ?? 'Failed to load this Pokemon.'}</Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Retry loading Pokémon cards"
+            onPress={() => setRetryEpoch((current) => current + 1)}
+            style={styles.retryButton}
+          >
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </Pressable>
         </View>
       </SafeAreaView>
     );
