@@ -1,0 +1,11 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "steps": {
+    "install": {
+      "variables": {
+        "ONNXRUNTIME_NODE_INSTALL": "skip"
+      },
+      "deployOutputs": []
+    }
+  }
+}
