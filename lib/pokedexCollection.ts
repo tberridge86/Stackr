@@ -8,6 +8,7 @@ import {
 } from './pokemonDisplayNames';
 import { fetchStackrCardRows, fetchStackrPriceSnapshots, fetchStackrSetRows, stackrCardToLegacyCard } from './stackrDomainAdapter';
 import { stackrApiClient, type StackrCard, type StackrCatalogueAsset } from './stackrApiV1';
+import { withPersonalDataReadTimeout } from './personalDataRead';
 import {
   buildOwnedPokedexCards,
   canRemovePokedexOwnershipMarker,
@@ -505,30 +506,108 @@ export async function fetchCardsForPokemon(
 }
 
 const OWNERSHIP_PAGE_SIZE = 500;
+const OWNERSHIP_MAX_REQUESTS = 256;
+const OWNERSHIP_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+export type PokedexOwnershipReadOptions = {
+  signal?: AbortSignal;
+  isCurrent?: () => boolean;
+};
+
+type OwnershipReadContext = {
+  signal: AbortSignal;
+  assertCurrent: () => void;
+  takeRequest: () => void;
+};
+
+function cancelledOwnershipRead() {
+  const error = new Error('Pokédex ownership request was cancelled.');
+  error.name = 'AbortError';
+  return error;
+}
+
+/** One deadline and page budget cover every source and every binder chunk. */
+async function readPokedexOwnership<T>(
+  options: PokedexOwnershipReadOptions,
+  read: (context: OwnershipReadContext) => Promise<T>,
+): Promise<T> {
+  const request = new AbortController();
+  const cancel = () => request.abort();
+  if (options.signal?.aborted) throw cancelledOwnershipRead();
+  options.signal?.addEventListener('abort', cancel, { once: true });
+  try {
+    return await withPersonalDataReadTimeout(async (deadlineSignal) => {
+      deadlineSignal.addEventListener('abort', cancel, { once: true });
+      let requests = 0;
+      const assertCurrent = () => {
+        if (request.signal.aborted || deadlineSignal.aborted || options.isCurrent?.() === false) {
+          throw cancelledOwnershipRead();
+        }
+      };
+      const context: OwnershipReadContext = {
+        signal: request.signal,
+        assertCurrent,
+        takeRequest: () => {
+          assertCurrent();
+          if (++requests > OWNERSHIP_MAX_REQUESTS) {
+            throw new Error('Pokédex ownership exceeded its safe request limit. Please retry.');
+          }
+        },
+      };
+      try {
+        assertCurrent();
+        const result = await read(context);
+        assertCurrent();
+        return result;
+      } finally {
+        // A failed source, deadline or superseded load must also stop siblings.
+        request.abort();
+        deadlineSignal.removeEventListener('abort', cancel);
+      }
+    }, { signal: options.signal });
+  } finally {
+    request.abort();
+    options.signal?.removeEventListener('abort', cancel);
+  }
+}
 
 async function fetchAllOwnershipRows<T extends { id: string }>(
   fetchPage: (after: string | null) => PromiseLike<{ data: T[] | null; error: unknown }>,
+  context: OwnershipReadContext,
+  accepts: (row: T) => boolean,
+  seen = new Set<string>(),
 ): Promise<T[]> {
   const rows: T[] = [];
   let after: string | null = null;
   for (;;) {
+    context.takeRequest();
     const { data, error } = await fetchPage(after);
+    context.assertCurrent();
     if (error) throw error;
-    rows.push(...(data ?? []));
-    if (!data || data.length < OWNERSHIP_PAGE_SIZE) return rows;
-    const next = data[data.length - 1]?.id;
-    if (!next || next === after) throw new Error('Ownership pagination did not advance.');
-    after = next;
+    if (!Array.isArray(data) || data.length > OWNERSHIP_PAGE_SIZE) {
+      throw new Error('Pokédex ownership response was incomplete. Please retry.');
+    }
+    // A nonempty short page may be a lower server cap. Only empty is complete.
+    if (!data.length) return rows;
+    for (const row of data) {
+      const id = typeof row?.id === 'string' ? row.id.toLowerCase() : '';
+      if (!OWNERSHIP_UUID.test(id) || (after !== null && id <= after) || seen.has(id) || !accepts(row)) {
+        throw new Error('Pokédex ownership pagination could not be verified. Please retry.');
+      }
+      seen.add(id);
+      rows.push(row);
+      after = id;
+    }
   }
 }
 
-const fetchOwnedBinderIds = async (userId: string) => {
-  const binders = await fetchAllOwnershipRows<{ id: string }>((after) => {
-    const query = supabase.from('binders').select('id').eq('user_id', userId)
-      .order('id', { ascending: true }).limit(OWNERSHIP_PAGE_SIZE);
+const readOwnedBinderIds = async (userId: string, context: OwnershipReadContext) => {
+  const binders = await fetchAllOwnershipRows<{ id: string; user_id: string }>((after) => {
+    const query = supabase.from('binders').select('id, user_id').eq('user_id', userId)
+      .order('id', { ascending: true }).limit(OWNERSHIP_PAGE_SIZE).abortSignal(context.signal);
     return after ? query.gt('id', after) : query;
-  });
-  return [...new Set(binders.map((binder) => binder.id).filter(Boolean))];
+  }, context, (row) => row.user_id === userId);
+  return binders.map((binder) => binder.id);
 };
 
 /** Fetch only visible canonical printings; never enumerate an entire set. */
@@ -559,70 +638,94 @@ async function fetchVisiblePokedexArtwork(cards: PokedexCard[], onDiagnostic?: P
   return assets;
 }
 
-async function fetchBinderOwnershipRows(binderIds: string[]): Promise<OwnedPokedexCardRow[]> {
-  const rowsById = new Map<string, OwnedPokedexCardRow>();
+const hasOwnershipIdentity = (row: OwnedPokedexCardRow) => (
+  typeof row.card_id === 'string' && row.card_id.length > 0
+  && (row.set_id === null || typeof row.set_id === 'string' && row.set_id.length > 0)
+);
+
+async function fetchBinderOwnershipRows(binderIds: string[], context: OwnershipReadContext): Promise<OwnedPokedexCardRow[]> {
+  const allRows: OwnedPokedexCardRow[] = [];
+  const seen = new Set<string>();
   for (let start = 0; start < binderIds.length; start += 100) {
     const ids = binderIds.slice(start, start + 100);
-    const rows = await fetchAllOwnershipRows<OwnedPokedexCardRow>((after) => {
-      const query = supabase.from('binder_cards').select('id, card_id, set_id').in('binder_id', ids).eq('owned', true)
-        .order('id', { ascending: true }).limit(OWNERSHIP_PAGE_SIZE);
+    const rows = await fetchAllOwnershipRows<OwnedPokedexCardRow & { binder_id: string; owned: boolean }>((after) => {
+      const query = supabase.from('binder_cards').select('id, binder_id, card_id, set_id, owned').in('binder_id', ids).eq('owned', true)
+        .order('id', { ascending: true }).limit(OWNERSHIP_PAGE_SIZE).abortSignal(context.signal);
       return after ? query.gt('id', after) : query;
-    });
-    for (const row of rows) rowsById.set(row.id, row);
+    }, context, (row) => row.owned === true && ids.includes(row.binder_id) && hasOwnershipIdentity(row), seen);
+    allRows.push(...rows);
   }
-  return [...rowsById.values()];
+  return allRows;
 }
 
-export async function fetchOwnedPokedexCards(expectedAccountId?: string): Promise<Map<string, OwnedPokedexCard>> {
+async function readOwnedPokedexCards(expectedAccountId: string | undefined, context: OwnershipReadContext): Promise<Map<string, OwnedPokedexCard>> {
+  context.assertCurrent();
   const {
     data: { user },
     error: userError,
   } = await supabase.auth.getUser();
 
+  context.assertCurrent();
   if (userError) throw userError;
   if (expectedAccountId !== undefined && user?.id !== expectedAccountId) {
     throw new Error('Your account changed. Retry ownership.');
   }
   if (!user) return new Map();
 
-  const binderIds = await fetchOwnedBinderIds(user.id);
+  const binderIds = await readOwnedBinderIds(user.id, context);
   const [variants, binderCards, pokedexCards] = await Promise.all([
-    fetchAllOwnershipRows<OwnedPokedexCardRow>((after) => {
-      const query = supabase.from('user_card_variants').select('id, card_id, set_id')
-        .eq('user_id', user.id).order('id', { ascending: true }).limit(OWNERSHIP_PAGE_SIZE);
+    fetchAllOwnershipRows<OwnedPokedexCardRow & { user_id: string }>((after) => {
+      const query = supabase.from('user_card_variants').select('id, user_id, card_id, set_id')
+        .eq('user_id', user.id).order('id', { ascending: true }).limit(OWNERSHIP_PAGE_SIZE).abortSignal(context.signal);
       return after ? query.gt('id', after) : query;
-    }),
-    fetchBinderOwnershipRows(binderIds),
-    fetchAllOwnershipRows<OwnedPokedexCardRow>((after) => {
-      const query = supabase.from('user_pokedex_cards').select('id, card_id, set_id')
-        .eq('user_id', user.id).order('id', { ascending: true }).limit(OWNERSHIP_PAGE_SIZE);
+    }, context, (row) => row.user_id === user.id && hasOwnershipIdentity(row)),
+    fetchBinderOwnershipRows(binderIds, context),
+    fetchAllOwnershipRows<OwnedPokedexCardRow & { user_id: string }>((after) => {
+      const query = supabase.from('user_pokedex_cards').select('id, user_id, card_id, set_id')
+        .eq('user_id', user.id).order('id', { ascending: true }).limit(OWNERSHIP_PAGE_SIZE).abortSignal(context.signal);
       return after ? query.gt('id', after) : query;
-    }),
+    }, context, (row) => row.user_id === user.id && hasOwnershipIdentity(row)),
   ]);
 
+  context.assertCurrent();
   return buildOwnedPokedexCards(variants, binderCards, pokedexCards);
 }
 
-export async function fetchOwnedPokemonNameSet(expectedAccountId?: string): Promise<Set<string>> {
-  const owned = await fetchOwnedPokedexCards(expectedAccountId);
-  const cardIds = [...new Set(Array.from(owned.values()).map((row) => row.card_id).filter(Boolean))];
-  const names = new Set<string>();
+export async function fetchOwnedPokedexCards(
+  expectedAccountId?: string,
+  options: PokedexOwnershipReadOptions = {},
+): Promise<Map<string, OwnedPokedexCard>> {
+  return readPokedexOwnership(options, (context) => readOwnedPokedexCards(expectedAccountId, context));
+}
 
-  if (!cardIds.length) return names;
-
-  const rows = await fetchStackrCardRows(cardIds);
-  for (const cardId of cardIds) {
-    const card = rows.get(cardId);
-    if (card) {
-      if (isExplicitNonPokemonCard(card)) continue;
-      const cardNames = getPokedexCardNames(card);
-      const normalizedCardName = normalise(cardNames.englishName ?? cardNames.name);
-      if (!normalizedCardName) continue;
-      names.add(normalizedCardName);
+export async function fetchOwnedPokemonNameSet(
+  expectedAccountId?: string,
+  options: PokedexOwnershipReadOptions = {},
+): Promise<Set<string>> {
+  return readPokedexOwnership(options, async (context) => {
+    const owned = await readOwnedPokedexCards(expectedAccountId, context);
+    const cardIds = [...new Set(Array.from(owned.values()).map((row) => row.card_id).filter(Boolean))];
+    const names = new Set<string>();
+    // Keep the adapter's existing six-read concurrency, but do not let its
+    // internal all-card loop dispatch later batches after this intent expires.
+    for (let start = 0; start < cardIds.length; start += 6) {
+      context.assertCurrent();
+      const ids = cardIds.slice(start, start + 6);
+      const rows = await fetchStackrCardRows(ids);
+      context.assertCurrent();
+      for (const cardId of ids) {
+        const card = rows.get(cardId);
+        if (card) {
+          if (isExplicitNonPokemonCard(card)) continue;
+          const cardNames = getPokedexCardNames(card);
+          const normalizedCardName = normalise(cardNames.englishName ?? cardNames.name);
+          if (!normalizedCardName) continue;
+          names.add(normalizedCardName);
+        }
+      }
     }
-  }
-
-  return names;
+    return names;
+  });
 }
 
 export async function setPokedexCardOwned(
@@ -669,7 +772,8 @@ export async function setPokedexCardOwned(
     if (!canRemovePokedexOwnershipMarker(physicalVariants)) {
       throw new Error('This card is owned through your collection. Use the collection card controls to remove it.');
     }
-    const binderIds = await fetchOwnedBinderIds(user.id);
+    const binderIds = await readPokedexOwnership({ isCurrent: accountIntent?.isCurrentAccount },
+      (context) => readOwnedBinderIds(user.id, context));
     for (let start = 0; start < binderIds.length; start += 100) {
       let query = supabase.from('binder_cards').select('id')
         .in('binder_id', binderIds.slice(start, start + 100))

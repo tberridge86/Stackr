@@ -226,7 +226,7 @@
     "catalogue-prices:bulk": "node scripts/refresh-catalogue-bulk-prices.mjs",
     "catalogue-prices:guide": "node scripts/catalogue-price-guide.mjs",
     "test:next-beta-fixes": "node scripts/test-ui-standardisation.cjs && tsx scripts/test-card-finish-profiles.ts && tsx scripts/test-card-artwork-images.ts && tsx scripts/test-pricing-v2-client.ts && tsx scripts/test-catalogue-price-client.ts",
-    "test:pokedex-release": "node scripts/test-pokedex-species-index.mjs && node scripts/test-pokedex-route-repair.mjs && node --import tsx scripts/test-pokedex-loading.ts && node --import tsx scripts/test-pokedex-account-boundary.ts && node --import tsx scripts/test-pokedex-partial-results.ts",
+    "test:pokedex-release": "node scripts/test-pokedex-species-index.mjs && node scripts/test-pokedex-route-repair.mjs && node --import tsx scripts/test-pokedex-loading.ts && node --import tsx scripts/test-pokedex-account-boundary.ts && node --import tsx scripts/test-pokedex-partial-results.ts && node --import tsx scripts/test-pokedex-ownership-bounds.ts",
     "test:catalogue-price-baseline": "node --import tsx scripts/test-catalogue-price-baseline.ts && node --import tsx scripts/test-catalogue-price-client.ts",
     "test:classified-price-read": "node scripts/test-classified-price-read.mjs && node --import tsx scripts/test-classified-price-overlay.ts",
     "test:device-feedback": "node --import tsx scripts/test-corocoro-screen-runtime.ts && node --import tsx scripts/test-explore-discover-runtime.ts && node --import tsx scripts/test-preferred-set-logo-delivery.ts && node --import tsx scripts/test-artwork-loading-recovery.ts && node --import tsx scripts/test-uncached-card-facts-runtime.ts && node --import tsx scripts/test-pokedex-cache-handoff.ts",

@@ -22,6 +22,7 @@ import {
   hydratePokedexCardArtwork,
   PokedexCardsProgress,
   type PokedexReadDiagnostic,
+  type PokedexOwnershipReadOptions,
   formatPokedexName,
   PokedexCard,
   setPokedexCardOwned,
@@ -61,7 +62,7 @@ const getPokemonSpriteUrl = (id: number) =>
   `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
 
 const makeOwnedKey = (card: Pick<PokedexCard, 'id' | 'set_id'>) => `${card.set_id ?? ''}:${card.id}`;
-const readOwnedKeys = async (accountId: string) => new Set((await fetchOwnedPokedexCards(accountId)).keys());
+const readOwnedKeys = async (accountId: string, options: PokedexOwnershipReadOptions) => new Set((await fetchOwnedPokedexCards(accountId, options)).keys());
 
 const getParamValue = (value?: string | string[]) => Array.isArray(value) ? value[0] : value;
 type PokedexTrace = ReturnType<typeof beginPokedexRetrieval>;

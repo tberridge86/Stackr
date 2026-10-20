@@ -3,6 +3,7 @@ import { useFocusEffect } from 'expo-router';
 import { useAuth } from '../components/auth-context';
 import { createAccountLoadGeneration } from './accountLoadGeneration';
 import { supabase } from './supabase';
+import type { PokedexOwnershipReadOptions } from './pokedexCollection';
 
 type OwnershipSnapshot = {
   accountId: string | null;
@@ -15,7 +16,7 @@ type PendingMarker = { accountId: string; key: string; owned: boolean; isCurrent
 type OwnershipFailure = { error: unknown; isCurrent: () => boolean };
 
 /** Shared account boundary for species names and exact set:printing ownership. */
-export function usePokedexOwnership(readOwnership: (accountId: string) => Promise<Set<string>>) {
+export function usePokedexOwnership(readOwnership: (accountId: string, options: PokedexOwnershipReadOptions) => Promise<Set<string>>) {
   const { user, loading: authLoading, error: authError, refreshAuth } = useAuth();
   const accountId: string | null = user?.id ?? null;
   const authReady = !authLoading && !authError;
@@ -29,10 +30,12 @@ export function usePokedexOwnership(readOwnership: (accountId: string) => Promis
   });
   const [pendingMarker, setPendingMarker] = useState<PendingMarker | null>(null);
   const activeMutation = useRef<PendingMarker | null>(null);
+  const activeRead = useRef<AbortController | null>(null);
 
   // Invalidate during render: an old completion must not win before effects run,
   // including an A -> B -> A transition that returns to the same account ID.
   if (currentAccount.current !== accountId || currentAuthReady.current !== authReady) {
+    activeRead.current?.abort();
     loadGeneration.invalidate();
     mutationGeneration.invalidate();
   }
@@ -46,18 +49,21 @@ export function usePokedexOwnership(readOwnership: (accountId: string) => Promis
 
   const loadOwnership = useCallback(async () => {
     if (!authReady || !focused.current || currentAccount.current !== accountId) return;
+    activeRead.current?.abort();
     const isCurrentLoad = loadGeneration.begin();
     if (!accountId) {
       setSnapshot({ accountId: null, values: null, status: 'idle', error: null });
       return;
     }
     const isCurrent = () => isCurrentLoad() && isAccountActive(accountId);
+    const request = new AbortController();
+    activeRead.current = request;
     setSnapshot((previous) => ({
       accountId, values: previous.accountId === accountId ? previous.values : null,
       status: 'loading', error: null,
     }));
     try {
-      const values = await readOwnership(accountId);
+      const values = await readOwnership(accountId, { signal: request.signal, isCurrent });
       if (!isCurrent()) return;
       const { data: { user: currentUser }, error } = await supabase.auth.getUser();
       if (error) throw error;
@@ -71,6 +77,9 @@ export function usePokedexOwnership(readOwnership: (accountId: string) => Promis
         accountId, values: previous.accountId === accountId ? previous.values : null,
         status: 'error', error: 'Ownership could not be refreshed. Please retry.',
       }));
+    } finally {
+      request.abort();
+      if (activeRead.current === request) activeRead.current = null;
     }
   }, [accountId, authReady, isAccountActive, loadGeneration, readOwnership]);
 
@@ -80,6 +89,7 @@ export function usePokedexOwnership(readOwnership: (accountId: string) => Promis
     void loadOwnership();
     return () => {
       focused.current = false;
+      activeRead.current?.abort();
       loadGeneration.invalidate();
       mutationGeneration.invalidate();
     };
@@ -106,6 +116,7 @@ export function usePokedexOwnership(readOwnership: (accountId: string) => Promis
     const isCurrentMutation = mutationGeneration.begin();
     const isCurrent = () => isCurrentMutation() && isAccountActive(accountId);
     loadGeneration.invalidate();
+    activeRead.current?.abort();
     const intent = { accountId, key, owned, isCurrent };
     activeMutation.current = intent;
     setPendingMarker(intent);
