@@ -123,29 +123,29 @@ type HomeDisplayCardRows = Awaited<ReturnType<typeof fetchStackrCardRows>>;
 
 const fetchHomeDisplayCardRows = async (
   cardIds: string[],
-  onFactsReady?: (rows: HomeDisplayCardRows) => void,
+  onFactsReady?: (rows: HomeDisplayCardRows, state: 'partial' | 'complete') => void,
 ): Promise<HomeDisplayCardRows> => {
   let acceptingFacts = true;
   let factsRevision = 0;
   try {
     const rows = await withPersonalDataReadTimeout(async (signal) => {
-      const publishFacts = async (snapshot: HomeDisplayCardRows) => {
+      const publishFacts = async (snapshot: HomeDisplayCardRows, state: 'partial' | 'complete') => {
         if (!acceptingFacts || signal.aborted || !onFactsReady) return;
         const revision = ++factsRevision;
         // Reuse the fail-closed image projection without a provider read. Each
         // verified card can paint before its optional manifest or batch peers.
         const facts = await hydrateCardReferenceRowMapWithLiveTcgdexReferences(snapshot, async (cards) => cards, 0);
-        if (acceptingFacts && !signal.aborted && factsRevision === revision) onFactsReady(facts);
+        if (acceptingFacts && !signal.aborted && factsRevision === revision) onFactsReady(facts, state);
       };
       const result = await fetchStackrCardRows(cardIds, {
         signal,
         onCanonicalRows: onFactsReady ? (snapshot) => {
           // Observe detached projections, including ones superseded by a newer
           // snapshot. The final projection below remains part of this deadline.
-          void publishFacts(snapshot).catch(() => undefined);
+          void publishFacts(snapshot, 'partial').catch(() => undefined);
         } : undefined,
       });
-      await publishFacts(result);
+      await publishFacts(result, 'complete');
       return result;
     });
     acceptingFacts = false;
@@ -2267,6 +2267,7 @@ export default function HubScreen() {
 
       const cardIds = [...new Set(mergedRows.map((row) => row.card_id))];
       let officialCardMap: HomeDisplayCardRows | null = null;
+      let factsComplete = false;
       let priceMap: Awaited<ReturnType<typeof fetchStackrPriceSnapshots>> | null = null;
       const publishCards = () => {
         if (!isCurrentRequest() || !officialCardMap) return;
@@ -2277,10 +2278,15 @@ export default function HubScreen() {
           const setId = officialCard?.set_id ?? row.set_id ?? null;
           // Keep the last estimate only for the same reference and set while its
           // new snapshot is pending. A different printing never inherits it.
-          const prior = priceMap === null
-            ? current.find((card) => card.cardId === row.card_id && card.setId === setId)?.estimatedValue
-            : null;
+          const previous = current.find((card) => card.cardId === row.card_id && card.setId === setId);
+          const prior = priceMap === null ? previous?.estimatedValue : null;
           const estimated = row.market_estimate ?? row.asking_price ?? priceMap?.get(row.card_id)?.market_central ?? prior ?? null;
+          const estimatedValue = typeof estimated === 'number' ? estimated : estimated == null ? null : Number(estimated);
+          // A partial snapshot cannot establish that this reference is absent.
+          // Preserve its complete display (including language, edition
+          // and inspection artwork) only within this current authorised request.
+          // A completed absence below must instead clear the previous facts.
+          if (!officialCard && !factsComplete && previous) return { ...previous, estimatedValue };
           const officialImages = getPokemonCardImageUrls(row.card_id, setId, cardNumber);
           const rawImages = (officialCard?.raw_data as any)?.images ?? null;
           const officialImage =
@@ -2314,17 +2320,19 @@ export default function HubScreen() {
               rawData: officialCard?.raw_data,
               imageUrl: officialImage,
             }),
-            estimatedValue: typeof estimated === 'number' ? estimated : estimated == null ? null : Number(estimated),
+            estimatedValue,
           };
         }));
         setChaseLoading(false);
       };
       await Promise.all([
-        fetchHomeDisplayCardRows(cardIds, (facts) => {
+        fetchHomeDisplayCardRows(cardIds, (facts, state) => {
           officialCardMap = facts;
+          factsComplete = state === 'complete';
           publishCards();
         }).then((cards) => {
           officialCardMap = cards;
+          factsComplete = true;
           publishCards();
         }).catch((error) => {
           revokeDeniedRequest(error);

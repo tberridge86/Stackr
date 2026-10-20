@@ -510,6 +510,97 @@ async function homeCanonicalFactsStreaming() {
   console.log('Home canonical streaming passed: real adapter → safe image projection → runtime publication, independent prices and late callback timeout/denial/retry/A→B→A/unmount guards.');
 }
 
+async function homePendingDisplayRefresh() {
+  for (const outcome of ['success', 'absence', 'denial', 'account', 'retry', 'timeout', 'unmount', 'changed-set', 'changed-reference'] as const) {
+    const first = canonicalFixture(1, true), peer = canonicalFixture(2, true);
+    const heldPeer = deferred<any>(), heldPrices = deferred<Map<string, any>>();
+    let round = 0;
+    const currentPeer = { ...peer, card: { ...peer.card, names: { ...peer.card.names, englishDisplay: 'Current peer' } } };
+    const priceMap = () => {
+      const prices = fixturePrice(round ? 88 : 42);
+      prices.set('peer', { ...prices.get(fixtureReference)!, card_id: peer.card.cardId,
+        variant_id: peer.variantId, market_central: round ? 90 : 44 });
+      return prices;
+    };
+    const runtime = await harness({
+      chaseRows: async () => [...fixtureChase(), { card_id: round && outcome === 'changed-reference' ? 'other-peer' : 'peer',
+        set_id: round && outcome === 'changed-set' ? 'different-fixture-set' : fixtureSet }],
+      canonical: {
+        resolve: async reference => reference === 'peer' || reference === 'other-peer'
+          ? round === 1 ? heldPeer.promise : round >= 2 ? currentPeer : peer : first,
+        manifest: async () => { throw new Error('The approved embedded fixtures cannot need manifests'); },
+      },
+      prices: async () => round === 1 ? heldPrices.promise : priceMap(),
+    });
+    let closed = false;
+    try {
+      await runtime.interactions(); await runtime.tick(180);
+      const previous = runtime.state().chaseCards[1];
+      assert.equal(previous.name, 'Home fixture 2');
+      assert.equal(previous.language, 'ja');
+      assert.equal(previous.imageUrl, peer.image.derivatives[0].deliveryUrl);
+      assert.equal(previous.inspectionRequest.card.raw_data.stackr.defaultVariantId, peer.variantId);
+      round = 1;
+      await act(async () => { void runtime.state().reloadChase(); }); await runtime.settle();
+      if (outcome === 'changed-set' || outcome === 'changed-reference') {
+        assert.notEqual(runtime.state().chaseCards[1].name, previous.name,
+          'pending preservation requires both the same saved reference and exact set');
+        assert.equal(runtime.state().chaseCards[1].imageUrl, null);
+      } else {
+        assert.deepEqual(runtime.state().chaseCards[1], previous,
+          'one resolved lookup cannot erase the exact pending peer display during same-account refresh');
+        if (outcome !== 'denial' && outcome !== 'timeout') {
+          heldPrices.resolve(priceMap()); await runtime.settle();
+          assert.equal(runtime.state().chaseCards[1].estimatedValue, 90, 'independent stored-price results still publish for pending facts');
+          assert.equal(runtime.state().chaseCards[1].inspectionRequest, previous.inspectionRequest,
+            'pending preservation retains the complete existing inspection and selected edition, without rebuilding it');
+        }
+      }
+
+      if (outcome === 'success') {
+        heldPeer.resolve(currentPeer); await runtime.settle();
+        assert.equal(runtime.state().chaseCards[1].name, 'Current peer', 'fresh facts replace the temporary retained display');
+      } else if (outcome === 'absence') {
+        heldPeer.resolve(null); await runtime.settle();
+        const missing = runtime.state().chaseCards[1];
+        assert.equal(missing.name, 'peer', 'completed absence cannot retain a stale verified name');
+        assert.equal(missing.language, null);
+        assert.equal(missing.imageUrl, null);
+        assert.equal(missing.inspectionRequest, null, 'completed absence cannot retain a prior exact inspection');
+      } else if (outcome === 'denial') {
+        heldPrices.reject({ status: 403, message: 'Synthetic refresh denial' } as any); await runtime.settle();
+        assert.equal(runtime.state().chaseCards.length, 0, 'denial revokes even deliberately retained pending display');
+        assert.match(runtime.state().chaseError, /access could not be confirmed/i);
+      } else if (outcome === 'account') {
+        round = 2; await runtime.auth('owner-b');
+        assert.equal(runtime.state().chaseCards.length, 0, 'an account change clears all prior pending display before the next read');
+        await runtime.interactions(); await runtime.tick(180);
+        assert.equal(runtime.state().chaseCards[1].name, 'Current peer');
+      } else if (outcome === 'retry') {
+        round = 2; await act(async () => { await runtime.state().reloadChase(); });
+        assert.equal(runtime.state().chaseCards[1].name, 'Current peer');
+      } else if (outcome === 'timeout') {
+        await runtime.tick(10_000);
+        assert.equal(runtime.state().chaseCards[1].name, previous.name, 'a timeout retains the last known display beside its retry error');
+        assert.match(runtime.state().chaseError, /Could not refresh/);
+        assert.equal(runtime.state().chaseLoading, false);
+      } else if (outcome === 'unmount') {
+        await runtime.close(); closed = true;
+      }
+      const writes = runtime.stateWrites();
+      heldPeer.resolve(peer); heldPrices.resolve(priceMap()); await runtime.settle();
+      if (['denial', 'account', 'retry', 'timeout', 'unmount'].includes(outcome)) {
+        assert.equal(runtime.stateWrites(), writes, `late ${outcome} completions cannot restore a retained pending display`);
+      }
+    } finally {
+      // Also close the deliberate V1 counterexample after its assertion fails.
+      heldPeer.resolve(peer); heldPrices.resolve(priceMap()); await runtime.settle();
+      if (!closed) await runtime.close();
+    }
+  }
+  console.log('Home pending display refresh passed: real two-card adapter/runtime retention, independent prices, completed absence, exact reference/set, denial, account, retry, timeout and unmount.');
+}
+
 async function homeDisplayRecovery() {
   const savedRows = deferred<any[]>(), facts = deferred<Map<string, any>>();
   const provider = deferred<void>(), prices = deferred<Map<string, any>>();
@@ -845,6 +936,7 @@ async function homeChaseDenialRecovery() {
 async function main() {
   await adapterFactsStreaming();
   await homeCanonicalFactsStreaming();
+  await homePendingDisplayRefresh();
   await homeChaseDenialRecovery();
   await homeDisplayRecovery();
   const savedCustom = async (): Promise<ReturnType<typeof emptySaved>> => ({ ...emptySaved(), binders: [{
