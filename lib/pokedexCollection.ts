@@ -8,6 +8,7 @@ import {
 } from './pokemonDisplayNames';
 import { fetchStackrCardRows, fetchStackrPriceSnapshots, fetchStackrSetRows, stackrCardToLegacyCard } from './stackrDomainAdapter';
 import { stackrApiClient, type StackrCard, type StackrCatalogueAsset } from './stackrApiV1';
+import { withPersonalDataReadTimeout } from './personalDataRead';
 import {
   buildOwnedPokedexCards,
   canRemovePokedexOwnershipMarker,
@@ -128,6 +129,14 @@ export type PokedexCardsProgress = {
   error?: Error | null;
 };
 
+export type PokedexReadDiagnostic =
+  | { source: 'canonical-facts'; phase: 'page' | 'complete' }
+  | { source: 'artwork' | 'prices'; phase: 'complete' | 'failed' };
+type PokedexReadObserver = (event: PokedexReadDiagnostic) => void;
+function reportPokedexRead(observer: PokedexReadObserver | undefined, event: PokedexReadDiagnostic) {
+  try { observer?.(event); } catch { /* Optional measurement must not change retrieval. */ }
+}
+
 const getPokedexCardNames = (card: any) => {
   const raw = card.raw_data ?? card.raw_payload ?? card;
   const input = {
@@ -240,7 +249,7 @@ const mergePokedexArtwork = (source: PokedexCard, hydrated: any): PokedexCard =>
  * Hydrates at most one visible-card batch. The promise cache avoids repeat
  * asset reads as a FlatList recycles cells while preserving canonical facts.
  */
-export async function hydratePokedexCardArtwork(cards: PokedexCard[]): Promise<PokedexCard[]> {
+export async function hydratePokedexCardArtwork(cards: PokedexCard[], onDiagnostic?: PokedexReadObserver): Promise<PokedexCard[]> {
   pruneArtworkHydrationCache();
   const unique = [...new Map(cards
     .filter((card) => card.canonical_card && !card.image_small && !card.image_large)
@@ -249,7 +258,7 @@ export async function hydratePokedexCardArtwork(cards: PokedexCard[]): Promise<P
     .slice(0, 100);
   const newCards = unique.filter((card) => !artworkHydrationByCardId.has(card.id));
   if (newCards.length) {
-    const batch = fetchVisiblePokedexArtwork(newCards)
+    const batch = fetchVisiblePokedexArtwork(newCards, onDiagnostic)
       .then((assets) => new Map(newCards.map((card) => [
         card.id,
         stackrCardToLegacyCard(card.canonical_card!, assets),
@@ -289,11 +298,18 @@ async function addSetNames(cards: PokedexCard[]): Promise<PokedexCard[]> {
   }));
 }
 
-async function addLatestPrices(cards: PokedexCard[]): Promise<PokedexCard[]> {
+async function addLatestPrices(cards: PokedexCard[], onDiagnostic?: PokedexReadObserver): Promise<PokedexCard[]> {
   const cardIds = [...new Set(cards.map((card) => card.id).filter(Boolean))];
   if (!cardIds.length) return cards;
 
-  const snapshotMap = await fetchStackrPriceSnapshots(cardIds);
+  let snapshotMap: Awaited<ReturnType<typeof fetchStackrPriceSnapshots>>;
+  try {
+    snapshotMap = await fetchStackrPriceSnapshots(cardIds);
+    reportPokedexRead(onDiagnostic, { source: 'prices', phase: 'complete' });
+  } catch (error) {
+    reportPokedexRead(onDiagnostic, { source: 'prices', phase: 'failed' });
+    throw error;
+  }
 
   return cards.map((card) => {
     const price = snapshotMap.get(card.id);
@@ -306,13 +322,13 @@ async function addLatestPrices(cards: PokedexCard[]): Promise<PokedexCard[]> {
   });
 }
 
-async function enrichPokedexCards(cards: PokedexCard[]): Promise<PokedexCard[]> {
+async function enrichPokedexCards(cards: PokedexCard[], onDiagnostic?: PokedexReadObserver): Promise<PokedexCard[]> {
   // Card retrieval is the primary detail-screen content. Set labels and prices
   // are optional enrichments, so an unavailable auxiliary endpoint must never
   // turn a populated Pokémon collection into an empty error state.
   const [setNames, prices] = await Promise.allSettled([
     addSetNames(cards),
-    addLatestPrices(cards),
+    addLatestPrices(cards, onDiagnostic),
   ]);
 
   const withSetNames = setNames.status === 'fulfilled' ? setNames.value : cards;
@@ -360,6 +376,7 @@ const CANONICAL_PAGE_LIMIT = 120;
 async function fetchCanonicalPokedexCards(
   pokemonName: string,
   onProgress?: (progress: PokedexCardsProgress) => void,
+  onDiagnostic?: PokedexReadObserver,
 ): Promise<PokedexCardsProgress> {
   const cardsById = new Map<string, PokedexCard>();
   let cursor: string | null = null;
@@ -378,13 +395,14 @@ async function fetchCanonicalPokedexCards(
         cardsById.set(legacy.id, { ...mapCardRow(legacy), canonical_card: card });
       }
       cursor = response.meta.pagination?.nextCursor ?? null;
+      reportPokedexRead(onDiagnostic, { source: 'canonical-facts', phase: 'page' });
       onProgress?.({ cards: sortPokedexCards([...cardsById.values()]), complete: false });
       // The first visible row gets thumbnails without waiting for later
       // source pages, pricing, or set labels. Subsequent visible chunks are
       // requested by the detail FlatList.
       if (!publishedFirstPage) {
         publishedFirstPage = true;
-        void hydratePokedexCardArtwork(sortPokedexCards([...cardsById.values()]).slice(0, 16))
+        void hydratePokedexCardArtwork(sortPokedexCards([...cardsById.values()]).slice(0, 16), onDiagnostic)
           .then((hydrated) => {
             for (const card of hydrated) {
               const current = cardsById.get(card.id) ?? card;
@@ -410,8 +428,9 @@ async function fetchCanonicalPokedexCards(
   // indefinitely on optional set or pricing services.
   const factual = { cards, complete: true };
   factsComplete = true;
+  reportPokedexRead(onDiagnostic, { source: 'canonical-facts', phase: 'complete' });
   onProgress?.(factual);
-  void enrichPokedexCards(cards)
+  void enrichPokedexCards(cards, onDiagnostic)
     .then((enriched) => {
       for (const card of enriched) {
         const current = cardsById.get(card.id);
@@ -426,10 +445,10 @@ async function fetchCanonicalPokedexCards(
 
 export async function fetchCardsForPokemon(
   pokemonName: string,
-  options: { onProgress?: (progress: PokedexCardsProgress) => void } = {},
+  options: { onProgress?: (progress: PokedexCardsProgress) => void; onDiagnostic?: PokedexReadObserver } = {},
 ): Promise<PokedexCardsProgress> {
   try {
-    const result = await fetchCanonicalPokedexCards(pokemonName, options.onProgress);
+    const result = await fetchCanonicalPokedexCards(pokemonName, options.onProgress, options.onDiagnostic);
     options.onProgress?.(result);
     return result;
   } catch {
@@ -487,118 +506,226 @@ export async function fetchCardsForPokemon(
 }
 
 const OWNERSHIP_PAGE_SIZE = 500;
+const OWNERSHIP_MAX_REQUESTS = 256;
+const OWNERSHIP_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+export type PokedexOwnershipReadOptions = {
+  signal?: AbortSignal;
+  isCurrent?: () => boolean;
+};
+
+type OwnershipReadContext = {
+  signal: AbortSignal;
+  assertCurrent: () => void;
+  takeRequest: () => void;
+};
+
+function cancelledOwnershipRead() {
+  const error = new Error('Pokédex ownership request was cancelled.');
+  error.name = 'AbortError';
+  return error;
+}
+
+/** One deadline and page budget cover every source and every binder chunk. */
+async function readPokedexOwnership<T>(
+  options: PokedexOwnershipReadOptions,
+  read: (context: OwnershipReadContext) => Promise<T>,
+): Promise<T> {
+  const request = new AbortController();
+  const cancel = () => request.abort();
+  if (options.signal?.aborted) throw cancelledOwnershipRead();
+  options.signal?.addEventListener('abort', cancel, { once: true });
+  try {
+    return await withPersonalDataReadTimeout(async (deadlineSignal) => {
+      deadlineSignal.addEventListener('abort', cancel, { once: true });
+      let requests = 0;
+      const assertCurrent = () => {
+        if (request.signal.aborted || deadlineSignal.aborted || options.isCurrent?.() === false) {
+          throw cancelledOwnershipRead();
+        }
+      };
+      const context: OwnershipReadContext = {
+        signal: request.signal,
+        assertCurrent,
+        takeRequest: () => {
+          assertCurrent();
+          if (++requests > OWNERSHIP_MAX_REQUESTS) {
+            throw new Error('Pokédex ownership exceeded its safe request limit. Please retry.');
+          }
+        },
+      };
+      try {
+        assertCurrent();
+        const result = await read(context);
+        assertCurrent();
+        return result;
+      } finally {
+        // A failed source, deadline or superseded load must also stop siblings.
+        request.abort();
+        deadlineSignal.removeEventListener('abort', cancel);
+      }
+    }, { signal: options.signal });
+  } finally {
+    request.abort();
+    options.signal?.removeEventListener('abort', cancel);
+  }
+}
 
 async function fetchAllOwnershipRows<T extends { id: string }>(
   fetchPage: (after: string | null) => PromiseLike<{ data: T[] | null; error: unknown }>,
+  context: OwnershipReadContext,
+  accepts: (row: T) => boolean,
+  seen = new Set<string>(),
 ): Promise<T[]> {
   const rows: T[] = [];
   let after: string | null = null;
   for (;;) {
+    context.takeRequest();
     const { data, error } = await fetchPage(after);
+    context.assertCurrent();
     if (error) throw error;
-    rows.push(...(data ?? []));
-    if (!data || data.length < OWNERSHIP_PAGE_SIZE) return rows;
-    const next = data[data.length - 1]?.id;
-    if (!next || next === after) throw new Error('Ownership pagination did not advance.');
-    after = next;
+    if (!Array.isArray(data) || data.length > OWNERSHIP_PAGE_SIZE) {
+      throw new Error('Pokédex ownership response was incomplete. Please retry.');
+    }
+    // A nonempty short page may be a lower server cap. Only empty is complete.
+    if (!data.length) return rows;
+    for (const row of data) {
+      const id = typeof row?.id === 'string' ? row.id.toLowerCase() : '';
+      if (!OWNERSHIP_UUID.test(id) || (after !== null && id <= after) || seen.has(id) || !accepts(row)) {
+        throw new Error('Pokédex ownership pagination could not be verified. Please retry.');
+      }
+      seen.add(id);
+      rows.push(row);
+      after = id;
+    }
   }
 }
 
-const fetchOwnedBinderIds = async (userId: string) => {
-  const binders = await fetchAllOwnershipRows<{ id: string }>((after) => {
-    const query = supabase.from('binders').select('id').eq('user_id', userId)
-      .order('id', { ascending: true }).limit(OWNERSHIP_PAGE_SIZE);
+const readOwnedBinderIds = async (userId: string, context: OwnershipReadContext) => {
+  const binders = await fetchAllOwnershipRows<{ id: string; user_id: string }>((after) => {
+    const query = supabase.from('binders').select('id, user_id').eq('user_id', userId)
+      .order('id', { ascending: true }).limit(OWNERSHIP_PAGE_SIZE).abortSignal(context.signal);
     return after ? query.gt('id', after) : query;
-  });
-  return [...new Set(binders.map((binder) => binder.id).filter(Boolean))];
+  }, context, (row) => row.user_id === userId);
+  return binders.map((binder) => binder.id);
 };
 
 /** Fetch only visible canonical printings; never enumerate an entire set. */
-async function fetchVisiblePokedexArtwork(cards: PokedexCard[]): Promise<StackrCatalogueAsset[]> {
+async function fetchVisiblePokedexArtwork(cards: PokedexCard[], onDiagnostic?: PokedexReadObserver): Promise<StackrCatalogueAsset[]> {
   const printingIds = [...new Set(cards.map((card) => card.canonical_card?.cardId).filter((id): id is string => Boolean(id)))];
   const assets: StackrCatalogueAsset[] = [];
-  for (let start = 0; start < printingIds.length; start += ARTWORK_MANIFEST_BATCH_SIZE) {
-    const printingBatch = printingIds.slice(start, start + ARTWORK_MANIFEST_BATCH_SIZE);
-    let cursor: string | null = null;
-    for (let page = 0; page < ARTWORK_MANIFEST_MAX_PAGES; page += 1) {
-      const response = await stackrApiClient.assetManifest({
-        assetType: 'card_image',
-        printingIds: printingBatch,
-        cursor,
-        limit: ARTWORK_MANIFEST_BATCH_SIZE,
-      });
-      assets.push(...response.data.assets);
-      cursor = response.meta.pagination?.nextCursor ?? null;
-      if (!cursor) break;
+  try {
+    for (let start = 0; start < printingIds.length; start += ARTWORK_MANIFEST_BATCH_SIZE) {
+      const printingBatch = printingIds.slice(start, start + ARTWORK_MANIFEST_BATCH_SIZE);
+      let cursor: string | null = null;
+      for (let page = 0; page < ARTWORK_MANIFEST_MAX_PAGES; page += 1) {
+        const response = await stackrApiClient.assetManifest({
+          assetType: 'card_image',
+          printingIds: printingBatch,
+          cursor,
+          limit: ARTWORK_MANIFEST_BATCH_SIZE,
+        });
+        assets.push(...response.data.assets);
+        cursor = response.meta.pagination?.nextCursor ?? null;
+        if (!cursor) break;
+      }
     }
+    if (printingIds.length) reportPokedexRead(onDiagnostic, { source: 'artwork', phase: 'complete' });
+  } catch (error) {
+    reportPokedexRead(onDiagnostic, { source: 'artwork', phase: 'failed' });
+    throw error;
   }
   return assets;
 }
 
-async function fetchBinderOwnershipRows(binderIds: string[]): Promise<OwnedPokedexCardRow[]> {
-  const rowsById = new Map<string, OwnedPokedexCardRow>();
+const hasOwnershipIdentity = (row: OwnedPokedexCardRow) => (
+  typeof row.card_id === 'string' && row.card_id.length > 0
+  && (row.set_id === null || typeof row.set_id === 'string' && row.set_id.length > 0)
+);
+
+async function fetchBinderOwnershipRows(binderIds: string[], context: OwnershipReadContext): Promise<OwnedPokedexCardRow[]> {
+  const allRows: OwnedPokedexCardRow[] = [];
+  const seen = new Set<string>();
   for (let start = 0; start < binderIds.length; start += 100) {
     const ids = binderIds.slice(start, start + 100);
-    const rows = await fetchAllOwnershipRows<OwnedPokedexCardRow>((after) => {
-      const query = supabase.from('binder_cards').select('id, card_id, set_id').in('binder_id', ids).eq('owned', true)
-        .order('id', { ascending: true }).limit(OWNERSHIP_PAGE_SIZE);
+    const rows = await fetchAllOwnershipRows<OwnedPokedexCardRow & { binder_id: string; owned: boolean }>((after) => {
+      const query = supabase.from('binder_cards').select('id, binder_id, card_id, set_id, owned').in('binder_id', ids).eq('owned', true)
+        .order('id', { ascending: true }).limit(OWNERSHIP_PAGE_SIZE).abortSignal(context.signal);
       return after ? query.gt('id', after) : query;
-    });
-    for (const row of rows) rowsById.set(row.id, row);
+    }, context, (row) => row.owned === true && ids.includes(row.binder_id) && hasOwnershipIdentity(row), seen);
+    allRows.push(...rows);
   }
-  return [...rowsById.values()];
+  return allRows;
 }
 
-export async function fetchOwnedPokedexCards(expectedAccountId?: string): Promise<Map<string, OwnedPokedexCard>> {
+async function readOwnedPokedexCards(expectedAccountId: string | undefined, context: OwnershipReadContext): Promise<Map<string, OwnedPokedexCard>> {
+  context.assertCurrent();
   const {
     data: { user },
     error: userError,
   } = await supabase.auth.getUser();
 
+  context.assertCurrent();
   if (userError) throw userError;
   if (expectedAccountId !== undefined && user?.id !== expectedAccountId) {
     throw new Error('Your account changed. Retry ownership.');
   }
   if (!user) return new Map();
 
-  const binderIds = await fetchOwnedBinderIds(user.id);
+  const binderIds = await readOwnedBinderIds(user.id, context);
   const [variants, binderCards, pokedexCards] = await Promise.all([
-    fetchAllOwnershipRows<OwnedPokedexCardRow>((after) => {
-      const query = supabase.from('user_card_variants').select('id, card_id, set_id')
-        .eq('user_id', user.id).order('id', { ascending: true }).limit(OWNERSHIP_PAGE_SIZE);
+    fetchAllOwnershipRows<OwnedPokedexCardRow & { user_id: string }>((after) => {
+      const query = supabase.from('user_card_variants').select('id, user_id, card_id, set_id')
+        .eq('user_id', user.id).order('id', { ascending: true }).limit(OWNERSHIP_PAGE_SIZE).abortSignal(context.signal);
       return after ? query.gt('id', after) : query;
-    }),
-    fetchBinderOwnershipRows(binderIds),
-    fetchAllOwnershipRows<OwnedPokedexCardRow>((after) => {
-      const query = supabase.from('user_pokedex_cards').select('id, card_id, set_id')
-        .eq('user_id', user.id).order('id', { ascending: true }).limit(OWNERSHIP_PAGE_SIZE);
+    }, context, (row) => row.user_id === user.id && hasOwnershipIdentity(row)),
+    fetchBinderOwnershipRows(binderIds, context),
+    fetchAllOwnershipRows<OwnedPokedexCardRow & { user_id: string }>((after) => {
+      const query = supabase.from('user_pokedex_cards').select('id, user_id, card_id, set_id')
+        .eq('user_id', user.id).order('id', { ascending: true }).limit(OWNERSHIP_PAGE_SIZE).abortSignal(context.signal);
       return after ? query.gt('id', after) : query;
-    }),
+    }, context, (row) => row.user_id === user.id && hasOwnershipIdentity(row)),
   ]);
 
+  context.assertCurrent();
   return buildOwnedPokedexCards(variants, binderCards, pokedexCards);
 }
 
-export async function fetchOwnedPokemonNameSet(expectedAccountId?: string): Promise<Set<string>> {
-  const owned = await fetchOwnedPokedexCards(expectedAccountId);
-  const cardIds = [...new Set(Array.from(owned.values()).map((row) => row.card_id).filter(Boolean))];
-  const names = new Set<string>();
+export async function fetchOwnedPokedexCards(
+  expectedAccountId?: string,
+  options: PokedexOwnershipReadOptions = {},
+): Promise<Map<string, OwnedPokedexCard>> {
+  return readPokedexOwnership(options, (context) => readOwnedPokedexCards(expectedAccountId, context));
+}
 
-  if (!cardIds.length) return names;
-
-  const rows = await fetchStackrCardRows(cardIds);
-  for (const cardId of cardIds) {
-    const card = rows.get(cardId);
-    if (card) {
-      if (isExplicitNonPokemonCard(card)) continue;
-      const cardNames = getPokedexCardNames(card);
-      const normalizedCardName = normalise(cardNames.englishName ?? cardNames.name);
-      if (!normalizedCardName) continue;
-      names.add(normalizedCardName);
+export async function fetchOwnedPokemonNameSet(
+  expectedAccountId?: string,
+  options: PokedexOwnershipReadOptions = {},
+): Promise<Set<string>> {
+  return readPokedexOwnership(options, async (context) => {
+    const owned = await readOwnedPokedexCards(expectedAccountId, context);
+    const cardIds = [...new Set(Array.from(owned.values()).map((row) => row.card_id).filter(Boolean))];
+    const names = new Set<string>();
+    // Keep the adapter's existing six-read concurrency, but do not let its
+    // internal all-card loop dispatch later batches after this intent expires.
+    for (let start = 0; start < cardIds.length; start += 6) {
+      context.assertCurrent();
+      const ids = cardIds.slice(start, start + 6);
+      const rows = await fetchStackrCardRows(ids);
+      context.assertCurrent();
+      for (const cardId of ids) {
+        const card = rows.get(cardId);
+        if (card) {
+          if (isExplicitNonPokemonCard(card)) continue;
+          const cardNames = getPokedexCardNames(card);
+          const normalizedCardName = normalise(cardNames.englishName ?? cardNames.name);
+          if (!normalizedCardName) continue;
+          names.add(normalizedCardName);
+        }
+      }
     }
-  }
-
-  return names;
+    return names;
+  });
 }
 
 export async function setPokedexCardOwned(
@@ -645,7 +772,8 @@ export async function setPokedexCardOwned(
     if (!canRemovePokedexOwnershipMarker(physicalVariants)) {
       throw new Error('This card is owned through your collection. Use the collection card controls to remove it.');
     }
-    const binderIds = await fetchOwnedBinderIds(user.id);
+    const binderIds = await readPokedexOwnership({ isCurrent: accountIntent?.isCurrentAccount },
+      (context) => readOwnedBinderIds(user.id, context));
     for (let start = 0; start < binderIds.length; start += 100) {
       let query = supabase.from('binder_cards').select('id')
         .in('binder_id', binderIds.slice(start, start + 100))

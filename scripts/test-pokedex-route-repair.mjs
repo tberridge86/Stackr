@@ -1,10 +1,185 @@
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
+import { readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
+import ts from 'typescript';
 import express from 'express';
 import { ApiError, createCatalogueV1Service } from '../backend/lib/stackrApiV1.js';
 import createV1Router from '../backend/routes/v1.js';
 import { matchesPokedexSpeciesName } from '../backend/lib/pokedexCards.js';
 const setId = '11111111-1111-4111-8111-111111111111';
+
+async function assertScreenMetadataRecovery() {
+  const screenSource = readFileSync('app/pokemon/[id].tsx', 'utf8');
+  const syntax = ts.createSourceFile('pokemon.tsx', screenSource, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let effect;
+  let failureBranch;
+  let retryAction;
+  const visit = (node) => {
+    if (ts.isCallExpression(node) && node.expression.getText(syntax) === 'useEffect'
+      && node.arguments[0]?.getText(syntax).includes('fetchCardsForPokemon')) effect = node.arguments[0].getText(syntax);
+    if (ts.isIfStatement(node) && node.expression.getText(syntax) === '!pokemon') failureBranch = node.getText(syntax);
+    if (ts.isVariableDeclaration(node) && node.name.getText(syntax) === 'retryCards') retryAction = node.initializer.arguments[0].getText(syntax);
+    ts.forEachChild(node, visit);
+  };
+  visit(syntax);
+  assert.ok(effect, 'exercise the actual Pokémon screen load effect');
+  assert.ok(failureBranch, 'exercise the actual no-metadata screen state');
+  assert.ok(retryAction, 'exercise the actual shared card Retry action');
+  const effectJs = ts.transpileModule(`globalThis.screenEffect = ${effect};`, {
+    compilerOptions: { target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+  const helperJs = ts.transpileModule(readFileSync('lib/optionalCatalogueEnrichment.ts', 'utf8'), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+  const performanceExports = {};
+  runInNewContext(ts.transpileModule(readFileSync('lib/performance.ts', 'utf8'), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  }).outputText, { exports: performanceExports, Date, Map, Set });
+  const retryJs = ts.transpileModule(`globalThis.retryCards = ${retryAction};`, {
+    compilerOptions: { target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+  const failureJs = ts.transpileModule(`globalThis.renderFailure = () => { ${failureBranch} };`, {
+    compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React },
+  }).outputText;
+  const flush = async () => { for (let index = 0; index < 30; index++) await Promise.resolve(); };
+  const fixture = (routeName, speciesName) => {
+    const timers = new Map();
+    const calls = [];
+    const updates = [];
+    let resolveFetch;
+    let rejectFetch;
+    let fetchSignal;
+    let retryEpoch = 0;
+    let cleanup;
+    const state = { cards: [] };
+    const context = {
+      id: '8', routeName, speciesName, AbortController,
+      routeKey: JSON.stringify(['8', routeName, speciesName]),
+      retrievalRef: { current: null }, publishedRef: { current: null }, committedRef: { current: null },
+      beginPokedexRetrieval: performanceExports.beginPokedexRetrieval,
+      startPokedexRetrieval: performanceExports.startPokedexRetrieval,
+      exports: {}, console: { log() {} },
+      setTimeout(callback, milliseconds) { const token = {}; timers.set(token, { callback, milliseconds }); return token; },
+      clearTimeout(token) { timers.delete(token); },
+      fetch(_url, options) {
+        fetchSignal = options?.signal;
+        return new Promise((resolve, reject) => { resolveFetch = resolve; rejectFetch = reject; });
+      },
+      fetchCardsForPokemon: async (name) => { calls.push(name); return { cards: [], complete: true }; },
+      setRetryEpoch(update) { retryEpoch = update(retryEpoch); cleanup(); cleanup = context.screenEffect(); },
+      React: { createElement: (type, props, ...children) => ({ type, props, children }) },
+      SafeAreaView: 'SafeAreaView', View: 'View', Text: 'Text', Pressable: 'Pressable',
+      styles: {}, theme: { colors: {} },
+    };
+    for (const name of ['Cards', 'CollectionComplete', 'CardsLoading', 'CardsError', 'Pokemon', 'Loading']) {
+      const key = name[0].toLowerCase() + name.slice(1);
+      context[`set${name}`] = (value) => {
+        state[key] = typeof value === 'function' ? value(state[key]) : value;
+        updates.push(key);
+      };
+    }
+    runInNewContext(helperJs, context);
+    context.readOptionalCatalogueEnrichment = context.exports.readOptionalCatalogueEnrichment;
+    runInNewContext(effectJs, context);
+    runInNewContext(retryJs, context);
+    runInNewContext(failureJs, context);
+    cleanup = context.screenEffect();
+    return {
+      calls, state, updates, cleanup: () => cleanup(), timers,
+      signal: () => fetchSignal,
+      retryEpoch: () => retryEpoch,
+      renderFailure: () => { context.pokemon = state.pokemon; context.cardsError = state.cardsError; return context.renderFailure(); },
+      respond: (data = { id: 8, name: 'wartortle', types: [] }) => resolveFetch({ ok: true, json: async () => data }),
+      respondWithPendingBody: () => resolveFetch({ ok: true, json: () => new Promise(() => {}) }),
+      fail: () => rejectFetch(new Error('offline fixture')),
+      expire: () => {
+        assert.equal(timers.size, 1);
+        for (const [token, timer] of timers) {
+          assert.equal(timer.milliseconds, 2_000, 'reuse the existing optional-enrichment deadline');
+          timers.delete(token); timer.callback();
+        }
+      },
+    };
+  };
+
+  const named = fixture('wartortle');
+  await flush();
+  assert.deepEqual(named.calls, ['wartortle'], 'known route facts do not wait for display metadata');
+  named.expire(); await flush();
+  assert.equal(named.signal().aborted, true);
+  assert.equal(named.state.cardsError, null, 'an optional metadata timeout cannot fail successful facts');
+  named.cleanup();
+
+  const selectedSpecies = fixture(undefined, 'wartortle');
+  await flush();
+  assert.deepEqual(selectedSpecies.calls, ['wartortle'], 'an explicit species name also starts facts immediately');
+  assert.equal(selectedSpecies.state.pokemon.name, 'wartortle');
+  selectedSpecies.cleanup(); await flush();
+  assert.equal(selectedSpecies.signal().aborted, true);
+  assert.equal(selectedSpecies.timers.size, 0, 'cleanup releases the metadata deadline');
+
+  const direct = fixture();
+  await flush();
+  assert.deepEqual(direct.calls, [], 'a direct numeric route does not invent a species');
+  direct.respond(); await flush();
+  assert.deepEqual(direct.calls, ['wartortle']);
+  assert.equal(direct.timers.size, 0, 'a successful metadata read releases its deadline');
+  direct.cleanup();
+
+  const timedOut = fixture();
+  await flush(); timedOut.expire(); await flush();
+  assert.equal(timedOut.signal().aborted, true, 'a hung transport receives abort');
+  assert.equal(timedOut.state.cardsLoading, false, 'a transport ignoring abort still settles the screen');
+  assert.match(timedOut.state.cardsError, /retry/i);
+  assert.deepEqual(timedOut.calls, [], 'timeout does not fabricate a card identity');
+  const failedUpdates = timedOut.updates.length;
+  timedOut.respond(); await flush();
+  assert.equal(timedOut.updates.length, failedUpdates, 'late metadata cannot replace the settled timeout');
+  const failedTree = timedOut.renderFailure();
+  const elements = [];
+  const collect = (node) => {
+    if (!node || typeof node !== 'object') return;
+    elements.push(node); node.children?.forEach(collect);
+  };
+  collect(failedTree);
+  assert.ok(elements.some((node) => node.type === 'Text' && node.children.includes(timedOut.state.cardsError)),
+    'the actual no-metadata state explains the retryable failure');
+  const retryButton = elements.find((node) => node.type === 'Pressable'
+    && node.props.accessibilityLabel === 'Retry loading Pokémon cards');
+  assert.ok(retryButton, 'a direct-route timeout renders an accessible Retry action');
+  retryButton.props.onPress(); await flush();
+  assert.equal(timedOut.retryEpoch(), 1, 'the rendered Retry advances the actual screen epoch');
+  assert.equal(timedOut.state.cardsError, null);
+  timedOut.respond(); await flush();
+  assert.deepEqual(timedOut.calls, ['wartortle'], 'the same failed screen recovers through its rendered Retry');
+  assert.equal(timedOut.timers.size, 0);
+  timedOut.cleanup();
+
+  const pendingBody = fixture();
+  await flush(); pendingBody.respondWithPendingBody(); await flush();
+  pendingBody.expire(); await flush();
+  assert.equal(pendingBody.state.cardsLoading, false, 'the deadline includes response-body parsing');
+  assert.match(pendingBody.state.cardsError, /retry/i);
+  pendingBody.cleanup();
+
+  const dismissed = fixture();
+  await flush(); dismissed.cleanup(); await flush();
+  const dismissedUpdates = dismissed.updates.length;
+  assert.equal(dismissed.signal().aborted, true);
+  assert.equal(dismissed.timers.size, 0);
+  dismissed.respond(); await flush();
+  assert.equal(dismissed.updates.length, dismissedUpdates, 'dismissal prevents late state updates');
+  assert.deepEqual(dismissed.calls, []);
+
+  const optionalFailure = fixture('wartortle');
+  await flush(); optionalFailure.fail(); await flush();
+  assert.equal(optionalFailure.state.cardsError, null);
+  assert.deepEqual(optionalFailure.calls, ['wartortle']);
+  assert.equal(optionalFailure.timers.size, 0);
+  optionalFailure.cleanup();
+
+}
 
 async function assertBatchAssetManifestPrintingFilter() {
   const printingId = '99999999-9999-4999-8999-999999999991';
@@ -377,6 +552,7 @@ async function assertAssetManifestIdentityRpc() {
 
 
 await assertBatchAssetManifestPrintingFilter();
+await assertScreenMetadataRecovery();
 await assertPokemonCardsPagination();
 await assertPokemonCardTypesAndEmptyPageContinuation();
 await assertPokemonEmptyScanRemainsBounded();

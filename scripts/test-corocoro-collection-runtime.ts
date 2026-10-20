@@ -18,7 +18,7 @@ function compile(path: string, dependencies: Record<string, unknown>) {
   const source = ts.transpileModule(readFileSync(path, 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React, esModuleInterop: true },
   }).outputText;
-  runInNewContext(source, { module, exports: module.exports, React, console, process, URL, Error,
+  runInNewContext(source, { module, exports: module.exports, React, console, process, URL, Error, AbortController,
     require: (name: string) => { if (!(name in dependencies)) throw Error(`Missing dependency ${name}`); return dependencies[name]; } });
   return module.exports;
 }

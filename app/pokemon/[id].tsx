@@ -2,7 +2,7 @@ import { useTheme } from '../../components/theme-context';
 import { Text } from '../../components/Text';
 import { StackrImage } from '../../components/StackrImage';
 import { Ionicons } from '@expo/vector-icons';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import {
@@ -21,6 +21,8 @@ import {
   fetchOwnedPokedexCards,
   hydratePokedexCardArtwork,
   PokedexCardsProgress,
+  type PokedexReadDiagnostic,
+  type PokedexOwnershipReadOptions,
   formatPokedexName,
   PokedexCard,
   setPokedexCardOwned,
@@ -33,6 +35,9 @@ import { useCardInspection } from '../../components/CardInspectionProvider';
 import { CARD_INSPECTION_LONG_PRESS_MS } from '../../lib/cardInspection';
 import { useCataloguePriceOverlay } from '../../lib/useCataloguePriceOverlay';
 import type { CataloguePriceDisplay } from '../../lib/cataloguePrices';
+import { readOptionalCatalogueEnrichment } from '../../lib/optionalCatalogueEnrichment';
+import { beginPokedexRetrieval, startPokedexRetrieval } from '../../lib/performance';
+import { useAuth } from '../../components/auth-context';
 
 type PokemonData = {
   id: number;
@@ -57,9 +62,18 @@ const getPokemonSpriteUrl = (id: number) =>
   `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
 
 const makeOwnedKey = (card: Pick<PokedexCard, 'id' | 'set_id'>) => `${card.set_id ?? ''}:${card.id}`;
-const readOwnedKeys = async (accountId: string) => new Set((await fetchOwnedPokedexCards(accountId)).keys());
+const readOwnedKeys = async (accountId: string, options: PokedexOwnershipReadOptions) => new Set((await fetchOwnedPokedexCards(accountId, options)).keys());
 
 const getParamValue = (value?: string | string[]) => Array.isArray(value) ? value[0] : value;
+type PokedexTrace = ReturnType<typeof beginPokedexRetrieval>;
+function observePokedexRead(trace: PokedexTrace | null, event: PokedexReadDiagnostic) {
+  if (!trace?.current()) return;
+  if (event.source === 'canonical-facts') {
+    trace.source('network');
+    if (event.phase === 'complete') trace.phase('network-complete');
+  } else if (event.phase === 'failed') trace.fail(event.source);
+  else trace.phase(event.source === 'artwork' ? 'artwork-read-complete' : 'price-read-complete');
+}
 
 const formatMoney = (value: number | null | undefined) =>
   typeof value === 'number' && Number.isFinite(value)
@@ -86,6 +100,8 @@ export default function PokemonDetailScreen() {
   const speciesName = getParamValue(params.speciesName);
   const rawSpeciesId = Number(getParamValue(params.speciesId));
   const speciesId = Number.isSafeInteger(rawSpeciesId) && rawSpeciesId > 0 ? rawSpeciesId : null;
+  const routeKey = JSON.stringify([id, routeName, speciesName]);
+  const auth = useAuth();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const columns = width >= 900 ? 5 : width >= 620 ? 4 : 2;
@@ -101,19 +117,42 @@ export default function PokemonDetailScreen() {
   const [cardsError, setCardsError] = useState<string | null>(null);
   const [collectionComplete, setCollectionComplete] = useState(false);
   const [retryEpoch, setRetryEpoch] = useState(0);
+  const retrievalRef = useRef<{ routeKey: string; trace: PokedexTrace } | null>(null);
+  const publishedRef = useRef<{ cards: PokedexCard[]; trace: PokedexTrace } | null>(null);
+  const committedRef = useRef<{ rows: Set<PokedexCard>; trace: PokedexTrace } | null>(null);
+  // Invalidate before effects, so old native callbacks cannot be attributed to a new route.
+  if (retrievalRef.current && retrievalRef.current.routeKey !== routeKey) {
+    retrievalRef.current.trace.cancel();
+    retrievalRef.current = null; publishedRef.current = null; committedRef.current = null;
+  }
+  const retryCards = useCallback(() => {
+    retrievalRef.current?.trace.cancel();
+    startPokedexRetrieval(routeKey, 'retry');
+    setRetryEpoch((current) => current + 1);
+  }, [routeKey]);
+  useFocusEffect(useCallback(() => () => {
+    retrievalRef.current?.trace.cancel();
+    committedRef.current = null;
+  }, []));
   const longPressedCardId = useRef<string | null>(null);
-  const mergeArtwork = useCallback((hydrated: PokedexCard[]) => {
+  const mergeArtwork = useCallback((hydrated: PokedexCard[], trace?: PokedexTrace) => {
     if (!hydrated.length) return;
     const byId = new Map(hydrated.map((card) => [card.id, card]));
-    setCards((current) => current.map((card) => {
-      const image = byId.get(card.id);
-      return image ? {
-        ...card,
-        image_small: image.image_small,
-        image_large: image.image_large,
-        image_urls: image.image_urls,
-      } : card;
-    }));
+    setCards((current) => {
+      const next = current.map((card) => {
+        const image = byId.get(card.id);
+        return image ? {
+          ...card,
+          image_small: image.image_small,
+          image_large: image.image_large,
+          image_urls: image.image_urls,
+        } : card;
+      });
+      if (trace?.current() && publishedRef.current?.trace === trace && publishedRef.current.cards === current) {
+        publishedRef.current = { cards: next, trace };
+      }
+      return next;
+    });
   }, []);
 
   const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: { item: PokedexCard | null }[] }) => {
@@ -122,22 +161,34 @@ export default function PokemonDetailScreen() {
       .filter((item): item is PokedexCard => Boolean(item))
       .slice(0, 100);
     if (!visible.length) return;
-    void hydratePokedexCardArtwork(visible).then(mergeArtwork).catch(() => {});
+    const committed = committedRef.current;
+    if (committed?.trace.current() && visible.some((card) => committed.rows.has(card))) committed.trace.phase('visible-rows');
+    void hydratePokedexCardArtwork(visible, (event) => observePokedexRead(committed?.trace ?? null, event))
+      .then((hydrated) => mergeArtwork(hydrated, committed?.trace)).catch(() => {});
   }).current;
 
   useEffect(() => {
     let active = true;
+    const metadataController = new AbortController();
+    retrievalRef.current?.trace.cancel();
+    const trace = beginPokedexRetrieval(routeKey);
+    retrievalRef.current = { routeKey, trace };
+    const onDiagnostic = (event: PokedexReadDiagnostic) => observePokedexRead(trace, event);
 
     const applyCards = (progress: PokedexCardsProgress) => {
       if (!active) return;
+      trace.facts(progress.cards.length, null, progress.complete);
+      if (progress.error) trace.fail('facts');
       setCards((current) => {
         const existing = new Map(current.map((card) => [card.id, card]));
-        return progress.cards.map((card) => {
+        const next = progress.cards.map((card) => {
           const prior = existing.get(card.id);
           return prior && !card.image_small && !card.image_large && (prior.image_small || prior.image_large)
             ? { ...card, image_small: prior.image_small, image_large: prior.image_large, image_urls: prior.image_urls }
             : card;
         });
+        if (trace.current()) publishedRef.current = { cards: next, trace };
+        return next;
       });
       setCollectionComplete(progress.complete);
       setCardsLoading(false);
@@ -148,8 +199,9 @@ export default function PokemonDetailScreen() {
       setCardsLoading(true);
       setCardsError(null);
       setCollectionComplete(false);
-      const routePokemon: PokemonData | null = routeName
-        ? { id: Number(id) || 0, name: routeName, types: [] }
+      const knownRouteName = routeName ?? speciesName;
+      const routePokemon: PokemonData | null = knownRouteName
+        ? { id: Number(id) || 0, name: knownRouteName, types: [] }
         : null;
       if (routePokemon && active) {
         setPokemon(routePokemon);
@@ -158,19 +210,13 @@ export default function PokemonDetailScreen() {
         setLoading(true);
       }
 
-      const metadata = (async (): Promise<PokemonData | null> => {
-        try {
-          const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
-          if (!response.ok) throw new Error(`PokeAPI returned ${response.status}`);
-          return await response.json() as PokemonData;
-        } catch (pokemonError) {
-          console.log('Pokedex Pokemon metadata lookup failed', {
-            id, routeName,
-            error: pokemonError instanceof Error ? pokemonError.message : String(pokemonError),
-          });
-          return null;
-        }
-      })();
+      // Display metadata is optional when the route already supplies the exact
+      // species name. Bound the entire response/body read even if abort is ignored.
+      const metadata = readOptionalCatalogueEnrichment(async (signal) => {
+        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`, { signal });
+        if (!response.ok) throw new Error(`PokeAPI returned ${response.status}`);
+        return await response.json() as PokemonData;
+      }, metadataController.signal).catch(() => null);
 
       try {
         const nextPokemon = routePokemon ?? await metadata;
@@ -189,9 +235,10 @@ export default function PokemonDetailScreen() {
         // legacy/form routes have no species parameter, so retain their exact
         // route name for card retrieval.
         const cardSpeciesName = speciesName ?? routeName ?? nextPokemon.name;
-        const pokemonCards = await fetchCardsForPokemon(cardSpeciesName, { onProgress: applyCards });
+        const pokemonCards = await fetchCardsForPokemon(cardSpeciesName, { onProgress: applyCards, onDiagnostic });
         if (!active) return;
         applyCards(pokemonCards);
+        trace.settle(pokemonCards.cards.length > 0);
         console.log('Pokedex cards loaded', {
           pokemon: cardSpeciesName,
           count: pokemonCards.cards.length,
@@ -200,6 +247,7 @@ export default function PokemonDetailScreen() {
       } catch (error) {
         console.log('Failed to load Pokemon collection page', error);
         if (active) {
+          trace.fail('facts'); trace.settle();
           setCardsLoading(false);
           setCardsError('Cards could not be loaded. Check your connection and retry.');
         }
@@ -212,8 +260,17 @@ export default function PokemonDetailScreen() {
 
     return () => {
       active = false;
+      metadataController.abort();
+      trace.cancel();
     };
-  }, [id, retryEpoch, routeName, speciesName]);
+  }, [id, retryEpoch, routeKey, routeName, speciesName]);
+
+  useEffect(() => {
+    const trace = retrievalRef.current?.trace;
+    if (!auth.loading && !auth.error) trace?.phase('auth-ready');
+    if (ownership.status === 'success') trace?.phase('ownership-ready');
+    if (ownership.status === 'error') trace?.fail('ownership');
+  }, [auth.loading, auth.error, ownership.status, retryEpoch, routeKey]);
 
   const ownedCount = useMemo(
     () => ownedKeys ? cards.filter((card) => ownedKeys.has(makeOwnedKey(card))).length : null,
@@ -221,7 +278,10 @@ export default function PokemonDetailScreen() {
   );
   const totalCount = cards.length;
   const progress = totalCount && ownedCount !== null ? ownedCount / totalCount : 0;
-  const pricedCards = useCataloguePriceOverlay(cards);
+  const renderedTrace = publishedRef.current?.cards === cards ? publishedRef.current.trace : null;
+  const pricedCards = useCataloguePriceOverlay(cards, {
+    onReadDiagnostic: (phase) => observePokedexRead(renderedTrace, { source: 'prices', phase }),
+  });
 
   const filteredCards = useMemo(() => {
     return pricedCards.filter((card) => {
@@ -232,6 +292,12 @@ export default function PokemonDetailScreen() {
       return true;
     });
   }, [pricedCards, filter, ownedKeys]);
+
+  useEffect(() => {
+    if (!renderedTrace?.current()) return;
+    if (cards.length) renderedTrace.phase('facts-committed');
+    committedRef.current = { rows: new Set(filteredCards), trace: renderedTrace };
+  }, [cards, filteredCards, renderedTrace]);
 
   const toggleCardOwned = useCallback(
     async (card: PokedexCard) => {
@@ -331,6 +397,7 @@ export default function PokemonDetailScreen() {
               uriCandidates={imageCandidates}
               cacheKey={`pokedex:${item.canonical_card?.cardId ?? item.raw_data?.stackr?.cardId ?? item.id}:${item.set_id ?? ''}:${item.number ?? ''}`}
               accessibilityLabel={`${item.name} card image`}
+              onDiagnostic={renderedTrace?.image}
             />
           ) : (
             <Ionicons name="image-outline" size={34} color={theme.colors.textSoft} />
@@ -390,7 +457,15 @@ export default function PokemonDetailScreen() {
     return (
       <SafeAreaView style={styles.safe}>
         <View style={styles.center}>
-          <Text style={{ color: theme.colors.text }}>Failed to load this Pokemon.</Text>
+          <Text style={{ color: theme.colors.text }}>{cardsError ?? 'Failed to load this Pokemon.'}</Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Retry loading Pokémon cards"
+            onPress={retryCards}
+            style={styles.retryButton}
+          >
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </Pressable>
         </View>
       </SafeAreaView>
     );
@@ -460,7 +535,7 @@ export default function PokemonDetailScreen() {
                     : cardsError ? 'Only a partial card list is available. Retry to load the remaining cards.' : cardsLoading ? 'Loading more matching cards…' : 'Only a partial card list is available.'}
                 </Text>
                 {cardsError ? <Text style={styles.progressSub} accessibilityRole="alert">{cardsError}</Text> : null}
-                {cardsError ? <Pressable accessibilityRole="button" accessibilityLabel="Retry loading Pokémon cards" onPress={() => setRetryEpoch((current) => current + 1)} style={styles.retryButton}><Text style={styles.retryButtonText}>Retry</Text></Pressable> : null}
+                {cardsError ? <Pressable accessibilityRole="button" accessibilityLabel="Retry loading Pokémon cards" onPress={retryCards} style={styles.retryButton}><Text style={styles.retryButtonText}>Retry</Text></Pressable> : null}
                 {ownership.message ? <Text style={styles.progressSub} accessibilityRole={ownership.status === 'error' ? 'alert' : undefined}>{ownership.message}</Text> : null}
                 {ownership.status === 'error' ? (
                   <Pressable accessibilityRole="button" accessibilityLabel="Retry Pokémon ownership"
@@ -490,7 +565,7 @@ export default function PokemonDetailScreen() {
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Retry loading Pokémon cards"
-                  onPress={() => setRetryEpoch((current) => current + 1)}
+                  onPress={retryCards}
                   style={styles.retryButton}
                 >
                   <Text style={styles.retryButtonText}>Retry</Text>

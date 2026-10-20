@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-19T20:45:11.724Z",
+  "updatedAt": "2026-10-20T09:15:45.086Z",
   "sourceVideo": {
     "fileName": "WhatsApp Video 2026-10-18 at 09.12.30.mp4",
     "sha256": "a29ad89ce8cec90b3dfa299c5a951ff4b60d686187f5a27c03a4e6175d1e859c",
@@ -51,6 +51,12 @@
         "privateReceipt": "evidence/consolidation-20261018/video-desktop-replay-20261019/pr411-main-delivery.json",
         "sha256": "3ed568815bd135a8ae3d62cf3da6d371e94fd3e85d250a1fcfb5ace9493e3814",
         "nativeOrPhoneAcceptanceImplied": false
+      },
+      "qualification20261020": {
+        "baseline": "Home card image and verified name missing",
+        "sourceOrDelivery": "Home facts no longer wait for optional images/prices; denial safeguards merged.",
+        "remainingGap": "Exact eventual Varoom printing and installed name/image/retry.",
+        "phoneClosed": false
       }
     },
     {
@@ -113,42 +119,24 @@
         "exactOwnedCoverageProven": false,
         "newRemoteCalls": 0
       },
-      "selectedEditionStoredReadRepair": {
-        "revision": "27bdabf0bd690450813260ec36a24d19b6c51375",
-        "isolatedRevision": "c0f14f71380a1d7f243e04cce43e146ddb218f8b",
-        "files": [
-          "scripts/lib/prepared-collection-valuation.mjs",
-          "scripts/test-catalogue-pricing.mjs"
-        ],
-        "implemented": true,
-        "tested": true,
-        "independentlyReviewed": true,
-        "merged": false,
-        "deployed": false,
-        "nativePublished": false,
-        "deviceVerified": false,
-        "baseline": {
-          "fixture": "200 regular and 200 First Edition variants, regular official binder",
-          "storedIds": 400,
-          "storedBatches": 2
-        },
-        "repaired": {
-          "storedIds": 200,
-          "storedBatches": 1,
-          "completeSummaryComparisonPassed": true
-        },
-        "reviewSha256": "79c6b3d7bf3504fdd9b4731f78af5d3c39655fec78e03a362f99520364220d16",
-        "scope": "Remove provably unused set-edition quote/state lookups; keep all owned exact/general identities and necessary general bases, quantities, <=200 cap and fail-closed publication. No measured phone speed, exact holdings coverage or SQL cancellation cure.",
-        "deliveryHold": "Draft PR413; main merge matches a live apply-worker watch path. Matching explicit worker-effects approval required."
+      "qualification20261020": {
+        "baseline": "Partial Home valuation and unavailable duplicate prices",
+        "sourceOrDelivery": "Coverage/freshness and exact response identity guards merged. PR418 classified catalogue read repair is now reviewed, tested and merged; live delivery remains separate.",
+        "remainingGap": "Stored evidence/live diagnostics and exact owned totals reconciliation.",
+        "phoneClosed": false
       },
-      "freshStoredReadTriage": {
-        "evidenceSha256": "7dcc3f1188882f244b6848b60558d66b08e01ae6f18c9e39a6edf4087beb8285",
-        "confirmed": "Fresh worker stored_exact_prices SQLSTATE57014 query cancellation before valuation publication.",
-        "unconfirmed": "Cancellation origin, runtime plan, exact holdings coverage/freshness and installed phone totals.",
-        "diagnosticProposalSha256": "8b656e9659c77b7b53038f3d7a5963eb557f0f38e82072a99bcf6cec0005dbd4",
-        "diagnosticReviewSha256": "0d65bafff5c79074016214a1217c372f61d87122862d1cf5a9013b9f386066d0",
-        "newRemoteSqlCalls": 0,
-        "newReadApproval": "PENDING"
+      "classifiedCatalogueReadRepair": {
+        "pr": 418,
+        "commit": "3892b1e8ab972507a0cce30d905e38aad98d2481",
+        "merge": "0bd1d932d668100a0ff80563e4b2b17aaebfc1aa",
+        "scope": "Opt-in classified catalogue reads qualify exact evidence, report per-reference partial failures, preserve stronger quotes and settle all due pages. Legacy contract and current v2 baseline preserved. Backend delivery/schema/ACL and exact holdings coverage remain unverified.",
+        "url": "https://github.com/tberridge86/Stackr/pull/418",
+        "sourceReviewed": true,
+        "sourceMerged": true,
+        "nativePublished": false,
+        "phoneVerified": false,
+        "homeHoldingsRouteIsIndependent": true,
+        "scopeLimit": "Catalogue/binder overlays where qualifying evidence exists. Does not establish fresh quotes, owner totals or historical database-timeout cause."
       }
     },
     {
@@ -177,7 +165,13 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Real provider-refresh metadata is absent from this response; installed-phone acceptance pending."
+      "remainingBlocker": "Real provider-refresh metadata is absent from this response; installed-phone acceptance pending.",
+      "qualification20261020": {
+        "baseline": "Market cards and last-refresh metadata unavailable",
+        "sourceOrDelivery": "Bounded stored market read, explicit unavailable freshness and Retry merged.",
+        "remainingGap": "Real refresh metadata and installed recovery.",
+        "phoneClosed": false
+      }
     },
     {
       "id": "V04",
@@ -230,6 +224,12 @@
           "deviceVerified": false
         },
         "remaining": "Source integration and separately approved backend deployment remain pending; stored live evidence and phone acceptance are not established. Cash ranking remains within the percentage-selected sample."
+      },
+      "qualification20261020": {
+        "baseline": "General-market movers unavailable",
+        "sourceOrDelivery": "Paired-history handling merged; PR413 direction-balanced backend reviewed but held.",
+        "remainingGap": "Approved PR413 release/worker effects and comparable historical observations.",
+        "phoneClosed": false
       }
     },
     {
@@ -258,7 +258,13 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Prepared aggregate history does not establish individual collection movers; live and phone evidence pending."
+      "remainingBlocker": "Prepared aggregate history does not establish individual collection movers; live and phone evidence pending.",
+      "qualification20261020": {
+        "baseline": "Collection movers remains loading",
+        "sourceOrDelivery": "Independent bounded movers settlement, error and insufficient-history states merged.",
+        "remainingGap": "Actual per-card history or verified absence and installed retry.",
+        "phoneClosed": false
+      }
     },
     {
       "id": "V06",
@@ -302,6 +308,12 @@
           "receiptSha256": "3c4dc88431d0e9b8dfb7efe936f2166ffb662d137147ab97e0f9b20de412f5c0",
           "nativeOrPhoneAcceptanceImplied": false
         }
+      },
+      "qualification20261020": {
+        "baseline": "Collection-history chart remains loading",
+        "sourceOrDelivery": "Prepared trends and owner-bound saved history handling merged.",
+        "remainingGap": "Live prepared-route coverage, ranges/chart/retry and current holding semantics.",
+        "phoneClosed": false
       }
     },
     {
@@ -330,7 +342,13 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Installed standard/master denominators and navigation acceptance pending."
+      "remainingBlocker": "Installed standard/master denominators and navigation acceptance pending.",
+      "qualification20261020": {
+        "baseline": "Binder total/progress unavailable",
+        "sourceOrDelivery": "Language/source-ID metadata and known totals fallback merged.",
+        "remainingGap": "Standard/master denominators and retained quantities on phone.",
+        "phoneClosed": false
+      }
     },
     {
       "id": "V08",
@@ -376,42 +394,24 @@
         "receipt": "docs/releases/collection-pricing-response-identity-20261019.json",
         "scope": "Reject mismatched/missing stored-response variant/product/currency without inventing values; exact owner coverage remains unverified."
       },
-      "selectedEditionStoredReadRepair": {
-        "revision": "27bdabf0bd690450813260ec36a24d19b6c51375",
-        "isolatedRevision": "c0f14f71380a1d7f243e04cce43e146ddb218f8b",
-        "files": [
-          "scripts/lib/prepared-collection-valuation.mjs",
-          "scripts/test-catalogue-pricing.mjs"
-        ],
-        "implemented": true,
-        "tested": true,
-        "independentlyReviewed": true,
-        "merged": false,
-        "deployed": false,
-        "nativePublished": false,
-        "deviceVerified": false,
-        "baseline": {
-          "fixture": "200 regular and 200 First Edition variants, regular official binder",
-          "storedIds": 400,
-          "storedBatches": 2
-        },
-        "repaired": {
-          "storedIds": 200,
-          "storedBatches": 1,
-          "completeSummaryComparisonPassed": true
-        },
-        "reviewSha256": "79c6b3d7bf3504fdd9b4731f78af5d3c39655fec78e03a362f99520364220d16",
-        "scope": "Remove provably unused set-edition quote/state lookups; keep all owned exact/general identities and necessary general bases, quantities, <=200 cap and fail-closed publication. No measured phone speed, exact holdings coverage or SQL cancellation cure.",
-        "deliveryHold": "Draft PR413; main merge matches a live apply-worker watch path. Matching explicit worker-effects approval required."
+      "qualification20261020": {
+        "baseline": "Binder prices unavailable despite owned cards",
+        "sourceOrDelivery": "Stored read failure distinct from no quote, retained values and account guards merged. PR418 classified catalogue read repair is now reviewed, tested and merged; live delivery remains separate.",
+        "remainingGap": "Pricing delivery/live coverage/exact subtotals and phone.",
+        "phoneClosed": false
       },
-      "freshStoredReadTriage": {
-        "evidenceSha256": "7dcc3f1188882f244b6848b60558d66b08e01ae6f18c9e39a6edf4087beb8285",
-        "confirmed": "Fresh worker stored_exact_prices SQLSTATE57014 query cancellation before valuation publication.",
-        "unconfirmed": "Cancellation origin, runtime plan, exact holdings coverage/freshness and installed phone totals.",
-        "diagnosticProposalSha256": "8b656e9659c77b7b53038f3d7a5963eb557f0f38e82072a99bcf6cec0005dbd4",
-        "diagnosticReviewSha256": "0d65bafff5c79074016214a1217c372f61d87122862d1cf5a9013b9f386066d0",
-        "newRemoteSqlCalls": 0,
-        "newReadApproval": "PENDING"
+      "classifiedCatalogueReadRepair": {
+        "pr": 418,
+        "commit": "3892b1e8ab972507a0cce30d905e38aad98d2481",
+        "merge": "0bd1d932d668100a0ff80563e4b2b17aaebfc1aa",
+        "scope": "Opt-in classified catalogue reads qualify exact evidence, report per-reference partial failures, preserve stronger quotes and settle all due pages. Legacy contract and current v2 baseline preserved. Backend delivery/schema/ACL and exact holdings coverage remain unverified.",
+        "url": "https://github.com/tberridge86/Stackr/pull/418",
+        "sourceReviewed": true,
+        "sourceMerged": true,
+        "nativePublished": false,
+        "phoneVerified": false,
+        "homeHoldingsRouteIsIndependent": true,
+        "scopeLimit": "Catalogue/binder overlays where qualifying evidence exists. Does not establish fresh quotes, owner totals or historical database-timeout cause."
       }
     },
     {
@@ -439,7 +439,13 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Stored-source reopening regressions pass and public facts have both success and timeout observations. Both bounded diagnostic sets completed without a confirmed timeout cause; repeated installed-binder journeys remain required."
+      "remainingBlocker": "Stored-source reopening regressions pass and public facts have both success and timeout observations. Both bounded diagnostic sets completed without a confirmed timeout cause; repeated installed-binder journeys remain required.",
+      "qualification20261020": {
+        "baseline": "Binder opening remains on loader",
+        "sourceOrDelivery": "Saved facts independent of optional/live loading and reopening/ownership repairs merged.",
+        "remainingGap": "Repeated phone opening/cancellation/retry and historical database cause.",
+        "phoneClosed": false
+      }
     },
     {
       "id": "V10",
@@ -543,6 +549,12 @@
           "mainApplicablePassed": 8,
           "nativeOrPhoneAcceptanceImplied": false
         }
+      },
+      "qualification20261020": {
+        "baseline": "Saved binder cannot confirm live ownership",
+        "sourceOrDelivery": "Mandatory ownership separate from optional placement; binder capped-row pagination repaired.",
+        "remainingGap": "Actual ownership/account switches/edit restrictions on phone.",
+        "phoneClosed": false
       }
     },
     {
@@ -570,7 +582,13 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Own/shared/forced-read-only phone acceptance pending."
+      "remainingBlocker": "Own/shared/forced-read-only phone acceptance pending.",
+      "qualification20261020": {
+        "baseline": "Saved preview says another collector",
+        "sourceOrDelivery": "Pending, saved, foreign and forced-read-only wording separated.",
+        "remainingGap": "Own/shared/forced-read-only phone cases.",
+        "phoneClosed": false
+      }
     },
     {
       "id": "V12",
@@ -633,6 +651,12 @@
         "nativePublished": false,
         "phoneVerified": false,
         "scope": "Fresh positive exact reassignment invalidates stale cached artwork; does not supply missing source images or identify the video printing."
+      },
+      "qualification20261020": {
+        "baseline": "Storm cards have No image alongside facts",
+        "sourceOrDelivery": "Saved fact reconstruction/set-wide artwork/warm reassignment repairs merged; historical113preferredURLs decoded.",
+        "remainingGap": "Installed Storm binder artwork and historical manifest timeout cause.",
+        "phoneClosed": false
       }
     },
     {
@@ -695,42 +719,24 @@
         "exactOwnedCoverageProven": false,
         "newRemoteCalls": 0
       },
-      "selectedEditionStoredReadRepair": {
-        "revision": "27bdabf0bd690450813260ec36a24d19b6c51375",
-        "isolatedRevision": "c0f14f71380a1d7f243e04cce43e146ddb218f8b",
-        "files": [
-          "scripts/lib/prepared-collection-valuation.mjs",
-          "scripts/test-catalogue-pricing.mjs"
-        ],
-        "implemented": true,
-        "tested": true,
-        "independentlyReviewed": true,
-        "merged": false,
-        "deployed": false,
-        "nativePublished": false,
-        "deviceVerified": false,
-        "baseline": {
-          "fixture": "200 regular and 200 First Edition variants, regular official binder",
-          "storedIds": 400,
-          "storedBatches": 2
-        },
-        "repaired": {
-          "storedIds": 200,
-          "storedBatches": 1,
-          "completeSummaryComparisonPassed": true
-        },
-        "reviewSha256": "79c6b3d7bf3504fdd9b4731f78af5d3c39655fec78e03a362f99520364220d16",
-        "scope": "Remove provably unused set-edition quote/state lookups; keep all owned exact/general identities and necessary general bases, quantities, <=200 cap and fail-closed publication. No measured phone speed, exact holdings coverage or SQL cancellation cure.",
-        "deliveryHold": "Draft PR413; main merge matches a live apply-worker watch path. Matching explicit worker-effects approval required."
+      "qualification20261020": {
+        "baseline": "Some stored estimates explicitly stale",
+        "sourceOrDelivery": "Stale/unknown/failure labels and exact identity guard merged. PR418 classified catalogue read repair is now reviewed, tested and merged; live delivery remains separate.",
+        "remainingGap": "Eligible fresh evidence/variant/time through approved workflow and phone.",
+        "phoneClosed": false
       },
-      "freshStoredReadTriage": {
-        "evidenceSha256": "7dcc3f1188882f244b6848b60558d66b08e01ae6f18c9e39a6edf4087beb8285",
-        "confirmed": "Fresh worker stored_exact_prices SQLSTATE57014 query cancellation before valuation publication.",
-        "unconfirmed": "Cancellation origin, runtime plan, exact holdings coverage/freshness and installed phone totals.",
-        "diagnosticProposalSha256": "8b656e9659c77b7b53038f3d7a5963eb557f0f38e82072a99bcf6cec0005dbd4",
-        "diagnosticReviewSha256": "0d65bafff5c79074016214a1217c372f61d87122862d1cf5a9013b9f386066d0",
-        "newRemoteSqlCalls": 0,
-        "newReadApproval": "PENDING"
+      "classifiedCatalogueReadRepair": {
+        "pr": 418,
+        "commit": "3892b1e8ab972507a0cce30d905e38aad98d2481",
+        "merge": "0bd1d932d668100a0ff80563e4b2b17aaebfc1aa",
+        "scope": "Opt-in classified catalogue reads qualify exact evidence, report per-reference partial failures, preserve stronger quotes and settle all due pages. Legacy contract and current v2 baseline preserved. Backend delivery/schema/ACL and exact holdings coverage remain unverified.",
+        "url": "https://github.com/tberridge86/Stackr/pull/418",
+        "sourceReviewed": true,
+        "sourceMerged": true,
+        "nativePublished": false,
+        "phoneVerified": false,
+        "homeHoldingsRouteIsIndependent": true,
+        "scopeLimit": "Catalogue/binder overlays where qualifying evidence exists. Does not establish fresh quotes, owner totals or historical database-timeout cause."
       }
     },
     {
@@ -771,7 +777,13 @@
         "apiArtworkVerified": true
       },
       "remainingBlocker": "Exact M6 logo and bytes are verified through normal per-set API URLs after cache expiry. Signed native delivery and actual Discover/binder phone rendering remain open.",
-      "publicationReceipt": "docs/releases/storm-m6-publication-20261018.json"
+      "publicationReceipt": "docs/releases/storm-m6-publication-20261018.json",
+      "qualification20261020": {
+        "baseline": "Japanese-only Storm logo selected instead of supplied English-lettered logo",
+        "sourceOrDelivery": "Approved English-lettered Storm logo published and bundled selection corrected.",
+        "remainingGap": "Final signed bytes and all app surfaces.",
+        "phoneClosed": false
+      }
     },
     {
       "id": "V15",
@@ -901,6 +913,12 @@
             "scope": "Exact failed query; estimates only, no execution or prior-link absence proof"
           }
         }
+      },
+      "qualification20261020": {
+        "baseline": "Newest Traditional Chinese rows show generic logos",
+        "sourceOrDelivery": "Exact recorded SV10/SV9a/SV9 generic icons repaired with approved native pack assets.",
+        "remainingGap": "Signed/phone surfaces; separate SVP1 publication remains held.",
+        "phoneClosed": false
       }
     },
     {
@@ -943,6 +961,12 @@
         "privateReceipt": "evidence/consolidation-20261018/video-desktop-replay-20261019/pr411-main-delivery.json",
         "sha256": "3ed568815bd135a8ae3d62cf3da6d371e94fd3e85d250a1fcfb5ace9493e3814",
         "nativeOrPhoneAcceptanceImplied": false
+      },
+      "qualification20261020": {
+        "baseline": "November2023CoroCoro issue has no cover",
+        "sourceOrDelivery": "Approved exact regular November2023 CoroCoro cover bundled; historical unsigned bytes checked.",
+        "remainingGap": "Final candidate/signed bytes and phone cover/opening/replay.",
+        "phoneClosed": false
       }
     },
     {
@@ -974,7 +998,35 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Declared broader species population and exact installed-build continuation remain unverified. Preserve useful progress/error/Retry; do not treat16first-page count as proven fallback or full inventory."
+      "remainingBlocker": "Declared broader species population and exact installed-build continuation remain unverified. Preserve useful progress/error/Retry; do not treat16first-page count as proven fallback or full inventory.",
+      "qualification20261020": {
+        "baseline": "Wartortle waits then returns16partial cards",
+        "sourceOrDelivery": "Saved cursor replay42distinct Wartortle printings; optional metadata dependency repaired byPR416.",
+        "remainingGap": "Declared population denominator and installed pagination/completeness.",
+        "phoneClosed": false
+      },
+      "pokedexRetrievalAndMeasurementMilestones": [
+        {
+          "pr": 416,
+          "merge": "0075e351224bae443bd4a239e4594f4034e1808f",
+          "scope": "Optional species metadata bounded at 2 seconds including response body. Known route/species facts start without waiting; numeric routes still require verified metadata.",
+          "url": "https://github.com/tberridge86/Stackr/pull/416",
+          "sourceReviewed": true,
+          "sourceMerged": true,
+          "nativePublished": false,
+          "phoneVerified": false
+        },
+        {
+          "pr": 417,
+          "merge": "073a37ec5988ea604f5cff2cbdbece1534438b5b",
+          "scope": "Actual tap/Retry diagnostics separate facts, commit, visible rows, account, ownership, price and artwork read/load/display. Capped local non-PII records retain cancellation/account guards.",
+          "url": "https://github.com/tberridge86/Stackr/pull/417",
+          "sourceReviewed": true,
+          "sourceMerged": true,
+          "nativePublished": false,
+          "phoneVerified": false
+        }
+      ]
     },
     {
       "id": "V18",
@@ -983,25 +1035,55 @@
       "owner": "stackr_performance",
       "resolution": "Treat private ownership independently from factual-card count.",
       "closureCriterion": "Owner-specific success/error/retry settles without false zero ownership.",
-      "state": "existing_boundary_checks_passed",
-      "cause": "Ownership remains an independent account-scoped request. No source cause specific to the recorded ownership delay is established.",
+      "state": "ownership_pagination_budget_and_cancellation_repair_merged_phone_pending",
+      "cause": "Confirmed conditional regression: nonempty ownership pages shorter than requested 500 rows were treated as complete, so lower server caps could truncate ownership. A shared logical budget and cancellation before later dispatch were absent. This does not establish the recorded delay cause or the production cap.",
       "sourceFiles": [
-        "app/pokemon/[id].tsx"
+        "app/pokemon/[id].tsx",
+        "lib/pokedexCollection.ts",
+        "lib/pokedexOwnershipState.ts"
       ],
-      "repairCommit": null,
+      "repairCommit": "97d5b1beac8706221528a28cf2dab5ffd4d5e1df",
       "validation": [
-        "scripts/test-pokedex-account-boundary.ts"
+        "scripts/test-pokedex-account-boundary.ts",
+        "scripts/test-pokedex-ownership-bounds.ts",
+        "scripts/test-pokedex-loading.ts",
+        "scripts/test-corocoro-collection-runtime.ts",
+        "npm run test:pokedex-release",
+        "npm run typecheck",
+        "npm run lint"
       ],
       "delivery": {
-        "implemented": false,
+        "implemented": true,
         "tested": true,
         "independentlyReviewed": true,
-        "merged": false,
+        "merged": true,
         "deployed": false,
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Installed ownership success/failure/Retry independently of catalogue loading remains pending."
+      "remainingBlocker": "Installed ownership success, pagination, failure, account switch, cancellation and Retry remain unverified independently of facts. Live cap and recorded historical cause remain unconfirmed.",
+      "qualification20261020": {
+        "baseline": "Pokédex ownership remains loading",
+        "sourceOrDelivery": "Conditional pagination, service budget and pre-dispatch cancellation repaired, independently reviewed and merged in PR419.",
+        "remainingGap": "Installed ownership success, pagination, failure, account switch, cancellation and Retry remain unverified independently of facts. Live cap and recorded historical cause remain unconfirmed.",
+        "phoneClosed": false
+      },
+      "additionalOwnershipRepair": {
+        "pr": 419,
+        "head": "cb9bdaa98ce8447f25d108ea4a2983ecdd5f7f71",
+        "merge": "196a50f42f51b893442fc594cce1f83ee56957ab",
+        "scope": "Ownership completes on an empty page with UUID cursor/order/scope validation,256-page/10-second service budget and pre-dispatch cancellation. CoroCoro VM supplies the real AbortController dependency. Final auth confirmation remains outside the service budget; no whole-journey 10-second claim.",
+        "url": "https://github.com/tberridge86/Stackr/pull/419",
+        "sourceReviewed": true,
+        "sourceMerged": true,
+        "nativePublished": false,
+        "phoneVerified": false
+      },
+      "regressionEvidence": {
+        "lowerServerCap": "Seven-row page previously returned 21 keys; repaired fixture retrieves all 603 expected keys.",
+        "independentMutations": "Premature short-page completion, removed scope guards and page 257 rejected.",
+        "phoneTimingClaimed": false
+      }
     },
     {
       "id": "V19",
@@ -1037,7 +1119,35 @@
         "nativePublished": false,
         "phoneVerified": false,
         "scope": "Fresh positive exact reassignment invalidates stale cached artwork; does not supply missing source images or identify the video printing."
-      }
+      },
+      "qualification20261020": {
+        "baseline": "Pokédex pictures arrive after facts",
+        "sourceOrDelivery": "Visible image hydration/exact edition safeguards/PR417read-display diagnostics merged.",
+        "remainingGap": "JAweb1#024 source, regularENbase1#42 distinct fromFirstEdition;42-image population and phone.",
+        "phoneClosed": false
+      },
+      "pokedexRetrievalAndMeasurementMilestones": [
+        {
+          "pr": 416,
+          "merge": "0075e351224bae443bd4a239e4594f4034e1808f",
+          "scope": "Optional species metadata bounded at 2 seconds including response body. Known route/species facts start without waiting; numeric routes still require verified metadata.",
+          "url": "https://github.com/tberridge86/Stackr/pull/416",
+          "sourceReviewed": true,
+          "sourceMerged": true,
+          "nativePublished": false,
+          "phoneVerified": false
+        },
+        {
+          "pr": 417,
+          "merge": "073a37ec5988ea604f5cff2cbdbece1534438b5b",
+          "scope": "Actual tap/Retry diagnostics separate facts, commit, visible rows, account, ownership, price and artwork read/load/display. Capped local non-PII records retain cancellation/account guards.",
+          "url": "https://github.com/tberridge86/Stackr/pull/417",
+          "sourceReviewed": true,
+          "sourceMerged": true,
+          "nativePublished": false,
+          "phoneVerified": false
+        }
+      ]
     },
     {
       "id": "V20",
@@ -1064,7 +1174,35 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Actual recording fallback path was not established; physical canonical recovery/completeness pending."
+      "remainingBlocker": "Actual recording fallback path was not established; physical canonical recovery/completeness pending.",
+      "qualification20261020": {
+        "baseline": "Partial Pokédex fallback can omit Retry",
+        "sourceOrDelivery": "Canonical failure retained alongside fallback cards and cleared after success.",
+        "remainingGap": "Phone partial failure/Retry/recovered completeness; recorded fallback route unknown.",
+        "phoneClosed": false
+      },
+      "pokedexRetrievalAndMeasurementMilestones": [
+        {
+          "pr": 416,
+          "merge": "0075e351224bae443bd4a239e4594f4034e1808f",
+          "scope": "Optional species metadata bounded at 2 seconds including response body. Known route/species facts start without waiting; numeric routes still require verified metadata.",
+          "url": "https://github.com/tberridge86/Stackr/pull/416",
+          "sourceReviewed": true,
+          "sourceMerged": true,
+          "nativePublished": false,
+          "phoneVerified": false
+        },
+        {
+          "pr": 417,
+          "merge": "073a37ec5988ea604f5cff2cbdbece1534438b5b",
+          "scope": "Actual tap/Retry diagnostics separate facts, commit, visible rows, account, ownership, price and artwork read/load/display. Capped local non-PII records retain cancellation/account guards.",
+          "url": "https://github.com/tberridge86/Stackr/pull/417",
+          "sourceReviewed": true,
+          "sourceMerged": true,
+          "nativePublished": false,
+          "phoneVerified": false
+        }
+      ]
     },
     {
       "id": "V21",
@@ -1094,7 +1232,13 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Current public fact reads succeed, but historical installed query failure/current-query Retry and optional image delivery still require phone acceptance."
+      "remainingBlocker": "Current public fact reads succeed, but historical installed query failure/current-query Retry and optional image delivery still require phone acceptance.",
+      "qualification20261020": {
+        "baseline": "Pikachu card search fails while sets/listings return",
+        "sourceOrDelivery": "Independent result groups/current-query recovery guards; saved factual samples succeeded.",
+        "remainingGap": "Historical card-search failure cause/current query retry on phone.",
+        "phoneClosed": false
+      }
     },
     {
       "id": "V22",
@@ -1122,7 +1266,13 @@
         "nativePublished": false,
         "deviceVerified": false
       },
-      "remainingBlocker": "Delivered-screen retained/fresh/error transitions and rapid searches remain pending."
+      "remainingBlocker": "Delivered-screen retained/fresh/error transitions and rapid searches remain pending.",
+      "qualification20261020": {
+        "baseline": "Search reports Cards100 while showing load failure",
+        "sourceOrDelivery": "Retained refresh versus initial-load wording and supersession guards repaired.",
+        "remainingGap": "Installed retained/fresh/error and rapid-query transitions.",
+        "phoneClosed": false
+      }
     },
     {
       "id": "V23",
@@ -1302,6 +1452,12 @@
           "unsignedIosVerified": true
         },
         "testFlightHeld": true
+      },
+      "qualification20261020": {
+        "baseline": "Search cards and listing media show placeholders",
+        "sourceOrDelivery": "Gateway circuit repair deployed. Batched manifests, listing-media compatibility and warm artwork reassignment app source merged; native delivery and phone verification remain pending.",
+        "remainingGap": "Exact recorded listing/finalPikachu identity/live media/signed phone rendering.",
+        "phoneClosed": false
       }
     }
   ],
@@ -1685,7 +1841,9 @@
   "limits": [
     "Phone build, API trace and full device timing not established by video",
     "API successes do not establish image delivery or private binder acceptance",
-    "Source/rights ambiguity stays explicit; no invented artwork or quotes"
+    "Source/rights ambiguity stays explicit; no invented artwork or quotes",
+    "Owner reports installed build59; video numeric build remains unconfirmed.",
+    "No 100-sample device cohorts or phone p95 acceptance collected; all 23 phone acceptance items remain open."
   ],
   "independentReview": {
     "status": "scoped_source_changes_reviewed",
@@ -2169,12 +2327,98 @@
     "nativePublished": false,
     "phoneVerified": false
   },
-  "latestPricingSourceCandidate": {
-    "revision": "27bdabf0bd690450813260ec36a24d19b6c51375",
-    "pullRequest": "https://github.com/tberridge86/Stackr/pull/413",
-    "state": "REVIEWED_LOCAL_SOURCE_UNMERGED_LIVE_WORKER_EFFECTS_HELD",
-    "mainBase": "1c53fe48a971abe0e32c540377af553e62c52f4c",
-    "testFlightHeld": true,
-    "phoneAcceptanceClosed": 0
+  "latestVideoQualification": {
+    "checkedAt": "2026-10-20T09:15:45.086Z",
+    "sourceMain": "196a50f42f51b893442fc594cce1f83ee56957ab",
+    "sourceTree": "4710b57510e99b812439a73b047161e5d0f1ce4d",
+    "sourceMilestones": [
+      {
+        "pr": 416,
+        "merge": "0075e351224bae443bd4a239e4594f4034e1808f",
+        "scope": "Optional species metadata bounded at 2 seconds including response body. Known route/species facts start without waiting; numeric routes still require verified metadata.",
+        "url": "https://github.com/tberridge86/Stackr/pull/416",
+        "sourceReviewed": true,
+        "sourceMerged": true,
+        "nativePublished": false,
+        "phoneVerified": false
+      },
+      {
+        "pr": 417,
+        "merge": "073a37ec5988ea604f5cff2cbdbece1534438b5b",
+        "scope": "Actual tap/Retry diagnostics separate facts, commit, visible rows, account, ownership, price and artwork read/load/display. Capped local non-PII records retain cancellation/account guards.",
+        "url": "https://github.com/tberridge86/Stackr/pull/417",
+        "sourceReviewed": true,
+        "sourceMerged": true,
+        "nativePublished": false,
+        "phoneVerified": false
+      },
+      {
+        "pr": 418,
+        "commit": "3892b1e8ab972507a0cce30d905e38aad98d2481",
+        "merge": "0bd1d932d668100a0ff80563e4b2b17aaebfc1aa",
+        "scope": "Opt-in classified catalogue reads qualify exact evidence, report per-reference partial failures, preserve stronger quotes and settle all due pages. Legacy contract and current v2 baseline preserved. Backend delivery/schema/ACL and exact holdings coverage remain unverified.",
+        "url": "https://github.com/tberridge86/Stackr/pull/418",
+        "sourceReviewed": true,
+        "sourceMerged": true,
+        "nativePublished": false,
+        "phoneVerified": false
+      },
+      {
+        "pr": 419,
+        "head": "cb9bdaa98ce8447f25d108ea4a2983ecdd5f7f71",
+        "merge": "196a50f42f51b893442fc594cce1f83ee56957ab",
+        "scope": "Ownership completes on an empty page with UUID cursor/order/scope validation,256-page/10-second service budget and pre-dispatch cancellation. CoroCoro VM supplies the real AbortController dependency. Final auth confirmation remains outside the service budget; no whole-journey 10-second claim.",
+        "url": "https://github.com/tberridge86/Stackr/pull/419",
+        "sourceReviewed": true,
+        "sourceMerged": true,
+        "nativePublished": false,
+        "phoneVerified": false
+      }
+    ],
+    "pr419ApplicableChecksPassed": 8,
+    "pr419MainPushChecks": "Both exact-main push workflows passed: Owner Pricing Identity Tests39398997423 and Stackr Platform CI39398997527.",
+    "phoneIssuesClosed": 0,
+    "totalIssues": 23,
+    "testFlight": "HELD",
+    "sourceChecksDoNotClosePhoneAcceptance": true,
+    "liveApprovalsStillPending": [
+      "PR413 merge with price-worker effects and guarded backend deployment",
+      "Two stored-price read-only diagnostic scripts",
+      "One scoped non-executing SVP1 query-plan check"
+    ],
+    "qualificationRequiredBeforeTestBuild": [
+      "Resolve or disclose remaining source, artwork identity, pricing and live-delivery gates against every video issue.",
+      "Verify exact candidate assets and configured API responses; earlier exports refer to earlier source.",
+      "A separately approved test build precedes final installed-phone acceptance. These source merges trigger no native build/submission."
+    ],
+    "performanceAcceptance": {
+      "generalWarmMsLessThan": 1000,
+      "generalColdMsLessThan": 2000,
+      "binderMemoryMsAtMost": 100,
+      "binderPersistedP95MsAtMost": 200,
+      "binderWarmCompleteNetworkMsAtMost": 500,
+      "minimumObservationsPerJourneyAndCacheConditionForP95": 100,
+      "clock": "Actual user action including debounce; device/build/network/cache/failures/Retry required.",
+      "diagnosticLimits": "Capped 256 journey observations; export before eviction. JavaScript facts/viewability are separate from native paint and felt haptics.",
+      "phoneSamplesCollected": 0,
+      "passingP95Claimed": false
+    },
+    "showcase": {
+      "source": "Existing renderer: dark illuminated stage, lift, moving shadow, readable tilt, opening/tilt feedback and verified-material safeguards.",
+      "remaining": "Phone appearance/smoothness, saved preferences, duplicate/late pulses and teardown after dismissal/background/repeated use.",
+      "phoneAppearanceOrFeltHapticsVerified": false
+    },
+    "consolidation": {
+      "canonicalCode": "D:/Stackr",
+      "preservedWork": "D:/Stackr-organization",
+      "originalRootsRelocated": 47,
+      "originalRootsRetained": 11,
+      "originalSharedRepositoryMoved": false,
+      "originalSharedRepository": "D:/Stackr-1 last; preserve existing index.lock",
+      "restorationAndDependentPathsRequiredBeforeRetirement": true,
+      "permanentDeletionPerformed": false,
+      "folderMovementIsPhonePerformanceEvidence": false
+    },
+    "readinessPercentage": null
   }
 }

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import vm from 'node:vm';
 import React from 'react';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
@@ -11,6 +12,11 @@ import * as stablePrices from '../lib/stableCollectionPrices';
 import * as cardReferences from '../lib/scanCardReferenceHydration';
 import { getHomeCardDisplayMetadata } from '../lib/homeCardDisplayMetadata';
 import { resolveTcgdexControlledCardReference } from '../lib/tcgdexControlledCardReference';
+import { resolveCardArtwork } from '../lib/cardArtworkPresentation';
+import { buildForeignCardPresentation } from '../lib/foreignCardPresentation';
+import { copyPreferredSetArtworkReassignments, getPreferredSetArtworkReassignments } from '../lib/stackrPreferredSetArtwork';
+import { throwIfOptionalCatalogueReadAborted } from '../lib/optionalCatalogueEnrichment';
+import type { fetchStackrCardRows } from '../lib/stackrDomainAdapter';
 import type { fetchHomeSavedCollection } from '../lib/homeSavedCollection';
 
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
@@ -32,7 +38,12 @@ const snapshot = (userId: string, value: number, overrides: Record<string, unkno
 // Run the real Home hooks, loaders and effects; replace only the visual JSX tree
 // with observable state. Native views and external services are mocked, not the
 // startup coordinator, cache restore or collection loading functions under test.
-const homeSource = readFileSync('features/home/HubScreen.tsx', 'utf8');
+const baselineRef = process.env.HOME_FACTS_BASELINE_REF;
+if (baselineRef) assert.match(baselineRef, /^[a-f0-9]{40}$/, 'baseline comparisons require an exact source commit');
+const sourceAtRevision = (path: string) => baselineRef
+  ? execFileSync('git', ['show', `${baselineRef}:${path}`], { encoding: 'utf8' })
+  : readFileSync(path, 'utf8');
+const homeSource = sourceAtRevision('features/home/HubScreen.tsx');
 const renderStart = homeSource.indexOf('  return (', homeSource.indexOf('// MAIN RENDER'));
 assert.ok(renderStart > 0);
 const source = homeSource.slice(0, renderStart) + `
@@ -50,6 +61,45 @@ const compiled = ts.transpileModule(source, { compilerOptions: {
 const deadlineSource = ts.transpileModule(readFileSync('lib/personalDataRead.ts', 'utf8'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText;
+const optionalSource = ts.transpileModule(readFileSync('lib/optionalCatalogueEnrichment.ts', 'utf8'), {
+  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+const adapterSource = sourceAtRevision('lib/stackrDomainAdapter.ts');
+const adapterTree = ts.createSourceFile('adapter.ts', adapterSource, ts.ScriptTarget.Latest, true);
+const adapterFunctions = ['fetchStackrCard', 'fetchStackrCardRows', 'stackrLegacyCardToRow',
+  'stackrCardToLegacyCard', 'embeddedCardImageAssets', 'primaryCardImageAsset', 'toLegacyLanguage', 'clean'];
+const adapterDeclarations = adapterTree.statements.filter(node => ts.isFunctionDeclaration(node)
+  && adapterFunctions.includes(node.name?.text ?? ''));
+assert.equal(adapterDeclarations.length, adapterFunctions.length);
+const adapterCompiled = ts.transpileModule(adapterDeclarations.map(node => node.getText(adapterTree)).join('\n'), {
+  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+type RowReadOptions = NonNullable<Parameters<typeof fetchStackrCardRows>[1]>;
+type CanonicalReads = {
+  resolve: (reference: string, language?: string | null) => Promise<any>;
+  manifest: (printing: string, signal?: AbortSignal) => Promise<any[]>;
+  legacy?: () => Promise<Map<string, any>>;
+};
+
+// Execute the real adapter, artwork selection and row conversion. Only the
+// canonical service boundary and clock are fixtures; no production IO is used.
+function canonicalRowsAdapter(reads: CanonicalReads, clock: {
+  setTimeout: typeof setTimeout; clearTimeout: typeof clearTimeout;
+}) {
+  const optional = { exports: {} as Record<string, any> };
+  vm.runInNewContext(optionalSource, { module: optional, exports: optional.exports, ...clock, AbortController });
+  const module = { exports: {} as Record<string, any> };
+  vm.runInNewContext(adapterCompiled, { module, exports: module.exports, Map, Set, WeakMap,
+    shouldUseStackrApi: () => !reads.legacy, stackrApiClient: {}, legacyCardMap: reads.legacy,
+    resolveCachedStackrCard: (reference: string, options: RowReadOptions) => reads.resolve(reference, options.language),
+    fetchStackrAssetsForPrinting: (_client: unknown, printing: string, signal?: AbortSignal) => reads.manifest(printing, signal),
+    resolveCardArtwork, buildForeignCardPresentation, copyPreferredSetArtworkReassignments,
+    getPreferredSetArtworkReassignments, canonicalArtworkFacts: new WeakMap(),
+    readOptionalCatalogueEnrichment: optional.exports.readOptionalCatalogueEnrichment,
+    throwIfOptionalCatalogueReadAborted,
+  });
+  return module.exports.fetchStackrCardRows as typeof fetchStackrCardRows;
+}
 const authSource = readFileSync('components/auth-context.tsx', 'utf8');
 const authDenialModule = { exports: {} as Record<string, any> };
 vm.runInNewContext(ts.transpileModule(authSource.slice(
@@ -71,7 +121,8 @@ async function harness(options: {
   chaseRows?: (owner: string) => Promise<any[]>;
   chaseRead?: (table: string, owner: string) => Promise<any>;
   activityRows?: (owner: string) => Promise<any[]>;
-  cards?: (ids: string[], call: number, owner: string) => Promise<Map<string, any>>;
+  cards?: (ids: string[], call: number, owner: string, options: RowReadOptions) => Promise<Map<string, any>>;
+  canonical?: CanonicalReads;
   prices?: (ids: string[], call: number, owner: string) => Promise<Map<string, any>>;
   references?: (cards: any[], budget: number) => Promise<any[]>;
 } = {}) {
@@ -90,6 +141,10 @@ async function harness(options: {
   const deadlineModule = { exports: {} as Record<string, any> };
   vm.runInNewContext(deadlineSource, { module: deadlineModule, exports: deadlineModule.exports,
     setTimeout: fakeSetTimeout, clearTimeout: (id: number) => timers.delete(id), AbortController });
+  const canonicalRows = options.canonical ? canonicalRowsAdapter(options.canonical, {
+    setTimeout: fakeSetTimeout as unknown as typeof setTimeout,
+    clearTimeout: ((id: number) => timers.delete(id)) as unknown as typeof clearTimeout,
+  }) : null;
   const authResult = (id: string) => ({ data: { user: id ? { id } : null }, error: null });
   const supabase = {
     auth: {
@@ -167,7 +222,8 @@ async function harness(options: {
     '../../lib/customBinderNameArt': { getCustomBinderNameArtKeyForBinder: options.customNameArt ?? (async () => null) },
     '../../lib/binders': { fetchBinders: async () => [], fetchBinderCards: async () => [] },
     '../../lib/stackrDomainAdapter': {
-      fetchStackrCardRows: async (ids: string[]) => options.cards?.(ids, ++cardCalls, owner) ?? new Map(),
+      fetchStackrCardRows: async (ids: string[], readOptions: RowReadOptions) => canonicalRows
+        ? canonicalRows(ids, readOptions) : options.cards?.(ids, ++cardCalls, owner, readOptions) ?? new Map(),
       fetchStackrPriceSnapshots: async (ids: string[]) => options.prices?.(ids, ++priceCalls, owner) ?? new Map(),
     },
     '../../lib/scanCardReferenceHydration': cardReferences,
@@ -251,6 +307,299 @@ const validatedFixtureImages = (cards: any[]) => {
   assert.ok(reference);
   return cards.map(card => ({ ...card, images: { small: reference.uri, large: reference.uri } }));
 };
+
+function canonicalFixture(index = 1, embedded = false) {
+  const cardId = index === 1 ? 'home-fixture-printing' : `home-fixture-printing-${index}`;
+  const selected = `home-fixture-first-edition-${index}`;
+  const card: any = { cardId, catalogueVersionId: 'fixture-version', game: 'pokemon', languageCode: 'ja',
+    set: { setId: fixtureSet, setCode: 'fixture-set', nativeName: '合成テストセット', englishDisplayName: 'Fixture set' },
+    collectorNumber: { value: '007' }, names: { native: fixtureName, englishDisplay: `Home fixture ${index}` },
+    rarity: { code: null, label: null }, details: {}, defaultVariantId: `home-fixture-normal-${index}`,
+    variants: [{ variantId: `home-fixture-normal-${index}`, variantCode: 'normal', finishCode: 'normal' },
+      { variantId: selected, canonicalId: `ja:fixture:${index}:first_edition`, variantCode: 'first_edition', finishCode: 'normal' }],
+  };
+  const image = { assetId: `fixture-asset-${index}`, assetType: 'card_image', cardId, setId: fixtureSet,
+    variantId: selected, permissionStatus: 'approved', deliveryUrl: `https://approved.invalid/${index}/original.webp`,
+    width: 1500, height: 2100, derivatives: [
+      { role: 'card-grid', deliveryUrl: `https://approved.invalid/${index}/grid.webp`, width: 240, height: 336 },
+      { role: 'detail', deliveryUrl: `https://approved.invalid/${index}/detail.webp`, width: 1200, height: 1680 },
+    ] };
+  if (embedded) card.variants[1].image = image;
+  return { card, variantId: selected, image };
+}
+
+async function adapterFactsStreaming() {
+  let now = 0, nextTimer = 0;
+  const timers = new Map<number, { due: number; action: () => void }>();
+  const clock = {
+    setTimeout: ((action: () => void, delay: number) => {
+      const id = ++nextTimer; timers.set(id, { due: now + delay, action }); return id;
+    }) as unknown as typeof setTimeout,
+    clearTimeout: ((id: number) => timers.delete(id)) as unknown as typeof clearTimeout,
+  };
+  const settle = async () => { for (let i = 0; i < 40; i++) await Promise.resolve(); };
+  const tick = async (ms: number) => {
+    now += ms;
+    for (const [id, timer] of [...timers]) if (timer.due <= now) { timers.delete(id); timer.action(); }
+    await settle();
+  };
+  for (const outcome of ['success', 'failure', 'timeout'] as const) {
+    const first = canonicalFixture(), peer = canonicalFixture(2, true), manifest = deferred<any[]>();
+    const calls: string[] = [], snapshots: Map<string, any>[] = [];
+    let manifestSignal: AbortSignal | undefined, settled = false;
+    const read = canonicalRowsAdapter({
+      resolve: async (reference, language) => {
+        calls.push(reference); assert.equal(language, 'ja'); return reference === 'peer' ? peer : first;
+      },
+      manifest: (_printing, signal) => { manifestSignal = signal; return manifest.promise; },
+    }, clock);
+    const pending = read([' alias ', 'alias', 'peer'], { language: 'ja', onCanonicalRows: rows => snapshots.push(rows) })
+      .then(rows => { settled = true; return rows; });
+    await settle();
+    assert.deepEqual(calls, ['alias', 'peer'], 'trimmed duplicate references retain the established one-read behaviour');
+    assert.equal(snapshots.length, 2, 'each real canonical conversion publishes independently');
+    assert.equal(settled, false, 'legacy return still includes bounded optional manifests');
+    const early = snapshots[0], earlyRow = early.get('alias');
+    assert.equal(earlyRow, early.get(first.card.cardId), 'the requested and canonical aliases share the exact row');
+    assert.equal(earlyRow.language, 'ja');
+    assert.equal(earlyRow.raw_data.local_name, fixtureName, 'native naming remains intact');
+    assert.equal(earlyRow.external_ids.stackrVariant, first.variantId, 'the verified selected edition remains exact');
+    assert.equal(earlyRow.raw_data.stackr.defaultVariantId, first.variantId);
+    assert.equal(first.card.defaultVariantId, 'home-fixture-normal-1', 'cached printing defaults are unchanged');
+    assert.equal(earlyRow.image_small, null, 'the normal printing cannot supply unverified First Edition art');
+    assert.equal(snapshots[1].get('peer').image_small, peer.image.derivatives[0].deliveryUrl,
+      'real embedded grid artwork does not wait for a missing-art peer');
+    assert.equal(snapshots[1].get('peer').image_large, peer.image.derivatives[1].deliveryUrl,
+      'full-resolution detail pixels remain available separately');
+    if (outcome === 'success') manifest.resolve([first.image]);
+    if (outcome === 'failure') manifest.reject(new Error('Synthetic manifest failure'));
+    if (outcome === 'timeout') await tick(2_000);
+    const result = await pending;
+    assert.equal(result.get('alias'), result.get(first.card.cardId));
+    assert.equal(result.get('alias')?.image_small, outcome === 'success' ? first.image.derivatives[0].deliveryUrl : null);
+    assert.equal(early.size, 2, 'a previously published snapshot never acquires later batch peers');
+    assert.equal(earlyRow.image_small, null, 'optional enrichment cannot mutate a returned facts snapshot');
+    if (outcome === 'timeout') {
+      assert.equal(manifestSignal?.aborted, true);
+      manifest.resolve([first.image]); await settle();
+      assert.equal(result.get('alias')?.image_small, null, 'a late manifest cannot mutate the settled result');
+      assert.equal(snapshots.length, 2);
+    }
+  }
+
+  for (const invalid of [null, { ...canonicalFixture(), variantId: 'absent-edition' }]) {
+    let publications = 0;
+    const read = canonicalRowsAdapter({ resolve: async () => invalid,
+      manifest: async () => { throw new Error('Invalid facts must not request artwork'); } }, clock);
+    assert.equal((await read(['invalid'], { onCanonicalRows: () => { publications++; } })).size, 0);
+    assert.equal(publications, 0, 'missing facts and unknown variants never become progressive rows');
+  }
+
+  const references = Array.from({ length: 13 }, (_, index) => `batch-${index}`);
+  const firstRead = deferred<void>(), firstManifest = deferred<any[]>();
+  const calls: string[] = [];
+  let manifests = 0, publications = 0;
+  const read = canonicalRowsAdapter({ resolve: async reference => {
+    calls.push(reference); if (reference === 'batch-0') await firstRead.promise;
+    return canonicalFixture(Number(reference.split('-')[1]) + 1, true);
+  }, manifest: async () => { manifests++; return firstManifest.promise; } }, clock);
+  const alreadyAborted = new AbortController(); alreadyAborted.abort();
+  await assert.rejects(read(references, { signal: alreadyAborted.signal }), { name: 'AbortError' });
+  assert.equal(calls.length, 0, 'pre-aborted reads perform no lookup');
+  const controller = new AbortController();
+  const cancelled = read(references, { concurrency: 2, signal: controller.signal,
+    onCanonicalRows: () => { publications++; } });
+  const rejection = assert.rejects(cancelled, { name: 'AbortError' });
+  await settle(); assert.deepEqual(calls, ['batch-0', 'batch-1']);
+  assert.equal(publications, 1, 'an embedded batch peer publishes while another fact is unresolved');
+  controller.abort(); firstRead.resolve(); await rejection;
+  assert.equal(publications, 1, 'late canonical facts cannot publish after abort');
+  assert.equal(manifests, 0, 'cancelled canonical completion does not start optional image IO');
+  assert.equal(calls.length, 2, 'abort stops every later batch');
+
+  calls.length = 0;
+  const retry = await read(references, { concurrency: 2 });
+  assert.equal(calls.length, 13, 'a fresh retry reads the entire declared population');
+  assert.equal(retry.size, 26, 'the completed legacy return retains every requested and canonical alias');
+  let legacyCallbacks = 0, legacyReads = 0;
+  const legacy = canonicalRowsAdapter({ resolve: async () => { throw new Error('Legacy mode cannot dispatch canonical facts'); },
+    manifest: async () => { throw new Error('Legacy mode cannot dispatch manifests'); },
+    legacy: async () => { legacyReads++; return new Map([[fixtureReference, {
+      ...fixtureCard(), externalIds: {}, images: {}, set: { id: fixtureSet, name: 'Fixture set' },
+    }]]); },
+  }, clock);
+  const legacyResult = await legacy([fixtureReference], { onCanonicalRows: () => { legacyCallbacks++; } });
+  assert.equal(legacyResult.size, 1, 'the legacy path preserves its original return aliases');
+  assert.equal(legacyResult.get(fixtureReference)?.id, 'home-fixture-printing');
+  assert.equal(legacyCallbacks, 0, 'legacy rows do not impersonate verified canonical publication');
+  const legacyAbort = new AbortController(); legacyAbort.abort();
+  await assert.rejects(legacy([fixtureReference], { signal: legacyAbort.signal }), { name: 'AbortError' });
+  assert.equal(legacyReads, 1, 'pre-abort also prevents a legacy map read');
+  assert.equal(timers.size, 0, 'all local optional-read timers close');
+  console.log('Home row adapter passed: real canonical/row/artwork conversion, detached aliases, embedded peers, success/failure/timeout, exact edition, abort and multibatch retry.');
+}
+
+async function homeCanonicalFactsStreaming() {
+  const first = canonicalFixture(), peer = canonicalFixture(2, true), manifest = deferred<any[]>();
+  const provider = deferred<void>(), price = deferred<Map<string, any>>();
+  let manifestCalls = 0, providerCalls = 0;
+  const runtime = await harness({ chaseRows: async () => [...fixtureChase(), { card_id: 'peer', set_id: fixtureSet }],
+    activityRows: async () => fixtureActivity(), canonical: {
+      resolve: async reference => reference === 'peer' ? peer : first,
+      manifest: async () => { manifestCalls++; return manifest.promise; },
+    }, prices: () => price.promise, references: async cards => { providerCalls++; await provider.promise; return cards; },
+  });
+  await runtime.interactions(); await runtime.tick(180);
+  assert.equal(runtime.state().chaseCards[0].name, 'Home fixture 1',
+    'real canonical facts reach Home while the actual adapter promise awaits a manifest');
+  assert.equal(runtime.state().recentActivity[0].cardName, 'Home fixture 1');
+  assert.equal(runtime.state().chaseLoading, false);
+  assert.equal(runtime.state().chaseCards[0].cardId, fixtureReference);
+  assert.equal(runtime.state().chaseCards[0].language, 'ja');
+  assert.equal(runtime.state().chaseCards[0].imageUrl, null);
+  assert.equal(runtime.state().chaseCards[1].imageUrl, peer.image.derivatives[0].deliveryUrl,
+    'an approved grid thumbnail paints before a stalled batch peer');
+  assert.equal(providerCalls, 0, 'progressive image projection performs no provider request');
+  assert.equal(manifestCalls, 2, 'independent activity and Chase paths retain their existing bounded enrichment');
+  price.resolve(fixturePrice(42)); await runtime.settle();
+  assert.equal(runtime.state().chaseCards[0].estimatedValue, 42);
+  manifest.resolve([first.image]); await runtime.settle();
+  assert.equal(runtime.state().chaseCards[0].imageUrl, first.image.derivatives[0].deliveryUrl,
+    'the final facts projection can add approved manifest artwork before controlled-provider completion');
+  provider.resolve(); await runtime.settle();
+  assert.equal(runtime.state().chaseCards[0].estimatedValue, 42);
+  assert.deepEqual(runtime.warnings, []);
+  await runtime.close();
+
+  for (const invalidation of ['timeout', 'denial', 'retry', 'account', 'unmount'] as const) {
+    const held = deferred<Map<string, any>>(), pendingPrice = deferred<Map<string, any>>();
+    const callbacks: ((rows: Map<string, any>) => void)[] = [];
+    const signals: AbortSignal[] = [];
+    let round = 0;
+    const late = await harness({ chaseRows: async () => fixtureChase(),
+      cards: async (_ids, _call, _owner, options) => {
+        if (round) return new Map([[fixtureReference, { ...fixtureCard(), name: 'Current fixture' }]]);
+        callbacks.push(options.onCanonicalRows!); signals.push(options.signal!); return held.promise;
+      }, prices: async () => round ? fixturePrice(88) : pendingPrice.promise,
+    });
+    await late.interactions(); await late.tick(180);
+    assert.equal(callbacks.length, 1);
+    callbacks[0](fixtureCards()); await late.settle();
+    assert.equal(late.state().chaseCards[0].name, fixtureName, 'the progressive callback uses the existing Home publication guard');
+    assert.ok(!late.state().chaseCards[0].imageUrl, 'progressive callbacks still suppress unvalidated TCGdex imagery');
+    if (invalidation === 'timeout') {
+      await late.tick(10_000); assert.equal(signals[0].aborted, true);
+      assert.match(late.state().chaseError, /Could not refresh/);
+    } else if (invalidation === 'denial') {
+      pendingPrice.reject({ status: 403, message: 'Synthetic denial' } as any); await late.settle();
+      assert.equal(late.state().chaseCards.length, 0);
+    } else if (invalidation === 'retry') {
+      round++; await act(async () => { await late.state().reloadChase(); });
+    } else if (invalidation === 'account') {
+      round++; await late.auth('owner-b'); await late.interactions(); await late.tick(180);
+      round++; await late.auth('owner-a'); await late.interactions(); await late.tick(180);
+    } else {
+      await late.close();
+    }
+    const writes = late.stateWrites();
+    callbacks[0](new Map([[fixtureReference, { ...fixtureCard(), name: 'Obsolete callback' }]]));
+    held.resolve(fixtureCards()); pendingPrice.resolve(fixturePrice(1)); await late.settle();
+    assert.equal(late.stateWrites(), writes, `late progressive ${invalidation} callbacks cannot repaint settled or obsolete Home state`);
+    if (invalidation !== 'unmount') await late.close();
+  }
+  console.log('Home canonical streaming passed: real adapter → safe image projection → runtime publication, independent prices and late callback timeout/denial/retry/A→B→A/unmount guards.');
+}
+
+async function homePendingDisplayRefresh() {
+  for (const outcome of ['success', 'absence', 'denial', 'account', 'retry', 'timeout', 'unmount', 'changed-set', 'changed-reference'] as const) {
+    const first = canonicalFixture(1, true), peer = canonicalFixture(2, true);
+    const heldPeer = deferred<any>(), heldPrices = deferred<Map<string, any>>();
+    let round = 0;
+    const currentPeer = { ...peer, card: { ...peer.card, names: { ...peer.card.names, englishDisplay: 'Current peer' } } };
+    const priceMap = () => {
+      const prices = fixturePrice(round ? 88 : 42);
+      prices.set('peer', { ...prices.get(fixtureReference)!, card_id: peer.card.cardId,
+        variant_id: peer.variantId, market_central: round ? 90 : 44 });
+      return prices;
+    };
+    const runtime = await harness({
+      chaseRows: async () => [...fixtureChase(), { card_id: round && outcome === 'changed-reference' ? 'other-peer' : 'peer',
+        set_id: round && outcome === 'changed-set' ? 'different-fixture-set' : fixtureSet }],
+      canonical: {
+        resolve: async reference => reference === 'peer' || reference === 'other-peer'
+          ? round === 1 ? heldPeer.promise : round >= 2 ? currentPeer : peer : first,
+        manifest: async () => { throw new Error('The approved embedded fixtures cannot need manifests'); },
+      },
+      prices: async () => round === 1 ? heldPrices.promise : priceMap(),
+    });
+    let closed = false;
+    try {
+      await runtime.interactions(); await runtime.tick(180);
+      const previous = runtime.state().chaseCards[1];
+      assert.equal(previous.name, 'Home fixture 2');
+      assert.equal(previous.language, 'ja');
+      assert.equal(previous.imageUrl, peer.image.derivatives[0].deliveryUrl);
+      assert.equal(previous.inspectionRequest.card.raw_data.stackr.defaultVariantId, peer.variantId);
+      round = 1;
+      await act(async () => { void runtime.state().reloadChase(); }); await runtime.settle();
+      if (outcome === 'changed-set' || outcome === 'changed-reference') {
+        assert.notEqual(runtime.state().chaseCards[1].name, previous.name,
+          'pending preservation requires both the same saved reference and exact set');
+        assert.equal(runtime.state().chaseCards[1].imageUrl, null);
+      } else {
+        assert.deepEqual(runtime.state().chaseCards[1], previous,
+          'one resolved lookup cannot erase the exact pending peer display during same-account refresh');
+        if (outcome !== 'denial' && outcome !== 'timeout') {
+          heldPrices.resolve(priceMap()); await runtime.settle();
+          assert.equal(runtime.state().chaseCards[1].estimatedValue, 90, 'independent stored-price results still publish for pending facts');
+          assert.equal(runtime.state().chaseCards[1].inspectionRequest, previous.inspectionRequest,
+            'pending preservation retains the complete existing inspection and selected edition, without rebuilding it');
+        }
+      }
+
+      if (outcome === 'success') {
+        heldPeer.resolve(currentPeer); await runtime.settle();
+        assert.equal(runtime.state().chaseCards[1].name, 'Current peer', 'fresh facts replace the temporary retained display');
+      } else if (outcome === 'absence') {
+        heldPeer.resolve(null); await runtime.settle();
+        const missing = runtime.state().chaseCards[1];
+        assert.equal(missing.name, 'peer', 'completed absence cannot retain a stale verified name');
+        assert.equal(missing.language, null);
+        assert.equal(missing.imageUrl, null);
+        assert.equal(missing.inspectionRequest, null, 'completed absence cannot retain a prior exact inspection');
+      } else if (outcome === 'denial') {
+        heldPrices.reject({ status: 403, message: 'Synthetic refresh denial' } as any); await runtime.settle();
+        assert.equal(runtime.state().chaseCards.length, 0, 'denial revokes even deliberately retained pending display');
+        assert.match(runtime.state().chaseError, /access could not be confirmed/i);
+      } else if (outcome === 'account') {
+        round = 2; await runtime.auth('owner-b');
+        assert.equal(runtime.state().chaseCards.length, 0, 'an account change clears all prior pending display before the next read');
+        await runtime.interactions(); await runtime.tick(180);
+        assert.equal(runtime.state().chaseCards[1].name, 'Current peer');
+      } else if (outcome === 'retry') {
+        round = 2; await act(async () => { await runtime.state().reloadChase(); });
+        assert.equal(runtime.state().chaseCards[1].name, 'Current peer');
+      } else if (outcome === 'timeout') {
+        await runtime.tick(10_000);
+        assert.equal(runtime.state().chaseCards[1].name, previous.name, 'a timeout retains the last known display beside its retry error');
+        assert.match(runtime.state().chaseError, /Could not refresh/);
+        assert.equal(runtime.state().chaseLoading, false);
+      } else if (outcome === 'unmount') {
+        await runtime.close(); closed = true;
+      }
+      const writes = runtime.stateWrites();
+      heldPeer.resolve(peer); heldPrices.resolve(priceMap()); await runtime.settle();
+      if (['denial', 'account', 'retry', 'timeout', 'unmount'].includes(outcome)) {
+        assert.equal(runtime.stateWrites(), writes, `late ${outcome} completions cannot restore a retained pending display`);
+      }
+    } finally {
+      // Also close the deliberate V1 counterexample after its assertion fails.
+      heldPeer.resolve(peer); heldPrices.resolve(priceMap()); await runtime.settle();
+      if (!closed) await runtime.close();
+    }
+  }
+  console.log('Home pending display refresh passed: real two-card adapter/runtime retention, independent prices, completed absence, exact reference/set, denial, account, retry, timeout and unmount.');
+}
 
 async function homeDisplayRecovery() {
   const savedRows = deferred<any[]>(), facts = deferred<Map<string, any>>();
@@ -585,6 +934,9 @@ async function homeChaseDenialRecovery() {
 }
 
 async function main() {
+  await adapterFactsStreaming();
+  await homeCanonicalFactsStreaming();
+  await homePendingDisplayRefresh();
   await homeChaseDenialRecovery();
   await homeDisplayRecovery();
   const savedCustom = async (): Promise<ReturnType<typeof emptySaved>> => ({ ...emptySaved(), binders: [{

@@ -24,16 +24,19 @@ function binderHarness(options = {}) {
   const ownership = deferred(); const cards = deferred(); const record = deferred();
   const calls = { record: 0, ownership: 0, catalogue: 0 };
   const selectedBinder = { ...binder, ...options.binder };
-  const supabase = { from(table) {
+  const supabase = { auth: { onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }) }, from(table) {
+    let offset = 0;
     const query = { select: () => query, eq: () => query, order: () => query,
-      range: (from, to) => { assert.equal(from, 0); assert.equal(to, 999); return query; },
+      range: (from, to) => { assert.equal(to - from, 999); offset = from; return query; },
+      abortSignal: (signal) => { assert(signal instanceof AbortSignal); return query; },
       maybeSingle: async () => { calls.record++; return options.gateRecord ? record.promise : { data: selectedBinder, error: null }; },
-      then: (resolve, reject) => { assert.equal(table, 'binder_cards'); calls.ownership++; return ownership.promise.then(resolve, reject); },
+      then: (resolve, reject) => { assert.equal(table, 'binder_cards'); calls.ownership++; return ownership.promise.then((result) => result.error ? result : { ...result, data: (result.data ?? []).slice(offset, offset + 1000) }).then(resolve, reject); },
     };
     return query;
   } };
   const dependencies = {
     './supabase': { supabase }, './requestCache': cache,
+    './personalDataRead': { withPersonalDataReadTimeout },
     './optionalCatalogueEnrichment': optionalCatalogueEnrichment,
     './pokemonTcg': { normalizePokemonCardLanguage: () => 'en', fetchCardsForSet: async (id, readOptions) => {
       calls.catalogue++; assert.equal(id, catalogueSet.id); assert.equal(readOptions.includeAssets, false); assert.equal(readOptions.minimumCardCount, 252); return cards.promise;
@@ -48,7 +51,7 @@ function binderHarness(options = {}) {
   const source = fs.readFileSync('lib/binders.ts', 'utf8');
   const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const exports = {};
-  vm.runInNewContext(compiled, { exports, require: (name) => dependencies[name] ?? {}, console });
+  vm.runInNewContext(compiled, { exports, require: (name) => dependencies[name] ?? {}, console, AbortController });
   return { calls, ownership, cards, record, selectedBinder, read: () => exports.fetchBinderCards('binder', { includePrices: false, includeAssets: false }) };
 }
 

@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
+import { readOptionalCatalogueEnrichment } from '../lib/optionalCatalogueEnrichment';
+import { beginPokedexRetrieval } from '../lib/performance';
 
 const tick = () => new Promise<void>((resolve) => setImmediate(resolve));
 
@@ -92,23 +94,75 @@ function testScreenOrdering() {
   assert.match(binderCache, /BINDER_OVERVIEW_CACHE_PREFIX/);
   assert.match(binderCache, /encodeURIComponent\(normalizeTrustedUserId\(userId\)\)/, 'binder cache is account scoped');
 
-  const detail = fs.readFileSync('app/pokemon/[id].tsx', 'utf8');
-  const routeIdentity = detail.indexOf('const routePokemon: PokemonData | null = routeName');
-  const metadataFetch = detail.indexOf('fetch(\`https:\/\/pokeapi\.co\/api\/v2\/pokemon\/\${id}\`)', routeIdentity);
-  const canonicalCards = detail.indexOf('fetchCardsForPokemon(cardSpeciesName, { onProgress: applyCards })', routeIdentity);
-  assert.ok(routeIdentity >= 0 && metadataFetch > routeIdentity && canonicalCards > metadataFetch,
-    'A known route identity starts canonical cards without awaiting external species metadata');
-  assert.match(detail, /const nextPokemon = routePokemon \?\? await metadata;/);
-  assert.match(detail, /const cardSpeciesName = speciesName \?\? routeName \?\? nextPokemon\.name;/,
-    'a species selected from the list survives a late provider metadata response');
-  assert.match(detail, /cardsError/);
-  assert.match(detail, /setRetryEpoch/, 'Pokédex exposes a bounded user retry after connectivity failure');
-
   const search = fs.readFileSync('app/(tabs)/search.tsx', 'utf8');
   const cachePromise = search.indexOf('readCachedCanonicalSearch(primary, selectedLanguage)');
   const canonicalSearch = search.indexOf('searchLocalPokemonCards<any>(primary', cachePromise);
   assert.ok(cachePromise >= 0 && canonicalSearch > cachePromise, 'Search starts its cold-cache read before canonical network results settle');
   assert.match(search, /requestId !== requestRef\.current/, 'late search results remain guarded by request identity');
+}
+
+async function testKnownPokedexRouteColdPath() {
+  const file = 'app/pokemon/[id].tsx';
+  const source = fs.readFileSync(file, 'utf8');
+  const tree = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let effect = '';
+  const visit = (node: ts.Node) => {
+    if (ts.isCallExpression(node) && node.expression.getText(tree) === 'useEffect'
+      && node.arguments[0]?.getText(tree).includes('fetchCardsForPokemon')) {
+      effect = node.arguments[0].getText(tree);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(tree);
+  assert.ok(effect, 'exercise the actual screen load effect');
+  const compiled = ts.transpileModule(`globalThis.screenEffect = ${effect};`, {
+    compilerOptions: { target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+
+  for (const [routeName, speciesName, expected] of [
+    ['wartortle', undefined, 'wartortle'],
+    [undefined, 'wartortle', 'wartortle'],
+    ['pikachu-cosplay', 'pikachu', 'pikachu'],
+  ]) {
+    const state: Record<string, any> = { cards: [] };
+    const requested: string[] = [];
+    let metadataSignal: AbortSignal | undefined;
+    const context: Record<string, any> = {
+      id: '8', routeName, speciesName, AbortController, readOptionalCatalogueEnrichment,
+      routeKey: JSON.stringify(['8', routeName, speciesName]), beginPokedexRetrieval,
+      retrievalRef: { current: null }, publishedRef: { current: null }, committedRef: { current: null },
+      console: { log() {} },
+      fetch: (_url: string, options: { signal?: AbortSignal }) => {
+        metadataSignal = options.signal;
+        return new Promise(() => {});
+      },
+      fetchCardsForPokemon: async (name: string) => {
+        requested.push(name);
+        return { cards: [{ id: 'canonical-card' }], complete: true };
+      },
+    };
+    for (const name of ['Cards', 'CollectionComplete', 'CardsLoading', 'CardsError', 'Pokemon', 'Loading']) {
+      const key = name[0].toLowerCase() + name.slice(1);
+      context[`set${name}`] = (value: any) => {
+        state[key] = typeof value === 'function' ? value(state[key]) : value;
+      };
+    }
+    vm.runInNewContext(compiled, context);
+    const cleanup = context.screenEffect();
+    try {
+      await tick();
+      assert.deepEqual(requested, [expected], 'known species starts factual cards while metadata remains pending');
+      assert.equal(state.cards[0]?.id, 'canonical-card', 'canonical facts are usable before metadata arrives');
+      assert.equal(state.cardsLoading, false);
+      assert.equal(state.loading, false);
+      assert.equal(state.collectionComplete, true);
+      assert.equal(metadataSignal?.aborted, false, 'the optional metadata read is still pending');
+    } finally {
+      cleanup();
+    }
+    assert.equal(metadataSignal?.aborted, true, 'unmount aborts the outstanding optional read');
+    await tick();
+  }
 }
 
 function testPokedexTabStagedLoadingSource() {
@@ -351,6 +405,7 @@ async function main() {
   await testPersistedSearchCache();
   await testPokedexCanonicalPaging();
   testScreenOrdering();
+  await testKnownPokedexRouteColdPath();
   testPokedexTabStagedLoadingSource();
   testLegacyPokedexCacheRejection();
   await testPokedexTabColdPathRuntime();

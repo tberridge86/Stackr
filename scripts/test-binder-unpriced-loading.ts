@@ -4,6 +4,7 @@ import vm from 'node:vm';
 import { URL } from 'node:url';
 import ts from 'typescript';
 import * as requestCache from '../lib/requestCache';
+import { withPersonalDataReadTimeout } from '../lib/personalDataRead';
 
 async function main() {
   requestCache.invalidateRequestCache();
@@ -12,10 +13,10 @@ async function main() {
   let cardPageReads = 0;
   const saved = { id: 'saved', binder_id: 'binder', card_id: 'base1-1', language: 'en', owned: true,
     owned_quantity: 2, card_name: 'Charizard', image_url: 'https://images.example/card.webp' };
-  const supabase = { from: (table: string) => {
+  const supabase = { auth: { onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }) }, from: (table: string) => {
     let pageFrom = 0, pageTo = 999;
     const query: any = {
-      select: () => query, eq: () => query, order: () => query,
+      select: () => query, eq: () => query, order: () => query, abortSignal: () => query,
       range: (from: number, to: number) => { pageFrom = from; pageTo = to; return query; },
       maybeSingle: async () => ({ data: { id: 'binder', type: 'custom', language: 'en' }, error: null }),
       then: (resolve: (value: unknown) => unknown) => {
@@ -29,6 +30,7 @@ async function main() {
   } };
   const dependencies: Record<string, unknown> = {
     './supabase': { supabase }, './requestCache': requestCache,
+    './personalDataRead': { withPersonalDataReadTimeout },
     './pokemonTcg': { normalizePokemonCardLanguage: () => 'en' },
     './stackrDomainAdapter': { fetchStackrPriceSnapshots: async () => {
       priceReads += 1;
@@ -39,7 +41,7 @@ async function main() {
   const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS,
     target: ts.ScriptTarget.ES2022 } }).outputText;
   const exports: any = {};
-  vm.runInNewContext(compiled, { exports, require: (name: string) => dependencies[name] ?? {}, console });
+  vm.runInNewContext(compiled, { exports, require: (name: string) => dependencies[name] ?? {}, console, AbortController });
   const fast = await exports.fetchBinderCards('binder', { includePrices: false });
   assert.equal(priceReads, 0, 'Home catalogue reads must not price every binder slot.');
   assert.equal(fast[0].owned_quantity, 2);
@@ -56,7 +58,7 @@ async function main() {
   const completeCustom = await exports.fetchBinderCards('binder', { includePrices: false });
   assert.equal(completeCustom.length, 1702, 'a fresh custom binder must not truncate a complete saved view at 1000 rows');
   assert.equal(new Set(completeCustom.map((row: { id: string }) => row.id)).size, 1702);
-  assert.equal(cardPageReads - beforePages, 2);
+  assert.equal(cardPageReads - beforePages, 3, 'two populated pages plus a definitive empty page establish completion');
   assert.equal(priceReads, 1, 'complete custom loading remains unpriced');
   console.log('Home bypasses redundant binder pricing while preserving ownership, images and existing callers.');
 }

@@ -34,6 +34,7 @@ function fixture(candidates: any[], options: any = {}) {
         if (name === 'read_catalogue_prices') return { data: args.p_references.map((reference: string) => ({
           reference, candidates: options.byReference?.[reference] ?? candidates.filter((row) => row.variant_id === reference),
         })), error: options.rpcError };
+        if (name === 'read_pricing_classifications') return { data: null, error: { code: 'PGRST202' } };
         assert.ok(['read_catalogue_printing_general_prices', 'read_cardmarket_blended_general_prices'].includes(name), 'no provider or job RPC');
         return { data: options.guides?.[name] ?? [] };
       },
