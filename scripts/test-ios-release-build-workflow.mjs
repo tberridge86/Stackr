@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { runInNewContext } from 'node:vm';
 
 const require = createRequire(import.meta.url);
-const workflow = readFileSync('.github/workflows/build-owner-ios-release.yml', 'utf8');
+const workflow = readFileSync('.github/workflows/build-owner-ios-release.yml', 'utf8').replace(/\r\n/gu, '\n');
 const eas = JSON.parse(readFileSync('eas.json', 'utf8'));
 const config = JSON.parse(readFileSync('app.json', 'utf8')).expo;
 
@@ -30,6 +31,35 @@ for (const command of ['npm run test:mobile-recovery', 'npm run test:server-deli
 }
 assert.match(readFileSync('.github/workflows/platform-ci.yml', 'utf8'), /npm run test:home-activity/);
 assert.match(workflow, /mobile-delivery-receipt\.json/);
+
+assert.match(workflow, /verify_only:\s*\n\s*description:[^\n]*\n\s*required: false\n\s*default: false\n\s*type: boolean/);
+assert.match(workflow, /VERIFY_ONLY: \$\{\{ inputs\.verify_only \}\}/);
+assert.match(workflow, /if \[\[ "\$VERIFY_ONLY" != 'true' \]\]; then\s*test -n "\$EXPO_TOKEN"\s*fi/);
+const buildStep = workflow.slice(nativeBuildPosition, workflow.indexOf('\n      - name:', nativeBuildPosition + 1));
+assert.match(buildStep, /if: \$\{\{ !inputs\.verify_only \}\}/);
+const buildScript = buildStep.match(/node <<'NODE'\n([\s\S]*?)\n\s*NODE/)[1]
+  .split('\n').map((line) => line.replace(/^          /, '')).join('\n');
+const reachedBuildBody = new Error('guard passed');
+function checkBuildGuard(env, expected, mayReachBody) {
+  let bodyReached = false;
+  assert.throws(() => runInNewContext(buildScript, {
+    process: { env },
+    require: () => { bodyReached = true; throw reachedBuildBody; },
+  }), expected);
+  assert.equal(bodyReached, mayReachBody);
+}
+checkBuildGuard({ VERIFY_ONLY: 'true', EXPO_TOKEN: 'fixture' }, /Verification-only runs cannot request a native build/, false);
+checkBuildGuard({ VERIFY_ONLY: 'true', EXPO_TOKEN: '' }, /Verification-only runs cannot request a native build/, false);
+checkBuildGuard({ EXPO_TOKEN: 'fixture' }, /Verification-only runs cannot request a native build/, false);
+checkBuildGuard({ VERIFY_ONLY: 'unexpected', EXPO_TOKEN: 'fixture' }, /Verification-only runs cannot request a native build/, false);
+checkBuildGuard({ VERIFY_ONLY: 'false', EXPO_TOKEN: '' }, /EXPO_TOKEN is required/, false);
+checkBuildGuard({ VERIFY_ONLY: 'false', EXPO_TOKEN: '  ' }, /EXPO_TOKEN is required/, false);
+checkBuildGuard({ VERIFY_ONLY: 'false', EXPO_TOKEN: 'fixture' }, (error) => error === reachedBuildBody, true);
+const verificationUpload = workflow.slice(workflow.indexOf('- name: Upload verification-only receipt'));
+assert.match(verificationUpload, /if: \$\{\{ success\(\) && inputs\.verify_only \}\}/);
+assert.match(verificationUpload, /path: outputs\/releases\/mobile-delivery-receipt\.json/);
+assert.doesNotMatch(verificationUpload, /frozen-ios-build-receipt|eas-cli/);
+assert.match(workflow, /- name: Upload non-secret native build receipt\n\s*if: \$\{\{ success\(\) && !inputs\.verify_only \}\}/);
 
 const before = { ...process.env };
 try {
