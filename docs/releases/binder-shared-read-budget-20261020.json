@@ -20,7 +20,9 @@
     "typecheck": "npm run typecheck passes",
     "lint": "npm run lint passes with 8 existing root warnings; changed-file lint passes with 8 existing binders.ts warnings",
     "independentReview": "No actionable introduced P1/P2 found; runtime and deterministic budget fixture reviewed",
-    "environment": "Sparse committed-source export at the base revision into a permitted isolated directory. Named validation dependencies copied from existing current install; no dependency or lockfile changes. Initial setup-only typecheck failures resolved by restoring missing installed modules and the exact tracked synthetic fixture."
+    "environment": "Sparse committed-source export at the base revision into a permitted isolated directory. Named validation dependencies copied from existing current install; no dependency or lockfile changes. Initial setup-only typecheck failures resolved by restoring missing installed modules and the exact tracked synthetic fixture.",
+    "unpricedBinder": "Existing price/no-price cache separation, images, quantities and all1702 saved rows pass; expected terminal-empty query included",
+    "hostedFirstHead": "a033725: binder CI failed on missing AbortController in legacy unpriced test VM; compatibility fixture corrected and passed locally, runtime unchanged. Superseding-head CI required."
   },
   "limits": [
     "The budget covers saved-row pagination only, after binder-record lookup. It is not a complete screen/public-catalogue/price deadline",
