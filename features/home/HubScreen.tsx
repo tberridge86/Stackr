@@ -125,16 +125,38 @@ const fetchHomeDisplayCardRows = async (
   cardIds: string[],
   onFactsReady?: (rows: HomeDisplayCardRows) => void,
 ): Promise<HomeDisplayCardRows> => {
-  const rows = await withPersonalDataReadTimeout(() => fetchStackrCardRows(cardIds));
-  if (onFactsReady) {
-    // Apply the same fail-closed image projection without a provider read, so
-    // facts can paint while only live-validated artwork is still pending.
-    const facts = await hydrateCardReferenceRowMapWithLiveTcgdexReferences(rows, async (cards) => cards, 0);
-    onFactsReady(facts);
+  let acceptingFacts = true;
+  let factsRevision = 0;
+  try {
+    const rows = await withPersonalDataReadTimeout(async (signal) => {
+      const publishFacts = async (snapshot: HomeDisplayCardRows) => {
+        if (!acceptingFacts || signal.aborted || !onFactsReady) return;
+        const revision = ++factsRevision;
+        // Reuse the fail-closed image projection without a provider read. Each
+        // verified card can paint before its optional manifest or batch peers.
+        const facts = await hydrateCardReferenceRowMapWithLiveTcgdexReferences(snapshot, async (cards) => cards, 0);
+        if (acceptingFacts && !signal.aborted && factsRevision === revision) onFactsReady(facts);
+      };
+      const result = await fetchStackrCardRows(cardIds, {
+        signal,
+        onCanonicalRows: onFactsReady ? (snapshot) => {
+          // Observe detached projections, including ones superseded by a newer
+          // snapshot. The final projection below remains part of this deadline.
+          void publishFacts(snapshot).catch(() => undefined);
+        } : undefined,
+      });
+      await publishFacts(result);
+      return result;
+    });
+    acceptingFacts = false;
+    return withPersonalDataReadTimeout(() => (
+      hydrateCardReferenceRowMapWithLiveTcgdexReferences(rows, attachLiveTcgdexCardReferences)
+    ));
+  } finally {
+    // An uncooperative read may deliver a callback after the deadline. It cannot
+    // publish again, even when the owning screen request is otherwise current.
+    acceptingFacts = false;
   }
-  return withPersonalDataReadTimeout(() => (
-    hydrateCardReferenceRowMapWithLiveTcgdexReferences(rows, attachLiveTcgdexCardReferences)
-  ));
 };
 
 // ===============================
