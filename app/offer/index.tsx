@@ -1,7 +1,7 @@
 import { useTheme } from '../../components/theme-context';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import {
-  ActivityIndicator,
   Alert,
   Image,
   KeyboardAvoidingView,
@@ -884,6 +884,7 @@ export default function OfferDetailScreen() {
 
       <StackrCenterModal
         visible={Boolean(confirmCopy)}
+        accessibilityLabel={confirmCopy?.title ?? 'Confirm trade action'}
         onClose={() => !sending && setConfirmAction(null)}
         dismissible={!sending}
         contentStyle={{ padding: 20 }}

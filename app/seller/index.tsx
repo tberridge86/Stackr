@@ -1,3 +1,4 @@
+import { STACKR_ICON_OUTLINE, StackrNavigationIcon } from '../../components/StackrNavigationIcon';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
@@ -131,7 +132,7 @@ function SellerDashboardContent() {
                 accessibilityLabel="Return to collector mode"
                 style={{ minHeight: 44, borderRadius: 16, backgroundColor: '#F7F3FF', borderWidth: 1, borderColor: '#E8E1FF', paddingHorizontal: 11, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 6 }}
               >
-                <Ionicons name="home-outline" size={18} color={theme.colors.primary} />
+                <StackrNavigationIcon name="home" size={18} color={theme.dark ? theme.colors.text : STACKR_ICON_OUTLINE} accentColor={theme.colors.primary} />
                 <Text style={{ color: theme.colors.primary, fontSize: 12, lineHeight: 15, fontWeight: '900' }}>Collector</Text>
               </TouchableOpacity>
             </View>

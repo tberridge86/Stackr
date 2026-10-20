@@ -142,12 +142,13 @@ function normalizeWeight(weight: TextStyle['fontWeight'], fontSize = 14): TextSt
 }
 
 export function fontFamilyForWeight(weight?: TextStyle['fontWeight']) {
-  const normalized = normalizeWeight(weight);
-  if (normalized === '800') return stackrFonts.extraBold;
-  if (normalized === '700') return stackrFonts.bold;
-  if (normalized === '600') return stackrFonts.semiBold;
-  if (normalized === '400') return stackrFonts.regular;
-  return stackrFonts.medium;
+  const value = weight === 'bold' ? 700 : weight === 'normal' ? 400 : Number(weight ?? 500);
+  if (!Number.isFinite(value)) return stackrFonts.medium;
+  if (value >= 750) return stackrFonts.extraBold;
+  if (value >= 650) return stackrFonts.bold;
+  if (value >= 550) return stackrFonts.semiBold;
+  if (value >= 450) return stackrFonts.medium;
+  return stackrFonts.regular;
 }
 
 export function lineHeightForFontSize(fontSize: number) {
@@ -165,13 +166,15 @@ export function resolveTypographyStyle(
 ): TextStyle {
   const variantStyle = variant ? typeScale[variant] : defaultTextStyle;
   const fontSize = Number(style?.fontSize ?? variantStyle.fontSize ?? defaultTextStyle.fontSize);
-  const fontWeight = normalizeWeight(style?.fontWeight ?? variantStyle.fontWeight ?? defaultTextStyle.fontWeight, fontSize);
-  const lineHeight = style?.lineHeight ?? variantStyle.lineHeight ?? lineHeightForFontSize(fontSize);
+  const fontWeight = normalizeWeight(style?.fontWeight ?? (numeric ? numericTextStyle.fontWeight : variantStyle.fontWeight) ?? defaultTextStyle.fontWeight, fontSize);
+  const lineHeight = style?.lineHeight ?? (
+    fontSize === variantStyle.fontSize ? variantStyle.lineHeight : lineHeightForFontSize(fontSize)
+  );
 
   return {
     ...variantStyle,
     ...(numeric ? numericTextStyle : null),
-    fontFamily: style?.fontFamily ?? (numeric ? fontFamilyForWeight(style?.fontWeight ?? '700') : fontFamilyForWeight(fontWeight)),
+    fontFamily: style?.fontFamily ?? fontFamilyForWeight(fontWeight),
     fontWeight,
     fontSize,
     lineHeight,

@@ -1,23 +1,25 @@
+import { StackrFunctionalIcon } from '../../components/StackrFunctionalIcon';
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
+import { getCorocoroIssuesForCard, formatCorocoroIssueGroup } from '../../lib/corocoroIssueArchive';
+import { useCardInspection } from '../../components/CardInspectionProvider';
+import { getEditionVariantImageUrl } from '../../lib/editionImages';
+import { CardDetailInspectSurface } from '../../components/InteractiveCardInspectPressable';
 import { useTheme } from '../../components/theme-context';
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import {
   View,
   StyleSheet,
-  ActivityIndicator,
   ScrollView,
   TouchableOpacity,
   Alert,
   Image,
-  Pressable,
   useWindowDimensions,
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { StackrCardIdentity } from '../../components/StackrCardIdentity';
 import { StackrButton } from '../../components/StackrControls';
 import EditionAwareCardImage from '../../components/EditionAwareCardImage';
-import { useCardInspection } from '../../components/CardInspectionProvider';
-import { CARD_INSPECTION_LONG_PRESS_MS } from '../../lib/cardInspection';
-import { getEditionVariantImageUrl } from '../../lib/editionImages';
+import { CardInspectionStage } from '../../components/CardInspectionStage';
 import PokeTraceMarketInsights from '../../components/PokeTraceMarketInsights';
 import PricingV2Summary from '../../components/PricingV2Summary';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
@@ -33,7 +35,8 @@ import { stackrIcons } from '../../lib/stackrIcons';
 import {
   getCachedCardSync,
 } from '../../lib/pokemonTcgCache';
-import { fetchCardById, normalizePokemonCardLanguage } from '../../lib/pokemonTcg';
+import { fetchCardById, mergeSetCardArtwork, normalizePokemonCardLanguage, type PokemonCard as CanonicalPokemonCard } from '../../lib/pokemonTcg';
+import { enrichStackrCardArtworkFromFacts } from '../../lib/stackrDomainAdapter';
 import { supabase } from '../../lib/supabase';
 import { createManualCollectionDraft } from '../../lib/manualCollectionDraft';
 import { getDisplaySetLogoUrl } from '../../lib/setDisplay';
@@ -41,7 +44,7 @@ import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
 import { fetchPokeTraceCardPrice } from '../../lib/pricing';
 import { refreshPersonalProviderEstimate } from '../../lib/personalPriceRefresh';
 import { StackrApiV1Error } from '../../lib/stackrApiV1';
-import { stackrTabContentPadding } from '../../lib/stackrSizing';
+import { stackrTabContentPadding, stackrCardImageSizes } from '../../lib/stackrSizing';
 import { buildForeignCardPresentation } from '../../lib/foreignCardPresentation';
 import { useCataloguePriceOverlay } from '../../lib/useCataloguePriceOverlay';
 
@@ -125,11 +128,18 @@ export default function CardDetailScreen() {
   const { premiumSellerAccess } = useAppMode();
   const styles = React.useMemo(() => makeStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
-  const heroImageHeight = Math.min(430, Math.max(342, (width - 64) * 1.25));
-  const params = useLocalSearchParams<{ id?: string; setId?: string; editionHint?: string }>();
+  const { width, height } = useWindowDimensions();
+  const heroImageWidth = Math.min(width - 80, 440, height * 0.7 * stackrCardImageSizes.cardAspectRatio);
+  const params = useLocalSearchParams<{ id?: string; setId?: string; editionHint?: string; variant?: string; finish?: string; slabbed?: string }>();
   const cardId = typeof params.id === 'string' ? params.id : '';
   const paramSetId = typeof params.setId === 'string' ? params.setId : '';
+  const cardContext = JSON.stringify([userId, cardId, paramSetId]);
+  const cardContextRef = useRef({ key: cardContext, generation: 0 });
+  // Invalidate late work during render, including A -> B -> A transitions
+  // before effect cleanup and state updaters have finished.
+  if (cardContextRef.current.key !== cardContext) {
+    cardContextRef.current = { key: cardContext, generation: cardContextRef.current.generation + 1 };
+  }
   const priceContextRef = useRef('');
   const priceRequestRef = useRef(0);
   const editionHint = params.editionHint === '1st_edition' || params.editionHint === 'unlimited' || params.editionHint === 'shadowless'
@@ -154,7 +164,14 @@ export default function CardDetailScreen() {
   } = useTrade();
 
   const [card, setCard] = useState<PokemonCard | null>(null);
+  const priceCardRef = useRef(card);
+  priceCardRef.current = card;
+  const priceCardKey = card ? JSON.stringify([
+    card.id, card.set?.id, card.set?.name, card.number,
+    card.language ?? card.raw_data?.language, card.raw_data?.stackr?.defaultVariantId,
+  ]) : null;
   const [referenceImage, setReferenceImage] = useState(false);
+  const [artworkLoading, setArtworkLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [listingBusy, setListingBusy] = useState(false);
   const [collectionBusy, setCollectionBusy] = useState(false);
@@ -196,31 +213,63 @@ export default function CardDetailScreen() {
 
   useEffect(() => {
     let mounted = true;
+    const artworkAbort = new AbortController();
+    const generation = cardContextRef.current.generation;
+    const isCurrent = () => mounted && !artworkAbort.signal.aborted && cardContextRef.current.generation === generation;
+    let publishedFacts = false;
 
     const loadCard = async () => {
       try {
         setLoading(true);
+        setArtworkLoading(false);
 
         let found: PokemonCard | null = null;
+        let foundInCache = false;
 
         if (paramSetId && cardId) {
           found = getCachedCardSync(paramSetId, cardId);
-
+          foundInCache = Boolean(found);
         }
 
         // A direct card route must never download every set to locate one ID.
         if (!found && cardId) {
-          found = await fetchCardById(cardId);
+          found = await fetchCardById(cardId, { onCanonicalCard: (facts) => {
+            if (!isCurrent()) return;
+            publishedFacts = true;
+            setCard(current => isCurrent() ? facts : current);
+            setLoading(current => isCurrent() ? false : current);
+            setArtworkLoading(current => isCurrent() ? !facts.images?.small && !facts.images?.large : current);
+          } });
         }
 
-        if (mounted) {
-          setCard(found ?? null);
+        if (isCurrent()) {
+          // Keep the original model: provider image overlays are intentionally
+          // non-enumerable and must not be copied through an object spread.
+          setCard(current => isCurrent() ? found ?? null : current);
+          if (foundInCache && found && (found.raw_data?.stackr?.canonical === true
+            || (!found.images?.small && !found.images?.large))) {
+            // Canonical cached images keep first paint while the bounded
+            // preferred read checks replacements and exact reassociations.
+            setArtworkLoading(!found.images?.small && !found.images?.large);
+            // The enrichment WeakMap accepts canonical facts only; unsupported
+            // cached legacy rows simply yield no artwork and retain their facts.
+            const canonicalFacts = found as CanonicalPokemonCard;
+            void enrichStackrCardArtworkFromFacts([canonicalFacts], artworkAbort.signal).then((enriched) => {
+              if (!mounted || artworkAbort.signal.aborted) return;
+              setCard((current) => {
+                if (!isCurrent() || !current) return current;
+                const merged = mergeSetCardArtwork([current as CanonicalPokemonCard], enriched)[0];
+                return merged ? merged as PokemonCard : current;
+              });
+            }).catch(() => undefined).finally(() => { if (isCurrent()) setArtworkLoading(false); });
+          } else setArtworkLoading(current => isCurrent() ? false : current);
         }
       } catch (err) {
         console.error('Failed to load card:', err);
-        if (mounted) setCard(null);
+        setCard(current => isCurrent() && !publishedFacts ? null : current);
+        setArtworkLoading(current => isCurrent() ? false : current);
       } finally {
-        if (mounted) setLoading(false);
+        setLoading(current => isCurrent() ? false : current);
       }
     };
 
@@ -232,8 +281,9 @@ export default function CardDetailScreen() {
 
     return () => {
       mounted = false;
+      artworkAbort.abort();
     };
-  }, [cardId, paramSetId]);
+  }, [cardId, paramSetId, userId]);
 
   // ===============================
   // FETCH STACKR MARKET PRICE
@@ -327,15 +377,18 @@ export default function CardDetailScreen() {
 
   // Auto-fetch the provider-neutral Stackr estimate once the card is loaded.
   useEffect(() => {
+    const priceCard = priceCardRef.current;
     setEbayPrice(null);
     setLatestSnapshotPrice(null);
     setEbayLoading(false);
     setPriceRefreshNotice(null);
-    if (card) {
-      void fetchEbay(card);
+    if (priceCard) {
+      void fetchEbay(priceCard);
     }
     return () => { priceRequestRef.current += 1; };
-  }, [card, fetchEbay]);
+    // Account and edition changes are represented by fetchEbay. Optional
+    // artwork changes must retain the current quote and its in-flight read.
+  }, [priceCardKey, fetchEbay]);
 
   // ===============================
   // MEMOS
@@ -530,27 +583,22 @@ export default function CardDetailScreen() {
       </View>
 
       {/* Card Image */}
-      <View style={styles.heroCard}>
-        <View style={[styles.heroImageFrame, { height: heroImageHeight }]}>
+      <CardInspectionStage style={{ alignSelf: 'center', marginBottom: 24, width: heroImageWidth + 48 }}>
+      <CardDetailInspectSurface
+        title={presentation.name}
+        rarity={card.rarity ?? undefined}
+        cardMetadata={card}
+        variant={typeof params.variant === 'string' ? params.variant : undefined}
+        finish={typeof params.finish === 'string' ? params.finish : undefined}
+        isSlabbed={params.slabbed === '1'}
+        style={[styles.heroCard, { width: heroImageWidth, height: heroImageWidth / stackrCardImageSizes.cardAspectRatio }]}
+        accessibilityLabel={`Inspect ${presentation.name} artwork`}
+      >
+        <View style={styles.heroImageFrame}>
           {card.images?.large || card.images?.small ? (
-            <Pressable
-              style={{ flex: 1 }}
-              onLongPress={() => inspectCard({
-                source: 'catalogue',
-                card: { id: inspectionCardId, name: card.name, language: card.language, raw_data: card.raw_data },
-                imageUri: inspectionImageUri,
-                fullImageUri: inspectionImageUri,
-                selectedVariantId: card.raw_data?.stackr?.defaultVariantId ?? null,
-                subtitle: [presentation.setName, card.number ? `#${card.number}` : null].filter(Boolean).join(' · '),
-              })}
-              delayLongPress={CARD_INSPECTION_LONG_PRESS_MS}
-              accessibilityRole="button"
-              accessibilityLabel={`Inspect ${presentation.name}`}
-              accessibilityActions={[{ name: 'inspect', label: 'Inspect card' }]}
-              onAccessibilityAction={(event) => { if (event.nativeEvent.actionName === 'inspect') inspectCard({ source: 'catalogue', card: { id: inspectionCardId, name: card.name, language: card.language, raw_data: card.raw_data }, imageUri: inspectionImageUri, fullImageUri: inspectionImageUri, selectedVariantId: card.raw_data?.stackr?.defaultVariantId ?? null, subtitle: [presentation.setName, card.number ? `#${card.number}` : null].filter(Boolean).join(' · ') }); }}
-            >
-              <EditionAwareCardImage
-              uri={card.images?.large || card.images?.small}
+            <EditionAwareCardImage
+              uri={card.images?.small}
+              fullUri={card.images?.large}
               cardId={card.id}
               language={card.language ?? card.raw_data?.language ?? null}
               rawData={card.raw_data}
@@ -560,10 +608,9 @@ export default function CardDetailScreen() {
               style={styles.cardImage}
               resizeMode="contain"
               />
-            </Pressable>
           ) : (
             <View style={styles.imageFallback}>
-              <Text style={styles.imageFallbackText}>No image</Text>
+              <Text style={styles.imageFallbackText}>{artworkLoading ? 'Loading artwork…' : 'No image'}</Text>
             </View>
           )}
           <RaritySymbol
@@ -572,8 +619,8 @@ export default function CardDetailScreen() {
             style={RARITY_SYMBOL_CARD_OVERLAY}
           />
         </View>
-      </View>
-
+      </CardDetailInspectSurface>
+      </CardInspectionStage>
       {referenceImage && (card.images?.large || card.images?.small) && <Text style={{ color: theme.colors.textSoft, marginBottom: 8 }}>Reference image; finish may differ.</Text>}
 
       <StackrCardIdentity
@@ -586,6 +633,7 @@ export default function CardDetailScreen() {
 
       <StackrButton
         label="Inspect card"
+        stackrIcon="scan"
         icon="scan-outline"
         variant="secondary"
         onPress={() => inspectCard({
@@ -599,7 +647,7 @@ export default function CardDetailScreen() {
         accessibilityLabel={`Inspect ${presentation.name}`}
         style={{ marginBottom: 12 }}
       />
-      <StackrButton label="Add to collection" icon="albums-outline" variant="primary" loading={collectionBusy} disabled={collectionBusy} onPress={() => { void openCollectionReview(); }} style={{ marginBottom: 12 }} />
+      <StackrButton label="Add to collection" stackrIcon="collection" icon="albums-outline" variant="primary" loading={collectionBusy} disabled={collectionBusy} onPress={() => { void openCollectionReview(); }} style={{ marginBottom: 12 }} />
       {collectionError ? <View style={{ marginBottom: 12, gap: 8 }}>
         <Text accessibilityRole="alert" style={{ color: theme.colors.text, lineHeight: 20 }}>{collectionError}</Text>
         <StackrButton label={collectionSignIn ? 'Sign in' : 'Open saved reviews'} onPress={() => router.push((collectionSignIn ? '/(auth)/login' : '/(tabs)/scan-hub') as any)} />
@@ -656,6 +704,19 @@ export default function CardDetailScreen() {
         {!!presentedDetails.supertype && <Text style={styles.metaChip}>{presentedDetails.supertype}</Text>}
         {!!card.hp && <Text style={styles.metaChip}>HP {card.hp}</Text>}
       </View>
+      {getCorocoroIssuesForCard(cardId).map((issue) => (
+        <TouchableOpacity
+          key={issue.id}
+          style={styles.setLinkRow}
+          accessibilityRole="button"
+          accessibilityLabel={`Open ${issue.publication}, ${formatCorocoroIssueGroup(issue)} magazine binder`}
+          onPress={() => router.push({ pathname: '/corocoro', params: { issue: issue.id } })}
+        >
+          <Text style={styles.setLinkText}>
+            {issue.publication} · {formatCorocoroIssueGroup(issue)}
+          </Text>
+        </TouchableOpacity>
+      ))}
 
       {/* ===============================
           MARKET GUIDE (moved up)
@@ -688,6 +749,8 @@ export default function CardDetailScreen() {
           <PricingV2Summary
             cardId={card.id}
             language={card.language ?? (card as any).raw_data?.language ?? null}
+            variant={typeof params.variant === 'string' ? params.variant : undefined}
+            finish={typeof params.finish === 'string' ? params.finish : undefined}
             edition={editionHint}
             productType="raw_card"
           />
@@ -898,7 +961,7 @@ export default function CardDetailScreen() {
             isWishlisted ? styles.chaseButtonActive : styles.chaseButton,
           ]}
         >
-          <Image source={stackrIcons.chase} style={styles.chaseButtonIcon} resizeMode="contain" />
+          <StackrFunctionalIcon source={stackrIcons.chase} style={styles.chaseButtonIcon} resizeMode="contain" />
           <Text style={[styles.showcaseButtonText, isWishlisted && styles.chaseButtonActiveText]}>
             {isWishlisted ? 'Remove from Chase' : 'Add to Chase'}
           </Text>
@@ -1096,11 +1159,7 @@ function makeStyles(theme: any) {
     fontSize: 14,
   },
   heroCard: {
-    backgroundColor: 'transparent',
-    borderRadius: 22,
-    padding: 10,
-    marginBottom: 14,
-    alignItems: 'center',
+    alignSelf: 'center',
   },
   heroImageFrame: {
     width: '100%',

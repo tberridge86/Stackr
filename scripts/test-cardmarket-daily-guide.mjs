@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { Buffer } from 'node:buffer';
 import { createHash } from 'node:crypto';
 import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -32,14 +33,15 @@ const api = { rpc: async (name, args) => {
 } };
 const checkpoint = join(cache, 'apply-checkpoint.json');
 const applied = await applyCardmarketDailyGuide({ api, retained: conditional, mappingLedger: ledger, checkpointPath: checkpoint, exchangeRate: 0.85, exchangeRateAt: '2026-10-04T11:00:00Z', exchangeRateSource: 'ECB fixture', now: Date.parse('2026-10-04T12:00:00Z'), maxPages: 1 });
-assert.deepEqual(applied, { revisions: { products: 'products-revision', priceGuide: 'price_guide-revision' }, reviewedMappings: 1, stored: 1, repairs: 1, pages: 1, complete: true });
+assert.deepEqual(applied, { revisions: { products: 'products-revision', priceGuide: 'price_guide-revision' }, reviewedMappings: 1, stored: 1, repairs: 1, pages: 1, complete: true,
+  dailyReadiness: { provider: { sourceAt: guide.createdAt, state: 'fresh', ageHours: 12 }, quoteScope: 'printing_level_blended', fullCatalogueCurrent: false } });
 assert.equal(rpcCalls.filter(call => call.name === 'review_cardmarket_printing_mapping').length, 1);
 assert.equal(rpcCalls.find(call => call.name === 'claim_cardmarket_source_revision' && call.args.p_kind === 'price_guide').args.p_kind, 'price_guide');
 assert.equal(rpcCalls.find(call => call.name === 'store_cardmarket_blended_general_prices').args.p_results[0].selectedField, 'trend');
 await writeFile(checkpoint, JSON.stringify({ schemaVersion: 2, reviewedKeys: ['51:1'], afterProductId: 1, priceGuideSha256: 'a'.repeat(64) }));
 const revised = await applyCardmarketDailyGuide({ api, retained: conditional, mappingLedger: ledger, checkpointPath: checkpoint, exchangeRate: 0.85, exchangeRateAt: '2026-10-04T11:00:00Z', exchangeRateSource: 'ECB EUR fixture', now: Date.parse('2026-10-04T12:00:00Z'), maxPages: 1 });
 assert.equal(revised.stored, 1, 'a changed guide restarts the product cursor');
-assert.equal(rpcCalls.filter(call => call.name === 'review_cardmarket_printing_mapping').length, 1, 'a changed guide retains prior reviewed mapping acknowledgements');
+assert.equal(rpcCalls.filter(call => call.name === 'review_cardmarket_printing_mapping').length, 2, 'a legacy checkpoint re-verifies full reviewed identity once');
 assert.equal(JSON.parse(await readFile(checkpoint, 'utf8')).priceGuideSha256, conditional.manifest.feeds.priceGuide.sha256);
 const beforeRestartClaims = rpcCalls.filter(call => call.name === 'claim_cardmarket_public_feed').length;
 const restartApi = { rpc: async (name, args) => name === 'read_cardmarket_retained_feed_revision'
@@ -47,10 +49,50 @@ const restartApi = { rpc: async (name, args) => name === 'read_cardmarket_retain
 const restarted = await applyCardmarketDailyGuide({ api: restartApi, retained: conditional, mappingLedger: ledger, checkpointPath: join(cache, 'new-volume-checkpoint.json'), exchangeRate: 0.85, exchangeRateAt: '2026-10-04T11:00:00Z', exchangeRateSource: 'ECB fixture', now: Date.parse('2026-10-04T12:00:00Z'), maxPages: 1 });
 assert.equal(restarted.stored, 1);
 assert.equal(rpcCalls.filter(call => call.name === 'claim_cardmarket_public_feed').length, beforeRestartClaims, 'a new worker volume reuses already retained source revisions');
+// Same-guide mapping changes must apply even when their product is behind a
+// completed cursor. Retain revision receipts, re-acknowledge changed identity.
+const expandedGuide = { ...guide, priceGuides: [...guide.priceGuides, { idProduct: 2, idCategory: 51, trend: 18 }] };
+const expandedRetained = { ...conditional, feeds: { ...conditional.feeds, priceGuide: expandedGuide },
+  manifest: { ...conditional.manifest, feeds: { ...conditional.manifest.feeds,
+    priceGuide: { ...conditional.manifest.feeds.priceGuide, sha256: retainedResult('priceGuide', expandedGuide).sha256 } } } };
+const mappingCheckpoint = join(cache, 'same-guide-checkpoint.json');
+const applyExpanded = mappingLedger => applyCardmarketDailyGuide({ api, retained: expandedRetained, mappingLedger,
+  checkpointPath: mappingCheckpoint, exchangeRate: 0.85, exchangeRateAt: '2026-10-04T11:00:00Z', exchangeRateSource: 'ECB fixture', now: Date.parse('2026-10-04T12:00:00Z'), maxPages: 1 });
+await applyExpanded(ledger);
+assert.equal((await applyExpanded(ledger)).stored, 0, 'unchanged guide and reviewed identity remain a no-op');
+const newPrinting = '22222222-2222-4222-8222-222222222222';
+const extendedLedger = { ...ledger, mappings: [...ledger.mappings, { ...ledger.mappings[0], cardmarketProductId: 2,
+  printingId: newPrinting, reviewReference: 'CARDMARKET-REVIEW-002' }] };
+assert.equal((await applyExpanded(extendedLedger)).stored, 2, 'a newly reviewed product behind the cursor is priced from the same retained guide');
+assert.ok(rpcCalls.at(-1).args.p_results.some(row => row.printingId === newPrinting));
+const beforeCorrection = rpcCalls.filter(call => call.name === 'review_cardmarket_printing_mapping').length;
+const correctedLedger = { ...extendedLedger, mappings: extendedLedger.mappings.map(mapping => mapping.cardmarketProductId === 2
+  ? { ...mapping, catalogueVersionId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', reviewReference: 'CARDMARKET-REVIEW-003' } : mapping) };
+assert.equal((await applyExpanded(correctedLedger)).stored, 2);
+assert.equal(rpcCalls.filter(call => call.name === 'review_cardmarket_printing_mapping').length, beforeCorrection + 1,
+  'a reused product key cannot inherit acknowledgement for another reviewed identity');
+const productRevisionCheckpoint = JSON.parse(await readFile(mappingCheckpoint, 'utf8'));
+productRevisionCheckpoint.productsSha256 = 'f'.repeat(64); productRevisionCheckpoint.revisions.products = 'old-product-revision';
+await writeFile(mappingCheckpoint, JSON.stringify(productRevisionCheckpoint));
+assert.equal((await applyExpanded(correctedLedger)).revisions.products, 'products-revision', 'changed product content must resolve its own source revision');
+const tinyGuide = { ...expandedGuide, priceGuides: expandedGuide.priceGuides.map(row => row.idProduct === 2 ? { ...row, trend: 0.001 } : row) };
+const tinyRetained = { ...expandedRetained, feeds: { ...expandedRetained.feeds, priceGuide: tinyGuide },
+  manifest: { ...expandedRetained.manifest, feeds: { ...expandedRetained.manifest.feeds,
+    priceGuide: { ...expandedRetained.manifest.feeds.priceGuide, sha256: retainedResult('priceGuide', tinyGuide).sha256 } } } };
+const tiny = await applyCardmarketDailyGuide({ api, retained: tinyRetained, mappingLedger: correctedLedger,
+  checkpointPath: mappingCheckpoint, exchangeRate: 0.85, exchangeRateAt: '2026-10-04T11:00:00Z', exchangeRateSource: 'ECB fixture', now: Date.parse('2026-10-04T12:00:00Z'), maxPages: 1 });
+assert.equal(tiny.stored, 1);
+assert.equal(tiny.repairs, 1, 'a sub-cent quote is recorded as an explicit missing market value, rather than counted as a zero-price success');
+assert.ok(rpcCalls.some(call => call.name === 'queue_cardmarket_mapping_repairs'
+  && call.args.p_repairs.some(row => row.providerProductId === 2 && row.detail.reason === 'rounded_to_zero_gbp')));
 let midnightCalls = 0;
 await refreshCardmarketDailyFeeds({ cacheDir: cache, now: Date.parse('2026-10-05T13:01:00Z'), download: async kind => { midnightCalls++; return { kind, unchanged: true, etag: `"${kind}-etag-2"` }; } });
 assert.equal(midnightCalls, 2, 'yesterday\'s guide is rechecked hourly until today\'s guide arrives');
-await assert.rejects(() => applyCardmarketDailyGuide({ api, retained: conditional, mappingLedger: { ...ledger, mappings: [{ ...ledger.mappings[0], cardmarketProductId: 99 }] }, checkpointPath: checkpoint, exchangeRate: 0.85, exchangeRateAt: '2026-10-04T11:00:00Z', exchangeRateSource: 'ECB fixture' }), /absent from the retained product catalogue/);
+await assert.rejects(() => applyCardmarketDailyGuide({ api, retained: conditional, mappingLedger: { ...ledger, mappings: [{ ...ledger.mappings[0], cardmarketProductId: 99 }] }, checkpointPath: checkpoint, exchangeRate: 0.85, exchangeRateAt: '2026-10-04T11:00:00Z', exchangeRateSource: 'ECB fixture', now: Date.parse('2026-10-04T12:00:00Z') }), /absent from the retained product catalogue/);
+const beforeStaleCalls = rpcCalls.length;
+await assert.rejects(() => applyCardmarketDailyGuide({ api, retained: conditional, mappingLedger: ledger, checkpointPath: checkpoint,
+  exchangeRate: 0.85, exchangeRateAt: '2026-10-04T11:00:00Z', exchangeRateSource: 'ECB fixture', now: Date.parse('2026-10-07T12:00:00Z') }), /Daily price guide is stale/);
+assert.equal(rpcCalls.length, beforeStaleCalls, 'an expired retained guide must not write or advance its checkpoint');
 const candidateExport = await exportCardmarketReviewCandidates({ retained: conditional, api: { rpc: async (name) => {
   assert.equal(name, 'list_cardmarket_current_provenance_candidates');
   return { data: [{ provider_product_id: 1, printing_id: printing, language_code: 'en', catalogue_version_id: version, provenance: { externalIds: ['sv1-1'], variantIds: ['22222222-2222-4222-8222-222222222222'], finishCodes: ['normal', 'holo'] } }], error: null };
@@ -64,4 +106,79 @@ const materializedExport = await exportCardmarketReviewCandidates({ retained: co
 } } });
 assert.equal(materializedExport.candidates.length, 1, 'a completed immutable provenance run can drive review material');
 await assert.rejects(() => exportCardmarketReviewCandidates({ retained: conditional, provenanceRunId: 'bad', api }), /Invalid completed Cardmarket provenance run id/);
+
+// Provider traversal remains a 500-product page, but writes have a separate
+// 100-row database limit. The first half is reviewed/priced; the second half
+// deliberately has no mapping and produces repair rows in the same page.
+const bulkId = n => `30000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
+const bulkProducts = { version: 1, createdAt: products.createdAt, products: Array.from({ length: 500 }, (_, index) => ({
+  idProduct: index + 1, idCategory: 51, name: `Bulk ${index + 1}`,
+})) };
+const bulkGuide = { version: 1, createdAt: guide.createdAt, priceGuides: Array.from({ length: 250 }, (_, index) => ({
+  idProduct: index + 1, idCategory: 51, trend: index + 1, avg30: null, avg: null,
+})) };
+const bulkProductsRetention = retainedResult('products', bulkProducts);
+const bulkGuideRetention = retainedResult('priceGuide', bulkGuide);
+const bulkRetained = {
+  ...conditional,
+  feeds: { products: bulkProducts, priceGuide: bulkGuide },
+  manifest: { ...conditional.manifest, feeds: {
+    products: { ...conditional.manifest.feeds.products, sha256: bulkProductsRetention.sha256 },
+    priceGuide: { ...conditional.manifest.feeds.priceGuide, sha256: bulkGuideRetention.sha256 },
+  } },
+};
+const bulkLedger = { schemaVersion: 1, mappings: Array.from({ length: 250 }, (_, index) => ({
+  cardmarketProductId: index + 1, cardmarketCategoryId: 51, printingId: bulkId(index + 1), catalogueVersionId: version,
+  method: 'reviewed_exact', languageEvidence: { source: 'bulk language review' }, variantEvidence: { source: 'bulk printing review' },
+  finishEvidence: { source: 'bulk public-guide scope' }, reviewReference: `CARDMARKET-BULK-${index + 1}`,
+})) };
+function bulkApi({ failRepairBatch = null, failPriceBatch = null } = {}) {
+  const observed = { repairBatches: [], priceBatches: [] };
+  let repairCalls = 0; let priceCalls = 0;
+  const timeout = Object.assign(new Error('secret-bearing database URL'), { code: '57014' });
+  return { observed, api: { rpc: async (name, args) => {
+    if (name === 'read_cardmarket_retained_feed_revision') return { data: `${args.p_kind}-revision`, error: null };
+    if (name === 'review_cardmarket_printing_mapping') return { data: true, error: null };
+    if (name === 'queue_cardmarket_mapping_repairs') {
+      repairCalls += 1; observed.repairBatches.push(args.p_repairs);
+      if (repairCalls === failRepairBatch) return { data: null, error: timeout };
+      return { data: args.p_repairs.length, error: null };
+    }
+    if (name === 'store_cardmarket_blended_general_prices') {
+      priceCalls += 1; observed.priceBatches.push(args.p_results);
+      if (priceCalls === failPriceBatch) throw timeout;
+      return { data: args.p_results.length, error: null };
+    }
+    throw Error(`Unexpected RPC ${name}`);
+  } } };
+}
+const applyBulk = (api, checkpointPath) => applyCardmarketDailyGuide({
+  api, retained: bulkRetained, mappingLedger: bulkLedger, checkpointPath,
+  exchangeRate: 0.85, exchangeRateAt: '2026-10-04T11:00:00Z', exchangeRateSource: 'ECB fixture',
+  now: Date.parse('2026-10-04T12:00:00Z'), maxPages: 1,
+});
+const successfulBulk = bulkApi();
+const successfulCheckpoint = join(cache, 'bulk-success-checkpoint.json');
+const bulkApplied = await applyBulk(successfulBulk.api, successfulCheckpoint);
+assert.equal(bulkApplied.stored, 250); assert.equal(bulkApplied.repairs, 250); assert.equal(bulkApplied.pages, 1);
+assert.deepEqual(successfulBulk.observed.repairBatches.map(batch => batch.length), [100, 100, 50]);
+assert.deepEqual(successfulBulk.observed.priceBatches.map(batch => batch.length), [100, 100, 50]);
+assert.equal(new Set(successfulBulk.observed.repairBatches.flat().map(row => row.providerProductId)).size, 250, 'all repairs remain present across batches');
+assert.equal(new Set(successfulBulk.observed.priceBatches.flat().map(row => row.providerProductId)).size, 250, 'all prices remain present across batches');
+
+const repairFailureCheckpoint = join(cache, 'bulk-repair-failure-checkpoint.json');
+const repairFailure = bulkApi({ failRepairBatch: 2 });
+await assert.rejects(() => applyBulk(repairFailure.api, repairFailureCheckpoint), error => /Cardmarket repair batch failed: statement_timeout/.test(error.message) && !error.message.includes('secret-bearing'));
+assert.deepEqual(repairFailure.observed.repairBatches.map(batch => batch.length), [100, 100]);
+assert.equal(JSON.parse(await readFile(repairFailureCheckpoint, 'utf8')).afterProductId, 0, 'a failed repair page cannot advance its checkpoint');
+const repairRetry = bulkApi(); await applyBulk(repairRetry.api, repairFailureCheckpoint);
+assert.deepEqual(repairRetry.observed.repairBatches.map(batch => batch.length), [100, 100, 50], 'a later invocation retries the complete uncheckpointed page');
+
+const priceFailureCheckpoint = join(cache, 'bulk-price-failure-checkpoint.json');
+const priceFailure = bulkApi({ failPriceBatch: 2 });
+await assert.rejects(() => applyBulk(priceFailure.api, priceFailureCheckpoint), error => /Cardmarket price batch failed: statement_timeout/.test(error.message) && !error.message.includes('secret-bearing'));
+assert.deepEqual(priceFailure.observed.priceBatches.map(batch => batch.length), [100, 100]);
+assert.equal(JSON.parse(await readFile(priceFailureCheckpoint, 'utf8')).afterProductId, 0, 'a failed price page cannot advance its checkpoint');
+const priceRetry = bulkApi(); await applyBulk(priceRetry.api, priceFailureCheckpoint);
+assert.deepEqual(priceRetry.observed.priceBatches.map(batch => batch.length), [100, 100, 50], 'a later invocation retries the complete uncheckpointed page');
 console.log('Cardmarket daily retention uses daily/ETag guards and applies only reviewed, printing-scoped blended estimates with resumable checkpoints.');

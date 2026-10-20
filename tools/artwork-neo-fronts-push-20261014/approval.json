@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 25,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "approved_at": "2026-10-14",
+  "cohort_sha256": "5501a15103bd50e314ca3a1e3ec17401296975527241eec1ae95122eeba722df",
+  "owner_instructions": [
+    "gather batch EN-CARDS-001 - hey Tif can you take over and process these artworks in their batvhes until we are complete - as you do them make sure they all livwe in production",
+    "using your internet sourcs you can queue it for the production push - we dont need to review",
+    "continue your work flow please - i want to set you loose to work through this Tif can you manage this?"
+  ],
+  "scope": "Store, resize and display exactly 25 inspected Japanese Neo1 originals and 75 derivatives. Preserve canonical aliases, current native labels, 20 normal and 5 holo metadata bindings and staging-only catalogue version difference. Printed National Dex numbers are separate from catalogue aliases. No native-name corrections, inferred copyright year, physical edition/foil certification, independent vendor licence or source-wide activation. Existing immutable set logo/symbol assets and links remain.",
+  "source_counts": {
+    "scrydex": 25
+  }
+}

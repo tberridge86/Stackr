@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 1,
+  "variants": 1,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "physical_finish_verified": false,
+  "physical_edition_verified": false,
+  "cohort_sha256": "fe3d4dbd3597ade317b904c2cbc2be41914c728bddaa16b540ec0141b415ca3c",
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "321fe74ede47c10e6e2e8cb0c2ac573a8e9e50032184f5bb847483df60b3ffeb",
+    "finiteDecisionFileByteSha256": "0f7687c975c7e9657fdf151ee8ace4aed4fd293c86b4f6b1b1e9054408a91e80",
+    "sourceHandoffFileByteSha256": "a8194bb0c24792fb8798e5d3ccbbbc5afef1b52be5fcefd2a52f9559dfb462c8",
+    "independentSourceReviewFileByteSha256": "fd182fccd5173f601d44153e82589c5439c02f1101f05af4c41978380ce6b198",
+    "fourSourceCheckpointFileByteSha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "80be1f9e32ac1a8b9a183a1baa25110882c73a0c1c71e68ce1d99adddc849bdc",
+    "independentPrivatePackageReviewSha256": "cf274aadf4bb04fff9862582770e0d92d786d8bae0237a050f5ef49dd3fcfece",
+    "rootPrivatePackageValidationSha256": "51035ed2a16cc814428a28b735cd4c81134471076d5276ab0f5b16c190328a54",
+    "rootSourceArchiveBindingSha256": "b2111030a001c01be19efb30a14a944dcf1c341b08408665c855dbfc80f1d879",
+    "rootUploadReceiptSha256": "739c8614fc8081fc85db0189afa819def3b4bcfb8112dbebcd8932bba1a6b552"
+  },
+  "production_source_changes_allowed": 0,
+  "scope": "Exactly one Japanese PCG9ウパーδ-デルタ種005/068 shared printing front for the current sole default normal variant. Preserve currentウーパー（デルタ種）label, HP40Grassたね, full actualJapaneseドわすれ/しっぽでたたく costs, damage, target and timing, TomokazuKomiya/footer and all four corners. Native-provider translated names are not verbatim printed Japanese. Retain unresolved physical-edition hold; shared front eligibility does not authenticate edition, unlimited status, finish or material. Original1103x1520 bytes remain unchanged; standard detail720x992 below1000-long-edge means app large should use original. Preserve existing PCG9setlogo/link, canonical metadata and all four full17 sources with microsecond timestamps; production only1asset1link11to13, stage temporaryPrice fixture5to8to5; no production source creation or policy changes."
+}

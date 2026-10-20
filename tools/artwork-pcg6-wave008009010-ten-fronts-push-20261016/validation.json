@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 2,
+  "status": "LOCAL_GUARDS_AND_PRIVATE_QUEUE_PASS_PENDING_INDEPENDENT_PUBLISHER_REVIEW",
+  "fronts": 10,
+  "variants": 10,
+  "rootPublisherContextSha256": "43aaa7135dc8e626ce262bdd8349cd7ea2ab564242ae3ea557c8927f2193c687",
+  "planSha256": "16b6947b206476eaa7c86763eed0607681c2daa291aaa569429e7a4387ae4a0f",
+  "approvalSha256": "2a6487868b48beb43c0c1889986df9a7333c335b968b658166e9658027149f4c",
+  "transactionFixtures": {
+    "production": [
+      47,
+      67
+    ],
+    "staging": [
+      41,
+      62,
+      41
+    ],
+    "actualFullSnapshotsUsed": true,
+    "all68SourceFieldsAndMicrosecondsImmutable": true,
+    "logo2172x724AndLinkUnchanged": true,
+    "productionSourceCreation": 0
+  },
+  "tests": {
+    "publisher": 68,
+    "downloaderSafety": 6,
+    "journalIntegration": 1,
+    "sourceValidatorV1PermutationsRejected": 110,
+    "nestedRootOrder": 5,
+    "nestedWitnessCopies": 45,
+    "wrongSHA": 20,
+    "recomputedSHA": 10,
+    "validParseClone": 20,
+    "validCrossRealm": 20,
+    "publisherNineCopiesAndCombined": 100,
+    "publisherNestedWitnessCopies": 45,
+    "publisherRootOrder": 10,
+    "publisherWrongStoredSHA": 30,
+    "publisherRecomputedSHA": 10,
+    "publisherParseCloneCrossRealm": 30,
+    "queueJointMutations": 440,
+    "queueRawAuthorityMutations": 70,
+    "queueRootPacketMutations": 10,
+    "queueCLIAuthority": 4
+  },
+  "privateV2ValidatorFileSha256": "8d234aae1a181aa47da915f71d3091ffed8237f56295b5cf298daa341157c479",
+  "externalValidatorBindingFileSha256": "e5ea926d9fc6ef91bfcf94b998800ce2a6d1f659c2a373982344f9b4722c9a35",
+  "unchangedZIPAloneInsufficient": true,
+  "app": {
+    "defaultExplicitPositive": 20,
+    "crossPrintingRejectedPermissionNegative": 20,
+    "detailRoles": 10,
+    "sourceHDCanvasSignals": 4,
+    "detailHDCanvasSignals": 3,
+    "noHandsetClaim": true
+  },
+  "images": {
+    "objects": 40,
+    "originals": 10,
+    "standardDerivatives": 30,
+    "fullPillowSharpRGBA": 40,
+    "exactRegeneration": 30,
+    "originalByteChanges": 0,
+    "pixelChanges": 0,
+    "enlargement": false
+  },
+  "queuePrivateOnly": {
+    "prior1250Preserved": true,
+    "expected1260": true,
+    "new10": true,
+    "unselectedInventoryRows2934Unchanged": true,
+    "interceptedWrites": 4,
+    "actualSharedWrites": 0
+  },
+  "finiteEnergy": {
+    "aliases": [
+      "085",
+      "086"
+    ],
+    "v3Only": true,
+    "globalWaiver": false,
+    "printedEnergyNativeTrainerCanonicalCategoryNull": true,
+    "completePokemonExRestriction": true
+  },
+  "sourceAndAssetVariantNull": true,
+  "sourceAuthorFlagsRemainFalse": true,
+  "otherOperationalHolds": 50,
+  "rawHistoricalHolds": 52,
+  "recordedNullsDefaultsAndLabelsPreserved": true,
+  "preservedPriorPublisherFiles": 440,
+  "unchangedDependencies": 11,
+  "logoMainFilesPreserved": 45,
+  "sourceRequests": 0,
+  "databaseRequests": 0,
+  "gitMutations": 0,
+  "uploads": 0,
+  "sharedWrites": 0,
+  "livePublicationVerified": false,
+  "actualConfiguredAPI10Manifest40Bytes20Positive20NegativeStillRootRequired": true,
+  "logoPreservation": {
+    "rawGitBlobs": 45,
+    "materializedExactCheckoutFiles": 4,
+    "absentTrackedSkipWorktreeFilesPreserved": 41,
+    "sparseCheckoutNotChanged": true
+  },
+  "workflowCheck": "STATIC_CONTRACT_PASS_YAML_PARSER_UNAVAILABLE_NO_INSTALL"
+}

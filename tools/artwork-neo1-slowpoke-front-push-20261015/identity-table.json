@@ -1,0 +1,23 @@
+[
+  {
+    "printing_id": "494725ee-70bf-41d3-a6b7-2a7bb6180287",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "045",
+    "card_native_name": "slowpoke",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "72c0e00c-e174-4ecd-a672-2864a586af82"
+    ],
+    "batch_id": "JP-CARDS-004",
+    "source_code": "pokellector",
+    "provider_id": "pokellector-image-url-sha256:c440501050afdccbc520cba0c0b5057137d71948aac242a0558d5896d9c137cb",
+    "image_url": "https://den-cards.pokellector.com/324/Slowpoke.NEO1.45.38564.png",
+    "original_sha256": "2d1170c7cac4753e519f9fe69c5179aee284f2d01be5c12f4d49af1a44e498eb",
+    "original_width": 570,
+    "original_height": 797,
+    "body_sha256": "5fbaf91ab72801e60622fa40fcbfec346a703c8c1609ae4e5d47975ef83ab75a",
+    "evidence_sha256": "6e0137832c16b0dcb351aed5d277535f00672a667eb31a4bf5732f7bcf72b7f3"
+  }
+]

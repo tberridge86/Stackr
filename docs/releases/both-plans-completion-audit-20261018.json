@@ -1,0 +1,2461 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-19T07:09:36.733Z",
+  "ownerRequest": "Ensure BOTH plans have satisfied the work listed before TestFlight.",
+  "sourceHeadAudited": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
+  "branch": "codex/stackr-repair-consolidation-20261018",
+  "runtimeAndNativeCandidate": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
+  "backendSource": "f9350f896375ffac84a22ca2f7a4ec7654538091",
+  "gatewayVersion": "56f04b7f-0692-4d8f-a9ae-0963442e57b8",
+  "verdict": {
+    "videoPlanSatisfiedInFull": false,
+    "consolidationPlanSatisfiedInFull": false,
+    "nativeExecutionHeld": true,
+    "phoneClosedIssues": 0,
+    "relevantSourceRepairEntriesMerged": 15,
+    "videoIssues": 23,
+    "rootsReversiblyRelocated": 38,
+    "permanentDeletionPerformed": false,
+    "reclaimedBytes": 0
+  },
+  "method": "Reconcile each original requirement with current issue state, committed repair ancestry, named source existence, independently reviewed delivery/preservation receipts and bounded original-folder metadata. No new live API/SQL, provider refresh, job, deployment, build, submission, move or deletion.",
+  "video": [
+    {
+      "id": "V01",
+      "owner": "stackr_coding",
+      "issue": "Home card image and verified name missing",
+      "requiredResolution": "Trace the exact Home printing; restore accepted image and verified name while preserving native identity.",
+      "acceptance": "Correct exact-printing Home tile renders.",
+      "state": "home_progressive_facts_repair_reviewed_unsigned_phone_pending",
+      "relevantSourceRepairMerged": false,
+      "nativePublished": false,
+      "phoneAccepted": false,
+      "satisfiedInFull": false,
+      "remaining": "Exact affected printing/subsurface and installed Home rendering remain unconfirmed. Verify the same eventual Varoom tile, account isolation and retry on the approved native candidate.",
+      "repairCommit": "d0f9e74aa099a4805383d1fabb4b5e6f91e59cdb",
+      "sourceFiles": [
+        "features/home/HubScreen.tsx",
+        "components/HomeCommandCenter.tsx"
+      ],
+      "checks": [
+        "scripts/test-home-startup-runtime.ts",
+        "scripts/test-home-collector-sections.ts"
+      ],
+      "confirmedCauseOrSourceGap": "Owner confirms the same blank tile eventually becomes Varoom. The Home chase path waited for optional artwork hydration and combined prices/artwork before publishing card facts; details now publish progressively, with independent optional updates. This confirms a source dependency, not the exact video printing.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "additionalSecurityRepair": "Raw/late401/403/JWT permission denials clear retained private cards and selections, invalidate pending work and preserve the actual response status; review finding HOME-DENIAL-01 resolved with regressions."
+    },
+    {
+      "id": "V02",
+      "owner": "stackr_pricing",
+      "issue": "Partial Home valuation and unavailable duplicate prices",
+      "requiredResolution": "Separate unavailable, stale, unresolved and failed stored reads; preserve exact price evidence and quantities.",
+      "acceptance": "Owned totals reconcile with labelled price coverage.",
+      "state": "live_quote_coverage_and_timeout_cause_open",
+      "relevantSourceRepairMerged": false,
+      "nativePublished": false,
+      "phoneAccepted": false,
+      "satisfiedInFull": false,
+      "remaining": "One saved worker timeout occurred in optional coverage reporting and later saved reports recovered; the SQL performance cause for every historical timeout remains unconfirmed. Exact owned-card quote coverage/freshness and phone evidence remain unverified. No price refresh or job restart performed.",
+      "repairCommit": null,
+      "sourceFiles": [],
+      "checks": [],
+      "confirmedCauseOrSourceGap": "Missing quotes and retrieval failures remain distinct. Saved worker evidence identifies one historical optional coverage-report RPC timeout after durable sweep checkpoints; five later reports in that saved window succeeded. Exact owner quote coverage and the causes of other historical timeouts remain unproved.",
+      "currentDelivery": {
+        "implemented": false,
+        "tested": false,
+        "independentlyReviewed": false,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "additionalSourceRepair": {
+        "revision": "d59c3a6e6f48fbb106866ed9e51edd2e0486a0b9",
+        "files": [
+          "lib/collectionPricingState.ts",
+          "scripts/test-collection-pricing-state.ts"
+        ],
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "scope": "Truthful missing/unknown/stale freshness and partial-coverage labels; no live quote retrieval or refresh proof."
+      },
+      "responseIdentityRepair": {
+        "repairCommit": "d70a222ac548ba6c7830163e94897fdc7e0cda6d",
+        "sourceFiles": [
+          "lib/collectionPricingApi.ts",
+          "scripts/test-collection-pricing-api.ts",
+          "scripts/test-binder-pricing.ts",
+          "scripts/test-collection-price-backpressure.mjs"
+        ],
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "nativePublished": false,
+        "deviceVerified": false,
+        "receipt": "docs/releases/collection-pricing-response-identity-20261019.json",
+        "scope": "Reject mismatched/missing stored-response variant/product/currency without inventing values; exact owner coverage remains unverified."
+      },
+      "savedWorkerEvidenceClarification": {
+        "report": {
+          "privatePath": "evidence/consolidation-20261018/remaining-pricing-cause-20261019/report.md",
+          "sha256": "b57c08415ae78f368ab9aff96bfadf47aaf22d0bf37f98078116fc741fb44840"
+        },
+        "optionalDiagnosticTimeoutIsNotAllPricingFailure": true,
+        "exactOwnedCoverageProven": false,
+        "newRemoteCalls": 0
+      }
+    },
+    {
+      "id": "V03",
+      "owner": "stackr_pricing",
+      "issue": "Market cards and last-refresh metadata unavailable",
+      "requiredResolution": "Distinguish absent refresh metadata from failed retrieval and expose read recovery.",
+      "acceptance": "Real status/freshness and retry work without implicit provider refresh.",
+      "state": "merged_native_publication_and_phone_acceptance_pending",
+      "relevantSourceRepairMerged": true,
+      "nativePublished": false,
+      "phoneAccepted": false,
+      "satisfiedInFull": false,
+      "remaining": "Real provider-refresh metadata is absent from this response; installed-phone acceptance pending.",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "sourceFiles": [
+        "app/value-history.tsx",
+        "lib/valueHistoryRead.ts"
+      ],
+      "checks": [
+        "scripts/test-value-history-recovery.ts"
+      ],
+      "confirmedCauseOrSourceGap": "The screen repeated market reads and conflated missing observations/refresh metadata. It now reads one bounded stored sample, exposes Retry and labels provider freshness unavailable.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
+    },
+    {
+      "id": "V04",
+      "owner": "stackr_pricing",
+      "issue": "General-market movers unavailable",
+      "requiredResolution": "Read comparable stored observations; retain explicit insufficient-history states.",
+      "acceptance": "Eligible movers display or a verified history gap is explained.",
+      "state": "merged_native_publication_and_phone_acceptance_pending",
+      "relevantSourceRepairMerged": true,
+      "nativePublished": false,
+      "phoneAccepted": false,
+      "satisfiedInFull": false,
+      "remaining": "Eligible stored observations and phone results must be verified; one observation never establishes a mover.",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "sourceFiles": [
+        "app/value-history.tsx",
+        "lib/valueHistoryRead.ts"
+      ],
+      "checks": [
+        "scripts/test-value-history-recovery.ts"
+      ],
+      "confirmedCauseOrSourceGap": "Same-day paired observations were discarded and optional previews delayed facts. Preserve exact paired estimates and reject conflicting variant comparisons.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
+    },
+    {
+      "id": "V05",
+      "owner": "stackr_pricing",
+      "issue": "Collection movers remains loading",
+      "requiredResolution": "Bound account-scoped retrieval and reject stale account/request callbacks.",
+      "acceptance": "Populated, empty, insufficient-history and retryable error states settle.",
+      "state": "merged_native_publication_and_phone_acceptance_pending",
+      "relevantSourceRepairMerged": true,
+      "nativePublished": false,
+      "phoneAccepted": false,
+      "satisfiedInFull": false,
+      "remaining": "Prepared aggregate history does not establish individual collection movers; live and phone evidence pending.",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "sourceFiles": [
+        "app/value-history.tsx",
+        "lib/valueHistoryRead.ts"
+      ],
+      "checks": [
+        "scripts/test-value-history-recovery.ts"
+      ],
+      "confirmedCauseOrSourceGap": "Unbounded per-binder/per-card history fan-out could leave collection movers loading. The lane now settles independently with bounded recovery and honest absence of per-card history.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
+    },
+    {
+      "id": "V06",
+      "owner": "stackr_pricing",
+      "issue": "Collection-history chart remains loading",
+      "requiredResolution": "Use existing comparable prepared collection trend; recover separately from current valuation.",
+      "acceptance": "Real scoped points render with range changes, errors and account isolation tested.",
+      "state": "merged_native_publication_and_phone_acceptance_pending",
+      "relevantSourceRepairMerged": true,
+      "nativePublished": false,
+      "phoneAccepted": false,
+      "satisfiedInFull": false,
+      "remaining": "Prepared-route configuration and live scope remain unverified. Saved observations are explicitly not a fresh holdings check; phone ranges/plot/haptics pending.",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "sourceFiles": [
+        "app/value-history.tsx",
+        "lib/valueHistoryRead.ts"
+      ],
+      "checks": [
+        "scripts/test-value-history-recovery.ts"
+      ],
+      "confirmedCauseOrSourceGap": "The former path discarded genuine aggregate history. Use validated prepared trends and owner-bound Home v4 saved observations, with range support, saved provenance and account-generation guards.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
+    },
+    {
+      "id": "V07",
+      "owner": "stackr_performance",
+      "issue": "Binder total/progress unavailable",
+      "requiredResolution": "Recover canonical totals independently of optional imagery/prices; preserve standard/master denominators.",
+      "acceptance": "Correct totals and owned quantities survive navigation.",
+      "state": "merged_native_publication_and_phone_acceptance_pending",
+      "relevantSourceRepairMerged": true,
+      "nativePublished": false,
+      "phoneAccepted": false,
+      "satisfiedInFull": false,
+      "remaining": "Installed standard/master denominators and navigation acceptance pending.",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "sourceFiles": [
+        "app/(tabs)/binder.tsx"
+      ],
+      "checks": [
+        "scripts/test-binder-library-value-recovery.ts",
+        "scripts/test-binder-library-progress-runtime.ts"
+      ],
+      "confirmedCauseOrSourceGap": "Legacy set codes were looked up only as canonical IDs and verified enriched totals were unused. Added exact language-scoped source-ID lookup and proven metadata fallback.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
+    },
+    {
+      "id": "V08",
+      "owner": "stackr_pricing",
+      "issue": "Binder prices unavailable despite owned cards",
+      "requiredResolution": "Read exact stored quote coverage and justified subtotals independently of facts.",
+      "acceptance": "Supported values render with honest remaining-unpriced coverage.",
+      "state": "merged_native_publication_and_phone_acceptance_pending",
+      "relevantSourceRepairMerged": true,
+      "nativePublished": false,
+      "phoneAccepted": false,
+      "satisfiedInFull": false,
+      "remaining": "Actual provider quotes/freshness remain incomplete; old-account queued work is bounded by query cancellation/deadline; phone evidence pending.",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "sourceFiles": [
+        "app/(tabs)/binder.tsx"
+      ],
+      "checks": [
+        "scripts/test-binder-library-value-recovery.ts",
+        "scripts/test-binder-library-progress-runtime.ts"
+      ],
+      "confirmedCauseOrSourceGap": "Price request failures were reduced to no-quote summaries. Added truthful errors, retained transient values, any-denial cache clearing and query-owned cancellation; overlapping shared loads no longer erase valid values.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
+    },
+    {
+      "id": "V09",
+      "owner": "root",
+      "issue": "Binder opening remains on loader",
+      "requiredResolution": "Separate required auth/content reads from optional custom art and saved-preview imagery.",
+      "acceptance": "Repeated open, cancellation, bounded failure and retry pass on installed build.",
+      "state": "merged_native_publication_and_phone_acceptance_pending",
+      "relevantSourceRepairMerged": true,
+      "nativePublished": false,
+      "phoneAccepted": false,
+      "satisfiedInFull": false,
+      "remaining": "Stored-source reopening regressions pass and public facts have both success and timeout observations. Both bounded diagnostic sets completed without a confirmed timeout cause; repeated installed-binder journeys remain required.",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "sourceFiles": [
+        "features/binder/BinderDetailScreen.tsx"
+      ],
+      "checks": [
+        "scripts/test-binder-reopen.mjs"
+      ],
+      "confirmedCauseOrSourceGap": "Saved content waited on live reads and optional name artwork could block usable facts. Show guarded saved previews and hydrate imagery independently; optional names no longer block facts.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
+    },
+    {
+      "id": "V10",
+      "owner": "root",
+      "issue": "Saved binder cannot confirm live ownership",
+      "requiredResolution": "Keep owner-scoped saved facts and separate successful ownership confirmation from image recovery.",
+      "acceptance": "Live owner check succeeds where available; failed verification stays read-only.",
+      "state": "merged_native_publication_and_phone_acceptance_pending",
+      "relevantSourceRepairMerged": true,
+      "nativePublished": false,
+      "phoneAccepted": false,
+      "satisfiedInFull": false,
+      "remaining": "Successful live ownership confirmation on the installed account is not established by fixtures.",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "sourceFiles": [
+        "features/binder/BinderDetailScreen.tsx"
+      ],
+      "checks": [
+        "scripts/test-binder-reopen.mjs"
+      ],
+      "confirmedCauseOrSourceGap": "Saved display readiness is independent of live ownership confirmation. Existing mutation guards are preserved and ownership remains explicit.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
+    },
+    {
+      "id": "V11",
+      "owner": "root",
+      "issue": "Saved preview says another collector",
+      "requiredResolution": "Use separate saved, pending, confirmed foreign-owner and explicit read-only wording.",
+      "acceptance": "Labels are correct and mutation/account guards remain intact.",
+      "state": "merged_native_publication_and_phone_acceptance_pending",
+      "relevantSourceRepairMerged": true,
+      "nativePublished": false,
+      "phoneAccepted": false,
+      "satisfiedInFull": false,
+      "remaining": "Own/shared/forced-read-only phone acceptance pending.",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "sourceFiles": [
+        "features/binder/BinderDetailScreen.tsx"
+      ],
+      "checks": [
+        "scripts/test-binder-reopen.mjs"
+      ],
+      "confirmedCauseOrSourceGap": "All read-only states shared foreign-owner wording. Distinguish saved, pending ownership, verified foreign ownership and explicit read-only views.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
+    },
+    {
+      "id": "V12",
+      "owner": "root",
+      "issue": "Storm cards have No image alongside facts",
+      "requiredResolution": "Start exact-artwork recovery for saved previews; distinguish missing URI, metadata and decode failures.",
+      "acceptance": "Correct images render for declared exact-printing sample; unresolved sources explicit.",
+      "state": "merged_native_publication_and_phone_acceptance_pending",
+      "relevantSourceRepairMerged": true,
+      "nativePublished": false,
+      "phoneAccepted": false,
+      "satisfiedInFull": false,
+      "remaining": "All113captured M6preferred shared printing-face image URLs now return200with exact hashes/bytes/dimensions and decode successfully. Captured client replay113inspectable/0manifestrequests remains distinct. Historical whole-set manifest504 cause and installed-phone acceptance remain open.",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "sourceFiles": [
+        "features/binder/BinderDetailScreen.tsx",
+        "lib/stackrDomainAdapter.ts"
+      ],
+      "checks": [
+        "scripts/test-saved-binder-artwork-recovery.ts",
+        "scripts/test-preferred-set-artwork.ts",
+        "scripts/test-binder-reopen.mjs",
+        "docs/releases/gateway-live-delivery-20261018.json (bounded public read; not phone acceptance)",
+        "docs/releases/storm-image-delivery-20261018.json (113fresh file responses; not phone rendering)"
+      ],
+      "confirmedCauseOrSourceGap": "Serialized saved views lost the WeakMap fact handle, so actual image recovery made zero requests. Recover complete public facts per exact set/language and prove printing/version/number/finish; use whole-set image pagination even for saved subsets.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "additionalSourceRepair": {
+        "revision": "d59c3a6e6f48fbb106866ed9e51edd2e0486a0b9",
+        "files": [
+          "lib/binders.ts",
+          "lib/stackrDomainAdapter.ts",
+          "scripts/test-saved-binder-artwork-recovery.ts"
+        ],
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "scope": "Full-resolution/provenance merge, live subset full-population pagination, non-sliding metadataTTL;113captured preferred references replay correctly."
+      },
+      "warmArtworkReassignmentRepair": {
+        "sourceRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "unsignedIosVerified": true,
+        "merged": false,
+        "nativePublished": false,
+        "phoneVerified": false,
+        "scope": "Fresh positive exact reassignment invalidates stale cached artwork; does not supply missing source images or identify the video printing."
+      },
+      "fullCapturedImageDelivery": {
+        "document": "docs/releases/storm-image-delivery-20261018.json",
+        "requests": 113,
+        "verifiedFiles": 113,
+        "sourceApiCapturedEarlier": true,
+        "phoneVerified": false
+      }
+    },
+    {
+      "id": "V13",
+      "owner": "stackr_pricing",
+      "issue": "Some stored estimates explicitly stale",
+      "requiredResolution": "Preserve stale status/provider identity and prepare the existing approved refresh path.",
+      "acceptance": "Eligible fresh evidence replaces stale only after authorised live processing.",
+      "state": "live_quote_coverage_and_timeout_cause_open",
+      "relevantSourceRepairMerged": false,
+      "nativePublished": false,
+      "phoneAccepted": false,
+      "satisfiedInFull": false,
+      "remaining": "One saved worker timeout occurred in optional coverage reporting and later saved reports recovered; the SQL performance cause for every historical timeout remains unconfirmed. Exact owned-card quote coverage/freshness and phone evidence remain unverified. No price refresh or job restart performed.",
+      "repairCommit": null,
+      "sourceFiles": [],
+      "checks": [],
+      "confirmedCauseOrSourceGap": "Stale estimates remain labelled until fresh exact provider evidence exists. One saved worker timeout is specifically an optional coverage-report RPC after durable work, followed by five successful report reads in that window; it does not prove an ongoing pricing outage or complete owner coverage.",
+      "currentDelivery": {
+        "implemented": false,
+        "tested": false,
+        "independentlyReviewed": false,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "additionalSourceRepair": {
+        "revision": "d59c3a6e6f48fbb106866ed9e51edd2e0486a0b9",
+        "files": [
+          "lib/collectionPricingState.ts",
+          "scripts/test-collection-pricing-state.ts"
+        ],
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "scope": "Truthful missing/unknown/stale freshness and partial-coverage labels; no live quote retrieval or refresh proof."
+      },
+      "responseIdentityRepair": {
+        "repairCommit": "d70a222ac548ba6c7830163e94897fdc7e0cda6d",
+        "sourceFiles": [
+          "lib/collectionPricingApi.ts",
+          "scripts/test-collection-pricing-api.ts",
+          "scripts/test-binder-pricing.ts",
+          "scripts/test-collection-price-backpressure.mjs"
+        ],
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "nativePublished": false,
+        "deviceVerified": false,
+        "receipt": "docs/releases/collection-pricing-response-identity-20261019.json",
+        "scope": "Reject mismatched/missing stored-response variant/product/currency without inventing values; exact owner coverage remains unverified."
+      },
+      "savedWorkerEvidenceClarification": {
+        "report": {
+          "privatePath": "evidence/consolidation-20261018/remaining-pricing-cause-20261019/report.md",
+          "sha256": "b57c08415ae78f368ab9aff96bfadf47aaf22d0bf37f98078116fc741fb44840"
+        },
+        "optionalDiagnosticTimeoutIsNotAllPricingFailure": true,
+        "exactOwnedCoverageProven": false,
+        "newRemoteCalls": 0
+      }
+    },
+    {
+      "id": "V14",
+      "owner": "stackr_artwork",
+      "issue": "Japanese-only Storm logo selected instead of supplied English-lettered logo",
+      "requiredResolution": "Bind exact owner-supplied M6 PNG from remaining-98 pack without modifying original pixels; preserve previous asset.",
+      "acceptance": "Resolver, exported/signed bytes and installed app display the selected original.",
+      "state": "api_artwork_verified_native_phone_acceptance_pending",
+      "relevantSourceRepairMerged": true,
+      "nativePublished": false,
+      "phoneAccepted": false,
+      "satisfiedInFull": false,
+      "remaining": "Exact M6 logo and bytes are verified through normal per-set API URLs after cache expiry. Signed native delivery and actual Discover/binder phone rendering remain open.",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "sourceFiles": [
+        "lib/japaneseSetLogos.ts",
+        "assets/rev2/11-japanese-set-logo/storm-m6-owner-supplied-20261018.json",
+        "catalogue/rights-reviews/stackr-m6-owner-supplied-set-logo.2026-10-18.json",
+        "scripts/prepare-reviewed-set-logo-catalogue-publication.mjs",
+        "scripts/prepare-storm-m6-catalogue-link-20261018.mjs",
+        "scripts/test-prepare-storm-m6-catalogue-link-20261018.mjs"
+      ],
+      "checks": [
+        "scripts/test-japanese-set-logo-runtime-lookup.ts",
+        "scripts/test-audit-japanese-set-logo-runtime-coverage.ts",
+        "docs/releases/ios-export-asset-verification-20261018.json",
+        "npm run test:storm-logo-publication: 13 passed including isolated PostgreSQL publish/rollback and rejection guards",
+        "Exact frozen candidate v2 independently reviewed; production commit receipt contains one M6 asset and one published membership",
+        "docs/releases/gateway-live-delivery-20261018.json (bounded public read; not phone acceptance)"
+      ],
+      "confirmedCauseOrSourceGap": "Supplied English-lettered source was present in the public logo library, but the r7 production canonical mapping was null. The old native source selection also preferred a Japanese-only bundled logo.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false,
+        "catalogueArtworkPublished": true,
+        "apiArtworkVerified": true
+      }
+    },
+    {
+      "id": "V15",
+      "owner": "stackr_artwork",
+      "issue": "Newest Traditional Chinese rows show generic logos",
+      "requiredResolution": "Reconcile exact TC identities with approved sources and diagnose manifest delivery; reject borrowed EN/JA artwork.",
+      "acceptance": "Each declared TC row renders exact verified logo on device.",
+      "state": "merged_native_publication_and_phone_acceptance_pending",
+      "relevantSourceRepairMerged": true,
+      "nativePublished": false,
+      "phoneAccepted": false,
+      "satisfiedInFull": false,
+      "remaining": "The current 83 published zh-tw set IDs are reconciled: 42 bundled marks and 47 approved public artwork metadata rows overlap on six IDs; all 47 public hashes match the named supplied manifest. Three existing image bodies matched and decoded; 44 were not fetched. No additional missing approved supplied mapping is demonstrated. This does not establish 83 standalone logos or HD originals: 35 bundled marks are generated derivatives, and public artwork includes packages and representatives with limited SKU scope. The exact video-row cohort remains unidentified. V15 stays open for configured-app delivery, exact signed bytes, Discover/set/binder rendering and Wi-Fi/mobile-data, cold, saved/offline and retry acceptance; TestFlight remains held.",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "sourceFiles": [
+        "lib/traditionalChineseSetLogos.ts",
+        "lib/localSetArtwork.ts",
+        "assets/rev2/12-traditional-chinese-set-logo/owner-supplied-three-pack-art-20261018.json"
+      ],
+      "checks": [
+        "scripts/test-traditional-chinese-hires-logos.ts",
+        "scripts/test-official-english-set-logo-runtime-lookup.cjs",
+        "docs/releases/ios-export-asset-verification-20261018.json"
+      ],
+      "confirmedCauseOrSourceGap": "Newest SV9/SV9a/SV10 entries lacked selected artwork. Verified supplied native pack art is available as product artwork fallback, with strict Traditional Chinese identity; it is not relabelled a standalone logo.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "current83SetSourceReconciliation": {
+        "privatePath": "evidence/consolidation-20261018/traditional-chinese-remaining-reconciliation-20261019/handoff.json",
+        "sha256": "1bfa99caee4d4a5dad1e5e0d62b5ed7165c765e3972856d5fcb128f3e34b440c",
+        "sourceReconciliationCompleteForDeclared83": true,
+        "exactVideoRowsIdentified": false,
+        "newRuntimeRepairDemonstrated": false,
+        "phoneClosed": false,
+        "independentReview": {
+          "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/traditional-chinese-v15-reconciliation-review-20261019/review.json",
+          "sha256": "ff9c29106f299ddec0738c3eebc66799245261bbf40fdbfda51f1ddfdb8cac7c"
+        },
+        "actualDecodedBodies": 3,
+        "publicBodiesNotFetched": 44,
+        "generatedDerivativeMarks": 35
+      }
+    },
+    {
+      "id": "V16",
+      "owner": "stackr_artwork",
+      "issue": "November2023CoroCoro issue has no cover",
+      "requiredResolution": "Verify exact regular monthly edition source and acquisition/display evidence before binding.",
+      "acceptance": "Correct exact-edition cover renders or named source/rights blocker remains.",
+      "state": "reviewed_source_and_unsigned_export_verified_native_and_phone_pending",
+      "relevantSourceRepairMerged": false,
+      "nativePublished": false,
+      "phoneAccepted": false,
+      "satisfiedInFull": false,
+      "remaining": "Exact bytes passed current unsigned iOS export. Signed app and installed-phone rendering remain pending; TestFlight stays held.",
+      "repairCommit": "f047a5f577126502767e88cdf6d491c467914fcc",
+      "sourceFiles": [
+        "components/CorocoroIssueCover.tsx",
+        "lib/corocoroSuppliedCovers.ts",
+        "lib/magazineSetCoverAssets.ts",
+        "lib/magazineSetCovers.ts",
+        "assets/magazine-covers/2023-11-corocoro-regular.jpg",
+        "catalogue/rights-reviews/corocoro-november-2023-owner-directed.2026-10-18.json"
+      ],
+      "checks": [
+        "scripts/test-corocoro-mobile-delivery.ts",
+        "scripts/test-corocoro-screen-runtime.ts",
+        "scripts/test-magazine-set-covers.ts",
+        "scripts/test-magazine-set-cover-pack.mjs",
+        "docs/releases/remaining-repairs-verification-20261018.json"
+      ],
+      "confirmedCauseOrSourceGap": "Exact regular issue and direct owner source permission verified. The released publisher original is now bundled for the existing monthly:2023-11 record; no combined-edition or card association inferred.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
+    },
+    {
+      "id": "V17",
+      "owner": "stackr_performance",
+      "issue": "Wartortle waits then returns16partial cards",
+      "requiredResolution": "Keep facts progressive, preserve canonical failure and retry pagination without false completeness.",
+      "acceptance": "Declared complete population or actionable partial recovery verified.",
+      "state": "current_canonical_pagination_and_replay_verified_phone_completeness_open",
+      "relevantSourceRepairMerged": false,
+      "nativePublished": false,
+      "phoneAccepted": false,
+      "satisfiedInFull": false,
+      "remaining": "Declared broader species population and exact installed-build continuation remain unverified. Preserve useful progress/error/Retry; do not treat16first-page count as proven fallback or full inventory.",
+      "repairCommit": null,
+      "sourceFiles": [
+        "lib/pokedexCollection.ts",
+        "app/pokemon/[id].tsx"
+      ],
+      "checks": [
+        "scripts/test-pokedex-partial-results.ts",
+        "scripts/test-pokedex-loading.ts",
+        "Bounded current API:2facts pages,42distinctprintings,nullfinalcursor; exact current-module replay16/incomplete to42/complete",
+        "docs/releases/gateway-live-delivery-20261018.json (bounded public read; not phone acceptance)"
+      ],
+      "confirmedCauseOrSourceGap": "Current first canonical page returns16cards WITH a continuation cursor; the next page completes42distinct printings across4published language versions. Current-module replay correctly emits16 incomplete then42 complete, so this sample does not demonstrate a pagination source defect or establish the historical installed-build cause.",
+      "currentDelivery": {
+        "implemented": false,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
+    },
+    {
+      "id": "V18",
+      "owner": "stackr_performance",
+      "issue": "Pokédex ownership remains loading",
+      "requiredResolution": "Treat private ownership independently from factual-card count.",
+      "acceptance": "Owner-specific success/error/retry settles without false zero ownership.",
+      "state": "existing_boundary_checks_passed",
+      "relevantSourceRepairMerged": false,
+      "nativePublished": false,
+      "phoneAccepted": false,
+      "satisfiedInFull": false,
+      "remaining": "Installed ownership success/failure/Retry independently of catalogue loading remains pending.",
+      "repairCommit": null,
+      "sourceFiles": [
+        "app/pokemon/[id].tsx"
+      ],
+      "checks": [
+        "scripts/test-pokedex-account-boundary.ts"
+      ],
+      "confirmedCauseOrSourceGap": "Ownership remains an independent account-scoped request. No source cause specific to the recorded ownership delay is established.",
+      "currentDelivery": {
+        "implemented": false,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
+    },
+    {
+      "id": "V19",
+      "owner": "stackr_performance",
+      "issue": "Pokédex pictures arrive after facts",
+      "requiredResolution": "Verify bounded exact-artwork hydration and preserve useful facts while images decode.",
+      "acceptance": "Declared image sample decodes with honest persistent failure recovery.",
+      "state": "scoped_image_delivery_verified_two_exact_source_identity_gaps",
+      "relevantSourceRepairMerged": false,
+      "nativePublished": false,
+      "phoneAccepted": false,
+      "satisfiedInFull": false,
+      "remaining": "Resolve exact JAweb1#024 approved source and verify ENbase1#42normal artwork/identity before mapping. Full42imagepopulation, installed rendering and historical delay remain unverified.",
+      "repairCommit": null,
+      "sourceFiles": [],
+      "checks": [
+        "docs/releases/gateway-live-delivery-20261018.json (bounded public read; not phone acceptance)"
+      ],
+      "confirmedCauseOrSourceGap": "A complete manifest for the first16current Wartortle printings provides14eligiblepresentationcandidates; two selected thumbnails decode and match hashes. JAweb1#024 is acquisition-required with no returned scoped asset; ENbase1#42normal points to first-edition artwork rejected by the edition guard. These gaps are distinct from historical transport delay.",
+      "currentDelivery": {
+        "implemented": false,
+        "tested": true,
+        "independentlyReviewed": false,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      },
+      "warmArtworkReassignmentRepair": {
+        "sourceRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "unsignedIosVerified": true,
+        "merged": false,
+        "nativePublished": false,
+        "phoneVerified": false,
+        "scope": "Fresh positive exact reassignment invalidates stale cached artwork; does not supply missing source images or identify the video printing."
+      }
+    },
+    {
+      "id": "V20",
+      "owner": "stackr_performance",
+      "issue": "Partial Pokédex fallback can omit Retry",
+      "requiredResolution": "Propagate canonical failure through existing PokedexCardsProgress.error while retaining partial cards.",
+      "acceptance": "Actual screen Retry recovers and clears error; stale account/query replies rejected.",
+      "state": "merged_native_publication_and_phone_acceptance_pending",
+      "relevantSourceRepairMerged": true,
+      "nativePublished": false,
+      "phoneAccepted": false,
+      "satisfiedInFull": false,
+      "remaining": "Actual recording fallback path was not established; physical canonical recovery/completeness pending.",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "sourceFiles": [
+        "lib/pokedexCollection.ts"
+      ],
+      "checks": [
+        "scripts/test-pokedex-partial-results.ts"
+      ],
+      "confirmedCauseOrSourceGap": "Canonical fallback dropped the existing progress.error field. Retained cards now preserve the canonical error so existing Retry appears; success clears it.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
+    },
+    {
+      "id": "V21",
+      "owner": "stackr_performance",
+      "issue": "Pikachu card search fails while sets/listings return",
+      "requiredResolution": "Keep independent useful groups and trace failed current factual-card read.",
+      "acceptance": "Current-query cards and explicit Retry recover correctly.",
+      "state": "current_public_factual_search_verified_phone_recovery_open",
+      "relevantSourceRepairMerged": false,
+      "nativePublished": false,
+      "phoneAccepted": false,
+      "satisfiedInFull": false,
+      "remaining": "Current public fact reads succeed, but historical installed query failure/current-query Retry and optional image delivery still require phone acceptance.",
+      "repairCommit": null,
+      "sourceFiles": [
+        "lib/searchRecovery.ts"
+      ],
+      "checks": [
+        "scripts/test-search-recovery.ts",
+        "scripts/test-search-settlement-runtime.ts",
+        "Fresh configured API search:100all-language and16Japanese Pikachu factualcards HTTP200; no embedded variant images",
+        "docs/releases/gateway-live-delivery-20261018.json (bounded public read; not phone acceptance)"
+      ],
+      "confirmedCauseOrSourceGap": "Independent search groups and factual-card failures remain separate. Current-query retries and settled/superseded callback guards have regression coverage; the live recorded request cause is not proved.",
+      "currentDelivery": {
+        "implemented": false,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": false,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
+    },
+    {
+      "id": "V22",
+      "owner": "stackr_performance",
+      "issue": "Search reports Cards100 while showing load failure",
+      "requiredResolution": "Preserve retained-result versus refreshed-result wording; clear factual error only after current factual success.",
+      "acceptance": "Failure/partial/success labels and superseded callback guards pass.",
+      "state": "merged_native_publication_and_phone_acceptance_pending",
+      "relevantSourceRepairMerged": true,
+      "nativePublished": false,
+      "phoneAccepted": false,
+      "satisfiedInFull": false,
+      "remaining": "Delivered-screen retained/fresh/error transitions and rapid searches remain pending.",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "sourceFiles": [
+        "lib/searchRecovery.ts"
+      ],
+      "checks": [
+        "scripts/test-search-recovery.ts",
+        "scripts/test-search-settlement-runtime.ts"
+      ],
+      "confirmedCauseOrSourceGap": "Retained cards retained initial-load failure wording. Recovery now preserves refresh-versus-load wording without clearing errors before current factual success.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false
+      }
+    },
+    {
+      "id": "V23",
+      "owner": "stackr_artwork",
+      "issue": "Search cards and listing media show placeholders",
+      "requiredResolution": "Separate exact card artwork from listing-media mapping and transport/decode failures.",
+      "acceptance": "Available thumbnails render without blocking facts; real gaps explicit.",
+      "state": "gateway_deployed_listing_media_source_repaired_native_and_phone_open",
+      "relevantSourceRepairMerged": true,
+      "nativePublished": false,
+      "phoneAccepted": false,
+      "satisfiedInFull": false,
+      "remaining": "The historical public95-printing batch returned105assets in557ms;98/100 resolver rows were eligible and one exact thumbnail was decoded in that capture. Structured listing-media selection is now repaired and locally reviewed. Exact recorded listing identity, live media delivery, remaining exact Pikachu artwork, native publication and phone journeys remain open.",
+      "repairCommit": "66156ca9893e8767a4e594173f63accae015354e",
+      "sourceFiles": [
+        "lib/stackrDomainAdapter.ts",
+        "scripts/test-search-artwork-batching.ts",
+        "scripts/test-progressive-card-search.mjs"
+      ],
+      "checks": [
+        "Actual source RED100singleton calls→GREEN1batch",
+        "Focused identity/pagination/partial/cancellation/concurrent-query guards PASS",
+        "Root typecheck/lint and six recovery scripts PASS",
+        "Independent source review PASS",
+        "Unsigned production iOS export with four exact assets PASS",
+        "Historical pre-deployment 95-printing batch503 retained. Later bounded public point returned105assets/557ms; no sustained or phone/p95 claim.",
+        "docs/releases/gateway-live-delivery-20261018.json (bounded public read; not phone acceptance)"
+      ],
+      "confirmedCauseOrSourceGap": "Confirmed pre-repair source image fan-out: 100 cards triggered 100 singleton manifest requests under the existing two-second optional deadline. Before the gateway deployment, the same 95-printing batch returned 503 downstream_circuit_open; its preceding trigger remains unknown. After the reviewed batch/circuit repairs, one bounded public sample returned 105 assets in 557ms. Historical listing-media cause, installed path and sustained reliability remain unconfirmed.",
+      "currentDelivery": {
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "merged": true,
+        "deployed": false,
+        "nativePublished": false,
+        "deviceVerified": false,
+        "gatewayDeployed": true,
+        "publicBatchVerified": true
+      },
+      "warmArtworkReassignmentRepair": {
+        "sourceRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
+        "implemented": true,
+        "tested": true,
+        "independentlyReviewed": true,
+        "unsignedIosVerified": true,
+        "merged": false,
+        "nativePublished": false,
+        "phoneVerified": false,
+        "scope": "Fresh positive exact reassignment invalidates stale cached artwork; does not supply missing source images or identify the video printing."
+      },
+      "additionalCatalogueFinding": {
+        "id": "AR-JUNGLE60-EXACT-REBIND",
+        "state": "owner_approved_production_committed_configured_app_image_verified_phone_open",
+        "evidence": "docs/releases/jungle-association-diagnostics-20261018.json",
+        "liveWrite": true,
+        "normalGapDisclosed": true,
+        "normalAliasAbsentNarrativeSuperseded": true,
+        "stagingExecution": "docs/releases/jungle-staging-rehearsal-20261018.json",
+        "productionWrite": true,
+        "productionFirstEditionVisibilityNotEstablishedByStaging": true,
+        "phoneVerified": false,
+        "historicalStateBeforeOwnerProductionApproval": "approved_staging_rollback_rehearsal_passed_production_repair_still_unapproved",
+        "productionFirstEditionVisibilityVerified": true,
+        "productionExecution": "docs/releases/jungle-production-image-correction-20261018.json"
+      },
+      "additionalListingMediaRepair": {
+        "recordedAt": "2026-10-18T21:35:01.645Z",
+        "issueId": "V23",
+        "sourceRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+        "sourceGapConfirmed": true,
+        "recordedListingIdentityConfirmed": false,
+        "change": "Search requests structured listing media and seller image fields. Valid available thumbnails use the existing official/legacy preference followed by seller front/labelled media/back. One compatibility retry is limited to an exact missing media-column error and a current request generation.",
+        "sourceFiles": [
+          "app/(tabs)/search.tsx",
+          "lib/listingSearchMedia.ts",
+          "lib/marketplacePresentation.ts"
+        ],
+        "safeguards": [
+          "Unchanged trade/active/product predicates,18-row limit and RLS/client path",
+          "No compatibility retry on permissions, timeouts, unrelated schema errors or superseded/account-invalidated queries",
+          "HTTPS-only validated image candidates; malformed or unavailable media stays explicit",
+          "No changes to listing publication, prices, quantities or private collection data"
+        ],
+        "validation": {
+          "newListingMediaRegression": "PASS",
+          "actualProgressiveSearch": "PASS",
+          "actualSearchCoordinatorSettlement": "PASS",
+          "searchRecovery": "PASS",
+          "typecheck": "PASS",
+          "lint": {
+            "errors": 0,
+            "existingWarnings": 8
+          },
+          "independentReview": {
+            "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/listing-search-media-source-review-v1-bounded-completion-review.json",
+            "sha256": "8e5d36613500c5686e2b95489f6137053770d7bfb6e005d8e541dffebe0fc2b5"
+          },
+          "sevenFileSourceBundle": {
+            "privatePath": "evidence/consolidation-20261018/listing-search-media-source-v1/source-pins.json",
+            "sha256": "39bd10a15d0f32ef9d139f379cbef74b549556e334507cdae650f4450d58c717"
+          },
+          "actualMapperBeforeAndAfter": {
+            "privatePath": "evidence/consolidation-20261018/listing-search-media-source-v1/actual-mapper-before-after.json",
+            "sha256": "cd497b6176327e55fe1221224a017fead6fec23312fd73ce875755f3961de25e"
+          },
+          "unsignedIos": {
+            "exportedSource": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
+            "runtimeRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+            "preservedIconCommits": [
+              "4fd177443d1e2f0a12e296728293d113c6a81f25",
+              "c85fa68f4e6dc7d62b290a76df59bd24d05446b3"
+            ],
+            "bundle": {
+              "path": "_expo/static/js/ios/entry-42dd80153c3289eb216419c5ede080c9.hbc",
+              "sha256": "c5e4e3f99c8f04e0508368b2c2d58453e5137f09bac49f133c489d1a840f6541",
+              "bytes": 11804174
+            },
+            "exactUniqueAssetsVerified": 74,
+            "listingMediaHelpersPackaged": true,
+            "iconComponentHelpersPackaged": true,
+            "exactSvgPathsPackaged": 44,
+            "receipt": {
+              "privatePath": "evidence/consolidation-20261018/combined-icons-ios-export-v1/asset-verification.json",
+              "sha256": "7b6754daa17475758abba077cc3a0423ccf9e5cbf75803bfbefc3ec1ae085b49"
+            },
+            "nativeSigned": false,
+            "uploaded": false,
+            "submitted": false,
+            "published": false,
+            "phoneVerified": false,
+            "testFlightHeld": true
+          },
+          "hostedSourceChecks": {
+            "checkedAt": "2026-10-18T21:49:28.020Z",
+            "sourceHead": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
+            "succeeded": 10,
+            "failed": 0,
+            "pending": 0,
+            "skipped": [
+              "release-candidate-gate",
+              "canary-api-evidence"
+            ],
+            "evidence": {
+              "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-4e1cdf7.json",
+              "sha256": "9fb65f14b076e4fd7e5967948b5fc16b2cd1d31b2ff6661b70858160e0a2c1fc"
+            },
+            "scope": "Exact pushed source snapshot. Subsequent documentation commits need their own hosted status; skipped release/canary gates do not prove delivery or phone acceptance."
+          },
+          "previousUnsignedIosBeforeIconIntegration": {
+            "exportedSource": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
+            "runtimeRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+            "bundle": {
+              "path": "_expo/static/js/ios/entry-41e9e4fdecdc123f827f005aec05eb9e.hbc",
+              "sha256": "c279c5ea4c6b4f1ebab3a927f6b0bbd015908338908126910ddd6d365fbdb06a",
+              "bytes": 11798374
+            },
+            "exactUniqueAssetsVerified": 74,
+            "listingMediaHelpersPackaged": true,
+            "receipt": {
+              "privatePath": "evidence/consolidation-20261018/listing-search-media-source-v1/ios-export-asset-verification.json",
+              "sha256": "05e8008e52fe45fa329564434be000a2325bcef4860ba691dab5ccefccb4b878"
+            },
+            "nativeSigned": false,
+            "uploaded": false,
+            "submitted": false,
+            "published": false,
+            "phoneVerified": false,
+            "testFlightHeld": true
+          }
+        },
+        "delivery": {
+          "implemented": true,
+          "tested": true,
+          "independentlyReviewed": true,
+          "merged": false,
+          "nativePublished": false,
+          "phoneVerified": false,
+          "unsignedCurrentRevisionExportPending": false,
+          "unsignedIosVerified": true
+        },
+        "testFlightHeld": true
+      }
+    }
+  ],
+  "additionalAcceptance": [
+    {
+      "id": "A01",
+      "requirement": "Both March 1999 CoroCoro references, associations and complete opening/replay",
+      "owner": "stackr_coding",
+      "satisfiedInFull": false,
+      "remaining": "Existing interaction regressions pass; both exact linked references and full installed replay still need acceptance."
+    },
+    {
+      "id": "A02",
+      "requirement": "Final Pikachu exact printing, full-resolution inspection, transitions and tactile haptics",
+      "owner": "stackr_artwork / stackr_coding",
+      "satisfiedInFull": false,
+      "remaining": "Source interaction checks do not prove the exact final printing, delivered full-resolution response or physical haptics."
+    },
+    {
+      "id": "A03",
+      "requirement": "Standard/master binder presentation and totals after navigation",
+      "owner": "stackr_coding",
+      "satisfiedInFull": false,
+      "remaining": "Denominator recovery is tested. Verify actual standard/master populations; 76 slots versus 113 entries is not itself corruption."
+    },
+    {
+      "id": "A04",
+      "requirement": "Preserve populated Home, English/Japanese Discover, visible Storm artwork, CoroCoro navigation and eventual Pikachu images",
+      "owner": "stackr_coding",
+      "satisfiedInFull": false,
+      "remaining": "Relevant source regressions and bounded public points pass; replay every positive behaviour on the installed candidate."
+    },
+    {
+      "id": "A05",
+      "requirement": "Offline recovery, cancellation, account switching, pagination and partial failures",
+      "owner": "stackr_coding / stackr_pokedex / stackr_search",
+      "satisfiedInFull": false,
+      "remaining": "Focused source fixtures cover several boundaries; physical account/network and cancellation journeys remain open."
+    },
+    {
+      "id": "A06",
+      "requirement": "Repeat recorded journeys on confirmed iPhone build over Wi-Fi and mobile data",
+      "owner": "Tif / release owner",
+      "satisfiedInFull": false,
+      "remaining": "Owner reports installed build 59; recording number is unconfirmed. No new native app or installed-candidate journey evidence."
+    },
+    {
+      "id": "A07",
+      "requirement": "Preserve existing performance bars and sample sizes",
+      "owner": "stackr_performance",
+      "satisfiedInFull": false,
+      "remaining": "No actual render p95 cohort. Latest general target: warm under 1 second, initially cold under 2 seconds, at least 100 observations per journey/cache condition including debounce. Retain stricter binder-specific memory <=100ms, persisted <=200ms p95 and every warm complete network sample <=500ms where applicable."
+    },
+    {
+      "id": "A08",
+      "requirement": "Every issue has owner, confirmed cause or explicit unknown, repair commit/checks, delivery identity and phone evidence",
+      "owner": "Tif",
+      "satisfiedInFull": false,
+      "remaining": "All23 have owners and explicit states/unknowns; source/delivery receipts exist where applicable. Missing repairs and phone evidence remain missing; they are not replaced with invented commits or closure."
+    },
+    {
+      "id": "A09",
+      "requirement": "Promised artwork visible through configured API or concrete blockers disclosed before TestFlight",
+      "owner": "stackr_artwork",
+      "satisfiedInFull": false,
+      "remaining": "Exact Storm logo API is verified. All 74 distinct promised assets passed the unsigned iOS export from 4e5715f; signed-app bytes, configured-API visibility for all promised batches and phone acceptance remain pending. The earlier tracked artwork backlog of 970, 43 held researched originals and four exact sampled card-art gaps remain disclosed; the whole batch has not been reverified."
+    }
+  ],
+  "consolidation": [
+    {
+      "id": "W01",
+      "requirement": "One independent coding repository and requested integration branch",
+      "state": "satisfied_for_current_coding_home",
+      "satisfiedInFull": true,
+      "remaining": "D:/Stackr has independent Git objects/dependencies on codex/stackr-repair-consolidation-20261018. Historical archives are recovery material; they have not all been merged into the app.",
+      "owner": "Tif"
+    },
+    {
+      "id": "W02",
+      "requirement": "Coordinate exclusive specialist ownership and independent review",
+      "state": "satisfied_for_changes_completed_so_far",
+      "satisfiedInFull": true,
+      "remaining": "Named ownership and independent runtime, identity/account, live gateway and preservation reviews are recorded. Future substantial changes still require review.",
+      "owner": "Tif"
+    },
+    {
+      "id": "W03",
+      "requirement": "Preserve commits, working/staged/untracked changes before retiring checkouts",
+      "state": "partially_satisfied",
+      "satisfiedInFull": false,
+      "remaining": "104 distinct heads from 111 registered worktrees restored/protected; 18 working snapshots verified. This does not prove all remaining roots or ignored material are preserved.",
+      "owner": "Tif"
+    },
+    {
+      "id": "W04",
+      "requirement": "Preserve necessary ignored data, assets, models and evidence and verify restoration",
+      "state": "partially_satisfied",
+      "satisfiedInFull": false,
+      "remaining": "7760 ignored evidence files separately preserved; artwork, secure recovery, release packets and native/export cohorts restored. Remaining large data/model/capture/ignored cohorts require classification, consumer mapping and proof.",
+      "owner": "Tif / stackr_coding"
+    },
+    {
+      "id": "W05",
+      "requirement": "Consolidate under D:/Stackr-organization with reversible recovery",
+      "state": "partially_satisfied",
+      "satisfiedInFull": false,
+      "remaining": "47 verified reversible relocations with preservation/restoration proof; actual inverse moves were rehearsed where recorded. The three artwork roots have copy/restoration and rollback evidence, not a recorded physical inverse-move rehearsal. Further original roots remain; relocation retains bytes and is not reclamation.",
+      "owner": "Tif"
+    },
+    {
+      "id": "W06",
+      "requirement": "Account for every folder in the original owner list",
+      "state": "all60_accounted_one_owner_excluded_unrelated",
+      "satisfiedInFull": true,
+      "remaining": "Folder accounting is complete: 47 verified relocations, 11 retained old roots, one organization destination and one owner-excluded unrelated folder, D:/CodexLogoWork. Stackr-relevant denominator is 59; consolidation of retained work remains incomplete.",
+      "owner": "Tif",
+      "evidence": {
+        "privatePath": "evidence/consolidation-20261018/owner-scope-correction-codexlogowork/owner-scope-reply.json",
+        "sha256": "454b9490c612e2f26a68f9032182d26d87f74a288d4a4bb2bfc205301b6ea4d9"
+      }
+    },
+    {
+      "id": "W07",
+      "requirement": "Repair dependent runtime, Git, launch and restore paths",
+      "state": "partially_satisfied",
+      "satisfiedInFull": false,
+      "remaining": "Seven dependency junctions repaired and prior entries kept. One pre-existing Wrangler target absent; Python/model/data consumers, nested worktrees and old dependency roots remain held. A separate exact Chinese-marks alias now reaches the same retained D:/Stackr-1 installation directly; its original junction object and failed/successful histories remain preserved separately.",
+      "owner": "stackr_coding"
+    },
+    {
+      "id": "W08",
+      "requirement": "Retire remaining old coding checkouts without losing work",
+      "state": "incomplete",
+      "satisfiedInFull": false,
+      "remaining": "Several dirty/dependency checkouts remain. Preserved historical WIP is available for selective recovery; no evidence justifies blindly overlaying it on current source.",
+      "owner": "Tif"
+    },
+    {
+      "id": "W09",
+      "requirement": "Migrate original shared D:/Stackr-1 last",
+      "state": "held_until_dependencies_and_preservation_complete",
+      "satisfiedInFull": false,
+      "remaining": "Original remains the chat workspace, common Git, data/model and nested-path dependency. The EAS CLI has independent preserved/restored copies verified locally; historical release helpers still need an exact new path binding before future publishing. Remaining preservation and dependent runtime/restore paths are open.",
+      "owner": "Tif"
+    },
+    {
+      "id": "W10",
+      "requirement": "Reclaim proven duplicates/reproducible caches from exact approved deletion list",
+      "state": "not_done",
+      "satisfiedInFull": false,
+      "remaining": "No permanent deletion or disk-space reclamation. No final exact deletion list has been approved; prepare one only for proven candidates after restoration/reproducibility evidence.",
+      "owner": "Tif"
+    },
+    {
+      "id": "W11",
+      "requirement": "Maintain a clear current map and restart record",
+      "state": "current_map_accounts_for_owner_scope_correction",
+      "satisfiedInFull": true,
+      "remaining": "Current map accounts for all 60 listed paths, including the owner-excluded unrelated folder. Earlier unresolved-location evidence remains historical; no deleted or preserved contents are inferred.",
+      "owner": "Tif"
+    }
+  ],
+  "sourceChecks": [
+    {
+      "issue": "V03",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "ancestorOfNativeCandidate": true
+    },
+    {
+      "issue": "V04",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "ancestorOfNativeCandidate": true
+    },
+    {
+      "issue": "V05",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "ancestorOfNativeCandidate": true
+    },
+    {
+      "issue": "V06",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "ancestorOfNativeCandidate": true
+    },
+    {
+      "issue": "V07",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "ancestorOfNativeCandidate": true
+    },
+    {
+      "issue": "V08",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "ancestorOfNativeCandidate": true
+    },
+    {
+      "issue": "V09",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "ancestorOfNativeCandidate": true
+    },
+    {
+      "issue": "V10",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "ancestorOfNativeCandidate": true
+    },
+    {
+      "issue": "V11",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "ancestorOfNativeCandidate": true
+    },
+    {
+      "issue": "V12",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "ancestorOfNativeCandidate": true
+    },
+    {
+      "issue": "V14",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "ancestorOfNativeCandidate": true
+    },
+    {
+      "issue": "V15",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "ancestorOfNativeCandidate": true
+    },
+    {
+      "issue": "V20",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "ancestorOfNativeCandidate": true
+    },
+    {
+      "issue": "V22",
+      "repairCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+      "ancestorOfNativeCandidate": true
+    },
+    {
+      "issue": "V23",
+      "repairCommit": "66156ca9893e8767a4e594173f63accae015354e",
+      "ancestorOfNativeCandidate": true
+    }
+  ],
+  "evidence": [
+    {
+      "path": "docs/releases/video-repair-register-20261018.json",
+      "sha256": "4f7f5f984ffc93227a23914b34fcc34b87d7d915fd042f9f397f6f9fe5b945ca"
+    },
+    {
+      "path": "docs/releases/workspace-preservation-20261018.json",
+      "sha256": "8d18a437a07a07a3ecb39656db3915dcf02a844e6e372267f1e7aab7f2b7643b"
+    },
+    {
+      "path": "docs/releases/gateway-live-delivery-20261018.json",
+      "sha256": "5dcfe1da1b88b2d39948894b4ad502e263f1f76ed5e861a067f89d4b31e093bc"
+    },
+    {
+      "path": "docs/releases/native-release-candidate-20261018.json",
+      "sha256": "80bc6c96d6ccde9749c3357b62e7287f26d1123f24002ce2073f2a331c4e0ebf"
+    },
+    {
+      "path": "docs/releases/phone-build59-reference-20261018.json",
+      "sha256": "931ddaf9f4f184539e4caf48c39fbf957ae93dfc07473fd69466af6c7d28c4f5"
+    },
+    {
+      "path": "docs/releases/public-retrieval-verification-20261018.json",
+      "sha256": "c99d1e68c8e63345b03e9ae5309208286f7d36759125a56caf71826ee867669a"
+    },
+    {
+      "path": "docs/releases/search-artwork-batching-20261018.json",
+      "sha256": "5beb0a751e1f585363621f3162291b10eb56b910d07f3457bb850367b9a2eda5"
+    },
+    {
+      "path": "docs/releases/storm-m6-publication-20261018.json",
+      "sha256": "1030c611c36f6b6f14a62f2175fc9eec3526f1ace4f625133011042032812552"
+    },
+    {
+      "path": "docs/releases/ios-export-asset-verification-20261018.json",
+      "sha256": "0189baf980c82642a1aec091c9c0b383e1316b8491178f8cd499988cdf044520"
+    },
+    {
+      "path": "docs/retrieval-performance-contract.md",
+      "sha256": "c668acbe7181a9743d5ec1039a3ea6e238beaf108982270fea30199676459a69"
+    }
+  ],
+  "performance": {
+    "general": {
+      "warmP95MsStrictlyBelow": 1000,
+      "initialColdP95MsStrictlyBelow": 2000,
+      "observationsPerJourneyCacheConditionAtLeast": 100,
+      "start": "Actual user action including debounce",
+      "measured": false
+    },
+    "binder": {
+      "warmMemoryP95MsAtMost": 100,
+      "persistedReopenP95MsAtMost": 200,
+      "everyRepeatedWarmCompleteNetworkReadMsAtMost": 500,
+      "measured": false
+    }
+  },
+  "nextWorkOrder": [
+    "Finish the original-folder coverage reconciliation and current handoff corrections; preserve ambiguous paths as unresolved.",
+    "Prioritise exact card/binder retrieval and ownership gaps, then approved exact artwork/logo delivery, then supported prices/history; record the exact account/identity/source or authority needed for blocked work.",
+    "Continue dependency-aware preservation and consolidation. Reconcile valuable unique work against current source before selectively integrating any needed changes; retained snapshots alone do not prove integration. Migrate the original shared repository last. Prepare an exact proven cleanup list before requesting its approval.",
+    "Keep TestFlight held while the owner completion condition remains unsatisfied. Existing approval persists and is not new SQL, pricing or deletion authority.",
+    "When the owner condition is resolved, fresh existing delivery gates and signed verification of all 74 distinct promised assets are still required for that exact native build. Installed Wi-Fi/mobile journeys and performance cohorts remain separate acceptance."
+  ],
+  "limitations": [
+    "This audits both specified plans, not every feature in broader production-readiness briefs.",
+    "Previous immutable receipts are rechecked by hash; whole large trees and every image are not rescanned or fetched.",
+    "A relevant source repair is not full resolution of an issue; a public point success is not sustained reliability or phone rendering.",
+    "The original phone/account data and exact historical failure path are not reconstructed from fixture or public records.",
+    "Performance targets are retained, not newly demonstrated or relaxed."
+  ],
+  "independentReview": {
+    "privatePath": "evidence/consolidation-20261018/completion-audit-20261018/independent-review.json",
+    "sha256": "714099dd3456675f74e4ae5e8df9427349e4a71d15ad76985db1743667499d52"
+  },
+  "originalFolderCoverage": {
+    "privatePath": "evidence/consolidation-20261018/edge-reviewed-forward-replay-20261019/current-owner-folder-placement.json",
+    "sha256": "1bbab46f8f43353d5a4cbcbfc08dfd5cb4e0edecf35081e5d02334b384b8cc85"
+  },
+  "originalFolderCounts": {
+    "relocatedWithRecordedProof": 47,
+    "retainedDependencyDataOrUnfinishedWork": 11,
+    "existingOrganizationDestination": 1,
+    "ownerExcludedUnrelated": 1,
+    "unmappedUnresolvedOriginal": 0,
+    "originalMapRowsPresent": 60,
+    "originalMapRowsMissing": 0,
+    "namedOriginalPathsStillPresentIncludingOrganizationDestination": 12,
+    "namedOldRootsStillPresentExcludingOrganizationDestination": 11,
+    "originalPathsAbsent": 48,
+    "stackrRelevantOriginalPaths": 59
+  },
+  "originalNamedPaths": 60,
+  "remainingOriginalRoots": [
+    {
+      "original": "D:/Stackr-recovery-artifacts-20261009",
+      "mapRowPresent": true,
+      "hold": "Twelve nested registered worktrees, a current audit-protocol pointer and source/runtime evidence need coordinated Git/path migration.",
+      "capturedCohort": null,
+      "nextAction": "Resolve the documented hold, preserve the required cohort and verify restoration before any relocation.",
+      "currentLocation": "D:/Stackr-recovery-artifacts-20261009",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
+    },
+    {
+      "original": "D:/Stackr-runtime",
+      "mapRowPresent": true,
+      "hold": "Python virtual environment embeds its D-root path; recreate or audit consumers before moving.",
+      "capturedCohort": null,
+      "nextAction": "Resolve the documented hold, preserve the required cohort and verify restoration before any relocation.",
+      "currentLocation": "D:\\Stackr-runtime",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
+    },
+    {
+      "original": "D:/Stackr-release-hardening-2026-08-19",
+      "mapRowPresent": true,
+      "hold": null,
+      "capturedCohort": {
+        "file": "D:/Stackr-organization/preserved-work/consolidation-20261018-content/combined-summary.json",
+        "sha256": "03c8a24a1b53c558104a2111882b911ea6b439d1104bf5dd4401ede25b0ffabc",
+        "capturedFiles": 24,
+        "capturedBytes": 62518771,
+        "restoredFiles": 24,
+        "restoreExact": true,
+        "allNecessaryIgnoredMaterialPreserved": false,
+        "scope": "Only the recorded captured cohort; not a complete whole-root preservation claim"
+      },
+      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder.",
+      "currentLocation": "D:\\Stackr-release-hardening-2026-08-19",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
+    },
+    {
+      "original": "D:/Stackr-mobile-release-candidate-20260824",
+      "mapRowPresent": true,
+      "hold": null,
+      "capturedCohort": {
+        "file": "D:/Stackr-organization/preserved-work/consolidation-20261018-content/combined-summary.json",
+        "sha256": "03c8a24a1b53c558104a2111882b911ea6b439d1104bf5dd4401ede25b0ffabc",
+        "capturedFiles": 1,
+        "capturedBytes": 4300,
+        "restoredFiles": 1,
+        "restoreExact": true,
+        "allNecessaryIgnoredMaterialPreserved": false,
+        "scope": "Only the recorded captured cohort; not a complete whole-root preservation claim"
+      },
+      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder.",
+      "currentLocation": "D:\\Stackr-mobile-release-candidate-20260824",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
+    },
+    {
+      "original": "D:/CodexTemp",
+      "mapRowPresent": true,
+      "hold": "Contains Stackr scan evidence and unrelated iCloud research; whole-root movement is outside the Stackr-only scope.",
+      "capturedCohort": null,
+      "nextAction": "Resolve the documented hold, preserve the required cohort and verify restoration before any relocation.",
+      "currentLocation": "D:\\CodexTemp",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
+    },
+    {
+      "original": "D:/Stackr-pilot-data",
+      "mapRowPresent": true,
+      "hold": "Preserve indexes, labels, datasets, provenance and consumer/cache path relationships.",
+      "capturedCohort": null,
+      "nextAction": "Map actual launcher/runtime overrides, then budget a linked index/cache or large-archive preservation cohort. No disposable or move-ready classification.",
+      "currentLocation": "D:\\Stackr-pilot-data",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
+    },
+    {
+      "original": "D:/Stackr-model-evaluation",
+      "mapRowPresent": true,
+      "hold": "Current model packaging names its ONNX path; nested Git repository and model/venv provenance need preservation and path migration.",
+      "capturedCohort": null,
+      "nextAction": "Resolve the documented hold, preserve the required cohort and verify restoration before any relocation.",
+      "currentLocation": "D:\\Stackr-model-evaluation",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
+    },
+    {
+      "original": "D:/Stackr-next-testflight-20260906",
+      "mapRowPresent": true,
+      "hold": null,
+      "capturedCohort": {
+        "file": "D:/Stackr-organization/preserved-work/consolidation-20261018-content/combined-summary.json",
+        "sha256": "03c8a24a1b53c558104a2111882b911ea6b439d1104bf5dd4401ede25b0ffabc",
+        "capturedFiles": 8,
+        "capturedBytes": 414531,
+        "restoredFiles": 8,
+        "restoreExact": true,
+        "allNecessaryIgnoredMaterialPreserved": false,
+        "scope": "Only the recorded captured cohort; not a complete whole-root preservation claim"
+      },
+      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder.",
+      "currentLocation": "D:\\Stackr-next-testflight-20260906",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
+    },
+    {
+      "original": "D:/Stackr-1",
+      "mapRowPresent": true,
+      "hold": null,
+      "capturedCohort": {
+        "file": "D:/Stackr-organization/preserved-work/consolidation-20261018-content/combined-summary.json",
+        "sha256": "03c8a24a1b53c558104a2111882b911ea6b439d1104bf5dd4401ede25b0ffabc",
+        "capturedFiles": 3677,
+        "capturedBytes": 2295652088,
+        "restoredFiles": 3677,
+        "restoreExact": true,
+        "allNecessaryIgnoredMaterialPreserved": false,
+        "scope": "Only the recorded captured cohort; not a complete whole-root preservation claim"
+      },
+      "nextAction": "Migrate last after all dependent Git/worktree/runtime/restore paths and necessary ignored material have preservation and restoration proof.",
+      "currentLocation": "D:\\Stackr-1",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
+    },
+    {
+      "original": "D:/Stackr-release-recovery-20261009",
+      "mapRowPresent": true,
+      "hold": null,
+      "capturedCohort": {
+        "file": "D:/Stackr-organization/preserved-work/consolidation-20261018-content/combined-summary.json",
+        "sha256": "03c8a24a1b53c558104a2111882b911ea6b439d1104bf5dd4401ede25b0ffabc",
+        "capturedFiles": 5,
+        "capturedBytes": 90793,
+        "restoredFiles": 5,
+        "restoreExact": true,
+        "allNecessaryIgnoredMaterialPreserved": false,
+        "scope": "Only the recorded captured cohort; not a complete whole-root preservation claim"
+      },
+      "nextAction": "Classify remaining ignored/source material and dependent paths, then verify restoration and a reversible move. A captured-file snapshot alone does not complete the folder.",
+      "currentLocation": "D:/Stackr-release-recovery-20261009",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
+    },
+    {
+      "original": "D:/Stackr-chinese-release-tools-20261010",
+      "mapRowPresent": true,
+      "hold": "Nested registered ios-source worktree and dependency junction to release-recovery need coordinated migration.",
+      "capturedCohort": null,
+      "nextAction": "Resolve the documented hold, preserve the required cohort and verify restoration before any relocation.",
+      "currentLocation": "D:/Stackr-chinese-release-tools-20261010",
+      "currentMapObservedAt": "2026-10-18T20:49:57.232Z"
+    }
+  ],
+  "unresolvedOriginals": [],
+  "mapCorrection": {
+    "privatePath": "evidence/consolidation-20261018/completion-audit-20261018/map-reconciliation.json",
+    "sha256": "1191fe3fd594c6b54740540ea9fa6d598e726102cae8e68d2d5baba5991f7f18",
+    "currentlyMappedOriginalPaths": 60,
+    "unresolvedLocations": 0,
+    "ownerExcludedUnrelated": 1,
+    "ownerScopeCorrection": {
+      "privatePath": "evidence/consolidation-20261018/owner-scope-correction-codexlogowork/owner-scope-reply.json",
+      "sha256": "454b9490c612e2f26a68f9032182d26d87f74a288d4a4bb2bfc205301b6ea4d9"
+    }
+  },
+  "continuation": {
+    "recordedAt": "2026-10-18T22:28:13.977Z",
+    "source": "b379c5c48b4cdbe9f169c739467e362be93f3a0e",
+    "homeSourceRepair": "d0f9e74aa099a4805383d1fabb4b5e6f91e59cdb",
+    "regularNovemberCover": "f047a5f577126502767e88cdf6d491c467914fcc",
+    "latestUnsignedSource": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
+    "exactExportAssets": 74,
+    "testFlightHeld": true,
+    "phoneClosedIssues": 0,
+    "moreRecentSourceEvidence": "docs/releases/remaining-repairs-verification-20261018.json",
+    "workspaceEvidence": "docs/releases/workspace-preservation-20261018.json",
+    "historicalSnapshotRetained": "Original source/evidence observations remain the earlier audit; current issue stages use video-repair-register-20261018.json.",
+    "ownerScopeCorrection": {
+      "privatePath": "evidence/consolidation-20261018/owner-scope-correction-codexlogowork/owner-scope-reply.json",
+      "sha256": "454b9490c612e2f26a68f9032182d26d87f74a288d4a4bb2bfc205301b6ea4d9"
+    },
+    "latestTestedSourceRevision": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
+    "latestUnsignedSourceRevision": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
+    "unsignedPromisedAssets": 74,
+    "currentSourceEvidence": "docs/releases/artwork-reassignment-repair-20261018.json",
+    "videoIssuesClosedOnPhone": 0,
+    "currentRuntimeSourceCandidate": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+    "exactExportSvgPaths": 44
+  },
+  "historicalUnresolvedOriginalsBeforeOwnerCorrection": [
+    {
+      "original": "D:/CodexLogoWork",
+      "originalMetadata": {
+        "exists": false,
+        "errorCode": "ENOENT"
+      },
+      "nextAction": "Locate a historical move/preservation receipt or exact replacement path for this named original; reconcile it before any completion or deletion claim. Absence alone is not evidence of loss or safe disposal."
+    }
+  ],
+  "ownerExcludedOriginals": [
+    {
+      "original": "D:/CodexLogoWork",
+      "classification": "owner_excluded_unrelated",
+      "locationKnown": false,
+      "evidence": {
+        "privatePath": "evidence/consolidation-20261018/owner-scope-correction-codexlogowork/owner-scope-reply.json",
+        "sha256": "454b9490c612e2f26a68f9032182d26d87f74a288d4a4bb2bfc205301b6ea4d9"
+      }
+    }
+  ],
+  "historicalOriginalFolderCoverageBeforeVault": {
+    "privatePath": "evidence/consolidation-20261018/completion-audit-20261018/original-folder-coverage.json",
+    "sha256": "0fbcb5ac47e2e151a55cc4e8cc02904796b04d97649de20b28ef3d585c599a11"
+  },
+  "recognitionCaptureVaultContinuation": {
+    "recordedAt": "2026-10-18T19:58:09.527Z",
+    "receipt": {
+      "privatePath": "evidence/consolidation-20261018/recognition-capture-vault-20261018-v2/move-execution-682ff69f04414e66a5d475f960667c4e/outcome.json",
+      "sha256": "21db48e64eb795699df5de362a1694d89132eec0e9c023b9ba7bde452d7ffa6e"
+    },
+    "files": 13,
+    "bytes": 13821,
+    "directories": 8,
+    "fullyPreservedAndRelocated": true,
+    "permanentDeletion": false
+  },
+  "currentHostedSourceChecks": {
+    "recordedAt": "2026-10-19T04:28:06.318Z",
+    "stateAtRecord": "LAST_COMMITTED_SOURCE_PASSED_NEW_DOCUMENTATION_REVISION_NEEDS_OWN_CHECKS",
+    "lastPassedRevision": "898f6fbec07388f331f4cbd739c6b46d9a4c294f",
+    "lastPassed": {
+      "sourceRevision": "898f6fbec07388f331f4cbd739c6b46d9a4c294f",
+      "success": 11,
+      "failure": 0,
+      "pending": 0,
+      "normalSkips": 2,
+      "receipt": {
+        "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-898f6fb-final.json",
+        "sha256": "4e32f37da16ceb99e5feda92fc02ebafa58724607abdeea9110c2276af6fee1a"
+      }
+    },
+    "sourceChecksAreNotPhoneAcceptance": true
+  },
+  "videoRegisterSynchronization": {
+    "recordedAt": "2026-10-18T20:30:22.209Z",
+    "source": "docs/releases/video-repair-register-20261018.json",
+    "sourceSha256": "85c40622d6232ac3f465a7cb23091fd23fe823893b47190953d844dee0008ae6",
+    "issues": 23,
+    "phoneClosedIssues": 0,
+    "scope": "Current per-issue source/delivery states synchronized from the maintained register; original planned requirements and closure criteria retained. Historical revisions remain in Git.",
+    "updatedAt": "2026-10-18T22:28:13.977Z",
+    "phoneClosed": 0,
+    "jungleStagingRehearsalRecorded": true
+  },
+  "nativeInitializingCheckoutCurrentState": {
+    "source": "D:/Stackr-native-aaae6ac-20260910",
+    "files": 242,
+    "bytes": 106910711,
+    "directories": 47,
+    "payloadComparison": {
+      "privatePath": "evidence/consolidation-20261018/native-aaae6ac-initialization-assessment/current-existing-payload-comparison-reconciled-v2.json",
+      "sha256": "3c45fb7aebe2a096010b9262500099d4fc1927c1715eb522aa5d58417daf5eb6"
+    },
+    "directoryRestoration": {
+      "privatePath": "evidence/consolidation-20261018/native-aaae6ac-initialization-assessment/directory-restoration-verification-v1.json",
+      "sha256": "8cb0b35ecf05cb60b9ffe77d15f9e2121ad703f7af77ddd727798f7b41719cd6"
+    },
+    "initializationStateRetained": true,
+    "absentIndexRetained": true,
+    "lockedMoveFixture": {
+      "privatePath": "active-runtime/repair-consolidation-20261018/native-locked-move-fixture-v1/result.json",
+      "sha256": "0adbd8aa6d84b7a09817b01781e9e71665657cebb7f9471913ae6b0019ff4b53",
+      "actualRealSourceMoved": false
+    },
+    "moveReady": false,
+    "current": "D:/Stackr-organization/archive/initializing-worktrees-20261018/Stackr-native-aaae6ac-20260910",
+    "sourceDirectoryAbsent": true,
+    "actualMoveExecuted": true,
+    "relocationReceipt": {
+      "privatePath": "evidence/consolidation-20261018/native-aaae6ac-initialization-assessment/move-preparation-v2/execution-16a49636-a147-418c-bb68-0711726f2e2a/outcome.json",
+      "sha256": "d0a4fd7aecab4b04fd22521170ea8ed64bc042f3f8d502bf6dc5a7fe89ebb565"
+    },
+    "restore": {
+      "type": "initializing-worktree-separate-reviewed-restore",
+      "instructions": "evidence/consolidation-20261018/native-aaae6ac-initialization-assessment/move-preparation-v2/REVIEW-AND-NATIVE-RESTORE.md",
+      "instructionsSha256": "e1b2c21b61a3539019a9c2e07fcb03a0b2d33d4b80d7d593555b930c5353bbea",
+      "helper": "evidence/consolidation-20261018/native-aaae6ac-initialization-assessment/move-preparation-v2/restore-initializing-native.cjs",
+      "helperSha256": "26c7cab4ecd0a0b1a644239eef4be2c113b412467dbe57cad35dc90f9bc651f4",
+      "standardRestoreScriptSupported": false,
+      "originalSharedCommonRequired": "D:/Stackr-1/.git",
+      "requiresNewExactRestoreApproval": true
+    },
+    "oldLockedMoveFixtureIsHistorical": true
+  },
+  "currentPricingWorkerReadOnlyObservation": {
+    "privatePath": "evidence/consolidation-20261018/pricing-worker-observation-20261018-2031.json",
+    "sha256": "4a3a3522927d0b1b7505acb2776fb29ef016af2200595d9e910a6ebd8c8ac374",
+    "scope": "Two existing production workers,30runtime-log entries each,14:00–20:31UTC; no database scripts, job triggers/restarts or price refreshes",
+    "catalogueProgress": {
+      "reportedAt": "2026-10-18T20:29:46.715223278Z",
+      "setsClaimed": 100,
+      "complete": 84,
+      "unmapped": 15,
+      "deferred": 1,
+      "cards": 12404,
+      "priced": 8844,
+      "status": "running",
+      "datasetAt": "2026-10-18T20:05:40+0000"
+    },
+    "cardmarketProgress": {
+      "reportedAt": "2026-10-18T20:21:22.646662673Z",
+      "reviewedMappings": 9234,
+      "stored": 0,
+      "repairs": 86,
+      "complete": true,
+      "quoteScope": "printing_level_blended",
+      "fullCatalogueCurrent": false
+    },
+    "interpretation": "Reported run progress does not establish new writes, complete catalogue coverage, exact owned-card or finish-specific quotes, or closure of V02/V08/V13. One saved timeout is specifically an optional catalogue_bulk_price_coverage_page coverage-report RPC followed by five successful saved report reads in that window. Other historical timeout causes and exact owned-card coverage remain unproved.",
+    "phoneAccepted": false
+  },
+  "currentJungleStagingReadExecution": {
+    "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/staging-binding-execution-20261018/execution-summary.json",
+    "sha256": "9d4d34318357636aa1d4a333570fdb65aeea8674ffcdb2d3d2d3086453910950",
+    "remoteSqlCalls": 5,
+    "successfulSqlCalls": 5,
+    "remoteWrites": 0,
+    "decision": "HOLD",
+    "matchingNondeletedObjects": 2,
+    "activeFirstEditionCandidateFound": false,
+    "stagingBindingSelected": false,
+    "next": "Subsequent exact history read and approved V6 rollback rehearsal completed. Production repair remains separately unapproved; exact HTTP/native/phone verification remains open.",
+    "testFlightHeld": true,
+    "historicalDecisionAtFiveReadStage": "HOLD"
+  },
+  "historicalOriginalFolderCoverageBeforeStage6": {
+    "privatePath": "evidence/consolidation-20261018/recognition-capture-vault-20261018-v2/current-owner-folder-placement.json",
+    "sha256": "feffac47ff2f9dbea88b91a7cb8c1aa70e0fdf0a90251ddf6cd4c778ed2c0801"
+  },
+  "stage6CaptureContinuation": {
+    "recordedAt": "2026-10-18T20:49:57.232Z",
+    "original": "D:/Stackr-stage6-captures",
+    "current": "D:/Stackr-organization/data-and-models/Stackr-stage6-captures",
+    "files": 177,
+    "bytes": 190823656,
+    "directories": 26,
+    "fullSnapshotAndRestoration": true,
+    "actualInverseAndReplay": true,
+    "originalLauncherPreserved": true,
+    "launcherCurrent": "D:\\Stackr-organization\\evidence\\consolidation-20261018\\stage6-captures-preservation-20261018\\move-preparation-v2\\retired-original\\Start-Stackr-Capture.cmd.preserved",
+    "commonGitControlsUnchanged": true,
+    "labelsAndConsentUnchanged": true,
+    "sevenManaphyContradictionsRetained": true,
+    "mappedUseNote": "evidence/consolidation-20261018/stage6-captures-preservation-20261018/move-preparation-v2/named-use-note.md",
+    "receipt": {
+      "privatePath": "evidence/consolidation-20261018/stage6-captures-preservation-20261018/move-preparation-v2/execution-03a4e93fcc8a44e8bcfe6aa197b8fe4a/outcome.json",
+      "sha256": "847ed4c1dc38f5b21a0b4c59c333d6e7158dcd11a596c4d0121450e21d54f507"
+    },
+    "currentOwnerFolderCoverage": {
+      "privatePath": "evidence/consolidation-20261018/stage6-captures-preservation-20261018/move-preparation-v2/current-owner-folder-placement.json",
+      "sha256": "e363aa5e82e48f6fc4354bedbba77a482d825d1836f64c13e90b15d74da54f1a"
+    },
+    "sourceDirectoryAbsent": true,
+    "permanentDeletion": false
+  },
+  "currentJungleStagingHistoryRead": {
+    "recordedAt": "2026-10-18T20:54:21.492Z",
+    "remoteSqlCalls": 1,
+    "successfulSqlCalls": 1,
+    "remoteWrites": 0,
+    "approvalConsumed": true,
+    "historicalFirstEditionKeyCollision": true,
+    "freshFixtureInsertBlocked": true,
+    "evidence": {
+      "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/staging-history-read-execution-20261018/query-outcome.json",
+      "sha256": "82c4aae23557642b2594e5f9e6481b65042aa1e0753abdf35b84f75ee5215ca3"
+    },
+    "stagingRehearsalApproved": true,
+    "productionRepairApproved": false,
+    "testFlightHeld": true,
+    "stagingRehearsalCompleted": true
+  },
+  "historicalOriginalFolderCoverageBeforeNative": {
+    "privatePath": "evidence/consolidation-20261018/stage6-captures-preservation-20261018/move-preparation-v2/current-owner-folder-placement.json",
+    "sha256": "e363aa5e82e48f6fc4354bedbba77a482d825d1836f64c13e90b15d74da54f1a"
+  },
+  "nativeInitializingRelocation": {
+    "recordedAt": "2026-10-18T21:17:32.911Z",
+    "original": "D:/Stackr-native-aaae6ac-20260910",
+    "current": "D:/Stackr-organization/archive/initializing-worktrees-20261018/Stackr-native-aaae6ac-20260910",
+    "files": 242,
+    "bytes": 106910711,
+    "directories": 47,
+    "payloadCopiesVerified": 241,
+    "physicalInverseAndReplayVerified": true,
+    "initializationStatePreserved": true,
+    "indexStillAbsent": true,
+    "sharedMainControlsUnchanged": true,
+    "receipt": {
+      "privatePath": "evidence/consolidation-20261018/native-aaae6ac-initialization-assessment/move-preparation-v2/execution-16a49636-a147-418c-bb68-0711726f2e2a/outcome.json",
+      "sha256": "d0a4fd7aecab4b04fd22521170ea8ed64bc042f3f8d502bf6dc5a7fe89ebb565"
+    },
+    "restore": {
+      "type": "initializing-worktree-separate-reviewed-restore",
+      "instructions": "evidence/consolidation-20261018/native-aaae6ac-initialization-assessment/move-preparation-v2/REVIEW-AND-NATIVE-RESTORE.md",
+      "instructionsSha256": "e1b2c21b61a3539019a9c2e07fcb03a0b2d33d4b80d7d593555b930c5353bbea",
+      "helper": "evidence/consolidation-20261018/native-aaae6ac-initialization-assessment/move-preparation-v2/restore-initializing-native.cjs",
+      "helperSha256": "26c7cab4ecd0a0b1a644239eef4be2c113b412467dbe57cad35dc90f9bc651f4",
+      "standardRestoreScriptSupported": false,
+      "originalSharedCommonRequired": "D:/Stackr-1/.git",
+      "requiresNewExactRestoreApproval": true
+    },
+    "sourceDirectoryAbsent": true,
+    "permanentDeletion": false
+  },
+  "currentJungleStagingRollbackRehearsal": {
+    "observedAt": "2026-10-18T21:16:47.345Z",
+    "state": "APPROVED_SINGLE_STAGING_ROLLBACK_REHEARSAL_COMPLETED_NO_TOOL_ERROR",
+    "executed": true,
+    "sqlCalls": 1,
+    "projectId": "lmwfhvexfcoyeuoyrlco",
+    "effectiveQuerySha256": "c4b383672578aded3f646a1af29f6524b062839bdaa6803c608a44899455311e",
+    "ownerApproval": {
+      "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/staging-rehearsal-execution-v6-20261018/owner-staging-write-approval.json",
+      "sha256": "552fc43a3cc6dcdac4778ed32d4413127af5d4d6c1c56b16764df736d8fffac5"
+    },
+    "intent": {
+      "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/staging-rehearsal-execution-v6-20261018/execution-intent.json",
+      "sha256": "cb864e64abad66d9000c755e7bada8cc6d97a4eb287cbbe795e69699f077a21e"
+    },
+    "outcome": {
+      "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/staging-rehearsal-execution-v6-20261018/query-outcome.json",
+      "sha256": "e43c8e3b14d7bcfcea85bdf33af0115f60beae11489926eacfd38032d16dfb8c"
+    },
+    "alwaysRollback": true,
+    "persistentChanges": 0,
+    "noticesReturned": false,
+    "returnedRows": 0,
+    "assertionMeaning": "Successful guarded DO completed all internal assertions and rollback verification. Detailed NOTICE fixture payloads were not returned by the connector.",
+    "httpOrNativeOrPhoneVerified": false,
+    "productionWritesAuthorized": false,
+    "testFlightHeld": true
+  },
+  "currentRuntimeSourceCandidate": {
+    "revision": "d70a222ac548ba6c7830163e94897fdc7e0cda6d",
+    "scope": "Reviewed collection response-identity guard on top of prior native/runtime repairs",
+    "receipt": "docs/releases/collection-pricing-response-identity-20261019.json",
+    "phoneVerified": false,
+    "nativePublished": false
+  },
+  "currentJungleProductionProposal": {
+    "document": "docs/releases/jungle-production-image-correction-20261018.json",
+    "sqlAndOperationsReviewed": true,
+    "ownerApproved": true,
+    "productionExecuted": true,
+    "normalImageGapDisclosed": true,
+    "testFlightHeld": true,
+    "httpImageVerified": true,
+    "actualOutcome": {
+      "issue": "AR-JUNGLE60-EXACT-REBIND",
+      "ownerApproved": true,
+      "ownerAnswer": "Approve the one production image correction",
+      "productionExecuted": true,
+      "productionCommitted": true,
+      "databaseCalls": 1,
+      "associationRowsChanged": 1,
+      "fieldsChanged": [
+        "printing_id",
+        "variant_id"
+      ],
+      "httpImageVerified": true,
+      "firstEditionArtwork": "exact",
+      "regularEditionArtwork": "missing_explicitly",
+      "configuredAnonymousApiReads": 2,
+      "existingImmutableImageBodiesHashDimensionDecodePassed": 4,
+      "sourceImageBytesUnchanged": true,
+      "priceRefreshes": 0,
+      "jobActions": 0,
+      "rollbackAuthorized": false,
+      "phoneVerified": false,
+      "testFlightHeld": true,
+      "validation": {
+        "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/production-execution-v5-20261018/validation.json",
+        "sha256": "ce316e7864f6a044e5dd84501976a87da74706b099d6b8aa656082296cbabfa3"
+      },
+      "rawOutcome": {
+        "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/production-execution-v5-20261018/query-outcome.json",
+        "sha256": "5f108a4e577f0a6d6cd69d7901e8415619886037f6d4ed09449882c14e9f22c5"
+      },
+      "publicAppDelivery": {
+        "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/production-execution-v5-20261018/http-after/outcome.json",
+        "sha256": "2a0c73b0e4604afff3aa675f2bc20984c5cc10329cf7b03f41af2095441542d9"
+      },
+      "independentActualReview": {
+        "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/jungle-production-actual-outcome-review-20261019/review.json",
+        "sha256": "1245aab872844a3b5855b97758343b8f302587acb6ed2103a2a79a35fc553b91"
+      }
+    }
+  },
+  "historicalHostedSourceChecksBeforeListingMedia": {
+    "checkedAt": "2026-10-18T21:20:19.967Z",
+    "sourceHead": "7623fea04c302b7a974408c8cf37efb5c7c3bb23",
+    "succeeded": 10,
+    "skipped": [
+      "release-candidate-gate",
+      "canary-api-evidence"
+    ],
+    "failed": 0,
+    "pending": 0,
+    "evidence": {
+      "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-7623fea.json",
+      "sha256": "e7b24754874f33229f074171ce31246f6ce48c4b3104a8fe68ed5305ffff19a9"
+    },
+    "scope": "Exact pushed 7623fea hosted checks; later documentation commits require fresh hosted status. No release or phone acceptance."
+  },
+  "currentUnsignedIos": {
+    "exportedSource": "4e5715f5e93a962c8f39e09e773be183c53059f1",
+    "runtimeRevision": "d70a222ac548ba6c7830163e94897fdc7e0cda6d",
+    "preservedIconCommits": [
+      "4fd177443d1e2f0a12e296728293d113c6a81f25",
+      "c85fa68f4e6dc7d62b290a76df59bd24d05446b3"
+    ],
+    "bundle": {
+      "path": "_expo/static/js/ios/entry-4839279ecc1cf077387fb0b3ef555bcb.hbc",
+      "sha256": "01c1acffa251c846f3d22df7b590fbe49deddf8b23e0b3a2425c506897fcdb7a",
+      "bytes": 11804397
+    },
+    "exactUniqueAssetsVerified": 74,
+    "listingMediaHelpersPackaged": true,
+    "iconComponentHelpersPackaged": true,
+    "exactSvgPathsPackaged": 44,
+    "collectionPriceIdentityGuardPackaged": true,
+    "receipt": {
+      "privatePath": "evidence/consolidation-20261018/pricing-identity-ios-export-v1/asset-verification.json",
+      "sha256": "8f539fb0841b53255a40caf9077e6d31d0bb159dfab1371dcce9c14098360475"
+    },
+    "nativeSigned": false,
+    "uploaded": false,
+    "submitted": false,
+    "published": false,
+    "phoneVerified": false,
+    "testFlightHeld": true
+  },
+  "historicalOriginalFolderCoverageBeforeVisual": {
+    "privatePath": "evidence/consolidation-20261018/native-aaae6ac-initialization-assessment/move-preparation-v2/current-owner-folder-placement.json",
+    "sha256": "7c01de116a9c457abfe91b11f9f8c6e6163c8ba89398dfd0153d7b5112cc1650"
+  },
+  "visualAtomicOriginalDirectoryContinuation": {
+    "registeredAt": "2026-10-18T22:18:16.139Z",
+    "original": "D:\\Stackr-visual-acceptance-20260910",
+    "current": "D:\\Stackr-organization\\archive\\consolidated-worktrees-20261018\\Stackr-visual-acceptance-20260910",
+    "preservationContract": "ATOMIC_ORIGINAL_TREE_RETENTION_V3",
+    "originalPhysicalDirectory": {
+      "device": "437697643",
+      "fileId": "281474978649203",
+      "birthtimeNs": "1789058641753471200",
+      "mode": 16822
+    },
+    "physicalMoveReturnReplayPassed": true,
+    "importantGitIndexControlsAndWipPreserved": true,
+    "independentlyRestoredNecessaryOutputFiles": 31,
+    "independentlyRestoredUntrackedWipFiles": 1,
+    "historicalWholeTree": {
+      "files": 55386,
+      "bytes": 1869093075,
+      "directories": 8737,
+      "freshFullTreeEqualityClaimed": false
+    },
+    "historicalDependencyCohort": {
+      "files": 51932,
+      "bytes": 779323200,
+      "ordinaryOriginalEntriesRetainedPhysically": true,
+      "independentlyBackedUp": false,
+      "reconstructed": false,
+      "deletionAllowed": false
+    },
+    "outcome": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/visual-acceptance-assessment-20261018/preparation-v3-atomic-original/execution-b065e030-1774-4661-9a1e-1b99e5a3150b/outcome.json",
+      "sha256": "e4c599dd2c3e12446b5701518bd4198493adf61239626de3027d314603325954"
+    },
+    "verification": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/visual-acceptance-assessment-20261018/preparation-v3-atomic-original/root-verified-outcome.json",
+      "sha256": "d4b00b217f350a69231757b9800fd0ec78b5cee4dd3d00b1cc3b5abb24ee5d6c"
+    },
+    "review": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/visual-atomic-original-implementation-review-v3-bounded-completion-review.json",
+      "sha256": "7408c542ceb4b8804a81c85e358153c73d88a38eee18757681ae80dfb46cfca0"
+    },
+    "restore": {
+      "type": "atomic-original-directory-retention-v3",
+      "helper": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/visual-acceptance-assessment-20261018/preparation-v3-atomic-original/restore-visual.cjs",
+        "sha256": "7436b9e7b31871c8b2f57caed265477df3b81e3294a8774b9f3fe37ed93dbbb0"
+      },
+      "instructions": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/visual-acceptance-assessment-20261018/preparation-v3-atomic-original/REVIEW-AND-RESTORE.md",
+        "sha256": "7f8c0d852544b21133b53e665331db6f0a6894a4bd8c4f77174ab73f95776d22"
+      },
+      "standardGenericRestoreSupported": false,
+      "originalSharedCommonRequired": "D:/Stackr-1/.git",
+      "requiresCurrentExactLocalReview": true,
+      "historicalPlanMustNotBeSilentlyRebound": true
+    },
+    "sourceDirectoryAbsent": true,
+    "permanentDeletion": false
+  },
+  "previousUnsignedIosBeforeIconIntegration": {
+    "exportedSource": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
+    "runtimeRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+    "bundle": {
+      "path": "_expo/static/js/ios/entry-41e9e4fdecdc123f827f005aec05eb9e.hbc",
+      "sha256": "c279c5ea4c6b4f1ebab3a927f6b0bbd015908338908126910ddd6d365fbdb06a",
+      "bytes": 11798374
+    },
+    "exactUniqueAssetsVerified": 74,
+    "listingMediaHelpersPackaged": true,
+    "receipt": {
+      "privatePath": "evidence/consolidation-20261018/listing-search-media-source-v1/ios-export-asset-verification.json",
+      "sha256": "05e8008e52fe45fa329564434be000a2325bcef4860ba691dab5ccefccb4b878"
+    },
+    "nativeSigned": false,
+    "uploaded": false,
+    "submitted": false,
+    "published": false,
+    "phoneVerified": false,
+    "testFlightHeld": true
+  },
+  "preservedIconIntegration": {
+    "source": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
+    "separateImplementationRevision": "4fd177443d1e2f0a12e296728293d113c6a81f25",
+    "authoredByThisContinuation": false,
+    "review": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/icon-integration-compatibility-review-v1-bounded-completion-review.json",
+      "sha256": "181489ad613aed983cbea06f5bd75b76c505d7d46c842f5cc756baf2f80bc0e5"
+    },
+    "outcome": "PASS_COMPATIBILITY_REVIEW",
+    "rootTypecheck": {
+      "exitCode": 0,
+      "settledToolSession": 41645
+    },
+    "rootLint": {
+      "exitCode": 0,
+      "errors": 0,
+      "existingWarnings": 8,
+      "settledToolSession": 28404
+    },
+    "scope": "Separate icon work retained and independently reviewed against immutable8dd..c85. Root current-source typecheck/lint and local unsigned package pass. No native publication or phone evidence."
+  },
+  "rcOriginalDirectoryContinuation": {
+    "registeredAt": "2026-10-18T23:28:28.432Z",
+    "original": "D:\\Stackr-rc-closure-20260824",
+    "current": "D:\\Stackr-organization\\archive\\consolidated-worktrees-20261018\\Stackr-rc-closure-20260824",
+    "preservationContract": "ATOMIC_ORIGINAL_TREE_RETENTION_V3",
+    "originalPhysicalDirectory": {
+      "device": "437697643",
+      "fileId": "281474977706047",
+      "birthtimeNs": "1787549656142849200"
+    },
+    "physicalMoveReturnReplayPassed": true,
+    "independentlyRestoredImportantFiles": 4475,
+    "independentlyRestoredImportantBytes": 1683454155,
+    "importantCohort": {
+      "workingFiles": 4398,
+      "workingBytes": 1672291865,
+      "additionalFiles": 77,
+      "additionalBytes": 11162290
+    },
+    "historicalWholeTree": {
+      "files": 63290,
+      "bytes": 2786649904,
+      "freshFullTreeEqualityClaimed": false
+    },
+    "ordinaryOriginalDependencyEntriesRetainedPhysically": true,
+    "independentDependencyBackup": false,
+    "dependencyDeletionAllowed": false,
+    "outcome": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/execution-53494dd4-36e8-4b6c-b1e0-71eda9fd7a33/outcome.json",
+      "sha256": "e1939002d54fe1605556eb65250664c6b2802f86287c86796b678288cec10c97"
+    },
+    "verification": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/root-verified-outcome-v2.json",
+      "sha256": "ed43762efe58f4969404d8752c825f11addec60ad88d8f1111a3914b95dc875b"
+    },
+    "review": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/rc-operational-amendment-review-v2-bounded-completion-review.json",
+      "sha256": "11bc759296445c69320844a7f00c3df5c0d81dc250d3ceba40be252068c03050"
+    },
+    "restore": {
+      "type": "atomic-original-directory-retention-v3",
+      "helper": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/restore-rc-v2.cjs",
+        "sha256": "debc49447354bc754b1a049cafc28ae5590fb22b570eb35a68e6cb23ff8c64d1"
+      },
+      "guard": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/rc-move-v2.cjs",
+        "sha256": "f2f40dbf3c77c1561dd3aa8cdbad6c5c82378400f461215e8ce0ccf1a2dd92ee"
+      },
+      "instructions": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/rc-closure-assessment-20261018/move-preparation-v1/operational-amendment-v2/REVIEW.md",
+        "sha256": "1065b5accbb2adb6687abe55e239052351ba51794bcb9dfe9fb73f96deba5d87"
+      },
+      "standardGenericRestoreSupported": false,
+      "originalSharedCommonRequired": "D:/Stackr-1/.git",
+      "requiresCurrentExactLocalReview": true,
+      "historicalPlanMustNotBeSilentlyRebound": true
+    },
+    "sourceDirectoryAbsent": true,
+    "permanentDeletion": false
+  },
+  "collectionPricingResponseIdentityRepair": {
+    "repairCommit": "d70a222ac548ba6c7830163e94897fdc7e0cda6d",
+    "sourceFiles": [
+      "lib/collectionPricingApi.ts",
+      "scripts/test-collection-pricing-api.ts",
+      "scripts/test-binder-pricing.ts",
+      "scripts/test-collection-price-backpressure.mjs"
+    ],
+    "implemented": true,
+    "tested": true,
+    "independentlyReviewed": true,
+    "merged": false,
+    "nativePublished": false,
+    "deviceVerified": false,
+    "receipt": "docs/releases/collection-pricing-response-identity-20261019.json",
+    "scope": "Reject mismatched/missing stored-response variant/product/currency without inventing values; exact owner coverage remains unverified."
+  },
+  "historicalHostedSourceChecksBeforePricingIdentity": {
+    "checkedAt": "2026-10-18T21:49:28.020Z",
+    "sourceHead": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
+    "succeeded": 10,
+    "failed": 0,
+    "pending": 0,
+    "skipped": [
+      "release-candidate-gate",
+      "canary-api-evidence"
+    ],
+    "evidence": {
+      "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-4e1cdf7.json",
+      "sha256": "9fb65f14b076e4fd7e5967948b5fc16b2cd1d31b2ff6661b70858160e0a2c1fc"
+    },
+    "scope": "Exact pushed source snapshot. Subsequent documentation commits need their own hosted status; skipped release/canary gates do not prove delivery or phone acceptance."
+  },
+  "releaseValidationRawContinuation": {
+    "registeredAt": "2026-10-18T23:54:28.319Z",
+    "original": "D:\\Stackr-release-validation-20260824",
+    "current": "D:\\Stackr-organization\\archive\\consolidated-worktrees-20261018\\Stackr-release-validation-20260824",
+    "preservationContract": "raw-preservation-v1",
+    "originalPhysicalDirectory": {
+      "device": "437697643",
+      "fileId": "281474977803306",
+      "birthtimeNs": "1787552994935213600"
+    },
+    "physicalMoveReturnReplayPassed": true,
+    "independentlyRestoredFiles": 45014,
+    "independentlyRestoredBytes": 1400526778,
+    "requiredGitObjects": 6660,
+    "requiredGitObjectBytes": 827267302,
+    "rawIndexSha256": "9d974eb982200fd2b580dcf2d1b1229b0572aac723ff43b3d2c13e0f7e8dd635",
+    "sourceHead": "50ef37dece1fb19eeacfe5906c8f9335e6560f4f",
+    "rawProof": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/raw-preservation-completion-v1/raw-preservation-proof-continuity-v4.json",
+      "sha256": "9f12286287dcbfe8858b9ecea0fb327dec8367255590569753e49a3d0746992f"
+    },
+    "preservationAcceptance": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/release-validation-continuity-final-acceptance-v4-bounded-completion-review.json",
+      "sha256": "bda12d394ea83aab96eefbac1637878c3a48b7af376b36abdac869e73d40a018"
+    },
+    "priorLogicalWorkflowCompleted": false,
+    "sourceStatusOrDiffWorkflowClaimed": false,
+    "bodyHashesFromAcceptedPreservation": true,
+    "freshBodyRehashClaimed": false,
+    "currentPhysicalContinuityAndMembershipPassed": true,
+    "outgoingDependencyJunction": {
+      "relative": "gateway/node_modules",
+      "target": "D:/Stackr-1/gateway/node_modules",
+      "targetBodiesBackedUpByThisProof": false
+    },
+    "outcome": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/preflight-a24dbdc2-855b-462e-bce7-1f2d40dc33ec/outcome.json",
+      "sha256": "644e91742cbe0827ee2c849f7abea0cc69b41da4dd6d13033869aed5142403fd"
+    },
+    "verification": {
+      "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/root-verified-outcome-v4.json",
+      "sha256": "ea74d7f73f2cd8528824190a6f806c83b22dc91a01134daed624b29b53d47159"
+    },
+    "review": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/release-target-hdd-scheduling-review-v4-bounded-completion-review.json",
+      "sha256": "ddcee781b755147f8668505dd63c9c5cbffc248fd183a69008410f2f500d0de8"
+    },
+    "restore": {
+      "type": "raw-preservation-v1",
+      "helper": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/restore-release.cjs",
+        "sha256": "9f303ac011f0f2c0115ab81bd23b42edb3af8ac46a3f560c7c32b67bfa8a05c9"
+      },
+      "guard": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/release-move.cjs",
+        "sha256": "8fb72af45e67a8910aa37f1f31275a85644a07736cc703e8015bdb8b7062c00a"
+      },
+      "bindingCapture": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/capture-root-binding.cjs",
+        "sha256": "f21acf3e76c8db77ced6b63f94c0c47a405b0b5a5fdfe4629843aec1f3f4c7b3"
+      },
+      "instructions": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/REVIEW-AND-RESTORE.md",
+        "sha256": "4875ab2efe90a0a554d611f6c24b7448725f86f00854d750a9dddce01e5d0add"
+      },
+      "plan": {
+        "privatePath": "evidence/consolidation-20261018/remaining-coding-roots-20261018/release-validation/relocation-preparation-v1/target-correction-v4/move-plan-prepared.json",
+        "sha256": "0cb115c4f87cdaa0124b1cffcf223cf042cdda5dd23902839f3ee57ab77ad556"
+      },
+      "standardGenericRestoreSupported": false,
+      "originalSharedCommonRequired": "D:/Stackr-1/.git",
+      "requiresCurrentExactLocalReview": true,
+      "requiresFreshRestoreBinding": true,
+      "bindingInvocation": "capture-root-binding.cjs --restore <actual-current-canonical-HEAD>",
+      "requiresSeparateCurrentRootGrant": true,
+      "requiresExactSuccessfulArchiveIntentAndOutcome": true,
+      "historicalPlanMustNotBeSilentlyRebound": true,
+      "noAutomaticRetryOrRollback": true
+    },
+    "sourceDirectoryAbsent": true,
+    "permanentDeletion": false
+  },
+  "currentUnsignedPackage": {
+    "sourceHead": "4e5715f5e93a962c8f39e09e773be183c53059f1",
+    "runtimeRevision": "d70a222ac548ba6c7830163e94897fdc7e0cda6d",
+    "receipt": {
+      "privatePath": "evidence/consolidation-20261018/pricing-identity-ios-export-v1/asset-verification.json",
+      "sha256": "8f539fb0841b53255a40caf9077e6d31d0bb159dfab1371dcce9c14098360475"
+    },
+    "exactAssets": 74,
+    "svgPaths": 44,
+    "signed": false,
+    "submitted": false,
+    "phoneVerified": false
+  },
+  "chinesePartialDirectoryContinuation": {
+    "registeredAt": "2026-10-19T00:12:44.856Z",
+    "original": "D:\\Stackr-chinese-partial-dependencies-20261010",
+    "current": "D:\\Stackr-organization\\archive\\dependency-snapshots-20261019\\Stackr-chinese-partial-dependencies-20261010",
+    "preservationContract": "independent-triple-hash-metadata-continuity-v1",
+    "originalPhysicalDirectory": {
+      "dev": "437697643",
+      "ino": "281474978986676",
+      "birthtimeNs": "1791670573323716300",
+      "mode": "16822"
+    },
+    "physicalMoveReturnReplayPassed": true,
+    "independentlyRestoredFiles": 2513,
+    "independentlyRestoredBytes": 26114058,
+    "directories": 712,
+    "links": 0,
+    "priorBodyHashReceipt": {
+      "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-preservation-v1/outcome.json",
+      "sha256": "de2b7262ed420ac722df14453010decc5a287072f5267655c9270591a65ffd59"
+    },
+    "freshBodyRehashClaimed": false,
+    "fullCurrentMembershipAndMetadataContinuityPassed": true,
+    "dependencyPackageHealthOrReproductionClaimed": false,
+    "sourceGitCommands": 0,
+    "outcome": {
+      "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-relocation-20261019-v3/preflight-abec0eda-e53d-4dc9-be92-1f7567b4544e/outcome.json",
+      "sha256": "69b080676ad9a63aea46eeea3f3e262745ab3f69eb93e072b846354f7723c5a2"
+    },
+    "verification": {
+      "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-relocation-20261019-v3/root-verified-outcome-v3.json",
+      "sha256": "36f3f5a5022ba389805f82cacba6605bb0033275dfaa09ee2e6ea74105d7d51d"
+    },
+    "review": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/chinese-native-pin-review-v3/review.json",
+      "sha256": "11b17d2158e3e9d4994ceb04e90f07dc85f4007a4826413321c854cfcbc829ec"
+    },
+    "restore": {
+      "type": "independent-triple-hash-metadata-continuity-v1",
+      "helper": {
+        "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-relocation-20261019-v3/restore-directory.cjs",
+        "sha256": "ba130652a3064ca69d8553992ec4bc5edfe27d74341e905c72f97466e507d1c3"
+      },
+      "guard": {
+        "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-relocation-20261019-v3/relocate-directory.cjs",
+        "sha256": "767208b0c2935d0e08ffea470c60ffce7640994fb1fadf2038eb9ad4f06eb33b"
+      },
+      "canonicalBindingCapture": {
+        "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-relocation-20261019-v3/capture-root-binding.cjs",
+        "sha256": "d5be0f9a6826b193f876f501322c3e6099e3d1889ccf757e0afe15d50f4c2f00"
+      },
+      "resourceBindingCapture": {
+        "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-relocation-20261019-v3/capture-parent-config-bindings.cjs",
+        "sha256": "fed7927179e253f8552bed9b442a2f8990f25674211e1645d88c9a91e4f26414"
+      },
+      "instructions": {
+        "privatePath": "evidence/consolidation-20261018/chinese-partial-dependencies-relocation-20261019-v3/REVIEW-AND-RESTORE.md",
+        "sha256": "c4ea3244961bf77ba36c39a85a5d2d178efd78590e4356201d0649a60fc1669d"
+      },
+      "standardGenericRestoreSupported": false,
+      "requiresCurrentExactLocalReview": true,
+      "requiresFreshCanonicalAndResourceBindings": true,
+      "requiresSeparateRestorePreflightAndGrant": true,
+      "requiresSuccessfulArchiveIntentAndOutcomeHashes": true,
+      "consumerScopeCurrentlyRequiresOriginalCommon": "D:/Stackr-1/.git",
+      "requiresAdditiveConsumerAdapterAfterCommonMigration": true,
+      "historicalPlanMustNotBeSilentlyRebound": true,
+      "noAutomaticRetryOrRollback": true
+    },
+    "sourceDirectoryAbsent": true,
+    "permanentDeletion": false
+  },
+  "calendarFixtureCorrection": {
+    "file": "docs/releases/pricing-fixture-clock-correction-20261019.json",
+    "sha256": "8d097ca23883066246f4861b6ce3e4816570495b919baafacbb908e4284c5c41",
+    "sourceRevision": "9d33a7032b3bf55551ca8c52972c329ccc250a68",
+    "testOnly": true
+  },
+  "latestVerifiedCommittedSource": {
+    "sourceRevision": "898f6fbec07388f331f4cbd739c6b46d9a4c294f",
+    "success": 11,
+    "failure": 0,
+    "pending": 0,
+    "normalSkips": 2,
+    "receipt": {
+      "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-898f6fb-final.json",
+      "sha256": "4e32f37da16ceb99e5feda92fc02ebafa58724607abdeea9110c2276af6fee1a"
+    }
+  },
+  "previousUnsignedIosBeforePricingIdentity": {
+    "exportedSource": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
+    "runtimeRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+    "preservedIconCommits": [
+      "4fd177443d1e2f0a12e296728293d113c6a81f25",
+      "c85fa68f4e6dc7d62b290a76df59bd24d05446b3"
+    ],
+    "bundle": {
+      "path": "_expo/static/js/ios/entry-42dd80153c3289eb216419c5ede080c9.hbc",
+      "sha256": "c5e4e3f99c8f04e0508368b2c2d58453e5137f09bac49f133c489d1a840f6541",
+      "bytes": 11804174
+    },
+    "exactUniqueAssetsVerified": 74,
+    "listingMediaHelpersPackaged": true,
+    "iconComponentHelpersPackaged": true,
+    "exactSvgPathsPackaged": 44,
+    "receipt": {
+      "privatePath": "evidence/consolidation-20261018/combined-icons-ios-export-v1/asset-verification.json",
+      "sha256": "7b6754daa17475758abba077cc3a0423ccf9e5cbf75803bfbefc3ec1ae085b49"
+    },
+    "nativeSigned": false,
+    "uploaded": false,
+    "submitted": false,
+    "published": false,
+    "phoneVerified": false,
+    "testFlightHeld": true
+  },
+  "currentAppPlanAssessment": {
+    "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/app-remaining-plans-assessment-20261019/review.json",
+    "sha256": "169736908ff434f92704bb834d73187c16be29e856c2c60bc6ef11e4b753610b",
+    "confirmedUnblockedRuntimeRepairMissing": false,
+    "phoneClosedIssues": 0,
+    "testFlightHeld": true
+  },
+  "build37IntegratedContinuation": {
+    "registeredAt": "2026-10-19T04:13:41.900Z",
+    "roots": [
+      {
+        "name": "Stackr-build37-feedback-20260912",
+        "original": "D:\\Stackr-build37-feedback-20260912",
+        "current": "D:\\Stackr-organization\\archive\\consolidated-worktrees-20261018\\Stackr-build37-feedback-20260912",
+        "exactOriginalDirectoryRetained": true,
+        "moveReturnReplayPassed": true,
+        "independentlyRestoredImportantFiles": 4029
+      },
+      {
+        "name": "Stackr-integrated-candidate-20260912",
+        "original": "D:\\Stackr-integrated-candidate-20260912",
+        "current": "D:\\Stackr-organization\\archive\\consolidated-worktrees-20261018\\Stackr-integrated-candidate-20260912",
+        "exactOriginalDirectoryRetained": true,
+        "moveReturnReplayPassed": true,
+        "independentlyRestoredImportantFiles": 5189
+      }
+    ],
+    "officialGitMoves": 6,
+    "originalEdgeTransactionCompleted": false,
+    "separateHistoricalFourPlusNewTwoEdgeCompletion": true,
+    "registration": {
+      "privatePath": "evidence/consolidation-20261018/edge-reviewed-forward-replay-20261019/relocation-registration.json",
+      "sha256": "d07f8af84ad8ee0238c25cca3291ff16d24b6224a0bc68d83ab33fe7fe281f1e"
+    },
+    "independentReview": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/build37-integrated-completion-review-20261019/review.json",
+      "sha256": "555e2883b85279641391870ecd103798fadc5bf8cda95e04fa9253ed30258cd4"
+    },
+    "ordinaryDependencyEntriesRetainedInOriginalDirectories": true,
+    "independentDependencyBackupClaimed": false,
+    "currentTypedRestoreRequiresFreshBindingsAndReview": true,
+    "permanentDeletion": false
+  },
+  "currentTraditionalChinese83SetReconciliation": {
+    "privatePath": "evidence/consolidation-20261018/traditional-chinese-remaining-reconciliation-20261019/handoff.json",
+    "sha256": "1bfa99caee4d4a5dad1e5e0d62b5ed7165c765e3972856d5fcb128f3e34b440c",
+    "sourceReconciliationCompleteForDeclared83": true,
+    "exactVideoRowsIdentified": false,
+    "newRuntimeRepairDemonstrated": false,
+    "phoneClosed": false,
+    "independentReview": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/traditional-chinese-v15-reconciliation-review-20261019/review.json",
+      "sha256": "ff9c29106f299ddec0738c3eebc66799245261bbf40fdbfda51f1ddfdb8cac7c"
+    },
+    "actualDecodedBodies": 47,
+    "publicBodiesNotFetched": 0,
+    "generatedDerivativeMarks": 35,
+    "historicalEarlierDecodedBodies": 3,
+    "approvedPublicDeliveryVerification": {
+      "outcome": {
+        "privatePath": "evidence/consolidation-20261018/traditional-chinese-remaining-reconciliation-20261019/remaining-approved-delivery-verification-20261019/outcome.json",
+        "sha256": "d792ddd3b872925d3debe339e689a8e49c9b9f8b3d413629696b9aa4675c34e8"
+      },
+      "independentReview": {
+        "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/exact-artwork-and-delivery-review-20261019/review.json",
+        "sha256": "a67b6d3736dc5eaef822658fe9a8941fdaeb3d864708c0d66e74465e8edac134"
+      },
+      "existingApprovedObjects": 47,
+      "earlierBodyChecks": 3,
+      "laterBodyChecks": 44,
+      "laterBytes": 81361757,
+      "allBodyHashesDimensionsAndDecodesPassed": true,
+      "imagesPersisted": false,
+      "newSourceAcquisition": false,
+      "phoneRenderingVerified": false,
+      "hdOriginalsEstablished": false,
+      "scope": "All47 existing approved public artwork objects have saved full-body hash, dimension and decode checks: three earlier samples plus44 later GETs, with all identity/hash/role joins matching. The44 later requests read81361757bytes without persisting images. Signed-app and phone rendering, the exact visible video-row cohort, sharper originals and unknown physical/regional SKUs remain open."
+    }
+  },
+  "currentExactArtworkFollowup": {
+    "handoff": {
+      "privatePath": "evidence/consolidation-20261018/exact-card-artwork-followup-20261019/handoff.json",
+      "sha256": "311a38422cc13189fead8de4be987ae50a0c1d84af94d977d354f11bd5da2a50"
+    },
+    "independentReview": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/exact-artwork-and-delivery-review-20261019/review.json",
+      "sha256": "a67b6d3736dc5eaef822658fe9a8941fdaeb3d864708c0d66e74465e8edac134"
+    },
+    "heldExactTargets": 5,
+    "newExactApprovedReplacementFound": false,
+    "phoneClosureClaimed": false,
+    "scope": "The finite follow-up found no new exact approved replacement among the inspected records. The five held source/printing targets remain explicit; five supplied enhancement manifests contain revisions of the same17 originals. No catalogue, source or phone closure was made."
+  },
+  "reportOutputPathConsolidation": {
+    "files": [
+      "scripts/collect-public-catalogue-coverage.ts",
+      "scripts/collect-four-language-coverage-baseline.ts",
+      "scripts/test-collect-public-catalogue-coverage.ts"
+    ],
+    "outputRoot": "D:/Stackr-organization/active-runtime/four-language-coverage",
+    "historicalInputDefaultsChanged": false,
+    "datedInputsStillRequirePreservationAndExplicitOverridesAfterPrimaryMigration": true,
+    "sourceReview": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/report-output-path-review-20261019/review.json",
+      "sha256": "8736658dd91638f0f3dd311d53e788c38ea16c09b28136edbe06928a5265ee28"
+    },
+    "requiredChecks": {
+      "privatePath": "evidence/consolidation-20261018/validation/report-output-paths-20261019/required-checks.json",
+      "sha256": "5b892d9df8379cfc79a8d8d7402ecc55c40be4980c74de52caf239fbf39fb682"
+    },
+    "narrowTestsPassed": true,
+    "typecheckPassed": true,
+    "lintPassed": true,
+    "existingLintWarnings": 8,
+    "actualCollectorOrNetworkRun": false,
+    "appOrBackendRuntimeChanged": false,
+    "nativeBuildOrSubmission": false
+  },
+  "currentTraditionalChineseExact32SourceEligibility": {
+    "ownerAnswer": "Yes, my permission covers those exact sources and uses",
+    "permission": {
+      "privatePath": "evidence/consolidation-20261018/traditional-chinese-remaining-reconciliation-20261019/official-source-authority-proposal-20261019/owner-permission-and-source-eligibility-20261019/owner-permission-receipt.json",
+      "sha256": "7f07676cd46768956726c15619b74cc1c25d422f9d95ea52d04fddf3ee9a63d1"
+    },
+    "eligibility": {
+      "privatePath": "evidence/consolidation-20261018/traditional-chinese-remaining-reconciliation-20261019/official-source-authority-proposal-20261019/owner-permission-and-source-eligibility-20261019/handoff.json",
+      "sha256": "b46e5c995280711534df0729c2b3afb128c1fe15e1ebd8c5b1c44427b9d44046"
+    },
+    "independentSavedEvidenceReview": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/exact32-permission-eligibility-root-evidence-review-20261019.json",
+      "sha256": "beb6fdbe0f61618bd53a44a297c62e387c9f890a12450b8f9f5c9b9e95ebe83d"
+    },
+    "exactSetBindings": 32,
+    "officialUrlsHttp200AndDecoded": 26,
+    "selectedDerivativeBodyHashesMatched": 32,
+    "permissionSourceFactResolved": true,
+    "provenSharperEligibleReplacements": 0,
+    "replacementHolds": 32,
+    "newArtworkPublished": false,
+    "scope": "Permission covers the exact official Taiwan sources for saving, displaying and cropping. Existing selected derivatives are not demonstrated sharper replacements; identity, transform/provenance and title-crop holds remain. This proposal is separate from the47 existing approved public artwork objects."
+  },
+  "currentLocalRoundedIconIntegration": {
+    "revision": "067d62fdd28eb6ea91d1291ecbc715aebcad6c68",
+    "implementationRevision": "354a400348d4fc26b75053f7f91bc9fa987fcbb8",
+    "document": "docs/releases/icon-rounded-20261019.md",
+    "scope": "Separately integrated local presentation change, preserved by this workstream. Its web checks do not replace the earlier unsigned iOS receipt or phone acceptance.",
+    "published": false,
+    "unsignedIosForThisRevisionVerified": false,
+    "phoneVerified": false
+  }
+}

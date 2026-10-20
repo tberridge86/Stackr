@@ -4,6 +4,7 @@ import {
   clearCollectionBatchRecoveryIntent,
   createCollectionBatchRequestKey,
   persistVerifiedCollectionBatchRecoveryIntent,
+  repairOwnedCardBatchActivity,
   sanitizeCollectionBatchCards,
   type CollectionBatchCard,
 } from './collectionBatch';
@@ -23,9 +24,10 @@ type SavedScanCollectionVariantIntent = Readonly<{
   binderId: string;
   cards: readonly CollectionBatchCard[];
   variant: Omit<ScannedVariantInput, 'requestKey'> | null;
+  historyOnly?: boolean;
 }>;
 
-export type ScanCollectionVariantSaveInput = Omit<SavedScanCollectionVariantIntent, 'schemaVersion'>;
+export type ScanCollectionVariantSaveInput = Omit<SavedScanCollectionVariantIntent, 'schemaVersion' | 'historyOnly'>;
 
 const ownerStorageKey = (ownerUserId: string) => `${STORAGE_PREFIX}${encodeURIComponent(ownerUserId)}`;
 const clean = (value: unknown) => typeof value === 'string' ? value.trim() : '';
@@ -47,7 +49,8 @@ function validateIntent(value: unknown, ownerUserId: string): SavedScanCollectio
   const sourceSessionId = clean(raw.sourceSessionId);
   const binderId = clean(raw.binderId);
   if (raw.schemaVersion !== 1 || clean(raw.ownerUserId) !== ownerUserId || !sourceSessionId || !binderId
-    || !Array.isArray(raw.cards) || raw.cards.length === 0 || (raw.variant !== null && typeof raw.variant !== 'object')) {
+    || !Array.isArray(raw.cards) || raw.cards.length === 0 || (raw.variant !== null && typeof raw.variant !== 'object')
+    || (raw.historyOnly !== undefined && typeof raw.historyOnly !== 'boolean')) {
     throw new Error('Saved scan collection recovery data could not be verified.');
   }
   const requestKey = createCollectionBatchRequestKey({ sourceSessionId, binderId, cards: raw.cards });
@@ -71,6 +74,7 @@ function validateIntent(value: unknown, ownerUserId: string): SavedScanCollectio
     binderId,
     cards: Object.freeze(sanitizeCollectionBatchCards(raw.cards)),
     variant: raw.variant ? Object.freeze({ ...(raw.variant as Omit<ScannedVariantInput, 'requestKey'>) }) : null,
+    ...(raw.historyOnly ? { historyOnly: true } : {}),
   });
 }
 
@@ -131,6 +135,19 @@ async function clearPending(ownerUserId: string, sourceSessionId: string) {
   });
 }
 
+async function retainHistoryRepair(intent: SavedScanCollectionVariantIntent) {
+  return serialized(intent.ownerUserId, async () => {
+    const pending = await loadBucket(intent.ownerUserId);
+    const existing = pending.find((item) => item.sourceSessionId === intent.sourceSessionId);
+    if (!existing || canonical(existing) !== canonical(intent)) {
+      throw new Error('Saved scan history recovery could not be verified.');
+    }
+    await persistBucket(intent.ownerUserId, pending.map((item) =>
+      item.sourceSessionId === intent.sourceSessionId ? { ...item, historyOnly: true } : item,
+    ));
+  });
+}
+
 async function resumeIntent(intent: SavedScanCollectionVariantIntent) {
   const requestKey = createCollectionBatchRequestKey({ sourceSessionId: intent.sourceSessionId, binderId: intent.binderId, cards: intent.cards });
   const batchIntent = await persistVerifiedCollectionBatchRecoveryIntent({
@@ -140,10 +157,21 @@ async function resumeIntent(intent: SavedScanCollectionVariantIntent) {
     requestKey,
   });
   await verifyOwner(intent.ownerUserId);
-  const batch = await addOwnedCardBatchToBinder(batchIntent.binderId, [...batchIntent.cards], { requestKey: batchIntent.requestKey });
-  const variant = intent.variant ? await addScannedVariantCopy({ ...intent.variant, requestKey: batchIntent.requestKey }) : null;
-  await clearCollectionBatchRecoveryIntent(intent.sourceSessionId);
-  await clearPending(intent.ownerUserId, intent.sourceSessionId);
+  const batch = await (intent.historyOnly ? repairOwnedCardBatchActivity : addOwnedCardBatchToBinder)(
+    batchIntent.binderId, [...batchIntent.cards], { requestKey: batchIntent.requestKey },
+  );
+  const variant = !intent.historyOnly && intent.variant
+    ? await addScannedVariantCopy({ ...intent.variant, requestKey: batchIntent.requestKey }) : null;
+  // The holding and variant are saved even when their history needs repair.
+  // Retain the same operation identity so recovery cannot add another copy.
+  if (!batch.activityFailures) {
+    await clearCollectionBatchRecoveryIntent(intent.sourceSessionId);
+    await clearPending(intent.ownerUserId, intent.sourceSessionId);
+  } else if (!intent.historyOnly) {
+    await retainHistoryRepair(intent).catch((error) => {
+      console.warn('Collection saved; the local history recovery marker needs verification', error);
+    });
+  }
   return { intent: batchIntent, batch, variant };
 }
 

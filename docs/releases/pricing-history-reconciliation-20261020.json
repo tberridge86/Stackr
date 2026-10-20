@@ -1,0 +1,94 @@
+{
+  "date": "2026-10-20",
+  "recoveredFrom": "f964524be042219a343bed5d896a0f279cf80888",
+  "scope": "Exact historical source recovery only; no runtime replacement or SQL execution",
+  "originalFiles": [
+    {
+      "path": "supabase/migrations/20261005162643_classified_pricing_coverage.sql",
+      "gitBlob": "a81931832b35e9193b4caad962db1f2c79701e53"
+    },
+    {
+      "path": "supabase/migrations/20261005163008_bound_classification_evidence_aggregation.sql",
+      "gitBlob": "ebdde32ff3b6e1ac2485113eb439629885f24b13"
+    },
+    {
+      "path": "supabase/migrations/20261005163402_classification_page_custom_plans.sql",
+      "gitBlob": "905649fe267e029304abefae4fa73031b64ed16b"
+    },
+    {
+      "path": "supabase/migrations/20261005203421_retain_identity_bound_cheap_snapshots.sql",
+      "gitBlob": "349077a73dbfff81e06913ebae2226a4d1b75eff"
+    },
+    {
+      "path": "supabase/migrations/20261005203922_bound_retained_cheap_native_evidence.sql",
+      "gitBlob": "ea2303cb779a8d21e1bdfbe20dd4cac1b8e16edf"
+    },
+    {
+      "path": "supabase/migrations/20261005204527_scope_retained_cheap_provider_languages.sql",
+      "gitBlob": "4a195f17127f6f54133a061a171f3a758409e64d"
+    },
+    {
+      "path": "supabase/migrations/20261005205507_select_latest_valid_retained_observation.sql",
+      "gitBlob": "867a4e3527e651d9364b9e9bb0599b63d6133e1c"
+    },
+    {
+      "path": "docs/releases/pricing-classified-coverage-20261005.md",
+      "gitBlob": "a72f4548922e8467b67408caefd51d22f8d24592"
+    },
+    {
+      "path": "docs/releases/pricing-classified-coverage-20261005.json",
+      "gitBlob": "9ec61efe95814edfc0e12b83951cf272422d68dc"
+    },
+    {
+      "path": "docs/releases/pricing-recovery-20261005.md",
+      "gitBlob": "95422b06c56baffd81c6d7991c540ac7a5a013b7"
+    },
+    {
+      "path": "docs/releases/pricing-recovery-20261005.json",
+      "gitBlob": "514e02cac57b7bffc155822ec89676c7933babd0"
+    }
+  ],
+  "migrations": [
+    {
+      "name": "classified_pricing_coverage",
+      "production": "20261005162643",
+      "stage": "20261005162549"
+    },
+    {
+      "name": "bound_classification_evidence_aggregation",
+      "production": "20261005163008",
+      "stage": "20261005162949"
+    },
+    {
+      "name": "classification_page_custom_plans",
+      "production": "20261005163402",
+      "stage": "20261005163401"
+    },
+    {
+      "name": "retain_identity_bound_cheap_snapshots",
+      "stage": "20261005203143",
+      "production": "20261005203421"
+    },
+    {
+      "name": "bound_retained_cheap_native_evidence",
+      "stage": "20261005203902",
+      "production": "20261005203922"
+    },
+    {
+      "name": "scope_retained_cheap_provider_languages",
+      "stage": "20261005204523",
+      "production": "20261005204527"
+    },
+    {
+      "name": "select_latest_valid_retained_observation",
+      "stage": "20261005205459",
+      "production": "20261005205507"
+    }
+  ],
+  "limits": [
+    "October5 receipts remain historical, not fresh ledger or coverage measurements",
+    "Preserve production filenames and staging aliases; do not replay applied SQL",
+    "Keep newer PR418 reader and current workers; old recovery CLI and classifier hooks excluded",
+    "Current authenticated price coverage, backend delivery, native publication and phone verification remain open"
+  ]
+}

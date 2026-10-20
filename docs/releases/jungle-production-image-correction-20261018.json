@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "preparedAt": "2026-10-18T21:37:20.702Z",
+  "state": "PRODUCTION_COMMITTED_CONFIGURED_APP_IMAGE_VERIFIED_PHONE_OPEN",
+  "issue": "AR-JUNGLE60-EXACT-REBIND",
+  "targetProject": "oakdbbzdqwurpjnoqhmu",
+  "script": "docs/releases/jungle-production-image-correction-20261018.sql",
+  "templateSha256": "d760a2e8f3da4865fa7f75821da81a96b0f325596dd8d23fa52612d2049c2878",
+  "defaultTypedPlan": null,
+  "bindingRule": "REPLACE_ONE_TYPED_NULL_WITH_FROZEN_PLAN_AND_VERIFIED_RECEIPTS_ONLY",
+  "change": "Assign the existing stamped Jungle Pikachu60/64 image to its exact First Edition variant. The regular edition remains explicitly without a verified image.",
+  "scope": {
+    "maximumForwardDatabaseCalls": 1,
+    "existingAssociationRowsUpdated": 1,
+    "associationFields": [
+      "printing_id",
+      "variant_id"
+    ],
+    "newAssetOrSourceRows": 0,
+    "storageObjectWrites": 0,
+    "lifecycleOrMembershipWrites": 0,
+    "priceOrQuantityWrites": 0,
+    "priceRefreshes": 0,
+    "jobActions": 0,
+    "nativePublishing": 0
+  },
+  "identity": {
+    "assetId": "0d6fe9c6-58c6-46a3-8f13-88c4352b8791",
+    "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "printingId": "7f7c3925-368d-4cbc-8e37-415b6ceb4bda",
+    "oldRegularVariantId": "ccac455c-42b0-4344-9fd1-285ed8756e75",
+    "newFirstEditionVariantId": "2f89247e-d3cd-4ec0-88e3-baff0f60252c"
+  },
+  "checks": {
+    "transaction": "SERIALIZABLE",
+    "statementTimeout": "5s",
+    "lockTimeout": "1s",
+    "idleTransactionTimeout": "15s",
+    "freshExactContractBeforeRowsRightsAndVisibility": true,
+    "oneRowTwoFieldDeltaOnly": true,
+    "unchangedPublishedFacts": true,
+    "exactImageRpcBeforeAfter": true,
+    "allInternalChecksBeforeCommit": true,
+    "wholeCallSuccessAndReturnedActualReceiptRequired": true,
+    "actualOriginalAndAfterEnvelopesRetained": true,
+    "unknownOutcome": "HOLD; no retry, diagnostic SQL or rollback on this approval"
+  },
+  "existingImmutableImageRetained": true,
+  "existingExactSourceApprovalRetained": true,
+  "rollback": {
+    "preparedGuardedTemplateSha256": "004df892dcd3a2e3c7059b605375b1c35047c9658869f7cb2f92586138b1c97e",
+    "authorized": false,
+    "requiresActualForwardReceipt": true,
+    "requiresSeparateExplicitApproval": true,
+    "refusesInterveningDrift": true
+  },
+  "reviews": {
+    "sql": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/jungle-production-proposal-v5-review-bounded-completion-review.json",
+      "sha256": "1c02272a8b5c434ad9abb232370b6c7ed9c410167ad04e034e68e6881130b133"
+    },
+    "operations": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/jungle-production-v5-operations-review-v2-bounded-completion-review.json",
+      "sha256": "a035974b29d67ceb34f0090dbf462d7ebf49cdf14810c38cbef3a0b93b7106cc"
+    },
+    "operationsModule": {
+      "privatePath": "active-runtime/repair-consolidation-20261018/jungle-production-v5-operations-v2.cjs",
+      "sha256": "8d419b3e54ec90044cbaca9c19f61eda32dac76b47ca2de57ba76b5105a6d40a"
+    },
+    "operationsTests": {
+      "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/operations-preparation-v5-v2/tests.json",
+      "sha256": "95a9bca070be88deb21b68f9f109f9e0510e312f93b85b6f924190814e5409d4"
+    },
+    "localSqlChecks": 11,
+    "localOperationsChecks": 28,
+    "independentActualWrapperReplays": 6
+  },
+  "stagingRehearsal": {
+    "document": "docs/releases/jungle-staging-rehearsal-20261018.json",
+    "completed": true,
+    "rolledBack": true,
+    "persistentChanges": 0,
+    "returnedNoticeFixtures": false
+  },
+  "ownerApproved": true,
+  "productionExecuted": true,
+  "httpImageVerified": true,
+  "phoneVerified": false,
+  "testFlightHeld": true,
+  "historicalPreparationState": "SQL_AND_OPERATIONS_REVIEWED_OWNER_PRODUCTION_APPROVAL_PENDING",
+  "actualProductionOutcome": {
+    "issue": "AR-JUNGLE60-EXACT-REBIND",
+    "ownerApproved": true,
+    "ownerAnswer": "Approve the one production image correction",
+    "productionExecuted": true,
+    "productionCommitted": true,
+    "databaseCalls": 1,
+    "associationRowsChanged": 1,
+    "fieldsChanged": [
+      "printing_id",
+      "variant_id"
+    ],
+    "httpImageVerified": true,
+    "firstEditionArtwork": "exact",
+    "regularEditionArtwork": "missing_explicitly",
+    "configuredAnonymousApiReads": 2,
+    "existingImmutableImageBodiesHashDimensionDecodePassed": 4,
+    "sourceImageBytesUnchanged": true,
+    "priceRefreshes": 0,
+    "jobActions": 0,
+    "rollbackAuthorized": false,
+    "phoneVerified": false,
+    "testFlightHeld": true,
+    "validation": {
+      "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/production-execution-v5-20261018/validation.json",
+      "sha256": "ce316e7864f6a044e5dd84501976a87da74706b099d6b8aa656082296cbabfa3"
+    },
+    "rawOutcome": {
+      "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/production-execution-v5-20261018/query-outcome.json",
+      "sha256": "5f108a4e577f0a6d6cd69d7901e8415619886037f6d4ed09449882c14e9f22c5"
+    },
+    "publicAppDelivery": {
+      "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/production-execution-v5-20261018/http-after/outcome.json",
+      "sha256": "2a0c73b0e4604afff3aa675f2bc20984c5cc10329cf7b03f41af2095441542d9"
+    },
+    "independentActualReview": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/jungle-production-actual-outcome-review-20261019/review.json",
+      "sha256": "1245aab872844a3b5855b97758343b8f302587acb6ed2103a2a79a35fc553b91"
+    }
+  }
+}

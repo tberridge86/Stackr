@@ -1,0 +1,56 @@
+{
+  "source_manifest_file": "mfb8-source-manifest.json",
+  "source_manifest_sha256": "508970e62fbd29662fd9b6ef4c34db19b9c4aa9f9580941e2050cccd6ae0c0f0",
+  "package_receipt_file": "mfb8-package-receipt.json",
+  "package_receipt_sha256": "3e6ec594484ec82fff36dc09891f0a20e18bd49bf132212bd1da3a6f9dff1210",
+  "finite_decision_file": "source-batches/owner-mfb-held-observation-reconciliation-20261014/finite-publication8-decision.json",
+  "finite_decision_sha256": "0d85c039a030d779b8721b4d34c77d94cafe70166bf258a228b8f64aeb2f77df",
+  "binding_snapshots": {
+    "production": {
+      "sha256": "7e312c618582fe4855466d64ef278df95088f52ee3774decdb49683d417e5767",
+      "bytes": 6023
+    },
+    "staging": {
+      "sha256": "e263766365ead633c930b865dfaaac5147c60134ab04aeb5bf26de05fd390908",
+      "bytes": 4671
+    }
+  },
+  "before_snapshots": {
+    "production": {
+      "sha256": "986f5b88e92ad723f6c02a6f6ac91e3598b0f2fe1b03e6d730664e0badf157f2",
+      "bytes": 35497
+    },
+    "staging": {
+      "sha256": "4e119a12c63d639cc8731d20e6205196ccff520a10e8c54ce60a45601de90f70",
+      "bytes": 28023
+    }
+  },
+  "archive": {
+    "id": 641631537,
+    "sha256": "f5146e5d8d7f1c1213c3a0d411a6df2c80f4700a8769ff120b637dd0936bc27a",
+    "byte_size": 4279822,
+    "file_count": 36
+  },
+  "metadata": [
+    {
+      "file": "manifest.json",
+      "sha256": "508970e62fbd29662fd9b6ef4c34db19b9c4aa9f9580941e2050cccd6ae0c0f0",
+      "byte_size": 124558
+    },
+    {
+      "file": "receipts/preparation-summary.json",
+      "sha256": "817cd6afd2e3b4f6bb4402e573d821724790f11ce9a540bfab15cad7430ccd55",
+      "byte_size": 1316
+    },
+    {
+      "file": "receipts/current-card-bindings.json",
+      "sha256": "d8aa09ce914a9e68ea01d287518bc4b9878e3b58202772733581aa6898289360",
+      "byte_size": 8461
+    },
+    {
+      "file": "receipts/finite-decision.json",
+      "sha256": "ef9cb3a1bd809dfb244a09d1878b6633577c8e4ac4599880bba0661ba87c2612",
+      "byte_size": 5171
+    }
+  ]
+}

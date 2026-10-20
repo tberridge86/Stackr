@@ -1,0 +1,1402 @@
+{
+  "schemaVersion": 1,
+  "queue_id": "STACKR-JA-AWAKENING-FINAL-20261014-002",
+  "source_manifest_sha256": "0507956d091c670ef84370e2921313eca4e11850d2bd1a6db93cbcf7fb0e2f2f",
+  "package_receipt_sha256": "ce93b8de8981bf7994baf358720f852da18192882d6ef46e2e5c46af9e6bd18f",
+  "saved_targets_sha256": "b93ca3157bc3efe84518ff615e57f2a42a0431a0555c067b5e05bade69edb1f0",
+  "identity_table_sha256": "75579691c48ee2566e45b8fb91860a4c3fb7ff9a0bf5b2c28c8066dfd61e78c5",
+  "source_evidence": {
+    "handoff": "64a2bf59198952643cd000ce90da066b22496310a0baaf6b273e8bcfb084e736",
+    "subset": "2d16d5ae7c67a1ef2501782bdd2f251991e8038fd5097ebd71830693c8666132",
+    "metadata": "f55479b730d141ecaa1af14e8dd1e2ca7eabb00c3da06cb806039d3e9d879eea",
+    "sourceQA": "3e3e639506359749c87e28320f0fc15196c39b9744cf1ee57844d97c6fb9daf0",
+    "validation": "7ee649538102c7ad404754a1c9abeb0ab841fe9f7c6bcab695edb6e32f6cb401",
+    "independentAcceptance": "00755f84b8baa9de2e809bed4dccf40ef25fa53c530e2f989b8408440fa50f5f",
+    "decision": "ec414f1e139f7051736aae38ae500e100cd37d9219a3286aa08cc54cb967d8c8",
+    "heldTrainers": "909aeadc4233f71fcd4f4c41a2fcaffbcb1aede6e5b9d0efcde960b5e0d11bad"
+  },
+  "archive": {
+    "id": 641804110,
+    "sha256": "c06a56a780178351698794207b4bae873240ebab274dcb4e36f6561dfb8d5264",
+    "byte_size": 1084630,
+    "file_count": 12
+  },
+  "archive_metadata": [
+    {
+      "file": "manifest.json",
+      "sha256": "0507956d091c670ef84370e2921313eca4e11850d2bd1a6db93cbcf7fb0e2f2f",
+      "byte_size": 54701
+    },
+    {
+      "file": "receipts/preparation-summary.json",
+      "sha256": "a2f6d53a0d5bf30d650b86ef7b94b78e81e259a84aa2003725a57c81fd6ca4f1",
+      "byte_size": 1313
+    },
+    {
+      "file": "receipts/current-card-bindings.json",
+      "sha256": "11b239fe8e2f3e93dd39feb76e571a659c4d416d0e06b96c87f601b31e395259",
+      "byte_size": 2217
+    },
+    {
+      "file": "receipts/finite-decision.json",
+      "sha256": "50dfaa78ff54a82d18cf84e7fb9a61afa97d7778929437c0a9f9512ec9d96a53",
+      "byte_size": 8256
+    }
+  ],
+  "rows": [
+    {
+      "printing_id": "6ad6da5c-02cb-45e1-ab7a-2de25855dbf4",
+      "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+      "set_code": "neo3",
+      "language_code": "ja",
+      "collector_number": "051",
+      "card_native_name": "Porygon2",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "c563902f-3ed5-41c6-8289-60dbdc121a5b"
+      ],
+      "batch_id": "JP-CARDS-012",
+      "source_code": "scrydex",
+      "provider_id": "neo3_ja-51",
+      "image_url": "https://images.scrydex.com/pokemon/neo3_ja-51/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/64ac8b84198f0dcbf4c625edc2f2407f86cdd767d74ee0aa772971fb31bf837b/original.webp",
+          "sha256": "64ac8b84198f0dcbf4c625edc2f2407f86cdd767d74ee0aa772971fb31bf837b",
+          "byte_size": 434350,
+          "width": 570,
+          "height": 794,
+          "mime_type": "image/webp",
+          "artifact_id": 641804110
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/5f8bd614a17e7def35f1a6562724dc0ff504d401ba15571a5d0b518390fd0e2b/card-grid.webp",
+          "sha256": "5f8bd614a17e7def35f1a6562724dc0ff504d401ba15571a5d0b518390fd0e2b",
+          "byte_size": 19286,
+          "width": 240,
+          "height": 334,
+          "mime_type": "image/webp",
+          "artifact_id": 641804110
+        },
+        {
+          "role": "search-result",
+          "file": "objects/ef5b5916b8250abd85f0c2d7788cc8561f8409afee0c095b06ff7bce69fee55d/search-result.webp",
+          "sha256": "ef5b5916b8250abd85f0c2d7788cc8561f8409afee0c095b06ff7bce69fee55d",
+          "byte_size": 4010,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp",
+          "artifact_id": 641804110
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/8e4045694f43ff05dd0dfe8f4c3e70bc0fc8d2afdfd13b32df820024fed94362/detail-page.webp",
+          "sha256": "8e4045694f43ff05dd0dfe8f4c3e70bc0fc8d2afdfd13b32df820024fed94362",
+          "byte_size": 75232,
+          "width": 570,
+          "height": 794,
+          "mime_type": "image/webp",
+          "artifact_id": 641804110
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo3_ja-51/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/porygon2/neo3_ja-51?variant=holofoil",
+        "provider_id": "neo3_ja-51",
+        "source_metadata_sha256": "abad128a0a95f8aee8e052a2aeacf467d504740e2150e12a869fa5f67baa8213",
+        "source_body": {
+          "provider_metadata": {
+            "id": "neo3_ja-51",
+            "name": "ポリゴン2",
+            "supertype": "ポケモン",
+            "subtypes": [
+              "1進化"
+            ],
+            "types": [
+              "無"
+            ],
+            "hp": "70",
+            "evolves_from": [
+              "ポリゴン"
+            ],
+            "abilities": [
+              {
+                "type": "特殊能力",
+                "name": "エナジーコンバーター",
+                "text": "この力は、自分の番ごとに1回使うことができる。自分の場のポケモンについている「基本エネルギーカード」を1枚選び、好きな「色（タイプ）」（「無色」以外）を1つ選ぶ。この番が終わるまで、その「エネルギーカード」の「エネルギー」は、選んだ「色（タイプ）」の「エネルギー」としてあつかわれる。このカードが「ねむり・マヒ・こんらん」状態のとき、この力を使うことはできず、その効果も消える。"
+              }
+            ],
+            "attacks": [
+              {
+                "cost": [
+                  "無",
+                  "無",
+                  "無"
+                ],
+                "converted_energy_cost": 3,
+                "name": "デルタビーム",
+                "text": "コインを投げて「おもて」なら、「ねむり・マヒ・こんらん」の中から1つを選び、相手をその状態にする。",
+                "damage": "20"
+              }
+            ],
+            "weaknesses": [
+              {
+                "type": "闘",
+                "value": "×2"
+              }
+            ],
+            "resistances": [
+              {
+                "type": "超",
+                "value": "-30"
+              }
+            ],
+            "retreat_cost": [
+              "無"
+            ],
+            "converted_retreat_cost": 1,
+            "rules": [],
+            "number": "233",
+            "printed_number": "No.233",
+            "additional_numbers": [],
+            "rarity": "レアホロ",
+            "rarity_code": "★H",
+            "artist": "Keiji Kinebuchi",
+            "national_pokedex_numbers": [
+              233
+            ],
+            "regulation_mark": null,
+            "legalities": [
+              {
+                "format": "Standard",
+                "status": "Not Legal"
+              },
+              {
+                "format": "Unlimited",
+                "status": "Legal"
+              },
+              {
+                "format": "Expanded",
+                "status": "Not Legal"
+              },
+              {
+                "format": "Gym Leader Challenge",
+                "status": "Not Legal"
+              }
+            ],
+            "flavor_text": null,
+            "images": [
+              {
+                "type": "front",
+                "small": "https://images.scrydex.com/pokemon/neo3_ja-51/small",
+                "medium": "https://images.scrydex.com/pokemon/neo3_ja-51/medium",
+                "large": "https://images.scrydex.com/pokemon/neo3_ja-51/large"
+              }
+            ],
+            "expansion": {
+              "id": "neo3_ja",
+              "name": "めざめる伝説",
+              "series": "Neo",
+              "code": null,
+              "total": 57,
+              "printed_total": 57,
+              "language": "Japanese",
+              "language_code": "JA",
+              "release_date": "2000/11/23",
+              "is_online_only": false,
+              "logo": "https://images.scrydex.com/pokemon/neo3_ja-logo/logo",
+              "symbol": "https://images.scrydex.com/pokemon/neo3_ja-symbol/symbol",
+              "translation": {
+                "en": {
+                  "name": "Awakening Legends"
+                }
+              }
+            },
+            "language": "Japanese",
+            "language_code": "JA",
+            "expansion_sort_order": 51,
+            "translation": {
+              "en": {
+                "name": "Porygon2",
+                "supertype": "Pokémon",
+                "subtypes": [
+                  "Stage 1"
+                ],
+                "types": [
+                  "Colorless"
+                ],
+                "rules": null,
+                "abilities": [
+                  {
+                    "type": "Pokémon Power",
+                    "name": "Energy Converter",
+                    "text": "Once during your turn (before your attack), you may choose 1 basic Energy card attached to 1 of your Pokémon and choose an Energy type. Treat that Energy card as that type until the end is your turn. This power can't be used if Porygon2 is Asleep, Confused, or Paralyzed. If Porygon2 becomes Asleep, Confused, or Paralyzed, the Energy card goes back to its original type."
+                  }
+                ],
+                "attacks": [
+                  {
+                    "cost": [
+                      "Colorless",
+                      "Colorless",
+                      "Colorless"
+                    ],
+                    "converted_energy_cost": 3,
+                    "name": "Delta Beam",
+                    "text": "Flip a coin. If heads, choose whether the Defending Pokémon becomes Asleep, Confused, or Paralyzed.",
+                    "damage": "20"
+                  }
+                ],
+                "weaknesses": [
+                  {
+                    "type": "Fighting",
+                    "value": "×2"
+                  }
+                ],
+                "resistances": [
+                  {
+                    "type": "Psychic",
+                    "value": "-30"
+                  }
+                ],
+                "retreat_cost": [
+                  "Colorless"
+                ],
+                "evolves_from": [
+                  "Porygon"
+                ],
+                "flavor_text": null,
+                "rarity": "Rare Holo",
+                "expansion": {
+                  "name": "Awakening Legends"
+                }
+              }
+            },
+            "variants": [
+              {
+                "name": "holofoil",
+                "images": []
+              }
+            ]
+          },
+          "tcgdex_metadata": {
+            "category": "Pokemon",
+            "id": "neo3-051",
+            "localId": "051",
+            "name": "Porygon2",
+            "rarity": "Holo Rare",
+            "set": {
+              "cardCount": {
+                "official": 57,
+                "total": 57
+              },
+              "id": "neo3",
+              "name": "めざめる伝説",
+              "symbol": "https://assets.tcgdex.net/univ/neo/neo3/symbol"
+            },
+            "variants": {
+              "firstEdition": false,
+              "holo": true,
+              "normal": false,
+              "reverse": false,
+              "wPromo": false
+            },
+            "variants_detailed": [
+              {
+                "type": "holo",
+                "size": "standard",
+                "variantId": "jr7oetx1mqug9"
+              }
+            ],
+            "dexId": [
+              233
+            ],
+            "hp": 70,
+            "types": [
+              "Colorless"
+            ],
+            "stage": "Stage1",
+            "abilities": [
+              {
+                "name": "エネルギーコンバーター",
+                "effect": "ターン中に（攻撃の前）</em> </em>、ポケモンの1つに1つの基本エネルギーカードを選択し、エネルギータイプを選択できます。そのエネルギーカードをターンの終わりまでそのタイプとして扱います。 Porygon2が眠ったり、混乱したり、麻痺している場合、このパワーは使用できません。 Porygon2が眠り、混乱、または麻痺した場合、エネルギーカードは元のタイプに戻ります。"
+              }
+            ],
+            "attacks": [
+              {
+                "cost": [
+                  "Colorless",
+                  "Colorless",
+                  "Colorless"
+                ],
+                "name": "デルタビーム",
+                "effect": "コインをひっくり返します。頭の場合は、防御するポケモンが眠っているか、混乱したり、麻痺したりするかどうかを選択します。",
+                "damage": 20
+              }
+            ],
+            "retreat": 1,
+            "legal": {
+              "standard": false,
+              "expanded": false
+            },
+            "updated": "2026-09-25T23:45:28.256Z"
+          },
+          "source_signature": {
+            "sourceCardId": "neo3_ja-51",
+            "nativeName": "ポリゴン2",
+            "sourceEnglishName": "Porygon2",
+            "language": "Japanese",
+            "languageCode": "JA",
+            "supertype": "ポケモン",
+            "subtypes": [
+              "1進化"
+            ],
+            "nationalDex": [
+              233
+            ],
+            "hp": "70",
+            "types": [
+              "無"
+            ],
+            "evolvesFrom": [
+              "ポリゴン"
+            ],
+            "artist": "Keiji Kinebuchi",
+            "orderedAttacks": [
+              {
+                "cost": [
+                  "無",
+                  "無",
+                  "無"
+                ],
+                "converted_energy_cost": 3,
+                "name": "デルタビーム",
+                "text": "コインを投げて「おもて」なら、「ねむり・マヒ・こんらん」の中から1つを選び、相手をその状態にする。",
+                "damage": "20"
+              }
+            ],
+            "abilities": [
+              {
+                "type": "特殊能力",
+                "name": "エナジーコンバーター",
+                "text": "この力は、自分の番ごとに1回使うことができる。自分の場のポケモンについている「基本エネルギーカード」を1枚選び、好きな「色（タイプ）」（「無色」以外）を1つ選ぶ。この番が終わるまで、その「エネルギーカード」の「エネルギー」は、選んだ「色（タイプ）」の「エネルギー」としてあつかわれる。このカードが「ねむり・マヒ・こんらん」状態のとき、この力を使うことはできず、その効果も消える。"
+              }
+            ],
+            "rules": [],
+            "weaknesses": [
+              {
+                "type": "闘",
+                "value": "×2"
+              }
+            ],
+            "resistances": [
+              {
+                "type": "超",
+                "value": "-30"
+              }
+            ],
+            "retreatCosts": [
+              "無"
+            ],
+            "convertedRetreatCost": 1,
+            "sourceReportedNumber": "233",
+            "sourceReportedPrintedNumber": "No.233",
+            "rarity": "レアホロ",
+            "rarityCode": "★H",
+            "expansion": {
+              "id": "neo3_ja",
+              "name": "めざめる伝説",
+              "series": "Neo",
+              "code": null,
+              "total": 57,
+              "printed_total": 57,
+              "language": "Japanese",
+              "language_code": "JA",
+              "release_date": "2000/11/23",
+              "is_online_only": false,
+              "logo": "https://images.scrydex.com/pokemon/neo3_ja-logo/logo",
+              "symbol": "https://images.scrydex.com/pokemon/neo3_ja-symbol/symbol",
+              "translation": {
+                "en": {
+                  "name": "Awakening Legends"
+                }
+              }
+            },
+            "sourceVariantNames": [
+              "holofoil"
+            ]
+          },
+          "source_signature_sha256": "6cb352b31593584223d1336175894138be6c0d90efc330d1ceb9fc67cc457de3",
+          "source_attack_array_sha256": "50bd2638feeb86246e7c3c2eb3b3886aad17d66909e29445d7e3d0163cb24118",
+          "actual_pixel_observations": {
+            "alias": "051",
+            "printingId": "6ad6da5c-02cb-45e1-ab7a-2de25855dbf4",
+            "sha256": "64ac8b84198f0dcbf4c625edc2f2407f86cdd767d74ee0aa772971fb31bf837b",
+            "width": 570,
+            "height": 794,
+            "hashCheckedImmediatelyBeforeViewAtUtc": "2026-10-14T21:45:12.255Z",
+            "observedAtUtc": "2026-10-14T21:45:38.083Z",
+            "viewMethod": "Single whole original via view_image(detail original), immediately preceded by byte hash verification",
+            "actualLanguageCode": "ja",
+            "allFourOuterEdgesVisible": true,
+            "fullCardFrontVisible": true,
+            "sourceBytesUnchanged": true,
+            "generatedOrUpscaled": false,
+            "physicalEditionVerified": false,
+            "physicalFinishVerified": false,
+            "nativeNameObserved": "ポリゴン2",
+            "hpObserved": 70,
+            "stageObserved": "1進化",
+            "evolvesFromObserved": "ポリゴン",
+            "printedNationalDexObserved": 233,
+            "artistObserved": "Keiji Kinebuchi",
+            "artistReadCertain": true,
+            "printedAttackNamesObserved": [
+              "デルタビーム"
+            ],
+            "attackCostsObserved": [
+              [
+                "Colorless",
+                "Colorless",
+                "Colorless"
+              ]
+            ],
+            "attackDamageObserved": [
+              "20"
+            ],
+            "retreatSymbolsObserved": 1,
+            "abilityNamesObserved": [
+              "エナジーコンバーター"
+            ],
+            "nativeAbilityTextObserved": "この力は、自分の番ごとに1回使うことができる。自分の場のポケモンについている「基本エネルギーカード」を1枚選び、好きな「色（タイプ）」（「無色」以外）を1つ選ぶ。この番が終わるまで、その「エネルギーカード」の「エネルギー」は、選んだ「色（タイプ）」の「エネルギー」としてあつかわれる。このカードが「ねむり・マヒ・こんらん」状態のとき、この力を使うことはできず、その効果も消える。",
+            "nativeAttackTextObserved": [
+              "コインを投げて「おもて」なら、「ねむり・マヒ・こんらん」の中から1つを選び、相手をその状態にする。"
+            ],
+            "nonColorlessRestrictionActuallyVisible": true,
+            "setSymbolObserved": true,
+            "frameDescription": "Complete yellow outer border and grey Colorless Stage1 card frame; speckled artwork field.",
+            "copyrightObservation": "No legible copyright/date line seen on complete front; no release-year inference.",
+            "editionStampVisible": false,
+            "proposedPokemonIdentityMatch": true,
+            "trainerCanonicalIdentityAsserted": false,
+            "transcriptionNote": "Readable Japanese title and gameplay body transcribed from a single whole source original; punctuation/spacing normalised. Fine print not invented; no copyright year or physical edition inferred."
+          },
+          "actual_pixel_signature": {
+            "actualLanguageCode": "ja",
+            "nativeName": "ポリゴン2",
+            "header": null,
+            "printedSubtype": null,
+            "hp": 70,
+            "stage": "1進化",
+            "evolvesFrom": "ポリゴン",
+            "nationalDex": 233,
+            "canonicalCollectorAliasNotPrintedNumber": true,
+            "artist": "Keiji Kinebuchi",
+            "artistReadCertain": true,
+            "orderedAttackNames": [
+              "デルタビーム"
+            ],
+            "orderedAttackCosts": [
+              [
+                "Colorless",
+                "Colorless",
+                "Colorless"
+              ]
+            ],
+            "orderedAttackDamage": [
+              "20"
+            ],
+            "abilityNames": [
+              "エナジーコンバーター"
+            ],
+            "nativeAbilityText": "この力は、自分の番ごとに1回使うことができる。自分の場のポケモンについている「基本エネルギーカード」を1枚選び、好きな「色（タイプ）」（「無色」以外）を1つ選ぶ。この番が終わるまで、その「エネルギーカード」の「エネルギー」は、選んだ「色（タイプ）」の「エネルギー」としてあつかわれる。このカードが「ねむり・マヒ・こんらん」状態のとき、この力を使うことはできず、その効果も消える。",
+            "nativeAttackText": [
+              "コインを投げて「おもて」なら、「ねむり・マヒ・こんらん」の中から1つを選び、相手をその状態にする。"
+            ],
+            "nativeRulesText": null,
+            "retreatSymbols": 1,
+            "fullCardFrontVisible": true,
+            "allFourOuterEdgesVisible": true,
+            "setSymbolObserved": true,
+            "editionOrMaterialCertified": false
+          },
+          "actual_pixel_signature_sha256": "196595e9da0fe40a0ef379190587adee43510751e39c4001e2304675a7ff6cff",
+          "original_observation_sha256": "a51b2eb6e5d138727a3ea3dcf7b909faf90aadba52d64b262b49f88078543918",
+          "provider_metadata_discrepancies": [
+            {
+              "type": "actual_nonColorless_type_restriction",
+              "field": "abilityConstraint",
+              "sourceConstraint": "好きな「色（タイプ）」（「無色」以外）",
+              "actualConstraint": "好きな「色（タイプ）」（「無色」以外）",
+              "sourceMatchesActual": true,
+              "tcgConstraintNotExplicit": true,
+              "pixelResolution": true,
+              "canonicalCorrection": false
+            }
+          ],
+          "source_variant_support": {
+            "currentVariantCode": "holo",
+            "currentFinishCode": "holo",
+            "sourceVariantNames": [
+              "holofoil"
+            ],
+            "supportsCurrentMetadataVariant": true,
+            "globalFrontNotPerVariantProof": true,
+            "physicalFinishVerified": false
+          },
+          "raw_provider_translations_preserved": true,
+          "printed_native_body_transcription_note": "Readable Japanese title and gameplay body transcribed from a single whole source original; punctuation/spacing normalised. Fine print not invented; no copyright year or physical edition inferred.",
+          "physical_edition_verified": false,
+          "physical_finish_verified": false,
+          "generic_other_rows_may_relax": false,
+          "queue_controls": {
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "name_number_and_symbol_readable": true,
+              "artist_read_certain": true,
+              "fine_print_readability": "Readable Japanese title and gameplay body transcribed from a single whole source original; punctuation/spacing normalised. Fine print not invented; no copyright year or physical edition inferred.",
+              "copyright_or_date_line_visible": false,
+              "copyright_year_inferred": false,
+              "edition_stamp_visible": false,
+              "edition_or_distribution_certified": false,
+              "material_foil_finish_certified": false,
+              "physical_card_or_material_not_observed": true,
+              "source_image_does_not_certify_physical_finish": true,
+              "full_native_rules_transcription_claimed": false
+            },
+            "identity_controls": {
+              "canonical_alias": "051",
+              "printed_national_dex": 233,
+              "canonical_alias_is_not_printed_national_dex": true,
+              "current_native_label": "Porygon2",
+              "verified_printed_native_name": "ポリゴン2",
+              "current_native_label_not_used_for_match": true,
+              "known_native_label_defect_retained_without_write": true,
+              "form_letter": null
+            },
+            "source_qa": {
+              "actual_japanese_full_front_verified": true,
+              "ordered_costs_and_damage_verified": true,
+              "all_provider_discrepancies_pixel_resolved": true,
+              "physical_finish_verified": false,
+              "source_metadata_sha256": "abad128a0a95f8aee8e052a2aeacf467d504740e2150e12a869fa5f67baa8213",
+              "original_sha256": "64ac8b84198f0dcbf4c625edc2f2407f86cdd767d74ee0aa772971fb31bf837b",
+              "actual_pixel_signature_sha256": "196595e9da0fe40a0ef379190587adee43510751e39c4001e2304675a7ff6cff"
+            }
+          }
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "ab2c259c-353a-4317-b075-83f28a24fab2",
+      "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+      "set_code": "neo3",
+      "language_code": "ja",
+      "collector_number": "052",
+      "card_native_name": "ブリッシー",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "c1935cc0-315e-472d-ac8d-65a2da94674c"
+      ],
+      "batch_id": "JP-CARDS-012",
+      "source_code": "scrydex",
+      "provider_id": "neo3_ja-52",
+      "image_url": "https://images.scrydex.com/pokemon/neo3_ja-52/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/c94cfbe99ed1e5bac2c9464abd9e713b410fe99a00995cc1199419a355a2ff75/original.webp",
+          "sha256": "c94cfbe99ed1e5bac2c9464abd9e713b410fe99a00995cc1199419a355a2ff75",
+          "byte_size": 438580,
+          "width": 570,
+          "height": 799,
+          "mime_type": "image/webp",
+          "artifact_id": 641804110
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/ece9148756d24917c984dfd43a4ac5e06866a57fe93108593fdd2f31360d0eb5/card-grid.webp",
+          "sha256": "ece9148756d24917c984dfd43a4ac5e06866a57fe93108593fdd2f31360d0eb5",
+          "byte_size": 19238,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp",
+          "artifact_id": 641804110
+        },
+        {
+          "role": "search-result",
+          "file": "objects/d228e1b776f42beee7bdec117af67f27e993fc210908477932f6900a01e42a83/search-result.webp",
+          "sha256": "d228e1b776f42beee7bdec117af67f27e993fc210908477932f6900a01e42a83",
+          "byte_size": 4202,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 641804110
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/aea5467509511fc21c582ae03a61d39140bbf43fad95ca649d06a6dce2d0d40e/detail-page.webp",
+          "sha256": "aea5467509511fc21c582ae03a61d39140bbf43fad95ca649d06a6dce2d0d40e",
+          "byte_size": 75146,
+          "width": 570,
+          "height": 799,
+          "mime_type": "image/webp",
+          "artifact_id": 641804110
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo3_ja-52/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/blissey/neo3_ja-52?variant=holofoil",
+        "provider_id": "neo3_ja-52",
+        "source_metadata_sha256": "6ab686ea25a08de83c3c78f25d648d0cd8887b61b9c9b108e6b1399623d1a278",
+        "source_body": {
+          "provider_metadata": {
+            "id": "neo3_ja-52",
+            "name": "ハピナス",
+            "supertype": "ポケモン",
+            "subtypes": [
+              "1進化"
+            ],
+            "types": [
+              "無"
+            ],
+            "hp": "120",
+            "evolves_from": [
+              "ラッキー"
+            ],
+            "abilities": [
+              {
+                "type": "特殊能力",
+                "name": "タマゴうみ",
+                "text": "この力は、このカードを手札から場に出してポケモンを進化させたとき、1回だけ使うことができる。このカードにのっているダメージカウンターを、4個とりのぞく。その後、コインを投げて「おもて」なら、さらにこのカードにのっているダメージカウンターを、4個とりのぞく。"
+              }
+            ],
+            "attacks": [
+              {
+                "cost": [
+                  "無",
+                  "無",
+                  "無",
+                  "無"
+                ],
+                "converted_energy_cost": 4,
+                "name": "のしかかり",
+                "text": "コインを投げて「おもて」なら、相手を「マヒ」状態にする。",
+                "damage": "30"
+              }
+            ],
+            "weaknesses": [
+              {
+                "type": "闘",
+                "value": "×2"
+              }
+            ],
+            "resistances": [
+              {
+                "type": "超",
+                "value": "-30"
+              }
+            ],
+            "retreat_cost": [
+              "無"
+            ],
+            "converted_retreat_cost": 1,
+            "rules": [],
+            "number": "242",
+            "printed_number": "No.242",
+            "additional_numbers": [],
+            "rarity": "レアホロ",
+            "rarity_code": "★H",
+            "artist": "Yuka Morii",
+            "national_pokedex_numbers": [
+              242
+            ],
+            "regulation_mark": null,
+            "legalities": [
+              {
+                "format": "Standard",
+                "status": "Not Legal"
+              },
+              {
+                "format": "Unlimited",
+                "status": "Legal"
+              },
+              {
+                "format": "Expanded",
+                "status": "Not Legal"
+              },
+              {
+                "format": "Gym Leader Challenge",
+                "status": "Not Legal"
+              }
+            ],
+            "flavor_text": null,
+            "images": [
+              {
+                "type": "front",
+                "small": "https://images.scrydex.com/pokemon/neo3_ja-52/small",
+                "medium": "https://images.scrydex.com/pokemon/neo3_ja-52/medium",
+                "large": "https://images.scrydex.com/pokemon/neo3_ja-52/large"
+              }
+            ],
+            "expansion": {
+              "id": "neo3_ja",
+              "name": "めざめる伝説",
+              "series": "Neo",
+              "code": null,
+              "total": 57,
+              "printed_total": 57,
+              "language": "Japanese",
+              "language_code": "JA",
+              "release_date": "2000/11/23",
+              "is_online_only": false,
+              "logo": "https://images.scrydex.com/pokemon/neo3_ja-logo/logo",
+              "symbol": "https://images.scrydex.com/pokemon/neo3_ja-symbol/symbol",
+              "translation": {
+                "en": {
+                  "name": "Awakening Legends"
+                }
+              }
+            },
+            "language": "Japanese",
+            "language_code": "JA",
+            "expansion_sort_order": 52,
+            "translation": {
+              "en": {
+                "name": "Blissey",
+                "supertype": "Pokémon",
+                "subtypes": [
+                  "Stage 1"
+                ],
+                "types": [
+                  "Colorless"
+                ],
+                "rules": null,
+                "abilities": [
+                  {
+                    "type": "Pokémon Power",
+                    "name": "Softboiled",
+                    "text": "When you play Blissey from your hand, you may flip a coin. If heads, remove 8 damage counters from Blissey. If tails, remove 4 damage counters from Blissey. Either way, if Blissey has fewer damage counters than that, remove all of them."
+                  }
+                ],
+                "attacks": [
+                  {
+                    "cost": [
+                      "Colorless",
+                      "Colorless",
+                      "Colorless",
+                      "Colorless"
+                    ],
+                    "converted_energy_cost": 4,
+                    "name": "Body Slam",
+                    "text": "Flip a coin. If heads, the Defending Pokémon is now Paralyzed.",
+                    "damage": "30"
+                  }
+                ],
+                "weaknesses": [
+                  {
+                    "type": "Fighting",
+                    "value": "×2"
+                  }
+                ],
+                "resistances": [
+                  {
+                    "type": "Psychic",
+                    "value": "-30"
+                  }
+                ],
+                "retreat_cost": [
+                  "Colorless"
+                ],
+                "evolves_from": [
+                  "Chansey"
+                ],
+                "flavor_text": null,
+                "rarity": "Rare Holo",
+                "expansion": {
+                  "name": "Awakening Legends"
+                }
+              }
+            },
+            "variants": [
+              {
+                "name": "holofoil",
+                "images": []
+              }
+            ]
+          },
+          "tcgdex_metadata": {
+            "category": "Pokemon",
+            "id": "neo3-052",
+            "localId": "052",
+            "name": "ブリッシー",
+            "rarity": "Holo Rare",
+            "set": {
+              "cardCount": {
+                "official": 57,
+                "total": 57
+              },
+              "id": "neo3",
+              "name": "めざめる伝説",
+              "symbol": "https://assets.tcgdex.net/univ/neo/neo3/symbol"
+            },
+            "variants": {
+              "firstEdition": false,
+              "holo": true,
+              "normal": false,
+              "reverse": false,
+              "wPromo": false
+            },
+            "variants_detailed": [
+              {
+                "type": "holo",
+                "size": "standard",
+                "variantId": "jr7oetx1mqug9"
+              }
+            ],
+            "dexId": [
+              242
+            ],
+            "hp": 120,
+            "types": [
+              "Colorless"
+            ],
+            "stage": "Stage1",
+            "abilities": [
+              {
+                "name": "ソフトボイルド",
+                "effect": "手からブリッシーをプレイすると、コインをひっくり返すことができます。頭の場合は、Blisseyから8つのダメージカウンターを削除します。尾の場合、Blisseyから4つのダメージカウンターを削除します。いずれにせよ、Blisseyのダメージカウンターがそれよりも少ない場合、それらすべてを削除します。"
+              }
+            ],
+            "attacks": [
+              {
+                "cost": [
+                  "Colorless",
+                  "Colorless",
+                  "Colorless",
+                  "Colorless"
+                ],
+                "name": "ボディスラム",
+                "effect": "コインをひっくり返します。頭の場合、防御ポケモンは麻痺しています。",
+                "damage": 30
+              }
+            ],
+            "retreat": 2,
+            "legal": {
+              "standard": false,
+              "expanded": false
+            },
+            "updated": "2026-09-25T23:45:27.136Z"
+          },
+          "source_signature": {
+            "sourceCardId": "neo3_ja-52",
+            "nativeName": "ハピナス",
+            "sourceEnglishName": "Blissey",
+            "language": "Japanese",
+            "languageCode": "JA",
+            "supertype": "ポケモン",
+            "subtypes": [
+              "1進化"
+            ],
+            "nationalDex": [
+              242
+            ],
+            "hp": "120",
+            "types": [
+              "無"
+            ],
+            "evolvesFrom": [
+              "ラッキー"
+            ],
+            "artist": "Yuka Morii",
+            "orderedAttacks": [
+              {
+                "cost": [
+                  "無",
+                  "無",
+                  "無",
+                  "無"
+                ],
+                "converted_energy_cost": 4,
+                "name": "のしかかり",
+                "text": "コインを投げて「おもて」なら、相手を「マヒ」状態にする。",
+                "damage": "30"
+              }
+            ],
+            "abilities": [
+              {
+                "type": "特殊能力",
+                "name": "タマゴうみ",
+                "text": "この力は、このカードを手札から場に出してポケモンを進化させたとき、1回だけ使うことができる。このカードにのっているダメージカウンターを、4個とりのぞく。その後、コインを投げて「おもて」なら、さらにこのカードにのっているダメージカウンターを、4個とりのぞく。"
+              }
+            ],
+            "rules": [],
+            "weaknesses": [
+              {
+                "type": "闘",
+                "value": "×2"
+              }
+            ],
+            "resistances": [
+              {
+                "type": "超",
+                "value": "-30"
+              }
+            ],
+            "retreatCosts": [
+              "無"
+            ],
+            "convertedRetreatCost": 1,
+            "sourceReportedNumber": "242",
+            "sourceReportedPrintedNumber": "No.242",
+            "rarity": "レアホロ",
+            "rarityCode": "★H",
+            "expansion": {
+              "id": "neo3_ja",
+              "name": "めざめる伝説",
+              "series": "Neo",
+              "code": null,
+              "total": 57,
+              "printed_total": 57,
+              "language": "Japanese",
+              "language_code": "JA",
+              "release_date": "2000/11/23",
+              "is_online_only": false,
+              "logo": "https://images.scrydex.com/pokemon/neo3_ja-logo/logo",
+              "symbol": "https://images.scrydex.com/pokemon/neo3_ja-symbol/symbol",
+              "translation": {
+                "en": {
+                  "name": "Awakening Legends"
+                }
+              }
+            },
+            "sourceVariantNames": [
+              "holofoil"
+            ]
+          },
+          "source_signature_sha256": "27f494627fb11d52d758165f4318dd8be2d2e05b0f368cfc77c647c50395f7ce",
+          "source_attack_array_sha256": "b6d6fa8cc2cd9e296ed72cc224a39e260718ae493671cf9302c0419110b860b4",
+          "actual_pixel_observations": {
+            "alias": "052",
+            "printingId": "ab2c259c-353a-4317-b075-83f28a24fab2",
+            "sha256": "c94cfbe99ed1e5bac2c9464abd9e713b410fe99a00995cc1199419a355a2ff75",
+            "width": 570,
+            "height": 799,
+            "hashCheckedImmediatelyBeforeViewAtUtc": "2026-10-14T21:45:38.094Z",
+            "observedAtUtc": "2026-10-14T21:46:01.511Z",
+            "viewMethod": "Single whole original via view_image(detail original), immediately preceded by byte hash verification",
+            "actualLanguageCode": "ja",
+            "allFourOuterEdgesVisible": true,
+            "fullCardFrontVisible": true,
+            "sourceBytesUnchanged": true,
+            "generatedOrUpscaled": false,
+            "physicalEditionVerified": false,
+            "physicalFinishVerified": false,
+            "nativeNameObserved": "ハピナス",
+            "hpObserved": 120,
+            "stageObserved": "1進化",
+            "evolvesFromObserved": "ラッキー",
+            "printedNationalDexObserved": 242,
+            "artistObserved": "Yuka Morii",
+            "artistReadCertain": true,
+            "printedAttackNamesObserved": [
+              "のしかかり"
+            ],
+            "attackCostsObserved": [
+              [
+                "Colorless",
+                "Colorless",
+                "Colorless",
+                "Colorless"
+              ]
+            ],
+            "attackDamageObserved": [
+              "30"
+            ],
+            "retreatSymbolsObserved": 2,
+            "abilityNamesObserved": [
+              "タマゴうみ"
+            ],
+            "nativeAbilityTextObserved": "この力は、このカードを手札から場に出してポケモンを進化させたとき、1回だけ使うことができる。このカードにのっているダメージカウンターを、4個とりのぞく。その後、コインを投げて「おもて」なら、さらにこのカードにのっているダメージカウンターを、4個とりのぞく。",
+            "nativeAttackTextObserved": [
+              "コインを投げて「おもて」なら、相手を「マヒ」状態にする。"
+            ],
+            "setSymbolObserved": true,
+            "frameDescription": "Complete yellow outer border and grey Colorless Stage1 card frame; speckled artwork field.",
+            "copyrightObservation": "No legible copyright/date line seen on complete front; no release-year inference.",
+            "editionStampVisible": false,
+            "sourceDiscrepancies": [
+              "Source retreat1; actual TWO symbols, matching TCGdex2."
+            ],
+            "proposedPokemonIdentityMatch": true,
+            "trainerCanonicalIdentityAsserted": false,
+            "transcriptionNote": "Readable Japanese title and gameplay body transcribed from a single whole source original; punctuation/spacing normalised. Fine print not invented; no copyright year or physical edition inferred."
+          },
+          "actual_pixel_signature": {
+            "actualLanguageCode": "ja",
+            "nativeName": "ハピナス",
+            "header": null,
+            "printedSubtype": null,
+            "hp": 120,
+            "stage": "1進化",
+            "evolvesFrom": "ラッキー",
+            "nationalDex": 242,
+            "canonicalCollectorAliasNotPrintedNumber": true,
+            "artist": "Yuka Morii",
+            "artistReadCertain": true,
+            "orderedAttackNames": [
+              "のしかかり"
+            ],
+            "orderedAttackCosts": [
+              [
+                "Colorless",
+                "Colorless",
+                "Colorless",
+                "Colorless"
+              ]
+            ],
+            "orderedAttackDamage": [
+              "30"
+            ],
+            "abilityNames": [
+              "タマゴうみ"
+            ],
+            "nativeAbilityText": "この力は、このカードを手札から場に出してポケモンを進化させたとき、1回だけ使うことができる。このカードにのっているダメージカウンターを、4個とりのぞく。その後、コインを投げて「おもて」なら、さらにこのカードにのっているダメージカウンターを、4個とりのぞく。",
+            "nativeAttackText": [
+              "コインを投げて「おもて」なら、相手を「マヒ」状態にする。"
+            ],
+            "nativeRulesText": null,
+            "retreatSymbols": 2,
+            "fullCardFrontVisible": true,
+            "allFourOuterEdgesVisible": true,
+            "setSymbolObserved": true,
+            "editionOrMaterialCertified": false
+          },
+          "actual_pixel_signature_sha256": "d0e9d10dd83625f98bf4ff0a0405daacb3025922e563fdf273f17ade4aaf000b",
+          "original_observation_sha256": "3db2d8e3f6c285ffeea433bf23aabcbe95bb22560ebf2371aeaf5117304b6346",
+          "provider_metadata_discrepancies": [
+            {
+              "type": "retreat_metadata_disagreement",
+              "field": "retreat",
+              "sourceRetreat": 1,
+              "tcgdexRetreat": 2,
+              "actualRetreat": 2,
+              "sourceMatchesActual": false,
+              "tcgMatchesActual": true,
+              "pixelResolution": true,
+              "canonicalCorrection": false
+            }
+          ],
+          "source_variant_support": {
+            "currentVariantCode": "holo",
+            "currentFinishCode": "holo",
+            "sourceVariantNames": [
+              "holofoil"
+            ],
+            "supportsCurrentMetadataVariant": true,
+            "globalFrontNotPerVariantProof": true,
+            "physicalFinishVerified": false
+          },
+          "raw_provider_translations_preserved": true,
+          "printed_native_body_transcription_note": "Readable Japanese title and gameplay body transcribed from a single whole source original; punctuation/spacing normalised. Fine print not invented; no copyright year or physical edition inferred.",
+          "physical_edition_verified": false,
+          "physical_finish_verified": false,
+          "generic_other_rows_may_relax": false,
+          "queue_controls": {
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "name_number_and_symbol_readable": true,
+              "artist_read_certain": true,
+              "fine_print_readability": "Readable Japanese title and gameplay body transcribed from a single whole source original; punctuation/spacing normalised. Fine print not invented; no copyright year or physical edition inferred.",
+              "copyright_or_date_line_visible": false,
+              "copyright_year_inferred": false,
+              "edition_stamp_visible": false,
+              "edition_or_distribution_certified": false,
+              "material_foil_finish_certified": false,
+              "physical_card_or_material_not_observed": true,
+              "source_image_does_not_certify_physical_finish": true,
+              "full_native_rules_transcription_claimed": false
+            },
+            "identity_controls": {
+              "canonical_alias": "052",
+              "printed_national_dex": 242,
+              "canonical_alias_is_not_printed_national_dex": true,
+              "current_native_label": "ブリッシー",
+              "verified_printed_native_name": "ハピナス",
+              "current_native_label_not_used_for_match": true,
+              "known_native_label_defect_retained_without_write": true,
+              "form_letter": null
+            },
+            "source_qa": {
+              "actual_japanese_full_front_verified": true,
+              "ordered_costs_and_damage_verified": true,
+              "all_provider_discrepancies_pixel_resolved": true,
+              "physical_finish_verified": false,
+              "source_metadata_sha256": "6ab686ea25a08de83c3c78f25d648d0cd8887b61b9c9b108e6b1399623d1a278",
+              "original_sha256": "c94cfbe99ed1e5bac2c9464abd9e713b410fe99a00995cc1199419a355a2ff75",
+              "actual_pixel_signature_sha256": "d0e9d10dd83625f98bf4ff0a0405daacb3025922e563fdf273f17ade4aaf000b"
+            }
+          }
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    }
+  ],
+  "source_counts": {
+    "scrydex": 2
+  },
+  "delivery_scope": {
+    "fixed_batch_ids": [
+      "JP-CARDS-012"
+    ],
+    "saved_batch_tasks": 7,
+    "eligible_fronts": 2,
+    "by_batch": {
+      "JP-CARDS-012": {
+        "verified": 2,
+        "held": 5
+      }
+    },
+    "excluded_aliases": [
+      "053",
+      "054",
+      "055",
+      "056",
+      "057"
+    ],
+    "excluded": [
+      {
+        "batchId": "JP-CARDS-012",
+        "printingId": "ecd63564-d5d4-402d-b28d-95011e2a9107",
+        "variantId": "40806ca5-1d4c-4bf6-b499-cee8ff167f94",
+        "canonicalCollectorAlias": "053",
+        "selectedSourceCardId": null,
+        "holds": [
+          {
+            "code": "trainer_native_body_and_art_not_independently_bound",
+            "reason": "The exact current TCGdex target contains category/name/set/rarity only; it omits effects, artist and native rules. Scrydex provides a literal source lead and one native body, but name/set matching alone is not an exact artwork/version/printing bridge.",
+            "action": "Any later capture must be quarantine comparison-only. Read full Japanese title, set symbol, artist, frame/header/subtype/rule boxes and complete rule effect before exact canonical artwork binding. Do not prepare or infer printing from alias/order."
+          },
+          {
+            "code": "actual_source_front_verified_but_canonical_trainer_body_art_bridge_missing",
+            "action": "Retain this unchanged source original as comparison only. selectedSourceCardId remains null; current canonical artist is null and printing discriminator empty. Independent canonical native body/art/version evidence is still required."
+          }
+        ]
+      },
+      {
+        "batchId": "JP-CARDS-012",
+        "printingId": "f03f92e7-086a-4ec9-8281-e3c88906d13d",
+        "variantId": "eaa7573e-3860-440e-be69-cb414e6bbda5",
+        "canonicalCollectorAlias": "054",
+        "selectedSourceCardId": null,
+        "holds": [
+          {
+            "code": "trainer_native_body_and_art_not_independently_bound",
+            "reason": "The exact current TCGdex target contains category/name/set/rarity only; it omits effects, artist and native rules. Scrydex provides a literal source lead and one native body, but name/set matching alone is not an exact artwork/version/printing bridge.",
+            "action": "Any later capture must be quarantine comparison-only. Read full Japanese title, set symbol, artist, frame/header/subtype/rule boxes and complete rule effect before exact canonical artwork binding. Do not prepare or infer printing from alias/order."
+          },
+          {
+            "code": "actual_source_front_verified_but_canonical_trainer_body_art_bridge_missing",
+            "action": "Retain this unchanged source original as comparison only. selectedSourceCardId remains null; current canonical artist is null and printing discriminator empty. Independent canonical native body/art/version evidence is still required."
+          }
+        ]
+      },
+      {
+        "batchId": "JP-CARDS-012",
+        "printingId": "05ec5ae6-bfb8-41b1-a65b-acb7ce4c3585",
+        "variantId": "fc02d833-0de4-4a4d-be84-fe71a9bd0582",
+        "canonicalCollectorAlias": "055",
+        "selectedSourceCardId": null,
+        "holds": [
+          {
+            "code": "trainer_native_body_and_art_not_independently_bound",
+            "reason": "The exact current TCGdex target contains category/name/set/rarity only; it omits effects, artist and native rules. Scrydex provides a literal source lead and one native body, but name/set matching alone is not an exact artwork/version/printing bridge.",
+            "action": "Any later capture must be quarantine comparison-only. Read full Japanese title, set symbol, artist, frame/header/subtype/rule boxes and complete rule effect before exact canonical artwork binding. Do not prepare or infer printing from alias/order."
+          },
+          {
+            "code": "actual_source_front_verified_but_canonical_trainer_body_art_bridge_missing",
+            "action": "Retain this unchanged source original as comparison only. selectedSourceCardId remains null; current canonical artist is null and printing discriminator empty. Independent canonical native body/art/version evidence is still required."
+          }
+        ]
+      },
+      {
+        "batchId": "JP-CARDS-012",
+        "printingId": "6196aadb-f7bc-4449-8fd3-254987e292f8",
+        "variantId": "7d0611e3-9b65-4539-8803-c7a9876f6e68",
+        "canonicalCollectorAlias": "056",
+        "selectedSourceCardId": null,
+        "holds": [
+          {
+            "code": "trainer_native_body_and_art_not_independently_bound",
+            "reason": "The exact current TCGdex target contains category/name/set/rarity only; it omits effects, artist and native rules. Scrydex provides a literal source lead and one native body, but name/set matching alone is not an exact artwork/version/printing bridge.",
+            "action": "Any later capture must be quarantine comparison-only. Read full Japanese title, set symbol, artist, frame/header/subtype/rule boxes and complete rule effect before exact canonical artwork binding. Do not prepare or infer printing from alias/order."
+          },
+          {
+            "code": "actual_source_front_verified_but_canonical_trainer_body_art_bridge_missing",
+            "action": "Retain this unchanged source original as comparison only. selectedSourceCardId remains null; current canonical artist is null and printing discriminator empty. Independent canonical native body/art/version evidence is still required."
+          }
+        ]
+      },
+      {
+        "batchId": "JP-CARDS-012",
+        "printingId": "56fc9f48-441c-40da-b1a7-29fdbd5300c4",
+        "variantId": "767914af-5fcc-4e7c-9304-de89589eb56f",
+        "canonicalCollectorAlias": "057",
+        "selectedSourceCardId": null,
+        "holds": [
+          {
+            "code": "trainer_native_body_and_art_not_independently_bound",
+            "reason": "The exact current TCGdex target contains category/name/set/rarity only; it omits effects, artist and native rules. Scrydex provides a literal source lead and one native body, but name/set matching alone is not an exact artwork/version/printing bridge.",
+            "action": "Any later capture must be quarantine comparison-only. Read full Japanese title, set symbol, artist, frame/header/subtype/rule boxes and complete rule effect before exact canonical artwork binding. Do not prepare or infer printing from alias/order."
+          },
+          {
+            "code": "actual_source_front_verified_but_canonical_trainer_body_art_bridge_missing",
+            "action": "Retain this unchanged source original as comparison only. selectedSourceCardId remains null; current canonical artist is null and printing discriminator empty. Independent canonical native body/art/version evidence is still required."
+          }
+        ]
+      }
+    ],
+    "outside_fixed_cohort": [
+      {
+        "aliases": [
+          "022",
+          "023"
+        ],
+        "reason": "Separate unresolved source/current finish conflicts; outside this exact-two scope."
+      }
+    ],
+    "whole_batch_completion_asserted": false
+  },
+  "binding_expectations": {
+    "production": [
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+        "set_code": "neo3",
+        "printing_id": "ab2c259c-353a-4317-b075-83f28a24fab2",
+        "collector_number": "052",
+        "card_native_name": "ブリッシー",
+        "variant_id": "c1935cc0-315e-472d-ac8d-65a2da94674c",
+        "variant_code": "holo",
+        "finish_code": "holo",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+        "set_code": "neo3",
+        "printing_id": "6ad6da5c-02cb-45e1-ab7a-2de25855dbf4",
+        "collector_number": "051",
+        "card_native_name": "Porygon2",
+        "variant_id": "c563902f-3ed5-41c6-8289-60dbdc121a5b",
+        "variant_code": "holo",
+        "finish_code": "holo",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      }
+    ],
+    "staging": [
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+        "set_code": "neo3",
+        "printing_id": "ab2c259c-353a-4317-b075-83f28a24fab2",
+        "collector_number": "052",
+        "card_native_name": "ブリッシー",
+        "variant_id": "c1935cc0-315e-472d-ac8d-65a2da94674c",
+        "variant_code": "holo",
+        "finish_code": "holo",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+        "set_code": "neo3",
+        "printing_id": "6ad6da5c-02cb-45e1-ab7a-2de25855dbf4",
+        "collector_number": "051",
+        "card_native_name": "Porygon2",
+        "variant_id": "c563902f-3ed5-41c6-8289-60dbdc121a5b",
+        "variant_code": "holo",
+        "finish_code": "holo",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      }
+    ]
+  },
+  "scope_counts": {
+    "production": {
+      "printings": 2,
+      "variants": 2,
+      "names": 4,
+      "sets": 1
+    },
+    "staging": {
+      "printings": 2,
+      "variants": 2,
+      "names": 4,
+      "sets": 1
+    }
+  },
+  "source_policies": {
+    "production": [
+      {
+        "code": "scrydex",
+        "display_name": "Scrydex",
+        "source_type": "image",
+        "base_url": "https://scrydex.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Exactly 89 English MEP fronts approved by owner; catalogue/rights-evidence/mep89-scrydex-owner-confirmation.2026-09-27.json; 8c68bf3499de1e1e340b00fc03e5f1b469de7b65d259b5fba5a8b4cd31119ca9. No source-wide approval.",
+        "deprecated_at": null
+      }
+    ],
+    "staging": []
+  },
+  "new_sources": {
+    "production": [],
+    "staging": [
+      {
+        "code": "scrydex",
+        "display_name": "Scrydex",
+        "source_type": "image",
+        "base_url": "https://scrydex.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Exactly 89 English MEP fronts approved by owner; catalogue/rights-evidence/mep89-scrydex-owner-confirmation.2026-09-27.json; 8c68bf3499de1e1e340b00fc03e5f1b469de7b65d259b5fba5a8b4cd31119ca9. No source-wide approval.",
+        "deprecated_at": null
+      }
+    ]
+  }
+}

@@ -6,10 +6,12 @@
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
+import ts from 'typescript';
 
 type Row = Record<string, unknown>;
 type Logo = { key: string; normalizedKey: string; code: string; assetPath: string };
 const MAX_BYTES = 300 * 1024 * 1024;
+const HISTORICAL_LOGO_COUNT = 223;
 const sha = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
 const fileSha = (path: string) => sha(readFileSync(path));
 const stable = (value: unknown) => `${JSON.stringify(value, null, 2)}\n`;
@@ -24,24 +26,81 @@ function json(path: string, label: string): Row {
 }
 
 function sourceLogos(path: string): { logos: Logo[]; aliases: Record<string, string> } {
+  if (!existsSync(path) || statSync(path).size > 1024 * 1024) throw new Error('Japanese logo runtime source is missing or too large.');
   const source = readFileSync(path, 'utf8');
-  const logos = [...source.matchAll(/^  "([^"]+)": \{\r?\n    key: "([^"]+)",\r?\n    normalizedKey: "([^"]+)",[\s\S]*?\r?\n    code: "([^"]+)",\r?\n    source: require\('\.\.\/assets\/(rev2\/11-japanese-set-logo\/logos\/[^']+\.png)'\)/gm)]
-    .map((match) => ({ key: match[2], normalizedKey: match[3], code: match[4], assetPath: `assets/${match[5]}` }));
-  if (logos.length !== 223 || new Set(logos.map((logo) => logo.normalizedKey)).size !== logos.length) throw new Error('Japanese logo runtime source must expose exactly 223 unique manifest keys.');
-  const aliases = Object.fromEntries([...source.matchAll(/^  "([^"]+)": "([^"]+)",\r?$/gm)].map((match) => [match[1], match[2]]));
+  const diagnostics = ts.transpileModule(source, { fileName: path, reportDiagnostics: true }).diagnostics;
+  if (diagnostics?.some((diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error)) throw new Error('Japanese logo runtime source is malformed.');
+  const tree = ts.createSourceFile(path, source, ts.ScriptTarget.Latest, true);
+  const objects = new Map<string, ts.ObjectLiteralExpression>();
+  function visit(node: ts.Node) {
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name)
+      && ['JAPANESE_SET_LOGOS_BY_KEY', 'JAPANESE_SET_LOGO_ALIASES'].includes(node.name.text)) {
+      if (objects.has(node.name.text) || !node.initializer || !ts.isObjectLiteralExpression(node.initializer)) throw new Error(`Runtime ${node.name.text} must be one literal object.`);
+      objects.set(node.name.text, node.initializer);
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(tree);
+  function entries(object: ts.ObjectLiteralExpression | undefined, label: string) {
+    if (!object) throw new Error(`Runtime ${label} is missing.`);
+    const fields = new Map<string, ts.Expression>();
+    for (const property of object.properties) {
+      if (!ts.isPropertyAssignment(property) || !ts.isStringLiteral(property.name) && !ts.isIdentifier(property.name)) throw new Error(`Runtime ${label} contains a nonliteral property.`);
+      const key = property.name.text;
+      if (fields.has(key)) throw new Error(`Runtime ${label} contains duplicate ${key}.`);
+      fields.set(key, property.initializer);
+    }
+    return fields;
+  }
+  function text(value: ts.Expression | undefined, label: string) {
+    if (!value || !ts.isStringLiteral(value) || !value.text) throw new Error(`Runtime ${label} must be a literal string.`);
+    return value.text;
+  }
+  const logos = [...entries(objects.get('JAPANESE_SET_LOGOS_BY_KEY'), 'logo map')].map(([mapKey, value]) => {
+    if (!ts.isObjectLiteralExpression(value)) throw new Error(`Runtime logo ${mapKey} must be a literal object.`);
+    const fields = entries(value, `logo ${mapKey}`);
+    const key = text(fields.get('key'), `logo ${mapKey} key`);
+    const normalizedKey = text(fields.get('normalizedKey'), `logo ${mapKey} normalizedKey`);
+    if (mapKey !== normalizedKey || normalize(key) !== normalizedKey) throw new Error(`Runtime logo ${mapKey} has conflicting keys.`);
+    let image = fields.get('source');
+    while (image && (ts.isAsExpression(image) || ts.isParenthesizedExpression(image))) image = image.expression;
+    if (!image || !ts.isCallExpression(image) || !ts.isIdentifier(image.expression) || image.expression.text !== 'require' || image.arguments.length !== 1) throw new Error(`Runtime logo ${mapKey} source must be one literal require.`);
+    const requiredPath = text(image.arguments[0], `logo ${mapKey} source`);
+    if (!requiredPath.startsWith('../assets/') || requiredPath.slice('../assets/'.length).split('/').some((part) => !part || part === '.' || part === '..')) throw new Error(`Runtime logo ${mapKey} source is outside the asset inventory.`);
+    return { key, normalizedKey, code: text(fields.get('code'), `logo ${mapKey} code`), assetPath: requiredPath.slice(3) };
+  });
+  const aliases = Object.fromEntries([...entries(objects.get('JAPANESE_SET_LOGO_ALIASES'), 'alias map')]
+    .map(([key, value]) => [key, text(value, `alias ${key}`)]));
   return { logos, aliases };
 }
 
-export function auditJapaneseSetLogoRuntimeCoverage(args: { evidencePath?: string; manifestPath?: string; runtimeSourcePath?: string; outputDir: string; expectedTargetSetCount?: number }) {
+export function auditJapaneseSetLogoRuntimeCoverage(args: { evidencePath?: string; manifestPath?: string; addendumPath?: string; runtimeSourcePath?: string; outputDir: string; expectedTargetSetCount?: number }) {
   const evidencePath = resolve(args.evidencePath ?? '.tmp/canonical-evidence/current-gap-audit-20260903-v3/canonical-catalogue-row-evidence.jsonl');
   const manifestPath = resolve(args.manifestPath ?? 'assets/rev2/11-japanese-set-logo/manifest.json');
+  const addendumPath = resolve(args.addendumPath ?? 'assets/rev2/11-japanese-set-logo/storm-m6-owner-supplied-20261018.json');
   const runtimeSourcePath = resolve(args.runtimeSourcePath ?? 'lib/japaneseSetLogos.ts');
   if (!existsSync(evidencePath) || statSync(evidencePath).size > MAX_BYTES) throw new Error('Canonical evidence ledger is missing or too large.');
   const manifest = json(manifestPath, 'Japanese logo manifest');
   const manifestLogos = Array.isArray(manifest.logos) ? manifest.logos : [];
+  if (manifestLogos.length !== HISTORICAL_LOGO_COUNT || manifestLogos.some((logo) => !isRow(logo)
+    || ['key', 'normalizedKey', 'code', 'assetPath'].some((field) => typeof logo[field] !== 'string' || !logo[field]))) throw new Error('Historical Japanese logo manifest must contain 223 complete entries.');
+  const addendum = json(addendumPath, 'Storm M6 logo addendum');
+  if (addendum.schemaVersion !== 1 || addendum.language !== 'ja' || addendum.setCode !== 'M6'
+    || addendum.setId !== '903d5baa-27c7-5690-b1d7-2395c770204a'
+    || addendum.assetPath !== 'assets/rev2/11-japanese-set-logo/logos-owner-supplied-20261018/m6.png'
+    || addendum.sha256 !== '383905581374e6a41be583303354be84a34891d52f8b6420ea632ff61a07f7ba'
+    || addendum.permissionRecord !== 'catalogue/rights-reviews/stackr-m6-owner-supplied-set-logo.2026-10-18.json'
+    || addendum.existingManifestUnchanged !== true) throw new Error('Storm M6 logo addendum has invalid identity, asset or permission binding.');
+  const inventory = [...manifestLogos as Logo[], { key: 'm6', normalizedKey: 'm6', code: 'M6', assetPath: addendum.assetPath }];
+  const manifestByKey = new Map(inventory.map((logo) => [logo.normalizedKey, logo]));
+  if (manifestByKey.size !== inventory.length || new Set(inventory.map((logo) => logo.assetPath)).size !== inventory.length) throw new Error('Japanese logo inventory must contain 224 unique keys and asset paths.');
   const { logos, aliases } = sourceLogos(runtimeSourcePath);
-  const manifestByKey = new Map(manifestLogos.filter(isRow).map((logo) => [String(logo.normalizedKey), String(logo.assetPath)]));
-  for (const logo of logos) if (manifestByKey.get(logo.normalizedKey) !== logo.assetPath) throw new Error(`Runtime logo ${logo.key} is not exactly manifest-bound.`);
+  if (logos.length !== inventory.length || new Set(logos.map((logo) => logo.normalizedKey)).size !== logos.length) throw new Error('Japanese logo runtime source must expose exactly 224 unique inventory keys.');
+  for (const logo of logos) {
+    const expected = manifestByKey.get(logo.normalizedKey);
+    if (!expected || expected.key !== logo.key || expected.code !== logo.code || expected.assetPath !== logo.assetPath) throw new Error(`Runtime logo ${logo.key} is not exactly manifest-bound.`);
+  }
+  for (const [alias, target] of Object.entries(aliases)) if (!manifestByKey.has(target)) throw new Error(`Runtime alias ${alias} has an unbound logo target.`);
 
   const sets = new Map<string, string>();
   for (const line of readFileSync(evidencePath, 'utf8').split(/\r?\n/)) {
@@ -76,8 +135,10 @@ export function auditJapaneseSetLogoRuntimeCoverage(args: { evidencePath?: strin
   const count = (resolution: string) => rows.filter((row) => row.resolution === resolution).length;
   const report = {
     schema_version: 'stackr-japanese-set-logo-runtime-coverage-audit-v1', mode: 'dry_run_local_files_only', network_accessed: false, artwork_accessed: false, database_accessed: false, canonical_database_write_authorized: false,
-    input_sha256: { [`evidence:${basename(evidencePath)}`]: fileSha(evidencePath), [`manifest:${basename(manifestPath)}`]: fileSha(manifestPath), [`runtime:${basename(runtimeSourcePath)}`]: fileSha(runtimeSourcePath) },
+    input_sha256: { [`evidence:${basename(evidencePath)}`]: fileSha(evidencePath), [`manifest:${basename(manifestPath)}`]: fileSha(manifestPath), [`addendum:${basename(addendumPath)}`]: fileSha(addendumPath), [`runtime:${basename(runtimeSourcePath)}`]: fileSha(runtimeSourcePath) },
     target_set_count: rows.length, manifest_logo_count: logos.length,
+    historical_manifest_logo_count: manifestLogos.length, addendum_logo_count: 1,
+    additive_logo: { key: 'm6', asset_path: addendum.assetPath, declared_asset_sha256: addendum.sha256, permission_record: addendum.permissionRecord },
     before: { matched_current_sets: rows.filter((row) => row.runtime_logo_key).length },
     proposed_exact_aliases: [],
     after: { matched_current_sets: rows.filter((row) => row.runtime_logo_key).length },
@@ -95,5 +156,5 @@ export function auditJapaneseSetLogoRuntimeCoverage(args: { evidencePath?: strin
 
 if (require.main === module) {
   const values = Object.fromEntries(process.argv.slice(2).map((arg) => { const [key, ...rest] = arg.replace(/^--/, '').split('='); return [key, rest.join('=')]; }));
-  process.stdout.write(`${JSON.stringify(auditJapaneseSetLogoRuntimeCoverage({ evidencePath: values.evidence, manifestPath: values.manifest, runtimeSourcePath: values.runtime, outputDir: values.output || '.tmp/japanese-set-logo-runtime-coverage-audit/NEW_OUTPUT' }), null, 2)}\n`);
+  process.stdout.write(`${JSON.stringify(auditJapaneseSetLogoRuntimeCoverage({ evidencePath: values.evidence, manifestPath: values.manifest, addendumPath: values.addendum, runtimeSourcePath: values.runtime, outputDir: values.output || '.tmp/japanese-set-logo-runtime-coverage-audit/NEW_OUTPUT' }), null, 2)}\n`);
 }

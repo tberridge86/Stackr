@@ -5,6 +5,9 @@ import { getEditionAwareImageUrl, getEditionVariantImageUrl, type EditionImageSi
 import type { ScanEditionHint } from '../types/scan';
 import { Text } from './Text';
 import { StackrImage } from './StackrImage';
+import { CardFinishArtwork } from './CardFinishArtwork';
+import type { CardFinishMetadata } from '../lib/cardFinishProfiles';
+import type { RetrievalImageEvent } from '../lib/performance';
 
 type Props = {
   uri?: string | null;
@@ -22,6 +25,11 @@ type Props = {
   imageStyle?: StyleProp<ImageStyle>;
   resizeMode?: ImageProps['resizeMode'];
   onReferenceImageChange?: (shared: boolean) => void;
+  onDiagnostic?: (event: RetrievalImageEvent) => void;
+  cropToCard?: boolean;
+  fallback?: React.ReactNode;
+  finishMetadata?: CardFinishMetadata;
+  isSlabbed?: boolean;
 };
 
 function isForeignLanguage(language: unknown) {
@@ -29,13 +37,13 @@ function isForeignLanguage(language: unknown) {
   return Boolean(value && value !== 'en' && value !== 'english' && !value.startsWith('en-'));
 }
 
-function EditionAwareCardImageBase({ uri, fullUri, fallbackUri, cardId, language, rawData, editionHint, sourceSize = 'large', style, imageStyle, resizeMode = 'contain', onReferenceImageChange }: Props) {
+function EditionAwareCardImageBase({ uri, fullUri, fallbackUri, cardId, language, rawData, editionHint, sourceSize = 'large', style, imageStyle, resizeMode = 'contain', onReferenceImageChange, onDiagnostic, cropToCard = false, fallback, finishMetadata, isSlabbed }: Props) {
   const rawVariantUri = React.useMemo(() => getEditionVariantImageUrl(rawData, editionHint, sourceSize), [editionHint, rawData, sourceSize]);
   const foreign = isForeignLanguage(language ?? rawData?.language);
   // Only exact supplied catalogue artwork and an explicitly tagged local variant
   // are admissible. The old edition route is contained, and constructed/provider
   // fallbacks do not establish a foreign printing's language or identity.
-  const resolvedDisplayUri = getEditionAwareImageUrl({ rawVariantUri, suppliedUri: uri ?? fullUri ?? fallbackUri });
+  const resolvedDisplayUri = getEditionAwareImageUrl({ rawVariantUri, suppliedUri: sourceSize === 'small' ? uri ?? fullUri ?? fallbackUri : fullUri ?? uri ?? fallbackUri });
   const hasSourceVariant = Boolean(rawVariantUri);
   const needsVisualPatch = !foreign && Boolean(editionHint && !hasSourceVariant && editionHint !== 'unlimited');
   const contentFit = resizeMode === 'cover' ? 'cover' : resizeMode === 'stretch' ? 'fill' : 'contain';
@@ -44,25 +52,31 @@ function EditionAwareCardImageBase({ uri, fullUri, fallbackUri, cardId, language
     onReferenceImageChange?.(artwork?.candidates.some((candidate) => candidate.uri === source && candidate.kind === 'shared') ?? false);
   }, [artwork, onReferenceImageChange]);
 
-  return <View style={[styles.container, style]}>
+  const face = <View style={[styles.container, finishMetadata ? { width: '100%', height: '100%' } : style]}>
     {resolvedDisplayUri || fullUri || fallbackUri ? <StackrImage
       uri={resolvedDisplayUri}
+      thumbnailUri={sourceSize !== 'small' && !hasSourceVariant && uri !== resolvedDisplayUri ? uri : undefined}
       fullUri={!hasSourceVariant ? fullUri : undefined}
       fallbackSource={!hasSourceVariant && fallbackUri ? { uri: fallbackUri } : undefined}
       fallbackUris={!foreign && !hasSourceVariant ? artwork?.candidates.map((candidate) => candidate.uri) : undefined}
       cacheKey={[String(language ?? rawData?.language ?? 'en').toLowerCase(), cardId ?? 'unknown', sourceSize].join(':')}
       onSourceChange={handleSourceChange}
+      onDiagnostic={onDiagnostic}
       style={styles.image}
       imageStyle={imageStyle}
       contentFit={contentFit}
-      priority={sourceSize === 'small' ? 'low' : 'normal'}
-      transition={sourceSize === 'small' ? 140 : 220}
+      cropToCard={cropToCard}
+      preserveDetail={sourceSize !== 'small'}
+      fallback={fallback}
+      priority="normal"
+      transition={0}
       showFallbackIcon
       cardShape
-    /> : <View style={styles.fallback} />}
+    /> : fallback ?? <View style={styles.fallback} />}
     {needsVisualPatch && editionHint === '1st_edition' && <View pointerEvents="none" style={styles.firstEditionStamp}><Text style={styles.firstEditionOne}>1st</Text><Text style={styles.firstEditionText}>EDITION</Text></View>}
     {needsVisualPatch && editionHint === 'shadowless' && <View pointerEvents="none" style={styles.shadowlessBadge}><Text style={styles.shadowlessText}>SHADOWLESS</Text></View>}
   </View>;
+  return finishMetadata ? <CardFinishArtwork cardMetadata={finishMetadata} isSlabbed={isSlabbed} style={style}>{face}</CardFinishArtwork> : face;
 }
 
 export default React.memo(EditionAwareCardImageBase);

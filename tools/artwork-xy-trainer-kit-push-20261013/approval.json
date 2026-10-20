@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 53,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "en",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "approved_at": "2026-10-13",
+  "cohort_sha256": "f5b9cbbea6e8b1b4f61d9739d3785abf01439228ca61f9088329aca6fdd7ac9e",
+  "owner_instructions": [
+    "gather batch EN-CARDS-001 - hey Tif can you take over and process these artworks in their batvhes until we are complete - as you do them make sure they all livwe in production",
+    "using your internet sourcs you can queue it for the production push - we dont need to review",
+    "continue your work flow please - i want to set you loose to work through this Tif can you manage this?"
+  ],
+  "scope": "Store, resize and display exactly these 53 eligible XY trainer-kit source originals and 159 derivatives. The original 54 saved target identities remain fixed; 1 targets are excluded from this exact release. Per-printing source aliases, original hashes, readable footer/deck/name evidence and minimum detail dimensions are frozen. No canonical metadata/pricing changes, production source insertion, source-wide activation or per-batch human review. No independent vendor licence or physical foil certification is asserted.",
+  "source_counts": {
+    "scrydex": 53
+  }
+}

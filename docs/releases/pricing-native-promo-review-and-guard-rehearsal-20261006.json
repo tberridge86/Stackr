@@ -1,0 +1,884 @@
+{
+  "schemaVersion": "stackr-native-promo-review-and-guard-rehearsal-v1",
+  "observedAt": "2026-10-06 04:39:53.734683+00",
+  "worker": {
+    "productionDatasetAt": "2026-10-05T20:05:57+0000",
+    "setsClaimed": 1,
+    "cards": 30,
+    "pricedOutcomes": 25,
+    "deferred": 0,
+    "exitCode": 0,
+    "finishedAt": "2026-10-06T04:15:26.927384703Z",
+    "diagnostics": {
+      "pages": 39,
+      "scanned": 76317,
+      "catalogueVersions": [
+        {
+          "language_code": "en",
+          "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+        },
+        {
+          "language_code": "ja",
+          "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+        },
+        {
+          "language_code": "ko",
+          "id": "159eb902-143c-42ef-b682-93ba5f9e81f2"
+        },
+        {
+          "language_code": "zh-cn",
+          "id": "79f43e8f-7062-4d29-8571-569eccb7c249"
+        },
+        {
+          "language_code": "zh-tw",
+          "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e"
+        }
+      ],
+      "observedAtBegin": "2026-10-06T04:14:29.595551+00:00",
+      "observedAtEnd": "2026-10-06T04:15:25.448373+00:00",
+      "atomic": false
+    },
+    "durableGroups": [
+      {
+        "total": 167,
+        "status": "complete",
+        "categoryId": 3
+      },
+      {
+        "total": 53,
+        "status": "unmapped",
+        "categoryId": 3
+      },
+      {
+        "total": 163,
+        "status": "complete",
+        "categoryId": 85
+      },
+      {
+        "total": 297,
+        "status": "unmapped",
+        "categoryId": 85
+      }
+    ],
+    "productionDeployment": "a05bce17-b739-48a8-ae23-9b3809fada5e",
+    "configuredSource": "7dc63aa",
+    "workerTriggeredByThisHeartbeat": false
+  },
+  "classicCollection": {
+    "category": 3,
+    "group": 24837,
+    "productionCandidates": 30,
+    "productionMapped": 25,
+    "stageCandidates": 0,
+    "productionOnlyWriteByThisHeartbeat": false,
+    "positiveStoredReadback": {
+      "observed_at": "2026-10-06 04:44:02.174223+00",
+      "native_variants": 30,
+      "stored_variant_quotes": 25,
+      "positive_fresh_variant_quotes": 25,
+      "source_at": "2026-10-05 20:05:57+00",
+      "expiry": "2026-10-07 20:05:57+00",
+      "first_current_recorded_at": "2026-10-06 04:14:25.780222+00",
+      "last_current_recorded_at": "2026-10-06 04:14:25.780222+00",
+      "positive_fresh_cardmarket_variants": 0
+    },
+    "generalScope": true,
+    "exactConditionGradeHoldingsSoldProof": false,
+    "wholeCatalogueNetCoverageGain": "not yet measured; eight additional positives verified in matched initial English 9,000-variant partitions"
+  },
+  "coverage": {
+    "lastCompleteObservation": "2026-10-06T03:34:45.990Z",
+    "lastCompletePositive": 38371,
+    "physicalDenominator": 76030,
+    "fullPhysicalCatalogue": 76269,
+    "koreanExcludedVariants": 239,
+    "lastCompletePercent": 50.47,
+    "currentCompleteObservation": "not measured",
+    "incompleteObservation": {
+      "complete": false,
+      "observation": "2026-10-06T04:39:53.734Z",
+      "rows": [
+        {
+          "language": "en",
+          "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+          "pages": 28,
+          "complete": false,
+          "scanned": 10000,
+          "physical": 10000,
+          "invalidPhysicalMemberships": 0,
+          "positiveStoredVariants": 8013,
+          "positiveVariantQuotes": 6918,
+          "positiveCardmarketVariants": 2372,
+          "additionalPrintingGuideVariants": 509,
+          "nextCursor": "4d1128a9-adaa-427c-bac8-93398632e034"
+        },
+        {
+          "language": "ja",
+          "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+          "pages": 24,
+          "complete": false,
+          "scanned": 5100,
+          "physical": 5100,
+          "invalidPhysicalMemberships": 0,
+          "positiveStoredVariants": 2866,
+          "positiveVariantQuotes": 2549,
+          "positiveCardmarketVariants": 351,
+          "additionalPrintingGuideVariants": 179,
+          "nextCursor": "5d531de4-77d2-41d5-9253-2b4ca58daff2"
+        },
+        {
+          "language": "zh-cn",
+          "catalogueVersionId": "79f43e8f-7062-4d29-8571-569eccb7c249",
+          "pages": 21,
+          "complete": true,
+          "scanned": 20453,
+          "physical": 20405,
+          "invalidPhysicalMemberships": 48,
+          "positiveStoredVariants": 0,
+          "positiveVariantQuotes": 0,
+          "positiveCardmarketVariants": 0,
+          "additionalPrintingGuideVariants": 0,
+          "nextCursor": "fffbee7c-4094-4589-ab7a-ff72015294b1"
+        },
+        {
+          "language": "zh-tw",
+          "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+          "pages": 9,
+          "complete": true,
+          "scanned": 8166,
+          "physical": 8166,
+          "invalidPhysicalMemberships": 0,
+          "positiveStoredVariants": 4036,
+          "positiveVariantQuotes": 0,
+          "positiveCardmarketVariants": 4036,
+          "additionalPrintingGuideVariants": 0,
+          "nextCursor": "fff6e5fe-60a1-4033-91d1-258f6a890efa"
+        },
+        {
+          "language": "ko",
+          "catalogueVersionId": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+          "pages": 1,
+          "complete": true,
+          "scanned": 239,
+          "physical": 239,
+          "invalidPhysicalMemberships": 0,
+          "positiveStoredVariants": 0,
+          "positiveVariantQuotes": 0,
+          "positiveCardmarketVariants": 0,
+          "additionalPrintingGuideVariants": 0,
+          "nextCursor": "fe7f9e8e-6b17-4899-ac66-1d34bf955aa6"
+        }
+      ],
+      "targetLanguages": [
+        "en",
+        "ja",
+        "zh-cn",
+        "zh-tw"
+      ],
+      "koreanExcluded": true,
+      "measuredPhysicalVariants": 43671,
+      "measuredPositiveStoredVariants": 14915,
+      "wholeCataloguePercent": null,
+      "projectedGeneralSourceAvailability": "not measured",
+      "ownerHttpPhoneVisibility": "not measured",
+      "atomic": false
+    },
+    "checkpoint": "pricing-positive-coverage-checkpoint-20261006-0439.json",
+    "initialEnglish9000PartitionHashesAndNativeCountsMatch": true,
+    "initialEnglish9000NetPositiveChange": 8,
+    "priceGuideFailures": [
+      {
+        "language": "en",
+        "cursor": "452277f4-7896-4cfa-8a35-e69e9df082db",
+        "pageSize": 500,
+        "at": "2026-10-06T04:44:23.660Z",
+        "reason": "guarded printing-read statement timeout at eight seconds; no checkpoint advancement"
+      },
+      {
+        "language": "en",
+        "cursor": "452277f4-7896-4cfa-8a35-e69e9df082db",
+        "pageSize": 250,
+        "at": "2026-10-06T04:44:33.600Z",
+        "reason": "guarded printing-read statement timeout at eight seconds; no checkpoint advancement"
+      },
+      {
+        "language": "ja",
+        "cursor": "5253a939-4ab3-4dfc-b3db-db9de8d40d6a",
+        "pageSize": 250,
+        "at": "2026-10-06T04:44:34.402Z",
+        "reason": "guarded printing-read statement timeout at eight seconds; no checkpoint advancement"
+      },
+      {
+        "language": "en",
+        "cursor": "4d1128a9-adaa-427c-bac8-93398632e034",
+        "pageSize": 100,
+        "at": "2026-10-06T04:51:15.202Z",
+        "reason": "guarded printing-read statement timeout at eight seconds; no checkpoint advancement"
+      },
+      {
+        "language": "ja",
+        "cursor": "5d531de4-77d2-41d5-9253-2b4ca58daff2",
+        "pageSize": 100,
+        "at": "2026-10-06T04:51:15.646Z",
+        "reason": "guarded printing-read statement timeout at eight seconds; no checkpoint advancement"
+      }
+    ],
+    "checkpointAdvancedOnFailure": false,
+    "deadlineRaised": false,
+    "loweringPageSizeTo100WasInsufficient": true,
+    "guardRehearsalUsedForCoverageCounting": false
+  },
+  "mp": {
+    "category": 85,
+    "group": 24423,
+    "datasetAt": "2026-10-05T20:05:57Z",
+    "stageNative": [
+      {
+        "observed_at": "2026-10-06 04:39:48.570334+00",
+        "candidates": 83,
+        "native_physical": 83,
+        "physical_identity_hash": "df60da33f396c00a3f6fdecd2dc6a789",
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      }
+    ],
+    "productionNative": [
+      {
+        "observed_at": "2026-10-06 04:39:49.217138+00",
+        "candidates": 83,
+        "native_physical": 83,
+        "physical_identity_hash": "df60da33f396c00a3f6fdecd2dc6a789",
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      }
+    ],
+    "stagePlan": {
+      "env": "stage",
+      "candidates": 83,
+      "mapped": 62,
+      "products": 68,
+      "prices": 32,
+      "reasons": {
+        "priced": 22,
+        "no_provider_quote": 40,
+        "unresolved_provider_identity": 21
+      },
+      "blockedMappingKeys": [],
+      "blockedPrintingProducts": [],
+      "newMappings": 0,
+      "alternateGuideCandidates": 5,
+      "positiveQuoteCandidates": 22
+    },
+    "productionPlan": {
+      "env": "prod",
+      "candidates": 83,
+      "mapped": 62,
+      "products": 68,
+      "prices": 32,
+      "reasons": {
+        "priced": 22,
+        "no_provider_quote": 40,
+        "unresolved_provider_identity": 21
+      },
+      "blockedMappingKeys": [],
+      "blockedPrintingProducts": [],
+      "newMappings": 0,
+      "alternateGuideCandidates": 5,
+      "positiveQuoteCandidates": 22
+    },
+    "missingMarket": {
+      "noRows": 32,
+      "nullMarket": 3
+    },
+    "unresolved": [
+      {
+        "number": "010",
+        "printing_id": "445d7510-2176-45af-ae73-8e991cccdccf",
+        "variant_id": "4880151d-ae42-4194-bd8e-4e4f8f19cfb5",
+        "providerProducts": 0
+      },
+      {
+        "number": "037",
+        "printing_id": "2645d75b-f5a8-4db2-8837-6ac52e755663",
+        "variant_id": "4ae251ce-3cc0-4ffb-beae-69bc143614e5",
+        "providerProducts": 0
+      },
+      {
+        "number": "036",
+        "printing_id": "0502f6bf-8844-42a1-b6ab-96b430ea5d59",
+        "variant_id": "4f9c754d-973f-4f29-9b79-0014c9680c91",
+        "providerProducts": 0
+      },
+      {
+        "number": "100",
+        "printing_id": "bb6e3899-5843-42eb-88b7-13ebe9591489",
+        "variant_id": "50d407d6-5468-4e1b-a8fa-a41a8f964aa4",
+        "providerProducts": 0
+      },
+      {
+        "number": "011",
+        "printing_id": "6ccc51d5-0190-4190-85c1-5fb7e08e7fc9",
+        "variant_id": "5d297cdd-49c9-4b2b-aaea-702e17667333",
+        "providerProducts": 0
+      },
+      {
+        "number": "031",
+        "printing_id": "79a7f764-9780-4b9c-b4cf-a5cea22fc63a",
+        "variant_id": "5ef3e082-ad8d-4ca3-886d-ba1d08775aa4",
+        "providerProducts": 0
+      },
+      {
+        "number": "014",
+        "printing_id": "b395d699-3b32-484e-bdfd-ac131bd8408d",
+        "variant_id": "6fc53051-ac02-46de-9afa-c12cb517a199",
+        "providerProducts": 0
+      },
+      {
+        "number": "032",
+        "printing_id": "456c9228-3de8-4247-bb72-aaca288a8651",
+        "variant_id": "756b8ced-9eef-46fa-8346-14301e513baf",
+        "providerProducts": 0
+      },
+      {
+        "number": "012",
+        "printing_id": "bd98271d-e4a7-4c14-90b1-6a959562b974",
+        "variant_id": "7dedb018-2f61-4e3e-a634-4414cd3eadac",
+        "providerProducts": 0
+      },
+      {
+        "number": "009",
+        "printing_id": "40a81f72-adeb-445b-9e84-734eb72c3462",
+        "variant_id": "8a474f1e-795d-4ab6-88b2-9a4034f72525",
+        "providerProducts": 0
+      },
+      {
+        "number": "041",
+        "printing_id": "dcf4cd4f-4136-4a7f-b1e7-7304f5f060de",
+        "variant_id": "91eac769-b1f8-441b-af29-25418b4942a6",
+        "providerProducts": 0
+      },
+      {
+        "number": "040",
+        "printing_id": "299a83a5-83c7-43ae-b4e3-0f83636eb21d",
+        "variant_id": "9b00f0af-d9f1-4925-a398-f97185d32e04",
+        "providerProducts": 0
+      },
+      {
+        "number": "042",
+        "printing_id": "989da87f-2ee0-4ace-b2d5-8e295262192c",
+        "variant_id": "b177aacf-b445-4fff-b0a8-d35f9d9c6c54",
+        "providerProducts": 0
+      },
+      {
+        "number": "035",
+        "printing_id": "af1522b5-0b9d-4142-ba81-059de976c7b6",
+        "variant_id": "b9f57f16-3cb2-4d4c-a22e-cd8b61498a98",
+        "providerProducts": 0
+      },
+      {
+        "number": "038",
+        "printing_id": "d810884d-47f6-4534-8708-ce0dfeed9213",
+        "variant_id": "bf0f0b19-caee-4b29-b15e-0669d1c2d703",
+        "providerProducts": 0
+      },
+      {
+        "number": "098",
+        "printing_id": "9f26b7d8-65dc-4469-a6b3-bbffe3980e20",
+        "variant_id": "ccc204d2-a277-4704-951f-adedc5b0b90d",
+        "providerProducts": 0
+      },
+      {
+        "number": "015",
+        "printing_id": "bf2eed26-2d23-4106-b2bb-964d3a8c1fcd",
+        "variant_id": "e0323513-bdbf-4db3-bfce-e8be5941167a",
+        "providerProducts": 0
+      },
+      {
+        "number": "099",
+        "printing_id": "f7c32fee-ef69-4fd9-8c8e-9249fe7b53f7",
+        "variant_id": "e158e8f4-b703-4ab7-8972-37ebbc28a915",
+        "providerProducts": 0
+      },
+      {
+        "number": "013",
+        "printing_id": "60aacfcb-3443-49e8-a48b-67c751177290",
+        "variant_id": "ed85ceec-db69-4ed8-98d5-d5e585f3c774",
+        "providerProducts": 0
+      },
+      {
+        "number": "016",
+        "printing_id": "465d4109-bd70-49af-aae3-7899252055a7",
+        "variant_id": "ee001c11-8cd0-4add-85d4-bec86c90c397",
+        "providerProducts": 0
+      },
+      {
+        "number": "039",
+        "printing_id": "dadc3152-dc91-49fe-abca-4f73f6068595",
+        "variant_id": "ee027191-b10c-45e5-82fa-d06b8c008126",
+        "providerProducts": 0
+      }
+    ],
+    "alternativeGuides": [
+      {
+        "printingId": "3ea2f75d-eb26-48cf-9b4b-d1cc42fc7bc9",
+        "variantId": "62a37f54-9fc0-41a9-bea3-0e4509bde50c",
+        "collectorNumber": "096",
+        "providerProductId": 714053,
+        "providerProductTitle": "Mega Delphox ex - 096/M-P",
+        "providerFinish": "Holofoil",
+        "originalPrice": 20,
+        "scope": "printing_general_estimate",
+        "exact": false,
+        "holdings": false,
+        "presale": false,
+        "alreadyStored": true,
+        "semanticModifier": null
+      },
+      {
+        "printingId": "f5463829-c5ff-4409-ab17-cbe7f2a6e17a",
+        "variantId": "9087b691-8fcc-449f-bc79-4c506dfefbc5",
+        "collectorNumber": "068",
+        "providerProductId": 691617,
+        "providerProductTitle": "Mega Gallade ex - 068/M-P",
+        "providerFinish": "Holofoil",
+        "originalPrice": 4.78,
+        "scope": "printing_general_estimate",
+        "exact": false,
+        "holdings": false,
+        "presale": false,
+        "alreadyStored": true,
+        "semanticModifier": null
+      },
+      {
+        "printingId": "5e7007f3-2162-4c78-b42c-b3d282b0aaac",
+        "variantId": "d55e0090-87a1-4a3d-8698-6ab1926d0b57",
+        "collectorNumber": "002",
+        "providerProductId": 649576,
+        "providerProductTitle": "Lapras ex - 002/M-P",
+        "providerFinish": "Holofoil",
+        "originalPrice": 14.73,
+        "scope": "printing_general_estimate",
+        "exact": false,
+        "holdings": false,
+        "presale": false,
+        "alreadyStored": true,
+        "semanticModifier": null
+      },
+      {
+        "printingId": "15daf25a-3fea-451d-8b88-2ca4ffb475d1",
+        "variantId": "e5cad5bd-c10b-424e-9256-1f317bea2591",
+        "collectorNumber": "071",
+        "providerProductId": 684574,
+        "providerProductTitle": "Mega Slowbro ex - 071/M-P",
+        "providerFinish": "Holofoil",
+        "originalPrice": 21.82,
+        "scope": "printing_general_estimate",
+        "exact": false,
+        "holdings": false,
+        "presale": false,
+        "alreadyStored": true,
+        "semanticModifier": null
+      },
+      {
+        "printingId": "41093811-2ba5-4b44-a2f9-d490740f5980",
+        "variantId": "f6d2edf5-0b5e-4117-a558-2999bc0afe6f",
+        "collectorNumber": "069",
+        "providerProductId": 691618,
+        "providerProductTitle": "Premium Power Pro - 069/M-P (Mirror Holo)",
+        "providerFinish": "Holofoil",
+        "originalPrice": 1,
+        "scope": "printing_general_estimate",
+        "exact": false,
+        "holdings": false,
+        "presale": false,
+        "alreadyStored": true,
+        "semanticModifier": "Mirror Holo in actual product title; retained separately, no new mapping or exact finish inference"
+      }
+    ],
+    "stageGuideReadback": {
+      "observed_at": "2026-10-06 04:33:33.901681+00",
+      "guides": [
+        {
+          "quote": {
+            "grade": null,
+            "finish": null,
+            "currency": "GBP",
+            "language": "ja",
+            "provider": "tcgcsv",
+            "condition": null,
+            "priceScope": "printing_general_estimate",
+            "staleAfter": "2026-10-07T20:05:57+00:00",
+            "exchangeRate": 0.756158514816137,
+            "originalPrice": 21.82,
+            "exchangeRateAt": "2026-10-05T00:00:00+00:00",
+            "anchorVariantId": "e5cad5bd-c10b-424e-9256-1f317bea2591",
+            "centralEstimate": 16.5,
+            "providerGroupId": 24423,
+            "providerSubtype": "Holofoil",
+            "sourceCreatedAt": "2026-10-05T20:05:57+00:00",
+            "originalCurrency": "USD",
+            "providerProductId": 684574,
+            "exchangeRateSource": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+            "providerCategoryId": 85,
+            "usableForExactVariant": false,
+            "usableForHoldingsValuation": false
+          },
+          "printing_id": "15daf25a-3fea-451d-8b88-2ca4ffb475d1"
+        },
+        {
+          "quote": {
+            "grade": null,
+            "finish": null,
+            "currency": "GBP",
+            "language": "ja",
+            "provider": "tcgcsv",
+            "condition": null,
+            "priceScope": "printing_general_estimate",
+            "staleAfter": "2026-10-07T20:05:57+00:00",
+            "exchangeRate": 0.756158514816137,
+            "originalPrice": 20,
+            "exchangeRateAt": "2026-10-05T00:00:00+00:00",
+            "anchorVariantId": "62a37f54-9fc0-41a9-bea3-0e4509bde50c",
+            "centralEstimate": 15.12,
+            "providerGroupId": 24423,
+            "providerSubtype": "Holofoil",
+            "sourceCreatedAt": "2026-10-05T20:05:57+00:00",
+            "originalCurrency": "USD",
+            "providerProductId": 714053,
+            "exchangeRateSource": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+            "providerCategoryId": 85,
+            "usableForExactVariant": false,
+            "usableForHoldingsValuation": false
+          },
+          "printing_id": "3ea2f75d-eb26-48cf-9b4b-d1cc42fc7bc9"
+        },
+        {
+          "quote": {
+            "grade": null,
+            "finish": null,
+            "currency": "GBP",
+            "language": "ja",
+            "provider": "tcgcsv",
+            "condition": null,
+            "priceScope": "printing_general_estimate",
+            "staleAfter": "2026-10-07T20:05:57+00:00",
+            "exchangeRate": 0.756158514816137,
+            "originalPrice": 1,
+            "exchangeRateAt": "2026-10-05T00:00:00+00:00",
+            "anchorVariantId": "f6d2edf5-0b5e-4117-a558-2999bc0afe6f",
+            "centralEstimate": 0.76,
+            "providerGroupId": 24423,
+            "providerSubtype": "Holofoil",
+            "sourceCreatedAt": "2026-10-05T20:05:57+00:00",
+            "originalCurrency": "USD",
+            "providerProductId": 691618,
+            "exchangeRateSource": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+            "providerCategoryId": 85,
+            "usableForExactVariant": false,
+            "usableForHoldingsValuation": false
+          },
+          "printing_id": "41093811-2ba5-4b44-a2f9-d490740f5980"
+        },
+        {
+          "quote": {
+            "grade": null,
+            "finish": null,
+            "currency": "GBP",
+            "language": "ja",
+            "provider": "tcgcsv",
+            "condition": null,
+            "priceScope": "printing_general_estimate",
+            "staleAfter": "2026-10-07T20:05:57+00:00",
+            "exchangeRate": 0.756158514816137,
+            "originalPrice": 14.73,
+            "exchangeRateAt": "2026-10-05T00:00:00+00:00",
+            "anchorVariantId": "d55e0090-87a1-4a3d-8698-6ab1926d0b57",
+            "centralEstimate": 11.14,
+            "providerGroupId": 24423,
+            "providerSubtype": "Holofoil",
+            "sourceCreatedAt": "2026-10-05T20:05:57+00:00",
+            "originalCurrency": "USD",
+            "providerProductId": 649576,
+            "exchangeRateSource": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+            "providerCategoryId": 85,
+            "usableForExactVariant": false,
+            "usableForHoldingsValuation": false
+          },
+          "printing_id": "5e7007f3-2162-4c78-b42c-b3d282b0aaac"
+        },
+        {
+          "quote": {
+            "grade": null,
+            "finish": null,
+            "currency": "GBP",
+            "language": "ja",
+            "provider": "tcgcsv",
+            "condition": null,
+            "priceScope": "printing_general_estimate",
+            "staleAfter": "2026-10-07T20:05:57+00:00",
+            "exchangeRate": 0.756158514816137,
+            "originalPrice": 4.78,
+            "exchangeRateAt": "2026-10-05T00:00:00+00:00",
+            "anchorVariantId": "9087b691-8fcc-449f-bc79-4c506dfefbc5",
+            "centralEstimate": 3.61,
+            "providerGroupId": 24423,
+            "providerSubtype": "Holofoil",
+            "sourceCreatedAt": "2026-10-05T20:05:57+00:00",
+            "originalCurrency": "USD",
+            "providerProductId": 691617,
+            "exchangeRateSource": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+            "providerCategoryId": 85,
+            "usableForExactVariant": false,
+            "usableForHoldingsValuation": false
+          },
+          "printing_id": "f5463829-c5ff-4409-ab17-cbe7f2a6e17a"
+        }
+      ]
+    },
+    "productionGuideReadback": {
+      "observed_at": "2026-10-06 04:33:34.894222+00",
+      "guides": [
+        {
+          "quote": {
+            "grade": null,
+            "finish": null,
+            "currency": "GBP",
+            "language": "ja",
+            "provider": "tcgcsv",
+            "condition": null,
+            "priceScope": "printing_general_estimate",
+            "staleAfter": "2026-10-07T20:05:57+00:00",
+            "exchangeRate": 0.756158514816137,
+            "originalPrice": 21.82,
+            "exchangeRateAt": "2026-10-05T00:00:00+00:00",
+            "anchorVariantId": "e5cad5bd-c10b-424e-9256-1f317bea2591",
+            "centralEstimate": 16.5,
+            "providerGroupId": 24423,
+            "providerSubtype": "Holofoil",
+            "sourceCreatedAt": "2026-10-05T20:05:57+00:00",
+            "originalCurrency": "USD",
+            "providerProductId": 684574,
+            "exchangeRateSource": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+            "providerCategoryId": 85,
+            "usableForExactVariant": false,
+            "usableForHoldingsValuation": false
+          },
+          "printing_id": "15daf25a-3fea-451d-8b88-2ca4ffb475d1"
+        },
+        {
+          "quote": {
+            "grade": null,
+            "finish": null,
+            "currency": "GBP",
+            "language": "ja",
+            "provider": "tcgcsv",
+            "condition": null,
+            "priceScope": "printing_general_estimate",
+            "staleAfter": "2026-10-07T20:05:57+00:00",
+            "exchangeRate": 0.756158514816137,
+            "originalPrice": 20,
+            "exchangeRateAt": "2026-10-05T00:00:00+00:00",
+            "anchorVariantId": "62a37f54-9fc0-41a9-bea3-0e4509bde50c",
+            "centralEstimate": 15.12,
+            "providerGroupId": 24423,
+            "providerSubtype": "Holofoil",
+            "sourceCreatedAt": "2026-10-05T20:05:57+00:00",
+            "originalCurrency": "USD",
+            "providerProductId": 714053,
+            "exchangeRateSource": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+            "providerCategoryId": 85,
+            "usableForExactVariant": false,
+            "usableForHoldingsValuation": false
+          },
+          "printing_id": "3ea2f75d-eb26-48cf-9b4b-d1cc42fc7bc9"
+        },
+        {
+          "quote": {
+            "grade": null,
+            "finish": null,
+            "currency": "GBP",
+            "language": "ja",
+            "provider": "tcgcsv",
+            "condition": null,
+            "priceScope": "printing_general_estimate",
+            "staleAfter": "2026-10-07T20:05:57+00:00",
+            "exchangeRate": 0.756158514816137,
+            "originalPrice": 1,
+            "exchangeRateAt": "2026-10-05T00:00:00+00:00",
+            "anchorVariantId": "f6d2edf5-0b5e-4117-a558-2999bc0afe6f",
+            "centralEstimate": 0.76,
+            "providerGroupId": 24423,
+            "providerSubtype": "Holofoil",
+            "sourceCreatedAt": "2026-10-05T20:05:57+00:00",
+            "originalCurrency": "USD",
+            "providerProductId": 691618,
+            "exchangeRateSource": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+            "providerCategoryId": 85,
+            "usableForExactVariant": false,
+            "usableForHoldingsValuation": false
+          },
+          "printing_id": "41093811-2ba5-4b44-a2f9-d490740f5980"
+        },
+        {
+          "quote": {
+            "grade": null,
+            "finish": null,
+            "currency": "GBP",
+            "language": "ja",
+            "provider": "tcgcsv",
+            "condition": null,
+            "priceScope": "printing_general_estimate",
+            "staleAfter": "2026-10-07T20:05:57+00:00",
+            "exchangeRate": 0.756158514816137,
+            "originalPrice": 14.73,
+            "exchangeRateAt": "2026-10-05T00:00:00+00:00",
+            "anchorVariantId": "d55e0090-87a1-4a3d-8698-6ab1926d0b57",
+            "centralEstimate": 11.14,
+            "providerGroupId": 24423,
+            "providerSubtype": "Holofoil",
+            "sourceCreatedAt": "2026-10-05T20:05:57+00:00",
+            "originalCurrency": "USD",
+            "providerProductId": 649576,
+            "exchangeRateSource": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+            "providerCategoryId": 85,
+            "usableForExactVariant": false,
+            "usableForHoldingsValuation": false
+          },
+          "printing_id": "5e7007f3-2162-4c78-b42c-b3d282b0aaac"
+        },
+        {
+          "quote": {
+            "grade": null,
+            "finish": null,
+            "currency": "GBP",
+            "language": "ja",
+            "provider": "tcgcsv",
+            "condition": null,
+            "priceScope": "printing_general_estimate",
+            "staleAfter": "2026-10-07T20:05:57+00:00",
+            "exchangeRate": 0.756158514816137,
+            "originalPrice": 4.78,
+            "exchangeRateAt": "2026-10-05T00:00:00+00:00",
+            "anchorVariantId": "9087b691-8fcc-449f-bc79-4c506dfefbc5",
+            "centralEstimate": 3.61,
+            "providerGroupId": 24423,
+            "providerSubtype": "Holofoil",
+            "sourceCreatedAt": "2026-10-05T20:05:57+00:00",
+            "originalCurrency": "USD",
+            "providerProductId": 691617,
+            "exchangeRateSource": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+            "providerCategoryId": 85,
+            "usableForExactVariant": false,
+            "usableForHoldingsValuation": false
+          },
+          "printing_id": "f5463829-c5ff-4409-ab17-cbe7f2a6e17a"
+        }
+      ]
+    },
+    "newMappings": 0,
+    "newManualPrices": 0,
+    "repeatUnchangedBatch": false
+  },
+  "sourceResearch": {
+    "categoriesUrl": "https://tcgcsv.com/tcgplayer/categories",
+    "observedAt": "2026-10-06T04:36:05.091Z",
+    "publicPokemonCategories": [
+      {
+        "id": 3,
+        "name": "Pokemon"
+      },
+      {
+        "id": 85,
+        "name": "Pokemon Japan"
+      }
+    ],
+    "categoryCount": 94,
+    "groupsUrl": "https://tcgcsv.com/tcgplayer/3/groups",
+    "groupCount": 220,
+    "explicitChineseNamedGroups": 0,
+    "groupObservedAt": "2026-10-06T04:36:31.004Z",
+    "limitation": "Metadata identifies no dedicated Chinese category or explicitly named Chinese group here. TCGCSV does not publish SKU language/condition data; this is not proof that all Chinese vendor inventory is absent. No English price was substituted, no Chinese provider IDs promoted and no paid source activated."
+  },
+  "guard": {
+    "forwardMigration": "supabase/migrations/20261005221812_bounded_provider_identity_guards.sql",
+    "candidateCommit": "12215cbe",
+    "sourceSha256": "3365ba71e945381ea03a315dccbc1feae42f3429adab7037c07c22861dcca8f5",
+    "stagePredecessor": "ca77044f82345cc18fdc7f2be1cca8f6",
+    "productionPredecessor": "ca77044f82345cc18fdc7f2be1cca8f6",
+    "expectedCandidateDefinitionMd5": "80c06d896c9a1531229b9df2cd5af3b3",
+    "applied": false,
+    "sourceShadowStaging": {
+      "printingIds": [
+        "2c8cc972-78a1-4b07-adc5-d45976ba74c3",
+        "717bece3-4e17-443b-b2f4-246ee868aa3c",
+        "7e6cd159-b443-4025-9c5a-93a5b701e047",
+        "b1f7349e-dd55-4acf-8e7c-7218fb46845d",
+        "b4832c82-af35-4cf2-9ab7-3d603685d99c",
+        "c82a1527-9003-457c-8f49-a43f932f747a",
+        "d7b0f40f-a59b-4a84-af3e-8554cb3b42f5",
+        "d9879837-e01a-48d3-bf8e-118aae33e47f",
+        "e1304ca9-61cc-483b-b156-3f34fcef609f",
+        "f626cf39-f491-4c3d-95e1-42e3ea234421"
+      ],
+      "returned": 10,
+      "elapsedMsIncludingTool": 1819,
+      "baselineElapsedMsIncludingTool": 4734,
+      "identicalPricesProvenanceAndScope": true,
+      "liveAccessControls": [
+        {
+          "role_name": "anon",
+          "english_guard": false,
+          "printing_read": false
+        },
+        {
+          "role_name": "authenticated",
+          "english_guard": false,
+          "printing_read": false
+        },
+        {
+          "role_name": "service_role",
+          "english_guard": true,
+          "printing_read": true
+        }
+      ],
+      "queryFile": "pricing-identity-guard-staging-shadow-20261006.sql",
+      "actualCandidateApiDeployment": false,
+      "productionPerformanceProof": false
+    },
+    "plannedRollback": "pricing-identity-guard-rollback-20261006.sql",
+    "localControls": {
+      "checks": 20,
+      "legacyParity": true,
+      "publicationNativeIdentity": true,
+      "serviceOnly": true,
+      "changedPredecessorRejected": true,
+      "exactForwardRollback": true,
+      "rollbackRoleAccessPreserved": true,
+      "alreadyRestoredRollbackRejected": true
+    },
+    "canonicalGate": {
+      "workflow": ".github/workflows/deploy-staging.yml",
+      "mainOnly": true,
+      "protectedEnvironment": "staging",
+      "materializedManifest": "supabase/staging-migrations/manifest.json",
+      "candidateOmitted": true,
+      "manifestStillEndsAtOlderGate0PendingEntry": true,
+      "unrelatedLedgerPush": false,
+      "liveSchemaWrites": false,
+      "historyRewritten": false
+    }
+  },
+  "preserved": {
+    "fourOwnedWorkerFiles": true,
+    "primaryDirtyCheckout": true,
+    "pendingRailwayPatch": "8e29d75c-d567-4a9a-9e96-8a40e51a22f3",
+    "cacheRestart": false,
+    "pausedAutomationsRestarted": false,
+    "paidActivation": false,
+    "externalMessages": false,
+    "nativeOrOtaPublished": false
+  },
+  "next": [
+    "Complete canonical scoped forward/rollback provenance and live staged controls before protected guard promotion; do not overwrite a changed predecessor or blindly push the unrelated manifest.",
+    "Resume or deliberately supersede the saved partial measurement only after the identified read path is repaired/verified; continue actual guarded RPC counting and membership validation, never substitute source-shadow canary counts or add 25 to historical totals.",
+    "Skip unchanged completed M-P, Shiny Treasure and earlier cohorts; eligible next Japanese native cohort is category85/group24721, with full independent stage/production feeds, physical identities, presale/semantic/finish and whole-group ownership preflight required. Chinese native sources still need evidence without paid activation."
+  ]
+}

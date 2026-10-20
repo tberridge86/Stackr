@@ -1,0 +1,22 @@
+[
+  {
+    "printing_id": "d70868de-b7dc-414e-ac9f-d63055956ef0",
+    "set_id": "6bbc266c-3ebc-4f6e-a3a5-d8a6d40427b7",
+    "set_code": "tk-sm-r",
+    "language_code": "en",
+    "collector_number": "2",
+    "card_native_name": "Lightning Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "a5401eba-11c3-42f1-a05e-f76b3db9d945"
+    ],
+    "batch_id": "EN-CARDS-020",
+    "work_type": "CARDS",
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:c476992336733cd7d8945cf4bf5c2e3e6120347a96b7672fed22fa6531630df8",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/d190a2da2b78dae7625f89adbf3ee5da3d1f7f6d276dbf813734e6f07d21f689/1600.jpg",
+    "original_sha256": "aa596e1acb287f469733735faae3c4a2b9ecb614630762bed7ac31084eac1701",
+    "body_sha256": "75df0f42223526ce7c3da87eb43e216d898ef45f3ffdfce946b50952074d3e23",
+    "evidence_sha256": "7dfe8e117115e126cfa09268dda245e62db912ecd43e3a5d080e471b97d23f10"
+  }
+]

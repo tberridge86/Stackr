@@ -1,0 +1,1043 @@
+{
+  "schemaVersion": 1,
+  "researchedAt": "2026-09-06",
+  "scope": "Bounded evidence inventory, not an exhaustive checklist or database import. Japanese CoroCoro-related promotional card distributions, 1996–2022.",
+  "limitations": [
+    "Historical rows predominantly rely on specialist/community secondary sources, not contemporaneous publisher scans.",
+    "An issue's cover month is not its release month. Null onSaleDate means the exact day was not established; do not infer the 15th.",
+    "Rows describe distributions, not a deduplicated catalogue of physical variants. Repeated names may be distinct prints.",
+    "Only the two existing exact Mew identities are mapped. No other catalogue IDs or provider images are asserted.",
+    "Native names were not transcribed without card-level verification. Null printedNumber with numbering=unnumbered is deliberate; numbering=unverified is unresolved.",
+    "Research-only metadata; no image assets downloaded, no image activation, no catalogue/database changes.",
+    "Pokémon Illustrator is a contest award, not an issue insert. Contest announcement and award timelines are not included as confirmed insert records."
+  ],
+  "sources": [
+    {
+      "id": "early",
+      "url": "https://pokumon.com/timeline/",
+      "title": "Pokumon early promotional-card timeline",
+      "kind": "secondary"
+    },
+    {
+      "id": "unnumbered",
+      "url": "https://bulbapedia.bulbagarden.net/wiki/Unnumbered_Promotional_cards_%28TCG%29/1996-2005",
+      "title": "Unnumbered Promotional cards, 1996–2005",
+      "kind": "secondary"
+    },
+    {
+      "id": "neo",
+      "url": "https://pokumon.com/timeline-neo-era/",
+      "title": "Pokumon Neo-era promotional-card timeline",
+      "kind": "secondary"
+    },
+    {
+      "id": "shining",
+      "url": "https://bulbapedia.bulbagarden.net/wiki/Shining_Mew",
+      "title": "Shining Mew (CoroCoro promo) release information",
+      "kind": "secondary"
+    },
+    {
+      "id": "mewtwo",
+      "url": "https://bulbapedia.bulbagarden.net/wiki/Mewtwo_%28CoroCoro_promo%29",
+      "title": "Mewtwo CoroCoro print and 1998 mail-in draw",
+      "kind": "secondary"
+    },
+    {
+      "id": "adv",
+      "url": "https://bulbapedia.bulbagarden.net/wiki/%22ADV-P%22_Promotional_Cards",
+      "title": "ADV-P Promotional cards",
+      "kind": "secondary"
+    },
+    {
+      "id": "groudon",
+      "url": "https://pokeboon.com/002advp-groudonex-promo/",
+      "title": "Groudon ex 002/ADV-P February 2003 insert",
+      "kind": "secondary"
+    },
+    {
+      "id": "charizard",
+      "url": "https://pokeboon.com/jp/030xyp-charizardex-promo/",
+      "title": "Charizard EX 030/XY-P March 2014 insert",
+      "kind": "secondary"
+    },
+    {
+      "id": "vmax",
+      "url": "https://www.pokemon-card.com/card-search/details.php/card/41152/regu/XY",
+      "title": "Official Pikachu VMAX 265/S-P card record",
+      "kind": "primary"
+    },
+    {
+      "id": "issue2022",
+      "url": "https://corocoro-news.jp/news/320449/",
+      "title": "Publisher announcement of February 2022 issue on sale January 15",
+      "kind": "primary"
+    },
+    {
+      "id": "deck2022",
+      "url": "https://www.pokemon-card.com/info/003230.html",
+      "title": "Official Start Deck 100 CoroCoro Comic version application instructions",
+      "kind": "primary"
+    },
+    {
+      "id": "snorlax",
+      "url": "https://pokeboon.com/156sp-snorlax-promo/",
+      "title": "Snorlax 156/S-P CoroCoro Ichiban March 2021",
+      "kind": "secondary"
+    }
+  ],
+  "issues": [
+    {
+      "id": "corocoro-1996-11-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "1996-11",
+      "onSaleDate": "1996-10-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Pikachu",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        },
+        {
+          "name": "Jigglypuff",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://pokumon.com/timeline/",
+        "https://bulbapedia.bulbagarden.net/wiki/Unnumbered_Promotional_cards_%28TCG%29/1996-2005"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": "Glossy inserts; do not identify an unnumbered Pikachu by species name alone."
+    },
+    {
+      "id": "corocoro-1997-02-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "1997-02",
+      "onSaleDate": "1997-01-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Mew",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": "ja:corocoro-mew-1997"
+        }
+      ],
+      "sourceUrls": [
+        "https://pokumon.com/timeline/",
+        "https://bulbapedia.bulbagarden.net/wiki/Unnumbered_Promotional_cards_%28TCG%29/1996-2005"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": "Glossy, unnumbered Japanese insert. Pokédex 151 is not a printed collector number."
+    },
+    {
+      "id": "corocoro-1997-06-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "1997-06",
+      "onSaleDate": "1997-05-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Mewtwo",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://pokumon.com/timeline/",
+        "https://bulbapedia.bulbagarden.net/wiki/Mewtwo_%28CoroCoro_promo%29"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": "Benimaru Itoh CoroCoro illustration; distinguish the Fan Book print."
+    },
+    {
+      "id": "corocoro-1997-07-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "1997-07",
+      "onSaleDate": "1997-06-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Pikachu, Jigglypuff, and Clefairy",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "jumbo",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://pokumon.com/timeline/",
+        "https://bulbapedia.bulbagarden.net/wiki/Unnumbered_Promotional_cards_%28TCG%29/1996-2005"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": "One jumbo card, not three standard cards."
+    },
+    {
+      "id": "corocoro-1997-09-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "1997-09",
+      "onSaleDate": "1997-08-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Surfing Pikachu",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        },
+        {
+          "name": "Imakuni?",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://pokumon.com/timeline/",
+        "https://bulbapedia.bulbagarden.net/wiki/Unnumbered_Promotional_cards_%28TCG%29/1996-2005"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": null
+    },
+    {
+      "id": "corocoro-1997-10-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "1997-10",
+      "onSaleDate": "1997-09-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Articuno, Moltres, and Zapdos",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "jumbo",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://pokumon.com/timeline/",
+        "https://bulbapedia.bulbagarden.net/wiki/Unnumbered_Promotional_cards_%28TCG%29/1996-2005"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": null
+    },
+    {
+      "id": "corocoro-1997-11-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "1997-11",
+      "onSaleDate": "1997-10-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Flying Pikachu",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://pokumon.com/timeline/",
+        "https://bulbapedia.bulbagarden.net/wiki/Unnumbered_Promotional_cards_%28TCG%29/1996-2005"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": "The illustration contest announced in this issue is a separate campaign, not a Pokémon Illustrator insert."
+    },
+    {
+      "id": "corocoro-1998-01-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "1998-01",
+      "onSaleDate": "1997-12-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Meowth",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        },
+        {
+          "name": "Computer Error",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://pokumon.com/timeline/",
+        "https://bulbapedia.bulbagarden.net/wiki/Unnumbered_Promotional_cards_%28TCG%29/1996-2005"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": null
+    },
+    {
+      "id": "corocoro-1998-03-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "1998-03",
+      "onSaleDate": "1998-02-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Brock's Onix",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        },
+        {
+          "name": "Misty's Staryu",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://pokumon.com/timeline/",
+        "https://bulbapedia.bulbagarden.net/wiki/Unnumbered_Promotional_cards_%28TCG%29/1996-2005"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": null
+    },
+    {
+      "id": "corocoro-1998-04-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "1998-04",
+      "onSaleDate": "1998-03-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Farfetch'd",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        },
+        {
+          "name": "Jynx",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        },
+        {
+          "name": "Cubone",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://pokumon.com/timeline/",
+        "https://bulbapedia.bulbagarden.net/wiki/Unnumbered_Promotional_cards_%28TCG%29/1996-2005"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": null
+    },
+    {
+      "id": "corocoro-1998-05-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "1998-05",
+      "onSaleDate": "1998-04-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Mewtwo Strikes Back",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "jumbo",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://bulbapedia.bulbagarden.net/wiki/Unnumbered_Promotional_cards_%28TCG%29/1996-2005"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": null
+    },
+    {
+      "id": "corocoro-1998-06-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "1998-06",
+      "onSaleDate": "1998-05-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Pikachu's Summer Vacation",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "jumbo",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://bulbapedia.bulbagarden.net/wiki/Unnumbered_Promotional_cards_%28TCG%29/1996-2005"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": null
+    },
+    {
+      "id": "corocoro-1998-08-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "1998-08",
+      "onSaleDate": "1998-07-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Lt. Surge's Electabuzz",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        },
+        {
+          "name": "Erika's Dratini",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://bulbapedia.bulbagarden.net/wiki/Unnumbered_Promotional_cards_%28TCG%29/1996-2005"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": null
+    },
+    {
+      "id": "corocoro-1998-10-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "1998-10",
+      "onSaleDate": "1998-09-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Pokémon Plaza",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "jumbo",
+          "mappedStackrCardId": null
+        },
+        {
+          "name": "Pikachu",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://bulbapedia.bulbagarden.net/wiki/Unnumbered_Promotional_cards_%28TCG%29/1996-2005"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": "Pikachu: Keiji Kinebuchi glossy print; do not merge with other unnumbered Pikachu solely by artist or name."
+    },
+    {
+      "id": "corocoro-1998-11-mail_in_prize_draw",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "1998-11",
+      "onSaleDate": "1998-10-15",
+      "distributionType": "mail_in_prize_draw",
+      "cards": [
+        {
+          "name": "Mew",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        },
+        {
+          "name": "Mewtwo (Fan Book print)",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        },
+        {
+          "name": "Mewtwo (CoroCoro print)",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        },
+        {
+          "name": "Misty's Staryu",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://bulbapedia.bulbagarden.net/wiki/Mewtwo_%28CoroCoro_promo%29"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": "Application ticket, not guaranteed card inserts. 2,000 winners received four cards on two sheets. Fulfillment date unverified."
+    },
+    {
+      "id": "corocoro-1998-12-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "1998-12",
+      "onSaleDate": "1998-11-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Brock's Mankey",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        },
+        {
+          "name": "Erika's Bulbasaur",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        },
+        {
+          "name": "Misty's Tentacool",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        },
+        {
+          "name": "Lt. Surge's Jolteon",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://bulbapedia.bulbagarden.net/wiki/Unnumbered_Promotional_cards_%28TCG%29/1996-2005"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": null
+    },
+    {
+      "id": "corocoro-1999-02-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "1999-02",
+      "onSaleDate": "1999-01-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Meowth",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://pokumon.com/timeline/",
+        "https://bulbapedia.bulbagarden.net/wiki/Unnumbered_Promotional_cards_%28TCG%29/1996-2005"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": null
+    },
+    {
+      "id": "corocoro-1999-03-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "1999-03",
+      "onSaleDate": "1999-02-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Blaine's Growlithe",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        },
+        {
+          "name": "Sabrina's Abra",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://pokumon.com/timeline/",
+        "https://bulbapedia.bulbagarden.net/wiki/Unnumbered_Promotional_cards_%28TCG%29/1996-2005"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": null
+    },
+    {
+      "id": "corocoro-2000-02-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "2000-02",
+      "onSaleDate": "2000-01-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Cleffa",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://pokumon.com/timeline-neo-era/"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": null
+    },
+    {
+      "id": "corocoro-2000-04-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "2000-04",
+      "onSaleDate": "2000-03-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Charizard",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "jumbo",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://pokumon.com/timeline-neo-era/"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": null
+    },
+    {
+      "id": "corocoro-2000-07-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "2000-07",
+      "onSaleDate": "2000-06-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Scizor",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://pokumon.com/timeline-neo-era/"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": null
+    },
+    {
+      "id": "bessatsu-corocoro-2000-08-insert",
+      "publication": "Bessatsu CoroCoro Comic Special",
+      "issueMonth": "2000-08",
+      "onSaleDate": "2000-07-06",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Pikachu & Pichu",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "jumbo",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://pokumon.com/timeline-neo-era/"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": "Separate publication; not Monthly CoroCoro."
+    },
+    {
+      "id": "corocoro-2000-11-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "2000-11",
+      "onSaleDate": "2000-10-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Unown",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://pokumon.com/timeline-neo-era/"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": null
+    },
+    {
+      "id": "corocoro-2001-01-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "2001-01",
+      "onSaleDate": "2000-12-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Smoochum",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://pokumon.com/timeline-neo-era/"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": null
+    },
+    {
+      "id": "corocoro-2001-05-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "2001-05",
+      "onSaleDate": "2001-04-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Shining Mew",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unnumbered",
+          "format": "standard",
+          "mappedStackrCardId": "ja:corocoro-shining-mew-2001"
+        }
+      ],
+      "sourceUrls": [
+        "https://pokumon.com/timeline-neo-era/",
+        "https://bulbapedia.bulbagarden.net/wiki/Shining_Mew"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": "Hironobu Yoshida illustration; unnumbered. Pokédex 151 is not its collector number. Not Shining Legends SM3p-041."
+    },
+    {
+      "id": "corocoro-2001-08-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "2001-08",
+      "onSaleDate": "2001-07-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Rocket's Sneasel",
+          "nativeName": null,
+          "printedNumber": "003/P",
+          "numbering": "numbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://pokumon.com/timeline-neo-era/"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": null
+    },
+    {
+      "id": "corocoro-2001-12-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "2001-12",
+      "onSaleDate": "2001-11-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Ho-Oh",
+          "nativeName": null,
+          "printedNumber": "010/P",
+          "numbering": "numbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://pokumon.com/timeline-neo-era/"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": null
+    },
+    {
+      "id": "corocoro-2002-01-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "2002-01",
+      "onSaleDate": "2001-12-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Rapidash",
+          "nativeName": null,
+          "printedNumber": "011/P",
+          "numbering": "numbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://pokumon.com/timeline-neo-era/"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": null
+    },
+    {
+      "id": "corocoro-2003-02-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "2003-02",
+      "onSaleDate": "2003-01-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Kyogre ex",
+          "nativeName": null,
+          "printedNumber": "001/ADV-P",
+          "numbering": "numbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        },
+        {
+          "name": "Groudon ex",
+          "nativeName": null,
+          "printedNumber": "002/ADV-P",
+          "numbering": "numbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://bulbapedia.bulbagarden.net/wiki/%22ADV-P%22_Promotional_Cards",
+        "https://pokeboon.com/002advp-groudonex-promo/"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": "Direct insert prints; do not substitute later ticket-exchange 011/012 prints."
+    },
+    {
+      "id": "corocoro-2003-02-ticket_exchange",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "2003-02",
+      "onSaleDate": "2003-01-15",
+      "distributionType": "ticket_exchange",
+      "cards": [
+        {
+          "name": "Kyogre ex",
+          "nativeName": null,
+          "printedNumber": "011/ADV-P",
+          "numbering": "numbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        },
+        {
+          "name": "Groudon ex",
+          "nativeName": null,
+          "printedNumber": "012/ADV-P",
+          "numbering": "numbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://bulbapedia.bulbagarden.net/wiki/%22ADV-P%22_Promotional_Cards"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": "Issue contains redemption ticket. Exchange cards are distinct from 001/002 insert prints; redemption began February 2003, exact day not established here."
+    },
+    {
+      "id": "corocoro-2003-05-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "2003-05",
+      "onSaleDate": null,
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Armaldo ex",
+          "nativeName": null,
+          "printedNumber": "013/ADV-P",
+          "numbering": "numbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://bulbapedia.bulbagarden.net/wiki/%22ADV-P%22_Promotional_Cards"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": "Source identifies May issue and April 2003 release month; exact sale day not verified."
+    },
+    {
+      "id": "corocoro-2003-06-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "2003-06",
+      "onSaleDate": null,
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Jirachi",
+          "nativeName": null,
+          "printedNumber": "014/ADV-P",
+          "numbering": "numbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://bulbapedia.bulbagarden.net/wiki/%22ADV-P%22_Promotional_Cards",
+        "https://corocoro-news.jp/news/30528/"
+      ],
+      "confidence": "conflicting",
+      "notes": "Issue/card assignment disputed: the secondary ADV-P list places 014/ADV-P in June 2003, while the publisher's 2003 retrospective says a Jirachi ADV promo was a July-issue bonus. Retained as a reported June candidate, not a confirmed insert; do not assign a cover or canonical card from this claim until the conflict is resolved. Exact sale day is unverified."
+    },
+    {
+      "id": "corocoro-2014-03-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "2014-03",
+      "onSaleDate": "2014-02-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Charizard EX",
+          "nativeName": null,
+          "printedNumber": "030/XY-P",
+          "numbering": "numbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://pokeboon.com/jp/030xyp-charizardex-promo/"
+      ],
+      "confidence": "secondary_confirmed",
+      "notes": null
+    },
+    {
+      "id": "corocoro-ichiban-2021-03-insert",
+      "publication": "CoroCoro Ichiban!",
+      "issueMonth": "2021-03",
+      "onSaleDate": "2021-01-21",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Snorlax",
+          "nativeName": null,
+          "printedNumber": "156/S-P",
+          "numbering": "numbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://pokeboon.com/156sp-snorlax-promo/",
+        "https://corocoro-news.jp/%E6%9C%AA%E5%88%86%E9%A1%9E/266111/"
+      ],
+      "confidence": "primary_confirmed",
+      "notes": "Separate publication. Publisher confirms the March 2021 issue and Snorlax insert went on sale 21 January 2021; the cover month is not the sale month."
+    },
+    {
+      "id": "corocoro-2022-02-insert",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "2022-02",
+      "onSaleDate": "2022-01-15",
+      "distributionType": "insert",
+      "cards": [
+        {
+          "name": "Pikachu VMAX",
+          "nativeName": null,
+          "printedNumber": "265/S-P",
+          "numbering": "numbered",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://www.pokemon-card.com/card-search/details.php/card/41152/regu/XY",
+        "https://corocoro-news.jp/news/320449/"
+      ],
+      "confidence": "primary_confirmed",
+      "notes": "Official card page labels January 2022 sale issue; publisher calls it February cover issue."
+    },
+    {
+      "id": "corocoro-2022-02-paid_applicant_order",
+      "publication": "Monthly CoroCoro Comic",
+      "issueMonth": "2022-02",
+      "onSaleDate": "2022-01-15",
+      "distributionType": "paid_applicant_order",
+      "cards": [
+        {
+          "name": "Pikachu V",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unverified",
+          "format": "standard",
+          "mappedStackrCardId": null
+        },
+        {
+          "name": "Eevee V",
+          "nativeName": null,
+          "printedNumber": null,
+          "numbering": "unverified",
+          "format": "standard",
+          "mappedStackrCardId": null
+        }
+      ],
+      "sourceUrls": [
+        "https://www.pokemon-card.com/info/003230.html"
+      ],
+      "confidence": "primary_confirmed",
+      "notes": "Paid applicant Start Deck 100 CoroCoro Comic ver., 60-card deck (only featured Pokémon listed here). Application QR/serial in magazine; capped 100,000 with lottery if exceeded. Fulfillment late March or late August 2022; not a free card insert."
+    }
+  ]
+}

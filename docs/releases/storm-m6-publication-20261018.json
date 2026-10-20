@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-18T14:05:53.840Z",
+  "issue": "V14",
+  "setId": "903d5baa-27c7-5690-b1d7-2395c770204a",
+  "language": "ja",
+  "game": "pokemon",
+  "code": "M6",
+  "cause": "Supplied English-lettered source was present in the public logo library, but the r7 production canonical mapping was null. The old native source selection also preferred a Japanese-only bundled logo.",
+  "ownerPermission": {
+    "record": "catalogue/rights-reviews/stackr-m6-owner-supplied-set-logo.2026-10-18.json",
+    "recordSha256": "1a0ba3c6a2df7ad4282c43aa8fc8f00da74d3a4b160f26324fe87541879c341e",
+    "answer": "Yes, my permission covers this supplied Storm logo.",
+    "independentLicensorDocumentationClaimed": false
+  },
+  "authority": "Standing exact supplied verified artwork import/supersession/publication/API verification, plus direct owner permission. Separate from the diagnostic SQL approval.",
+  "publication": {
+    "projectRef": "oakdbbzdqwurpjnoqhmu",
+    "committed": true,
+    "startedAt": "2026-10-18T13:59:05.280Z",
+    "completedAt": "2026-10-18T13:59:10.329Z",
+    "sqlSha256": "51e1291bff4eb4b9fa7535f25eccb0d447db053b428275ab37ab81c44b62fdc1",
+    "asset": {
+      "id": "ef8f1718-823a-4d74-91fd-d66061991a06",
+      "set_id": "903d5baa-27c7-5690-b1d7-2395c770204a",
+      "asset_id": "reviewed:set-logo:903d5baa-27c7-5690-b1d7-2395c770204a:383905581374e6a41be583303354be84a34891d52f8b6420ea632ff61a07f7ba",
+      "byte_size": 900649,
+      "storage_key": "public/set_logo/reviewed/383905581374e6a41be583303354be84a34891d52f8b6420ea632ff61a07f7ba/source.png",
+      "content_sha256": "383905581374e6a41be583303354be84a34891d52f8b6420ea632ff61a07f7ba"
+    },
+    "memberships": [
+      {
+        "set_id": "903d5baa-27c7-5690-b1d7-2395c770204a",
+        "asset_id": "ef8f1718-823a-4d74-91fd-d66061991a06",
+        "asset_type": "set_logo",
+        "created_at": "2026-10-18T13:59:07.095908+00:00",
+        "variant_id": null,
+        "printing_id": null,
+        "language_code": "ja",
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      }
+    ],
+    "storageObjectReusedUnchanged": true,
+    "storageUploads": 0,
+    "setPrintingVariantVersionRowsChanged": false,
+    "providerPricesRefreshed": false,
+    "backendDeployment": false,
+    "statementTimeoutSeconds": 5,
+    "lockTimeoutSeconds": 1
+  },
+  "localVerification": {
+    "focusedTestsPassed": 13,
+    "recoveredBuilderTestsPassed": 7,
+    "recoveredOptionalExternalPgTestSkipped": 1,
+    "inMemoryPostgresqlPublishRollbackAndRejectionGuardsPassed": true,
+    "exactFrozenSqlEngineProofSha256": "de486784de323c742d31f617e28314b0a9c7177dfab017dca93657d5734d7ef2",
+    "independentReview": "PASS on frozen candidate v2",
+    "typecheck": "passed",
+    "lintErrors": 0,
+    "existingLintWarnings": 8
+  },
+  "rollback": {
+    "sqlSha256": "bc544fbb6383f47284cd93609aa2b4415848025a6847c75feca4c53667edc66f",
+    "removesOnlyScopedNewMembership": true,
+    "keepsImmutableAssetAndObject": true,
+    "exactLocalEngineRehearsalPassed": true,
+    "productionRollbackPerformed": false
+  },
+  "delivery": {
+    "apiVerified": true,
+    "configuredApi": "https://api.stackrtcg.com/v1",
+    "defaultUrlCacheVerificationNotBefore": "2026-10-18T14:05:25.329Z",
+    "apiObservationAt": "2026-10-18T14:05:38.384Z",
+    "defaultManifestRequests": [
+      {
+        "url": "https://api.stackrtcg.com/v1/assets/manifest?assetType=set_logo&setId=903d5baa-27c7-5690-b1d7-2395c770204a&limit=10",
+        "status": 200,
+        "generatedAt": "2026-10-18T14:05:38.059Z",
+        "assetCount": 1,
+        "elapsedMs": 2309
+      },
+      {
+        "url": "https://api.stackrtcg.com/v1/assets/manifest?setId=903d5baa-27c7-5690-b1d7-2395c770204a&assetType=set_logo&limit=250",
+        "status": 200,
+        "generatedAt": "2026-10-18T14:05:38.498Z",
+        "assetCount": 1,
+        "elapsedMs": 436
+      }
+    ],
+    "imageSha256": "383905581374e6a41be583303354be84a34891d52f8b6420ea632ff61a07f7ba",
+    "nativeBundleSourceVerified": true,
+    "nativeExportReceipt": "docs/releases/ios-export-asset-verification-20261018.json",
+    "signedNativePublished": false,
+    "phoneVerified": false,
+    "issueClosed": false
+  },
+  "limits": [
+    "Single set logo operation only; intermittent card/image/database failures and other artwork promises remain separate.",
+    "Native signed delivery and visible Discover/binder acceptance remain open. Performance targets and sample sizes are unchanged."
+  ],
+  "privateReceiptDigests": [
+    {
+      "relativePath": "evidence/consolidation-20261018/storm-m6-canonical-link-20261018/publication-execution-intent.json",
+      "sha256": "6f956f2d4a616bf49ae2e596bfaba9abc3c03db474f2efb546fd1c94eaf8c1ec"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/storm-m6-canonical-link-20261018/publication-execution-result.json",
+      "sha256": "4532690ffde34e5e04f61eccce2da2b7d499bbdfbc99859ecad5f5694617b4dd"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/storm-m6-canonical-link-20261018/source-byte-verification-before-publication.json",
+      "sha256": "716fbf1f5f9269b68cac257a5ae315bd6e6775de0f2dad4192b43f5074fe751c"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/storm-m6-canonical-link-20261018/api-delivery-verification.json",
+      "sha256": "f0dcf9113f43cc0555fc47de56d0c3c3f89905719d5d93cbdc373f7512a6b1aa"
+    }
+  ]
+}

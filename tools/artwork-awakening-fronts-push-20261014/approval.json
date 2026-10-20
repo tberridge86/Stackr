@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 48,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "approved_at": "2026-10-14",
+  "cohort_sha256": "fa059bf9425ef17f9d7074ca63963044e7b701d7cd79957e31c302938660435c",
+  "source_counts": {
+    "scrydex": 48
+  },
+  "source_evidence": {
+    "handoff": "9abf4e61ead2de64404e2fd63385c0e910d464093e312076d67b97ae91c882e7",
+    "subset": "688ff4b1e3bca8d7e0b792b0ada3a4347de8e5922426d91d93ffe674cf9db7dd",
+    "validation": "9f4a7bcf67b0372ef67ece7f36bc3aded9a330ea70953779ab04a19fed88a634",
+    "reconciliation": "49bc5d6a8b88f5c26108b19ab0fae0d17f5514e7f89bc9957b11237dc7af1865",
+    "independentAcceptance": "27b5295076b3f54bd09f6d8ae1e89600581dea360df64b83da8a19229f152358",
+    "decision": "e61b7a9f0595e6bb18f1d3e6488644743f65f22431af9be3fb8df2d43e82580b"
+  },
+  "scope": "Store, resize and display exactly 48 independently accepted Japanese Awakening fronts and 144 derivatives. Preserve two finish holds, seven outside tasks, all current names and variants, every provider conflict and actual body witness, three exact Unown forms, Baby rule, complete artist credits and optical-null Ho-oh artist. No source policy activation, metadata edits, physical edition/finish or independent vendor licence certification."
+}

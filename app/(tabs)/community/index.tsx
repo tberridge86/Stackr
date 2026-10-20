@@ -1,11 +1,13 @@
+import { STACKR_ICON_OUTLINE, StackrNavigationIcon } from '../../../components/StackrNavigationIcon';
+import { StackrFunctionalIcon } from '../../../components/StackrFunctionalIcon';
 import { router, useLocalSearchParams } from 'expo-router';
 import { StackrBottomSheet } from '../../../components/StackrModalSystem';
 import { useTheme } from '../../../components/theme-context';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from '../../../components/StackrLoadingIndicator';
 import {
   View,
   FlatList,
-  ActivityIndicator,
   StyleSheet,
   Image,
   Pressable,
@@ -1520,7 +1522,7 @@ export default function CommunityScreen() {
                 <StackrCardActionIcon source={stackrIcons.searchCard} frameSize={30} artworkSize={24} />
               </Pressable>
               <Pressable onPress={() => router.push('/notifications')} style={styles.heroIconButton}>
-                <Image source={stackrIcons.notifications} style={{ width: 26, height: 26 }} resizeMode="contain" />
+                <StackrFunctionalIcon source={stackrIcons.notifications} style={{ width: 26, height: 26 }} resizeMode="contain" />
                 <View style={styles.notificationDot} />
               </Pressable>
             </View>
@@ -1682,7 +1684,7 @@ export default function CommunityScreen() {
               {!liveLocalPlaces.length && localStoreResults.map(({ store, miles }) => (
                 <Pressable key={store.id} onPress={() => setSelectedShop(store)} style={styles.localStoreRow}>
                   <View style={styles.localStoreIcon}>
-                    <Ionicons name="storefront-outline" size={19} color={theme.colors.primary} />
+                    <StackrNavigationIcon name="market" size={19} color={theme.dark ? theme.colors.text : STACKR_ICON_OUTLINE} accentColor={theme.colors.primary} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.localEventTitle}>{store.name}</Text>

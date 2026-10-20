@@ -151,7 +151,12 @@
     }
   },
   "submit": {
-    "production": {},
+    "production": {
+      "ios": {
+        "ascAppId": "6772118450",
+        "groups": ["Team (Expo)"]
+      }
+    },
     "production-owner": {
       "ios": {
         "ascAppId": "6772118450",

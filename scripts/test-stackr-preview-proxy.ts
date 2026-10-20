@@ -126,7 +126,7 @@ assert.equal(
 );
 assert.equal(isAuthorizedPreviewRead({ ...loopbackRequest, method: 'POST' }, configuredGateway, '/sets'), false);
 assert.equal(isAuthorizedPreviewRead(loopbackRequest, configuredGateway, '/cards/unapproved'), false);
-for (const pathname of ['/search', '/cards/11111111-1111-4111-8111-111111111111', '/cards/11111111-1111-4111-8111-111111111111/variants']) {
+for (const pathname of ['/pokemon', '/search', '/cards/11111111-1111-4111-8111-111111111111', '/cards/11111111-1111-4111-8111-111111111111/variants']) {
   assert.equal(isAuthorizedPreviewRead(loopbackRequest, configuredGateway, pathname), true);
   assert.equal(rewriteStackrApiUrlForLoopbackPreview(`https://gateway.stackr.test/v1${pathname}`, 'GET', loopback),
     `${loopback.location.origin}${STACKR_PREVIEW_PROXY_PREFIX}${pathname}`);

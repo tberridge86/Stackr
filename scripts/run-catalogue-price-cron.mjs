@@ -6,18 +6,22 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 // hourly tick. The child owns the explicit target and server-write guards.
 export function runPriceCron({ spawnImpl = spawn, timeoutMs = 50 * 60_000, killGraceMs = 5_000, log = console.info } = {}) {
   if (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 50 * 60_000) throw Error('Invalid cron deadline.');
+  if (!Number.isInteger(killGraceMs) || killGraceMs < 1 || killGraceMs > 60_000) throw Error('Invalid cron termination grace.');
   return new Promise((resolve) => {
     const started = Date.now();
     const child = spawnImpl(process.execPath, [fileURLToPath(new URL('./refresh-catalogue-bulk-prices.mjs', import.meta.url)), '--apply', '--max-groups=5000'], { stdio: 'inherit', windowsHide: true });
     let deadlineReached = false;
+    let finished = false;
     let killTimer;
     const deadline = setTimeout(() => {
       deadlineReached = true;
       log(JSON.stringify({ event: 'catalogue_price_cron_timeout', checkpointResume: true }));
       child.kill('SIGTERM');
-      killTimer = setTimeout(() => child.kill('SIGKILL'), killGraceMs);
+      if (!finished) killTimer = setTimeout(() => child.kill('SIGKILL'), killGraceMs);
     }, timeoutMs);
     const finish = (code, signal) => {
+      if (finished) return;
+      finished = true;
       clearTimeout(deadline);
       clearTimeout(killTimer);
       const exitCode = deadlineReached ? 124 : Number.isInteger(code) ? code : 1;

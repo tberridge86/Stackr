@@ -1,7 +1,8 @@
+import { STACKR_ICON_OUTLINE, StackrNavigationIcon } from './StackrNavigationIcon';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useMemo, useState } from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from './StackrLoadingIndicator';
 import {
-  ActivityIndicator,
   AccessibilityInfo,
   Animated,
   Image,
@@ -495,7 +496,7 @@ export function ValueTrackerCard({
       return (
         <View style={styles.vaultMessageContent}>
           <View style={styles.vaultMessageIcon}>
-            <Ionicons name="scan-outline" size={22} color={theme.colors.primary} />
+            <StackrNavigationIcon name="scan" size={22} color={theme.dark ? theme.colors.text : STACKR_ICON_OUTLINE} accentColor={theme.colors.primary} />
           </View>
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={[styles.vaultMessageTitle, { color: theme.colors.text }]}>Start tracking your collection</Text>
@@ -517,7 +518,7 @@ export function ValueTrackerCard({
       return (
         <View style={styles.vaultMessageContent}>
           <View style={styles.vaultMessageIcon}>
-            <Ionicons name="analytics-outline" size={22} color={theme.colors.primary} />
+            <StackrNavigationIcon name="marketMovers" size={22} color={theme.dark ? theme.colors.text : STACKR_ICON_OUTLINE} accentColor={theme.colors.primary} />
           </View>
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={[styles.vaultMessageTitle, { color: theme.colors.text }]}>No stored market estimate yet</Text>

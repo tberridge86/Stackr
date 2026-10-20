@@ -1,0 +1,165 @@
+{
+  "checked_at": "2026-10-13T20:05:14.849Z",
+  "status": "local_validation_passed_not_published",
+  "source_revision": "c06361f9708c4f53dee2fd21351e9038f8345ef0",
+  "reused_sources_unchanged_from_tested_revision": "d73946b53c42f5b40f8da81a7c98a3d2e2356f62",
+  "final_checkout_dependency_diff": "no_changed_files",
+  "cohort_sha256": "0bc7b51cfd6bde6c878b9b3674751c6c079b5af99d18c3f8c9410eed84f80f45",
+  "approval_sha256": "1b8879eb856915a3407ce7970f68aac5e2e60ef2b0ea94e82dce314a3383b28a",
+  "archive": {
+    "id": 638107947,
+    "bytes": 32119253,
+    "sha256": "9bcc979f0ddb70dc64544c8cc592667fa19d570a12e295834600e459132ad862",
+    "exact_members": 143
+  },
+  "checks": [
+    {
+      "command": "node --test tools/artwork-trainer-kit35-push-20261013/publish.test.mjs tools/artwork-trainer-kit-push-20261013/publish.test.mjs",
+      "passed": 20,
+      "failed": 0,
+      "new_trainer_kit35_tests": 10,
+      "exit_code": 0
+    },
+    {
+      "command": "python tools/artwork-trainer-kit35-push-20261013/download-package.test.py",
+      "passed": 2,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "python tools/artwork-trainer-kit35-push-20261013/download-package.py <private-local-packages> --archive <frozen-local-zip>",
+      "status": "verified_and_extracted",
+      "exact_members": 143,
+      "exit_code": 0
+    },
+    {
+      "command": "node tools/artwork-trainer-kit35-push-20261013/verify-packages.mjs <private-local-packages>",
+      "status": "all_frozen_files_fully_decoded",
+      "fronts": 35,
+      "derivatives": 105,
+      "files": 140,
+      "exit_code": 0
+    }
+  ],
+  "database_requests": 0,
+  "provider_requests": 0,
+  "storage_writes": 0,
+  "production_source_insertions": 0,
+  "published": false,
+  "independent_review": "pending_coordinator",
+  "raw_private_snapshots_included": false,
+  "file_hashes": [
+    {
+      "file": ".gitattributes",
+      "bytes": 54,
+      "sha256": "5a4ffa8f62276e5e43264106e04022e901f0c4c5d4818000f800366bb43f2f30"
+    },
+    {
+      "file": ".gitignore",
+      "bytes": 19,
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793"
+    },
+    {
+      "file": "README.md",
+      "bytes": 4980,
+      "sha256": "782aa0f31934c07cccbb76b64e499b2fefab35353f6b5c459e9a19ab50d010ec"
+    },
+    {
+      "file": "approval.json",
+      "bytes": 1376,
+      "sha256": "1b8879eb856915a3407ce7970f68aac5e2e60ef2b0ea94e82dce314a3383b28a"
+    },
+    {
+      "file": "before-query.sql",
+      "bytes": 3236,
+      "sha256": "d1d7b4b643473bfc0af87ef66fc74591a6762d52676583105ebdf274da6b0fa2"
+    },
+    {
+      "file": "download-package.py",
+      "bytes": 5209,
+      "sha256": "c33591b7816fe58b32cb40ca15b356f0332ee101f6273ea23b6df040a3dda495"
+    },
+    {
+      "file": "download-package.test.py",
+      "bytes": 1804,
+      "sha256": "a41462c9a9dd20908a998ee0f08b27083aa04e84b4f5fcb7015c784dbc8a88a7"
+    },
+    {
+      "file": "freeze-local.mjs",
+      "bytes": 7957,
+      "sha256": "fc1ecad766cb2b295e820d2b858ead08f54802cc10b968b3fc2427fad610a372"
+    },
+    {
+      "file": "frozen.mjs",
+      "bytes": 8890,
+      "sha256": "2bc70a63d3e6072dac5e89475db1335e4d08941161e708501a06d61557411072"
+    },
+    {
+      "file": "plan.json",
+      "bytes": 218673,
+      "sha256": "0bc7b51cfd6bde6c878b9b3674751c6c079b5af99d18c3f8c9410eed84f80f45"
+    },
+    {
+      "file": "publish.mjs",
+      "bytes": 4854,
+      "sha256": "e8df6640519598a805ba569e50bfadbb0d40ed8cf889aa68754755707840e985"
+    },
+    {
+      "file": "publish.test.mjs",
+      "bytes": 14093,
+      "sha256": "2aad6bf0ff4d214146aff12a1b27f67f6ad445a571c7b8bfba688f40a038033a"
+    },
+    {
+      "file": "verify-packages.mjs",
+      "bytes": 1334,
+      "sha256": "5ca5b7e87524ba0961dce7528ca2bfe4585f804423150fd48050fad1fa87b7cd"
+    }
+  ],
+  "reused_dependency_hashes": [
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 9031,
+      "sha256": "5524305ba4bd6a0f3867ea2c097c57fb0d610e27ef1d9d64529b64e9c67249de"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/metadata-guard.mjs",
+      "bytes": 4018,
+      "sha256": "cca5354822fe11c007308f7d22ebf84649d2374619e0dd049c7347a9db9e116f"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/publish.mjs",
+      "bytes": 5885,
+      "sha256": "8451746bb6e188f56c5be31064742eaeecdc2f2c6d6e27cb31ab5c7227af6d1f"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "tools/artwork-next-push-20261013/frozen.mjs",
+      "bytes": 7732,
+      "sha256": "3e14eb76a012116492075328c50e6c5907f712004da02d4d3dae541d2617a95b"
+    },
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 30117,
+      "sha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24425,
+      "sha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d"
+    }
+  ]
+}

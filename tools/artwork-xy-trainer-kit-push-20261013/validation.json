@@ -1,0 +1,218 @@
+{
+  "checked_at": "2026-10-13T21:02:41.815Z",
+  "status": "local_validation_passed_not_published",
+  "source_revision": "661fa219086bdcd11a7d4a5c1aed5b257fb618ad",
+  "cohort_sha256": "f5b9cbbea6e8b1b4f61d9739d3785abf01439228ca61f9088329aca6fdd7ac9e",
+  "approval_sha256": "523c5a76993fa376874f0f6a6503a3dee9c976c53dd233a859482fe1f0331ffe",
+  "identity_table_sha256": "11eab0a530e0358407b90e1b66d949d4184005054b91c8e6ffb0cb90dd61c5ab",
+  "source_manifest_sha256": "be22233ea3bae8bd5aebf882ce2701cf59400f5bac7082aa147cb8ab0d3844f2",
+  "checked_handoff_sha256": "a820451e96ed321c6a9cf77856f04782d0a9f07cf818dcee33074a265ce3172d",
+  "delivery_scope": {
+    "original_saved_targets": 54,
+    "eligible_fronts": 53,
+    "excluded_targets": 1,
+    "whole_batch_completion_asserted": false
+  },
+  "finish_hold": {
+    "printing_id": "ecaa0fee-22a2-4cda-82e9-278ec886c7b8",
+    "canonical_finish": "normal",
+    "available_source_finish": "holofoil",
+    "included_in_plan": false
+  },
+  "earlier_sm_quality_holds_included": 0,
+  "archive": {
+    "id": 638239382,
+    "bytes": 66689774,
+    "sha256": "ba83ea3accf161a7129370edff9f77697e34295369f3df7ce3efed452b40b262",
+    "exact_members": 215,
+    "github_metadata_verified_by_coordinator": true
+  },
+  "scope_before_counts": {
+    "production": {
+      "assets": 4,
+      "links": 6,
+      "names": 106,
+      "printings": 53,
+      "sets": 2,
+      "variants": 53
+    },
+    "staging": {
+      "assets": 2,
+      "links": 4,
+      "names": 106,
+      "printings": 53,
+      "sets": 2,
+      "variants": 53
+    }
+  },
+  "checks": [
+    {
+      "command": "node --test tools/artwork-xy-trainer-kit-push-20261013/publish.test.mjs tools/artwork-trainer-kit-push-20261013/publish.test.mjs",
+      "passed": 23,
+      "failed": 0,
+      "new_XY_tests": 13,
+      "exit_code": 0,
+      "checkout_revision": "661fa219086bdcd11a7d4a5c1aed5b257fb618ad"
+    },
+    {
+      "command": "python tools/artwork-xy-trainer-kit-push-20261013/download-package.test.py",
+      "passed": 2,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "python tools/artwork-xy-trainer-kit-push-20261013/download-package.py <private-local-packages> --archive <frozen-local-zip>",
+      "status": "verified_and_extracted",
+      "exact_members": 215,
+      "exit_code": 0
+    },
+    {
+      "command": "node tools/artwork-xy-trainer-kit-push-20261013/verify-packages.mjs <private-local-packages>",
+      "status": "all_frozen_files_fully_decoded",
+      "fronts": 53,
+      "derivatives": 159,
+      "files": 212,
+      "exit_code": 0
+    }
+  ],
+  "database_requests": 0,
+  "provider_requests": 0,
+  "github_release_metadata_reads": 0,
+  "storage_writes": 0,
+  "production_source_insertions": 0,
+  "published": false,
+  "independent_review": "pending_coordinator",
+  "raw_private_snapshots_included": false,
+  "private_paths_in_public_plan": false,
+  "physical_finish_certified": false,
+  "independent_vendor_licence_verified": false,
+  "file_hashes": [
+    {
+      "file": ".gitattributes",
+      "bytes": 54,
+      "sha256": "5a4ffa8f62276e5e43264106e04022e901f0c4c5d4818000f800366bb43f2f30"
+    },
+    {
+      "file": ".gitignore",
+      "bytes": 19,
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793"
+    },
+    {
+      "file": "README.md",
+      "bytes": 5923,
+      "sha256": "10220f68399441514f37270a23bf15cafa06d79e3e08d615cbde9780685a8bd8"
+    },
+    {
+      "file": "approval.json",
+      "bytes": 1412,
+      "sha256": "523c5a76993fa376874f0f6a6503a3dee9c976c53dd233a859482fe1f0331ffe"
+    },
+    {
+      "file": "before-query.sql",
+      "bytes": 4036,
+      "sha256": "b5d0ed5e7654ede6010516edfd6434bd3e941563f4e468638aff4928fd13242b"
+    },
+    {
+      "file": "download-package.py",
+      "bytes": 5296,
+      "sha256": "5f15df9d28c04ac417f4068c3e04e6d1d32342a29299c89f4e5026eb326a14be"
+    },
+    {
+      "file": "download-package.test.py",
+      "bytes": 1840,
+      "sha256": "52dc7bf797129eef8f4398fc9b0af2959891d47466b851dbb7fc3364bbefdb0d"
+    },
+    {
+      "file": "freeze-inputs.json",
+      "bytes": 674,
+      "sha256": "baca6ed90fd4f97f25d29515553c1973b87897a9d50a9458d310d6dac207efcf"
+    },
+    {
+      "file": "freeze-local.mjs",
+      "bytes": 12571,
+      "sha256": "543a28885a12be37cd3de16e3657caaa3e146d7f8760269f6526bdab0ea03e5e"
+    },
+    {
+      "file": "frozen.mjs",
+      "bytes": 12416,
+      "sha256": "f9985fb690ed22f9e441be18e72ceb797e2eb65947f5397a631849d04272f149"
+    },
+    {
+      "file": "identity-table.json",
+      "bytes": 64675,
+      "sha256": "11eab0a530e0358407b90e1b66d949d4184005054b91c8e6ffb0cb90dd61c5ab"
+    },
+    {
+      "file": "plan.json",
+      "bytes": 324483,
+      "sha256": "f5b9cbbea6e8b1b4f61d9739d3785abf01439228ca61f9088329aca6fdd7ac9e"
+    },
+    {
+      "file": "publish.mjs",
+      "bytes": 4863,
+      "sha256": "c9f1402d19bea23e849c46cd9ed50f3d8c92d8a15d0471f94c7719e45baaf79c"
+    },
+    {
+      "file": "publish.test.mjs",
+      "bytes": 17175,
+      "sha256": "8fb2048d25d778259114eb2b8377171f485da654576527a540917ff6a20b7334"
+    },
+    {
+      "file": "saved-targets.json",
+      "bytes": 23965,
+      "sha256": "5a540da675773ff3b1d734ae90846b86cbbfee9e2a689ca1a18db859fcaf5f0c"
+    },
+    {
+      "file": "verify-packages.mjs",
+      "bytes": 1325,
+      "sha256": "c838840763d97299ff788de6081f85e5e6ff1ee88773b92356e8c24ba3254475"
+    }
+  ],
+  "reused_dependency_hashes": [
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 9031,
+      "sha256": "5524305ba4bd6a0f3867ea2c097c57fb0d610e27ef1d9d64529b64e9c67249de"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/metadata-guard.mjs",
+      "bytes": 4018,
+      "sha256": "cca5354822fe11c007308f7d22ebf84649d2374619e0dd049c7347a9db9e116f"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/publish.mjs",
+      "bytes": 5885,
+      "sha256": "8451746bb6e188f56c5be31064742eaeecdc2f2c6d6e27cb31ab5c7227af6d1f"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "tools/artwork-next-push-20261013/frozen.mjs",
+      "bytes": 7732,
+      "sha256": "3e14eb76a012116492075328c50e6c5907f712004da02d4d3dae541d2617a95b"
+    },
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 30117,
+      "sha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24425,
+      "sha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d"
+    }
+  ]
+}

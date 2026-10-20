@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 93,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "approved_at": "2026-10-15",
+  "cohort_sha256": "00621bdb7805bf6f6f1b83c2cbd24434b76ce5a3a4474e1239a4756359158e1a",
+  "source_counts": {
+    "pokellector": 93
+  },
+  "source_evidence": {
+    "approvedProjection": "633843feccd2d1a16a28c414d28c73903b80b232813a3a64f0ab6e2ece5feb5a",
+    "finiteDecision": "afcaee27e95709047280e01dc7f40d7f2288a6ea9a0a7f6555965616abfd750b",
+    "independentSelection": "653cdd1b4c658898fba051d1d9da29fbf07aa37b0aa2537abc701661cbcaa0cf",
+    "independentReview": "996f9a93b3ae19afb7a11b6070475a3f91d678c22e28b35da21e0e792c0868fb",
+    "sourcePolicyCheckpoint": "2013e3ecdb0bf05501b2cc7a66733c73e20ba80b3a7876e5d0442f1a32eb00e9",
+    "ownerPermissionAttestation": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d"
+  },
+  "source_policy_checkpoint_sha256": "2013e3ecdb0bf05501b2cc7a66733c73e20ba80b3a7876e5d0442f1a32eb00e9",
+  "scope": "Exactly93 approved Leaders Stadium fronts65Pokemon28Trainer79normal14holo;019081096held. Unchanged PNG originals and279no-enlargement WebP derivatives;0HD/no optical native gain. Preserve020no-coinBasic and051mandatory10HPASCP accepted signatures, crossed Oddish/Vulpix joins, partial peer coverage, all raw/provider discrepancies and full17inactive source policies. No new production source or canonical edits."
+}

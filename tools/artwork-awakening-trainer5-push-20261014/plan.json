@@ -1,0 +1,3528 @@
+{
+  "schemaVersion": 1,
+  "queue_id": "STACKR-JA-AWAKENING-TRAINERS-20261014-005",
+  "source_manifest_sha256": "123b451711828a642beb2c606f0510cc6689314e6f8dca9298a46c7c4b535882",
+  "package_receipt_sha256": "0fcc94cf7c399853c9adaca55756d457e736f49a0ec1cfe8aef98e5fd54e8f0e",
+  "saved_targets_sha256": "4ea6decdd4a8ac4039d08ee01d025f712c1197e8b2e6fc05780a93420e035f8b",
+  "identity_table_sha256": "95b7016423012664c70a231a663bc596a89730055ff5721cd1abd9bb487ee0f7",
+  "source_evidence": {
+    "approvedProjection": "301f506f278d6558e8948e73b3922f7a9991d439cd8495fc31a3b3a4fce46bc9",
+    "decision": "a8611b59bf68d9a3c76107e9b7dc2bcd56f8c42858eed643208673d5d363627a",
+    "independentSelection": "468eee32291b9a36b950974671c0d8094d9d1be855fbab204a5463604d2d781d",
+    "independentAcceptance": "d5694683f9ea22b1e441b4231fc969153e3079143d1117213f85f8e534b857a8",
+    "referenceHandoff": "01da4d6d0e2ebe40d1b2225119e70b09bbb09a49516e607fa4327210fdabceaa",
+    "metadata": "f55479b730d141ecaa1af14e8dd1e2ca7eabb00c3da06cb806039d3e9d879eea",
+    "historicalHeld": "909aeadc4233f71fcd4f4c41a2fcaffbcb1aede6e5b9d0efcde960b5e0d11bad"
+  },
+  "archive": {
+    "id": 641944947,
+    "sha256": "8bf11edd817e085632c008dce15ed0ef68e7ad3e582966f7f10613b3978572f2",
+    "byte_size": 2310785,
+    "file_count": 24
+  },
+  "archive_metadata": [
+    {
+      "file": "manifest.json",
+      "sha256": "123b451711828a642beb2c606f0510cc6689314e6f8dca9298a46c7c4b535882",
+      "byte_size": 162565
+    },
+    {
+      "file": "receipts/preparation-summary.json",
+      "sha256": "f3d9fd0f84abbd9d874e2a48c48745ed953287a4bfd8f446920c60920c469bd9",
+      "byte_size": 1315
+    },
+    {
+      "file": "receipts/current-card-bindings.json",
+      "sha256": "02a1fc5254c1156b395037e3a9478e75647bd41da39658dbc2f2b6d9cc41b8eb",
+      "byte_size": 5511
+    },
+    {
+      "file": "receipts/finite-decision.json",
+      "sha256": "9c79d88813e72e5f0c1dcc622778c9be34f1fba449704abad57fce5fb7cf4057",
+      "byte_size": 1955
+    }
+  ],
+  "rows": [
+    {
+      "printing_id": "ecd63564-d5d4-402d-b28d-95011e2a9107",
+      "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+      "set_code": "neo3",
+      "language_code": "ja",
+      "collector_number": "053",
+      "card_native_name": "古い棒",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "40806ca5-1d4c-4bf6-b499-cee8ff167f94"
+      ],
+      "batch_id": "JP-CARDS-012",
+      "source_code": "scrydex",
+      "provider_id": "neo3_ja-53",
+      "image_url": "https://images.scrydex.com/pokemon/neo3_ja-53/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/8122a558912c72cef5c4b7b14591becae892a78f776ce530748b032909ce3f99/original.webp",
+          "sha256": "8122a558912c72cef5c4b7b14591becae892a78f776ce530748b032909ce3f99",
+          "byte_size": 392996,
+          "width": 570,
+          "height": 797,
+          "mime_type": "image/webp",
+          "artifact_id": 641944947
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/8c98d097844bb377cbbb058e32f7a269a3b8623098cec8f61fa579251d2c2d4a/card-grid.webp",
+          "sha256": "8c98d097844bb377cbbb058e32f7a269a3b8623098cec8f61fa579251d2c2d4a",
+          "byte_size": 15972,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp",
+          "artifact_id": 641944947
+        },
+        {
+          "role": "search-result",
+          "file": "objects/3873478a3e84ee999b94aa6d3147ecc2b318e614f7451083840293f752aabc70/search-result.webp",
+          "sha256": "3873478a3e84ee999b94aa6d3147ecc2b318e614f7451083840293f752aabc70",
+          "byte_size": 3758,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp",
+          "artifact_id": 641944947
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/c5ac0e8b1dc00f70fc1614f0c71b621d43c144464f794d6b063d71ebe78b3f65/detail-page.webp",
+          "sha256": "c5ac0e8b1dc00f70fc1614f0c71b621d43c144464f794d6b063d71ebe78b3f65",
+          "byte_size": 61474,
+          "width": 570,
+          "height": 797,
+          "mime_type": "image/webp",
+          "artifact_id": 641944947
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo3_ja-53/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/old-rod/neo3_ja-53?variant=normal",
+        "provider_id": "neo3_ja-53",
+        "source_metadata_sha256": "88d2dd93143a7ddc5217c772f4582789062a7214a9c7e6606020da272feefcc1",
+        "source_body": {
+          "provider_metadata_raw_html_sha256": "88d2dd93143a7ddc5217c772f4582789062a7214a9c7e6606020da272feefcc1",
+          "provider_metadata_full_captured_json_sha256": "f562c98e933905c90aeded5e8b1184794fdf4fb74dfa0da757fef08d568c0170",
+          "provider_metadata_identity_projection": {
+            "id": "neo3_ja-53",
+            "name": "ボロのつりざお",
+            "supertype": "トレーナー",
+            "subtypes": [],
+            "types": [],
+            "hp": null,
+            "evolves_from": [],
+            "abilities": [],
+            "attacks": [],
+            "weaknesses": [],
+            "resistances": [],
+            "retreat_cost": [],
+            "converted_retreat_cost": null,
+            "rules": [
+              "コインを2回投げる。\nすべてオモテなら、自分のトラッシュから「ポケモンのカード」を1枚選び出し、相手プレイヤーに見せてから、手札に加える。\nすべてウラなら、自分のトラッシュから「トレーナー」を1枚選び出し、相手プレイヤーに見せてから、手札に加える。"
+            ],
+            "number": null,
+            "printed_number": null,
+            "additional_numbers": [],
+            "rarity": "通常",
+            "rarity_code": "●",
+            "artist": "Keiji Kinebuchi",
+            "national_pokedex_numbers": [],
+            "regulation_mark": null,
+            "legalities": [
+              {
+                "format": "Standard",
+                "status": "Not Legal"
+              },
+              {
+                "format": "Unlimited",
+                "status": "Legal"
+              },
+              {
+                "format": "Expanded",
+                "status": "Not Legal"
+              },
+              {
+                "format": "Gym Leader Challenge",
+                "status": "Not Legal"
+              }
+            ],
+            "flavor_text": null,
+            "images": [
+              {
+                "type": "front",
+                "small": "https://images.scrydex.com/pokemon/neo3_ja-53/small",
+                "medium": "https://images.scrydex.com/pokemon/neo3_ja-53/medium",
+                "large": "https://images.scrydex.com/pokemon/neo3_ja-53/large"
+              }
+            ],
+            "expansion": {
+              "id": "neo3_ja",
+              "name": "めざめる伝説",
+              "series": "Neo",
+              "code": null,
+              "total": 57,
+              "printed_total": 57,
+              "language": "Japanese",
+              "language_code": "JA",
+              "release_date": "2000/11/23",
+              "is_online_only": false,
+              "logo": "https://images.scrydex.com/pokemon/neo3_ja-logo/logo",
+              "symbol": "https://images.scrydex.com/pokemon/neo3_ja-symbol/symbol",
+              "translation": {
+                "en": {
+                  "name": "Awakening Legends"
+                }
+              }
+            },
+            "language": "Japanese",
+            "language_code": "JA",
+            "expansion_sort_order": 53,
+            "translation": {
+              "en": {
+                "name": "Old Rod",
+                "supertype": "Trainer",
+                "subtypes": null,
+                "types": null,
+                "rules": [
+                  "Flip 2 coins. If both are heads, put a Baby Pokémon, Basic Pokémon, or Evolution card from your discard pile into your hand. If both are tails, put a Trainer card from your discard pile into your hand."
+                ],
+                "abilities": [],
+                "attacks": [],
+                "weaknesses": [],
+                "resistances": [],
+                "retreat_cost": null,
+                "evolves_from": null,
+                "flavor_text": null,
+                "rarity": "Common",
+                "expansion": {
+                  "name": "Awakening Legends"
+                }
+              }
+            },
+            "variants": [
+              {
+                "name": "normal",
+                "images": []
+              }
+            ]
+          },
+          "provider_metadata_identity_projection_sha256": "b64298e2a7b0a1fb7a912f7a9951f2920c193b2e36c32f1bac216e1db97d6ebd",
+          "provider_metadata_projection_contract": "Derived identity-only projection from the retained exactmetadata7 packet; full captured provider JSON remains offline and is represented only by its distinct hash.",
+          "tcgdex_metadata": {
+            "category": "Trainer",
+            "id": "neo3-053",
+            "localId": "053",
+            "name": "古い棒",
+            "rarity": "Common",
+            "set": {
+              "cardCount": {
+                "official": 57,
+                "total": 57
+              },
+              "id": "neo3",
+              "name": "めざめる伝説",
+              "symbol": "https://assets.tcgdex.net/univ/neo/neo3/symbol"
+            },
+            "variants": {
+              "firstEdition": false,
+              "holo": false,
+              "normal": true,
+              "reverse": false,
+              "wPromo": false
+            },
+            "variants_detailed": [
+              {
+                "type": "normal",
+                "size": "standard",
+                "variantId": "endfynwn4n10gzq"
+              }
+            ],
+            "legal": {
+              "standard": false,
+              "expanded": false
+            },
+            "updated": "2026-09-25T23:45:28.020Z"
+          },
+          "source_signature": {
+            "sourceCardId": "neo3_ja-53",
+            "nativeName": "ボロのつりざお",
+            "sourceEnglishName": "Old Rod",
+            "language": "Japanese",
+            "languageCode": "JA",
+            "supertype": "トレーナー",
+            "subtypes": [],
+            "nationalDex": [],
+            "hp": null,
+            "types": [],
+            "evolvesFrom": [],
+            "artist": "Keiji Kinebuchi",
+            "orderedAttacks": [],
+            "abilities": [],
+            "rules": [
+              "コインを2回投げる。\nすべてオモテなら、自分のトラッシュから「ポケモンのカード」を1枚選び出し、相手プレイヤーに見せてから、手札に加える。\nすべてウラなら、自分のトラッシュから「トレーナー」を1枚選び出し、相手プレイヤーに見せてから、手札に加える。"
+            ],
+            "weaknesses": [],
+            "resistances": [],
+            "retreatCosts": [],
+            "convertedRetreatCost": null,
+            "sourceReportedNumber": null,
+            "sourceReportedPrintedNumber": null,
+            "rarity": "通常",
+            "rarityCode": "●",
+            "expansion": {
+              "id": "neo3_ja",
+              "name": "めざめる伝説",
+              "series": "Neo",
+              "code": null,
+              "total": 57,
+              "printed_total": 57,
+              "language": "Japanese",
+              "language_code": "JA",
+              "release_date": "2000/11/23",
+              "is_online_only": false,
+              "logo": "https://images.scrydex.com/pokemon/neo3_ja-logo/logo",
+              "symbol": "https://images.scrydex.com/pokemon/neo3_ja-symbol/symbol",
+              "translation": {
+                "en": {
+                  "name": "Awakening Legends"
+                }
+              }
+            },
+            "sourceVariantNames": [
+              "normal"
+            ]
+          },
+          "source_signature_sha256": "703c7346abca1b7f589313d32ddb05ace0045576094a9ef32f5f98cb39eebb79",
+          "source_attack_array_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "actual_pixel_signature": {
+            "actualLanguageCode": "ja",
+            "nativeName": "ボロのつりざお",
+            "header": "TRAINER",
+            "printedSubtype": null,
+            "hp": null,
+            "stage": null,
+            "evolvesFrom": null,
+            "nationalDex": null,
+            "canonicalCollectorAliasNotPrintedNumber": true,
+            "artist": "Keiji Kinebuchi",
+            "artistReadCertain": true,
+            "orderedAttackNames": [],
+            "orderedAttackCosts": [],
+            "orderedAttackDamage": [],
+            "abilityNames": [],
+            "nativeAbilityText": null,
+            "nativeAttackText": [],
+            "nativeRulesText": "コインを2枚投げ、すべて「おもて」なら「ポケモンのカード」を、すべて「うら」なら「トレーナーカード」を、あなたのトラッシュから1枚選び出し、相手プレイヤーに見せてから、手札に加える。",
+            "retreatSymbols": null,
+            "fullCardFrontVisible": true,
+            "allFourOuterEdgesVisible": true,
+            "setSymbolObserved": true,
+            "editionOrMaterialCertified": false
+          },
+          "actual_pixel_signature_sha256": "04214630bcf38e92c1c07d431bff69140799ff6481acabeb996d50010e54b998",
+          "actual_pixel_observations": {
+            "alias": "053",
+            "printingId": "ecd63564-d5d4-402d-b28d-95011e2a9107",
+            "sha256": "8122a558912c72cef5c4b7b14591becae892a78f776ce530748b032909ce3f99",
+            "width": 570,
+            "height": 797,
+            "hashCheckedImmediatelyBeforeViewAtUtc": "2026-10-14T21:46:01.522Z",
+            "observedAtUtc": "2026-10-14T21:46:44.094Z",
+            "viewMethod": "Single whole original via view_image(detail original), immediately preceded by byte hash verification",
+            "actualLanguageCode": "ja",
+            "allFourOuterEdgesVisible": true,
+            "fullCardFrontVisible": true,
+            "sourceBytesUnchanged": true,
+            "generatedOrUpscaled": false,
+            "physicalEditionVerified": false,
+            "physicalFinishVerified": false,
+            "nativeNameObserved": "ボロのつりざお",
+            "headerObserved": "TRAINER",
+            "printedSubtypeObserved": null,
+            "hpObserved": null,
+            "stageObserved": null,
+            "printedNationalDexObserved": null,
+            "printedCollectorNumberObserved": null,
+            "artistObserved": "Keiji Kinebuchi",
+            "artistReadCertain": true,
+            "nativeRulesTextObserved": "コインを2枚投げ、すべて「おもて」なら「ポケモンのカード」を、すべて「うら」なら「トレーナーカード」を、あなたのトラッシュから1枚選び出し、相手プレイヤーに見せてから、手札に加える。",
+            "rulesMechanicObserved": "Two coins:all heads retrieves one Pokémon card;all tails retrieves one Trainer card from own discard, show opponent,add to hand.",
+            "artDescriptionObserved": "A yellow-and-black fishing rod with line and red float lying on brown wooden dock boards beside water.",
+            "setSymbolObserved": true,
+            "frameDescription": "Complete yellow outer border, grey metallic Trainer frame, yellow TRAINER header and riveted white rule box.",
+            "copyrightObservation": "No legible copyright/date line seen on complete front; no year inference.",
+            "editionStampVisible": false,
+            "proposedPokemonIdentityMatch": false,
+            "trainerCanonicalIdentityAsserted": false,
+            "selectedSourceCardId": null,
+            "quarantineComparisonOnly": true,
+            "transcriptionNote": "Readable Japanese title and gameplay body transcribed from a single whole source original; punctuation/spacing normalised. Fine print not invented; no copyright year or physical edition inferred."
+          },
+          "original_observation_sha256": "74efe9312f461c04342605bc98fe9e71f29e0dfb11ae69b05fcab8a57708e2a5",
+          "provider_metadata_discrepancies": [],
+          "historical_source_row_canonical_json_sha256": "59a268cdaae93bf1cec0e0582ada81a7bc13330e09b62677f04db8a0e4b902ea",
+          "root_approved_projection_row_canonical_json_sha256": "69c28f73162659eb0238735de8758dc34e2139bef01b64d6522d2474a9da3fc0",
+          "historical_association": {
+            "selected_source_card_id": null,
+            "quarantine_comparison_only": true,
+            "holds": [
+              {
+                "code": "trainer_native_body_and_art_not_independently_bound",
+                "reason": "The exact current TCGdex target contains category/name/set/rarity only; it omits effects, artist and native rules. Scrydex provides a literal source lead and one native body, but name/set matching alone is not an exact artwork/version/printing bridge.",
+                "action": "Any later capture must be quarantine comparison-only. Read full Japanese title, set symbol, artist, frame/header/subtype/rule boxes and complete rule effect before exact canonical artwork binding. Do not prepare or infer printing from alias/order."
+              },
+              {
+                "code": "actual_source_front_verified_but_canonical_trainer_body_art_bridge_missing",
+                "action": "Retain this unchanged source original as comparison only. selectedSourceCardId remains null; current canonical artist is null and printing discriminator empty. Independent canonical native body/art/version evidence is still required."
+              }
+            ],
+            "exact_canonical_trainer_artwork_match": false,
+            "canonical_artist_and_body_missing_retained": true
+          },
+          "independent_selection": {
+            "itemId": "card:ecd63564-d5d4-402d-b28d-95011e2a9107",
+            "printingId": "ecd63564-d5d4-402d-b28d-95011e2a9107",
+            "variantId": "40806ca5-1d4c-4bf6-b499-cee8ff167f94",
+            "canonicalSetId": "a15481a7-410b-4a98-8695-3bba0db9d226",
+            "canonicalSetCode": "neo3",
+            "canonicalLanguageCode": "ja",
+            "canonicalCollectorAlias": "053",
+            "collectorAliasIsNotPrintedNumber": true,
+            "currentNativeLabel": "古い棒",
+            "currentNativeLabelRetained": true,
+            "currentProductionBinding": {
+              "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+              "set_code": "neo3",
+              "game_code": "pokemon",
+              "variant_id": "40806ca5-1d4c-4bf6-b499-cee8ff167f94",
+              "finish_code": "normal",
+              "printing_id": "ecd63564-d5d4-402d-b28d-95011e2a9107",
+              "variant_code": "normal",
+              "language_code": "ja",
+              "card_native_name": "古い棒",
+              "collector_number": "053",
+              "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+              "same_artwork_as_variant_id": null
+            },
+            "currentStagingBinding": {
+              "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+              "set_code": "neo3",
+              "game_code": "pokemon",
+              "variant_id": "40806ca5-1d4c-4bf6-b499-cee8ff167f94",
+              "finish_code": "normal",
+              "printing_id": "ecd63564-d5d4-402d-b28d-95011e2a9107",
+              "variant_code": "normal",
+              "language_code": "ja",
+              "card_native_name": "古い棒",
+              "collector_number": "053",
+              "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+              "same_artwork_as_variant_id": null
+            },
+            "historicalSelectedSourceCardId": null,
+            "historicalComparisonPacketUnchanged": true,
+            "candidateSourceCardId": "neo3_ja-53",
+            "independentlySelectedSourceCardId": "neo3_ja-53",
+            "sourceProvider": "scrydex",
+            "sourcePageUrl": "https://scrydex.com/pokemon/cards/old-rod/neo3_ja-53?variant=normal",
+            "sourceImageUrl": "https://images.scrydex.com/pokemon/neo3_ja-53/large",
+            "sourceOriginal": {
+              "sha256": "8122a558912c72cef5c4b7b14591becae892a78f776ce530748b032909ce3f99",
+              "bytes": 392996,
+              "mimeType": "image/webp",
+              "format": "WEBP",
+              "width": 570,
+              "height": 797,
+              "fullPILDecodePassed": true,
+              "fullSharpDecodePassed": true,
+              "sourceBytesUnchanged": true,
+              "generatedOrUpscaled": false,
+              "minimumDetailResolution": true,
+              "hd720x1008": false
+            },
+            "sourceMetadata": {
+              "sha256": "88d2dd93143a7ddc5217c772f4582789062a7214a9c7e6606020da272feefcc1",
+              "sourceSignature": {
+                "sourceCardId": "neo3_ja-53",
+                "nativeName": "ボロのつりざお",
+                "sourceEnglishName": "Old Rod",
+                "language": "Japanese",
+                "languageCode": "JA",
+                "supertype": "トレーナー",
+                "subtypes": [],
+                "nationalDex": [],
+                "hp": null,
+                "types": [],
+                "evolvesFrom": [],
+                "artist": "Keiji Kinebuchi",
+                "orderedAttacks": [],
+                "abilities": [],
+                "rules": [
+                  "コインを2回投げる。\nすべてオモテなら、自分のトラッシュから「ポケモンのカード」を1枚選び出し、相手プレイヤーに見せてから、手札に加える。\nすべてウラなら、自分のトラッシュから「トレーナー」を1枚選び出し、相手プレイヤーに見せてから、手札に加える。"
+                ],
+                "weaknesses": [],
+                "resistances": [],
+                "retreatCosts": [],
+                "convertedRetreatCost": null,
+                "sourceReportedNumber": null,
+                "sourceReportedPrintedNumber": null,
+                "rarity": "通常",
+                "rarityCode": "●",
+                "expansion": {
+                  "id": "neo3_ja",
+                  "name": "めざめる伝説",
+                  "series": "Neo",
+                  "code": null,
+                  "total": 57,
+                  "printed_total": 57,
+                  "language": "Japanese",
+                  "language_code": "JA",
+                  "release_date": "2000/11/23",
+                  "is_online_only": false,
+                  "logo": "https://images.scrydex.com/pokemon/neo3_ja-logo/logo",
+                  "symbol": "https://images.scrydex.com/pokemon/neo3_ja-symbol/symbol",
+                  "translation": {
+                    "en": {
+                      "name": "Awakening Legends"
+                    }
+                  }
+                },
+                "sourceVariantNames": [
+                  "normal"
+                ]
+              },
+              "sourceSignatureSha256": "703c7346abca1b7f589313d32ddb05ace0045576094a9ef32f5f98cb39eebb79",
+              "sourceAttackArraySha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+            },
+            "sourceActualPixelSignature": {
+              "actualLanguageCode": "ja",
+              "nativeName": "ボロのつりざお",
+              "header": "TRAINER",
+              "printedSubtype": null,
+              "hp": null,
+              "stage": null,
+              "evolvesFrom": null,
+              "nationalDex": null,
+              "canonicalCollectorAliasNotPrintedNumber": true,
+              "artist": "Keiji Kinebuchi",
+              "artistReadCertain": true,
+              "orderedAttackNames": [],
+              "orderedAttackCosts": [],
+              "orderedAttackDamage": [],
+              "abilityNames": [],
+              "nativeAbilityText": null,
+              "nativeAttackText": [],
+              "nativeRulesText": "コインを2枚投げ、すべて「おもて」なら「ポケモンのカード」を、すべて「うら」なら「トレーナーカード」を、あなたのトラッシュから1枚選び出し、相手プレイヤーに見せてから、手札に加える。",
+              "retreatSymbols": null,
+              "fullCardFrontVisible": true,
+              "allFourOuterEdgesVisible": true,
+              "setSymbolObserved": true,
+              "editionOrMaterialCertified": false
+            },
+            "sourceActualPixelSignatureSha256": "04214630bcf38e92c1c07d431bff69140799ff6481acabeb996d50010e54b998",
+            "sourceProviderDiscrepanciesRetained": [],
+            "canonicalMetadata": {
+              "sha256": "39680e33d01ae30f93eb309918067853639b13e1f54e7366d9c6eca1ae520e93",
+              "artistAbsent": true,
+              "bodyAbsent": true,
+              "officialTranslationCertification": false
+            },
+            "titleCrosswalk": {
+              "catalogue": "古い棒",
+              "referenceEnglish": "Old Rod",
+              "actualJapanese": "ボロのつりざお",
+              "basis": "古い means old; 棒 is a rod/stick. Printed ボロのつりざお is a worn fishing rod. The distinctive fishing-rod art and two-coin discard retrieval rule bind the card beyond this broad translated label.",
+              "semanticInference": true,
+              "officialTranslationCertification": false,
+              "proofIsNotNamesOrOrderAlone": true
+            },
+            "referenceEvidence": {
+              "role": "Identity comparison evidence only; not a production image source",
+              "provider": "Pokellector named Japanese set/card reference",
+              "setUrl": "https://jp.pokellector.com/Awakening-Legends-Expansion/",
+              "cardUrl": "https://jp.pokellector.com/Awakening-Legends-Expansion/Old-Rod-Card-53",
+              "cardMetadata": {
+                "sha256": "8e235eb3f2dd722813ae6173af9fe6a5d7338eaae027bbbc52ee3c8559ecd34f",
+                "bytes": 26913
+              },
+              "providerCardId": "39702",
+              "englishTitle": "Old Rod",
+              "observedLiteralImageUrl": "https://den-cards.pokellector.com/332/Old-Rod.NEO3.53.39702.png",
+              "original": {
+                "kind": "reference",
+                "sha256": "24a17af7ec0ab980b787160da45313c03dc73f3a7ec05236610b2cc36fd134c2",
+                "bytes": 60868,
+                "mimeType": "image/webp",
+                "format": "webp",
+                "width": 570,
+                "height": 797,
+                "fullSharpDecodePassed": true,
+                "fullPILDecodePassed": true,
+                "rgbaSha256": "d4133eabf24cb5617338b7c9688245a2201f208605ed468c301185da136295bf",
+                "genuineDetailSize": true,
+                "hd720x1008": false,
+                "aspectRatio": 0.7151819322459222,
+                "aspectRatioIsCropProof": false
+              },
+              "pageJapaneseLabelConflict": {
+                "pageJpnLabel": "オールドロッド",
+                "actualPrintedTitle": "ボロのつりざお",
+                "resolvedBy": "Both actual whole reference and Scrydex front print ボロのつりざお; page search label retained as inaccurate metadata."
+              }
+            },
+            "independentDirectObservation": {
+              "alias": "053",
+              "referenceSha256": "24a17af7ec0ab980b787160da45313c03dc73f3a7ec05236610b2cc36fd134c2",
+              "actualTitle": "ボロのつりざお",
+              "header": "TRAINER",
+              "subtype": null,
+              "artist": "Keiji Kinebuchi",
+              "fullFrame": true,
+              "setMarkVisible": true,
+              "actualNativeRules": "コインを2枚投げ、すべて「おもて」なら「ポケモンのカード」を、すべて「うら」なら「トレーナーカード」を、あなたのトラッシュから1枚選び出し、相手プレイヤーに見せてから、手札に加える。",
+              "art": "Yellow-and-black fishing rod lies diagonally across wooden dock; line and red/white float below, turquoise water at upper right.",
+              "referenceViewedIndependently": true,
+              "writerClaimsSeenBeforeReferenceView": true,
+              "sourceSha256": "8122a558912c72cef5c4b7b14591becae892a78f776ce530748b032909ce3f99",
+              "sourceViewedIndependently": true,
+              "sourceReferenceExactPrintedFrontMatch": true,
+              "sameUnderlyingScanPossible": true
+            },
+            "writerProposedBindingEvidenceSha256": "3e03bd3fc9beb7ae138adb8dc60109c46b94e3057e75cd8818c5cc4d234d366e",
+            "exactArtworkSourceIdentityAccepted": true,
+            "currentVariantMetadata": "normal",
+            "physicalEditionVerified": false,
+            "physicalFinishVerified": false,
+            "sourceWideApproval": false,
+            "vendorLicenceVerified": false,
+            "underlyingCopyrightLicenceVerified": false,
+            "preparationApproved": false,
+            "publicationApproved": false
+          },
+          "independent_selection_raw_canonical_json_sha256": "2cbd0e91c4914da758f4a4459de5273e8fe927ad9361717ccc336cf33da84567",
+          "independent_selection_public_canonical_json_sha256": "2e2e77c700329e370af0409dbd82d28cc34d0e7266235e69410c7bba46ab1b22",
+          "public_projection_contract": "Remove only local path/absolutePath properties; reject unexpected local paths; raw private evidence hashes remain distinct from projected hashes.",
+          "current_acceptance": {
+            "independently_accepted": true,
+            "source_card_id": "neo3_ja-53",
+            "exact_unnumbered_japanese_trainer": true
+          },
+          "source_variant_support": {
+            "currentVariantCode": "normal",
+            "currentFinishCode": "normal",
+            "sourceVariantNames": [
+              "normal"
+            ],
+            "supportsCurrentMetadataVariant": true,
+            "globalFrontNotPerVariantProof": true,
+            "physicalFinishVerified": false
+          },
+          "physical_edition_verified": false,
+          "physical_finish_verified": false,
+          "generic_other_rows_may_relax": false,
+          "queue_controls": {
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "name_and_set_symbol_readable": true,
+              "artist_read_certain": true,
+              "full_japanese_trainer_rules_read": true,
+              "printed_collector_number": null,
+              "printed_national_dex": null,
+              "physical_finish_verified": false,
+              "edition_or_distribution_certified": false,
+              "copyright_year_inferred": false
+            },
+            "identity_controls": {
+              "canonical_alias": "053",
+              "canonical_alias_is_not_printed_number": true,
+              "printed_collector_number": null,
+              "printed_national_dex": null,
+              "card_category": "Trainer",
+              "verified_printed_native_name": "ボロのつりざお",
+              "current_native_label": "古い棒",
+              "current_native_label_not_used_as_sole_match": true,
+              "pokemon_identity_asserted": false,
+              "trainer_full_body_art_reference_bridge_verified": true
+            },
+            "source_qa": {
+              "actual_japanese_unnumbered_trainer_front_verified": true,
+              "complete_native_trainer_body_verified": true,
+              "independent_named_reference_and_source_front_match": true,
+              "reference_image_comparison_only": true,
+              "printed_number_and_national_dex_absent_verified": true,
+              "original_sha256": "8122a558912c72cef5c4b7b14591becae892a78f776ce530748b032909ce3f99",
+              "source_metadata_sha256": "88d2dd93143a7ddc5217c772f4582789062a7214a9c7e6606020da272feefcc1",
+              "actual_pixel_signature_sha256": "04214630bcf38e92c1c07d431bff69140799ff6481acabeb996d50010e54b998",
+              "independent_reference_sha256": "24a17af7ec0ab980b787160da45313c03dc73f3a7ec05236610b2cc36fd134c2",
+              "physical_finish_verified": false
+            }
+          }
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "f03f92e7-086a-4ec9-8281-e3c88906d13d",
+      "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+      "set_code": "neo3",
+      "language_code": "ja",
+      "collector_number": "054",
+      "card_native_name": "ヒーリングフィールド",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "eaa7573e-3860-440e-be69-cb414e6bbda5"
+      ],
+      "batch_id": "JP-CARDS-012",
+      "source_code": "scrydex",
+      "provider_id": "neo3_ja-54",
+      "image_url": "https://images.scrydex.com/pokemon/neo3_ja-54/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/3b1abb921c0e67ef8aa7de076859d1b920caa22ce4e9d962bc2639965e7af7ed/original.webp",
+          "sha256": "3b1abb921c0e67ef8aa7de076859d1b920caa22ce4e9d962bc2639965e7af7ed",
+          "byte_size": 383412,
+          "width": 565,
+          "height": 800,
+          "mime_type": "image/webp",
+          "artifact_id": 641944947
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/057491bf6f0dcafa69916d5697ee83a01f152491b6de9b3a6cbbd3c044fd57d3/card-grid.webp",
+          "sha256": "057491bf6f0dcafa69916d5697ee83a01f152491b6de9b3a6cbbd3c044fd57d3",
+          "byte_size": 15134,
+          "width": 240,
+          "height": 340,
+          "mime_type": "image/webp",
+          "artifact_id": 641944947
+        },
+        {
+          "role": "search-result",
+          "file": "objects/7e214e33744a3d6492300d68d379acb73f42715f042e69b4c9a199b612d10722/search-result.webp",
+          "sha256": "7e214e33744a3d6492300d68d379acb73f42715f042e69b4c9a199b612d10722",
+          "byte_size": 3256,
+          "width": 96,
+          "height": 136,
+          "mime_type": "image/webp",
+          "artifact_id": 641944947
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/361a12d27576964f0c889ea788cb50a7cb328ae40fec7f0f4a9e702514ac9047/detail-page.webp",
+          "sha256": "361a12d27576964f0c889ea788cb50a7cb328ae40fec7f0f4a9e702514ac9047",
+          "byte_size": 61968,
+          "width": 565,
+          "height": 800,
+          "mime_type": "image/webp",
+          "artifact_id": 641944947
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo3_ja-54/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/healing-field/neo3_ja-54?variant=normal",
+        "provider_id": "neo3_ja-54",
+        "source_metadata_sha256": "c285981dc65234cb03399e21de5df38224372d8f8fc29373b6bdfac29c228a89",
+        "source_body": {
+          "provider_metadata_raw_html_sha256": "c285981dc65234cb03399e21de5df38224372d8f8fc29373b6bdfac29c228a89",
+          "provider_metadata_full_captured_json_sha256": "31cf79c270f908acd04cc1db0f30f27bfe47b9936a757cb04bf5d4f9ac59168f",
+          "provider_metadata_identity_projection": {
+            "id": "neo3_ja-54",
+            "name": "いやしの野原",
+            "supertype": "トレーナー",
+            "subtypes": [],
+            "types": [],
+            "hp": null,
+            "evolves_from": [],
+            "abilities": [],
+            "attacks": [],
+            "weaknesses": [],
+            "resistances": [],
+            "retreat_cost": [],
+            "converted_retreat_cost": null,
+            "rules": [
+              "おたがいのプレイヤーは、それぞれ、のぞむなら、自分の番ごとに1回、コインを投げてよい。コインを投げて「おもて」なら、自分の対戦ポケモンにのっているダメージカウンターを、2個とりのぞく。"
+            ],
+            "number": null,
+            "printed_number": null,
+            "additional_numbers": [],
+            "rarity": "非",
+            "rarity_code": "♦",
+            "artist": "Keiji Kinebuchi",
+            "national_pokedex_numbers": [],
+            "regulation_mark": null,
+            "legalities": [
+              {
+                "format": "Standard",
+                "status": "Not Legal"
+              },
+              {
+                "format": "Unlimited",
+                "status": "Legal"
+              },
+              {
+                "format": "Expanded",
+                "status": "Not Legal"
+              },
+              {
+                "format": "Gym Leader Challenge",
+                "status": "Not Legal"
+              }
+            ],
+            "flavor_text": null,
+            "images": [
+              {
+                "type": "front",
+                "small": "https://images.scrydex.com/pokemon/neo3_ja-54/small",
+                "medium": "https://images.scrydex.com/pokemon/neo3_ja-54/medium",
+                "large": "https://images.scrydex.com/pokemon/neo3_ja-54/large"
+              }
+            ],
+            "expansion": {
+              "id": "neo3_ja",
+              "name": "めざめる伝説",
+              "series": "Neo",
+              "code": null,
+              "total": 57,
+              "printed_total": 57,
+              "language": "Japanese",
+              "language_code": "JA",
+              "release_date": "2000/11/23",
+              "is_online_only": false,
+              "logo": "https://images.scrydex.com/pokemon/neo3_ja-logo/logo",
+              "symbol": "https://images.scrydex.com/pokemon/neo3_ja-symbol/symbol",
+              "translation": {
+                "en": {
+                  "name": "Awakening Legends"
+                }
+              }
+            },
+            "language": "Japanese",
+            "language_code": "JA",
+            "expansion_sort_order": 54,
+            "translation": {
+              "en": {
+                "name": "Healing Field",
+                "supertype": "Trainer",
+                "subtypes": null,
+                "types": null,
+                "rules": [
+                  "Once during each player's turn, he or she may flip a coin. If heads, that player removes 2 damage counters from his or her Active Pokémon (1 if it only has 1)."
+                ],
+                "abilities": [],
+                "attacks": [],
+                "weaknesses": [],
+                "resistances": [],
+                "retreat_cost": null,
+                "evolves_from": null,
+                "flavor_text": null,
+                "rarity": "Uncommon",
+                "expansion": {
+                  "name": "Awakening Legends"
+                }
+              }
+            },
+            "variants": [
+              {
+                "name": "normal",
+                "images": []
+              }
+            ]
+          },
+          "provider_metadata_identity_projection_sha256": "e54ccea51f7c320e3584036db17552039a828a2886d5b4c41e32a930aa65430f",
+          "provider_metadata_projection_contract": "Derived identity-only projection from the retained exactmetadata7 packet; full captured provider JSON remains offline and is represented only by its distinct hash.",
+          "tcgdex_metadata": {
+            "category": "Trainer",
+            "id": "neo3-054",
+            "localId": "054",
+            "name": "ヒーリングフィールド",
+            "rarity": "Uncommon",
+            "set": {
+              "cardCount": {
+                "official": 57,
+                "total": 57
+              },
+              "id": "neo3",
+              "name": "めざめる伝説",
+              "symbol": "https://assets.tcgdex.net/univ/neo/neo3/symbol"
+            },
+            "variants": {
+              "firstEdition": false,
+              "holo": false,
+              "normal": true,
+              "reverse": false,
+              "wPromo": false
+            },
+            "variants_detailed": [
+              {
+                "type": "normal",
+                "size": "standard",
+                "variantId": "endfynwn4n10gzq"
+              }
+            ],
+            "legal": {
+              "standard": false,
+              "expanded": false
+            },
+            "updated": "2026-09-25T23:45:28.482Z"
+          },
+          "source_signature": {
+            "sourceCardId": "neo3_ja-54",
+            "nativeName": "いやしの野原",
+            "sourceEnglishName": "Healing Field",
+            "language": "Japanese",
+            "languageCode": "JA",
+            "supertype": "トレーナー",
+            "subtypes": [],
+            "nationalDex": [],
+            "hp": null,
+            "types": [],
+            "evolvesFrom": [],
+            "artist": "Keiji Kinebuchi",
+            "orderedAttacks": [],
+            "abilities": [],
+            "rules": [
+              "おたがいのプレイヤーは、それぞれ、のぞむなら、自分の番ごとに1回、コインを投げてよい。コインを投げて「おもて」なら、自分の対戦ポケモンにのっているダメージカウンターを、2個とりのぞく。"
+            ],
+            "weaknesses": [],
+            "resistances": [],
+            "retreatCosts": [],
+            "convertedRetreatCost": null,
+            "sourceReportedNumber": null,
+            "sourceReportedPrintedNumber": null,
+            "rarity": "非",
+            "rarityCode": "♦",
+            "expansion": {
+              "id": "neo3_ja",
+              "name": "めざめる伝説",
+              "series": "Neo",
+              "code": null,
+              "total": 57,
+              "printed_total": 57,
+              "language": "Japanese",
+              "language_code": "JA",
+              "release_date": "2000/11/23",
+              "is_online_only": false,
+              "logo": "https://images.scrydex.com/pokemon/neo3_ja-logo/logo",
+              "symbol": "https://images.scrydex.com/pokemon/neo3_ja-symbol/symbol",
+              "translation": {
+                "en": {
+                  "name": "Awakening Legends"
+                }
+              }
+            },
+            "sourceVariantNames": [
+              "normal"
+            ]
+          },
+          "source_signature_sha256": "1fcaa9c1f1020f608cbe13d65749d244747389d9181f2b7bede11adf2687d826",
+          "source_attack_array_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "actual_pixel_signature": {
+            "actualLanguageCode": "ja",
+            "nativeName": "いやしの野原",
+            "header": "TRAINER",
+            "printedSubtype": "スタジアムカード",
+            "hp": null,
+            "stage": null,
+            "evolvesFrom": null,
+            "nationalDex": null,
+            "canonicalCollectorAliasNotPrintedNumber": true,
+            "artist": "Keiji Kinebuchi",
+            "artistReadCertain": true,
+            "orderedAttackNames": [],
+            "orderedAttackCosts": [],
+            "orderedAttackDamage": [],
+            "abilityNames": [],
+            "nativeAbilityText": null,
+            "nativeAttackText": [],
+            "nativeRulesText": "おたがいのプレイヤーは、それぞれ、のぞむなら、自分の番ごとに1回、コインを投げてよい。\nコインを投げて「おもて」なら、自分の対戦ポケモンにのっているダメージカウンターを、2個とりのぞく。\n「スタジアムカード」は、バトル場の横に出して使う。別の「スタジアムカード」が場に出たとき、このカードをトラッシュする。",
+            "retreatSymbols": null,
+            "fullCardFrontVisible": true,
+            "allFourOuterEdgesVisible": true,
+            "setSymbolObserved": true,
+            "editionOrMaterialCertified": false
+          },
+          "actual_pixel_signature_sha256": "86b5fe99d1593b47a991f0bbd0957f61b8abe5556e0087e2cec6ac8d65f2863c",
+          "actual_pixel_observations": {
+            "alias": "054",
+            "printingId": "f03f92e7-086a-4ec9-8281-e3c88906d13d",
+            "sha256": "3b1abb921c0e67ef8aa7de076859d1b920caa22ce4e9d962bc2639965e7af7ed",
+            "width": 565,
+            "height": 800,
+            "hashCheckedImmediatelyBeforeViewAtUtc": "2026-10-14T21:46:44.104Z",
+            "observedAtUtc": "2026-10-14T21:47:04.655Z",
+            "viewMethod": "Single whole original via view_image(detail original), immediately preceded by byte hash verification",
+            "actualLanguageCode": "ja",
+            "allFourOuterEdgesVisible": true,
+            "fullCardFrontVisible": true,
+            "sourceBytesUnchanged": true,
+            "generatedOrUpscaled": false,
+            "physicalEditionVerified": false,
+            "physicalFinishVerified": false,
+            "nativeNameObserved": "いやしの野原",
+            "headerObserved": "TRAINER",
+            "printedSubtypeObserved": "スタジアムカード",
+            "hpObserved": null,
+            "stageObserved": null,
+            "printedNationalDexObserved": null,
+            "printedCollectorNumberObserved": null,
+            "artistObserved": "Keiji Kinebuchi",
+            "artistReadCertain": true,
+            "nativeRulesTextObserved": "おたがいのプレイヤーは、それぞれ、のぞむなら、自分の番ごとに1回、コインを投げてよい。\nコインを投げて「おもて」なら、自分の対戦ポケモンにのっているダメージカウンターを、2個とりのぞく。\n「スタジアムカード」は、バトル場の横に出して使う。別の「スタジアムカード」が場に出たとき、このカードをトラッシュする。",
+            "rulesMechanicObserved": "Either player may flip once per turn;heads removes two damage counters from own active. Separate printed Stadium-use/discard rule is visible.",
+            "artDescriptionObserved": "Bright green grassy field with a Poké Ball circle on the grass,trees along both sides and blue sky.",
+            "setSymbolObserved": true,
+            "frameDescription": "Complete yellow border and grey Trainer frame;printed Stadium subtype and riveted white rule box.",
+            "copyrightObservation": "No legible copyright/date line seen on complete front; no year inference.",
+            "editionStampVisible": false,
+            "proposedPokemonIdentityMatch": false,
+            "trainerCanonicalIdentityAsserted": false,
+            "selectedSourceCardId": null,
+            "quarantineComparisonOnly": true,
+            "sourceMetadataOmissions": [
+              "Printed スタジアムカード subtype and generic Stadium rule paragraph omitted from source subtypes/rules."
+            ],
+            "transcriptionNote": "Readable Japanese title and gameplay body transcribed from a single whole source original; punctuation/spacing normalised. Fine print not invented; no copyright year or physical edition inferred."
+          },
+          "original_observation_sha256": "0044ebc412b9569874e12339e21d2dde481e7a5a409b13f29bdfb0fe37cf5c48",
+          "provider_metadata_discrepancies": [
+            {
+              "type": "source_printed_subtype_and_generic_rule_omitted",
+              "field": "rulesAndSubtype",
+              "sourceSubtypes": [],
+              "actualPrintedSubtype": "スタジアムカード",
+              "actualGenericRule": "「スタジアムカード」は、バトル場の横に出して使う。別の「スタジアムカード」が場に出たとき、このカードをトラッシュする。",
+              "pixelResolution": true,
+              "canonicalCorrection": false,
+              "canonicalTrainerIdentityStillUnbound": true
+            }
+          ],
+          "historical_source_row_canonical_json_sha256": "d39f10628a75c62709ea70cbdde2ccb4ebdbc3c8b3c874cf55fd2cb5fdffa817",
+          "root_approved_projection_row_canonical_json_sha256": "99737689f71e4cbc881102634fd1f8285907570eb839b03d8c2976abd6bfc048",
+          "historical_association": {
+            "selected_source_card_id": null,
+            "quarantine_comparison_only": true,
+            "holds": [
+              {
+                "code": "trainer_native_body_and_art_not_independently_bound",
+                "reason": "The exact current TCGdex target contains category/name/set/rarity only; it omits effects, artist and native rules. Scrydex provides a literal source lead and one native body, but name/set matching alone is not an exact artwork/version/printing bridge.",
+                "action": "Any later capture must be quarantine comparison-only. Read full Japanese title, set symbol, artist, frame/header/subtype/rule boxes and complete rule effect before exact canonical artwork binding. Do not prepare or infer printing from alias/order."
+              },
+              {
+                "code": "actual_source_front_verified_but_canonical_trainer_body_art_bridge_missing",
+                "action": "Retain this unchanged source original as comparison only. selectedSourceCardId remains null; current canonical artist is null and printing discriminator empty. Independent canonical native body/art/version evidence is still required."
+              }
+            ],
+            "exact_canonical_trainer_artwork_match": false,
+            "canonical_artist_and_body_missing_retained": true
+          },
+          "independent_selection": {
+            "itemId": "card:f03f92e7-086a-4ec9-8281-e3c88906d13d",
+            "printingId": "f03f92e7-086a-4ec9-8281-e3c88906d13d",
+            "variantId": "eaa7573e-3860-440e-be69-cb414e6bbda5",
+            "canonicalSetId": "a15481a7-410b-4a98-8695-3bba0db9d226",
+            "canonicalSetCode": "neo3",
+            "canonicalLanguageCode": "ja",
+            "canonicalCollectorAlias": "054",
+            "collectorAliasIsNotPrintedNumber": true,
+            "currentNativeLabel": "ヒーリングフィールド",
+            "currentNativeLabelRetained": true,
+            "currentProductionBinding": {
+              "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+              "set_code": "neo3",
+              "game_code": "pokemon",
+              "variant_id": "eaa7573e-3860-440e-be69-cb414e6bbda5",
+              "finish_code": "normal",
+              "printing_id": "f03f92e7-086a-4ec9-8281-e3c88906d13d",
+              "variant_code": "normal",
+              "language_code": "ja",
+              "card_native_name": "ヒーリングフィールド",
+              "collector_number": "054",
+              "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+              "same_artwork_as_variant_id": null
+            },
+            "currentStagingBinding": {
+              "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+              "set_code": "neo3",
+              "game_code": "pokemon",
+              "variant_id": "eaa7573e-3860-440e-be69-cb414e6bbda5",
+              "finish_code": "normal",
+              "printing_id": "f03f92e7-086a-4ec9-8281-e3c88906d13d",
+              "variant_code": "normal",
+              "language_code": "ja",
+              "card_native_name": "ヒーリングフィールド",
+              "collector_number": "054",
+              "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+              "same_artwork_as_variant_id": null
+            },
+            "historicalSelectedSourceCardId": null,
+            "historicalComparisonPacketUnchanged": true,
+            "candidateSourceCardId": "neo3_ja-54",
+            "independentlySelectedSourceCardId": "neo3_ja-54",
+            "sourceProvider": "scrydex",
+            "sourcePageUrl": "https://scrydex.com/pokemon/cards/healing-field/neo3_ja-54?variant=normal",
+            "sourceImageUrl": "https://images.scrydex.com/pokemon/neo3_ja-54/large",
+            "sourceOriginal": {
+              "sha256": "3b1abb921c0e67ef8aa7de076859d1b920caa22ce4e9d962bc2639965e7af7ed",
+              "bytes": 383412,
+              "mimeType": "image/webp",
+              "format": "WEBP",
+              "width": 565,
+              "height": 800,
+              "fullPILDecodePassed": true,
+              "fullSharpDecodePassed": true,
+              "sourceBytesUnchanged": true,
+              "generatedOrUpscaled": false,
+              "minimumDetailResolution": true,
+              "hd720x1008": false
+            },
+            "sourceMetadata": {
+              "sha256": "c285981dc65234cb03399e21de5df38224372d8f8fc29373b6bdfac29c228a89",
+              "sourceSignature": {
+                "sourceCardId": "neo3_ja-54",
+                "nativeName": "いやしの野原",
+                "sourceEnglishName": "Healing Field",
+                "language": "Japanese",
+                "languageCode": "JA",
+                "supertype": "トレーナー",
+                "subtypes": [],
+                "nationalDex": [],
+                "hp": null,
+                "types": [],
+                "evolvesFrom": [],
+                "artist": "Keiji Kinebuchi",
+                "orderedAttacks": [],
+                "abilities": [],
+                "rules": [
+                  "おたがいのプレイヤーは、それぞれ、のぞむなら、自分の番ごとに1回、コインを投げてよい。コインを投げて「おもて」なら、自分の対戦ポケモンにのっているダメージカウンターを、2個とりのぞく。"
+                ],
+                "weaknesses": [],
+                "resistances": [],
+                "retreatCosts": [],
+                "convertedRetreatCost": null,
+                "sourceReportedNumber": null,
+                "sourceReportedPrintedNumber": null,
+                "rarity": "非",
+                "rarityCode": "♦",
+                "expansion": {
+                  "id": "neo3_ja",
+                  "name": "めざめる伝説",
+                  "series": "Neo",
+                  "code": null,
+                  "total": 57,
+                  "printed_total": 57,
+                  "language": "Japanese",
+                  "language_code": "JA",
+                  "release_date": "2000/11/23",
+                  "is_online_only": false,
+                  "logo": "https://images.scrydex.com/pokemon/neo3_ja-logo/logo",
+                  "symbol": "https://images.scrydex.com/pokemon/neo3_ja-symbol/symbol",
+                  "translation": {
+                    "en": {
+                      "name": "Awakening Legends"
+                    }
+                  }
+                },
+                "sourceVariantNames": [
+                  "normal"
+                ]
+              },
+              "sourceSignatureSha256": "1fcaa9c1f1020f608cbe13d65749d244747389d9181f2b7bede11adf2687d826",
+              "sourceAttackArraySha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+            },
+            "sourceActualPixelSignature": {
+              "actualLanguageCode": "ja",
+              "nativeName": "いやしの野原",
+              "header": "TRAINER",
+              "printedSubtype": "スタジアムカード",
+              "hp": null,
+              "stage": null,
+              "evolvesFrom": null,
+              "nationalDex": null,
+              "canonicalCollectorAliasNotPrintedNumber": true,
+              "artist": "Keiji Kinebuchi",
+              "artistReadCertain": true,
+              "orderedAttackNames": [],
+              "orderedAttackCosts": [],
+              "orderedAttackDamage": [],
+              "abilityNames": [],
+              "nativeAbilityText": null,
+              "nativeAttackText": [],
+              "nativeRulesText": "おたがいのプレイヤーは、それぞれ、のぞむなら、自分の番ごとに1回、コインを投げてよい。\nコインを投げて「おもて」なら、自分の対戦ポケモンにのっているダメージカウンターを、2個とりのぞく。\n「スタジアムカード」は、バトル場の横に出して使う。別の「スタジアムカード」が場に出たとき、このカードをトラッシュする。",
+              "retreatSymbols": null,
+              "fullCardFrontVisible": true,
+              "allFourOuterEdgesVisible": true,
+              "setSymbolObserved": true,
+              "editionOrMaterialCertified": false
+            },
+            "sourceActualPixelSignatureSha256": "86b5fe99d1593b47a991f0bbd0957f61b8abe5556e0087e2cec6ac8d65f2863c",
+            "sourceProviderDiscrepanciesRetained": [
+              {
+                "type": "source_printed_subtype_and_generic_rule_omitted",
+                "field": "rulesAndSubtype",
+                "sourceSubtypes": [],
+                "actualPrintedSubtype": "スタジアムカード",
+                "actualGenericRule": "「スタジアムカード」は、バトル場の横に出して使う。別の「スタジアムカード」が場に出たとき、このカードをトラッシュする。",
+                "pixelResolution": true,
+                "canonicalCorrection": false,
+                "canonicalTrainerIdentityStillUnbound": true
+              }
+            ],
+            "canonicalMetadata": {
+              "sha256": "b3937149e3bde524a1bf17bb22b1006083c502375ca82ceb2d8747f17fd84475",
+              "artistAbsent": true,
+              "bodyAbsent": true,
+              "officialTranslationCertification": false
+            },
+            "titleCrosswalk": {
+              "catalogue": "ヒーリングフィールド",
+              "referenceEnglish": "Healing Field",
+              "actualJapanese": "いやしの野原",
+              "basis": "Catalogue transliterates Healing Field; printed native title means healing field/meadow. Full field artwork, Stadium subtype and coin-heal-two rule are matched.",
+              "semanticInference": true,
+              "officialTranslationCertification": false,
+              "proofIsNotNamesOrOrderAlone": true
+            },
+            "referenceEvidence": {
+              "role": "Identity comparison evidence only; not a production image source",
+              "provider": "Pokellector named Japanese set/card reference",
+              "setUrl": "https://jp.pokellector.com/Awakening-Legends-Expansion/",
+              "cardUrl": "https://jp.pokellector.com/Awakening-Legends-Expansion/Healing-Field-Card-54",
+              "cardMetadata": {
+                "sha256": "7dfd71c755bb40251bb52c67859f4e92fa46307bf9bfdf8c46958b4c2e13cbf8",
+                "bytes": 26914
+              },
+              "providerCardId": "39703",
+              "englishTitle": "Healing Field",
+              "observedLiteralImageUrl": "https://den-cards.pokellector.com/332/Healing-Field.NEO3.54.39703.png",
+              "original": {
+                "kind": "reference",
+                "sha256": "e70bf0542992f42252fbd8e4a94c2c6918d1ece042f60069fe95afcae0ec841a",
+                "bytes": 61738,
+                "mimeType": "image/webp",
+                "format": "webp",
+                "width": 565,
+                "height": 800,
+                "fullSharpDecodePassed": true,
+                "fullPILDecodePassed": true,
+                "rgbaSha256": "a35ec2af17f4e8d7fc204624ecd8cd91117ac20633455bb81f3c1be1caf33694",
+                "genuineDetailSize": true,
+                "hd720x1008": false,
+                "aspectRatio": 0.70625,
+                "aspectRatioIsCropProof": false
+              },
+              "pageJapaneseLabelConflict": null
+            },
+            "independentDirectObservation": {
+              "alias": "054",
+              "referenceSha256": "e70bf0542992f42252fbd8e4a94c2c6918d1ece042f60069fe95afcae0ec841a",
+              "actualTitle": "いやしの野原",
+              "header": "TRAINER",
+              "subtype": "スタジアムカード",
+              "artist": "Keiji Kinebuchi",
+              "fullFrame": true,
+              "setMarkVisible": true,
+              "actualNativeRules": "おたがいのプレイヤーは、それぞれ、のぞむなら、自分の番ごとに1回、コインを投げてよい。コインを投げて「おもて」なら、自分の対戦ポケモンにのっているダメージカウンターを、2個とりのぞく。",
+              "stadiumRule": "「スタジアムカード」は、バトル場の横に出して使う。別の「スタジアムカード」が場に出たとき、このカードをトラッシュする。",
+              "art": "Green clearing with a brown Poké Ball circle in grass, red-brown trunks at left/right, yellow foliage and blue sky behind.",
+              "referenceViewedIndependently": true,
+              "writerClaimsSeenBeforeReferenceView": false,
+              "sourceSha256": "3b1abb921c0e67ef8aa7de076859d1b920caa22ce4e9d962bc2639965e7af7ed",
+              "sourceViewedIndependently": true,
+              "sourceReferenceExactPrintedFrontMatch": true,
+              "sameUnderlyingScanPossible": true
+            },
+            "writerProposedBindingEvidenceSha256": "1064c46c7a5c4eb82b8c31d0ea246b253247ab78008fd14232d9243b4f2d353e",
+            "exactArtworkSourceIdentityAccepted": true,
+            "currentVariantMetadata": "normal",
+            "physicalEditionVerified": false,
+            "physicalFinishVerified": false,
+            "sourceWideApproval": false,
+            "vendorLicenceVerified": false,
+            "underlyingCopyrightLicenceVerified": false,
+            "preparationApproved": false,
+            "publicationApproved": false
+          },
+          "independent_selection_raw_canonical_json_sha256": "f99aedc217a4f4e2c2784636346d36c6c1e1d91c865deffaea386ad80f446331",
+          "independent_selection_public_canonical_json_sha256": "2b615c1b4e6872f6e5c58c2d01305ff5bdfddd6f5238cf4e5b111880a981f0f2",
+          "public_projection_contract": "Remove only local path/absolutePath properties; reject unexpected local paths; raw private evidence hashes remain distinct from projected hashes.",
+          "current_acceptance": {
+            "independently_accepted": true,
+            "source_card_id": "neo3_ja-54",
+            "exact_unnumbered_japanese_trainer": true
+          },
+          "source_variant_support": {
+            "currentVariantCode": "normal",
+            "currentFinishCode": "normal",
+            "sourceVariantNames": [
+              "normal"
+            ],
+            "supportsCurrentMetadataVariant": true,
+            "globalFrontNotPerVariantProof": true,
+            "physicalFinishVerified": false
+          },
+          "physical_edition_verified": false,
+          "physical_finish_verified": false,
+          "generic_other_rows_may_relax": false,
+          "queue_controls": {
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "name_and_set_symbol_readable": true,
+              "artist_read_certain": true,
+              "full_japanese_trainer_rules_read": true,
+              "printed_collector_number": null,
+              "printed_national_dex": null,
+              "physical_finish_verified": false,
+              "edition_or_distribution_certified": false,
+              "copyright_year_inferred": false
+            },
+            "identity_controls": {
+              "canonical_alias": "054",
+              "canonical_alias_is_not_printed_number": true,
+              "printed_collector_number": null,
+              "printed_national_dex": null,
+              "card_category": "Trainer",
+              "verified_printed_native_name": "いやしの野原",
+              "current_native_label": "ヒーリングフィールド",
+              "current_native_label_not_used_as_sole_match": true,
+              "pokemon_identity_asserted": false,
+              "trainer_full_body_art_reference_bridge_verified": true
+            },
+            "source_qa": {
+              "actual_japanese_unnumbered_trainer_front_verified": true,
+              "complete_native_trainer_body_verified": true,
+              "independent_named_reference_and_source_front_match": true,
+              "reference_image_comparison_only": true,
+              "printed_number_and_national_dex_absent_verified": true,
+              "original_sha256": "3b1abb921c0e67ef8aa7de076859d1b920caa22ce4e9d962bc2639965e7af7ed",
+              "source_metadata_sha256": "c285981dc65234cb03399e21de5df38224372d8f8fc29373b6bdfac29c228a89",
+              "actual_pixel_signature_sha256": "86b5fe99d1593b47a991f0bbd0957f61b8abe5556e0087e2cec6ac8d65f2863c",
+              "independent_reference_sha256": "e70bf0542992f42252fbd8e4a94c2c6918d1ece042f60069fe95afcae0ec841a",
+              "physical_finish_verified": false
+            }
+          }
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "05ec5ae6-bfb8-41b1-a65b-acb7ce4c3585",
+      "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+      "set_code": "neo3",
+      "language_code": "ja",
+      "collector_number": "055",
+      "card_native_name": "バルーンベリー",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "fc02d833-0de4-4a4d-be84-fe71a9bd0582"
+      ],
+      "batch_id": "JP-CARDS-012",
+      "source_code": "scrydex",
+      "provider_id": "neo3_ja-55",
+      "image_url": "https://images.scrydex.com/pokemon/neo3_ja-55/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/f350108c698a80ae0fc2aaf67d694672a4de04bd016a3a098ab6ca65e6dbbfcf/original.webp",
+          "sha256": "f350108c698a80ae0fc2aaf67d694672a4de04bd016a3a098ab6ca65e6dbbfcf",
+          "byte_size": 377880,
+          "width": 570,
+          "height": 792,
+          "mime_type": "image/webp",
+          "artifact_id": 641944947
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/c6c3f6d749b3504436b16d527c8f97c054a2d46fefeb07ca1c86ad50e81cc3cf/card-grid.webp",
+          "sha256": "c6c3f6d749b3504436b16d527c8f97c054a2d46fefeb07ca1c86ad50e81cc3cf",
+          "byte_size": 14124,
+          "width": 240,
+          "height": 333,
+          "mime_type": "image/webp",
+          "artifact_id": 641944947
+        },
+        {
+          "role": "search-result",
+          "file": "objects/85c405154d362f5b7715c04cc7879f47dc4de20c8bd5f5b14247a24e982d4bfd/search-result.webp",
+          "sha256": "85c405154d362f5b7715c04cc7879f47dc4de20c8bd5f5b14247a24e982d4bfd",
+          "byte_size": 3350,
+          "width": 96,
+          "height": 133,
+          "mime_type": "image/webp",
+          "artifact_id": 641944947
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/38970da3f11f14244bb495281df720b9683819e79b93cea763c8622a112560ef/detail-page.webp",
+          "sha256": "38970da3f11f14244bb495281df720b9683819e79b93cea763c8622a112560ef",
+          "byte_size": 56112,
+          "width": 570,
+          "height": 792,
+          "mime_type": "image/webp",
+          "artifact_id": 641944947
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo3_ja-55/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/balloon-berry/neo3_ja-55?variant=normal",
+        "provider_id": "neo3_ja-55",
+        "source_metadata_sha256": "74a00eca887b267057d3cca3e518298cdeac73709bec7631ef37084b68632a72",
+        "source_body": {
+          "provider_metadata_raw_html_sha256": "74a00eca887b267057d3cca3e518298cdeac73709bec7631ef37084b68632a72",
+          "provider_metadata_full_captured_json_sha256": "551f2b0633772be91e72b1f3ed37fe54efc8a8a3f0bc6655d91773d59fdf10f8",
+          "provider_metadata_identity_projection": {
+            "id": "neo3_ja-55",
+            "name": "ふうせんのみ",
+            "supertype": "トレーナー",
+            "subtypes": [],
+            "types": [],
+            "hp": null,
+            "evolves_from": [],
+            "abilities": [],
+            "attacks": [],
+            "weaknesses": [],
+            "resistances": [],
+            "retreat_cost": [],
+            "converted_retreat_cost": null,
+            "rules": [
+              "このカードをつけているポケモンのにげるに必要なエネルギーは、すべてなくなる。このカードをつけているポケモンがにげるとき、このカードをトラッシュする。"
+            ],
+            "number": null,
+            "printed_number": null,
+            "additional_numbers": [],
+            "rarity": "非",
+            "rarity_code": "♦",
+            "artist": "Keiji Kinebuchi",
+            "national_pokedex_numbers": [],
+            "regulation_mark": null,
+            "legalities": [
+              {
+                "format": "Standard",
+                "status": "Not Legal"
+              },
+              {
+                "format": "Unlimited",
+                "status": "Legal"
+              },
+              {
+                "format": "Expanded",
+                "status": "Not Legal"
+              },
+              {
+                "format": "Gym Leader Challenge",
+                "status": "Not Legal"
+              }
+            ],
+            "flavor_text": null,
+            "images": [
+              {
+                "type": "front",
+                "small": "https://images.scrydex.com/pokemon/neo3_ja-55/small",
+                "medium": "https://images.scrydex.com/pokemon/neo3_ja-55/medium",
+                "large": "https://images.scrydex.com/pokemon/neo3_ja-55/large"
+              }
+            ],
+            "expansion": {
+              "id": "neo3_ja",
+              "name": "めざめる伝説",
+              "series": "Neo",
+              "code": null,
+              "total": 57,
+              "printed_total": 57,
+              "language": "Japanese",
+              "language_code": "JA",
+              "release_date": "2000/11/23",
+              "is_online_only": false,
+              "logo": "https://images.scrydex.com/pokemon/neo3_ja-logo/logo",
+              "symbol": "https://images.scrydex.com/pokemon/neo3_ja-symbol/symbol",
+              "translation": {
+                "en": {
+                  "name": "Awakening Legends"
+                }
+              }
+            },
+            "language": "Japanese",
+            "language_code": "JA",
+            "expansion_sort_order": 55,
+            "translation": {
+              "en": {
+                "name": "Balloon Berry",
+                "supertype": "Trainer",
+                "subtypes": null,
+                "types": null,
+                "rules": [
+                  "When the Pokémon Balloon Berry is attached to retreats, discard Balloon Berry instead of discarding Energy cards."
+                ],
+                "abilities": [],
+                "attacks": [],
+                "weaknesses": [],
+                "resistances": [],
+                "retreat_cost": null,
+                "evolves_from": null,
+                "flavor_text": null,
+                "rarity": "Uncommon",
+                "expansion": {
+                  "name": "Awakening Legends"
+                }
+              }
+            },
+            "variants": [
+              {
+                "name": "normal",
+                "images": []
+              }
+            ]
+          },
+          "provider_metadata_identity_projection_sha256": "3155ba7db22d6f170ffa1fd38738ef4ebdefb76f5e98f7cb73c0ac285a0eb938",
+          "provider_metadata_projection_contract": "Derived identity-only projection from the retained exactmetadata7 packet; full captured provider JSON remains offline and is represented only by its distinct hash.",
+          "tcgdex_metadata": {
+            "category": "Trainer",
+            "id": "neo3-055",
+            "localId": "055",
+            "name": "バルーンベリー",
+            "rarity": "Uncommon",
+            "set": {
+              "cardCount": {
+                "official": 57,
+                "total": 57
+              },
+              "id": "neo3",
+              "name": "めざめる伝説",
+              "symbol": "https://assets.tcgdex.net/univ/neo/neo3/symbol"
+            },
+            "variants": {
+              "firstEdition": false,
+              "holo": false,
+              "normal": true,
+              "reverse": false,
+              "wPromo": false
+            },
+            "variants_detailed": [
+              {
+                "type": "normal",
+                "size": "standard",
+                "variantId": "endfynwn4n10gzq"
+              }
+            ],
+            "legal": {
+              "standard": false,
+              "expanded": false
+            },
+            "updated": "2026-09-25T23:45:27.279Z"
+          },
+          "source_signature": {
+            "sourceCardId": "neo3_ja-55",
+            "nativeName": "ふうせんのみ",
+            "sourceEnglishName": "Balloon Berry",
+            "language": "Japanese",
+            "languageCode": "JA",
+            "supertype": "トレーナー",
+            "subtypes": [],
+            "nationalDex": [],
+            "hp": null,
+            "types": [],
+            "evolvesFrom": [],
+            "artist": "Keiji Kinebuchi",
+            "orderedAttacks": [],
+            "abilities": [],
+            "rules": [
+              "このカードをつけているポケモンのにげるに必要なエネルギーは、すべてなくなる。このカードをつけているポケモンがにげるとき、このカードをトラッシュする。"
+            ],
+            "weaknesses": [],
+            "resistances": [],
+            "retreatCosts": [],
+            "convertedRetreatCost": null,
+            "sourceReportedNumber": null,
+            "sourceReportedPrintedNumber": null,
+            "rarity": "非",
+            "rarityCode": "♦",
+            "expansion": {
+              "id": "neo3_ja",
+              "name": "めざめる伝説",
+              "series": "Neo",
+              "code": null,
+              "total": 57,
+              "printed_total": 57,
+              "language": "Japanese",
+              "language_code": "JA",
+              "release_date": "2000/11/23",
+              "is_online_only": false,
+              "logo": "https://images.scrydex.com/pokemon/neo3_ja-logo/logo",
+              "symbol": "https://images.scrydex.com/pokemon/neo3_ja-symbol/symbol",
+              "translation": {
+                "en": {
+                  "name": "Awakening Legends"
+                }
+              }
+            },
+            "sourceVariantNames": [
+              "normal"
+            ]
+          },
+          "source_signature_sha256": "e4165928daf60b0e5c040f1d7ae9aecbac213aecbaaf748f21d72ff78fc49f6e",
+          "source_attack_array_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "actual_pixel_signature": {
+            "actualLanguageCode": "ja",
+            "nativeName": "ふうせんのみ",
+            "header": "TRAINER",
+            "printedSubtype": "ポケモンのどうぐ",
+            "hp": null,
+            "stage": null,
+            "evolvesFrom": null,
+            "nationalDex": null,
+            "canonicalCollectorAliasNotPrintedNumber": true,
+            "artist": "Keiji Kinebuchi",
+            "artistReadCertain": true,
+            "orderedAttackNames": [],
+            "orderedAttackCosts": [],
+            "orderedAttackDamage": [],
+            "abilityNames": [],
+            "nativeAbilityText": null,
+            "nativeAttackText": [],
+            "nativeRulesText": "「ポケモンのどうぐ」は、あなたの場のポケモンにつけて使い、そのポケモンが「きぜつ」したとき、トラッシュする。すでに「ポケモンのどうぐ」をつけているポケモンには、つけることができない。\nこのカードをつけているポケモンの「にげる」ときに必要な「エネルギー」は、すべてなくなる。このカードをつけているポケモンが「にげる」とき、このカードをトラッシュする。",
+            "retreatSymbols": null,
+            "fullCardFrontVisible": true,
+            "allFourOuterEdgesVisible": true,
+            "setSymbolObserved": true,
+            "editionOrMaterialCertified": false
+          },
+          "actual_pixel_signature_sha256": "707576c3c2659db791833a22436b92a615bfd029a6224565a5f202a27061012e",
+          "actual_pixel_observations": {
+            "alias": "055",
+            "printingId": "05ec5ae6-bfb8-41b1-a65b-acb7ce4c3585",
+            "sha256": "f350108c698a80ae0fc2aaf67d694672a4de04bd016a3a098ab6ca65e6dbbfcf",
+            "width": 570,
+            "height": 792,
+            "hashCheckedImmediatelyBeforeViewAtUtc": "2026-10-14T21:47:04.667Z",
+            "observedAtUtc": "2026-10-14T21:47:26.475Z",
+            "viewMethod": "Single whole original via view_image(detail original), immediately preceded by byte hash verification",
+            "actualLanguageCode": "ja",
+            "allFourOuterEdgesVisible": true,
+            "fullCardFrontVisible": true,
+            "sourceBytesUnchanged": true,
+            "generatedOrUpscaled": false,
+            "physicalEditionVerified": false,
+            "physicalFinishVerified": false,
+            "nativeNameObserved": "ふうせんのみ",
+            "headerObserved": "TRAINER",
+            "printedSubtypeObserved": "ポケモンのどうぐ",
+            "hpObserved": null,
+            "stageObserved": null,
+            "printedNationalDexObserved": null,
+            "printedCollectorNumberObserved": null,
+            "artistObserved": "Keiji Kinebuchi",
+            "artistReadCertain": true,
+            "nativeRulesTextObserved": "「ポケモンのどうぐ」は、あなたの場のポケモンにつけて使い、そのポケモンが「きぜつ」したとき、トラッシュする。すでに「ポケモンのどうぐ」をつけているポケモンには、つけることができない。\nこのカードをつけているポケモンの「にげる」ときに必要な「エネルギー」は、すべてなくなる。このカードをつけているポケモンが「にげる」とき、このカードをトラッシュする。",
+            "rulesMechanicObserved": "Printed Pokémon Tool attach/Knock Out/single-tool rule;holder retreat Energy becomes zero,and Tool discarded when retreating.",
+            "artDescriptionObserved": "Large yellow bulbous berry with green leaves floating against blue sky and white clouds,with a smaller berry in distance.",
+            "setSymbolObserved": true,
+            "frameDescription": "Complete yellow border and grey Trainer frame;printed Pokémon Tool subtype and riveted white rule box.",
+            "copyrightObservation": "No legible copyright/date line seen on complete front; no year inference.",
+            "editionStampVisible": false,
+            "proposedPokemonIdentityMatch": false,
+            "trainerCanonicalIdentityAsserted": false,
+            "selectedSourceCardId": null,
+            "quarantineComparisonOnly": true,
+            "sourceMetadataOmissions": [
+              "Printed ポケモンのどうぐ subtype and generic Tool rule paragraph omitted from source subtypes/rules."
+            ],
+            "transcriptionNote": "Readable Japanese title and gameplay body transcribed from a single whole source original; punctuation/spacing normalised. Fine print not invented; no copyright year or physical edition inferred."
+          },
+          "original_observation_sha256": "ac47d44361870f43ecabf4841e08c5f3e60939f12c830c3ff74461dce572625b",
+          "provider_metadata_discrepancies": [
+            {
+              "type": "source_printed_subtype_and_generic_rule_omitted",
+              "field": "rulesAndSubtype",
+              "sourceSubtypes": [],
+              "actualPrintedSubtype": "ポケモンのどうぐ",
+              "actualGenericRule": "「ポケモンのどうぐ」は、あなたの場のポケモンにつけて使い、そのポケモンが「きぜつ」したとき、トラッシュする。すでに「ポケモンのどうぐ」をつけているポケモンには、つけることができない。",
+              "pixelResolution": true,
+              "canonicalCorrection": false,
+              "canonicalTrainerIdentityStillUnbound": true
+            }
+          ],
+          "historical_source_row_canonical_json_sha256": "2e0278378736bb4bbe5f9453fada3cc8f635895588670291629a5d343075a319",
+          "root_approved_projection_row_canonical_json_sha256": "e6fec809c735dcb1667c495c5b428e965b9c13f35ee4462df6801797547331ef",
+          "historical_association": {
+            "selected_source_card_id": null,
+            "quarantine_comparison_only": true,
+            "holds": [
+              {
+                "code": "trainer_native_body_and_art_not_independently_bound",
+                "reason": "The exact current TCGdex target contains category/name/set/rarity only; it omits effects, artist and native rules. Scrydex provides a literal source lead and one native body, but name/set matching alone is not an exact artwork/version/printing bridge.",
+                "action": "Any later capture must be quarantine comparison-only. Read full Japanese title, set symbol, artist, frame/header/subtype/rule boxes and complete rule effect before exact canonical artwork binding. Do not prepare or infer printing from alias/order."
+              },
+              {
+                "code": "actual_source_front_verified_but_canonical_trainer_body_art_bridge_missing",
+                "action": "Retain this unchanged source original as comparison only. selectedSourceCardId remains null; current canonical artist is null and printing discriminator empty. Independent canonical native body/art/version evidence is still required."
+              }
+            ],
+            "exact_canonical_trainer_artwork_match": false,
+            "canonical_artist_and_body_missing_retained": true
+          },
+          "independent_selection": {
+            "itemId": "card:05ec5ae6-bfb8-41b1-a65b-acb7ce4c3585",
+            "printingId": "05ec5ae6-bfb8-41b1-a65b-acb7ce4c3585",
+            "variantId": "fc02d833-0de4-4a4d-be84-fe71a9bd0582",
+            "canonicalSetId": "a15481a7-410b-4a98-8695-3bba0db9d226",
+            "canonicalSetCode": "neo3",
+            "canonicalLanguageCode": "ja",
+            "canonicalCollectorAlias": "055",
+            "collectorAliasIsNotPrintedNumber": true,
+            "currentNativeLabel": "バルーンベリー",
+            "currentNativeLabelRetained": true,
+            "currentProductionBinding": {
+              "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+              "set_code": "neo3",
+              "game_code": "pokemon",
+              "variant_id": "fc02d833-0de4-4a4d-be84-fe71a9bd0582",
+              "finish_code": "normal",
+              "printing_id": "05ec5ae6-bfb8-41b1-a65b-acb7ce4c3585",
+              "variant_code": "normal",
+              "language_code": "ja",
+              "card_native_name": "バルーンベリー",
+              "collector_number": "055",
+              "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+              "same_artwork_as_variant_id": null
+            },
+            "currentStagingBinding": {
+              "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+              "set_code": "neo3",
+              "game_code": "pokemon",
+              "variant_id": "fc02d833-0de4-4a4d-be84-fe71a9bd0582",
+              "finish_code": "normal",
+              "printing_id": "05ec5ae6-bfb8-41b1-a65b-acb7ce4c3585",
+              "variant_code": "normal",
+              "language_code": "ja",
+              "card_native_name": "バルーンベリー",
+              "collector_number": "055",
+              "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+              "same_artwork_as_variant_id": null
+            },
+            "historicalSelectedSourceCardId": null,
+            "historicalComparisonPacketUnchanged": true,
+            "candidateSourceCardId": "neo3_ja-55",
+            "independentlySelectedSourceCardId": "neo3_ja-55",
+            "sourceProvider": "scrydex",
+            "sourcePageUrl": "https://scrydex.com/pokemon/cards/balloon-berry/neo3_ja-55?variant=normal",
+            "sourceImageUrl": "https://images.scrydex.com/pokemon/neo3_ja-55/large",
+            "sourceOriginal": {
+              "sha256": "f350108c698a80ae0fc2aaf67d694672a4de04bd016a3a098ab6ca65e6dbbfcf",
+              "bytes": 377880,
+              "mimeType": "image/webp",
+              "format": "WEBP",
+              "width": 570,
+              "height": 792,
+              "fullPILDecodePassed": true,
+              "fullSharpDecodePassed": true,
+              "sourceBytesUnchanged": true,
+              "generatedOrUpscaled": false,
+              "minimumDetailResolution": true,
+              "hd720x1008": false
+            },
+            "sourceMetadata": {
+              "sha256": "74a00eca887b267057d3cca3e518298cdeac73709bec7631ef37084b68632a72",
+              "sourceSignature": {
+                "sourceCardId": "neo3_ja-55",
+                "nativeName": "ふうせんのみ",
+                "sourceEnglishName": "Balloon Berry",
+                "language": "Japanese",
+                "languageCode": "JA",
+                "supertype": "トレーナー",
+                "subtypes": [],
+                "nationalDex": [],
+                "hp": null,
+                "types": [],
+                "evolvesFrom": [],
+                "artist": "Keiji Kinebuchi",
+                "orderedAttacks": [],
+                "abilities": [],
+                "rules": [
+                  "このカードをつけているポケモンのにげるに必要なエネルギーは、すべてなくなる。このカードをつけているポケモンがにげるとき、このカードをトラッシュする。"
+                ],
+                "weaknesses": [],
+                "resistances": [],
+                "retreatCosts": [],
+                "convertedRetreatCost": null,
+                "sourceReportedNumber": null,
+                "sourceReportedPrintedNumber": null,
+                "rarity": "非",
+                "rarityCode": "♦",
+                "expansion": {
+                  "id": "neo3_ja",
+                  "name": "めざめる伝説",
+                  "series": "Neo",
+                  "code": null,
+                  "total": 57,
+                  "printed_total": 57,
+                  "language": "Japanese",
+                  "language_code": "JA",
+                  "release_date": "2000/11/23",
+                  "is_online_only": false,
+                  "logo": "https://images.scrydex.com/pokemon/neo3_ja-logo/logo",
+                  "symbol": "https://images.scrydex.com/pokemon/neo3_ja-symbol/symbol",
+                  "translation": {
+                    "en": {
+                      "name": "Awakening Legends"
+                    }
+                  }
+                },
+                "sourceVariantNames": [
+                  "normal"
+                ]
+              },
+              "sourceSignatureSha256": "e4165928daf60b0e5c040f1d7ae9aecbac213aecbaaf748f21d72ff78fc49f6e",
+              "sourceAttackArraySha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+            },
+            "sourceActualPixelSignature": {
+              "actualLanguageCode": "ja",
+              "nativeName": "ふうせんのみ",
+              "header": "TRAINER",
+              "printedSubtype": "ポケモンのどうぐ",
+              "hp": null,
+              "stage": null,
+              "evolvesFrom": null,
+              "nationalDex": null,
+              "canonicalCollectorAliasNotPrintedNumber": true,
+              "artist": "Keiji Kinebuchi",
+              "artistReadCertain": true,
+              "orderedAttackNames": [],
+              "orderedAttackCosts": [],
+              "orderedAttackDamage": [],
+              "abilityNames": [],
+              "nativeAbilityText": null,
+              "nativeAttackText": [],
+              "nativeRulesText": "「ポケモンのどうぐ」は、あなたの場のポケモンにつけて使い、そのポケモンが「きぜつ」したとき、トラッシュする。すでに「ポケモンのどうぐ」をつけているポケモンには、つけることができない。\nこのカードをつけているポケモンの「にげる」ときに必要な「エネルギー」は、すべてなくなる。このカードをつけているポケモンが「にげる」とき、このカードをトラッシュする。",
+              "retreatSymbols": null,
+              "fullCardFrontVisible": true,
+              "allFourOuterEdgesVisible": true,
+              "setSymbolObserved": true,
+              "editionOrMaterialCertified": false
+            },
+            "sourceActualPixelSignatureSha256": "707576c3c2659db791833a22436b92a615bfd029a6224565a5f202a27061012e",
+            "sourceProviderDiscrepanciesRetained": [
+              {
+                "type": "source_printed_subtype_and_generic_rule_omitted",
+                "field": "rulesAndSubtype",
+                "sourceSubtypes": [],
+                "actualPrintedSubtype": "ポケモンのどうぐ",
+                "actualGenericRule": "「ポケモンのどうぐ」は、あなたの場のポケモンにつけて使い、そのポケモンが「きぜつ」したとき、トラッシュする。すでに「ポケモンのどうぐ」をつけているポケモンには、つけることができない。",
+                "pixelResolution": true,
+                "canonicalCorrection": false,
+                "canonicalTrainerIdentityStillUnbound": true
+              }
+            ],
+            "canonicalMetadata": {
+              "sha256": "f8b0265986dcec8d2d38989aa8807115e1ae671c0024854c5b530d3733a9cac5",
+              "artistAbsent": true,
+              "bodyAbsent": true,
+              "officialTranslationCertification": false
+            },
+            "titleCrosswalk": {
+              "catalogue": "バルーンベリー",
+              "referenceEnglish": "Balloon Berry",
+              "actualJapanese": "ふうせんのみ",
+              "basis": "Catalogue transliterates Balloon Berry; printed ふうせん is balloon and み is fruit/Berry. Distinctive floating Berry art and Tool free-retreat/discard rule match.",
+              "semanticInference": true,
+              "officialTranslationCertification": false,
+              "proofIsNotNamesOrOrderAlone": true
+            },
+            "referenceEvidence": {
+              "role": "Identity comparison evidence only; not a production image source",
+              "provider": "Pokellector named Japanese set/card reference",
+              "setUrl": "https://jp.pokellector.com/Awakening-Legends-Expansion/",
+              "cardUrl": "https://jp.pokellector.com/Awakening-Legends-Expansion/Balloon-Berry-Card-55",
+              "cardMetadata": {
+                "sha256": "e49bb530cbcff3245cb5ca2b3c36ccc4c7434d37e77f9744b4d8f21c7bae8226",
+                "bytes": 26928
+              },
+              "providerCardId": "39704",
+              "englishTitle": "Balloon Berry",
+              "observedLiteralImageUrl": "https://den-cards.pokellector.com/332/Balloon-Berry.NEO3.55.39704.png",
+              "original": {
+                "kind": "reference",
+                "sha256": "88defdcb353c49559b721119dff9976ad8efb6bc715182116d998537ba4aa74f",
+                "bytes": 56568,
+                "mimeType": "image/webp",
+                "format": "webp",
+                "width": 570,
+                "height": 792,
+                "fullSharpDecodePassed": true,
+                "fullPILDecodePassed": true,
+                "rgbaSha256": "d6e35af39fa37fed468b13df768dfde19539f5a8af4e973d930c4357bff24b41",
+                "genuineDetailSize": true,
+                "hd720x1008": false,
+                "aspectRatio": 0.7196969696969697,
+                "aspectRatioIsCropProof": false
+              },
+              "pageJapaneseLabelConflict": null
+            },
+            "independentDirectObservation": {
+              "alias": "055",
+              "referenceSha256": "88defdcb353c49559b721119dff9976ad8efb6bc715182116d998537ba4aa74f",
+              "actualTitle": "ふうせんのみ",
+              "header": "TRAINER",
+              "subtype": "ポケモンのどうぐ",
+              "artist": "Keiji Kinebuchi",
+              "fullFrame": true,
+              "setMarkVisible": true,
+              "actualNativeRules": "このカードをつけているポケモンの「にげる」ときに必要な「エネルギー」は、すべてなくなる。このカードをつけているポケモンが「にげる」とき、このカードをトラッシュする。",
+              "toolRule": "「ポケモンのどうぐ」は、あなたの場のポケモンにつけて使い、そのポケモンが「きぜつ」したとき、トラッシュする。すでに「ポケモンのどうぐ」をつけているポケモンには、つけることができない。",
+              "art": "Large floating yellow berry with green leaves and a small second berry in blue sky with white clouds.",
+              "referenceViewedIndependently": true,
+              "writerClaimsSeenBeforeReferenceView": false,
+              "sourceSha256": "f350108c698a80ae0fc2aaf67d694672a4de04bd016a3a098ab6ca65e6dbbfcf",
+              "sourceViewedIndependently": true,
+              "sourceReferenceExactPrintedFrontMatch": true,
+              "sameUnderlyingScanPossible": true
+            },
+            "writerProposedBindingEvidenceSha256": "ffb0e9a30c5c22840ffd195a6f59b87740e6e68a57d77376fbb15c421933dbbc",
+            "exactArtworkSourceIdentityAccepted": true,
+            "currentVariantMetadata": "normal",
+            "physicalEditionVerified": false,
+            "physicalFinishVerified": false,
+            "sourceWideApproval": false,
+            "vendorLicenceVerified": false,
+            "underlyingCopyrightLicenceVerified": false,
+            "preparationApproved": false,
+            "publicationApproved": false
+          },
+          "independent_selection_raw_canonical_json_sha256": "e6573b88a031a40773f4151147468364054d459e0240551e289a7d2f84abf88b",
+          "independent_selection_public_canonical_json_sha256": "ca1a9bb02bc7c09f2cf24e8bf72eb69ebea65a1458b86ae8741490a33e04755e",
+          "public_projection_contract": "Remove only local path/absolutePath properties; reject unexpected local paths; raw private evidence hashes remain distinct from projected hashes.",
+          "current_acceptance": {
+            "independently_accepted": true,
+            "source_card_id": "neo3_ja-55",
+            "exact_unnumbered_japanese_trainer": true
+          },
+          "source_variant_support": {
+            "currentVariantCode": "normal",
+            "currentFinishCode": "normal",
+            "sourceVariantNames": [
+              "normal"
+            ],
+            "supportsCurrentMetadataVariant": true,
+            "globalFrontNotPerVariantProof": true,
+            "physicalFinishVerified": false
+          },
+          "physical_edition_verified": false,
+          "physical_finish_verified": false,
+          "generic_other_rows_may_relax": false,
+          "queue_controls": {
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "name_and_set_symbol_readable": true,
+              "artist_read_certain": true,
+              "full_japanese_trainer_rules_read": true,
+              "printed_collector_number": null,
+              "printed_national_dex": null,
+              "physical_finish_verified": false,
+              "edition_or_distribution_certified": false,
+              "copyright_year_inferred": false
+            },
+            "identity_controls": {
+              "canonical_alias": "055",
+              "canonical_alias_is_not_printed_number": true,
+              "printed_collector_number": null,
+              "printed_national_dex": null,
+              "card_category": "Trainer",
+              "verified_printed_native_name": "ふうせんのみ",
+              "current_native_label": "バルーンベリー",
+              "current_native_label_not_used_as_sole_match": true,
+              "pokemon_identity_asserted": false,
+              "trainer_full_body_art_reference_bridge_verified": true
+            },
+            "source_qa": {
+              "actual_japanese_unnumbered_trainer_front_verified": true,
+              "complete_native_trainer_body_verified": true,
+              "independent_named_reference_and_source_front_match": true,
+              "reference_image_comparison_only": true,
+              "printed_number_and_national_dex_absent_verified": true,
+              "original_sha256": "f350108c698a80ae0fc2aaf67d694672a4de04bd016a3a098ab6ca65e6dbbfcf",
+              "source_metadata_sha256": "74a00eca887b267057d3cca3e518298cdeac73709bec7631ef37084b68632a72",
+              "actual_pixel_signature_sha256": "707576c3c2659db791833a22436b92a615bfd029a6224565a5f202a27061012e",
+              "independent_reference_sha256": "88defdcb353c49559b721119dff9976ad8efb6bc715182116d998537ba4aa74f",
+              "physical_finish_verified": false
+            }
+          }
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "6196aadb-f7bc-4449-8fd3-254987e292f8",
+      "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+      "set_code": "neo3",
+      "language_code": "ja",
+      "collector_number": "056",
+      "card_native_name": "ポケモンブリーダーフィールド",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "7d0611e3-9b65-4539-8803-c7a9876f6e68"
+      ],
+      "batch_id": "JP-CARDS-012",
+      "source_code": "scrydex",
+      "provider_id": "neo3_ja-56",
+      "image_url": "https://images.scrydex.com/pokemon/neo3_ja-56/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/30f797b81043589bffd3e9c7af4ead32f97b6980d38868c90b4d0ef09207005c/original.webp",
+          "sha256": "30f797b81043589bffd3e9c7af4ead32f97b6980d38868c90b4d0ef09207005c",
+          "byte_size": 399276,
+          "width": 569,
+          "height": 800,
+          "mime_type": "image/webp",
+          "artifact_id": 641944947
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/782a0d009dc5a5040b0c024af6d0fe98793839ec616c2810cd42da9f8b002784/card-grid.webp",
+          "sha256": "782a0d009dc5a5040b0c024af6d0fe98793839ec616c2810cd42da9f8b002784",
+          "byte_size": 15850,
+          "width": 240,
+          "height": 337,
+          "mime_type": "image/webp",
+          "artifact_id": 641944947
+        },
+        {
+          "role": "search-result",
+          "file": "objects/2e2eabd478c3d50d1703d2d81a257964a0ccd1cd5b430762302e01ee54f4c2b3/search-result.webp",
+          "sha256": "2e2eabd478c3d50d1703d2d81a257964a0ccd1cd5b430762302e01ee54f4c2b3",
+          "byte_size": 3550,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 641944947
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/7bb6cfea5cbdc6b8cad74bbc3df7d60c97ded4d155fc62652313d6f40c8b9ef0/detail-page.webp",
+          "sha256": "7bb6cfea5cbdc6b8cad74bbc3df7d60c97ded4d155fc62652313d6f40c8b9ef0",
+          "byte_size": 65806,
+          "width": 569,
+          "height": 800,
+          "mime_type": "image/webp",
+          "artifact_id": 641944947
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo3_ja-56/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/pokmon-breeder-fields/neo3_ja-56?variant=normal",
+        "provider_id": "neo3_ja-56",
+        "source_metadata_sha256": "1865115c60cd1b5c84a9cd61dcc014757bfff740544c5528113a9d3dc041ae72",
+        "source_body": {
+          "provider_metadata_raw_html_sha256": "1865115c60cd1b5c84a9cd61dcc014757bfff740544c5528113a9d3dc041ae72",
+          "provider_metadata_full_captured_json_sha256": "c2086e43176665b65023938ae23e784696249492f76c6af5b6c586d03d703262",
+          "provider_metadata_identity_projection": {
+            "id": "neo3_ja-56",
+            "name": "ポケモン育て屋夫婦",
+            "supertype": "トレーナー",
+            "subtypes": [],
+            "types": [],
+            "hp": null,
+            "evolves_from": [],
+            "abilities": [],
+            "attacks": [],
+            "weaknesses": [],
+            "resistances": [],
+            "retreat_cost": [],
+            "converted_retreat_cost": null,
+            "rules": [
+              "あなたの場の「たねポケモン」「1進化ポケモン」の中から、最大2匹までを選び、選んだポケモンそれぞれに対してコインを1枚ずつ投げる。「おもて」が出たポケモンから進化する「進化カード」を、あなたの山札からそれぞれ1枚ずつ選び出し、相手プレイヤーに見せてから、手札に加える。その後、その山札をよく切る。"
+            ],
+            "number": null,
+            "printed_number": null,
+            "additional_numbers": [],
+            "rarity": "非",
+            "rarity_code": "♦",
+            "artist": "Ken Sugimori",
+            "national_pokedex_numbers": [],
+            "regulation_mark": null,
+            "legalities": [
+              {
+                "format": "Standard",
+                "status": "Not Legal"
+              },
+              {
+                "format": "Unlimited",
+                "status": "Legal"
+              },
+              {
+                "format": "Expanded",
+                "status": "Not Legal"
+              },
+              {
+                "format": "Gym Leader Challenge",
+                "status": "Not Legal"
+              }
+            ],
+            "flavor_text": null,
+            "images": [
+              {
+                "type": "front",
+                "small": "https://images.scrydex.com/pokemon/neo3_ja-56/small",
+                "medium": "https://images.scrydex.com/pokemon/neo3_ja-56/medium",
+                "large": "https://images.scrydex.com/pokemon/neo3_ja-56/large"
+              }
+            ],
+            "expansion": {
+              "id": "neo3_ja",
+              "name": "めざめる伝説",
+              "series": "Neo",
+              "code": null,
+              "total": 57,
+              "printed_total": 57,
+              "language": "Japanese",
+              "language_code": "JA",
+              "release_date": "2000/11/23",
+              "is_online_only": false,
+              "logo": "https://images.scrydex.com/pokemon/neo3_ja-logo/logo",
+              "symbol": "https://images.scrydex.com/pokemon/neo3_ja-symbol/symbol",
+              "translation": {
+                "en": {
+                  "name": "Awakening Legends"
+                }
+              }
+            },
+            "language": "Japanese",
+            "language_code": "JA",
+            "expansion_sort_order": 56,
+            "translation": {
+              "en": {
+                "name": "Pokémon Breeder Fields",
+                "supertype": "Trainer",
+                "subtypes": null,
+                "types": null,
+                "rules": [
+                  "Flip a coin for 1 or 2 of your non-Baby Pokémon that can evolve. For each heads, search your deck for a later-Stage card that matches that Pokémon. Then put that card into your hand. Shuffle your deck afterward."
+                ],
+                "abilities": [],
+                "attacks": [],
+                "weaknesses": [],
+                "resistances": [],
+                "retreat_cost": null,
+                "evolves_from": null,
+                "flavor_text": null,
+                "rarity": "Uncommon",
+                "expansion": {
+                  "name": "Awakening Legends"
+                }
+              }
+            },
+            "variants": [
+              {
+                "name": "normal",
+                "images": []
+              }
+            ]
+          },
+          "provider_metadata_identity_projection_sha256": "5cdd6c7da12ed2a3b0263c45338ae80e1836b6840b11783a236ba370d4c24c95",
+          "provider_metadata_projection_contract": "Derived identity-only projection from the retained exactmetadata7 packet; full captured provider JSON remains offline and is represented only by its distinct hash.",
+          "tcgdex_metadata": {
+            "category": "Trainer",
+            "id": "neo3-056",
+            "localId": "056",
+            "name": "ポケモンブリーダーフィールド",
+            "rarity": "Uncommon",
+            "set": {
+              "cardCount": {
+                "official": 57,
+                "total": 57
+              },
+              "id": "neo3",
+              "name": "めざめる伝説",
+              "symbol": "https://assets.tcgdex.net/univ/neo/neo3/symbol"
+            },
+            "variants": {
+              "firstEdition": false,
+              "holo": false,
+              "normal": true,
+              "reverse": false,
+              "wPromo": false
+            },
+            "variants_detailed": [
+              {
+                "type": "normal",
+                "size": "standard",
+                "variantId": "endfynwn4n10gzq"
+              }
+            ],
+            "legal": {
+              "standard": false,
+              "expanded": false
+            },
+            "updated": "2026-09-25T23:45:26.319Z"
+          },
+          "source_signature": {
+            "sourceCardId": "neo3_ja-56",
+            "nativeName": "ポケモン育て屋夫婦",
+            "sourceEnglishName": "Pokémon Breeder Fields",
+            "language": "Japanese",
+            "languageCode": "JA",
+            "supertype": "トレーナー",
+            "subtypes": [],
+            "nationalDex": [],
+            "hp": null,
+            "types": [],
+            "evolvesFrom": [],
+            "artist": "Ken Sugimori",
+            "orderedAttacks": [],
+            "abilities": [],
+            "rules": [
+              "あなたの場の「たねポケモン」「1進化ポケモン」の中から、最大2匹までを選び、選んだポケモンそれぞれに対してコインを1枚ずつ投げる。「おもて」が出たポケモンから進化する「進化カード」を、あなたの山札からそれぞれ1枚ずつ選び出し、相手プレイヤーに見せてから、手札に加える。その後、その山札をよく切る。"
+            ],
+            "weaknesses": [],
+            "resistances": [],
+            "retreatCosts": [],
+            "convertedRetreatCost": null,
+            "sourceReportedNumber": null,
+            "sourceReportedPrintedNumber": null,
+            "rarity": "非",
+            "rarityCode": "♦",
+            "expansion": {
+              "id": "neo3_ja",
+              "name": "めざめる伝説",
+              "series": "Neo",
+              "code": null,
+              "total": 57,
+              "printed_total": 57,
+              "language": "Japanese",
+              "language_code": "JA",
+              "release_date": "2000/11/23",
+              "is_online_only": false,
+              "logo": "https://images.scrydex.com/pokemon/neo3_ja-logo/logo",
+              "symbol": "https://images.scrydex.com/pokemon/neo3_ja-symbol/symbol",
+              "translation": {
+                "en": {
+                  "name": "Awakening Legends"
+                }
+              }
+            },
+            "sourceVariantNames": [
+              "normal"
+            ]
+          },
+          "source_signature_sha256": "837e10f52eed4327fb9c849ccfd945dc21f1ff7d888c32d8ac7a8b6b76dc6ba0",
+          "source_attack_array_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "actual_pixel_signature": {
+            "actualLanguageCode": "ja",
+            "nativeName": "ポケモン育て屋夫婦",
+            "header": "TRAINER",
+            "printedSubtype": null,
+            "hp": null,
+            "stage": null,
+            "evolvesFrom": null,
+            "nationalDex": null,
+            "canonicalCollectorAliasNotPrintedNumber": true,
+            "artist": "Ken Sugimori",
+            "artistReadCertain": true,
+            "orderedAttackNames": [],
+            "orderedAttackCosts": [],
+            "orderedAttackDamage": [],
+            "abilityNames": [],
+            "nativeAbilityText": null,
+            "nativeAttackText": [],
+            "nativeRulesText": "あなたの場の「たねポケモン」「1進化ポケモン」の中から、最大2匹までを選び、選んだポケモンそれぞれに対してコインを1枚ずつ投げる。\n「おもて」が出たポケモンから進化する「進化カード」を、あなたの山札からそれぞれ1枚ずつ選び出し、相手プレイヤーに見せてから、手札に加える。その後、その山札をよく切る。",
+            "retreatSymbols": null,
+            "fullCardFrontVisible": true,
+            "allFourOuterEdgesVisible": true,
+            "setSymbolObserved": true,
+            "editionOrMaterialCertified": false
+          },
+          "actual_pixel_signature_sha256": "dd257d0826649c07a899e9a0018c6b116b7856350b3417c07484e07ff8b5f074",
+          "actual_pixel_observations": {
+            "alias": "056",
+            "printingId": "6196aadb-f7bc-4449-8fd3-254987e292f8",
+            "sha256": "30f797b81043589bffd3e9c7af4ead32f97b6980d38868c90b4d0ef09207005c",
+            "width": 569,
+            "height": 800,
+            "hashCheckedImmediatelyBeforeViewAtUtc": "2026-10-14T21:47:26.486Z",
+            "observedAtUtc": "2026-10-14T21:47:51.692Z",
+            "viewMethod": "Single whole original via view_image(detail original), immediately preceded by byte hash verification",
+            "actualLanguageCode": "ja",
+            "allFourOuterEdgesVisible": true,
+            "fullCardFrontVisible": true,
+            "sourceBytesUnchanged": true,
+            "generatedOrUpscaled": false,
+            "physicalEditionVerified": false,
+            "physicalFinishVerified": false,
+            "nativeNameObserved": "ポケモン育て屋夫婦",
+            "headerObserved": "TRAINER",
+            "printedSubtypeObserved": null,
+            "hpObserved": null,
+            "stageObserved": null,
+            "printedNationalDexObserved": null,
+            "printedCollectorNumberObserved": null,
+            "artistObserved": "Ken Sugimori",
+            "artistReadCertain": true,
+            "nativeRulesTextObserved": "あなたの場の「たねポケモン」「1進化ポケモン」の中から、最大2匹までを選び、選んだポケモンそれぞれに対してコインを1枚ずつ投げる。\n「おもて」が出たポケモンから進化する「進化カード」を、あなたの山札からそれぞれ1枚ずつ選び出し、相手プレイヤーに見せてから、手札に加える。その後、その山札をよく切る。",
+            "rulesMechanicObserved": "Choose up to two own Basic/Stage1 Pokémon and flip for each;heads searches each evolution into hand after showing opponent;shuffle.",
+            "artDescriptionObserved": "Older man in a green apron beside orange Dragonite in foreground,older woman with flowers in background,under orange sunset sky.",
+            "setSymbolObserved": true,
+            "frameDescription": "Complete yellow outer border,grey metallic Trainer frame,yellow TRAINER header,riveted white rule box.",
+            "copyrightObservation": "No legible copyright/date line seen on complete front; no year inference.",
+            "editionStampVisible": false,
+            "proposedPokemonIdentityMatch": false,
+            "trainerCanonicalIdentityAsserted": false,
+            "selectedSourceCardId": null,
+            "quarantineComparisonOnly": true,
+            "transcriptionNote": "Readable Japanese title and gameplay body transcribed from a single whole source original; punctuation/spacing normalised. Fine print not invented; no copyright year or physical edition inferred."
+          },
+          "original_observation_sha256": "402b309b52ce3cdc8960a5911a86da5ae35b8c2bb30c2f4ecbd294fc43d1f792",
+          "provider_metadata_discrepancies": [],
+          "historical_source_row_canonical_json_sha256": "2ee1190bca52acf357587706af2efd65e6308e390a0d3852ea6256ba2783326e",
+          "root_approved_projection_row_canonical_json_sha256": "7cb314e4144050061bcc1a385c518087771944229e79dde8e3649e48a446899b",
+          "historical_association": {
+            "selected_source_card_id": null,
+            "quarantine_comparison_only": true,
+            "holds": [
+              {
+                "code": "trainer_native_body_and_art_not_independently_bound",
+                "reason": "The exact current TCGdex target contains category/name/set/rarity only; it omits effects, artist and native rules. Scrydex provides a literal source lead and one native body, but name/set matching alone is not an exact artwork/version/printing bridge.",
+                "action": "Any later capture must be quarantine comparison-only. Read full Japanese title, set symbol, artist, frame/header/subtype/rule boxes and complete rule effect before exact canonical artwork binding. Do not prepare or infer printing from alias/order."
+              },
+              {
+                "code": "actual_source_front_verified_but_canonical_trainer_body_art_bridge_missing",
+                "action": "Retain this unchanged source original as comparison only. selectedSourceCardId remains null; current canonical artist is null and printing discriminator empty. Independent canonical native body/art/version evidence is still required."
+              }
+            ],
+            "exact_canonical_trainer_artwork_match": false,
+            "canonical_artist_and_body_missing_retained": true
+          },
+          "independent_selection": {
+            "itemId": "card:6196aadb-f7bc-4449-8fd3-254987e292f8",
+            "printingId": "6196aadb-f7bc-4449-8fd3-254987e292f8",
+            "variantId": "7d0611e3-9b65-4539-8803-c7a9876f6e68",
+            "canonicalSetId": "a15481a7-410b-4a98-8695-3bba0db9d226",
+            "canonicalSetCode": "neo3",
+            "canonicalLanguageCode": "ja",
+            "canonicalCollectorAlias": "056",
+            "collectorAliasIsNotPrintedNumber": true,
+            "currentNativeLabel": "ポケモンブリーダーフィールド",
+            "currentNativeLabelRetained": true,
+            "currentProductionBinding": {
+              "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+              "set_code": "neo3",
+              "game_code": "pokemon",
+              "variant_id": "7d0611e3-9b65-4539-8803-c7a9876f6e68",
+              "finish_code": "normal",
+              "printing_id": "6196aadb-f7bc-4449-8fd3-254987e292f8",
+              "variant_code": "normal",
+              "language_code": "ja",
+              "card_native_name": "ポケモンブリーダーフィールド",
+              "collector_number": "056",
+              "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+              "same_artwork_as_variant_id": null
+            },
+            "currentStagingBinding": {
+              "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+              "set_code": "neo3",
+              "game_code": "pokemon",
+              "variant_id": "7d0611e3-9b65-4539-8803-c7a9876f6e68",
+              "finish_code": "normal",
+              "printing_id": "6196aadb-f7bc-4449-8fd3-254987e292f8",
+              "variant_code": "normal",
+              "language_code": "ja",
+              "card_native_name": "ポケモンブリーダーフィールド",
+              "collector_number": "056",
+              "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+              "same_artwork_as_variant_id": null
+            },
+            "historicalSelectedSourceCardId": null,
+            "historicalComparisonPacketUnchanged": true,
+            "candidateSourceCardId": "neo3_ja-56",
+            "independentlySelectedSourceCardId": "neo3_ja-56",
+            "sourceProvider": "scrydex",
+            "sourcePageUrl": "https://scrydex.com/pokemon/cards/pokmon-breeder-fields/neo3_ja-56?variant=normal",
+            "sourceImageUrl": "https://images.scrydex.com/pokemon/neo3_ja-56/large",
+            "sourceOriginal": {
+              "sha256": "30f797b81043589bffd3e9c7af4ead32f97b6980d38868c90b4d0ef09207005c",
+              "bytes": 399276,
+              "mimeType": "image/webp",
+              "format": "WEBP",
+              "width": 569,
+              "height": 800,
+              "fullPILDecodePassed": true,
+              "fullSharpDecodePassed": true,
+              "sourceBytesUnchanged": true,
+              "generatedOrUpscaled": false,
+              "minimumDetailResolution": true,
+              "hd720x1008": false
+            },
+            "sourceMetadata": {
+              "sha256": "1865115c60cd1b5c84a9cd61dcc014757bfff740544c5528113a9d3dc041ae72",
+              "sourceSignature": {
+                "sourceCardId": "neo3_ja-56",
+                "nativeName": "ポケモン育て屋夫婦",
+                "sourceEnglishName": "Pokémon Breeder Fields",
+                "language": "Japanese",
+                "languageCode": "JA",
+                "supertype": "トレーナー",
+                "subtypes": [],
+                "nationalDex": [],
+                "hp": null,
+                "types": [],
+                "evolvesFrom": [],
+                "artist": "Ken Sugimori",
+                "orderedAttacks": [],
+                "abilities": [],
+                "rules": [
+                  "あなたの場の「たねポケモン」「1進化ポケモン」の中から、最大2匹までを選び、選んだポケモンそれぞれに対してコインを1枚ずつ投げる。「おもて」が出たポケモンから進化する「進化カード」を、あなたの山札からそれぞれ1枚ずつ選び出し、相手プレイヤーに見せてから、手札に加える。その後、その山札をよく切る。"
+                ],
+                "weaknesses": [],
+                "resistances": [],
+                "retreatCosts": [],
+                "convertedRetreatCost": null,
+                "sourceReportedNumber": null,
+                "sourceReportedPrintedNumber": null,
+                "rarity": "非",
+                "rarityCode": "♦",
+                "expansion": {
+                  "id": "neo3_ja",
+                  "name": "めざめる伝説",
+                  "series": "Neo",
+                  "code": null,
+                  "total": 57,
+                  "printed_total": 57,
+                  "language": "Japanese",
+                  "language_code": "JA",
+                  "release_date": "2000/11/23",
+                  "is_online_only": false,
+                  "logo": "https://images.scrydex.com/pokemon/neo3_ja-logo/logo",
+                  "symbol": "https://images.scrydex.com/pokemon/neo3_ja-symbol/symbol",
+                  "translation": {
+                    "en": {
+                      "name": "Awakening Legends"
+                    }
+                  }
+                },
+                "sourceVariantNames": [
+                  "normal"
+                ]
+              },
+              "sourceSignatureSha256": "837e10f52eed4327fb9c849ccfd945dc21f1ff7d888c32d8ac7a8b6b76dc6ba0",
+              "sourceAttackArraySha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+            },
+            "sourceActualPixelSignature": {
+              "actualLanguageCode": "ja",
+              "nativeName": "ポケモン育て屋夫婦",
+              "header": "TRAINER",
+              "printedSubtype": null,
+              "hp": null,
+              "stage": null,
+              "evolvesFrom": null,
+              "nationalDex": null,
+              "canonicalCollectorAliasNotPrintedNumber": true,
+              "artist": "Ken Sugimori",
+              "artistReadCertain": true,
+              "orderedAttackNames": [],
+              "orderedAttackCosts": [],
+              "orderedAttackDamage": [],
+              "abilityNames": [],
+              "nativeAbilityText": null,
+              "nativeAttackText": [],
+              "nativeRulesText": "あなたの場の「たねポケモン」「1進化ポケモン」の中から、最大2匹までを選び、選んだポケモンそれぞれに対してコインを1枚ずつ投げる。\n「おもて」が出たポケモンから進化する「進化カード」を、あなたの山札からそれぞれ1枚ずつ選び出し、相手プレイヤーに見せてから、手札に加える。その後、その山札をよく切る。",
+              "retreatSymbols": null,
+              "fullCardFrontVisible": true,
+              "allFourOuterEdgesVisible": true,
+              "setSymbolObserved": true,
+              "editionOrMaterialCertified": false
+            },
+            "sourceActualPixelSignatureSha256": "dd257d0826649c07a899e9a0018c6b116b7856350b3417c07484e07ff8b5f074",
+            "sourceProviderDiscrepanciesRetained": [],
+            "canonicalMetadata": {
+              "sha256": "2f3043342212d18b645097f82afe96bb04b83d2a1359023dd79f3beb2330c451",
+              "artistAbsent": true,
+              "bodyAbsent": true,
+              "officialTranslationCertification": false
+            },
+            "titleCrosswalk": {
+              "catalogue": "ポケモンブリーダーフィールド",
+              "referenceEnglish": "Pokémon Breeder Fields",
+              "actualJapanese": "ポケモン育て屋夫婦",
+              "basis": "Catalogue transliterates the exact provider English card title. Printed Japanese names the Pokemon Day-Care couple; couple/Dragonite nursery artwork and choose-two/coin evolution-search body match the independently linked named reference.",
+              "semanticInference": true,
+              "officialTranslationCertification": false,
+              "proofIsNotNamesOrOrderAlone": true
+            },
+            "referenceEvidence": {
+              "role": "Identity comparison evidence only; not a production image source",
+              "provider": "Pokellector named Japanese set/card reference",
+              "setUrl": "https://jp.pokellector.com/Awakening-Legends-Expansion/",
+              "cardUrl": "https://jp.pokellector.com/Awakening-Legends-Expansion/Pokmon-Breeder-Fields-Card-56",
+              "cardMetadata": {
+                "sha256": "c3c6f415beb3328cf8bd6001da39958955b2d20a6058f09680ce863bb8190152",
+                "bytes": 27072
+              },
+              "providerCardId": "39705",
+              "englishTitle": "Pokémon Breeder Fields",
+              "observedLiteralImageUrl": "https://den-cards.pokellector.com/332/Pokmon-Breeder-Fields.NEO3.56.39705.png",
+              "original": {
+                "kind": "reference",
+                "sha256": "30af8e4bdc0ec95fd79062ec3f7839b595da81cdabf9f9dc0c6d8e90e84867aa",
+                "bytes": 682394,
+                "mimeType": "image/png",
+                "format": "png",
+                "width": 569,
+                "height": 800,
+                "fullSharpDecodePassed": true,
+                "fullPILDecodePassed": true,
+                "rgbaSha256": "ae0177b901de6c7c4a8077aa07acec80b567b2fdce0ee22dbf2a284abdca9e71",
+                "genuineDetailSize": true,
+                "hd720x1008": false,
+                "aspectRatio": 0.71125,
+                "aspectRatioIsCropProof": false
+              },
+              "pageJapaneseLabelConflict": null
+            },
+            "independentDirectObservation": {
+              "alias": "056",
+              "referenceSha256": "30af8e4bdc0ec95fd79062ec3f7839b595da81cdabf9f9dc0c6d8e90e84867aa",
+              "actualTitle": "ポケモン育て屋夫婦",
+              "header": "TRAINER",
+              "subtype": null,
+              "artist": "Ken Sugimori",
+              "fullFrame": true,
+              "setMarkVisible": true,
+              "actualNativeRules": "あなたの場の「たねポケモン」「1進化ポケモン」の中から、最大2匹までを選び、選んだポケモンそれぞれに対してコインを1枚ずつ投げる。「おもて」が出たポケモンから進化する「進化カード」を、あなたの山札からそれぞれ1枚ずつ選び出し、相手プレイヤーに見せてから、手札に加える。その後、その山札をよく切る。",
+              "art": "Older couple tend flowers beside Dragonite under orange sunset; foreground man carries a bucket and rests hand near Dragonite, woman in left background.",
+              "referenceViewedIndependently": true,
+              "writerClaimsSeenBeforeReferenceView": false,
+              "sourceSha256": "30f797b81043589bffd3e9c7af4ead32f97b6980d38868c90b4d0ef09207005c",
+              "sourceViewedIndependently": true,
+              "sourceReferenceExactPrintedFrontMatch": true,
+              "sameUnderlyingScanPossible": true
+            },
+            "writerProposedBindingEvidenceSha256": "3f0bc299eb93c151e116d439c796cbf689f7300df36a250936e19259b0a2aa49",
+            "exactArtworkSourceIdentityAccepted": true,
+            "currentVariantMetadata": "normal",
+            "physicalEditionVerified": false,
+            "physicalFinishVerified": false,
+            "sourceWideApproval": false,
+            "vendorLicenceVerified": false,
+            "underlyingCopyrightLicenceVerified": false,
+            "preparationApproved": false,
+            "publicationApproved": false
+          },
+          "independent_selection_raw_canonical_json_sha256": "b1870716a1b20ea5a028f1b293367fbce11b15c10da2eb924b3677c50ee1bda1",
+          "independent_selection_public_canonical_json_sha256": "8b7a4638732baad3d6dd145750f29b95cbcdce5a571d0cc1a59a94751927fe7f",
+          "public_projection_contract": "Remove only local path/absolutePath properties; reject unexpected local paths; raw private evidence hashes remain distinct from projected hashes.",
+          "current_acceptance": {
+            "independently_accepted": true,
+            "source_card_id": "neo3_ja-56",
+            "exact_unnumbered_japanese_trainer": true
+          },
+          "source_variant_support": {
+            "currentVariantCode": "normal",
+            "currentFinishCode": "normal",
+            "sourceVariantNames": [
+              "normal"
+            ],
+            "supportsCurrentMetadataVariant": true,
+            "globalFrontNotPerVariantProof": true,
+            "physicalFinishVerified": false
+          },
+          "physical_edition_verified": false,
+          "physical_finish_verified": false,
+          "generic_other_rows_may_relax": false,
+          "queue_controls": {
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "name_and_set_symbol_readable": true,
+              "artist_read_certain": true,
+              "full_japanese_trainer_rules_read": true,
+              "printed_collector_number": null,
+              "printed_national_dex": null,
+              "physical_finish_verified": false,
+              "edition_or_distribution_certified": false,
+              "copyright_year_inferred": false
+            },
+            "identity_controls": {
+              "canonical_alias": "056",
+              "canonical_alias_is_not_printed_number": true,
+              "printed_collector_number": null,
+              "printed_national_dex": null,
+              "card_category": "Trainer",
+              "verified_printed_native_name": "ポケモン育て屋夫婦",
+              "current_native_label": "ポケモンブリーダーフィールド",
+              "current_native_label_not_used_as_sole_match": true,
+              "pokemon_identity_asserted": false,
+              "trainer_full_body_art_reference_bridge_verified": true
+            },
+            "source_qa": {
+              "actual_japanese_unnumbered_trainer_front_verified": true,
+              "complete_native_trainer_body_verified": true,
+              "independent_named_reference_and_source_front_match": true,
+              "reference_image_comparison_only": true,
+              "printed_number_and_national_dex_absent_verified": true,
+              "original_sha256": "30f797b81043589bffd3e9c7af4ead32f97b6980d38868c90b4d0ef09207005c",
+              "source_metadata_sha256": "1865115c60cd1b5c84a9cd61dcc014757bfff740544c5528113a9d3dc041ae72",
+              "actual_pixel_signature_sha256": "dd257d0826649c07a899e9a0018c6b116b7856350b3417c07484e07ff8b5f074",
+              "independent_reference_sha256": "30af8e4bdc0ec95fd79062ec3f7839b595da81cdabf9f9dc0c6d8e90e84867aa",
+              "physical_finish_verified": false
+            }
+          }
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "56fc9f48-441c-40da-b1a7-29fdbd5300c4",
+      "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+      "set_code": "neo3",
+      "language_code": "ja",
+      "collector_number": "057",
+      "card_native_name": "ロケットの隠れ家",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "767914af-5fcc-4e7c-9304-de89589eb56f"
+      ],
+      "batch_id": "JP-CARDS-012",
+      "source_code": "scrydex",
+      "provider_id": "neo3_ja-57",
+      "image_url": "https://images.scrydex.com/pokemon/neo3_ja-57/large",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/bcabdcf132f2d8fd1f855b4f4bb1c2e52be53f28225ae0e19f0f9310757143be/original.webp",
+          "sha256": "bcabdcf132f2d8fd1f855b4f4bb1c2e52be53f28225ae0e19f0f9310757143be",
+          "byte_size": 341826,
+          "width": 564,
+          "height": 800,
+          "mime_type": "image/webp",
+          "artifact_id": 641944947
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/2e0fbd26ff7f279c9af14841ca36f2b2cc34de0f5da7e1db91b49993922e69d4/card-grid.webp",
+          "sha256": "2e0fbd26ff7f279c9af14841ca36f2b2cc34de0f5da7e1db91b49993922e69d4",
+          "byte_size": 12226,
+          "width": 240,
+          "height": 340,
+          "mime_type": "image/webp",
+          "artifact_id": 641944947
+        },
+        {
+          "role": "search-result",
+          "file": "objects/231e9ca4978a19ef6a33e7467395c906b3a7d70a2e6fa179c57ae1f62fccb916/search-result.webp",
+          "sha256": "231e9ca4978a19ef6a33e7467395c906b3a7d70a2e6fa179c57ae1f62fccb916",
+          "byte_size": 3024,
+          "width": 96,
+          "height": 136,
+          "mime_type": "image/webp",
+          "artifact_id": 641944947
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/a46d41e5b295bb4873f1f5c0217240d91abaad5fd0f8b4f2b9cce9f63347c633/detail-page.webp",
+          "sha256": "a46d41e5b295bb4873f1f5c0217240d91abaad5fd0f8b4f2b9cce9f63347c633",
+          "byte_size": 49662,
+          "width": 564,
+          "height": 800,
+          "mime_type": "image/webp",
+          "artifact_id": 641944947
+        }
+      ],
+      "evidence": {
+        "source_url": "https://images.scrydex.com/pokemon/neo3_ja-57/large",
+        "source_page_url": "https://scrydex.com/pokemon/cards/rockets-hideout/neo3_ja-57?variant=normal",
+        "provider_id": "neo3_ja-57",
+        "source_metadata_sha256": "5382f243a43ef7619860e76a6f2eb4f94a98006997b256d0f819687306d06d5a",
+        "source_body": {
+          "provider_metadata_raw_html_sha256": "5382f243a43ef7619860e76a6f2eb4f94a98006997b256d0f819687306d06d5a",
+          "provider_metadata_full_captured_json_sha256": "827590fcd47be45d9807506c9cc1521a5af75b172a3b2a933e471877a6348cfb",
+          "provider_metadata_identity_projection": {
+            "id": "neo3_ja-57",
+            "name": "ロケット団のアジト",
+            "supertype": "トレーナー",
+            "subtypes": [],
+            "types": [],
+            "hp": null,
+            "evolves_from": [],
+            "abilities": [],
+            "attacks": [],
+            "weaknesses": [],
+            "resistances": [],
+            "retreat_cost": [],
+            "converted_retreat_cost": null,
+            "rules": [
+              "おたがいの場の、「わるいポケモン」全員と「R団のポケモン」全員の最大HPは、それぞれ「20」ずつ大きくなる。"
+            ],
+            "number": null,
+            "printed_number": null,
+            "additional_numbers": [],
+            "rarity": "非",
+            "rarity_code": "♦",
+            "artist": "Keiji Kinebuchi",
+            "national_pokedex_numbers": [],
+            "regulation_mark": null,
+            "legalities": [
+              {
+                "format": "Standard",
+                "status": "Not Legal"
+              },
+              {
+                "format": "Unlimited",
+                "status": "Legal"
+              },
+              {
+                "format": "Expanded",
+                "status": "Not Legal"
+              },
+              {
+                "format": "Gym Leader Challenge",
+                "status": "Not Legal"
+              }
+            ],
+            "flavor_text": null,
+            "images": [
+              {
+                "type": "front",
+                "small": "https://images.scrydex.com/pokemon/neo3_ja-57/small",
+                "medium": "https://images.scrydex.com/pokemon/neo3_ja-57/medium",
+                "large": "https://images.scrydex.com/pokemon/neo3_ja-57/large"
+              }
+            ],
+            "expansion": {
+              "id": "neo3_ja",
+              "name": "めざめる伝説",
+              "series": "Neo",
+              "code": null,
+              "total": 57,
+              "printed_total": 57,
+              "language": "Japanese",
+              "language_code": "JA",
+              "release_date": "2000/11/23",
+              "is_online_only": false,
+              "logo": "https://images.scrydex.com/pokemon/neo3_ja-logo/logo",
+              "symbol": "https://images.scrydex.com/pokemon/neo3_ja-symbol/symbol",
+              "translation": {
+                "en": {
+                  "name": "Awakening Legends"
+                }
+              }
+            },
+            "language": "Japanese",
+            "language_code": "JA",
+            "expansion_sort_order": 57,
+            "translation": {
+              "en": {
+                "name": "Rocket's Hideout",
+                "supertype": "Trainer",
+                "subtypes": null,
+                "types": null,
+                "rules": [
+                  "Each Pokémon in play with Dark in its name (even your opponent's) gets +20 HP."
+                ],
+                "abilities": [],
+                "attacks": [],
+                "weaknesses": [],
+                "resistances": [],
+                "retreat_cost": null,
+                "evolves_from": null,
+                "flavor_text": null,
+                "rarity": "Uncommon",
+                "expansion": {
+                  "name": "Awakening Legends"
+                }
+              }
+            },
+            "variants": [
+              {
+                "name": "normal",
+                "images": []
+              }
+            ]
+          },
+          "provider_metadata_identity_projection_sha256": "71325c35bcd98cba4a1286dce586ce7b03fa7b4587af0c9ce3185ef9f5be9876",
+          "provider_metadata_projection_contract": "Derived identity-only projection from the retained exactmetadata7 packet; full captured provider JSON remains offline and is represented only by its distinct hash.",
+          "tcgdex_metadata": {
+            "category": "Trainer",
+            "id": "neo3-057",
+            "localId": "057",
+            "name": "ロケットの隠れ家",
+            "rarity": "Uncommon",
+            "set": {
+              "cardCount": {
+                "official": 57,
+                "total": 57
+              },
+              "id": "neo3",
+              "name": "めざめる伝説",
+              "symbol": "https://assets.tcgdex.net/univ/neo/neo3/symbol"
+            },
+            "variants": {
+              "firstEdition": false,
+              "holo": false,
+              "normal": true,
+              "reverse": false,
+              "wPromo": false
+            },
+            "variants_detailed": [
+              {
+                "type": "normal",
+                "size": "standard",
+                "variantId": "endfynwn4n10gzq"
+              }
+            ],
+            "legal": {
+              "standard": false,
+              "expanded": false
+            },
+            "updated": "2026-09-25T23:45:26.614Z"
+          },
+          "source_signature": {
+            "sourceCardId": "neo3_ja-57",
+            "nativeName": "ロケット団のアジト",
+            "sourceEnglishName": "Rocket's Hideout",
+            "language": "Japanese",
+            "languageCode": "JA",
+            "supertype": "トレーナー",
+            "subtypes": [],
+            "nationalDex": [],
+            "hp": null,
+            "types": [],
+            "evolvesFrom": [],
+            "artist": "Keiji Kinebuchi",
+            "orderedAttacks": [],
+            "abilities": [],
+            "rules": [
+              "おたがいの場の、「わるいポケモン」全員と「R団のポケモン」全員の最大HPは、それぞれ「20」ずつ大きくなる。"
+            ],
+            "weaknesses": [],
+            "resistances": [],
+            "retreatCosts": [],
+            "convertedRetreatCost": null,
+            "sourceReportedNumber": null,
+            "sourceReportedPrintedNumber": null,
+            "rarity": "非",
+            "rarityCode": "♦",
+            "expansion": {
+              "id": "neo3_ja",
+              "name": "めざめる伝説",
+              "series": "Neo",
+              "code": null,
+              "total": 57,
+              "printed_total": 57,
+              "language": "Japanese",
+              "language_code": "JA",
+              "release_date": "2000/11/23",
+              "is_online_only": false,
+              "logo": "https://images.scrydex.com/pokemon/neo3_ja-logo/logo",
+              "symbol": "https://images.scrydex.com/pokemon/neo3_ja-symbol/symbol",
+              "translation": {
+                "en": {
+                  "name": "Awakening Legends"
+                }
+              }
+            },
+            "sourceVariantNames": [
+              "normal"
+            ]
+          },
+          "source_signature_sha256": "8af2b6c1e8ddedc26062a0a991cb0df6064662af110dd4a3c74635c5a64dc75c",
+          "source_attack_array_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "actual_pixel_signature": {
+            "actualLanguageCode": "ja",
+            "nativeName": "ロケット団のアジト",
+            "header": "TRAINER",
+            "printedSubtype": "スタジアムカード",
+            "hp": null,
+            "stage": null,
+            "evolvesFrom": null,
+            "nationalDex": null,
+            "canonicalCollectorAliasNotPrintedNumber": true,
+            "artist": "Keiji Kinebuchi",
+            "artistReadCertain": true,
+            "orderedAttackNames": [],
+            "orderedAttackCosts": [],
+            "orderedAttackDamage": [],
+            "abilityNames": [],
+            "nativeAbilityText": null,
+            "nativeAttackText": [],
+            "nativeRulesText": "おたがいの場の「わるい」ポケモンの最大HPは、「20」ぶん大きいものになる。\n「スタジアムカード」は、バトル場の横に出して使う。別の「スタジアムカード」が場に出たとき、このカードをトラッシュする。",
+            "retreatSymbols": null,
+            "fullCardFrontVisible": true,
+            "allFourOuterEdgesVisible": true,
+            "setSymbolObserved": true,
+            "editionOrMaterialCertified": false
+          },
+          "actual_pixel_signature_sha256": "bad7816a659c707034e8104f37a42ca62373924d0971c5b45a89fd2a72c34fef",
+          "actual_pixel_observations": {
+            "alias": "057",
+            "printingId": "56fc9f48-441c-40da-b1a7-29fdbd5300c4",
+            "sha256": "bcabdcf132f2d8fd1f855b4f4bb1c2e52be53f28225ae0e19f0f9310757143be",
+            "width": 564,
+            "height": 800,
+            "hashCheckedImmediatelyBeforeViewAtUtc": "2026-10-14T21:47:51.701Z",
+            "observedAtUtc": "2026-10-14T21:48:16.677Z",
+            "viewMethod": "Single whole original via view_image(detail original), immediately preceded by byte hash verification",
+            "actualLanguageCode": "ja",
+            "allFourOuterEdgesVisible": true,
+            "fullCardFrontVisible": true,
+            "sourceBytesUnchanged": true,
+            "generatedOrUpscaled": false,
+            "physicalEditionVerified": false,
+            "physicalFinishVerified": false,
+            "nativeNameObserved": "ロケット団のアジト",
+            "headerObserved": "TRAINER",
+            "printedSubtypeObserved": "スタジアムカード",
+            "hpObserved": null,
+            "stageObserved": null,
+            "printedNationalDexObserved": null,
+            "printedCollectorNumberObserved": null,
+            "artistObserved": "Keiji Kinebuchi",
+            "artistReadCertain": true,
+            "nativeRulesTextObserved": "おたがいの場の「わるい」ポケモンの最大HPは、「20」ぶん大きいものになる。\n「スタジアムカード」は、バトル場の横に出して使う。別の「スタジアムカード」が場に出たとき、このカードをトラッシュする。",
+            "rulesMechanicObserved": "Both players Dark-name Pokémon gain20 maximum HP. Actual printed effect has no separate R団のポケモン category. Generic Stadium rule also printed.",
+            "artDescriptionObserved": "Large red R against dark grey interior wall,white Poké Ball floor outline and Gengar in lower-right foreground.",
+            "setSymbolObserved": true,
+            "frameDescription": "Complete yellow border and grey Trainer frame;printed Stadium subtype and riveted white rule box.",
+            "copyrightObservation": "No legible copyright/date line seen on complete front; no year inference.",
+            "editionStampVisible": false,
+            "proposedPokemonIdentityMatch": false,
+            "trainerCanonicalIdentityAsserted": false,
+            "selectedSourceCardId": null,
+            "quarantineComparisonOnly": true,
+            "sourceMetadataDiscrepancies": [
+              "Source rule adds R団のポケモン; actual printed effect names only わるい Pokémon.",
+              "Printed Stadium subtype and generic Stadium paragraph omitted from source subtypes/rules."
+            ],
+            "transcriptionNote": "Readable Japanese title and gameplay body transcribed from a single whole source original; punctuation/spacing normalised. Fine print not invented; no copyright year or physical edition inferred."
+          },
+          "original_observation_sha256": "f86a2005422e9c487000ad7d7d17a8eef179605b9b1f329c9bcf54417f9a2662",
+          "provider_metadata_discrepancies": [
+            {
+              "type": "source_printed_subtype_and_generic_rule_omitted",
+              "field": "rulesAndSubtype",
+              "sourceSubtypes": [],
+              "actualPrintedSubtype": "スタジアムカード",
+              "actualGenericRule": "「スタジアムカード」は、バトル場の横に出して使う。別の「スタジアムカード」が場に出たとき、このカードをトラッシュする。",
+              "pixelResolution": true,
+              "canonicalCorrection": false,
+              "canonicalTrainerIdentityStillUnbound": true
+            },
+            {
+              "type": "source_rule_extra_pokemon_category",
+              "field": "trainerRule",
+              "sourceNativeRules": [
+                "おたがいの場の、「わるいポケモン」全員と「R団のポケモン」全員の最大HPは、それぞれ「20」ずつ大きくなる。"
+              ],
+              "actualNativeRule": "おたがいの場の「わるい」ポケモンの最大HPは、「20」ぶん大きいものになる。",
+              "sourceExtraCategoryAbsentFromActual": "R団のポケモン",
+              "pixelResolution": true,
+              "canonicalCorrection": false,
+              "canonicalTrainerIdentityStillUnbound": true
+            }
+          ],
+          "historical_source_row_canonical_json_sha256": "023b989fbe5c5a63a249745b6f2b263f83eff14355c3bfab476d7a4d4b5d3270",
+          "root_approved_projection_row_canonical_json_sha256": "03ebdc2796c355ce4ec6f937fb3855a1350bf041d8c4523af43776e792d1593d",
+          "historical_association": {
+            "selected_source_card_id": null,
+            "quarantine_comparison_only": true,
+            "holds": [
+              {
+                "code": "trainer_native_body_and_art_not_independently_bound",
+                "reason": "The exact current TCGdex target contains category/name/set/rarity only; it omits effects, artist and native rules. Scrydex provides a literal source lead and one native body, but name/set matching alone is not an exact artwork/version/printing bridge.",
+                "action": "Any later capture must be quarantine comparison-only. Read full Japanese title, set symbol, artist, frame/header/subtype/rule boxes and complete rule effect before exact canonical artwork binding. Do not prepare or infer printing from alias/order."
+              },
+              {
+                "code": "actual_source_front_verified_but_canonical_trainer_body_art_bridge_missing",
+                "action": "Retain this unchanged source original as comparison only. selectedSourceCardId remains null; current canonical artist is null and printing discriminator empty. Independent canonical native body/art/version evidence is still required."
+              }
+            ],
+            "exact_canonical_trainer_artwork_match": false,
+            "canonical_artist_and_body_missing_retained": true
+          },
+          "independent_selection": {
+            "itemId": "card:56fc9f48-441c-40da-b1a7-29fdbd5300c4",
+            "printingId": "56fc9f48-441c-40da-b1a7-29fdbd5300c4",
+            "variantId": "767914af-5fcc-4e7c-9304-de89589eb56f",
+            "canonicalSetId": "a15481a7-410b-4a98-8695-3bba0db9d226",
+            "canonicalSetCode": "neo3",
+            "canonicalLanguageCode": "ja",
+            "canonicalCollectorAlias": "057",
+            "collectorAliasIsNotPrintedNumber": true,
+            "currentNativeLabel": "ロケットの隠れ家",
+            "currentNativeLabelRetained": true,
+            "currentProductionBinding": {
+              "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+              "set_code": "neo3",
+              "game_code": "pokemon",
+              "variant_id": "767914af-5fcc-4e7c-9304-de89589eb56f",
+              "finish_code": "normal",
+              "printing_id": "56fc9f48-441c-40da-b1a7-29fdbd5300c4",
+              "variant_code": "normal",
+              "language_code": "ja",
+              "card_native_name": "ロケットの隠れ家",
+              "collector_number": "057",
+              "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+              "same_artwork_as_variant_id": null
+            },
+            "currentStagingBinding": {
+              "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+              "set_code": "neo3",
+              "game_code": "pokemon",
+              "variant_id": "767914af-5fcc-4e7c-9304-de89589eb56f",
+              "finish_code": "normal",
+              "printing_id": "56fc9f48-441c-40da-b1a7-29fdbd5300c4",
+              "variant_code": "normal",
+              "language_code": "ja",
+              "card_native_name": "ロケットの隠れ家",
+              "collector_number": "057",
+              "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+              "same_artwork_as_variant_id": null
+            },
+            "historicalSelectedSourceCardId": null,
+            "historicalComparisonPacketUnchanged": true,
+            "candidateSourceCardId": "neo3_ja-57",
+            "independentlySelectedSourceCardId": "neo3_ja-57",
+            "sourceProvider": "scrydex",
+            "sourcePageUrl": "https://scrydex.com/pokemon/cards/rockets-hideout/neo3_ja-57?variant=normal",
+            "sourceImageUrl": "https://images.scrydex.com/pokemon/neo3_ja-57/large",
+            "sourceOriginal": {
+              "sha256": "bcabdcf132f2d8fd1f855b4f4bb1c2e52be53f28225ae0e19f0f9310757143be",
+              "bytes": 341826,
+              "mimeType": "image/webp",
+              "format": "WEBP",
+              "width": 564,
+              "height": 800,
+              "fullPILDecodePassed": true,
+              "fullSharpDecodePassed": true,
+              "sourceBytesUnchanged": true,
+              "generatedOrUpscaled": false,
+              "minimumDetailResolution": true,
+              "hd720x1008": false
+            },
+            "sourceMetadata": {
+              "sha256": "5382f243a43ef7619860e76a6f2eb4f94a98006997b256d0f819687306d06d5a",
+              "sourceSignature": {
+                "sourceCardId": "neo3_ja-57",
+                "nativeName": "ロケット団のアジト",
+                "sourceEnglishName": "Rocket's Hideout",
+                "language": "Japanese",
+                "languageCode": "JA",
+                "supertype": "トレーナー",
+                "subtypes": [],
+                "nationalDex": [],
+                "hp": null,
+                "types": [],
+                "evolvesFrom": [],
+                "artist": "Keiji Kinebuchi",
+                "orderedAttacks": [],
+                "abilities": [],
+                "rules": [
+                  "おたがいの場の、「わるいポケモン」全員と「R団のポケモン」全員の最大HPは、それぞれ「20」ずつ大きくなる。"
+                ],
+                "weaknesses": [],
+                "resistances": [],
+                "retreatCosts": [],
+                "convertedRetreatCost": null,
+                "sourceReportedNumber": null,
+                "sourceReportedPrintedNumber": null,
+                "rarity": "非",
+                "rarityCode": "♦",
+                "expansion": {
+                  "id": "neo3_ja",
+                  "name": "めざめる伝説",
+                  "series": "Neo",
+                  "code": null,
+                  "total": 57,
+                  "printed_total": 57,
+                  "language": "Japanese",
+                  "language_code": "JA",
+                  "release_date": "2000/11/23",
+                  "is_online_only": false,
+                  "logo": "https://images.scrydex.com/pokemon/neo3_ja-logo/logo",
+                  "symbol": "https://images.scrydex.com/pokemon/neo3_ja-symbol/symbol",
+                  "translation": {
+                    "en": {
+                      "name": "Awakening Legends"
+                    }
+                  }
+                },
+                "sourceVariantNames": [
+                  "normal"
+                ]
+              },
+              "sourceSignatureSha256": "8af2b6c1e8ddedc26062a0a991cb0df6064662af110dd4a3c74635c5a64dc75c",
+              "sourceAttackArraySha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+            },
+            "sourceActualPixelSignature": {
+              "actualLanguageCode": "ja",
+              "nativeName": "ロケット団のアジト",
+              "header": "TRAINER",
+              "printedSubtype": "スタジアムカード",
+              "hp": null,
+              "stage": null,
+              "evolvesFrom": null,
+              "nationalDex": null,
+              "canonicalCollectorAliasNotPrintedNumber": true,
+              "artist": "Keiji Kinebuchi",
+              "artistReadCertain": true,
+              "orderedAttackNames": [],
+              "orderedAttackCosts": [],
+              "orderedAttackDamage": [],
+              "abilityNames": [],
+              "nativeAbilityText": null,
+              "nativeAttackText": [],
+              "nativeRulesText": "おたがいの場の「わるい」ポケモンの最大HPは、「20」ぶん大きいものになる。\n「スタジアムカード」は、バトル場の横に出して使う。別の「スタジアムカード」が場に出たとき、このカードをトラッシュする。",
+              "retreatSymbols": null,
+              "fullCardFrontVisible": true,
+              "allFourOuterEdgesVisible": true,
+              "setSymbolObserved": true,
+              "editionOrMaterialCertified": false
+            },
+            "sourceActualPixelSignatureSha256": "bad7816a659c707034e8104f37a42ca62373924d0971c5b45a89fd2a72c34fef",
+            "sourceProviderDiscrepanciesRetained": [
+              {
+                "type": "source_printed_subtype_and_generic_rule_omitted",
+                "field": "rulesAndSubtype",
+                "sourceSubtypes": [],
+                "actualPrintedSubtype": "スタジアムカード",
+                "actualGenericRule": "「スタジアムカード」は、バトル場の横に出して使う。別の「スタジアムカード」が場に出たとき、このカードをトラッシュする。",
+                "pixelResolution": true,
+                "canonicalCorrection": false,
+                "canonicalTrainerIdentityStillUnbound": true
+              },
+              {
+                "type": "source_rule_extra_pokemon_category",
+                "field": "trainerRule",
+                "sourceNativeRules": [
+                  "おたがいの場の、「わるいポケモン」全員と「R団のポケモン」全員の最大HPは、それぞれ「20」ずつ大きくなる。"
+                ],
+                "actualNativeRule": "おたがいの場の「わるい」ポケモンの最大HPは、「20」ぶん大きいものになる。",
+                "sourceExtraCategoryAbsentFromActual": "R団のポケモン",
+                "pixelResolution": true,
+                "canonicalCorrection": false,
+                "canonicalTrainerIdentityStillUnbound": true
+              }
+            ],
+            "canonicalMetadata": {
+              "sha256": "93185c3098cefc0b974e6ea060ae5c0ba60f555a36d1b6c09780ad15843a9e9d",
+              "artistAbsent": true,
+              "bodyAbsent": true,
+              "officialTranslationCertification": false
+            },
+            "titleCrosswalk": {
+              "catalogue": "ロケットの隠れ家",
+              "referenceEnglish": "Rocket's Hideout",
+              "actualJapanese": "ロケット団のアジト",
+              "basis": "Catalogue means Rocket hideout; printed title names Team Rocket hideout. Red R/Gengar room art, Stadium subtype and Dark-Pokemon-only HP+20 rule match.",
+              "semanticInference": true,
+              "officialTranslationCertification": false,
+              "proofIsNotNamesOrOrderAlone": true
+            },
+            "referenceEvidence": {
+              "role": "Identity comparison evidence only; not a production image source",
+              "provider": "Pokellector named Japanese set/card reference",
+              "setUrl": "https://jp.pokellector.com/Awakening-Legends-Expansion/",
+              "cardUrl": "https://jp.pokellector.com/Awakening-Legends-Expansion/Rockets-Hideout-Card-57",
+              "cardMetadata": {
+                "sha256": "e629538055f737df09329c53ef91e3efd47babbecfd059e9f434a64c81dada79",
+                "bytes": 26867
+              },
+              "providerCardId": "39706",
+              "englishTitle": "Rocket's Hideout",
+              "observedLiteralImageUrl": "https://den-cards.pokellector.com/332/Rockets-Hideout.NEO3.57.39706.png",
+              "original": {
+                "kind": "reference",
+                "sha256": "f9e142056d04489c4566ce10f555ed12c216dbddd6cfc4ee601f59e112558680",
+                "bytes": 47816,
+                "mimeType": "image/webp",
+                "format": "webp",
+                "width": 564,
+                "height": 800,
+                "fullSharpDecodePassed": true,
+                "fullPILDecodePassed": true,
+                "rgbaSha256": "118276bbfda7a9475376df2dc87b78799584564d0f2770ff1f3fb70b6c51d001",
+                "genuineDetailSize": true,
+                "hd720x1008": false,
+                "aspectRatio": 0.705,
+                "aspectRatioIsCropProof": false
+              },
+              "pageJapaneseLabelConflict": null
+            },
+            "independentDirectObservation": {
+              "alias": "057",
+              "referenceSha256": "f9e142056d04489c4566ce10f555ed12c216dbddd6cfc4ee601f59e112558680",
+              "actualTitle": "ロケット団のアジト",
+              "header": "TRAINER",
+              "subtype": "スタジアムカード",
+              "artist": "Keiji Kinebuchi",
+              "fullFrame": true,
+              "setMarkVisible": true,
+              "actualNativeRules": "おたがいの場の「わるい」ポケモンの最大HPは、「20」ぶん大きいものになる。",
+              "stadiumRule": "「スタジアムカード」は、バトル場の横に出して使う。別の「スタジアムカード」が場に出たとき、このカードをトラッシュする。",
+              "art": "Large red R mounted on grey metal walls, Gengar at lower right, purple Poké Ball marking on floor.",
+              "noAdditionalRTeamCategoryInPrintedEffect": true,
+              "referenceViewedIndependently": true,
+              "writerClaimsSeenBeforeReferenceView": false,
+              "earlierIndependent057SourceViewReusedInHypothesis": true,
+              "sourceSha256": "bcabdcf132f2d8fd1f855b4f4bb1c2e52be53f28225ae0e19f0f9310757143be",
+              "sourceViewedIndependently": true,
+              "sourceReferenceExactPrintedFrontMatch": true,
+              "sameUnderlyingScanPossible": true
+            },
+            "writerProposedBindingEvidenceSha256": "62eb4303b4404f98cc6a30a35569d1279c9bbba3405d59e96bc19b21f023b1e0",
+            "exactArtworkSourceIdentityAccepted": true,
+            "currentVariantMetadata": "normal",
+            "physicalEditionVerified": false,
+            "physicalFinishVerified": false,
+            "sourceWideApproval": false,
+            "vendorLicenceVerified": false,
+            "underlyingCopyrightLicenceVerified": false,
+            "preparationApproved": false,
+            "publicationApproved": false
+          },
+          "independent_selection_raw_canonical_json_sha256": "3ff6db6e9bf2c3e1b7b500d9aa6f14eb45ca20c6dbaf8f27cd742a3fc7e7ca34",
+          "independent_selection_public_canonical_json_sha256": "bfe5dba77927a7afaaa61ec3cb0c42045b5309e8122c97ee4060974c40620b03",
+          "public_projection_contract": "Remove only local path/absolutePath properties; reject unexpected local paths; raw private evidence hashes remain distinct from projected hashes.",
+          "current_acceptance": {
+            "independently_accepted": true,
+            "source_card_id": "neo3_ja-57",
+            "exact_unnumbered_japanese_trainer": true
+          },
+          "source_variant_support": {
+            "currentVariantCode": "normal",
+            "currentFinishCode": "normal",
+            "sourceVariantNames": [
+              "normal"
+            ],
+            "supportsCurrentMetadataVariant": true,
+            "globalFrontNotPerVariantProof": true,
+            "physicalFinishVerified": false
+          },
+          "physical_edition_verified": false,
+          "physical_finish_verified": false,
+          "generic_other_rows_may_relax": false,
+          "queue_controls": {
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "name_and_set_symbol_readable": true,
+              "artist_read_certain": true,
+              "full_japanese_trainer_rules_read": true,
+              "printed_collector_number": null,
+              "printed_national_dex": null,
+              "physical_finish_verified": false,
+              "edition_or_distribution_certified": false,
+              "copyright_year_inferred": false
+            },
+            "identity_controls": {
+              "canonical_alias": "057",
+              "canonical_alias_is_not_printed_number": true,
+              "printed_collector_number": null,
+              "printed_national_dex": null,
+              "card_category": "Trainer",
+              "verified_printed_native_name": "ロケット団のアジト",
+              "current_native_label": "ロケットの隠れ家",
+              "current_native_label_not_used_as_sole_match": true,
+              "pokemon_identity_asserted": false,
+              "trainer_full_body_art_reference_bridge_verified": true
+            },
+            "source_qa": {
+              "actual_japanese_unnumbered_trainer_front_verified": true,
+              "complete_native_trainer_body_verified": true,
+              "independent_named_reference_and_source_front_match": true,
+              "reference_image_comparison_only": true,
+              "printed_number_and_national_dex_absent_verified": true,
+              "original_sha256": "bcabdcf132f2d8fd1f855b4f4bb1c2e52be53f28225ae0e19f0f9310757143be",
+              "source_metadata_sha256": "5382f243a43ef7619860e76a6f2eb4f94a98006997b256d0f819687306d06d5a",
+              "actual_pixel_signature_sha256": "bad7816a659c707034e8104f37a42ca62373924d0971c5b45a89fd2a72c34fef",
+              "independent_reference_sha256": "f9e142056d04489c4566ce10f555ed12c216dbddd6cfc4ee601f59e112558680",
+              "physical_finish_verified": false
+            }
+          }
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    }
+  ],
+  "source_counts": {
+    "scrydex": 5
+  },
+  "delivery_scope": {
+    "fixed_batch_ids": [
+      "JP-CARDS-012"
+    ],
+    "saved_batch_tasks": 5,
+    "eligible_fronts": 5,
+    "by_batch": {
+      "JP-CARDS-012": {
+        "verified": 5,
+        "held": 0
+      }
+    },
+    "excluded_aliases": [],
+    "excluded": [],
+    "outside_fixed_cohort": [
+      {
+        "aliases": [
+          "051",
+          "052"
+        ],
+        "reason": "Previously published Pokemon pair; already complete outside this finite Trainer5 scope."
+      },
+      {
+        "aliases": [
+          "022",
+          "023"
+        ],
+        "reason": "Separate unresolved source/current finish conflicts outside JP-CARDS-012 and this finite scope."
+      }
+    ],
+    "whole_batch_completion_asserted": false
+  },
+  "binding_expectations": {
+    "production": [
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+        "set_code": "neo3",
+        "printing_id": "ecd63564-d5d4-402d-b28d-95011e2a9107",
+        "collector_number": "053",
+        "card_native_name": "古い棒",
+        "variant_id": "40806ca5-1d4c-4bf6-b499-cee8ff167f94",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+        "set_code": "neo3",
+        "printing_id": "56fc9f48-441c-40da-b1a7-29fdbd5300c4",
+        "collector_number": "057",
+        "card_native_name": "ロケットの隠れ家",
+        "variant_id": "767914af-5fcc-4e7c-9304-de89589eb56f",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+        "set_code": "neo3",
+        "printing_id": "6196aadb-f7bc-4449-8fd3-254987e292f8",
+        "collector_number": "056",
+        "card_native_name": "ポケモンブリーダーフィールド",
+        "variant_id": "7d0611e3-9b65-4539-8803-c7a9876f6e68",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+        "set_code": "neo3",
+        "printing_id": "f03f92e7-086a-4ec9-8281-e3c88906d13d",
+        "collector_number": "054",
+        "card_native_name": "ヒーリングフィールド",
+        "variant_id": "eaa7573e-3860-440e-be69-cb414e6bbda5",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+        "set_code": "neo3",
+        "printing_id": "05ec5ae6-bfb8-41b1-a65b-acb7ce4c3585",
+        "collector_number": "055",
+        "card_native_name": "バルーンベリー",
+        "variant_id": "fc02d833-0de4-4a4d-be84-fe71a9bd0582",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      }
+    ],
+    "staging": [
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+        "set_code": "neo3",
+        "printing_id": "ecd63564-d5d4-402d-b28d-95011e2a9107",
+        "collector_number": "053",
+        "card_native_name": "古い棒",
+        "variant_id": "40806ca5-1d4c-4bf6-b499-cee8ff167f94",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+        "set_code": "neo3",
+        "printing_id": "56fc9f48-441c-40da-b1a7-29fdbd5300c4",
+        "collector_number": "057",
+        "card_native_name": "ロケットの隠れ家",
+        "variant_id": "767914af-5fcc-4e7c-9304-de89589eb56f",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+        "set_code": "neo3",
+        "printing_id": "6196aadb-f7bc-4449-8fd3-254987e292f8",
+        "collector_number": "056",
+        "card_native_name": "ポケモンブリーダーフィールド",
+        "variant_id": "7d0611e3-9b65-4539-8803-c7a9876f6e68",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+        "set_code": "neo3",
+        "printing_id": "f03f92e7-086a-4ec9-8281-e3c88906d13d",
+        "collector_number": "054",
+        "card_native_name": "ヒーリングフィールド",
+        "variant_id": "eaa7573e-3860-440e-be69-cb414e6bbda5",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "a15481a7-410b-4a98-8695-3bba0db9d226",
+        "set_code": "neo3",
+        "printing_id": "05ec5ae6-bfb8-41b1-a65b-acb7ce4c3585",
+        "collector_number": "055",
+        "card_native_name": "バルーンベリー",
+        "variant_id": "fc02d833-0de4-4a4d-be84-fe71a9bd0582",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      }
+    ]
+  },
+  "scope_counts": {
+    "production": {
+      "printings": 5,
+      "variants": 5,
+      "names": 10,
+      "sets": 1
+    },
+    "staging": {
+      "printings": 5,
+      "variants": 5,
+      "names": 10,
+      "sets": 1
+    }
+  },
+  "source_policies": {
+    "production": [
+      {
+        "code": "scrydex",
+        "display_name": "Scrydex",
+        "source_type": "image",
+        "base_url": "https://scrydex.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Exactly 89 English MEP fronts approved by owner; catalogue/rights-evidence/mep89-scrydex-owner-confirmation.2026-09-27.json; 8c68bf3499de1e1e340b00fc03e5f1b469de7b65d259b5fba5a8b4cd31119ca9. No source-wide approval.",
+        "deprecated_at": null
+      }
+    ],
+    "staging": []
+  },
+  "new_sources": {
+    "production": [],
+    "staging": [
+      {
+        "code": "scrydex",
+        "display_name": "Scrydex",
+        "source_type": "image",
+        "base_url": "https://scrydex.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Exactly 89 English MEP fronts approved by owner; catalogue/rights-evidence/mep89-scrydex-owner-confirmation.2026-09-27.json; 8c68bf3499de1e1e340b00fc03e5f1b469de7b65d259b5fba5a8b4cd31119ca9. No source-wide approval.",
+        "deprecated_at": null
+      }
+    ]
+  }
+}

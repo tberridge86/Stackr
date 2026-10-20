@@ -32,6 +32,13 @@ const feed = { products: [enProduct], prices: [{ productId: 30, subTypeName: 'No
 const plan = planCatalogueBulkPrices({ candidates: [base, { ...base, variant_id: 'holo', variant_code: 'holo', finish_code: 'holo' }, { ...base, variant_id: 'reverse', variant_code: 'reverse_holo', finish_code: 'reverse_holo' }, { ...base, variant_id: 'bad', language_code: 'zh-cn' }], group: enGroup, ...feed, datasetAt: '2026-10-03T00:00:00Z', fx, now });
 assert.equal(plan.priced, 3); assert.equal(plan.results[2].quote.subtype, 'Reverse Holofoil'); assert.equal(plan.results[3].reason, 'unsupported_provider_language');
 assert.ok(plan.results.every((row) => !('condition' in (row.quote ?? {})) && !('soldAt' in (row.quote ?? {}))), 'general feed never becomes condition or sales evidence');
+for (const marketPrice of [0, -1, 0.001, null, NaN]) {
+  const invalid = planCatalogueBulkPrices({ candidates: [base], group: enGroup, products: [enProduct],
+    prices: [{ productId: 30, subTypeName: 'Normal', marketPrice }], datasetAt: '2026-10-03T00:00:00Z', fx, now });
+  assert.equal(invalid.priced, 0, 'an unavailable or rounded-to-zero quote must not count as priced');
+  assert.equal(invalid.results[0].quote, null);
+}
+assert.throws(() => planCatalogueBulkPrices({ candidates: [base], group: enGroup, ...feed, datasetAt: '2026-09-30T00:00:00Z', fx, now }), /Daily price guide is stale/);
 const jaPlan = planCatalogueBulkPrices({ candidates: [jaNumberRow], group: jaGroup, products: [jaNumberProduct], prices: [{ productId: 201, subTypeName: 'Normal', marketPrice: 6 }], datasetAt: '2026-10-03T00:00:00Z', fx, now });
 assert.equal(jaPlan.results[0].mapping?.method, 'exact_set_code_number');
 assert.equal(jaPlan.results[0].quote?.subtype, 'Normal', 'the Japanese number path still requires the exact canonical finish');
@@ -94,14 +101,21 @@ assert.equal(boundaryBlocked.length, 2); assert.ok(boundaryBlocked.every((row) =
 // Metadata is hour-cached; immutable set files stay cached for the current
 // build even when older than a day, then acquire a fresh revision on advance.
 const dataset = '2026-10-03T00:00:00Z'; const oldDataset = '2026-10-02T00:00:00Z'; const feedKey = 'tcgplayer/3/10/products';
-const cache = new Map([[feedKey, { payload: { success: true, results: [] }, dataset_at: dataset, fetched_at: '2026-10-01T00:00:00Z' }], ['last-updated', { payload: oldDataset, dataset_at: oldDataset, fetched_at: new Date(Date.now() - 7200000).toISOString() }]]); const revisions = []; let feedFetches = 0;
+const cache = new Map([[feedKey, { payload: { success: true, results: [] }, dataset_at: dataset, fetched_at: '2026-10-01T00:00:00Z' }], ['last-updated', { payload: oldDataset, dataset_at: oldDataset, fetched_at: new Date(now - 7200000).toISOString() }]]); const revisions = []; let feedFetches = 0;
 const fakeDb = { schema: (schema) => { assert.equal(schema, 'api', 'internal market schema must not be exposed'); return { rpc: async (name, args) => { revisions.push([name, args]); return { data: name === 'read_catalogue_bulk_feed' ? cache.get(args.p_key) ?? null : name === 'finish_catalogue_bulk_feed' ? true : '00000000-0000-4000-8000-000000000001', error: null }; } }; } };
 const fixtureFetch = async (url) => { feedFetches++; return url.endsWith('last-updated.txt') ? new Response(dataset) : new Response(JSON.stringify({ success: true, results: [] })); };
-const feedLoader = createBulkFeedLoader(fakeDb, fixtureFetch); feedLoader.setDataset(dataset); await feedLoader.load(feedKey);
+const feedLoader = createBulkFeedLoader(fakeDb, fixtureFetch, { now: () => now }); feedLoader.setDataset(dataset); await feedLoader.load(feedKey);
 assert.equal(feedFetches, 0, 'same-build set file remains cached after 24 hours');
 await feedLoader.load('last-updated'); assert.equal(feedFetches, 1, 'hour-expired metadata is refreshed');
 cache.set(feedKey, { payload: { success: true, results: [] }, dataset_at: oldDataset, fetched_at: '2026-10-03T11:00:00Z' }); feedLoader.setDataset(dataset); await feedLoader.load(feedKey);
 assert.equal(feedFetches, 2); assert.ok(revisions.some(([name, args]) => name === 'claim_catalogue_bulk_feed_revision' && args.p_key === feedKey && args.p_dataset === dataset));
+for (const timestamp of ['bad', '2026-10-04T12:00:00Z', '2026-09-30T12:00:00Z']) {
+  const before = revisions.length;
+  await assert.rejects(() => createBulkFeedLoader(fakeDb, async () => new Response(timestamp), { now: () => now }).load('last-updated'), /timestamp|Daily price guide/);
+  assert.ok(revisions.slice(before).every(([name, args]) => name !== 'finish_catalogue_bulk_feed' || args.p_payload === null), 'invalid source metadata is never accepted as a current revision');
+}
+cache.set('last-updated', { payload: dataset, dataset_at: dataset, fetched_at: new Date(now - 7200000).toISOString() });
+await assert.rejects(() => createBulkFeedLoader(fakeDb, async () => new Response(oldDataset), { now: () => now }).load('last-updated'), /timestamp regressed/);
 
 // An unmapped native set remains visible and terminal rather than being silently
 // skipped or incorrectly joined to an English set.

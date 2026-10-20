@@ -1,11 +1,11 @@
 import { StackrNavigationIcon } from '../../components/StackrNavigationIcon';
 import { useTheme } from '../../components/theme-context';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import {
   View,
   TextInput,
   TouchableOpacity,
-  ActivityIndicator,
   Alert,
   Image,
   ScrollView,

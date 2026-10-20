@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 22,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "approved_at": "2026-10-14",
+  "cohort_sha256": "2c61460916256e54919c34f4c36a97525a3664bf3b43bc7617609e22de7c402e",
+  "owner_instructions": [
+    "Gather batch JP-CARDS-005, Tif, then keep working through the remaining batches and put each verified batch live in production.",
+    "all the missing images i gave links to"
+  ],
+  "finite_decision_sha256": "f795788f88483f5be7cc8403b8a353f38e23a91416dd60d5c3f8da526f0f7e6d",
+  "root_request_scope_sha256": "6cc9a33c7b1fb871959ff97a6af1cd0a12bee7e65f93f249c7f2dfe4ba393441",
+  "reader_recovery_decision_sha256": "f4b732955ec07b9f0544cdf9cff255d1a2c01225efc72cdb50f2173a2b6d55b8",
+  "source_counts": {
+    "scrydex": 22
+  },
+  "scope": "Store, resize and display exactly 22 acquired and inspected Japanese Neo1 originals and 66 derivatives from JP-CARDS-005. The fixed batch has 25 tasks; three unbound Trainer aliases 073-075 remain excluded. Whole-batch completion is false. Preserve canonical aliases, current native labels, 18 normal and 4 holo metadata bindings and staging-only catalogue version difference. Printed National Dex numbers remain separate. No native-name corrections, inferred copyright year, physical edition/foil certification, independent vendor licence or source-wide activation. Existing immutable set logo/symbol assets, links and full source policies remain."
+}

@@ -1,0 +1,242 @@
+[
+  {
+    "printing_id": "44e54db1-ee82-40e2-9465-c5eb1cc18cdb",
+    "set_id": "421a8323-4094-4c7f-8622-fb6af390becc",
+    "set_code": "PCG7",
+    "language_code": "ja",
+    "collector_number": "022",
+    "card_native_name": "deoxys（デルタ種）",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-037",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "20f763a7-10b5-440b-aea6-88ea38d92e2d"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:5257f46b3e91d8a1bff71066df005bd3192defec97ab5b14c222055fcb412a4e",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/jig6bp6a5pgf5gae/1600.jpg",
+    "original_sha256": "84977709728507c6ec359c1f60bb91c367f06ae8b9b875c0d8a3f08462d03e17",
+    "body_sha256": "553f7e9856dd0fd0b526e63e723755d645ff35831f1d90bcbff49c6f6fe197d9",
+    "evidence_sha256": "158190551399a06711ab27bb147249a177c53eaab454cba190106f5b3ede0f40"
+  },
+  {
+    "printing_id": "48edaa8d-8750-4aeb-a246-73ce4ef1218f",
+    "set_id": "421a8323-4094-4c7f-8622-fb6af390becc",
+    "set_code": "PCG7",
+    "language_code": "ja",
+    "collector_number": "033",
+    "card_native_name": "アルマルド（デルタ種）",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-038",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "c33e36aa-e537-49b8-b508-63064b097899"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:f6b5659fee795eaa81b1a6e9e3ceda4c86a09db54c73d0c8a9249e1184725db3",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/013db1f56c66d78ca2e21d2e15c9629580b6c523ebba71b093395c7b61c7743b/1600.jpg",
+    "original_sha256": "8a56ec47105a19324ca523ceb1f513fbaf2d60636cb617254faad43a16167efd",
+    "body_sha256": "f84557ef5b38ef0df76e3e43de109428388ed67779eaefe2df76c5462d8b5e41",
+    "evidence_sha256": "f9135ca1f564e63c50ff675e61f37bbaf0a4f8d108ecec08baa35b9ec1e06f6b"
+  },
+  {
+    "printing_id": "d9d4cb1b-0b22-4753-98f2-181298f22a07",
+    "set_id": "421a8323-4094-4c7f-8622-fb6af390becc",
+    "set_code": "PCG7",
+    "language_code": "ja",
+    "collector_number": "040",
+    "card_native_name": "ゆっくり（デルタ種）",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-038",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "0bc646ec-08da-4061-b201-ccfdf7e4014b"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:e2e3ef3ac2ca2aef50c209895a2b80ceaf4a400d3bf39831981c7b5687263a9b",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/4h77fixnqi6sjgzl/1600.jpg",
+    "original_sha256": "059c3984b262f75eb86bb206bcee0d0290150c32bfd20c985f3b783bbe48c74f",
+    "body_sha256": "c4c87c4b343055c842b8a24036c0d242a1895bcd2759a1e4e51a552b2862ffe9",
+    "evidence_sha256": "efce30550a0086a8487309f7a6488a98b0b6db2057a987f2d60b60752d889449"
+  },
+  {
+    "printing_id": "38e67ba5-019b-405a-9800-6995a3d62393",
+    "set_id": "421a8323-4094-4c7f-8622-fb6af390becc",
+    "set_code": "PCG7",
+    "language_code": "ja",
+    "collector_number": "048",
+    "card_native_name": "珍しいキャンディー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-038",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "1b73d0d4-dba6-4acf-a068-f1334471af86"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:a0135570ba574a73d1176a5599b98df66d787dbf91bd22f4051fd2532bc46a9c",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/3dxsoiqijpj5xmcb/1600.jpg",
+    "original_sha256": "8b76f7406270e84df93ee27dc2ed0cda7e413f3409db33633d301a1c116e5f5c",
+    "body_sha256": "6ee2657fee12c904526bab7e52c38f3297227b79b96d2058c2d0a430eb61a006",
+    "evidence_sha256": "62488b376bd1851faa221ec0784fa3aee8e2f6bf0ab90e4752882722bc3e2733"
+  },
+  {
+    "printing_id": "826abe37-5568-4559-b3e2-da9cc4e29658",
+    "set_id": "421a8323-4094-4c7f-8622-fb6af390becc",
+    "set_code": "PCG7",
+    "language_code": "ja",
+    "collector_number": "050",
+    "card_native_name": "ホロンアドベンチャー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-038",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "a18ce7b9-4b4b-4e25-8d12-800d49b19c0e"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:5b35193af80819e03ec17e690f20484b6914b6b264779beed53766ed199a7f1a",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/qyth7vwanaf5v7eu/1600.jpg",
+    "original_sha256": "2c4fa56b5fb9559e380421b37fafe3ed9a176ae6f34dfc4c01b378e04f43de18",
+    "body_sha256": "055d88e0187e4826eecdd21c110ecd560fb7f047efb0eed60da8565a73505a3f",
+    "evidence_sha256": "6991754bd2f01b7902a668abe0dce6e567adfb64d2b27215fa9e6c821ded304c"
+  },
+  {
+    "printing_id": "40c40f95-7df1-4153-9030-1871ccaf77cf",
+    "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+    "set_code": "PCG8",
+    "language_code": "ja",
+    "collector_number": "047",
+    "card_native_name": "メディチャム",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-041",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "eb6c6e73-dc4c-4a20-a83a-57071ad93969"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:606d667cd88c734886daaea0b25fe02f88abdb6a267058918f4dee0e90bee833",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/ikrh2cvxajwxganu/1600.jpg",
+    "original_sha256": "887470b1479016f08c4bc4e9d817f1f9aba9b8c7849c6ffd6715b0b7683fbeb5",
+    "body_sha256": "fffe48e12efe797bc980e091370eff0fc2f9da4e0522924fbc14788ee747ebc0",
+    "evidence_sha256": "9f6e7f56bde72161a6af222784c4da42dfd63043676cfe3fd6cad328e88a1ff9"
+  },
+  {
+    "printing_id": "16b33fb8-f25f-46d0-9cdc-3d58c9973093",
+    "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+    "set_code": "PCG8",
+    "language_code": "ja",
+    "collector_number": "048",
+    "card_native_name": "サボテン（デルタ種）",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-041",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "71c383ba-8c07-4106-8286-b8789db9414e"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:0bba36bb98f3150a4e45f05877738e9820f354fd5eac14669e37f459a6e54be9",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/pe7abj52kraritlh/1600.jpg",
+    "original_sha256": "e10b678bf15ad4adb7b50fd027b0b3d91dcb43935c0ff09789937feab7951364",
+    "body_sha256": "266b9a996b02e6c7a89b63e7107b262a47052e4f2a4e0b0a0144c073618255e1",
+    "evidence_sha256": "532bae0dfd58cda98e1051c91c5477170f3eb23ce5a60cfa0a07c5a6d6869365"
+  },
+  {
+    "printing_id": "4f98bea0-d418-4443-84bf-07a30281a5d3",
+    "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+    "set_code": "PCG8",
+    "language_code": "ja",
+    "collector_number": "050",
+    "card_native_name": "槍",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-041",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "4a2f5781-18e8-47f3-8306-2bc8e0112d48"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:296ec82e383b529dec32fe5d99fd309f1b398f343f5c0d67d061a94ef670522d",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/refb869a7c34d566afc4dde2bcdcbd349f5bcf485123e6d740b6f016925cb5e319a/1600.jpg",
+    "original_sha256": "c0e2953b4b20ad72219532598496be9d715fb1ed8b1444d498b8ea79e8b070af",
+    "body_sha256": "496674d0dac302bbf7576da6311a1c8aa0f1c089f80afd8c8cf0f51da48ec248",
+    "evidence_sha256": "4ee215fa87efeaab9cb33354ffcc1e6423bfbc63e6f1cb2ff8bed7dfcaa06cbc"
+  },
+  {
+    "printing_id": "65ce4679-d7b1-48b4-a747-2e18cf57847f",
+    "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+    "set_code": "PCG8",
+    "language_code": "ja",
+    "collector_number": "051",
+    "card_native_name": "jigglypuff",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-042",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "c73b2587-431d-47e1-ac6f-654d5559532f"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:3aea527201802a9ed495dae24db19b30c7c6817d0ccda795a3ead36dfbeb0143",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/ac182bede13131900b97aaee338c1db77f8dc0fb7193005ff65142bd7dbc367b/1600.jpg",
+    "original_sha256": "70837a665bfc760d181de1f5ab82cdb74ee601934928f3b85179a7b01f551520",
+    "body_sha256": "5c73f477077935237b2afa9dccdbfb3a20757f2f2161ac80a4f6e3ca6b09b92d",
+    "evidence_sha256": "3ec16e7be881c1d54aa1b61a1a33c0746115cd0ac2f7eaa12fc3b8f61f74eb97"
+  },
+  {
+    "printing_id": "e878f64d-e38a-4d38-854b-d0dedb8ecafe",
+    "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+    "set_code": "PCG8",
+    "language_code": "ja",
+    "collector_number": "068",
+    "card_native_name": "キャスト・アウェイ",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-042",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "3ec629ff-2cdc-4ee9-af18-84416f3a5bda"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:b85a933355639621afe1efdbd56a7793f3e34c73357de8318495bb8838044784",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/corri4wf7kojvtosxgev/1600.jpg",
+    "original_sha256": "de83821bd05fb63841846b55857f651530de4b86bd19971074ab2158ec65f25c",
+    "body_sha256": "e235a1aa1b0d81652f24af77c7fb32fd95def69b46656e92cfb151d7a039ad75",
+    "evidence_sha256": "0435beac586b1c7ce689b5e3d7cec0dde62e5783710bb3dcc8897a329eb39a21"
+  },
+  {
+    "printing_id": "c2e0e90e-3a4c-4020-89e4-91bcbbdafbe5",
+    "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+    "set_code": "PCG8",
+    "language_code": "ja",
+    "collector_number": "075",
+    "card_native_name": "二重虹のエネルギー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-042",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "f0ddf359-2d96-4bef-b096-1ab9df898aff"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:fe19b87457cd2f790909ea769cb9dc53a6097bf9bde9c7e7310c73bc0a03e6a4",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/corr562cdyytolajlzrp/1600.jpg",
+    "original_sha256": "0b40f6a1d3e3311b06b1557923e82fc42ded5af0c90b4847b10ad6650a44fd8a",
+    "body_sha256": "059b1df7267e0d00b8190f3835cb5fdf216993458d60a0d87201d861c23c872d",
+    "evidence_sha256": "9d654ee9b0feec880fd8b272b99c913a4a055ee8621af1ca075dbe62960a88c2"
+  },
+  {
+    "printing_id": "73c8c54f-ca86-411d-bc34-437d6bbae88a",
+    "set_id": "b5ef438a-ddcb-4093-8c9b-572639565af5",
+    "set_code": "PCG9",
+    "language_code": "ja",
+    "collector_number": "048",
+    "card_native_name": "デューゴン（デルタ種）",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-044",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "052ae4a3-808a-4626-90b1-a8947c6eee70"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:6a684dfea92230be95ca6e404c3b8c77b89357808033a47b6f1c8e3e1c87174b",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/5fe60e22067800c719421ab40ec9e7525edbd5e3857f48426ebdee938de59e1b/1600.jpg",
+    "original_sha256": "3739486c16f42b32410a07330d75121e775fd387e9871e2dab8689c3c873f041",
+    "body_sha256": "b371726570409edc680c5e5c57f226a5fe792cbc23d079b3c87598fdc939162b",
+    "evidence_sha256": "c3f340eb2d4a2496cadb0c9087dd8dec2253977f5e0c5589efe756f4dd6f639b"
+  }
+]

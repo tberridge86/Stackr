@@ -1,0 +1,281 @@
+{
+  "schemaVersion": 2,
+  "private_inputs": [
+    {
+      "file": "pcg6-wave008009010-root-publisher-context-20261016.json",
+      "bytes": 150518,
+      "sha256": "43aaa7135dc8e626ce262bdd8349cd7ea2ab564242ae3ea557c8927f2193c687"
+    },
+    {
+      "file": "after-owner-bulbasaur-reviewed-repair-current440-byte-baseline-20261016.json",
+      "bytes": 83959,
+      "sha256": "797c101827f088c36f14b88a39c15836483483eaa29190bfbc99b5e1db81dd71"
+    },
+    {
+      "file": "pcg6-wave008009010-formal-queue-before-publisher-20261016.json",
+      "bytes": 8604559,
+      "sha256": "74f7cd71ad2e053711cccc4d2d2f1697185ec109d4861f8ac7aef3d7a6d33fe1"
+    },
+    {
+      "file": "pcg6-wave008009010-ten-private-preparation-v2-20261016/private-package-handoff.json",
+      "bytes": 9133,
+      "sha256": "0a8d5f748d441041b6c496e8ada48e9aec41461ae5e28241b159e612cd07e298"
+    },
+    {
+      "file": "pcg6-wave008009010-ten-private-preparation-v2-20261016/source-contract.json",
+      "bytes": 50973,
+      "sha256": "a5408cf93e3806de7b76d19b2014c91fe2e2f2527cb76c5e6778b25f36506425"
+    },
+    {
+      "file": "pcg6-wave008009010-ten-private-preparation-v2-20261016/pcg6-source-contract.mjs",
+      "bytes": 16216,
+      "sha256": "8d234aae1a181aa47da915f71d3091ffed8237f56295b5cf298daa341157c479"
+    },
+    {
+      "file": "pcg6-wave008009010-ten-private-preparation-v2-20261016/v2-validator-contract-binding.json",
+      "bytes": 12651,
+      "sha256": "e5ea926d9fc6ef91bfcf94b998800ce2a6d1f659c2a373982344f9b4722c9a35"
+    },
+    {
+      "file": "publish-review/pcg6-wave008009010-independent-private-package-v2-review-20261016.json",
+      "bytes": 52608,
+      "sha256": "af6f2ab63737fa1206f9c7337cc5add4e285bdd551bc46a4c6599c082e5323c9"
+    },
+    {
+      "file": "publish-review/pcg6-wave008009010-root-private-v2-final-integrity-20261016.json",
+      "bytes": 474796,
+      "sha256": "354bf9f5ea98db4979d5325e71a27852f449b36260b2ee4b94a487cffeb427fb"
+    },
+    {
+      "file": "publish-review/pcg6-wave008009010-root-release-upload-binding-20261016.json",
+      "bytes": 2574,
+      "sha256": "287eeec5e4b5f12653f8cd0f6eb4aefc0365d140bccc733ac775471d292f825b"
+    },
+    {
+      "file": "pcg6-wave008009010-ten-private-preparation-v2-20261016/derived-approved-ten-projection.json",
+      "bytes": 169572,
+      "sha256": "61484eb4abfe5ce7787ad5fa6752efb034c8e1b95ae90b007aa5a8c299d32a87"
+    },
+    {
+      "file": "source-batches/pcg6-wave008009010-root-approved-ten-20261016/root-finite-ten-combined-source-selection-preparation-decision.json",
+      "bytes": 151254,
+      "sha256": "42474a9c27107d72404a5a1c40a840ddc5b03a5faee2947b3ea001ac49d8497b"
+    },
+    {
+      "file": "pcg6-wave008009010-ten-private-preparation-v2-20261016/derived-private-preparation-context.json",
+      "bytes": 7500,
+      "sha256": "50d3da85513eadb2550dad1055238018b0acc59bf83950922710cd13415d57c2"
+    },
+    {
+      "file": "pcg6-wave008009010-ten-private-preparation-v2-20261016/frozen-own-pins.json",
+      "bytes": 30858,
+      "sha256": "a96ca1387bd9809fcf9ef4da02f09a0eaadadd2856600cf90ebac536aafb3139"
+    },
+    {
+      "file": "pcg6-wave008009010-ten-private-preparation-v2-20261016/frozen-input-pins.json",
+      "bytes": 246291,
+      "sha256": "32fe6fbafd3b44ccd391bd95c1930c48c53b80a408f1ce20bb41856393a34714"
+    },
+    {
+      "file": "pcg6-wave008009010-ten-private-preparation-v2-20261016/private-projection-inputs.json",
+      "bytes": 624586,
+      "sha256": "33908f5719f956a1188b26725b3c36b5f5145c895f9f19de7e80801b7ac356bf"
+    },
+    {
+      "file": "pcg6-wave008009010-ten-private-preparation-v2-20261016/source-manifest.json",
+      "bytes": 322342,
+      "sha256": "61d8530f497e9dc2b2095f95e63a0a2bb332027f1877da811ca8dc1f6f0472db"
+    },
+    {
+      "file": "pcg6-wave008009010-ten-private-preparation-v2-20261016/package-receipt.json",
+      "bytes": 10248,
+      "sha256": "c6700e5e165a1b98a66d75f8c325be0789b8f8b42360df5f36d24aead55c96c6"
+    },
+    {
+      "file": "pcg6-wave008009010-ten-private-preparation-v2-20261016/planned-actual-app-helper-acceptance.json",
+      "bytes": 12593,
+      "sha256": "02dcaa088cca0d9764b24c92170be095ac5a6b45b93ab4150047944298260962"
+    },
+    {
+      "file": "pcg6-wave008009010-ten-private-preparation-v2-20261016/preservation-scope-proof.json",
+      "bytes": 8790,
+      "sha256": "787a9fc63a8658e32d25362bf123ef3428ac35e8a80a9609901950dd001e248b"
+    },
+    {
+      "file": "pcg6-wave008009010-ten-private-preparation-v2-20261016/source-input-pins.json",
+      "bytes": 212471,
+      "sha256": "842a49b366c8e5f3397f0da2a2f5cbf3f23998d3a83f2b25b153d0a066a73fe5"
+    },
+    {
+      "file": "source-batches/pcg6-wave008009010-ten-root-fresh-facts-20261016/pcg6-ten-wave008009010-sources-20261016-production-before.json",
+      "bytes": 44095,
+      "sha256": "1294b6968dbf4995b38812f90b1a989c999c9b04928bb15a452141af4151235a"
+    },
+    {
+      "file": "source-batches/pcg6-wave008009010-ten-root-fresh-facts-20261016/pcg6-ten-wave008009010-sources-20261016-production-bindings.json",
+      "bytes": 17724,
+      "sha256": "1bf1083d67e3291157285d53840602ff2c37a8f84dac14aa378b857367fcadfc"
+    },
+    {
+      "file": "source-batches/pcg6-wave008009010-ten-root-fresh-facts-20261016/pcg6-ten-wave008009010-sources-20261016-staging-before.json",
+      "bytes": 35781,
+      "sha256": "22568dfe67d1f825e184abe74260b4149e277fb59926fde5d0e5fa00eb03a407"
+    },
+    {
+      "file": "source-batches/pcg6-wave008009010-ten-root-fresh-facts-20261016/pcg6-ten-wave008009010-sources-20261016-staging-bindings.json",
+      "bytes": 17441,
+      "sha256": "975bfcf9f14129ccc84ef7c0b17c8d1b78b7e6b5da07de3f990bfc36b3296d7b"
+    },
+    {
+      "file": "source-batches/pcg6-wave008009010-ten-root-fresh-facts-20261016/root-ten-current-check.json",
+      "bytes": 6517,
+      "sha256": "f1946a2cac1907ddb7f95cfdaf1416b65505901bbe706debcc22970febdeaaba"
+    }
+  ],
+  "source_manifest_file": "pcg6-wave008009010-ten-private-preparation-v2-20261016/source-manifest.json",
+  "source_manifest_sha256": "61d8530f497e9dc2b2095f95e63a0a2bb332027f1877da811ca8dc1f6f0472db",
+  "package_receipt_file": "pcg6-wave008009010-ten-private-preparation-v2-20261016/package-receipt.json",
+  "package_receipt_sha256": "c6700e5e165a1b98a66d75f8c325be0789b8f8b42360df5f36d24aead55c96c6",
+  "archive": {
+    "id": 648265809,
+    "sha256": "c53e01a36b0e37aef0ca5da29a506bcd314c46684a9c612473af82dcd41a4d3b",
+    "byte_size": 4056759,
+    "file_count": 44,
+    "name": "pcg6-wave008009010-fronts-20261016.zip"
+  },
+  "unchanged_dependencies": [
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 9031,
+      "sha256": "5524305ba4bd6a0f3867ea2c097c57fb0d610e27ef1d9d64529b64e9c67249de"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/metadata-guard.mjs",
+      "bytes": 4018,
+      "sha256": "cca5354822fe11c007308f7d22ebf84649d2374619e0dd049c7347a9db9e116f"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/publish.mjs",
+      "bytes": 5885,
+      "sha256": "8451746bb6e188f56c5be31064742eaeecdc2f2c6d6e27cb31ab5c7227af6d1f"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "tools/artwork-next-push-20261013/frozen.mjs",
+      "bytes": 7732,
+      "sha256": "3e14eb76a012116492075328c50e6c5907f712004da02d4d3dae541d2617a95b"
+    },
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 30117,
+      "sha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24425,
+      "sha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 15024,
+      "sha256": "1d168e5407a5bdc6e027f58991de58a0664576d7c917d5b219fa13f9af4a1d0a"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/download-package.py",
+      "bytes": 5489,
+      "sha256": "53f1114f25bd995b4f05d9b2d3adad7ae2dadc85b4b13f038a84bcc5e7d6b09f"
+    }
+  ],
+  "staging_fixture_policy": {
+    "code": "pricecharting",
+    "display_name": "PriceCharting (owner supplied card fronts)",
+    "source_type": "image",
+    "base_url": "https://www.pricecharting.com",
+    "licence_status": "under_review",
+    "attribution_required": true,
+    "active": false,
+    "internal_notes": "Owner-attested source use for exactly Aquapolis Mr. Mime95b and Porygon103b shared printing-front artwork in finite cohort AQUAPOLIS-SHARED-002-20261015. Independent vendor and underlying card licences are unverified. No source-wide approval; each later acquisition requires separate finite approval. Existing provenance rows and source policies must remain unchanged.",
+    "deprecated_at": null
+  },
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "61484eb4abfe5ce7787ad5fa6752efb034c8e1b95ae90b007aa5a8c299d32a87",
+    "finiteDecisionFileByteSha256": "42474a9c27107d72404a5a1c40a840ddc5b03a5faee2947b3ea001ac49d8497b",
+    "rootPrivateContextFileByteSha256": "50d3da85513eadb2550dad1055238018b0acc59bf83950922710cd13415d57c2",
+    "sourceLineages": {
+      "sourceLineages": [
+        {
+          "wave": "008",
+          "handoffSHA": "4f600dd25d3ffdb2744a140921a2bc71cc0e922a3c7fec12ea67dde4086e5762",
+          "independentSourcePeerSHA": "59955361dc218092e491465947bd5bdf02e25eaf880b37c81e634e96f3addcfe",
+          "priorRootDecisionSHA": "ae9fa3fa807f3d59f66742d77af7c3980bf362dfbc823957e239663599eade54"
+        },
+        {
+          "wave": "009",
+          "handoffSHA": "d3254352263f9938509cc7b899c4947c617bb92d6f37c35c6dc46da300e7bfd5",
+          "independentSourcePeerSHA": "2b28acbbd0298df871300839787ae064069cbb843f3f3fb8e19d16d504bc1ea1",
+          "priorRootDecisionSHA": "98b69c75b155971a789fef0a2967f9abc2c60a193d3210a0e098eb5e27486dab"
+        },
+        {
+          "wave": "010",
+          "handoffSHA": "16c4ad34320966b94ea449e9fbe9dba6c59d8d23475db0f746a2d64b3f73ca5f",
+          "independentSourcePeerSHA": "87cf8a63286e0c1bd367ed5454968042022ba179b5511976a4a7384f2b8f84d5",
+          "priorRootDecisionSHA": "1e222e22085524a99019dfb859b7ac7105fbab65ef50704fe39992bbcd03a06b"
+        }
+      ],
+      "finiteEnergyQualification": {
+        "aliases": [
+          "PCG6-085",
+          "PCG6-086"
+        ],
+        "handoffSHA": "ce221f8c00579866edd4c715ae22cf4d25abe679708972ea4a183bff0bcb6a7c",
+        "moduleSHA": "07ad55e7c9ff251c0a0aa46bc06f0718d8eaa88c4fac790e56e7f3bea051b1da",
+        "peerSHA": "884d6d5875e04125bc8fea1bd715379c683e0f7259d1b8c89c66b6be420dd8df",
+        "currentNativeProviderCategory": "Trainer",
+        "currentCanonicalCategory": null,
+        "printedClass": "Energy",
+        "completePrintedRulesIncludingPokemonExRestrictionPreserved": true,
+        "source010RawHistoricalPartition": {
+          "accepted": 4,
+          "held": 16
+        },
+        "source010OperationalPartition": {
+          "accepted": 6,
+          "held": 14
+        },
+        "sourceAuthorFlagsRemainFalse": true,
+        "globalTrainerOrEnergyWaiver": false,
+        "notIncluded": "PCG6-084"
+      },
+      "otherOperationalHolds": 50,
+      "rawHistoricalHolds": 52,
+      "allFalseSourceAuthorFlagsPreserved": true,
+      "allNineInsertionWitnessChecksAndStoredSHARecomputesRequired": true,
+      "newSourceRequestsAllowed": 0
+    },
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "a5408cf93e3806de7b76d19b2014c91fe2e2f2527cb76c5e6778b25f36506425",
+    "privateSourceContractModuleFileByteSha256": "8d234aae1a181aa47da915f71d3091ffed8237f56295b5cf298daa341157c479",
+    "v2ExternalValidatorBindingFileByteSha256": "e5ea926d9fc6ef91bfcf94b998800ce2a6d1f659c2a373982344f9b4722c9a35",
+    "privateV2HandoffFileByteSha256": "0a8d5f748d441041b6c496e8ada48e9aec41461ae5e28241b159e612cd07e298",
+    "unchangedArchiveDoesNotAloneProveCorrectedValidator": true,
+    "independentPrivatePackageReviewSha256": "af6f2ab63737fa1206f9c7337cc5add4e285bdd551bc46a4c6599c082e5323c9",
+    "rootPrivatePackageValidationSha256": "354bf9f5ea98db4979d5325e71a27852f449b36260b2ee4b94a487cffeb427fb",
+    "rootUploadReceiptSha256": "287eeec5e4b5f12653f8cd0f6eb4aefc0365d140bccc733ac775471d292f825b",
+    "actualMeasuredAppReportSha256": "02dcaa088cca0d9764b24c92170be095ac5a6b45b93ab4150047944298260962",
+    "rootPublisherContextSha256": "43aaa7135dc8e626ce262bdd8349cd7ea2ab564242ae3ea557c8927f2193c687"
+  }
+}

@@ -1,5 +1,13 @@
 # Stackr specialist ownership
 
+The owner's 18 October 2026 repair and consolidation instruction now uses
+`D:/Stackr` on `codex/stackr-repair-consolidation-20261018` as the single active
+integration branch. Preserve older checkouts and private evidence under
+`D:/Stackr-organization`; do not merge every old branch blindly. Use the video
+issue register in `docs/releases/video-repair-register-20261018.json` alongside
+the existing repair queue. Older branch names and revisions below are historical
+evidence, not instructions to return to an obsolete checkout.
+
 Established 10 September 2026 at the owner's request. The initial review used
 GitHub main `6f439fd9bcf31dc69adbf55e4ebe6c4785e77b1e` and identified candidate PR
 [#168](https://github.com/tberridge86/Stackr/pull/168), head
@@ -23,11 +31,18 @@ and its linked evidence before acting on the initial audits below. Build 34's
 signed source and TestFlight availability are now evidenced; installed-device
 acceptance remains pending. PR #168 is a separate, unshipped candidate.
 
-The release task responds to Stackr pull-request lifecycle events. Pricing,
-performance, backend and catalogue tasks run daily in staggered London-time
-windows. These are scheduled or event-triggered task runs, not continuously
-running processes. They supervise the existing application workers; they do not
-replace the six-hour price schedule or five-minute manual queue consumer.
+The initial setup recorded a release task for pull-request lifecycle events and
+staggered daily pricing, performance, backend and catalogue task windows. This
+is historical configuration, not a current inventory or a continuously running
+process. The application workers have their own separately verified cadence.
+
+For Tif, the owner rejected scheduled work on 11 October 2026; the old repair
+heartbeat was deleted. The subsequent explicit production-readiness request
+authorizes investigation, isolated repairs and review in the current chat.
+The native saved goal runner still reports paused until the supported
+user-controlled resume mechanism is used. Do not recreate a Tif schedule,
+promise automatic continuation or treat earlier task schedules as authority
+to change running application workers.
 
 Each run must read the current source and the latest matching work before
 choosing an action. A specialist should fix the highest-impact verified issue in

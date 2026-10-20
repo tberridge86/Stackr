@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 51,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "approved_at": "2026-10-14",
+  "cohort_sha256": "5da9df04d1266be2a6b333a4e5d0b1e3192765f442f5a684bdfc295976e5850b",
+  "source_counts": {
+    "scrydex": 51
+  },
+  "source_evidence": {
+    "handoff": "f7610d61a4c2ccdeab8cba87cacd2eaca7edbe350e94c2e576228cc5a0a45ada",
+    "subset": "05c0f6681346d6b316958f30772b53c63f7fb7f167556b808a068e01854aeb22",
+    "validation": "2801854f21f2df027be70137f4e2bab4f631bcaa4c8b9d4ebc000558826d8ffc",
+    "decision": "9bff75f8339e88b45eb9b590484b4f8d876f72e355dd4293660f57684ddc47c0",
+    "unownApproval": "d1bcbe07659f0e0b71ac79d91a84cdf547dece34b4f558b7bf99c33455fd7a99",
+    "unownReceipt": "0820a366b34ae46c9667e98230651f29a7be10740f44a7e2b4299b7a15cf7153",
+    "sourceChecksums": "bab53e7c0e4dda55762b9fc60f57b146e411591d097c513f0fc8cd1f63e78ba8"
+  },
+  "scope": "Store, resize and display exactly 51 accepted Japanese Crossing the Ruins Pokemon fronts and 153 derivatives. Preserve six excluded fixed tasks, current names, 31 normal/20 holo metadata variants, actual observed body/source discrepancies, exact root-approved D/F associations and historical initial captures. No source policy activation, metadata, physical edition/finish or independent vendor licence certification."
+}

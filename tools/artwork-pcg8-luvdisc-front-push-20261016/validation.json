@@ -1,0 +1,194 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_FROZEN_PUBLICATION_HANDOFF_READY",
+  "confirmation": "PUBLISH ARTWORK PCG8 LUVDISC FRONT",
+  "fronts": 1,
+  "fixedVariantTuplesPerEnvironment": 1,
+  "workType": "CARDS",
+  "batchId": "JP-CARDS-041",
+  "category": "Pokemon",
+  "identity": {
+    "printingId": "1ec3e5ff-f0c2-4ff2-8423-9021a810f5b7",
+    "setId": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+    "setCode": "PCG8",
+    "languageCode": "ja",
+    "canonicalAlias": "027",
+    "currentNativeLabel": "luvdisc",
+    "actualPrintedName": "ラブカス",
+    "actualPrintedForm": null,
+    "printedHP": 60,
+    "printedType": "Water",
+    "printedStage": "たね",
+    "printedCollectorNumber": "027/075",
+    "printedArtist": "Kyoko Umemoto",
+    "printedNationalDex": null,
+    "printedSetCodeLiteral": null,
+    "currentVariantId": "c1697767-547d-4c48-a774-ccb5357f07b4",
+    "currentVariantCode": "holo",
+    "currentFinishCode": "holo",
+    "currentIsDefaultFlag": false,
+    "actualApiFallbackDefaultVariantId": "c1697767-547d-4c48-a774-ccb5357f07b4",
+    "assetVariantId": null,
+    "sourceVariantId": null,
+    "deliveryKind": "shared",
+    "actualSignatureWrapperCanonicalSha256": "ee451cfad67d03ae89b4f2d098c27f0d9de4a8b9dd6cda709e3128e2f1a59f6e",
+    "actualSignatureObservationsAreNested": true,
+    "completeActualJapaneseBodyPreserved": true,
+    "providerUnprintedWeaknessResistanceParentheticalExcluded": true,
+    "sourcePhotoURLHashDistinctFromProduct3439740": true
+  },
+  "tests": {
+    "publisherNode": {
+      "passed": 17,
+      "failed": 0
+    },
+    "archiveGuardsPython": {
+      "passed": 6,
+      "failed": 0
+    },
+    "priorPublisherRegressions": [
+      {
+        "tool": "artwork-pcg8-mudkip-front-push-20261015",
+        "tests": 17,
+        "passed": 17,
+        "failed": 0
+      },
+      {
+        "tool": "artwork-sm1plus-sharper-fronts-push-20261015",
+        "tests": 17,
+        "passed": 17,
+        "failed": 0
+      },
+      {
+        "tool": "artwork-aquapolis-shared-fronts-push-20261015",
+        "tests": 15,
+        "passed": 15,
+        "failed": 0
+      }
+    ],
+    "persistedFailureJournal": {
+      "tests": 1,
+      "passed": 1,
+      "failed": 0
+    },
+    "phase1SourceContract": {
+      "passed": 75,
+      "failed": 0,
+      "reusedThroughIndependentPrivateReviewSha256": "3922759f3f7dd24278d6f4fbf21d911b4681b812a1350604ac2e84a2b9377250"
+    },
+    "queue": {
+      "realReceipts": 1,
+      "localImageByteObjects": 4,
+      "jointRawEntryTamperRejections": 49,
+      "forgedRawAuthorityRejections": 7,
+      "rootAuthorityPacketRejections": 7,
+      "private75TestReviewReusedByFrozenPins": true,
+      "priorReadOnlyReceipts": 9,
+      "priorLocalImageObjects": 36,
+      "unchangedSharpMetricCases": 1,
+      "allPriorExactBranchesPreserved": true,
+      "sharedQueueUnchanged": true,
+      "actualPrintedForm": null,
+      "currentHoloIsDefaultFlag": false,
+      "actualApiFallbackDefaultVariantId": "c1697767-547d-4c48-a774-ccb5357f07b4",
+      "sourceVariantId": null,
+      "appLargeExpectedRole": "original",
+      "productionWrites": 0
+    }
+  },
+  "archiveInstaller": {
+    "assetId": 645584430,
+    "membersVerifiedAndExtracted": 8,
+    "runtimeSharpFullyDecoded": 4,
+    "privatePeerPILSharpRgbaAgreements": 4,
+    "privacySafeJsonFiles": 4,
+    "originalHdPixelFronts": 1,
+    "derivativeHdPixelFiles": 0,
+    "noEnlargement": true,
+    "localPinnedArchiveOnly": true
+  },
+  "sourceGuard": {
+    "externalAuthorityAndBaselineFilesRehashed": 14,
+    "oldProductionSources": 4,
+    "oldFullSourceFieldsProtected": 68,
+    "productionNewSources": 0,
+    "productionPolicyChangesAllowed": 0,
+    "explicitProductionResolverHasNoInsertPath": true,
+    "existingPriceFinite2NotesUnchanged": true,
+    "full17MicrosecondsRetainedByBothJsonReaders": true,
+    "stagingBaselineScopedSources": 0,
+    "onlyTemporaryStagingFixture": "pricecharting",
+    "frozenFullBeforeSnapshotsChecked": true
+  },
+  "transactionFixtures": {
+    "production": {
+      "beforeRows": 11,
+      "afterRows": 13,
+      "assetsAdded": 1,
+      "linksAdded": 1,
+      "sourcesAdded": 0
+    },
+    "staging": {
+      "beforeRows": 5,
+      "temporaryRows": 8,
+      "afterRollbackRows": 5
+    },
+    "existingPCG8SetLogoAndLinkUnchanged": true,
+    "canonicalMetadataAssetsLinksAndAllSourceRowsUnchanged": true,
+    "sourceAndLinkFailuresRollBack": true
+  },
+  "appSelection": {
+    "largeExpectedRole": "original",
+    "largeExpectedDimensions": [
+      1020,
+      1403
+    ],
+    "detailDimensions": [
+      720,
+      990
+    ],
+    "detailLongEdgeBelow1000": true,
+    "privatePeerActualHelperPlannedDefaultAndExplicitPassed": true,
+    "actualDefaultSharedAppSelectionStillRequiresLiveVerification": true,
+    "largeEqualsDetailMustNotBeRequired": true
+  },
+  "qualifications": {
+    "historicalPhysicalEditionHoldRetained": true,
+    "sharedFrontEligibilityDoesNotAuthenticatePhysicalEdition": true,
+    "providerBodyVerbatimAgreement": false,
+    "providerNeverResizedCertified": false,
+    "nativeOpticalGainClaimed": false,
+    "physicalEditionCertified": false,
+    "physicalFinishCertified": false,
+    "unlimitedEditionCertified": false,
+    "materialAuthenticityCertified": false,
+    "vendorLicenceCertified": false,
+    "sourcewideApproval": false
+  },
+  "unchangedPriorRepositoryFilesRehashed": 240,
+  "unchangedSharedDependenciesRehashed": 11,
+  "unchangedPrivateOwnedPinsPlusHandoffRehashed": 36,
+  "private355InputAuditReusedThroughPrivatePeerHashPin": true,
+  "workflow": {
+    "protectedProduction": true,
+    "expectedProtectedProductionEnvironmentId": 19553872513,
+    "exactMainSha": true,
+    "sharedDeploymentConcurrency": true,
+    "shaPinnedActions": 3,
+    "exact20FileSecretScanRequired": true,
+    "failureJournalAndRollbackReceipts": true
+  },
+  "planSha256": "a485736a9db61e7f59cacf7aa0248a02addedf31a84f4f878f1df8c2338b3763",
+  "approvalSha256": "f71e6f189bd9683eb45eddc1f13598af0c8979c544e341de7c01cb2709ee5d88",
+  "sourceManifestSha256": "8bc1260175856b0e19bf56bcc91b5e6275dce077cfcc4f446eec730426e1fcfd",
+  "archiveSha256": "cb60020e1886227fbbe62acde45f37a78bfa7f2185311d016067a166682496ef",
+  "newProviderRequests": 0,
+  "databaseRequests": 0,
+  "gitMutations": 0,
+  "sharedQueueWrites": 0,
+  "ledgerWrites": 0,
+  "storageWrites": 0,
+  "productionWrites": 0,
+  "livePublicationVerified": false,
+  "independentExactHeadAndHostedChecksStillRequired": true
+}

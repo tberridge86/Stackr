@@ -1,0 +1,210 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_FROZEN_PUBLICATION_HANDOFF_READY",
+  "confirmation": "PUBLISH ARTWORK PCG8 MUDKIP FRONT",
+  "fronts": 1,
+  "fixedVariantTuplesPerEnvironment": 1,
+  "workType": "CARDS",
+  "batchId": "JP-CARDS-040",
+  "category": "Pokemon",
+  "languageCode": "ja",
+  "setCode": "PCG8",
+  "canonicalAlias": "021",
+  "printingAssetVariantId": null,
+  "sourceVariantId": null,
+  "deliveryKind": "shared",
+  "tests": {
+    "publisherNode": {
+      "passed": 17,
+      "failed": 0
+    },
+    "archiveGuardsPython": {
+      "passed": 6,
+      "failed": 0
+    },
+    "priorPublisherRegressions": [
+      {
+        "tool": "artwork-pcg9-wooper-front-push-20261015",
+        "tests": 17,
+        "passed": 17,
+        "failed": 0
+      },
+      {
+        "tool": "artwork-tksmr-lightning2-front-push-20261015",
+        "tests": 17,
+        "passed": 17,
+        "failed": 0
+      },
+      {
+        "tool": "artwork-pcg8-celebi-front-push-20261015",
+        "tests": 17,
+        "passed": 17,
+        "failed": 0
+      },
+      {
+        "tool": "artwork-sm1plus-sharper-fronts-push-20261015",
+        "tests": 17,
+        "passed": 17,
+        "failed": 0
+      },
+      {
+        "tool": "artwork-neo2-eevee-front-push-20261015",
+        "tests": 15,
+        "passed": 15,
+        "failed": 0
+      },
+      {
+        "tool": "artwork-aquapolis-shared-fronts-push-20261015",
+        "tests": 15,
+        "passed": 15,
+        "failed": 0
+      }
+    ],
+    "persistedFailureJournal": {
+      "tests": 1,
+      "passed": 1,
+      "failed": 0
+    },
+    "phase1FrozenSourceContract": {
+      "passed": 61,
+      "failed": 0
+    },
+    "queue": {
+      "realReceipts": 1,
+      "localImageByteObjects": 4,
+      "jointRawEntryTamperRejections": 50,
+      "forgedAuthorityRejections": 9,
+      "supersededAuthorityPacketRejections": 6,
+      "correctedNestedScopeVerified": true,
+      "priorWooperLightningSM1PlusCelebiEeveeAndAquapolisReadOnlyReceipts": 8,
+      "priorLocalImageObjects": 32,
+      "unchangedSharpMetricCases": 1,
+      "previousJapaneseCelebiSM1PlusEeveeAndAquapolisPredicatesPreserved": true,
+      "sharedQueueUnchanged": true,
+      "japanesePokemonFullFrontVerified": true,
+      "noDeltaSpeciesFormInvented": true,
+      "completeActualJapaneseBodyPreserved": true,
+      "historicalPhysicalEditionHoldRetained": true,
+      "providerBodyVerbatimAgreement": false,
+      "appLargeExpectedRole": "original",
+      "productionWrites": 0
+    }
+  },
+  "archiveInstaller": {
+    "assetId": 645525725,
+    "membersVerifiedAndExtracted": 8,
+    "runtimeSharpFullyDecoded": 4,
+    "privatePILSharpRgbaAgreements": 4,
+    "privacySafeJsonFiles": 4,
+    "originalHdPixelFronts": 1,
+    "derivativeHdPixelFiles": 0,
+    "noEnlargement": true,
+    "localPinnedArchiveOnly": true
+  },
+  "correctedAuthority": {
+    "onlyScopeCorrectedApprovalAndDecisionAuthoritative": true,
+    "correctionReceiptPinned": true,
+    "historicalWrongScopePacketsPreservedAndRejected": true,
+    "rawBodyPhotoAndCurrentTupleNestedScopesMustMatchSamePrinting": true,
+    "supersededAuthorityPacketRejections": 6
+  },
+  "sourceGuard": {
+    "externalAuthorityAndBaselineFilesRehashed": 15,
+    "oldProductionSources": 4,
+    "oldFullSourceFieldsProtected": 68,
+    "productionNewSources": 0,
+    "productionPolicyChangesAllowed": 0,
+    "explicitProductionResolverHasNoInsertPath": true,
+    "missingOrDriftedAnyExistingSourceFails": true,
+    "existingPriceFinite2NotesUnchanged": true,
+    "full17MicrosecondsRetainedByBothJsonReaders": true,
+    "stagingBaselineScopedSources": 0,
+    "onlyTemporaryStagingFixture": "pricecharting",
+    "stageFull17DefaultsAndCreationReceiptChecked": true,
+    "frozenFullBeforeSnapshotsChecked": true
+  },
+  "transactionFixtures": {
+    "production": {
+      "beforeRows": 11,
+      "afterRows": 13,
+      "assetsAdded": 1,
+      "linksAdded": 1,
+      "sourcesAdded": 0
+    },
+    "staging": {
+      "beforeRows": 5,
+      "temporaryRows": 8,
+      "afterRollbackRows": 5
+    },
+    "existingPCG8SetLogoAndLinkUnchanged": true,
+    "canonicalMetadataAssetsLinksAndAllSourceRowsUnchanged": true,
+    "sourceAndLinkFailuresRollBack": true
+  },
+  "identity": {
+    "currentNativeLabelPreserved": "マッドキップ",
+    "actualPrintedName": "ミズゴロウ",
+    "actualPrintedForm": null,
+    "printedHP": 50,
+    "printedType": "Water",
+    "printedStage": "たね",
+    "printedCollectorNumber": "021/075",
+    "printedArtist": "Hajime Kusajima",
+    "completeActualJapaneseAttacksCostsEffectsAndTimingPreserved": true,
+    "printedNationalDex": null,
+    "printedSetCodeLiteral": null,
+    "photoUrlHashDistinctFromProduct3439734": true,
+    "soleDefaultNormalTuplePreservedBothEnvironments": true,
+    "wholeUnchangedOriginalAndFourCornersRetained": true,
+    "actualCurrentEditionExactMatchEstablished": false,
+    "historicalPhysicalEditionHoldRetained": true,
+    "sharedFrontEligibilityDoesNotAuthenticatePhysicalEdition": true,
+    "providerBodyVerbatimAgreement": false,
+    "providerNeverResizedCertified": false,
+    "nativeOpticalGainClaimed": false,
+    "physicalFinishCertified": false,
+    "physicalEditionCertified": false,
+    "unlimitedEditionCertified": false,
+    "materialAuthenticityCertified": false
+  },
+  "appSelection": {
+    "largeExpectedRole": "original",
+    "largeExpectedDimensions": [
+      1022,
+      1409
+    ],
+    "detailDimensions": [
+      720,
+      993
+    ],
+    "detailLongEdgeBelow1000": true,
+    "actualDefaultSharedAppSelectionStillRequiresLiveVerification": true,
+    "largeEqualsDetailMustNotBeRequired": true
+  },
+  "unchangedPriorRepositoryFilesRehashed": 220,
+  "unchangedSharedDependenciesRehashed": 11,
+  "unchangedPrivateOwnedPinsPlusHandoffRehashed": 36,
+  "unchangedSourceAuthorityPinsRehashed": 188,
+  "unchangedIndependentSourceReviewReportsRehashed": 6,
+  "workflow": {
+    "protectedProduction": true,
+    "expectedProtectedProductionEnvironmentId": 19553872513,
+    "exactMainSha": true,
+    "sharedDeploymentConcurrency": true,
+    "shaPinnedActions": 3,
+    "exact20FileSecretScanPassed": true,
+    "failureJournalAndRollbackReceipts": true
+  },
+  "planSha256": "14f93cf2bb271af2a1d2f58d7e85a1ec39c0bd6aa934e669eec053d3184155c2",
+  "approvalSha256": "1bf99343e33696398739769810a6d2cfc146845ef50a724f779b78d80470119e",
+  "sourceManifestSha256": "a7ba9cc8914e9dc56d1465eb6038e1479a4677fc6a0e16e302e5e266b7098722",
+  "archiveSha256": "5ab280df47e24a7e4382100d34c5dcf1ea4227145414f58aab7764b11bb71304",
+  "newProviderRequests": 0,
+  "databaseRequests": 0,
+  "gitMutations": 0,
+  "sharedQueueWrites": 0,
+  "ledgerWrites": 0,
+  "storageWrites": 0,
+  "productionWrites": 0,
+  "livePublicationVerified": false,
+  "independentExactHeadAndHostedChecksStillRequired": true
+}

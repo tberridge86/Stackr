@@ -1,7 +1,8 @@
 import { Stack, router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { usePreventRemove } from '@react-navigation/native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, ScrollView, TouchableOpacity, View, Alert } from 'react-native';
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
+import { ScrollView, TouchableOpacity, View, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '../../components/Text';
 import { StackrBackButton } from '../../components/StackrBackButton';
@@ -9,7 +10,7 @@ import { useTheme } from '../../components/theme-context';
 import { fetchBinders, type BinderRecord } from '../../lib/binders';
 import { supabase } from '../../lib/supabase';
 import { discardManualCollectionDraft, loadManualCollectionDraft, updateManualCollectionDraft, type ManualCollectionDraft } from '../../lib/manualCollectionDraft';
-import { addOwnedCardBatchToBinder, createCollectionBatchRequestKey, persistVerifiedCollectionBatchRecoveryIntent } from '../../lib/collectionBatch';
+import { resumeOwnedCardBatchToBinder, createCollectionBatchRequestKey, persistVerifiedCollectionBatchRecoveryIntent } from '../../lib/collectionBatch';
 
 export default function ManualCollectionReviewScreen() {
   const { theme } = useTheme();
@@ -21,6 +22,7 @@ export default function ManualCollectionReviewScreen() {
   const [busy, setBusy] = useState(false);
   const [retry, setRetry] = useState(0);
   const [discarded, setDiscarded] = useState(false);
+  const [historyPending, setHistoryPending] = useState(false);
   const operation = useRef(false);
   const saved = draft?.state === 'saved';
   const locked = busy || draft?.state !== 'review';
@@ -75,7 +77,13 @@ export default function ManualCollectionReviewScreen() {
       const cards = [{ ...fixed.card, quantity: fixed.quantity, notes: 'Added from Stackr catalogue' }];
       const requestKey = createCollectionBatchRequestKey({ sourceSessionId: fixed.id, binderId: fixed.binderId!, cards });
       const intent = await persistVerifiedCollectionBatchRecoveryIntent({ sourceSessionId: fixed.id, binderId: fixed.binderId!, cards, requestKey });
-      await addOwnedCardBatchToBinder(intent.binderId, [...intent.cards], { requestKey: intent.requestKey });
+      const result = await resumeOwnedCardBatchToBinder(intent.binderId, [...intent.cards], { requestKey: intent.requestKey });
+      if (result.activityFailures) {
+        setHistoryPending(true);
+        setError('Your card is saved. Its history entry could not be recorded. Finish history to retry without adding another copy.');
+        return;
+      }
+      setHistoryPending(false);
       // Show confirmed success even if the local completion marker needs recovery.
       setDraft({ ...fixed, state: 'saved' });
       await updateManualCollectionDraft(fixed.userId, fixed.id, { state: 'saved' }).catch(() => {
@@ -118,7 +126,7 @@ export default function ManualCollectionReviewScreen() {
             <TouchableOpacity accessibilityRole="button" accessibilityLabel="Increase quantity" disabled={locked || draft.quantity >= 999} onPress={() => { void change({ quantity: draft.quantity + 1 }); }} style={[buttonStyle, { minWidth: 56, borderWidth: 1, borderColor: theme.colors.border }]}><Text style={{ color: theme.colors.text, fontSize: 24 }}>+</Text></TouchableOpacity>
           </View>
           <TouchableOpacity accessibilityRole="button" accessibilityState={{ disabled: busy || !draft.binderId, busy }} disabled={busy || !draft.binderId} onPress={() => { void save(); }} style={[buttonStyle, { backgroundColor: theme.colors.primary, opacity: busy || !draft.binderId ? 0.6 : 1 }]}>
-            {busy ? <ActivityIndicator color="#FFFFFF" /> : <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 16 }}>{draft.state === 'saving' ? 'Retry original add' : `Confirm and add ${draft.quantity}`}</Text>}
+            {busy ? <ActivityIndicator color="#FFFFFF" /> : <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 16 }}>{historyPending ? 'Finish history' : draft.state === 'saving' ? 'Retry original add' : `Confirm and add ${draft.quantity}`}</Text>}
           </TouchableOpacity>
           {draft.state === 'review' ? <TouchableOpacity accessibilityRole="button" disabled={busy} style={buttonStyle} onPress={() => {
             if (operation.current) return;

@@ -1,0 +1,170 @@
+[
+  {
+    "printing_id": "03b21683-af68-4f9a-bbbd-647dec3d5b81",
+    "set_id": "e60f305b-5ad6-4964-b6c6-636788481ca5",
+    "set_code": "neo2",
+    "language_code": "ja",
+    "collector_number": "053",
+    "card_native_name": "エネルギーアーク",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "e0b949b2-2bc9-4aca-bdec-f1584ec3f011"
+    ],
+    "batch_id": "JP-CARDS-009",
+    "source_code": "scrydex",
+    "provider_id": "neo2_ja-53",
+    "image_url": "https://images.scrydex.com/pokemon/neo2_ja-53/large",
+    "original_sha256": "19feecd0a5d0653c7c5656865600300f37d26470f872e89116206e539282e18d",
+    "original_width": 565,
+    "original_height": 800,
+    "body_sha256": "e2177e7cae8644f88df25fa0137e129628800973d566ec82f418b0258891f48f",
+    "evidence_sha256": "ea6a22c62d5955c4eb1b832b5665b87d50b2fcd477bdce075e99f1de5f15c373"
+  },
+  {
+    "printing_id": "331a9eb6-75c4-47f1-97c8-ad2c55884ba3",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "075",
+    "card_native_name": "二重突風",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "8f29d59d-9dbf-4058-a9b1-17797791530f"
+    ],
+    "batch_id": "JP-CARDS-005",
+    "source_code": "scrydex",
+    "provider_id": "neo1_ja-75",
+    "image_url": "https://images.scrydex.com/pokemon/neo1_ja-75/large",
+    "original_sha256": "3fbf00ecdf7a6682fa29e2fe76cd705cec4cc3920977fb08f7c75f7d1a30a39c",
+    "original_width": 570,
+    "original_height": 799,
+    "body_sha256": "7db14e194c1a1cf843a818fca6118546ae3d8246055e4a2d4bdd39ec7bb90993",
+    "evidence_sha256": "8f965ca7014b678cbf6265b3d2f3c90284e1a401797a589643236619e4b230ea"
+  },
+  {
+    "printing_id": "34a5728e-9e47-453f-8102-84259c8cdaf2",
+    "set_id": "e60f305b-5ad6-4964-b6c6-636788481ca5",
+    "set_code": "neo2",
+    "language_code": "ja",
+    "collector_number": "056",
+    "card_native_name": "ハイパーデボルブスプレー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "9de3a61b-28c7-4cfa-8167-2ee54b2f62e4"
+    ],
+    "batch_id": "JP-CARDS-009",
+    "source_code": "scrydex",
+    "provider_id": "neo2_ja-56",
+    "image_url": "https://images.scrydex.com/pokemon/neo2_ja-56/large",
+    "original_sha256": "3def2fa5637f88174f9e82193707a3f247595d1336b3330c30669781f830730c",
+    "original_width": 570,
+    "original_height": 794,
+    "body_sha256": "617e150a6efb28e25a04372efe50578b07bb329ba55dc30b715635fca2fc298e",
+    "evidence_sha256": "fd1566f7a83d852f5930793868a143e67148b91981c6a0e15054cf631bfbff89"
+  },
+  {
+    "printing_id": "4ec6bdf6-3a65-4dd6-a3d7-84ea96cb77d6",
+    "set_id": "e60f305b-5ad6-4964-b6c6-636788481ca5",
+    "set_code": "neo2",
+    "language_code": "ja",
+    "collector_number": "057",
+    "card_native_name": "壁を台無しにする[aerodactyl]",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "a4b5fd43-f9f0-494f-8fc8-e1dcc7398386"
+    ],
+    "batch_id": "JP-CARDS-009",
+    "source_code": "pokellector",
+    "provider_id": "39648",
+    "image_url": "https://den-cards.pokellector.com/331/Ruin-Wall-Kabuto.NEO2.54.39648.mobile.jpg",
+    "original_sha256": "f00804e6b093b5d9028cb1f5692d939195d41cbb6a5bdcef1fe5d3bfed9d43c4",
+    "original_width": 570,
+    "original_height": 799,
+    "body_sha256": "29d702d91c3cdf79d474b2d97aa4a508cb5938904760ced223dd3ea0d1349479",
+    "evidence_sha256": "a76b1b4dc4d7a23d6fb852bc58375f23408c58f1f33eb17117e47cea86bb893d"
+  },
+  {
+    "printing_id": "56ae4a00-656c-4564-8d7a-831db2900857",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "074",
+    "card_native_name": "スーパーロッド",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "0d21bd9d-f70f-4671-898f-278daad9cda2"
+    ],
+    "batch_id": "JP-CARDS-005",
+    "source_code": "scrydex",
+    "provider_id": "neo1_ja-74",
+    "image_url": "https://images.scrydex.com/pokemon/neo1_ja-74/large",
+    "original_sha256": "b767880240a4bfb59ebdbb852f4856a340f4bcc272191ab5abd20a611c9af9f7",
+    "original_width": 569,
+    "original_height": 800,
+    "body_sha256": "5705d19277b12db79cc7c2d84462e4d33248966d073cab40aa4bc3c6ea57009c",
+    "evidence_sha256": "ee362e14fb2ef353582b6338da8abf0cea3073f5c137a91d3b4e061cd8a4c2ec"
+  },
+  {
+    "printing_id": "60c39900-94fe-420b-b997-60e9c64f3491",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "073",
+    "card_native_name": "ベリー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "c21bd7f6-d7e6-487c-ac76-00a7d218d95c"
+    ],
+    "batch_id": "JP-CARDS-005",
+    "source_code": "scrydex",
+    "provider_id": "neo1_ja-73",
+    "image_url": "https://images.scrydex.com/pokemon/neo1_ja-73/large",
+    "original_sha256": "31d49627ce76df792c54f2108b5a0faec45a7ffa1fbeba77b933c19f3458f079",
+    "original_width": 570,
+    "original_height": 794,
+    "body_sha256": "6c2f27b41cfe52889fd8efad5ac74bee36b59829fa408cae7abf90108f127cae",
+    "evidence_sha256": "5830563fa5ece3e46583fb9ee12ec06dacb65a85654a6b09a09dc1ec20234c4d"
+  },
+  {
+    "printing_id": "9815742c-ab9c-47d5-a05e-8fa67d755b43",
+    "set_id": "e60f305b-5ad6-4964-b6c6-636788481ca5",
+    "set_code": "neo2",
+    "language_code": "ja",
+    "collector_number": "054",
+    "card_native_name": "壁を台無しにする[カブト]",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "e9c77163-1fa9-417f-ac99-caa57cce0533"
+    ],
+    "batch_id": "JP-CARDS-009",
+    "source_code": "pokellector",
+    "provider_id": "39645",
+    "image_url": "https://den-cards.pokellector.com/331/Ruin-Wall-KabutoRuin-Wall-Aerodactyl.NEO2.54.39645.png",
+    "original_sha256": "d5561d776619b453097fb25d53135c3d7ae4cece93c6abe8e0875b555e1e6a88",
+    "original_width": 570,
+    "original_height": 794,
+    "body_sha256": "eb8292ff6adf3f7578c24f93549a91ba877e5fc50c00d273e36c0d703ef64f73",
+    "evidence_sha256": "03c134d853c50d15a62666888a381b77458e979dd349cbbb2468098426dd56da"
+  },
+  {
+    "printing_id": "be1af7b3-7199-445e-89e3-2ad26f93ffc7",
+    "set_id": "e60f305b-5ad6-4964-b6c6-636788481ca5",
+    "set_code": "neo2",
+    "language_code": "ja",
+    "collector_number": "055",
+    "card_native_name": "化石卵",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "33605fc7-7329-4191-ab47-25a8b8dfedc4"
+    ],
+    "batch_id": "JP-CARDS-009",
+    "source_code": "scrydex",
+    "provider_id": "neo2_ja-55",
+    "image_url": "https://images.scrydex.com/pokemon/neo2_ja-55/large",
+    "original_sha256": "093954beed912a12f4bbc2bd63601fa27123f780fa65321a032f4fe9207e9a47",
+    "original_width": 567,
+    "original_height": 800,
+    "body_sha256": "9d47714d64cd4d934862ce34883a2d420f194f2f547caf2263393a6fe2260bdf",
+    "evidence_sha256": "f658c469a99ba1b89918e28d98bb3fb8dd2a4cc1b017fbda5b675c7802ba37ac"
+  }
+]

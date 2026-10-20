@@ -193,6 +193,78 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CardsResponse"
+  /pokemon:
+    get:
+      tags: [Catalogue]
+      operationId: listPokemonIndex
+      summary: Reviewed server-owned National Dex species index with explicit default Pokémon routes; no live provider request.
+      parameters:
+        - name: offset
+          in: query
+          schema: { type: integer, minimum: 0, default: 0 }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 1025, default: 151 }
+        - $ref: "#/components/parameters/IfNoneMatch"
+      responses:
+        "200":
+          description: One entry per reviewed species. The frozen snapshot currently contains 1025 species; count and indexVersion identify that scope. Legacy name/url retain the reviewed default Pokémon route. Alternate forms remain available through existing exact form-card routes.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: object
+                    required: [count, indexVersion, results]
+                    properties:
+                      count: { type: integer }
+                      indexVersion: { type: string }
+                      results:
+                        type: array
+                        items:
+                          type: object
+                          required: [name, url, speciesId, speciesName, routeId, routeName]
+                          properties:
+                            name: { type: string, description: Reviewed default Pokémon route name; retained for older clients. }
+                            url: { type: string, format: uri, description: Reviewed default Pokémon route URL; retained for older clients. }
+                            speciesId: { type: integer, minimum: 1, description: Stable National Dex species identity for list progress and regional grouping. }
+                            speciesName: { type: string, description: Species name distinct from a default or alternate Pokémon form name. }
+                            routeId: { type: integer, minimum: 1, description: Reviewed default Pokémon resource ID for sprite and detail retrieval. }
+                            routeName: { type: string, description: Reviewed default Pokémon route name; exact form-card routes remain supported separately. }
+                  meta:
+                    $ref: "#/components/schemas/EnvelopeMeta"
+        "304":
+          description: The index page has not changed.
+        "400":
+          $ref: "#/components/responses/Error"
+  /pokemon/{name}/cards:
+    get:
+      tags: [Catalogue]
+      operationId: listPokemonCards
+      summary: Published cards for an exact Pokémon species or form.
+      parameters:
+        - name: name
+          in: path
+          required: true
+          description: Species or form name; URL-encode punctuation and spaces.
+          schema: { type: string, minLength: 1, maxLength: 120 }
+        - $ref: "#/components/parameters/Language"
+        - $ref: "#/components/parameters/Cursor"
+        - name: limit
+          in: query
+          description: Published name source rows per page; deduplicated card count may be smaller.
+          schema: { type: integer, minimum: 1, maximum: 250, default: 120 }
+      responses:
+        "200":
+          description: Cursor-paginated canonical cards, with factual metadata available before optional artwork.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CardsResponse"
+        "400":
+          $ref: "#/components/responses/Error"
   /cards/{cardId}:
     get:
       tags: [Catalogue]
@@ -287,17 +359,26 @@ paths:
           schema:
             type: string
             enum: [sold_observation, active_listing]
+        - name: provenOnly
+          in: query
+          description: Filter verified completed-sale evidence before pagination. Defaults to false.
+          schema: { type: boolean, default: false }
+        - name: soldSince
+          in: query
+          description: Include sale dates on or after this past ISO timestamp, before pagination.
+          schema: { type: string, format: date-time }
         - $ref: "#/components/parameters/Cursor"
         - $ref: "#/components/parameters/Limit"
       responses:
         "200":
-          description: Pricing evidence history with active and sold rows explicitly labelled. Private and no-store in default personal owner-only mode.
+          description: Raw near-mint history by default, with active and sold rows explicitly labelled. Exact graded history is unavailable until numeric-grade identity is exposed. Private and no-store in default personal owner-only mode.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/PriceHistoryResponse"
         "400":
           $ref: "#/components/responses/Error"
+        "422": { $ref: "#/components/responses/Error" }
         "401": { $ref: "#/components/responses/Error" }
         "403": { $ref: "#/components/responses/Error" }
         "503": { $ref: "#/components/responses/Error" }
@@ -563,6 +644,16 @@ paths:
         - name: printingId
           in: query
           schema: { type: string, format: uuid }
+        - name: printingIds
+          in: query
+          description: Bounded canonical printing batch, mutually exclusive with printingId.
+          style: form
+          explode: false
+          schema:
+            type: array
+            minItems: 1
+            maxItems: 100
+            items: { type: string, format: uuid }
         - name: variantId
           in: query
           schema: { type: string, format: uuid }
@@ -1886,6 +1977,19 @@ components:
             englishDisplaySource:
               type: [string, "null"]
               enum: [printing, concept, null]
+            englishSupplement:
+              type: [object, "null"]
+              required: [value, provenance, authoritative]
+              properties:
+                value: { type: string }
+                provenance: { type: string }
+                authoritative: { type: boolean }
+                sourceCardIds:
+                  type: array
+                  items: { type: string }
+                canonicalProvenance:
+                  type: object
+                  additionalProperties: true
         details:
           type: object
           required: [supertype, subtypes, artist]
@@ -1942,6 +2046,10 @@ components:
           additionalProperties:
             type: string
             pattern: "^[a-f0-9]{64}$"
+        classificationVersion:
+          type: string
+          enum: [classified-v1]
+          description: Opt in to stored classified evidence and explicit per-reference readErrors. Omission retains the legacy read contract.
     CataloguePriceItem:
       type: object
       additionalProperties: false
@@ -1965,10 +2073,6 @@ components:
       additionalProperties: false
       required: [variantId, productType, identityKey, currency, status, priceType, estimates, sample, confidence, freshness, sourceBreakdown, outliers, fallbackEstimate, unavailableReason, calculatedAt, staleAfter, estimateVersion]
       properties:
-        classification:
-          type: string
-          enum: [EXACT_PRICE, MARKET_GUIDE, ESTIMATED_VALUE, PRICE_UNAVAILABLE]
-        evidenceType: { type: string }
         variantId: { type: string, format: uuid }
         productType: { $ref: "#/components/schemas/MarketProductType" }
         identityKey: { type: [string, "null"] }
@@ -1978,6 +2082,12 @@ components:
         priceBasis: { type: string }
         quoteScope: { type: string, enum: [exact_variant, printing_level] }
         primarySource: { type: string }
+        classification:
+          type: string
+          enum: [MARKET_GUIDE, ESTIMATED_VALUE, PRICE_UNAVAILABLE]
+          description: Optional stored raw catalogue guide decision; never exact-condition or sale evidence.
+        evidenceType: { type: string }
+        sourceLabel: { type: string }
         estimates:
           type: object
           additionalProperties: false
@@ -2048,6 +2158,17 @@ components:
                 estimateMode:
                   type: string
                   enum: [exact, general]
+                readErrors:
+                  type: array
+                  description: Failed references have no replacement price or cache checkpoint. Together with prices and unchangedReferences this partitions the request.
+                  maxItems: 100
+                  items:
+                    type: object
+                    additionalProperties: false
+                    required: [reference, code]
+                    properties:
+                      reference: { type: string }
+                      code: { type: string }
     CardPriceResponse:
       allOf:
         - $ref: "#/components/schemas/Envelope"

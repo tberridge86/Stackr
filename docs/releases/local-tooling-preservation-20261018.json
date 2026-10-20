@@ -1,0 +1,31 @@
+{
+  "recordedAt": "2026-10-18T22:53:40.458Z",
+  "scope": "Exact local EAS CLI runtime backup and independent restoration, outside the original shared checkout",
+  "outcomeSha256": "bcf8a9a73b727bb1af833df51c1ff8e04030b2ea26340641a69fe45e6a40ea5d",
+  "inventorySha256": "85c4f53b09348241cb55b107ab66500fd9b1f270faf3618fc93217209bde8656",
+  "filesLedgerSha256": "cc04bd69091196dc9323f374cb5a74ead5eb8513184d2ec045d82dfc9a6339bc",
+  "totals": {
+    "files": 15633,
+    "bytes": 122118474,
+    "directories": 1872,
+    "links": 0
+  },
+  "tripleContentHashesEqual": true,
+  "exactMembershipAndOriginalMetadataUnchanged": true,
+  "primaryCli": "D:/Stackr-organization/active-runtime/eas-cli-23.2.0-preserved-v1/snapshot/node_modules/eas-cli/bin/run",
+  "restoredCli": "D:/Stackr-organization/active-runtime/eas-cli-23.2.0-preserved-v1/restored/node_modules/eas-cli/bin/run",
+  "localVersionChecks": {
+    "snapshotExitCode": 0,
+    "restoredExitCode": 0,
+    "actualVersionOutput": "eas-cli/23.2.0 win32-x64 node-v24.15.0",
+    "command": "node <exact-cli> --version",
+    "observation": "Both displayed the available-update notice as well as the exact existing version; no install was requested"
+  },
+  "earlierNativeGateHelpers": "Historical immutable receipts retain their original paths; future separately authorised gates must use and validate the preserved runtime",
+  "originalRepositoryMigrationComplete": false,
+  "sourceMoved": false,
+  "sourceDeleted": false,
+  "nativeBuild": false,
+  "nativeSubmission": false,
+  "testFlightHeld": true
+}

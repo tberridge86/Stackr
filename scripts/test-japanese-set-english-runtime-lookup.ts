@@ -53,8 +53,8 @@ assert.equal(
   '92639734fb2bb7167c96d720a651c66ccf618d160bd9169e04dc6ba0a77280f9',
 );
 const identitySource = JSON.parse(readFileSync('catalogue/stackr-japanese-set-identity-source.2026-09-04.json', 'utf8')) as {
-  entries: Array<{ normalizedSetCode: string }>;
-  exclusions: Array<{ normalizedSetCode: string; reason: string }>;
+  entries: { normalizedSetCode: string }[];
+  exclusions: { normalizedSetCode: string; reason: string }[];
 };
 const boundCodes = new Set(identitySource.entries.map((entry) => entry.normalizedSetCode));
 const excludedCodes = new Set(identitySource.exclusions.map((entry) => entry.normalizedSetCode));
@@ -144,4 +144,74 @@ assert.equal(getBackendEnglishSetDisplayName({ id: 'jp:SGG' }), null);
 assert.equal(getClientEnglishSetDisplaySupplement({ language: 'ja', setCode: 'SGG' }), null);
 assert.equal(getBackendEnglishSetDisplaySupplement({ language: 'ja', setCode: 'SGG' }), null);
 
-console.log('Pinned TCGdex Japanese set English supplements passed their green native-primary runtime gate');
+// Exercise the actual client and reviewed backend contracts with bounded input
+// identities. A direct English field keeps precedence; a manual lookup must
+// not use a language/code conflict or an older alias to bypass an explicit code.
+type SetInput = Parameters<typeof getClientEnglishSetDisplayName>[0];
+type SetContractCase = {
+  label: string;
+  input: SetInput;
+  name: string | null;
+  supplementStatus?: string;
+};
+const manual151 = { language: 'ja', id: 'ja:sv2a', setCode: 'SV2A', localName: 'ポケモンカード151' };
+const setContractCases: SetContractCase[] = [
+  { label: 'manual exact code', input: manual151, name: 'Pokemon Card 151' },
+  { label: 'legacy Japanese ID without language', input: { id: 'ja:sv2a' }, name: 'Pokemon Card 151' },
+  { label: 'Japanese region without language', input: { region: 'japan', setCode: 'sv2a' }, name: 'Pokemon Card 151' },
+  { label: 'manual jp language alias', input: { ...manual151, language: 'jp' }, name: 'Pokemon Card 151' },
+  { label: 'agreeing normalized languages', input: { ...manual151, language: ' JA ', raw: { language: 'jp', set: { language: 'ja' } } }, name: 'Pokemon Card 151' },
+  { label: 'Korean cannot be overridden by Japanese ID', input: { ...manual151, language: 'ko' }, name: null },
+  { label: 'Simplified Chinese cannot be overridden by region', input: { ...manual151, language: 'zh-cn', region: 'japan' }, name: null },
+  { label: 'Traditional Chinese raw language conflicts', input: { ...manual151, raw: { language: 'zh-tw' } }, name: null },
+  { label: 'nested Korean language conflicts', input: { ...manual151, raw: { set: { language: 'ko' } } }, name: null },
+  { label: 'English top-level and Japanese raw language conflict', input: { ...manual151, language: 'en', raw: { language: 'ja' } }, name: null },
+  { label: 'raw and nested language conflict without top-level language', input: { id: 'ja:sv2a', localName: manual151.localName, raw: { language: 'en', set: { language: 'ja' } } }, name: null },
+  { label: 'raw Japanese and nested Simplified Chinese conflict', input: { id: 'ja:sv2a', localName: manual151.localName, raw: { language: 'ja', set: { language: 'zh-cn' } } }, name: null },
+  { label: 'raw snake-case code conflicts', input: { ...manual151, raw: { set_code: 'SV3' } }, name: null },
+  { label: 'raw camel-case code conflicts', input: { ...manual151, raw: { setCode: 'SV3' } }, name: null },
+  { label: 'nested snake-case code conflicts', input: { ...manual151, raw: { set: { set_code: 'SV3' } } }, name: null },
+  { label: 'nested camel-case code conflicts', input: { ...manual151, raw: { set: { setCode: 'SV3' } } }, name: null },
+  { label: 'conflicting codes supplied only in raw', input: { language: 'ja', localName: manual151.localName, raw: { set_code: 'SV2A', setCode: 'SV3' } }, name: null },
+  { label: 'known manual ID conflicts with explicit code', input: { ...manual151, id: 'ja:sv3' }, name: null },
+  { label: 'known source ID conflicts', input: { ...manual151, sourceId: 'ja:sv3' }, name: null },
+  { label: 'known raw source alias conflicts', input: { ...manual151, raw: { source_id: 'sv3' } }, name: null },
+  { label: 'known raw provider alias conflicts', input: { ...manual151, raw: { provider_id: 'sv3' } }, name: null },
+  { label: 'known provider set alias conflicts', input: { ...manual151, raw: { providerSetId: 'sv3' } }, name: null },
+  { label: 'known raw ID conflicts', input: { ...manual151, raw: { id: 'sv3' } }, name: null },
+  { label: 'known nested ID conflicts', input: { ...manual151, raw: { set: { id: 'sv3' } } }, name: null },
+  { label: 'known nested TCGdex ID conflicts', input: { ...manual151, raw: { set: { tcgdex_id: 'sv3' } } }, name: null },
+  { label: 'known manual aliases conflict without explicit code', input: { language: 'ja', id: 'ja:sv2a', sourceId: 'ja:sv3' }, name: null },
+  { label: 'unknown explicit code takes precedence over old ID', input: { ...manual151, setCode: 'UNKNOWN' }, name: null },
+  { label: 'unknown raw camel-case code takes precedence over old ID', input: { language: 'ja', id: 'ja:sv2a', raw: { setCode: 'UNKNOWN' } }, name: null },
+  { label: 'unknown nested code takes precedence over old ID', input: { language: 'ja', id: 'ja:sv2a', raw: { set: { set_code: 'UNKNOWN' } } }, name: null },
+  { label: 'opaque canonical ID retains valid code', input: { ...manual151, id: 'set-canonical-opaque' }, name: 'Pokemon Card 151' },
+  { label: 'agreeing normalized codes', input: { ...manual151, raw: { set_code: 'ja:sv2a', setCode: 'sv2a', set: { set_code: 'SV2A', setCode: 'jp:sv2a' } } }, name: 'Pokemon Card 151' },
+  { label: 'known aliases for same manual title remain valid', input: { language: 'ja', id: 'ja:me05', setCode: 'ME5' }, name: 'Pitch Black' },
+  { label: 'direct English title keeps precedence over conflicts', input: { ...manual151, language: 'ko', sourceId: 'sv3', englishDisplayName: 'Reviewed direct English' }, name: 'Reviewed direct English' },
+  { label: 'nested direct English title keeps precedence', input: { ...manual151, raw: { set: { set_code: 'SV3', english_display_name: 'Reviewed nested English' } } }, name: 'Reviewed nested English' },
+  { label: 'exact provider identity', input: supplementInput, name: null, supplementStatus: 'provider_metadata_english_supplement' },
+  { label: 'provider identity with agreeing languages/codes', input: { ...supplementInput, raw: { language: 'ja', set_code: 'sgg', set: { language: 'ja', setCode: 'SGG' } } }, name: null, supplementStatus: 'provider_metadata_english_supplement' },
+  { label: 'provider lookup rejects conflicting known aliases', input: { ...supplementInput, id: 'ja:sv2a', sourceId: 'ja:sv3' }, name: null },
+  { label: 'provider lookup rejects nested code conflict', input: { ...supplementInput, raw: { set: { setCode: 'PPD' } } }, name: null },
+  { label: 'provider lookup rejects nested language conflict', input: { ...supplementInput, raw: { set: { language: 'ko' } } }, name: null },
+  { label: 'exact Chinese editorial identity', input: { language: 'zh-cn', setCode: 'CS5.5C', localName: '暗影夺辉' }, name: null, supplementStatus: 'model_translation_draft' },
+  { label: 'editorial lookup rejects conflicting known aliases', input: { language: 'zh-cn', setCode: 'CS5.5C', localName: '暗影夺辉', id: 'ja:sv2a', sourceId: 'ja:sv3' }, name: null },
+  { label: 'editorial lookup rejects native title mismatch', input: { language: 'zh-cn', setCode: 'CS5.5C', localName: '另一套卡' }, name: null },
+];
+const setFailures: string[] = [];
+for (const { label, input, name, supplementStatus } of setContractCases) {
+  const before = structuredClone(input);
+  try {
+    assert.equal(getBackendEnglishSetDisplayName(input), name, `${label}: backend name control`);
+    const backendSupplement = getBackendEnglishSetDisplaySupplement(input);
+    assert.equal(backendSupplement?.status ?? null, supplementStatus ?? (name ? 'authoritative_english_display_name' : null), `${label}: backend status control`);
+    assert.equal(getClientEnglishSetDisplayName(input), name, `${label}: client name`);
+    assert.deepEqual(getClientEnglishSetDisplaySupplement(input), backendSupplement, `${label}: supplement parity`);
+    assert.deepEqual(input, before, `${label}: input/native identity retained`);
+  } catch (error) {
+    setFailures.push(`${label}: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+assert.equal(setFailures.length, 0, `${setFailures.length}/${setContractCases.length} set contract cases failed:\n${setFailures.join('\n')}`);
+console.log(`Pinned TCGdex Japanese set English supplements passed their green native-primary runtime gate; ${setContractCases.length} actual client/backend identity contract cases passed`);

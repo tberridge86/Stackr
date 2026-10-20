@@ -3,12 +3,19 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import ts from 'typescript';
 import vm from 'node:vm';
+import { createRequire } from 'node:module';
+
+const requireFromProject = createRequire(`${process.cwd()}/package.json`);
 
 assert.equal(
-  createHash('sha256').update(readFileSync('assets/startup/stackr-loading-screen-exact.mp4')).digest('hex'),
-  '14b82efa2bdf8bbf98debde5e0138f2a3b419e32e011e7d0d91faf0a57ab697c',
-  'The bundled opening video must remain byte-for-byte identical to the supplied MP4.',
+  createHash('sha256').update(readFileSync('assets/startup/stackr-premium-opening.mp4')).digest('hex'),
+  '809a97349ed29f348724266ea9807af81a83a7edafae01371c2ffedca149a989',
+  'The bundled premium opening video must remain byte-for-byte identical to the approved MP4.',
 );
+
+const startupVideoSource = readFileSync('components/StackrStartupVideo.tsx', 'utf8');
+assert.match(startupVideoSource, /assets\/startup\/stackr-premium-opening\.mp4/);
+assert.match(startupVideoSource, /assets\/startup\/stackr-premium-poster\.png/);
 
 type Deferred<T> = { promise: Promise<T>; resolve(value: T): void; reject(error: Error): void };
 function deferred<T>(): Deferred<T> {
@@ -31,7 +38,7 @@ function createHost(preference: Promise<boolean>) {
   const player = { pause() {}, play() { starts += 1; }, status: 'readyToPlay', addListener(name: string, callback: () => void) { listeners.set(name, callback); return { remove() { listeners.delete(name); } }; } };
   const value = () => ({ setValue() {}, interpolate: () => ({}), stopAnimation() {} });
   const react = {
-    createElement: () => null,
+    createElement: (type: unknown, props: Record<string, unknown>, ...children: unknown[]) => ({ type, props: { ...props, children } }),
     useCallback: <T,>(callback: T) => callback,
     useState<T>(initial: T) {
       const index = cursor++;
@@ -58,7 +65,7 @@ function createHost(preference: Promise<boolean>) {
     'expo-video': { useVideoPlayer: (_asset: unknown, setup: (value: unknown) => void) => { setup(player); return player; }, VideoView: 'VideoView' },
     'react-native': {
       AccessibilityInfo: { isReduceMotionEnabled: () => preference, addEventListener: () => ({ remove() {} }) },
-      Animated: animated, Easing: { inOut: (x: unknown) => x, cubic: 'cubic', sin: 'sin' }, Image: 'Image', StyleSheet: { create: (x: unknown) => x, absoluteFillObject: {} }, useWindowDimensions: () => ({ width: 390 }), View: 'View',
+      Animated: animated, Easing: { inOut: (x: unknown) => x, cubic: 'cubic', sin: 'sin' }, Image: 'Image', StyleSheet: { create: (x: unknown) => x, absoluteFillObject: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 } }, useWindowDimensions: () => ({ width: 390, height: 844 }), View: 'View',
     },
     './Text': { Text: 'Text' }, './theme-context': { useTheme: () => ({ theme: { dark: false, colors: { bg: '#fff', text: '#111' } } }) },
     '../lib/stackrSizing': { stackrLogoSizes: { loadingWordmarkHeightRatio: 0.2 } }, '../lib/typography': { typeScale: { sectionTitle: {}, caption: {} } },
@@ -67,13 +74,24 @@ function createHost(preference: Promise<boolean>) {
   const Screen = module.exports.StackrStartupVideo as (props: { onComplete: () => void }) => unknown;
   const render = () => {
     cursor = 0;
-    Screen({ onComplete: () => { completions += 1; } });
+    const tree = Screen({ onComplete: () => { completions += 1; } });
     for (const record of effects) { if (record && !record.cleanup) { const cleanup = record.effect(); if (cleanup) record.cleanup = cleanup; } }
+    return tree;
   };
   return { render, starts: () => starts, completions: () => completions, end: () => listeners.get('playToEnd')?.(), timeout: () => { for (const callback of timers.values()) callback(); }, unmount: () => { for (const effect of effects) effect?.cleanup?.(); }, listeners, timers };
 }
 
 async function settle() { await Promise.resolve(); await Promise.resolve(); }
+
+function findNode(node: any, predicate: (node: any) => boolean): any {
+  if (!node || typeof node !== 'object') return null;
+  if (predicate(node)) return node;
+  for (const child of node.props?.children?.flat(Infinity) ?? []) {
+    const found = findNode(child, predicate);
+    if (found) return found;
+  }
+  return null;
+}
 
 async function main() {
 const pending = deferred<boolean>();
@@ -90,6 +108,42 @@ allowedHost.render();
 assert.equal(allowedHost.starts(), 0, 'motion remains paused while the preference is pending');
 allowed.resolve(false); await settle(); allowedHost.render();
 assert.equal(allowedHost.starts(), 1, 'the exact video starts once after the system allows motion');
+let openingTree = allowedHost.render();
+const frame = findNode(openingTree, node => node.type === 'View' && typeof node.props.onLayout === 'function');
+assert.ok(frame, 'poster and video require one explicitly sized native frame');
+const frameSize = frame.props.style.find((style: any) => typeof style?.width === 'number');
+assert.equal(frameSize.width, 320, 'the frame retains the established splash size');
+assert.equal(frameSize.height, 320, 'the reveal has a square frame');
+const video = findNode(openingTree, node => node.type === 'VideoView');
+const poster = findNode(openingTree, node => node.type === 'Image');
+assert.equal(poster, null, 'allowed motion must not flash the finished poster before the formation starts');
+assert.equal(video.props.style[1].opacity, 0, 'video stays hidden before its native frame is ready');
+video.props.onFirstFrameRender();
+openingTree = allowedHost.render();
+assert.equal(findNode(openingTree, node => node.type === 'VideoView').props.style[1].opacity, 0, 'an early first-frame event must not expose the video before native layout');
+frame.props.onLayout({ nativeEvent: { layout: { width: 0, height: 0 } } });
+assert.equal(findNode(allowedHost.render(), node => node.type === 'VideoView').props.style[1].opacity, 0, 'zero-size layout cannot complete the handoff');
+frame.props.onLayout({ nativeEvent: { layout: { width: 320, height: 320 } } });
+assert.equal(findNode(allowedHost.render(), node => node.type === 'VideoView').props.style[1].opacity, 1, 'the reveal is visible only after both native layout and a rendered frame');
+const appConfig = JSON.parse(readFileSync('app.json', 'utf8'));
+const nativeSplash = appConfig.expo.plugins.find((plugin: any) => Array.isArray(plugin) && plugin[0] === 'expo-splash-screen')[1];
+assert.equal(nativeSplash.image, './assets/startup/stackr-premium-first-frame.png', 'native startup must begin on the approved video’s opening frame, not its finished logo');
+assert.equal(
+  createHash('sha256').update(readFileSync(nativeSplash.image)).digest('hex'),
+  '56edc45df636e2e5393502e34cb607c7e809732f07d8e133d043f507fac7f1a6',
+  'The native handoff still is the full-resolution first frame extracted from the unchanged approved MP4.',
+);
+const { getIosSplashConfig } = requireFromProject('@expo/prebuild-config/build/plugins/unversioned/expo-splash-screen/getIosSplashConfig');
+const { getTemplateAsync } = requireFromProject('@expo/prebuild-config/build/plugins/unversioned/expo-splash-screen/withIosSplashScreenStoryboard');
+const { applySplashScreenStoryboard } = requireFromProject('@expo/prebuild-config/build/plugins/unversioned/expo-splash-screen/withIosSplashScreenStoryboardImage');
+const iosSplash = getIosSplashConfig(appConfig.expo, nativeSplash);
+assert.equal(iosSplash.image, nativeSplash.image, 'the installed Expo plugin retains the opening still');
+const storyboard = applySplashScreenStoryboard(await getTemplateAsync(), iosSplash);
+const launchView = storyboard.document.scenes[0].scene[0].objects[0].viewController[0].view[0];
+assert.equal(launchView.subviews[0].imageView.length, 1, 'generated iOS storyboard keeps a valid image view and constraints');
+assert.equal(launchView.subviews[0].imageView[0].rect[0].$.width, 320, 'native opening still matches the player’s centred square');
+assert.equal(launchView.subviews[0].imageView[0].rect[0].$.height, 320);
+assert.equal(launchView.subviews[0].imageView[0].$.image, 'SplashScreenLogo');
 allowedHost.end(); allowedHost.end();
 assert.equal(allowedHost.completions(), 1, 'playback completes startup exactly once');
 allowedHost.unmount();

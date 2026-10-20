@@ -25,7 +25,7 @@ function isLoopbackHost(value) {
 }
 
 function isAllowedPreviewRead(pathname) {
-  return pathname === '/search' || pathname === '/sets' || pathname === '/assets/manifest'
+  return pathname === '/search' || pathname === '/sets' || pathname === '/pokemon' || pathname === '/assets/manifest'
     || /^\/sets\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}(?:\/cards)?$/i.test(pathname)
     || /^\/cards\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}(?:\/variants)?$/i.test(pathname);
 }

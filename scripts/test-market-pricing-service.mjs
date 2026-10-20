@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { mock } from 'node:test';
 import { readFileSync } from 'node:fs';
 import express from 'express';
 import createV1Router from '../backend/routes/v1.js';
@@ -343,7 +344,247 @@ async function assertInvalidServiceInput() {
   );
 }
 
-function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], estimates = [], storedExactPrices = [], externalIdentifiers = [], tcgdexSource = null, publishedVersion = null, approvedTcgdexAliases = [], insertErrors = [], onSnapshotUpdate = null }) {
+async function assertMarketMoversRetainsBothBoundedExtremes() {
+  const row = (index, change, overrides = {}) => ({
+    market_identity_id: `10000000-0000-4000-8000-${String(index).padStart(12, '0')}`,
+    variant_id: `20000000-0000-4000-8000-${String(index).padStart(12, '0')}`,
+    sealed_product_variant_id: null, product_kind: 'raw_card', display_currency_code: 'GBP',
+    current_estimate: change == null ? 100 : 100 + change, previous_estimate: 100,
+    percentage_change: change, confidence_score: 0.6, confidence_label: 'medium',
+    calculated_at: '2026-10-18T09:00:00.000Z', previous_calculated_at: '2026-10-17T09:00:00.000Z',
+    ...overrides,
+  });
+  const fixture = (population, options = {}) => {
+    const calls = [];
+    const counts = { started: 0, settled: 0, returned: 0, providers: 0 };
+    const supabase = { schema(schema) {
+      assert.equal(schema, 'api', 'movers read only the stored API projection');
+      return { from(name) {
+        assert.equal(name, 'market_movers', 'movers cannot read holdings, provider tables or refresh queues');
+        const call = { filters: [], orders: [], limit: null };
+        calls.push(call);
+        const query = {
+          select(columns) { assert.equal(columns, '*'); return query; },
+          eq(column, value) { call.filters.push([column, value]); return query; },
+          order(column, order) { call.orders.push([column, order]); return query; },
+          limit(limit) { call.limit = limit; return query; },
+          then(resolve, reject) {
+            return (async () => {
+              counts.started++;
+              try {
+                if (options.gate) await options.gate;
+                const ascending = call.orders[0][1].ascending;
+                if (options.errorDirection === ascending) return { data: null, error: options.error };
+                let rows = population.filter((item) => call.filters.every(([column, value]) => item[column] === value));
+                rows.sort((a, b) => {
+                  for (const [column, order] of call.orders) {
+                    const left = a[column]; const right = b[column];
+                    if (left == null || right == null) {
+                      if (left == null && right == null) continue;
+                      return (left == null ? 1 : -1) * (order.nullsFirst ? -1 : 1);
+                    }
+                    const difference = typeof left === 'number' && typeof right === 'number'
+                      ? left - right : String(left).localeCompare(String(right));
+                    if (difference) return difference * (order.ascending === false ? -1 : 1);
+                  }
+                  return 0;
+                });
+                rows = rows.slice(0, call.limit).map((item) => ({ ...item }));
+                if (options.transform) rows = options.transform(rows, ascending);
+                counts.returned += rows.length;
+                return { data: rows, error: null };
+              } finally { counts.settled++; }
+            })().then(resolve, reject);
+          },
+        };
+        return query;
+      } };
+    } };
+    const service = createMarketPricingService({ supabase, refreshEnabled: false,
+      fetchTcgdexNormalCardPrice: async () => { counts.providers++; throw new Error('Forbidden provider read.'); } });
+    return { service, calls, counts };
+  };
+  const input = { productType: 'raw_card', currency: 'GBP', limit: 100 };
+  const read = async (population, overrides = {}) => {
+    const db = fixture(population);
+    const requested = { ...input, ...overrides };
+    const result = await db.service.marketMovers(requested);
+    const expectedLimit = Math.min(requested.limit, 100);
+    assert.equal(db.calls.length, 2, 'exactly two bounded stored reads supply both extremes');
+    assert.equal(db.counts.started, 2); assert.equal(db.counts.settled, 2);
+    assert.ok(db.counts.returned <= 2 * (expectedLimit + 1));
+    assert.ok(result.movers.length <= expectedLimit);
+    assert.deepEqual(result.pagination, { limit: expectedLimit, nextCursor: null }, 'movers remains a bounded sample without cursor pagination');
+    for (const call of db.calls) {
+      assert.equal(call.limit, expectedLimit + 1);
+      assert.deepEqual(call.filters, [['display_currency_code', 'GBP'], ['product_kind', requested.productType]]);
+      assert.deepEqual(call.orders[1], ['market_identity_id', { ascending: true }], 'equal percentages have deterministic database ordering');
+      assert.equal(call.orders[0][1].nullsFirst, false);
+    }
+    assert.equal(db.counts.providers, 0);
+    return result.movers;
+  };
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => { throw new Error('Network forbidden in stored mover fixtures.'); };
+  try {
+    const rises = Array.from({ length: 150 }, (_, i) => row(i + 1, i + 1));
+    const falls = Array.from({ length: 150 }, (_, i) => row(i + 151, -1 - i / 2));
+    const mixed = await read([...rises, row(500, -50)]);
+    assert.equal(mixed.length, 100);
+    assert.equal(mixed.filter((item) => item.percentageChange < 0).length, 1, 'a genuine fall survives more than 100 positive comparisons');
+    const inverse = await read([...falls, row(501, 50)]);
+    assert.equal(inverse.filter((item) => item.percentageChange > 0).length, 1, 'a genuine rise survives more than 100 falls');
+    const balanced = await read([...rises, ...falls]);
+    assert.equal(balanced.filter((item) => item.percentageChange > 0).length, 50);
+    assert.equal(balanced.filter((item) => item.percentageChange < 0).length, 50);
+    assert.equal((await read(rises)).length, 100, 'one available direction fills otherwise unused slots');
+    assert.equal((await read(falls)).length, 100);
+    assert.equal((await read([], { limit: 2 })).length, 0, 'verified empty is still empty');
+    const small = [row(1, 10), row(2, -30), row(3, 20), row(4, -5), row(5, 0)];
+    assert.deepEqual((await read(small, { limit: 1 })).map((item) => item.percentageChange), [-30], 'limit one chooses the strongest absolute percentage');
+    assert.deepEqual((await read(small, { limit: 2 })).map((item) => item.percentageChange), [20, -30]);
+    assert.deepEqual((await read(small, { limit: 3 })).map((item) => item.percentageChange), [20, 10, -30], 'odd capacity takes the next strongest remaining comparison');
+    assert.equal((await read(small, { limit: 1000 })).length, 5, 'caller limits above 100 remain clamped');
+    const ties = [row(3, -10), row(2, 10), row(1, 10), row(4, -10)];
+    assert.deepEqual((await read(ties, { limit: 2 })).map((item) => item.variantId), [row(1, 10).variant_id, row(3, -10).variant_id]);
+    assert.deepEqual((await read([...ties].reverse(), { limit: 2 })).map((item) => item.variantId), [row(1, 10).variant_id, row(3, -10).variant_id]);
+    assert.equal((await read([small[0], small[0], small[1]], { limit: 10 })).length, 2, 'identical overlaps collapse under exact market identity');
+    const sameVariant = [row(1, 10), row(2, -10, { variant_id: row(1, 10).variant_id })];
+    assert.equal((await read(sameVariant, { limit: 10 })).length, 2, 'different condition identities sharing one raw variant are retained separately');
+    assert.equal((await read(sameVariant.map((item) => ({ ...item, product_kind: 'graded_card' })), { productType: 'graded_card', limit: 10 })).length, 2,
+      'different grade identities sharing a variant are not collapsed');
+    const nulls = await read([row(1, 0), row(2, null, { current_estimate: 0, previous_estimate: 0 }),
+      row(3, null, { previous_estimate: null })], { limit: 10 });
+    assert.equal(nulls.find((item) => item.variantId === row(1, 0).variant_id).percentageChange, 0);
+    assert.equal(nulls.find((item) => item.variantId === row(2, null).variant_id).currentEstimate, 0, 'known zero remains numeric zero');
+    assert.equal(nulls.find((item) => item.variantId === row(3, null).variant_id).previousEstimate, null, 'missing evidence never becomes zero');
+    assert.deepEqual((await read([row(2, 0), row(1, 0)], { limit: 1 })).map((item) => item.variantId), [row(1, 0).variant_id], 'unchanged-only samples remain available');
+    assert.equal((await read([row(1, 1), row(2, -90, { display_currency_code: 'USD' }), row(3, 90, { product_kind: 'graded_card' })])).length, 1,
+      'currency and product constraints apply before both query caps');
+    const allProducts = fixture([row(1, 1), row(2, -1, { product_kind: 'graded_card' })]);
+    assert.equal((await allProducts.service.marketMovers({ currency: 'GBP', limit: 10 })).movers.length, 2);
+    assert.ok(allProducts.calls.every((call) => call.filters.length === 1), 'omitting the optional product selector preserves its existing contract');
+
+    let release; const gate = new Promise((resolve) => { release = resolve; });
+    const parallel = fixture(small, { gate });
+    const pending = parallel.service.marketMovers(input);
+    try { await new Promise((resolve) => setImmediate(resolve)); assert.equal(parallel.counts.started, 2, 'both stored reads start before either is allowed to settle'); }
+    finally { release(); await pending; }
+    for (const direction of [false, true]) {
+      const failure = Object.assign(new Error('fixture read failure'), { status: 503 });
+      const failed = fixture(small, { errorDirection: direction, error: failure });
+      await assert.rejects(() => failed.service.marketMovers(input), (error) => error === failure,
+        'a failed direction is a retryable failure, never a partial successful or empty sample');
+      assert.equal(failed.counts.settled, 2, 'both reads are observed even when one fails');
+    }
+    const denial = Object.assign(new Error('fixture denied'), { status: 403 });
+    await assert.rejects(() => fixture(small, { errorDirection: true, error: denial }).service.marketMovers(input), (error) => error === denial,
+      'authentication failure must not become empty prices');
+    const conflict = fixture(small, { transform: (rows, ascending) => rows.map((item) => ascending && item.market_identity_id === small[0].market_identity_id
+      ? { ...item, current_estimate: item.current_estimate + 1 } : item) });
+    await assert.rejects(() => conflict.service.marketMovers(input), (error) => error.status === 503 && error.code === 'market_comparison_changed',
+      'disagreeing concurrent evidence for the same exact identity must not select an arbitrary price');
+    const invalid = fixture([row(1, 1, { market_identity_id: null })]);
+    await assert.rejects(() => invalid.service.marketMovers(input), (error) => error.status === 503 && error.code === 'market_comparison_read_invalid');
+    const overflow = fixture(small, { transform: (rows) => [...rows, ...rows, ...rows] });
+    await assert.rejects(() => overflow.service.marketMovers({ ...input, limit: 2 }), (error) => error.status === 503 && error.code === 'market_comparison_read_invalid');
+    const badInput = fixture([]);
+    await assert.rejects(() => badInput.service.marketMovers({ limit: 0 }), (error) => error.status === 400);
+    await assert.rejects(() => badInput.service.marketMovers({ productType: 'unknown' }), (error) => error.status === 400);
+    assert.equal(badInput.calls.length, 0, 'invalid input cannot start either stored read');
+  } finally { globalThis.fetch = originalFetch; }
+}
+
+async function assertGradedPriceRequiresExactIdentity() {
+  const variantId = '90909090-9090-4909-8909-909090909090';
+  const estimate = (grader, grade, amount, calculatedAt) => ({
+    variant_id: variantId, product_kind: 'graded_card', display_currency_code: 'GBP',
+    condition_code: null, grader_code: grader, grade_value: grade,
+    evidence_status: 'market_estimate', central_estimate: amount, calculated_at: calculatedAt,
+  });
+  const estimates = [
+    estimate('PSA', '10', 321, '2026-10-01'), estimate('PSA', '9', 190, '2026-10-02'),
+    estimate('BGS', '10', 420, '2026-10-03'),
+  ];
+  for (const missingScope of [{}, { grader: 'PSA' }, { grade: '10' }, { grader: '', grade: '10' }, { grader: 'PSA', grade: ' ' }]) {
+    const db = createSnapshotSupabase({ metadata: [], estimates });
+    const price = await createMarketPricingService({ supabase: db }).price(variantId,
+      { productType: 'graded_card', currency: 'GBP', ...missingScope });
+    assert.equal(price.status, 'unavailable', 'incomplete slab identity cannot select an arbitrary stored grader or grade');
+    assert.equal(price.unavailableReason, 'grader_and_grade_required_for_graded_price');
+    assert.equal(price.estimates.central, null);
+    assert.equal(db.equalities.length, 0, 'incomplete slab identity is rejected before reading estimate rows');
+  }
+  const service = createMarketPricingService({ supabase: createSnapshotSupabase({ metadata: [], estimates }) });
+  assert.equal((await service.price(variantId, { productType: 'graded_card', currency: 'GBP', grader: 'psa', grade: '10' })).estimates.central,
+    321, 'complete slab identity retains the requested grader and grade despite newer competing slabs');
+  assert.equal((await service.price(variantId, { productType: 'graded_card', currency: 'GBP', grader: 'PSA', grade: '8' })).status,
+    'unavailable', 'a missing exact grade cannot borrow another slab value');
+}
+
+
+async function assertHistoryKeepsExactRawScope() {
+  const variantId = '92929292-9292-4929-8929-929292929292';
+  const row = (observationId, overrides = {}) => ({
+    observation_id: observationId, variant_id: variantId, product_kind: 'raw_card', currency_code: 'GBP',
+    condition_code: 'raw_near_mint', observation_type: 'sold_observation', observed_price: 75,
+    shipping_price: null, observed_at: '2026-10-09T12:00:00Z', ...overrides,
+  });
+  const history = [
+    row('near-mint'),
+    row('played', { condition_code: 'raw_lightly_played', observed_price: 30 }),
+    row('mint', { condition_code: 'raw_mint', observed_price: 90 }),
+    row('foreign', { currency_code: 'USD', observed_price: 120 }),
+    row('slab-9', { product_kind: 'graded_card', condition_code: null, grader_code: 'PSA', grade_label: 'Mint 9', observed_price: 200 }),
+    row('slab-10', { product_kind: 'graded_card', condition_code: null, grader_code: 'PSA', grade_label: 'Gem Mint 10', observed_price: 400 }),
+    row('sibling', { variant_id: '93939393-9393-4939-8939-939393939393' }),
+    row('asking', { observation_type: 'active_listing', observed_price: 150 }),
+  ];
+  const db = createSnapshotSupabase({ metadata: [], history });
+  const service = createMarketPricingService({ supabase: db });
+  const sold = await service.priceHistory(variantId, { observationType: 'sold_observation' });
+  assert.deepEqual(sold.observations.map((observation) => observation.observationId), ['near-mint'],
+    'default raw history uses the exact variant, GBP and near-mint condition without played/foreign/slab sales');
+  assert.equal(sold.observations[0].observedPrice, 75);
+  assert.equal(sold.observations[0].shippingPrice, null, 'unknown delivery remains unknown');
+  assert.equal(sold.observations[0].currency, 'GBP', 'history returns recorded currency rather than implicit FX');
+  const played = await service.priceHistory(variantId, { observationType: 'sold_observation', condition: 'lightly_played' });
+  assert.deepEqual(played.observations.map((observation) => observation.observationId), ['played'],
+    'an explicit condition remains separate from the default near-mint history');
+  const foreign = await service.priceHistory(variantId, { observationType: 'sold_observation', currency: 'USD' });
+  assert.deepEqual(foreign.observations.map((observation) => observation.observationId), ['foreign']);
+  assert.equal(foreign.observations[0].observedPrice, 120, 'foreign prices remain in their own recorded currency');
+  const allRaw = await service.priceHistory(variantId);
+  assert.deepEqual(allRaw.observations.map((observation) => observation.observationType).sort(), ['active_listing', 'sold_observation'],
+    'unfiltered history preserves separate asking/sold observation types instead of relabelling them');
+  const recent = new Date(Date.now() - 86400000).toISOString();
+  const proofRows = [
+    ...Array.from({ length: 20 }, (_, index) => row(`unproven-${index}`, { observed_at: new Date().toISOString(), proven_last_sold: false, sold_at: recent })),
+    row('old-proof', { observed_at: new Date().toISOString(), proven_last_sold: true, sold_at: '2020-01-01T00:00:00Z' }),
+    row('future-proof', { observed_at: new Date().toISOString(), proven_last_sold: true, sold_at: new Date(Date.now() + 86400000).toISOString() }),
+    row('recent-proof', { observed_at: recent, proven_last_sold: true, sold_at: recent }),
+  ];
+  const provenService = createMarketPricingService({ supabase: createSnapshotSupabase({ metadata: [], history: proofRows }) });
+  const filteredProof = await provenService.priceHistory(variantId, { limit: 14, observationType: 'sold_observation', provenOnly: 'true',
+    soldSince: new Date(Date.now() - 7 * 86400000).toISOString() });
+  assert.deepEqual(filteredProof.observations.map(observation => observation.observationId), ['recent-proof'],
+    'unverified and out-of-window observations are filtered before pagination rather than hiding a valid recent sale');
+  await assert.rejects(provenService.priceHistory(variantId, { provenOnly: 'yes' }), error => error.code === 'invalid_proven_only');
+  await assert.rejects(provenService.priceHistory(variantId, { soldSince: '123' }), error => error.code === 'invalid_sold_since');
+  for (const scope of [
+    { productType: 'graded_card' }, { productType: 'graded_card', grader: 'PSA' },
+    { productType: 'graded_card', grader: 'PSA', grade: '10' }, { productType: 'graded_card', grader: 'PSA', grade: '9' },
+    { productType: 'raw_card', grade: '10' }, { productType: 'raw_card', grader: 'PSA' },
+  ]) {
+    const reads = db.equalities.length;
+    await assert.rejects(service.priceHistory(variantId, scope),
+      (error) => error.status === 422 && error.code === 'unsupported_graded_history_identity',
+      'unfilterable graded history is explicitly unsupported rather than borrowing another slab grade');
+    assert.equal(db.equalities.length, reads, 'unsupported graded history does not read mixed evidence rows');
+  }
+}
+
+function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], estimates = [], history = [], storedExactPrices = [], externalIdentifiers = [], tcgdexSource = null, publishedVersion = null, approvedTcgdexAliases = [], insertErrors = [], onSnapshotUpdate = null }) {
   const limits = [];
   const inserted = [];
   const updates = [];
@@ -364,7 +605,9 @@ function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], esti
                 ? snapshotRows
                 : schemaName === 'api' && tableName === 'market_price_estimates'
                   ? estimates
-                  : tableName === 'market_price_snapshots'
+                  : schemaName === 'api' && tableName === 'market_price_history'
+                    ? history
+                    : tableName === 'market_price_snapshots'
                     ? snapshotRows
                     : tableName === 'price_refresh_queue'
                       ? queueRows
@@ -393,6 +636,10 @@ function createSnapshotSupabase({ metadata, snapshots = [], queueRows = [], esti
       },
       gte(column, value) {
         rows = rows.filter((row) => String(row[column] ?? '') >= String(value));
+        return builder;
+      },
+      lte(column, value) {
+        rows = rows.filter((row) => row[column] != null && String(row[column]) <= String(value));
         return builder;
       },
       lt(column, value) {
@@ -642,6 +889,26 @@ async function assertLabelledLegacySnapshotFallback() {
   const unavailable = await empty.price(variantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' });
   assert.equal(unavailable.status, 'unavailable', 'a numeric null must not become a £0 legacy price');
   assert.equal(unavailable.estimates.central, null);
+  for (const slabOverride of [{ grader: 'PSA' }, { grade: '10' }, { grader: 'PSA', grade: '10' }]) {
+    const incompatible = await service.price(variantId, { productType: 'raw_card', currency: 'GBP', ...slabOverride });
+    assert.equal(incompatible.status, 'unavailable', 'raw requests with slab qualifiers cannot inherit a legacy raw quote');
+    assert.equal(incompatible.estimates.central, null);
+  }
+
+  const lowOnly = createMarketPricingService({
+    supabase: createSnapshotSupabase({ metadata, snapshots: [snapshot({ tcgdex_price: null, tcg_mid: null, tcg_low: 0.25, market_price_gbp: null })] }),
+  });
+  assert.equal((await lowOnly.price(variantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' })).status,
+    'unavailable', 'a stored lowest asking price alone cannot become a central market estimate');
+  for (const marketColumn of ['tcgdex_price', 'tcg_mid', 'market_price_gbp']) {
+    const supported = createMarketPricingService({
+      supabase: createSnapshotSupabase({ metadata, snapshots: [snapshot({ tcgdex_price: null, tcg_mid: null,
+        market_price_gbp: null, tcg_low: 0.25, [marketColumn]: 42.55 })] }),
+    });
+    const paired = await supported.price(variantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' });
+    assert.equal(paired.estimates.central, 42.55, `${marketColumn} remains a supported stored market value`);
+    assert.equal(paired.estimates.low, 0.25, 'the low range stays separate from the market center');
+  }
 
   const usd = await service.price(variantId, { productType: 'raw_card', currency: 'USD', condition: 'near_mint' });
   assert.equal(usd.status, 'unavailable', 'a GBP snapshot must not serve a USD request');
@@ -1231,8 +1498,31 @@ async function assertExactOwnerProviderRefresh() {
   const second = concurrentService.refreshExactProviderEstimate(concurrentVariantId, { productType: 'raw_card', currency: 'GBP', condition: 'near_mint' });
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(concurrentCalls, 1, 'concurrent refresh requests must share one provider call');
+  const unsupportedScopes = [
+    { productType: 'graded_card', grader: 'PSA', grade: '10', currency: 'GBP' },
+    { productType: 'sealed_product', currency: 'GBP' },
+    { productType: 'raw_card', condition: 'damaged', currency: 'GBP' },
+    { productType: 'raw_card', condition: 'near_mint', currency: 'USD' },
+    { productType: 'raw_card', condition: 'near_mint', currency: 'GBP', grader: 'PSA' },
+    { productType: 'raw_card', condition: 'near_mint', currency: 'GBP', grade: '10' },
+  ];
+  for (const scope of unsupportedScopes) {
+    await assert.rejects(concurrentService.refreshExactProviderEstimate(concurrentVariantId, scope),
+      (error) => error.code === 'unsupported_refresh_scope',
+      'an unsupported request cannot borrow a pending quote for the same canonical variant');
+  }
+  const supportedAlias = concurrentService.refreshExactProviderEstimate(concurrentVariantId,
+    { productType: 'raw_card', currency: 'gbp', condition: 'raw_near_mint' });
+  assert.equal(concurrentCalls, 1, 'supported condition/currency spellings reuse the exact raw quote without another provider request');
   resolveQuote({ providerCardId: 'base3-4', language: 'en', number: '4/102', price: 12.5, pricingUpdatedAt: new Date().toISOString() });
-  await Promise.all([first, second]);
+  const concurrentPrices = await Promise.all([first, second, supportedAlias]);
+  assert.ok(concurrentPrices.every((price) => price.productType === 'raw_card' && price.currency === 'GBP' && price.estimates.central === 12.5));
+  for (const scope of unsupportedScopes) {
+    await assert.rejects(concurrentService.refreshExactProviderEstimate(concurrentVariantId, scope),
+      (error) => error.code === 'unsupported_refresh_scope',
+      'an unsupported request keeps its scope error even when a raw refresh is in cooldown');
+  }
+  assert.equal(concurrentCalls, 1);
 
   const normal = summariseTcgdexNormalPricing({
     id: 'base3-4', localId: '4/102', set: { id: 'base3' },
@@ -1389,6 +1679,10 @@ async function assertExactProviderDailySnapshotConflictHandling() {
   const source = { id: '44444444-4444-4444-8444-444444444444', code: 'tcgdex', active: true, licence_status: 'approved', deprecated_at: null };
   const version = { id: '33333333-3333-4333-8333-333333333333', status: 'published', language_code: 'en', deprecated_at: null, superseded_by_version_id: null };
   const now = new Date();
+  const utcDayStart = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  // Keep same-day retrieval fixtures inside their day; provider timestamps retain their ordering.
+  const sameUtcDaySnapshotAt = (offset) => new Date(Math.max(utcDayStart,
+    Math.min(now.getTime() + offset, utcDayStart + 24 * 60 * 60_000 - 1))).toISOString();
   const fixture = (variantId) => {
     const metadata = {
       variant_id: variantId, printing_id: '66666666-6666-4666-8666-666666666666', language_code: 'en',
@@ -1406,7 +1700,7 @@ async function assertExactProviderDailySnapshotConflictHandling() {
       canonical_identity_key: identity.identityKey, pricing_identity_json: { ...identity, canonicalVariantId: variantId, canonical_variant_id: variantId },
       tcgdex_card_id: 'base3-4', tcgdex_price: 11, price_source: 'tcgdex_market', primary_source: 'tcgdex', price_type: 'market_estimate', proven_last_sold: false,
       tcgdex_price_updated_at: new Date(now.getTime() + 60_000).toISOString(), methodology_version: null,
-      calculated_at: new Date(now.getTime() + 60_000).toISOString(), snapshot_at: new Date(now.getTime() + 60_000).toISOString(), stale_after: new Date(now.getTime() + 7 * 60 * 60_000).toISOString(), is_stale: false,
+      calculated_at: new Date(now.getTime() + 60_000).toISOString(), snapshot_at: sameUtcDaySnapshotAt(60_000), stale_after: new Date(now.getTime() + 7 * 60 * 60_000).toISOString(), is_stale: false,
       ...overrides,
     });
     const provider = async () => ({ providerCardId: 'base3-4', language: 'en', number: '4/102', price: 12.5, priceSource: 'tcgdex_market', pricingUpdatedAt: now.toISOString(), raw: { id: 'base3-4' } });
@@ -1451,7 +1745,7 @@ async function assertExactProviderDailySnapshotConflictHandling() {
 
   const olderProviderId = '22222222-2222-4222-8222-222222222222';
   const olderProvider = fixture(olderProviderId);
-  const olderProviderDb = createSnapshotSupabase({ metadata: olderProvider.metadata, snapshots: [olderProvider.snapshot({ tcgdex_price_updated_at: new Date(now.getTime() - 60_000).toISOString(), snapshot_at: new Date(now.getTime() + 60_000).toISOString(), calculated_at: new Date(now.getTime() + 60_000).toISOString() })], insertErrors: [{ code: '23505' }], tcgdexSource: source, publishedVersion: version, approvedTcgdexAliases: olderProvider.aliases });
+  const olderProviderDb = createSnapshotSupabase({ metadata: olderProvider.metadata, snapshots: [olderProvider.snapshot({ tcgdex_price_updated_at: new Date(now.getTime() - 60_000).toISOString(), snapshot_at: sameUtcDaySnapshotAt(60_000), calculated_at: new Date(now.getTime() + 60_000).toISOString() })], insertErrors: [{ code: '23505' }], tcgdexSource: source, publishedVersion: version, approvedTcgdexAliases: olderProvider.aliases });
   const olderProviderResult = await createMarketPricingService({ supabase: olderProviderDb, fetchTcgdexNormalCardPrice: olderProvider.provider }).refreshExactProviderEstimate(olderProviderId, input);
   assert.equal(olderProviderResult.estimates.central, 12.5, 'a later retrieval with an older provider timestamp cannot displace a fresher incoming provider quote');
   assert.equal(olderProviderDb.updates.length, 1);
@@ -1459,9 +1753,9 @@ async function assertExactProviderDailySnapshotConflictHandling() {
   const racedId = '30303030-3030-4030-8030-303030303030';
   const raced = fixture(racedId);
   const racedDb = createSnapshotSupabase({
-    metadata: raced.metadata, snapshots: [raced.snapshot({ tcgdex_price_updated_at: new Date(now.getTime() - 60_000).toISOString(), calculated_at: new Date(now.getTime() - 60_000).toISOString(), snapshot_at: new Date(now.getTime() - 60_000).toISOString() })], insertErrors: [{ code: '23505' }], tcgdexSource: source, publishedVersion: version, approvedTcgdexAliases: raced.aliases,
+    metadata: raced.metadata, snapshots: [raced.snapshot({ tcgdex_price_updated_at: new Date(now.getTime() - 60_000).toISOString(), calculated_at: new Date(now.getTime() - 60_000).toISOString(), snapshot_at: sameUtcDaySnapshotAt(-60_000) })], insertErrors: [{ code: '23505' }], tcgdexSource: source, publishedVersion: version, approvedTcgdexAliases: raced.aliases,
     onSnapshotUpdate: ({ value, snapshotRows }) => {
-      Object.assign(snapshotRows[0], { ...value, tcgdex_price: 13, tcgdex_price_updated_at: new Date(now.getTime() + 120_000).toISOString(), calculated_at: new Date(now.getTime() + 120_000).toISOString(), snapshot_at: new Date(now.getTime() + 120_000).toISOString() });
+      Object.assign(snapshotRows[0], { ...value, tcgdex_price: 13, tcgdex_price_updated_at: new Date(now.getTime() + 120_000).toISOString(), calculated_at: new Date(now.getTime() + 120_000).toISOString(), snapshot_at: sameUtcDaySnapshotAt(120_000) });
       return [];
     },
   });
@@ -1509,26 +1803,46 @@ async function assertNormalProviderFetchAbortsAndClearsInflight() {
   }
 }
 
-assertMigrationShape();
-assertOpenApiAndClientContract();
-assertPricingMathAndTitleValidation();
-await assertEbayAdapterBoundary();
-await assertRoutes();
-await assertInvalidServiceInput();
-await assertLabelledLegacySnapshotFallback();
-await assertOptInGeneralStoredPrices();
-await assertNormalVariantProviderBaseSnapshotIdentity();
-await assertLatestExactSnapshotBatchAvoidsAliasResolution();
-await assertRawPriceDefaultsNearMint();
-await assertCanonicalSnapshotLabelsAndBasis();
-await assertManualRefreshIdentityAndGate();
-await assertIdentityAwareDenseRangeHistory();
-await assertPagedRangeHistoryKeepsBaseline();
-await assertExactOwnerProviderRefresh();
-await assertExactEnglishFinishProviderRefresh();
-await assertSingleHoloProviderRefresh('ja');
-await assertSingleHoloProviderRefresh('en');
-await assertExactProviderDailySnapshotConflictHandling();
-await assertNormalProviderFetchAbortsAndClearsInflight();
+// Calendar-dependent fixtures use one logical instant across setup and service reads.
+mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 9, 18, 12) });
+try {
+  assertMigrationShape();
+  assertOpenApiAndClientContract();
+  assertPricingMathAndTitleValidation();
+  await assertEbayAdapterBoundary();
+  await assertRoutes();
+  await assertInvalidServiceInput();
+  await assertMarketMoversRetainsBothBoundedExtremes();
+  await assertGradedPriceRequiresExactIdentity();
+  await assertHistoryKeepsExactRawScope();
+  await assertLabelledLegacySnapshotFallback();
+  await assertOptInGeneralStoredPrices();
+  await assertNormalVariantProviderBaseSnapshotIdentity();
+  await assertLatestExactSnapshotBatchAvoidsAliasResolution();
+  await assertRawPriceDefaultsNearMint();
+  await assertCanonicalSnapshotLabelsAndBasis();
+  await assertManualRefreshIdentityAndGate();
+  await assertIdentityAwareDenseRangeHistory();
+  await assertPagedRangeHistoryKeepsBaseline();
+  await assertExactOwnerProviderRefresh();
+  await assertExactEnglishFinishProviderRefresh();
+  await assertSingleHoloProviderRefresh('ja');
+  await assertSingleHoloProviderRefresh('en');
+  // Separate logical days avoid sharing the production five-minute refresh cooldown.
+  for (const fixtureTime of [
+    Date.UTC(2026, 9, 18, 12),
+    Date.UTC(2026, 9, 19, 23, 58, 4, 105),
+    Date.UTC(2026, 9, 20, 23, 59, 59, 999),
+    Date.UTC(2026, 9, 22),
+    Date.UTC(2026, 9, 23, 0, 0, 0, 1),
+    Date.UTC(2026, 9, 24, 0, 0, 59, 999),
+  ]) {
+    mock.timers.setTime(fixtureTime);
+    await assertExactProviderDailySnapshotConflictHandling();
+  }
+  await assertNormalProviderFetchAbortsAndClearsInflight();
 
-console.log('Market pricing service tests passed.');
+  console.log('Market pricing service tests passed.');
+} finally {
+  mock.timers.reset();
+}

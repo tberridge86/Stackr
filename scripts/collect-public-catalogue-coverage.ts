@@ -3,7 +3,7 @@
  * card image descriptors are recorded but never fetched as image binaries.
  *
  * npx tsx scripts/collect-public-catalogue-coverage.ts
- * npx tsx scripts/collect-public-catalogue-coverage.ts --output-dir=D:/Stackr-1/.tmp/four-language-coverage/20260905-public-api-example
+ * npx tsx scripts/collect-public-catalogue-coverage.ts --output-dir=D:/Stackr-organization/active-runtime/four-language-coverage/20260905-public-api-example
  */
 import { createHash, randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
@@ -12,7 +12,7 @@ import { isAbsolute, relative, resolve } from 'node:path';
 type Row = Record<string, any>;
 const BASE = 'https://api.stackrtcg.com/v1';
 const LANGUAGES = ['en', 'ja', 'zh-cn', 'zh-tw'] as const;
-const ROOT = resolve('.tmp/four-language-coverage');
+const ROOT = resolve('D:/Stackr-organization/active-runtime/four-language-coverage');
 const MAX_CONCURRENCY = 3;
 const LIMIT = 250;
 
@@ -23,7 +23,7 @@ function text(value: unknown) { return typeof value === 'string' && value.trim()
 function dateToken() { return new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z'); }
 export function resolveOutputDirectory(value?: string) {
   const target = resolve(value || `${ROOT}/20260905-public-api-${dateToken()}-${randomUUID().slice(0, 8)}`); const contained = relative(ROOT, target);
-  if (!contained || contained.startsWith('..') || isAbsolute(contained) || existsSync(target) || !/^20260905-public-api-/.test(contained.split(/[\\/]/)[0])) throw new Error('Output must be a new 20260905-public-api-* directory under D:/Stackr-1/.tmp/four-language-coverage.');
+  if (!contained || contained.startsWith('..') || isAbsolute(contained) || existsSync(target) || !/^20260905-public-api-/.test(contained.split(/[\\/]/)[0])) throw new Error(`Output must be a new 20260905-public-api-* directory under ${ROOT}.`);
   return target;
 }
 function sleep(ms: number) { return new Promise((resolveSleep) => setTimeout(resolveSleep, ms)); }

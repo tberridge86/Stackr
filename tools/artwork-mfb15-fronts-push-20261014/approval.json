@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 15,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "en",
+  "source_counts": {
+    "bulbapedia": 15
+  },
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "underlying_copyright_licence_verified": false,
+  "owner_website_permission_attested": true,
+  "approved_at": "2026-10-14",
+  "cohort_sha256": "4b8406e829a4637e588d44cd3df78806e0a1ed638f46928c07252f59eecae42c",
+  "finite_decision_sha256": "777cb65189762d31cfec71d5b2026229076be3aaf2c85c2fa0e10d9f959dced3",
+  "metadata_revision": 2,
+  "observation_correction_sha256": "04e10cb81935fd3d440705a849e886f86a56e6fca319a84ee9fc0e7dedad2d9e",
+  "owner_permission_attestation_sha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+  "owner_instructions": [
+    "all the missing images i gave links to",
+    "i have permission from the 4 websites - all the links i sent shopuld bridge majoprity of the missings cards"
+  ],
+  "scope": "Store, resize and display exactly fifteen inspected English unnumbered My First Battle source fronts and forty-five derivatives. Retain nineteen unresolved canonical tasks (nine captured candidates with historical holds (including one hold observation under reconciliation) and ten source-choice ambiguities). Canonical aliases are internal catalogue keys, not printed collector numbers or National Dex numbers. Preserve all names, metadata, variants, old immutable set artwork/links and full Scrydex source row. Create only one new inactive under_review attribution-required Bulbapedia provenance source for this finite cohort. Staging fixtures roll back. Per-file TCG Collector/artist attribution and artwork-specific fair-use tags remain; generic footer licence is not an artwork licence. Independent vendor/underlying copyright licence, physical edition/finish and source-wide activation remain false."
+}

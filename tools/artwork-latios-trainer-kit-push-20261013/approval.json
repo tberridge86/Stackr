@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 32,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "en",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "approved_at": "2026-10-13",
+  "cohort_sha256": "3c5a18af706b5c1ecd63f8134e5ebfe5b6787d12c6529b06cebfab1d970463c8",
+  "owner_instructions": [
+    "gather batch EN-CARDS-001 - hey Tif can you take over and process these artworks in their batvhes until we are complete - as you do them make sure they all livwe in production",
+    "using your internet sourcs you can queue it for the production push - we dont need to review",
+    "continue your work flow please - i want to set you loose to work through this Tif can you manage this?"
+  ],
+  "scope": "Store, resize and display exactly these 32 verified Latios trainer-kit source originals and 96 derivative references. All original 32 saved target identities remain fixed. The two earlier Rhyhorn reading errors are superseded by pinned independent inspection of unchanged originals, confirming printed Take Down40. The unpublished30 cohort remains preserved as history. Per-printing source aliases, original hashes, actual pixel observations and minimum detail dimensions are frozen. No card/source defect, canonical metadata/pricing repair, production source insertion, source-wide activation or per-batch human review is asserted. Independent vendor licence and physical foil certification remain unestablished.",
+  "source_counts": {
+    "scrydex": 32
+  }
+}

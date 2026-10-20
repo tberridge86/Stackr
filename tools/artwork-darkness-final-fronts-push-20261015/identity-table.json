@@ -1,0 +1,275 @@
+[
+  {
+    "printing_id": "321e1cd2-8677-4e61-a1d7-3a9f47bcafb0",
+    "set_id": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+    "set_code": "neo4",
+    "language_code": "ja",
+    "collector_number": "102",
+    "card_native_name": "エネルギー増幅器",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "10bda5e3-e914-4519-bd6d-4ee49eae442d"
+    ],
+    "batch_id": "JP-CARDS-017",
+    "source_code": "scrydex",
+    "provider_id": "neo4_ja-102",
+    "image_url": "https://images.scrydex.com/pokemon/neo4_ja-102/large",
+    "original_sha256": "ecc92984cee59268439066aa700bfdd2642aa78500028315d666c43b92e59359",
+    "original_width": 570,
+    "original_height": 799,
+    "body_sha256": "2fa00a118c11ee02033a42a26315831f02d85cf57eb96c28570985c1f4484a3d",
+    "evidence_sha256": "73f01449065b055f63346ef916ce9ffde47b55b1047cfcd1e899afa4dc80717f"
+  },
+  {
+    "printing_id": "3cea11be-02b2-4f43-b394-270fc6cf752e",
+    "set_id": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+    "set_code": "neo4",
+    "language_code": "ja",
+    "collector_number": "112",
+    "card_native_name": "ラジオタワー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "de289be1-707f-4405-850c-c760ce86faab"
+    ],
+    "batch_id": "JP-CARDS-017",
+    "source_code": "scrydex",
+    "provider_id": "neo4_ja-112",
+    "image_url": "https://images.scrydex.com/pokemon/neo4_ja-112/large",
+    "original_sha256": "ac013fd3b3e6d70df10731a07b3e33e9d0e099623ad98a61f1e4695e730bed3a",
+    "original_width": 570,
+    "original_height": 799,
+    "body_sha256": "13b82c4342783a01b49990aebbf709b122327bae3b9b3dd5a21988bfa4c34664",
+    "evidence_sha256": "623f04855cfbca7cf40fe46f20eaa333c4be1b9ff5cab70b7d519d957ff7332f"
+  },
+  {
+    "printing_id": "3d3c9971-cd1a-4dbe-a659-8e4fffd669f2",
+    "set_id": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+    "set_code": "neo4",
+    "language_code": "ja",
+    "collector_number": "104",
+    "card_native_name": "拡大鏡",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "70d44586-048d-41d1-a65d-a420daf26e60"
+    ],
+    "batch_id": "JP-CARDS-017",
+    "source_code": "scrydex",
+    "provider_id": "neo4_ja-104",
+    "image_url": "https://images.scrydex.com/pokemon/neo4_ja-104/large",
+    "original_sha256": "c449ddd89086b8690d13c0d6e0027381414751c93757c89a6e12c29f6d6d0440",
+    "original_width": 570,
+    "original_height": 794,
+    "body_sha256": "8a1a01e3f6d53598cf414dcef91d9a705ea29f8d09f460c70a4bf638726fccfa",
+    "evidence_sha256": "17f1e3bbb4fb2c16e1b04fa89b7cb8e39a5feb192a39b073a1d793d034d1d492"
+  },
+  {
+    "printing_id": "53329b0c-0a4e-4bd8-a800-11c349d6f5d7",
+    "set_id": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+    "set_code": "neo4",
+    "language_code": "ja",
+    "collector_number": "103",
+    "card_native_name": "反撃の爪",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "269f8c0c-92d1-47b8-b06a-8a34a1214326"
+    ],
+    "batch_id": "JP-CARDS-017",
+    "source_code": "scrydex",
+    "provider_id": "neo4_ja-103",
+    "image_url": "https://images.scrydex.com/pokemon/neo4_ja-103/large",
+    "original_sha256": "fa76f889552b3d75de4ca2ce9f44287a8164345149dc596856c6c0193f16cd23",
+    "original_width": 567,
+    "original_height": 800,
+    "body_sha256": "da9f0dd82222e88cedd154d3c0192bff50ea195bdc55fcf8df2203340de5069a",
+    "evidence_sha256": "0a70fcf97729223b4ddebe87f22d062fa30be9d0812686ee80200b94eaec9341"
+  },
+  {
+    "printing_id": "643d3366-7047-459b-b7ef-0a4278785e4e",
+    "set_id": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+    "set_code": "neo4",
+    "language_code": "ja",
+    "collector_number": "106",
+    "card_native_name": "ラッキースタジアム",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "5c58884b-9958-4ba1-8430-af73c0cab9f1"
+    ],
+    "batch_id": "JP-CARDS-017",
+    "source_code": "scrydex",
+    "provider_id": "neo4_ja-106",
+    "image_url": "https://images.scrydex.com/pokemon/neo4_ja-106/large",
+    "original_sha256": "5dee062f5a127cb54f2509044f913e6b65b6aec2e04fd22b40162686db90f658",
+    "original_width": 567,
+    "original_height": 800,
+    "body_sha256": "13cf0e7841716e3388df9afbcb3bc43448fc5801d0e37840a302cce40d7cfebb",
+    "evidence_sha256": "b119bef639444425f9b60796410726cf24c157b24acc2ba95b5cc5a96db7bb09"
+  },
+  {
+    "printing_id": "6c0f9c08-1fc4-4f4e-8c01-bf9db820e06a",
+    "set_id": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+    "set_code": "neo4",
+    "language_code": "ja",
+    "collector_number": "113",
+    "card_native_name": "奇跡のエネルギー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "43e4450e-f35b-482d-987c-64b0a546f1f5"
+    ],
+    "batch_id": "JP-CARDS-017",
+    "source_code": "scrydex",
+    "provider_id": "neo4_ja-113",
+    "image_url": "https://images.scrydex.com/pokemon/neo4_ja-113/large",
+    "original_sha256": "22754251005f8d21b4e358a059829850c7b795fc76f5a67d84dd1b49f7faecf3",
+    "original_width": 567,
+    "original_height": 800,
+    "body_sha256": "1aaf9bc0f2cfc0edd7f3ad4f0dca36cd84e94ce1755e94ba42105d218287ee57",
+    "evidence_sha256": "5451dfbc8107e9527c7e96636b49999c83c2da9594c6c7b9c8a876e3eabb33af"
+  },
+  {
+    "printing_id": "8b7bdb6b-ae3b-4b2b-8965-013c218b5766",
+    "set_id": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+    "set_code": "neo4",
+    "language_code": "ja",
+    "collector_number": "111",
+    "card_native_name": "詐欺師オーク教授の発明",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "718cd280-e3dc-4817-b1b2-059ea8a8306a"
+    ],
+    "batch_id": "JP-CARDS-017",
+    "source_code": "scrydex",
+    "provider_id": "neo4_ja-111",
+    "image_url": "https://images.scrydex.com/pokemon/neo4_ja-111/large",
+    "original_sha256": "70e34a8973615ac20266da169456ec063b51c25626cfbac6fe6aca2d957936e0",
+    "original_width": 570,
+    "original_height": 794,
+    "body_sha256": "6a141221962ae01c67ba589e86e77807f56aaf8e94f27bae26fdbe890243ca2b",
+    "evidence_sha256": "5e38fea7d94351af236a8d75222bd080253770691dfe3c2cb99634ec8362c0ca"
+  },
+  {
+    "printing_id": "9d182887-d279-4aa8-bfd4-7c3c53ddd834",
+    "set_id": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+    "set_code": "neo4",
+    "language_code": "ja",
+    "collector_number": "110",
+    "card_native_name": "壊れた地上ジム",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "b3263116-6453-43e3-b209-953e6706ce3e"
+    ],
+    "batch_id": "JP-CARDS-017",
+    "source_code": "scrydex",
+    "provider_id": "neo4_ja-110",
+    "image_url": "https://images.scrydex.com/pokemon/neo4_ja-110/large",
+    "original_sha256": "e2f100fee5ddefeef34f4c0f50ec745515abecee7e8449a8c4cf7820f1764844",
+    "original_width": 565,
+    "original_height": 800,
+    "body_sha256": "4bd69dfabcfa879435cb0612dd463cbe6df132bd313c56560859b1824fb780a1",
+    "evidence_sha256": "ee4ba84fa10b5e995c6959067476769b275d6564e06d22647f6dce26b30be76b"
+  },
+  {
+    "printing_id": "9f2ec684-fa0d-4308-86b1-cc11a4cd4d54",
+    "set_id": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+    "set_code": "neo4",
+    "language_code": "ja",
+    "collector_number": "107",
+    "card_native_name": "チームロケットの邪悪な行為",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "e57c0e22-231e-4ea1-8d70-0272f5b0dd69"
+    ],
+    "batch_id": "JP-CARDS-017",
+    "source_code": "scrydex",
+    "provider_id": "neo4_ja-107",
+    "image_url": "https://images.scrydex.com/pokemon/neo4_ja-107/large",
+    "original_sha256": "48c742aec2886ec480fb63afa11b0dadb276373bd6d2050c55a690b2cff12bf0",
+    "original_width": 570,
+    "original_height": 799,
+    "body_sha256": "2457acff7f7e878432d65da0399e65864eeec1a96d303b7e6aac70c577c05a5f",
+    "evidence_sha256": "44f1ded87e3fbb74d03ada58bd08dcf6bdc825036a4aa3c220bdaf23212cef62"
+  },
+  {
+    "printing_id": "a210caa0-de01-4caf-aa35-1367a99723f1",
+    "set_id": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+    "set_code": "neo4",
+    "language_code": "ja",
+    "collector_number": "108",
+    "card_native_name": "思考ウェーブマシン",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "f4a81b91-eba3-4ad6-9d64-eeb19384d48a"
+    ],
+    "batch_id": "JP-CARDS-017",
+    "source_code": "scrydex",
+    "provider_id": "neo4_ja-108",
+    "image_url": "https://images.scrydex.com/pokemon/neo4_ja-108/large",
+    "original_sha256": "c750ef6460a2d090b98d996d6aeacb2e5f1afbf45aa5d0e518eca6c5858a28ea",
+    "original_width": 570,
+    "original_height": 797,
+    "body_sha256": "9015f08942db9f0c1692971fb330a36fdd97756b9ae453814f7625f1aeeb87de",
+    "evidence_sha256": "2996e1cc3dbc071fd0d135a2caf237f11b925639bfc1ca1b92b2aae963332b76"
+  },
+  {
+    "printing_id": "a61b14c6-e3f0-45b6-8b8e-09b175969400",
+    "set_id": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+    "set_code": "neo4",
+    "language_code": "ja",
+    "collector_number": "109",
+    "card_native_name": "exp。共有",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "f20b6f01-d00d-43b2-8222-1248d003d52c"
+    ],
+    "batch_id": "JP-CARDS-017",
+    "source_code": "scrydex",
+    "provider_id": "neo4_ja-109",
+    "image_url": "https://images.scrydex.com/pokemon/neo4_ja-109/large",
+    "original_sha256": "4bb18b87b3a66a534f6df2182a1dde6f8593be165f58592016906b0367e7ec8e",
+    "original_width": 569,
+    "original_height": 800,
+    "body_sha256": "275b0a7b06edc4ff54ec47266aba632d05f90e59bdb847449281d93747f52e6d",
+    "evidence_sha256": "e7decd7b4a8de90758e1084043721d4cb14b510bbde24a5d31a933545458a0ad"
+  },
+  {
+    "printing_id": "ac2058d9-5f2c-464c-83dc-86145472f4b4",
+    "set_id": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+    "set_code": "neo4",
+    "language_code": "ja",
+    "collector_number": "105",
+    "card_native_name": "ポケモンパーソナリティテスト",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "9241f36a-931e-4b6e-914a-db6035c09052"
+    ],
+    "batch_id": "JP-CARDS-017",
+    "source_code": "scrydex",
+    "provider_id": "neo4_ja-105",
+    "image_url": "https://images.scrydex.com/pokemon/neo4_ja-105/large",
+    "original_sha256": "142bfb42e99f36a6ee81d22e5be4c6ef3d522d286a7936b6d78b54173a82b9c5",
+    "original_width": 570,
+    "original_height": 797,
+    "body_sha256": "93d318c0e73e3539c22616ca15eaf27582e741cc00c9cbb61966da1e95039f5a",
+    "evidence_sha256": "152db9ed03eb37c7daac4b82675ae5e4bf3fda8c5ea8ad604350eb69570b3f3c"
+  },
+  {
+    "printing_id": "b1b031a2-2e81-4602-90ad-57cab1a04ef0",
+    "set_id": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+    "set_code": "neo4",
+    "language_code": "ja",
+    "collector_number": "229",
+    "card_native_name": "暗い猟犬",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "ae5bf6c7-5706-40ed-9042-330ab173dbe5"
+    ],
+    "batch_id": "JP-CARDS-017",
+    "source_code": "scrydex",
+    "provider_id": "neo4_ja-24",
+    "image_url": "https://images.scrydex.com/pokemon/neo4_ja-24/large",
+    "original_sha256": "130986ffbfc32ce1e6f9201aba739c68b4c80b66f5f5d1cadc7c3887561adb30",
+    "original_width": 570,
+    "original_height": 794,
+    "body_sha256": "ecba51ecda1b293c65a5c385efa2f0efd8203489ffe91b00e77585eba07525ae",
+    "evidence_sha256": "352961c8f04132410d4cc8479c30151665d2503caaff3eeda315e3749155aa6b"
+  }
+]

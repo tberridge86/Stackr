@@ -1,0 +1,2416 @@
+{
+  "schemaVersion": "stackr-price-guard-scoped-release-plan-v1",
+  "observedAt": "2026-10-06T05:36:12Z",
+  "candidate": {
+    "commit": "12215cbe4466fc5928e060c33bff2928aad26981",
+    "path": "supabase/migrations/20261005221812_bounded_provider_identity_guards.sql",
+    "migrationVersion": "20261005221812",
+    "sourceLfSha256": "3365ba71e945381ea03a315dccbc1feae42f3429adab7037c07c22861dcca8f5",
+    "predecessorDefinitionMd5": "ca77044f82345cc18fdc7f2be1cca8f6",
+    "candidateDefinitionMd5": "80c06d896c9a1531229b9df2cd5af3b3",
+    "applied": false
+  },
+  "rollback": {
+    "path": "docs/releases/pricing-identity-guard-rollback-20261006.sql",
+    "mode": "new forward corrective migration only",
+    "localVerified": true,
+    "applied": false
+  },
+  "canonical": {
+    "workflow": ".github/workflows/deploy-staging.yml",
+    "branch": "main",
+    "observedMain": "9044564e109eb77a244a9e511999f7d4e3ae817e",
+    "environment": "staging",
+    "concurrency": "stackr-staging-deployment",
+    "manifest": "supabase/staging-migrations/manifest.json",
+    "expectedAppliedCount": 146,
+    "expectedMaterializedCount": 147,
+    "pendingEntry": "20260827124944_gate0_financial_route_containment",
+    "candidateIncluded": false,
+    "scopedGuardRouteAvailable": false
+  },
+  "targetBaselines": [
+    {
+      "environment": "staging",
+      "project": "lmwfhvexfcoyeuoyrlco",
+      "count": 200,
+      "orderedVersionNameMd5": "71b5df59273c973230515f3a1e4f6d8c",
+      "orderedStatementLedgerSha256": "d2bcf3030ee91723de037a17ddf63af71efd9f6af41ab22a622fff0df102ab77",
+      "old146KeysAndStatementHashesMatch": true,
+      "additionalMigrations": 54,
+      "exactVersionLocalFiles": 34,
+      "exactSingleStatementArrayByteMatches": 24,
+      "unexplainedRawByteDifferences": 10,
+      "withoutExactVersionFile": 20
+    },
+    {
+      "environment": "production",
+      "project": "oakdbbzdqwurpjnoqhmu",
+      "count": 191,
+      "orderedVersionNameMd5": "408e52e0902c6f13887c5b0ed6b16472",
+      "orderedStatementLedgerSha256": "ebba2b984b77d6b341795b61498f08fdc64ad1b60e2d9d612b6f1e3abe964b9b",
+      "note": "Different target ledger; do not use staging history as production baseline."
+    }
+  ],
+  "interpretation": "Raw statement-array byte differences are unresolved provenance, not independently established semantic or deployed function drift. The old staging prefix remains intact; the manifest is stale relative to 54 later applied entries. No migration repair, history rewrite, manifest replacement or schema change was performed.",
+  "requiredSequence": [
+    "Recheck worker state and exact target ledger/function hashes immediately before any release step; stop on drift.",
+    "Release integration must reconcile the 54 later staging entries from their immutable originals (including version aliases/raw differences), or explicitly implement a reviewed pricing-only scope within the existing canonical release workflow with its own exact target baseline. Do not silently replace the Gate0 contract, add the guard to an obsolete ledger, push unrelated pending migrations or create a bypass deployment mechanism.",
+    "Keep main-only exact source attestation, protected environment review, appropriate verified backup and shared deployment concurrency in the canonical route; the intended migration delta is the single guard replacement only.",
+    "Run installed staging native/current publication, title-prefix and name equality, duplicate provider/canonical title, unsupported finish, anonymous/authenticated denial and service-role acceptance controls; verify actual guarded API reads with unchanged eight-second query deadlines.",
+    "Verify failure restores the exact predecessor via the tested new forward rollback; preserve applied migration history.",
+    "Only after live staged API evidence passes may the release owner advance the exact protected production gate, rechecking the distinct production baseline.",
+    "After actual deployed repair, resume or deliberately supersede the partial 04:39 coverage checkpoint; never use source-shadow results for deployed coverage."
+  ],
+  "noRouteDispatched": true,
+  "stagingLedger": [
+    {
+      "version": "20260513170000",
+      "name": "card_fingerprint_regions",
+      "statement_count": 3,
+      "remoteStatementsSha256": "1f9036d8281e2e13118fb46c209d73427768b6b6451bf74214dac80c5d358506"
+    },
+    {
+      "version": "20260513213000",
+      "name": "card_clip_embeddings",
+      "statement_count": 3,
+      "remoteStatementsSha256": "21aa13791506bfcbd1059ccdc187a9e6055138e16450c75d8acb15ea8bfd9ac2"
+    },
+    {
+      "version": "20260516195500",
+      "name": "seller_inventory_sales",
+      "statement_count": 19,
+      "remoteStatementsSha256": "514a486655bb1bfaefb937e674a9a00cd3857f0fbca20a3ff3718bba2e7854be"
+    },
+    {
+      "version": "20260518120000",
+      "name": "local_postcode_distance",
+      "statement_count": 17,
+      "remoteStatementsSha256": "b604799b117b735fe3bac640df4469d0270a006a1a6d1e66d74a83b760f7c22c"
+    },
+    {
+      "version": "20260518124500",
+      "name": "market_price_snapshots_read_policy",
+      "statement_count": 2,
+      "remoteStatementsSha256": "2322951d7ba3ca89d1f02922ccb6f8b33ea1bc76250302e7991bd3506a8e2c0b"
+    },
+    {
+      "version": "20260518133000",
+      "name": "trade_listing_metadata",
+      "statement_count": 1,
+      "remoteStatementsSha256": "aac5d1a64d7b8bc13eff603bf092cfb355685735786bc4611222aae937ccb8b2"
+    },
+    {
+      "version": "20260518142000",
+      "name": "seller_inventory_products",
+      "statement_count": 4,
+      "remoteStatementsSha256": "7afb9557ee10adbbad0651ec3f5faeb3709a4cae575de60b1642501e40c306e9"
+    },
+    {
+      "version": "20260518145500",
+      "name": "market_products",
+      "statement_count": 19,
+      "remoteStatementsSha256": "c5c8b159c13873e4fb0fde5e3032b94c4295bcf4738fb4e112b955ff1778024a"
+    },
+    {
+      "version": "20260518150000",
+      "name": "seed_market_products",
+      "statement_count": 1,
+      "remoteStatementsSha256": "32e645efb39e2e07bf3b4aaf44c0d455f26539072cac02c8d03a3ff6d64d1734"
+    },
+    {
+      "version": "20260519102000",
+      "name": "seed_market_product_expansion",
+      "statement_count": 2,
+      "remoteStatementsSha256": "4a41a46275614657d617d1da2af0e260737c71035b671cffc6ac3f1022c76963"
+    },
+    {
+      "version": "20260519124500",
+      "name": "market_product_tcgcsv_prices",
+      "statement_count": 5,
+      "remoteStatementsSha256": "0c9009b507b4fc6d0049ee8e1b13fa6ca8a245bb73b790e1085e22af517c56be"
+    },
+    {
+      "version": "20260521143000",
+      "name": "admin_social_content",
+      "statement_count": 5,
+      "remoteStatementsSha256": "5dba914aacfc35ad7babf653321eab8f6a2b8db9e8f4ce1b04eb10ff6b0cb073"
+    },
+    {
+      "version": "20260521152000",
+      "name": "community_news_sources",
+      "statement_count": 2,
+      "remoteStatementsSha256": "915a3b07675c6ff4e270f8c09547e66f8a646af823dc6a363ae8a0040dc03c2d"
+    },
+    {
+      "version": "20260526170000",
+      "name": "user_pokedex_cards",
+      "statement_count": 12,
+      "remoteStatementsSha256": "e46f35ea56f2400da2dd062e8950b69dc4a2abe8d3ace3dd15e25c1ce7dad659"
+    },
+    {
+      "version": "20260526171500",
+      "name": "binder_cards_condition",
+      "statement_count": 1,
+      "remoteStatementsSha256": "e6a336211a45d8127052f8d0a28a49dd8c4c5993845b49328df0dbc77b3384ca"
+    },
+    {
+      "version": "20260527120000",
+      "name": "explicit_data_api_grants",
+      "statement_count": 5,
+      "remoteStatementsSha256": "76f6a11d2b6d1220c088c23ed47bc6abdacbfaf744f9138093c5fa81292d2030"
+    },
+    {
+      "version": "20260527123000",
+      "name": "repair_new_user_profile_trigger",
+      "statement_count": 3,
+      "remoteStatementsSha256": "a9e967b132f7a7c4b3528c96f8ada8922065703569cf4a0260bc7aaebab78fa1"
+    },
+    {
+      "version": "20260528100000",
+      "name": "binder_default_condition",
+      "statement_count": 2,
+      "remoteStatementsSha256": "2929f4d26e7735f2197f5e69a4fdb9b14c06c7ed26ea50b5ad204e10ec4dfd0c"
+    },
+    {
+      "version": "20260528103000",
+      "name": "binder_master_set_enabled",
+      "statement_count": 2,
+      "remoteStatementsSha256": "402a1b32e97c2eb91487328b2542ee71ff7008a57733bff9a5534fac169b297a"
+    },
+    {
+      "version": "20260528110000",
+      "name": "user_achievements",
+      "statement_count": 18,
+      "remoteStatementsSha256": "9d7d7030e4469f429a84d27c07d8067edd2511772387108acd2583ac87dead2c"
+    },
+    {
+      "version": "20260528113000",
+      "name": "user_coin_rewards",
+      "statement_count": 20,
+      "remoteStatementsSha256": "332485d33f0971964236383942244eb738b74f00aeb1496ee25e90f94ab14035"
+    },
+    {
+      "version": "20260528114500",
+      "name": "server_side_coin_awards",
+      "statement_count": 19,
+      "remoteStatementsSha256": "5ed314b385c1afe2487274cb12952d05813130d16b6376dc609d84ee0daf81b1"
+    },
+    {
+      "version": "20260528120500",
+      "name": "remove_android_beta_email_opt_in",
+      "statement_count": 1,
+      "remoteStatementsSha256": "2f442744236c7d8614752b1c018c42b6bf13815b6ea6c09cdaedc221fe6d313d"
+    },
+    {
+      "version": "20260529100000",
+      "name": "binder_owner_rls",
+      "statement_count": 18,
+      "remoteStatementsSha256": "c6d23ca68fc3062eb84905057c6d661523c735049158cfc0e0d7e8b94ce106c1"
+    },
+    {
+      "version": "20260529102000",
+      "name": "admin_binder_directory",
+      "statement_count": 2,
+      "remoteStatementsSha256": "694aec6cc43cf665e6f27315a0c40148bcc9b8981671b0390d7c313b3bac9da6"
+    },
+    {
+      "version": "20260529103000",
+      "name": "admin_binder_directory_view",
+      "statement_count": 4,
+      "remoteStatementsSha256": "a174ea88ec869697de1097b4e87f0f7c1486d671b56f61962a95e8b64ae21938"
+    },
+    {
+      "version": "20260529195500",
+      "name": "repair_user_pokedex_cards",
+      "statement_count": 14,
+      "remoteStatementsSha256": "ce721cdbdec60b8e1c3ecc6ee44925fbff1f7f906e4b5f68c4043f5962e6c0ac"
+    },
+    {
+      "version": "20260602120000",
+      "name": "user_card_variants_quantity",
+      "statement_count": 3,
+      "remoteStatementsSha256": "644ccd1e86030a5a476785d58f02b51f4cda6b5839b02ea0fec10c720d54286b"
+    },
+    {
+      "version": "20260602133000",
+      "name": "binder_card_mode",
+      "statement_count": 4,
+      "remoteStatementsSha256": "2c1e68f51b7edb466cb13d0e576756de5290a9a5fd19bf1db09f3558a84b834e"
+    },
+    {
+      "version": "20260603100000",
+      "name": "binder_card_grading",
+      "statement_count": 3,
+      "remoteStatementsSha256": "2b44519a6ef5e1145c3f34e523594870fcfeef8b0ce7bd277124a662a5eb17c5"
+    },
+    {
+      "version": "20260605120000",
+      "name": "poketrace_api_cache",
+      "statement_count": 5,
+      "remoteStatementsSha256": "4d27ffe3eb480baa637bea13bd26e3cc7801905b76c45509989ac64bbbd34de0"
+    },
+    {
+      "version": "20260605130000",
+      "name": "binder_card_owned_quantity",
+      "statement_count": 2,
+      "remoteStatementsSha256": "9dc9c1242932fbef98311be89a4ccc5bd43f349a5019ae2fed1265b2f4cbb107"
+    },
+    {
+      "version": "20260605133000",
+      "name": "user_card_variants_unique_key",
+      "statement_count": 1,
+      "remoteStatementsSha256": "c803ab28eb5156389bfad765437727c43c592f11859f7d0864126a65e5653379"
+    },
+    {
+      "version": "20260605214500",
+      "name": "user_card_variants_allow_multiple_variants",
+      "statement_count": 5,
+      "remoteStatementsSha256": "1dae7133be77bd811deb22dd1985eda64ebca1f229c6ff14c0c6bffd5307975a"
+    },
+    {
+      "version": "20260621170000",
+      "name": "rookie_accolade_rewards",
+      "statement_count": 1,
+      "remoteStatementsSha256": "9064e72f178cf191bad243964bf40c2af0bfb971cf298578d9e58fec5c2b089e"
+    },
+    {
+      "version": "20260623120000",
+      "name": "binder_card_slab_metadata",
+      "statement_count": 5,
+      "remoteStatementsSha256": "cd636d6a0ae89fad6c3d692a7ae1c4333c1c457d4aa66c204608554f0878988d"
+    },
+    {
+      "version": "20260627120000",
+      "name": "inventory_movements_and_binder_schema_repair",
+      "statement_count": 10,
+      "remoteStatementsSha256": "cd084ce64def86ffd31e304eeffed97d92379dd592eb26f0f49bf830ee3e1322"
+    },
+    {
+      "version": "20260628100000",
+      "name": "listing_media_metadata",
+      "statement_count": 7,
+      "remoteStatementsSha256": "49f43ba6ea61276fd88a0ffa4721189b7b704352bfed29ae7e96f6b1d7033788"
+    },
+    {
+      "version": "20260628120000",
+      "name": "strong_goblin_achievement_rewards",
+      "statement_count": 1,
+      "remoteStatementsSha256": "eb114914ce61b4a3aa9d372a3421a9e2ef6b0376da3d65b2e82288de908fec80"
+    },
+    {
+      "version": "20260701195000",
+      "name": "marketplace_schema_repair",
+      "statement_count": 10,
+      "remoteStatementsSha256": "004cb4f6588e5cab981387d5d26d2431722c1b0c1cb1b309ca54ef97add499d8"
+    },
+    {
+      "version": "20260702120000",
+      "name": "owned_card_membership_model",
+      "statement_count": 24,
+      "remoteStatementsSha256": "ac813a965263f7532c4b7f60106137f7558b7225d9e10bad660fa4dda221d458"
+    },
+    {
+      "version": "20260707120000",
+      "name": "japanese_card_pricing_support",
+      "statement_count": 12,
+      "remoteStatementsSha256": "97f7474282cb48eb697a6fe61c326505be3e2214090a621bb3c1638b2deeaf9e"
+    },
+    {
+      "version": "20260707123000",
+      "name": "price_refresh_scheduler",
+      "statement_count": 12,
+      "remoteStatementsSha256": "f06ae074aa0cba1d645879eeec086d2384002d1b561b15e69e2f4265e35fbf9c"
+    },
+    {
+      "version": "20260714120000",
+      "name": "performance_pricing_indexes",
+      "statement_count": 14,
+      "remoteStatementsSha256": "c0b631d9b46a5a5c7e2f3a61dbbc01698a4e5237c2b47d437e86931ccadaa3a4"
+    },
+    {
+      "version": "20260715120000",
+      "name": "binder_language_support",
+      "statement_count": 3,
+      "remoteStatementsSha256": "1905712cce3d41c6b23ad8bb5c206e056af85e0cf5404c8d675395f1de50d220"
+    },
+    {
+      "version": "20260715143000",
+      "name": "minty_insight_platform",
+      "statement_count": 59,
+      "remoteStatementsSha256": "c3b0a3140cf4eba58146f8a0dee6c1095be539bb58925f4da3284324f932d2db"
+    },
+    {
+      "version": "20260717120000",
+      "name": "phase1_app_performance_indexes",
+      "statement_count": 13,
+      "remoteStatementsSha256": "c2bf0b491fe6b25915d9bfa54836f8a4b7ef40b03b9eb3db6d0f7212aaf1e7e2"
+    },
+    {
+      "version": "20260717143000",
+      "name": "japanese_catalogue_canonical_schema",
+      "statement_count": 82,
+      "remoteStatementsSha256": "65b2a296dcebbe319bf7d64a0a1f6876e2d5b826a2f719376915b27081356792"
+    },
+    {
+      "version": "20260718120000",
+      "name": "tcgdex_catalogue_repair",
+      "statement_count": 26,
+      "remoteStatementsSha256": "8235af0832f96fd9091658a15524dfafbc68d7093bb4c258db2541f19d9b4da5"
+    },
+    {
+      "version": "20260719110000",
+      "name": "fast_global_search_indexes",
+      "statement_count": 11,
+      "remoteStatementsSha256": "72b5ea58b1ea8c0cbdb5326c0aa7600bec6b15c35951e042cf4e6b40239df662"
+    },
+    {
+      "version": "20260719123000",
+      "name": "scan_learning_events",
+      "statement_count": 13,
+      "remoteStatementsSha256": "69bedddd1529e273f10e652e503ea6b67fd5803a71e799a8acb077baf542150a"
+    },
+    {
+      "version": "20260719133000",
+      "name": "scan_learning_match_incorrect",
+      "statement_count": 2,
+      "remoteStatementsSha256": "84aa34e0ae57a59942526ee8be2f8f7c99a3a81d2753d4b4f9ec2fb18b59c56c"
+    },
+    {
+      "version": "20260720173000",
+      "name": "secure_scan_recognition",
+      "statement_count": 9,
+      "remoteStatementsSha256": "bebcf449ce44dfbbf3e96a3f17f0aef6f741289d0739e587311489fb8938da48"
+    },
+    {
+      "version": "20260720184000",
+      "name": "scan_grading_jobs",
+      "statement_count": 9,
+      "remoteStatementsSha256": "66bcea498f7b530d04aef4a82c62c97eb535fea27eb31f48d753efa3154703aa"
+    },
+    {
+      "version": "20260720235000",
+      "name": "scan_analytics_feedback",
+      "statement_count": 9,
+      "remoteStatementsSha256": "9584cc638c5cf5d6ade261437fb760271193a3c91f1579877127223a01caf5ee"
+    },
+    {
+      "version": "20260721090000",
+      "name": "scanner_calibration",
+      "statement_count": 33,
+      "remoteStatementsSha256": "f2c3d1f2737ae861171108dcb4d378286c936ce07c10727840d53e0a0ff3fbda"
+    },
+    {
+      "version": "20260721123000",
+      "name": "tcg_set_cover_images",
+      "statement_count": 2,
+      "remoteStatementsSha256": "0397252efde965f59457701f1272caef6c19ae210e3898c124d98a8bff56e789"
+    },
+    {
+      "version": "20260726103000",
+      "name": "scanner_recognition_rebuild",
+      "statement_count": 40,
+      "remoteStatementsSha256": "9bd6cc6c48c1df0ddea80960ab42aa95374d7567bd07c579eed4b5c63bcaa471"
+    },
+    {
+      "version": "20260726162000",
+      "name": "binder_set_branding_assets",
+      "statement_count": 7,
+      "remoteStatementsSha256": "af18ebe3d7f8d05f4a3e00df84e19e625031ae6ad28db4105c563ae4872791fa"
+    },
+    {
+      "version": "20260726210000",
+      "name": "pricing_engine_v2",
+      "statement_count": 35,
+      "remoteStatementsSha256": "9fec847ffb31a105a45792b224624cca1a9a803deba0489994fc3e418d9a9a49"
+    },
+    {
+      "version": "20260726223000",
+      "name": "scan_lab_capture_queue",
+      "statement_count": 32,
+      "remoteStatementsSha256": "6a0e5ebd5ce4ab5ba5518b172e5eaff2d0f78b4e279d8038713bde5399e1349d"
+    },
+    {
+      "version": "20260726234500",
+      "name": "recognition_feedback_loop",
+      "statement_count": 40,
+      "remoteStatementsSha256": "a415e54d8b171764f45b71112b70547e764ebfb9b6c5364d900389757411ef3d"
+    },
+    {
+      "version": "20260727090000",
+      "name": "shadow_mode_pilot",
+      "statement_count": 14,
+      "remoteStatementsSha256": "fa23b5752a4f1b8f935f4ad5121025cdef10314e59b02a377567a5930355d348"
+    },
+    {
+      "version": "20260727212256",
+      "name": "canonical_stackr_catalogue_database",
+      "statement_count": 217,
+      "remoteStatementsSha256": "ed0cf88a008a9cccd5274a7f2294ed458647779d1c947438ce05bb46d4ded471"
+    },
+    {
+      "version": "20260727213835",
+      "name": "stackr_data_ingestion_reconciliation",
+      "statement_count": 64,
+      "remoteStatementsSha256": "aa819bd898932e210fce86dd794a2d77ddb448f540fc8d1366d48d877bcf5dcd"
+    },
+    {
+      "version": "20260728060617",
+      "name": "stackr_asset_repository_delivery_pipeline",
+      "statement_count": 57,
+      "remoteStatementsSha256": "ec41c64e4e7eba2d4d1ec85c604e309a8735628e8fcd6645ad4b2b5e52a9aa9d"
+    },
+    {
+      "version": "20260728064400",
+      "name": "embedding_model_registry_and_index_gates",
+      "statement_count": 58,
+      "remoteStatementsSha256": "c2304716a05f37d66e4ba0fbbf6506f3c5f2db782ea6b6cf0cdb9c1485732f55"
+    },
+    {
+      "version": "20260728110000",
+      "name": "curated_corocoro_mew_promos",
+      "statement_count": 7,
+      "remoteStatementsSha256": "dce2fc151a8c43d2fe0ccf841878d420063fcbaac7fc7ad6877fbc3669fafb88"
+    },
+    {
+      "version": "20260728152412",
+      "name": "recognition_service_scan_diagnostics",
+      "statement_count": 19,
+      "remoteStatementsSha256": "603eee2ce63f0d5e5d4a0015611796ebf50fb1e3df7695bf5a26a5ccdf882c63"
+    },
+    {
+      "version": "20260728171416",
+      "name": "stackr_market_pricing_service",
+      "statement_count": 91,
+      "remoteStatementsSha256": "e5d14a963d0a42a06837c6718fb0d607593d0f8fc570ba28c56ffd53de953276"
+    },
+    {
+      "version": "20260728173530",
+      "name": "stackr_api_gateway_controls",
+      "statement_count": 58,
+      "remoteStatementsSha256": "293760967a5fb7e4fe438019bdbdac96cfaba6db764d98acd61592204e73226e"
+    },
+    {
+      "version": "20260728182743",
+      "name": "stackr_quality_performance_observability",
+      "statement_count": 85,
+      "remoteStatementsSha256": "092a2e04878e88fb0880c0266c943e19886be6e04630a2c1747042a9fb605f32"
+    },
+    {
+      "version": "20260728202949",
+      "name": "stackr_application_migration_provider_retirement",
+      "statement_count": 30,
+      "remoteStatementsSha256": "beb7ebb478b7d1cacfd6ba3a71199594a73540850e62f10e14866ef93e4058da"
+    },
+    {
+      "version": "20260728203300",
+      "name": "stackr_release_activation_controls",
+      "statement_count": 18,
+      "remoteStatementsSha256": "a0d8a7e454d70061a66dcc5ea37f118cbb0332026c575eb8b5563367745ffc0a"
+    },
+    {
+      "version": "20260729055239",
+      "name": "critical_security_containment",
+      "statement_count": 26,
+      "remoteStatementsSha256": "98f55317893ffa76fd495bc353e646612357a1e6b6dc2d00f49abf11d2684500"
+    },
+    {
+      "version": "20260730080047",
+      "name": "reconcile_catalogue_seed_encoding_and_finish_taxonomy",
+      "statement_count": 4,
+      "remoteStatementsSha256": "eb0a13a3a18216eb3fd7c59562babdaa7248eede9ec5e84af384cad3f90bcc60"
+    },
+    {
+      "version": "20260730144626",
+      "name": "harden_legacy_catalogue_operational_access",
+      "statement_count": 24,
+      "remoteStatementsSha256": "f44307de40081755cda2d45f8d079ab9334f60048c91121d6447c7ed67e0fa04"
+    },
+    {
+      "version": "20260730145958",
+      "name": "harden_function_and_storage_access",
+      "statement_count": 29,
+      "remoteStatementsSha256": "8e623e22d497cf98954328c2f228a874ee5c2ccf8ae8107f82eed17cd5c8c973"
+    },
+    {
+      "version": "20260730153923",
+      "name": "preserve_raw_source_record_history",
+      "statement_count": 3,
+      "remoteStatementsSha256": "e8e2d356228b3e611eaab9335a38a695c41882557276c9e46a682f71c8148fa9"
+    },
+    {
+      "version": "20260801090000",
+      "name": "strict_foreign_catalogue_import_safety",
+      "statement_count": 1,
+      "remoteStatementsSha256": "1805ad59a001e2a31345701934f8543ed8e18c05b061400e0501a01ab57214cf"
+    },
+    {
+      "version": "20260801103000",
+      "name": "catalogue_image_leftover_workflow",
+      "statement_count": 1,
+      "remoteStatementsSha256": "73a20044854208e2ce07070df5e64f40ed68f15571cc6b920b114022bd682c3d"
+    },
+    {
+      "version": "20260801120000",
+      "name": "language_catalogue_publication_snapshots",
+      "statement_count": 1,
+      "remoteStatementsSha256": "0cdfa5e37ad4465595ae85b06d0f1b12670f6f5a47e2f14c0978c96eca3d5c34"
+    },
+    {
+      "version": "20260802160643",
+      "name": "production_critical_rls_storage_containment_20260802",
+      "statement_count": 49,
+      "remoteStatementsSha256": "30dc5f39b0246580309bf99fb7f8bbb50272a90aa9231c8d2c17c4715a52e1e8"
+    },
+    {
+      "version": "20260805200000",
+      "name": "recognition_service_database_role",
+      "statement_count": 1,
+      "remoteStatementsSha256": "7d6d8e3ba1e06e28e133b936bdf58d5507db04b64def3ef4ebaaeb108a918057"
+    },
+    {
+      "version": "20260806073146",
+      "name": "recognition_reference_asset_eligibility",
+      "statement_count": 1,
+      "remoteStatementsSha256": "2f99945a9864d0d3a7e9c785f1684b3ef086ae162d062644f34097f06c08e6d6"
+    },
+    {
+      "version": "20260806170203",
+      "name": "optimise_catalogue_quality_report",
+      "statement_count": 1,
+      "remoteStatementsSha256": "21f07ea49955629bac67052be637bc5019f9696a77387d1880f01dffd7d21970"
+    },
+    {
+      "version": "20260806170501",
+      "name": "make_catalogue_quality_report_targeted",
+      "statement_count": 1,
+      "remoteStatementsSha256": "08eb1e14d0fb1ad0b6201ccd2d9e9a46c157d19ae6473e71c0458d40527d8bb1"
+    },
+    {
+      "version": "20260806171907",
+      "name": "resolve_asset_manifest_catalogue_identity",
+      "statement_count": 1,
+      "remoteStatementsSha256": "44784f4233afe01d6e7cddfe5fb872c082da4218c09a1c08f8b75d589e1e6ae2"
+    },
+    {
+      "version": "20260806174020",
+      "name": "materialize_dinov2_vits14_embedding_index",
+      "statement_count": 1,
+      "remoteStatementsSha256": "5f40f887bc7151bfe43254edf6a5adf3244f6040e063565d6f188d095a19d951"
+    },
+    {
+      "version": "20260806183600",
+      "name": "index_dinov2_embedding_foreign_keys",
+      "statement_count": 1,
+      "remoteStatementsSha256": "056fcfcd31feda9096c2444b25acecdf6811e9dfc1dba1dfdcb3a6a9724ded9b"
+    },
+    {
+      "version": "20260806212500",
+      "name": "expose_catalogue_artwork_fallbacks",
+      "statement_count": 1,
+      "remoteStatementsSha256": "55c6b7925380f3a882b1b74d795cff6a3243a4c2c91ebacdb216ffac7bf97613"
+    },
+    {
+      "version": "20260806213000",
+      "name": "backfill_catalogue_native_image_states",
+      "statement_count": 1,
+      "remoteStatementsSha256": "870255bb50de7894d6a41dd049965a8134b064fdc5db9e5cc2e4afa6d5727406"
+    },
+    {
+      "version": "20260807034806",
+      "name": "repair_provider_variant_identity",
+      "statement_count": 1,
+      "remoteStatementsSha256": "bfff26539c9d90a98881ed1a17b4a71d9f20919e38b14c668fed575eac812cd4"
+    },
+    {
+      "version": "20260807173127",
+      "name": "register_private_scan_upload",
+      "statement_count": 1,
+      "remoteStatementsSha256": "69c27361eb91ba2026e12a31de38dc306fe982bab6b23a7c159d6ff0d51ac625"
+    },
+    {
+      "version": "20260807174127",
+      "name": "allow_recognition_read_private_scan_uploads",
+      "statement_count": 1,
+      "remoteStatementsSha256": "6cbdb2b00afcaa4a1feabfc62580f50a66a45ef828b0ec84817e7d53190cb380"
+    },
+    {
+      "version": "20260807180227",
+      "name": "allow_recognition_vector_extension_usage",
+      "statement_count": 1,
+      "remoteStatementsSha256": "94af8c994eaf06410d6ed166237dda398e88283d6b12276e8f9dd035f0d35285"
+    },
+    {
+      "version": "20260807183118",
+      "name": "recognition_index_build_api",
+      "statement_count": 1,
+      "remoteStatementsSha256": "856b576d4e03871c175ee9142b47f7b93ae9ec48bd71c296cbe98c16b0b8e7ed"
+    },
+    {
+      "version": "20260807184200",
+      "name": "search_recognition_candidate_index",
+      "statement_count": 1,
+      "remoteStatementsSha256": "f713633268b5642040667816688a3e40fbe2633c6c96b9bf6faaa20d21eb577d"
+    },
+    {
+      "version": "20260809121525",
+      "name": "catalogue_asset_mirror_queue_index",
+      "statement_count": 1,
+      "remoteStatementsSha256": "d454aea5f019735e1d631064e23be672d23f7cbc523f2d9f2c0af85b222fda24"
+    },
+    {
+      "version": "20260809123804",
+      "name": "optimize_catalogue_asset_source_reuse",
+      "statement_count": 1,
+      "remoteStatementsSha256": "789ffd57c4edbda6d7ab352f448af080b440c2971bd28513b617cf484ceaf1b3"
+    },
+    {
+      "version": "20260810070906",
+      "name": "optimize_published_asset_manifest_reads",
+      "statement_count": 4,
+      "remoteStatementsSha256": "9b9ff38c619b9b0173edc29405595223e91380fff685893f623bc342d8419bce"
+    },
+    {
+      "version": "20260810071807",
+      "name": "add_stable_asset_manifest_cursor",
+      "statement_count": 2,
+      "remoteStatementsSha256": "77ae25b66aa52622becb1156c2231bed0dae428e54a88de9f2516ee537ae2585"
+    },
+    {
+      "version": "20260810170607",
+      "name": "optimize_raw_source_publication_reads",
+      "statement_count": 1,
+      "remoteStatementsSha256": "5e3a0b9daac22cdfbce61c4d1583a3dafbf968e37a6168fd89df990044f8ea02"
+    },
+    {
+      "version": "20260811165000",
+      "name": "repair_owned_card_membership_legacy_identity",
+      "statement_count": 2,
+      "remoteStatementsSha256": "5823f86f115a077f291689a8a03fba949277e6ed79800858f652f4fa681a321c"
+    },
+    {
+      "version": "20260818191024",
+      "name": "add_catalogue_report_language_pagination_indexes",
+      "statement_count": 1,
+      "remoteStatementsSha256": "169a428254929e86eafee55855b0ba5b08fe0bf070b03603d17be86f610e657a"
+    },
+    {
+      "version": "20260820104237",
+      "name": "add_catalogue_publication_identifier_covering_index",
+      "statement_count": 1,
+      "remoteStatementsSha256": "4707eaffb64be9cef732c33c91f9cbd4e9e15722b3148abe60d51cb1e2624735"
+    },
+    {
+      "version": "20260820215422",
+      "name": "expand_pokemon_rarity_taxonomy",
+      "statement_count": 1,
+      "remoteStatementsSha256": "a8dca8e8fef279ee7040ffee2d5b4acfd3a532182f71aee31347192f29707795"
+    },
+    {
+      "version": "20260820222400",
+      "name": "backfill_catalogue_set_release_dates",
+      "statement_count": 1,
+      "remoteStatementsSha256": "6dfc0db9d536ed639f0badd09da9f9b646d024f4c179611328ef59923b758cad"
+    },
+    {
+      "version": "20260820223027",
+      "name": "backfill_chinese_catalogue_set_release_dates",
+      "statement_count": 1,
+      "remoteStatementsSha256": "6b8921b411a391c84bb7fa90aaef4f79b33d68cc9196d2fe78ac7dd8fa82596a"
+    },
+    {
+      "version": "20260820224112",
+      "name": "backfill_exact_english_tcgdex_rarities",
+      "statement_count": 1,
+      "remoteStatementsSha256": "26ac0a7f10feb200dd6bdc50c7ae07133f951de2ebbe4f063713169417e550fd"
+    },
+    {
+      "version": "20260820231128",
+      "name": "reuse_identical_catalogue_storage_objects",
+      "statement_count": 1,
+      "remoteStatementsSha256": "978eafba42d4efba31ab74895a9ed5b11290b616b61512a047ca85667795000a"
+    },
+    {
+      "version": "20260820233514",
+      "name": "backfill_exact_english_pokemontcg_metadata",
+      "statement_count": 1,
+      "remoteStatementsSha256": "bd56ee4ec6d162ffc40f326df21457b7788585e1dc4fdf7eab120403b5b94f4c"
+    },
+    {
+      "version": "20260820234322",
+      "name": "resolve_official_csm25_release_date",
+      "statement_count": 1,
+      "remoteStatementsSha256": "8edd133031db7b079cbbc79708f4e64ea9465dc2fe9a33efd28d2e659f65eccf"
+    },
+    {
+      "version": "20260821111626",
+      "name": "extend_recognition_embedding_batch_timeout",
+      "statement_count": 1,
+      "remoteStatementsSha256": "c8ee134f3aedcd66a90e6f76be34f6e1ffbb62c2df8384587fec7f6aa51e0ef6"
+    },
+    {
+      "version": "20260821140706",
+      "name": "extend_recognition_candidate_search_timeout",
+      "statement_count": 1,
+      "remoteStatementsSha256": "b40db80427fbcc89cae7f2be34c5520d9bd20dd1e817a67434c393fcc850ecdd"
+    },
+    {
+      "version": "20260821150512",
+      "name": "optimize_recognition_candidate_search_hnsw_v2",
+      "statement_count": 1,
+      "remoteStatementsSha256": "5c6d0e6b7bede075e4375f85f7415732354f5d480232a92010fd0029e151dbd5"
+    },
+    {
+      "version": "20260821151109",
+      "name": "optimize_recognition_candidate_search_hnsw_v3",
+      "statement_count": 1,
+      "remoteStatementsSha256": "bd42e8aa12d2d6a7f9230a918f301dbca95656c0ab5a90e332fedbc198bbcbe1"
+    },
+    {
+      "version": "20260821155911",
+      "name": "tune_recognition_candidate_search_ef_v4",
+      "statement_count": 1,
+      "remoteStatementsSha256": "2c2cc35fb65aec6fe6cca65709fb1d6ae8432988362e4327dae844df8d4e899d"
+    },
+    {
+      "version": "20260821165027",
+      "name": "backfill_exact_english_tcgcsv_rarities",
+      "statement_count": 1,
+      "remoteStatementsSha256": "c4a9faa18c406ec4fb36ad82c8629af2a0b7abee22db8489a07d7f49ec098c44"
+    },
+    {
+      "version": "20260821170443",
+      "name": "use_exact_filtered_recognition_benchmark_v6",
+      "statement_count": 1,
+      "remoteStatementsSha256": "5de44686a6a627e53b6c312bc2fde2d9ac0e6a1e71ef38d2e439a93b4026827f"
+    },
+    {
+      "version": "20260821212325",
+      "name": "family_accounts_and_purchase_requests",
+      "statement_count": 1,
+      "remoteStatementsSha256": "2fffb9ac6ab6fb5cdb20f2b12bf34ea4e7697ed613ac6dd753cda29592e2ada7"
+    },
+    {
+      "version": "20260821212418",
+      "name": "cover_family_child_parent_foreign_key",
+      "statement_count": 1,
+      "remoteStatementsSha256": "88f7097c016c7d2205f9fa0ed73ab3df081a64a7a3030b0266a5979fca623d95"
+    },
+    {
+      "version": "20260822073501",
+      "name": "add_scoped_recognition_candidate_search",
+      "statement_count": 1,
+      "remoteStatementsSha256": "35fb2c43b9f0abcf1e54e171393bf5271e53263ca6f29c40f906006343c74b8b"
+    },
+    {
+      "version": "20260822075102",
+      "name": "require_published_variants_in_recognition_indexes",
+      "statement_count": 1,
+      "remoteStatementsSha256": "e37c06281d061b99d40b4e7a33c5f0b0c658da30eef1ebb458dbe2707a2aef26"
+    },
+    {
+      "version": "20260822075624",
+      "name": "batch_clone_published_recognition_index",
+      "statement_count": 1,
+      "remoteStatementsSha256": "8c85e22337fff63af25d238c56f691ebe1e3f3f4b056891520bbea78ae1a6b16"
+    },
+    {
+      "version": "20260822075704",
+      "name": "fix_recognition_batch_uuid_cursor",
+      "statement_count": 1,
+      "remoteStatementsSha256": "06c95dd12a28893c666c94b417c96db452211cba03af46c6cbc470cf45652179"
+    },
+    {
+      "version": "20260822075820",
+      "name": "resume_recognition_copy_from_target_cursor",
+      "statement_count": 1,
+      "remoteStatementsSha256": "ec25e48a31195f309525a869a40ce3464204495f45f27e367078b589eea0f19b"
+    },
+    {
+      "version": "20260822075930",
+      "name": "increase_recognition_copy_batch_bound",
+      "statement_count": 1,
+      "remoteStatementsSha256": "c64fdd6202144e56fee81027edf6214f5d0110df4523124dc22566762b853e56"
+    },
+    {
+      "version": "20260822082835",
+      "name": "require_recognition_evidence_before_activation",
+      "statement_count": 1,
+      "remoteStatementsSha256": "fb45afb17db487ac95c7abf5e92ccd738df7b4ea415302becc2fbec5cd175d98"
+    },
+    {
+      "version": "20260822160439",
+      "name": "add_bounded_recognition_fingerprint_asset_lookup",
+      "statement_count": 1,
+      "remoteStatementsSha256": "fc8e89b24db8df79c7d205e9a46d30c4d5ebd67db031a1cf6a32d462f41ddce6"
+    },
+    {
+      "version": "20260822161133",
+      "name": "add_paged_recognition_fingerprint_context",
+      "statement_count": 1,
+      "remoteStatementsSha256": "75a4798bf6406d967069f409ccb72ea3a79e68ef5eb779130cc17027862f73c6"
+    },
+    {
+      "version": "20260822161726",
+      "name": "use_invoker_security_for_recognition_fingerprint_reads",
+      "statement_count": 1,
+      "remoteStatementsSha256": "ce3ec60a5c30624a4fdb932d203b6b2edaf30eb2982845382242da422c25f302"
+    },
+    {
+      "version": "20260822161808",
+      "name": "restore_bounded_definer_fingerprint_reads",
+      "statement_count": 1,
+      "remoteStatementsSha256": "1ead189c89c8e93bc5df6b48205c8521c968858dd6596db0b2bc3858448982d7"
+    },
+    {
+      "version": "20260822223752",
+      "name": "add_bounded_recognition_fingerprint_asset_lookup",
+      "statement_count": 1,
+      "remoteStatementsSha256": "b7fa01cb94fb85442cdd66290e0b1143496b611187f20dc6d54242d5a33767ef"
+    },
+    {
+      "version": "20260822223756",
+      "name": "add_paged_recognition_fingerprint_context",
+      "statement_count": 1,
+      "remoteStatementsSha256": "7265e33c41980c646640e5192d599618bf009ee0db60a4b95322a3caf342939e"
+    },
+    {
+      "version": "20260822223800",
+      "name": "use_invoker_security_for_recognition_fingerprint_reads",
+      "statement_count": 1,
+      "remoteStatementsSha256": "9db37bbafa101ee9376c322a6a6f45d5893fa9e52bff9dc1eeeda9ea2dda18b5"
+    },
+    {
+      "version": "20260822223802",
+      "name": "restore_bounded_definer_fingerprint_reads",
+      "statement_count": 1,
+      "remoteStatementsSha256": "346c033932c164aeda5bfe74f48c29e9a26cd55df9a1be75fe92a85e6276b9c3"
+    },
+    {
+      "version": "20260822223828",
+      "name": "atomic_seller_inventory_batches",
+      "statement_count": 1,
+      "remoteStatementsSha256": "75843f607bbe687a8de6dffafc285ba092f89e62785e3f473a37923f584e151b"
+    },
+    {
+      "version": "20260823094456",
+      "name": "add_paged_recognition_embedding_manifest_api",
+      "statement_count": 1,
+      "remoteStatementsSha256": "9fcd2fdd5eb7dbc36e5786e0a5a8bca780b992361ee667e40563e9160328a00a"
+    },
+    {
+      "version": "20260823095317",
+      "name": "add_paged_ebay_recognition_evidence_api",
+      "statement_count": 1,
+      "remoteStatementsSha256": "6edc07b9f2c41a40f82f2e0ed4d8c739c97d6050400f7c28c4b2ad4fe21a1c0c"
+    },
+    {
+      "version": "20260823163044",
+      "name": "online_recognition_scaleup_v1",
+      "statement_count": 1,
+      "remoteStatementsSha256": "28112427e521536a02495a66db45847a515c4f272a608804c8162aa4183abbb7"
+    },
+    {
+      "version": "20260823163657",
+      "name": "improve_online_recognition_scaleup_lookup",
+      "statement_count": 1,
+      "remoteStatementsSha256": "60f6b550c741cb9c6abf2b24a10d1a97c1e23a3a706a02bd9d666ae9ac6c084f"
+    },
+    {
+      "version": "20260823164436",
+      "name": "optimize_online_recognition_scaleup_lookup",
+      "statement_count": 1,
+      "remoteStatementsSha256": "45c0d54ecbfc83c7b88205c9c523c6e3b2b1ff102913ea6cc0126e99f50c3690"
+    },
+    {
+      "version": "20260823165543",
+      "name": "filter_scaleup_index_membership",
+      "statement_count": 1,
+      "remoteStatementsSha256": "843dd17a46f8f672d191166b029f396866d9e5f5441041b12df16fdcb82bcf36"
+    },
+    {
+      "version": "20260824073736",
+      "name": "expose_english_card_presentation",
+      "statement_count": 1,
+      "remoteStatementsSha256": "42e853b0a64d0f51f13746fa4abdc381ca06746f1a37949a071d8159388214b1"
+    },
+    {
+      "version": "20260827093108",
+      "name": "emergency_client_write_containment",
+      "statement_count": 1,
+      "remoteStatementsSha256": "49bbdd915ecb16b5d378a02ebbd5c7b043782e098f869a72777f45d3470b8cc6"
+    },
+    {
+      "version": "20260828093921",
+      "name": "prompt2_trade_notification_write_containment",
+      "statement_count": 1,
+      "remoteStatementsSha256": "172cf815a1b9d9d63e0ec2bd8d160f6852f631a2d1603eaec46eec280c41488a"
+    },
+    {
+      "version": "20260829170147",
+      "name": "reconcile_active_catalogue_natural_identities",
+      "statement_count": 1,
+      "remoteStatementsSha256": "ef689af825d9987e012f7ab65ff01ba6f28c939052d26c65559c9c612d63bf01"
+    },
+    {
+      "version": "20260829214736",
+      "name": "retain_exact_raw_source_revisions_once",
+      "statement_count": 1,
+      "remoteStatementsSha256": "5f720950f946da6bccaba39686a1e61b6bec3a1b206ed091733232dd8502706f"
+    },
+    {
+      "version": "20260829220516",
+      "name": "track_raw_source_record_observations",
+      "statement_count": 1,
+      "remoteStatementsSha256": "1cda21befab9f749c80a976de2f5add17d6d5ddc183434f8ea4341329dbef6d9"
+    },
+    {
+      "version": "20260831123607",
+      "name": "index_ingest_conflict_deduplication",
+      "statement_count": 1,
+      "remoteStatementsSha256": "c9d643715f3680f462d25ae83419f8cb3c6e333b36996402b83be67b7169362a"
+    },
+    {
+      "version": "20260831202805",
+      "name": "repair_launch_catalogue_conflict_set_resolution",
+      "statement_count": 1,
+      "remoteStatementsSha256": "dc5e671bdf1ccbb7a1bd2bbf7806ffc8186e62aad5aa3c9693a4333c40f644b8"
+    },
+    {
+      "version": "20260831204414",
+      "name": "atomic_official_japanese_card_bootstrap",
+      "statement_count": 1,
+      "remoteStatementsSha256": "bf3a92d52a03fb25d026f14316f85e6004ce6cec28089647fb95f677cbc3b351"
+    },
+    {
+      "version": "20260831205211",
+      "name": "supersede_atomic_official_japanese_metadata_bootstrap",
+      "statement_count": 1,
+      "remoteStatementsSha256": "a79df2ca6409125be243b0b4783218c1acbe36b41e3f9329117fd9e18b8584fe"
+    },
+    {
+      "version": "20260831210059",
+      "name": "fix_atomic_official_japanese_metadata_bootstrap_concept_conflict",
+      "statement_count": 1,
+      "remoteStatementsSha256": "2a029610b3d03b58c134ab02a8b86d3f696ff3007884e5ae2ed90ee8076a7a30"
+    },
+    {
+      "version": "20260906063153",
+      "name": "index_asset_printing_identity",
+      "statement_count": 1,
+      "remoteStatementsSha256": "98c60e7f92562537b23677fb3c2df3114848489238d7bf61900b5bd0dc5a25de"
+    },
+    {
+      "version": "20260906063228",
+      "name": "expose_bounded_card_image_identity_read",
+      "statement_count": 1,
+      "remoteStatementsSha256": "f6e4ab2b12e480d6b0a6f7e6531685ddfd88227590754df95da6fde7295b7cae"
+    },
+    {
+      "version": "20260908111244",
+      "name": "catalogue_name_membership_lookup",
+      "statement_count": 1,
+      "remoteStatementsSha256": "451091026f8681f4865f4a23dfa42b54889d6aeb0b343beb8f1ade60307e1f14"
+    },
+    {
+      "version": "20260908111706",
+      "name": "catalogue_name_printing_language",
+      "statement_count": 1,
+      "remoteStatementsSha256": "0073350ffb06bc526bcc96508c908470d15a87cdcd38b70bc5a64041a89ba23b"
+    },
+    {
+      "version": "20260908113506",
+      "name": "catalogue_name_language_independent_lookup",
+      "statement_count": 1,
+      "remoteStatementsSha256": "f32e6fd1f5ff42d5d5a48752666529e901fba36104c1e1cbcef3dc7f25b46f49"
+    },
+    {
+      "version": "20260908194232",
+      "name": "service_only_tcgdex_variant_aliases",
+      "statement_count": 1,
+      "remoteStatementsSha256": "5b6dab3a91162031769c36d94694b25310c8c9cf94636f61d47f20e0071491e2"
+    },
+    {
+      "version": "20261003224016",
+      "name": "catalogue_price_bulk_cache",
+      "statement_count": 1,
+      "remoteStatementsSha256": "c9535369e337d25f3fddeda93ed6e31c73558aba0d05d334fd9664379d4b70de"
+    },
+    {
+      "version": "20261003224031",
+      "name": "restore_full_catalogue_price_guide",
+      "statement_count": 1,
+      "remoteStatementsSha256": "8e3c9e840bd5de5925469949f6a0e57357cb41de964cfde377588c516da1723a"
+    },
+    {
+      "version": "20261003224558",
+      "name": "catalogue_price_feed_access_indexes",
+      "statement_count": 1,
+      "remoteStatementsSha256": "6dbdd6d474a4e9e4368a0613e66d2cb111c643e182da8ef20e9cf731201d166e"
+    },
+    {
+      "version": "20261003225316",
+      "name": "catalogue_price_repair_reads",
+      "statement_count": 1,
+      "remoteStatementsSha256": "2d4bd6f6f2880aeabbddd19134fc5a189956866528f8b554386247f7b3e11b89"
+    },
+    {
+      "version": "20261003225832",
+      "name": "cardmarket_general_price_backup",
+      "statement_count": 1,
+      "remoteStatementsSha256": "9ca260cc8021b4abb9064759409dd4cfabaf474142dae12e46a69562d39b506e"
+    },
+    {
+      "version": "20261003231006",
+      "name": "batch_catalogue_price_identity_reads",
+      "statement_count": 1,
+      "remoteStatementsSha256": "31caf3e9892963e4c89f3827f82060991898c9c9ade1676189601f52d45a6a84"
+    },
+    {
+      "version": "20261003232812",
+      "name": "japanese_exact_price_identities",
+      "statement_count": 1,
+      "remoteStatementsSha256": "908b4d71db14f882e0793ff2c043e9df8e2077545d8b8b50d14efdcc60a82c39"
+    },
+    {
+      "version": "20261003234257",
+      "name": "bounded_published_price_read",
+      "statement_count": 1,
+      "remoteStatementsSha256": "f375e039462065042f352adc78901c4dc67903b5fbab429dfa95813824235f19"
+    },
+    {
+      "version": "20261003234442",
+      "name": "cover_general_price_foreign_keys",
+      "statement_count": 1,
+      "remoteStatementsSha256": "30f73974710cf421d054e5c26110ab8983ce3f7c56ac2ac2ceb3128e17604050"
+    },
+    {
+      "version": "20261004084131",
+      "name": "english_exact_title_price_identities",
+      "statement_count": 1,
+      "remoteStatementsSha256": "b2cd3f2a3893ec3506d0ba0ba093b8cb77114dfd2e8326035ff7362cccaad3f2"
+    },
+    {
+      "version": "20261004084237",
+      "name": "cardmarket_current_provenance_candidates",
+      "statement_count": 1,
+      "remoteStatementsSha256": "ffd3edcdf6413b6b9c60ea0e9b828bf51ea9c4faf2d7090c457223527ca64f59"
+    },
+    {
+      "version": "20261004084956",
+      "name": "cardmarket_bounded_provenance_candidates",
+      "statement_count": 1,
+      "remoteStatementsSha256": "529223cf443c3fa07a132f0c6d485c4f0dd2413ae7ebc142ea730bcb24bf55b9"
+    },
+    {
+      "version": "20261004090339",
+      "name": "cardmarket_resumable_provenance_index",
+      "statement_count": 1,
+      "remoteStatementsSha256": "01412bc720bf47d5f996321a507841a58d50fd712fadd2c9ff53f5d6348a5e11"
+    },
+    {
+      "version": "20261004091559",
+      "name": "catalogue_bulk_sweep_bounded_initialisation",
+      "statement_count": 1,
+      "remoteStatementsSha256": "764a7a9aff14368b2cf1714250b299ce346e9573c11dc29c7dd95bea966b643b"
+    },
+    {
+      "version": "20261004091600",
+      "name": "bounded_collector_search_identity_view",
+      "statement_count": 1,
+      "remoteStatementsSha256": "0b37128485872eb18b683dc0b95fbd0021bba73f38400eedb4d6ed16587d33ae"
+    },
+    {
+      "version": "20261004093356",
+      "name": "bounded_catalogue_bulk_sweep_finish",
+      "statement_count": 1,
+      "remoteStatementsSha256": "98c63a4ccf2d2c51676636db81f927280999e6dc4d2826bfd517eccd4d4f66fc"
+    },
+    {
+      "version": "20261004093530",
+      "name": "cardmarket_reviewed_mapping_loader",
+      "statement_count": 1,
+      "remoteStatementsSha256": "c93adb5e746757ecca776742b7c525057b611d111ce5cd3579af632481ff49d6"
+    },
+    {
+      "version": "20261004094846",
+      "name": "cardmarket_daily_revision_resume",
+      "statement_count": 1,
+      "remoteStatementsSha256": "1c54e0cba6407ad92ea2f053a11866add32dfa8fa899f34fa11365aece225f75"
+    },
+    {
+      "version": "20261004094851",
+      "name": "thin_published_price_identities",
+      "statement_count": 1,
+      "remoteStatementsSha256": "fac67c7ca87669c6b00f33d7e8128b56e98d333ac5e33c6ec6764eb4a2a8ec12"
+    },
+    {
+      "version": "20261004101533",
+      "name": "catalogue_bulk_store_materialization",
+      "statement_count": 1,
+      "remoteStatementsSha256": "38940c0c15a8d02bbcf08b2e6816933aefe51f4cce6cd9ae54e34ad2895c1fe7"
+    },
+    {
+      "version": "20261004102720",
+      "name": "cardmarket_source_revision_lease",
+      "statement_count": 1,
+      "remoteStatementsSha256": "14c1425759fded531e6a648027defa703d59b85bf9520378d4e7e2e15c684e9e"
+    },
+    {
+      "version": "20261004162804",
+      "name": "bounded_reviewed_provider_set_resolver",
+      "statement_count": 1,
+      "remoteStatementsSha256": "77604deb82caffd4c4a37c079a7a94560597e39429cdbdadcacbf690ded2a4d4"
+    },
+    {
+      "version": "20261004171309",
+      "name": "shared_set_authoritative_provider_card_exclusion",
+      "statement_count": 1,
+      "remoteStatementsSha256": "608c423a11448440b2a66315045c240c8b1a8fe48696fab54762516278cf793c"
+    },
+    {
+      "version": "20261004172210",
+      "name": "bounded_catalogue_bulk_price_coverage",
+      "statement_count": 1,
+      "remoteStatementsSha256": "f44acf046e0c135e8e1a11c32194fcbcdd51ab259c090b1fa72bd01bd7ac30fe"
+    },
+    {
+      "version": "20261004174213",
+      "name": "hashable_bounded_catalogue_bulk_price_coverage",
+      "statement_count": 1,
+      "remoteStatementsSha256": "2351e942e0db53a9aced100d4c65e094be7adecc3de9c0b2f680bda8d6c984b6"
+    },
+    {
+      "version": "20261004174528",
+      "name": "cardmarket_raw_retention_contract",
+      "statement_count": 1,
+      "remoteStatementsSha256": "af61e05b79efb9f6487f828b7eb8d1dd8b72a2d7f2888b769ac9ee974af1519e"
+    },
+    {
+      "version": "20261004180037",
+      "name": "compact_hashable_catalogue_bulk_price_coverage",
+      "statement_count": 1,
+      "remoteStatementsSha256": "809eb1cd23ce46fecf0d2a437176cc615cd7d72e171685a5c432dc656b3c209e"
+    },
+    {
+      "version": "20261004181314",
+      "name": "catalogue_bulk_price_coverage_page",
+      "statement_count": 1,
+      "remoteStatementsSha256": "4f3179330299ad190afb3b2a9eb01f4db2dc9d3f46bc96abd582c90032700c57"
+    },
+    {
+      "version": "20261004190319",
+      "name": "numbered_english_provider_set_titles",
+      "statement_count": 1,
+      "remoteStatementsSha256": "17770ad8b4b2c60b68563ebcf49bdab645c728436f7f713f29d8c0ee0c2b6d28"
+    },
+    {
+      "version": "20261005090204",
+      "name": "current_physical_catalogue_price_read",
+      "statement_count": 1,
+      "remoteStatementsSha256": "9a69238a9599e234cdb7e160b873963d832bb4c4d019505c2b2c4c7c2b00d0af"
+    },
+    {
+      "version": "20261005093440",
+      "name": "printing_general_price_guide",
+      "statement_count": 1,
+      "remoteStatementsSha256": "14f92c7ebe57c707e02edb81bad19a1cd4e326c931fa51c38fafd6de05020655"
+    },
+    {
+      "version": "20261005095334",
+      "name": "printing_guide_native_set_language",
+      "statement_count": 1,
+      "remoteStatementsSha256": "d711a3815424ba877a8ca53fde72e4fe5709f3d17e4b2ad4bb5f3a023278fcf0"
+    },
+    {
+      "version": "20261005162549",
+      "name": "classified_pricing_coverage",
+      "statement_count": 1,
+      "remoteStatementsSha256": "c0974af4219096fe8034265ec4697ad1675e022d096b1120e0c1800aa5326967"
+    },
+    {
+      "version": "20261005162949",
+      "name": "bound_classification_evidence_aggregation",
+      "statement_count": 1,
+      "remoteStatementsSha256": "95b5efa4b2201271ae84630540eb3301242b7d4b18844027f90ba734d37f9f43"
+    },
+    {
+      "version": "20261005163401",
+      "name": "classification_page_custom_plans",
+      "statement_count": 1,
+      "remoteStatementsSha256": "813c04973a9c72459cc7810e5537fd1848dd3421afb972fbeb6b7d9b1d317f24"
+    },
+    {
+      "version": "20261005203143",
+      "name": "retain_identity_bound_cheap_snapshots",
+      "statement_count": 1,
+      "remoteStatementsSha256": "3f61e9ee1c71d72e6602470ef81017efb549bf86ffc01034d6967e42cb2188af"
+    },
+    {
+      "version": "20261005203902",
+      "name": "bound_retained_cheap_native_evidence",
+      "statement_count": 1,
+      "remoteStatementsSha256": "edd382ed4e3956ae7c1e199b6b717b4c0e6702b83bc4d4088a514654e159553f"
+    },
+    {
+      "version": "20261005204523",
+      "name": "scope_retained_cheap_provider_languages",
+      "statement_count": 1,
+      "remoteStatementsSha256": "50b3dfb9810afeadd74e097936b6641c9a9c4226a586df29346420323bddc39c"
+    },
+    {
+      "version": "20261005205459",
+      "name": "select_latest_valid_retained_observation",
+      "statement_count": 1,
+      "remoteStatementsSha256": "80ff1e967785ced1da70e8bfddaf6b73ef1178446121427e8905065a6f8ef623"
+    }
+  ],
+  "productionLedger": [
+    {
+      "version": "20260513170000",
+      "name": "card_fingerprint_regions",
+      "statement_count": 3,
+      "remoteStatementsSha256": "1f9036d8281e2e13118fb46c209d73427768b6b6451bf74214dac80c5d358506"
+    },
+    {
+      "version": "20260513213000",
+      "name": "card_clip_embeddings",
+      "statement_count": 3,
+      "remoteStatementsSha256": "21aa13791506bfcbd1059ccdc187a9e6055138e16450c75d8acb15ea8bfd9ac2"
+    },
+    {
+      "version": "20260516195500",
+      "name": "seller_inventory_sales",
+      "statement_count": 19,
+      "remoteStatementsSha256": "514a486655bb1bfaefb937e674a9a00cd3857f0fbca20a3ff3718bba2e7854be"
+    },
+    {
+      "version": "20260518120000",
+      "name": "local_postcode_distance",
+      "statement_count": 17,
+      "remoteStatementsSha256": "b604799b117b735fe3bac640df4469d0270a006a1a6d1e66d74a83b760f7c22c"
+    },
+    {
+      "version": "20260518124500",
+      "name": "market_price_snapshots_read_policy",
+      "statement_count": 2,
+      "remoteStatementsSha256": "2322951d7ba3ca89d1f02922ccb6f8b33ea1bc76250302e7991bd3506a8e2c0b"
+    },
+    {
+      "version": "20260518133000",
+      "name": "trade_listing_metadata",
+      "statement_count": 1,
+      "remoteStatementsSha256": "aac5d1a64d7b8bc13eff603bf092cfb355685735786bc4611222aae937ccb8b2"
+    },
+    {
+      "version": "20260518142000",
+      "name": "seller_inventory_products",
+      "statement_count": 4,
+      "remoteStatementsSha256": "7afb9557ee10adbbad0651ec3f5faeb3709a4cae575de60b1642501e40c306e9"
+    },
+    {
+      "version": "20260518145500",
+      "name": "market_products",
+      "statement_count": 19,
+      "remoteStatementsSha256": "c5c8b159c13873e4fb0fde5e3032b94c4295bcf4738fb4e112b955ff1778024a"
+    },
+    {
+      "version": "20260518150000",
+      "name": "seed_market_products",
+      "statement_count": 1,
+      "remoteStatementsSha256": "32e645efb39e2e07bf3b4aaf44c0d455f26539072cac02c8d03a3ff6d64d1734"
+    },
+    {
+      "version": "20260519102000",
+      "name": "seed_market_product_expansion",
+      "statement_count": 2,
+      "remoteStatementsSha256": "4a41a46275614657d617d1da2af0e260737c71035b671cffc6ac3f1022c76963"
+    },
+    {
+      "version": "20260519124500",
+      "name": "market_product_tcgcsv_prices",
+      "statement_count": 5,
+      "remoteStatementsSha256": "0c9009b507b4fc6d0049ee8e1b13fa6ca8a245bb73b790e1085e22af517c56be"
+    },
+    {
+      "version": "20260521143000",
+      "name": "admin_social_content",
+      "statement_count": 5,
+      "remoteStatementsSha256": "5dba914aacfc35ad7babf653321eab8f6a2b8db9e8f4ce1b04eb10ff6b0cb073"
+    },
+    {
+      "version": "20260521152000",
+      "name": "community_news_sources",
+      "statement_count": 2,
+      "remoteStatementsSha256": "915a3b07675c6ff4e270f8c09547e66f8a646af823dc6a363ae8a0040dc03c2d"
+    },
+    {
+      "version": "20260526170000",
+      "name": "user_pokedex_cards",
+      "statement_count": 12,
+      "remoteStatementsSha256": "e46f35ea56f2400da2dd062e8950b69dc4a2abe8d3ace3dd15e25c1ce7dad659"
+    },
+    {
+      "version": "20260526171500",
+      "name": "binder_cards_condition",
+      "statement_count": 1,
+      "remoteStatementsSha256": "e6a336211a45d8127052f8d0a28a49dd8c4c5993845b49328df0dbc77b3384ca"
+    },
+    {
+      "version": "20260527120000",
+      "name": "explicit_data_api_grants",
+      "statement_count": 5,
+      "remoteStatementsSha256": "76f6a11d2b6d1220c088c23ed47bc6abdacbfaf744f9138093c5fa81292d2030"
+    },
+    {
+      "version": "20260527123000",
+      "name": "repair_new_user_profile_trigger",
+      "statement_count": 3,
+      "remoteStatementsSha256": "a9e967b132f7a7c4b3528c96f8ada8922065703569cf4a0260bc7aaebab78fa1"
+    },
+    {
+      "version": "20260528100000",
+      "name": "binder_default_condition",
+      "statement_count": 2,
+      "remoteStatementsSha256": "2929f4d26e7735f2197f5e69a4fdb9b14c06c7ed26ea50b5ad204e10ec4dfd0c"
+    },
+    {
+      "version": "20260528103000",
+      "name": "binder_master_set_enabled",
+      "statement_count": 2,
+      "remoteStatementsSha256": "402a1b32e97c2eb91487328b2542ee71ff7008a57733bff9a5534fac169b297a"
+    },
+    {
+      "version": "20260528110000",
+      "name": "user_achievements",
+      "statement_count": 18,
+      "remoteStatementsSha256": "9d7d7030e4469f429a84d27c07d8067edd2511772387108acd2583ac87dead2c"
+    },
+    {
+      "version": "20260528113000",
+      "name": "user_coin_rewards",
+      "statement_count": 20,
+      "remoteStatementsSha256": "332485d33f0971964236383942244eb738b74f00aeb1496ee25e90f94ab14035"
+    },
+    {
+      "version": "20260528114500",
+      "name": "server_side_coin_awards",
+      "statement_count": 19,
+      "remoteStatementsSha256": "5ed314b385c1afe2487274cb12952d05813130d16b6376dc609d84ee0daf81b1"
+    },
+    {
+      "version": "20260528120500",
+      "name": "remove_android_beta_email_opt_in",
+      "statement_count": 1,
+      "remoteStatementsSha256": "2f442744236c7d8614752b1c018c42b6bf13815b6ea6c09cdaedc221fe6d313d"
+    },
+    {
+      "version": "20260529100000",
+      "name": "binder_owner_rls",
+      "statement_count": 18,
+      "remoteStatementsSha256": "c6d23ca68fc3062eb84905057c6d661523c735049158cfc0e0d7e8b94ce106c1"
+    },
+    {
+      "version": "20260529102000",
+      "name": "admin_binder_directory",
+      "statement_count": 2,
+      "remoteStatementsSha256": "694aec6cc43cf665e6f27315a0c40148bcc9b8981671b0390d7c313b3bac9da6"
+    },
+    {
+      "version": "20260529103000",
+      "name": "admin_binder_directory_view",
+      "statement_count": 4,
+      "remoteStatementsSha256": "a174ea88ec869697de1097b4e87f0f7c1486d671b56f61962a95e8b64ae21938"
+    },
+    {
+      "version": "20260529195500",
+      "name": "repair_user_pokedex_cards",
+      "statement_count": 14,
+      "remoteStatementsSha256": "ce721cdbdec60b8e1c3ecc6ee44925fbff1f7f906e4b5f68c4043f5962e6c0ac"
+    },
+    {
+      "version": "20260602120000",
+      "name": "user_card_variants_quantity",
+      "statement_count": 3,
+      "remoteStatementsSha256": "644ccd1e86030a5a476785d58f02b51f4cda6b5839b02ea0fec10c720d54286b"
+    },
+    {
+      "version": "20260602133000",
+      "name": "binder_card_mode",
+      "statement_count": 4,
+      "remoteStatementsSha256": "2c1e68f51b7edb466cb13d0e576756de5290a9a5fd19bf1db09f3558a84b834e"
+    },
+    {
+      "version": "20260603100000",
+      "name": "binder_card_grading",
+      "statement_count": 3,
+      "remoteStatementsSha256": "2b44519a6ef5e1145c3f34e523594870fcfeef8b0ce7bd277124a662a5eb17c5"
+    },
+    {
+      "version": "20260605120000",
+      "name": "poketrace_api_cache",
+      "statement_count": 5,
+      "remoteStatementsSha256": "4d27ffe3eb480baa637bea13bd26e3cc7801905b76c45509989ac64bbbd34de0"
+    },
+    {
+      "version": "20260605130000",
+      "name": "binder_card_owned_quantity",
+      "statement_count": 2,
+      "remoteStatementsSha256": "9dc9c1242932fbef98311be89a4ccc5bd43f349a5019ae2fed1265b2f4cbb107"
+    },
+    {
+      "version": "20260605133000",
+      "name": "user_card_variants_unique_key",
+      "statement_count": 1,
+      "remoteStatementsSha256": "c803ab28eb5156389bfad765437727c43c592f11859f7d0864126a65e5653379"
+    },
+    {
+      "version": "20260605214500",
+      "name": "user_card_variants_allow_multiple_variants",
+      "statement_count": 5,
+      "remoteStatementsSha256": "1dae7133be77bd811deb22dd1985eda64ebca1f229c6ff14c0c6bffd5307975a"
+    },
+    {
+      "version": "20260621170000",
+      "name": "rookie_accolade_rewards",
+      "statement_count": 1,
+      "remoteStatementsSha256": "9064e72f178cf191bad243964bf40c2af0bfb971cf298578d9e58fec5c2b089e"
+    },
+    {
+      "version": "20260623120000",
+      "name": "binder_card_slab_metadata",
+      "statement_count": 5,
+      "remoteStatementsSha256": "cd636d6a0ae89fad6c3d692a7ae1c4333c1c457d4aa66c204608554f0878988d"
+    },
+    {
+      "version": "20260627120000",
+      "name": "inventory_movements_and_binder_schema_repair",
+      "statement_count": 10,
+      "remoteStatementsSha256": "cd084ce64def86ffd31e304eeffed97d92379dd592eb26f0f49bf830ee3e1322"
+    },
+    {
+      "version": "20260628100000",
+      "name": "listing_media_metadata",
+      "statement_count": 7,
+      "remoteStatementsSha256": "49f43ba6ea61276fd88a0ffa4721189b7b704352bfed29ae7e96f6b1d7033788"
+    },
+    {
+      "version": "20260628120000",
+      "name": "strong_goblin_achievement_rewards",
+      "statement_count": 1,
+      "remoteStatementsSha256": "eb114914ce61b4a3aa9d372a3421a9e2ef6b0376da3d65b2e82288de908fec80"
+    },
+    {
+      "version": "20260701195000",
+      "name": "marketplace_schema_repair",
+      "statement_count": 10,
+      "remoteStatementsSha256": "004cb4f6588e5cab981387d5d26d2431722c1b0c1cb1b309ca54ef97add499d8"
+    },
+    {
+      "version": "20260702120000",
+      "name": "owned_card_membership_model",
+      "statement_count": 24,
+      "remoteStatementsSha256": "b4be7696c4389d6229cdcce5b3a49b82ef68f402492d0e8955ba7a8f6eb9865f"
+    },
+    {
+      "version": "20260707120000",
+      "name": "japanese_card_pricing_support",
+      "statement_count": 12,
+      "remoteStatementsSha256": "97f7474282cb48eb697a6fe61c326505be3e2214090a621bb3c1638b2deeaf9e"
+    },
+    {
+      "version": "20260707123000",
+      "name": "price_refresh_scheduler",
+      "statement_count": 12,
+      "remoteStatementsSha256": "f06ae074aa0cba1d645879eeec086d2384002d1b561b15e69e2f4265e35fbf9c"
+    },
+    {
+      "version": "20260714120000",
+      "name": "performance_pricing_indexes",
+      "statement_count": 14,
+      "remoteStatementsSha256": "c0b631d9b46a5a5c7e2f3a61dbbc01698a4e5237c2b47d437e86931ccadaa3a4"
+    },
+    {
+      "version": "20260715120000",
+      "name": "binder_language_support",
+      "statement_count": 3,
+      "remoteStatementsSha256": "1905712cce3d41c6b23ad8bb5c206e056af85e0cf5404c8d675395f1de50d220"
+    },
+    {
+      "version": "20260715143000",
+      "name": "minty_insight_platform",
+      "statement_count": 59,
+      "remoteStatementsSha256": "c3b0a3140cf4eba58146f8a0dee6c1095be539bb58925f4da3284324f932d2db"
+    },
+    {
+      "version": "20260717120000",
+      "name": "phase1_app_performance_indexes",
+      "statement_count": 13,
+      "remoteStatementsSha256": "c2bf0b491fe6b25915d9bfa54836f8a4b7ef40b03b9eb3db6d0f7212aaf1e7e2"
+    },
+    {
+      "version": "20260717143000",
+      "name": "japanese_catalogue_canonical_schema",
+      "statement_count": 82,
+      "remoteStatementsSha256": "65b2a296dcebbe319bf7d64a0a1f6876e2d5b826a2f719376915b27081356792"
+    },
+    {
+      "version": "20260718120000",
+      "name": "tcgdex_catalogue_repair",
+      "statement_count": 26,
+      "remoteStatementsSha256": "8235af0832f96fd9091658a15524dfafbc68d7093bb4c258db2541f19d9b4da5"
+    },
+    {
+      "version": "20260719110000",
+      "name": "fast_global_search_indexes",
+      "statement_count": 11,
+      "remoteStatementsSha256": "72b5ea58b1ea8c0cbdb5326c0aa7600bec6b15c35951e042cf4e6b40239df662"
+    },
+    {
+      "version": "20260719123000",
+      "name": "scan_learning_events",
+      "statement_count": 13,
+      "remoteStatementsSha256": "69bedddd1529e273f10e652e503ea6b67fd5803a71e799a8acb077baf542150a"
+    },
+    {
+      "version": "20260719133000",
+      "name": "scan_learning_match_incorrect",
+      "statement_count": 2,
+      "remoteStatementsSha256": "84aa34e0ae57a59942526ee8be2f8f7c99a3a81d2753d4b4f9ec2fb18b59c56c"
+    },
+    {
+      "version": "20260720173000",
+      "name": "secure_scan_recognition",
+      "statement_count": 9,
+      "remoteStatementsSha256": "bebcf449ce44dfbbf3e96a3f17f0aef6f741289d0739e587311489fb8938da48"
+    },
+    {
+      "version": "20260720184000",
+      "name": "scan_grading_jobs",
+      "statement_count": 9,
+      "remoteStatementsSha256": "66bcea498f7b530d04aef4a82c62c97eb535fea27eb31f48d753efa3154703aa"
+    },
+    {
+      "version": "20260720235000",
+      "name": "scan_analytics_feedback",
+      "statement_count": 9,
+      "remoteStatementsSha256": "9584cc638c5cf5d6ade261437fb760271193a3c91f1579877127223a01caf5ee"
+    },
+    {
+      "version": "20260721090000",
+      "name": "scanner_calibration",
+      "statement_count": 33,
+      "remoteStatementsSha256": "f2c3d1f2737ae861171108dcb4d378286c936ce07c10727840d53e0a0ff3fbda"
+    },
+    {
+      "version": "20260721123000",
+      "name": "tcg_set_cover_images",
+      "statement_count": 2,
+      "remoteStatementsSha256": "0397252efde965f59457701f1272caef6c19ae210e3898c124d98a8bff56e789"
+    },
+    {
+      "version": "20260726103000",
+      "name": "scanner_recognition_rebuild",
+      "statement_count": 40,
+      "remoteStatementsSha256": "9bd6cc6c48c1df0ddea80960ab42aa95374d7567bd07c579eed4b5c63bcaa471"
+    },
+    {
+      "version": "20260726162000",
+      "name": "binder_set_branding_assets",
+      "statement_count": 7,
+      "remoteStatementsSha256": "af18ebe3d7f8d05f4a3e00df84e19e625031ae6ad28db4105c563ae4872791fa"
+    },
+    {
+      "version": "20260726210000",
+      "name": "pricing_engine_v2",
+      "statement_count": 35,
+      "remoteStatementsSha256": "9fec847ffb31a105a45792b224624cca1a9a803deba0489994fc3e418d9a9a49"
+    },
+    {
+      "version": "20260726223000",
+      "name": "scan_lab_capture_queue",
+      "statement_count": 32,
+      "remoteStatementsSha256": "6a0e5ebd5ce4ab5ba5518b172e5eaff2d0f78b4e279d8038713bde5399e1349d"
+    },
+    {
+      "version": "20260726234500",
+      "name": "recognition_feedback_loop",
+      "statement_count": 40,
+      "remoteStatementsSha256": "a415e54d8b171764f45b71112b70547e764ebfb9b6c5364d900389757411ef3d"
+    },
+    {
+      "version": "20260727090000",
+      "name": "shadow_mode_pilot",
+      "statement_count": 14,
+      "remoteStatementsSha256": "fa23b5752a4f1b8f935f4ad5121025cdef10314e59b02a377567a5930355d348"
+    },
+    {
+      "version": "20260727212256",
+      "name": "canonical_stackr_catalogue_database",
+      "statement_count": 217,
+      "remoteStatementsSha256": "ed0cf88a008a9cccd5274a7f2294ed458647779d1c947438ce05bb46d4ded471"
+    },
+    {
+      "version": "20260727213835",
+      "name": "stackr_data_ingestion_reconciliation",
+      "statement_count": 64,
+      "remoteStatementsSha256": "aa819bd898932e210fce86dd794a2d77ddb448f540fc8d1366d48d877bcf5dcd"
+    },
+    {
+      "version": "20260728060617",
+      "name": "stackr_asset_repository_delivery_pipeline",
+      "statement_count": 56,
+      "remoteStatementsSha256": "9ff8c8099e6087fb7cabdba945000cae7a8fcec615dd773620a07b8873bde41c"
+    },
+    {
+      "version": "20260728064400",
+      "name": "embedding_model_registry_and_index_gates",
+      "statement_count": 58,
+      "remoteStatementsSha256": "c2304716a05f37d66e4ba0fbbf6506f3c5f2db782ea6b6cf0cdb9c1485732f55"
+    },
+    {
+      "version": "20260728110000",
+      "name": "curated_corocoro_mew_promos",
+      "statement_count": 7,
+      "remoteStatementsSha256": "dce2fc151a8c43d2fe0ccf841878d420063fcbaac7fc7ad6877fbc3669fafb88"
+    },
+    {
+      "version": "20260728152412",
+      "name": "recognition_service_scan_diagnostics",
+      "statement_count": 19,
+      "remoteStatementsSha256": "603eee2ce63f0d5e5d4a0015611796ebf50fb1e3df7695bf5a26a5ccdf882c63"
+    },
+    {
+      "version": "20260728171416",
+      "name": "stackr_market_pricing_service",
+      "statement_count": 91,
+      "remoteStatementsSha256": "e5d14a963d0a42a06837c6718fb0d607593d0f8fc570ba28c56ffd53de953276"
+    },
+    {
+      "version": "20260728173530",
+      "name": "stackr_api_gateway_controls",
+      "statement_count": 58,
+      "remoteStatementsSha256": "293760967a5fb7e4fe438019bdbdac96cfaba6db764d98acd61592204e73226e"
+    },
+    {
+      "version": "20260728182743",
+      "name": "stackr_quality_performance_observability",
+      "statement_count": 85,
+      "remoteStatementsSha256": "092a2e04878e88fb0880c0266c943e19886be6e04630a2c1747042a9fb605f32"
+    },
+    {
+      "version": "20260728202949",
+      "name": "stackr_application_migration_provider_retirement",
+      "statement_count": 30,
+      "remoteStatementsSha256": "beb7ebb478b7d1cacfd6ba3a71199594a73540850e62f10e14866ef93e4058da"
+    },
+    {
+      "version": "20260728203300",
+      "name": "stackr_release_activation_controls",
+      "statement_count": 18,
+      "remoteStatementsSha256": "a0d8a7e454d70061a66dcc5ea37f118cbb0332026c575eb8b5563367745ffc0a"
+    },
+    {
+      "version": "20260729055239",
+      "name": "critical_security_containment",
+      "statement_count": 27,
+      "remoteStatementsSha256": "465694f3f5a45c422ea6cd18427c180b3d8a7af16bb5066e6207e22dd5dca850"
+    },
+    {
+      "version": "20260730080047",
+      "name": "reconcile_catalogue_seed_encoding_and_finish_taxonomy",
+      "statement_count": 4,
+      "remoteStatementsSha256": "eb0a13a3a18216eb3fd7c59562babdaa7248eede9ec5e84af384cad3f90bcc60"
+    },
+    {
+      "version": "20260730144626",
+      "name": "harden_legacy_catalogue_operational_access",
+      "statement_count": 24,
+      "remoteStatementsSha256": "f44307de40081755cda2d45f8d079ab9334f60048c91121d6447c7ed67e0fa04"
+    },
+    {
+      "version": "20260730145958",
+      "name": "harden_function_and_storage_access",
+      "statement_count": 29,
+      "remoteStatementsSha256": "8e623e22d497cf98954328c2f228a874ee5c2ccf8ae8107f82eed17cd5c8c973"
+    },
+    {
+      "version": "20260730153923",
+      "name": "preserve_raw_source_record_history",
+      "statement_count": 3,
+      "remoteStatementsSha256": "e8e2d356228b3e611eaab9335a38a695c41882557276c9e46a682f71c8148fa9"
+    },
+    {
+      "version": "20260801090000",
+      "name": "strict_foreign_catalogue_import_safety",
+      "statement_count": 12,
+      "remoteStatementsSha256": "641a8ea07e0dc5f67e6fb62e6f38c6bd3716a972668cc959b1b8626dc6f372ba"
+    },
+    {
+      "version": "20260801103000",
+      "name": "catalogue_image_leftover_workflow",
+      "statement_count": 12,
+      "remoteStatementsSha256": "582e50a9fab14e65c9be76047614238db89a67ada5332d3f0e90b50b0c2d742a"
+    },
+    {
+      "version": "20260801120000",
+      "name": "language_catalogue_publication_snapshots",
+      "statement_count": 76,
+      "remoteStatementsSha256": "8baa35e416f87c45debe61a95407536c5181dd58d288e354fcbeaea78499b19b"
+    },
+    {
+      "version": "20260802160643",
+      "name": "production_critical_rls_storage_containment_20260802",
+      "statement_count": 1,
+      "remoteStatementsSha256": "d09009ea11a2a2acde2db7bb60722d694c10b0eaf7fdddbe3222942c6bd63428"
+    },
+    {
+      "version": "20260805200000",
+      "name": "recognition_service_database_role",
+      "statement_count": 41,
+      "remoteStatementsSha256": "097929d30c3990b7a249a39054d6cc13c7511859f56a0b06ff6bceff4047b327"
+    },
+    {
+      "version": "20260806073146",
+      "name": "recognition_reference_asset_eligibility",
+      "statement_count": 3,
+      "remoteStatementsSha256": "7b75ce163f440ca92dc3da2b95ab84e31ad46c8337a267600a0264972960ea4a"
+    },
+    {
+      "version": "20260806170203",
+      "name": "optimise_catalogue_quality_report",
+      "statement_count": 2,
+      "remoteStatementsSha256": "06219afebc14966ec3481d77480debf21a6e9c347f1aa621d259f618fea0be3a"
+    },
+    {
+      "version": "20260806170501",
+      "name": "make_catalogue_quality_report_targeted",
+      "statement_count": 5,
+      "remoteStatementsSha256": "03b5c431d56f2e11d0209ded1988c41594beee4cce6d6726c6c2f464d8045377"
+    },
+    {
+      "version": "20260806171907",
+      "name": "resolve_asset_manifest_catalogue_identity",
+      "statement_count": 2,
+      "remoteStatementsSha256": "d461bce18ba2454d1d1b0e357d71d197b1394c381eafd5583e6be905dadb7c78"
+    },
+    {
+      "version": "20260806174020",
+      "name": "materialize_dinov2_vits14_embedding_index",
+      "statement_count": 14,
+      "remoteStatementsSha256": "3c23c453484d989146bf68c2f98b33c60b0e8fae2914a434f225bf75bc673c19"
+    },
+    {
+      "version": "20260806183600",
+      "name": "index_dinov2_embedding_foreign_keys",
+      "statement_count": 4,
+      "remoteStatementsSha256": "c61c48832fd98a1b2e8fd44561c9d3ed6678e4edf03b25f172407fa1eedd6ccb"
+    },
+    {
+      "version": "20260806212500",
+      "name": "expose_catalogue_artwork_fallbacks",
+      "statement_count": 4,
+      "remoteStatementsSha256": "a42946f337fb4f52ab9f9047efb057026974a49849086cd0b779987cd2de5f13"
+    },
+    {
+      "version": "20260806213000",
+      "name": "backfill_catalogue_native_image_states",
+      "statement_count": 2,
+      "remoteStatementsSha256": "365a456111f7310515998c3cb6cb04dce0d0aedc912f255e8f2fc08f90ad9288"
+    },
+    {
+      "version": "20260807034806",
+      "name": "repair_provider_variant_identity",
+      "statement_count": 3,
+      "remoteStatementsSha256": "9c1fe57630bd92221fa2efba3af0c3f3fde8d51a8649fba95674a0b72760014a"
+    },
+    {
+      "version": "20260807173127",
+      "name": "register_private_scan_upload",
+      "statement_count": 4,
+      "remoteStatementsSha256": "8bc32b84663fc135bb1eed1bea0c436a780ddc43da2797a3a42c77ca88d23618"
+    },
+    {
+      "version": "20260807174127",
+      "name": "allow_recognition_read_private_scan_uploads",
+      "statement_count": 4,
+      "remoteStatementsSha256": "dd6b55a39b3fbc5a0834b8c04da7d7e0211f9598f61f375f490393d926203bba"
+    },
+    {
+      "version": "20260807180227",
+      "name": "allow_recognition_vector_extension_usage",
+      "statement_count": 1,
+      "remoteStatementsSha256": "60ee134cd122bbc93275d81a3c84e5b5987fae02f0cba0c09e940c6388e9f96f"
+    },
+    {
+      "version": "20260807183118",
+      "name": "recognition_index_build_api",
+      "statement_count": 12,
+      "remoteStatementsSha256": "e876797a700841641c449cd564cb96c84a675057c210ea25cfba9bf59c8c4c52"
+    },
+    {
+      "version": "20260807184200",
+      "name": "search_recognition_candidate_index",
+      "statement_count": 3,
+      "remoteStatementsSha256": "5ced656d7b99746a6d2389b84840f23ef66e420a34af321770e76add4ce35827"
+    },
+    {
+      "version": "20260809121525",
+      "name": "catalogue_asset_mirror_queue_index",
+      "statement_count": 1,
+      "remoteStatementsSha256": "bd0dbec610311ec0be31e06474f038cff14cb1fbb2aab4c1faf0ccb7abc20976"
+    },
+    {
+      "version": "20260809123804",
+      "name": "optimize_catalogue_asset_source_reuse",
+      "statement_count": 1,
+      "remoteStatementsSha256": "6483a773dffbe6622e8885f7a81d58ec7636f05d12376b0efe0d5b396a3b50e9"
+    },
+    {
+      "version": "20260810070906",
+      "name": "optimize_published_asset_manifest_reads",
+      "statement_count": 4,
+      "remoteStatementsSha256": "9b9ff38c619b9b0173edc29405595223e91380fff685893f623bc342d8419bce"
+    },
+    {
+      "version": "20260810071807",
+      "name": "add_stable_asset_manifest_cursor",
+      "statement_count": 2,
+      "remoteStatementsSha256": "77ae25b66aa52622becb1156c2231bed0dae428e54a88de9f2516ee537ae2585"
+    },
+    {
+      "version": "20260810170607",
+      "name": "optimize_raw_source_publication_reads",
+      "statement_count": 2,
+      "remoteStatementsSha256": "89188eb061c4f20928f7488a9382c75bb30d45aabc3c4289dcbd314140bc8ff6"
+    },
+    {
+      "version": "20260811165000",
+      "name": "repair_owned_card_membership_legacy_identity",
+      "statement_count": 2,
+      "remoteStatementsSha256": "5823f86f115a077f291689a8a03fba949277e6ed79800858f652f4fa681a321c"
+    },
+    {
+      "version": "20260813093320",
+      "name": "atomic_seller_inventory_batches",
+      "statement_count": 20,
+      "remoteStatementsSha256": "2c150bce84f88571d6c61ec2ba1f618a58ebdf8e3eba5591979b9073445f5bcc"
+    },
+    {
+      "version": "20260813135412",
+      "name": "premium_seller_access_boundary",
+      "statement_count": 40,
+      "remoteStatementsSha256": "7c3fa8be1b4aedaf95b41c7974b72a5090b50361f14fdabf9c24d7e7923ace02"
+    },
+    {
+      "version": "20260827093110",
+      "name": "emergency_client_write_containment",
+      "statement_count": 1,
+      "remoteStatementsSha256": "49bbdd915ecb16b5d378a02ebbd5c7b043782e098f869a72777f45d3470b8cc6"
+    },
+    {
+      "version": "20260828093213",
+      "name": "prompt2_emergency_profile_authority_containment",
+      "statement_count": 1,
+      "remoteStatementsSha256": "19a01ac58a27bcc4113abea44888b34962dd9b05e5d21d8cab820e60b3ddf987"
+    },
+    {
+      "version": "20260828093520",
+      "name": "prompt2_trusted_admin_claim_cutover",
+      "statement_count": 1,
+      "remoteStatementsSha256": "fcb0c84e8678a59c79f47e229dae478a6a70b18cef97a5f4cb792c080837b563"
+    },
+    {
+      "version": "20260828151836",
+      "name": "prompt2_trade_notification_write_containment",
+      "statement_count": 1,
+      "remoteStatementsSha256": "71a0a9a82115ffd9d383af66f6ae0725ccf0e1b9d95d4b606c2c145dfab43c70"
+    },
+    {
+      "version": "20260902204348",
+      "name": "prepare_prompt2_trade_freeze_for_transaction_boundary",
+      "statement_count": 1,
+      "remoteStatementsSha256": "c89bf62e739b41979490ccea1e4223461662b28779a84ed2b67c0147e3d20f7d"
+    },
+    {
+      "version": "20260902204349",
+      "name": "marketplace_trust_and_safety",
+      "statement_count": 1,
+      "remoteStatementsSha256": "d85d58e21fafa9ffebad6c8e1e3c402d5ca900a3faf2707e6cc6b5674b659c22"
+    },
+    {
+      "version": "20260902204350",
+      "name": "marketplace_listing_transactions",
+      "statement_count": 1,
+      "remoteStatementsSha256": "acc9b63703bd10837500991b0fcd120a1107bd89e8b05dd4e340fd351270e834"
+    },
+    {
+      "version": "20260902204351",
+      "name": "binder_ownership_lifecycle",
+      "statement_count": 1,
+      "remoteStatementsSha256": "c2372a6154b547a9722d7305cd923e303fe467ca9596fcbedb24adb07a9756ef"
+    },
+    {
+      "version": "20260902204352",
+      "name": "restrict_marketplace_transaction_trigger_execution",
+      "statement_count": 1,
+      "remoteStatementsSha256": "a936791b8ace6b998670af32484834b054a91f31670c8e5fea61683bf03c714e"
+    },
+    {
+      "version": "20260902204353",
+      "name": "restrict_binder_reservation_trigger_execution",
+      "statement_count": 1,
+      "remoteStatementsSha256": "faf5c3ef616c254c3ed94b9eb7db66d0d131b00981b79a91ba76f5440a5379ff"
+    },
+    {
+      "version": "20260902204354",
+      "name": "optimize_binder_marketplace_transaction_access",
+      "statement_count": 1,
+      "remoteStatementsSha256": "1aa39e8b1e955c4e2638fb23fcb208a1ea7a2d79f96afe09321bc15fd27ba9fb"
+    },
+    {
+      "version": "20260902204550",
+      "name": "binder_conflict_preconditions",
+      "statement_count": 1,
+      "remoteStatementsSha256": "dd056c8fcc4c662f89d51b74ff66aaa6a036cbb45ca9ca67256f1aef2e9cd2a1"
+    },
+    {
+      "version": "20260902204552",
+      "name": "binder_readiness_policy_access",
+      "statement_count": 1,
+      "remoteStatementsSha256": "85c21df8ea39dfd9c9ad9681d788ca88e5676a4ef244f630d92045e7084785b5"
+    },
+    {
+      "version": "20260902204554",
+      "name": "reconcile_prompt2_trade_freeze_with_marketplace_transactions",
+      "statement_count": 1,
+      "remoteStatementsSha256": "5541d05c767df30194af25baba4864398878cfbba155673fedddbcefd0d265ed"
+    },
+    {
+      "version": "20260902205018",
+      "name": "prepare_marketplace_trust_utf8_data_repair",
+      "statement_count": 1,
+      "remoteStatementsSha256": "09bc91d754091345c3f6e8d03dcfe37f94e15c164a32345de86fb44151912dd1"
+    },
+    {
+      "version": "20260902205020",
+      "name": "repair_marketplace_trust_utf8_separator",
+      "statement_count": 1,
+      "remoteStatementsSha256": "3b960b9f3381a842a17891b0c46baa57ee88e67c30333bf87950c39a35404db4"
+    },
+    {
+      "version": "20260903120000",
+      "name": "deduplicate_pending_price_refreshes",
+      "statement_count": 1,
+      "remoteStatementsSha256": "74665b96ad3b7a9b5a0bd260ca7e862b919a816ad651d7946af792953e9fac35"
+    },
+    {
+      "version": "20260903210000",
+      "name": "verified_sold_provenance",
+      "statement_count": 1,
+      "remoteStatementsSha256": "de9e9e425c347768be6a4af343a02b884ce7313c0a593169e89eeca545714e2f"
+    },
+    {
+      "version": "20260904123000",
+      "name": "poketrace_sold_evidence_provider",
+      "statement_count": 1,
+      "remoteStatementsSha256": "216189bc23ec964e6fe3e0cce4e942606816516baad6498b45b819a1844d4f3f"
+    },
+    {
+      "version": "20260904130000",
+      "name": "market_price_snapshot_history_buckets",
+      "statement_count": 1,
+      "remoteStatementsSha256": "3076882cf5d2c4289278a08bd67961b80af463bd344cc940b521a0b8b092a8a3"
+    },
+    {
+      "version": "20260904131000",
+      "name": "exact_variant_price_refresh_queue",
+      "statement_count": 1,
+      "remoteStatementsSha256": "b8653939cc914ce2d1d7e1c0b0a790b6aa518da3c4443da056a398fe712a4bf7"
+    },
+    {
+      "version": "20260906062835",
+      "name": "index_asset_printing_identity",
+      "statement_count": 1,
+      "remoteStatementsSha256": "e246fec562d3e3cfbb96fd61f9c4e17ac9fe8be75dc8895fc77129062695ce2e"
+    },
+    {
+      "version": "20260906062838",
+      "name": "expose_bounded_card_image_identity_read",
+      "statement_count": 1,
+      "remoteStatementsSha256": "f6e4ab2b12e480d6b0a6f7e6531685ddfd88227590754df95da6fde7295b7cae"
+    },
+    {
+      "version": "20260906063316",
+      "name": "personal_pricing_privacy_boundary",
+      "statement_count": 1,
+      "remoteStatementsSha256": "8408bd5898d1b380477934aca65ee3cac2160e2ae5d5d818941bec45d0d58959"
+    },
+    {
+      "version": "20260908111410",
+      "name": "catalogue_name_membership_lookup",
+      "statement_count": 1,
+      "remoteStatementsSha256": "451091026f8681f4865f4a23dfa42b54889d6aeb0b343beb8f1ade60307e1f14"
+    },
+    {
+      "version": "20260908111830",
+      "name": "catalogue_name_printing_language",
+      "statement_count": 1,
+      "remoteStatementsSha256": "0073350ffb06bc526bcc96508c908470d15a87cdcd38b70bc5a64041a89ba23b"
+    },
+    {
+      "version": "20260908113546",
+      "name": "catalogue_name_language_independent_lookup",
+      "statement_count": 1,
+      "remoteStatementsSha256": "f32e6fd1f5ff42d5d5a48752666529e901fba36104c1e1cbcef3dc7f25b46f49"
+    },
+    {
+      "version": "20260908194309",
+      "name": "service_only_tcgdex_variant_aliases",
+      "statement_count": 1,
+      "remoteStatementsSha256": "5b6dab3a91162031769c36d94694b25310c8c9cf94636f61d47f20e0071491e2"
+    },
+    {
+      "version": "20260909132452",
+      "name": "optimize_catalogue_search_indexes",
+      "statement_count": 1,
+      "remoteStatementsSha256": "babd4f5a3de2d7a2ba04c3944792e9f80de9e52f511aeaad939cdf642a13efed"
+    },
+    {
+      "version": "20260909133445",
+      "name": "indexed_tolerant_collector_search",
+      "statement_count": 1,
+      "remoteStatementsSha256": "c3a91026e6e9d4ea57175c287eaf8c9fac91cac9f66523e44d29d61b01fd4cbb"
+    },
+    {
+      "version": "20260909133512",
+      "name": "fix_indexed_tolerant_collector_search",
+      "statement_count": 1,
+      "remoteStatementsSha256": "dbe21b8b3e49cf9d6853e11b63fc7c344e4f4e281e63e57b93affec7b7043322"
+    },
+    {
+      "version": "20260909133545",
+      "name": "fix_indexed_tolerant_collector_search_limit",
+      "statement_count": 1,
+      "remoteStatementsSha256": "951c1ee8b294225499de180284b1a69ea9a60db329b9edd5228cd05d16a6297c"
+    },
+    {
+      "version": "20260909133639",
+      "name": "collector_search_identity_view",
+      "statement_count": 1,
+      "remoteStatementsSha256": "185ba85e6c8cf99d948f9bd5f05521660d5a2656d00d1bf6b8ac8f6792fb8a0a"
+    },
+    {
+      "version": "20260911075733",
+      "name": "optimize_card_image_identity_rpc",
+      "statement_count": 1,
+      "remoteStatementsSha256": "7ff3ed9c2b56e4e7b6d12e986038fe1c2ef6c4eac884de19acc596f84add88fc"
+    },
+    {
+      "version": "20260911080138",
+      "name": "add_catalogue_set_cards_bundle_rpc",
+      "statement_count": 1,
+      "remoteStatementsSha256": "935d19bcd1979d5c6f7ae8f2019194e50984bd3befd253209609891217166f33"
+    },
+    {
+      "version": "20260911080444",
+      "name": "add_fast_catalogue_set_card_rows_rpc",
+      "statement_count": 1,
+      "remoteStatementsSha256": "79e4d6a4f2391b8b14a806711f6586239ed4c91c828fa34cf16260783bffba65"
+    },
+    {
+      "version": "20260911083308",
+      "name": "secure_fast_catalogue_set_card_rows",
+      "statement_count": 1,
+      "remoteStatementsSha256": "b752d524632a6eca054aad3f52cbe2f505ba5555fe27a5398e674ef81f22a605"
+    },
+    {
+      "version": "20260911104326",
+      "name": "catalogue_set_card_fact_rows",
+      "statement_count": 1,
+      "remoteStatementsSha256": "9508b521f1230a4c01184e509d20fe80ac422d97f438f99c7868f0dac18d3705"
+    },
+    {
+      "version": "20260911104546",
+      "name": "remove_unused_catalogue_set_card_fact_rows",
+      "statement_count": 1,
+      "remoteStatementsSha256": "3b676ff18937c1f3d17ef111ecca9deeb0afa88ae25e8dc9c6f8540ace860009"
+    },
+    {
+      "version": "20260919100104",
+      "name": "catalogue_pricing_cycles",
+      "statement_count": 1,
+      "remoteStatementsSha256": "fd4812a2d4a0e28d725add35ab1440dd1b37638d1c6c62693827d29bdc248104"
+    },
+    {
+      "version": "20260920130134",
+      "name": "optimise_published_price_catalogue_revision",
+      "statement_count": 1,
+      "remoteStatementsSha256": "3859ad611c085ba82f5934f47520bbde91d776874f918387754f3ebcf22a0a7c"
+    },
+    {
+      "version": "20260927150826",
+      "name": "catalogue_repeated_printed_number_identity",
+      "statement_count": 1,
+      "remoteStatementsSha256": "cd3d3f36a1e3e024dc6b3b53b93cf950b1319e2de741f90f4b59f6b88803aa66"
+    },
+    {
+      "version": "20260927162633",
+      "name": "expose_printing_fronts_in_fast_set_cards",
+      "statement_count": 1,
+      "remoteStatementsSha256": "14e6dd290ff5df4463c95074bc7c8fe9815513a3a98517bb690e9b5df0cc46ca"
+    },
+    {
+      "version": "20260927164229",
+      "name": "magazine_publication_groups",
+      "statement_count": 1,
+      "remoteStatementsSha256": "a3f9e0335654abb015ef9f7a9db24854a9ab2f28efdad4573f78725f0055384d"
+    },
+    {
+      "version": "20260927165014",
+      "name": "bound_stored_exact_price_catalogue_lookup",
+      "statement_count": 1,
+      "remoteStatementsSha256": "34cdff73e21d11a90e8ee849edcc4e2f678144c9a4eb07bfc91d5af7c91a69e7"
+    },
+    {
+      "version": "20260927165307",
+      "name": "skip_unpublished_catalogue_alias_repair_scans",
+      "statement_count": 1,
+      "remoteStatementsSha256": "5aac8828830fe73f74d0b546a645feb1231b2eea20c3e827ea1460cbf7e83b03"
+    },
+    {
+      "version": "20260927173200",
+      "name": "include_printing_fronts_in_card_identity_read",
+      "statement_count": 1,
+      "remoteStatementsSha256": "854826b720a0f5270debffb7882674c47298441e024248f77227592d6596f7ca"
+    },
+    {
+      "version": "20260929073406",
+      "name": "expose_published_card_details",
+      "statement_count": 1,
+      "remoteStatementsSha256": "872599cf9106e8432406214bd388a630147efd8b1bf263e02d6a12f5461363a1"
+    },
+    {
+      "version": "20261003224016",
+      "name": "catalogue_price_bulk_cache",
+      "statement_count": 1,
+      "remoteStatementsSha256": "cab1cb8a548e0602d59e45a7010a5ae192dbccbd21705197452b8f00fbd91529"
+    },
+    {
+      "version": "20261003224031",
+      "name": "restore_full_catalogue_price_guide",
+      "statement_count": 1,
+      "remoteStatementsSha256": "b70b29ee0e1efc7ec5eb098144ed1aeae0db00064af7543c0ced606e6998e167"
+    },
+    {
+      "version": "20261003224558",
+      "name": "catalogue_price_feed_access_indexes",
+      "statement_count": 1,
+      "remoteStatementsSha256": "664da9b1a40447f9d942735b4c6d131c370b0c21d5248c2ee0a9ad63363cda7b"
+    },
+    {
+      "version": "20261003225316",
+      "name": "catalogue_price_repair_reads",
+      "statement_count": 1,
+      "remoteStatementsSha256": "0e5220821506d6c4bb6dd342279353acad2526b4bf1f1fa2298e902ef1a2e0d7"
+    },
+    {
+      "version": "20261003225832",
+      "name": "cardmarket_general_price_backup",
+      "statement_count": 1,
+      "remoteStatementsSha256": "88dacef14f70270298dc3deb79cccb3834ccbfdfc8fdf23b77d5b24f921b5a16"
+    },
+    {
+      "version": "20261003231006",
+      "name": "batch_catalogue_price_identity_reads",
+      "statement_count": 1,
+      "remoteStatementsSha256": "c219c3fd7e0f4f0fb2787a0fa76a4eec231097e0a1624b80bb4ce2701330a707"
+    },
+    {
+      "version": "20261003232812",
+      "name": "japanese_exact_price_identities",
+      "statement_count": 1,
+      "remoteStatementsSha256": "e8b1e4dd7d20f0d2bcd0b015684edbbd1d6c62a1bdfbb5ec0035fc46a4b629f1"
+    },
+    {
+      "version": "20261003234257",
+      "name": "bounded_published_price_read",
+      "statement_count": 1,
+      "remoteStatementsSha256": "25e707f2b76bb85bd91f028098a3164586645eb6880befdb8f709c3bbd8ab37a"
+    },
+    {
+      "version": "20261003234442",
+      "name": "cover_general_price_foreign_keys",
+      "statement_count": 1,
+      "remoteStatementsSha256": "30f73974710cf421d054e5c26110ab8983ce3f7c56ac2ac2ceb3128e17604050"
+    },
+    {
+      "version": "20261004084131",
+      "name": "english_exact_title_price_identities",
+      "statement_count": 1,
+      "remoteStatementsSha256": "b2cd3f2a3893ec3506d0ba0ba093b8cb77114dfd2e8326035ff7362cccaad3f2"
+    },
+    {
+      "version": "20261004084237",
+      "name": "cardmarket_current_provenance_candidates",
+      "statement_count": 1,
+      "remoteStatementsSha256": "ffd3edcdf6413b6b9c60ea0e9b828bf51ea9c4faf2d7090c457223527ca64f59"
+    },
+    {
+      "version": "20261004084956",
+      "name": "cardmarket_bounded_provenance_candidates",
+      "statement_count": 1,
+      "remoteStatementsSha256": "529223cf443c3fa07a132f0c6d485c4f0dd2413ae7ebc142ea730bcb24bf55b9"
+    },
+    {
+      "version": "20261004090339",
+      "name": "cardmarket_resumable_provenance_index",
+      "statement_count": 1,
+      "remoteStatementsSha256": "01412bc720bf47d5f996321a507841a58d50fd712fadd2c9ff53f5d6348a5e11"
+    },
+    {
+      "version": "20261004091559",
+      "name": "catalogue_bulk_sweep_bounded_initialisation",
+      "statement_count": 1,
+      "remoteStatementsSha256": "764a7a9aff14368b2cf1714250b299ce346e9573c11dc29c7dd95bea966b643b"
+    },
+    {
+      "version": "20261004091600",
+      "name": "bounded_collector_search_identity_view",
+      "statement_count": 1,
+      "remoteStatementsSha256": "0b37128485872eb18b683dc0b95fbd0021bba73f38400eedb4d6ed16587d33ae"
+    },
+    {
+      "version": "20261004093356",
+      "name": "bounded_catalogue_bulk_sweep_finish",
+      "statement_count": 1,
+      "remoteStatementsSha256": "98c63a4ccf2d2c51676636db81f927280999e6dc4d2826bfd517eccd4d4f66fc"
+    },
+    {
+      "version": "20261004093530",
+      "name": "cardmarket_reviewed_mapping_loader",
+      "statement_count": 1,
+      "remoteStatementsSha256": "c93adb5e746757ecca776742b7c525057b611d111ce5cd3579af632481ff49d6"
+    },
+    {
+      "version": "20261004094846",
+      "name": "cardmarket_daily_revision_resume",
+      "statement_count": 1,
+      "remoteStatementsSha256": "1c54e0cba6407ad92ea2f053a11866add32dfa8fa899f34fa11365aece225f75"
+    },
+    {
+      "version": "20261004094851",
+      "name": "thin_published_price_identities",
+      "statement_count": 1,
+      "remoteStatementsSha256": "fac67c7ca87669c6b00f33d7e8128b56e98d333ac5e33c6ec6764eb4a2a8ec12"
+    },
+    {
+      "version": "20261004101533",
+      "name": "catalogue_bulk_store_materialization",
+      "statement_count": 1,
+      "remoteStatementsSha256": "38940c0c15a8d02bbcf08b2e6816933aefe51f4cce6cd9ae54e34ad2895c1fe7"
+    },
+    {
+      "version": "20261004102720",
+      "name": "cardmarket_source_revision_lease",
+      "statement_count": 1,
+      "remoteStatementsSha256": "14c1425759fded531e6a648027defa703d59b85bf9520378d4e7e2e15c684e9e"
+    },
+    {
+      "version": "20261004162804",
+      "name": "bounded_reviewed_provider_set_resolver",
+      "statement_count": 1,
+      "remoteStatementsSha256": "77604deb82caffd4c4a37c079a7a94560597e39429cdbdadcacbf690ded2a4d4"
+    },
+    {
+      "version": "20261004171309",
+      "name": "shared_set_authoritative_provider_card_exclusion",
+      "statement_count": 1,
+      "remoteStatementsSha256": "608c423a11448440b2a66315045c240c8b1a8fe48696fab54762516278cf793c"
+    },
+    {
+      "version": "20261004172210",
+      "name": "bounded_catalogue_bulk_price_coverage",
+      "statement_count": 1,
+      "remoteStatementsSha256": "f44acf046e0c135e8e1a11c32194fcbcdd51ab259c090b1fa72bd01bd7ac30fe"
+    },
+    {
+      "version": "20261004174528",
+      "name": "cardmarket_raw_retention_contract",
+      "statement_count": 1,
+      "remoteStatementsSha256": "af61e05b79efb9f6487f828b7eb8d1dd8b72a2d7f2888b769ac9ee974af1519e"
+    },
+    {
+      "version": "20261004181314",
+      "name": "catalogue_bulk_price_coverage_page",
+      "statement_count": 1,
+      "remoteStatementsSha256": "4f3179330299ad190afb3b2a9eb01f4db2dc9d3f46bc96abd582c90032700c57"
+    },
+    {
+      "version": "20261004190319",
+      "name": "numbered_english_provider_set_titles",
+      "statement_count": 1,
+      "remoteStatementsSha256": "17770ad8b4b2c60b68563ebcf49bdab645c728436f7f713f29d8c0ee0c2b6d28"
+    },
+    {
+      "version": "20261005090204",
+      "name": "current_physical_catalogue_price_read",
+      "statement_count": 1,
+      "remoteStatementsSha256": "9a69238a9599e234cdb7e160b873963d832bb4c4d019505c2b2c4c7c2b00d0af"
+    },
+    {
+      "version": "20261005093440",
+      "name": "printing_general_price_guide",
+      "statement_count": 1,
+      "remoteStatementsSha256": "14f92c7ebe57c707e02edb81bad19a1cd4e326c931fa51c38fafd6de05020655"
+    },
+    {
+      "version": "20261005095334",
+      "name": "printing_guide_native_set_language",
+      "statement_count": 1,
+      "remoteStatementsSha256": "d711a3815424ba877a8ca53fde72e4fe5709f3d17e4b2ad4bb5f3a023278fcf0"
+    },
+    {
+      "version": "20261005162643",
+      "name": "classified_pricing_coverage",
+      "statement_count": 1,
+      "remoteStatementsSha256": "c0974af4219096fe8034265ec4697ad1675e022d096b1120e0c1800aa5326967"
+    },
+    {
+      "version": "20261005163008",
+      "name": "bound_classification_evidence_aggregation",
+      "statement_count": 1,
+      "remoteStatementsSha256": "95b5efa4b2201271ae84630540eb3301242b7d4b18844027f90ba734d37f9f43"
+    },
+    {
+      "version": "20261005163402",
+      "name": "classification_page_custom_plans",
+      "statement_count": 1,
+      "remoteStatementsSha256": "813c04973a9c72459cc7810e5537fd1848dd3421afb972fbeb6b7d9b1d317f24"
+    },
+    {
+      "version": "20261005203421",
+      "name": "retain_identity_bound_cheap_snapshots",
+      "statement_count": 1,
+      "remoteStatementsSha256": "3f61e9ee1c71d72e6602470ef81017efb549bf86ffc01034d6967e42cb2188af"
+    },
+    {
+      "version": "20261005203922",
+      "name": "bound_retained_cheap_native_evidence",
+      "statement_count": 1,
+      "remoteStatementsSha256": "edd382ed4e3956ae7c1e199b6b717b4c0e6702b83bc4d4088a514654e159553f"
+    },
+    {
+      "version": "20261005204527",
+      "name": "scope_retained_cheap_provider_languages",
+      "statement_count": 1,
+      "remoteStatementsSha256": "50b3dfb9810afeadd74e097936b6641c9a9c4226a586df29346420323bddc39c"
+    },
+    {
+      "version": "20261005205507",
+      "name": "select_latest_valid_retained_observation",
+      "statement_count": 1,
+      "remoteStatementsSha256": "80ff1e967785ced1da70e8bfddaf6b73ef1178446121427e8905065a6f8ef623"
+    }
+  ]
+}

@@ -1,6 +1,7 @@
+import { StackrFunctionalIcon } from '../../components/StackrFunctionalIcon';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Image } from 'react-native';
+
 import { useTheme } from '../../components/theme-context';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { StackrCardActionIcon } from '../../components/StackrScreen';
@@ -36,7 +37,7 @@ export default function TabLayout() {
               />
             );
           }
-          return <Image source={icon} resizeMode="contain" style={{ width: size, height: size }} />;
+          return <StackrFunctionalIcon source={icon} resizeMode="contain" style={{ width: size, height: size }} />;
         },
       })}
     >

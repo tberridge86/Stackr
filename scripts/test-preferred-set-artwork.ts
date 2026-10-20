@@ -11,7 +11,8 @@ const card = {
     { variantId: 'holo', canonicalId: 'ja:1:holo', imageVariantId: 'holo', image: null },
   ],
 } as StackrCard;
-const asset = (id: string) => ({ assetId: id, assetType: 'card_image', variantId: id, deliveryUrl: `https://approved.example/${id}.webp` }) as StackrCatalogueAsset;
+const asset = (id: string) => ({ assetId: id, assetType: 'card_image', variantId: id, permissionStatus: 'approved',
+  deliveryUrl: `https://approved.example/${id}.webp` }) as StackrCatalogueAsset;
 const page = (id: string): StackrCard => ({ ...card, defaultVariantId: id,
   variants: card.variants.filter((variant) => variant.variantId === id).map((variant) => ({ ...variant, image: asset(id) })) });
 

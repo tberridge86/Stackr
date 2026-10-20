@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "stackr-scoped-local-set-artwork-owner-attestation-v1",
+  "decisionId": "traditional-chinese-three-pack-art-owner-supplied:2026-10-18",
+  "classification": "amber",
+  "status": "authorized_on_existing_exact_owner_attestations",
+  "recordedDate": "2026-10-18",
+  "activationAuthorized": true,
+  "publicRuntimeDisplayAuthorized": true,
+  "assetPersistenceAuthorized": true,
+  "canonicalDatabaseWriteAuthorized": false,
+  "scope": {
+    "language": "zh-tw",
+    "assetType": "product_pack",
+    "displayRole": "set_identification_artwork_fallback",
+    "standaloneSetLogo": false,
+    "assetCount": 3,
+    "manifestPath": "assets/rev2/12-traditional-chinese-set-logo/owner-supplied-three-pack-art-20261018.json",
+    "sourceManifestPath": "D:/Stackr-1/assets/rev2/13-sourced-set-logos/manifest.json",
+    "setIds": ["cd44897f-ea2e-4f63-b662-e4ddce1ac7e7", "664d717f-745d-4178-ae4f-5863ae558a2f", "4f84057b-edcf-4523-967c-5997ae696987"],
+    "sha256": ["6b5f779a7449ed770b1ffe0953bc2ac2eb5f4a38a0fcf5605896be385954a4fa", "9419f4174d3264b848a66e1518786289062bd158d4fbe2d61021edc2498d804b", "cef902ae715ba078286c6b47cabda824a126b1caa790e42dfe8f773f600e7f79"],
+    "allowedUses": ["reuse_exact_previously_approved_local_assets", "bundle_exact_bytes", "in_app_set_identification"],
+    "excludedUses": ["standalone_set_logo_relabelling", "new_external_acquisition", "new_artwork_generation", "catalogue_or_card_identity_changes", "standalone_export", "model_training"]
+  },
+  "ownerEvidence": [
+    {
+      "path": "catalogue/rights-evidence/traditional-chinese-three-pack-art-20261018/owner-seven-permission-attestation.json",
+      "sha256": "fa2bb9261fc3b083efd9b710b6f1b559b605314c3ec32220b70e6c7e35a090a5",
+      "originalPath": "D:/Stackr-1/outputs/set-logo-seven-corrected-2026-10-10/owner-permission-attestation.json",
+      "scopeUsed": "Exact SV10 Traditional Chinese product packaging."
+    },
+    {
+      "path": "catalogue/rights-evidence/traditional-chinese-three-pack-art-20261018/owner-native47-continuation-attestation.json",
+      "sha256": "170be80fb880882d57bfaabea8bcf8366a68e5c6329c49ad6b05390387223184",
+      "originalPath": "D:/Stackr-1/outputs/set-logo-native47-upgrade-2026-10-10/owner-continuation-attestation.json",
+      "scopeUsed": "Exact SV9 and SV9a native derivative hashes and previously approved SV10 hash; bundled app display capability."
+    }
+  ],
+  "verification": {
+    "checkedDate": "2026-10-18",
+    "allThreeAssetsFullyDecoded": true,
+    "sourceBytesUnchanged": true,
+    "printedTraditionalChineseLanguageAndSetCodesVisuallyVerified": true,
+    "existingOwnerReceiptHashesVerified": true,
+    "actualPixelsViewedBy": ["stackr_artwork specialist"],
+    "independentlyAuditedLicence": false,
+    "officialHighResolutionMasterClaimed": false
+  },
+  "attribution": {
+    "sourceName": "Owner-supplied reviewed Traditional Chinese native pack-art collection; original sources recorded per exact asset.",
+    "embeddedMarksPreserved": true,
+    "contractualWording": "No additional upstream licence or attribution terms invented."
+  },
+  "boundaries": {
+    "globalSourceRegistryUnchanged": true,
+    "newExternalAcquisitionPerformed": false,
+    "previousImmutableAssetsPreserved": true,
+    "newBackendOrNativePublicationAuthorizedByThisRecord": false
+  }
+}

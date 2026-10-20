@@ -28,6 +28,26 @@ npx wrangler secret put RECOGNITION_SERVICE_SECRET --env staging
 
 ## Preflight
 
+For a reviewed backend code revision whose dependencies have already been
+verified on staging, use `deploy-staging.yml` with `release_scope=backend_only`
+and the exact `expected_main_sha`. Set `apply_migrations`, `release_candidate`
+and `publish_mobile_update` to false. This scope uses the existing protected
+staging environment and deployment concurrency; it uploads only the backend
+to the existing staging service. It attests the previous healthy deployment,
+validates source/target IDs and commerce restrictions, checks Chinese old-ID
+resolution and approved image bytes, and restores the previous backend if
+deployment or smoke checks fail. It does not establish wider migration, model,
+index, mobile or full-platform readiness.
+
+The Chinese duplicate correction is a separately reviewed, rollback-by-default
+data operation in `supabase/manual/chinese_staging_identity_correction_20261011.sql`.
+Deploy and verify the old-ID resolver before committing that operation. Preserve
+its database receipt, then run
+`node scripts/deploy/verify-chinese-staging-resolution.mjs <main-sha> committed <first-sequence> <last-sequence>`.
+Set `STACKR_STAGING_RECEIPT_PATH` to save the live delivery receipt. The sequence
+bounds must come from the committed database receipt; never substitute a rehearsal
+sequence, because rolled-back sequence allocation can leave gaps.
+
 Run from a clean checkout of the release commit:
 
 ```powershell

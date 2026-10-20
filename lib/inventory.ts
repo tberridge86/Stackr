@@ -32,6 +32,8 @@ export const INVENTORY_CONDITIONS: InventoryCondition[] = [
 export const PRODUCT_INVENTORY_CONDITIONS: InventoryCondition[] = ['Sealed'];
 
 export type InventoryCardSnapshot = {
+  variant?: string | null;
+  finish?: string | null;
   id: string;
   name: string;
   number: string | null;

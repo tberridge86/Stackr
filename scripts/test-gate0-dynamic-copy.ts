@@ -804,13 +804,18 @@ assert.match(homeScreenSource, /AsyncStorage\.removeItem\(LEGACY_HOME_COLLECTION
 assert.match(homeScreenSource, /getHomeCollectionCacheKey\(trustedUserId\)/);
 assert.match(
   homeScreenSource,
-  /parseHomeCollectionCache<Partial<HomeCollectionCacheSnapshot>>\([\s\S]*?raw,[\s\S]*?trustedUserId,[\s\S]*?\)/,
-  'Home cache hydration must bind the envelope to the verified user',
+  /const generation = homeSessionGenerationRef\.current;[\s\S]*?const cachedOwnerId = homeSessionUserIdRef\.current;[\s\S]*?homeSessionExpiresAtRef\.current \* 1000 > Date\.now\(\)/,
+  'Home cache hydration must use the current local session owner, generation and unexpired session only',
 );
 assert.match(
   homeScreenSource,
-  /if \(confirmedUser\?\.id !== trustedUserId\) \{[\s\S]*?return false;/,
-  'Home cache hydration must recheck auth before applying cached state',
+  /parseHomeCollectionCache<Partial<HomeCollectionCacheSnapshot>>\([\s\S]*?raw,[\s\S]*?trustedUserId,[\s\S]*?\)[\s\S]*?if \(!isCurrentRestore\(\) \|\| homeSessionUserIdRef\.current !== trustedUserId\) return false;/,
+  'Home cache hydration must bind its persisted envelope and recheck the local owner/generation before applying state',
+);
+assert.match(
+  homeScreenSource,
+  /if \(accountDenied\) \{[\s\S]*?homeSessionExpiresAtRef\.current = 0;[\s\S]*?cachedHomeSnapshotUserIdRef\.current = null;/,
+  'a known live account denial must revoke a previously displayed local Home snapshot',
 );
 assert.match(
   homeScreenSource,
@@ -837,7 +842,11 @@ assert.doesNotMatch(
 assert.match(homeScreenSource, /mintyPreferenceGenerationRef\.current \+= 1/);
 assert.match(homeScreenSource, /mintyInsightRequestRef\.current \+= 1/);
 assert.match(homeScreenSource, /setApiMintyInsight\(null\)/);
-assert.match(homeScreenSource, /confirmedUser\?\.id !== trustedUserId/);
+assert.match(
+  homeScreenSource,
+  /const confirmCurrentRequest = async \(\) => \{[\s\S]*?supabase\.auth\.getUser\(\)[\s\S]*?return isCurrentRequest\(\) && confirmedUser\?\.id === trustedUserId;/,
+  'fresh Home collection work must retain a separate live getUser confirmation before it publishes',
+);
 
 const createListingSource = fs.readFileSync('features/listing/CreateListingScreen.tsx', 'utf8');
 assert.match(createListingSource, /supabase\.auth\.onAuthStateChange/);

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 4,
+  "variants": 4,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "physical_finish_verified": false,
+  "physical_edition_verified": false,
+  "cohort_sha256": "d79fd3367b40be0d0a852ec774c761c7276ac4b8f4b10343a05de5b9134eae04",
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "5976b3017578cbe04a0c6d57f54f8b98f3c857de37894ad5f2381e021e973b23",
+    "finiteDecisionFileByteSha256": "7608cc5c480280744f3c8f8c503b3f0f94c7c23ff9f1a23aa897d419888e3007",
+    "rootPrivateContextFileByteSha256": "d7ee6bd2932672edb17c93611e17bebef2c9bb8dd924b80482b81093eeddeaf5",
+    "sourceHandoffFileByteSha256s": [
+      "9bfccf1ad8d67f40bbee23cb683ce073555151142493acfd7df1ef22eb594741",
+      "8d4a2bcc569e1e292dba7b037bb5f7ca92ea50aace028ce48812ce04c6397580"
+    ],
+    "independentSourceReviewFileByteSha256s": [
+      "5bb022cd60e4d1ef02aef359a49c428bd6e7adc1ffc0340d129d1faec6e45d8a",
+      "fac11c6626a96324944e88a21a161fc6c4650d4335c6675c8d3aa87382da10aa"
+    ],
+    "fourSourceCheckpointFileByteSha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "3d1478238a990fa8b4ac72c3eb9008dc6fe219535a842beec184f1abefd1fe24",
+    "independentPrivatePackageReviewSha256": "55fcfbfa0178b8beab4866b3a978b0e432c801b3278a3eac6340abfc35d4bf63",
+    "rootPrivatePackageValidationSha256": "0a32f4e1ea07f73fc1bad71c051984e44c22f14b70a474c42c30771f9b739fe5",
+    "rootSourceArchiveBindingSha256": "954276417a26bf7100c247fce8a58897fa4b31235d2c154694ee520b6922fa55",
+    "rootUploadReceiptSha256": "ef9bb9fea382852f4b0209e1b0cd5972067c54798227a5b40e65a83cf34f8b39",
+    "rootUploadRecordFormatCorrectionSha256": "b89038ce239ddd9bd00ed6844a7029c26c8a5c79db6556c466ea9c8fdb22a608",
+    "rootPublisherContextSha256": "12dd3e078e6dd482f95c036b50d7f433e72cfd8e6bc48f2047463c0dd5c2495c"
+  },
+  "production_source_changes_allowed": 0,
+  "scope": "Exactly four Japanese shared printing fronts: Magikarp PCG1-034, Magikarp PCG2-023, Delibird PCG3-030 and Rocket's Hitmonchan ex PCG3-060. Preserve heterogeneous raw observations, full Japanese ex rule and body, Hitmonchan recorded category null, three normal/defaulttrue and one holo/defaultfalse. All measured LARGE roles original. Production29→37 only4assets4links, staging19→28→19 with one temporary PriceCharting fixture. Four full17-field source rows and microseconds, three set logos/links and immutable assets unchanged; physical and vendor/source-wide qualifications remain unresolved. Protected exact-main publication and actual API verification required."
+}

@@ -2,9 +2,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CataloguePriceCache } from './cataloguePriceCacheCore';
 import { stackrApiClient, type StackrApiClient, type StackrCataloguePriceRow } from './stackrApiV1';
 import { sha256Text } from './cataloguePriceHash';
+import { PROVISIONAL_CATALOGUE_PRICE_MODEL } from './cataloguePriceBaseline';
 
 export const cataloguePriceCache = new CataloguePriceCache(AsyncStorage);
 const unavailableServers = new WeakMap<StackrApiClient, { until: number; error: unknown }>();
+const legacyClassificationServers = new WeakSet<StackrApiClient>();
 export type CataloguePriceOptions = { language?: string | null; estimateMode?: 'exact' | 'general'; force?: boolean };
 
 function toStackrApiLanguage(value?: string | null) {
@@ -19,9 +21,14 @@ function toStackrApiLanguage(value?: string | null) {
 }
 
 export function cataloguePriceScope(accountScope: string, options: CataloguePriceOptions) {
-  const mode = options.estimateMode ?? 'exact';
-  const condition = mode === 'general' ? 'raw_market_unspecified' : 'raw_near_mint';
-  return `${accountScope}|${toStackrApiLanguage(options.language) ?? 'all'}|${mode}|${condition}|GBP`;
+  return `${accountScope}|${toStackrApiLanguage(options.language) ?? 'all'}|${options.estimateMode ?? 'exact'}|raw_near_mint|GBP${options.estimateMode === 'general' ? '|classified-v1' : ''}`;
+}
+
+async function assertPricingAccountScope(client: StackrApiClient, accountScope: string) {
+  const changed = () => Object.assign(new Error('Pricing account changed.'), { code: 'pricing_account_changed' });
+  let currentScope;
+  try { currentScope = await client.getPricingCacheScope(); } catch { throw changed(); }
+  if (currentScope !== accountScope) throw changed();
 }
 
 export async function fetchCataloguePrices(references: string[], options: CataloguePriceOptions = {}, client = stackrApiClient) {
@@ -31,12 +38,24 @@ export async function fetchCataloguePrices(references: string[], options: Catalo
       try {
         const unavailable = unavailableServers.get(client);
         if (unavailable && unavailable.until > Date.now()) throw unavailable.error;
-        if (await client.getPricingCacheScope() !== accountScope) throw new Error('Pricing account changed.');
-        const page = (await client.cataloguePrices({
+        await assertPricingAccountScope(client, accountScope);
+        const input = {
           references: refs, language: toStackrApiLanguage(options.language) ?? undefined,
           estimateMode: options.estimateMode ?? 'exact', knownRevisions,
-        })).data;
-        if (await client.getPricingCacheScope() !== accountScope) throw new Error('Pricing account changed.');
+        } as const;
+        let page;
+        if (input.estimateMode === 'general' && !legacyClassificationServers.has(client)) {
+          try { page = (await client.cataloguePrices({ ...input, classificationVersion: 'classified-v1' })).data; }
+          catch (error: any) {
+            // Old strict request parsers reject the new field. Only that exact
+            // compatibility error permits one retry without the capability.
+            if (error?.status !== 400 || error?.code !== 'invalid_price_read') throw error;
+            await assertPricingAccountScope(client, accountScope);
+            page = (await client.cataloguePrices(input)).data;
+            legacyClassificationServers.add(client);
+          }
+        } else page = (await client.cataloguePrices(input)).data;
+        await assertPricingAccountScope(client, accountScope);
         return page;
       } catch (error: any) {
         if (isUnavailableCataloguePriceRoute(error)) unavailableServers.set(client, { until: Date.now() + 5 * 60_000, error });
@@ -52,25 +71,44 @@ export function isUnavailableCataloguePriceRoute(error: any) {
 
 export function cataloguePriceDisplay(row: StackrCataloguePriceRow) {
   const price = row.price;
-  const value = price?.estimates.central ?? null;
   const general = price?.fallbackEstimate?.reason === 'general_card_estimate';
+  const provisional = price?.fallbackEstimate?.reason === 'provisional_catalogue_baseline';
+  // A restart must not restore the retired rarity model's cheap vintage prices.
+  // Preserve every evidence-backed quote; only the provisional model is retired.
+  const retiredBaseline = provisional && price?.estimateVersion !== PROVISIONAL_CATALOGUE_PRICE_MODEL;
+  const sourceValue = retiredBaseline ? null : price?.estimates.central ?? null;
+  const value = typeof sourceValue === 'number' && Number.isFinite(sourceValue) && sourceValue > 0 ? sourceValue : null;
+  const authoritativeUnavailable = price?.classification === 'PRICE_UNAVAILABLE'
+    && price.estimateVersion === 'classified-v1' && price.priceBasis === 'general'
+    && price.status === 'unavailable' && price.priceType === 'unavailable' && value == null
+    && price.variantId === row.variantId && row.variantId != null && row.cardId != null
+    && price.productType === 'raw_card' && price.currency === 'GBP';
   const stale = price?.freshness === 'stale' || price?.freshness === 'expired';
-  const provider = String(price?.sourceBreakdown?.[0]?.provider ?? '').trim().toLowerCase();
-  const providerLabel = provider === 'cardmarket_public' ? 'Cardmarket'
-    : provider === 'tcgplayer' || provider === 'tcgcsv' ? 'TCGplayer'
-      : null;
-  const classificationLabel = price?.classification === 'EXACT_PRICE' ? 'Exact price'
-    : price?.classification === 'MARKET_GUIDE' ? 'Market guide'
-      : price?.classification === 'ESTIMATED_VALUE' ? 'Estimated value'
-        : price?.classification === 'PRICE_UNAVAILABLE' ? 'Price unavailable' : null;
+  const sourceLabel = value == null
+    ? 'Price unavailable'
+    : price?.provenLastSold && price.priceType === 'recent_sold_value'
+      ? 'Last sold'
+      : price?.priceType === 'asking_price_indication'
+        ? 'Asking price indication'
+        : provisional
+          ? 'Estimated price (provisional baseline)'
+          : price?.classification === 'MARKET_GUIDE'
+            ? 'Market guide'
+            : price?.classification === 'ESTIMATED_VALUE'
+              ? 'Estimated price'
+          : general || price?.priceType === 'recent_sold_value' || price?.priceType === 'recent_sold_market_estimate' || price?.priceType === 'thin_sold_value'
+            ? 'Estimated price'
+            : 'Current market value';
   return {
-    displayPrice: value, currency: price?.currency ?? 'GBP', priceType: 'market_estimate',
-    updatedAt: price?.calculatedAt ?? null, pricingStatus: value == null ? 'unavailable' : stale ? 'stale' : 'priced',
-    sourceLabel: classificationLabel
-      ? `${stale ? 'Stale ' : ''}${providerLabel ? `${providerLabel} · ` : ''}${classificationLabel}`
-      : `${stale ? 'Stale ' : ''}${providerLabel ? `${providerLabel} ` : ''}${general ? 'general market estimate' : 'market estimate'}`,
-    confidence: price?.confidence.label ?? null, unavailableReason: row.unavailableReason,
-    priceBasis: general ? 'general' as const : 'exact' as const,
+    displayPrice: value == null ? null : Math.round((value + Number.EPSILON) * 100) / 100,
+    currency: price?.currency ?? 'GBP', priceType: String(price?.priceType ?? 'market_estimate'),
+    updatedAt: price?.calculatedAt ?? null, pricingStatus: value == null ? 'unavailable' : provisional ? 'provisional' : stale ? 'stale' : 'priced',
+    sourceLabel: `${stale ? 'Stale ' : ''}${sourceLabel}`,
+    confidence: price?.confidence.label ?? null,
+    unavailableReason: retiredBaseline ? 'retired_provisional_baseline' : row.unavailableReason,
+    priceBasis: general || provisional || price?.priceBasis === 'general' ? 'general' as const : 'exact' as const,
+    provisional, authoritativeUnavailable, classification: price?.classification ?? null,
+    evidenceType: price?.evidenceType ?? null, sourceBreakdown: price?.sourceBreakdown ?? [],
   };
 }
 

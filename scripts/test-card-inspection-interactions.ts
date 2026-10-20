@@ -122,6 +122,13 @@ const providerSource = ts.createSourceFile('components/CardInspectionProvider.ts
 const providerText = providerSource.getFullText();
 assert.ok(providerText.includes('setRequest(null)'), 'closing or leaving a surface dismisses inspection instead of navigating away');
 assert.ok(!providerText.includes('router.push') && !providerText.includes('router.replace'), 'inspection itself must not change the current route');
+const detailSurfaceSource = readFileSync('components/InteractiveCardInspectPressable.tsx', 'utf8');
+assert.match(detailSurfaceSource, /useCardMotionPreference/, 'the detail-card surface must read the saved card-motion preference');
+assert.match(
+  detailSurfaceSource,
+  /systemReducedMotion \|\| forceReducedMotion \|\| motionPreference\.reduced \|\| !motionPreference\.loaded/,
+  'a pending, failed, or enabled saved preference must keep the detail surface still',
+);
 const marketSource = readFileSync('components/market/MarketComponents.tsx', 'utf8');
 assert.ok(marketSource.includes('item.imageIsCatalogue === true'), 'Market inspection is gated by explicit catalogue-image provenance');
 

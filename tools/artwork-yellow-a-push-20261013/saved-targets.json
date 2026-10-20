@@ -1,0 +1,26 @@
+[
+  {
+    "printing_id": "8a4dd5f6-ed5a-4d09-babf-85572f6eea0a",
+    "set_id": "b9ec08c9-c68e-4bd0-9b7b-1bc84203d8f7",
+    "set_code": "xya",
+    "language_code": "en",
+    "collector_number": "107a",
+    "card_native_name": "Professor Sycamore",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "0b79891f-698e-4cc9-92e1-fc90f425dcbb"
+    ]
+  },
+  {
+    "printing_id": "f4c6af1e-70c0-48fe-b3a1-1d04059b1051",
+    "set_id": "b9ec08c9-c68e-4bd0-9b7b-1bc84203d8f7",
+    "set_code": "xya",
+    "language_code": "en",
+    "collector_number": "92a",
+    "card_native_name": "Trainers’ Mail",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "ff44c94e-e574-4106-8e5f-8edd220d7698"
+    ]
+  }
+]

@@ -1,0 +1,22 @@
+[
+  {
+    "printing_id": "c74b44da-73e0-4e07-9950-5c1adb74784b",
+    "set_id": "b5ef438a-ddcb-4093-8c9b-572639565af5",
+    "set_code": "PCG9",
+    "language_code": "ja",
+    "collector_number": "005",
+    "card_native_name": "ウーパー（デルタ種）",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "ba7421c1-b1ca-4345-ba12-2777c8867b38"
+    ],
+    "batch_id": "JP-CARDS-043",
+    "work_type": "CARDS",
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:fc70a9b103f26e73964e5207e8c15aea3e7a4fe44f38d0b8a8b69529b27829b8",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/j4fqslsao3jnaa76/1600.jpg",
+    "original_sha256": "63b1a0d68c9c4cc22ee544481624ca27cbf265a17a8eaab65a483bd7ec459a11",
+    "body_sha256": "0325abeb61fde26b651a029bbf841e6a15bac7f026f30b00c3161efba2415640",
+    "evidence_sha256": "5af554588818f2411aa30012e051c396fe99feb27f215d3bd28e6733360ff3eb"
+  }
+]

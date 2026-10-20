@@ -1,0 +1,170 @@
+[
+  {
+    "printing_id": "07ff7f6b-9459-4feb-bb0f-a0efd42079e5",
+    "set_id": "40cb9e83-3e60-4966-8d2d-4edb02bf1ac7",
+    "set_code": "MC",
+    "language_code": "ja",
+    "collector_number": "PSY",
+    "card_native_name": "基本超エネルギー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "eae8d1c2-6315-4e56-9d1e-3166f14c7c13"
+    ],
+    "batch_id": "JP-CARDS-002",
+    "source_code": "tcgcollector",
+    "provider_id": "tcgcollector-image-url-sha256:ae7364f22a8c46d11d4d06b04dd84664347687de643202aaeaeccdd3e422dd95",
+    "image_url": "https://static.tcgcollector.com/content/images/90/54/e0/9054e0755036ab864e3ed4c9ec6a3540c3112a2515ef3db4355cf24750568b75.webp",
+    "original_sha256": "a6de1a07bdda1b0fd8e774868a02ab17804985ed17bae3f568ab9846cd1d3876",
+    "original_width": 868,
+    "original_height": 1212,
+    "body_sha256": "290e01e90aff35712e1972440bd3cacfa1f1bd27e78c1e28bd5a72d5efabe378",
+    "evidence_sha256": "15ef8c2295d6dd898b49263d954f1ceb735d4cde85b715e87dbe9da3f001556f"
+  },
+  {
+    "printing_id": "16ddfe56-d4f2-4bbe-93fe-bc33e2ba46fd",
+    "set_id": "40cb9e83-3e60-4966-8d2d-4edb02bf1ac7",
+    "set_code": "MC",
+    "language_code": "ja",
+    "collector_number": "FIR",
+    "card_native_name": "基本炎エネルギー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "1fd4398e-6c9a-4f1e-8f44-7e9cb372d2ba"
+    ],
+    "batch_id": "JP-CARDS-002",
+    "source_code": "tcgcollector",
+    "provider_id": "tcgcollector-image-url-sha256:a9f726bbdc3d720a84e6670d7eb211fff8497d1c6c950172793697ef0a3becf0",
+    "image_url": "https://static.tcgcollector.com/content/images/f4/97/aa/f497aaed813e3abda973c63027e95165ecc72eb06673c098c0e6b3cb088c5f11.webp",
+    "original_sha256": "a2fc2bc3fb09a28e259c323304e30213b0f5933b0114719623776685c4e88383",
+    "original_width": 868,
+    "original_height": 1212,
+    "body_sha256": "bcba13264d6189261f72f11d19ae87fa032c35cd8438ff4e53ecd7023f6c2d70",
+    "evidence_sha256": "9f1b891663fae5d0dac4b093e165fd09393a506266754aecb3576d052b0e653b"
+  },
+  {
+    "printing_id": "322b5ba7-8a5d-418d-8abd-376a12d3dea9",
+    "set_id": "40cb9e83-3e60-4966-8d2d-4edb02bf1ac7",
+    "set_code": "MC",
+    "language_code": "ja",
+    "collector_number": "MET",
+    "card_native_name": "基本鋼エネルギー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "a574e417-34de-4ce9-89dd-ccd016945d29"
+    ],
+    "batch_id": "JP-CARDS-002",
+    "source_code": "tcgcollector",
+    "provider_id": "tcgcollector-image-url-sha256:d1236e8ebb0e0945a3db682a1c56e6dfc9ebf34799e465922b279a4e6f17ccaa",
+    "image_url": "https://static.tcgcollector.com/content/images/44/fc/59/44fc593e3141734d92d78d30d9aa3f03b475b00732ae082fbbb6ff87b3bd4022.webp",
+    "original_sha256": "1c92c9e66a140dcdaa6a4de04fdfc28791c7ff48f1172fdedff4718b2fdf3a88",
+    "original_width": 868,
+    "original_height": 1212,
+    "body_sha256": "8b7e17617bbd421ea6847f38ca772bc8119eff39ce4389e3caa01a25c1b207a2",
+    "evidence_sha256": "4fec74a8ec6667fca3c780978aab98ad1806a9b7be35cc3798316efb90bb69c2"
+  },
+  {
+    "printing_id": "78343d26-d54b-40df-9d6f-d883c74c71cd",
+    "set_id": "40cb9e83-3e60-4966-8d2d-4edb02bf1ac7",
+    "set_code": "MC",
+    "language_code": "ja",
+    "collector_number": "FIG",
+    "card_native_name": "基本闘エネルギー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "5f06793b-569b-48b0-8843-2d103893b1c3"
+    ],
+    "batch_id": "JP-CARDS-002",
+    "source_code": "tcgcollector",
+    "provider_id": "tcgcollector-image-url-sha256:0c7d6123f4cc13b0c7c22ca3c4f379d0f68f3ec4f850526469295d3e71ab7bf8",
+    "image_url": "https://static.tcgcollector.com/content/images/c0/09/fa/c009fa6edcdcf236fa8fd37af192a0e7afb752dedf04661f23ec99791c909f05.webp",
+    "original_sha256": "241425bb8a572e619ec1cbdb2828fe72e0d877847eb1e6f3287ad0529b2d23c3",
+    "original_width": 868,
+    "original_height": 1212,
+    "body_sha256": "7d0f23a39f16f0ae8bab6607eee6c17fc8441a7f75204c95dc9df01e18340c13",
+    "evidence_sha256": "2acdcaaeef032768c21bda5676b8c2d95279253299ffa82d358667d7755d94b3"
+  },
+  {
+    "printing_id": "7b1cc2c4-1540-4d78-880b-4e10a0331397",
+    "set_id": "40cb9e83-3e60-4966-8d2d-4edb02bf1ac7",
+    "set_code": "MC",
+    "language_code": "ja",
+    "collector_number": "GRA",
+    "card_native_name": "基本草エネルギー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "5e4d0715-7eb6-449b-9979-9ca61e30aedb"
+    ],
+    "batch_id": "JP-CARDS-002",
+    "source_code": "tcgcollector",
+    "provider_id": "tcgcollector-image-url-sha256:6cc623d466eac9417fc28cb3b861b4c4e5ec1fcf0eac4169f99c24e0a5aefd43",
+    "image_url": "https://static.tcgcollector.com/content/images/3a/2d/21/3a2d214c2084f1a5b9934b3c7a0dde4ea8f2519624f463936f7a6f249bf423ee.webp",
+    "original_sha256": "022d647dc7d68bfff87d168cce25a84f1a754104b7ff3f499567ca5a022ac3eb",
+    "original_width": 868,
+    "original_height": 1212,
+    "body_sha256": "09739286ee4bcb5f97f906350fed0dc0dc553e1c645d857879f9a1e1bc9a740b",
+    "evidence_sha256": "b6dc039033e631cbf219716f5d5613bd7f138e72581cf3d182067b1659202ee0"
+  },
+  {
+    "printing_id": "85321449-d93a-49a2-86a0-611d7b7b3e8e",
+    "set_id": "40cb9e83-3e60-4966-8d2d-4edb02bf1ac7",
+    "set_code": "MC",
+    "language_code": "ja",
+    "collector_number": "LIG",
+    "card_native_name": "基本雷エネルギー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "a493adee-161e-400b-b222-ab76ae519cd3"
+    ],
+    "batch_id": "JP-CARDS-002",
+    "source_code": "tcgcollector",
+    "provider_id": "tcgcollector-image-url-sha256:c22d729db0e49828966e36bfe3fb046b2e30a380f304ca69ed301e0feb432d85",
+    "image_url": "https://static.tcgcollector.com/content/images/92/87/b5/9287b537edd6e48bb169a0a349439c5fb3f0d9e346069ef96bbee453ca9626d4.webp",
+    "original_sha256": "f59bf4573265b1fb0e80be1737e9acbad79014bd9f04b9305b6fffbb6391974e",
+    "original_width": 868,
+    "original_height": 1212,
+    "body_sha256": "85b3ca345024948b940295df370f45e78e686cc872b492f72ec0825fc655b994",
+    "evidence_sha256": "202099d9613a85c626b8cde417f57eb0e874bf83307a6ee1594f26870f001afa"
+  },
+  {
+    "printing_id": "e366fc5e-deec-4863-bd5c-cc890adfbc08",
+    "set_id": "40cb9e83-3e60-4966-8d2d-4edb02bf1ac7",
+    "set_code": "MC",
+    "language_code": "ja",
+    "collector_number": "WAT",
+    "card_native_name": "基本水エネルギー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "6dd5229e-3675-4d5a-8f0b-cc89c5ad3a3a"
+    ],
+    "batch_id": "JP-CARDS-002",
+    "source_code": "tcgcollector",
+    "provider_id": "tcgcollector-image-url-sha256:74b014fc2fb490c80cbd93e4ee250bd8c026dfa743b5eb627ae5a8e858a5d061",
+    "image_url": "https://static.tcgcollector.com/content/images/c4/79/a3/c479a31dce405c352f2571f6a3291c6b62904721ac37750a100949c45e07b669.webp",
+    "original_sha256": "1379a845a194f6ba41712f2f84f26c41858e75d8e7b22da3f47a2314a9ff4fe6",
+    "original_width": 868,
+    "original_height": 1212,
+    "body_sha256": "b51fbaa1ffa621cd695f675189055368b664dd42a3d38cbd650be96fb0aac775",
+    "evidence_sha256": "3ce7a6210dbd5c73fd19bdedf8943a2f4379735c7168c3f331e857d586b51fcd"
+  },
+  {
+    "printing_id": "e830100c-dc89-403f-aa16-994b4b1b8cb9",
+    "set_id": "40cb9e83-3e60-4966-8d2d-4edb02bf1ac7",
+    "set_code": "MC",
+    "language_code": "ja",
+    "collector_number": "DAR",
+    "card_native_name": "基本悪エネルギー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "c4d608e8-ed76-49f9-bc90-cd42d13a626a"
+    ],
+    "batch_id": "JP-CARDS-002",
+    "source_code": "tcgcollector",
+    "provider_id": "tcgcollector-image-url-sha256:57ce71bb47db3d7bff6a5327ca93b8b7bf297c56ae0473f1e5cccc98f49c5a61",
+    "image_url": "https://static.tcgcollector.com/content/images/06/91/51/0691516890eda2d682b3502b19c672eca3d8ddf1952ea29560d1098a18ebfa74.webp",
+    "original_sha256": "e1484f6fc27e2ca486af21a5219a847102ef8bdb3f419f307444b4eeaec4e0b4",
+    "original_width": 868,
+    "original_height": 1212,
+    "body_sha256": "d0929be657c65a0d34a5bc9de9c69c4c15514acbb04473c3b4f592672029ce53",
+    "evidence_sha256": "2e091b6d03aab630e9765d4a363d3d5305af64af616806a13290f8757c975e2b"
+  }
+]

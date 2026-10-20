@@ -148,6 +148,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/pokemon": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reviewed server-owned National Dex species index with explicit default Pokémon routes; no live provider request. */
+        get: operations["listPokemonIndex"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pokemon/{name}/cards": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Published cards for an exact Pokémon species or form. */
+        get: operations["listPokemonCards"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/cards/{cardId}": {
         parameters: {
             query?: never;
@@ -1056,6 +1090,15 @@ export interface components {
                 englishDisplay: string | null;
                 /** @enum {string|null} */
                 englishDisplaySource?: "printing" | "concept" | null;
+                englishSupplement?: {
+                    value: string;
+                    provenance: string;
+                    authoritative: boolean;
+                    sourceCardIds?: string[];
+                    canonicalProvenance?: {
+                        [key: string]: unknown;
+                    };
+                } | null;
             };
             details?: {
                 supertype: string | null;
@@ -1084,6 +1127,11 @@ export interface components {
             knownRevisions?: {
                 [key: string]: string;
             };
+            /**
+             * @description Opt in to stored classified evidence and explicit per-reference readErrors. Omission retains the legacy read contract.
+             * @enum {string}
+             */
+            classificationVersion?: "classified-v1";
         };
         CataloguePriceItem: {
             reference: string;
@@ -1099,9 +1147,6 @@ export interface components {
             revision: string;
         };
         CatalogueStoredPrice: {
-            /** @enum {string} */
-            classification?: "EXACT_PRICE" | "MARKET_GUIDE" | "ESTIMATED_VALUE" | "PRICE_UNAVAILABLE";
-            evidenceType?: string;
             /** Format: uuid */
             variantId: string;
             productType: components["schemas"]["MarketProductType"];
@@ -1113,6 +1158,13 @@ export interface components {
             /** @enum {string} */
             quoteScope?: "exact_variant" | "printing_level";
             primarySource?: string;
+            /**
+             * @description Optional stored raw catalogue guide decision; never exact-condition or sale evidence.
+             * @enum {string}
+             */
+            classification?: "MARKET_GUIDE" | "ESTIMATED_VALUE" | "PRICE_UNAVAILABLE";
+            evidenceType?: string;
+            sourceLabel?: string;
             estimates: {
                 low: number | null;
                 central: number | null;
@@ -1165,6 +1217,11 @@ export interface components {
                 priceRevision: string;
                 /** @enum {string} */
                 estimateMode: "exact" | "general";
+                /** @description Failed references have no replacement price or cache checkpoint. Together with prices and unchangedReferences this partitions the request. */
+                readErrors?: {
+                    reference: string;
+                    code: string;
+                }[];
             };
         };
         CardPriceResponse: components["schemas"]["Envelope"] & {
@@ -1650,6 +1707,92 @@ export interface operations {
             };
         };
     };
+    listPokemonIndex: {
+        parameters: {
+            query?: {
+                offset?: number;
+                limit?: number;
+            };
+            header?: {
+                "If-None-Match"?: components["parameters"]["IfNoneMatch"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One entry per reviewed species. The frozen snapshot currently contains 1025 species; count and indexVersion identify that scope. Legacy name/url retain the reviewed default Pokémon route. Alternate forms remain available through existing exact form-card routes. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            count: number;
+                            indexVersion: string;
+                            results: {
+                                /** @description Reviewed default Pokémon route name; retained for older clients. */
+                                name: string;
+                                /**
+                                 * Format: uri
+                                 * @description Reviewed default Pokémon route URL; retained for older clients.
+                                 */
+                                url: string;
+                                /** @description Stable National Dex species identity for list progress and regional grouping. */
+                                speciesId: number;
+                                /** @description Species name distinct from a default or alternate Pokémon form name. */
+                                speciesName: string;
+                                /** @description Reviewed default Pokémon resource ID for sprite and detail retrieval. */
+                                routeId: number;
+                                /** @description Reviewed default Pokémon route name; exact form-card routes remain supported separately. */
+                                routeName: string;
+                            }[];
+                        };
+                        meta: components["schemas"]["EnvelopeMeta"];
+                    };
+                };
+            };
+            /** @description The index page has not changed. */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["Error"];
+        };
+    };
+    listPokemonCards: {
+        parameters: {
+            query?: {
+                language?: components["parameters"]["Language"];
+                /** @description Opaque cursor returned by the previous page. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Published name source rows per page; deduplicated card count may be smaller. */
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                /** @description Species or form name; URL-encode punctuation and spaces. */
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cursor-paginated canonical cards, with factual metadata available before optional artwork. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CardsResponse"];
+                };
+            };
+            400: components["responses"]["Error"];
+        };
+    };
     getCard: {
         parameters: {
             query?: never;
@@ -1763,6 +1906,10 @@ export interface operations {
                 grader?: components["parameters"]["Grader"];
                 grade?: components["parameters"]["Grade"];
                 observationType?: "sold_observation" | "active_listing";
+                /** @description Filter verified completed-sale evidence before pagination. Defaults to false. */
+                provenOnly?: boolean;
+                /** @description Include sale dates on or after this past ISO timestamp, before pagination. */
+                soldSince?: string;
                 /** @description Opaque cursor returned by the previous page. */
                 cursor?: components["parameters"]["Cursor"];
                 limit?: components["parameters"]["Limit"];
@@ -1775,7 +1922,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Pricing evidence history with active and sold rows explicitly labelled. Private and no-store in default personal owner-only mode. */
+            /** @description Raw near-mint history by default, with active and sold rows explicitly labelled. Exact graded history is unavailable until numeric-grade identity is exposed. Private and no-store in default personal owner-only mode. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1787,6 +1934,7 @@ export interface operations {
             400: components["responses"]["Error"];
             401: components["responses"]["Error"];
             403: components["responses"]["Error"];
+            422: components["responses"]["Error"];
             503: components["responses"]["Error"];
         };
     };
@@ -2103,6 +2251,8 @@ export interface operations {
                 assetType?: string;
                 setId?: string;
                 printingId?: string;
+                /** @description Bounded canonical printing batch, mutually exclusive with printingId. */
+                printingIds?: string[];
                 variantId?: string;
                 /** @description Opaque cursor returned by the previous page. */
                 cursor?: components["parameters"]["Cursor"];

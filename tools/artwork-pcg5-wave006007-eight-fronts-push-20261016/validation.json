@@ -1,0 +1,237 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_EXACT_PUBLISHER_READY_FOR_INDEPENDENT_REVIEW",
+  "fronts": 8,
+  "variants": 8,
+  "scopeUUIDs": 17,
+  "confirmation": "PUBLISH ARTWORK PCG5 WAVES006007 EIGHT FRONTS",
+  "rootPublisherContextSha256": "ef29da818fc956aff2a5a63ec972152e388799d4997b3131c8d4a8ee6317c21e",
+  "planSha256": "074c3c63473345e578ce9bf8db30af43e81d192e96f86a564c015058c1635df3",
+  "approvalSha256": "6f20811a2edeacc0dc8a522059d900adab56d8c3975247d0066752fdc6ab3a06",
+  "transactionFixtures": {
+    "production": [
+      39,
+      55
+    ],
+    "staging": [
+      33,
+      50,
+      33
+    ],
+    "assetsAdded": 8,
+    "linksAdded": 8,
+    "productionSourceChanges": 0,
+    "temporaryInactiveStagingPriceFixture": 1,
+    "existingPCG5LogoAssets": 1,
+    "existingPCG5LogoLinks": 1
+  },
+  "tests": {
+    "publisher": {
+      "passed": 20,
+      "failed": 0
+    },
+    "prior-and-journal": {
+      "passed": 128,
+      "failed": 0
+    },
+    "archiveGuards": {
+      "passed": 6,
+      "failed": 0
+    },
+    "queue": {
+      "status": "PASS",
+      "helperAuthorityRejections": 4,
+      "unselectedInventoryItemsPreserved": 2936,
+      "firstWaveVerifierImportPathPreserved": true,
+      "realReceipts": 8,
+      "localImageByteObjects": 32,
+      "jointRawEntryTamperRejections": 352,
+      "forgedRawAuthorityRejections": 56,
+      "rootAuthorityPacketRejections": 10,
+      "privateExactSourceContractReusedThroughIndependentPeerPin": true,
+      "priorReadOnlyReceipts": 39,
+      "priorLocalImageObjects": 156,
+      "sharpMetricCasePassed": true,
+      "allPriorExactPredicatesPreserved": true,
+      "inMemoryCompleteHelperDryRun": {
+        "priorEntries": 1242,
+        "afterEntries": 1250,
+        "onlyExactEightAdded": true,
+        "prior1242ByteValuesUnchanged": true,
+        "sharedWritesIntercepted": 4
+      },
+      "actualSharedWrites": 0,
+      "unrelatedSharedProgressAllowed": true,
+      "productionWrites": 0
+    }
+  },
+  "privateSourceContract": {
+    "passed": 156,
+    "negative": 130,
+    "independentPrivatePeerSha256": "01f8a91dc328f8643a2a949f304fcc0ef4beff0d0034c07de3c09ebc559be755"
+  },
+  "actualUnchangedAppHelperPrivateCases": {
+    "defaultExplicit": 16,
+    "negative": 16,
+    "reportSha256": "badbe2caf54c795630861f3ea694389914ee82079da52f4fe4e69246cad53923"
+  },
+  "appSelection": [
+    {
+      "printing_id": "99d92c62-48a1-4f46-8c52-f8bd29aa7925",
+      "large_role": "detail-page",
+      "large_dimensions": [
+        720,
+        1010
+      ],
+      "large_object_path": "objects/25e6a849ea53ab0bc89f3e3452846faa7a9c8b4e4418c91ddac0f3c4f8306ae9/detail-page.webp",
+      "detail_dimensions": [
+        720,
+        1010
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "3b42d0a6-58d9-440f-a4fa-5dedd29bd2c1",
+      "large_role": "original",
+      "large_dimensions": [
+        1220,
+        1600
+      ],
+      "large_object_path": "objects/7cc5d4e4fbb7a20be902c7c9682dde8d2c0be82a6406a2c673a53ef02cf774e9/original.jpg",
+      "detail_dimensions": [
+        720,
+        944
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "d375bdec-7d0e-46ff-a6b9-b156ed9af609",
+      "large_role": "detail-page",
+      "large_dimensions": [
+        720,
+        1009
+      ],
+      "large_object_path": "objects/0cd397893a08ffec3446eb14c86b89063ec03404b3a0c43365bc282bcc086ad0/detail-page.webp",
+      "detail_dimensions": [
+        720,
+        1009
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "54ab745b-392e-46a6-8480-b4dc593124a7",
+      "large_role": "original",
+      "large_dimensions": [
+        1600,
+        1600
+      ],
+      "large_object_path": "objects/a2763347bb5a41905d1ea130bae478174c12543583e4e19634722e673f5db1d2/original.jpg",
+      "detail_dimensions": [
+        720,
+        720
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "f1ccf730-c3d2-44b6-a59d-72c0f1f6f2b9",
+      "large_role": "detail-page",
+      "large_dimensions": [
+        500,
+        700
+      ],
+      "large_object_path": "objects/96085f3d8f7b2e012c4c2adc8bd864251aea96a383e54d0249aaa3961fefd738/detail-page.webp",
+      "detail_dimensions": [
+        500,
+        700
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "495d3e13-53cf-4193-b897-892e492dcef1",
+      "large_role": "original",
+      "large_dimensions": [
+        1600,
+        1600
+      ],
+      "large_object_path": "objects/4c4455af9208fe0fd572ad09fd0504d5ee389f5d1f8c55be9b8cb1ef740272b1/original.jpg",
+      "detail_dimensions": [
+        720,
+        720
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "48be3163-e728-45e7-b7d5-e4b5d2267507",
+      "large_role": "detail-page",
+      "large_dimensions": [
+        500,
+        699
+      ],
+      "large_object_path": "objects/9da9d03fe9c32403af572233fbd796d6fee0127ba3c4fe8c579337c44498e1db/detail-page.webp",
+      "detail_dimensions": [
+        500,
+        699
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "060248e6-200d-4e55-9c59-693b622a2bb0",
+      "large_role": "detail-page",
+      "large_dimensions": [
+        500,
+        700
+      ],
+      "large_object_path": "objects/37d40f45242aacfafb1d81731ec94f00575108ca245b947084fd9303736231c2/detail-page.webp",
+      "detail_dimensions": [
+        500,
+        700
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    }
+  ],
+  "sourceHDCanvasSignals": 5,
+  "detailHDCanvasSignals": 2,
+  "archiveInstaller": {
+    "asset_id": 648009411,
+    "sha256": "57ddd63643250633faf619aa60ae9eae936e59b1bbc1f1e159b98bf202fbeb68",
+    "bytes": 3725316,
+    "files": 36,
+    "status": "verified_and_extracted",
+    "provider_requests": 0
+  },
+  "decodedImages": 32,
+  "directRawObservationSchemaHashAndSeparateRootReadingsBound": true,
+  "finiteFossilActualHPAbilitiesAndFullRulesPreserved": true,
+  "globalTrainerGuardChanged": false,
+  "readableNative500Fallbacks": [
+    "PCG5-079",
+    "PCG5-082",
+    "PCG5-084"
+  ],
+  "whitePaddingPreserved": [
+    "PCG5-078",
+    "PCG5-081"
+  ],
+  "sourceLineage006OneAnd007SevenBound": true,
+  "recordedEnglishAndCategoryRemainNull": true,
+  "sevenNormalTrueAnd054HoloFalseTuplesUnchanged": true,
+  "sourceAndAssetVariantRemainNull": true,
+  "all68ExistingSourceFieldsAndMicrosecondsProtected": true,
+  "previousRepositoryFilesByteExact": 420,
+  "unchangedDependencies": 11,
+  "sourceRequests": 0,
+  "databaseRequests": 0,
+  "sharedWrites": 0,
+  "physicalFinishOrEditionCertified": false,
+  "opticalOrHandsetClaim": false,
+  "livePublicationVerified": false,
+  "actualConfiguredApiDefaultExplicitAndAll32FilesStillRequired": true
+}

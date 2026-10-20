@@ -1,6 +1,6 @@
+import { StackrFunctionalIcon } from './StackrFunctionalIcon';
 import React from 'react';
 import {
-  Image,
   type ImageSourcePropType,
   type ImageStyle,
   type StyleProp,
@@ -160,7 +160,7 @@ function StackrCardActionIconBase({
       accessibilityRole={accessibilityLabel ? 'image' : undefined}
       accessibilityLabel={accessibilityLabel}
     >
-      <Image
+      <StackrFunctionalIcon
         source={source}
         resizeMode="contain"
         style={[

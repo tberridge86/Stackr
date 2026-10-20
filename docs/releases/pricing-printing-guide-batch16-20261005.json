@@ -1,0 +1,1302 @@
+{
+  "observedAt": "2026-10-05T19:20:49Z",
+  "scope": {
+    "languages": [
+      "en",
+      "ja",
+      "zh-cn",
+      "zh-tw"
+    ],
+    "koreanExcluded": true,
+    "publishedPhysicalVariants": 76030,
+    "fullCataloguePhysicalVariants": 76269,
+    "fullCatalogueRows": [
+      {
+        "language_code": "en",
+        "physical_total": 33359
+      },
+      {
+        "language_code": "ja",
+        "physical_total": 14100
+      },
+      {
+        "language_code": "ko",
+        "physical_total": 239
+      },
+      {
+        "language_code": "zh-cn",
+        "physical_total": 20405
+      },
+      {
+        "language_code": "zh-tw",
+        "physical_total": 8166
+      }
+    ],
+    "fullTargetAchieved": false
+  },
+  "sourceCommit": "7dc63aab2bb7be9ca69e77e686ef7722db6927a7",
+  "cohort": {
+    "categoryId": 85,
+    "groupId": 23779,
+    "providerName": "SV-P Promotional Cards",
+    "nativeSetCode": "SV-P",
+    "candidates": 288,
+    "positivePrintingGuides": 58,
+    "plannedAlternativeBasicFinish": 59,
+    "excludedSemanticModifier": [
+      {
+        "variantId": "eabd98a3-c281-48f5-b315-6609c8f65849",
+        "printingId": "f451e921-a002-46e6-8375-848520198ba9",
+        "collector": "201",
+        "nativeName": "シャリタツ",
+        "providerName": "Tatsugiri - 201/SV-P (Championship Series 2025)",
+        "providerNumber": "201/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 21.7
+      }
+    ],
+    "excludedModifierReason": "The Championship Series 2025 source modifier lacks independently reviewed native physical-printing attribution; retain separately until proved."
+  },
+  "identityReview": {
+    "existingPermanentMappingsOnly": true,
+    "method": "exact_set_code_number",
+    "nativeSetLanguage": "ja",
+    "nativeSetCode": "SV-P",
+    "stageAndProductionIndependentCurrentPublication": true,
+    "semanticPlansAgree": true,
+    "currentUniqueFullCollector": true,
+    "wholeGroupCrossFinishOwnershipPreflight": true,
+    "blockedProducts": 0,
+    "newMappings": 0,
+    "catalogueMutations": 0,
+    "titleExamples": [
+      {
+        "variantId": "00643278-55e4-4cb5-80c5-bf83661b6abd",
+        "printingId": "466d2ed2-3e38-40e6-b95e-41386afd8d0f",
+        "collector": "133",
+        "nativeName": "カプ・テテフGX",
+        "providerName": "Tapu Lele GX - 133/SV-P",
+        "providerNumber": "133/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 24
+      },
+      {
+        "variantId": "02a14c11-dd84-4bdb-8760-e6785d23bafc",
+        "printingId": "ca1f77dd-3aa7-4893-aada-99748c336bfb",
+        "collector": "193",
+        "nativeName": "パルデア ウパー",
+        "providerName": "Paldean Wooper - 193/SV-P",
+        "providerNumber": "193/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 19.13
+      },
+      {
+        "variantId": "087fbb85-869e-4924-ba92-119b5a9dc33f",
+        "printingId": "61b5616e-9a9b-4069-ba2e-d19b2ded9c11",
+        "collector": "031",
+        "nativeName": "イーブイ",
+        "providerName": "Eevee - 031/SV-P",
+        "providerNumber": "031/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 8.98
+      }
+    ],
+    "nativeEvidenceExamples": [
+      {
+        "collector": "031/SV-P",
+        "nativeName": "イーブイ",
+        "url": "https://www.pokemon-card.com/card-search/details.php/card/42964/regu/all"
+      },
+      {
+        "collector": "133/SV-P",
+        "nativeName": "カプ・テテフGX",
+        "url": "https://www.pokemon-card.com/deck/confirm.html/deckID/Dc4YYc-HKnx7U-888ca4/"
+      }
+    ],
+    "limitation": "Primary source examples corroborate current unique native-set/full-number identity; not a visual inspection of all 58 cards. Provider category85 is native Japanese, not an English price substitution.",
+    "accepted": [
+      {
+        "variantId": "00643278-55e4-4cb5-80c5-bf83661b6abd",
+        "printingId": "466d2ed2-3e38-40e6-b95e-41386afd8d0f",
+        "collector": "133",
+        "nativeName": "カプ・テテフGX",
+        "providerName": "Tapu Lele GX - 133/SV-P",
+        "providerNumber": "133/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 24,
+        "providerProductId": 587882,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "02a14c11-dd84-4bdb-8760-e6785d23bafc",
+        "printingId": "ca1f77dd-3aa7-4893-aada-99748c336bfb",
+        "collector": "193",
+        "nativeName": "パルデア ウパー",
+        "providerName": "Paldean Wooper - 193/SV-P",
+        "providerNumber": "193/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 19.13,
+        "providerProductId": 656026,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "087fbb85-869e-4924-ba92-119b5a9dc33f",
+        "printingId": "61b5616e-9a9b-4069-ba2e-d19b2ded9c11",
+        "collector": "031",
+        "nativeName": "イーブイ",
+        "providerName": "Eevee - 031/SV-P",
+        "providerNumber": "031/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 8.98,
+        "providerProductId": 587788,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "0c970261-c03c-455d-91fb-8ebf4c0507e5",
+        "printingId": "7f5815be-bcc9-41aa-b131-fa4d6045333b",
+        "collector": "003",
+        "nativeName": "ウインディ",
+        "providerName": "Arcanine - 003/SV-P",
+        "providerNumber": "003/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 2.28,
+        "providerProductId": 587760,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "0d8bc0cd-9690-415f-ad78-1bf017e517eb",
+        "printingId": "e0b60acd-9011-4cef-bd29-5c0cd904c9ba",
+        "collector": "216",
+        "nativeName": "ピカチュウ",
+        "providerName": "Pikachu - 216/SV-P",
+        "providerNumber": "216/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 7.55,
+        "providerProductId": 587923,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "1026977e-1a0f-41f1-a919-4a7dc20d21c7",
+        "printingId": "acc79691-1ce7-4042-8f24-14b5ba13fbab",
+        "collector": "065",
+        "nativeName": "ブースター",
+        "providerName": "Flareon - 065/SV-P",
+        "providerNumber": "065/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 95.44,
+        "providerProductId": 587823,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "15c137cc-8717-41c0-ae26-21cd8155061f",
+        "printingId": "a67c6fad-099b-48e5-875d-d29ddebb3893",
+        "collector": "063",
+        "nativeName": "シャワーズ",
+        "providerName": "Vaporeon - 063/SV-P",
+        "providerNumber": "063/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 87.68,
+        "providerProductId": 587821,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "1759a0f3-e8c7-480b-aa84-63d27ea941f0",
+        "printingId": "87783ebb-4f40-4ff0-93e1-3c60db786e80",
+        "collector": "288",
+        "nativeName": "ビクティニ",
+        "providerName": "Victini - 288/SV-P",
+        "providerNumber": "288/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 490,
+        "providerProductId": 643120,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "188d5e36-1bfa-48cb-ab48-9f2ed7bcf4cf",
+        "printingId": "a1546557-9d26-48bc-aa7d-1577425b65c0",
+        "collector": "232",
+        "nativeName": "ナンジャモのカイデン",
+        "providerName": "Iono's Wattrel - 232/SV-P",
+        "providerNumber": "232/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 9.67,
+        "providerProductId": 615009,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "19744d73-3633-4739-b4aa-b239a9bdf9ed",
+        "printingId": "7642fdd3-9e19-45d4-a013-33bee165cb17",
+        "collector": "192",
+        "nativeName": "ニャース",
+        "providerName": "Meowth",
+        "providerNumber": "192/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 74.11,
+        "providerProductId": 650395,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "1da8defb-fb1b-4cf1-aec9-2f43fdf293e4",
+        "printingId": "2eb5d22c-01c7-4602-b339-16d5bdfae236",
+        "collector": "184",
+        "nativeName": "ベラカスex",
+        "providerName": "Rabsca ex - 184/SV-P",
+        "providerNumber": "184/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 0.27,
+        "providerProductId": 672425,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "1f4595f6-5ebc-4388-a9eb-b64fbf7429d7",
+        "printingId": "cc5ebb92-a57f-49ab-bb3a-2961483063d3",
+        "collector": "088",
+        "nativeName": "タギングルex",
+        "providerName": "Grafaiai ex - 088/SV-P",
+        "providerNumber": "088/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 5.25,
+        "providerProductId": 587846,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "1f77286d-421a-42ff-a3b2-915c8109c6ae",
+        "printingId": "2f4d4241-dc49-48c0-809f-62e2f671c2f4",
+        "collector": "066",
+        "nativeName": "エーフィ",
+        "providerName": "Espeon - 066/SV-P",
+        "providerNumber": "066/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 101.65,
+        "providerProductId": 587824,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "203e9309-8202-402b-b2ec-205f2812ebea",
+        "printingId": "a01f247c-55ca-4028-9a4b-ec61791238db",
+        "collector": "001",
+        "nativeName": "ピカチュウ",
+        "providerName": "Pikachu - 001/SV-P",
+        "providerNumber": "001/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 21.02,
+        "providerProductId": 587758,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "26fdbe44-8757-45ad-902a-904f67281273",
+        "printingId": "72cffaae-0a11-4c55-a00b-f3497f40a00b",
+        "collector": "196",
+        "nativeName": "イーブイ",
+        "providerName": "Eevee - 196/SV-P",
+        "providerNumber": "196/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 15.1,
+        "providerProductId": 587918,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "2734656e-51e3-43da-949d-4fde5d63ead1",
+        "printingId": "47a1c68c-6d25-4c02-abd9-230363f50470",
+        "collector": "068",
+        "nativeName": "リーフィア",
+        "providerName": "Leafeon - 068/SV-P",
+        "providerNumber": "068/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 90.59,
+        "providerProductId": 587826,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "2781e278-e4f8-4b78-a806-ba71a937f26e",
+        "printingId": "6f3e15ea-5000-4676-88ca-7e3f306b7e04",
+        "collector": "259",
+        "nativeName": "ロケット団のニャース",
+        "providerName": "Team Rocket's Meowth - 259/SV-P",
+        "providerNumber": "259/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 30.55,
+        "providerProductId": 659980,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "287e5fb2-d55f-4a12-86b3-1c5b38a9cd0f",
+        "printingId": "20a36885-4b97-42b5-92fe-f7831d7fe7c4",
+        "collector": "165",
+        "nativeName": "ミガルーサex",
+        "providerName": "Veluza ex - 165/SV-P",
+        "providerNumber": "165/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 3.45,
+        "providerProductId": 587908,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "2b94cfbf-4520-4122-95ad-676316fca7a5",
+        "printingId": "796dc5f3-0a73-4cf8-9cc3-d9da43c662d8",
+        "collector": "005",
+        "nativeName": "ミライドン",
+        "providerName": "Miraidon - 005/SV-P",
+        "providerNumber": "005/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 0.36,
+        "providerProductId": 587762,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "2d0bb339-9ea6-4a05-b411-4d084ab0c8d3",
+        "printingId": "feef74fe-c08b-4a63-a590-7ceee65b12c7",
+        "collector": "002",
+        "nativeName": "ワナイダー",
+        "providerName": "Spidops - 002/SV-P",
+        "providerNumber": "002/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 0.54,
+        "providerProductId": 587759,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "31a190e9-cfc9-4888-bef1-0e5beb2c3d4b",
+        "printingId": "d9208a1f-6195-4b28-acba-4bd9910e813a",
+        "collector": "089",
+        "nativeName": "スコヴィランex",
+        "providerName": "Scovillain ex - 089/SV-P",
+        "providerNumber": "089/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 5,
+        "providerProductId": 587847,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "3dcb15e9-818d-46ac-8bc7-99e76ba500d1",
+        "printingId": "1c7321aa-2dcc-41c1-aa59-3b0cfbdb969d",
+        "collector": "279",
+        "nativeName": "チェレン",
+        "providerName": "Cheren - 279/SV-P",
+        "providerNumber": "279/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 69.99,
+        "providerProductId": 644687,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "43df3262-558c-4e3a-957a-cf1392fb3c87",
+        "printingId": "37fc15a2-8430-4722-8c48-7bb25a05fff2",
+        "collector": "214",
+        "nativeName": "ホゲータ",
+        "providerName": "Fuecoco - 214/SV-P",
+        "providerNumber": "214/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 2.93,
+        "providerProductId": 587921,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "44a289a4-36e8-4322-ac7e-6efafe5f0330",
+        "printingId": "da8ec4f1-0f73-4d8f-b05e-307452a61406",
+        "collector": "064",
+        "nativeName": "サンダース",
+        "providerName": "Jolteon - 064/SV-P",
+        "providerNumber": "064/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 99.78,
+        "providerProductId": 587822,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "44a301c4-88d8-4c08-a958-7df6f5bea897",
+        "printingId": "4732303f-6156-4924-ae01-8d3525fd6019",
+        "collector": "124",
+        "nativeName": "カラミンゴex",
+        "providerName": "Flamigo ex - 124/SV-P",
+        "providerNumber": "124/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 7.27,
+        "providerProductId": 587874,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "48521abb-a834-4141-9c25-f79e0e52d286",
+        "printingId": "7917a306-1e3f-4b63-922c-c2f4eb913da5",
+        "collector": "008",
+        "nativeName": "パフュートン",
+        "providerName": "Oinkologne - 008/SV-P",
+        "providerNumber": "008/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 0.57,
+        "providerProductId": 587765,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "49fb7cee-27b6-4a4f-aa20-37fbcfed515e",
+        "printingId": "79e59ed8-09e6-4a6c-b753-6f59dea16461",
+        "collector": "070",
+        "nativeName": "ニンフィア",
+        "providerName": "Sylveon - 070/SV-P",
+        "providerNumber": "070/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 97.92,
+        "providerProductId": 587828,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "4d17fdc4-bf29-48ca-ae18-b34b8e3268fb",
+        "printingId": "ad1c07b4-cd11-45d0-89f7-e0d40db17cb2",
+        "collector": "055",
+        "nativeName": "マフィティフex",
+        "providerName": "Mabosstiff ex - 055/SV-P",
+        "providerNumber": "055/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 3.04,
+        "providerProductId": 587812,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "4e4e971e-dbb2-44da-a814-be19a2dd16c1",
+        "printingId": "f65cab1f-7be1-4a8c-9fa8-ac6d2cd6ce8a",
+        "collector": "260",
+        "nativeName": "トウホクのピカチュウ",
+        "providerName": "Tohoku's Pikachu - 260/SV-P",
+        "providerNumber": "260/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 126.96,
+        "providerProductId": 650726,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "4fab0cd3-c051-429b-a28f-b6cbab968415",
+        "printingId": "6736f402-ef80-44b8-9356-72b4db0a87a2",
+        "collector": "006",
+        "nativeName": "クエスパトラ",
+        "providerName": "Espathra - 006/SV-P",
+        "providerNumber": "006/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 0.27,
+        "providerProductId": 587763,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "51eee52c-8e5a-4622-9f27-3fee7b23bb5d",
+        "printingId": "614e979b-cf89-46ae-81d8-1327aec99e65",
+        "collector": "271",
+        "nativeName": "ビクティニ",
+        "providerName": "Victini - 271/SV-P",
+        "providerNumber": "271/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 16.1,
+        "providerProductId": 648603,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "5f793bc5-4fc0-4b65-9eed-8843c83c574a",
+        "printingId": "03c4ed66-fa21-4a97-a625-e7c86c763e58",
+        "collector": "148",
+        "nativeName": "オーガポン みどりのめん",
+        "providerName": "Teal Mask Ogerpon - 148/SV-P",
+        "providerNumber": "148/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 3.24,
+        "providerProductId": 587891,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "706ffc1d-608a-4370-bfad-502ad212256b",
+        "printingId": "52a906d0-2851-48e2-84d0-6087924d997b",
+        "collector": "129",
+        "nativeName": "パチリス",
+        "providerName": "Pachirisu - 129/SV-P",
+        "providerNumber": "129/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 15.99,
+        "providerProductId": 587878,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "71e14628-10c7-4ec8-ac9b-857c5d363e0f",
+        "printingId": "0921a873-a563-4cd7-86a7-50181df733b7",
+        "collector": "087",
+        "nativeName": "シルシュルー",
+        "providerName": "Shroodle - 087/SV-P",
+        "providerNumber": "087/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 4.95,
+        "providerProductId": 587845,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "877b6c68-2e91-46a8-9ccb-368416a71c64",
+        "printingId": "599e0b6c-34f8-4773-b575-b48280639995",
+        "collector": "115",
+        "nativeName": "キョジオーンex",
+        "providerName": "Garganacl ex - 115/SV-P",
+        "providerNumber": "115/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 4.88,
+        "providerProductId": 587865,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "8c1ac286-25b8-477c-8bd7-bd8a2f76e1c1",
+        "printingId": "ca828d26-8ee4-4f1f-8aea-0b94a851ec64",
+        "collector": "009",
+        "nativeName": "モトトカゲex",
+        "providerName": "Cyclizar ex - 009/SV-P",
+        "providerNumber": "009/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 0.34,
+        "providerProductId": 587766,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "8d9ce9f3-c03c-43b1-a2eb-37ade89d4994",
+        "printingId": "d2937df4-1faf-40c6-b80e-f68d80e06c56",
+        "collector": "061",
+        "nativeName": "ゼニガメ",
+        "providerName": "Squirtle - 061/SV-P",
+        "providerNumber": "061/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 5.45,
+        "providerProductId": 587819,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "945f5981-1330-4d48-9d08-dc4bc3b07c45",
+        "printingId": "c7f58c7d-ddce-47d6-962d-4f43f78c02a8",
+        "collector": "173",
+        "nativeName": "ヨルノズク",
+        "providerName": "Noctowl - 173/SV-P",
+        "providerNumber": "173/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 1.99,
+        "providerProductId": 587915,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "a3a66936-b584-451d-b4a0-84fe2736b549",
+        "printingId": "ecdd66de-a2bc-404e-afaa-90490a6adfb1",
+        "collector": "149",
+        "nativeName": "鬼の仮面",
+        "providerName": "Ogre's Mask - 149/SV-P",
+        "providerNumber": "149/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 1,
+        "providerProductId": 587892,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "a488ae1e-2268-4b07-99ab-cdaeedd6b4e4",
+        "printingId": "d5e4759e-a05b-43d8-9cfc-f137705c4bd2",
+        "collector": "004",
+        "nativeName": "ヘイラッシャ",
+        "providerName": "Dondozo - 004/SV-P",
+        "providerNumber": "004/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 0.41,
+        "providerProductId": 587761,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "a96ac688-7c1a-4332-b907-9f8e8b1e066c",
+        "printingId": "1abd2920-536d-404a-96c7-61ccd9589a46",
+        "collector": "060",
+        "nativeName": "ヒトカゲ",
+        "providerName": "Charmander - 060/SV-P",
+        "providerNumber": "060/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 3.93,
+        "providerProductId": 587818,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "a9c04bf9-6853-4c17-b3a7-8f1cf77f0236",
+        "printingId": "74727479-799f-47d0-a135-3a666c69aa77",
+        "collector": "059",
+        "nativeName": "フシギダネ",
+        "providerName": "Bulbasaur - 059/SV-P",
+        "providerNumber": "059/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 3.65,
+        "providerProductId": 587817,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "b50563e8-94d6-4379-93db-69884e637ff8",
+        "printingId": "5a168cee-31a5-4496-8ed6-792f1c54c9f0",
+        "collector": "007",
+        "nativeName": "コライドン",
+        "providerName": "Koraidon - 007/SV-P",
+        "providerNumber": "007/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 0.23,
+        "providerProductId": 587764,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "bbf1b549-ef3e-4b87-a3e7-a955e69227e4",
+        "printingId": "127be8c7-585b-42bf-8aac-58fb043ffd66",
+        "collector": "067",
+        "nativeName": "ブラッキー",
+        "providerName": "Umbreon - 067/SV-P",
+        "providerNumber": "067/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 223.85,
+        "providerProductId": 587825,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "bde0e101-d5fb-4512-8317-a76bddd03e96",
+        "printingId": "a07a9ec0-3e73-41f5-b922-74d74c5c1691",
+        "collector": "062",
+        "nativeName": "イーブイ",
+        "providerName": "Eevee - 062/SV-P",
+        "providerNumber": "062/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 95.55,
+        "providerProductId": 587820,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "bffb338e-99c2-4a95-b5e6-fc714110ef11",
+        "printingId": "18e5b587-59b3-40f3-abe6-dc3790308f12",
+        "collector": "155",
+        "nativeName": "タイカイデンex",
+        "providerName": "Kilowattrel ex - 155/SV-P",
+        "providerNumber": "155/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 5,
+        "providerProductId": 587898,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "c0797a1c-7e96-4e33-a099-196f98e6288f",
+        "printingId": "1af075bd-b833-47d8-a1d7-7eb8ae73e4e9",
+        "collector": "215",
+        "nativeName": "クワッス",
+        "providerName": "Quaxly - 215/SV-P",
+        "providerNumber": "215/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 1.22,
+        "providerProductId": 587922,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "cb584791-a423-4352-8b70-088e51cc8b04",
+        "printingId": "7475a7d0-c5c3-4e96-ae4f-137cfa5c39d3",
+        "collector": "098",
+        "nativeName": "名探偵ピカチュウ",
+        "providerName": "Detective Pikachu - 098/SV-P",
+        "providerNumber": "098/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 263.27,
+        "providerProductId": 587856,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "cbe1810d-6045-4ca5-bde1-c31bac915d0d",
+        "printingId": "5cb74afb-99c7-4a85-b1d7-9c0036581a3a",
+        "collector": "213",
+        "nativeName": "ニャオハ",
+        "providerName": "Sprigatito - 213/SV-P",
+        "providerNumber": "213/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 8.04,
+        "providerProductId": 587920,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "cfcf4f0c-1fee-43e5-affc-614aab7f54f7",
+        "printingId": "0489684e-6016-4cee-b881-85b6ba20e219",
+        "collector": "183",
+        "nativeName": "アローラ ナッシーex",
+        "providerName": "Alolan Exeggutor ex - 183/SV-P",
+        "providerNumber": "183/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 10,
+        "providerProductId": 587917,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "d2d26434-7120-47c4-9323-080270e4bcd3",
+        "printingId": "88b5502a-8ffd-4855-af1e-d3742eb95627",
+        "collector": "289",
+        "nativeName": "フクオカのピカチュウ",
+        "providerName": "Fukuoka's Pikachu - 289/SV-P",
+        "providerNumber": "289/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 153.39,
+        "providerProductId": 658431,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "d7ee0832-d7b7-4cdc-9050-bc76aceb478e",
+        "printingId": "a258322b-80d9-4c6b-a9f6-2baf38b7bf29",
+        "collector": "218",
+        "nativeName": "ピカチュウ",
+        "providerName": "Pikachu - 218/SV-P",
+        "providerNumber": "218/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 36.92,
+        "providerProductId": 587925,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "db4934aa-c361-4967-9049-8ed1ad3ce4fb",
+        "printingId": "78b4734e-d180-4bbb-af57-7cb0ac23b790",
+        "collector": "261",
+        "nativeName": "ヒロシマのピカチュウ",
+        "providerName": "Hiroshima's Pikachu - 261/SV-P",
+        "providerNumber": "261/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 153.09,
+        "providerProductId": 650763,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "ddc5ab92-6593-4634-87ec-d2b31cb2fb28",
+        "printingId": "ba891c1b-b4e5-4943-b84b-d753ea11553e",
+        "collector": "027",
+        "nativeName": "ガケガニex",
+        "providerName": "Klawf ex - 027/SV-P",
+        "providerNumber": "027/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 9.99,
+        "providerProductId": 587784,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "e5a55799-660e-4a66-89f6-6fd9d51016f1",
+        "printingId": "da0015ea-5767-4d7b-940b-27f88696ee80",
+        "collector": "069",
+        "nativeName": "グレイシア",
+        "providerName": "Glaceon - 069/SV-P",
+        "providerNumber": "069/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 92.64,
+        "providerProductId": 587827,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "e954e57d-1984-4c2e-9c88-b043c99b865d",
+        "printingId": "ed18f70b-1ff4-464e-946d-d8dab9dd1988",
+        "collector": "119",
+        "nativeName": "ラティアス",
+        "providerName": "Latias - 119/SV-P",
+        "providerNumber": "119/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 45.99,
+        "providerProductId": 587869,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "f940756c-8036-4686-8fa0-bdf9a5b510d3",
+        "printingId": "8ef8e2e8-28fe-44a7-8a11-c6ab2681821b",
+        "collector": "199",
+        "nativeName": "リーリエのキュワワー",
+        "providerName": "Lillie's Comfey - 199/SV-P",
+        "providerNumber": "199/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 7.07,
+        "providerProductId": 683009,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "variantId": "ff8f0544-c6ce-498a-a557-41de5072c290",
+        "printingId": "dc61205a-0989-4115-97c5-86dcb228dac8",
+        "collector": "217",
+        "nativeName": "パモ",
+        "providerName": "Pawmi - 217/SV-P",
+        "providerNumber": "217/SV-P",
+        "method": "exact_set_code_number",
+        "requestedFinish": "normal",
+        "sourceFinish": "Holofoil",
+        "sourcePrice": 1.12,
+        "providerProductId": 587924,
+        "productionCatalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "stageCatalogueVersionId": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      }
+    ]
+  },
+  "providerEvidence": {
+    "datasetAt": "2026-10-04T20:05:38Z",
+    "staleAfter": "2026-10-06T20:05:38Z",
+    "providerSubtype": "Holofoil",
+    "requestedFinish": "normal",
+    "originalCurrency": "USD",
+    "displayCurrency": "GBP",
+    "fx": {
+      "rate": 0.757532293986637,
+      "at": "2026-10-02T00:00:00.000Z",
+      "source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+    },
+    "newProviderFetches": 0,
+    "retainedProducts": 236,
+    "retainedPriceRows": 157,
+    "retainedSemanticHashes": {
+      "stage": {
+        "products": "7115cf196b15c7233d372935f7c2772f39053ff7269f0d7fcf5796577fdd688b",
+        "prices": "adb6083da2254a226690d0c646faaf9fd881b1a43e54a4621feeaf5b741e0cd7"
+      },
+      "prod": {
+        "products": "7115cf196b15c7233d372935f7c2772f39053ff7269f0d7fcf5796577fdd688b",
+        "prices": "adb6083da2254a226690d0c646faaf9fd881b1a43e54a4621feeaf5b741e0cd7"
+      }
+    }
+  },
+  "preflight": {
+    "stage": [
+      {
+        "native_set": {
+          "id": "c20234cb-c629-4383-b107-c49b38b682ae",
+          "set_code": "SV-P",
+          "provider_set_code": "SV-P",
+          "language_code": "ja"
+        },
+        "physical_variants": 58,
+        "positive_exact": 0,
+        "positive_cardmarket": 0,
+        "positive_printing": 0
+      }
+    ],
+    "production": [
+      {
+        "native_set": {
+          "id": "c20234cb-c629-4383-b107-c49b38b682ae",
+          "set_code": "SV-P",
+          "provider_set_code": "SV-P",
+          "language_code": "ja"
+        },
+        "physical_variants": 58,
+        "positive_exact": 0,
+        "positive_cardmarket": 0,
+        "positive_printing": 0
+      }
+    ]
+  },
+  "writes": {
+    "stage": 58,
+    "production": 58,
+    "chunkSizes": [
+      40,
+      18
+    ],
+    "table": "market.catalogue_printing_general_prices",
+    "validationErrorBeforeWrites": "Initial object-shaped SQL payload rejected atomically; corrected to the documented JSON array. No partial write from that rejection."
+  },
+  "verification": {
+    "stage": {
+      "positiveFresh": 58,
+      "printingGuideUsed": 58,
+      "exactUnavailable": 58,
+      "generalPrintingReads": 1,
+      "exactPrintingReads": 0
+    },
+    "production": {
+      "positiveFresh": 58,
+      "printingGuideUsed": 58,
+      "exactUnavailable": 58,
+      "generalPrintingReads": 1,
+      "exactPrintingReads": 0
+    },
+    "allCurrentProductionPrintingGuides": {
+      "valid": 525,
+      "fresh": 525
+    },
+    "scope": "printing_general_estimate",
+    "usableForExactVariant": false,
+    "usableForHoldingsValuation": false,
+    "sourceFinishPreserved": true,
+    "requestedVariantPreserved": true,
+    "noSoldClaim": true,
+    "method": "Actual service SQL readback replayed through the deployed backend module using Japanese language; owner HTTP/device visibility unmeasured."
+  },
+  "coverage": {
+    "metric": "Fresh positive stored exact TCGCSV, printing general TCGCSV or blended Cardmarket per current physical variant, deduplicated.",
+    "priced": 33422,
+    "total": 76030,
+    "percent": 43.96,
+    "rows": [
+      {
+        "language_code": "en",
+        "observed_at": "2026-10-05 19:18:37.436713+00",
+        "physical_total": 33359,
+        "primary_positive": 18915,
+        "cardmarket_positive": 7802,
+        "printing_positive": 467,
+        "legacy_positive": 21556,
+        "combined_positive": 22021
+      },
+      {
+        "language_code": "ja",
+        "observed_at": "2026-10-05 19:18:49.762578+00",
+        "physical_total": 14100,
+        "primary_positive": 6907,
+        "cardmarket_positive": 1015,
+        "printing_positive": 58,
+        "legacy_positive": 7307,
+        "combined_positive": 7365
+      },
+      {
+        "language_code": "zh-cn",
+        "observed_at": "2026-10-05 19:18:53.837375+00",
+        "physical_total": 20405,
+        "primary_positive": 0,
+        "cardmarket_positive": 0,
+        "printing_positive": 0,
+        "legacy_positive": 0,
+        "combined_positive": 0
+      },
+      {
+        "language_code": "zh-tw",
+        "observed_at": "2026-10-05 19:18:57.866498+00",
+        "physical_total": 8166,
+        "primary_positive": 0,
+        "cardmarket_positive": 4036,
+        "printing_positive": 0,
+        "legacy_positive": 4036,
+        "combined_positive": 4036
+      }
+    ],
+    "previousStoredGuide": 33364,
+    "netNewCohort": 58,
+    "legacyPositiveTcgcsvOrBlendedCardmarket": 32899,
+    "knownAdditionalBaseFallbackVariants": 236,
+    "baseFallbackPrintingOverlap": 0,
+    "generalSourceAvailabilityProjection": 33658,
+    "generalSourceAvailabilityProjectionPercent": 44.27,
+    "publicationVersionsBefore": [
+      {
+        "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en"
+      },
+      {
+        "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja"
+      },
+      {
+        "id": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+        "language_code": "ko"
+      },
+      {
+        "id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "language_code": "zh-cn"
+      },
+      {
+        "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "language_code": "zh-tw"
+      }
+    ],
+    "publicationVersionsAfter": [
+      {
+        "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en"
+      },
+      {
+        "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja"
+      },
+      {
+        "id": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+        "language_code": "ko"
+      },
+      {
+        "id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "language_code": "zh-cn"
+      },
+      {
+        "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "language_code": "zh-tw"
+      }
+    ],
+    "atomic": false,
+    "ownerHttp": "unmeasured",
+    "phone": "unmeasured"
+  },
+  "runtime": {
+    "deploymentId": "ba85de72-ae0d-4dd3-b5a2-be0075a94763",
+    "configuredCommit": "7dc63aab2bb7be9ca69e77e686ef7722db6927a7",
+    "scheduledStart": "2026-10-05T19:15:36.294459501Z",
+    "finishedAt": "2026-10-05T19:17:00.099229925Z",
+    "exitCode": 0,
+    "elapsedMs": 76000,
+    "datasetAt": "2026-10-04T20:05:38+0000",
+    "runId": "4dda2fc7-a30e-4188-8f2a-15aea5dd417d",
+    "setsClaimed": 0,
+    "priced": 0,
+    "deferred": 0,
+    "coveragePages": 39,
+    "coverageError": null,
+    "interpretation": "Successful scheduled runtime on unchanged provider dataset; no new daily dataset or guide-refresh proof. No restart or redeployment.",
+    "cardmarket": "Previously verified scheduled retained-cache run; not reasserted from a new run in this receipt."
+  },
+  "nonActionableEnglishProbe": {
+    "categoryId": 3,
+    "groupId": 1440,
+    "name": "Gym Challenge",
+    "stageCandidates": 132,
+    "productionCandidates": 262,
+    "stageReasonDifference": "Production also publishes 130 unsupported first_edition variants; do not alter publication to force stage parity.",
+    "positiveAlternateBasicFinishGuides": 0,
+    "writes": 0
+  },
+  "next": {
+    "priority": "Verify printing-guide refresh when the provider daily dataset advances, without worker restart.",
+    "boundedJapaneseCandidate": {
+      "categoryId": 85,
+      "groupId": 23909,
+      "name": "SV8a: Terastal Fest ex",
+      "currentlyMappedMissingPositiveVariants": 57,
+      "requires": "Inspect complete current stage/production group and retained feed; reject pre-sales and modifiers, repeat whole-group product ownership preflight, validate native identities before any bounded writes."
+    },
+    "remainingSvPCandidates": "119 mapped no-provider-quote rows lack a positive alternate basic-finish price; one additional Championship Series 2025 product withheld pending native-printing evidence.",
+    "chinese": "Existing approved native source/physical-printing evidence remains required; shared provider IDs quarantined.",
+    "korean": "Excluded from new work and active target.",
+    "rankedCurrentJapaneseMissing": [
+      {
+        "group_id": 23779,
+        "provider_name": "SV-P Promotional Cards",
+        "missing_positive_variants": 120
+      },
+      {
+        "group_id": 24721,
+        "provider_name": "M6a: MEGA Expansion 30th Celebration",
+        "missing_positive_variants": 104
+      },
+      {
+        "group_id": 23909,
+        "provider_name": "SV8a: Terastal Fest ex",
+        "missing_positive_variants": 57
+      },
+      {
+        "group_id": 24260,
+        "provider_name": "SV9a: Heat Wave Arena",
+        "missing_positive_variants": 43
+      },
+      {
+        "group_id": 23601,
+        "provider_name": "SV4a: Shiny Treasure ex",
+        "missing_positive_variants": 40
+      },
+      {
+        "group_id": 23686,
+        "provider_name": "SM7: Sky-Splitting Charisma",
+        "missing_positive_variants": 38
+      },
+      {
+        "group_id": 23615,
+        "provider_name": "SV7: Stellar Miracle",
+        "missing_positive_variants": 36
+      },
+      {
+        "group_id": 23679,
+        "provider_name": "SM3H: To Have Seen the Battle Rainbow",
+        "missing_positive_variants": 34
+      }
+    ],
+    "otherProbeResults": {
+      "swordShieldPromos": [
+        {
+          "candidates": 13,
+          "mapped": 0,
+          "printings": 13,
+          "page_last_variant": "f8f46dcf-735b-4673-af65-096065e95a8c"
+        }
+      ],
+      "smXyPromos": [
+        {
+          "group_id": 23881,
+          "candidates": 12,
+          "mapped": 0,
+          "printings": 12,
+          "page_last_variant": "da80cd42-5e81-45df-bd50-dab254e38b15"
+        },
+        {
+          "group_id": 23908,
+          "candidates": 12,
+          "mapped": 0,
+          "printings": 12,
+          "page_last_variant": "f5f6645a-2ddb-4e10-9f8e-24ecc53e3988"
+        }
+      ],
+      "interpretation": "Only 13/12/12 current candidates and none mapped for these specific resolved groups; do not infer broad legacy promo coverage or map absent deck/publication identities."
+    }
+  }
+}

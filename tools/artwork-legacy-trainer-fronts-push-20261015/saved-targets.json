@@ -1,0 +1,106 @@
+[
+  {
+    "printing_id": "03b21683-af68-4f9a-bbbd-647dec3d5b81",
+    "set_id": "e60f305b-5ad6-4964-b6c6-636788481ca5",
+    "set_code": "neo2",
+    "language_code": "ja",
+    "collector_number": "053",
+    "card_native_name": "エネルギーアーク",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "e0b949b2-2bc9-4aca-bdec-f1584ec3f011"
+    ],
+    "batch_id": "JP-CARDS-009"
+  },
+  {
+    "printing_id": "9815742c-ab9c-47d5-a05e-8fa67d755b43",
+    "set_id": "e60f305b-5ad6-4964-b6c6-636788481ca5",
+    "set_code": "neo2",
+    "language_code": "ja",
+    "collector_number": "054",
+    "card_native_name": "壁を台無しにする[カブト]",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "e9c77163-1fa9-417f-ac99-caa57cce0533"
+    ],
+    "batch_id": "JP-CARDS-009"
+  },
+  {
+    "printing_id": "be1af7b3-7199-445e-89e3-2ad26f93ffc7",
+    "set_id": "e60f305b-5ad6-4964-b6c6-636788481ca5",
+    "set_code": "neo2",
+    "language_code": "ja",
+    "collector_number": "055",
+    "card_native_name": "化石卵",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "33605fc7-7329-4191-ab47-25a8b8dfedc4"
+    ],
+    "batch_id": "JP-CARDS-009"
+  },
+  {
+    "printing_id": "34a5728e-9e47-453f-8102-84259c8cdaf2",
+    "set_id": "e60f305b-5ad6-4964-b6c6-636788481ca5",
+    "set_code": "neo2",
+    "language_code": "ja",
+    "collector_number": "056",
+    "card_native_name": "ハイパーデボルブスプレー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "9de3a61b-28c7-4cfa-8167-2ee54b2f62e4"
+    ],
+    "batch_id": "JP-CARDS-009"
+  },
+  {
+    "printing_id": "4ec6bdf6-3a65-4dd6-a3d7-84ea96cb77d6",
+    "set_id": "e60f305b-5ad6-4964-b6c6-636788481ca5",
+    "set_code": "neo2",
+    "language_code": "ja",
+    "collector_number": "057",
+    "card_native_name": "壁を台無しにする[aerodactyl]",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "a4b5fd43-f9f0-494f-8fc8-e1dcc7398386"
+    ],
+    "batch_id": "JP-CARDS-009"
+  },
+  {
+    "printing_id": "60c39900-94fe-420b-b997-60e9c64f3491",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "073",
+    "card_native_name": "ベリー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "c21bd7f6-d7e6-487c-ac76-00a7d218d95c"
+    ],
+    "batch_id": "JP-CARDS-005"
+  },
+  {
+    "printing_id": "56ae4a00-656c-4564-8d7a-831db2900857",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "074",
+    "card_native_name": "スーパーロッド",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "0d21bd9d-f70f-4671-898f-278daad9cda2"
+    ],
+    "batch_id": "JP-CARDS-005"
+  },
+  {
+    "printing_id": "331a9eb6-75c4-47f1-97c8-ad2c55884ba3",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "075",
+    "card_native_name": "二重突風",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "8f29d59d-9dbf-4058-a9b1-17797791530f"
+    ],
+    "batch_id": "JP-CARDS-005"
+  }
+]

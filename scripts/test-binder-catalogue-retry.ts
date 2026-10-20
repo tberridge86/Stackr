@@ -5,6 +5,8 @@ import ts from 'typescript';
 import * as cache from '../lib/requestCache';
 import * as identity from '../lib/binderCardIdentity';
 import * as presentation from '../lib/binderCataloguePresentation';
+import * as optionalCatalogueEnrichment from '../lib/optionalCatalogueEnrichment';
+import { withPersonalDataReadTimeout } from '../lib/personalDataRead';
 
 async function main() {
   cache.invalidateRequestCache();
@@ -15,14 +17,22 @@ async function main() {
     externalIds: { setCode: 'swsh7' }, images: {} };
   let cardReads = 0;
   let setReads = 0;
-  const supabase = { from: (table: string) => {
-    const q: any = { select: () => q, eq: () => q, order: () => q,
+  const supabase = { auth: { onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }) }, from: (table: string) => {
+    let rangeStart = 0;
+    let rangeEnd = 999;
+    const q: any = { select: () => q, eq: () => q, order: () => q, abortSignal: () => q,
+      range: (from: number, to: number) => { rangeStart = from; rangeEnd = to; return q; },
       maybeSingle: async () => ({ data: binder, error: null }),
-      then: (resolve: any) => { assert.equal(table, 'binder_cards'); return Promise.resolve({ data: saved, error: null }).then(resolve); } };
+      then: (resolve: any) => {
+        assert.equal(table, 'binder_cards');
+        return Promise.resolve({ data: saved.slice(rangeStart, rangeEnd + 1), error: null }).then(resolve);
+      } };
     return q;
   } };
   const dependencies: Record<string, unknown> = {
     './supabase': { supabase }, './requestCache': cache,
+    './optionalCatalogueEnrichment': optionalCatalogueEnrichment,
+    './personalDataRead': { withPersonalDataReadTimeout },
     './pokemonTcg': { normalizePokemonCardLanguage: () => 'en', fetchCardsForSet: async (id: string, options: any) => {
       assert.equal(id, set.id); assert.equal(options.preferCanonicalApi, true);
       assert.equal(options.minimumCardCount, 237);
@@ -41,7 +51,7 @@ async function main() {
   const source = fs.readFileSync('lib/binders.ts', 'utf8');
   const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const exports: any = {};
-  vm.runInNewContext(compiled, { exports, require: (name: string) => dependencies[name] ?? {}, console });
+  vm.runInNewContext(compiled, { exports, require: (name: string) => dependencies[name] ?? {}, console, AbortController });
   const partial = await exports.fetchBinderCards('binder', { includePrices: false });
   assert.equal(partial.length, 3);
   assert.equal(partial[0].card.name, 'Partial 1', 'real partial catalogue rows stay visible');

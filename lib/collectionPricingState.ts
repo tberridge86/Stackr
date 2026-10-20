@@ -44,7 +44,9 @@ function parsedTime(value: string | null | undefined) {
 
 function isStale(input: CollectionPricingInput, now: number) {
   const freshness = String(input.freshness ?? '').trim().toLowerCase();
-  if (freshness === 'stale' || freshness === 'expired' || freshness === 'unknown') return true;
+  // Only an explicit fresh status establishes freshness. Missing or unfamiliar
+  // metadata keeps the stored value usable, with its update-needed label.
+  if (freshness !== 'fresh') return true;
   const staleAfter = parsedTime(input.staleAfter);
   return staleAfter != null && staleAfter <= now;
 }
@@ -172,5 +174,10 @@ export function getCollectionPriceCoverageLabel(summary: Pick<CollectionPricingS
     : summary.state === 'stale'
       ? `Prices for ${summary.pricedUnits} cards need updating`
       : `Prices for all ${summary.totalUnits} cards`;
-  return general > 0 ? `${coverage} · Includes ${general} general estimate${general === 1 ? '' : 's'}` : coverage;
+  const freshness = summary.state === 'partial' && summary.staleUnits > 0
+    ? ` · ${summary.staleUnits} ${summary.staleUnits === 1 ? 'needs' : 'need'} updating`
+    : '';
+  return general > 0
+    ? `${coverage}${freshness} · Includes ${general} general estimate${general === 1 ? '' : 's'}`
+    : `${coverage}${freshness}`;
 }

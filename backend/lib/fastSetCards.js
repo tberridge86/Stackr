@@ -8,6 +8,8 @@ import {
   parseLimit,
   toCatalogueAsset,
 } from './stackrApiV1.js';
+import { correctedCatalogueSetId, CORRECTION_LANGUAGE } from './catalogueLanguageCorrections.js';
+import { readCatalogueQuery } from './traceContext.js';
 
 function clean(value) {
   const text = String(value ?? '').trim();
@@ -48,18 +50,35 @@ function paginationFromRows(bundleRows, rawRows, limit) {
   };
 }
 
-async function fetchFactRows(supabase, setId, language, afterVariantId, limit) {
+async function fetchFactRows(supabase, setId, language, afterVariantId, limit, options) {
+  let catalogueVersionId = clean(options.catalogueVersionId);
+  if (!catalogueVersionId) {
+    const { data: publishedSet, error } = await readCatalogueQuery(supabase.schema('api')
+      .from('catalogue_sets')
+      .select('catalogue_version_id')
+      .eq('set_id', setId)
+      .maybeSingle());
+    if (error) throw error;
+    if (!publishedSet) return { cards: [], pagination: { limit, nextCursor: null } };
+    catalogueVersionId = clean(publishedSet.catalogue_version_id);
+  }
+  if (!isUuid(catalogueVersionId)) {
+    throw new ApiError(502, 'catalogue_version_unavailable', 'The published set catalogue version is unavailable.');
+  }
+  // Keep the facts path as narrowly scoped as the canonical set-card read.
+  // Otherwise Postgres can walk every published version's variants first.
   let query = supabase
     .schema('api')
     .from('catalogue_cards')
     .select('*')
     .eq('set_id', setId)
+    .eq('catalogue_version_id', catalogueVersionId)
     .order('variant_id', { ascending: true })
     .limit(limit + 1);
   if (language) query = query.eq('language_code', language);
   if (afterVariantId) query = query.gt('variant_id', afterVariantId);
 
-  const { data, error } = await query;
+  const { data, error } = await readCatalogueQuery(query);
   if (error) throw error;
 
   const bundleRows = Array.isArray(data) ? data : [];
@@ -71,14 +90,17 @@ async function fetchFactRows(supabase, setId, language, afterVariantId, limit) {
 }
 
 /**
- * Fetches one published set page through a single PostgREST request.
+ * Fetches one published set page, resolving its published version for facts.
  * Binder first paint can request facts only (includeAssets=false), while existing
  * consumers retain the preferred-artwork response by default.
  */
-export async function fetchFastSetCards(supabase, setId, input = {}) {
+export async function fetchFastSetCards(supabase, setId, input = {}, options = {}) {
   if (!isUuid(setId)) throw new ApiError(400, 'invalid_set_id', 'setId must be a canonical UUID.');
+  const targetSetId = correctedCatalogueSetId(setId);
+  const isLanguageCorrection = targetSetId !== setId;
+  setId = targetSetId;
   const limit = parseLimit(input.limit, 120, 500);
-  const language = clean(input.language);
+  const language = isLanguageCorrection ? CORRECTION_LANGUAGE : clean(input.language);
   if (language && !SUPPORTED_LANGUAGE_CODES.includes(language)) {
     throw new ApiError(400, 'invalid_language', 'Unsupported catalogue language.');
   }
@@ -88,16 +110,35 @@ export async function fetchFastSetCards(supabase, setId, input = {}) {
     throw new ApiError(400, 'invalid_cursor', 'cursor is not a valid Stackr pagination cursor.');
   }
 
-  if (!shouldIncludeAssets(input.includeAssets)) {
-    return fetchFactRows(supabase, setId, language, afterVariantId, limit);
+  if (isLanguageCorrection) {
+    const { data: publishedSet, error } = await readCatalogueQuery(supabase.schema('api')
+      .from('catalogue_sets').select('catalogue_version_id,language_code')
+      .eq('set_id', setId).maybeSingle());
+    if (error) throw error;
+    if (!publishedSet || publishedSet.language_code !== CORRECTION_LANGUAGE) {
+      throw new ApiError(502, 'invalid_language_correction', 'The reviewed correction target is unavailable.');
+    }
+    options = { ...options, catalogueVersionId: publishedSet.catalogue_version_id };
   }
 
-  const { data, error } = await supabase.schema('api').rpc('catalogue_set_card_rows', {
+  const verifyCorrectedCards = (cards) => {
+    if (isLanguageCorrection && cards.some((card) => card.languageCode !== CORRECTION_LANGUAGE || card.set?.setId !== setId)) {
+      throw new ApiError(502, 'invalid_language_correction', 'The reviewed correction target is unavailable.');
+    }
+  };
+
+  if (!shouldIncludeAssets(input.includeAssets)) {
+    const result = await fetchFactRows(supabase, setId, language, afterVariantId, limit, options);
+    verifyCorrectedCards(result.cards);
+    return result;
+  }
+
+  const { data, error } = await readCatalogueQuery(supabase.schema('api').rpc('catalogue_set_card_rows', {
     p_set_id: setId,
     p_language_code: language,
     p_after_variant_id: afterVariantId,
     p_limit: limit,
-  });
+  }));
   if (error) throw error;
 
   const bundleRows = Array.isArray(data) ? data : [];
@@ -119,6 +160,7 @@ export async function fetchFastSetCards(supabase, setId, input = {}) {
       };
     }),
   }));
+  verifyCorrectedCards(cards);
 
   return {
     cards,

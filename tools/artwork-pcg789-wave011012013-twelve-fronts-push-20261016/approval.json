@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 12,
+  "variants": 12,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "physical_finish_verified": false,
+  "physical_edition_verified": false,
+  "cohort_sha256": "477021bea5228a33c64414b790af250f5f57f4ad81e3b772b77f1cdd025e38ef",
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "34210b15423e8f9b002dc619b5b4c05c396510f7daeae909a0e5c757df447164",
+    "finiteDecisionFileByteSha256": "e4c6e8fa4388b45c4361bad054c39fa5b2ab5c129e7a0ea24ec44309e7935c41",
+    "rootPrivateContextFileByteSha256": "c24154a2a6572ab2c2e9b321504c4d041883417f671fdffaa1a7060979b64964",
+    "sourceLineages": [
+      {
+        "wave": "011",
+        "sourceHandoffSHA": "40888f3bc3efbd3a8aaf585175601f6680b5d80941614226f6ae01a0610a03a4",
+        "independentPeerSHA": "7097a3538764e7983e6e2075330a1a24484c4ba5026dec73aed35b4f6eff29ac",
+        "rootDecisionSHA": "2ca1aa85477d1303871f9efeafe5434f7cda1d0a2ea932d56c3ff8df98d4f464",
+        "selected": 3,
+        "operationalHeld": 17
+      },
+      {
+        "wave": "012",
+        "sourceHandoffSHA": "d932d62effa8de0750d354315754151a70cc4c1a44d56937a74562e2bc86d301",
+        "independentPeerSHA": "ef81e16e1eb99e6409ccad444a8ace3fce7c4534071fa26f99fd76405737b067",
+        "rootDecisionSHA": "3c2fcec13e7c4ab8c59925f6cad076c5fb81e60799c31dfdcc596c60e11b01d9",
+        "selected": 6,
+        "operationalHeld": 14
+      },
+      {
+        "wave": "013",
+        "sourceHandoffSHA": "a1d2991c2f423bd37c70c414943a94caa6a646dc4f6063d365b1ee878865124a",
+        "independentPeerSHA": "6595353e6ca7046b030607101fece0e4c0fbcb954139ce3e04a74b433aa7f47f",
+        "rootDecisionSHA": "eaf72c29563094f5fea5f00e9932a8cc5423c908cc619a5f58bb0168e31f1fb8",
+        "selected": 3,
+        "operationalHeld": 17
+      }
+    ],
+    "source012HoldProjectionHF": "f2cc9030fc2520b593c4a0bc663cd180eeca8f790e992f55ffa2a185c8a0b53d",
+    "source012HoldProjectionPeer": "86c7d74d397d0abdfec4021b63ef7693fa9bd880327abb11de2fbea9214c668c",
+    "finiteEnergyQualification": {
+      "alias": "PCG8-075",
+      "handoffSHA": "d4530fece80edb6ad367006a32fce51d2eee26b2ed1a5caa7a9a0d77c35031c8",
+      "moduleSHA": "3b43cae88048f970cf4c5f031a0237c329192f0028c59dcdd514247c3bdeb433",
+      "bindingSHA": "86cec2239bbcaa44a2c6429a6e7684e5d913a6ada38b4b92c3c7a8900cd5ae9a",
+      "packetSHA": "573f8f801862ab7e6ce3062a273df17f812c7fd5b568bb5e75d6f7994c1fd818",
+      "operationalQuerySHA": "3e972f519c307989756fe6a6d08502762f34e7340df9c5beaa1e5923183048be",
+      "independentPeerSHA": "df7c7116c2d41c923e2b9b58026a78bc7139fd813e664a334de69c8c94342878",
+      "actualPrintedClass": "Energy",
+      "providerNativeClassRetained": "Trainer",
+      "canonicalCategoryRetained": null,
+      "englishNameRetained": null,
+      "fullRulesIncludingBothPokemonExExclusionsPreserved": true,
+      "globalTrainerEnergyWaiver": false,
+      "sourceAuthorApprovalFlagsChanged": false
+    },
+    "source011ProseCorrection": {
+      "originalDecisionSHA": "2ca1aa85477d1303871f9efeafe5434f7cda1d0a2ea932d56c3ff8df98d4f464",
+      "alias": "PCG7-022",
+      "incorrectHistoricalProse": "022 normal/defaultTRUE",
+      "correctFrozenRowAndActualCurrentTuple": "022 holo/defaultFALSE; sole actual API default remains its only holo variant",
+      "rowValuesAndSourceArtifactBytesUnchanged": true,
+      "metadataWrites": 0
+    },
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "c529f49954a2800bb31bf833eb89528d9f197a01946875ff53b07c21f34e5af0",
+    "privateSourceContractModuleFileByteSha256": "9f7a132ec7c2e8f508d19d1869836a3cdb9b521e1c0723cde68fc87098ff7f75",
+    "externalValidatorBindingFileByteSha256": "65e7faabea24c378950eae3e0f9f4b1524888c09c06506444e3e7dd5e0784e90",
+    "privateHandoffFileByteSha256": "c5d42eac529d1047ed8200b8bc1dd6425bf38e62eb46ed42d0ce04eede35a323",
+    "executableValidatorSeparateFromArchive": true,
+    "independentPrivatePackageReviewSha256": "76e2c1bc639a3645fbad6ffcef8d86d3f204445b831e0d53780f17e1f311b041",
+    "rootPrivatePackageValidationSha256": "347c00d6274a47479fccaebb30df4d12a94b7a36473f119715a07c029ea06fa2",
+    "rootUploadReceiptSha256": "77ebf292fffae683ec1e213b1e08ba8e746f289d503b255eb391afd53dbc32e1",
+    "actualMeasuredAppReportSha256": "6811ee38779a2480cee9397ff0437de56adac531b87ec7c2187c0e82ab02ee0b",
+    "rootPublisherContextSha256": "f5c5eacae2d1b40bae48bb3beebd24235386396b7aa74311722a5532c0feb25a",
+    "otherOperationalHolds48": true,
+    "perRowEnglishCategoryValuesExact": true,
+    "PCG8051EnglishExactly": "jigglypuff"
+  },
+  "production_source_changes_allowed": 0,
+  "scope": "Exactly12 source011012013 PCG7/8/9 shared fronts. Nine normal/defaultTRUE and022033040holo/defaultFALSE with sole API defaults retained. PCG8-051 lowercase jigglypuff retained; all other per-row metadata/nulls unchanged. OnlyPCG8-075 new Energy qualification3b43…; both Pokemonex restrictions and historical source flags unchanged. Production61→85;stage53→78→53, full4source17µs,all3production/1stage logos and links preserved. No optical/physical/vendor/sourcewide/handset certificate."
+}

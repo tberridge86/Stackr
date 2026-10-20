@@ -1,7 +1,9 @@
+import { StackrFunctionalIcon } from '../components/StackrFunctionalIcon';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Image, ScrollView, TouchableOpacity, View } from 'react-native';
+import { StackrLoadingIndicator as ActivityIndicator } from '../components/StackrLoadingIndicator';
+import { Alert, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackrBackdrop } from '../components/StackrBackdrop';
 import { StackrBackButton } from '../components/StackrBackButton';
@@ -41,7 +43,7 @@ function CosmeticShopCard({
       <LinearGradient colors={[item.color, item.accentColor]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ height: 84, borderRadius: 16, alignItems: 'center', justifyContent: 'center', padding: 10 }}>
         {item.type === 'border' ? (
           <View style={{ width: 56, height: 56, borderRadius: 28, borderWidth: 4, borderColor: '#FFFFFF', backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
-            <Image source={SHOP_ICONS.profile} resizeMode="contain" style={{ width: 30, height: 30 }} />
+            <StackrFunctionalIcon source={SHOP_ICONS.profile} resizeMode="contain" style={{ width: 30, height: 30 }} />
           </View>
         ) : (
           <Text style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 17, fontWeight: '900' }}>Profile Banner</Text>
@@ -145,7 +147,7 @@ export default function CoinShopScreen() {
             <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 18, fontWeight: '700' }}>Unlock profile cosmetics with Stackr Coins.</Text>
           </View>
           <View style={{ minHeight: 38, borderRadius: 999, paddingHorizontal: 10, flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E8E1FF' }}>
-            <Image source={SHOP_ICONS.coins} resizeMode="contain" style={{ width: 24, height: 24 }} />
+            <StackrFunctionalIcon source={SHOP_ICONS.coins} resizeMode="contain" style={{ width: 24, height: 24 }} />
             <Text style={{ color: theme.colors.text, fontSize: 12, lineHeight: 15, fontWeight: '900' }}>{coinBalance}</Text>
           </View>
         </View>

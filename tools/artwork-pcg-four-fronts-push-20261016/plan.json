@@ -1,0 +1,2139 @@
+{
+  "schemaVersion": 1,
+  "queue_id": "PCG1234-EXACT4-SHARED-FRONTS-20261016",
+  "source_manifest_sha256": "a2c5e3647ad5f74ca2f19d958af2c2b807b22407ffe4f2a1b025cff7712dcc63",
+  "package_receipt_sha256": "b7623d43f21cdca4f1a13a0715d72ab05639bf93a0a0a3ef0a5dcd657ebacbe9",
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "5976b3017578cbe04a0c6d57f54f8b98f3c857de37894ad5f2381e021e973b23",
+    "finiteDecisionFileByteSha256": "7608cc5c480280744f3c8f8c503b3f0f94c7c23ff9f1a23aa897d419888e3007",
+    "rootPrivateContextFileByteSha256": "d7ee6bd2932672edb17c93611e17bebef2c9bb8dd924b80482b81093eeddeaf5",
+    "sourceHandoffFileByteSha256s": [
+      "9bfccf1ad8d67f40bbee23cb683ce073555151142493acfd7df1ef22eb594741",
+      "8d4a2bcc569e1e292dba7b037bb5f7ca92ea50aace028ce48812ce04c6397580"
+    ],
+    "independentSourceReviewFileByteSha256s": [
+      "5bb022cd60e4d1ef02aef359a49c428bd6e7adc1ffc0340d129d1faec6e45d8a",
+      "fac11c6626a96324944e88a21a161fc6c4650d4335c6675c8d3aa87382da10aa"
+    ],
+    "fourSourceCheckpointFileByteSha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "3d1478238a990fa8b4ac72c3eb9008dc6fe219535a842beec184f1abefd1fe24",
+    "independentPrivatePackageReviewSha256": "55fcfbfa0178b8beab4866b3a978b0e432c801b3278a3eac6340abfc35d4bf63",
+    "rootPrivatePackageValidationSha256": "0a32f4e1ea07f73fc1bad71c051984e44c22f14b70a474c42c30771f9b739fe5",
+    "rootSourceArchiveBindingSha256": "954276417a26bf7100c247fce8a58897fa4b31235d2c154694ee520b6922fa55",
+    "rootUploadReceiptSha256": "ef9bb9fea382852f4b0209e1b0cd5972067c54798227a5b40e65a83cf34f8b39",
+    "rootUploadRecordFormatCorrectionSha256": "b89038ce239ddd9bd00ed6844a7029c26c8a5c79db6556c466ea9c8fdb22a608",
+    "rootPublisherContextSha256": "12dd3e078e6dd482f95c036b50d7f433e72cfd8e6bc48f2047463c0dd5c2495c"
+  },
+  "archive": {
+    "id": 646214227,
+    "sha256": "b8a5112200e40f5be101f602263e14ef165595cdc380df2e8fa5ca83f06f6635",
+    "byte_size": 2977622,
+    "file_count": 20,
+    "name": "pcg1234-fronts-20261016.zip"
+  },
+  "archive_metadata": [
+    {
+      "file": "manifest.json",
+      "sha256": "a2c5e3647ad5f74ca2f19d958af2c2b807b22407ffe4f2a1b025cff7712dcc63",
+      "byte_size": 105107
+    },
+    {
+      "file": "receipts/preparation-summary.json",
+      "sha256": "aab0e08497823b8e6847455499aed40da2989acd08b195f050ece7d58a2bd018",
+      "byte_size": 1315
+    },
+    {
+      "file": "receipts/current-card-bindings.json",
+      "sha256": "d045cd0ea467aa340610edd79e4100de89d58808a293314f0aec1fa7fa31c72b",
+      "byte_size": 20546
+    },
+    {
+      "file": "receipts/finite-decision.json",
+      "sha256": "5b1f83d5eb0ebec8f60508068a0806d60f8dc05f92dae48760948a72e21b6b5b",
+      "byte_size": 3586
+    }
+  ],
+  "rows": [
+    {
+      "printing_id": "3c83ecfe-306a-4f64-8003-e455fb4be4f9",
+      "set_id": "8063eabc-362a-4f15-a4ec-4ed73824252d",
+      "set_code": "PCG1",
+      "language_code": "ja",
+      "collector_number": "034",
+      "card_native_name": "Magikarp",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "batch_id": "JP-CARDS-019",
+      "work_type": "CARDS",
+      "variant_ids": [
+        "e2710b68-93f0-4cdd-8537-57a1e6046a0f"
+      ],
+      "source_code": "pricecharting",
+      "provider_id": "pricecharting-image-url-sha256:969e19616e3f1452f9c6429726dc26bcc9278d3fa712bdc627908020be2101ed",
+      "image_url": "https://storage.googleapis.com/images.pricecharting.com/e4f5d0d1c5bd803938a282a6d628a988fcb046b9f669ad452683ec8e333d2214/1600.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/59f7953cd442973c464adc0d05f6267c3488f494fad34be911542c048c2d31d2/original.jpg",
+          "sha256": "59f7953cd442973c464adc0d05f6267c3488f494fad34be911542c048c2d31d2",
+          "byte_size": 520296,
+          "width": 1028,
+          "height": 1411,
+          "mime_type": "image/jpeg",
+          "artifact_id": 646214227
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/22ad89773a7c1652c27fa03139c5587fea5e4b156b8bbbae7e9415170df43cc0/card-grid.webp",
+          "sha256": "22ad89773a7c1652c27fa03139c5587fea5e4b156b8bbbae7e9415170df43cc0",
+          "byte_size": 20192,
+          "width": 240,
+          "height": 329,
+          "mime_type": "image/webp",
+          "artifact_id": 646214227
+        },
+        {
+          "role": "search-result",
+          "file": "objects/547c46eec963e17710b432fed6859094d529ced94e5c5a5d0770613c75a54d73/search-result.webp",
+          "sha256": "547c46eec963e17710b432fed6859094d529ced94e5c5a5d0770613c75a54d73",
+          "byte_size": 3572,
+          "width": 96,
+          "height": 132,
+          "mime_type": "image/webp",
+          "artifact_id": 646214227
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/06dfecde4292ea6ca3432310661220d4aa6ce5b6861eec51102b525d81a32e04/detail-page.webp",
+          "sha256": "06dfecde4292ea6ca3432310661220d4aa6ce5b6861eec51102b525d81a32e04",
+          "byte_size": 245764,
+          "width": 720,
+          "height": 988,
+          "mime_type": "image/webp",
+          "artifact_id": 646214227
+        }
+      ],
+      "evidence": {
+        "source_url": "https://storage.googleapis.com/images.pricecharting.com/e4f5d0d1c5bd803938a282a6d628a988fcb046b9f669ad452683ec8e333d2214/1600.jpg",
+        "source_page_url": "https://www.pricecharting.com/game/pokemon-japanese-flight-of-legends/magikarp-34",
+        "provider_id": "pricecharting-image-url-sha256:969e19616e3f1452f9c6429726dc26bcc9278d3fa712bdc627908020be2101ed",
+        "source_metadata_sha256": "4bbf1ff6a146dd4d0b6b3615369fff031736ebb14f4c06a7910e08dbc10b471e",
+        "source_body": {
+          "contract": "pcg1234-exact4-magikarp034-magikarp023-delibird030-hitmonchan060-japanese-shared-fronts-v1",
+          "work_type": "CARDS",
+          "accepted_category": "Pokemon",
+          "photo_identity_projection": {
+            "schemaVersion": 1,
+            "sourceCode": "pricecharting",
+            "sourceDetailUrl": "https://www.pricecharting.com/game/pokemon-japanese-flight-of-legends/magikarp-34",
+            "literalOriginalUrl": "https://storage.googleapis.com/images.pricecharting.com/e4f5d0d1c5bd803938a282a6d628a988fcb046b9f669ad452683ec8e333d2214/1600.jpg",
+            "literalOriginalUrlSha256": "969e19616e3f1452f9c6429726dc26bcc9278d3fa712bdc627908020be2101ed",
+            "sourceProductId": "3439153",
+            "canonicalPrintingId": "3c83ecfe-306a-4f64-8003-e455fb4be4f9",
+            "canonicalSetId": "8063eabc-362a-4f15-a4ec-4ed73824252d",
+            "canonicalSetCode": "PCG1",
+            "languageCode": "ja",
+            "canonicalAlias": "034",
+            "printedCollectorNumber": "034/082",
+            "printedSetCodeLiteral": null,
+            "sourceSetAssociation": "Exact saved source page and current PCG1 set binding",
+            "originalFileByteSha256": "59f7953cd442973c464adc0d05f6267c3488f494fad34be911542c048c2d31d2",
+            "originalByteSize": 520296,
+            "width": 1028,
+            "height": 1411,
+            "format": "jpeg",
+            "actualPrintedName": "コイキング",
+            "actualPrintedForm": null,
+            "historicalSelectedSourceCardId": null,
+            "physicalEditionCertified": false,
+            "physicalFinishCertified": false
+          },
+          "photo_identity_projection_canonical_sha256": "95b13cb359e976b3b03651ffe61c47c25435a7af5cc216cc60a615a76d3b53be",
+          "photo_raw_private_html_file_byte_sha256": "4bbf1ff6a146dd4d0b6b3615369fff031736ebb14f4c06a7910e08dbc10b471e",
+          "root_approved_raw_row_canonical_sha256": "bf5353c231ffa089642f696c595924e592c6d711eac01321c72f005bd926f2ef",
+          "actual_pixel_signature": {
+            "alias": "PCG1-034",
+            "originalSha256": "59f7953cd442973c464adc0d05f6267c3488f494fad34be911542c048c2d31d2",
+            "actualPrintedObservations": {
+              "printedNativeName": "コイキング",
+              "category": "Pokemon",
+              "printedForm": null,
+              "printedHP": 30,
+              "printedType": "Water",
+              "printedStage": "たね",
+              "printedEvolutionFrom": null,
+              "abilities": [],
+              "attacks": [
+                {
+                  "printedName": "ふいをつく",
+                  "printedCost": [
+                    "Colorless"
+                  ],
+                  "printedDamage": "10",
+                  "printedEffect": "コインを1回投げウラなら、このワザは失敗する。"
+                },
+                {
+                  "printedName": "かくせい",
+                  "printedCost": [
+                    "Water",
+                    "Colorless"
+                  ],
+                  "printedDamage": null,
+                  "printedEffect": "自分の山札から、自分から進化する「進化カード」を1枚選び出し、自分の上にのせ、進化させる。その後、その山札を切る。"
+                }
+              ],
+              "printedCollectorNumber": "034/082",
+              "printedArtist": "Atsuko Nishida",
+              "printedWeakness": "Lightning",
+              "printedResistance": null,
+              "printedRetreat": 1,
+              "printedRarityGlyph": "black circle",
+              "printedSetCodeLiteral": null,
+              "printedNationalDex": null,
+              "setMarkVisible": true,
+              "copyrightYear": 2004,
+              "editionStampObserved": false,
+              "foreignWatermarkObserved": false,
+              "allFourOuterPerimetersAndCornersVisible": true,
+              "frameQualification": "All four rounded corners and exterior borders are clearly inside the pale photographic background; no watermark/support/hand covers printing.",
+              "art": "Red Magikarp leaps from dark water beneath a bright yellow moon.",
+              "sourceMetadataIsSoleIdentityProof": false
+            },
+            "nativeProviderQualification": "Actual コイキング HP30 Water, full two attacks including evolution/deck-shuffle clause,034/082 and Atsuko Nishida independently read. Current canonical Magikarp/normal tuple retained. No observed1ED mark is not an unlimited/material or provider-native-resolution certificate. Root and independent source acceptance pending.",
+            "holds": [],
+            "completePrintedIdentityAndBodyReadable": true
+          },
+          "actual_pixel_signature_canonical_sha256": "4d454618935f870abf035bdedaf6b5d37cf8ac79cf3fa158112c9a75b4b20604",
+          "current_production_binding": {
+            "printing": {
+              "id": "3c83ecfe-306a-4f64-8003-e455fb4be4f9",
+              "set_id": "8063eabc-362a-4f15-a4ec-4ed73824252d",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": true
+              },
+              "collector_number": "034",
+              "printing_discriminator": "",
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "e2710b68-93f0-4cdd-8537-57a1e6046a0f",
+                "is_default": true,
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "3c83ecfe-306a-4f64-8003-e455fb4be4f9",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:8063eabc-362a-4f15-a4ec-4ed73824252d:034:normal",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "8063eabc-362a-4f15-a4ec-4ed73824252d",
+                "set_code": "PCG1",
+                "variant_id": "e2710b68-93f0-4cdd-8537-57a1e6046a0f",
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "3c83ecfe-306a-4f64-8003-e455fb4be4f9",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:8063eabc-362a-4f15-a4ec-4ed73824252d:034:normal",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "034",
+                "catalogue_version": "ja:magazine-promo-reconciliation-2026-09-27-v1",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "3c83ecfe-306a-4f64-8003-e455fb4be4f9"
+          },
+          "current_staging_binding": {
+            "printing": {
+              "id": "3c83ecfe-306a-4f64-8003-e455fb4be4f9",
+              "set_id": "8063eabc-362a-4f15-a4ec-4ed73824252d",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": false
+              },
+              "collector_number": "034",
+              "printing_discriminator": null,
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "e2710b68-93f0-4cdd-8537-57a1e6046a0f",
+                "is_default": true,
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "3c83ecfe-306a-4f64-8003-e455fb4be4f9",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:8063eabc-362a-4f15-a4ec-4ed73824252d:034:normal",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "8063eabc-362a-4f15-a4ec-4ed73824252d",
+                "set_code": "PCG1",
+                "variant_id": "e2710b68-93f0-4cdd-8537-57a1e6046a0f",
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "3c83ecfe-306a-4f64-8003-e455fb4be4f9",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:8063eabc-362a-4f15-a4ec-4ed73824252d:034:normal",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "034",
+                "catalogue_version": "ja:tcgdex-796afd47e430-full-primary-2026-08-19",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "3c83ecfe-306a-4f64-8003-e455fb4be4f9"
+          },
+          "required_asset_scope": {
+            "printing_id": "3c83ecfe-306a-4f64-8003-e455fb4be4f9",
+            "variant_id": null
+          },
+          "source_variant_id": null,
+          "required_delivery_kind": "shared",
+          "queue_controls": {
+            "identity_controls": {
+              "canonical_alias": "034",
+              "printed_collector_number": "034/082",
+              "catalogue_set_code": "PCG1",
+              "printed_set_code_literal": null,
+              "printed_national_dex": null,
+              "canonical_native_label_preserved": "Magikarp",
+              "actual_printed_name": "コイキング",
+              "actual_printed_form": null,
+              "category": "Pokemon"
+            },
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "all_four_rounded_corners_visible": true,
+              "printed_body_language": "ja",
+              "complete_name_form_hp_type_stage_full_ability_attack_body_artist_collector_footer_readable": true,
+              "edition_stamp_observed": false,
+              "watermark_observed": false,
+              "stamp_absence_does_not_certify_unlimited": true,
+              "current_physical_edition_unresolved_retained": true,
+              "provider_body_not_verbatim_printed_japanese": true,
+              "raw_observation_keys_retained_without_inventing_fields": true
+            },
+            "source_qa": {
+              "actual_japanese_complete_front_verified": true,
+              "original_sha256": "59f7953cd442973c464adc0d05f6267c3488f494fad34be911542c048c2d31d2",
+              "actual_signature_canonical_sha256": "4d454618935f870abf035bdedaf6b5d37cf8ac79cf3fa158112c9a75b4b20604",
+              "source_metadata_is_sole_identity_proof": false,
+              "physical_finish_certified": false,
+              "physical_edition_certified": false,
+              "unlimited_edition_certified": false
+            }
+          },
+          "historical_authority": {
+            "selected_source_card_id": null,
+            "preparation_approved": false,
+            "publication_approved": false
+          },
+          "root_finite_authority": {
+            "approved_file_byte_sha256": "5976b3017578cbe04a0c6d57f54f8b98f3c857de37894ad5f2381e021e973b23",
+            "decision_file_byte_sha256": "7608cc5c480280744f3c8f8c503b3f0f94c7c23ff9f1a23aa897d419888e3007",
+            "preparation_approved": true,
+            "conditional_future_publication_approved": true,
+            "private_package_is_production_ready": false
+          },
+          "coverage": {
+            "wholeUnchangedOriginalIndividuallyViewed": true,
+            "fullPILSharpRGBAAgreement": true,
+            "completeFrameAndFourOuterCornersVisible": true,
+            "completeJapaneseBodyFooterAndArtistReadable": true,
+            "unprintedNationalDexAndSetCodeNotInvented": true
+          },
+          "unresolved_physical_qualifications": [
+            "Current printing/variant tuple and discriminator columns preserved as recorded in fresh production/staging facts. No physical edition, material or finish certificate follows."
+          ],
+          "shared_front_eligibility_does_not_authenticate_physical_edition": true,
+          "source_provider_body_verbatim_agreement": false,
+          "canonical_native_label_preserved": true,
+          "quality_qualification": {
+            "original_width": 1028,
+            "original_height": 1411,
+            "whole_original_perimeter_and_corners_retained": true,
+            "provider_never_resized_certified": false,
+            "native_optical_gain_claimed": false,
+            "actual_derivative_measurement_required": true,
+            "app_large_role_must_be_measured_per_row": true
+          },
+          "new_source_requests": 0,
+          "full_commercial_html_or_provider_json_included": false,
+          "source_wide_approval": false,
+          "vendor_licence_certified": false,
+          "physical_finish_certified": false,
+          "physical_edition_certified": false,
+          "physical_material_authenticity_verified": false,
+          "unlimited_edition_certified": false,
+          "provider_never_resized_certified": false,
+          "native_optical_gain_claimed": false,
+          "stackr_enlargement": false
+        },
+        "queue_controls": {
+          "identity_controls": {
+            "canonical_alias": "034",
+            "printed_collector_number": "034/082",
+            "catalogue_set_code": "PCG1",
+            "printed_set_code_literal": null,
+            "printed_national_dex": null,
+            "canonical_native_label_preserved": "Magikarp",
+            "actual_printed_name": "コイキング",
+            "actual_printed_form": null,
+            "category": "Pokemon"
+          },
+          "pixel_observations": {
+            "whole_original_inspected": true,
+            "full_frame_visible": true,
+            "all_four_rounded_corners_visible": true,
+            "printed_body_language": "ja",
+            "complete_name_form_hp_type_stage_full_ability_attack_body_artist_collector_footer_readable": true,
+            "edition_stamp_observed": false,
+            "watermark_observed": false,
+            "stamp_absence_does_not_certify_unlimited": true,
+            "current_physical_edition_unresolved_retained": true,
+            "provider_body_not_verbatim_printed_japanese": true,
+            "raw_observation_keys_retained_without_inventing_fields": true
+          },
+          "source_qa": {
+            "actual_japanese_complete_front_verified": true,
+            "original_sha256": "59f7953cd442973c464adc0d05f6267c3488f494fad34be911542c048c2d31d2",
+            "actual_signature_canonical_sha256": "4d454618935f870abf035bdedaf6b5d37cf8ac79cf3fa158112c9a75b4b20604",
+            "source_metadata_is_sole_identity_proof": false,
+            "physical_finish_certified": false,
+            "physical_edition_certified": false,
+            "unlimited_edition_certified": false
+          }
+        },
+        "artwork_scope": "printing_front",
+        "delivery_kind": "shared",
+        "asset_variant_id": null,
+        "source_variant_id": null,
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "physical_edition_verified": false,
+        "vendor_licence_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "aec39508-e7ed-4d3d-a876-51dc5f7c258e",
+      "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+      "set_code": "PCG2",
+      "language_code": "ja",
+      "collector_number": "023",
+      "card_native_name": "Magikarp",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "batch_id": "JP-CARDS-021",
+      "work_type": "CARDS",
+      "variant_ids": [
+        "41385d11-8aac-4618-b8b0-b810bdfcaa8a"
+      ],
+      "source_code": "pricecharting",
+      "provider_id": "pricecharting-image-url-sha256:216eb54cb14d91c43234a42350d520a86f72c65aa068c1105ba4a3f0902af8e0",
+      "image_url": "https://storage.googleapis.com/images.pricecharting.com/d6d2e1d606137f572f172ea7a4f0fce814fcfba18ffb6efd78ef37f0d00a60ef/1600.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/3b0688053bc0ba6ffc6b9ff5be8d391f944106b686bc92f3ff4dbacfa1c65782/original.jpg",
+          "sha256": "3b0688053bc0ba6ffc6b9ff5be8d391f944106b686bc92f3ff4dbacfa1c65782",
+          "byte_size": 476723,
+          "width": 1026,
+          "height": 1416,
+          "mime_type": "image/jpeg",
+          "artifact_id": 646214227
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/19bef3528684172e7a795a642f743b25491bb365294151ac5314e2dfa2b88620/card-grid.webp",
+          "sha256": "19bef3528684172e7a795a642f743b25491bb365294151ac5314e2dfa2b88620",
+          "byte_size": 22856,
+          "width": 240,
+          "height": 331,
+          "mime_type": "image/webp",
+          "artifact_id": 646214227
+        },
+        {
+          "role": "search-result",
+          "file": "objects/a1bb6e4ae4b2aa1fce250eddc5cb1851dca7d89170398103ba5988962e338756/search-result.webp",
+          "sha256": "a1bb6e4ae4b2aa1fce250eddc5cb1851dca7d89170398103ba5988962e338756",
+          "byte_size": 4190,
+          "width": 96,
+          "height": 133,
+          "mime_type": "image/webp",
+          "artifact_id": 646214227
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/4fe39d8a072333dd80f60288d1c361360dd74dc47b4ac448ec077b45dec22afa/detail-page.webp",
+          "sha256": "4fe39d8a072333dd80f60288d1c361360dd74dc47b4ac448ec077b45dec22afa",
+          "byte_size": 235544,
+          "width": 720,
+          "height": 994,
+          "mime_type": "image/webp",
+          "artifact_id": 646214227
+        }
+      ],
+      "evidence": {
+        "source_url": "https://storage.googleapis.com/images.pricecharting.com/d6d2e1d606137f572f172ea7a4f0fce814fcfba18ffb6efd78ef37f0d00a60ef/1600.jpg",
+        "source_page_url": "https://www.pricecharting.com/game/pokemon-japanese-clash-of-the-blue-sky/magikarp-23",
+        "provider_id": "pricecharting-image-url-sha256:216eb54cb14d91c43234a42350d520a86f72c65aa068c1105ba4a3f0902af8e0",
+        "source_metadata_sha256": "97edea3e104529b1d58844f33092193feac9f00b526ef145b6f6f45a702010d1",
+        "source_body": {
+          "contract": "pcg1234-exact4-magikarp034-magikarp023-delibird030-hitmonchan060-japanese-shared-fronts-v1",
+          "work_type": "CARDS",
+          "accepted_category": "Pokemon",
+          "photo_identity_projection": {
+            "schemaVersion": 1,
+            "sourceCode": "pricecharting",
+            "sourceDetailUrl": "https://www.pricecharting.com/game/pokemon-japanese-clash-of-the-blue-sky/magikarp-23",
+            "literalOriginalUrl": "https://storage.googleapis.com/images.pricecharting.com/d6d2e1d606137f572f172ea7a4f0fce814fcfba18ffb6efd78ef37f0d00a60ef/1600.jpg",
+            "literalOriginalUrlSha256": "216eb54cb14d91c43234a42350d520a86f72c65aa068c1105ba4a3f0902af8e0",
+            "sourceProductId": "3439310",
+            "canonicalPrintingId": "aec39508-e7ed-4d3d-a876-51dc5f7c258e",
+            "canonicalSetId": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+            "canonicalSetCode": "PCG2",
+            "languageCode": "ja",
+            "canonicalAlias": "023",
+            "printedCollectorNumber": "023/082",
+            "printedSetCodeLiteral": null,
+            "sourceSetAssociation": "Exact saved source page and current PCG2 set binding",
+            "originalFileByteSha256": "3b0688053bc0ba6ffc6b9ff5be8d391f944106b686bc92f3ff4dbacfa1c65782",
+            "originalByteSize": 476723,
+            "width": 1026,
+            "height": 1416,
+            "format": "jpeg",
+            "actualPrintedName": "コイキング",
+            "actualPrintedForm": null,
+            "historicalSelectedSourceCardId": null,
+            "physicalEditionCertified": false,
+            "physicalFinishCertified": false
+          },
+          "photo_identity_projection_canonical_sha256": "5cefef5148d761113c59ceb757f08c30df70bb3eddb40e1c7cab8418eeb72042",
+          "photo_raw_private_html_file_byte_sha256": "97edea3e104529b1d58844f33092193feac9f00b526ef145b6f6f45a702010d1",
+          "root_approved_raw_row_canonical_sha256": "12bc47777147a53e2cdde51c88a958174d0a59c6486d266645f210636a6afc53",
+          "actual_pixel_signature": {
+            "alias": "PCG2-023",
+            "originalSha256": "3b0688053bc0ba6ffc6b9ff5be8d391f944106b686bc92f3ff4dbacfa1c65782",
+            "actualPrintedObservations": {
+              "printedName": "コイキング",
+              "printedForm": null,
+              "hitPoints": 30,
+              "printedType": "Water",
+              "stage": "たね",
+              "evolvesFrom": null,
+              "abilities": [],
+              "attacks": [
+                {
+                  "name": "はねにげ",
+                  "cost": [
+                    "Colorless"
+                  ],
+                  "damage": null,
+                  "effect": "自分を自分のベンチポケモンと入れ替える。"
+                },
+                {
+                  "name": "いかり",
+                  "cost": [
+                    "Water",
+                    "Colorless"
+                  ],
+                  "damage": "10+",
+                  "effect": "自分のダメージカウンター×10ダメージを追加する。"
+                }
+              ],
+              "collectorNumber": "023/082",
+              "artist": "Hisao Nakamura",
+              "weakness": "Lightning",
+              "resistance": null,
+              "retreatCost": 1,
+              "raritySymbol": "black circle",
+              "copyright": "©2004 Pokémon/Nintendo/Creatures/GAME FREAK.",
+              "setCodeLiteral": null,
+              "setMark": "outlined star-like set emblem",
+              "firstEditionStampObserved": false,
+              "watermarkObserved": false,
+              "wholeFrame": "Complete card perimeter and all four rounded corners visible against a white background.",
+              "artwork": "Magikarp jumping through stylised white and blue waves, with horizontal purple stripes behind it."
+            },
+            "nativeProviderQualification": {
+              "currentFinish": "normal",
+              "currentDefaultFlagsRetained": true,
+              "absenceOfVisibleStampDoesNotCertifyUnlimited": true
+            },
+            "holds": [],
+            "completePrintedIdentityAndBodyReadable": true
+          },
+          "actual_pixel_signature_canonical_sha256": "ca325b30c57338ce29fa3155757313e7dc7d4cdc3cd16609d1e7c56b6859f13f",
+          "current_production_binding": {
+            "printing": {
+              "id": "aec39508-e7ed-4d3d-a876-51dc5f7c258e",
+              "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": true
+              },
+              "collector_number": "023",
+              "printing_discriminator": "",
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "41385d11-8aac-4618-b8b0-b810bdfcaa8a",
+                "is_default": true,
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "aec39508-e7ed-4d3d-a876-51dc5f7c258e",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:9fa08d47-d2cd-4829-85b6-819692a6850a:023:normal",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+                "set_code": "PCG2",
+                "variant_id": "41385d11-8aac-4618-b8b0-b810bdfcaa8a",
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "aec39508-e7ed-4d3d-a876-51dc5f7c258e",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:9fa08d47-d2cd-4829-85b6-819692a6850a:023:normal",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "023",
+                "catalogue_version": "ja:magazine-promo-reconciliation-2026-09-27-v1",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "aec39508-e7ed-4d3d-a876-51dc5f7c258e"
+          },
+          "current_staging_binding": {
+            "printing": {
+              "id": "aec39508-e7ed-4d3d-a876-51dc5f7c258e",
+              "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": false
+              },
+              "collector_number": "023",
+              "printing_discriminator": null,
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "41385d11-8aac-4618-b8b0-b810bdfcaa8a",
+                "is_default": true,
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "aec39508-e7ed-4d3d-a876-51dc5f7c258e",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:9fa08d47-d2cd-4829-85b6-819692a6850a:023:normal",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+                "set_code": "PCG2",
+                "variant_id": "41385d11-8aac-4618-b8b0-b810bdfcaa8a",
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "aec39508-e7ed-4d3d-a876-51dc5f7c258e",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:9fa08d47-d2cd-4829-85b6-819692a6850a:023:normal",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "023",
+                "catalogue_version": "ja:tcgdex-796afd47e430-full-primary-2026-08-19",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "aec39508-e7ed-4d3d-a876-51dc5f7c258e"
+          },
+          "required_asset_scope": {
+            "printing_id": "aec39508-e7ed-4d3d-a876-51dc5f7c258e",
+            "variant_id": null
+          },
+          "source_variant_id": null,
+          "required_delivery_kind": "shared",
+          "queue_controls": {
+            "identity_controls": {
+              "canonical_alias": "023",
+              "printed_collector_number": "023/082",
+              "catalogue_set_code": "PCG2",
+              "printed_set_code_literal": null,
+              "printed_national_dex": null,
+              "canonical_native_label_preserved": "Magikarp",
+              "actual_printed_name": "コイキング",
+              "actual_printed_form": null,
+              "category": "Pokemon"
+            },
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "all_four_rounded_corners_visible": true,
+              "printed_body_language": "ja",
+              "complete_name_form_hp_type_stage_full_ability_attack_body_artist_collector_footer_readable": true,
+              "edition_stamp_observed": false,
+              "watermark_observed": false,
+              "stamp_absence_does_not_certify_unlimited": true,
+              "current_physical_edition_unresolved_retained": true,
+              "provider_body_not_verbatim_printed_japanese": true,
+              "raw_observation_keys_retained_without_inventing_fields": true
+            },
+            "source_qa": {
+              "actual_japanese_complete_front_verified": true,
+              "original_sha256": "3b0688053bc0ba6ffc6b9ff5be8d391f944106b686bc92f3ff4dbacfa1c65782",
+              "actual_signature_canonical_sha256": "ca325b30c57338ce29fa3155757313e7dc7d4cdc3cd16609d1e7c56b6859f13f",
+              "source_metadata_is_sole_identity_proof": false,
+              "physical_finish_certified": false,
+              "physical_edition_certified": false,
+              "unlimited_edition_certified": false
+            }
+          },
+          "historical_authority": {
+            "selected_source_card_id": null,
+            "preparation_approved": false,
+            "publication_approved": false
+          },
+          "root_finite_authority": {
+            "approved_file_byte_sha256": "5976b3017578cbe04a0c6d57f54f8b98f3c857de37894ad5f2381e021e973b23",
+            "decision_file_byte_sha256": "7608cc5c480280744f3c8f8c503b3f0f94c7c23ff9f1a23aa897d419888e3007",
+            "preparation_approved": true,
+            "conditional_future_publication_approved": true,
+            "private_package_is_production_ready": false
+          },
+          "coverage": {
+            "wholeUnchangedOriginalIndividuallyViewed": true,
+            "fullPILSharpRGBAAgreement": true,
+            "completeFrameAndFourOuterCornersVisible": true,
+            "completeJapaneseBodyFooterAndArtistReadable": true,
+            "unprintedNationalDexAndSetCodeNotInvented": true
+          },
+          "unresolved_physical_qualifications": [
+            "Current printing/variant tuple and discriminator columns preserved as recorded in fresh production/staging facts. No physical edition, material or finish certificate follows."
+          ],
+          "shared_front_eligibility_does_not_authenticate_physical_edition": true,
+          "source_provider_body_verbatim_agreement": false,
+          "canonical_native_label_preserved": true,
+          "quality_qualification": {
+            "original_width": 1026,
+            "original_height": 1416,
+            "whole_original_perimeter_and_corners_retained": true,
+            "provider_never_resized_certified": false,
+            "native_optical_gain_claimed": false,
+            "actual_derivative_measurement_required": true,
+            "app_large_role_must_be_measured_per_row": true
+          },
+          "new_source_requests": 0,
+          "full_commercial_html_or_provider_json_included": false,
+          "source_wide_approval": false,
+          "vendor_licence_certified": false,
+          "physical_finish_certified": false,
+          "physical_edition_certified": false,
+          "physical_material_authenticity_verified": false,
+          "unlimited_edition_certified": false,
+          "provider_never_resized_certified": false,
+          "native_optical_gain_claimed": false,
+          "stackr_enlargement": false
+        },
+        "queue_controls": {
+          "identity_controls": {
+            "canonical_alias": "023",
+            "printed_collector_number": "023/082",
+            "catalogue_set_code": "PCG2",
+            "printed_set_code_literal": null,
+            "printed_national_dex": null,
+            "canonical_native_label_preserved": "Magikarp",
+            "actual_printed_name": "コイキング",
+            "actual_printed_form": null,
+            "category": "Pokemon"
+          },
+          "pixel_observations": {
+            "whole_original_inspected": true,
+            "full_frame_visible": true,
+            "all_four_rounded_corners_visible": true,
+            "printed_body_language": "ja",
+            "complete_name_form_hp_type_stage_full_ability_attack_body_artist_collector_footer_readable": true,
+            "edition_stamp_observed": false,
+            "watermark_observed": false,
+            "stamp_absence_does_not_certify_unlimited": true,
+            "current_physical_edition_unresolved_retained": true,
+            "provider_body_not_verbatim_printed_japanese": true,
+            "raw_observation_keys_retained_without_inventing_fields": true
+          },
+          "source_qa": {
+            "actual_japanese_complete_front_verified": true,
+            "original_sha256": "3b0688053bc0ba6ffc6b9ff5be8d391f944106b686bc92f3ff4dbacfa1c65782",
+            "actual_signature_canonical_sha256": "ca325b30c57338ce29fa3155757313e7dc7d4cdc3cd16609d1e7c56b6859f13f",
+            "source_metadata_is_sole_identity_proof": false,
+            "physical_finish_certified": false,
+            "physical_edition_certified": false,
+            "unlimited_edition_certified": false
+          }
+        },
+        "artwork_scope": "printing_front",
+        "delivery_kind": "shared",
+        "asset_variant_id": null,
+        "source_variant_id": null,
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "physical_edition_verified": false,
+        "vendor_licence_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "db02f454-b7b4-497d-b2a0-a9e5ab074665",
+      "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+      "set_code": "PCG3",
+      "language_code": "ja",
+      "collector_number": "030",
+      "card_native_name": "Delibird",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "batch_id": "JP-CARDS-025",
+      "work_type": "CARDS",
+      "variant_ids": [
+        "1f58b1ed-c5fe-4d9b-9d05-a3f3cc24cd2e"
+      ],
+      "source_code": "pricecharting",
+      "provider_id": "pricecharting-image-url-sha256:0973053e12a282e02b519ab3d793d25c53b645468fbd018e4a21f274948f8d9f",
+      "image_url": "https://storage.googleapis.com/images.pricecharting.com/67154956235a060c815fdc167a110259b888183ac554619e90042ed385817914/1600.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/356e2b83bf079ff0070eda4fe340482c43f7fcd51fc53b8b3adec7a0ce893e7f/original.jpg",
+          "sha256": "356e2b83bf079ff0070eda4fe340482c43f7fcd51fc53b8b3adec7a0ce893e7f",
+          "byte_size": 588107,
+          "width": 1027,
+          "height": 1409,
+          "mime_type": "image/jpeg",
+          "artifact_id": 646214227
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/1f120de2fa2f3c650e14c7ddf3048360b814687065b4216141790da1d8dd6408/card-grid.webp",
+          "sha256": "1f120de2fa2f3c650e14c7ddf3048360b814687065b4216141790da1d8dd6408",
+          "byte_size": 23978,
+          "width": 240,
+          "height": 329,
+          "mime_type": "image/webp",
+          "artifact_id": 646214227
+        },
+        {
+          "role": "search-result",
+          "file": "objects/d8f9eb54318ea9c88a45fdcc2a220b1a5731523ac30c788d719e9ac9011c46ec/search-result.webp",
+          "sha256": "d8f9eb54318ea9c88a45fdcc2a220b1a5731523ac30c788d719e9ac9011c46ec",
+          "byte_size": 3924,
+          "width": 96,
+          "height": 132,
+          "mime_type": "image/webp",
+          "artifact_id": 646214227
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/0c0cd3da0c6ff6395ae3148ca00429e4072701cfa68d64443b95f30ec7199b9a/detail-page.webp",
+          "sha256": "0c0cd3da0c6ff6395ae3148ca00429e4072701cfa68d64443b95f30ec7199b9a",
+          "byte_size": 289022,
+          "width": 720,
+          "height": 988,
+          "mime_type": "image/webp",
+          "artifact_id": 646214227
+        }
+      ],
+      "evidence": {
+        "source_url": "https://storage.googleapis.com/images.pricecharting.com/67154956235a060c815fdc167a110259b888183ac554619e90042ed385817914/1600.jpg",
+        "source_page_url": "https://www.pricecharting.com/game/pokemon-japanese-rocket-gang-strikes-back/delibird-30",
+        "provider_id": "pricecharting-image-url-sha256:0973053e12a282e02b519ab3d793d25c53b645468fbd018e4a21f274948f8d9f",
+        "source_metadata_sha256": "5d0922a2f4dfb9be23a00f8ebbfc0d0704d07ded462a8b696e0734780fb5f015",
+        "source_body": {
+          "contract": "pcg1234-exact4-magikarp034-magikarp023-delibird030-hitmonchan060-japanese-shared-fronts-v1",
+          "work_type": "CARDS",
+          "accepted_category": "Pokemon",
+          "photo_identity_projection": {
+            "schemaVersion": 1,
+            "sourceCode": "pricecharting",
+            "sourceDetailUrl": "https://www.pricecharting.com/game/pokemon-japanese-rocket-gang-strikes-back/delibird-30",
+            "literalOriginalUrl": "https://storage.googleapis.com/images.pricecharting.com/67154956235a060c815fdc167a110259b888183ac554619e90042ed385817914/1600.jpg",
+            "literalOriginalUrlSha256": "0973053e12a282e02b519ab3d793d25c53b645468fbd018e4a21f274948f8d9f",
+            "sourceProductId": "3439232",
+            "canonicalPrintingId": "db02f454-b7b4-497d-b2a0-a9e5ab074665",
+            "canonicalSetId": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+            "canonicalSetCode": "PCG3",
+            "languageCode": "ja",
+            "canonicalAlias": "030",
+            "printedCollectorNumber": "030/084",
+            "printedSetCodeLiteral": null,
+            "sourceSetAssociation": "Exact saved source page and current PCG3 set binding",
+            "originalFileByteSha256": "356e2b83bf079ff0070eda4fe340482c43f7fcd51fc53b8b3adec7a0ce893e7f",
+            "originalByteSize": 588107,
+            "width": 1027,
+            "height": 1409,
+            "format": "jpeg",
+            "actualPrintedName": "デリバード",
+            "actualPrintedForm": null,
+            "historicalSelectedSourceCardId": null,
+            "physicalEditionCertified": false,
+            "physicalFinishCertified": false
+          },
+          "photo_identity_projection_canonical_sha256": "1b79f7625fec3f1022eece527a25b0670918c2f3f6503762b84d218b6e71164f",
+          "photo_raw_private_html_file_byte_sha256": "5d0922a2f4dfb9be23a00f8ebbfc0d0704d07ded462a8b696e0734780fb5f015",
+          "root_approved_raw_row_canonical_sha256": "c111c4ac75fe0d62080b2af29b0fefb640da0982d698d07b7a0ba0c855e28e40",
+          "actual_pixel_signature": {
+            "alias": "PCG3-030",
+            "originalSha256": "356e2b83bf079ff0070eda4fe340482c43f7fcd51fc53b8b3adec7a0ce893e7f",
+            "actualPrintedObservations": {
+              "printedName": "デリバード",
+              "printedForm": null,
+              "hitPoints": 70,
+              "printedType": "Water",
+              "stage": "たね",
+              "evolvesFrom": null,
+              "abilities": [
+                {
+                  "kind": "ポケパワー",
+                  "name": "プレゼントこうかん",
+                  "effect": "このパワーは、このポケモンがバトル場にいるなら、自分の番に1回使うことができる。自分の手札からカードを1枚選び出し、自分の山札にもどし、その山札を切る。その後、その山札からカードを1枚引く。このポケモンが特殊状態なら、このパワーを使うことはできない。"
+                }
+              ],
+              "attacks": [
+                {
+                  "name": "おみやげ",
+                  "cost": [
+                    "Colorless",
+                    "Colorless"
+                  ],
+                  "damage": null,
+                  "effect": "コインを3回投げる。オモテが1回なら、相手にダメージカウンターを4個のせる。オモテが2回なら、相手のダメージカウンターを1個とりのぞく。すべてオモテなら、相手にダメージカウンターを10個のせる。すべてウラなら、相手のダメージカウンターをすべてとりのぞく。"
+                }
+              ],
+              "collectorNumber": "030/084",
+              "artist": "Yuka Morii",
+              "weakness": "Metal",
+              "resistance": null,
+              "retreatCost": 1,
+              "raritySymbol": "black star",
+              "copyright": "©2004 Pokémon/Nintendo/Creatures/GAME FREAK.",
+              "setCodeLiteral": null,
+              "setMark": "R in shield",
+              "firstEditionStampObserved": false,
+              "watermarkObserved": false,
+              "wholeFrame": "All four rounded corners and complete perimeter visible in white background.",
+              "artwork": "Clay-like Delibird standing on textured rocks against a dark background."
+            },
+            "nativeProviderQualification": {
+              "currentFinish": "normal",
+              "currentDefaultFlagsRetained": true,
+              "absenceOfVisibleStampDoesNotCertifyUnlimited": true
+            },
+            "holds": [],
+            "completePrintedIdentityAndBodyReadable": true
+          },
+          "actual_pixel_signature_canonical_sha256": "90390dc41661349403dedd26a4d0956f41034a254230a2e10bd5d8658a9b7888",
+          "current_production_binding": {
+            "printing": {
+              "id": "db02f454-b7b4-497d-b2a0-a9e5ab074665",
+              "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": true
+              },
+              "collector_number": "030",
+              "printing_discriminator": "",
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "1f58b1ed-c5fe-4d9b-9d05-a3f3cc24cd2e",
+                "is_default": true,
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "db02f454-b7b4-497d-b2a0-a9e5ab074665",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:12f2bb10-ec15-4783-bc9b-c946546a1abc:030:normal",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+                "set_code": "PCG3",
+                "variant_id": "1f58b1ed-c5fe-4d9b-9d05-a3f3cc24cd2e",
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "db02f454-b7b4-497d-b2a0-a9e5ab074665",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:12f2bb10-ec15-4783-bc9b-c946546a1abc:030:normal",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "030",
+                "catalogue_version": "ja:magazine-promo-reconciliation-2026-09-27-v1",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "db02f454-b7b4-497d-b2a0-a9e5ab074665"
+          },
+          "current_staging_binding": {
+            "printing": {
+              "id": "db02f454-b7b4-497d-b2a0-a9e5ab074665",
+              "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": false
+              },
+              "collector_number": "030",
+              "printing_discriminator": null,
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "1f58b1ed-c5fe-4d9b-9d05-a3f3cc24cd2e",
+                "is_default": true,
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "db02f454-b7b4-497d-b2a0-a9e5ab074665",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:12f2bb10-ec15-4783-bc9b-c946546a1abc:030:normal",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+                "set_code": "PCG3",
+                "variant_id": "1f58b1ed-c5fe-4d9b-9d05-a3f3cc24cd2e",
+                "artwork_key": null,
+                "finish_code": "normal",
+                "printing_id": "db02f454-b7b4-497d-b2a0-a9e5ab074665",
+                "variant_code": "normal",
+                "canonical_key": "pokemon:ja:12f2bb10-ec15-4783-bc9b-c946546a1abc:030:normal",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "030",
+                "catalogue_version": "ja:tcgdex-796afd47e430-full-primary-2026-08-19",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "db02f454-b7b4-497d-b2a0-a9e5ab074665"
+          },
+          "required_asset_scope": {
+            "printing_id": "db02f454-b7b4-497d-b2a0-a9e5ab074665",
+            "variant_id": null
+          },
+          "source_variant_id": null,
+          "required_delivery_kind": "shared",
+          "queue_controls": {
+            "identity_controls": {
+              "canonical_alias": "030",
+              "printed_collector_number": "030/084",
+              "catalogue_set_code": "PCG3",
+              "printed_set_code_literal": null,
+              "printed_national_dex": null,
+              "canonical_native_label_preserved": "Delibird",
+              "actual_printed_name": "デリバード",
+              "actual_printed_form": null,
+              "category": "Pokemon"
+            },
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "all_four_rounded_corners_visible": true,
+              "printed_body_language": "ja",
+              "complete_name_form_hp_type_stage_full_ability_attack_body_artist_collector_footer_readable": true,
+              "edition_stamp_observed": false,
+              "watermark_observed": false,
+              "stamp_absence_does_not_certify_unlimited": true,
+              "current_physical_edition_unresolved_retained": true,
+              "provider_body_not_verbatim_printed_japanese": true,
+              "raw_observation_keys_retained_without_inventing_fields": true
+            },
+            "source_qa": {
+              "actual_japanese_complete_front_verified": true,
+              "original_sha256": "356e2b83bf079ff0070eda4fe340482c43f7fcd51fc53b8b3adec7a0ce893e7f",
+              "actual_signature_canonical_sha256": "90390dc41661349403dedd26a4d0956f41034a254230a2e10bd5d8658a9b7888",
+              "source_metadata_is_sole_identity_proof": false,
+              "physical_finish_certified": false,
+              "physical_edition_certified": false,
+              "unlimited_edition_certified": false
+            }
+          },
+          "historical_authority": {
+            "selected_source_card_id": null,
+            "preparation_approved": false,
+            "publication_approved": false
+          },
+          "root_finite_authority": {
+            "approved_file_byte_sha256": "5976b3017578cbe04a0c6d57f54f8b98f3c857de37894ad5f2381e021e973b23",
+            "decision_file_byte_sha256": "7608cc5c480280744f3c8f8c503b3f0f94c7c23ff9f1a23aa897d419888e3007",
+            "preparation_approved": true,
+            "conditional_future_publication_approved": true,
+            "private_package_is_production_ready": false
+          },
+          "coverage": {
+            "wholeUnchangedOriginalIndividuallyViewed": true,
+            "fullPILSharpRGBAAgreement": true,
+            "completeFrameAndFourOuterCornersVisible": true,
+            "completeJapaneseBodyFooterAndArtistReadable": true,
+            "unprintedNationalDexAndSetCodeNotInvented": true
+          },
+          "unresolved_physical_qualifications": [
+            "Current printing/variant tuple and discriminator columns preserved as recorded in fresh production/staging facts. No physical edition, material or finish certificate follows."
+          ],
+          "shared_front_eligibility_does_not_authenticate_physical_edition": true,
+          "source_provider_body_verbatim_agreement": false,
+          "canonical_native_label_preserved": true,
+          "quality_qualification": {
+            "original_width": 1027,
+            "original_height": 1409,
+            "whole_original_perimeter_and_corners_retained": true,
+            "provider_never_resized_certified": false,
+            "native_optical_gain_claimed": false,
+            "actual_derivative_measurement_required": true,
+            "app_large_role_must_be_measured_per_row": true
+          },
+          "new_source_requests": 0,
+          "full_commercial_html_or_provider_json_included": false,
+          "source_wide_approval": false,
+          "vendor_licence_certified": false,
+          "physical_finish_certified": false,
+          "physical_edition_certified": false,
+          "physical_material_authenticity_verified": false,
+          "unlimited_edition_certified": false,
+          "provider_never_resized_certified": false,
+          "native_optical_gain_claimed": false,
+          "stackr_enlargement": false
+        },
+        "queue_controls": {
+          "identity_controls": {
+            "canonical_alias": "030",
+            "printed_collector_number": "030/084",
+            "catalogue_set_code": "PCG3",
+            "printed_set_code_literal": null,
+            "printed_national_dex": null,
+            "canonical_native_label_preserved": "Delibird",
+            "actual_printed_name": "デリバード",
+            "actual_printed_form": null,
+            "category": "Pokemon"
+          },
+          "pixel_observations": {
+            "whole_original_inspected": true,
+            "full_frame_visible": true,
+            "all_four_rounded_corners_visible": true,
+            "printed_body_language": "ja",
+            "complete_name_form_hp_type_stage_full_ability_attack_body_artist_collector_footer_readable": true,
+            "edition_stamp_observed": false,
+            "watermark_observed": false,
+            "stamp_absence_does_not_certify_unlimited": true,
+            "current_physical_edition_unresolved_retained": true,
+            "provider_body_not_verbatim_printed_japanese": true,
+            "raw_observation_keys_retained_without_inventing_fields": true
+          },
+          "source_qa": {
+            "actual_japanese_complete_front_verified": true,
+            "original_sha256": "356e2b83bf079ff0070eda4fe340482c43f7fcd51fc53b8b3adec7a0ce893e7f",
+            "actual_signature_canonical_sha256": "90390dc41661349403dedd26a4d0956f41034a254230a2e10bd5d8658a9b7888",
+            "source_metadata_is_sole_identity_proof": false,
+            "physical_finish_certified": false,
+            "physical_edition_certified": false,
+            "unlimited_edition_certified": false
+          }
+        },
+        "artwork_scope": "printing_front",
+        "delivery_kind": "shared",
+        "asset_variant_id": null,
+        "source_variant_id": null,
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "physical_edition_verified": false,
+        "vendor_licence_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "bd47b01b-2694-4e7a-a446-9c2f7a5cbba7",
+      "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+      "set_code": "PCG3",
+      "language_code": "ja",
+      "collector_number": "060",
+      "card_native_name": "Rocket's Hitmonchan ex",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "batch_id": "JP-CARDS-026",
+      "work_type": "CARDS",
+      "variant_ids": [
+        "d782e5b3-f7f7-4ac9-84ff-c9c6dfa05aca"
+      ],
+      "source_code": "pricecharting",
+      "provider_id": "pricecharting-image-url-sha256:2434851e2989680db395e6991f4ab79e780509e41032763da98586d3d807ef60",
+      "image_url": "https://storage.googleapis.com/images.pricecharting.com/ref7bdf51e640008c472afd8ac00a3ab553532c496a67f5aa4aa594e772b9e0b44e/1600.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/9a2f6443bb670c35e8f7fb67a29d7346768277d3c877f52effd33f9ba87b23a1/original.jpg",
+          "sha256": "9a2f6443bb670c35e8f7fb67a29d7346768277d3c877f52effd33f9ba87b23a1",
+          "byte_size": 360094,
+          "width": 1218,
+          "height": 1600,
+          "mime_type": "image/jpeg",
+          "artifact_id": 646214227
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/f6f8b76ef072ff4467dc042173f725e728c01eb3ef791c9515f5a571752610e0/card-grid.webp",
+          "sha256": "f6f8b76ef072ff4467dc042173f725e728c01eb3ef791c9515f5a571752610e0",
+          "byte_size": 14872,
+          "width": 240,
+          "height": 316,
+          "mime_type": "image/webp",
+          "artifact_id": 646214227
+        },
+        {
+          "role": "search-result",
+          "file": "objects/dc4e9b3181b0d2d3a94476318367eecb5cb1bf1eb707200e8e529656e409e0d5/search-result.webp",
+          "sha256": "dc4e9b3181b0d2d3a94476318367eecb5cb1bf1eb707200e8e529656e409e0d5",
+          "byte_size": 2964,
+          "width": 96,
+          "height": 126,
+          "mime_type": "image/webp",
+          "artifact_id": 646214227
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/7790a82875d97184c6746930951868432563792cf681f9acca6648a83be86d06/detail-page.webp",
+          "sha256": "7790a82875d97184c6746930951868432563792cf681f9acca6648a83be86d06",
+          "byte_size": 153272,
+          "width": 720,
+          "height": 946,
+          "mime_type": "image/webp",
+          "artifact_id": 646214227
+        }
+      ],
+      "evidence": {
+        "source_url": "https://storage.googleapis.com/images.pricecharting.com/ref7bdf51e640008c472afd8ac00a3ab553532c496a67f5aa4aa594e772b9e0b44e/1600.jpg",
+        "source_page_url": "https://www.pricecharting.com/game/pokemon-japanese-rocket-gang-strikes-back/rocket%27s-hitmonchan-ex-60",
+        "provider_id": "pricecharting-image-url-sha256:2434851e2989680db395e6991f4ab79e780509e41032763da98586d3d807ef60",
+        "source_metadata_sha256": "09c75f598cbc4146160f5a9afe83ddaed5c0799bcbbb4344aa915967fd5e2bb6",
+        "source_body": {
+          "contract": "pcg1234-exact4-magikarp034-magikarp023-delibird030-hitmonchan060-japanese-shared-fronts-v1",
+          "work_type": "CARDS",
+          "accepted_category": null,
+          "photo_identity_projection": {
+            "schemaVersion": 1,
+            "sourceCode": "pricecharting",
+            "sourceDetailUrl": "https://www.pricecharting.com/game/pokemon-japanese-rocket-gang-strikes-back/rocket%27s-hitmonchan-ex-60",
+            "literalOriginalUrl": "https://storage.googleapis.com/images.pricecharting.com/ref7bdf51e640008c472afd8ac00a3ab553532c496a67f5aa4aa594e772b9e0b44e/1600.jpg",
+            "literalOriginalUrlSha256": "2434851e2989680db395e6991f4ab79e780509e41032763da98586d3d807ef60",
+            "sourceProductId": "3439262",
+            "canonicalPrintingId": "bd47b01b-2694-4e7a-a446-9c2f7a5cbba7",
+            "canonicalSetId": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+            "canonicalSetCode": "PCG3",
+            "languageCode": "ja",
+            "canonicalAlias": "060",
+            "printedCollectorNumber": "060/084",
+            "printedSetCodeLiteral": null,
+            "sourceSetAssociation": "Exact saved source page and current PCG3 set binding",
+            "originalFileByteSha256": "9a2f6443bb670c35e8f7fb67a29d7346768277d3c877f52effd33f9ba87b23a1",
+            "originalByteSize": 360094,
+            "width": 1218,
+            "height": 1600,
+            "format": "jpeg",
+            "actualPrintedName": "R団のエビワラーex",
+            "actualPrintedForm": null,
+            "historicalSelectedSourceCardId": null,
+            "physicalEditionCertified": false,
+            "physicalFinishCertified": false
+          },
+          "photo_identity_projection_canonical_sha256": "5d93b736b9f1c25c8cf923a16be68d0a2bf2491aeccf33c4b35a85d86c3e89e0",
+          "photo_raw_private_html_file_byte_sha256": "09c75f598cbc4146160f5a9afe83ddaed5c0799bcbbb4344aa915967fd5e2bb6",
+          "root_approved_raw_row_canonical_sha256": "c1bb9a7442970d30c1108bf783d75cc2040350555ca1e1a6f83342fd0655e369",
+          "actual_pixel_signature": {
+            "alias": "PCG3-060",
+            "originalSha256": "9a2f6443bb670c35e8f7fb67a29d7346768277d3c877f52effd33f9ba87b23a1",
+            "actualPrintedObservations": {
+              "printedNativeName": "R団のエビワラーex",
+              "printedForm": null,
+              "printedHP": "100",
+              "printedType": "Darkness",
+              "printedStage": "たね",
+              "printedEvolutionFrom": null,
+              "abilities": [
+                {
+                  "kind": "ポケボディー",
+                  "printedName": "はんげき",
+                  "printedEffect": "このポケモンが、バトル場で相手のワザによるダメージを受けたとき（このポケモンがきぜつしても）、そのワザを使ったポケモンにダメージカウンターを2個のせる。"
+                }
+              ],
+              "attacks": [
+                {
+                  "printedName": "マッハパンチ",
+                  "printedCost": [
+                    "Fighting"
+                  ],
+                  "printedDamage": "10",
+                  "printedEffect": "相手のベンチポケモン1匹にも、10ダメージ。"
+                },
+                {
+                  "printedName": "マグナムパンチ",
+                  "printedCost": [
+                    "Fighting",
+                    "Fighting",
+                    "Colorless"
+                  ],
+                  "printedDamage": "60",
+                  "printedEffect": "none printed"
+                }
+              ],
+              "printedPokemonExRule": "ポケモンexが きぜつしたとき、相手プレイヤーはサイドを2枚とります。",
+              "printedCollectorNumber": "060/084",
+              "printedArtist": "Mitsuhiro Arita",
+              "printedWeakness": "Psychic",
+              "printedResistance": "none printed",
+              "printedRetreat": [
+                "Colorless"
+              ],
+              "printedRarityGlyph": "☆",
+              "printedSetCodeLiteral": null,
+              "printedNationalDex": null,
+              "setMarkVisible": true,
+              "copyrightYear": 2004,
+              "editionStampObserved": false,
+              "foreignWatermarkObserved": false,
+              "allFourOuterPerimetersAndCornersVisible": true,
+              "frameQualification": "All four outer edges and rounded corners visible in unchanged original, with slight photographic perspective. Complete name, collector, artist, attacks, ability and ex rule readable. No visible 1st Edition mark; this is not an edition or material certificate.",
+              "art": "Rocket Hitmonchan kicking forward with red gloves, black uniform and blue-purple holographic background."
+            },
+            "nativeProviderQualification": {
+              "savedInventoryCategoryRetained": null,
+              "actualNativeCategory": "Pokemon",
+              "currentVariantCode": "holo",
+              "currentFinish": "holo",
+              "currentIsDefaultFlag": false,
+              "currentTuplePreserved": true,
+              "noVisibleStampDoesNotCertifyUnlimited": true
+            },
+            "holds": [],
+            "completePrintedIdentityAndBodyReadable": true
+          },
+          "actual_pixel_signature_canonical_sha256": "51558677dd46c1d8aef43279c65277a4beac932d274551cbbc4f07f3df2d7aac",
+          "current_production_binding": {
+            "printing": {
+              "id": "bd47b01b-2694-4e7a-a446-9c2f7a5cbba7",
+              "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": true
+              },
+              "collector_number": "060",
+              "printing_discriminator": "",
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "d782e5b3-f7f7-4ac9-84ff-c9c6dfa05aca",
+                "is_default": false,
+                "artwork_key": null,
+                "finish_code": "holo",
+                "printing_id": "bd47b01b-2694-4e7a-a446-9c2f7a5cbba7",
+                "variant_code": "holo",
+                "canonical_key": "pokemon:ja:12f2bb10-ec15-4783-bc9b-c946546a1abc:060:holo",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+                "set_code": "PCG3",
+                "variant_id": "d782e5b3-f7f7-4ac9-84ff-c9c6dfa05aca",
+                "artwork_key": null,
+                "finish_code": "holo",
+                "printing_id": "bd47b01b-2694-4e7a-a446-9c2f7a5cbba7",
+                "variant_code": "holo",
+                "canonical_key": "pokemon:ja:12f2bb10-ec15-4783-bc9b-c946546a1abc:060:holo",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "060",
+                "catalogue_version": "ja:magazine-promo-reconciliation-2026-09-27-v1",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "bd47b01b-2694-4e7a-a446-9c2f7a5cbba7"
+          },
+          "current_staging_binding": {
+            "printing": {
+              "id": "bd47b01b-2694-4e7a-a446-9c2f7a5cbba7",
+              "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": false
+              },
+              "collector_number": "060",
+              "printing_discriminator": null,
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "d782e5b3-f7f7-4ac9-84ff-c9c6dfa05aca",
+                "is_default": false,
+                "artwork_key": null,
+                "finish_code": "holo",
+                "printing_id": "bd47b01b-2694-4e7a-a446-9c2f7a5cbba7",
+                "variant_code": "holo",
+                "canonical_key": "pokemon:ja:12f2bb10-ec15-4783-bc9b-c946546a1abc:060:holo",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+                "set_code": "PCG3",
+                "variant_id": "d782e5b3-f7f7-4ac9-84ff-c9c6dfa05aca",
+                "artwork_key": null,
+                "finish_code": "holo",
+                "printing_id": "bd47b01b-2694-4e7a-a446-9c2f7a5cbba7",
+                "variant_code": "holo",
+                "canonical_key": "pokemon:ja:12f2bb10-ec15-4783-bc9b-c946546a1abc:060:holo",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "060",
+                "catalogue_version": "ja:tcgdex-796afd47e430-full-primary-2026-08-19",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "bd47b01b-2694-4e7a-a446-9c2f7a5cbba7"
+          },
+          "required_asset_scope": {
+            "printing_id": "bd47b01b-2694-4e7a-a446-9c2f7a5cbba7",
+            "variant_id": null
+          },
+          "source_variant_id": null,
+          "required_delivery_kind": "shared",
+          "queue_controls": {
+            "identity_controls": {
+              "canonical_alias": "060",
+              "printed_collector_number": "060/084",
+              "catalogue_set_code": "PCG3",
+              "printed_set_code_literal": null,
+              "printed_national_dex": null,
+              "canonical_native_label_preserved": "Rocket's Hitmonchan ex",
+              "actual_printed_name": "R団のエビワラーex",
+              "actual_printed_form": null,
+              "category": null
+            },
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "all_four_rounded_corners_visible": true,
+              "printed_body_language": "ja",
+              "complete_name_form_hp_type_stage_full_ability_attack_body_artist_collector_footer_readable": true,
+              "edition_stamp_observed": false,
+              "watermark_observed": false,
+              "stamp_absence_does_not_certify_unlimited": true,
+              "current_physical_edition_unresolved_retained": true,
+              "provider_body_not_verbatim_printed_japanese": true,
+              "raw_observation_keys_retained_without_inventing_fields": true,
+              "complete_actual_pokemon_ex_rule_readable": true
+            },
+            "source_qa": {
+              "actual_japanese_complete_front_verified": true,
+              "original_sha256": "9a2f6443bb670c35e8f7fb67a29d7346768277d3c877f52effd33f9ba87b23a1",
+              "actual_signature_canonical_sha256": "51558677dd46c1d8aef43279c65277a4beac932d274551cbbc4f07f3df2d7aac",
+              "source_metadata_is_sole_identity_proof": false,
+              "physical_finish_certified": false,
+              "physical_edition_certified": false,
+              "unlimited_edition_certified": false
+            }
+          },
+          "historical_authority": {
+            "selected_source_card_id": null,
+            "preparation_approved": false,
+            "publication_approved": false
+          },
+          "root_finite_authority": {
+            "approved_file_byte_sha256": "5976b3017578cbe04a0c6d57f54f8b98f3c857de37894ad5f2381e021e973b23",
+            "decision_file_byte_sha256": "7608cc5c480280744f3c8f8c503b3f0f94c7c23ff9f1a23aa897d419888e3007",
+            "preparation_approved": true,
+            "conditional_future_publication_approved": true,
+            "private_package_is_production_ready": false
+          },
+          "coverage": {
+            "wholeUnchangedOriginalIndividuallyViewed": true,
+            "fullPILSharpRGBAAgreement": true,
+            "completeFrameAndFourOuterCornersVisible": true,
+            "completeJapaneseBodyFooterAndArtistReadable": true,
+            "completeActualPokemonExRuleReadable": true,
+            "unprintedNationalDexAndSetCodeNotInvented": true
+          },
+          "unresolved_physical_qualifications": [
+            "current_physical_edition_unresolved",
+            "physical_finish_and_material_not_certified",
+            "slight_photographic_perspective_disclosed"
+          ],
+          "shared_front_eligibility_does_not_authenticate_physical_edition": true,
+          "source_provider_body_verbatim_agreement": false,
+          "canonical_native_label_preserved": true,
+          "quality_qualification": {
+            "original_width": 1218,
+            "original_height": 1600,
+            "whole_original_perimeter_and_corners_retained": true,
+            "provider_never_resized_certified": false,
+            "native_optical_gain_claimed": false,
+            "actual_derivative_measurement_required": true,
+            "app_large_role_must_be_measured_per_row": true
+          },
+          "new_source_requests": 0,
+          "full_commercial_html_or_provider_json_included": false,
+          "source_wide_approval": false,
+          "vendor_licence_certified": false,
+          "physical_finish_certified": false,
+          "physical_edition_certified": false,
+          "physical_material_authenticity_verified": false,
+          "unlimited_edition_certified": false,
+          "provider_never_resized_certified": false,
+          "native_optical_gain_claimed": false,
+          "stackr_enlargement": false
+        },
+        "queue_controls": {
+          "identity_controls": {
+            "canonical_alias": "060",
+            "printed_collector_number": "060/084",
+            "catalogue_set_code": "PCG3",
+            "printed_set_code_literal": null,
+            "printed_national_dex": null,
+            "canonical_native_label_preserved": "Rocket's Hitmonchan ex",
+            "actual_printed_name": "R団のエビワラーex",
+            "actual_printed_form": null,
+            "category": null
+          },
+          "pixel_observations": {
+            "whole_original_inspected": true,
+            "full_frame_visible": true,
+            "all_four_rounded_corners_visible": true,
+            "printed_body_language": "ja",
+            "complete_name_form_hp_type_stage_full_ability_attack_body_artist_collector_footer_readable": true,
+            "edition_stamp_observed": false,
+            "watermark_observed": false,
+            "stamp_absence_does_not_certify_unlimited": true,
+            "current_physical_edition_unresolved_retained": true,
+            "provider_body_not_verbatim_printed_japanese": true,
+            "raw_observation_keys_retained_without_inventing_fields": true,
+            "complete_actual_pokemon_ex_rule_readable": true
+          },
+          "source_qa": {
+            "actual_japanese_complete_front_verified": true,
+            "original_sha256": "9a2f6443bb670c35e8f7fb67a29d7346768277d3c877f52effd33f9ba87b23a1",
+            "actual_signature_canonical_sha256": "51558677dd46c1d8aef43279c65277a4beac932d274551cbbc4f07f3df2d7aac",
+            "source_metadata_is_sole_identity_proof": false,
+            "physical_finish_certified": false,
+            "physical_edition_certified": false,
+            "unlimited_edition_certified": false
+          }
+        },
+        "artwork_scope": "printing_front",
+        "delivery_kind": "shared",
+        "asset_variant_id": null,
+        "source_variant_id": null,
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "physical_edition_verified": false,
+        "vendor_licence_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    }
+  ],
+  "source_counts": {
+    "pricecharting": 4
+  },
+  "delivery_scope": {
+    "fixed_batch_ids": [
+      "JP-CARDS-019",
+      "JP-CARDS-021",
+      "JP-CARDS-025",
+      "JP-CARDS-026"
+    ],
+    "work_type": "CARDS",
+    "eligible_fronts": 4,
+    "eligible_set_aliases": [
+      "PCG1-034",
+      "PCG2-023",
+      "PCG3-030",
+      "PCG3-060"
+    ],
+    "recorded_categories_preserved": [
+      {
+        "printingId": "3c83ecfe-306a-4f64-8003-e455fb4be4f9",
+        "category": "Pokemon"
+      },
+      {
+        "printingId": "aec39508-e7ed-4d3d-a876-51dc5f7c258e",
+        "category": "Pokemon"
+      },
+      {
+        "printingId": "db02f454-b7b4-497d-b2a0-a9e5ab074665",
+        "category": "Pokemon"
+      },
+      {
+        "printingId": "bd47b01b-2694-4e7a-a446-9c2f7a5cbba7",
+        "category": null
+      }
+    ],
+    "asset_variant_id": null,
+    "source_variant_id": null,
+    "delivery_kind": "shared",
+    "whole_batch_completion_asserted": false
+  },
+  "binding_expectations": {
+    "production": [
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "8063eabc-362a-4f15-a4ec-4ed73824252d",
+        "set_code": "PCG1",
+        "printing_id": "3c83ecfe-306a-4f64-8003-e455fb4be4f9",
+        "collector_number": "034",
+        "card_native_name": "Magikarp",
+        "variant_id": "e2710b68-93f0-4cdd-8537-57a1e6046a0f",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+        "set_code": "PCG2",
+        "printing_id": "aec39508-e7ed-4d3d-a876-51dc5f7c258e",
+        "collector_number": "023",
+        "card_native_name": "Magikarp",
+        "variant_id": "41385d11-8aac-4618-b8b0-b810bdfcaa8a",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+        "set_code": "PCG3",
+        "printing_id": "db02f454-b7b4-497d-b2a0-a9e5ab074665",
+        "collector_number": "030",
+        "card_native_name": "Delibird",
+        "variant_id": "1f58b1ed-c5fe-4d9b-9d05-a3f3cc24cd2e",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+        "set_code": "PCG3",
+        "printing_id": "bd47b01b-2694-4e7a-a446-9c2f7a5cbba7",
+        "collector_number": "060",
+        "card_native_name": "Rocket's Hitmonchan ex",
+        "variant_id": "d782e5b3-f7f7-4ac9-84ff-c9c6dfa05aca",
+        "variant_code": "holo",
+        "finish_code": "holo",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      }
+    ],
+    "staging": [
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "8063eabc-362a-4f15-a4ec-4ed73824252d",
+        "set_code": "PCG1",
+        "printing_id": "3c83ecfe-306a-4f64-8003-e455fb4be4f9",
+        "collector_number": "034",
+        "card_native_name": "Magikarp",
+        "variant_id": "e2710b68-93f0-4cdd-8537-57a1e6046a0f",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+        "set_code": "PCG2",
+        "printing_id": "aec39508-e7ed-4d3d-a876-51dc5f7c258e",
+        "collector_number": "023",
+        "card_native_name": "Magikarp",
+        "variant_id": "41385d11-8aac-4618-b8b0-b810bdfcaa8a",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+        "set_code": "PCG3",
+        "printing_id": "db02f454-b7b4-497d-b2a0-a9e5ab074665",
+        "collector_number": "030",
+        "card_native_name": "Delibird",
+        "variant_id": "1f58b1ed-c5fe-4d9b-9d05-a3f3cc24cd2e",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+        "set_code": "PCG3",
+        "printing_id": "bd47b01b-2694-4e7a-a446-9c2f7a5cbba7",
+        "collector_number": "060",
+        "card_native_name": "Rocket's Hitmonchan ex",
+        "variant_id": "d782e5b3-f7f7-4ac9-84ff-c9c6dfa05aca",
+        "variant_code": "holo",
+        "finish_code": "holo",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      }
+    ]
+  },
+  "scope_counts": {
+    "production": {
+      "printings": 4,
+      "variants": 4,
+      "names": 8,
+      "sets": 3
+    },
+    "staging": {
+      "printings": 4,
+      "variants": 4,
+      "names": 8,
+      "sets": 3
+    }
+  },
+  "source_policies": {
+    "production": [
+      {
+        "code": "pokellector",
+        "display_name": "Pokellector (owner supplied Japanese card fronts)",
+        "source_type": "image",
+        "base_url": "https://jp.pokellector.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly2 Neo2 Ruin Wall reference fronts in STACKR-JA-LEGACY-TRAINER-FRONTS-20261015-008; owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval or independently verified vendor licence.",
+        "deprecated_at": null
+      },
+      {
+        "code": "pricecharting",
+        "display_name": "PriceCharting (owner supplied card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.pricecharting.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Owner-attested source use for exactly Aquapolis Mr. Mime95b and Porygon103b shared printing-front artwork in finite cohort AQUAPOLIS-SHARED-002-20261015. Independent vendor and underlying card licences are unverified. No source-wide approval; each later acquisition requires separate finite approval. Existing provenance rows and source policies must remain unchanged.",
+        "deprecated_at": null
+      },
+      {
+        "code": "scrydex",
+        "display_name": "Scrydex",
+        "source_type": "image",
+        "base_url": "https://scrydex.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Exactly 89 English MEP fronts approved by owner; catalogue/rights-evidence/mep89-scrydex-owner-confirmation.2026-09-27.json; 8c68bf3499de1e1e340b00fc03e5f1b469de7b65d259b5fba5a8b4cd31119ca9. No source-wide approval.",
+        "deprecated_at": null
+      },
+      {
+        "code": "tcgcollector",
+        "display_name": "TCGCollector (owner supplied Japanese card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.tcgcollector.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly3 independently accepted Leaders Stadium fronts019/081/096. Bind the final finite preparation/publication decision and exact source selection in the publisher plan. Owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval, independently verified vendor licence or physical finish/edition certification. Finite decision SHA256 68f1af735d5e481ed26d1aabbe94e493d520575d9d4191413508f9ec90cf68ff.",
+        "deprecated_at": null
+      }
+    ],
+    "staging": []
+  },
+  "new_sources": {
+    "production": [],
+    "staging": [
+      {
+        "code": "pricecharting",
+        "display_name": "PriceCharting (owner supplied card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.pricecharting.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Owner-attested source use for exactly Aquapolis Mr. Mime95b and Porygon103b shared printing-front artwork in finite cohort AQUAPOLIS-SHARED-002-20261015. Independent vendor and underlying card licences are unverified. No source-wide approval; each later acquisition requires separate finite approval. Existing provenance rows and source policies must remain unchanged.",
+        "deprecated_at": null
+      }
+    ]
+  },
+  "source_policy_checkpoint_sha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+  "existing_source_row_hashes": {
+    "pricecharting": "b4b74f69cac37abeee008806f6d8dd8ea63a0f0ce43fa065dce9261b428b421b",
+    "pokellector": "4a2a381f7146c0bfa0201c62e91e7682f18da6597c4743f23414f3606a942a71",
+    "tcgcollector": "f1f01d1b094986ad0a9f5efcf1e98fe7388e0e1c5452d23da6cf7cab97a1ca29",
+    "scrydex": "25af5b50521e6fd0942764536f62b0c53c3e72c69c874916241af47735407929"
+  },
+  "before_snapshot_hashes": {
+    "production": "95470dc9496ea2ee9c78b67e79771da34cfd0be7759ef2129db2be6d4cabbe31",
+    "staging": "7a721cb6069dc339fefc03e0314297958b4a11d2090efea11cd46ba774c21cfa"
+  },
+  "before_snapshot_counts": {
+    "production": 29,
+    "staging": 19
+  },
+  "expected_after_snapshot_counts": {
+    "production": 37,
+    "staging": 28
+  },
+  "production_source_changes_allowed": 0,
+  "stage_only_fixture_source_code": "pricecharting",
+  "canonical_schema_qualification": {
+    "production": [
+      {
+        "id": "3c83ecfe-306a-4f64-8003-e455fb4be4f9",
+        "set_id": "8063eabc-362a-4f15-a4ec-4ed73824252d",
+        "game_code": "pokemon",
+        "deprecated_at": null,
+        "language_code": "ja",
+        "_column_presence": {
+          "printing_discriminator": true
+        },
+        "collector_number": "034",
+        "printing_discriminator": "",
+        "corrected_by_printing_id": null
+      },
+      {
+        "id": "aec39508-e7ed-4d3d-a876-51dc5f7c258e",
+        "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+        "game_code": "pokemon",
+        "deprecated_at": null,
+        "language_code": "ja",
+        "_column_presence": {
+          "printing_discriminator": true
+        },
+        "collector_number": "023",
+        "printing_discriminator": "",
+        "corrected_by_printing_id": null
+      },
+      {
+        "id": "db02f454-b7b4-497d-b2a0-a9e5ab074665",
+        "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+        "game_code": "pokemon",
+        "deprecated_at": null,
+        "language_code": "ja",
+        "_column_presence": {
+          "printing_discriminator": true
+        },
+        "collector_number": "030",
+        "printing_discriminator": "",
+        "corrected_by_printing_id": null
+      },
+      {
+        "id": "bd47b01b-2694-4e7a-a446-9c2f7a5cbba7",
+        "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+        "game_code": "pokemon",
+        "deprecated_at": null,
+        "language_code": "ja",
+        "_column_presence": {
+          "printing_discriminator": true
+        },
+        "collector_number": "060",
+        "printing_discriminator": "",
+        "corrected_by_printing_id": null
+      }
+    ],
+    "staging": [
+      {
+        "id": "3c83ecfe-306a-4f64-8003-e455fb4be4f9",
+        "set_id": "8063eabc-362a-4f15-a4ec-4ed73824252d",
+        "game_code": "pokemon",
+        "deprecated_at": null,
+        "language_code": "ja",
+        "_column_presence": {
+          "printing_discriminator": false
+        },
+        "collector_number": "034",
+        "printing_discriminator": null,
+        "corrected_by_printing_id": null
+      },
+      {
+        "id": "aec39508-e7ed-4d3d-a876-51dc5f7c258e",
+        "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+        "game_code": "pokemon",
+        "deprecated_at": null,
+        "language_code": "ja",
+        "_column_presence": {
+          "printing_discriminator": false
+        },
+        "collector_number": "023",
+        "printing_discriminator": null,
+        "corrected_by_printing_id": null
+      },
+      {
+        "id": "db02f454-b7b4-497d-b2a0-a9e5ab074665",
+        "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+        "game_code": "pokemon",
+        "deprecated_at": null,
+        "language_code": "ja",
+        "_column_presence": {
+          "printing_discriminator": false
+        },
+        "collector_number": "030",
+        "printing_discriminator": null,
+        "corrected_by_printing_id": null
+      },
+      {
+        "id": "bd47b01b-2694-4e7a-a446-9c2f7a5cbba7",
+        "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+        "game_code": "pokemon",
+        "deprecated_at": null,
+        "language_code": "ja",
+        "_column_presence": {
+          "printing_discriminator": false
+        },
+        "collector_number": "060",
+        "printing_discriminator": null,
+        "corrected_by_printing_id": null
+      }
+    ]
+  },
+  "app_display_expectation": [
+    {
+      "printing_id": "3c83ecfe-306a-4f64-8003-e455fb4be4f9",
+      "large_role": "original",
+      "large_dimensions": [
+        1028,
+        1411
+      ],
+      "large_object_path": "objects/59f7953cd442973c464adc0d05f6267c3488f494fad34be911542c048c2d31d2/original.jpg",
+      "detail_dimensions": [
+        720,
+        988
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "aec39508-e7ed-4d3d-a876-51dc5f7c258e",
+      "large_role": "original",
+      "large_dimensions": [
+        1026,
+        1416
+      ],
+      "large_object_path": "objects/3b0688053bc0ba6ffc6b9ff5be8d391f944106b686bc92f3ff4dbacfa1c65782/original.jpg",
+      "detail_dimensions": [
+        720,
+        994
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "db02f454-b7b4-497d-b2a0-a9e5ab074665",
+      "large_role": "original",
+      "large_dimensions": [
+        1027,
+        1409
+      ],
+      "large_object_path": "objects/356e2b83bf079ff0070eda4fe340482c43f7fcd51fc53b8b3adec7a0ce893e7f/original.jpg",
+      "detail_dimensions": [
+        720,
+        988
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "bd47b01b-2694-4e7a-a446-9c2f7a5cbba7",
+      "large_role": "original",
+      "large_dimensions": [
+        1218,
+        1600
+      ],
+      "large_object_path": "objects/9a2f6443bb670c35e8f7fb67a29d7346768277d3c877f52effd33f9ba87b23a1/original.jpg",
+      "detail_dimensions": [
+        720,
+        946
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    }
+  ],
+  "saved_targets_sha256": "8b9679c99d31b7ce6f9f3f44f57a63b4a5bccd2ca4f1c916663201d77aef130a",
+  "identity_table_sha256": "0b6499c290c9fa0cf22d5cb09cb14110c4fd6e316d9f19e178994355f0085299"
+}

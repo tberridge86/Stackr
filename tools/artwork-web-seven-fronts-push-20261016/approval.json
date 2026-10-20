@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 7,
+  "variants": 7,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "physical_finish_verified": false,
+  "physical_edition_verified": false,
+  "cohort_sha256": "9eb559d543b303c19c5af6874564b021302819821a3035e6650d4c3c51f0c0c1",
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "ebcd8e328e76a92eabd405d582b87a65c4b3f66f66c226c1aa360c8ee2592fa0",
+    "finiteDecisionFileByteSha256": "aefe0b3acfb003468bd87244fd440b8639ec71546b8df2f3bfac3844a2e2363d",
+    "rootPrivateContextFileByteSha256": "5bea0fdc6c762a23a2b19215952eb3734487a0c71106b320c993eea0d3c8b319",
+    "sourceHandoffFileByteSha256s": [
+      "524ea2a5494a0bd365f166f214835330101928d9982a3b9b0ec629cc61360e69"
+    ],
+    "independentSourceReviewFileByteSha256s": [
+      "eb225a3002823abde25e38ee493d6f06749e7a0eba1f4183a1390a6341158071"
+    ],
+    "fourSourceCheckpointFileByteSha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "af490781c540f0168d86ee117760b30fdc57200815a79ca4c5d5ef5854f541bd",
+    "independentPrivatePackageReviewSha256": "48aaa6b7d0d8f66e1e5a33141c741318c8c28e4b357cab8890f812ebc98edc5d",
+    "rootPrivatePackageValidationSha256": "541b72eb02891f72cfef2d76a168544343d5ebf5952e7d2bf7f4da12100d9979",
+    "rootSourceArchiveBindingSha256": "15ef527a1161e0442c0727798c7439e9528b7c2b8330df10d3b8c0e663114ada",
+    "rootUploadReceiptSha256": "0dd178cf6db0fddb2c169164734dbf362cd6c7a4fa90cfb158832b5dc862bdfc",
+    "actualMeasuredAppReportSha256": "da2c0e40e1843df54f82860dd6d13518ca05e8fba7b07a3a4edf1496c1240e1a",
+    "actualMeasuredDimensionAuditSha256": "286e37f20b643e438f3a01e52c92a8a6d1f658a2e9bb3817b5128a8f5d64d6b1",
+    "rootWeb007AdditivePlacementCorrectionSha256": "5715565257cf7211c35acde90db026a497f315d0f7c9ec994baab2b1a6199d51",
+    "rootPublisherContextSha256": "9a70044a9d085e3c2b0287b809ecb5f0eb9c1a70b64a056aa0a213336c087d19"
+  },
+  "production_source_changes_allowed": 0,
+  "scope": "Exactly seven Japanese Web shared reference fronts; five normal TRUE and two holo FALSE existing sole variants. Recorded English/category remain null. Complete raw/root Japanese bodies, separate007 placement correction and025 surfing form are immutable. Production33→47 adds7assets7links only; staging29→44→29 rolls back its temporary inactive Price fixture. All existing sources and catalogue rows stay unchanged. Physical edition/finish/material/native optical quality remain uncertified. Protected publication and actual configured API/app verification still required."
+}

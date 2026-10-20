@@ -8,6 +8,11 @@ export type BinderReopenSnapshot = BinderReopenScope & {
   savedAt: number;
   binder: BinderRecord;
   cards: BinderCardRecord[];
+  /** Set only after a verified full private saved-card pagination. */
+  customSource?: { kind: 'home-saved-cards-v1' | 'binder-saved-cards-v1'; cardCount: number };
+};
+export type BinderReopenSaveOptions = {
+  customSource?: BinderReopenSnapshot['customSource'];
 };
 export type BinderReopenStore = {
   read(scope: BinderReopenScope, binderId: string): Promise<unknown>;
@@ -15,9 +20,13 @@ export type BinderReopenStore = {
   clear(): Promise<void>;
 };
 export const BINDER_REOPEN_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+export type BinderReopenCacheSource = 'memory' | 'persisted';
 const MAX_BYTES = 8 * 1024 * 1024;
 const MAX_ENTRY_BYTES = 2 * 1024 * 1024;
 const MAX_ENTRIES = 8;
+// Keep working memory small while retaining more started binders across launches.
+export const BINDER_REOPEN_STORED_ENTRIES = 64;
+export const BINDER_REOPEN_STORED_BYTES = 64 * 1024 * 1024;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const key = (scope: BinderReopenScope, binderId: string) => JSON.stringify([scope.namespace, scope.accountId, binderId]);
 const copy = <T>(value: T): T => JSON.parse(JSON.stringify(value));
@@ -33,7 +42,7 @@ function pick<T extends object>(value: T, keys: readonly string[]): Partial<T> {
 }
 
 /** Whitelist data needed for read-only presentation; exclude prices, tokens and arbitrary raw payloads. */
-export function snapshotBinderView(scope: BinderReopenScope, binder: BinderRecord, cards: BinderCardRecord[], savedAt: number): BinderReopenSnapshot {
+export function snapshotBinderView(scope: BinderReopenScope, binder: BinderRecord, cards: BinderCardRecord[], savedAt: number, options: BinderReopenSaveOptions = {}): BinderReopenSnapshot {
   const record = pick(binder, [
     'id', 'user_id', 'name', 'color', 'gradient', 'cover_key', 'type', 'is_public', 'source_set_id', 'language', 'created_at',
     'edition', 'default_condition', 'master_set_enabled', 'card_mode', 'default_grade_company', 'default_grade',
@@ -78,7 +87,11 @@ export function snapshotBinderView(scope: BinderReopenScope, binder: BinderRecor
     }
     return result;
   });
-  return copy(stripTcgdexReferencesFromValueBeforePersistence({ ...scope, schema: 1 as const, savedAt, binder: record, cards: rows }));
+  const customSource = (options.customSource?.kind === 'home-saved-cards-v1' || options.customSource?.kind === 'binder-saved-cards-v1')
+    && Number.isSafeInteger(options.customSource.cardCount)
+    ? { kind: options.customSource.kind, cardCount: options.customSource.cardCount }
+    : undefined;
+  return copy(stripTcgdexReferencesFromValueBeforePersistence({ ...scope, schema: 1 as const, savedAt, binder: record, cards: rows, customSource }));
 }
 
 export function isCompleteBinderSnapshot(value: unknown, scope: BinderReopenScope, binderId: string, now: number): value is BinderReopenSnapshot {
@@ -86,9 +99,20 @@ export function isCompleteBinderSnapshot(value: unknown, scope: BinderReopenScop
     const s = value as BinderReopenSnapshot;
     if (!scope.accountId || !scope.namespace || !s || s.schema !== 1 || s.namespace !== scope.namespace || s.accountId !== scope.accountId
       || !Number.isFinite(s.savedAt) || s.savedAt > now || now - s.savedAt >= BINDER_REOPEN_MAX_AGE_MS
-      || s.binder?.id !== binderId || s.binder.user_id !== scope.accountId || s.binder.type !== 'official'
-      || s.binder.catalogue_identity_status !== 'resolved' || !UUID.test(s.binder.catalogue_set_id ?? '')
+      || s.binder?.id !== binderId || !UUID.test(s.binder.id) || s.binder.user_id !== scope.accountId
       || !Array.isArray(s.cards) || s.cards.length > 2500) return false;
+    if (s.binder.type === 'custom') {
+      if ((s.customSource?.kind !== 'home-saved-cards-v1' && s.customSource?.kind !== 'binder-saved-cards-v1') || !Number.isSafeInteger(s.customSource.cardCount)
+        || s.customSource.cardCount !== s.cards.length) return false;
+      const rows = new Set<string>();
+      for (const row of s.cards) {
+        if (!row.id || rows.has(row.id) || row.binder_id !== binderId || typeof row.owned !== 'boolean'
+          || !Number.isFinite(row.owned_quantity) || row.owned_quantity < 0 || (row.owned && row.owned_quantity < 1)) return false;
+        rows.add(row.id);
+      }
+      return true;
+    }
+    if (s.binder.type !== 'official' || s.binder.catalogue_identity_status !== 'resolved' || !UUID.test(s.binder.catalogue_set_id ?? '')) return false;
     const count = s.binder.catalogue_set_total ?? s.binder.catalogue_set_printed_total;
     if (!Number.isSafeInteger(count) || !count || count < 1 || count > 2000) return false;
     const rows = new Set<string>();
@@ -138,10 +162,14 @@ export function createBinderReopenCache(options: { store: () => Promise<BinderRe
   };
   return {
     lease() { return generation; },
-    async read(scope: BinderReopenScope, binderId: string): Promise<BinderReopenSnapshot | null> {
+    async read(scope: BinderReopenScope, binderId: string, onSource?: (source: BinderReopenCacheSource) => void): Promise<BinderReopenSnapshot | null> {
+      const observed = (snapshot: BinderReopenSnapshot, source: BinderReopenCacheSource) => {
+        try { onSource?.(source); } catch { /* Diagnostics cannot fail a saved view. */ }
+        return copy(snapshot);
+      };
       const lease = generation;
       const cached = memory.get(key(scope, binderId));
-      if (cached && isCompleteBinderSnapshot(cached.snapshot, scope, binderId, now())) return copy(cached.snapshot);
+      if (cached && isCompleteBinderSnapshot(cached.snapshot, scope, binderId, now())) return observed(cached.snapshot, 'memory');
       if (!diskAllowed) return null;
       try {
         const store = await options.store();
@@ -149,17 +177,18 @@ export function createBinderReopenCache(options: { store: () => Promise<BinderRe
         const stored = await store?.read(scope, binderId);
         if (lease !== generation || !isCompleteBinderSnapshot(stored, scope, binderId, now())) return null;
         // Disk contents pass the same whitelist as fresh responses, not only shape checks.
-        const snapshot = snapshotBinderView(scope, stored.binder, stored.cards, stored.savedAt);
+        const snapshot = snapshotBinderView(scope, stored.binder, stored.cards, stored.savedAt, { customSource: stored.customSource });
+        if (!isCompleteBinderSnapshot(snapshot, scope, binderId, now())) return null;
         const newer = memory.get(key(scope, binderId))?.snapshot;
-        if (newer && newer.savedAt >= snapshot.savedAt && isCompleteBinderSnapshot(newer, scope, binderId, now())) return copy(newer);
+        if (newer && newer.savedAt >= snapshot.savedAt && isCompleteBinderSnapshot(newer, scope, binderId, now())) return observed(newer, 'memory');
         remember(snapshot);
-        return copy(snapshot);
+        return observed(snapshot, 'persisted');
       } catch { return null; }
     },
-    save(scope: BinderReopenScope, binder: BinderRecord, cards: BinderCardRecord[], lease: number, savedAt = now()) {
+    save(scope: BinderReopenScope, binder: BinderRecord, cards: BinderCardRecord[], lease: number, savedAt = now(), saveOptions: BinderReopenSaveOptions = {}) {
       if (lease !== generation) return false;
       let snapshot: BinderReopenSnapshot;
-      try { snapshot = snapshotBinderView(scope, binder, cards, savedAt); } catch { return false; }
+      try { snapshot = snapshotBinderView(scope, binder, cards, savedAt, saveOptions); } catch { return false; }
       if (!isCompleteBinderSnapshot(snapshot, scope, binder.id, now()) || !remember(snapshot)) return false;
       enqueue(async () => {
         const store = await options.store();

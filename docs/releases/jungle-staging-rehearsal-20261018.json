@@ -1,0 +1,94 @@
+{
+  "recordedAt": "2026-10-18T21:19:08.653Z",
+  "state": "APPROVED_SINGLE_STAGING_ROLLBACK_REHEARSAL_COMPLETED_NO_TOOL_ERROR",
+  "targetProject": "lmwfhvexfcoyeuoyrlco",
+  "targetName": "Stackr me5 staging",
+  "script": "docs/releases/jungle-staging-rollback-rehearsal-20261018.sql",
+  "templateSha256": "625e01353564a306bcb6e0c593972110b41b1fe77b956809ba96493df0a29968",
+  "bodySha256": "325ce203010e17eda06be358584d6517eb1d3c327475c71a511a69be857d848b",
+  "sqlCalls": 1,
+  "scope": {
+    "existingHistoricalVariantUpdates": 1,
+    "variantFields": [
+      "deprecated_at",
+      "deprecated_reason"
+    ],
+    "triggerAlsoUpdates": "updated_at",
+    "newVariantRows": 0,
+    "optionalCurrentMembershipInserts": 1,
+    "existingAssociationUpdates": 1,
+    "associationFields": [
+      "printing_id",
+      "variant_id"
+    ],
+    "assetSourceObjectWrites": 0,
+    "priceQuantityWrites": 0,
+    "persistentChanges": 0
+  },
+  "timeLimits": {
+    "statement": "5s",
+    "lock": "1s",
+    "idle": "15s"
+  },
+  "alwaysRollback": true,
+  "productionWrites": false,
+  "priceRefreshes": false,
+  "collectorRows": false,
+  "executed": true,
+  "offlineChecksPassed": 17,
+  "rehearsalReview": {
+    "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/jungle-staging-rehearsal-review-v6-bounded-completion-review.json",
+    "sha256": "a09e1760d78aa871d046380d86c67666ccde04de13930319637fdccd3857585d"
+  },
+  "materializer": {
+    "privatePath": "active-runtime/repair-consolidation-20261018/materialize-jungle-v6-approved-rehearsal.cjs",
+    "sha256": "94e65e3b37380cc6d40340384fb1321b634bf1fca8b0030bb96d584c085fee6c"
+  },
+  "materializationReview": {
+    "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/jungle-v6-materialization-review-bounded-completion-review.json",
+    "sha256": "39623a7a8c7d63aee969747b4d55d13f699ab6378244709a315404ca50e9f451"
+  },
+  "bindingRule": "REPLACE_ONE_TYPED_NULL_WITH_FIXED_SCOPE_AND_VERIFIED_RECEIPT_HASHES_ONLY",
+  "afterConsent": "Only prepared_v6 typed JSON receives the fixed staging project/mode and real review, new owner-write approval and existing source/asset evidence hashes. All remaining SQL and transaction wrapper bytes stay unchanged.",
+  "priorReadsConferWriteAuthority": false,
+  "existingSourceAssetApprovalEvidence": {
+    "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/staging-binding-execution-20261018/q3-rows.json",
+    "sha256": "a6f2a54102f7d7fa3d87e45fe37fd8b0249db36a626a491ab09c5d6cc0b7cc76",
+    "meaning": "Existing artwork/source approval evidence only; separate new owner staging-write consent is required."
+  },
+  "knownLimitations": [
+    "Actual staging historical membership is checked inside this guarded transaction.",
+    "Actual api.catalogue_cards behavior must pass runtime checks; hidden or redirected First Edition aborts and rolls back.",
+    "SQL/RPC assertion evidence remains separate from HTTP, native and installed-phone acceptance.",
+    "The successful single SQL response contains an empty result; detailed NOTICE fixture payloads are not captured. HTTP/native/phone acceptance remains unproved."
+  ],
+  "testFlightHeld": true,
+  "execution": {
+    "observedAt": "2026-10-18T21:16:47.345Z",
+    "state": "APPROVED_SINGLE_STAGING_ROLLBACK_REHEARSAL_COMPLETED_NO_TOOL_ERROR",
+    "executed": true,
+    "sqlCalls": 1,
+    "projectId": "lmwfhvexfcoyeuoyrlco",
+    "effectiveQuerySha256": "c4b383672578aded3f646a1af29f6524b062839bdaa6803c608a44899455311e",
+    "ownerApproval": {
+      "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/staging-rehearsal-execution-v6-20261018/owner-staging-write-approval.json",
+      "sha256": "552fc43a3cc6dcdac4778ed32d4413127af5d4d6c1c56b16764df736d8fffac5"
+    },
+    "intent": {
+      "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/staging-rehearsal-execution-v6-20261018/execution-intent.json",
+      "sha256": "cb864e64abad66d9000c755e7bada8cc6d97a4eb287cbbe795e69699f077a21e"
+    },
+    "outcome": {
+      "privatePath": "evidence/consolidation-20261018/remaining-exact-artwork-20261018/jungle-association/staging-rehearsal-execution-v6-20261018/query-outcome.json",
+      "sha256": "e43c8e3b14d7bcfcea85bdf33af0115f60beae11489926eacfd38032d16dfb8c"
+    },
+    "alwaysRollback": true,
+    "persistentChanges": 0,
+    "noticesReturned": false,
+    "returnedRows": 0,
+    "assertionMeaning": "Successful guarded DO completed all internal assertions and rollback verification. Detailed NOTICE fixture payloads were not returned by the connector.",
+    "httpOrNativeOrPhoneVerified": false,
+    "productionWritesAuthorized": false,
+    "testFlightHeld": true
+  }
+}

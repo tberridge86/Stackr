@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "language": "ja",
+  "setId": "903d5baa-27c7-5690-b1d7-2395c770204a",
+  "setCode": "M6",
+  "nativeName": "ストームエメラルダ",
+  "displayName": "Storm Emeralda",
+  "assetPath": "assets/rev2/11-japanese-set-logo/logos-owner-supplied-20261018/m6.png",
+  "sha256": "383905581374e6a41be583303354be84a34891d52f8b6420ea632ff61a07f7ba",
+  "bytes": 900649,
+  "width": 1280,
+  "height": 544,
+  "origin": "owner_supplied_original_unchanged",
+  "upstreamOriginIndependentlyVerified": false,
+  "sourcePixelsUnchanged": true,
+  "englishLetteringVisuallyVerified": true,
+  "sourceLocalPath": "D:/Stackr-1/assets/rev2/16-remaining-98-set-logos/images/383905581374e6a41be583303354be84a34891d52f8b6420ea632ff61a07f7ba.png",
+  "sourceManifestPath": "D:/Stackr-1/assets/rev2/16-remaining-98-set-logos/manifest.json",
+  "sourceManifestPublishedRevision": "2026-10-10-r7",
+  "sourceUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/set_logo/reviewed/383905581374e6a41be583303354be84a34891d52f8b6420ea632ff61a07f7ba/source.png",
+  "sourceUrlEvidence": "Historical owner-source manifest; this selection did not fetch or republish the URL.",
+  "identityEvidence": "Owner identified this source folder on 18 October 2026 for the previously supplied English-lettered Storm logo. Its manifest binds these exact bytes to Japanese M6 / Storm Emeralda; viewed pixels show the Japanese mark above English STORM EMERALDA lettering.",
+  "permissionRecord": "catalogue/rights-reviews/stackr-m6-owner-supplied-set-logo.2026-10-18.json",
+  "permissionBasis": "Fresh direct owner permission attestation on 2026-10-18, bound in the permission record to this exact asset SHA-256; no independent licensor documentation or historical prior permission is asserted.",
+  "existingManifestUnchanged": true,
+  "supersedes": {
+    "manifestPath": "assets/rev2/11-japanese-set-logo/storm-m6-20261017.json",
+    "assetPath": "assets/rev2/11-japanese-set-logo/logos-owner-approved-20261017/m6.webp",
+    "sha256": "ef4ea9578d26a3b9ed3aacc731a447014946e776bf3bdf438fa0306e58d70b50",
+    "previousAssetAndPermissionRecordPreserved": true,
+    "rollback": "Restore the previous M6 static require and audit addendum binding. Previous source bytes and permission record remain unchanged."
+  }
+}

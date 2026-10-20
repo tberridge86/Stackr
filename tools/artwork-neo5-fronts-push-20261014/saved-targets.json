@@ -1,0 +1,288 @@
+[
+  {
+    "printing_id": "eca39411-d895-4482-8d65-1aa6e03fe947",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "051",
+    "card_native_name": "sudowoodo",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "9e527401-52a1-470e-8acb-d99657c7bd1c"
+    ],
+    "batch_id": "JP-CARDS-005"
+  },
+  {
+    "printing_id": "18846511-394c-4a23-a456-9f58222c2997",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "052",
+    "card_native_name": "グリガー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "da03a350-db35-4d09-9a35-7cf81a6643dd"
+    ],
+    "batch_id": "JP-CARDS-005"
+  },
+  {
+    "printing_id": "6d3ab9b6-8590-4832-9a4f-28451bfa959e",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "053",
+    "card_native_name": "ファンピー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "42cbc90b-e398-4d35-8692-20ce0aaa4d88"
+    ],
+    "batch_id": "JP-CARDS-005"
+  },
+  {
+    "printing_id": "754c26cf-68bb-4296-a816-ef0bfdb0db40",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "054",
+    "card_native_name": "ドンファン",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "d3a65311-b137-478d-8549-5efc62a915cb"
+    ],
+    "batch_id": "JP-CARDS-005"
+  },
+  {
+    "printing_id": "10ac49ce-527b-4455-9853-086b447fca7d",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "055",
+    "card_native_name": "マークロウ",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "ebea8864-77e5-4220-aa22-c527942cf3de"
+    ],
+    "batch_id": "JP-CARDS-005"
+  },
+  {
+    "printing_id": "0e993e93-502f-4ef4-958f-77414e5b45aa",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "056",
+    "card_native_name": "スニーエル",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "48f843c1-2301-46da-a44d-4141ba9acbcf"
+    ],
+    "batch_id": "JP-CARDS-005"
+  },
+  {
+    "printing_id": "b950e929-e093-4f8b-b2fd-c956905fcaef",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "057",
+    "card_native_name": "Steelix",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "1e5daf71-2dd5-4a59-bb58-42fcc5988cb4"
+    ],
+    "batch_id": "JP-CARDS-005"
+  },
+  {
+    "printing_id": "9cc050ef-28f7-4955-b6a4-1404a077b241",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "058",
+    "card_native_name": "スカルモリー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "895d1351-538e-4e7e-832d-24a769406ad8"
+    ],
+    "batch_id": "JP-CARDS-005"
+  },
+  {
+    "printing_id": "fed0b8ce-1074-4600-aeb9-07a7b1a998ec",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "059",
+    "card_native_name": "セントレット",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "e95bff2e-9769-49a1-b472-ce8fee045d21"
+    ],
+    "batch_id": "JP-CARDS-005"
+  },
+  {
+    "printing_id": "6e1d67e2-5584-4b97-9685-5babc78e3fa8",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "060",
+    "card_native_name": "hoothoot",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "ce09c865-e5ba-4a0c-ae9a-f33a9ef82d47"
+    ],
+    "batch_id": "JP-CARDS-005"
+  },
+  {
+    "printing_id": "a2a24b14-ce0e-4020-b092-12a0bf90ca87",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "061",
+    "card_native_name": "Snubbull",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "28df9f76-8293-4830-b831-7e6ffa6822b4"
+    ],
+    "batch_id": "JP-CARDS-005"
+  },
+  {
+    "printing_id": "6fc73fcf-b89e-48b7-85a4-3946510165fb",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "062",
+    "card_native_name": "スタントラー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "a7044cb2-c380-4d5c-83b8-3ec88c642fc1"
+    ],
+    "batch_id": "JP-CARDS-005"
+  },
+  {
+    "printing_id": "73db5808-2875-44ab-93ea-9d2c8bdd2f2b",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "063",
+    "card_native_name": "クリーフ",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "08fbf8fe-87b9-47b3-b74d-312781b3aa0b"
+    ],
+    "batch_id": "JP-CARDS-005"
+  },
+  {
+    "printing_id": "62bae39a-d38c-4af3-83e9-eb884e17191d",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "064",
+    "card_native_name": "Furret",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "241fd141-49c0-428a-9246-767ef8183abc"
+    ],
+    "batch_id": "JP-CARDS-005"
+  },
+  {
+    "printing_id": "e3c9c2ed-ee92-465f-a7c2-90f00be493bc",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "065",
+    "card_native_name": "ノクトウル",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "c935ab13-88ea-433b-a343-9a18f614d8a4"
+    ],
+    "batch_id": "JP-CARDS-005"
+  },
+  {
+    "printing_id": "fee3b7f6-e9c3-414c-942f-89748ad44032",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "066",
+    "card_native_name": "togepi",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "4ddb38a3-4753-4e1c-a998-ccb1702a812d"
+    ],
+    "batch_id": "JP-CARDS-005"
+  },
+  {
+    "printing_id": "ca953242-537f-4839-aa41-c761dc2169e8",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "067",
+    "card_native_name": "aipom",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "cc45f170-4a18-46e5-b542-5f73a4c9c328"
+    ],
+    "batch_id": "JP-CARDS-005"
+  },
+  {
+    "printing_id": "37fb4303-a9cf-434e-95fd-26efdd7b46ff",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "068",
+    "card_native_name": "グランブル",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "7d20075c-40d2-4778-977c-8bdc55165e1a"
+    ],
+    "batch_id": "JP-CARDS-005"
+  },
+  {
+    "printing_id": "9548140e-6a06-4cc8-925f-602f5bc5b739",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "069",
+    "card_native_name": "ミルタンク",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "bc44bcd5-d986-4efc-a4bf-02d8d392fca0"
+    ],
+    "batch_id": "JP-CARDS-005"
+  },
+  {
+    "printing_id": "901d689a-4ab9-46f9-ab17-36b32d03da88",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "070",
+    "card_native_name": "クレファ",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "d5ab7535-d80b-479e-8258-698f403e9a70"
+    ],
+    "batch_id": "JP-CARDS-005"
+  },
+  {
+    "printing_id": "5165052b-26fd-42da-879c-e28945be12cb",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "071",
+    "card_native_name": "togetic",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "ff171759-55d6-4878-9201-82cede7dd22d"
+    ],
+    "batch_id": "JP-CARDS-005"
+  },
+  {
+    "printing_id": "c86cc4f0-b598-4850-8c81-8f7f81a9caa5",
+    "set_id": "769fa22e-e603-41a8-b62b-920a4abc660b",
+    "set_code": "neo1",
+    "language_code": "ja",
+    "collector_number": "072",
+    "card_native_name": "ルギア",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "e7cb3a07-ff35-47df-a51f-edbe24f805d2"
+    ],
+    "batch_id": "JP-CARDS-005"
+  }
+]

@@ -1,0 +1,208 @@
+{
+  "schemaVersion": 1,
+  "status": "local_frozen_publisher_checks_passed",
+  "fronts": 13,
+  "trainers": 11,
+  "energy": 1,
+  "pokemon": 1,
+  "normal": 11,
+  "holo": 2,
+  "queue_id": "STACKR-JA-DARKNESS-FINAL-20261015-013",
+  "confirmation": "PUBLISH ARTWORK DARKNESS FINAL FRONTS",
+  "job": "artwork_darkness_final_fronts",
+  "archive": {
+    "id": 642982354,
+    "sha256": "923b56b7ba4c349aa31fdaa7e9e71aa9307d933b6604dddaf394257c550503f8",
+    "byte_size": 6639659,
+    "file_count": 56,
+    "name": "stackr-ja-artwork-darkness-final-fronts-20261015.zip"
+  },
+  "source_manifest_sha256": "98b24bb530ddb280ce4196728c062135f9be9b86434258836eeac9a7633c5ae1",
+  "package_receipt_sha256": "6afc572e03b11e15dcc873f944d85d55ecfc60c7eea5aea0cb021a6267b0c8c2",
+  "cohort_sha256": "6fd3c62cef8c21ea33743bd281470ca9ff55186347f345354f91e7ac566fe155",
+  "approval_sha256": "8ceea85f315f177aad545b35da080a32d3aade5d74bf47760a737d8f774cabb5",
+  "identity_table_sha256": "e13e91d15eca98032269d45cb6d8cd2ad845930ea6a9b9ec51bc9e74dedf6e08",
+  "checks": {
+    "publisherNodeTests": {
+      "passed": 14,
+      "failed": 0
+    },
+    "archiveSafetyPythonTests": {
+      "passed": 6,
+      "failed": 0
+    },
+    "persistedFailureJournalTests": {
+      "passed": 1,
+      "failed": 0
+    },
+    "immutableArchive": {
+      "members": 56,
+      "imagesFullyPILDecoded": 52,
+      "imagesFullySharpDecodedFromExtractedPackage": 52,
+      "metadataMembersByteVerified": 4
+    },
+    "queue": {
+      "realReceiptsPassed": 13,
+      "receiptTamperRejections": 10,
+      "jointReceiptManifestRejections": 4,
+      "forgedAuthorityRejections": 1,
+      "positiveEnergyIdentity": true,
+      "positiveTrainerIdentity": true,
+      "printedDex229Verified": true,
+      "currentBindingPairs": 13,
+      "localObjectsHashed": 52,
+      "archiveAndRawCapturesPinned": true
+    },
+    "readOnlyOldQueueRegressions": {
+      "exact47": 47,
+      "trainer5": 5,
+      "middle45": 45,
+      "middle45JointTamperRejections": 25,
+      "middle45FakeAuthorityRejections": 1
+    },
+    "text": {
+      "repoFiles": 19,
+      "allLFFromWorkingBytes": true,
+      "equalsLFNormalizedBytes": true,
+      "savedTargetsLFBeforeHash": true,
+      "allNewMjsSyntaxPassed": true,
+      "pythonAstPassed": true
+    },
+    "workflow": {
+      "protectedProduction": true,
+      "exactMain": true,
+      "sharedProductionConcurrency": true,
+      "jobName": "artwork_darkness_final_fronts",
+      "receiptSecretScanBeforeUpload": true
+    },
+    "secretScan": {
+      "publisherFilesPassed": 18,
+      "workflowAndNewQueueHelpersPassed": 3
+    },
+    "unchangedSharedDependencies": 11
+  },
+  "preservation": {
+    "productionBeforeRows": 61,
+    "productionExpectedAfterRows": 87,
+    "stagingBeforeAfterRows": 57,
+    "productionNewSources": 0,
+    "existingFullSourcePolicy": "inactive/under_review unchanged",
+    "stagingSourceFixture": "rollback-only",
+    "previousImmutableAssets": "preserved",
+    "rollbackReceipt": "new assets hidden only; immutable objects retained"
+  },
+  "imagePreparation": {
+    "sharp": "0.35.5",
+    "pipeline_sha256": "642eb05d57c921901cfa6241e1f0d32a71da602ea3594693b8d63247a05b0bb0",
+    "originals": 13,
+    "derivatives": 39,
+    "upscaling": false,
+    "detailReadable": 13,
+    "hd720x1008": 0
+  },
+  "provenance": "Raw approved/historical row, source HTML byte, full captured JSON file/canonical, identity projection, actual signature, private selection and safe public projection hashes stay distinct. Raw captures and any commercial provider fields remain offline.",
+  "files": [
+    {
+      "file": "tools/artwork-darkness-final-fronts-push-20261015/.gitattributes",
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+      "bytes": 14
+    },
+    {
+      "file": "tools/artwork-darkness-final-fronts-push-20261015/.gitignore",
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "bytes": 19
+    },
+    {
+      "file": "tools/artwork-darkness-final-fronts-push-20261015/approval.json",
+      "sha256": "8ceea85f315f177aad545b35da080a32d3aade5d74bf47760a737d8f774cabb5",
+      "bytes": 1682
+    },
+    {
+      "file": "tools/artwork-darkness-final-fronts-push-20261015/before-query.sql",
+      "sha256": "8334b14b56d6fbc435cedc9e4d29e82a4fa0402c7a1aab3f3a3339e74084b53c",
+      "bytes": 7093
+    },
+    {
+      "file": "tools/artwork-darkness-final-fronts-push-20261015/download-package.py",
+      "sha256": "0f55462d5b86e7cc63e3e3c99d557d9c7fc319fda307ba3f597d19b0ba5da458",
+      "bytes": 6088
+    },
+    {
+      "file": "tools/artwork-darkness-final-fronts-push-20261015/download-package.test.py",
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41",
+      "bytes": 6940
+    },
+    {
+      "file": "tools/artwork-darkness-final-fronts-push-20261015/freeze-inputs.json",
+      "sha256": "83755bc3f1aa3333237ebf126f51aabacc4ae3f824c5d5a7cb238c47eec39d2c",
+      "bytes": 4756
+    },
+    {
+      "file": "tools/artwork-darkness-final-fronts-push-20261015/freeze-local.mjs",
+      "sha256": "b343b3c2ba3771aad35df26a025754fe61f00f06c13b1cc69edf148df53854ce",
+      "bytes": 10040
+    },
+    {
+      "file": "tools/artwork-darkness-final-fronts-push-20261015/frozen.mjs",
+      "sha256": "2f592d82a3304cdd43ae3672848578480b8425a797aad9616f635ca91c9eafb8",
+      "bytes": 34460
+    },
+    {
+      "file": "tools/artwork-darkness-final-fronts-push-20261015/identity-table.json",
+      "sha256": "e13e91d15eca98032269d45cb6d8cd2ad845930ea6a9b9ec51bc9e74dedf6e08",
+      "bytes": 11546
+    },
+    {
+      "file": "tools/artwork-darkness-final-fronts-push-20261015/plan.json",
+      "sha256": "6fd3c62cef8c21ea33743bd281470ca9ff55186347f345354f91e7ac566fe155",
+      "bytes": 1084267
+    },
+    {
+      "file": "tools/artwork-darkness-final-fronts-push-20261015/publish.mjs",
+      "sha256": "a62761553b7e22d8faa07509d9964b354965a852a3fb62b059ab6ba2e9f7f047",
+      "bytes": 4989
+    },
+    {
+      "file": "tools/artwork-darkness-final-fronts-push-20261015/publish.test.mjs",
+      "sha256": "099b0ce96185827417aa27c8ec8c410bed168eb0dcc1b98ecc1d0056b02041fd",
+      "bytes": 22997
+    },
+    {
+      "file": "tools/artwork-darkness-final-fronts-push-20261015/README.md",
+      "sha256": "fa9ec50f1cd64ec437b4318f41b7b09b2d86c9ce28f8ac52057520f7ca0088b3",
+      "bytes": 1829
+    },
+    {
+      "file": "tools/artwork-darkness-final-fronts-push-20261015/saved-targets.json",
+      "sha256": "65cb59b1e6020cd16a184eca5a50a3571191b6ace57b2b547db6406c0792518b",
+      "bytes": 5555
+    },
+    {
+      "file": "tools/artwork-darkness-final-fronts-push-20261015/source-proof.mjs",
+      "sha256": "92e81a90e681945374633ed6ada906dec424a7fdaad27da32a07c4b9f80b90eb",
+      "bytes": 30287
+    },
+    {
+      "file": "tools/artwork-darkness-final-fronts-push-20261015/verify-packages.mjs",
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841",
+      "bytes": 1495
+    },
+    {
+      "file": ".github/workflows/artwork-darkness-final-fronts-production.yml",
+      "sha256": "d6d676c116958367e3a257f1c81141170cd483601f05f7ad08522b63f278a50a",
+      "bytes": 3712
+    }
+  ],
+  "localRuntime": "Node24.19.0; hosted Node22 checks remain root-owned/pending",
+  "providerRequests": 0,
+  "databaseRequests": 0,
+  "queueExecuted": false,
+  "gitMutations": 0,
+  "liveWrites": 0,
+  "sourcePolicyActivation": false,
+  "vendorLicenceVerified": false,
+  "sourcewideApproval": false,
+  "physicalEditionVerified": false,
+  "physicalFinishVerified": false,
+  "nextGate": "Independent frozen review, root Git/hosted checks/protected exact-main publication and configured API proof."
+}

@@ -1,0 +1,20 @@
+import { readFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
+import { pathToFileURL } from 'node:url';
+import { check } from '../queue1-publish-20260927/publish.mjs';
+import { publicationObjects, safePath, validateBytes } from '../artwork3303-publish-20260928/publish.mjs';
+import { loadFrozen, COHORT_SHA } from './frozen.mjs';
+
+export async function verifyPackages(root) {
+  check(root, 'Package directory required');
+  const { rows } = await loadFrozen();
+  const require = createRequire(new URL('../../backend/package.json', import.meta.url));
+  const sharp = require('sharp');
+  sharp.concurrency(2);
+  const objects = publicationObjects(rows);
+  check(objects.length === 40, 'Wrong forty-file cohort');
+  for (const object of objects) await validateBytes(sharp, await readFile(safePath(root, `${object.artifact_id}/${object.file}`)), object);
+  return { status: 'all_frozen_files_fully_decoded', cohort_sha256: COHORT_SHA, fronts: 10, derivatives: 30, files: 40, database_requests: 0, provider_requests: 0, storage_writes: 0 };
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) verifyPackages(process.argv[2]).then(result => console.log(JSON.stringify(result))).catch(error => { console.error(error.message); process.exitCode = 1; });

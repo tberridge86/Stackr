@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "status": "focused_local_validation_passed",
+  "validatedAt": "2026-10-15T19:33:08.099647+00:00",
+  "releaseAssetId": 644915851,
+  "archiveSha256": "827eaa332cb9bbfad6364d0031c23de95dcc012cc3793f3fe92974d3edfb42f3",
+  "archiveBytes": 16022937,
+  "fronts": 97,
+  "categoryCounts": {
+    "pokemon": 74,
+    "trainer": 23
+  },
+  "finishes": {
+    "normal": 82,
+    "holo": 15
+  },
+  "heldAliases": [
+    "072"
+  ],
+  "checks": {
+    "publisherNodeTestsPassed": 16,
+    "existingFailureJournalIntegrationTestsPassed": 1,
+    "archiveTestsPassed": 6,
+    "actualQueueReceiptsPassed": 97,
+    "queueJointTamperRejections": 27,
+    "queueForgedAuthorityRejections": 2,
+    "privateSourceContractRowsPassed": 97,
+    "privateSourceContractJointTamperRejections": 23,
+    "privateSourcePrivacyAndScopeRejections": 4,
+    "privateSourceAuthorityRejections": 1,
+    "previousLeaders93QueueReceiptsPassed": 93,
+    "previousLeaders93QueueTamperRejections": 25,
+    "previousLeaders93AuthorityRejections": 2,
+    "previousLeaders93RepoFilesUnchanged": 20,
+    "archiveMembers": 392,
+    "imageMembers": 388,
+    "localInstallerAllMemberHashesPassed": true,
+    "runtimeSharpFullDecodesPassed": 388,
+    "preparationSharpFullDecodesPassed": 388,
+    "archivePILFullDecodesPassed": 388,
+    "newRepoTextFilesLFWithoutBOM": 20,
+    "newModuleSyntaxPassed": true,
+    "newPythonSyntaxPassed": true,
+    "unchangedDependencyHashesPassed": 11,
+    "workflowYamlGatesAndActionPinsPassed": true,
+    "scopedSecretScanPassed": true,
+    "genericQueueUnchanged": true
+  },
+  "modeledMetadata": {
+    "productionBefore": 394,
+    "productionAfter": 588,
+    "newAssets": 97,
+    "newLinks": 97,
+    "newSources": 0,
+    "stagingBefore": 390,
+    "stagingAfterRollback": 390,
+    "oldRowsUnchanged": true,
+    "full17SourceFieldsPreserved": true,
+    "snapshotAndResolverPostgresJsonTimestampGuardsPassed": true
+  },
+  "sourceCoverage": {
+    "eligibleDirectPeerRows": 49,
+    "eligibleRecordOnlyPeerRows": 48,
+    "newDirectPeerViews": 47,
+    "reusedPilotDirectViews": 2,
+    "allEligibleAuthorViewsReportedAndPinned": true,
+    "sourceBodyFullAgreement": false,
+    "fullVerbatimNativeTranscriptionCertified": false,
+    "physicalEditionCertified": false,
+    "physicalFinishCertified": false,
+    "vendorLicenceCertified": false,
+    "sourceWideAuthorisation": false,
+    "hdCount": 0,
+    "noStackrEnlargement": true,
+    "originalsActualFormat": "WEBP",
+    "losslessOriginals": false,
+    "literalPngUrlIsFormatProof": false,
+    "providerNoResizeCertified": false,
+    "nativeOpticalGainClaimed": false
+  },
+  "execution": {
+    "localOnly": true,
+    "databaseRequests": 0,
+    "providerRequests": 0,
+    "storageWrites": 0,
+    "queueWrites": 0,
+    "gitMutations": 0,
+    "productionPublicationVerified": false
+  }
+}

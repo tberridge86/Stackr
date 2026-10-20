@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 24,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "approved_at": "2026-10-14",
+  "cohort_sha256": "0cb244197cfc59ceba856594a4c0de50ce5a1a1dd2177d3996843fa621be765e",
+  "owner_instructions": [
+    "gather batch EN-CARDS-001 - hey Tif can you take over and process these artworks in their batvhes until we are complete - as you do them make sure they all livwe in production",
+    "using your internet sourcs you can queue it for the production push - we dont need to review",
+    "continue your work flow please - i want to set you loose to work through this Tif can you manage this?"
+  ],
+  "scope": "Store, resize and display exactly 24 previously inspected Japanese Neo1 originals and 72 derivatives from JP-CARDS-004. The saved batch has 25 tasks; Slowpoke alias 045 remains excluded for HP 40/50 identity conflict, and whole-batch completion is false. Preserve canonical aliases, current native labels, 18 normal and 6 holo metadata bindings and staging-only catalogue version difference. Printed National Dex numbers are separate from catalogue aliases. No native-name corrections, inferred copyright year, physical edition/foil certification, independent vendor licence or source-wide activation. Existing immutable set logo/symbol assets and links remain.",
+  "source_counts": {
+    "scrydex": 24
+  }
+}

@@ -1,0 +1,450 @@
+[
+  {
+    "printing_id": "0a51e711-6be1-4ab9-8e6d-556c6d50bf25",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "7",
+    "card_native_name": "Fighting Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "9b3a0eb9-0058-479b-8b60-6f618cded56e"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "0e596b27-e980-42da-8350-5a335cc0cab4",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "11",
+    "card_native_name": "Machop",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "5ef4844d-61c7-41d8-b905-e215a911a544"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "14bba03a-a2ae-4b85-8b66-28e6b46817a0",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "22",
+    "card_native_name": "Machoke",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "bd6c7715-89db-4475-beaa-d7a797ae62db"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "1944094d-be94-48cd-8682-8dd9bce0842c",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "17",
+    "card_native_name": "Fighting Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "f32e382e-dcaa-4a0a-bc04-8d19611ae746"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "1b88f418-7810-4493-bf55-f05e42babe7a",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "18",
+    "card_native_name": "Psychic Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "99996ea8-9f88-4bb0-9e39-c3393b986e7c"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "21924cab-37db-4b49-b020-a7427277011f",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "2",
+    "card_native_name": "Fighting Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "37b3cdb2-36f6-4089-9170-aa19e2f9a40f"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "298d0048-ff00-47e2-8a00-e3452309d2b4",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "29",
+    "card_native_name": "Psychic Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "fc52834b-5fa2-474d-bce0-16a8d392ba7e"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "2b359ce3-debe-42f9-8cdc-9c479a90b565",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "19",
+    "card_native_name": "Delcatty",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "3abfe831-e375-438c-be4c-64e2d80c72c4"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "2edf6f8d-8922-4d4c-9e4c-b1cca68b08a6",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "23",
+    "card_native_name": "Rhyhorn",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "9e23aaee-e76e-4509-a3f6-afdafeed7732"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "3f2d8dd0-bd9e-4f5d-8d21-762c9e6f0019",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "25",
+    "card_native_name": "Rhydon",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "772a1d90-def4-4e32-b6bd-aa06027dd5bb"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "4131af6d-7ecb-4c50-8f4e-9d626f02860e",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "27",
+    "card_native_name": "Grovyle",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "257bdb36-2ba2-404a-b67f-3c4150db09c8"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "5078d507-c568-45d6-b16f-092d5002a64b",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "8",
+    "card_native_name": "Fighting Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "7b264c84-c2a6-43d6-a8f2-ef8a4a117ed3"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "5c2b19f9-5c00-48c6-b33b-2e7493a71456",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "24",
+    "card_native_name": "Delcatty",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "2e9101b7-6994-4931-84e5-bb179b16b580"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "6ec47968-da5f-4f44-a26a-b43051cfe7ae",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "26",
+    "card_native_name": "Solrock",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "6a20de28-a7a0-4107-b139-426759d17cd5"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "7a9841ed-1edd-4623-b521-21e6c884aed1",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "28",
+    "card_native_name": "Psychic Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "be58d8d4-4bbb-469b-9e4a-278e4fee45ab"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "7fb74e6f-6423-465d-ba75-08b22e7983bf",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "5",
+    "card_native_name": "Fighting Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "43728305-cadd-46b8-8881-71ef11d754c5"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "8d9e1c3e-f093-476a-8f5c-9b3a00b9dd18",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "20",
+    "card_native_name": "Acro Bike",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "b52a27ac-b381-486c-95fc-003d1c9fbc95"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "93cbb08f-4a6e-4172-a80a-b80b84729e15",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "14",
+    "card_native_name": "Machoke",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "5b45e053-8af5-40ef-ba0a-10dcac23d563"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "ac36c2c3-659f-4fdc-8352-672a2ff5231e",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "28",
+    "card_native_name": "Machop",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "bbab9273-1622-43d4-899a-c1f9ff8bbcc3"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "b6326b64-0046-4ab5-8cfd-9c8e4877750d",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "6",
+    "card_native_name": "Fighting Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "e4d3f147-5789-46d7-b0da-348fcd6eb0b3"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "b8995abc-c60e-4b75-ae84-ab95a03751ab",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "26",
+    "card_native_name": "Tangela",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "3c388efb-e8de-4b4d-980f-5430fefa1fc8"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "b9765507-5583-4f38-b8a2-588c50ab9d12",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "9",
+    "card_native_name": "Fighting Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "cebf726a-47c7-444e-8f8a-3e78074f1bee"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "c4c82782-0817-4304-815b-bcc0bba3db9b",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "15",
+    "card_native_name": "Rhyhorn",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "4db27107-a95a-4201-883e-5546e4fa520c"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "d35325cb-be43-43dc-93e9-7209e90ae951",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "1",
+    "card_native_name": "Skitty",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "3f364915-bb88-4d8b-83e1-0529dd2ba5e9"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "da08e921-01ee-4e70-b097-9e499048c7df",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "21",
+    "card_native_name": "Potion",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "d25db7d4-c51c-4933-b374-f89ff2ffb15b"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "dfa45d96-1d3a-4325-940c-04c312b6bb6a",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "10",
+    "card_native_name": "Fighting Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "5c8f8402-4b6f-40ad-b9b8-7172434f1e61"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "e9e493c2-3e60-4f41-873a-1daf1edf2c56",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "27",
+    "card_native_name": "Skitty",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "977e3444-1f34-441e-9c50-63bdf126bb28"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "ed70a282-9ca5-45f7-9893-542dd095d4e3",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "16",
+    "card_native_name": "Psychic Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "9e22b555-9d51-498a-a9d6-135883db3320"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "ed7519d1-4ded-4b28-ad2c-03293de28c78",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "13",
+    "card_native_name": "Latios",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "77f74324-6670-47e1-899f-ada151046590"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "fadcbc2e-280a-4e06-b8d3-9df9eb2c5a5a",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "4",
+    "card_native_name": "Rhydon",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "54751aae-9007-438f-9753-ebc0bfd1d882"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "fc44e2c4-134e-4f11-b260-94e8d7875d1d",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "3",
+    "card_native_name": "Fighting Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "39a642d4-698b-4893-9bb3-6aa3fcbe3070"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "ffccaa4d-9eac-4cdf-8ef5-61e7d8b2c20e",
+    "set_id": "fffca854-8bf1-4f89-9a38-ea2b0a47f055",
+    "set_code": "tk-xy-latio",
+    "language_code": "en",
+    "collector_number": "12",
+    "card_native_name": "Solrock",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "dc7267f8-f82a-4a09-a3f8-0d37105cc9eb"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  }
+]

@@ -1,0 +1,7 @@
+# Exact1 Neo1 Slowpoke front
+
+Exactly one accepted Japanese Pokemon front, current normal variant, JP-CARDS-004 alias045. The unchanged provided PNG570x797 and three unenlarged derivatives fill a missing readable front. ActualHP50/LV20/Dex79, full two native attacks, Tomokazu Komiya and the lawn/redfruit/drool artwork resolve the historicalTCG40 source hold without catalogue edits. Weakness multiplier stays optically unconfirmed/null.
+
+The PNG retains322x450 thumbnail/JPEG/provider processing history. There is no native-resolution gain, provider-no-resize, HD or sharper-image claim. Pokellector photo provenance is distinct from native Scrydex and historical TCGdex semantic witnesses. The complete native JSON stays embedded in the private review; standalone full JSON file SHA remains null. Safe identity/current/actual evidence and raw/private/public hashes stay distinct; full commercial JSON/private URI is excluded from public metadata.
+
+Both existing17-field source rows remain inactive/under_review with zero production source insertion or source policy updates. PostgreSQL JSON reads preserve timestamp microseconds in snapshot and resolver; staging Pokellector fixture rolls back. Protected exact-main/manual confirmation, shared concurrency, immutable PNG/WebP bytes, complete old metadata/artwork preservation, failure journals and guarded rollback remain required. Root owns publication and actual API verification.

@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "stackr-scoped-local-set-logo-owner-attestation-v1",
+  "decisionId": "stackr-m6-owner-supplied-set-logo:2026-10-18",
+  "classification": "amber",
+  "status": "authorized_on_fresh_direct_owner_permission_attestation",
+  "recordedDate": "2026-10-18",
+  "activationAuthorized": true,
+  "publicRuntimeDisplayAuthorized": true,
+  "assetPersistenceAuthorized": true,
+  "canonicalDatabaseWriteAuthorized": false,
+  "ownerAttestation": {
+    "source": "Direct permission answer from the Stackr owner in the repair chat on 18 October 2026.",
+    "recordedDate": "2026-10-18",
+    "answer": "Yes, my permission covers this supplied Storm logo.",
+    "assetSha256": "383905581374e6a41be583303354be84a34891d52f8b6420ea632ff61a07f7ba",
+    "assetPath": "assets/rev2/11-japanese-set-logo/logos-owner-supplied-20261018/m6.png",
+    "basis": "This fresh, explicit owner permission statement covers the exact supplied English-lettered Storm Emeralda asset identified by the hash above, for the bounded uses recorded in scope. Source-folder identification and historical publication are provenance only and are not the permission basis.",
+    "historicalPriorPermissionEstablished": false,
+    "independentlyIssuedLicensorGrantVerified": false,
+    "upstreamCreationMethodVerified": false
+  },
+  "scope": {
+    "sourceName": "Owner-supplied remaining 98 set-logo pack",
+    "sourceLocalPath": "D:/Stackr-1/assets/rev2/16-remaining-98-set-logos/images/383905581374e6a41be583303354be84a34891d52f8b6420ea632ff61a07f7ba.png",
+    "sourceManifestPath": "D:/Stackr-1/assets/rev2/16-remaining-98-set-logos/manifest.json",
+    "sourceManifestPublishedRevision": "2026-10-10-r7",
+    "sourceUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/set_logo/reviewed/383905581374e6a41be583303354be84a34891d52f8b6420ea632ff61a07f7ba/source.png",
+    "sourceUrlEvidence": "Existing local manifest only; no new external acquisition or upload.",
+    "assetType": "set_logo",
+    "language": "ja",
+    "setId": "903d5baa-27c7-5690-b1d7-2395c770204a",
+    "setCode": "M6",
+    "assetCount": 1,
+    "assetPath": "assets/rev2/11-japanese-set-logo/logos-owner-supplied-20261018/m6.png",
+    "sha256": "383905581374e6a41be583303354be84a34891d52f8b6420ea632ff61a07f7ba",
+    "bytes": 900649,
+    "allowedUses": ["retain_exact_supplied_bytes", "bundle_exact_supplied_bytes", "in_app_set_identification"],
+    "excludedUses": ["unrelated_images_or_sources", "catalogue_identity_or_price_changes", "recognition_training", "standalone_export", "merchandise", "new_artwork_generation"]
+  },
+  "verification": {
+    "checkedDate": "2026-10-18",
+    "fullyDecoded": true,
+    "width": 1280,
+    "height": 544,
+    "sourcePixelsUnchanged": true,
+    "englishLetteringVisuallyVerified": true,
+    "actualPixelsViewedBy": ["stackr_artwork specialist"],
+    "officialHighResolutionMasterClaimed": false
+  },
+  "attribution": {
+    "sourceName": "Owner-supplied remaining 98 set-logo pack",
+    "embeddedMarksPreserved": true,
+    "contractualWording": "No additional contractual terms or upstream licence evidence invented."
+  },
+  "boundaries": {
+    "existingSourceRegistryUnchanged": true,
+    "previousM6AssetAndPermissionRecordUnchanged": true,
+    "newBackendOrNativePublicationAuthorizedByThisRecord": false
+  }
+}

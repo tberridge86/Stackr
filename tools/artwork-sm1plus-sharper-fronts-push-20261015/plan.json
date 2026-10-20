@@ -1,0 +1,1162 @@
+{
+  "schemaVersion": 1,
+  "queue_id": "SM1PLUS-SHARP-002-20261015",
+  "source_manifest_sha256": "36c93fa4f6ddb4a3160279355b5fe82083d1b7f7ef5d338953c99d20422b3f7a",
+  "package_receipt_sha256": "d8cfc4301452234f623b69d7467e4468e0f4ffa5f6529c0c73d0da6517e474e3",
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "9f5b4f3a6a0ad916e04ab3a5636e50d219c9a08090823208f990281e1862750a",
+    "finiteDecisionFileByteSha256": "0fd57f13f1e5683a81beb901f607a26f3c4480fe97b22c03dded22d3ed822882",
+    "sourceHandoffFileByteSha256": "461cc760a4a1a78a46c0e51bbef1762a9874d34c1a087151c425d61238041a87",
+    "independentSourceReviewFileByteSha256": "84cd8726f5847b69dacdf855ea09ebec711ea1bc5421baa5f0befa6f4fd56537",
+    "fourSourceCheckpointFileByteSha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "afaa2f9e78af05686bb474d5f7f2f1a89886e7d22486cc62e44d72f386eb9af5",
+    "independentPrivatePackageReviewSha256": "efd91b72ecfd21b200211f733fddc569f47c7015fe3240ff478b612ddc277954",
+    "rootPrivatePackageValidationSha256": "6a047e3c737f47280b29966ae077004ddcd5969e9197ae338a7ddf417ecd4884",
+    "rootSourceArchiveBindingSha256": "55cd6ed30e662187e0c24ecd2ec77da96743af451759059a07615045dbacc92a",
+    "rootUploadReceiptSha256": "e72d3db6f2e66d955a468cc79cd593ead131ad436fafa31e0d8cecb55b8a6010"
+  },
+  "archive": {
+    "id": 645329722,
+    "sha256": "cedc81f0fa2859ae34335db3abf5844176d760a8e76d557f85c195242fc9737e",
+    "byte_size": 1683207,
+    "file_count": 12,
+    "name": "sm1sharp2-fronts-20261015.zip"
+  },
+  "archive_metadata": [
+    {
+      "file": "manifest.json",
+      "sha256": "36c93fa4f6ddb4a3160279355b5fe82083d1b7f7ef5d338953c99d20422b3f7a",
+      "byte_size": 51773
+    },
+    {
+      "file": "receipts/preparation-summary.json",
+      "sha256": "5c69285a88ae91916fb362345012f5dc3a583982664f0a8d8cfdaefb3d0213c3",
+      "byte_size": 1314
+    },
+    {
+      "file": "receipts/current-card-bindings.json",
+      "sha256": "072b7e3c43d80bfa671a81d90c47d451c45b84c9253d627641d9b8378f45aa48",
+      "byte_size": 9959
+    },
+    {
+      "file": "receipts/finite-decision.json",
+      "sha256": "090c3c3c0a18c620971703e425e178986c879b8ba26f842c6f9a835e99fbf2dc",
+      "byte_size": 4498
+    }
+  ],
+  "rows": [
+    {
+      "printing_id": "4f5ffc62-ebdf-4768-a11c-7dd384c3c6d7",
+      "set_id": "151b0439-551d-49d6-bd35-32c4d3a2de4f",
+      "set_code": "SM1+",
+      "language_code": "ja",
+      "collector_number": "064",
+      "card_native_name": "ニンフィアGX",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "95aea58b-127f-4b66-9906-2c4f2ad8763f"
+      ],
+      "batch_id": "JP-SHARP-001",
+      "work_type": "SHARP",
+      "source_code": "pokellector",
+      "provider_id": "pokellector:photo:14613",
+      "image_url": "https://den-cards.pokellector.com/200/Sylveon-GX.SM1+.64.14613.png",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/de6eec9518fb45321efeb85563825953599523807ae05a9ab5f4c4117f92f821/original.png",
+          "sha256": "de6eec9518fb45321efeb85563825953599523807ae05a9ab5f4c4117f92f821",
+          "byte_size": 824795,
+          "width": 567,
+          "height": 800,
+          "mime_type": "image/png",
+          "artifact_id": 645329722
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/3891189281b3ea6061efd904890264b875d21ba6bacf33e7ab18dabb896bf281/card-grid.webp",
+          "sha256": "3891189281b3ea6061efd904890264b875d21ba6bacf33e7ab18dabb896bf281",
+          "byte_size": 22598,
+          "width": 240,
+          "height": 339,
+          "mime_type": "image/webp",
+          "artifact_id": 645329722
+        },
+        {
+          "role": "search-result",
+          "file": "objects/d4244f0e77cc3303f5b8045c8f3ece98a2f81ea1f5b664d9871a1591abbfdee1/search-result.webp",
+          "sha256": "d4244f0e77cc3303f5b8045c8f3ece98a2f81ea1f5b664d9871a1591abbfdee1",
+          "byte_size": 4446,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 645329722
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/f05d08cb8ff6a40c51c6b888fcc711099712beac442fe46c4e1f6918df3b3899/detail-page.webp",
+          "sha256": "f05d08cb8ff6a40c51c6b888fcc711099712beac442fe46c4e1f6918df3b3899",
+          "byte_size": 81894,
+          "width": 567,
+          "height": 800,
+          "mime_type": "image/webp",
+          "artifact_id": 645329722
+        }
+      ],
+      "evidence": {
+        "source_url": "https://den-cards.pokellector.com/200/Sylveon-GX.SM1+.64.14613.png",
+        "source_page_url": "https://jp.pokellector.com/Sun-Moon-Strengthening-Expansion-Expansion/Sylveon-GX-Card-64",
+        "provider_id": "pokellector:photo:14613",
+        "source_metadata_sha256": "20304cac267b92423f89105c746693ff10de825f4fd28096c45cea4f5bfffc40",
+        "source_body": {
+          "contract": "sm1plus-two-sharper-japanese-shared-fronts-v1",
+          "accepted_category": "Pokemon",
+          "work_type": "SHARP",
+          "photo_identity_projection": {
+            "schemaVersion": 1,
+            "printingId": "4f5ffc62-ebdf-4768-a11c-7dd384c3c6d7",
+            "setId": "151b0439-551d-49d6-bd35-32c4d3a2de4f",
+            "setCode": "SM1+",
+            "languageCode": "ja",
+            "canonicalCollectorAlias": "064",
+            "currentCanonicalName": "ニンフィアGX",
+            "sourceCode": "pokellector",
+            "sourceDetailUrl": "https://jp.pokellector.com/Sun-Moon-Strengthening-Expansion-Expansion/Sylveon-GX-Card-64",
+            "literalOriginalUrl": "https://den-cards.pokellector.com/200/Sylveon-GX.SM1+.64.14613.png",
+            "literalOriginalUrlSha256": "1b67197c7aff0034dbba95f2630322f58723bf917e4b9d911baa785e319ab873",
+            "sourceProviderCardId": "14613",
+            "sourceProviderCardIdBoundByPageCommentAndMainImage": true,
+            "proposedSourceCardId": "pokellector:photo:14613",
+            "selectedSourceCardId": null,
+            "originalFileByteSha256": "de6eec9518fb45321efeb85563825953599523807ae05a9ab5f4c4117f92f821",
+            "width": 567,
+            "height": 800,
+            "format": "png",
+            "actualPrintedReference": "064/051",
+            "actualSetFooter": "SM1+",
+            "actualRarityText": "HR",
+            "physicalEditionCertified": false,
+            "physicalFinishAuthenticated": false
+          },
+          "photo_identity_projection_canonical_sha256": "8b0ceaae89d7149e85444be35f3de8978b80d51e561e5b6dba7533b5fcee7099",
+          "photo_raw_private_html_file_byte_sha256": "20304cac267b92423f89105c746693ff10de825f4fd28096c45cea4f5bfffc40",
+          "root_approved_raw_row_canonical_sha256": "407312848ca1f7d624c8e42b4def1cd8d0c627ed960a9d88f518c927257770e0",
+          "actual_pixel_signature": {
+            "alias": "064",
+            "category": "Pokemon",
+            "printedName": "ニンフィアGX",
+            "observedLanguage": "ja",
+            "printedJapaneseNameReadCertain": true,
+            "hp": 200,
+            "type": "Fairy",
+            "stage": "1進化",
+            "evolvesFromPrinted": "イーブイ",
+            "attacks": [
+              {
+                "name": "マジカルリボン",
+                "cost": [
+                  "Fairy"
+                ],
+                "damage": null,
+                "japaneseBody": "自分の山札にある好きなカードを3枚まで、手札に加える。そして山札を切る。",
+                "meaning": "Put up to3cards of your choice from your deck into your hand,then shuffle the deck.",
+                "revealingCardsClaimed": false
+              },
+              {
+                "name": "ようせいのかぜ",
+                "cost": [
+                  "Fairy",
+                  "Colorless",
+                  "Colorless"
+                ],
+                "damage": 110,
+                "additionalRuleBody": null
+              },
+              {
+                "name": "プリエールGX",
+                "cost": [
+                  "Fairy",
+                  "Colorless",
+                  "Colorless"
+                ],
+                "damage": null,
+                "japaneseBody": "相手のベンチポケモン2匹と、そのポケモンについているすべてのカードを、相手の手札にもどす。",
+                "gxUsageClause": "対戦中、自分はGXワザを1回しか使えない。",
+                "meaning": "Return2opposing BenchedPokémon and allcards attached to them to the opponent’s hand; you can use a GX attack only once during the game.",
+                "benchPokemonCountPrinted": 2,
+                "upToClauseClaimed": false
+              }
+            ],
+            "gxRule": {
+              "label": "GXルール",
+              "japaneseBody": "ポケモンGXがきぜつしたとき、相手はサイドを2枚とる。",
+              "meaning": "When a PokémonGX is Knocked Out,the opponent takes2Prizecards."
+            },
+            "allPrintedAttackAndGXRuleClausesDirectlyRead": true,
+            "weakness": {
+              "type": "Metal",
+              "value": "×2"
+            },
+            "resistance": {
+              "type": "Darkness",
+              "value": -20
+            },
+            "retreat": [
+              "Colorless",
+              "Colorless"
+            ],
+            "artist": "5ban Graphics",
+            "artistReadCertain": true,
+            "printedCollectorNumber": "064/051",
+            "sourceReference64Slash51SemanticEquivalent": true,
+            "printedSetFooter": "SM1+",
+            "regulationMarkObserved": "A",
+            "rarityGlyphTextObserved": "HR",
+            "art": "Full-art Sylveon with ribbon-like feelers,winking amid a pastel rainbow foil-looking field.",
+            "foilAppearance": "Rainbow/pastel textured foil-looking fullart; HR printedfooter visible.",
+            "completeOuterFrameAndAllFourCornersVisible": true,
+            "externalSourceWatermarkObserved": false,
+            "slabOrGradingLabelObserved": false,
+            "visibleEditionStamp": false,
+            "physicalEditionCertified": false,
+            "physicalFinishAuthenticated": false,
+            "stampAbsenceOr2017NotUnlimitedCertificate": true,
+            "printedCopyrightYearRead": 2017,
+            "fullLegalCopyrightLineTranscriptionClaimed": false,
+            "printedNationalDex": null,
+            "noDexInferredFromSpecies": true
+          },
+          "actual_pixel_signature_canonical_sha256": "aa6e7ce4687983e88d6f45e72fea3faa7e02019db34be4cee8ff9c9c4378103b",
+          "actual_signature_unchanged_root_accepted": true,
+          "provider_body_verbatim_agreement_certified": false,
+          "current_production_binding": {
+            "printing": {
+              "id": "4f5ffc62-ebdf-4768-a11c-7dd384c3c6d7",
+              "set_id": "151b0439-551d-49d6-bd35-32c4d3a2de4f",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": true
+              },
+              "collector_number": "064",
+              "printing_discriminator": "",
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "95aea58b-127f-4b66-9906-2c4f2ad8763f",
+                "is_default": false,
+                "artwork_key": null,
+                "finish_code": "holo",
+                "printing_id": "4f5ffc62-ebdf-4768-a11c-7dd384c3c6d7",
+                "variant_code": "holo",
+                "canonical_key": "pokemon:ja:151b0439-551d-49d6-bd35-32c4d3a2de4f:064:holo",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "151b0439-551d-49d6-bd35-32c4d3a2de4f",
+                "set_code": "SM1+",
+                "variant_id": "95aea58b-127f-4b66-9906-2c4f2ad8763f",
+                "artwork_key": null,
+                "finish_code": "holo",
+                "printing_id": "4f5ffc62-ebdf-4768-a11c-7dd384c3c6d7",
+                "variant_code": "holo",
+                "canonical_key": "pokemon:ja:151b0439-551d-49d6-bd35-32c4d3a2de4f:064:holo",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "064",
+                "catalogue_version": "ja:magazine-promo-reconciliation-2026-09-27-v1",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "4f5ffc62-ebdf-4768-a11c-7dd384c3c6d7"
+          },
+          "current_staging_binding": {
+            "printing": {
+              "id": "4f5ffc62-ebdf-4768-a11c-7dd384c3c6d7",
+              "set_id": "151b0439-551d-49d6-bd35-32c4d3a2de4f",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": false
+              },
+              "collector_number": "064",
+              "printing_discriminator": null,
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "95aea58b-127f-4b66-9906-2c4f2ad8763f",
+                "is_default": false,
+                "artwork_key": null,
+                "finish_code": "holo",
+                "printing_id": "4f5ffc62-ebdf-4768-a11c-7dd384c3c6d7",
+                "variant_code": "holo",
+                "canonical_key": "pokemon:ja:151b0439-551d-49d6-bd35-32c4d3a2de4f:064:holo",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "151b0439-551d-49d6-bd35-32c4d3a2de4f",
+                "set_code": "SM1p",
+                "variant_id": "95aea58b-127f-4b66-9906-2c4f2ad8763f",
+                "artwork_key": null,
+                "finish_code": "holo",
+                "printing_id": "4f5ffc62-ebdf-4768-a11c-7dd384c3c6d7",
+                "variant_code": "holo",
+                "canonical_key": "pokemon:ja:151b0439-551d-49d6-bd35-32c4d3a2de4f:064:holo",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "064",
+                "catalogue_version": "ja:tcgdex-796afd47e430-full-primary-2026-08-19",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "4f5ffc62-ebdf-4768-a11c-7dd384c3c6d7"
+          },
+          "required_asset_scope": {
+            "printing_id": "4f5ffc62-ebdf-4768-a11c-7dd384c3c6d7",
+            "variant_id": null
+          },
+          "source_variant_id": null,
+          "required_delivery_kind": "shared",
+          "queue_controls": {
+            "identity_controls": {
+              "canonical_alias": "064",
+              "canonical_native_label_preserved": "ニンフィアGX",
+              "accepted_category": "Pokemon",
+              "actual_printed_collector_reference": "064/051",
+              "actual_set_footer": "SM1+",
+              "actual_rarity_text": "HR",
+              "energy_leaf_glyph_not_printed_grass_kanji": false
+            },
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "four_outer_corners_visible": true,
+              "printed_body_language": "ja",
+              "name_or_energy_glyph_and_footer_readable": true,
+              "all_category_applicable_rules_read": true,
+              "edition_stamp_observed": false,
+              "stamp_absence_does_not_certify_unlimited": true
+            },
+            "source_qa": {
+              "actual_japanese_full_front_verified": true,
+              "original_sha256": "de6eec9518fb45321efeb85563825953599523807ae05a9ab5f4c4117f92f821",
+              "actual_signature_canonical_sha256": "aa6e7ce4687983e88d6f45e72fea3faa7e02019db34be4cee8ff9c9c4378103b",
+              "source_metadata_is_sole_identity_proof": false,
+              "provider_body_verbatim_agreement": false,
+              "physical_finish_certified": false,
+              "physical_edition_certified": false
+            }
+          },
+          "historical_authority": {
+            "selected_source_card_id": null,
+            "safe_photo_selected_source_card_id": null,
+            "preparation_approved": false,
+            "publication_approved": false
+          },
+          "root_finite_authority": {
+            "decision_file_byte_sha256": "0fd57f13f1e5683a81beb901f607a26f3c4480fe97b22c03dded22d3ed822882",
+            "preparation_approved": true,
+            "conditional_future_publication_approved": true,
+            "private_package_is_production_ready": false
+          },
+          "quality_qualification": {
+            "saved_tiny_reference_dimensions": [
+              139,
+              196
+            ],
+            "current_configured_api_image_null": true,
+            "measured_delivered_pixel_count_gain_ratio": 16.649537512846866,
+            "larger_delivered_dimensions_prove_native_optical_gain": false,
+            "original_hd_pixel_front": false,
+            "detail_hd_pixel_file": false
+          },
+          "provider_processing_metadata": {
+            "embedded_history_summary": {
+              "software": "ImageMagick 6.7.2-7 2016-06-16 Q16 http://www.imagemagick.org",
+              "thumbReportedWidth": "363",
+              "thumbReportedHeight": "512",
+              "thumbReportedMimetype": "image/jpeg",
+              "jpegColorspace": "2",
+              "jpegSamplingFactor": "2x2,1x1,1x1"
+            },
+            "embedded_thumb_uri_classification": {
+              "alias": "064",
+              "metadataKey": "Thumb::URI",
+              "uriSha256": "1ffd9ffb37185a45cf9a4cf1a87f2a8d6b9aad58895031c564a11c3bad1614ce",
+              "classification": "local_filesystem_reference_in_provider_metadata",
+              "protocol": "file:",
+              "credentialsPresent": false,
+              "signatureOrSensitiveQueryKeyPresent": false,
+              "rawURINotCopiedToSafeJson": true,
+              "rawURIStillEmbeddedInUnchangedOriginal": true,
+              "originalIfPublishedWouldExposeEmbeddedMetadata": true,
+              "metadataNotStrippedOrTranscoded": true
+            },
+            "raw_local_uri_excluded_from_safe_json": true,
+            "raw_local_uri_remains_embedded_in_unchanged_original": true,
+            "original_metadata_will_remain_publicly_visible_if_published": true,
+            "original_metadata_stripped": false,
+            "ordinary_noncredentialed_provider_metadata_exposure_root_accepted": true
+          },
+          "coverage": {
+            "wholeUnchangedOriginalIndividuallyViewed": true,
+            "fullPILSharpRGBAAgreement": true,
+            "completeFrameAndFourOuterCornersVisible": true,
+            "printedJapaneseNameOrEnergyGlyphAndBodyReadable": true,
+            "actualSM1PlusFooterAndCollectorNumberMatch": true
+          },
+          "new_source_requests": 0,
+          "full_commercial_html_or_provider_json_included": false,
+          "source_wide_approval": false,
+          "vendor_licence_certified": false,
+          "physical_finish_certified": false,
+          "physical_edition_certified": false,
+          "exact_holo_material_authentication_certified": false,
+          "unlimited_edition_certified": false,
+          "provider_never_resized_certified": false,
+          "native_optical_gain_claimed": false,
+          "stackr_enlargement": false
+        },
+        "queue_controls": {
+          "identity_controls": {
+            "canonical_alias": "064",
+            "canonical_native_label_preserved": "ニンフィアGX",
+            "accepted_category": "Pokemon",
+            "actual_printed_collector_reference": "064/051",
+            "actual_set_footer": "SM1+",
+            "actual_rarity_text": "HR",
+            "energy_leaf_glyph_not_printed_grass_kanji": false
+          },
+          "pixel_observations": {
+            "whole_original_inspected": true,
+            "full_frame_visible": true,
+            "four_outer_corners_visible": true,
+            "printed_body_language": "ja",
+            "name_or_energy_glyph_and_footer_readable": true,
+            "all_category_applicable_rules_read": true,
+            "edition_stamp_observed": false,
+            "stamp_absence_does_not_certify_unlimited": true
+          },
+          "source_qa": {
+            "actual_japanese_full_front_verified": true,
+            "original_sha256": "de6eec9518fb45321efeb85563825953599523807ae05a9ab5f4c4117f92f821",
+            "actual_signature_canonical_sha256": "aa6e7ce4687983e88d6f45e72fea3faa7e02019db34be4cee8ff9c9c4378103b",
+            "source_metadata_is_sole_identity_proof": false,
+            "provider_body_verbatim_agreement": false,
+            "physical_finish_certified": false,
+            "physical_edition_certified": false
+          }
+        },
+        "artwork_scope": "printing_front",
+        "delivery_kind": "shared",
+        "asset_variant_id": null,
+        "source_variant_id": null,
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "physical_edition_verified": false,
+        "vendor_licence_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "c83aac5f-eba3-49da-baab-cbef76e8bc6e",
+      "set_id": "151b0439-551d-49d6-bd35-32c4d3a2de4f",
+      "set_code": "SM1+",
+      "language_code": "ja",
+      "collector_number": "068",
+      "card_native_name": "基本草エネルギー",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "b685e065-7995-4968-bc77-67826c3245fe"
+      ],
+      "batch_id": "JP-SHARP-001",
+      "work_type": "SHARP",
+      "source_code": "pokellector",
+      "provider_id": "pokellector:photo:23186",
+      "image_url": "https://den-cards.pokellector.com/200/Grass-Energy.SM1+.68.23186.png",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/2ee529ffbfc32bde464ae48193e644c8b8228f57ba05c2ca2d16207454b98289/original.png",
+          "sha256": "2ee529ffbfc32bde464ae48193e644c8b8228f57ba05c2ca2d16207454b98289",
+          "byte_size": 665429,
+          "width": 570,
+          "height": 800,
+          "mime_type": "image/png",
+          "artifact_id": 645329722
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/120cab70486176cef946c8fc8dd73a844828bdd58de8c03bbacc58fb345986ab/card-grid.webp",
+          "sha256": "120cab70486176cef946c8fc8dd73a844828bdd58de8c03bbacc58fb345986ab",
+          "byte_size": 13546,
+          "width": 240,
+          "height": 337,
+          "mime_type": "image/webp",
+          "artifact_id": 645329722
+        },
+        {
+          "role": "search-result",
+          "file": "objects/a757933ca270ecdf2000e2ff76f3a8af3695a291b1004fa9f1d0d5a2c721114d/search-result.webp",
+          "sha256": "a757933ca270ecdf2000e2ff76f3a8af3695a291b1004fa9f1d0d5a2c721114d",
+          "byte_size": 2886,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 645329722
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/82c767cef840a7582ff66faa5213136974a7890754cee6e80e83bafce8ec75f7/detail-page.webp",
+          "sha256": "82c767cef840a7582ff66faa5213136974a7890754cee6e80e83bafce8ec75f7",
+          "byte_size": 53294,
+          "width": 570,
+          "height": 800,
+          "mime_type": "image/webp",
+          "artifact_id": 645329722
+        }
+      ],
+      "evidence": {
+        "source_url": "https://den-cards.pokellector.com/200/Grass-Energy.SM1+.68.23186.png",
+        "source_page_url": "https://jp.pokellector.com/Sun-Moon-Strengthening-Expansion-Expansion/Grass-Energy-Card-68",
+        "provider_id": "pokellector:photo:23186",
+        "source_metadata_sha256": "f3c5087238f64d3c942a78b0759ad1476d6bfb1adb4ccd7ce007765ee9625d66",
+        "source_body": {
+          "contract": "sm1plus-two-sharper-japanese-shared-fronts-v1",
+          "accepted_category": "Energy",
+          "work_type": "SHARP",
+          "photo_identity_projection": {
+            "schemaVersion": 1,
+            "printingId": "c83aac5f-eba3-49da-baab-cbef76e8bc6e",
+            "setId": "151b0439-551d-49d6-bd35-32c4d3a2de4f",
+            "setCode": "SM1+",
+            "languageCode": "ja",
+            "canonicalCollectorAlias": "068",
+            "currentCanonicalName": "基本草エネルギー",
+            "sourceCode": "pokellector",
+            "sourceDetailUrl": "https://jp.pokellector.com/Sun-Moon-Strengthening-Expansion-Expansion/Grass-Energy-Card-68",
+            "literalOriginalUrl": "https://den-cards.pokellector.com/200/Grass-Energy.SM1+.68.23186.png",
+            "literalOriginalUrlSha256": "a74ddaceb39fedbd16991bd2eb81e7613b8fe8c1fe5c1dba7a813b2a1494697f",
+            "sourceProviderCardId": "23186",
+            "sourceProviderCardIdBoundByPageCommentAndMainImage": true,
+            "proposedSourceCardId": "pokellector:photo:23186",
+            "selectedSourceCardId": null,
+            "originalFileByteSha256": "2ee529ffbfc32bde464ae48193e644c8b8228f57ba05c2ca2d16207454b98289",
+            "width": 570,
+            "height": 800,
+            "format": "png",
+            "actualPrintedReference": "068/051",
+            "actualSetFooter": "SM1+",
+            "actualRarityText": "UR",
+            "physicalEditionCertified": false,
+            "physicalFinishAuthenticated": false
+          },
+          "photo_identity_projection_canonical_sha256": "5ce9d33c9934ac341083fdcb57c6c415f1b503ae38b3acb3520965756e6dd6ce",
+          "photo_raw_private_html_file_byte_sha256": "f3c5087238f64d3c942a78b0759ad1476d6bfb1adb4ccd7ce007765ee9625d66",
+          "root_approved_raw_row_canonical_sha256": "585ee542e08ce7995adc1a333500a0febe4bdb13a476dccf9b4dffc0712ea918",
+          "actual_pixel_signature": {
+            "alias": "068",
+            "category": "Energy",
+            "semanticCanonicalNamePreserved": "基本草エネルギー",
+            "printedTitleTextSegments": [
+              "基本",
+              "エネルギー"
+            ],
+            "printedGrassTypeAsGlyphNotKanji": true,
+            "printedTypeGlyph": "Grass leaf",
+            "printedFuriganaObserved": [
+              "きほん",
+              "くさ"
+            ],
+            "observedLanguage": "ja",
+            "latinHeader": "ENERGY",
+            "printedJapaneseScriptReadCertain": true,
+            "type": "Grass",
+            "printedCollectorNumber": "068/051",
+            "sourceReference68Slash51SemanticEquivalent": true,
+            "printedSetFooter": "SM1+",
+            "regulationMarkObserved": null,
+            "rarityGlyphTextObserved": "UR",
+            "art": "Black Grass leaf symbol inside a glowing green sphere,green radiant field and white starbursts within a gold border.",
+            "foilAppearance": "Gold and green textured foil-looking field with white stars; UR footer printed.",
+            "hp": null,
+            "hpNotApplicable": true,
+            "nationalDex": null,
+            "pokemonStage": null,
+            "attacks": [],
+            "rulesBody": null,
+            "artist": null,
+            "artistCreditObserved": false,
+            "pokemonFieldsNotInvented": true,
+            "completeOuterFrameAndAllFourCornersVisible": true,
+            "externalSourceWatermarkObserved": false,
+            "slabOrGradingLabelObserved": false,
+            "visibleEditionStamp": false,
+            "physicalEditionCertified": false,
+            "physicalFinishAuthenticated": false,
+            "stampAbsenceOr2017NotUnlimitedCertificate": true,
+            "printedCopyrightYearRead": 2017,
+            "fullLegalCopyrightLineTranscriptionClaimed": false
+          },
+          "actual_pixel_signature_canonical_sha256": "6f38464516e3a5eea213c2199587ba2af87127a2488d3353637851da9fafe41a",
+          "actual_signature_unchanged_root_accepted": true,
+          "provider_body_verbatim_agreement_certified": false,
+          "current_production_binding": {
+            "printing": {
+              "id": "c83aac5f-eba3-49da-baab-cbef76e8bc6e",
+              "set_id": "151b0439-551d-49d6-bd35-32c4d3a2de4f",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": true
+              },
+              "collector_number": "068",
+              "printing_discriminator": "",
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "b685e065-7995-4968-bc77-67826c3245fe",
+                "is_default": false,
+                "artwork_key": null,
+                "finish_code": "holo",
+                "printing_id": "c83aac5f-eba3-49da-baab-cbef76e8bc6e",
+                "variant_code": "holo",
+                "canonical_key": "pokemon:ja:151b0439-551d-49d6-bd35-32c4d3a2de4f:068:holo",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "151b0439-551d-49d6-bd35-32c4d3a2de4f",
+                "set_code": "SM1+",
+                "variant_id": "b685e065-7995-4968-bc77-67826c3245fe",
+                "artwork_key": null,
+                "finish_code": "holo",
+                "printing_id": "c83aac5f-eba3-49da-baab-cbef76e8bc6e",
+                "variant_code": "holo",
+                "canonical_key": "pokemon:ja:151b0439-551d-49d6-bd35-32c4d3a2de4f:068:holo",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "068",
+                "catalogue_version": "ja:magazine-promo-reconciliation-2026-09-27-v1",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "c83aac5f-eba3-49da-baab-cbef76e8bc6e"
+          },
+          "current_staging_binding": {
+            "printing": {
+              "id": "c83aac5f-eba3-49da-baab-cbef76e8bc6e",
+              "set_id": "151b0439-551d-49d6-bd35-32c4d3a2de4f",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": false
+              },
+              "collector_number": "068",
+              "printing_discriminator": null,
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "b685e065-7995-4968-bc77-67826c3245fe",
+                "is_default": false,
+                "artwork_key": null,
+                "finish_code": "holo",
+                "printing_id": "c83aac5f-eba3-49da-baab-cbef76e8bc6e",
+                "variant_code": "holo",
+                "canonical_key": "pokemon:ja:151b0439-551d-49d6-bd35-32c4d3a2de4f:068:holo",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "151b0439-551d-49d6-bd35-32c4d3a2de4f",
+                "set_code": "SM1p",
+                "variant_id": "b685e065-7995-4968-bc77-67826c3245fe",
+                "artwork_key": null,
+                "finish_code": "holo",
+                "printing_id": "c83aac5f-eba3-49da-baab-cbef76e8bc6e",
+                "variant_code": "holo",
+                "canonical_key": "pokemon:ja:151b0439-551d-49d6-bd35-32c4d3a2de4f:068:holo",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "068",
+                "catalogue_version": "ja:tcgdex-796afd47e430-full-primary-2026-08-19",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "c83aac5f-eba3-49da-baab-cbef76e8bc6e"
+          },
+          "required_asset_scope": {
+            "printing_id": "c83aac5f-eba3-49da-baab-cbef76e8bc6e",
+            "variant_id": null
+          },
+          "source_variant_id": null,
+          "required_delivery_kind": "shared",
+          "queue_controls": {
+            "identity_controls": {
+              "canonical_alias": "068",
+              "canonical_native_label_preserved": "基本草エネルギー",
+              "accepted_category": "Energy",
+              "actual_printed_collector_reference": "068/051",
+              "actual_set_footer": "SM1+",
+              "actual_rarity_text": "UR",
+              "energy_leaf_glyph_not_printed_grass_kanji": true
+            },
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "four_outer_corners_visible": true,
+              "printed_body_language": "ja",
+              "name_or_energy_glyph_and_footer_readable": true,
+              "all_category_applicable_rules_read": true,
+              "edition_stamp_observed": false,
+              "stamp_absence_does_not_certify_unlimited": true
+            },
+            "source_qa": {
+              "actual_japanese_full_front_verified": true,
+              "original_sha256": "2ee529ffbfc32bde464ae48193e644c8b8228f57ba05c2ca2d16207454b98289",
+              "actual_signature_canonical_sha256": "6f38464516e3a5eea213c2199587ba2af87127a2488d3353637851da9fafe41a",
+              "source_metadata_is_sole_identity_proof": false,
+              "provider_body_verbatim_agreement": false,
+              "physical_finish_certified": false,
+              "physical_edition_certified": false
+            }
+          },
+          "historical_authority": {
+            "selected_source_card_id": null,
+            "safe_photo_selected_source_card_id": null,
+            "preparation_approved": false,
+            "publication_approved": false
+          },
+          "root_finite_authority": {
+            "decision_file_byte_sha256": "0fd57f13f1e5683a81beb901f607a26f3c4480fe97b22c03dded22d3ed822882",
+            "preparation_approved": true,
+            "conditional_future_publication_approved": true,
+            "private_package_is_production_ready": false
+          },
+          "quality_qualification": {
+            "saved_tiny_reference_dimensions": [
+              139,
+              196
+            ],
+            "current_configured_api_image_null": true,
+            "measured_delivered_pixel_count_gain_ratio": 16.737630303920128,
+            "larger_delivered_dimensions_prove_native_optical_gain": false,
+            "original_hd_pixel_front": false,
+            "detail_hd_pixel_file": false
+          },
+          "provider_processing_metadata": {
+            "embedded_history_summary": {
+              "software": "ImageMagick 6.7.2-7 2016-06-16 Q16 http://www.imagemagick.org",
+              "thumbReportedWidth": "365",
+              "thumbReportedHeight": "512",
+              "thumbReportedMimetype": "image/jpeg",
+              "jpegColorspace": "2",
+              "jpegSamplingFactor": "2x2,1x1,1x1"
+            },
+            "embedded_thumb_uri_classification": {
+              "alias": "068",
+              "metadataKey": "Thumb::URI",
+              "uriSha256": "201d772f4455d98bacf22d66732d9b7fcec282e899f5d9039acb4d01934855d6",
+              "classification": "local_filesystem_reference_in_provider_metadata",
+              "protocol": "file:",
+              "credentialsPresent": false,
+              "signatureOrSensitiveQueryKeyPresent": false,
+              "rawURINotCopiedToSafeJson": true,
+              "rawURIStillEmbeddedInUnchangedOriginal": true,
+              "originalIfPublishedWouldExposeEmbeddedMetadata": true,
+              "metadataNotStrippedOrTranscoded": true
+            },
+            "raw_local_uri_excluded_from_safe_json": true,
+            "raw_local_uri_remains_embedded_in_unchanged_original": true,
+            "original_metadata_will_remain_publicly_visible_if_published": true,
+            "original_metadata_stripped": false,
+            "ordinary_noncredentialed_provider_metadata_exposure_root_accepted": true
+          },
+          "coverage": {
+            "wholeUnchangedOriginalIndividuallyViewed": true,
+            "fullPILSharpRGBAAgreement": true,
+            "completeFrameAndFourOuterCornersVisible": true,
+            "printedJapaneseNameOrEnergyGlyphAndBodyReadable": true,
+            "actualSM1PlusFooterAndCollectorNumberMatch": true
+          },
+          "new_source_requests": 0,
+          "full_commercial_html_or_provider_json_included": false,
+          "source_wide_approval": false,
+          "vendor_licence_certified": false,
+          "physical_finish_certified": false,
+          "physical_edition_certified": false,
+          "exact_holo_material_authentication_certified": false,
+          "unlimited_edition_certified": false,
+          "provider_never_resized_certified": false,
+          "native_optical_gain_claimed": false,
+          "stackr_enlargement": false
+        },
+        "queue_controls": {
+          "identity_controls": {
+            "canonical_alias": "068",
+            "canonical_native_label_preserved": "基本草エネルギー",
+            "accepted_category": "Energy",
+            "actual_printed_collector_reference": "068/051",
+            "actual_set_footer": "SM1+",
+            "actual_rarity_text": "UR",
+            "energy_leaf_glyph_not_printed_grass_kanji": true
+          },
+          "pixel_observations": {
+            "whole_original_inspected": true,
+            "full_frame_visible": true,
+            "four_outer_corners_visible": true,
+            "printed_body_language": "ja",
+            "name_or_energy_glyph_and_footer_readable": true,
+            "all_category_applicable_rules_read": true,
+            "edition_stamp_observed": false,
+            "stamp_absence_does_not_certify_unlimited": true
+          },
+          "source_qa": {
+            "actual_japanese_full_front_verified": true,
+            "original_sha256": "2ee529ffbfc32bde464ae48193e644c8b8228f57ba05c2ca2d16207454b98289",
+            "actual_signature_canonical_sha256": "6f38464516e3a5eea213c2199587ba2af87127a2488d3353637851da9fafe41a",
+            "source_metadata_is_sole_identity_proof": false,
+            "provider_body_verbatim_agreement": false,
+            "physical_finish_certified": false,
+            "physical_edition_certified": false
+          }
+        },
+        "artwork_scope": "printing_front",
+        "delivery_kind": "shared",
+        "asset_variant_id": null,
+        "source_variant_id": null,
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "physical_edition_verified": false,
+        "vendor_licence_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    }
+  ],
+  "source_counts": {
+    "pokellector": 2
+  },
+  "delivery_scope": {
+    "fixed_batch_ids": [
+      "JP-SHARP-001"
+    ],
+    "work_type": "SHARP",
+    "eligible_fronts": 2,
+    "eligible_aliases": [
+      "064",
+      "068"
+    ],
+    "asset_variant_id": null,
+    "source_variant_id": null,
+    "delivery_kind": "shared",
+    "whole_batch_completion_asserted": false,
+    "close_sharper_original_group_only": true
+  },
+  "binding_expectations": {
+    "production": [
+      {
+        "set_id": "151b0439-551d-49d6-bd35-32c4d3a2de4f",
+        "set_code": "SM1+",
+        "game_code": "pokemon",
+        "variant_id": "95aea58b-127f-4b66-9906-2c4f2ad8763f",
+        "finish_code": "holo",
+        "printing_id": "4f5ffc62-ebdf-4768-a11c-7dd384c3c6d7",
+        "variant_code": "holo",
+        "language_code": "ja",
+        "card_native_name": "ニンフィアGX",
+        "collector_number": "064",
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "151b0439-551d-49d6-bd35-32c4d3a2de4f",
+        "set_code": "SM1+",
+        "game_code": "pokemon",
+        "variant_id": "b685e065-7995-4968-bc77-67826c3245fe",
+        "finish_code": "holo",
+        "printing_id": "c83aac5f-eba3-49da-baab-cbef76e8bc6e",
+        "variant_code": "holo",
+        "language_code": "ja",
+        "card_native_name": "基本草エネルギー",
+        "collector_number": "068",
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "same_artwork_as_variant_id": null
+      }
+    ],
+    "staging": [
+      {
+        "set_id": "151b0439-551d-49d6-bd35-32c4d3a2de4f",
+        "set_code": "SM1p",
+        "game_code": "pokemon",
+        "variant_id": "95aea58b-127f-4b66-9906-2c4f2ad8763f",
+        "finish_code": "holo",
+        "printing_id": "4f5ffc62-ebdf-4768-a11c-7dd384c3c6d7",
+        "variant_code": "holo",
+        "language_code": "ja",
+        "card_native_name": "ニンフィアGX",
+        "collector_number": "064",
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "151b0439-551d-49d6-bd35-32c4d3a2de4f",
+        "set_code": "SM1p",
+        "game_code": "pokemon",
+        "variant_id": "b685e065-7995-4968-bc77-67826c3245fe",
+        "finish_code": "holo",
+        "printing_id": "c83aac5f-eba3-49da-baab-cbef76e8bc6e",
+        "variant_code": "holo",
+        "language_code": "ja",
+        "card_native_name": "基本草エネルギー",
+        "collector_number": "068",
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+        "same_artwork_as_variant_id": null
+      }
+    ]
+  },
+  "scope_counts": {
+    "production": {
+      "printings": 2,
+      "variants": 2,
+      "names": 4,
+      "sets": 1
+    },
+    "staging": {
+      "printings": 2,
+      "variants": 2,
+      "names": 4,
+      "sets": 1
+    }
+  },
+  "source_policies": {
+    "production": [
+      {
+        "code": "pokellector",
+        "display_name": "Pokellector (owner supplied Japanese card fronts)",
+        "source_type": "image",
+        "base_url": "https://jp.pokellector.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly2 Neo2 Ruin Wall reference fronts in STACKR-JA-LEGACY-TRAINER-FRONTS-20261015-008; owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval or independently verified vendor licence.",
+        "deprecated_at": null
+      },
+      {
+        "code": "pricecharting",
+        "display_name": "PriceCharting (owner supplied card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.pricecharting.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Owner-attested source use for exactly Aquapolis Mr. Mime95b and Porygon103b shared printing-front artwork in finite cohort AQUAPOLIS-SHARED-002-20261015. Independent vendor and underlying card licences are unverified. No source-wide approval; each later acquisition requires separate finite approval. Existing provenance rows and source policies must remain unchanged.",
+        "deprecated_at": null
+      },
+      {
+        "code": "scrydex",
+        "display_name": "Scrydex",
+        "source_type": "image",
+        "base_url": "https://scrydex.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Exactly 89 English MEP fronts approved by owner; catalogue/rights-evidence/mep89-scrydex-owner-confirmation.2026-09-27.json; 8c68bf3499de1e1e340b00fc03e5f1b469de7b65d259b5fba5a8b4cd31119ca9. No source-wide approval.",
+        "deprecated_at": null
+      },
+      {
+        "code": "tcgcollector",
+        "display_name": "TCGCollector (owner supplied Japanese card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.tcgcollector.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly3 independently accepted Leaders Stadium fronts019/081/096. Bind the final finite preparation/publication decision and exact source selection in the publisher plan. Owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval, independently verified vendor licence or physical finish/edition certification. Finite decision SHA256 68f1af735d5e481ed26d1aabbe94e493d520575d9d4191413508f9ec90cf68ff.",
+        "deprecated_at": null
+      }
+    ],
+    "staging": []
+  },
+  "new_sources": {
+    "production": [],
+    "staging": [
+      {
+        "code": "pokellector",
+        "display_name": "Pokellector (owner supplied Japanese card fronts)",
+        "source_type": "image",
+        "base_url": "https://jp.pokellector.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly2 Neo2 Ruin Wall reference fronts in STACKR-JA-LEGACY-TRAINER-FRONTS-20261015-008; owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval or independently verified vendor licence.",
+        "deprecated_at": null
+      }
+    ]
+  },
+  "source_policy_checkpoint_sha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+  "existing_source_row_hashes": {
+    "pricecharting": "b4b74f69cac37abeee008806f6d8dd8ea63a0f0ce43fa065dce9261b428b421b",
+    "pokellector": "4a2a381f7146c0bfa0201c62e91e7682f18da6597c4743f23414f3606a942a71",
+    "tcgcollector": "f1f01d1b094986ad0a9f5efcf1e98fe7388e0e1c5452d23da6cf7cab97a1ca29",
+    "scrydex": "25af5b50521e6fd0942764536f62b0c53c3e72c69c874916241af47735407929"
+  },
+  "before_snapshot_hashes": {
+    "production": "f93b1520560ca2418b0bbb66b7dae174308c6e779061fd6b719209ee67abbede",
+    "staging": "152d0225e7f9d6a322c4734b742e3df0272db2b2ffa136c5d4361609f36081bc"
+  },
+  "before_snapshot_counts": {
+    "production": 16,
+    "staging": 10
+  },
+  "expected_after_snapshot_counts": {
+    "production": 20,
+    "staging": 15
+  },
+  "production_source_changes_allowed": 0,
+  "stage_only_fixture_source_code": "pokellector",
+  "canonical_schema_qualification": {
+    "production": [
+      {
+        "id": "4f5ffc62-ebdf-4768-a11c-7dd384c3c6d7",
+        "set_id": "151b0439-551d-49d6-bd35-32c4d3a2de4f",
+        "game_code": "pokemon",
+        "deprecated_at": null,
+        "language_code": "ja",
+        "_column_presence": {
+          "printing_discriminator": true
+        },
+        "collector_number": "064",
+        "printing_discriminator": "",
+        "corrected_by_printing_id": null
+      },
+      {
+        "id": "c83aac5f-eba3-49da-baab-cbef76e8bc6e",
+        "set_id": "151b0439-551d-49d6-bd35-32c4d3a2de4f",
+        "game_code": "pokemon",
+        "deprecated_at": null,
+        "language_code": "ja",
+        "_column_presence": {
+          "printing_discriminator": true
+        },
+        "collector_number": "068",
+        "printing_discriminator": "",
+        "corrected_by_printing_id": null
+      }
+    ],
+    "staging": [
+      {
+        "id": "4f5ffc62-ebdf-4768-a11c-7dd384c3c6d7",
+        "set_id": "151b0439-551d-49d6-bd35-32c4d3a2de4f",
+        "game_code": "pokemon",
+        "deprecated_at": null,
+        "language_code": "ja",
+        "_column_presence": {
+          "printing_discriminator": false
+        },
+        "collector_number": "064",
+        "printing_discriminator": null,
+        "corrected_by_printing_id": null
+      },
+      {
+        "id": "c83aac5f-eba3-49da-baab-cbef76e8bc6e",
+        "set_id": "151b0439-551d-49d6-bd35-32c4d3a2de4f",
+        "game_code": "pokemon",
+        "deprecated_at": null,
+        "language_code": "ja",
+        "_column_presence": {
+          "printing_discriminator": false
+        },
+        "collector_number": "068",
+        "printing_discriminator": null,
+        "corrected_by_printing_id": null
+      }
+    ]
+  },
+  "saved_targets_sha256": "cbf6166649e4694af875762372061f71e760f0f43c462712a17ae3370ee58fcb",
+  "identity_table_sha256": "78db7be5a93785f1f5d852f546bcff63b148211baff68062e7a2922aec327710"
+}

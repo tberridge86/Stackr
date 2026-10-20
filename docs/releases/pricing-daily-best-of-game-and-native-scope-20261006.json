@@ -1,0 +1,873 @@
+{
+  "schemaVersion": "stackr-pricing-bounded-batch-v1",
+  "observedAt": "2026-10-06T05:42:16.438Z",
+  "productionTcgcsv": {
+    "deployment": "a05bce17-b739-48a8-ae23-9b3809fada5e",
+    "configuredSource": "7dc63aa",
+    "datasetAt": "2026-10-05T20:05:57+0000",
+    "report": {
+      "project": "oakdbbzdqwurpjnoqhmu",
+      "datasetAt": "2026-10-05T20:05:57+0000",
+      "runId": "faaff017-f849-48b1-9721-9c148f6bf689",
+      "requeued": 0,
+      "outcomeSeed": {
+        "pages": 1,
+        "scanned": 0,
+        "written": 0,
+        "complete": true
+      },
+      "setsClaimed": 1,
+      "complete": 1,
+      "unmapped": 0,
+      "deferred": 0,
+      "cards": 9,
+      "priced": 7,
+      "status": "needs_mapping",
+      "health": {
+        "runId": "faaff017-f849-48b1-9721-9c148f6bf689",
+        "groups": [
+          {
+            "total": 168,
+            "status": "complete",
+            "categoryId": 3
+          },
+          {
+            "total": 52,
+            "status": "unmapped",
+            "categoryId": 3
+          },
+          {
+            "total": 163,
+            "status": "complete",
+            "categoryId": 85
+          },
+          {
+            "total": 297,
+            "status": "unmapped",
+            "categoryId": 85
+          }
+        ],
+        "quotes": [
+          {
+            "stale": 0,
+            "total": 23123,
+            "provider": "tcgcsv",
+            "languageCode": "en"
+          },
+          {
+            "stale": 9,
+            "total": 6912,
+            "provider": "tcgcsv",
+            "languageCode": "ja"
+          }
+        ],
+        "outcomes": {
+          "total": 76272,
+          "no_provider_quote": 4027,
+          "unsupported_finish": 1240,
+          "unsupported_language": 28813
+        },
+        "datasetAt": "2026-10-05T20:05:57+00:00",
+        "runStatus": "needs_mapping",
+        "openRepairs": 38009
+      }
+    },
+    "diagnostics": {
+      "pages": 39,
+      "scanned": 76317,
+      "catalogueVersions": [
+        {
+          "language_code": "en",
+          "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+        },
+        {
+          "language_code": "ja",
+          "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+        },
+        {
+          "language_code": "ko",
+          "id": "159eb902-143c-42ef-b682-93ba5f9e81f2"
+        },
+        {
+          "language_code": "zh-cn",
+          "id": "79f43e8f-7062-4d29-8571-569eccb7c249"
+        },
+        {
+          "language_code": "zh-tw",
+          "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e"
+        }
+      ],
+      "observedAtBegin": "2026-10-06T05:17:11.396841+00:00",
+      "observedAtEnd": "2026-10-06T05:18:30.977794+00:00",
+      "atomic": false
+    },
+    "coverageError": null,
+    "exitCode": 0,
+    "completedAt": "2026-10-06T05:18:38.840445067Z",
+    "automaticWrites": true,
+    "initiatedHere": false
+  },
+  "productionCardmarket": {
+    "deployment": "c7286876-4d57-4cf9-aaf3-ac1162958684",
+    "source": "f6aee12a18a89c28b8fd1b9c234a9d834e8ced4b",
+    "completedAt": "2026-10-06T05:19:02.986356973Z",
+    "reviewedMappings": 9234,
+    "stored": 0,
+    "repairs": 53,
+    "pages": 1,
+    "complete": true,
+    "productsRevision": "cb8f04f4-14aa-49eb-8f25-939ff5c411ef",
+    "guideRevision": "49c887e7-42ec-4116-bf4c-7f3b6fc5b84f",
+    "knownPriceSourceDate": "2026-10-06T00:48:24Z",
+    "knownExpiry": "2026-10-08T00:48:24Z",
+    "restartOrCacheClear": false
+  },
+  "englishCohort": {
+    "name": "Best of Game",
+    "category": 3,
+    "group": 1455,
+    "set": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+    "nativePublishedVariants": 9,
+    "positiveFreshStoredVariantQuotes": 7,
+    "recordedAt": "2026-10-06T05:17:07.622285Z",
+    "source": "2026-10-05T20:05:57Z",
+    "expiry": "2026-10-07T20:05:57Z",
+    "serviceRoleActualReadReferences": 9,
+    "serviceRoleReadPositiveUniqueVariants": 7,
+    "netWholeCatalogueGain": null,
+    "ownerHttpOrPhoneVerified": false,
+    "scope": "stored native variant general quotes; no new exact condition/graded/holdings/sold claim",
+    "nativeReadback": {
+      "observed_at": "2026-10-06 05:36:10.20553+00",
+      "identities": [
+        {
+          "set": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+          "quote": null,
+          "finish": "reverse_holo",
+          "member": true,
+          "number": "8",
+          "display": "Best of Game",
+          "variant": "83f4b840-fad0-4dc9-9d38-23da8ecb8e59",
+          "language": "en",
+          "printing": "02830f64-b2ae-4a99-9618-4894bcbf5275",
+          "currentSet": true,
+          "nativeName": "Best of Game",
+          "variantCode": "reverse_holo"
+        },
+        {
+          "set": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+          "quote": null,
+          "finish": "reverse_holo",
+          "member": true,
+          "number": "9",
+          "display": "Best of Game",
+          "variant": "a6141298-de36-44c4-9a83-1abaddcef7e5",
+          "language": "en",
+          "printing": "66a007f5-1462-4d73-912b-544fce080f8d",
+          "currentSet": true,
+          "nativeName": "Best of Game",
+          "variantCode": "reverse_holo"
+        },
+        {
+          "set": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+          "quote": {
+            "set_id": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+            "subtype": "Reverse Holofoil",
+            "group_id": 1455,
+            "provider": "tcgcsv",
+            "dataset_at": "2026-10-05T20:05:57+00:00",
+            "product_id": 88387,
+            "variant_id": "a74a1953-8bb3-41d9-ad1b-3de9f302f237",
+            "category_id": 3,
+            "printing_id": "6983e71a-bdbe-4467-9355-bd3e5cfabe6b",
+            "recorded_at": "2026-10-06T05:17:07.622285+00:00",
+            "stale_after": "2026-10-07T20:05:57+00:00",
+            "exchange_rate": 0.756158514816137,
+            "language_code": "en",
+            "original_price": 31.66,
+            "central_estimate": 23.94,
+            "exchange_rate_at": "2026-10-05T00:00:00+00:00",
+            "original_currency": "USD",
+            "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+            "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+          },
+          "finish": "reverse_holo",
+          "member": true,
+          "number": "3",
+          "display": "Best of Game",
+          "variant": "a74a1953-8bb3-41d9-ad1b-3de9f302f237",
+          "language": "en",
+          "printing": "6983e71a-bdbe-4467-9355-bd3e5cfabe6b",
+          "currentSet": true,
+          "nativeName": "Best of Game",
+          "variantCode": "reverse_holo"
+        },
+        {
+          "set": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+          "quote": {
+            "set_id": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+            "subtype": "Normal",
+            "group_id": 1455,
+            "provider": "tcgcsv",
+            "dataset_at": "2026-10-05T20:05:57+00:00",
+            "product_id": 84616,
+            "variant_id": "bdafaa2a-8c31-490b-bf70-f6d262337790",
+            "category_id": 3,
+            "printing_id": "ae0be05c-e4b8-457a-897a-7e6993235088",
+            "recorded_at": "2026-10-06T05:17:07.622285+00:00",
+            "stale_after": "2026-10-07T20:05:57+00:00",
+            "exchange_rate": 0.756158514816137,
+            "language_code": "en",
+            "original_price": 65.63,
+            "central_estimate": 49.63,
+            "exchange_rate_at": "2026-10-05T00:00:00+00:00",
+            "original_currency": "USD",
+            "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+            "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+          },
+          "finish": "normal",
+          "member": true,
+          "number": "6",
+          "display": "Best of Game",
+          "variant": "bdafaa2a-8c31-490b-bf70-f6d262337790",
+          "language": "en",
+          "printing": "ae0be05c-e4b8-457a-897a-7e6993235088",
+          "currentSet": true,
+          "nativeName": "Best of Game",
+          "variantCode": "normal"
+        },
+        {
+          "set": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+          "quote": {
+            "set_id": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+            "subtype": "Reverse Holofoil",
+            "group_id": 1455,
+            "provider": "tcgcsv",
+            "dataset_at": "2026-10-05T20:05:57+00:00",
+            "product_id": 85106,
+            "variant_id": "b97afdc5-24ec-43cf-a0be-2b6a46fbdc1e",
+            "category_id": 3,
+            "printing_id": "b1020afa-87ee-4330-90a9-887e06045a1d",
+            "recorded_at": "2026-10-06T05:17:07.622285+00:00",
+            "stale_after": "2026-10-07T20:05:57+00:00",
+            "exchange_rate": 0.756158514816137,
+            "language_code": "en",
+            "original_price": 38.68,
+            "central_estimate": 29.25,
+            "exchange_rate_at": "2026-10-05T00:00:00+00:00",
+            "original_currency": "USD",
+            "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+            "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+          },
+          "finish": "reverse_holo",
+          "member": true,
+          "number": "1",
+          "display": "Best of Game",
+          "variant": "b97afdc5-24ec-43cf-a0be-2b6a46fbdc1e",
+          "language": "en",
+          "printing": "b1020afa-87ee-4330-90a9-887e06045a1d",
+          "currentSet": true,
+          "nativeName": "Best of Game",
+          "variantCode": "reverse_holo"
+        },
+        {
+          "set": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+          "quote": {
+            "set_id": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+            "subtype": "Normal",
+            "group_id": 1455,
+            "provider": "tcgcsv",
+            "dataset_at": "2026-10-05T20:05:57+00:00",
+            "product_id": 84666,
+            "variant_id": "40a07aeb-2b6e-4f0d-ac85-81ad6164fb86",
+            "category_id": 3,
+            "printing_id": "bda4862d-3aca-4fc9-a66c-844c377cdc74",
+            "recorded_at": "2026-10-06T05:17:07.622285+00:00",
+            "stale_after": "2026-10-07T20:05:57+00:00",
+            "exchange_rate": 0.756158514816137,
+            "language_code": "en",
+            "original_price": 142.69,
+            "central_estimate": 107.9,
+            "exchange_rate_at": "2026-10-05T00:00:00+00:00",
+            "original_currency": "USD",
+            "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+            "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+          },
+          "finish": "normal",
+          "member": true,
+          "number": "7",
+          "display": "Best of Game",
+          "variant": "40a07aeb-2b6e-4f0d-ac85-81ad6164fb86",
+          "language": "en",
+          "printing": "bda4862d-3aca-4fc9-a66c-844c377cdc74",
+          "currentSet": true,
+          "nativeName": "Best of Game",
+          "variantCode": "normal"
+        },
+        {
+          "set": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+          "quote": {
+            "set_id": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+            "subtype": "Normal",
+            "group_id": 1455,
+            "provider": "tcgcsv",
+            "dataset_at": "2026-10-05T20:05:57+00:00",
+            "product_id": 88786,
+            "variant_id": "c282e02e-92d1-472a-a0c2-18d45bee89d9",
+            "category_id": 3,
+            "printing_id": "c5188b12-81f1-4f3a-9552-bb98eba0b3e7",
+            "recorded_at": "2026-10-06T05:17:07.622285+00:00",
+            "stale_after": "2026-10-07T20:05:57+00:00",
+            "exchange_rate": 0.756158514816137,
+            "language_code": "en",
+            "original_price": 40.18,
+            "central_estimate": 30.38,
+            "exchange_rate_at": "2026-10-05T00:00:00+00:00",
+            "original_currency": "USD",
+            "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+            "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+          },
+          "finish": "normal",
+          "member": true,
+          "number": "4",
+          "display": "Best of Game",
+          "variant": "c282e02e-92d1-472a-a0c2-18d45bee89d9",
+          "language": "en",
+          "printing": "c5188b12-81f1-4f3a-9552-bb98eba0b3e7",
+          "currentSet": true,
+          "nativeName": "Best of Game",
+          "variantCode": "normal"
+        },
+        {
+          "set": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+          "quote": {
+            "set_id": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+            "subtype": "Normal",
+            "group_id": 1455,
+            "provider": "tcgcsv",
+            "dataset_at": "2026-10-05T20:05:57+00:00",
+            "product_id": 88793,
+            "variant_id": "ef3bd14e-996d-4bb3-a943-7bdcaac3ef8a",
+            "category_id": 3,
+            "printing_id": "cdc40f7e-104b-454a-bc5f-ea9e3c5f4c97",
+            "recorded_at": "2026-10-06T05:17:07.622285+00:00",
+            "stale_after": "2026-10-07T20:05:57+00:00",
+            "exchange_rate": 0.756158514816137,
+            "language_code": "en",
+            "original_price": 20.48,
+            "central_estimate": 15.49,
+            "exchange_rate_at": "2026-10-05T00:00:00+00:00",
+            "original_currency": "USD",
+            "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+            "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+          },
+          "finish": "normal",
+          "member": true,
+          "number": "5",
+          "display": "Best of Game",
+          "variant": "ef3bd14e-996d-4bb3-a943-7bdcaac3ef8a",
+          "language": "en",
+          "printing": "cdc40f7e-104b-454a-bc5f-ea9e3c5f4c97",
+          "currentSet": true,
+          "nativeName": "Best of Game",
+          "variantCode": "normal"
+        },
+        {
+          "set": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+          "quote": {
+            "set_id": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+            "subtype": "Reverse Holofoil",
+            "group_id": 1455,
+            "provider": "tcgcsv",
+            "dataset_at": "2026-10-05T20:05:57+00:00",
+            "product_id": 86098,
+            "variant_id": "3fc0b927-9dcd-4390-9deb-5b86ce16cdf3",
+            "category_id": 3,
+            "printing_id": "e91f0fac-1c80-4d8e-adc1-863a576457dc",
+            "recorded_at": "2026-10-06T05:17:07.622285+00:00",
+            "stale_after": "2026-10-07T20:05:57+00:00",
+            "exchange_rate": 0.756158514816137,
+            "language_code": "en",
+            "original_price": 39.85,
+            "central_estimate": 30.13,
+            "exchange_rate_at": "2026-10-05T00:00:00+00:00",
+            "original_currency": "USD",
+            "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+            "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+          },
+          "finish": "reverse_holo",
+          "member": true,
+          "number": "2",
+          "display": "Best of Game",
+          "variant": "3fc0b927-9dcd-4390-9deb-5b86ce16cdf3",
+          "language": "en",
+          "printing": "e91f0fac-1c80-4d8e-adc1-863a576457dc",
+          "currentSet": true,
+          "nativeName": "Best of Game",
+          "variantCode": "reverse_holo"
+        }
+      ]
+    },
+    "serviceRpcReadback": {
+      "responses": [
+        {
+          "reference": "83f4b840-fad0-4dc9-9d38-23da8ecb8e59",
+          "candidates": [
+            {
+              "set_id": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+              "outcome": {
+                "reason": "unresolved_provider_identity",
+                "next_retry_at": "2026-10-07T05:16:59.947+00:00"
+              },
+              "estimate": null,
+              "snapshot": null,
+              "is_default": false,
+              "variant_id": "83f4b840-fad0-4dc9-9d38-23da8ecb8e59",
+              "finish_code": "reverse_holo",
+              "printing_id": "02830f64-b2ae-4a99-9618-4894bcbf5275",
+              "variant_code": "reverse_holo",
+              "general_quote": null,
+              "language_code": "en",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "requested_variant_ids": [
+                "83f4b840-fad0-4dc9-9d38-23da8ecb8e59"
+              ]
+            }
+          ]
+        },
+        {
+          "reference": "a6141298-de36-44c4-9a83-1abaddcef7e5",
+          "candidates": [
+            {
+              "set_id": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+              "outcome": {
+                "reason": "unresolved_provider_identity",
+                "next_retry_at": "2026-10-07T05:16:59.947+00:00"
+              },
+              "estimate": null,
+              "snapshot": null,
+              "is_default": false,
+              "variant_id": "a6141298-de36-44c4-9a83-1abaddcef7e5",
+              "finish_code": "reverse_holo",
+              "printing_id": "66a007f5-1462-4d73-912b-544fce080f8d",
+              "variant_code": "reverse_holo",
+              "general_quote": null,
+              "language_code": "en",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "requested_variant_ids": [
+                "a6141298-de36-44c4-9a83-1abaddcef7e5"
+              ]
+            }
+          ]
+        },
+        {
+          "reference": "a74a1953-8bb3-41d9-ad1b-3de9f302f237",
+          "candidates": [
+            {
+              "set_id": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+              "outcome": {
+                "reason": "priced",
+                "next_retry_at": "2026-10-07T05:16:59.947+00:00"
+              },
+              "estimate": null,
+              "snapshot": null,
+              "is_default": false,
+              "variant_id": "a74a1953-8bb3-41d9-ad1b-3de9f302f237",
+              "finish_code": "reverse_holo",
+              "printing_id": "6983e71a-bdbe-4467-9355-bd3e5cfabe6b",
+              "variant_code": "reverse_holo",
+              "general_quote": {
+                "set_id": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+                "subtype": "Reverse Holofoil",
+                "group_id": 1455,
+                "provider": "tcgcsv",
+                "dataset_at": "2026-10-05T20:05:57+00:00",
+                "product_id": 88387,
+                "variant_id": "a74a1953-8bb3-41d9-ad1b-3de9f302f237",
+                "category_id": 3,
+                "printing_id": "6983e71a-bdbe-4467-9355-bd3e5cfabe6b",
+                "recorded_at": "2026-10-06T05:17:07.622285+00:00",
+                "stale_after": "2026-10-07T20:05:57+00:00",
+                "exchange_rate": 0.756158514816137,
+                "language_code": "en",
+                "original_price": 31.66,
+                "central_estimate": 23.94,
+                "exchange_rate_at": "2026-10-05T00:00:00+00:00",
+                "original_currency": "USD",
+                "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+                "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+              },
+              "language_code": "en",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "requested_variant_ids": [
+                "a74a1953-8bb3-41d9-ad1b-3de9f302f237"
+              ]
+            }
+          ]
+        },
+        {
+          "reference": "bdafaa2a-8c31-490b-bf70-f6d262337790",
+          "candidates": [
+            {
+              "set_id": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+              "outcome": {
+                "reason": "priced",
+                "next_retry_at": "2026-10-07T05:16:59.947+00:00"
+              },
+              "estimate": null,
+              "snapshot": null,
+              "is_default": true,
+              "variant_id": "bdafaa2a-8c31-490b-bf70-f6d262337790",
+              "finish_code": "normal",
+              "printing_id": "ae0be05c-e4b8-457a-897a-7e6993235088",
+              "variant_code": "normal",
+              "general_quote": {
+                "set_id": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+                "subtype": "Normal",
+                "group_id": 1455,
+                "provider": "tcgcsv",
+                "dataset_at": "2026-10-05T20:05:57+00:00",
+                "product_id": 84616,
+                "variant_id": "bdafaa2a-8c31-490b-bf70-f6d262337790",
+                "category_id": 3,
+                "printing_id": "ae0be05c-e4b8-457a-897a-7e6993235088",
+                "recorded_at": "2026-10-06T05:17:07.622285+00:00",
+                "stale_after": "2026-10-07T20:05:57+00:00",
+                "exchange_rate": 0.756158514816137,
+                "language_code": "en",
+                "original_price": 65.63,
+                "central_estimate": 49.63,
+                "exchange_rate_at": "2026-10-05T00:00:00+00:00",
+                "original_currency": "USD",
+                "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+                "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+              },
+              "language_code": "en",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "requested_variant_ids": [
+                "bdafaa2a-8c31-490b-bf70-f6d262337790"
+              ]
+            }
+          ]
+        },
+        {
+          "reference": "b97afdc5-24ec-43cf-a0be-2b6a46fbdc1e",
+          "candidates": [
+            {
+              "set_id": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+              "outcome": {
+                "reason": "priced",
+                "next_retry_at": "2026-10-07T05:16:59.947+00:00"
+              },
+              "estimate": null,
+              "snapshot": null,
+              "is_default": false,
+              "variant_id": "b97afdc5-24ec-43cf-a0be-2b6a46fbdc1e",
+              "finish_code": "reverse_holo",
+              "printing_id": "b1020afa-87ee-4330-90a9-887e06045a1d",
+              "variant_code": "reverse_holo",
+              "general_quote": {
+                "set_id": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+                "subtype": "Reverse Holofoil",
+                "group_id": 1455,
+                "provider": "tcgcsv",
+                "dataset_at": "2026-10-05T20:05:57+00:00",
+                "product_id": 85106,
+                "variant_id": "b97afdc5-24ec-43cf-a0be-2b6a46fbdc1e",
+                "category_id": 3,
+                "printing_id": "b1020afa-87ee-4330-90a9-887e06045a1d",
+                "recorded_at": "2026-10-06T05:17:07.622285+00:00",
+                "stale_after": "2026-10-07T20:05:57+00:00",
+                "exchange_rate": 0.756158514816137,
+                "language_code": "en",
+                "original_price": 38.68,
+                "central_estimate": 29.25,
+                "exchange_rate_at": "2026-10-05T00:00:00+00:00",
+                "original_currency": "USD",
+                "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+                "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+              },
+              "language_code": "en",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "requested_variant_ids": [
+                "b97afdc5-24ec-43cf-a0be-2b6a46fbdc1e"
+              ]
+            }
+          ]
+        },
+        {
+          "reference": "40a07aeb-2b6e-4f0d-ac85-81ad6164fb86",
+          "candidates": [
+            {
+              "set_id": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+              "outcome": {
+                "reason": "priced",
+                "next_retry_at": "2026-10-07T05:16:59.947+00:00"
+              },
+              "estimate": null,
+              "snapshot": null,
+              "is_default": true,
+              "variant_id": "40a07aeb-2b6e-4f0d-ac85-81ad6164fb86",
+              "finish_code": "normal",
+              "printing_id": "bda4862d-3aca-4fc9-a66c-844c377cdc74",
+              "variant_code": "normal",
+              "general_quote": {
+                "set_id": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+                "subtype": "Normal",
+                "group_id": 1455,
+                "provider": "tcgcsv",
+                "dataset_at": "2026-10-05T20:05:57+00:00",
+                "product_id": 84666,
+                "variant_id": "40a07aeb-2b6e-4f0d-ac85-81ad6164fb86",
+                "category_id": 3,
+                "printing_id": "bda4862d-3aca-4fc9-a66c-844c377cdc74",
+                "recorded_at": "2026-10-06T05:17:07.622285+00:00",
+                "stale_after": "2026-10-07T20:05:57+00:00",
+                "exchange_rate": 0.756158514816137,
+                "language_code": "en",
+                "original_price": 142.69,
+                "central_estimate": 107.9,
+                "exchange_rate_at": "2026-10-05T00:00:00+00:00",
+                "original_currency": "USD",
+                "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+                "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+              },
+              "language_code": "en",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "requested_variant_ids": [
+                "40a07aeb-2b6e-4f0d-ac85-81ad6164fb86"
+              ]
+            }
+          ]
+        },
+        {
+          "reference": "c282e02e-92d1-472a-a0c2-18d45bee89d9",
+          "candidates": [
+            {
+              "set_id": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+              "outcome": {
+                "reason": "priced",
+                "next_retry_at": "2026-10-07T05:16:59.947+00:00"
+              },
+              "estimate": null,
+              "snapshot": null,
+              "is_default": true,
+              "variant_id": "c282e02e-92d1-472a-a0c2-18d45bee89d9",
+              "finish_code": "normal",
+              "printing_id": "c5188b12-81f1-4f3a-9552-bb98eba0b3e7",
+              "variant_code": "normal",
+              "general_quote": {
+                "set_id": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+                "subtype": "Normal",
+                "group_id": 1455,
+                "provider": "tcgcsv",
+                "dataset_at": "2026-10-05T20:05:57+00:00",
+                "product_id": 88786,
+                "variant_id": "c282e02e-92d1-472a-a0c2-18d45bee89d9",
+                "category_id": 3,
+                "printing_id": "c5188b12-81f1-4f3a-9552-bb98eba0b3e7",
+                "recorded_at": "2026-10-06T05:17:07.622285+00:00",
+                "stale_after": "2026-10-07T20:05:57+00:00",
+                "exchange_rate": 0.756158514816137,
+                "language_code": "en",
+                "original_price": 40.18,
+                "central_estimate": 30.38,
+                "exchange_rate_at": "2026-10-05T00:00:00+00:00",
+                "original_currency": "USD",
+                "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+                "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+              },
+              "language_code": "en",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "requested_variant_ids": [
+                "c282e02e-92d1-472a-a0c2-18d45bee89d9"
+              ]
+            }
+          ]
+        },
+        {
+          "reference": "ef3bd14e-996d-4bb3-a943-7bdcaac3ef8a",
+          "candidates": [
+            {
+              "set_id": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+              "outcome": {
+                "reason": "priced",
+                "next_retry_at": "2026-10-07T05:16:59.947+00:00"
+              },
+              "estimate": null,
+              "snapshot": null,
+              "is_default": true,
+              "variant_id": "ef3bd14e-996d-4bb3-a943-7bdcaac3ef8a",
+              "finish_code": "normal",
+              "printing_id": "cdc40f7e-104b-454a-bc5f-ea9e3c5f4c97",
+              "variant_code": "normal",
+              "general_quote": {
+                "set_id": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+                "subtype": "Normal",
+                "group_id": 1455,
+                "provider": "tcgcsv",
+                "dataset_at": "2026-10-05T20:05:57+00:00",
+                "product_id": 88793,
+                "variant_id": "ef3bd14e-996d-4bb3-a943-7bdcaac3ef8a",
+                "category_id": 3,
+                "printing_id": "cdc40f7e-104b-454a-bc5f-ea9e3c5f4c97",
+                "recorded_at": "2026-10-06T05:17:07.622285+00:00",
+                "stale_after": "2026-10-07T20:05:57+00:00",
+                "exchange_rate": 0.756158514816137,
+                "language_code": "en",
+                "original_price": 20.48,
+                "central_estimate": 15.49,
+                "exchange_rate_at": "2026-10-05T00:00:00+00:00",
+                "original_currency": "USD",
+                "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+                "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+              },
+              "language_code": "en",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "requested_variant_ids": [
+                "ef3bd14e-996d-4bb3-a943-7bdcaac3ef8a"
+              ]
+            }
+          ]
+        },
+        {
+          "reference": "3fc0b927-9dcd-4390-9deb-5b86ce16cdf3",
+          "candidates": [
+            {
+              "set_id": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+              "outcome": {
+                "reason": "priced",
+                "next_retry_at": "2026-10-07T05:16:59.947+00:00"
+              },
+              "estimate": null,
+              "snapshot": null,
+              "is_default": false,
+              "variant_id": "3fc0b927-9dcd-4390-9deb-5b86ce16cdf3",
+              "finish_code": "reverse_holo",
+              "printing_id": "e91f0fac-1c80-4d8e-adc1-863a576457dc",
+              "variant_code": "reverse_holo",
+              "general_quote": {
+                "set_id": "2fa71113-d1fe-4498-a69f-581cfdfc2f9e",
+                "subtype": "Reverse Holofoil",
+                "group_id": 1455,
+                "provider": "tcgcsv",
+                "dataset_at": "2026-10-05T20:05:57+00:00",
+                "product_id": 86098,
+                "variant_id": "3fc0b927-9dcd-4390-9deb-5b86ce16cdf3",
+                "category_id": 3,
+                "printing_id": "e91f0fac-1c80-4d8e-adc1-863a576457dc",
+                "recorded_at": "2026-10-06T05:17:07.622285+00:00",
+                "stale_after": "2026-10-07T20:05:57+00:00",
+                "exchange_rate": 0.756158514816137,
+                "language_code": "en",
+                "original_price": 39.85,
+                "central_estimate": 30.13,
+                "exchange_rate_at": "2026-10-05T00:00:00+00:00",
+                "original_currency": "USD",
+                "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+                "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+              },
+              "language_code": "en",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "requested_variant_ids": [
+                "3fc0b927-9dcd-4390-9deb-5b86ce16cdf3"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "japaneseM6a": {
+    "category": 85,
+    "group": 24721,
+    "name": "M6a: MEGA Expansion 30th Celebration",
+    "productionNativePublishedVariants": 176,
+    "nativePhysicalHash": "cce8de373b46ddd2eed477bd8adc6c2c",
+    "wholeCandidatesHash": "cce8de373b46ddd2eed477bd8adc6c2c",
+    "mapped": 176,
+    "products": 179,
+    "priceRows": 176,
+    "positiveDirectVariantQuotes": 72,
+    "noProviderQuoteForRequestedVariant": 104,
+    "alternativePrintingGuidesAlreadyStored": 101,
+    "alternativeGuidesVerifiedFreshPositiveThroughGuardedProductionRpc": 101,
+    "otherGuideRowsWithDirectPriceOverlap": 72,
+    "fullRawPrintingGuides": 173,
+    "sourceDate": "2026-10-05T20:05:57Z",
+    "expiry": "2026-10-07T20:05:57Z",
+    "newMappingsProposed": 0,
+    "blockedProductOrSubtypeOwnership": [],
+    "stagingPhysicalSetPresent": false,
+    "stagingProviderMemberPresent": false,
+    "stagingCandidates": 0,
+    "stagingRetainedProducts": 179,
+    "stagingRetainedPriceRows": 176,
+    "promotedOrWrittenHere": false,
+    "closeUnchangedSourceReview": true,
+    "exactOrHoldingsOrSold": false,
+    "guardedAlternativeReadParts": [
+      {
+        "requested": 50,
+        "returned": 50,
+        "statementTimeoutSeconds": 8
+      },
+      {
+        "requested": 50,
+        "returned": 50,
+        "statementTimeoutSeconds": 8
+      },
+      {
+        "requested": 1,
+        "returned": 1,
+        "statementTimeoutSeconds": 8
+      }
+    ],
+    "providerFinishProvenance": [
+      "Holofoil"
+    ],
+    "note": "Native source feeds do not substitute for an absent staged physical catalogue. The 101 existing alternate guides were read, not newly imported; together with 72 direct quotes this is a bounded set observation, not whole-catalogue coverage or owner delivery."
+  },
+  "coverage": {
+    "lastCompleteCutoff": "2026-10-06T03:34:45.990Z",
+    "lastCompletePositive": 38371,
+    "lastCompleteDenominator": 76030,
+    "lastCompletePercent": 50.47,
+    "fullPhysicalCatalogue": 76269,
+    "excludedKorean": 239,
+    "invalidChineseMemberships": 48,
+    "currentCompletePositive": null,
+    "currentCompletePercent": null,
+    "partialCheckpoint": "docs/releases/pricing-positive-coverage-checkpoint-20261006-0439.json",
+    "partialFrozenCutoff": "2026-10-06T04:39:53.734Z",
+    "noFailedCohortRetrial": true,
+    "noDeadlineRaised": true,
+    "sourceAvailabilityProjection": null,
+    "ownerHttpOrPhoneCoverage": null
+  },
+  "canonicalGuardPlan": "docs/releases/pricing-identity-guard-canonical-baseline-20261006.json",
+  "validation": {
+    "guardLocalSuiteControls": 20,
+    "legacyParity": true,
+    "rollbackRestoresPredecessor": true,
+    "serviceOnlyAndRepeatRollbackRejection": true,
+    "readOnlyMetadataReconciliation": true
+  },
+  "preserved": {
+    "dirtyPrimaryCheckout": true,
+    "fourOwnedDirtyWorkerFiles": true,
+    "koreanExcluded": true,
+    "unrelatedProductionPatch": "8e29d75c-d567-4a9a-9e96-8a40e51a22f3",
+    "sourceShadowNotDeployedProof": true,
+    "noSchemaCatalogueManualMappingPriceWrite": true,
+    "noDeploymentOrPaidActivation": true,
+    "noNativeOrOtaBuild": true,
+    "noOutsideMessage": true
+  },
+  "next": [
+    "Resolve canonical scoped guard migration provenance/route with the exact live baselines; do not push the obsolete ledger.",
+    "Do not repeat the M6a/M-P/previous guide writes or publish staging catalogues to enable mapping.",
+    "Check the existing staged TCGCSV 40-result changed-dataset path when the actual provider source advances; leave healthy workers and mounted cache undisturbed.",
+    "Choose future Japanese gaps only from physical cohorts actually present in both current stage and production; continue native Chinese evidence without paid activation or substitution."
+  ]
+}

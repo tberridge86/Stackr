@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_FROZEN_PUBLICATION_HANDOFF_READY",
+  "confirmation": "PUBLISH ARTWORK AQUAPOLIS SHARED FRONTS",
+  "fronts": 2,
+  "fixedVariantTuplesPerEnvironment": 4,
+  "printingAssetVariantId": null,
+  "deliveryKind": "shared",
+  "tests": {
+    "publisherNode": {
+      "pass": 15,
+      "fail": 0
+    },
+    "archiveGuardsPython": {
+      "pass": 6,
+      "fail": 0
+    },
+    "persistedFailureJournal": {
+      "pass": 1,
+      "fail": 0
+    },
+    "priorTCG3PublisherRegression": {
+      "pass": 18,
+      "fail": 0
+    },
+    "priorMC8ReadOnlyQueueReceipts": 8,
+    "priorMC8LocalImageObjects": 32,
+    "aquapolisPhase1SourceContract": {
+      "pass": 27,
+      "fail": 0
+    },
+    "queue": {
+      "realReceipts": 2,
+      "localImageByteObjects": 8,
+      "jointRawEntryTamperRejections": 28,
+      "forgedAuthorityRejections": 4,
+      "priorPredicatesPreserved": true,
+      "sharedQueueUnchanged": true,
+      "productionWrites": 0
+    }
+  },
+  "archiveInstaller": {
+    "assetId": 645177330,
+    "membersVerifiedAndExtracted": 12,
+    "runtimeSharpFullyDecoded": 8,
+    "privateArchivePILSharpRgbaAgreements": 8,
+    "privacySafeJsonFiles": 4
+  },
+  "sourceGuard": {
+    "externalAuthorityFilesRehashed": 12,
+    "oldProductionSources": 3,
+    "oldFullSourceFieldsProtected": 51,
+    "newProductionSources": 1,
+    "newSourceCode": "pricecharting",
+    "newSourceActive": false,
+    "newSourceLicenceStatus": "under_review",
+    "newSourceExactPolicyFields": 9,
+    "newSourceGeneratedFullRowFields": 17,
+    "stagingBaselineScopedSources": 0,
+    "onlyTemporaryStagingSource": "pricecharting",
+    "existingSourceMicrosecondsPreservedByBothJsonReaders": true,
+    "frozenFullBeforeSnapshotsChecked": true
+  },
+  "transactionFixtures": {
+    "productionRows": {
+      "before": 26,
+      "after": 31,
+      "assetsAdded": 2,
+      "linksAdded": 2,
+      "sourcesAdded": 1
+    },
+    "stagingRows": {
+      "before": 22,
+      "temporaryAfter": 27,
+      "afterRollback": 22
+    },
+    "oldMetadataAssetsAndLinksUnchanged": true,
+    "sourceAndLinkWriteFailuresRollBack": true
+  },
+  "unchangedPriorRepositoryFilesRehashed": 100,
+  "unchangedSharedDependenciesRehashed": 11,
+  "unchangedPhase1PrivatePinsRehashed": 41,
+  "workflow": {
+    "protectedProduction": true,
+    "exactMainSha": true,
+    "sharedDeploymentConcurrency": true,
+    "shaPinnedActions": 3,
+    "secretScannerPresent": true,
+    "localExact20FileSecretScanPassed": true,
+    "failureJournalAndRollbackReceipts": true
+  },
+  "planSha256": "96f6a0cd92b31b9e37bef04a6dfa7cec52366e780095a5c16f8c31f6320da43a",
+  "approvalSha256": "af20708b53b91319d99acfd0d256752b1c8975802a83be4b0a4c8682d8d161b0",
+  "sourceManifestSha256": "6a4589185a70dbe7b3745519502bafe554e976d9b8633aa8db2f3fbf33305ee6",
+  "archiveSha256": "97d39c1f4ef272951456a00093fecd14e2ba7a5751bcc0d8804050d71928c4d0",
+  "physicalFinishOrEditionCertified": false,
+  "exactNormalOrReversePhotoClaimed": false,
+  "newProviderRequests": 0,
+  "databaseRequests": 0,
+  "gitMutations": 0,
+  "sharedQueueWrites": 0,
+  "ledgerWrites": 0,
+  "storageWrites": 0,
+  "productionWrites": 0,
+  "livePublicationVerified": false,
+  "independentExactHeadAndHostedChecksStillRequired": true
+}

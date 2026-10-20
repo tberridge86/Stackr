@@ -1,0 +1,22 @@
+[
+  {
+    "printing_id": "1ec3e5ff-f0c2-4ff2-8423-9021a810f5b7",
+    "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+    "set_code": "PCG8",
+    "language_code": "ja",
+    "collector_number": "027",
+    "card_native_name": "luvdisc",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "c1697767-547d-4c48-a774-ccb5357f07b4"
+    ],
+    "batch_id": "JP-CARDS-041",
+    "work_type": "CARDS",
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:db50605658ba522392b809aea4200d8d2cef733f30c4cd75bd20ea3296720f8c",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/7a9b921596b750b23bf473eed1864bed1eb2904b414a9c2ff87f80f075a19024/1600.jpg",
+    "original_sha256": "caf0171a65a1a8d2c6ab7350ba201d270316dcf1767f13a628243dee15f54356",
+    "body_sha256": "ae2185864d2c55e87cde1806abc712cdc81e264f4e230a2eb4abd24162f36544",
+    "evidence_sha256": "f953aa453f58cdf24436d0dfa91d35e2d434b10f38654b036b937e8493d83cd6"
+  }
+]

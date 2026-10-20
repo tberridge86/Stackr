@@ -1,0 +1,117 @@
+{
+  "recordedAt": "2026-10-18T21:35:01.645Z",
+  "issueId": "V23",
+  "sourceRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+  "sourceGapConfirmed": true,
+  "recordedListingIdentityConfirmed": false,
+  "change": "Search requests structured listing media and seller image fields. Valid available thumbnails use the existing official/legacy preference followed by seller front/labelled media/back. One compatibility retry is limited to an exact missing media-column error and a current request generation.",
+  "sourceFiles": [
+    "app/(tabs)/search.tsx",
+    "lib/listingSearchMedia.ts",
+    "lib/marketplacePresentation.ts"
+  ],
+  "safeguards": [
+    "Unchanged trade/active/product predicates,18-row limit and RLS/client path",
+    "No compatibility retry on permissions, timeouts, unrelated schema errors or superseded/account-invalidated queries",
+    "HTTPS-only validated image candidates; malformed or unavailable media stays explicit",
+    "No changes to listing publication, prices, quantities or private collection data"
+  ],
+  "validation": {
+    "newListingMediaRegression": "PASS",
+    "actualProgressiveSearch": "PASS",
+    "actualSearchCoordinatorSettlement": "PASS",
+    "searchRecovery": "PASS",
+    "typecheck": "PASS",
+    "lint": {
+      "errors": 0,
+      "existingWarnings": 8
+    },
+    "independentReview": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/listing-search-media-source-review-v1-bounded-completion-review.json",
+      "sha256": "8e5d36613500c5686e2b95489f6137053770d7bfb6e005d8e541dffebe0fc2b5"
+    },
+    "sevenFileSourceBundle": {
+      "privatePath": "evidence/consolidation-20261018/listing-search-media-source-v1/source-pins.json",
+      "sha256": "39bd10a15d0f32ef9d139f379cbef74b549556e334507cdae650f4450d58c717"
+    },
+    "actualMapperBeforeAndAfter": {
+      "privatePath": "evidence/consolidation-20261018/listing-search-media-source-v1/actual-mapper-before-after.json",
+      "sha256": "cd497b6176327e55fe1221224a017fead6fec23312fd73ce875755f3961de25e"
+    },
+    "unsignedIos": {
+      "exportedSource": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
+      "runtimeRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+      "preservedIconCommits": [
+        "4fd177443d1e2f0a12e296728293d113c6a81f25",
+        "c85fa68f4e6dc7d62b290a76df59bd24d05446b3"
+      ],
+      "bundle": {
+        "path": "_expo/static/js/ios/entry-42dd80153c3289eb216419c5ede080c9.hbc",
+        "sha256": "c5e4e3f99c8f04e0508368b2c2d58453e5137f09bac49f133c489d1a840f6541",
+        "bytes": 11804174
+      },
+      "exactUniqueAssetsVerified": 74,
+      "listingMediaHelpersPackaged": true,
+      "iconComponentHelpersPackaged": true,
+      "exactSvgPathsPackaged": 44,
+      "receipt": {
+        "privatePath": "evidence/consolidation-20261018/combined-icons-ios-export-v1/asset-verification.json",
+        "sha256": "7b6754daa17475758abba077cc3a0423ccf9e5cbf75803bfbefc3ec1ae085b49"
+      },
+      "nativeSigned": false,
+      "uploaded": false,
+      "submitted": false,
+      "published": false,
+      "phoneVerified": false,
+      "testFlightHeld": true
+    },
+    "hostedSourceChecks": {
+      "checkedAt": "2026-10-18T21:49:28.020Z",
+      "sourceHead": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
+      "succeeded": 10,
+      "failed": 0,
+      "pending": 0,
+      "skipped": [
+        "release-candidate-gate",
+        "canary-api-evidence"
+      ],
+      "evidence": {
+        "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-4e1cdf7.json",
+        "sha256": "9fb65f14b076e4fd7e5967948b5fc16b2cd1d31b2ff6661b70858160e0a2c1fc"
+      },
+      "scope": "Exact pushed source snapshot. Subsequent documentation commits need their own hosted status; skipped release/canary gates do not prove delivery or phone acceptance."
+    },
+    "previousUnsignedIosBeforeIconIntegration": {
+      "exportedSource": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
+      "runtimeRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+      "bundle": {
+        "path": "_expo/static/js/ios/entry-41e9e4fdecdc123f827f005aec05eb9e.hbc",
+        "sha256": "c279c5ea4c6b4f1ebab3a927f6b0bbd015908338908126910ddd6d365fbdb06a",
+        "bytes": 11798374
+      },
+      "exactUniqueAssetsVerified": 74,
+      "listingMediaHelpersPackaged": true,
+      "receipt": {
+        "privatePath": "evidence/consolidation-20261018/listing-search-media-source-v1/ios-export-asset-verification.json",
+        "sha256": "05e8008e52fe45fa329564434be000a2325bcef4860ba691dab5ccefccb4b878"
+      },
+      "nativeSigned": false,
+      "uploaded": false,
+      "submitted": false,
+      "published": false,
+      "phoneVerified": false,
+      "testFlightHeld": true
+    }
+  },
+  "delivery": {
+    "implemented": true,
+    "tested": true,
+    "independentlyReviewed": true,
+    "merged": false,
+    "nativePublished": false,
+    "phoneVerified": false,
+    "unsignedCurrentRevisionExportPending": false,
+    "unsignedIosVerified": true
+  },
+  "testFlightHeld": true
+}

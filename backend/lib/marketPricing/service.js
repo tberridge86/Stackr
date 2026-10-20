@@ -206,7 +206,7 @@ function legacySource(row) {
 function legacySnapshotEstimate(row, variantId, scope) {
   const source = legacySource(row);
   const central = source === 'tcgdex'
-    ? snapshotValue(row, 'tcgdex_price', 'tcg_mid', 'tcg_low', 'market_price_gbp')
+    ? snapshotValue(row, 'tcgdex_price', 'tcg_mid', 'market_price_gbp')
     : null;
   if (!source || central == null) return null;
   const calculatedAt = dateOrNull(row.tcgdex_price_updated_at) ?? dateOrNull(row.calculated_at) ?? dateOrNull(row.snapshot_at);
@@ -464,9 +464,9 @@ function applyHistoryFilters(query, input = {}) {
   const currency = normalizeCurrency(input.currency);
   query = query.eq('product_kind', productType).eq('currency_code', currency);
   if (clean(input.observationType)) query = query.eq('observation_type', clean(input.observationType));
-  const condition = normalizeConditionCode(input.condition);
+  const condition = normalizeConditionCode(input.condition)
+    ?? (productType === 'raw_card' ? RAW_NEAR_MINT : null);
   if (condition) query = query.eq('condition_code', condition);
-  if (clean(input.grader)) query = query.eq('grader_code', clean(input.grader).toUpperCase());
   return query;
 }
 
@@ -554,6 +554,7 @@ async function readSnapshotHistoryRpc(supabase, cardIds, rangeDays) {
 function supportedLegacyInput(input = {}) {
   if (normalizeProductType(input.productType) !== 'raw_card') return false;
   if (normalizeCurrency(input.currency) !== 'GBP') return false;
+  if (clean(input.grader) || clean(input.grade)) return false;
   const condition = normalizeConditionCode(input.condition);
   return !condition || condition === RAW_NEAR_MINT;
 }
@@ -1132,6 +1133,9 @@ async function refreshExactLegacyProviderEstimate(supabase, variantId, input, pr
 }
 
 async function refreshPersonalProviderEstimate(supabase, variantId, input, providerFetch) {
+  // Unsupported requests must never join a raw/NM/GBP refresh already in
+  // flight or inherit its cooldown merely because the variant UUID matches.
+  if (!supportedLegacyInput(input)) throw new ApiError(422, 'unsupported_refresh_scope', 'Provider refresh supports only raw near-mint GBP cards.');
   const now = Date.now();
   prunePersonalProviderRefreshes(now);
   const existing = personalProviderRefreshes.get(variantId);
@@ -1225,6 +1229,9 @@ export function createMarketPricingService(options) {
       if (input.estimateMode != null && !['exact', 'general'].includes(input.estimateMode)) {
         throw new ApiError(400, 'invalid_estimate_mode', 'estimateMode must be exact or general.');
       }
+      if (normalizeProductType(input.productType) === 'graded_card' && (!clean(input.grader) || !clean(input.grade))) {
+        return unavailablePrice(variantId, input, 'grader_and_grade_required_for_graded_price');
+      }
       let query = table(supabase, 'api', 'market_price_estimates')
         .select('*')
         .eq('variant_id', variantId);
@@ -1235,12 +1242,8 @@ export function createMarketPricingService(options) {
         .maybeSingle();
       const row = await queryMaybeOne(query);
       if (!row) {
-        const reason = normalizeProductType(input.productType) === 'graded_card' && (!clean(input.grader) || !clean(input.grade))
-          ? 'grader_and_grade_required_for_graded_price'
-          : 'insufficient_exact_market_evidence';
-        const legacy = reason === 'insufficient_exact_market_evidence'
-          ? await findLegacySnapshotEstimate(supabase, variantId, input)
-          : null;
+        const reason = 'insufficient_exact_market_evidence';
+        const legacy = await findLegacySnapshotEstimate(supabase, variantId, input);
         if (legacy) return legacy;
         if (input.estimateMode === 'general') {
           const general = await findGeneralStoredEstimate(supabase, variantId, input);
@@ -1258,12 +1261,30 @@ export function createMarketPricingService(options) {
 
     async priceHistory(variantId, input = {}) {
       if (!isUuid(variantId)) throw new ApiError(400, 'invalid_variant_id', 'variantId must be a canonical UUID.');
+      // The current projection has a grade display label, not its exact numeric
+      // identity. Do not ignore a requested grade or mix unrelated slab sales.
+      if (normalizeProductType(input.productType) === 'graded_card' || clean(input.grader) || clean(input.grade)) {
+        throw new ApiError(422, 'unsupported_graded_history_identity', 'Exact graded history requires a numeric-grade projection that is not available yet.');
+      }
       const limit = parseLimit(input.limit, 50, 200);
       const cursor = parseCursor(input.cursor);
+      if (input.provenOnly != null && ![true, false, 'true', 'false'].includes(input.provenOnly)) {
+        throw new ApiError(400, 'invalid_proven_only', 'provenOnly must be true or false.');
+      }
+      const provenOnly = input.provenOnly === true || input.provenOnly === 'true';
+      const soldSince = clean(input.soldSince);
+      if (soldSince && (!/^\d{4}-\d{2}-\d{2}T.*(?:Z|[+-]\d{2}:?\d{2})$/.test(soldSince)
+        || !Number.isFinite(Date.parse(soldSince)) || Date.parse(soldSince) > Date.now())) {
+        throw new ApiError(400, 'invalid_sold_since', 'soldSince must be a past ISO timestamp.');
+      }
       let query = table(supabase, 'api', 'market_price_history')
         .select('*')
         .eq('variant_id', variantId);
       query = applyHistoryFilters(query, input);
+      // Filter evidence and sale window before the cap; recent unverified rows
+      // must not crowd genuine matching sales out of a small history page.
+      if (provenOnly) query = query.eq('proven_last_sold', true).lte('sold_at', new Date().toISOString());
+      if (soldSince) query = query.gte('sold_at', new Date(soldSince).toISOString());
       if (cursor?.observedAt) query = query.lt('observed_at', cursor.observedAt);
       query = query
         .order('observed_at', { ascending: false })
@@ -1541,15 +1562,60 @@ export function createMarketPricingService(options) {
     async marketMovers(input = {}) {
       const limit = parseLimit(input.limit, 25, 100);
       const currency = normalizeCurrency(input.currency);
-      let query = table(supabase, 'api', 'market_movers')
-        .select('*')
-        .eq('display_currency_code', currency)
-        .order('percentage_change', { ascending: false, nullsFirst: false })
-        .limit(limit + 1);
-      if (clean(input.productType)) query = query.eq('product_kind', normalizeProductType(input.productType));
-      const rows = await queryRows(query);
+      const productType = clean(input.productType) ? normalizeProductType(input.productType) : null;
+      // This is a bounded percentage-movement sample, not a complete market or
+      // global cash ranking. One descending page can exclude every real faller.
+      const readExtreme = (ascending) => {
+        let query = table(supabase, 'api', 'market_movers').select('*')
+          .eq('display_currency_code', currency)
+          .order('percentage_change', { ascending, nullsFirst: false })
+          .order('market_identity_id', { ascending: true })
+          .limit(limit + 1);
+        if (productType) query = query.eq('product_kind', productType);
+        return queryRows(query);
+      };
+      const reads = await Promise.allSettled([readExtreme(false), readExtreme(true)]);
+      const comparisons = new Map();
+      for (const read of reads) {
+        if (read.status === 'rejected') throw read.reason;
+        if (!Array.isArray(read.value) || read.value.length > limit + 1) {
+          throw new ApiError(503, 'market_comparison_read_invalid', 'Stored market comparisons could not be verified. Retry stored data.');
+        }
+        for (const row of read.value) {
+          if (!isUuid(row?.market_identity_id) || row.display_currency_code !== currency
+            || !['raw_card', 'graded_card', 'sealed_product'].includes(row.product_kind)
+            || (productType && row.product_kind !== productType)) {
+            throw new ApiError(503, 'market_comparison_read_invalid', 'Stored market comparisons could not be verified. Retry stored data.');
+          }
+          // Different conditions/grades share a variant, not a market identity.
+          // Concurrent reads must agree on all exposed evidence for an overlap.
+          const key = `${row.market_identity_id.toLowerCase()}:${currency}`;
+          const fingerprint = JSON.stringify([row.variant_id ?? null, row.sealed_product_variant_id ?? null,
+            row.product_kind, row.current_estimate, row.previous_estimate, row.percentage_change,
+            row.confidence_score, row.confidence_label, row.calculated_at, row.previous_calculated_at]);
+          const existing = comparisons.get(key);
+          if (existing && existing.fingerprint !== fingerprint) {
+            throw new ApiError(503, 'market_comparison_changed', 'Stored market comparisons changed during this read. Retry stored data.');
+          }
+          comparisons.set(key, { row, fingerprint });
+        }
+      }
+      const rows = [...comparisons.values()].map(({ row }) => row);
+      const identityOrder = (a, b) => a.market_identity_id.localeCompare(b.market_identity_id);
+      const strongestFirst = (a, b) => Number(numeric(a.percentage_change) == null) - Number(numeric(b.percentage_change) == null)
+        || Math.abs(numeric(b.percentage_change) ?? 0) - Math.abs(numeric(a.percentage_change) ?? 0) || identityOrder(a, b);
+      const quota = Math.floor(limit / 2);
+      const selected = [
+        ...rows.filter((row) => numeric(row.percentage_change) > 0).sort(strongestFirst).slice(0, quota),
+        ...rows.filter((row) => numeric(row.percentage_change) < 0).sort(strongestFirst).slice(0, quota),
+      ];
+      const selectedIds = new Set(selected.map((row) => row.market_identity_id));
+      selected.push(...rows.filter((row) => !selectedIds.has(row.market_identity_id))
+        .sort(strongestFirst).slice(0, limit - selected.length));
+      selected.sort((a, b) => Number(numeric(a.percentage_change) == null) - Number(numeric(b.percentage_change) == null)
+        || (numeric(b.percentage_change) ?? 0) - (numeric(a.percentage_change) ?? 0) || identityOrder(a, b));
       return {
-        movers: rows.slice(0, limit).map((row) => ({
+        movers: selected.map((row) => ({
           variantId: row.variant_id ?? null,
           sealedProductVariantId: row.sealed_product_variant_id ?? null,
           productType: row.product_kind,

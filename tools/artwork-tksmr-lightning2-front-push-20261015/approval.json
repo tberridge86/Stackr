@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 1,
+  "variants": 1,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "en",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "physical_finish_verified": false,
+  "physical_edition_verified": false,
+  "cohort_sha256": "54575156221082ad95851a3b4899014b5a5aa9231ffb394edfe2785c4e46af8f",
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "589fcd412e1bec60964ed2599fe10b4e4ba4c0c3f295949e96494acf10b78f27",
+    "finiteDecisionFileByteSha256": "1001c024be45d7bd8d6a5e90ca1b3c9f431724aa39ed4b4897139c96dfd0c775",
+    "sourceHandoffFileByteSha256": "64caff893846ecd56f6c07a01d5952675353887cb488abf31d32e4d7be2aebff",
+    "independentSourceReviewFileByteSha256": "e2b3ce3e5f9de5254c3405cd6f0665f08ff4ed91f8e052aaa78d179779b4d3d1",
+    "fourSourceCheckpointFileByteSha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "b2ed63f3192c7336a77941e4327de35777198dbb77034e19cb940e341cc33168",
+    "independentPrivatePackageReviewSha256": "d1924e81b936af10665ef1703597fc7fed4f3635e98f37c4f700fc2fa3b28b2f",
+    "rootPrivatePackageValidationSha256": "63514c39f8bbe8a7b9dce971c037fe851301ea4c0da2faee36a59710828affd3",
+    "rootSourceArchiveBindingSha256": "7ddde53d9b14ec80fa6762fa4dff09be8d6cf7f7532f2901c1ede09bee5dc909",
+    "rootUploadReceiptSha256": "421af3d809ce8d8306adedee951a05ce443d92fe89dad4cee73438f12ba772ae"
+  },
+  "production_source_changes_allowed": 0,
+  "scope": "Exactly one English tk-sm-r Lightning Energy2/30 shared printing front for the current sole default normal variant. ENERGY and bolt/goldRaichu mark prove type and footer; no Pokemon HP,Dex,stage,abilities,attacks,rules or artist invented. Original full fabric photograph and glare,shadow,perspective,specks remain byte-exact. No pristine/native optical or physical edition/finish certificate. Preserve all current metadata/set images/links and four full17 sources; no production source creation/policy updates, temporary stagePrice fixture fully rolls back. Actual app large selection is expected to retain original1200x1600 because detail720x960 is below1000longedge."
+}

@@ -2,6 +2,7 @@ import { supabase } from './supabase';
 import { attachLiveTcgdexCardReferences, fetchCardsForSet, normalizePokemonCardLanguage, type PokemonCardLanguage } from './pokemonTcg';
 import { enrichStackrCardArtworkFromFacts } from './stackrDomainAdapter';
 import { readOptionalCatalogueEnrichment } from './optionalCatalogueEnrichment';
+import { withPersonalDataReadTimeout } from './personalDataRead';
 import { createActivityPost } from './activity';
 import { PRICE_API_URL, USD_TO_GBP } from './config';
 import { recordAchievementEvent } from './achievements';
@@ -11,12 +12,10 @@ import { getPreferredSetDisplayName } from './pokemonDisplayNames';
 import { fetchPreferredStackrSets, fetchStackrPriceSnapshots, fetchStackrSet } from './stackrDomainAdapter';
 import { resolveBinderSetIdentity } from './binderSetIdentity';
 import { createSavedBinderCardMatcher, normalizeBinderCollectorNumber } from './binderCardIdentity';
+import { mergeBinderArtwork } from './stackrSetRetrieval';
+import { getPreferredSetArtworkReassignments } from './stackrPreferredSetArtwork';
 import { positiveCatalogueCount, preserveUnmatchedBinderRows } from './binderCataloguePresentation';
 import { enforceSetVisualRuntimePolicy } from './providerSetMarkRuntimePolicy';
-import {
-  defineTcgdexRuntimeImageOverlay,
-  hasTcgdexRuntimeImageOverlay,
-} from './tcgdexControlledCardReference';
 import { selectTcgdexReferencePersistenceImage } from './tcgdexReferencePersistence';
 import {
   getPokemonSetLanguageFromPrefixedId,
@@ -427,14 +426,14 @@ async function attachSetBrandingToBinders(binders: BinderRecord[], includeAssets
   const single = binders.length === 1 && binders[0].language ? binders[0] : null;
   const catalogueSets = single
     ? await getCachedOrFetch(`binder:catalogue-set:${single.language}:${single.source_set_id}:${includeAssets ? 'assets' : 'facts'}`, 5 * 60 * 1000, async () => {
-      const set = await fetchStackrSet(single.source_set_id!, single.language, { includeAssets });
+      const set = await readOptionalCatalogueEnrichment(() => fetchStackrSet(single.source_set_id!, single.language, { includeAssets }));
       if (!set) throw new Error('Binder catalogue metadata is temporarily unavailable.');
       return [set];
     }).catch(() => [])
     : await getCachedOrFetch(`binder:catalogue-sets:${includeAssets ? 'assets' : 'facts'}`, 5 * 60 * 1000, async () => {
-    const sets = await fetchPreferredStackrSets(null, undefined, { includeAssets });
+    const sets = await readOptionalCatalogueEnrichment(() => fetchPreferredStackrSets(null, undefined, { includeAssets }));
     // Empty/error metadata reads must be retryable, not cached for five minutes.
-    if (!sets.length) throw new Error('Binder catalogue metadata is temporarily unavailable.');
+    if (!sets?.length) throw new Error('Binder catalogue metadata is temporarily unavailable.');
     return sets;
   }).catch(() => []);
 
@@ -500,16 +499,23 @@ export async function fetchBinders(options: { enrich?: boolean } = {}): Promise<
   if (!user) return [];
 
   const saved = await getCachedOrFetch(`binders:${user.id}:saved`, BINDERS_CACHE_TTL_MS, async () => {
-    const { data, error } = await supabase
-      .from('binders')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('sort_order', { ascending: true })
-      .order('created_at', { ascending: false });
+    const savedBinders: BinderRecord[] = [];
+    for (let from = 0; ; from += 1000) {
+      const { data, error } = await supabase
+        .from('binders')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: true })
+        .range(from, from + 999);
 
-    if (error) throw error;
-
-    return ((data ?? []) as BinderRecord[]).filter((binder) => binder.user_id === user.id);
+      if (error) throw error;
+      const page = (data ?? []) as BinderRecord[];
+      savedBinders.push(...page.filter((binder) => binder.user_id === user.id));
+      if (page.length < 1000) break;
+    }
+    return savedBinders;
   });
   if (options.enrich === false) return saved;
   return getCachedOrFetch(`binders:${user.id}:enriched`, BINDERS_CACHE_TTL_MS,
@@ -556,6 +562,63 @@ export async function fetchBinderCards(
   );
 }
 
+/** The shared cache owns this budget; one caller leaving cannot cancel another. */
+async function readSavedBinderRows(binderId: string): Promise<BinderCardRecord[]> {
+  const request = new AbortController();
+  let accountId: string | null | undefined;
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const nextAccountId = session?.user.id ?? null;
+    if (event === 'SIGNED_OUT'
+      || (accountId !== undefined && accountId !== nextAccountId)
+      || (accountId === undefined && event !== 'INITIAL_SESSION' && event !== 'TOKEN_REFRESHED')) {
+      request.abort();
+    }
+    accountId = nextAccountId;
+  });
+  try {
+    return await withPersonalDataReadTimeout(async (signal) => {
+      const assertCurrent = () => {
+        if (signal.aborted) {
+          const error = new Error('The collection request was cancelled.');
+          error.name = 'AbortError';
+          throw error;
+        }
+      };
+      const rows: BinderCardRecord[] = [];
+      const seen = new Set<string>();
+      // A server row cap can return a short nonterminal page. Only an empty
+      // page proves exhaustion; advance by received rows, not the asked limit.
+      for (let pageIndex = 0; pageIndex < 256; pageIndex += 1) {
+        assertCurrent();
+        const from = rows.length;
+        const { data, error } = await supabase
+          .from('binder_cards')
+          .select('*')
+          .eq('binder_id', binderId)
+          .order('slot_order', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, from + 999)
+          .abortSignal(signal);
+        assertCurrent();
+        if (error) throw error;
+        const page = (data ?? []) as BinderCardRecord[];
+        if (!page.length) return rows;
+        for (const row of page) {
+          if (row.binder_id !== binderId || typeof row.id !== 'string' || !row.id || seen.has(row.id)) {
+            throw new Error('Saved cards did not match a consistent binder page. Please retry.');
+          }
+          seen.add(row.id);
+          rows.push(row);
+        }
+      }
+      throw new Error('Saved binder cards exceeded the page budget. Please retry.');
+    }, { signal: request.signal });
+  } finally {
+    subscription.unsubscribe();
+    request.abort();
+  }
+}
+
 async function fetchBinderCardsUncached(
   binderId: string,
   options: { includePrices?: boolean; includeAssets?: boolean; onCatalogueUnavailable?: () => void } = {},
@@ -571,15 +634,7 @@ async function fetchBinderCardsUncached(
     || (binder.catalogue_identity_status === 'unresolved' && !binder.language);
   // Once the binder read has passed RLS, ownership and public facts are
   // independent. Start both now; no card rows render before ownership returns.
-  const savedRowsPromise = (async () => {
-    const { data, error } = await supabase
-      .from('binder_cards')
-      .select('*')
-      .eq('binder_id', binderId)
-      .order('slot_order', { ascending: true });
-    if (error) throw error;
-    return (data ?? []) as BinderCardRecord[];
-  })();
+  const savedRowsPromise = readSavedBinderRows(binderId);
   const setCardsPromise = officialCatalogue && !ambiguousCatalogue
     ? fetchCardsForSet(binder.catalogue_set_id ?? binder.source_set_id as string, {
         language: binderLanguage,
@@ -1138,6 +1193,16 @@ export async function updateBinderCardOwned(
     ownedQuantity?: number;
   }
 ): Promise<BinderSnapshotPriceFields | null> {
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError) throw userError;
+  if (!user) throw new Error('Sign in before changing your collection.');
+  const currentUserId = user.id;
+  const recordActivity = (input: Parameters<typeof createActivityPost>[0]) =>
+    createActivityPost(input, { expectedUserId: currentUserId }).catch((error) => {
+      // The holding is already saved. A changed account suppresses its event
+      // without turning this into a failed collection mutation.
+      console.warn('Saved collection activity needs verification', error);
+    });
   const virtual = parseVirtualBinderCardId(binderCardId);
 
   if (virtual) {
@@ -1176,7 +1241,7 @@ export async function updateBinderCardOwned(
 
       if (error) throw error;
 
-      await createActivityPost({
+      await recordActivity({
         title: 'Added a card to binder',
         subtitle: cardMeta?.cardName ?? virtual.cardId,
         cardId: virtual.cardId,
@@ -1212,7 +1277,7 @@ export async function updateBinderCardOwned(
 
       if (error) throw error;
 
-      await createActivityPost({
+      await recordActivity({
         title: 'Removed from collection',
         subtitle: existingRow.card_name ?? cardMeta?.cardName ?? virtual.cardId,
         cardId: virtual.cardId,
@@ -1262,7 +1327,7 @@ export async function updateBinderCardOwned(
   invalidateBinderCaches();
 
   if (owned && existingCard && !existingCard.owned) {
-    await createActivityPost({
+    await recordActivity({
       title: 'Added a card to binder',
       subtitle: existingCard.card_name ?? existingCard.card_id,
       cardId: existingCard.card_id,
@@ -1280,7 +1345,7 @@ export async function updateBinderCardOwned(
   }
 
   if (!owned && existingCard?.owned) {
-    await createActivityPost({
+    await recordActivity({
       title: 'Removed from collection',
       subtitle: existingCard.card_name ?? existingCard.card_id,
       cardId: existingCard.card_id,
@@ -1309,6 +1374,15 @@ export async function updateBinderCardQuantity(
     grade?: string | null;
   }
 ): Promise<void> {
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError) throw userError;
+  if (!user) throw new Error('Sign in before changing your collection.');
+  const currentUserId = user.id;
+  const recordActivity = (input: Parameters<typeof createActivityPost>[0]) =>
+    createActivityPost(input, { expectedUserId: currentUserId }).catch((error) => {
+      // Quantity success is independent of recording its history.
+      console.warn('Saved collection activity needs verification', error);
+    });
   const ownedQuantity = Math.max(1, Math.min(999, Math.floor(Number(quantity) || 1)));
   const virtual = parseVirtualBinderCardId(binderCardId);
 
@@ -1316,13 +1390,13 @@ export async function updateBinderCardQuantity(
     const language = normalizePokemonCardLanguage(cardMeta?.language);
     const { data: existingVariantQuantity } = await supabase
       .from('binder_cards')
-      .select('owned_quantity, card_name, image_url')
+      .select('owned, owned_quantity, card_name, image_url')
       .eq('binder_id', virtual.binderId)
       .eq('card_id', virtual.cardId)
       .eq('set_id', virtual.setId)
       .eq('language', language)
       .maybeSingle();
-    const previousQuantity = Math.max(0, Number(existingVariantQuantity?.owned_quantity ?? 0) || 0);
+    const previousQuantity = existingVariantQuantity?.owned === false ? 0 : Math.max(0, Number(existingVariantQuantity?.owned_quantity ?? 0) || 0);
     const latestPrices = await fetchLatestSnapshotPrices([virtual.cardId], language);
     const price = latestPrices.get(virtual.cardId) ?? null;
 
@@ -1354,7 +1428,7 @@ export async function updateBinderCardQuantity(
 
     if (error) throw error;
     if (previousQuantity > ownedQuantity) {
-      await createActivityPost({
+      await recordActivity({
         title: `Quantity reduced from ${previousQuantity} to ${ownedQuantity}`,
         subtitle: existingVariantQuantity?.card_name ?? cardMeta?.cardName ?? virtual.cardId,
         cardId: virtual.cardId,
@@ -1362,9 +1436,9 @@ export async function updateBinderCardQuantity(
         type: 'quantity_reduced',
         isPositive: false,
       });
-    } else if (previousQuantity === 0 && ownedQuantity > 0) {
-      await createActivityPost({
-        title: 'Added to collection',
+    } else if (ownedQuantity > previousQuantity) {
+      await recordActivity({
+        title: previousQuantity === 0 ? 'Added to collection' : `Quantity increased from ${previousQuantity} to ${ownedQuantity}`,
         subtitle: cardMeta?.cardName ?? virtual.cardId,
         cardId: virtual.cardId,
         setId: virtual.setId,
@@ -1378,10 +1452,10 @@ export async function updateBinderCardQuantity(
 
   const { data: existingCard } = await supabase
     .from('binder_cards')
-    .select('card_id, set_id, language, card_name, owned_quantity')
+    .select('card_id, set_id, language, card_name, owned, owned_quantity')
     .eq('id', binderCardId)
     .maybeSingle();
-  const previousQuantity = Math.max(0, Number(existingCard?.owned_quantity ?? 0) || 0);
+  const previousQuantity = existingCard?.owned === false ? 0 : Math.max(0, Number(existingCard?.owned_quantity ?? 0) || 0);
 
   const { error } = await supabase
     .from('binder_cards')
@@ -1390,13 +1464,22 @@ export async function updateBinderCardQuantity(
 
   if (error) throw error;
   if (existingCard && previousQuantity > ownedQuantity) {
-    await createActivityPost({
+    await recordActivity({
       title: `Quantity reduced from ${previousQuantity} to ${ownedQuantity}`,
       subtitle: existingCard.card_name ?? existingCard.card_id,
       cardId: existingCard.card_id,
       setId: existingCard.set_id,
       type: 'quantity_reduced',
       isPositive: false,
+    });
+  } else if (existingCard && ownedQuantity > previousQuantity) {
+    await recordActivity({
+      title: previousQuantity === 0 ? 'Added to collection' : `Quantity increased from ${previousQuantity} to ${ownedQuantity}`,
+      subtitle: existingCard.card_name ?? existingCard.card_id,
+      cardId: existingCard.card_id,
+      setId: existingCard.set_id,
+      type: 'binder_add',
+      isPositive: true,
     });
   }
   invalidateBinderCaches();
@@ -1512,16 +1595,28 @@ export async function attachBinderCatalogueArtwork(
 ): Promise<BinderCardRecord[]> {
   const eligible = rows.filter((row) => row.catalogue_match_status === 'catalogue' && row.card?.raw_data?.stackr?.canonical);
   if (!eligible.length) return rows;
+  const artworkIdentity = (card: any): string | null => {
+    const identity = card?.raw_data?.stackr;
+    const variant = identity?.variants?.find((candidate: any) => candidate.variantId === identity.defaultVariantId);
+    if (!identity?.canonical || !variant || !identity.catalogueVersionId) return null;
+    return JSON.stringify([card.id, card.set?.id, card.language, card.number, identity.catalogueVersionId,
+      identity.defaultVariantId, variant.canonicalId, variant.imageVariantId, variant.finishCode ?? null]);
+  };
   const merge = (displayCards: Awaited<ReturnType<typeof enrichStackrCardArtworkFromFacts>>) => {
-    const byId = new Map(displayCards.map((card) => [JSON.stringify([card.id, card.language, card.raw_data?.stackr && (card.raw_data.stackr as any).defaultVariantId]), card]));
-    return rows.map((row) => {
-      const identity = row.card?.raw_data?.stackr;
-      const display = identity && byId.get(JSON.stringify([identity.cardId, row.language, identity.defaultVariantId]));
-      if (!display || (!display.images.small && !display.images.large)) return row;
-      const card = { ...row.card, images: display.images };
-      if (hasTcgdexRuntimeImageOverlay(display, 'images')) defineTcgdexRuntimeImageOverlay(card, 'images', display.images, display.images.small);
-      return { ...row, card };
+    const byId = new Map(displayCards.flatMap((card) => {
+      const identity = artworkIdentity(card);
+      return identity ? [[identity, card] as const] : [];
+    }));
+    const enriched = rows.map((row) => {
+      const identity = artworkIdentity(row.card);
+      const display = identity ? byId.get(identity) : null;
+      if (!display || (!display.images.small && !display.images.large
+        && !getPreferredSetArtworkReassignments(display.raw_data).length)) return row;
+      return { ...row, card: display };
     });
+    // Share the screen's image-only merge so inspection, provenance and tiles
+    // advance together while current facts, ownership and quantities stay put.
+    return mergeBinderArtwork(rows, enriched);
   };
   const enriched = await enrichStackrCardArtworkFromFacts(eligible.map((row) => row.card), signal, undefined,
     (progress) => onProgress?.(merge(progress)));

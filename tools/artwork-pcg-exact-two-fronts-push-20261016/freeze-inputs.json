@@ -1,0 +1,193 @@
+{
+  "schemaVersion": 1,
+  "private_inputs": [
+    {
+      "file": "publish-review/pcgexact2-four-sources-20261016-production-before-raw.json",
+      "sha256": "bce20406322fd585360d527f082d2f54741389a45cfb46a57cd699c6c36db128"
+    },
+    {
+      "file": "publish-review/pcgexact2-four-sources-20261016-production-before.json",
+      "sha256": "33e22b5034274e2c07d8a722142de358f005bd32b9a569b02a4c870b944440e0"
+    },
+    {
+      "file": "publish-review/pcgexact2-four-sources-20261016-production-bindings-raw.json",
+      "sha256": "de3af03a2eb2c08f4ad2989f0d75d3477632b9b7b4336df136bacc5c90300eae"
+    },
+    {
+      "file": "publish-review/pcgexact2-four-sources-20261016-production-bindings.json",
+      "sha256": "6bd61f9ff0617652f90b60d55bc20e912c7cb6dfe65fb266f08518e658a23d2f"
+    },
+    {
+      "file": "publish-review/pcgexact2-four-sources-20261016-staging-before-raw.json",
+      "sha256": "4384e68e1c44299d674a2fad109f783296c1f60844d4d6b1119d5672bf7abb48"
+    },
+    {
+      "file": "publish-review/pcgexact2-four-sources-20261016-staging-before.json",
+      "sha256": "8fe37e617a71e2102d7b2910f6c18d217261eb432a40fc26cdeb890e65ec645c"
+    },
+    {
+      "file": "publish-review/pcgexact2-four-sources-20261016-staging-bindings-raw.json",
+      "sha256": "e8146fc8853701c65e2ab546fea9c2f59aca62ae04e1de97189dce57bfe0dc5f"
+    },
+    {
+      "file": "publish-review/pcgexact2-four-sources-20261016-staging-bindings.json",
+      "sha256": "3cb943724bebbf6cbb9f3e052d058c45aade3e5ce913f2139fb169659725f716"
+    },
+    {
+      "file": "source-batches/pcgexact2-approved-shared-fronts-20261016/root-approved2-source-originals.json",
+      "sha256": "31aae4b963a67dcf1aae3a6a174616c7ad036c12590d4a6d3516e6c2d9138fe9"
+    },
+    {
+      "file": "source-batches/pcgexact2-approved-shared-fronts-20261016/root-finite2-preparation-publication-decision.json",
+      "sha256": "912c4fcac1656776b60357da92cb1424ad8d787b4b0464cd89f9661acbcad974"
+    },
+    {
+      "file": "source-batches/pcgexact2-approved-shared-fronts-20261016/root-private-preparation-context.json",
+      "sha256": "abda4ad4db5a19555b74e863d758771bb00076b8780b75bcdee65902d68feb9a"
+    },
+    {
+      "file": "publish-review/pcgexact2-independent-private-package-review-20261016.json",
+      "sha256": "05328d2cb08bf3841262bd4ada13ad0749ca9010dbe89d616bea2c47fae2fe57"
+    },
+    {
+      "file": "publish-review/pcgexact2-root-private-binding-validation-20261016.json",
+      "sha256": "1e375b74a6f3dc632627fa5d38ebd49215b3a79e2030edbf29a7933e60d432c2"
+    },
+    {
+      "file": "publish-review/pcgexact2-root-source-archive-binding-20261016.json",
+      "sha256": "e17b2c8c73fda3f9c186e7f0bef0fbb08ef57cede1d5d5d033313b1d2b8f430c"
+    },
+    {
+      "file": "publish-review/pcgexact2-root-upload-receipt-20261016.json",
+      "sha256": "ec9306e89fe20cfb3fb0a4a6de6c707a39f05edc4ecce61626414e230fb9e0bd"
+    },
+    {
+      "file": "pcgexact2-root-publisher-context-20261016.json",
+      "sha256": "930a26b2ee77ad00d41b5db851cbe9200f60cb7b8a0564d5c978608a6f29ad32"
+    },
+    {
+      "file": "publish-review/root-four-source-policy-checkpoint-after-aquapolis2-20261015.json",
+      "sha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f"
+    },
+    {
+      "file": "pcgexact2-private-preparation-20261016/source-contract.json",
+      "sha256": "e05db5618cce8dbd2f01841aa13cf55e2b8ed866ae3c23a6a13123a8960e06e9"
+    },
+    {
+      "file": "pcgexact2-private-preparation-20261016/private-projection-inputs.json",
+      "sha256": "26d9753724daf802dc3a6cf3b9d673f99b6012373faa96ee4fe537f24b8f05c3"
+    },
+    {
+      "file": "pcgexact2-private-preparation-20261016/private-package-handoff.json",
+      "sha256": "b9503eb90ae85f09f310ea1ed703376f6cc68e77b4175a0ddef7178275b803d0"
+    },
+    {
+      "file": "publish-review/pcgexact2-independent-before-scope-correction-review-20261016.json",
+      "sha256": "80992ab28ffa47d33fe6ab26472a34dbcc1d134668948ca7b797476392c4d556"
+    },
+    {
+      "file": "publish-review/pcgexact2-root-scope-correction-review-accepted-20261016.json",
+      "sha256": "c815fbec543d4fabb9354a5a81af02b98167f7b68c09ac304f853888bf51d48c"
+    }
+  ],
+  "source_manifest_file": "pcgexact2-private-preparation-20261016/source-manifest.json",
+  "source_manifest_sha256": "8331b4bacfe4ceff55741f6f296e3923d2a5368d054bf1373ff85a76d4c3bb67",
+  "package_receipt_file": "pcgexact2-private-preparation-20261016/package-receipt.json",
+  "package_receipt_sha256": "7ef31a588d8172ef24815e944ea450884a802cb2042310dac91b64ef33ed5835",
+  "archive": {
+    "id": 646111909,
+    "sha256": "03ec8c24e1706d7384796b996b93c146e97399c5f758322e01452f87b1ff4683",
+    "byte_size": 1329087,
+    "file_count": 12,
+    "name": "pcgexact2-fronts-20261016.zip"
+  },
+  "unchanged_dependencies": [
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 9031,
+      "sha256": "5524305ba4bd6a0f3867ea2c097c57fb0d610e27ef1d9d64529b64e9c67249de"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/metadata-guard.mjs",
+      "bytes": 4018,
+      "sha256": "cca5354822fe11c007308f7d22ebf84649d2374619e0dd049c7347a9db9e116f"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/publish.mjs",
+      "bytes": 5885,
+      "sha256": "8451746bb6e188f56c5be31064742eaeecdc2f2c6d6e27cb31ab5c7227af6d1f"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "tools/artwork-next-push-20261013/frozen.mjs",
+      "bytes": 7732,
+      "sha256": "3e14eb76a012116492075328c50e6c5907f712004da02d4d3dae541d2617a95b"
+    },
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 30117,
+      "sha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24425,
+      "sha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 15024,
+      "sha256": "1d168e5407a5bdc6e027f58991de58a0664576d7c917d5b219fa13f9af4a1d0a"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/download-package.py",
+      "bytes": 5489,
+      "sha256": "53f1114f25bd995b4f05d9b2d3adad7ae2dadc85b4b13f038a84bcc5e7d6b09f"
+    }
+  ],
+  "staging_fixture_policy": {
+    "code": "pricecharting",
+    "display_name": "PriceCharting (owner supplied card fronts)",
+    "source_type": "image",
+    "base_url": "https://www.pricecharting.com",
+    "licence_status": "under_review",
+    "attribution_required": true,
+    "active": false,
+    "internal_notes": "Owner-attested source use for exactly Aquapolis Mr. Mime95b and Porygon103b shared printing-front artwork in finite cohort AQUAPOLIS-SHARED-002-20261015. Independent vendor and underlying card licences are unverified. No source-wide approval; each later acquisition requires separate finite approval. Existing provenance rows and source policies must remain unchanged.",
+    "deprecated_at": null
+  },
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "31aae4b963a67dcf1aae3a6a174616c7ad036c12590d4a6d3516e6c2d9138fe9",
+    "finiteDecisionFileByteSha256": "912c4fcac1656776b60357da92cb1424ad8d787b4b0464cd89f9661acbcad974",
+    "rootPrivateContextFileByteSha256": "abda4ad4db5a19555b74e863d758771bb00076b8780b75bcdee65902d68feb9a",
+    "sourceHandoffFileByteSha256s": [
+      "6f77b38b21f8121fff5b6c480b72d362984f0576a3d38eb4b9c0f5491f068dcf",
+      "61caf6f78ab4cc403b6b019fd173ddd2349ed791e5758762b6745f7b812ea0eb"
+    ],
+    "independentSourceReviewFileByteSha256s": [
+      "83db568fac391d69f2c54231ac004fbb6cf586e1deaf30f1f98fb535ca7ede15",
+      "8202fcefc2ce77895fb0e36e3a747cbb2ec33deb1214c1571810176132c39516"
+    ],
+    "fourSourceCheckpointFileByteSha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "e05db5618cce8dbd2f01841aa13cf55e2b8ed866ae3c23a6a13123a8960e06e9",
+    "independentPrivatePackageReviewSha256": "05328d2cb08bf3841262bd4ada13ad0749ca9010dbe89d616bea2c47fae2fe57",
+    "rootPrivatePackageValidationSha256": "1e375b74a6f3dc632627fa5d38ebd49215b3a79e2030edbf29a7933e60d432c2",
+    "rootSourceArchiveBindingSha256": "e17b2c8c73fda3f9c186e7f0bef0fbb08ef57cede1d5d5d033313b1d2b8f430c",
+    "rootUploadReceiptSha256": "ec9306e89fe20cfb3fb0a4a6de6c707a39f05edc4ecce61626414e230fb9e0bd",
+    "rootPublisherContextSha256": "930a26b2ee77ad00d41b5db851cbe9200f60cb7b8a0564d5c978608a6f29ad32"
+  }
+}

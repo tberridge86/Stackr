@@ -550,6 +550,12 @@ async function loadOne(
       estimateMode: 'general',
     });
     const price = response.data;
+    // A successful HTTP response must still attest the requested identity.
+    // Never attach a sibling variant, another product or a foreign-currency
+    // amount to this owned unit merely because it reached the same endpoint.
+    if (!price || price.variantId !== variantId || price.productType !== productType || price.currency !== 'GBP') {
+      throw new Error('Stackr price response does not match the requested card variant, product type or currency.');
+    }
     // The endpoint may have an exact quote for the selected base variant, but
     // that is still a printing-level general estimate for the saved normal.
     const displayedPrice = generalBase ? {

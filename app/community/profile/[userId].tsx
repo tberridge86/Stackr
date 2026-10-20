@@ -1,7 +1,8 @@
+import { StackrFunctionalIcon } from '../../../components/StackrFunctionalIcon';
 import { useTheme } from '../../../components/theme-context';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from '../../../components/StackrLoadingIndicator';
 import {
-  ActivityIndicator,
   Alert,
   FlatList,
   Image,
@@ -642,7 +643,7 @@ export default function PublicCollectorProfileScreen() {
                       backgroundColor: theme.colors.secondary,
                     }}
                   >
-                    <Image source={stackrIcons.trade} style={{ width: 18, height: 18 }} resizeMode="contain" />
+                    <StackrFunctionalIcon source={stackrIcons.trade} style={{ width: 18, height: 18 }} resizeMode="contain" />
                     <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13 }}>
                       Trade
                     </Text>
@@ -670,7 +671,7 @@ export default function PublicCollectorProfileScreen() {
                       borderColor: theme.colors.secondary,
                     }}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 6 }}>
-                        <Image source={stackrIcons.scanCard} style={{ width: 14, height: 14 }} resizeMode="contain" />
+                        <StackrFunctionalIcon source={stackrIcons.scanCard} style={{ width: 14, height: 14 }} resizeMode="contain" />
                         <Text style={{ color: theme.colors.primary, fontSize: 11, fontWeight: '900' }}>
                           FEATURED
                         </Text>
@@ -700,7 +701,7 @@ export default function PublicCollectorProfileScreen() {
                       borderColor: `${theme.colors.primary}55`,
                     }}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 6 }}>
-                        <Image source={stackrIcons.chase} style={{ width: 14, height: 14 }} resizeMode="contain" />
+                        <StackrFunctionalIcon source={stackrIcons.chase} style={{ width: 14, height: 14 }} resizeMode="contain" />
                         <Text style={{ color: theme.colors.primary, fontSize: 11, fontWeight: '900' }}>
                           CHASE
                         </Text>

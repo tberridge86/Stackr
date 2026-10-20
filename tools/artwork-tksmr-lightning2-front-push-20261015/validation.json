@@ -1,0 +1,164 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_FROZEN_PUBLICATION_HANDOFF_READY",
+  "confirmation": "PUBLISH ARTWORK TKSMR LIGHTNING2 FRONT",
+  "fronts": 1,
+  "fixedVariantTuplesPerEnvironment": 1,
+  "workType": "CARDS",
+  "batchId": "EN-CARDS-020",
+  "printingAssetVariantId": null,
+  "sourceVariantId": null,
+  "deliveryKind": "shared",
+  "tests": {
+    "publisherNode": {
+      "passed": 17,
+      "failed": 0
+    },
+    "archiveGuardsPython": {
+      "passed": 6,
+      "failed": 0
+    },
+    "persistedFailureJournal": {
+      "passed": 1,
+      "failed": 0
+    },
+    "priorCelebiPublisherRegression": {
+      "passed": 17,
+      "failed": 0
+    },
+    "priorSM1PlusPublisherRegression": {
+      "passed": 17,
+      "failed": 0
+    },
+    "priorEeveePublisherRegression": {
+      "passed": 15,
+      "failed": 0
+    },
+    "priorAquapolisPublisherRegression": {
+      "passed": 15,
+      "failed": 0
+    },
+    "phase1SourceContract": {
+      "passed": 41,
+      "failed": 0
+    },
+    "queue": {
+      "realReceipts": 1,
+      "localImageByteObjects": 4,
+      "jointRawEntryTamperRejections": 37,
+      "forgedAuthorityRejections": 7,
+      "priorSM1PlusCelebiEeveeAndAquapolisReadOnlyReceipts": 6,
+      "priorLocalImageObjects": 24,
+      "unchangedSharpMetricCases": 1,
+      "previousJapaneseCelebiSM1PlusEeveeAndAquapolisPredicatesPreserved": true,
+      "sharedQueueUnchanged": true,
+      "englishEnergyFullFrontVerified": true,
+      "noPokemonFieldsInvented": true,
+      "wholePhotographAndImperfectionsRetained": true,
+      "appLargeExpectedRole": "original",
+      "productionWrites": 0
+    }
+  },
+  "archiveInstaller": {
+    "assetId": 645429563,
+    "membersVerifiedAndExtracted": 8,
+    "runtimeSharpFullyDecoded": 4,
+    "privatePILSharpRgbaAgreements": 4,
+    "privacySafeJsonFiles": 4,
+    "originalHdPixelFronts": 0,
+    "derivativeHdPixelFiles": 0,
+    "noEnlargement": true
+  },
+  "sourceGuard": {
+    "externalAuthorityAndBaselineFilesRehashed": 12,
+    "oldProductionSources": 4,
+    "oldFullSourceFieldsProtected": 68,
+    "productionNewSources": 0,
+    "productionPolicyChangesAllowed": 0,
+    "explicitProductionResolverHasNoInsertPath": true,
+    "missingOrDriftedExistingPriceFails": true,
+    "existingPriceFinite2NotesUnchanged": true,
+    "full17MicrosecondsRetainedByBothJsonReaders": true,
+    "stagingBaselineScopedSources": 0,
+    "onlyTemporaryStagingFixture": "pricecharting",
+    "stageGeneratedFull17DefaultsAndCreationReceiptChecked": true,
+    "frozenFullBeforeSnapshotsChecked": true
+  },
+  "transactionFixtures": {
+    "production": {
+      "beforeRows": 14,
+      "afterRows": 16,
+      "assetsAdded": 1,
+      "linksAdded": 1,
+      "sourcesAdded": 0
+    },
+    "staging": {
+      "beforeRows": 8,
+      "temporaryRows": 11,
+      "afterRollbackRows": 8
+    },
+    "existingSetImagesAndLinksUnchanged": true,
+    "oldCanonicalMetadataAssetsLinksAndSourcePoliciesUnchanged": true,
+    "sourceAndLinkWriteFailuresRollBack": true
+  },
+  "identity": {
+    "languageCode": "en",
+    "category": "Energy",
+    "currentNativeLabelPreserved": "Lightning Energy",
+    "actualPrintedTitle": "ENERGY",
+    "canonicalAlias": "2",
+    "printedCollectorNumber": "2/30",
+    "printedSetCodeLiteral": null,
+    "printedNationalDex": null,
+    "goldRaichuTrainerKitMarkVerified": true,
+    "noPokemonHPDexStageAbilitiesAttacksRulesOrArtistInvented": true,
+    "photoUrlHashDistinctFromProduct6610761": true,
+    "soleDefaultNormalTuplePreservedBothEnvironments": true,
+    "wholeUncroppedUnretouchedFabricPhotographRetained": true,
+    "glareShadowPerspectiveSurfaceSpecksRetained": true,
+    "pristineConditionCertified": false,
+    "providerNeverResizedCertified": false,
+    "nativeOpticalGainClaimed": false,
+    "physicalFinishCertified": false,
+    "physicalEditionCertified": false
+  },
+  "appSelection": {
+    "largeExpectedRole": "original",
+    "largeExpectedDimensions": [
+      1200,
+      1600
+    ],
+    "detailDimensions": [
+      720,
+      960
+    ],
+    "detailLongEdgeBelow1000": true,
+    "actualDefaultSharedAppSelectionStillRequiresLiveVerification": true,
+    "largeEqualsDetailMustNotBeRequired": true
+  },
+  "unchangedPriorRepositoryFilesRehashed": 180,
+  "unchangedSharedDependenciesRehashed": 11,
+  "unchangedPhase1PrivatePinsRehashed": 33,
+  "unchangedSourceAuthorityPinsRehashed": 64,
+  "workflow": {
+    "protectedProduction": true,
+    "exactMainSha": true,
+    "sharedDeploymentConcurrency": true,
+    "shaPinnedActions": 3,
+    "exact20FileSecretScanPassed": true,
+    "failureJournalAndRollbackReceipts": true
+  },
+  "planSha256": "54575156221082ad95851a3b4899014b5a5aa9231ffb394edfe2785c4e46af8f",
+  "approvalSha256": "315991230ce3d91fadc90b11dd223ddc3fd25a651a3a5883725344b9e273a48f",
+  "sourceManifestSha256": "86e75232ef6edab0db64dc67e39f71f17821864eea82d6543ccf01e891352ea8",
+  "archiveSha256": "904a6727badadcbaf9821b0c4902018ca71a7029453d7ac68fc844ba4a775b28",
+  "newProviderRequests": 0,
+  "databaseRequests": 0,
+  "gitMutations": 0,
+  "sharedQueueWrites": 0,
+  "ledgerWrites": 0,
+  "storageWrites": 0,
+  "productionWrites": 0,
+  "livePublicationVerified": false,
+  "independentExactHeadAndHostedChecksStillRequired": true
+}

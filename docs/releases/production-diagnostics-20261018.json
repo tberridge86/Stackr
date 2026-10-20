@@ -1,0 +1,473 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-18T13:36:38.377Z",
+  "projectRef": "oakdbbzdqwurpjnoqhmu",
+  "ownerApproval": {
+    "answer": "Approve these read-only diagnostics",
+    "approvedFile": "docs/releases/diagnostics-20261018-read-only.sql",
+    "sqlSha256": "2ee4559c42004e130c6bd9309da54318ae972db1c9db5bad69b064aa77cc0efe",
+    "scope": "Prepared read-only checks only; same approved statements collected separately to expose hidden resultsets; one additional point sample of the same approved wait-state statement"
+  },
+  "execution": {
+    "initialBatchToolCalls": 1,
+    "separateResultCollectionCalls": 5,
+    "additionalSameStatementWaitSamples": 1,
+    "totalSqlToolCalls": 7,
+    "initialStartedAt": "2026-10-18 13:30:49 UTC",
+    "finalSqlCompletedAt": "2026-10-18 13:33:32 UTC",
+    "allCallsReportedErrors": false,
+    "statementTimeoutSeconds": 5,
+    "lockTimeoutSeconds": 1,
+    "readOnlyTransactions": true,
+    "rollbackIncluded": true,
+    "analyzeUsed": false,
+    "writes": false,
+    "providerRefresh": false,
+    "jobs": false,
+    "deployment": false
+  },
+  "resultCollection": "The tool exposed only the final row-producing result from the initial batch. Five unchanged approved statements were subsequently collected individually in the identical bounded read-only wrapper. Separate calls are not a single simultaneous snapshot.",
+  "checks": [
+    {
+      "name": "wait_states",
+      "approvedStatementOrdinal": 1,
+      "startedAt": "2026-10-18 13:31:47 UTC",
+      "completedAt": "2026-10-18 13:31:48 UTC",
+      "rows": 2,
+      "isError": false
+    },
+    {
+      "name": "named_indexes",
+      "approvedStatementOrdinal": 2,
+      "startedAt": "2026-10-18 13:31:48 UTC",
+      "completedAt": "2026-10-18 13:31:49 UTC",
+      "rows": 29,
+      "isError": false
+    },
+    {
+      "name": "named_views",
+      "approvedStatementOrdinal": 3,
+      "startedAt": "2026-10-18 13:31:49 UTC",
+      "completedAt": "2026-10-18 13:31:50 UTC",
+      "rows": 3,
+      "isError": false
+    },
+    {
+      "name": "named_functions",
+      "approvedStatementOrdinal": 4,
+      "startedAt": "2026-10-18 13:31:50 UTC",
+      "completedAt": "2026-10-18 13:31:51 UTC",
+      "rows": 4,
+      "isError": false
+    },
+    {
+      "name": "set_version_plan",
+      "approvedStatementOrdinal": 5,
+      "startedAt": "2026-10-18 13:31:51 UTC",
+      "completedAt": "2026-10-18 13:31:52 UTC",
+      "rows": 1,
+      "isError": false
+    }
+  ],
+  "waitSamples": [
+    {
+      "startedAt": "2026-10-18 13:31:47 UTC",
+      "completedAt": "2026-10-18 13:31:48 UTC",
+      "rows": [
+        {
+          "state": "idle",
+          "wait_event_type": "Client",
+          "wait_event": "ClientRead",
+          "sessions": 13
+        },
+        {
+          "state": "active",
+          "wait_event_type": null,
+          "wait_event": null,
+          "sessions": 1
+        }
+      ]
+    },
+    {
+      "startedAt": "2026-10-18 13:33:31 UTC",
+      "completedAt": "2026-10-18 13:33:32 UTC",
+      "rows": [
+        {
+          "state": "idle",
+          "wait_event_type": "Client",
+          "wait_event": "ClientRead",
+          "sessions": 17
+        },
+        {
+          "state": "active",
+          "wait_event_type": null,
+          "wait_event": null,
+          "sessions": 1
+        }
+      ]
+    }
+  ],
+  "indexMetadata": {
+    "returnedDefinitions": 29,
+    "returnedPhysicalTables": [
+      "catalog.assets",
+      "catalog.catalogue_version_assets",
+      "catalog.catalogue_version_variants",
+      "catalog.sets"
+    ],
+    "completeness": "Not established: the approved filters name printings/variants and market tables differently from several actual physical relations. Absence from this output is not proof an index or table is missing."
+  },
+  "objectDefinitions": {
+    "views": [
+      "api.asset_manifest",
+      "api.catalogue_cards",
+      "api.catalogue_sets"
+    ],
+    "functions": [
+      "card_image_manifest_for_identities",
+      "catalogue_set_card_rows",
+      "latest_stored_exact_prices",
+      "list_reviewed_cardmarket_printing_mappings"
+    ]
+  },
+  "factsPlan": {
+    "estimatedTotalCost": 326.33,
+    "estimatedOutputRows": 3,
+    "nodes": [
+      {
+        "type": "Limit",
+        "relation": null,
+        "index": null,
+        "estimatedRows": 3,
+        "estimatedTotalCost": 326.33
+      },
+      {
+        "type": "Limit",
+        "relation": null,
+        "index": null,
+        "estimatedRows": 1,
+        "estimatedTotalCost": 20.98
+      },
+      {
+        "type": "Nested Loop",
+        "relation": null,
+        "index": null,
+        "estimatedRows": 1,
+        "estimatedTotalCost": 20.98
+      },
+      {
+        "type": "Nested Loop",
+        "relation": null,
+        "index": null,
+        "estimatedRows": 1,
+        "estimatedTotalCost": 18.61
+      },
+      {
+        "type": "Nested Loop",
+        "relation": null,
+        "index": null,
+        "estimatedRows": 1,
+        "estimatedTotalCost": 16.1
+      },
+      {
+        "type": "Seq Scan",
+        "relation": "catalogue_versions",
+        "index": null,
+        "estimatedRows": 2,
+        "estimatedTotalCost": 12.16
+      },
+      {
+        "type": "Memoize",
+        "relation": null,
+        "index": null,
+        "estimatedRows": 1,
+        "estimatedTotalCost": 1.96
+      },
+      {
+        "type": "Index Only Scan",
+        "relation": "catalogue_version_sets",
+        "index": "catalogue_version_sets_pkey",
+        "estimatedRows": 1,
+        "estimatedTotalCost": 1.95
+      },
+      {
+        "type": "Index Scan",
+        "relation": "sets",
+        "index": "sets_pkey",
+        "estimatedRows": 1,
+        "estimatedTotalCost": 2.49
+      },
+      {
+        "type": "Index Only Scan",
+        "relation": "languages",
+        "index": "languages_pkey",
+        "estimatedRows": 1,
+        "estimatedTotalCost": 2.37
+      },
+      {
+        "type": "Sort",
+        "relation": null,
+        "index": null,
+        "estimatedRows": 3,
+        "estimatedTotalCost": 305.35
+      },
+      {
+        "type": "Nested Loop",
+        "relation": null,
+        "index": null,
+        "estimatedRows": 3,
+        "estimatedTotalCost": 305.32
+      },
+      {
+        "type": "Nested Loop",
+        "relation": null,
+        "index": null,
+        "estimatedRows": 3,
+        "estimatedTotalCost": 304.81
+      },
+      {
+        "type": "Nested Loop",
+        "relation": null,
+        "index": null,
+        "estimatedRows": 3,
+        "estimatedTotalCost": 304.33
+      },
+      {
+        "type": "Nested Loop",
+        "relation": null,
+        "index": null,
+        "estimatedRows": 3,
+        "estimatedTotalCost": 300.74
+      },
+      {
+        "type": "Nested Loop",
+        "relation": null,
+        "index": null,
+        "estimatedRows": 3,
+        "estimatedTotalCost": 294.53
+      },
+      {
+        "type": "Index Scan",
+        "relation": "languages",
+        "index": "languages_pkey",
+        "estimatedRows": 1,
+        "estimatedTotalCost": 2.37
+      },
+      {
+        "type": "Nested Loop",
+        "relation": null,
+        "index": null,
+        "estimatedRows": 3,
+        "estimatedTotalCost": 292.13
+      },
+      {
+        "type": "Index Scan",
+        "relation": "sets",
+        "index": "sets_pkey",
+        "estimatedRows": 1,
+        "estimatedTotalCost": 2.49
+      },
+      {
+        "type": "Nested Loop",
+        "relation": null,
+        "index": null,
+        "estimatedRows": 3,
+        "estimatedTotalCost": 289.61
+      },
+      {
+        "type": "Index Scan",
+        "relation": "catalogue_versions",
+        "index": "catalogue_versions_pkey",
+        "estimatedRows": 1,
+        "estimatedTotalCost": 2.36
+      },
+      {
+        "type": "Nested Loop",
+        "relation": null,
+        "index": null,
+        "estimatedRows": 3,
+        "estimatedTotalCost": 287.23
+      },
+      {
+        "type": "Nested Loop",
+        "relation": null,
+        "index": null,
+        "estimatedRows": 20,
+        "estimatedTotalCost": 276.82
+      },
+      {
+        "type": "Index Scan",
+        "relation": "card_printings",
+        "index": "card_printings_set_sort_idx",
+        "estimatedRows": 74,
+        "estimatedTotalCost": 84.21
+      },
+      {
+        "type": "Index Scan",
+        "relation": "card_variants",
+        "index": "card_variants_printing_idx",
+        "estimatedRows": 1,
+        "estimatedTotalCost": 2.59
+      },
+      {
+        "type": "Index Only Scan",
+        "relation": "catalogue_version_variants",
+        "index": "catalogue_price_version_variant_lookup_idx",
+        "estimatedRows": 1,
+        "estimatedTotalCost": 0.52
+      },
+      {
+        "type": "Index Scan",
+        "relation": "card_concepts",
+        "index": "card_concepts_pkey",
+        "estimatedRows": 1,
+        "estimatedTotalCost": 2.07
+      },
+      {
+        "type": "Materialize",
+        "relation": null,
+        "index": null,
+        "estimatedRows": 45,
+        "estimatedTotalCost": 1.68
+      },
+      {
+        "type": "Seq Scan",
+        "relation": "rarities",
+        "index": null,
+        "estimatedRows": 45,
+        "estimatedTotalCost": 1.45
+      },
+      {
+        "type": "Index Scan",
+        "relation": "variant_taxonomy",
+        "index": "variant_taxonomy_pkey",
+        "estimatedRows": 1,
+        "estimatedTotalCost": 0.16
+      },
+      {
+        "type": "Index Scan",
+        "relation": "finishes",
+        "index": "finishes_code_key",
+        "estimatedRows": 1,
+        "estimatedTotalCost": 0.17
+      }
+    ],
+    "actualExecutionTimeMeasured": false,
+    "notes": [
+      "No ANALYZE: costs and cardinalities are estimates, not milliseconds or observed rows.",
+      "Approved SQL uses a LIMIT 1 version subquery; actual API first resolves maybeSingle version then applies a literal UUID. This does not verify uniqueness or identical role/planning context.",
+      "The plan does not cover default image RPC, set-scoped asset manifest or Supabase Storage internals."
+    ]
+  },
+  "publicHttpComparison": {
+    "observedAt": "2026-10-18T13:33:31.818Z",
+    "scope": "One bounded unauthenticated GET per named existing public endpoint; no price, private account, job or mutation routes",
+    "retries": 0,
+    "results": [
+      {
+        "label": "storm_facts",
+        "url": "https://api.stackrtcg.com/v1/sets/903d5baa-27c7-5690-b1d7-2395c770204a/cards?language=ja&limit=3&includeAssets=false",
+        "startedAt": "2026-10-18T13:33:28.041Z",
+        "completedAt": "2026-10-18T13:33:30.340Z",
+        "elapsedMs": 2296,
+        "status": 200,
+        "bytes": 4645,
+        "contentType": "application/json; charset=utf-8",
+        "requestId": "6c97a899-15c2-4cb9-9916-eda6e02111b4",
+        "cfRay": "a4c7ea3e8f2a8e49-LHR",
+        "error": null,
+        "envelopeKeys": [
+          "data",
+          "meta"
+        ],
+        "returnedItems": 3,
+        "sourceSha256": null,
+        "expectedSourceBytesMatched": null
+      },
+      {
+        "label": "storm_logo_manifest",
+        "url": "https://api.stackrtcg.com/v1/assets/manifest?assetType=set_logo&setId=903d5baa-27c7-5690-b1d7-2395c770204a&limit=10",
+        "startedAt": "2026-10-18T13:33:28.120Z",
+        "completedAt": "2026-10-18T13:33:31.817Z",
+        "elapsedMs": 3698,
+        "status": 200,
+        "bytes": 184,
+        "contentType": "application/json; charset=utf-8",
+        "requestId": "f0a8e392-5e39-4f37-8e06-af86c78112a1",
+        "cfRay": "a4c7ea3e99cbb874-LHR",
+        "error": null,
+        "envelopeKeys": [
+          "data",
+          "meta"
+        ],
+        "returnedItems": null,
+        "sourceSha256": null,
+        "expectedSourceBytesMatched": null
+      },
+      {
+        "label": "storm_public_source_png",
+        "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/set_logo/reviewed/383905581374e6a41be583303354be84a34891d52f8b6420ea632ff61a07f7ba/source.png",
+        "startedAt": "2026-10-18T13:33:28.121Z",
+        "completedAt": "2026-10-18T13:33:29.175Z",
+        "elapsedMs": 1054,
+        "status": 200,
+        "bytes": 900649,
+        "contentType": "image/png",
+        "requestId": null,
+        "cfRay": "a4c7ea3eced01fc9-LHR",
+        "error": null,
+        "envelopeKeys": [],
+        "returnedItems": null,
+        "sourceSha256": "383905581374e6a41be583303354be84a34891d52f8b6420ea632ff61a07f7ba",
+        "expectedSourceBytesMatched": true
+      }
+    ]
+  },
+  "conclusion": "No root cause established. Two point activity samples show only idle ClientRead sessions and one active session without a reported wait. Previously failing public facts and the immutable source PNG now return 200; exact PNG bytes match. These observations do not prove intermittent failures resolved, complete card populations, published logo selection, phone correctness or latency targets.",
+  "remainingGates": [
+    "Inspect and repair the independently confirmed missing production M6 logo association under the separate standing exact-artwork authorization",
+    "Keep earlier 504/544 evidence; investigate recurrence with matching role/query/HTTP evidence before selecting a database change",
+    "Actual installed iPhone delivery and Wi-Fi/mobile acceptance remain open; no issue closed"
+  ],
+  "diagnosticsApprovalConsumed": "Approved diagnostics completed; approval does not authorize arbitrary new SQL, price refresh, restart, catalogue change or deployment. Exact supplied-artwork operations retain their separately recorded standing scope.",
+  "privateEvidenceDirectory": "D:/Stackr-organization/evidence/consolidation-20261018/production-diagnostics-20261018-1330",
+  "privateReceiptDigests": [
+    {
+      "file": "approval.json",
+      "sha256": "19435f706561ea80f7b239826aadd65f4527cc8897f2a9faa3665a5013a07724"
+    },
+    {
+      "file": "initial-tool-result.json",
+      "sha256": "cdb4ba3a9ea1459c283061cac20dad1b9b3fd65d7324c70afc819551f4d2160f"
+    },
+    {
+      "file": "wait_states.json",
+      "sha256": "7262fbc332456c9b8e71b6f4c9ef2585b1ca0aeaff7a566572dbdbf0de3764c7"
+    },
+    {
+      "file": "named_indexes.json",
+      "sha256": "96e979c02875c6febd7cf51dde3c4599e811c2e1cfd680df37e09cba94da09d0"
+    },
+    {
+      "file": "named_views.json",
+      "sha256": "7ff760ff65d0760fcbc4cfd0900bfbb1a6779d17f5cff8d983cacb96772829bc"
+    },
+    {
+      "file": "named_functions.json",
+      "sha256": "0d527e1e2343e0dd2cc743ed35408276c961ee40c94c51fb891004123196f94a"
+    },
+    {
+      "file": "set_version_plan.json",
+      "sha256": "85c78769850aae0e421a093422f66db0a4d9b497f54f3f0108b310b0160194c9"
+    },
+    {
+      "file": "wait_states_near_public_http.json",
+      "sha256": "60364a23ed1b55ec6ad1ea515d56d4b7872c62ab5729f27157e72ef11507e55a"
+    },
+    {
+      "file": "public-http-comparison.json",
+      "sha256": "906116a851a4e700ebb5ad9b8ec8c9c4c158cefb76d110e634d3bd4fad71069d"
+    }
+  ],
+  "phoneVerified": false
+}

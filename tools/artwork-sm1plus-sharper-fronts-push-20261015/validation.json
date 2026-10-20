@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_FROZEN_PUBLICATION_HANDOFF_READY",
+  "confirmation": "PUBLISH ARTWORK SM1PLUS SHARPER FRONTS",
+  "fronts": 2,
+  "fixedVariantTuplesPerEnvironment": 2,
+  "workType": "SHARP",
+  "batchId": "JP-SHARP-001",
+  "printingAssetVariantId": null,
+  "sourceVariantId": null,
+  "deliveryKind": "shared",
+  "tests": {
+    "publisherNode": {
+      "passed": 17,
+      "failed": 0
+    },
+    "archiveGuardsPython": {
+      "passed": 6,
+      "failed": 0
+    },
+    "persistedFailureJournal": {
+      "passed": 1,
+      "failed": 0
+    },
+    "priorEeveePublisherRegression": {
+      "passed": 15,
+      "failed": 0
+    },
+    "priorAquapolisPublisherRegression": {
+      "passed": 15,
+      "failed": 0
+    },
+    "phase1SourceContract": {
+      "passed": 46,
+      "failed": 0
+    },
+    "queue": {
+      "realReceipts": 2,
+      "localImageByteObjects": 8,
+      "jointRawEntryTamperRejections": 61,
+      "forgedAuthorityRejections": 10,
+      "ordinaryFrontMetricCases": 6,
+      "sharpQueuedExcludedOnlyFromOrdinaryFrontSubtraction": true,
+      "sharpAcceptedExcludedOnlyFromOrdinaryFrontPendingSubtraction": true,
+      "totalQueuedStillIncludesSharp": true,
+      "priorEeveeAndAquapolisReadOnlyReceipts": 3,
+      "priorLocalImageObjects": 12,
+      "previousJapaneseEeveeAndAquapolisEnglishBehaviourPreserved": true,
+      "sharedQueueUnchanged": true,
+      "productionWrites": 0
+    }
+  },
+  "archiveInstaller": {
+    "assetId": 645329722,
+    "membersVerifiedAndExtracted": 12,
+    "runtimeSharpFullyDecoded": 8,
+    "privatePILSharpRgbaAgreements": 8,
+    "privacySafeJsonFiles": 4,
+    "originalHdPixelFronts": 0,
+    "derivativeHdPixelFiles": 0,
+    "noEnlargement": true
+  },
+  "sourceGuard": {
+    "externalAuthorityAndBaselineFilesRehashed": 12,
+    "oldProductionSources": 4,
+    "oldFullSourceFieldsProtected": 68,
+    "productionNewSources": 0,
+    "productionPolicyChangesAllowed": 0,
+    "explicitProductionResolverHasNoInsertPath": true,
+    "missingOrDriftedExistingPokellectorFails": true,
+    "existingPriceFinite2NotesUnchanged": true,
+    "full17MicrosecondsRetainedByBothJsonReaders": true,
+    "stagingBaselineScopedSources": 0,
+    "onlyTemporaryStagingFixture": "pokellector",
+    "stageGeneratedFull17DefaultsAndCreationReceiptChecked": true,
+    "frozenFullBeforeSnapshotsChecked": true
+  },
+  "transactionFixtures": {
+    "production": {
+      "beforeRows": 16,
+      "afterRows": 20,
+      "assetsAdded": 2,
+      "linksAdded": 2,
+      "sourcesAdded": 0
+    },
+    "staging": {
+      "beforeRows": 10,
+      "temporaryRows": 15,
+      "afterRollbackRows": 10
+    },
+    "oldCanonicalMetadataAssetsLinksAndSourcePoliciesUnchanged": true,
+    "sourceAndLinkWriteFailuresRollBack": true
+  },
+  "identity": {
+    "pokemonAndEnergyCategoriesDistinct": true,
+    "sylveon064FullGXAttacksUsageAndKnockoutRulePreserved": true,
+    "energy068LeafGlyphNotFalsePrintedGrassKanji": true,
+    "energyNoPokemonHPDexStageArtistAttacksRulesOrAMarkInvented": true,
+    "providerBodyVerbatimAgreement": false,
+    "editionStampAbsenceIsNotUnlimitedProof": true,
+    "physicalEditionCertified": false,
+    "physicalFinishCertified": false
+  },
+  "metadataHistory": {
+    "originalEmbeddedNoncredentialedLocalUriRemainsPublicIfPublished": true,
+    "rawUriExcludedFromSafeJsonOnly": true,
+    "originalMetadataStripped": false,
+    "providerNativeNoResizeCertified": false,
+    "nativeOpticalGainClaimed": false,
+    "saved139x196ReferencesOnly": true,
+    "currentConfiguredApiImagesNull": true
+  },
+  "unchangedPriorRepositoryFilesRehashed": 140,
+  "unchangedSharedDependenciesRehashed": 11,
+  "unchangedPhase1PrivatePinsRehashed": 42,
+  "unchangedSourceAuthorityPinsRehashed": 54,
+  "workflow": {
+    "protectedProduction": true,
+    "exactMainSha": true,
+    "sharedDeploymentConcurrency": true,
+    "shaPinnedActions": 3,
+    "exact20FileSecretScanPassed": true,
+    "failureJournalAndRollbackReceipts": true
+  },
+  "planSha256": "295673228ed3273dbb02291973f3ae35f36bb94428a5b99711ef8fff8c80e85c",
+  "approvalSha256": "72e8ceeb2f92e2b5d1dd4d83df79d732e2055638002bc5026aac6844abdfb48b",
+  "sourceManifestSha256": "36c93fa4f6ddb4a3160279355b5fe82083d1b7f7ef5d338953c99d20422b3f7a",
+  "archiveSha256": "cedc81f0fa2859ae34335db3abf5844176d760a8e76d557f85c195242fc9737e",
+  "localValidationRepair": "An overbroad generated display-name replacement was detected by the frozen source policy guard and narrowed before validation; existing policy data now matches all four unchanged source rows.",
+  "newProviderRequests": 0,
+  "databaseRequests": 0,
+  "gitMutations": 0,
+  "sharedQueueWrites": 0,
+  "ledgerWrites": 0,
+  "storageWrites": 0,
+  "productionWrites": 0,
+  "livePublicationVerified": false,
+  "independentExactHeadAndHostedChecksStillRequired": true
+}

@@ -5,7 +5,7 @@ import './test-stored-price-read.mjs';
 import { assertCatalogueCapacity, catalogueRefreshPlan, refreshOutcome } from './refresh-catalogue-prices.mjs';
 import { mergeValuationTrend, valuationTrendEvidence, ownedValuationUnits, prepareCollectionValuation, readPages, resolveValuationUnit, setValuationUnits, summarisePreparedUnits } from './lib/prepared-collection-valuation.mjs';
 import { createMarketPricingService } from '../backend/lib/marketPricing/service.js';
-import { summariseTcgdexExactVariantPricing } from '../backend/lib/tcgdex.js';
+import { fetchTcgdexCardPrice, summariseTcgdexExactVariantPricing, summariseTcgdexNormalPricing, summariseTcgdexPricing } from '../backend/lib/tcgdex.js';
 import { ownerQueueRetryAfter, prepareStoredValuationIfEnabled } from './refresh-owner-provider-prices.mjs';
 import { withSavedCardLanguage, withPublishedOwnedLanguage, readSavedCardLanguages } from './lib/owner-price-saved-references.mjs';
 
@@ -50,6 +50,61 @@ for (const key of ['normal', 'reverse', 'firstEdition', 'wPromo', 'newFinish']) 
   assert.equal(summariseTcgdexExactVariantPricing({ ...jaHoloCard, variants: { ...jaHoloCard.variants, [key]: true } }, 'ja', 'holo'), null);
   assert.equal(summariseTcgdexExactVariantPricing({ ...jaHoloCard, variants: { ...jaHoloCard.variants, [key]: undefined } }, 'ja', 'holo'), null);
 }
+
+const cardmarketCard = { id: 'market-fixture-001', set: { id: 'market-fixture' }, localId: '001', language: 'en',
+  variants: { normal: true, holo: false, reverse: false, firstEdition: false, wPromo: false } };
+const cardmarketPricing = fields => ({ ...cardmarketCard, pricing: { cardmarket: {
+  unit: 'GBP', updated: '2026-10-08T12:00:00Z', low: 0.25, ...fields,
+} } });
+assert.equal(summariseTcgdexNormalPricing(cardmarketPricing({}), 'en'), null, 'a low-only Cardmarket asking floor is unavailable as a market estimate');
+assert.equal(summariseTcgdexPricing(cardmarketPricing({}), 'en').preferredGbp, null);
+for (const fields of [{ trend: 42, avg30: 30, avg: 20 }, { avg30: 30, avg: 20 }, { avg: 20 }]) {
+  const card = cardmarketPricing(fields);
+  const expected = fields.trend ?? fields.avg30 ?? fields.avg;
+  const exact = summariseTcgdexNormalPricing(card, 'en');
+  assert.equal(exact.price, expected, 'Cardmarket trend, avg30, then avg keep their precedence over low');
+  assert.equal(exact.priceSource, 'tcgdex_cardmarket');
+  assert.equal(exact.pricingUpdatedAt, card.pricing.cardmarket.updated);
+  assert.equal(exact.raw, card, 'provider field precision and provenance stay intact');
+  const summary = summariseTcgdexPricing(card, 'en');
+  assert.equal(summary.preferredGbp, expected);
+  assert.equal(summary.cardmarket[0].lowGbp, 0.25, 'a supported quote retains its low range without promoting it');
+}
+const lowOnlyHolo = { ...jaHoloCard, pricing: { cardmarket: { unit: 'GBP', updated: '2026-10-08', low: 0.25 } } };
+assert.equal(summariseTcgdexExactVariantPricing(lowOnlyHolo, 'ja', 'holo'), null, 'unique ordinary holo proof does not promote an asking floor');
+const wrongFinishMarket = cardmarketPricing({ 'trend-holo': 42, 'low-holo': 0.25 });
+assert.equal(summariseTcgdexNormalPricing(wrongFinishMarket, 'en'), null, 'a holo market field cannot rescue a normal low-only record');
+const tcgplayerPricing = normal => ({ ...cardmarketCard, pricing: { tcgplayer: {
+  unit: 'GBP', updated: '2026-10-08T12:00:00Z', normal,
+} } });
+assert.equal(summariseTcgdexNormalPricing(tcgplayerPricing({ lowPrice: 0.25 }), 'en'), null, 'a low-only TCGplayer record also lacks a market center');
+assert.equal(summariseTcgdexPricing(tcgplayerPricing({ lowPrice: 0.25 }), 'en').preferredGbp, null);
+for (const normal of [{ marketPrice: 42, midPrice: 30, lowPrice: 0.25 }, { midPrice: 30, lowPrice: 0.25 }]) {
+  const exact = summariseTcgdexNormalPricing(tcgplayerPricing(normal), 'en');
+  assert.equal(exact.price, normal.marketPrice ?? normal.midPrice);
+  assert.equal(exact.tcg_low, 0.25);
+}
+for (const variantCode of ['holo', 'reverse_holo']) {
+  const providerVariant = variantCode === 'holo' ? 'holofoil' : 'reverse-holofoil';
+  const card = { ...cardmarketCard, variants: { ...cardmarketCard.variants, holo: true, reverse: true },
+    pricing: { tcgplayer: { unit: 'GBP', [providerVariant]: { lowPrice: 0.25 } } } };
+  assert.equal(summariseTcgdexExactVariantPricing(card, 'en', variantCode), null, 'finish-specific asking prices remain separate from market estimates');
+}
+// Exercise the legacy exact-ID reader with a mocked provider transport. No
+// real requests or refresh writes run from this fixture.
+const originalProviderFetch = globalThis.fetch;
+try {
+  for (const [provider, fields, expected] of [
+    ['cardmarket', { low: 0.25 }, null], ['cardmarket', { low: 0.25, trend: 42 }, 42],
+    ['tcgplayer', { normal: { lowPrice: 0.25 } }, null], ['tcgplayer', { normal: { lowPrice: 0.25, marketPrice: 42 } }, 42],
+  ]) {
+    const card = { ...cardmarketCard, id: `${provider}-${expected ?? 'low'}-legacy-fixture`,
+      pricing: { [provider]: { unit: 'GBP', updated: '2026-10-08T12:00:00Z', ...fields } } };
+    globalThis.fetch = async () => ({ ok: true, text: async () => JSON.stringify(card) });
+    const price = await fetchTcgdexCardPrice({ cardId: card.id, language: 'en', exactOnly: true });
+    assert.equal(price.price, expected, 'legacy provider readers use the same market-versus-low boundary');
+  }
+} finally { globalThis.fetch = originalProviderFetch; }
 
 const providerCard={id:'sv01-1',set:{id:'sv01'},localId:'1',language:'en',variants:{normal:true,holo:true,reverse:true},
  pricing:{tcgplayer:{unit:'USD',updated:'2026-09-18T00:00:00Z',normal:{marketPrice:5},holofoil:{marketPrice:10},'reverse-holofoil':{marketPrice:15}}}};
@@ -132,6 +187,100 @@ assert.equal(mergeValuationTrend([point],{...point,total:9,evidence:'b'},true).l
 assert.equal(mergeValuationTrend([point],{...point,total:9,evidence:'b',at:'2026-09-19T02:00:00Z'},true).length,2,'a comparable partial generation adds genuine history');
 assert.equal(await prepareStoredValuationIfEnabled({env:{},dryRun:false}),null,'default-off worker does not touch database');
 assert.equal(await prepareStoredValuationIfEnabled({env:{STACKR_PREPARED_VALUATIONS_ENABLED:'true'},dryRun:true}),null,'dry run does not publish');
+// Exercise the real worker with synthetic catalogue/claim transports. A regular
+// official binder must not read its unowned First Edition siblings, while an
+// explicit First Edition binder still needs normal same-printing general bases.
+const storedEditionId=(prefix,n)=>`${prefix}0000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
+const storedEditionSet=storedEditionId('3',1),storedEditionVersion=storedEditionId('7',1);
+const storedEditionCatalogue=Array.from({length:200},(_,index)=>{
+ const n=index+1,base={printing_id:storedEditionId('2',n),set_id:storedEditionSet,language_code:'en',catalogue_version_id:storedEditionVersion};
+ return [{...base,variant_id:storedEditionId('1',n),variant_code:'normal',finish_code:'normal'},
+  {...base,variant_id:storedEditionId('4',n),variant_code:'first_edition',finish_code:'normal'}];
+}).flat();
+async function storedEditionPreparation({edition='normal',mixedEditions=false,ownedEdition=null,omitFirstEdition=false,includeUnusedQuotes=false}={}) {
+ const batches=[];
+ const binders=[{id:storedEditionId('5',1),type:'official',source_set_id:storedEditionSet,language:'en',edition,card_mode:'raw'}];
+ if(mixedEditions)binders.push({...binders[0],id:storedEditionId('5',2),edition:'first_edition'});
+ const ownedRows=ownedEdition?[{id:storedEditionId('9',1),set_id:storedEditionSet,
+  card_id:storedEditionId(ownedEdition==='first_edition'?'4':'1',1),quantity:2,condition:'near_mint',
+  language:'en',variant:ownedEdition,edition:ownedEdition}]:[];
+ const fixtureClaim={inputs:{ownedRows,binderCards:[],binders,collectionRevision:'edition-fixture'},
+  previousCollectionRevision:'edition-fixture',lease:storedEditionId('9',2)};
+ let calls=0;
+ const rpc=async(name)=>{
+  assert(++calls<=100,'synthetic preparation remains bounded');
+  const responses={claim_collection_valuation:fixtureClaim,published_price_catalogue_revision:[storedEditionVersion],
+   catalogue_price_cycle_status:null,collection_valuation_trend:[],publish_collection_valuation:true};
+  assert(Object.hasOwn(responses,name),`unexpected synthetic RPC ${name}`);
+  return {data:responses[name],error:null};
+ };
+ const from=(name)=>{
+  assert(++calls<=100,'synthetic preparation remains bounded');
+  const filters=[];
+  let start=0,end=Infinity;
+  const rows=()=>{
+   if(name==='catalogue_cards')return storedEditionCatalogue.filter(row=>filters.every(filter=>filter(row)))
+    .sort((a,b)=>a.variant_id.localeCompare(b.variant_id)).slice(start,end+1);
+   assert(['catalogue_external_identifiers','catalogue_price_state'].includes(name),`unexpected synthetic table ${name}`);
+   return [];
+  };
+  const query={select(){return query;},eq(key,value){filters.push(row=>row[key]===value);return query;},
+   in(key,values){filters.push(row=>values.includes(row[key]));return query;},order(){return query;},
+   range(a,b){start=a;end=b;return query;},
+   then(resolve,reject){return Promise.resolve({data:rows(),error:null}).then(resolve,reject);}};
+  return query;
+ };
+ const fixtureDb={from,rpc,schema(name){assert.equal(name,'api');return fixtureDb;}};
+ const result=await prepareCollectionValuation({supabase:fixtureDb,ownerId:storedEditionId('8',1),service:{
+  async storedExactPrices(ids){
+   assert(ids.length>0&&ids.length<=200,'the exact-price RPC keeps its existing 200-ID cap');
+   batches.push([...ids]);
+   const selected=includeUnusedQuotes?storedEditionCatalogue.map(row=>row.variant_id):ids;
+   return selected.filter(id=>!omitFirstEdition||id[0]!=='4').map(id=>({variantId:id,productType:'raw_card',currency:'GBP',
+    status:'market_estimate',estimates:{central:id[0]==='4'?777:1},calculatedAt:'2026-10-19T00:00:00Z',
+    staleAfter:'2099-01-01T00:00:00Z',freshness:'fresh'}));
+  },
+  async requestSnapshotRefresh(){throw Error('Provider work forbidden during stored-read fixture');},
+ }});
+ assert.equal(result.published,true);
+ const ids=batches.flat();
+ assert.equal(new Set(ids).size,ids.length,'a union does not repeat identities across batches or binders');
+ return {batches,ids,summary:result.summary};
+}
+// Only generation UUIDs and calculation/trend times vary between preparations.
+const stablePreparedSummary=value=>Array.isArray(value)?value.map(stablePreparedSummary):value&&typeof value==='object'
+ ?Object.fromEntries(Object.entries(value).filter(([key])=>!['valuationRevision','calculatedAt','at'].includes(key))
+  .map(([key,child])=>[key,stablePreparedSummary(child)])):value;
+const regularEditionRead=await storedEditionPreparation();
+assert.equal(regularEditionRead.ids.length,200,'regular set summaries skip 200 unused First Edition siblings');
+assert.equal(regularEditionRead.batches.length,1,'the regular fixture needs one bounded read instead of two');
+assert(regularEditionRead.ids.every(id=>id[0]==='1'));
+const broadEditionQuotes=await storedEditionPreparation({includeUnusedQuotes:true});
+assert.deepEqual(stablePreparedSummary(regularEditionRead.summary),stablePreparedSummary(broadEditionQuotes.summary),
+ 'the complete summary is unchanged when unused other-edition quotes are present');
+assert.equal(regularEditionRead.summary.binders[0].standardSet.total,200);
+assert.equal(regularEditionRead.summary.binders[0].masterSet.total,200);
+const mixedEditionRead=await storedEditionPreparation({mixedEditions:true});
+assert.equal(mixedEditionRead.ids.length,400,'mixed official editions retain both sets of exact identities');
+assert.equal(mixedEditionRead.batches.length,2);
+assert.equal(mixedEditionRead.summary.binders[0].standardSet.total,200);
+assert.equal(mixedEditionRead.summary.binders[1].standardSet.total,155400,'the stronger exact First Edition values remain');
+const firstEditionFallbackRead=await storedEditionPreparation({edition:'first_edition',omitFirstEdition:true});
+assert.equal(firstEditionFallbackRead.ids.length,400,'First Edition totals retain their necessary normal general bases');
+assert.equal(firstEditionFallbackRead.summary.binders[0].standardSet.total,null,'missing exact edition quotes stay unavailable');
+assert.equal(firstEditionFallbackRead.summary.general.binders[0].standardSet.total,200);
+assert.equal(firstEditionFallbackRead.summary.general.binders[0].standardSet.generalEstimateUnits,200);
+const ownedOtherEditionRead=await storedEditionPreparation({ownedEdition:'first_edition'});
+assert.equal(ownedOtherEditionRead.ids.length,201,'an owned other-edition identity is retained independently of set totals');
+assert.equal(ownedOtherEditionRead.ids.filter(id=>id[0]==='4').length,1,'unowned other-edition siblings remain excluded');
+assert.equal(ownedOtherEditionRead.summary.total,1554);
+assert.equal(ownedOtherEditionRead.summary.binders[0].standardSet.total,200);
+const broadOwnedEditionQuotes=await storedEditionPreparation({ownedEdition:'first_edition',includeUnusedQuotes:true});
+assert.deepEqual(stablePreparedSummary(ownedOtherEditionRead.summary),stablePreparedSummary(broadOwnedEditionQuotes.summary),
+ 'all collection, binder, general, coverage and trend facts retain the complete-read result');
+const ownedNormalInFirstEditionRead=await storedEditionPreparation({edition:'first_edition',ownedEdition:'normal'});
+assert.equal(ownedNormalInFirstEditionRead.summary.total,2,'explicit normal holdings survive a First Edition set selection');
+assert.equal(ownedNormalInFirstEditionRead.summary.general.total,2);
 const db=new PGlite();
 await db.exec("create function public.test_uuid(v text) returns uuid language sql immutable as $$ select (substr(md5(v),1,8)||'-'||substr(md5(v),9,4)||'-4'||substr(md5(v),14,3)||'-8'||substr(md5(v),18,3)||'-'||substr(md5(v),21,12))::uuid $$;");
 await db.exec(`create schema api; create schema auth; create schema catalog;

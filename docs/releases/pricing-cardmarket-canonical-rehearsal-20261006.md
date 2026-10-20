@@ -1,0 +1,11 @@
+# Cardmarket ledger rehearsal
+
+PR315 adds `cardmarket_ledger_rehearsal` inside the existing canonical staging workflow. Source is implemented/tested, not merged, remotely run or installed. Each selected scope changes only its own allowlisted function. Do not bundle this replacement with the English identity guard.
+
+After exact reviewed source is on main and applicable protected release acceptance is satisfied, select `confirmation=DEPLOY STAGING`, `release_scope=cardmarket_ledger_rehearsal`, `release_candidate=true`, `apply_migrations=false`, `publish_mobile_update=false`. Existing staging baseline approval, project ref, source attestation, verified physical/logical backups and shared deployment concurrency remain required. This runbook does not authorize bypassing review or dispatching from a branch.
+
+The runner pins the 200-entry immutable staging ledger from the existing canonical baseline, source SHA256 `6ea53be5d373faea6db7a4fff3445b497f952919f3d3b7fdf745865ff5b39ff0`, predecessor MD5 `8a23b5ed8bfb28bfc3bc38650f973f89` and candidate MD5 `0b412ef55657e19e5bd606a387fcdbaf`. Stop on any target, function, ledger, source or access drift; do not update baselines to force a pass. No historical manifest or migration registry entry is written.
+
+Within one repeatable-read transaction, it checks public-role denial, invalid/null limits and two service-role 100-row pages before and inside the replacement. Full row/provenance responses must match; cursor/category/identity/evidence/review controls stay strict. Invalid raw candidates must never truncate the eligible ledger. All reads retain eight-second statement deadlines. It always rolls back and verifies the captured predecessor and unchanged registry. It neither writes a local production cache nor refreshes prices. Only a non-secret attestation is uploaded; backup data and diagnostics remain ephemeral.
+
+Successful rollback is an intermediate gate, not persistent installation, full 9,234-ledger cron completion or owner HTTP/phone proof. Before persistent promotion, review canonical forward migration/rollback provenance, actual installed native/access/keyset/API controls, complete worker runtime and retained-cache behaviour under protected staging/production gates. The separate sweep-initialisation timeout and intermittent connectivity still need their own diagnosis.

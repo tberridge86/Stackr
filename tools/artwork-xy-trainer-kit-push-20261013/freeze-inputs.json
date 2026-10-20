@@ -1,0 +1,16 @@
+{
+  "source_manifest_file": "xy-trainer-kit53-source-manifest.json",
+  "source_manifest_sha256": "be22233ea3bae8bd5aebf882ce2701cf59400f5bac7082aa147cb8ab0d3844f2",
+  "checked_handoff_file": "source-batches/receipts/en022-en024-checked-handoff-20261013T205408300584Z.json",
+  "checked_handoff_sha256": "a820451e96ed321c6a9cf77856f04782d0a9f07cf818dcee33074a265ce3172d",
+  "eligible_fronts": 53,
+  "binding_prefix": "xykit53",
+  "archive": {
+    "id": 638239382,
+    "kind": "github_release_asset",
+    "artifact_directory": "638239382",
+    "sha256": "ba83ea3accf161a7129370edff9f77697e34295369f3df7ce3efed452b40b262",
+    "byte_size": 66689774,
+    "file_count": 215
+  }
+}

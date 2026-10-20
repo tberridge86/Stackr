@@ -1,0 +1,171 @@
+[
+  {
+    "printing_id": "321e1cd2-8677-4e61-a1d7-3a9f47bcafb0",
+    "set_id": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+    "set_code": "neo4",
+    "language_code": "ja",
+    "collector_number": "102",
+    "card_native_name": "エネルギー増幅器",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "10bda5e3-e914-4519-bd6d-4ee49eae442d"
+    ],
+    "batch_id": "JP-CARDS-017"
+  },
+  {
+    "printing_id": "53329b0c-0a4e-4bd8-a800-11c349d6f5d7",
+    "set_id": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+    "set_code": "neo4",
+    "language_code": "ja",
+    "collector_number": "103",
+    "card_native_name": "反撃の爪",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "269f8c0c-92d1-47b8-b06a-8a34a1214326"
+    ],
+    "batch_id": "JP-CARDS-017"
+  },
+  {
+    "printing_id": "3d3c9971-cd1a-4dbe-a659-8e4fffd669f2",
+    "set_id": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+    "set_code": "neo4",
+    "language_code": "ja",
+    "collector_number": "104",
+    "card_native_name": "拡大鏡",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "70d44586-048d-41d1-a65d-a420daf26e60"
+    ],
+    "batch_id": "JP-CARDS-017"
+  },
+  {
+    "printing_id": "ac2058d9-5f2c-464c-83dc-86145472f4b4",
+    "set_id": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+    "set_code": "neo4",
+    "language_code": "ja",
+    "collector_number": "105",
+    "card_native_name": "ポケモンパーソナリティテスト",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "9241f36a-931e-4b6e-914a-db6035c09052"
+    ],
+    "batch_id": "JP-CARDS-017"
+  },
+  {
+    "printing_id": "643d3366-7047-459b-b7ef-0a4278785e4e",
+    "set_id": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+    "set_code": "neo4",
+    "language_code": "ja",
+    "collector_number": "106",
+    "card_native_name": "ラッキースタジアム",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "5c58884b-9958-4ba1-8430-af73c0cab9f1"
+    ],
+    "batch_id": "JP-CARDS-017"
+  },
+  {
+    "printing_id": "9f2ec684-fa0d-4308-86b1-cc11a4cd4d54",
+    "set_id": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+    "set_code": "neo4",
+    "language_code": "ja",
+    "collector_number": "107",
+    "card_native_name": "チームロケットの邪悪な行為",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "e57c0e22-231e-4ea1-8d70-0272f5b0dd69"
+    ],
+    "batch_id": "JP-CARDS-017"
+  },
+  {
+    "printing_id": "a210caa0-de01-4caf-aa35-1367a99723f1",
+    "set_id": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+    "set_code": "neo4",
+    "language_code": "ja",
+    "collector_number": "108",
+    "card_native_name": "思考ウェーブマシン",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "f4a81b91-eba3-4ad6-9d64-eeb19384d48a"
+    ],
+    "batch_id": "JP-CARDS-017"
+  },
+  {
+    "printing_id": "a61b14c6-e3f0-45b6-8b8e-09b175969400",
+    "set_id": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+    "set_code": "neo4",
+    "language_code": "ja",
+    "collector_number": "109",
+    "card_native_name": "exp。共有",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "f20b6f01-d00d-43b2-8222-1248d003d52c"
+    ],
+    "batch_id": "JP-CARDS-017"
+  },
+  {
+    "printing_id": "9d182887-d279-4aa8-bfd4-7c3c53ddd834",
+    "set_id": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+    "set_code": "neo4",
+    "language_code": "ja",
+    "collector_number": "110",
+    "card_native_name": "壊れた地上ジム",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "b3263116-6453-43e3-b209-953e6706ce3e"
+    ],
+    "batch_id": "JP-CARDS-017"
+  },
+  {
+    "printing_id": "8b7bdb6b-ae3b-4b2b-8965-013c218b5766",
+    "set_id": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+    "set_code": "neo4",
+    "language_code": "ja",
+    "collector_number": "111",
+    "card_native_name": "詐欺師オーク教授の発明",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "718cd280-e3dc-4817-b1b2-059ea8a8306a"
+    ],
+    "batch_id": "JP-CARDS-017"
+  },
+  {
+    "printing_id": "3cea11be-02b2-4f43-b394-270fc6cf752e",
+    "set_id": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+    "set_code": "neo4",
+    "language_code": "ja",
+    "collector_number": "112",
+    "card_native_name": "ラジオタワー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "de289be1-707f-4405-850c-c760ce86faab"
+    ],
+    "batch_id": "JP-CARDS-017"
+  },
+  {
+    "printing_id": "6c0f9c08-1fc4-4f4e-8c01-bf9db820e06a",
+    "set_id": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+    "set_code": "neo4",
+    "language_code": "ja",
+    "collector_number": "113",
+    "card_native_name": "奇跡のエネルギー",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "43e4450e-f35b-482d-987c-64b0a546f1f5"
+    ],
+    "batch_id": "JP-CARDS-017"
+  },
+  {
+    "printing_id": "b1b031a2-2e81-4602-90ad-57cab1a04ef0",
+    "set_id": "cdaacf04-0a7c-452d-acb0-e02ca3907106",
+    "set_code": "neo4",
+    "language_code": "ja",
+    "collector_number": "229",
+    "card_native_name": "暗い猟犬",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "ae5bf6c7-5706-40ed-9042-330ab173dbe5"
+    ],
+    "batch_id": "JP-CARDS-017"
+  }
+]

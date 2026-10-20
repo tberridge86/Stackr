@@ -1,0 +1,220 @@
+{
+  "observedAt": "2026-10-11 15:08:54 UTC",
+  "sourceRevision": "fcf697bab7785c3ed87747ed1721e9c033818557",
+  "project": "oakdbbzdqwurpjnoqhmu",
+  "scope": "Read-only aggregate of currently published api views for Pokemon; not all locally/provider-supported sets, not independent artwork/correctness/device verification",
+  "populations": [
+    {
+      "population": "cards",
+      "language_code": "en",
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "rows": 33359,
+      "unique_identities": 23857,
+      "image_statuses": {
+        "missing_rows": 191,
+        "other_or_null_rows": 1892,
+        "native_image_available_rows": 21846,
+        "same_artwork_reference_rows": 9430
+      }
+    },
+    {
+      "population": "cards",
+      "language_code": "ja",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "rows": 14100,
+      "unique_identities": 12948,
+      "image_statuses": {
+        "missing_rows": 289,
+        "other_or_null_rows": 8783,
+        "native_image_available_rows": 4041,
+        "same_artwork_reference_rows": 987
+      }
+    },
+    {
+      "population": "cards",
+      "language_code": "ko",
+      "catalogue_version_id": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+      "rows": 239,
+      "unique_identities": 239,
+      "image_statuses": {
+        "missing_rows": 239,
+        "other_or_null_rows": 0,
+        "native_image_available_rows": 0,
+        "same_artwork_reference_rows": 0
+      }
+    },
+    {
+      "population": "cards",
+      "language_code": "zh-cn",
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "rows": 19658,
+      "unique_identities": 12351,
+      "image_statuses": {
+        "missing_rows": 0,
+        "other_or_null_rows": 224,
+        "native_image_available_rows": 19431,
+        "same_artwork_reference_rows": 3
+      }
+    },
+    {
+      "population": "cards",
+      "language_code": "zh-tw",
+      "catalogue_version_id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+      "rows": 8166,
+      "unique_identities": 7436,
+      "image_statuses": {
+        "missing_rows": 0,
+        "other_or_null_rows": 5784,
+        "native_image_available_rows": 2146,
+        "same_artwork_reference_rows": 236
+      }
+    },
+    {
+      "population": "sets",
+      "language_code": "en",
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "rows": 219,
+      "unique_identities": 219,
+      "image_statuses": null
+    },
+    {
+      "population": "sets",
+      "language_code": "ja",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "rows": 170,
+      "unique_identities": 170,
+      "image_statuses": null
+    },
+    {
+      "population": "sets",
+      "language_code": "ko",
+      "catalogue_version_id": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+      "rows": 97,
+      "unique_identities": 97,
+      "image_statuses": null
+    },
+    {
+      "population": "sets",
+      "language_code": "zh-cn",
+      "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "rows": 131,
+      "unique_identities": 131,
+      "image_statuses": null
+    },
+    {
+      "population": "sets",
+      "language_code": "zh-tw",
+      "catalogue_version_id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+      "rows": 83,
+      "unique_identities": 83,
+      "image_statuses": null
+    }
+  ],
+  "statusGroups": [
+    {
+      "language_code": "en",
+      "native_image_status": "available",
+      "variant_rows": 21846,
+      "printings": 21846
+    },
+    {
+      "language_code": "en",
+      "native_image_status": "missing",
+      "variant_rows": 191,
+      "printings": 191
+    },
+    {
+      "language_code": "en",
+      "native_image_status": "pending_review",
+      "variant_rows": 2,
+      "printings": 2
+    },
+    {
+      "language_code": "en",
+      "native_image_status": "same_artwork_reference",
+      "variant_rows": 9430,
+      "printings": 9158
+    },
+    {
+      "language_code": "en",
+      "native_image_status": "scan_acquisition_required",
+      "variant_rows": 1890,
+      "printings": 1819
+    },
+    {
+      "language_code": "ja",
+      "native_image_status": "available",
+      "variant_rows": 4041,
+      "printings": 4040
+    },
+    {
+      "language_code": "ja",
+      "native_image_status": "missing",
+      "variant_rows": 289,
+      "printings": 289
+    },
+    {
+      "language_code": "ja",
+      "native_image_status": "same_artwork_reference",
+      "variant_rows": 987,
+      "printings": 987
+    },
+    {
+      "language_code": "ja",
+      "native_image_status": "scan_acquisition_required",
+      "variant_rows": 8783,
+      "printings": 8619
+    },
+    {
+      "language_code": "ko",
+      "native_image_status": "missing",
+      "variant_rows": 239,
+      "printings": 239
+    },
+    {
+      "language_code": "zh-cn",
+      "native_image_status": "available",
+      "variant_rows": 19431,
+      "printings": 12127
+    },
+    {
+      "language_code": "zh-cn",
+      "native_image_status": "same_artwork_reference",
+      "variant_rows": 3,
+      "printings": 3
+    },
+    {
+      "language_code": "zh-cn",
+      "native_image_status": "scan_acquisition_required",
+      "variant_rows": 224,
+      "printings": 224
+    },
+    {
+      "language_code": "zh-tw",
+      "native_image_status": "available",
+      "variant_rows": 2146,
+      "printings": 2146
+    },
+    {
+      "language_code": "zh-tw",
+      "native_image_status": "same_artwork_reference",
+      "variant_rows": 236,
+      "printings": 236
+    },
+    {
+      "language_code": "zh-tw",
+      "native_image_status": "scan_acquisition_required",
+      "variant_rows": 5784,
+      "printings": 5290
+    }
+  ],
+  "nonAdditivePrintingStatusCounts": true,
+  "meaning": "Variant image-state rows are metadata only. Printing membership may overlap statuses; do not sum status-level printing counts for a coverage percentage.",
+  "totals": {
+    "publishedSets": 700,
+    "publishedPrintings": 56831,
+    "publishedVariantRows": 75522
+  },
+  "writes": 0,
+  "deviceObservations": 0
+}

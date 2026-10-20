@@ -1,0 +1,35 @@
+{
+  "observedAt": "2026-10-15T20:22:23.051Z",
+  "status": "rejected-before-publication",
+  "featureCommit": "d3edfed0943f85f2c119ee7111f9e63137035abb",
+  "previousReceipt": "docs/releases/magazine-opening-artwork-20261015.json",
+  "original": {
+    "key": "touch-change-1998",
+    "name": "Touch Change!",
+    "pageUrl": "https://www.pricecharting.com/game/pokemon-japanese-promo/touch-generation-change",
+    "imageUrl": "https://storage.googleapis.com/images.pricecharting.com/7ka7jc5l5rbrmpnd/1600.jpg",
+    "bytes": 101452,
+    "sha256": "f927b144670be8e262efd9c5fe43e1b9cdbebab9cb85398cf0a6fab333198708",
+    "sourcePageSha256": "53e9029952ede3911b098ebdb1e3c7f8279de1488b0dcf9d0b48c37b22053d5f",
+    "review": "historical-front-illustration-checked",
+    "file": "assets/magazine-openings/touch-change-1998.jpg",
+    "canonicalMappingVerified": false,
+    "physicalFinishVerified": false,
+    "generatedImage": false
+  },
+  "rejectedClaim": "Exact1998 FanClub volume5 Touch Change historical front",
+  "finding": {
+    "actualTitle": "タッチ世代交代!",
+    "actualArtist": "Tomokazu Komiya",
+    "actualPrinting": "Old-frame unnumbered2002 Touch Generation Change!",
+    "is1998TouchChange": false,
+    "is2002Ecard027P": false,
+    "expectedTitle": "タッチ交代！",
+    "expectedArtist": "Nobuyuki Habu",
+    "physical1998Reference": "https://pokeboon.com/wp-content/uploads/oldback-300x-re-name/funclubvol5-touchchange-promo.jpg",
+    "independentReviewerConfirmed": true
+  },
+  "action": "Remove from unreleased feature; retain original immutable bytes and prior claim in Git history; do not reuse as1998 artwork",
+  "newSourceLicenceVerified": false,
+  "accountOrCatalogueWrites": 0
+}

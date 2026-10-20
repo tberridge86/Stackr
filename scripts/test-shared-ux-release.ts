@@ -55,6 +55,7 @@ function loadComponent(relativePath: string): Record<string, any> {
       SafeAreaInsetsContext: { Provider: 'InsetsProvider' },
     },
     './Text': { Text: 'StackrText' },
+    './StackrFunctionalIcon': { StackrFunctionalIcon: 'Image' },
     './theme-context': { useTheme: () => ({ theme: { colors: { text: '#123', bg: '#fff' } } }) },
     '../lib/typography': typography,
     '../lib/stackrSizing': { stackrActionIconSizes: {} },
@@ -149,7 +150,7 @@ assert.equal(nativeText.defaultProps.accessibilityLabel, 'preserved');
 assert.equal(nativeInput.defaultProps.autoCorrect, false);
 
 function renderRoot(fontsLoaded: boolean, fontError: unknown, animationCompletes = true, pathname = '/') {
-  const stateValues = [false, true, false] as boolean[];
+  const stateValues = [false, true, false, false] as boolean[];
   let stateIndex = 0;
   const scheduledTimers: { delay: number; callback: () => void }[] = [];
   const effectCleanups: (() => void)[] = [];
@@ -158,7 +159,8 @@ function renderRoot(fontsLoaded: boolean, fontError: unknown, animationCompletes
   let hapticHydrationCalls = 0;
   let animationStopCalls = 0;
   const root = rootFunction('RootLayout', {
-    React: react,
+    React: react, Suspense: 'Suspense', AuthProvider: 'AuthProvider', ProfileProvider: 'ProfileProvider',
+    markStartupPhase: () => {},
     useFonts: () => [fontsLoaded, fontError],
     useState: (initial: boolean) => {
       const index = stateIndex++;
@@ -219,18 +221,25 @@ function renderRoot(fontsLoaded: boolean, fontError: unknown, animationCompletes
 }
 
 const childNodes = (children: unknown): any[] => Array.isArray(children) ? children : [children];
-const shell = (root: any) => root.props.children.props.children.props.children;
+const rootView = (root: any) => root.props.children.props.children.props.children;
+const shell = (root: any) => rootView(root).props.children.props.children;
+const appContent = (root: any) => {
+  const child = app(root).props.children.props.children;
+  return child.type === 'Suspense' ? child.props.children : child;
+};
 const app = (root: any) => childNodes(shell(root).props.children)[0];
 const overlay = (root: any) => childNodes(shell(root).props.children).find((child: any) => child?.type === 'AnimatedView');
 const pendingFonts = renderRoot(false, null);
 let root = pendingFonts.render();
 assert.equal(pendingFonts.getHapticHydrationCalls(), 1);
 assert.equal(root.type, 'ThemeProvider');
-assert.equal(app(root).props.children.props.children.type, 'StackrLoadingScreen', 'Fonts can load underneath the startup video.');
+assert.equal(root.props.children.type, 'AuthProvider', 'Authentication starts while fonts are still pending.');
+assert.equal(root.props.children.props.children.type, 'ProfileProvider', 'Profile reads can start as soon as auth settles, independently of fonts.');
+assert.equal(appContent(root).type, 'StackrLoadingScreen', 'Fonts can load underneath the startup video.');
 assert.ok(overlay(root), 'Video is mounted from the first render, including pending fonts.');
 assert.deepEqual(pendingFonts.scheduledTimers.map(timer => timer.delay), [5_000, 12_500], 'Fonts and media have independent bounded deadlines.');
 assert.equal(pendingFonts.getHideCalls(), 0);
-root.props.children.props.onLayout();
+rootView(root).props.onLayout();
 assert.equal(pendingFonts.getHideCalls(), 1, 'Native static splash hands off on the first React layout.');
 const video = childNodes(overlay(root).props.children).find((child: any) => child?.type === 'StackrStartupVideo');
 video.props.onComplete();
@@ -238,14 +247,14 @@ root = pendingFonts.render();
 assert.ok(overlay(root), 'Video completion waits for font readiness without remounting playback.');
 pendingFonts.scheduledTimers[0].callback();
 root = pendingFonts.render();
-assert.equal(app(root).props.children.props.children.type, 'AppShell');
+assert.equal(appContent(root).type, 'AppShell');
 assert.equal(overlay(root), undefined, 'The finished video is dismissed once fonts settle.');
 assert.equal(app(root).props.accessibilityElementsHidden, false);
 
 const loadedFonts = renderRoot(true, null);
 root = loadedFonts.render();
 assert.equal(loadedFonts.getTypographyCalls(), 1);
-assert.equal(app(root).props.children.props.children.type, 'AppShell');
+assert.equal(appContent(root).type, 'AppShell');
 assert.equal(app(root).props.accessibilityElementsHidden, true, 'The launch modal hides underlying app content.');
 assert.equal(overlay(root).props.accessibilityViewIsModal, true);
 assert.equal(loadedFonts.scheduledTimers[0].delay, 12_500);
@@ -253,6 +262,14 @@ const loadedVideo = childNodes(overlay(root).props.children).find((child: any) =
 loadedVideo.props.onComplete();
 root = loadedFonts.render();
 assert.equal(overlay(root), undefined, 'Ready startup dismisses at playback completion.');
+
+const readyScreen = renderRoot(true, null);
+root = readyScreen.render();
+assert.ok(overlay(root));
+appContent(root).props.onReady();
+root = readyScreen.render();
+assert.equal(overlay(root), undefined, 'A committed destination uncovers the app without waiting for video completion.');
+assert.equal(appContent(root).props.startupVisible, false, 'Only the removed overlay enables deferred services.');
 
 const stalledAnimation = renderRoot(true, null, false);
 stalledAnimation.render();
@@ -265,5 +282,5 @@ assert.equal(app(root).props.accessibilityElementsHidden, false);
 for (const cleanup of loadedFonts.getEffectCleanups()) cleanup();
 assert.ok(loadedFonts.getAnimationStopCalls() > 0, 'Unmount clears startup animation and guard.');
 const failedFonts = renderRoot(false, new Error('font unavailable'));
-assert.equal(app(failedFonts.render()).props.children.props.children.type, 'AppShell', 'A font error falls back to usable app text.');
+assert.equal(appContent(failedFonts.render()).type, 'AppShell', 'A font error falls back to usable app text.');
 console.log('Shared UX release checks passed: scaling, inset ownership and bounded video startup lifecycle.');

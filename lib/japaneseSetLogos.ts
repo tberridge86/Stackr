@@ -1036,6 +1036,13 @@ const JAPANESE_SET_LOGOS_BY_KEY: Record<string, JapaneseSetLogoMatch> = {
     code: "M6a",
     source: require('../assets/rev2/11-japanese-set-logo/logos/m6a.png') as ImageSourcePropType,
   },
+  "m6": {
+    key: "m6",
+    normalizedKey: "m6",
+    name: "Storm Emeralda",
+    code: "M6",
+    source: require('../assets/rev2/11-japanese-set-logo/logos-owner-supplied-20261018/m6.png') as ImageSourcePropType,
+  },
   "m5": {
     key: "m5",
     normalizedKey: "m5",
@@ -1585,6 +1592,8 @@ const JAPANESE_SET_LOGOS_BY_KEY: Record<string, JapaneseSetLogoMatch> = {
 };
 
 const JAPANESE_SET_LOGO_ALIASES: Record<string, string> = {
+  // Exact production M6 identity: binders can resolve it before metadata loads.
+  "903d5baa27c75690b1d72395c770204a": "m6",
   "bwp": "bwpromos",
   "bwpromo": "bwpromos",
   "dpp": "dppromos",

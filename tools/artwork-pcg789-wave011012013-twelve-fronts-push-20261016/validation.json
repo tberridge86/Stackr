@@ -1,0 +1,222 @@
+{
+  "schemaVersion": 2,
+  "status": "LOCAL_PUBLISHER_GUARDS_PASS_PENDING_INDEPENDENT_REVIEW",
+  "fronts": 12,
+  "variants": 12,
+  "rootPublisherContextSHA": "f5c5eacae2d1b40bae48bb3beebd24235386396b7aa74311722a5532c0feb25a",
+  "planSHA": "477021bea5228a33c64414b790af250f5f57f4ad81e3b772b77f1cdd025e38ef",
+  "approvalSHA": "42ff685755fbd080b8218f640c175ef3ad79a960d94553755086ba13821a0be0",
+  "strictPrivateModuleSHA": "9f7a132ec7c2e8f508d19d1869836a3cdb9b521e1c0723cde68fc87098ff7f75",
+  "externalValidatorBindingSHA": "65e7faabea24c378950eae3e0f9f4b1524888c09c06506444e3e7dd5e0784e90",
+  "executableValidatorSeparateFromArchive": true,
+  "tests": {
+    "publisher": 84,
+    "downloaderSafety": 6,
+    "journalIntegration": 1,
+    "privateSourcePositive": 12,
+    "privateSourceNegative": 259,
+    "nineCopyAndCombinedOrderRejections": 120,
+    "nestedWitnessRejections": 72,
+    "rootOrderRejections": 12,
+    "nestedRootRejections": 8,
+    "wrongStoredSHARejections": 36,
+    "recomputedPermutationSHARejections": 12,
+    "validParseCloneCases": 24,
+    "validCrossRealmCases": 24,
+    "publisherNineCopyAndCombinedOrderRejections": 120,
+    "publisherNestedWitnessRejections": 72,
+    "publisherRootOrderRejections": 12,
+    "publisherWrongStoredSHARejections": 36,
+    "publisherRecomputedSHARejections": 12,
+    "publisherParseCloneCrossRealmCases": 36,
+    "queueJointRejections": 528,
+    "queueRawAuthorityRejections": 84,
+    "queueRootPacketRejections": 10,
+    "queueCLIAuthorityRejections": 4,
+    "inventoryMetadataRejections": 3
+  },
+  "transactionFixtures": {
+    "actualFullSnapshots": true,
+    "production": [
+      61,
+      85
+    ],
+    "staging": [
+      53,
+      78,
+      53
+    ],
+    "sourceFull17MicrosecondsImmutable": true,
+    "productionSources": 4,
+    "stagingSources": 0,
+    "productionSourceWrites": 0,
+    "temporaryStageFixture": 1,
+    "productionLogos": 3,
+    "stageLogos": 1,
+    "allPreviousLogoFieldsAndLinksUnchanged": true
+  },
+  "identity": {
+    "holo022033040DefaultFalse": true,
+    "other9NormalDefaultTrue": true,
+    "allSoleAPIDefaultsRetained": true,
+    "assetAndSourceVariantNull": true,
+    "PCG8_051LowercaseEnglishJigglypuff": true,
+    "perRowRecordedMetadataExact": true,
+    "onlyPCG8_075NewEnergyQualificationModule": "3b43cae88048f970cf4c5f031a0237c329192f0028c59dcdd514247c3bdeb433",
+    "bothPrintedPokemonExRestrictions": true,
+    "noGeneralTrainerEnergyWaiver": true,
+    "source011HistoricalProsePreservedWithAdditiveCorrection": true,
+    "source012HoldProjectionRetained": true,
+    "allHistoricalSourceAuthorFlagsRemainFalse": true,
+    "otherOperationalHolds": 48
+  },
+  "images": {
+    "wholeOriginals12": true,
+    "standardDerivatives36": true,
+    "fullPillowSharpRGBA48": true,
+    "exactRegeneration36": true,
+    "unchangedNativeBytesAndBackgrounds": true,
+    "enlargement": false
+  },
+  "actualUnchangedAppFixture": {
+    "positiveDefaultExplicit": 24,
+    "negativePrintingRights": 24,
+    "largeRoles": [
+      {
+        "alias": "PCG7-022",
+        "role": "detail-page",
+        "dimensions": [
+          720,
+          1004
+        ]
+      },
+      {
+        "alias": "PCG7-033",
+        "role": "original",
+        "dimensions": [
+          1018,
+          1412
+        ]
+      },
+      {
+        "alias": "PCG7-040",
+        "role": "detail-page",
+        "dimensions": [
+          720,
+          1008
+        ]
+      },
+      {
+        "alias": "PCG7-048",
+        "role": "detail-page",
+        "dimensions": [
+          500,
+          702
+        ]
+      },
+      {
+        "alias": "PCG7-050",
+        "role": "detail-page",
+        "dimensions": [
+          500,
+          700
+        ]
+      },
+      {
+        "alias": "PCG8-047",
+        "role": "detail-page",
+        "dimensions": [
+          500,
+          702
+        ]
+      },
+      {
+        "alias": "PCG8-048",
+        "role": "detail-page",
+        "dimensions": [
+          500,
+          700
+        ]
+      },
+      {
+        "alias": "PCG8-050",
+        "role": "original",
+        "dimensions": [
+          1153,
+          1600
+        ]
+      },
+      {
+        "alias": "PCG8-051",
+        "role": "original",
+        "dimensions": [
+          1600,
+          1600
+        ]
+      },
+      {
+        "alias": "PCG8-068",
+        "role": "original",
+        "dimensions": [
+          1600,
+          1600
+        ]
+      },
+      {
+        "alias": "PCG8-075",
+        "role": "detail-page",
+        "dimensions": [
+          720,
+          1014
+        ]
+      },
+      {
+        "alias": "PCG9-048",
+        "role": "original",
+        "dimensions": [
+          854,
+          1113
+        ]
+      }
+    ],
+    "originalCanvasSignals": 8,
+    "detailCanvasSignals": 2,
+    "noOpticalPhysicalVendorHDOrHandsetCertificate": true
+  },
+  "privateQueueDryRun": {
+    "priorEntries1260Unchanged": true,
+    "expected1272": true,
+    "new12Only": true,
+    "unselectedInventory2932Unchanged": true,
+    "priorPredicatesUnchanged": true,
+    "inventoryCategoryActualAbsenceRetained": true,
+    "canonicalPreparedCategoryNullRetained": true,
+    "perRowEnglishExact": true,
+    "interceptedWrites4": true,
+    "actualWrites": 0
+  },
+  "preservation": {
+    "priorPublisherFiles460": true,
+    "unchangedDependencies11": true,
+    "logoMainRawGitFiles45": true,
+    "sparseAbsencePreserved": true,
+    "logoCurrentState": {
+      "rawGit45": true,
+      "materialized4": true,
+      "absentTrackedSkipWorktree41Retained": true
+    }
+  },
+  "effects": {
+    "HTTP": 0,
+    "SQL": 0,
+    "GitMutations": 0,
+    "archiveUploads": 0,
+    "actualQueueWrites": 0,
+    "sharedLedgerWrites": 0,
+    "liveWrites": 0
+  },
+  "workflowStaticContractOnlyNoYAMLParserInstall": true,
+  "productionVerified": false,
+  "rootConfiguredAPI12ResponsesManifest48PublicBytes24Positive24NegativeStillRequired": true,
+  "publicArtifactPrivacyPassed": true
+}

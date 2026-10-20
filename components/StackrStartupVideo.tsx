@@ -2,21 +2,24 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Image, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useVideoPlayer, VideoView } from 'expo-video';
 
-const STARTUP_VIDEO = require('../assets/startup/stackr-loading-screen-exact.mp4');
-const STARTUP_POSTER = require('../assets/startup/stackr-loading-poster.png');
+const STARTUP_VIDEO = require('../assets/startup/stackr-premium-opening.mp4');
+const STARTUP_POSTER = require('../assets/startup/stackr-premium-poster.png');
 export const STARTUP_VIDEO_TIMEOUT_MS = 12_000;
 
 type Props = { onComplete?: () => void; preview?: boolean };
 
-/** Local, unchanged 5.534-second clip. Playback never gates authentication. */
+/** Local 4.2-second premium logo reveal. Playback never gates authentication. */
 export function StackrStartupVideo({ onComplete, preview = false }: Props) {
   const { width, height } = useWindowDimensions();
-  const size = Math.min(width, height);
+  // Keep the static reduced-motion mark and player in the same square. The
+  // formation starts on a neutral splash, rather than flashing its final logo.
+  const size = Math.min(width, height, 320);
   const callback = useRef(onComplete);
   callback.current = onComplete;
   const completed = useRef(false);
   const [reduceMotion, setReduceMotion] = useState<boolean | null>(null);
   const [firstFrame, setFirstFrame] = useState(false);
+  const [frameReady, setFrameReady] = useState(false);
   const player = useVideoPlayer(STARTUP_VIDEO, video => {
     video.loop = preview;
     video.muted = true;
@@ -59,24 +62,33 @@ export function StackrStartupVideo({ onComplete, preview = false }: Props) {
 
   return (
     <View accessible accessibilityLabel="Opening Stackr" style={styles.container}>
-      <VideoView
-        player={player}
-        style={{ width: size, height: size }}
-        contentFit="contain"
-        nativeControls={false}
-        surfaceType="textureView"
-        allowsFullscreen={false}
-        allowsPictureInPicture={false}
-        allowsVideoFrameAnalysis={false}
-        playsInline
-        accessible={false}
-        onFirstFrameRender={() => setFirstFrame(true)}
-      />
-      {!firstFrame || reduceMotion !== false ? (
-        <Image source={STARTUP_POSTER} style={StyleSheet.absoluteFill} resizeMode="contain" accessible={false} />
-      ) : null}
+      <View
+        style={[styles.mediaFrame, { width: size, height: size }]}
+        onLayout={({ nativeEvent: { layout } }) => setFrameReady(layout.width > 0 && layout.height > 0)}
+      >
+        <VideoView
+          player={player}
+          style={[styles.media, { opacity: frameReady && firstFrame && reduceMotion === false ? 1 : 0 }]}
+          contentFit="contain"
+          nativeControls={false}
+          surfaceType="textureView"
+          allowsFullscreen={false}
+          allowsPictureInPicture={false}
+          allowsVideoFrameAnalysis={false}
+          playsInline
+          accessible={false}
+          onFirstFrameRender={() => setFirstFrame(true)}
+        />
+        {reduceMotion === true ? (
+          <Image source={STARTUP_POSTER} style={styles.media} resizeMode="contain" accessible={false} />
+        ) : null}
+      </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({ container: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF' } });
+const styles = StyleSheet.create({
+  container: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF' },
+  mediaFrame: { position: 'relative' },
+  media: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%' },
+});

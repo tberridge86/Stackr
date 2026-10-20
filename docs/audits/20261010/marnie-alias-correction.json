@@ -1,0 +1,803 @@
+{
+  "schemaVersion": "stackr-scoped-card-name-correction-proposal-v1",
+  "status": "source_supported_proposal_pending_canonical_review",
+  "createdAt": "2026-10-10T22:25:09.054Z",
+  "sourceRevision": "5da3ba5edd07d0390f5169d5a6713c7cbfd3a0b1",
+  "canonicalDatabaseWriteAuthorized": false,
+  "runtimeGenerationPerformed": false,
+  "sourceEvidence": [
+    {
+      "url": "https://asia.pokemon-card.com/tw/card-search/detail/7432/",
+      "sourceLanguage": "zh-tw",
+      "sourceType": "official_card_database",
+      "facts": {
+        "nativeName": "瑪俐",
+        "cardCategory": "Supporter",
+        "collectorNumber": "171/153",
+        "artist": "kirisAki",
+        "nativeProductName": "擴充包「劍&盾」SET B"
+      },
+      "mappingScope": "Native full title and named SC1b171 printing corroboration; no cross-language printing or artwork equivalence claim"
+    },
+    {
+      "url": "https://assets.pokemon.com/assets/cms2-en-uk/pdf/trading-card-game/checklist/swsh1_web_cardlist_en.pdf",
+      "sourceLanguage": "en",
+      "sourceType": "official_card_checklist",
+      "facts": {
+        "englishName": "Marnie",
+        "collectorNumbers": [
+          "169",
+          "200"
+        ],
+        "productName": "Sword & Shield"
+      },
+      "mappingScope": "Official English title evidence; collector numbers identify English cards only"
+    },
+    {
+      "url": "https://www.pokemon.com/uk/pokemon-tcg/pokemon-cards/series/swshp/SWSH121/",
+      "sourceLanguage": "en",
+      "sourceType": "official_card_database",
+      "facts": {
+        "englishName": "Marnie",
+        "cardCategory": "Trainer-Supporter",
+        "collectorNumber": "SWSH121",
+        "artist": "Naoki Saito"
+      },
+      "mappingScope": "Independent English Trainer name/category corroboration; distinct printing/artwork"
+    }
+  ],
+  "sourceEvidenceReferenceSha256": "ce404b8f995caec863d75606aa5c91edbcfbd2a4348d48a07ea8b2767b863a1c",
+  "sourceHashScope": "SHA-256 of JSON sourceEvidence references/facts above; not the remote HTML/PDF bytes",
+  "mappingEvidence": "Complete native title 瑪俐 on official Traditional Chinese Supporter evidence, official English Marnie title, and exact zh-tw/native/printing IDs checked in public API. This is an English display/search alias proposal, not verified equivalent English printing, artwork or price evidence.",
+  "sourceRegistry": "Existing owner-approved exact printing name input and canonical card-name provenance contract; no alternative runtime registry.",
+  "runtimeSource": {
+    "target": "backend/lib/generated/ownerApprovedCardEnglishNames.js",
+    "expectedRecordsSha256": "3309ae44ba128205f00276e78a7eb05e5c00e0069eac140f653e951566b95581",
+    "acceptedInputSha256": "5fd3a144044626b02c85bc105858d836cc57a39c3c1e5e67609826ae69661868",
+    "originalGenerator": "D:/Stackr-1/scripts/build-owner-approved-card-name-runtime.mjs",
+    "mirrorCheck": "D:/Stackr-1/scripts/sync-card-english-runtime.mjs --check",
+    "mobileReleasePolicy": "Recovery checkout excludes generated card-name mirrors; use backend result and preserve lean archive."
+  },
+  "candidates": [
+    {
+      "printingId": "1386b19f-ada3-447a-83d0-105acf48752c",
+      "language": "zh-tw",
+      "nativeName": "瑪俐",
+      "expectedEnglishDisplayName": "Pikachu",
+      "proposedEnglishDisplayName": "Marnie",
+      "set": {
+        "setId": "41251d8a-6a1c-4f91-8e84-22e2fe7737fd",
+        "setCode": "SCA",
+        "nativeName": "V起始牌組 搭檔",
+        "englishDisplayName": "V Starter Deck: Partner"
+      },
+      "collectorNumber": {
+        "value": "120",
+        "prefix": null,
+        "sort": 120,
+        "suffix": null,
+        "sortKey": "000000000120"
+      },
+      "supertype": "Trainer",
+      "artist": "kirisAki",
+      "variants": [
+        {
+          "variantId": "4d1df959-e323-44c5-b26b-56eda54a7a97",
+          "canonicalId": "pokemon:zh-tw:41251d8a-6a1c-4f91-8e84-22e2fe7737fd:120:normal",
+          "variantCode": "normal",
+          "finishCode": "normal"
+        }
+      ],
+      "expectedPublicUpdatedAt": "2026-10-06T18:49:23.353178+00:00",
+      "publicEvidence": {
+        "observedAt": "2026-10-10T22:25:06.901Z",
+        "url": "https://api.stackrtcg.com/v1/cards/1386b19f-ada3-447a-83d0-105acf48752c",
+        "requestId": "8f8c2541-3b60-4fbe-ba4a-5ac7cdf1a911",
+        "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "englishDisplaySource": "printing",
+        "englishSupplement": {
+          "value": "Pikachu",
+          "provenance": "published_stackr_exact_native_name",
+          "authoritative": false,
+          "sourceCardIds": [
+            "1386b19f-ada3-447a-83d0-105acf48752c",
+            "3467f1b3-cfed-47c1-bddb-73a6507009b4",
+            "44b54476-f33f-435f-8985-b412cb5edb4c"
+          ]
+        }
+      },
+      "originalApprovedSelection": {
+        "sourcePath": "D:/Stackr-1/.tmp/approved-english-metadata-20261006/accepted.json",
+        "sourceSha256": "5fd3a144044626b02c85bc105858d836cc57a39c3c1e5e67609826ae69661868",
+        "workbookRow": 14402,
+        "workbookSha256": "078bc294c53196ae49a5c4691130888179acc428b92cde94b743abbcefc81cf8",
+        "selectedEnglishName": "Pikachu",
+        "historicalLinkedEnglishNameIds": [
+          "e0a4fffb-ae6b-4d4c-ba4a-926f6dca7759"
+        ],
+        "historicalSnapshotOnly": true
+      }
+    },
+    {
+      "printingId": "3467f1b3-cfed-47c1-bddb-73a6507009b4",
+      "language": "zh-tw",
+      "nativeName": "瑪俐",
+      "expectedEnglishDisplayName": "Pikachu",
+      "proposedEnglishDisplayName": "Marnie",
+      "set": {
+        "setId": "4b4beb82-d593-4c0b-850f-3197e7dd0ac5",
+        "setCode": "SC1D",
+        "nativeName": "V起始牌組 劍&盾",
+        "englishDisplayName": "Sword & Shield V Starter Deck"
+      },
+      "collectorNumber": {
+        "value": "163",
+        "prefix": null,
+        "sort": 163,
+        "suffix": null,
+        "sortKey": "000000000163"
+      },
+      "supertype": "Trainer",
+      "artist": "kirisAki",
+      "variants": [
+        {
+          "variantId": "03f358c0-84a4-4b6e-98d0-9f5ba4dd7b8c",
+          "canonicalId": "pokemon:zh-tw:4b4beb82-d593-4c0b-850f-3197e7dd0ac5:163:normal",
+          "variantCode": "normal",
+          "finishCode": "normal"
+        }
+      ],
+      "expectedPublicUpdatedAt": "2026-10-06T18:49:17.96426+00:00",
+      "publicEvidence": {
+        "observedAt": "2026-10-10T22:25:06.948Z",
+        "url": "https://api.stackrtcg.com/v1/cards/3467f1b3-cfed-47c1-bddb-73a6507009b4",
+        "requestId": "afc7217f-8ea2-42bb-97f5-f31ec4c891c5",
+        "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "englishDisplaySource": "printing",
+        "englishSupplement": {
+          "value": "Pikachu",
+          "provenance": "published_stackr_exact_native_name",
+          "authoritative": false,
+          "sourceCardIds": [
+            "1386b19f-ada3-447a-83d0-105acf48752c",
+            "3467f1b3-cfed-47c1-bddb-73a6507009b4",
+            "44b54476-f33f-435f-8985-b412cb5edb4c"
+          ]
+        }
+      },
+      "originalApprovedSelection": {
+        "sourcePath": "D:/Stackr-1/.tmp/approved-english-metadata-20261006/accepted.json",
+        "sourceSha256": "5fd3a144044626b02c85bc105858d836cc57a39c3c1e5e67609826ae69661868",
+        "workbookRow": 13845,
+        "workbookSha256": "078bc294c53196ae49a5c4691130888179acc428b92cde94b743abbcefc81cf8",
+        "selectedEnglishName": "Pikachu",
+        "historicalLinkedEnglishNameIds": [
+          "379f69f1-850f-477f-adae-446b68ec3d73"
+        ],
+        "historicalSnapshotOnly": true
+      }
+    },
+    {
+      "printingId": "44b54476-f33f-435f-8985-b412cb5edb4c",
+      "language": "zh-tw",
+      "nativeName": "瑪俐",
+      "expectedEnglishDisplayName": "Pikachu",
+      "proposedEnglishDisplayName": "Marnie",
+      "set": {
+        "setId": "e6feffca-611b-479c-bfb2-43b80374458f",
+        "setCode": "S4a",
+        "nativeName": "閃色明星V",
+        "englishDisplayName": "Shiny Star V"
+      },
+      "collectorNumber": {
+        "value": "177",
+        "prefix": null,
+        "sort": 177,
+        "suffix": null,
+        "sortKey": "000000000177"
+      },
+      "supertype": "Trainer",
+      "artist": "kirisAki",
+      "variants": [
+        {
+          "variantId": "dbbc22b5-df74-4c2f-9c9c-84c8567d77d4",
+          "canonicalId": "pokemon:zh-tw:e6feffca-611b-479c-bfb2-43b80374458f:177:normal",
+          "variantCode": "normal",
+          "finishCode": "normal"
+        }
+      ],
+      "expectedPublicUpdatedAt": "2026-10-06T18:49:04.857771+00:00",
+      "publicEvidence": {
+        "observedAt": "2026-10-10T22:25:06.949Z",
+        "url": "https://api.stackrtcg.com/v1/cards/44b54476-f33f-435f-8985-b412cb5edb4c",
+        "requestId": "8bbe5b0d-b4a3-467b-abdb-b5dad3869c9c",
+        "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "englishDisplaySource": "printing",
+        "englishSupplement": {
+          "value": "Pikachu",
+          "provenance": "published_stackr_exact_native_name",
+          "authoritative": false,
+          "sourceCardIds": [
+            "1386b19f-ada3-447a-83d0-105acf48752c",
+            "3467f1b3-cfed-47c1-bddb-73a6507009b4",
+            "44b54476-f33f-435f-8985-b412cb5edb4c"
+          ]
+        }
+      },
+      "originalApprovedSelection": {
+        "sourcePath": "D:/Stackr-1/.tmp/approved-english-metadata-20261006/accepted.json",
+        "sourceSha256": "5fd3a144044626b02c85bc105858d836cc57a39c3c1e5e67609826ae69661868",
+        "workbookRow": 12338,
+        "workbookSha256": "078bc294c53196ae49a5c4691130888179acc428b92cde94b743abbcefc81cf8",
+        "selectedEnglishName": "Pikachu",
+        "historicalLinkedEnglishNameIds": [
+          "840bdc42-fb72-4139-a7cf-cfd0537594c2"
+        ],
+        "historicalSnapshotOnly": true
+      }
+    },
+    {
+      "printingId": "4a459e00-0853-43a7-b0a6-e9d0f56c42f6",
+      "language": "zh-tw",
+      "nativeName": "瑪俐",
+      "expectedEnglishDisplayName": "Pikachu",
+      "proposedEnglishDisplayName": "Marnie",
+      "set": {
+        "setId": "205ab185-9052-4965-b9f0-20fe44b7b61f",
+        "setCode": "SC1b",
+        "nativeName": "劍&盾 SET B",
+        "englishDisplayName": "Sword & Shield: Set B"
+      },
+      "collectorNumber": {
+        "value": "171",
+        "prefix": null,
+        "sort": 171,
+        "suffix": null,
+        "sortKey": "000000000171"
+      },
+      "supertype": "Trainer",
+      "artist": "kirisAki",
+      "variants": [
+        {
+          "variantId": "28542b48-d40e-4cb8-8598-45a4c8720e4c",
+          "canonicalId": "pokemon:zh-tw:205ab185-9052-4965-b9f0-20fe44b7b61f:171:normal",
+          "variantCode": "normal",
+          "finishCode": "normal"
+        }
+      ],
+      "expectedPublicUpdatedAt": "2026-10-06T18:49:16.223958+00:00",
+      "publicEvidence": {
+        "observedAt": "2026-10-10T22:25:08.761Z",
+        "url": "https://api.stackrtcg.com/v1/cards/4a459e00-0853-43a7-b0a6-e9d0f56c42f6",
+        "requestId": "257ef0fc-a5ce-43f7-a720-89eb6a18533d",
+        "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "englishDisplaySource": "printing",
+        "englishSupplement": {
+          "value": "Pikachu",
+          "provenance": "published_stackr_exact_native_name",
+          "authoritative": false,
+          "sourceCardIds": [
+            "1386b19f-ada3-447a-83d0-105acf48752c",
+            "3467f1b3-cfed-47c1-bddb-73a6507009b4",
+            "44b54476-f33f-435f-8985-b412cb5edb4c"
+          ]
+        }
+      },
+      "originalApprovedSelection": {
+        "sourcePath": "D:/Stackr-1/.tmp/approved-english-metadata-20261006/accepted.json",
+        "sourceSha256": "5fd3a144044626b02c85bc105858d836cc57a39c3c1e5e67609826ae69661868",
+        "workbookRow": 13688,
+        "workbookSha256": "078bc294c53196ae49a5c4691130888179acc428b92cde94b743abbcefc81cf8",
+        "selectedEnglishName": "Pikachu",
+        "historicalLinkedEnglishNameIds": [
+          "0070936d-d340-47ad-96d5-da42862035a7"
+        ],
+        "historicalSnapshotOnly": true
+      }
+    },
+    {
+      "printingId": "4a9af5de-61f9-4bb7-8133-5d28e2b356ad",
+      "language": "zh-tw",
+      "nativeName": "瑪俐",
+      "expectedEnglishDisplayName": "Pikachu",
+      "proposedEnglishDisplayName": "Marnie",
+      "set": {
+        "setId": "7201a603-407b-491c-b118-467f6549e400",
+        "setCode": "S8b",
+        "nativeName": "VMAX絕群壓軸",
+        "englishDisplayName": "VMAX Climax"
+      },
+      "collectorNumber": {
+        "value": "160",
+        "prefix": null,
+        "sort": 160,
+        "suffix": null,
+        "sortKey": "000000000160"
+      },
+      "supertype": "Trainer",
+      "artist": "kirisAki",
+      "variants": [
+        {
+          "variantId": "ded5a7a6-8c57-481c-94eb-264e091906a1",
+          "canonicalId": "pokemon:zh-tw:7201a603-407b-491c-b118-467f6549e400:160:normal",
+          "variantCode": "normal",
+          "finishCode": "normal"
+        },
+        {
+          "variantId": "3c0cf56d-6413-47dc-b655-f6642111533e",
+          "canonicalId": "pokemon:zh-tw:7201a603-407b-491c-b118-467f6549e400:160:reverse_holo",
+          "variantCode": "reverse_holo",
+          "finishCode": "reverse_holo"
+        }
+      ],
+      "expectedPublicUpdatedAt": "2026-10-06T18:49:11.435254+00:00",
+      "publicEvidence": {
+        "observedAt": "2026-10-10T22:25:08.763Z",
+        "url": "https://api.stackrtcg.com/v1/cards/4a9af5de-61f9-4bb7-8133-5d28e2b356ad",
+        "requestId": "6d7f4f38-8a1e-4afb-8eb8-6489706241d8",
+        "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "englishDisplaySource": "printing",
+        "englishSupplement": {
+          "value": "Pikachu",
+          "provenance": "published_stackr_exact_native_name",
+          "authoritative": false,
+          "sourceCardIds": [
+            "1386b19f-ada3-447a-83d0-105acf48752c",
+            "3467f1b3-cfed-47c1-bddb-73a6507009b4",
+            "44b54476-f33f-435f-8985-b412cb5edb4c"
+          ]
+        }
+      },
+      "originalApprovedSelection": {
+        "sourcePath": "D:/Stackr-1/.tmp/approved-english-metadata-20261006/accepted.json",
+        "sourceSha256": "5fd3a144044626b02c85bc105858d836cc57a39c3c1e5e67609826ae69661868",
+        "workbookRow": 13177,
+        "workbookSha256": "078bc294c53196ae49a5c4691130888179acc428b92cde94b743abbcefc81cf8",
+        "selectedEnglishName": "Pikachu",
+        "historicalLinkedEnglishNameIds": [
+          "31969f87-600d-45fe-898f-8e3afff13492",
+          "ed115f7d-9902-49c2-a47b-6303803f416b"
+        ],
+        "historicalSnapshotOnly": true
+      }
+    },
+    {
+      "printingId": "63019ce2-f59b-4aed-a3e0-025789ecb7ab",
+      "language": "zh-tw",
+      "nativeName": "瑪俐",
+      "expectedEnglishDisplayName": "Pikachu",
+      "proposedEnglishDisplayName": "Marnie",
+      "set": {
+        "setId": "c816b27f-f145-413b-b971-3f7b1542f24c",
+        "setCode": "SCC",
+        "nativeName": "V起始牌組 進化",
+        "englishDisplayName": "V Starter Deck: Evolution"
+      },
+      "collectorNumber": {
+        "value": "156",
+        "prefix": null,
+        "sort": 156,
+        "suffix": null,
+        "sortKey": "000000000156"
+      },
+      "supertype": "Trainer",
+      "artist": "kirisAki",
+      "variants": [
+        {
+          "variantId": "fab226b8-7f2e-4b02-8f2b-0e858b977ae1",
+          "canonicalId": "pokemon:zh-tw:c816b27f-f145-413b-b971-3f7b1542f24c:156:normal",
+          "variantCode": "normal",
+          "finishCode": "normal"
+        }
+      ],
+      "expectedPublicUpdatedAt": "2026-10-06T18:49:26.171478+00:00",
+      "publicEvidence": {
+        "observedAt": "2026-10-10T22:25:08.764Z",
+        "url": "https://api.stackrtcg.com/v1/cards/63019ce2-f59b-4aed-a3e0-025789ecb7ab",
+        "requestId": "c7c91f87-c15f-402a-833c-40217c9a5c69",
+        "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "englishDisplaySource": "printing",
+        "englishSupplement": {
+          "value": "Pikachu",
+          "provenance": "published_stackr_exact_native_name",
+          "authoritative": false,
+          "sourceCardIds": [
+            "1386b19f-ada3-447a-83d0-105acf48752c",
+            "3467f1b3-cfed-47c1-bddb-73a6507009b4",
+            "44b54476-f33f-435f-8985-b412cb5edb4c"
+          ]
+        }
+      },
+      "originalApprovedSelection": {
+        "sourcePath": "D:/Stackr-1/.tmp/approved-english-metadata-20261006/accepted.json",
+        "sourceSha256": "5fd3a144044626b02c85bc105858d836cc57a39c3c1e5e67609826ae69661868",
+        "workbookRow": 14717,
+        "workbookSha256": "078bc294c53196ae49a5c4691130888179acc428b92cde94b743abbcefc81cf8",
+        "selectedEnglishName": "Pikachu",
+        "historicalLinkedEnglishNameIds": [
+          "52a953c0-ea98-4c81-8f5f-63baceca8f38"
+        ],
+        "historicalSnapshotOnly": true
+      }
+    },
+    {
+      "printingId": "818b3095-25cf-491e-b536-6a2e7513a3a0",
+      "language": "zh-tw",
+      "nativeName": "瑪俐",
+      "expectedEnglishDisplayName": "Pikachu",
+      "proposedEnglishDisplayName": "Marnie",
+      "set": {
+        "setId": "6c446b0c-155d-4926-b0ee-5369f6ac44d3",
+        "setCode": "SJ",
+        "nativeName": "特別牌組組合 蒼響・藏瑪然特VS無極汰那",
+        "englishDisplayName": "Special Deck Set: Zacian & Zamazenta vs Eternatus"
+      },
+      "collectorNumber": {
+        "value": "028",
+        "prefix": null,
+        "sort": 28,
+        "suffix": null,
+        "sortKey": "000000000028"
+      },
+      "supertype": "Trainer",
+      "artist": "kirisAki",
+      "variants": [
+        {
+          "variantId": "01e51188-e92f-4370-a7f4-ad5d3bfdfd87",
+          "canonicalId": "pokemon:zh-tw:6c446b0c-155d-4926-b0ee-5369f6ac44d3:028:normal",
+          "variantCode": "normal",
+          "finishCode": "normal"
+        }
+      ],
+      "expectedPublicUpdatedAt": "2026-10-06T18:50:07.078228+00:00",
+      "publicEvidence": {
+        "observedAt": "2026-10-10T22:25:08.850Z",
+        "url": "https://api.stackrtcg.com/v1/cards/818b3095-25cf-491e-b536-6a2e7513a3a0",
+        "requestId": "2b4f7c57-fee9-4ff5-9170-b521e27c07eb",
+        "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "englishDisplaySource": "printing",
+        "englishSupplement": {
+          "value": "Pikachu",
+          "provenance": "published_stackr_exact_native_name",
+          "authoritative": false,
+          "sourceCardIds": [
+            "1386b19f-ada3-447a-83d0-105acf48752c",
+            "3467f1b3-cfed-47c1-bddb-73a6507009b4",
+            "44b54476-f33f-435f-8985-b412cb5edb4c"
+          ]
+        }
+      },
+      "originalApprovedSelection": {
+        "sourcePath": "D:/Stackr-1/.tmp/approved-english-metadata-20261006/accepted.json",
+        "sourceSha256": "5fd3a144044626b02c85bc105858d836cc57a39c3c1e5e67609826ae69661868",
+        "workbookRow": 15455,
+        "workbookSha256": "078bc294c53196ae49a5c4691130888179acc428b92cde94b743abbcefc81cf8",
+        "selectedEnglishName": "Pikachu",
+        "historicalLinkedEnglishNameIds": [
+          "acef624e-6440-4b91-b745-8424d893fea9"
+        ],
+        "historicalSnapshotOnly": true
+      }
+    },
+    {
+      "printingId": "971eba73-3c5f-4306-a6d5-700e8b748c9b",
+      "language": "zh-tw",
+      "nativeName": "瑪俐",
+      "expectedEnglishDisplayName": "Pikachu",
+      "proposedEnglishDisplayName": "Marnie",
+      "set": {
+        "setId": "5578c7d0-f386-4945-b651-65dd2f3ee2d3",
+        "setCode": "SCB",
+        "nativeName": "V起始牌組 挑戰",
+        "englishDisplayName": "V Starter Deck: Challenge"
+      },
+      "collectorNumber": {
+        "value": "143",
+        "prefix": null,
+        "sort": 143,
+        "suffix": null,
+        "sortKey": "000000000143"
+      },
+      "supertype": "Trainer",
+      "artist": "kirisAki",
+      "variants": [
+        {
+          "variantId": "e319bdb2-763f-48e1-a61f-8dccc46867f0",
+          "canonicalId": "pokemon:zh-tw:5578c7d0-f386-4945-b651-65dd2f3ee2d3:143:normal",
+          "variantCode": "normal",
+          "finishCode": "normal"
+        }
+      ],
+      "expectedPublicUpdatedAt": "2026-10-06T18:49:26.171478+00:00",
+      "publicEvidence": {
+        "observedAt": "2026-10-10T22:25:08.853Z",
+        "url": "https://api.stackrtcg.com/v1/cards/971eba73-3c5f-4306-a6d5-700e8b748c9b",
+        "requestId": "6674ec62-da99-48e7-9590-e415fe7350b4",
+        "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "englishDisplaySource": "printing",
+        "englishSupplement": {
+          "value": "Pikachu",
+          "provenance": "published_stackr_exact_native_name",
+          "authoritative": false,
+          "sourceCardIds": [
+            "1386b19f-ada3-447a-83d0-105acf48752c",
+            "3467f1b3-cfed-47c1-bddb-73a6507009b4",
+            "44b54476-f33f-435f-8985-b412cb5edb4c"
+          ]
+        }
+      },
+      "originalApprovedSelection": {
+        "sourcePath": "D:/Stackr-1/.tmp/approved-english-metadata-20261006/accepted.json",
+        "sourceSha256": "5fd3a144044626b02c85bc105858d836cc57a39c3c1e5e67609826ae69661868",
+        "workbookRow": 14554,
+        "workbookSha256": "078bc294c53196ae49a5c4691130888179acc428b92cde94b743abbcefc81cf8",
+        "selectedEnglishName": "Pikachu",
+        "historicalLinkedEnglishNameIds": [
+          "9b2526f7-1b50-4457-8bbf-e82e85e34384"
+        ],
+        "historicalSnapshotOnly": true
+      }
+    },
+    {
+      "printingId": "a52f71c8-a76c-449a-8030-219ec64a61d8",
+      "language": "zh-tw",
+      "nativeName": "瑪俐",
+      "expectedEnglishDisplayName": "Pikachu",
+      "proposedEnglishDisplayName": "Marnie",
+      "set": {
+        "setId": "d14fde0e-c786-41d0-93ef-6dc69cef94d0",
+        "setCode": "SC2D",
+        "nativeName": "V起始牌組 無極力量",
+        "englishDisplayName": "Infinite Power V Starter Deck"
+      },
+      "collectorNumber": {
+        "value": "156",
+        "prefix": null,
+        "sort": 156,
+        "suffix": null,
+        "sortKey": "000000000156"
+      },
+      "supertype": "Trainer",
+      "artist": "kirisAki",
+      "variants": [
+        {
+          "variantId": "1ce3153e-0a64-4697-a486-50f35c2cbede",
+          "canonicalId": "pokemon:zh-tw:d14fde0e-c786-41d0-93ef-6dc69cef94d0:156:normal",
+          "variantCode": "normal",
+          "finishCode": "normal"
+        }
+      ],
+      "expectedPublicUpdatedAt": "2026-10-06T18:49:23.353178+00:00",
+      "publicEvidence": {
+        "observedAt": "2026-10-10T22:25:08.853Z",
+        "url": "https://api.stackrtcg.com/v1/cards/a52f71c8-a76c-449a-8030-219ec64a61d8",
+        "requestId": "b8f357ec-c7db-4b9b-a09a-1fb112cdea1d",
+        "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "englishDisplaySource": "printing",
+        "englishSupplement": {
+          "value": "Pikachu",
+          "provenance": "published_stackr_exact_native_name",
+          "authoritative": false,
+          "sourceCardIds": [
+            "1386b19f-ada3-447a-83d0-105acf48752c",
+            "3467f1b3-cfed-47c1-bddb-73a6507009b4",
+            "44b54476-f33f-435f-8985-b412cb5edb4c"
+          ]
+        }
+      },
+      "originalApprovedSelection": {
+        "sourcePath": "D:/Stackr-1/.tmp/approved-english-metadata-20261006/accepted.json",
+        "sourceSha256": "5fd3a144044626b02c85bc105858d836cc57a39c3c1e5e67609826ae69661868",
+        "workbookRow": 14282,
+        "workbookSha256": "078bc294c53196ae49a5c4691130888179acc428b92cde94b743abbcefc81cf8",
+        "selectedEnglishName": "Pikachu",
+        "historicalLinkedEnglishNameIds": [
+          "a367df2a-938d-4d61-9d0c-b3d69bfff11f"
+        ],
+        "historicalSnapshotOnly": true
+      }
+    },
+    {
+      "printingId": "c3ee4722-7304-4cbf-a905-93162e371e76",
+      "language": "zh-tw",
+      "nativeName": "瑪俐",
+      "expectedEnglishDisplayName": "Pikachu",
+      "proposedEnglishDisplayName": "Marnie",
+      "set": {
+        "setId": "1217161f-69bf-4176-acce-93f23e475d04",
+        "setCode": "SK",
+        "nativeName": "頂級訓練家收藏箱 VSTAR",
+        "englishDisplayName": "Premium Trainer Box VSTAR"
+      },
+      "collectorNumber": {
+        "value": "026",
+        "prefix": null,
+        "sort": 26,
+        "suffix": null,
+        "sortKey": "000000000026"
+      },
+      "supertype": "Trainer",
+      "artist": "kirisAki",
+      "variants": [
+        {
+          "variantId": "2c460cdc-2735-4f7e-a569-01672fa514d5",
+          "canonicalId": "pokemon:zh-tw:1217161f-69bf-4176-acce-93f23e475d04:026:normal",
+          "variantCode": "normal",
+          "finishCode": "normal"
+        }
+      ],
+      "expectedPublicUpdatedAt": "2026-10-06T18:50:07.078228+00:00",
+      "publicEvidence": {
+        "observedAt": "2026-10-10T22:25:08.927Z",
+        "url": "https://api.stackrtcg.com/v1/cards/c3ee4722-7304-4cbf-a905-93162e371e76",
+        "requestId": "641f999a-87df-463e-8976-a1612e916b3e",
+        "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "englishDisplaySource": "printing",
+        "englishSupplement": {
+          "value": "Pikachu",
+          "provenance": "published_stackr_exact_native_name",
+          "authoritative": false,
+          "sourceCardIds": [
+            "1386b19f-ada3-447a-83d0-105acf48752c",
+            "3467f1b3-cfed-47c1-bddb-73a6507009b4",
+            "44b54476-f33f-435f-8985-b412cb5edb4c"
+          ]
+        }
+      },
+      "originalApprovedSelection": {
+        "sourcePath": "D:/Stackr-1/.tmp/approved-english-metadata-20261006/accepted.json",
+        "sourceSha256": "5fd3a144044626b02c85bc105858d836cc57a39c3c1e5e67609826ae69661868",
+        "workbookRow": 15481,
+        "workbookSha256": "078bc294c53196ae49a5c4691130888179acc428b92cde94b743abbcefc81cf8",
+        "selectedEnglishName": "Pikachu",
+        "historicalLinkedEnglishNameIds": [
+          "aabed11b-9f46-4d5b-9f60-4b82b7d31916"
+        ],
+        "historicalSnapshotOnly": true
+      }
+    },
+    {
+      "printingId": "d2132ffe-de94-462d-be98-8b6fba08e8ad",
+      "language": "zh-tw",
+      "nativeName": "瑪俐",
+      "expectedEnglishDisplayName": "Pikachu",
+      "proposedEnglishDisplayName": "Marnie",
+      "set": {
+        "setId": "205ab185-9052-4965-b9f0-20fe44b7b61f",
+        "setCode": "SC1b",
+        "nativeName": "劍&盾 SET B",
+        "englishDisplayName": "Sword & Shield: Set B"
+      },
+      "collectorNumber": {
+        "value": "149",
+        "prefix": null,
+        "sort": 149,
+        "suffix": null,
+        "sortKey": "000000000149"
+      },
+      "supertype": "Trainer",
+      "artist": "kirisAki",
+      "variants": [
+        {
+          "variantId": "4de6ad23-8639-4de7-a0bf-4ec2e8cf3057",
+          "canonicalId": "pokemon:zh-tw:205ab185-9052-4965-b9f0-20fe44b7b61f:149:normal",
+          "variantCode": "normal",
+          "finishCode": "normal"
+        }
+      ],
+      "expectedPublicUpdatedAt": "2026-10-06T18:49:16.223958+00:00",
+      "publicEvidence": {
+        "observedAt": "2026-10-10T22:25:08.939Z",
+        "url": "https://api.stackrtcg.com/v1/cards/d2132ffe-de94-462d-be98-8b6fba08e8ad",
+        "requestId": "3815c021-15d4-4e2d-b781-95a751c76f9f",
+        "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "englishDisplaySource": "printing",
+        "englishSupplement": {
+          "value": "Pikachu",
+          "provenance": "published_stackr_exact_native_name",
+          "authoritative": false,
+          "sourceCardIds": [
+            "1386b19f-ada3-447a-83d0-105acf48752c",
+            "3467f1b3-cfed-47c1-bddb-73a6507009b4",
+            "44b54476-f33f-435f-8985-b412cb5edb4c"
+          ]
+        }
+      },
+      "originalApprovedSelection": {
+        "sourcePath": "D:/Stackr-1/.tmp/approved-english-metadata-20261006/accepted.json",
+        "sourceSha256": "5fd3a144044626b02c85bc105858d836cc57a39c3c1e5e67609826ae69661868",
+        "workbookRow": 13666,
+        "workbookSha256": "078bc294c53196ae49a5c4691130888179acc428b92cde94b743abbcefc81cf8",
+        "selectedEnglishName": "Pikachu",
+        "historicalLinkedEnglishNameIds": [
+          "d7aefa3d-1179-44c5-8ab1-e8d673037cb4"
+        ],
+        "historicalSnapshotOnly": true
+      }
+    },
+    {
+      "printingId": "f9c8c84e-1179-4585-8a38-9591727bb676",
+      "language": "zh-tw",
+      "nativeName": "瑪俐",
+      "expectedEnglishDisplayName": "Pikachu",
+      "proposedEnglishDisplayName": "Marnie",
+      "set": {
+        "setId": "70184f97-2d37-457a-8ae4-21a4b40d270c",
+        "setCode": "SCD",
+        "nativeName": "V起始牌組 強大",
+        "englishDisplayName": "V Starter Deck: Power"
+      },
+      "collectorNumber": {
+        "value": "147",
+        "prefix": null,
+        "sort": 147,
+        "suffix": null,
+        "sortKey": "000000000147"
+      },
+      "supertype": "Trainer",
+      "artist": "kirisAki",
+      "variants": [
+        {
+          "variantId": "97460152-b00f-46b2-a25e-b2ded70e2ab3",
+          "canonicalId": "pokemon:zh-tw:70184f97-2d37-457a-8ae4-21a4b40d270c:147:normal",
+          "variantCode": "normal",
+          "finishCode": "normal"
+        }
+      ],
+      "expectedPublicUpdatedAt": "2026-10-06T18:49:57.558818+00:00",
+      "publicEvidence": {
+        "observedAt": "2026-10-10T22:25:08.945Z",
+        "url": "https://api.stackrtcg.com/v1/cards/f9c8c84e-1179-4585-8a38-9591727bb676",
+        "requestId": "ca79d749-41ec-4309-91e6-4f2a229c737d",
+        "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "englishDisplaySource": "printing",
+        "englishSupplement": {
+          "value": "Pikachu",
+          "provenance": "published_stackr_exact_native_name",
+          "authoritative": false,
+          "sourceCardIds": [
+            "1386b19f-ada3-447a-83d0-105acf48752c",
+            "3467f1b3-cfed-47c1-bddb-73a6507009b4",
+            "44b54476-f33f-435f-8985-b412cb5edb4c"
+          ]
+        }
+      },
+      "originalApprovedSelection": {
+        "sourcePath": "D:/Stackr-1/.tmp/approved-english-metadata-20261006/accepted.json",
+        "sourceSha256": "5fd3a144044626b02c85bc105858d836cc57a39c3c1e5e67609826ae69661868",
+        "workbookRow": 14879,
+        "workbookSha256": "078bc294c53196ae49a5c4691130888179acc428b92cde94b743abbcefc81cf8",
+        "selectedEnglishName": "Pikachu",
+        "historicalLinkedEnglishNameIds": [
+          "d1ca9223-84a3-415e-9a3a-2f3eca600e05"
+        ],
+        "historicalSnapshotOnly": true
+      }
+    }
+  ],
+  "correctionPath": [
+    "Review this exact 12-ID proposal and retain official native/English references with existing provenance contract. Official English naming does not itself verify equivalent printings.",
+    "Export current canonical printing and scoped English name/alias rows through the permitted read-only review lane before writing; public API updatedAt and historical linked-name IDs are insufficient mutation locks.",
+    "Prepare one new hash-bound correction input/receipt for these 12 exact printings, preserving the immutable 6 October selection/evidence. Use existing reviewed canonical provenance so the dated owner snapshot cannot override corrected fields.",
+    "Reconcile exact generated snapshot group with corrected reviewed input through the existing builder; verify client/server mirrors only where retained by that checkout. Inspect all destinations and side effects before generation.",
+    "Under separate authority apply the minimal printing/name alias/provenance updates with exact language/native/set/number/current-name/updatedAt preconditions, audit/change-log/publication receipt and zero unrelated row changes. Remove stale Pikachu aliases only when bound to these exact printing/variant rows; never remove real Pikachu names.",
+    "Release owner publishes/deploys as needed, then checks Marnie/native/Pikachu queries, all12 card details and device display using the retained canonical publication version."
+  ],
+  "rollback": {
+    "requiredBeforeMutation": "Capture immutable before-images of current 12 printing rows, scoped English display/alias/provenance rows, generated input/snapshot hashes and publication/cache/backend revision. Existing source records are historical evidence, not a current rollback capture.",
+    "operation": "Only restore captured English name/alias/provenance and publication/runtime state for these 12 printings under explicit rollback authority and exact post-change preconditions; preserve language/native/set/number/variant/finish/owned quantities/assets/prices.",
+    "doNotExecute": "Do not run the historical 16,800-row rollback.sql for this12-row correction."
+  },
+  "regressionRequirements": [
+    "Assert exact 12 zh-tw 瑪俐 IDs resolve Marnie and remain Trainer; assert real Pikachu printings retain Pikachu.",
+    "Assert findNativeCardNamesForEnglishQuery(\"Marnie\",\"zh-tw\") includes 瑪俐 and Pikachu query does not include that exact native group.",
+    "Assert actual published translation search returns these exact Trainer IDs for Marnie, excludes them for Pikachu, and retains native queries; higher-authority later reviewed canonical names win.",
+    "Assert no ja/zh-cn/ko group changes, collector numbers/finish/assets/price identity stay identical, mirrored maps/check hashes match, and retired stored Pikachu aliases cannot survive the scoped publication."
+  ],
+  "limitations": [
+    "Source-backed proposal only; no canonical review approval or live mutation occurred.",
+    "Official exact native printing source was checked for SC1b171; remaining11 public identities share the complete native title but their specific official printing pages were not independently inspected.",
+    "Public projection does not reveal current underlying provenance/alias rows, row locks, complete stored alias list or licence entitlement for any new descriptive text/artwork.",
+    "Phone display, complete set/rules-text gaps and whole-catalogue semantic correctness remain unmeasured."
+  ]
+}

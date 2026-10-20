@@ -1,0 +1,84 @@
+name: Publish Stackr Japanese PCG2 wave002 three-front Artwork
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type PUBLISH ARTWORK PCG2 WAVE002 THREE FRONTS
+        required: true
+        type: string
+      expected_main_sha:
+        description: Exact main revision containing the frozen batch
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-production-deployment
+  cancel-in-progress: false
+
+jobs:
+  artwork_pcg2_wave002_three_fronts:
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'PUBLISH ARTWORK PCG2 WAVE002 THREE FRONTS'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: production
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            backend/package-lock.json
+      - name: Validate the exact artwork-only batch
+        env:
+          EXPECTED_SHA: ${{ inputs.expected_main_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_SHA" =~ ^[a-f0-9]{40}$ ]]
+          test "$EXPECTED_SHA" = "$GITHUB_SHA"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git diff --exit-code
+      - name: Install locked publisher dependencies
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm ci --prefix backend --omit=dev --ignore-scripts --no-audit --no-fund
+      - name: Verify batch, transaction and archive guards
+        run: |
+          node --test tools/artwork-pcg2-wave002-three-fronts-push-20261016/publish.test.mjs
+          python tools/artwork-pcg2-wave002-three-fronts-push-20261016/download-package.test.py
+      - name: Verify persisted failure receipts
+        run: node --test tools/artwork3303-publish-20260928/journal.integration.test.mjs
+      - name: Retrieve the frozen image package
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python tools/artwork-pcg2-wave002-three-fronts-push-20261016/download-package.py "$RUNNER_TEMP/artwork-pcg2-wave002-three-fronts-packages"
+      - name: Rehearse and publish the frozen artwork batch
+        env:
+          STACKR_EXPECTED_MAIN_SHA: ${{ inputs.expected_main_sha }}
+          STACKR_ARTWORK_PCG2_WAVE002_THREE_FRONTS_CONFIRMATION: PUBLISH ARTWORK PCG2 WAVE002 THREE FRONTS
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PRODUCTION_SECRET_KEY: ${{ secrets.SUPABASE_PRODUCTION_SECRET_KEY }}
+          SUPABASE_STAGING_DB_URL: ${{ secrets.SUPABASE_STAGING_DB_URL }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          STACKR_ARTWORK_PCG2_WAVE002_THREE_FRONTS_PACKAGES: ${{ runner.temp }}/artwork-pcg2-wave002-three-fronts-packages
+          STACKR_ARTWORK_PCG2_WAVE002_THREE_FRONTS_OUTPUT: ${{ runner.temp }}/artwork-pcg2-wave002-three-fronts
+        run: node tools/artwork-pcg2-wave002-three-fronts-push-20261016/publish.mjs --execute
+      - name: Scan publication evidence for secrets
+        id: artwork_receipt_scan
+        if: always()
+        run: node scripts/deploy/secret-scan.mjs --directory="$RUNNER_TEMP/artwork-pcg2-wave002-three-fronts"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always() && steps.artwork_receipt_scan.outcome == 'success'
+        with:
+          name: artwork-pcg2-wave002-three-fronts-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/artwork-pcg2-wave002-three-fronts
+          retention-days: 90
+          if-no-files-found: warn

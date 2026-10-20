@@ -1,7 +1,7 @@
 import { theme } from '../lib/theme';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from '../components/StackrLoadingIndicator';
 import {
-  ActivityIndicator,
   Alert,
   FlatList,
   Image,
@@ -661,6 +661,7 @@ export default function OffersScreen() {
       </View>
 
       <StackrCenterModal
+        accessibilityLabel="Offer details"
         visible={Boolean(confirmCopy)}
         onClose={() => !confirmBusy && setConfirmAction(null)}
         dismissible={!confirmBusy}

@@ -123,6 +123,7 @@ async function check(baseUrl, path, options = {}) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), Number(options.timeoutMs ?? 10_000));
   const requestId = randomUUID();
+  let result;
   try {
     const response = await fetch(`${baseUrl.replace(/\/$/, '')}${path}`, {
       method: options.method ?? 'GET',
@@ -152,22 +153,24 @@ async function check(baseUrl, path, options = {}) {
         ? corsOrigin === null
         : true;
     const statusOk = options.accept?.includes(response.status) ?? response.ok;
-    return {
+    result = {
       name: options.name ?? path,
       path,
       status: response.status,
       ok: statusOk && corsOk && (bodyCheck?.ok ?? true),
+      ...(failFast ? { requestId } : {}),
       requestIdPropagated: returnedRequestId === requestId,
       requestIdRequired: options.requireRequestId !== false,
       corsOrigin,
       bodyCheck,
     };
   } catch (error) {
-    return {
+    result = {
       name: options.name ?? path,
       path,
       status: null,
       ok: false,
+      ...(failFast ? { requestId } : {}),
       requestIdPropagated: false,
       requestIdRequired: options.requireRequestId !== false,
       error: error.name,
@@ -175,6 +178,20 @@ async function check(baseUrl, path, options = {}) {
   } finally {
     clearTimeout(timeout);
   }
+  if (failFast && failedCheck(result)) {
+    // A failed status may leave an unread, streaming body after headers arrive.
+    controller.abort();
+    // Preserve every completed check and the failure before stopping. Flush the
+    // receipt so a piped workflow artifact remains valid JSON.
+    const output = JSON.stringify({ ok: false, checks: [...checks, result] }, null, 2);
+    await new Promise(resolve => process.stdout.write(`${output}\n`, resolve));
+    throw stoppedOnFailedCheck;
+  }
+  return result;
+}
+
+function failedCheck(item) {
+  return !item.ok || (!allowMissingRequestId && item.requestIdRequired !== false && !item.requestIdPropagated);
 }
 
 function commerceDisabledResponseCheck(expectedStatus, expectedCode, expectedMessage) {
@@ -244,11 +261,42 @@ function manifestPublishedCheck(body) {
   };
 }
 
+const CANONICAL_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function normalizedCardName(value) {
+  return String(value ?? '').toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
+}
+
+function pokemonCardsCheck(species) {
+  const expectedName = normalizedCardName(species);
+  return (body) => {
+    const cards = body?.data?.cards;
+    const pagination = body?.meta?.pagination;
+    const cardIds = Array.isArray(cards) ? cards.map((card) => card?.cardId) : [];
+    const cardIdsAreCanonical = cardIds.length > 0
+      && cardIds.every((cardId) => typeof cardId === 'string' && CANONICAL_UUID.test(cardId))
+      && new Set(cardIds).size === cardIds.length;
+    const cardsHaveExpectedSpecies = Array.isArray(cards) && cards.some((card) => [
+      card?.names?.native,
+      card?.names?.englishDisplay,
+    ].some((name) => normalizedCardName(name).includes(expectedName)));
+    const paginationIsBounded = pagination?.limit === 1
+      && (pagination.nextCursor === null || (typeof pagination.nextCursor === 'string' && pagination.nextCursor.length > 0));
+    return {
+      ok: cardIdsAreCanonical && cardsHaveExpectedSpecies && paginationIsBounded,
+      cardIds,
+      count: Array.isArray(cards) ? cards.length : null,
+      nextCursor: pagination?.nextCursor ?? null,
+    };
+  };
+}
+
 const gatewayUrl = argument('gateway', process.env.STACKR_GATEWAY_URL);
 const backendUrl = argument('backend', process.env.STACKR_BACKEND_URL);
 const recognitionUrl = argument('recognition', process.env.STACKR_RECOGNITION_URL);
 const allowRecognitionNotReady = process.argv.includes('--allow-recognition-not-ready');
 const allowMissingRequestId = process.argv.includes('--allow-missing-request-id');
+const failFast = process.argv.includes('--fail-fast');
 const fullGateway = process.argv.includes('--full-gateway');
 const gatewaySafety = process.argv.includes('--gateway-safety');
 const requirePublishedCatalogue = process.argv.includes('--require-published-catalogue');
@@ -264,6 +312,7 @@ const allowedOrigin = argument('allowed-origin', process.env.STACKR_ALLOWED_ORIG
 const deniedOrigin = argument('denied-origin', 'https://not-stackr.invalid');
 const searchQuery = encodeURIComponent(argument('search-query', 'SV2a 157'));
 const checks = [];
+const stoppedOnFailedCheck = Symbol('stoppedOnFailedCheck');
 
 if (fullGateway && gatewaySafety) {
   console.error('--full-gateway and --gateway-safety are mutually exclusive.');
@@ -290,169 +339,186 @@ if (expectedBackendCommit && (!expectedBackendEnvironment || !expectedBackendSup
   process.exit(1);
 }
 
-if (backendUrl) {
-  checks.push(await check(backendUrl, '/health', {
-    name: 'backend_health',
-    inspectJson: expectedBackendCommit
-      ? backendAttestationCheck(
-          expectedBackendCommit,
-          expectedBackendEnvironment,
-          expectedBackendSupabaseProjectRef,
-        )
-      : undefined,
-  }));
-}
-if (backendUrl && requireCommerceDisabled) {
-  for (const route of COMMERCE_DISABLED_ROUTES) {
-    const isPost = route.method === 'POST';
-    const expectedStatus = route.status ?? 503;
-    checks.push(await check(backendUrl, route.path, {
-      name: route.name,
-      method: route.method,
-      headers: isPost ? { 'content-type': 'application/json' } : undefined,
-      body: isPost ? '{}' : undefined,
-      accept: [expectedStatus],
-      inspectJson: commerceDisabledResponseCheck(expectedStatus, route.code, route.message),
+try {
+  if (backendUrl) {
+    checks.push(await check(backendUrl, '/health', {
+      name: 'backend_health',
+      inspectJson: expectedBackendCommit
+        ? backendAttestationCheck(
+            expectedBackendCommit,
+            expectedBackendEnvironment,
+            expectedBackendSupabaseProjectRef,
+          )
+        : undefined,
     }));
   }
-}
-if (backendUrl && (fullGateway || gatewaySafety)) {
-  checks.push(await check(backendUrl, '/v1/health', {
-    name: 'direct_origin_v1_health_without_gateway_key',
-    accept: [401, 503],
-  }));
-}
-if (recognitionUrl) {
-  checks.push(await check(recognitionUrl, '/health'));
-  checks.push(await check(recognitionUrl, '/ready', { accept: allowRecognitionNotReady ? [200, 503] : [200] }));
-}
-if (gatewayUrl) {
-  checks.push(await check(gatewayUrl, '/v1/health'));
-  checks.push(await check(gatewayUrl, '/v1/ready'));
-  if (!gatewaySafety) {
-    checks.push(await check(gatewayUrl, '/v1/catalog/manifest', {
-      inspectJson: requirePublishedCatalogue ? manifestPublishedCheck : undefined,
+  if (backendUrl && requireCommerceDisabled) {
+    for (const route of COMMERCE_DISABLED_ROUTES) {
+      const isPost = route.method === 'POST';
+      const expectedStatus = route.status ?? 503;
+      checks.push(await check(backendUrl, route.path, {
+        name: route.name,
+        method: route.method,
+        headers: isPost ? { 'content-type': 'application/json' } : undefined,
+        body: isPost ? '{}' : undefined,
+        accept: [expectedStatus],
+        inspectJson: commerceDisabledResponseCheck(expectedStatus, route.code, route.message),
+      }));
+    }
+  }
+  if (backendUrl && (fullGateway || gatewaySafety)) {
+    checks.push(await check(backendUrl, '/v1/health', {
+      name: 'direct_origin_v1_health_without_gateway_key',
+      accept: [401, 503],
     }));
   }
-  if (fullGateway) {
-    checks.push(await check(gatewayUrl, '/v1/languages'));
-    let firstSetId = null;
-    checks.push(await check(gatewayUrl, '/v1/sets?limit=1', {
-      inspectJson(body) {
-        firstSetId = body?.data?.sets?.[0]?.setId ?? null;
-        return { ok: Boolean(firstSetId), firstSetId };
-      },
-    }));
-    let firstCardId = null;
-    if (firstSetId) {
-      checks.push(await check(gatewayUrl, `/v1/sets/${encodeURIComponent(firstSetId)}/cards?limit=1`, {
-        inspectJson(body) {
-          firstCardId = body?.data?.cards?.[0]?.cardId ?? null;
-          return { ok: Boolean(firstCardId), firstCardId };
-        },
+  if (recognitionUrl) {
+    checks.push(await check(recognitionUrl, '/health'));
+    checks.push(await check(recognitionUrl, '/ready', { accept: allowRecognitionNotReady ? [200, 503] : [200] }));
+  }
+  if (gatewayUrl) {
+    checks.push(await check(gatewayUrl, '/v1/health'));
+    checks.push(await check(gatewayUrl, '/v1/ready'));
+    if (!gatewaySafety) {
+      checks.push(await check(gatewayUrl, '/v1/catalog/manifest', {
+        inspectJson: requirePublishedCatalogue ? manifestPublishedCheck : undefined,
       }));
     }
-    if (firstCardId) {
-      checks.push(await check(gatewayUrl, `/v1/cards/${encodeURIComponent(firstCardId)}`));
-      checks.push(await check(gatewayUrl, `/v1/cards/${encodeURIComponent(firstCardId)}/variants`, {
+    if (fullGateway) {
+      checks.push(await check(gatewayUrl, '/v1/languages'));
+      let firstSetId = null;
+      checks.push(await check(gatewayUrl, '/v1/sets?limit=1', {
         inspectJson(body) {
-          const variants = body?.data?.variants;
-          return { ok: Array.isArray(variants) && variants.length > 0, variantCount: variants?.length ?? 0 };
+          firstSetId = body?.data?.sets?.[0]?.setId ?? null;
+          return { ok: Boolean(firstSetId), firstSetId };
         },
       }));
-    }
-    checks.push(await check(gatewayUrl, `/v1/search?q=${searchQuery}&limit=1`, {
-      // Public search is cached by the gateway. Bypass that cache here so a
-      // successful release smoke proves the newly deployed origin can answer.
-      // The public route does not forward this header to the backend.
-      headers: { Authorization: 'Bearer smoke-cache-bypass' },
-    }));
-    let firstAssetDeliveryUrl = null;
-    let firstAssetId = null;
-    let assetManifestNextCursor = null;
-    checks.push(await check(gatewayUrl, '/v1/assets/manifest?limit=1', {
-      inspectJson(body) {
-        const assets = body?.data?.assets;
-        const firstAsset = assets?.[0] ?? null;
-        firstAssetId = firstAsset?.assetId ?? null;
-        assetManifestNextCursor = body?.meta?.pagination?.nextCursor ?? null;
-        const derivatives = Array.isArray(firstAsset?.derivative_list) ? firstAsset.derivative_list : [];
-        firstAssetDeliveryUrl = derivatives.find((item) => item?.role === 'search-result')?.deliveryUrl
-          ?? firstAsset?.derivatives?.find((item) => item?.role === 'search-result')?.deliveryUrl
-          ?? firstAsset?.delivery_url
-          ?? firstAsset?.deliveryUrl
-          ?? null;
-        return {
-          ok: Array.isArray(assets)
-            && assets.length > 0
-            && (!requirePublishedCatalogue || Boolean(assetManifestNextCursor)),
-          assetCount: assets?.length ?? 0,
-          nextCursorPresent: Boolean(assetManifestNextCursor),
-        };
-      },
-    }));
-    if (assetManifestNextCursor) {
-      checks.push(await check(
-        gatewayUrl,
-        `/v1/assets/manifest?limit=1&cursor=${encodeURIComponent(assetManifestNextCursor)}`,
-        {
-          name: 'asset_manifest_cursor_page',
+      let firstCardId = null;
+      if (firstSetId) {
+        checks.push(await check(gatewayUrl, `/v1/sets/${encodeURIComponent(firstSetId)}/cards?limit=1`, {
           inspectJson(body) {
-            const assets = body?.data?.assets;
-            const nextAssetId = assets?.[0]?.assetId ?? null;
-            return {
-              ok: Array.isArray(assets) && assets.length > 0 && nextAssetId !== firstAssetId,
-              assetCount: assets?.length ?? 0,
-              repeatedAsset: Boolean(nextAssetId && nextAssetId === firstAssetId),
-            };
+            firstCardId = body?.data?.cards?.[0]?.cardId ?? null;
+            return { ok: Boolean(firstCardId), firstCardId };
           },
+        }));
+      }
+      if (firstCardId) {
+        checks.push(await check(gatewayUrl, `/v1/cards/${encodeURIComponent(firstCardId)}`));
+        checks.push(await check(gatewayUrl, `/v1/cards/${encodeURIComponent(firstCardId)}/variants`, {
+          inspectJson(body) {
+            const variants = body?.data?.variants;
+            return { ok: Array.isArray(variants) && variants.length > 0, variantCount: variants?.length ?? 0 };
+          },
+        }));
+      }
+      checks.push(await check(gatewayUrl, `/v1/search?q=${searchQuery}&limit=1`, {
+        // Public search is cached by the gateway. Bypass that cache here so a
+        // successful release smoke proves the newly deployed origin can answer.
+        // The public route does not forward this header to the backend.
+        headers: { Authorization: 'Bearer smoke-cache-bypass' },
+      }));
+      checks.push(await check(gatewayUrl, '/v1/pokemon/pikachu/cards?limit=1', {
+        name: 'pokemon_cards_pikachu',
+        inspectJson: pokemonCardsCheck('Pikachu'),
+      }));
+      checks.push(await check(gatewayUrl, '/v1/pokemon/Mr.%20Mime/cards?limit=1', {
+        name: 'pokemon_cards_mr_mime_encoded',
+        inspectJson: pokemonCardsCheck('Mr Mime'),
+      }));
+      checks.push(await check(gatewayUrl, '/v1/pokemon/pikachu/cards?provider=all', {
+        name: 'pokemon_cards_rejects_unsupported_query',
+        accept: [400],
+        inspectJson(body) {
+          return { ok: body?.error?.code === 'unsupported_query_parameter' };
         },
-      ));
-    }
-    if (firstAssetDeliveryUrl) {
-      checks.push(await check('', firstAssetDeliveryUrl, {
-        name: 'asset_delivery',
-        requireRequestId: false,
-        async inspectResponse(response) {
-          const contentType = response.headers.get('content-type');
-          const bytes = (await response.arrayBuffer()).byteLength;
+      }));
+      let firstAssetDeliveryUrl = null;
+      let firstAssetId = null;
+      let assetManifestNextCursor = null;
+      checks.push(await check(gatewayUrl, '/v1/assets/manifest?limit=1', {
+        inspectJson(body) {
+          const assets = body?.data?.assets;
+          const firstAsset = assets?.[0] ?? null;
+          firstAssetId = firstAsset?.assetId ?? null;
+          assetManifestNextCursor = body?.meta?.pagination?.nextCursor ?? null;
+          const derivatives = Array.isArray(firstAsset?.derivative_list) ? firstAsset.derivative_list : [];
+          firstAssetDeliveryUrl = derivatives.find((item) => item?.role === 'search-result')?.deliveryUrl
+            ?? firstAsset?.derivatives?.find((item) => item?.role === 'search-result')?.deliveryUrl
+            ?? firstAsset?.delivery_url
+            ?? firstAsset?.deliveryUrl
+            ?? null;
           return {
-            ok: Boolean(contentType?.startsWith('image/')) && bytes > 0,
-            contentType,
-            bytes,
+            ok: Array.isArray(assets)
+              && assets.length > 0
+              && (!requirePublishedCatalogue || Boolean(assetManifestNextCursor)),
+            assetCount: assets?.length ?? 0,
+            nextCursorPresent: Boolean(assetManifestNextCursor),
           };
         },
       }));
+      if (assetManifestNextCursor) {
+        checks.push(await check(
+          gatewayUrl,
+          `/v1/assets/manifest?limit=1&cursor=${encodeURIComponent(assetManifestNextCursor)}`,
+          {
+            name: 'asset_manifest_cursor_page',
+            inspectJson(body) {
+              const assets = body?.data?.assets;
+              const nextAssetId = assets?.[0]?.assetId ?? null;
+              return {
+                ok: Array.isArray(assets) && assets.length > 0 && nextAssetId !== firstAssetId,
+                assetCount: assets?.length ?? 0,
+                repeatedAsset: Boolean(nextAssetId && nextAssetId === firstAssetId),
+              };
+            },
+          },
+        ));
+      }
+      if (firstAssetDeliveryUrl) {
+        checks.push(await check('', firstAssetDeliveryUrl, {
+          name: 'asset_delivery',
+          requireRequestId: false,
+          async inspectResponse(response) {
+            const contentType = response.headers.get('content-type');
+            const bytes = (await response.arrayBuffer()).byteLength;
+            return {
+              ok: Boolean(contentType?.startsWith('image/')) && bytes > 0,
+              contentType,
+              bytes,
+            };
+          },
+        }));
+      }
+    }
+    if (fullGateway || gatewaySafety) {
+      checks.push(await check(gatewayUrl, '/v1/health', {
+        name: 'cors_allowed_preflight',
+        method: 'OPTIONS',
+        headers: {
+          Origin: allowedOrigin,
+          'Access-Control-Request-Method': 'GET',
+        },
+        accept: [204],
+        expectCorsOrigin: allowedOrigin,
+      }));
+      checks.push(await check(gatewayUrl, '/v1/health', {
+        name: 'cors_denied_origin',
+        headers: { Origin: deniedOrigin },
+        accept: [403],
+        expectNoCorsOrigin: true,
+      }));
     }
   }
-  if (fullGateway || gatewaySafety) {
-    checks.push(await check(gatewayUrl, '/v1/health', {
-      name: 'cors_allowed_preflight',
-      method: 'OPTIONS',
-      headers: {
-        Origin: allowedOrigin,
-        'Access-Control-Request-Method': 'GET',
-      },
-      accept: [204],
-      expectCorsOrigin: allowedOrigin,
-    }));
-    checks.push(await check(gatewayUrl, '/v1/health', {
-      name: 'cors_denied_origin',
-      headers: { Origin: deniedOrigin },
-      accept: [403],
-      expectNoCorsOrigin: true,
-    }));
+
+  if (!checks.length) {
+    console.error('No deployment smoke-test URLs were supplied.');
+    process.exit(1);
   }
-}
 
-if (!checks.length) {
-  console.error('No deployment smoke-test URLs were supplied.');
-  process.exit(1);
+  const failed = checks.filter(failedCheck);
+  console.log(JSON.stringify({ ok: failed.length === 0, checks }, null, 2));
+  if (failed.length) process.exit(1);
+} catch (error) {
+  if (error !== stoppedOnFailedCheck) throw error;
+  process.exitCode = 1;
 }
-
-const failed = checks.filter((item) => (
-  !item.ok
-  || (!allowMissingRequestId && item.requestIdRequired !== false && !item.requestIdPropagated)
-));
-console.log(JSON.stringify({ ok: failed.length === 0, checks }, null, 2));
-if (failed.length) process.exit(1);

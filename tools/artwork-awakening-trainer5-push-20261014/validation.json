@@ -1,0 +1,345 @@
+{
+  "schemaVersion": "stackr-awakening-trainer5-frozen-local-validation-v1",
+  "recordedAt": "2026-10-14T23:05:51.099Z",
+  "status": "offline_validated_not_published",
+  "scope": {
+    "fronts": 5,
+    "normalCurrentVariants": 5,
+    "holoCurrentVariants": 0,
+    "originals": 5,
+    "derivatives": 15,
+    "imageFiles": 20,
+    "archiveMembers": 24,
+    "finiteTasks": 5,
+    "byBatch": {
+      "JP-CARDS-012": {
+        "verified": 5,
+        "held": 0
+      }
+    },
+    "excludedAliases": [],
+    "previouslyPublishedOutsideFiniteScope": [
+      "051",
+      "052"
+    ],
+    "separateFinishHoldsOutsideBatch": [
+      "022",
+      "023"
+    ],
+    "wholeBatchLiveCompletionAsserted": false
+  },
+  "archive": {
+    "id": 641944947,
+    "sha256": "8bf11edd817e085632c008dce15ed0ef68e7ad3e582966f7f10613b3978572f2",
+    "byte_size": 2310785,
+    "file_count": 24,
+    "name": "stackr-ja-artwork-awakening-trainer5-fronts-20261014-v2.zip",
+    "allMemberByteHashAndDimensionsVerified": true,
+    "fullPILDecodes": 20,
+    "fullSharpDecodes": 20,
+    "referenceImagesPackaged": 0
+  },
+  "prepublicationRefinement": {
+    "priorLocalArchive": "stackr-ja-artwork-awakening-trainer5-fronts-20261014.zip",
+    "priorArchiveWasUploaded": false,
+    "priorReceiptsPreserved": "awakening-trainer5-prepublication-v1/",
+    "unchangedImageMembers": 20,
+    "refinement": "Full captured commercial JSON retained offline; public body carries identity projection plus distinct raw provenance hashes."
+  },
+  "checks": {
+    "publisherAndFailureJournalTests": {
+      "passed": 14,
+      "failed": 0
+    },
+    "archiveSafetyTests": {
+      "passed": 6,
+      "failed": 0
+    },
+    "rawToPackageAndPublicProjectionRows": 5,
+    "privateFullProviderEvidenceReconciled": 5,
+    "topLevelActualTrainerControlsRows": 5,
+    "prePreparationTamperRejections": 50,
+    "nodeSyntaxFiles": 10,
+    "pythonAstFiles": 3,
+    "workflowYamlAndProtectedGates": true,
+    "readOnlyExactQueryScope": true,
+    "unchangedDependencies": 11,
+    "descriptorLfAndPinnedByteHash": true,
+    "toolAttributesLf": true,
+    "secretScanPassed": true,
+    "fullApplicationBuildRun": false,
+    "allNewTextFilesLf": 19,
+    "workingBytesEqualLfNormalizedBytes": 19,
+    "savedTargetsLfByteHash": "4ea6decdd4a8ac4039d08ee01d025f712c1197e8b2e6fc05780a93420e035f8b"
+  },
+  "trainerIdentity": {
+    "unnumbered": true,
+    "printedCollectorNumber": null,
+    "printedNationalDex": null,
+    "pokemonIdentityAsserted": false,
+    "borrowedHpStageDexOrAttackFieldsRejected": true,
+    "completeJapaneseRulesArtistSubtypeArtSetMarkReferenceBridgeVerified": 5,
+    "historicalNullSelectionsAndHoldsUnchanged": true,
+    "canonicalArtistAndBodyMissingUnchanged": true,
+    "oldRodPrintedTitle": "ボロのつりざお",
+    "oldRodWrongPageLabelRetained": "オールドロッド",
+    "rocketHideoutActualEffect": "Dark/わるい Pokemon HP+20 only; additional raw Team Rocket category absent from actual printed effect."
+  },
+  "provenance": {
+    "providerIdentityProjection": "unchanged derived exactmetadata7 identity projection, explicitly labelled",
+    "fullProviderJson": "retained offline only; distinct canonical JSON hash",
+    "rawHtml": "unchanged local capture; separate byte SHA",
+    "rawSourceAndActualSignaturesUnchanged": true,
+    "independentSelection": "remove only named local path/absolutePath fields; pin raw private and public projection hashes separately",
+    "noPublicLocalPaths": true,
+    "noPublicCommercialRawFields": true,
+    "referenceImages": "identity comparison only, never production source",
+    "sourceEvidence": {
+      "approvedProjection": "301f506f278d6558e8948e73b3922f7a9991d439cd8495fc31a3b3a4fce46bc9",
+      "decision": "a8611b59bf68d9a3c76107e9b7dc2bcd56f8c42858eed643208673d5d363627a",
+      "independentSelection": "468eee32291b9a36b950974671c0d8094d9d1be855fbab204a5463604d2d781d",
+      "independentAcceptance": "d5694683f9ea22b1e441b4231fc969153e3079143d1117213f85f8e534b857a8",
+      "referenceHandoff": "01da4d6d0e2ebe40d1b2225119e70b09bbb09a49516e607fa4327210fdabceaa",
+      "metadata": "f55479b730d141ecaa1af14e8dd1e2ca7eabb00c3da06cb806039d3e9d879eea",
+      "historicalHeld": "909aeadc4233f71fcd4f4c41a2fcaffbcb1aede6e5b9d0efcde960b5e0d11bad"
+    }
+  },
+  "pipeline": {
+    "sharp": "0.35.5",
+    "sha256": "642eb05d57c921901cfa6241e1f0d32a71da602ea3594693b8d63247a05b0bb0",
+    "enlargement": false,
+    "originalBytesChanged": false,
+    "hd720x1008Claimed": false
+  },
+  "preservation": {
+    "productionBeforeRows": 26,
+    "expectedProductionAfterRows": 36,
+    "stagingBeforeAfterRows": 23,
+    "existingSetAssets": 2,
+    "existingLinks": {
+      "production": 2,
+      "staging": 0
+    },
+    "completeSourceRowGuard": true,
+    "productionSourcePolicy": {
+      "code": "scrydex",
+      "active": false,
+      "licence_status": "under_review"
+    },
+    "productionNewSources": 0,
+    "stagingOnlySourceFixtureRolledBack": true,
+    "oldImmutableAssetsRetained": true,
+    "rollbackHidesOnlyNewAssets": true
+  },
+  "limits": {
+    "vendorLicenceVerified": false,
+    "sourcewideApproval": false,
+    "physicalEditionVerified": false,
+    "physicalFinishVerified": false,
+    "newProviderRequests": 0,
+    "databaseRequests": 0,
+    "productionWrites": 0,
+    "gitMutations": 0,
+    "independentFrozenReview": "pending release owner",
+    "hostedChecks": "pending release owner",
+    "protectedWorkflowDispatch": "not performed",
+    "configuredApiVerification": "not performed"
+  },
+  "files": [
+    {
+      "file": "tools/artwork-awakening-trainer5-push-20261014/.gitattributes",
+      "bytes": 14,
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9"
+    },
+    {
+      "file": "tools/artwork-awakening-trainer5-push-20261014/.gitignore",
+      "bytes": 19,
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793"
+    },
+    {
+      "file": "tools/artwork-awakening-trainer5-push-20261014/README.md",
+      "bytes": 4440,
+      "sha256": "73d53661a6c745190b6dee198498358fcdbc76691328ed91d9145aa6cec48beb"
+    },
+    {
+      "file": "tools/artwork-awakening-trainer5-push-20261014/approval.json",
+      "bytes": 1595,
+      "sha256": "35d222f6c256fc8907e0cf2badaeafefb7a29056ea60e4d3d8db443791e37d8d"
+    },
+    {
+      "file": "tools/artwork-awakening-trainer5-push-20261014/before-query.sql",
+      "bytes": 3983,
+      "sha256": "901ac54f64cd3cb5b59bbf4e67379d81cd2d9aad8b1dc31b67f3062b13ccded6"
+    },
+    {
+      "file": "tools/artwork-awakening-trainer5-push-20261014/download-package.py",
+      "bytes": 6092,
+      "sha256": "b1c3a4bc5ee965cfa86c3b3e0fc08ec088671a4a948c8460b81b800364a12c17"
+    },
+    {
+      "file": "tools/artwork-awakening-trainer5-push-20261014/download-package.test.py",
+      "bytes": 6940,
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41"
+    },
+    {
+      "file": "tools/artwork-awakening-trainer5-push-20261014/freeze-inputs.json",
+      "bytes": 4624,
+      "sha256": "886b76729826bb83708b6aade12d45731f61fd642997e10e0301a05e9e65cbdd"
+    },
+    {
+      "file": "tools/artwork-awakening-trainer5-push-20261014/freeze-local.mjs",
+      "bytes": 9942,
+      "sha256": "2ffa0694979f54f23f503bc572767de03f416c7a7561575b591603425cad3e29"
+    },
+    {
+      "file": "tools/artwork-awakening-trainer5-push-20261014/frozen.mjs",
+      "bytes": 24398,
+      "sha256": "1fd9caa1b95bf3583dc5ad61da9c65b27ed89427dc4a994a999994b4dc7a9573"
+    },
+    {
+      "file": "tools/artwork-awakening-trainer5-push-20261014/identity-table.json",
+      "bytes": 4444,
+      "sha256": "95b7016423012664c70a231a663bc596a89730055ff5721cd1abd9bb487ee0f7"
+    },
+    {
+      "file": "tools/artwork-awakening-trainer5-push-20261014/plan.json",
+      "bytes": 172653,
+      "sha256": "1adf9a3944f5b759f0d890307698f360608146a02f91a983dd8543814a6eba4e"
+    },
+    {
+      "file": "tools/artwork-awakening-trainer5-push-20261014/publish.mjs",
+      "bytes": 4967,
+      "sha256": "2c40af85fd74df6435198929e25231983b1ef5c6ac88bdfa41a561ef01eda338"
+    },
+    {
+      "file": "tools/artwork-awakening-trainer5-push-20261014/publish.test.mjs",
+      "bytes": 22312,
+      "sha256": "821ffb2c65812a0e3bcb93ea44fe78f4ca5b243f742017f5683a70d67a181779"
+    },
+    {
+      "file": "tools/artwork-awakening-trainer5-push-20261014/saved-targets.json",
+      "bytes": 2149,
+      "sha256": "4ea6decdd4a8ac4039d08ee01d025f712c1197e8b2e6fc05780a93420e035f8b"
+    },
+    {
+      "file": "tools/artwork-awakening-trainer5-push-20261014/source-proof.mjs",
+      "bytes": 15487,
+      "sha256": "ce9e0c94d86f1339f90ec118f699f15e012c81a12bba193f4c5913026002361e"
+    },
+    {
+      "file": "tools/artwork-awakening-trainer5-push-20261014/verify-packages.mjs",
+      "bytes": 1495,
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841"
+    }
+  ],
+  "workflow": {
+    "file": ".github/workflows/artwork-awakening-trainer5-production.yml",
+    "bytes": 3671,
+    "sha256": "e1ef6c9ac89bd4efda7481fe617ad38b86a7a4f54ca7cab17dc0361444427c65"
+  },
+  "continuation": [
+    {
+      "file": "awakening-trainer5-prepare-source-input.mjs",
+      "bytes": 9892,
+      "sha256": "a44453c7733562b2f427468091987a60d7d21d9046d9c042c2d48bfc9ce1c9c7"
+    },
+    {
+      "file": "awakening-trainer5-package-fronts.mjs",
+      "bytes": 6524,
+      "sha256": "11c5f43b7fae0c81dcfe981b5b086075f604a13b43601603819307d4ebcc4978"
+    },
+    {
+      "file": "awakening-trainer5-freeze-package.py",
+      "bytes": 2995,
+      "sha256": "137d57ad2cf5004bc1b8eb7f7107dfbd1f7cd909dbe6c9e6775b4c77d79ca7dc"
+    },
+    {
+      "file": "awakening-trainer5-validate-source-contract.mjs",
+      "bytes": 3679,
+      "sha256": "f9421a1d69d9775be873e9faa91bcb077222f0c65b5342e1df7dd53e16628a13"
+    },
+    {
+      "file": "awakening-trainer5-validate-config.mjs",
+      "bytes": 2757,
+      "sha256": "af2387946f29f2177e01be4fc8ed994bf41fd845ec2e526781b77a17ea973600"
+    },
+    {
+      "file": "awakening-trainer5-fronts-source-manifest.json",
+      "bytes": 162565,
+      "sha256": "123b451711828a642beb2c606f0510cc6689314e6f8dca9298a46c7c4b535882"
+    },
+    {
+      "file": "awakening-trainer5-fronts-package-receipt.json",
+      "bytes": 6161,
+      "sha256": "0fcc94cf7c399853c9adaca55756d457e736f49a0ec1cfe8aef98e5fd54e8f0e"
+    }
+  ],
+  "unchangedDependencies": [
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 9031,
+      "sha256": "5524305ba4bd6a0f3867ea2c097c57fb0d610e27ef1d9d64529b64e9c67249de"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/metadata-guard.mjs",
+      "bytes": 4018,
+      "sha256": "cca5354822fe11c007308f7d22ebf84649d2374619e0dd049c7347a9db9e116f"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/publish.mjs",
+      "bytes": 5885,
+      "sha256": "8451746bb6e188f56c5be31064742eaeecdc2f2c6d6e27cb31ab5c7227af6d1f"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "tools/artwork-next-push-20261013/frozen.mjs",
+      "bytes": 7732,
+      "sha256": "3e14eb76a012116492075328c50e6c5907f712004da02d4d3dae541d2617a95b"
+    },
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 30117,
+      "sha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24425,
+      "sha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 15024,
+      "sha256": "1d168e5407a5bdc6e027f58991de58a0664576d7c917d5b219fa13f9af4a1d0a"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/download-package.py",
+      "bytes": 5489,
+      "sha256": "53f1114f25bd995b4f05d9b2d3adad7ae2dadc85b4b13f038a84bcc5e7d6b09f"
+    }
+  ],
+  "lineEndingCorrection": {
+    "previousUncommittedSavedTargetHash": "9e0823af858b7349701233a2f129da871cb7d63123def12136d6af3a7e516d1f",
+    "correctedLfSavedTargetHash": "4ea6decdd4a8ac4039d08ee01d025f712c1197e8b2e6fc05780a93420e035f8b",
+    "all19TextFilesNormalizedBeforeRefreeze": true,
+    "planApprovalFrozenDownloaderAndValidationPinsRebuilt": true,
+    "regressionChecksAll19TextFiles": true,
+    "rerunNodeTests": 14,
+    "rerunArchiveSafetyTests": 6,
+    "imagePipelineOrArchiveRegenerated": false,
+    "gitIndexUntouched": true
+  }
+}

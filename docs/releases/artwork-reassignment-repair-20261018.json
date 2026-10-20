@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-18T19:33:01.184Z",
+  "issueId": "JUNGLE-WARM-01",
+  "sourceRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
+  "scope": "Cached catalogue artwork in adapter, saved binder, Set and Card Detail. Same immutable object reassigned to a different exact variant must stop appearing on the previous printing/variant.",
+  "cause": "Preferred merging and legacy image-only merges retained the old nonempty image after an approved exact reassignment. Serialized saved recovery lost the prior binding comparison, and imageful cached Card Detail skipped optional revalidation.",
+  "change": "Use fresh approved exact same-asset/scope evidence to invalidate only the contradicted catalogue image. Preserve useful facts and valid artwork through absent, failed, denied and unrelated reads. Revalidate eligible imageful canonical Card Detail in a bounded background read.",
+  "safeguards": [
+    "Preserve canonical default, alias/native status, finish, names and ownership facts.",
+    "Preserve quantities, prices, notes and distinct captured photos.",
+    "Do not serialize authority; saved artwork supplies only a previously observed binding after current exact identity validation.",
+    "Keep current-route/account generation and abort guards, including A→B→A and unmount."
+  ],
+  "sourceFiles": [
+    "lib/stackrPreferredSetArtwork.ts",
+    "lib/stackrDomainAdapter.ts",
+    "lib/binders.ts",
+    "lib/stackrSetRetrieval.ts",
+    "lib/pokemonTcg.ts",
+    "app/card/[id].tsx"
+  ],
+  "regressions": [
+    "scripts/test-preferred-set-artwork.ts",
+    "scripts/test-saved-binder-artwork-recovery.ts",
+    "scripts/test-set-artwork-identity-reassignment.ts",
+    "scripts/test-artwork-loading-recovery.ts",
+    "scripts/test-uncached-card-facts-runtime.ts"
+  ],
+  "validation": {
+    "narrowGroupsReported": 11,
+    "typecheck": "PASS",
+    "lint": {
+      "errors": 0,
+      "existingWarnings": 8
+    },
+    "wiredMasterArtworkGroups": 9,
+    "independentReview": "PASS_SOURCE_TEST_ONLY",
+    "priorReviewFindingsResolved": [
+      "JUNGLE-WARM-SAVED-01",
+      "JUNGLE-WARM-CARD-02"
+    ],
+    "unsignedIos": {
+      "source": "d0cf371080936ff538e86ac8883fed6af4d1200e",
+      "tree": "ca671a57f5f4841a12688aae1af2c7192845e08f",
+      "bundle": {
+        "path": "_expo/static/js/ios/entry-079ebd166aa22cedb2e79265d73810d8.hbc",
+        "sha256": "3d1e1c50bb0a8e7cecd295326caee48a3c3013c72fc1d7671341a1a3fe1325c3",
+        "bytes": 11796288
+      },
+      "uniquePromisedAssets": 74,
+      "exactExportedAssetBytesVerified": true
+    },
+    "postIntegrationHarnesses": {
+      "files": [
+        {
+          "file": "scripts/test-search-artwork-batching.ts",
+          "sha256": "1c44b8b1a0182c4847bbfa33860a7fc0bf6fa5678d8dc42bc82797cd95a3ad82"
+        },
+        {
+          "file": "scripts/test-server-name-delivery.mjs",
+          "sha256": "c41af5ab812269c811c7945ed8ea462d3c1e0c60ebee99ba7eb9b789c6e8c302"
+        }
+      ],
+      "feedbackRecovery": "PASS:6groups",
+      "serverNameDelivery": "PASS",
+      "rootRepeatedTypecheck": "PASS",
+      "rootRepeatedLint": {
+        "errors": 0,
+        "existingWarnings": 8
+      },
+      "assertionsUnchanged": true,
+      "realHelpersInjected": true,
+      "evidence": {
+        "privatePath": "evidence/consolidation-20261018/jungle-warm-reassignment-20261018/v2/post-integration-harness-validation.json",
+        "sha256": "f47dd4d9425c256a36ed52c263649fcdb7a5ad8799b2aac8fc9cea35fb0b3552"
+      }
+    },
+    "cacheMinimumHarness": {
+      "file": "scripts/test-pokemon-set-card-cache-minimum.ts",
+      "sha256": "e2eda3f774eb066f8ead53324a6c2f0ddbc95da220e928e8d539775f353958e4",
+      "assertionsUnchanged": true,
+      "realHelpersInjected": true,
+      "binderCatalogueGroups": 6,
+      "rootTypecheck": "PASS",
+      "rootLint": {
+        "errors": 0,
+        "existingWarnings": 8
+      },
+      "independentReview": "PASS_TEST_ONLY",
+      "priorHostedFailurePreserved": true,
+      "hostedRecheck": "PASS_AT_9b75d63",
+      "evidence": {
+        "privatePath": "evidence/consolidation-20261018/jungle-warm-reassignment-20261018/v2/cache-minimum-harness-validation.json",
+        "sha256": "cb7a3fe7122dc497de851f2acc08e47b9fa1a5bfff8a2ee8fc477e56a4a04396"
+      }
+    },
+    "englishIdentityHarness": {
+      "file": "scripts/test-english-set-identity.ts",
+      "sha256": "09ea57b1fd668885116e5d2f135ff8d02cc753a52aa69c93ef06f4658c94bc4a",
+      "assertionsUnchanged": true,
+      "realHelpersInjected": true,
+      "englishSetVisibilityGroups": 3,
+      "otherWholeAdapterVmCompatibilityGroups": 3,
+      "rootTypecheck": "PASS",
+      "rootLint": {
+        "errors": 0,
+        "existingWarnings": 8
+      },
+      "independentReview": "PASS_TEST_ONLY",
+      "priorHostedFailurePreserved": true,
+      "hostedRecheck": "PASS_AT_9b75d63",
+      "evidence": {
+        "privatePath": "evidence/consolidation-20261018/jungle-warm-reassignment-20261018/v2/english-harness-validation.json",
+        "sha256": "a905cf21d87d23f6b67fa2598d0392fcce878c1bf10a382b7d16701551ee2571"
+      }
+    },
+    "currentHostedChecks": {
+      "sourceHead": "9b75d6357259c8f8159b5fc3967d0e03a10a11a7",
+      "success": 10,
+      "skipped": 2,
+      "skippedNames": [
+        "canary-api-evidence",
+        "release-candidate-gate"
+      ],
+      "evidence": {
+        "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-9b75d63.json",
+        "sha256": "c6ad9110f7f6bab48542912e2385b5c23269ca5fbc3ef35147d69b6921a398a4"
+      }
+    }
+  },
+  "capturedStormReplay": {
+    "printings": 113,
+    "usableTileAndFullInspectionReferences": 113,
+    "manifestRequests": 0,
+    "offlineReplay": true,
+    "expectedOwnershipAndNotesUnchanged": true,
+    "phoneVerified": false
+  },
+  "evidence": {
+    "handoff": {
+      "privatePath": "evidence/consolidation-20261018/jungle-warm-reassignment-20261018/v2/handoff.json",
+      "sha256": "58729d424e46840b624449a96939b1c19990371b3e18d53521ff43cadba560bb"
+    },
+    "rootChecks": {
+      "privatePath": "evidence/consolidation-20261018/jungle-warm-reassignment-20261018/v2/root-validation.json",
+      "sha256": "43520c16d4d247bac9e42936b1bac0ece6d6b333e06acac81313e765e3588e5e"
+    },
+    "independentReview": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/jungle-warm-review-v2.json",
+      "sha256": "0e98a2fcd9e2f2c53c6086779b11cdf84ebececa8a40338f35cdef7e2247b3c1"
+    },
+    "unsignedExport": {
+      "privatePath": "evidence/consolidation-20261018/jungle-warm-reassignment-20261018/v2/ios-export-asset-verification.json",
+      "sha256": "8fe59a0e4adab3be3ffc57f496417627eb4cd10e2725c1e6002ef82c586ca1f4"
+    },
+    "currentStormReplay": {
+      "privatePath": "evidence/consolidation-20261018/remaining-retrieval-20261018/storm-real-client-replay-warm-v2.json",
+      "sha256": "d5a0148eb7c5f9972643801296a5ca430e9c0c5986db99d29ea4c3ed578e71b6"
+    }
+  },
+  "liveData": "Jungle first-edition object remains linked to normal in production; the separate one-association data proposal is not executed. Normal artwork will remain explicitly missing after that future exact correction until a correct normal source exists.",
+  "delivery": {
+    "implemented": true,
+    "tested": true,
+    "independentlyReviewed": true,
+    "committed": true,
+    "unsignedExportVerified": true,
+    "merged": false,
+    "deployed": false,
+    "nativeSigned": false,
+    "published": false,
+    "phoneVerified": false
+  },
+  "testFlightState": "held_until_repairs_verified"
+}

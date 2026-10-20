@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 8,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "en",
+  "source_counts": {
+    "bulbapedia": 8
+  },
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "underlying_copyright_licence_verified": false,
+  "owner_website_permission_attested": true,
+  "approved_at": "2026-10-14",
+  "cohort_sha256": "1ca4f1f3243629478779473b6ded41d9ef03e0731bb817fa4253406eff0ff362",
+  "finite_decision_sha256": "0d85c039a030d779b8721b4d34c77d94cafe70166bf258a228b8f64aeb2f77df",
+  "owner_permission_attestation_sha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+  "reconciliation_sha256": "014bce750f1a96d86b08168285f6e9458b12fa69afee5d615b5b70c6513504a8",
+  "signature_clarification_sha256": "b696ffda1e03e7ba1847e3f3a7cab6eb8492fb51107559ce8ea23f45b25dc642",
+  "owner_instructions": [
+    "all the missing images i gave links to",
+    "i have permission from the 4 websites - all the links i sent shopuld bridge majoprity of the missings cards"
+  ],
+  "scope": "Store, resize and display exactly eight existing English unnumbered My First Battle originals and twenty-four derivatives after the earlier fifteen are verified live. Historical mistaken stage/frame holds are corrected by separately inspected unchanged originals and append-only receipts. Exeggutor alias6 remains excluded for verified HP120 versus independent metadata90; ten ambiguous source choices remain excluded. Internal aliases are not printed collector numbers or National Dex numbers. Preserve the full existing inactive under_review Bulbapedia/Scrydex source rows and every old metadata/asset/link row; no new production source insertion. Staging fixtures roll back. No independently verified vendor/copyright licence, physical edition/finish or source-wide activation is asserted."
+}

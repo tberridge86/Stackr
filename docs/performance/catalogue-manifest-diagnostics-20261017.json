@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-17T12:22:55.502Z",
+  "base": "dcee48a2bad9f0f73f56d0d5c9f6025bb990fe92",
+  "branch": "codex/catalogue-manifest-diagnostics-20261017",
+  "problem": "The deployed server passes runtime health/source but /v1/catalog/manifest returns504. Saved evidence does not identify which of its3 required metadata reads stalls.",
+  "purpose": "Add safe request-linked complete-query timing to distinguish the3 essential metadata phases. This is diagnostic visibility, not a database fix or proof of recovery.",
+  "phaseNames": [
+    "manifest_versions",
+    "manifest_latest_change",
+    "manifest_languages"
+  ],
+  "implementation": [
+    "Only the3 existing manifest Promise.all members enter a fixed-label phase scope: manifest_versions, manifest_latest_change, manifest_languages. Existing query columns/filters/order/limits/parallelism remain unchanged.",
+    "Each phase copies request context and cancellation signal, adds a child span, and emits started plus one success/error/cancelled completion event. Terminal elapsed time covers the complete query including SDK retries/body decoding.",
+    "Existing supabase_rest spans gain phase and safe request_id only inside a recognised phase scope; their existing duration remains fetch-to-headers, not a full-query measurement.",
+    "New phase/SDK telemetry includes no SQL, URL, headers, raw errors, card identities or personal records. Existing route request/error logging is outside this change.",
+    "Only canonical UUID request metadata is copied/logged, lowercase. Non-UUID IDs are omitted from new telemetry while HTTP request/response IDs remain unchanged.",
+    "Phase and SDK logging are best effort: logger failure cannot alter results or replace the original query exception. No timers, retries, buffering queues, provider calls or storage writes added."
+  ],
+  "correlation": {
+    "checkToPhase": "Root-generated smoke UUID -> existing req.stackrRequestId -> safe phase request_id. trace_id also joins the existing backend request log.",
+    "requestToPhaseSpan": "Phase parent_span_id equals the backend request span_id.",
+    "phaseToSdkSpan": "SDK parent_span_id equals the phase span_id; trace_id/request_id/phase match.",
+    "bound": "At most6 NEW phase events per backend-origin manifest request. Gateway retries can create more than one origin request sharing a request UUID; distinguish those requests by the request/phase parent span. Existing SDK log count/retry policy is unchanged."
+  },
+  "smokeCorrelation": {
+    "scope": "Only --fail-fast receipts gain generated requestId; default receipt shape and all check/deadline/stop policies remain.",
+    "proof": "Actual CLI receipts exactly match loopback server-observed generated UUIDs across success, status/body/transport/metadata/request-ID failures and held-body cleanup.",
+    "baseline": "RED without generated-ID receipt; final23/23GREEN using bundled WindowsNode24.19 PATH.",
+    "runtimeCaveat": "Two intervening npm runs resolved the systemNode24.15 and failed on existing default forced-exit Windowslibuv behavior. Preserved raw outputs; no global exit-policy change introduced. Final bundled24.19 lane passes."
+  },
+  "validation": [
+    {
+      "command": "node --test backend/test/catalogue-manifest-observability.test.mjs",
+      "exitCode": 0,
+      "tests": 7,
+      "passed": 7,
+      "output": "manifest-diagnostics-focused-green.txt"
+    },
+    {
+      "command": "node --test backend/test/catalogue-manifest-observability.test.mjs backend/test/public-catalogue-cancellation.test.mjs",
+      "exitCode": 0,
+      "tests": 20,
+      "passed": 20,
+      "output": "manifest-diagnostics-cancellation-green.txt"
+    },
+    {
+      "command": "node scripts/test-quality-observability.mjs",
+      "exitCode": 0,
+      "output": "manifest-diagnostics-observability-green.txt"
+    },
+    {
+      "command": "npm run test:stackr-api-v1",
+      "exitCode": 0,
+      "output": "manifest-diagnostics-api-v1-green.txt",
+      "note": "Existing ExpoModulesCoreJSLogger diagnostic appears in cache-recovery harness; command and assertions pass."
+    },
+    {
+      "command": "npm run typecheck:backend",
+      "exitCode": 0,
+      "output": "manifest-diagnostics-backend-typecheck.txt"
+    },
+    {
+      "command": "node --check for the2 changed runtime modules and new test",
+      "exitCode": 0
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0,
+      "note": "Parent-owned docs produce existing LF/CRLF notices; no whitespace error."
+    },
+    {
+      "command": "npm run test:deployment-commerce-disabled-smoke (bundledNode24.19 first on PATH)",
+      "exitCode": 0,
+      "tests": 23,
+      "passed": 23,
+      "output": "manifest-diagnostics-smoke-correlation-node2419-green.output.txt"
+    }
+  ],
+  "workingCopySha256": {
+    "backend/lib/traceContext.js": "676d73b6b757a13435c209555bad11706634d47c6607bbaea66922256d24eb31",
+    "backend/lib/stackrApiV1.js": "55006600770e0e9f68921ba1e9d1275f3536a140dba1aa7a8f14bb77a983f88f",
+    "backend/test/catalogue-manifest-observability.test.mjs": "bb48c24cfb31bb0729630cedda39b7ad262aacc6b4874dd1cfdec5a5bf960376",
+    "scripts/deploy/smoke.mjs": "1f6acca09223d031ae81c08dccd81fe63d2df4a33600ffc7ded480e787003655",
+    "scripts/test-deployment-commerce-disabled-smoke.mjs": "62b267f9ed24e6b3f109667d7d83503bebbe3af968fc43b541d7e183397c4b19"
+  },
+  "independentReview": {
+    "status": "ACCEPTED",
+    "codeFiles": 5,
+    "evidenceDocuments": 4,
+    "backendCasesIndependentlyPassed": 20,
+    "smokeCasesIndependentlyPassed": 23,
+    "extraSdkRetryProof": "Actual installed-SDK503→200 retry gives2 header spans linked to one phase;6phaseevents total; full retry elapsed included; subsequent nonmanifest read has no phase/request_id; no rawerror sentinel."
+  },
+  "delivery": {
+    "sourcePrepared": true,
+    "sourceReviewed": true,
+    "merged": false,
+    "deployed": false,
+    "newLiveApproval": false,
+    "native": "HOLD"
+  },
+  "limits": [
+    "Local Windows bundled Node24 evidence; production workflow target remains Node22. Hosted final-head checks are not established by this receipt.",
+    "This identifies an application dependency phase if separately released and observed. It cannot distinguish database planning/locks/I/O/pool waits or establish the production root cause or recovery.",
+    "No deployment/merge/push/commit, provider/public probe, database/log query, native/OTA/EAS, price/catalogue mutation or spending. A new matching approval is required for any live diagnostic release.",
+    "Root-owned docs/queue and smoke correlation edits were preserved. No files outside assigned ownership changed by this agent."
+  ],
+  "nextAction": "Freeze reviewed candidate in draftPR and verify fresh exact-head hosted CI. A new server diagnostic release and single filtered app-log read require separate matching owner approval."
+}

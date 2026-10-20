@@ -186,7 +186,7 @@ export async function haptic(event: StackrHapticEvent, isCurrent: () => boolean 
 export const stackrHaptics = {
   selection: () => haptic('selection'),
   cardPreview: () => haptic('card_preview'),
-  cardInspection: () => haptic('card_inspection'),
+  cardInspection: (isCurrent?: () => boolean) => haptic('card_inspection', isCurrent),
   cardFoilCrossing: (isCurrent?: () => boolean) => haptic('card_foil_crossing', isCurrent),
   scannerFrameReady: () => haptic('scanner_frame_ready'),
   scannerCaptureLocked: () => haptic('scanner_capture_locked'),
