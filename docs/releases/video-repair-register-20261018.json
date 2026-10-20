@@ -121,7 +121,7 @@
       },
       "qualification20261020": {
         "baseline": "Partial Home valuation and unavailable duplicate prices",
-        "sourceOrDelivery": "Coverage/freshness and exact response identity guards merged; selective pricing v3 under validation. PR418 classified catalogue read repair is now reviewed, tested and merged; live delivery remains separate.",
+        "sourceOrDelivery": "Coverage/freshness and exact response identity guards merged. PR418 classified catalogue read repair is now reviewed, tested and merged; live delivery remains separate.",
         "remainingGap": "Stored evidence/live diagnostics and exact owned totals reconciliation.",
         "phoneClosed": false
       },
@@ -1455,7 +1455,7 @@
       },
       "qualification20261020": {
         "baseline": "Search cards and listing media show placeholders",
-        "sourceOrDelivery": "Gateway circuit/batched manifests/listing media compatibility/warm reassignment repairs delivered.",
+        "sourceOrDelivery": "Gateway circuit repair deployed. Batched manifests, listing-media compatibility and warm artwork reassignment app source merged; native delivery and phone verification remain pending.",
         "remainingGap": "Exact recorded listing/finalPikachu identity/live media/signed phone rendering.",
         "phoneClosed": false
       }
@@ -2376,7 +2376,7 @@
       }
     ],
     "pr419ApplicableChecksPassed": 8,
-    "pr419MainPushChecks": "Pending when authored; verify exact merged main before release.",
+    "pr419MainPushChecks": "Both exact-main push workflows passed: Owner Pricing Identity Tests39398997423 and Stackr Platform CI39398997527.",
     "phoneIssuesClosed": 0,
     "totalIssues": 23,
     "testFlight": "HELD",
@@ -2399,7 +2399,7 @@
       "binderWarmCompleteNetworkMsAtMost": 500,
       "minimumObservationsPerJourneyAndCacheConditionForP95": 100,
       "clock": "Actual user action including debounce; device/build/network/cache/failures/Retry required.",
-      "diagnosticLimits": "Capped 256 local events; export before eviction. JavaScript facts/viewability are separate from native paint and felt haptics.",
+      "diagnosticLimits": "Capped 256 journey observations; export before eviction. JavaScript facts/viewability are separate from native paint and felt haptics.",
       "phoneSamplesCollected": 0,
       "passingP95Claimed": false
     },
