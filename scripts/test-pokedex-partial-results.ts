@@ -5,6 +5,7 @@ import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
 import { readOptionalCatalogueEnrichment } from '../lib/optionalCatalogueEnrichment';
 import * as retrieval from '../lib/performance';
+import { withPersonalDataReadTimeout } from '../lib/personalDataRead';
 
 // Execute the complete screen with fixture hooks/sources. FlatList's empty
 // component is inspected only when its real data is empty; a hidden empty
@@ -169,6 +170,7 @@ function fallbackService(options: { failFirstCanonical?: boolean; pendingPrices?
       assetManifest: async () => { artworkReads++; if (options.failArtwork) throw new Error('fixture artwork failure'); return { data: { assets: [] }, meta: {} }; },
     } },
     './pokedexCollectionCore': {},
+    './personalDataRead': { withPersonalDataReadTimeout },
   };
   const exports: any = {};
   const servicePath = 'lib/pokedexCollection.ts';

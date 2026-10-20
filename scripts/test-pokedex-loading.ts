@@ -3,6 +3,9 @@ import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
 import * as ownership from '../lib/pokedexCollectionCore';
+import { withPersonalDataReadTimeout } from '../lib/personalDataRead';
+
+const ownershipId = (value: number) => `00000000-0000-4000-8000-${String(value).padStart(12, '0')}`;
 
 let clock = 100_000;
 class FixtureDate extends Date { static now() { return clock; } }
@@ -40,6 +43,7 @@ const query = (table: string) => {
     } else if (column === 'id') assert.ok(values.length <= 100, 'Binder mutation filters remain bounded'); return chain; },
     order: (column: string, options: any) => { assert.equal(column, 'id'); assert.equal(options.ascending, true); return chain; },
     limit: (size: number) => { limit = size; return chain; },
+    abortSignal: () => chain,
     gt: (column: string, value: string) => { assert.equal(column, 'id'); after = value; return chain; },
     update: () => { throw new Error('Pokédex markers must never change binder or physical inventory'); },
     upsert: (value: any) => { assert.equal(table, 'user_pokedex_cards'); assert.equal(value.user_id, 'owner-a'); writes.push(`${table}:upsert`); return chain; },
@@ -50,9 +54,9 @@ const query = (table: string) => {
       data: ownershipFixture ? (ownershipFixture[table] ?? [])
         .filter((row) => (!after || row.id > after) && (!binderIds || binderIds.includes(row.binder_id))
           && equalities.every(([key, value]) => !(key in row) || row[key] === value)).slice(0, limit)
-        : table === 'binders' ? [{ id: 'binder-a' }]
-        : table === 'user_card_variants' ? physical ? [{ id: 'variant-a' }] : [] : [],
-      error: failOwnershipPage && table === 'user_card_variants' && after?.endsWith('0499')
+        : table === 'binders' ? after ? [] : [{ id: ownershipId(1), user_id: 'owner-a' }]
+        : table === 'user_card_variants' ? physical ? [{ id: ownershipId(2), user_id: 'owner-a', card_id: 'card-a', set_id: 'set-a' }] : [] : [],
+      error: failOwnershipPage && table === 'user_card_variants' && after === ownershipId(20_499)
         ? new Error('Ownership page unavailable') : null,
     }).then(resolve); },
   };
@@ -90,10 +94,11 @@ const mocks: Record<string, unknown> = {
     return { data: { assets: ids.map((cardId) => ({ assetId: `asset-${cardId}`, assetType: 'card_image', cardId: null, variantId: cardId.replace(/^card-/, 'variant-').replace(/^visible-/, 'visible-variant-'), deliveryUrl: `https://example.test/${cardId}.webp` })) }, meta: {} };
   } } },
   './pokedexCollectionCore': ownership,
+  './personalDataRead': { withPersonalDataReadTimeout },
 };
 runInNewContext(ts.transpileModule(readFileSync('lib/pokedexCollection.ts', 'utf8'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
-}).outputText, { exports, Date: FixtureDate, console,
+}).outputText, { exports, Date: FixtureDate, console, AbortController,
   require: (name: string) => { assert.ok(name in mocks, `Unexpected dependency ${name}`); return mocks[name]; } });
 const tick = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
 
@@ -134,10 +139,10 @@ async function testReviewedSpeciesAliasesAndOwnership() {
     ['default', { id: 'default', name: 'Deoxys', language: 'en' }],
   ]);
   ownershipFixture = {
-    binders: [{ id: 'binder-a', user_id: 'owner-a' }],
-    user_card_variants: [{ id: 'physical-female', card_id: 'female', set_id: 'set-a' }],
-    binder_cards: [{ id: 'binder-male', binder_id: 'binder-a', card_id: 'male', set_id: 'set-a', owned: true }],
-    user_pokedex_cards: ['alolan-ja', 'alolan-zh', 'default'].map((card_id) => ({ id: `marker-${card_id}`, card_id, set_id: 'set-a' })),
+    binders: [{ id: ownershipId(1), user_id: 'owner-a' }],
+    user_card_variants: [{ id: ownershipId(2), user_id: 'owner-a', card_id: 'female', set_id: 'set-a' }],
+    binder_cards: [{ id: ownershipId(3), binder_id: ownershipId(1), card_id: 'male', set_id: 'set-a', owned: true }],
+    user_pokedex_cards: ['alolan-ja', 'alolan-zh', 'default'].map((card_id, index) => ({ id: ownershipId(4 + index), user_id: 'owner-a', card_id, set_id: 'set-a' })),
   };
   const names = await exports.fetchOwnedPokemonNameSet();
   for (const [route, expected] of [['nidoran-f', true], ['nidoran-m', true], ['raichu-alola', true],
@@ -215,9 +220,9 @@ async function testOwnedSpeciesEligibility() {
   const writesBefore = writes.length;
   for (const source of ['user_card_variants', 'binder_cards', 'user_pokedex_cards']) {
     for (const scenario of scenarios) {
-      const row = { id: `holding-${source}`, card_id: printingId, set_id: 'exact-set',
-        user_id: 'owner-a', binder_id: 'binder-a', owned: true };
-      ownershipFixture = { binders: [{ id: 'binder-a', user_id: 'owner-a' }],
+      const row = { id: ownershipId(2), card_id: printingId, set_id: 'exact-set',
+        user_id: 'owner-a', binder_id: ownershipId(1), owned: true };
+      ownershipFixture = { binders: [{ id: ownershipId(1), user_id: 'owner-a' }],
         user_card_variants: [], binder_cards: [], user_pokedex_cards: [], [source]: [row] };
       cardNameRows = new Map([[printingId, { id: printingId, name: '瑪俐', english_display_name: 'Pikachu',
         language: 'zh-tw', ...scenario.fields }]]);
@@ -251,17 +256,17 @@ async function run() {
   assert.equal(writes.length, 0, 'Physical ownership blocks all manual/binder removals');
   assert.ok(filters.some(([key, value]) => key === 'user_id' && value === 'owner-a'));
   pages.length = 0;
-  ownershipFixture = Object.fromEntries(['binders', 'user_card_variants', 'binder_cards', 'user_pokedex_cards'].map((table) => [table,
-    Array.from({ length: 1001 }, (_, i) => ({ id: `${table}-${String(i).padStart(4, '0')}`,
-      card_id: `${table}-card-${i}`, set_id: 'set-a', binder_id: `binders-${String(i).padStart(4, '0')}`, owned: true })),
+  ownershipFixture = Object.fromEntries(['binders', 'user_card_variants', 'binder_cards', 'user_pokedex_cards'].map((table, tableIndex) => [table,
+    Array.from({ length: 1001 }, (_, i) => ({ id: ownershipId((tableIndex + 1) * 10_000 + i), user_id: 'owner-a',
+      card_id: `${table}-card-${i}`, set_id: 'set-a', binder_id: ownershipId(10_000 + i), owned: true })),
   ]));
   const owned = await exports.fetchOwnedPokedexCards();
   assert.equal(owned.size, 3003, 'All physical, binder and manual ownership pages are retained');
-  for (const table of ['binders', 'user_card_variants', 'user_pokedex_cards']) {
+  for (const [table, firstId] of [['binders', 10_000], ['user_card_variants', 20_000], ['user_pokedex_cards', 40_000]] as const) {
     assert.deepEqual(pages.filter(([name]) => name === table).map(([, after, size]) => [after, size]),
-      [[null, 500], [`${table}-0499`, 500], [`${table}-0999`, 500]], `${table} uses bounded stable cursors`);
+      [[null, 500], [ownershipId(firstId + 499), 500], [ownershipId(firstId + 999), 500], [ownershipId(firstId + 1000), 500]], `${table} uses bounded stable cursors and a definitive empty page`);
   }
-  assert.equal(pages.filter(([name]) => name === 'binder_cards').length, 11, 'Large binder filters split into 100-ID chunks');
+  assert.equal(pages.filter(([name]) => name === 'binder_cards').length, 22, 'Each bounded binder chunk finishes with its own definitive empty page');
   assert.ok(filters.some(([key, value]) => key === 'owned' && value === true));
   failOwnershipPage = true;
   await assert.rejects(exports.fetchOwnedPokedexCards(), /Ownership page unavailable/,

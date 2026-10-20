@@ -6,6 +6,8 @@ import ts from 'typescript';
 import * as core from '../lib/pokedexCollectionCore';
 import { readOptionalCatalogueEnrichment } from '../lib/optionalCatalogueEnrichment';
 import * as retrieval from '../lib/performance';
+import { withPersonalDataReadTimeout } from '../lib/personalDataRead';
+import type { PokedexOwnershipReadOptions } from '../lib/pokedexCollection';
 
 const tick = () => new Promise<void>((resolve) => setImmediate(resolve));
 function deferred<T>() {
@@ -51,7 +53,7 @@ function screenHarness(kind: 'list' | 'detail') {
   const alertAccounts: (string | null)[] = [];
   const routes: any[] = [];
   const cardQueries: string[] = [];
-  let reader: (account: string) => Promise<Set<string>> = async () => new Set();
+  let reader: (account: string, options?: PokedexOwnershipReadOptions) => Promise<Set<string>> = async () => new Set();
   let writer: (intent: any) => Promise<void> = async () => {};
   let mutationHandoff: (() => Promise<void>) | null = null;
   const depsEqual = (left: any[], right: any[]) => left?.length === right?.length && left.every((item, i) => item === right[i]);
@@ -100,8 +102,8 @@ function screenHarness(kind: 'list' | 'detail') {
   } };
   const theme = { colors: new Proxy({}, { get: () => '#ffffff' }) };
   const collection = {
-    fetchOwnedPokemonNameSet: async (account = auth.user?.id) => { reads.push(account); return reader(account); },
-    fetchOwnedPokedexCards: async (account = auth.user?.id) => { reads.push(account); return new Map([...(await reader(account))].map((id) => [id, {}])); },
+    fetchOwnedPokemonNameSet: async (account = auth.user?.id, options?: PokedexOwnershipReadOptions) => { reads.push(account); return reader(account, options); },
+    fetchOwnedPokedexCards: async (account = auth.user?.id, options?: PokedexOwnershipReadOptions) => { reads.push(account); return new Map([...(await reader(account, options))].map((id) => [id, {}])); },
     pokemonNameMatchesCardName: (name: string, title: string) => name === title,
     fetchCardsForPokemon: async (name: string, options: any) => { cardQueries.push(name); const result = { cards, complete: true }; options.onProgress(result); return result; },
     hydratePokedexCardArtwork: async () => [], formatPokedexName: (value: string) => value,
@@ -255,17 +257,20 @@ async function testServiceIntents() {
   let user = 'A'; let current = true; let authRead = async () => ({ data: { user: { id: user } }, error: null });
   const writes: string[] = []; const filters: any[] = []; let physical = false; let binderOwned = false;
   const query = (table: string) => {
+    let after: string | null = null;
     const chain: any = { select: () => chain, order: () => chain, limit: () => chain,
+      gt: (_column: string, value: string) => { after = value; return chain; }, abortSignal: () => chain,
       eq: (column: string, value: any) => { filters.push([table, column, value]); return chain; },
       is: (column: string, value: any) => { filters.push([table, column, value]); return chain; }, in: () => chain,
       upsert: () => { writes.push(`${table}:upsert`); return chain; }, delete: () => { writes.push(`${table}:delete`); return chain; },
-      then: (resolve: any) => Promise.resolve({ data: table === 'binders' ? [{ id: 'binder-a' }]
+      then: (resolve: any) => Promise.resolve({ data: table === 'binders' ? after ? [] : [{ id: '00000000-0000-4000-8000-000000000001', user_id: user }]
         : table === 'user_card_variants' && physical || table === 'binder_cards' && binderOwned ? [{ id: 'owned' }] : [], error: null }).then(resolve) };
     return chain;
   };
   const service = compile('lib/pokedexCollection.ts', {
     './supabase': { supabase: { auth: { getUser: () => authRead() }, from: query } },
     './pokedexCollectionCore': core, './cardSearch': {}, './pokemonDisplayNames': {}, './stackrDomainAdapter': {}, './stackrApiV1': {},
+    './personalDataRead': { withPersonalDataReadTimeout },
   });
   const intent = { expectedAccountId: 'A', isCurrentAccount: () => current };
   user = 'B';
@@ -391,12 +396,44 @@ async function testSpeciesRouteConsumerHandoff() {
   results.push('species route handoff: list ownership/navigation and detail catalogue queries separate species from provider form routes');
 }
 
+async function testReadIntentHandoff() {
+  for (const kind of ['list', 'detail'] as const) {
+    for (const boundary of ['account', 'sign-out', 'auth-loading', 'auth-error', 'account-return', 'blur', 'unmount', 'refocus'] as const) {
+      const h = screenHarness(kind);
+      const pending = deferred<Set<string>>();
+      const intents: PokedexOwnershipReadOptions[] = [];
+      h.setReader(async (_account, options) => {
+        assert.ok(options?.signal && options.isCurrent, `${kind}: the actual consumer must forward the hook intent`);
+        intents.push(options);
+        return pending.promise;
+      });
+      h.render(); await h.flush();
+      const first = intents[0];
+      assert.equal(first.signal!.aborted, false); assert.equal(first.isCurrent!(), true);
+      if (boundary === 'account') { h.setAccount('B'); h.render(); }
+      else if (boundary === 'sign-out') { h.setAccount(null); h.render(); }
+      else if (boundary === 'auth-loading') { h.setAuthState(true, null); h.render(); }
+      else if (boundary === 'auth-error') { h.setAuthState(false, 'fixture auth error'); h.render(); }
+      else if (boundary === 'account-return') { h.setAccount('B'); h.render(); h.setAccount('A'); h.render(); }
+      else if (boundary === 'blur') h.blur();
+      else if (boundary === 'unmount') h.unmount();
+      else await h.focus();
+      assert.equal(first.signal!.aborted, true, `${kind}/${boundary}: abort the actual read intent immediately`);
+      assert.equal(first.isCurrent!(), false, `${kind}/${boundary}: invalidate the initiating generation`);
+      pending.resolve(new Set()); await tick();
+      h.unmount();
+    }
+  }
+  results.push('read intent: both actual consumers forward cancellation and invalidate account/sign-out/auth/ABA/blur/unmount/refocus generations');
+}
+
 async function run() {
   await testReviewedErrorHandoff();
   await testReviewedDuplicateTaps();
   await testReviewedMarkerRaces();
   await testConsumers('list'); await testConsumers('detail'); await testMarkerConsumers(); await testServiceIntents();
   await testSpeciesRouteConsumerHandoff();
+  await testReadIntentHandoff();
   console.log(JSON.stringify({ fixtureAccountsOnly: true, actualConsumersAndService: true, passedGroups: results.length, results }, null, 2));
 }
 run().catch((error) => { console.error(error); process.exitCode = 1; });
