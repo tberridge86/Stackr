@@ -2,6 +2,7 @@ import { supabase } from './supabase';
 import { attachLiveTcgdexCardReferences, fetchCardsForSet, normalizePokemonCardLanguage, type PokemonCardLanguage } from './pokemonTcg';
 import { enrichStackrCardArtworkFromFacts } from './stackrDomainAdapter';
 import { readOptionalCatalogueEnrichment } from './optionalCatalogueEnrichment';
+import { withPersonalDataReadTimeout } from './personalDataRead';
 import { createActivityPost } from './activity';
 import { PRICE_API_URL, USD_TO_GBP } from './config';
 import { recordAchievementEvent } from './achievements';
@@ -561,6 +562,63 @@ export async function fetchBinderCards(
   );
 }
 
+/** The shared cache owns this budget; one caller leaving cannot cancel another. */
+async function readSavedBinderRows(binderId: string): Promise<BinderCardRecord[]> {
+  const request = new AbortController();
+  let accountId: string | null | undefined;
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const nextAccountId = session?.user.id ?? null;
+    if (event === 'SIGNED_OUT'
+      || (accountId !== undefined && accountId !== nextAccountId)
+      || (accountId === undefined && event !== 'INITIAL_SESSION' && event !== 'TOKEN_REFRESHED')) {
+      request.abort();
+    }
+    accountId = nextAccountId;
+  });
+  try {
+    return await withPersonalDataReadTimeout(async (signal) => {
+      const assertCurrent = () => {
+        if (signal.aborted) {
+          const error = new Error('The collection request was cancelled.');
+          error.name = 'AbortError';
+          throw error;
+        }
+      };
+      const rows: BinderCardRecord[] = [];
+      const seen = new Set<string>();
+      // A server row cap can return a short nonterminal page. Only an empty
+      // page proves exhaustion; advance by received rows, not the asked limit.
+      for (let pageIndex = 0; pageIndex < 256; pageIndex += 1) {
+        assertCurrent();
+        const from = rows.length;
+        const { data, error } = await supabase
+          .from('binder_cards')
+          .select('*')
+          .eq('binder_id', binderId)
+          .order('slot_order', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, from + 999)
+          .abortSignal(signal);
+        assertCurrent();
+        if (error) throw error;
+        const page = (data ?? []) as BinderCardRecord[];
+        if (!page.length) return rows;
+        for (const row of page) {
+          if (row.binder_id !== binderId || typeof row.id !== 'string' || !row.id || seen.has(row.id)) {
+            throw new Error('Saved cards did not match a consistent binder page. Please retry.');
+          }
+          seen.add(row.id);
+          rows.push(row);
+        }
+      }
+      throw new Error('Saved binder cards exceeded the page budget. Please retry.');
+    }, { signal: request.signal });
+  } finally {
+    subscription.unsubscribe();
+    request.abort();
+  }
+}
+
 async function fetchBinderCardsUncached(
   binderId: string,
   options: { includePrices?: boolean; includeAssets?: boolean; onCatalogueUnavailable?: () => void } = {},
@@ -576,26 +634,7 @@ async function fetchBinderCardsUncached(
     || (binder.catalogue_identity_status === 'unresolved' && !binder.language);
   // Once the binder read has passed RLS, ownership and public facts are
   // independent. Start both now; no card rows render before ownership returns.
-  const savedRowsPromise = (async () => {
-    const rows: BinderCardRecord[] = [];
-    for (let from = 0; ; from += 1000) {
-      const { data, error } = await supabase
-        .from('binder_cards')
-        .select('*')
-        .eq('binder_id', binderId)
-        .order('slot_order', { ascending: true })
-        .order('id', { ascending: true })
-        .range(from, from + 999);
-      if (error) throw error;
-      const page = (data ?? []) as BinderCardRecord[];
-      if (page.some((row) => row.binder_id !== binderId)) {
-        throw new Error('Saved cards did not match the requested binder. Please retry.');
-      }
-      rows.push(...page);
-      if (page.length < 1000) break;
-    }
-    return rows;
-  })();
+  const savedRowsPromise = readSavedBinderRows(binderId);
   const setCardsPromise = officialCatalogue && !ambiguousCatalogue
     ? fetchCardsForSet(binder.catalogue_set_id ?? binder.source_set_id as string, {
         language: binderLanguage,
