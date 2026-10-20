@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-20T09:15:45.086Z",
+  "updatedAt": "2026-10-20",
   "sourceVideo": {
     "fileName": "WhatsApp Video 2026-10-18 at 09.12.30.mp4",
     "sha256": "a29ad89ce8cec90b3dfa299c5a951ff4b60d686187f5a27c03a4e6175d1e859c",
@@ -2420,5 +2420,30 @@
       "folderMovementIsPhonePerformanceEvidence": false
     },
     "readinessPercentage": null
+  },
+  "integration20261020": {
+    "ownerRequestedMerge": true,
+    "receipt": "docs/releases/release-integration-20261020.json",
+    "currentStatusReceipt": "https://github.com/tberridge86/Stackr/pull/313",
+    "merged": [
+      {
+        "pr": 422,
+        "sha": "57736ccd03be7493a764b812a18ac4d5eb95dd67"
+      },
+      {
+        "pr": 413,
+        "sha": "3b842d5bf90b63abc09c29aad66c5e5fb0fc2376"
+      }
+    ],
+    "reconciledCandidates": [
+      311,
+      313
+    ],
+    "independentReviewPassed": true,
+    "hostedChecksRequiredForPendingCandidates": true,
+    "phoneClosedIssues": 0,
+    "phoneOnlyReadyClaimed": false,
+    "nonPhoneGaps": "Source identity/artwork, authenticated price coverage, primary API and native delivery remain as disclosed in the linked receipt",
+    "historicalMergeApprovalHold": "The owner20October merge instruction supersedes the earlier PR413 source-merge hold; database scripts and native delivery remain separate"
   }
 }

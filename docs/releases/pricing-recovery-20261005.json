@@ -1,0 +1,4073 @@
+{
+  "productionProject": "oakdbbzdqwurpjnoqhmu",
+  "sourceBaseline": "28cbcfc7d68eb11edc622078b0bbc3216810610f",
+  "sourceParent": "573e1ae3a8888be9a828d41637c671f20eb1406f",
+  "coverage": {
+    "languages": [
+      {
+        "exact": 0,
+        "guide": 7750,
+        "estimated": 17232,
+        "published": 33359,
+        "classified": 33359,
+        "unavailable": 8377,
+        "language_code": "en"
+      },
+      {
+        "exact": 0,
+        "guide": 2072,
+        "estimated": 5026,
+        "published": 14100,
+        "classified": 14100,
+        "unavailable": 7002,
+        "language_code": "ja"
+      },
+      {
+        "exact": 0,
+        "guide": 0,
+        "estimated": 0,
+        "published": 20453,
+        "classified": 20453,
+        "unavailable": 20453,
+        "language_code": "zh-cn"
+      },
+      {
+        "exact": 0,
+        "guide": 0,
+        "estimated": 1597,
+        "published": 8166,
+        "classified": 8166,
+        "unavailable": 6569,
+        "language_code": "zh-tw"
+      }
+    ],
+    "providers": [
+      {
+        "provider": "cardmarket_public",
+        "variants": 1968
+      },
+      {
+        "provider": "tcgcsv",
+        "variants": 31639
+      },
+      {
+        "provider": "tcgdex_cardmarket",
+        "variants": 63
+      },
+      {
+        "provider": "tcgdex_tcgplayer",
+        "variants": 7
+      },
+      {
+        "provider": null,
+        "variants": 42401
+      }
+    ],
+    "classified": 76078,
+    "exactPrice": 0,
+    "observedAt": "2026-10-05T21:12:14.760913+00:00",
+    "marketGuide": 9822,
+    "evidenceTiers": [
+      {
+        "variants": 1968,
+        "evidence_type": "blended_printing_market"
+      },
+      {
+        "variants": 29998,
+        "evidence_type": "exact_variant_market"
+      },
+      {
+        "variants": 42401,
+        "evidence_type": "none"
+      },
+      {
+        "variants": 1641,
+        "evidence_type": "printing_market"
+      },
+      {
+        "variants": 70,
+        "evidence_type": "retained_printing_market"
+      }
+    ],
+    "estimatedValue": 23855,
+    "priceUnavailable": 42401,
+    "catalogueVersions": [
+      {
+        "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en"
+      },
+      {
+        "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja"
+      },
+      {
+        "id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "language_code": "zh-cn"
+      },
+      {
+        "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "language_code": "zh-tw"
+      }
+    ],
+    "unavailableReasons": [
+      {
+        "reason": "unsupported_provider_language",
+        "variants": 24535
+      },
+      {
+        "reason": "unresolved_provider_identity",
+        "variants": 10973
+      },
+      {
+        "reason": "blended_language_finish_condition_evidence_insufficient",
+        "variants": 3885
+      },
+      {
+        "reason": "no_provider_quote",
+        "variants": 1645
+      },
+      {
+        "reason": "unsupported_provider_finish",
+        "variants": 723
+      },
+      {
+        "reason": "stronger_variant_evidence_required",
+        "variants": 450
+      },
+      {
+        "reason": "provider_backoff",
+        "variants": 142
+      },
+      {
+        "reason": "invalid_published_identity",
+        "variants": 48
+      }
+    ],
+    "totalPublishedVariants": 76078,
+    "classifiedCoveragePercent": 100,
+    "usableValuationCoveragePercent": 44.27
+  },
+  "originalCoverage": {
+    "observedAt": "2026-10-05T17:17:05.171859+00:00",
+    "usable": 28426,
+    "usablePercent": 37.36
+  },
+  "commons": {
+    "total": 20066,
+    "estimated": 9709,
+    "guide": 1665,
+    "unavailable": 8692,
+    "byLanguage": [
+      {
+        "language_code": "en",
+        "classification": "ESTIMATED_VALUE",
+        "variants": 6843
+      },
+      {
+        "language_code": "en",
+        "classification": "MARKET_GUIDE",
+        "variants": 1529
+      },
+      {
+        "language_code": "en",
+        "classification": "PRICE_UNAVAILABLE",
+        "variants": 1483
+      },
+      {
+        "language_code": "ja",
+        "classification": "ESTIMATED_VALUE",
+        "variants": 1985
+      },
+      {
+        "language_code": "ja",
+        "classification": "MARKET_GUIDE",
+        "variants": 136
+      },
+      {
+        "language_code": "ja",
+        "classification": "PRICE_UNAVAILABLE",
+        "variants": 1376
+      },
+      {
+        "language_code": "zh-cn",
+        "classification": "PRICE_UNAVAILABLE",
+        "variants": 5314
+      },
+      {
+        "language_code": "zh-tw",
+        "classification": "ESTIMATED_VALUE",
+        "variants": 881
+      },
+      {
+        "language_code": "zh-tw",
+        "classification": "PRICE_UNAVAILABLE",
+        "variants": 519
+      }
+    ]
+  },
+  "storedQuotes": 4174,
+  "distinctPriceGroups": 93,
+  "inspectedGroups": 109,
+  "cohortTransitions": [
+    {
+      "original_class": "ESTIMATED_VALUE",
+      "current_class": "ESTIMATED_VALUE",
+      "current_evidence": "exact_variant_market",
+      "variants": 196
+    },
+    {
+      "original_class": "ESTIMATED_VALUE",
+      "current_class": "MARKET_GUIDE",
+      "current_evidence": "exact_variant_market",
+      "variants": 3
+    },
+    {
+      "original_class": "PRICE_UNAVAILABLE",
+      "current_class": "ESTIMATED_VALUE",
+      "current_evidence": "exact_variant_market",
+      "variants": 2247
+    },
+    {
+      "original_class": "PRICE_UNAVAILABLE",
+      "current_class": "MARKET_GUIDE",
+      "current_evidence": "exact_variant_market",
+      "variants": 1728
+    }
+  ],
+  "cohortQa": [
+    {
+      "stored": 4174,
+      "above20": 646,
+      "above50": 296,
+      "above100": 143,
+      "above500": 9,
+      "above1000": 1,
+      "valid": 4174
+    }
+  ],
+  "globalSafety": [
+    {
+      "invalid_values": 0,
+      "above20": 2756,
+      "above50": 1244,
+      "above100": 584,
+      "above500": 49,
+      "above1000": 9,
+      "weak_high_values": 0,
+      "expensive_retained_estimates": 0,
+      "earliest_check": "2026-10-05 16:27:25.792993+00",
+      "latest_check": "2026-10-05 21:12:02.249724+00"
+    }
+  ],
+  "globalIdentity": [
+    {
+      "invalid_identity": 0
+    }
+  ],
+  "highValueSourceQa": [
+    {
+      "checked": 2756,
+      "bad_source_consistency": 0
+    }
+  ],
+  "history": [
+    {
+      "records": 98830,
+      "variants": 76078,
+      "first_at": "2026-10-05 16:27:25.792993+00",
+      "last_at": "2026-10-05 21:12:02.249724+00"
+    }
+  ],
+  "classification": {
+    "reconciledObservedAt": "2026-10-05T21:12:14.760913+00:00",
+    "total": 76078,
+    "changed": 22312,
+    "pages": 77,
+    "publication": [
+      {
+        "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en",
+        "published": 33359
+      },
+      {
+        "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja",
+        "published": 14100
+      },
+      {
+        "id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "language_code": "zh-cn",
+        "published": 20453
+      },
+      {
+        "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "language_code": "zh-tw",
+        "published": 8166
+      }
+    ],
+    "at": "2026-10-05T21:04:16.965145+00:00",
+    "checkpoints": [
+      {
+        "page": 1,
+        "changed": 311,
+        "complete": false,
+        "nextAfter": "0355b1af-dd43-4b63-a301-5efc021584b8",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:55:45.809726+00:00"
+      },
+      {
+        "page": 2,
+        "changed": 278,
+        "complete": false,
+        "nextAfter": "06811a89-d440-4c1a-8c07-2bb2f9efecef",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:55:52.166719+00:00"
+      },
+      {
+        "page": 3,
+        "changed": 281,
+        "complete": false,
+        "nextAfter": "09ec3f20-3e2a-43eb-8722-88aae90eabb5",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:55:57.337914+00:00"
+      },
+      {
+        "page": 4,
+        "changed": 312,
+        "complete": false,
+        "nextAfter": "0d2809a4-6d11-4037-9695-974d9b597e65",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:56:02.97207+00:00"
+      },
+      {
+        "page": 5,
+        "changed": 313,
+        "complete": false,
+        "nextAfter": "109120cd-d231-443d-87ee-a64c43ab1a8f",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:56:08.797779+00:00"
+      },
+      {
+        "page": 6,
+        "changed": 296,
+        "complete": false,
+        "nextAfter": "13f21566-395f-4bb3-8c72-b3e222104eec",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:56:11.79102+00:00"
+      },
+      {
+        "page": 7,
+        "changed": 266,
+        "complete": false,
+        "nextAfter": "175d3a14-dad7-453b-acad-7e1ac53e392c",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:56:16.275819+00:00"
+      },
+      {
+        "page": 8,
+        "changed": 289,
+        "complete": false,
+        "nextAfter": "1abec072-a949-4893-b4d6-9403e8304219",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:56:30.665165+00:00"
+      },
+      {
+        "page": 9,
+        "changed": 290,
+        "complete": false,
+        "nextAfter": "1e260d69-58a4-4c22-8c0c-cb1f34c3284b",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:56:37.511712+00:00"
+      },
+      {
+        "page": 10,
+        "changed": 305,
+        "complete": false,
+        "nextAfter": "21a2445c-c4a9-40f0-ad34-31f4a73fba2f",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:56:42.465416+00:00"
+      },
+      {
+        "page": 11,
+        "changed": 306,
+        "complete": false,
+        "nextAfter": "2529c18e-6563-4fb9-89b8-265d1f5e36b0",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:56:45.441017+00:00"
+      },
+      {
+        "page": 12,
+        "changed": 284,
+        "complete": false,
+        "nextAfter": "289bb9ab-766b-4f77-a72a-c422d959e242",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:56:47.880156+00:00"
+      },
+      {
+        "page": 13,
+        "changed": 310,
+        "complete": false,
+        "nextAfter": "2c32aa2b-a905-4e5c-a0e4-053d6cbcb288",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:56:52.512151+00:00"
+      },
+      {
+        "page": 14,
+        "changed": 316,
+        "complete": false,
+        "nextAfter": "2f6aafa9-58fb-498c-95e4-e028fc635c38",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:56:57.251533+00:00"
+      },
+      {
+        "page": 15,
+        "changed": 295,
+        "complete": false,
+        "nextAfter": "32f85e6a-9bfa-4bc6-adec-09c8756e6741",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:57:01.177023+00:00"
+      },
+      {
+        "page": 16,
+        "changed": 291,
+        "complete": false,
+        "nextAfter": "365ae5a3-c813-46ee-8fb7-7656413c3257",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:57:03.5444+00:00"
+      },
+      {
+        "page": 17,
+        "changed": 274,
+        "complete": false,
+        "nextAfter": "39b5256f-35d1-45a5-8ad5-75ba5817a0fc",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:57:06.004253+00:00"
+      },
+      {
+        "page": 18,
+        "changed": 291,
+        "complete": false,
+        "nextAfter": "3d2c0e22-893e-4c08-922a-828e9cec1288",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:57:08.500783+00:00"
+      },
+      {
+        "page": 19,
+        "changed": 301,
+        "complete": false,
+        "nextAfter": "4072b0b2-a246-49b6-b96f-8a79b0acbafd",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:57:10.706507+00:00"
+      },
+      {
+        "page": 20,
+        "changed": 295,
+        "complete": false,
+        "nextAfter": "43d803ed-ee7a-4491-b1e2-0abfa4007041",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:57:13.172438+00:00"
+      },
+      {
+        "page": 21,
+        "changed": 285,
+        "complete": false,
+        "nextAfter": "4745a157-5726-4a43-9bf4-e9d23b523fa7",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:57:22.877074+00:00"
+      },
+      {
+        "page": 22,
+        "changed": 263,
+        "complete": false,
+        "nextAfter": "4abfc585-a8e3-45ad-a575-62a29a585e91",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:57:34.84865+00:00"
+      },
+      {
+        "page": 23,
+        "changed": 299,
+        "complete": false,
+        "nextAfter": "4e0c830a-36e2-4abf-868e-3a340b489247",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:57:51.604069+00:00"
+      },
+      {
+        "page": 24,
+        "changed": 295,
+        "complete": false,
+        "nextAfter": "51539efb-6345-4104-955a-76dd8715b28c",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:58:01.14817+00:00"
+      },
+      {
+        "page": 25,
+        "changed": 292,
+        "complete": false,
+        "nextAfter": "5490558c-d9cb-4b09-a3dc-17ce2218289e",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:58:04.864596+00:00"
+      },
+      {
+        "page": 26,
+        "changed": 272,
+        "complete": false,
+        "nextAfter": "581f56d4-b1e4-4acb-b101-6ddc6387da76",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:58:07.665255+00:00"
+      },
+      {
+        "page": 27,
+        "changed": 297,
+        "complete": false,
+        "nextAfter": "5b59899b-c24e-492f-b9a0-3d34f98f6c62",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:58:15.843618+00:00"
+      },
+      {
+        "page": 28,
+        "changed": 314,
+        "complete": false,
+        "nextAfter": "5f06438d-3352-46b9-905c-916ad307e3e2",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:58:24.529601+00:00"
+      },
+      {
+        "page": 29,
+        "changed": 297,
+        "complete": false,
+        "nextAfter": "6280efcb-6fec-4ee1-80f2-6326d99de367",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:58:38.332622+00:00"
+      },
+      {
+        "page": 30,
+        "changed": 283,
+        "complete": false,
+        "nextAfter": "65a57207-9373-44e7-829f-5abbb272c26e",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:58:51.533553+00:00"
+      },
+      {
+        "page": 31,
+        "changed": 306,
+        "complete": false,
+        "nextAfter": "693a532a-fe92-4c3d-8831-2a6e3feaaf3a",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:58:54.784837+00:00"
+      },
+      {
+        "page": 32,
+        "changed": 272,
+        "complete": false,
+        "nextAfter": "6c84a136-8266-4e7d-93eb-a8d8b344205b",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:58:58.699004+00:00"
+      },
+      {
+        "page": 33,
+        "changed": 301,
+        "complete": false,
+        "nextAfter": "6fde38fc-3d4d-4005-95d5-0736e4a437d5",
+        "processed": 1000,
+        "observedAt": "2026-10-05T20:59:01.118067+00:00"
+      },
+      {
+        "page": 34,
+        "changed": 283,
+        "complete": false,
+        "nextAfter": "7325f4e4-4b24-44be-a5ae-d9f65ee248cd",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:02:14.10254+00:00"
+      },
+      {
+        "page": 35,
+        "changed": 279,
+        "complete": false,
+        "nextAfter": "76499ef9-f20e-48f6-8ecc-37634e90f65e",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:02:21.209364+00:00"
+      },
+      {
+        "page": 36,
+        "changed": 295,
+        "complete": false,
+        "nextAfter": "79c04d26-b0fa-48ab-a60c-7d4a66d8df30",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:02:26.154578+00:00"
+      },
+      {
+        "page": 37,
+        "changed": 286,
+        "complete": false,
+        "nextAfter": "7d138576-e683-46f5-bac2-205cd74f434e",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:02:28.713361+00:00"
+      },
+      {
+        "page": 38,
+        "changed": 292,
+        "complete": false,
+        "nextAfter": "8060a016-b5b3-407b-bda7-7369409b5f55",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:02:30.832218+00:00"
+      },
+      {
+        "page": 39,
+        "changed": 290,
+        "complete": false,
+        "nextAfter": "839cd373-2ee9-493f-92bd-3007477f1f82",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:02:32.981102+00:00"
+      },
+      {
+        "page": 40,
+        "changed": 308,
+        "complete": false,
+        "nextAfter": "8714d8b1-d8e6-4d97-9167-f07ca6d21df7",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:02:34.981407+00:00"
+      },
+      {
+        "page": 41,
+        "changed": 301,
+        "complete": false,
+        "nextAfter": "8a442696-818e-4d04-bbf4-38734054c167",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:02:37.093204+00:00"
+      },
+      {
+        "page": 42,
+        "changed": 279,
+        "complete": false,
+        "nextAfter": "8db5bd55-aa40-41a1-a2cf-614e8ce20c55",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:02:39.077246+00:00"
+      },
+      {
+        "page": 43,
+        "changed": 260,
+        "complete": false,
+        "nextAfter": "911ce645-fa51-44ed-b3b4-fc9873ecbe63",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:02:40.998588+00:00"
+      },
+      {
+        "page": 44,
+        "changed": 303,
+        "complete": false,
+        "nextAfter": "94713785-c9d7-40be-8157-1e1abdd932ad",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:02:43.141479+00:00"
+      },
+      {
+        "page": 45,
+        "changed": 269,
+        "complete": false,
+        "nextAfter": "97ca7837-49f1-4cba-95f1-14dfac3d8e9b",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:02:45.153719+00:00"
+      },
+      {
+        "page": 46,
+        "changed": 283,
+        "complete": false,
+        "nextAfter": "9b3a0eb9-0058-479b-8b60-6f618cded56e",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:02:47.039419+00:00"
+      },
+      {
+        "page": 47,
+        "changed": 282,
+        "complete": false,
+        "nextAfter": "9e95c300-5532-4f04-846c-6903982e21fe",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:02:48.831294+00:00"
+      },
+      {
+        "page": 48,
+        "changed": 303,
+        "complete": false,
+        "nextAfter": "a1d7bb2f-a262-42c2-a373-23915a804d8e",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:02:50.649483+00:00"
+      },
+      {
+        "page": 49,
+        "changed": 311,
+        "complete": false,
+        "nextAfter": "a554ff4b-5022-48f4-b648-6841f35d473c",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:02:52.538708+00:00"
+      },
+      {
+        "page": 50,
+        "changed": 303,
+        "complete": false,
+        "nextAfter": "a895db2a-a167-4c9a-859a-8fadbe005c59",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:02:56.57942+00:00"
+      },
+      {
+        "page": 51,
+        "changed": 300,
+        "complete": false,
+        "nextAfter": "abffc62a-c694-4a66-9a14-ba3f2c25236f",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:02:59.444007+00:00"
+      },
+      {
+        "page": 52,
+        "changed": 320,
+        "complete": false,
+        "nextAfter": "af49a9f1-02f2-4aa3-aad1-590a455724b8",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:03:01.734576+00:00"
+      },
+      {
+        "page": 53,
+        "changed": 305,
+        "complete": false,
+        "nextAfter": "b27e8862-8b01-4a03-bfe6-8bac1553bd56",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:03:05.272017+00:00"
+      },
+      {
+        "page": 54,
+        "changed": 315,
+        "complete": false,
+        "nextAfter": "b5d69b25-f200-4780-9a72-e858453cab5b",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:03:07.317693+00:00"
+      },
+      {
+        "page": 55,
+        "changed": 297,
+        "complete": false,
+        "nextAfter": "b93d07ce-ea51-4f59-bcd6-e392f5b99353",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:03:10.986394+00:00"
+      },
+      {
+        "page": 56,
+        "changed": 288,
+        "complete": false,
+        "nextAfter": "bcaf0996-c662-4608-a2e6-3208c8905baa",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:03:13.007782+00:00"
+      },
+      {
+        "page": 57,
+        "changed": 276,
+        "complete": false,
+        "nextAfter": "bfe49ae4-1de5-4c64-85bb-342768513774",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:03:14.879919+00:00"
+      },
+      {
+        "page": 58,
+        "changed": 285,
+        "complete": false,
+        "nextAfter": "c33fa255-5640-4751-b960-e1484928abce",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:03:17.842648+00:00"
+      },
+      {
+        "page": 59,
+        "changed": 312,
+        "complete": false,
+        "nextAfter": "c672f6d8-2de3-46a1-86f2-080e587c85f0",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:03:20.423019+00:00"
+      },
+      {
+        "page": 60,
+        "changed": 306,
+        "complete": false,
+        "nextAfter": "c9e07757-7768-437c-b104-6b65dd00f401",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:03:22.701805+00:00"
+      },
+      {
+        "page": 61,
+        "changed": 299,
+        "complete": false,
+        "nextAfter": "cd216b28-29c1-4e82-abb7-1d7df66c3c4d",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:03:24.866175+00:00"
+      },
+      {
+        "page": 62,
+        "changed": 279,
+        "complete": false,
+        "nextAfter": "d071474d-6cca-4410-9512-8ac174ae55cc",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:03:27.625034+00:00"
+      },
+      {
+        "page": 63,
+        "changed": 267,
+        "complete": false,
+        "nextAfter": "d3d67064-fdc4-4204-8c74-d864b5a5b4c5",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:03:30.981705+00:00"
+      },
+      {
+        "page": 64,
+        "changed": 286,
+        "complete": false,
+        "nextAfter": "d74ddae6-21ff-407f-a350-8b21002accc9",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:03:34.562622+00:00"
+      },
+      {
+        "page": 65,
+        "changed": 322,
+        "complete": false,
+        "nextAfter": "da80cd42-5e81-45df-bd50-dab254e38b15",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:03:43.69672+00:00"
+      },
+      {
+        "page": 66,
+        "changed": 289,
+        "complete": false,
+        "nextAfter": "de030560-0784-425b-b8db-b380920220da",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:03:48.960199+00:00"
+      },
+      {
+        "page": 67,
+        "changed": 261,
+        "complete": false,
+        "nextAfter": "e161e789-a140-4960-8b93-4265e5ce8612",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:03:51.823598+00:00"
+      },
+      {
+        "page": 68,
+        "changed": 268,
+        "complete": false,
+        "nextAfter": "e4bceac2-deb4-4799-8be6-6960affb3a42",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:03:54.207193+00:00"
+      },
+      {
+        "page": 69,
+        "changed": 280,
+        "complete": false,
+        "nextAfter": "e8318f2d-1350-4ccc-aa28-a88e9195b0ff",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:03:57.829473+00:00"
+      },
+      {
+        "page": 70,
+        "changed": 321,
+        "complete": false,
+        "nextAfter": "ebad0fab-0ddc-4300-9f2f-db17b492f26d",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:03:59.595806+00:00"
+      },
+      {
+        "page": 71,
+        "changed": 311,
+        "complete": false,
+        "nextAfter": "eef302ae-790d-404d-9a98-dbf6ae27aaf7",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:04:02.505252+00:00"
+      },
+      {
+        "page": 72,
+        "changed": 283,
+        "complete": false,
+        "nextAfter": "f254b18e-089a-4bbc-916e-6001882153d8",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:04:04.430663+00:00"
+      },
+      {
+        "page": 73,
+        "changed": 310,
+        "complete": false,
+        "nextAfter": "f5be8380-1bd4-4a94-b886-a032730af3c5",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:04:06.189178+00:00"
+      },
+      {
+        "page": 74,
+        "changed": 315,
+        "complete": false,
+        "nextAfter": "f932124c-9488-48de-984e-76cb12ed0c78",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:04:07.879904+00:00"
+      },
+      {
+        "page": 75,
+        "changed": 295,
+        "complete": false,
+        "nextAfter": "fc941d1e-9b7c-4473-99a7-f5c0999c7d85",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:04:11.898968+00:00"
+      },
+      {
+        "page": 76,
+        "changed": 292,
+        "complete": false,
+        "nextAfter": "ffba851a-074d-498c-8c3f-07856d3ec8ab",
+        "processed": 1000,
+        "observedAt": "2026-10-05T21:04:13.623753+00:00"
+      },
+      {
+        "page": 77,
+        "changed": 23,
+        "complete": true,
+        "nextAfter": "fffe8a09-35d9-532c-af27-932931198e1d",
+        "processed": 78,
+        "observedAt": "2026-10-05T21:04:16.965145+00:00"
+      }
+    ],
+    "transientErrors": [
+      {
+        "page": 34,
+        "error": "Transport response could not be decoded; resumed safely from page 33."
+      }
+    ],
+    "incrementalTargets": 109,
+    "incrementalWrites": 109,
+    "remainingSourceChangesAtReadback": 0
+  },
+  "providerBuilds": [
+    "2026-10-04T20:05:38Z",
+    "2026-10-05T20:05:57Z"
+  ],
+  "finalBatchFx": {
+    "rate": 0.756158514816137,
+    "at": "2026-10-05T00:00:00.000Z",
+    "source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+  },
+  "mappingWriteBatches": 211,
+  "initialSv02Batches": 3,
+  "additionalMappingWriteBatches": 208,
+  "groups": [
+    {
+      "groupId": 22873,
+      "setCode": "sv01",
+      "candidates": 444,
+      "stored": 234,
+      "proof": {
+        "stored": 234,
+        "valid": 234,
+        "lowest": "0.04",
+        "highest": "52.32"
+      },
+      "at": "2026-10-05T20:05:07.737Z"
+    },
+    {
+      "groupId": 23286,
+      "setCode": "sv04",
+      "candidates": 432,
+      "stored": 201,
+      "proof": {
+        "stored": 201,
+        "valid": 201,
+        "lowest": "0.04",
+        "highest": "82.41"
+      },
+      "at": "2026-10-05T20:05:52.788Z"
+    },
+    {
+      "groupId": 24541,
+      "setCode": "me02.5",
+      "candidates": 484,
+      "stored": 107,
+      "proof": {
+        "stored": 107,
+        "valid": 107,
+        "lowest": "0.11",
+        "highest": "701.57"
+      },
+      "at": "2026-10-05T20:06:13.772Z"
+    },
+    {
+      "groupId": 1375,
+      "setCode": "ecard1",
+      "candidates": 330,
+      "stored": 164,
+      "proof": {
+        "stored": 164,
+        "valid": 164,
+        "lowest": "4.01",
+        "highest": "605.79"
+      },
+      "at": "2026-10-05T20:06:52.337Z"
+    },
+    {
+      "groupId": 2585,
+      "setCode": "swsh1",
+      "candidates": 380,
+      "stored": 98,
+      "proof": {
+        "stored": 98,
+        "valid": 98,
+        "lowest": "0.01",
+        "highest": "0.65"
+      },
+      "at": "2026-10-05T20:07:10.483Z"
+    },
+    {
+      "groupId": 23651,
+      "setCode": "sv08",
+      "candidates": 422,
+      "stored": 150,
+      "proof": {
+        "stored": 150,
+        "valid": 150,
+        "lowest": "0.03",
+        "highest": "216.89"
+      },
+      "at": "2026-10-05T20:07:41.396Z"
+    },
+    {
+      "groupId": 23353,
+      "setCode": "sv04.5",
+      "candidates": 328,
+      "stored": 146,
+      "proof": {
+        "stored": 146,
+        "valid": 146,
+        "lowest": "0.02",
+        "highest": "661.05"
+      },
+      "at": "2026-10-05T20:08:04.625Z"
+    },
+    {
+      "groupId": 1372,
+      "setCode": "ecard3",
+      "candidates": 332,
+      "stored": 90,
+      "proof": {
+        "stored": 90,
+        "valid": 90,
+        "lowest": "5.57",
+        "highest": "908.85"
+      },
+      "at": "2026-10-05T20:08:26.857Z"
+    },
+    {
+      "groupId": 23381,
+      "setCode": "sv05",
+      "candidates": 379,
+      "stored": 132,
+      "proof": {
+        "stored": 132,
+        "valid": 132,
+        "lowest": "0.03",
+        "highest": "72.56"
+      },
+      "at": "2026-10-05T20:09:22.568Z"
+    },
+    {
+      "groupId": 23473,
+      "setCode": "sv06",
+      "candidates": 384,
+      "stored": 134,
+      "proof": {
+        "stored": 134,
+        "valid": 134,
+        "lowest": "0.05",
+        "highest": "249.74"
+      },
+      "at": "2026-10-05T20:10:20.838Z"
+    },
+    {
+      "groupId": 1397,
+      "setCode": "ecard2",
+      "candidates": 338,
+      "stored": 62,
+      "proof": {
+        "stored": 62,
+        "valid": 62,
+        "lowest": "1.86",
+        "highest": "378.77"
+      },
+      "at": "2026-10-05T20:10:54.868Z"
+    },
+    {
+      "groupId": 24269,
+      "setCode": "sv10",
+      "candidates": 416,
+      "stored": 122,
+      "proof": {
+        "stored": 122,
+        "valid": 122,
+        "lowest": "0.03",
+        "highest": "304.26"
+      },
+      "at": "2026-10-05T20:11:31.041Z"
+    },
+    {
+      "groupId": 24380,
+      "setCode": "me01",
+      "candidates": 328,
+      "stored": 125,
+      "proof": {
+        "stored": 125,
+        "valid": 125,
+        "lowest": "0.04",
+        "highest": "175.55"
+      },
+      "at": "2026-10-05T20:12:01.554Z"
+    },
+    {
+      "groupId": 24722,
+      "setCode": "30C",
+      "candidates": 161,
+      "stored": 70,
+      "proof": {
+        "stored": 70,
+        "valid": 70,
+        "lowest": "0.29",
+        "highest": "70.33"
+      },
+      "at": "2026-10-05T20:12:16.359Z"
+    },
+    {
+      "groupId": 23228,
+      "setCode": "sv03",
+      "candidates": 425,
+      "stored": 81,
+      "proof": {
+        "stored": 81,
+        "valid": 81,
+        "lowest": "0.07",
+        "highest": "74.92"
+      },
+      "at": "2026-10-05T20:12:32.979Z"
+    },
+    {
+      "groupId": 2534,
+      "setCode": "sm12",
+      "candidates": 271,
+      "stored": 16,
+      "proof": {
+        "stored": 16,
+        "valid": 16,
+        "lowest": "0.14",
+        "highest": "10.91"
+      },
+      "at": "2026-10-05T20:12:39.854Z"
+    },
+    {
+      "groupId": 1393,
+      "setCode": "ex1",
+      "candidates": 214,
+      "stored": 94,
+      "proof": {
+        "stored": 94,
+        "valid": 94,
+        "lowest": "0.41",
+        "highest": "98.34"
+      },
+      "at": "2026-10-05T20:12:55.530Z"
+    },
+    {
+      "groupId": 2328,
+      "setCode": "sm8",
+      "candidates": 236,
+      "stored": 27,
+      "proof": {
+        "stored": 27,
+        "valid": 27,
+        "lowest": "0.10",
+        "highest": "4.07"
+      },
+      "at": "2026-10-05T20:13:07.101Z"
+    },
+    {
+      "groupId": 2906,
+      "setCode": "swsh8",
+      "candidates": 502,
+      "stored": 38,
+      "proof": {
+        "stored": 38,
+        "valid": 38,
+        "lowest": "0.02",
+        "highest": "0.56"
+      },
+      "at": "2026-10-05T20:13:17.640Z"
+    },
+    {
+      "groupId": 23237,
+      "setCode": "sv03.5",
+      "candidates": 362,
+      "stored": 93,
+      "proof": {
+        "stored": 93,
+        "valid": 93,
+        "lowest": "0.12",
+        "highest": "259.63"
+      },
+      "at": "2026-10-05T20:13:36.324Z"
+    },
+    {
+      "groupId": 2848,
+      "setCode": "swsh7",
+      "candidates": 370,
+      "stored": 0
+    },
+    {
+      "groupId": 1377,
+      "setCode": "ex4",
+      "candidates": 187,
+      "stored": 94,
+      "proof": {
+        "stored": 94,
+        "valid": 94,
+        "lowest": "0.33",
+        "highest": "120.71"
+      },
+      "at": "2026-10-05T20:13:57.367Z"
+    },
+    {
+      "groupId": 2807,
+      "setCode": "swsh6",
+      "candidates": 370,
+      "stored": 0
+    },
+    {
+      "groupId": 2464,
+      "setCode": "sm11",
+      "candidates": 258,
+      "stored": 24,
+      "proof": {
+        "stored": 24,
+        "valid": 24,
+        "lowest": "0.11",
+        "highest": "4.16"
+      },
+      "at": "2026-10-05T20:14:08.017Z"
+    },
+    {
+      "groupId": 1391,
+      "setCode": "pl4",
+      "candidates": 207,
+      "stored": 67,
+      "proof": {
+        "stored": 67,
+        "valid": 67,
+        "lowest": "0.22",
+        "highest": "171.05"
+      },
+      "at": "2026-10-05T20:14:23.510Z"
+    },
+    {
+      "groupId": 24325,
+      "setCode": "sv10.5b",
+      "candidates": 254,
+      "stored": 86,
+      "proof": {
+        "stored": 86,
+        "valid": 86,
+        "lowest": "0.61",
+        "highest": "475.31"
+      },
+      "at": "2026-10-05T20:14:39.415Z"
+    },
+    {
+      "groupId": 24326,
+      "setCode": "sv10.5w",
+      "candidates": 255,
+      "stored": 87,
+      "proof": {
+        "stored": 87,
+        "valid": 87,
+        "lowest": "0.63",
+        "highest": "420.39"
+      },
+      "at": "2026-10-05T20:15:08.642Z"
+    },
+    {
+      "groupId": 24655,
+      "setCode": "me04",
+      "candidates": 201,
+      "stored": 81,
+      "proof": {
+        "stored": 81,
+        "valid": 81,
+        "lowest": "0.02",
+        "highest": "105.82"
+      },
+      "at": "2026-10-05T20:15:24.478Z"
+    },
+    {
+      "groupId": 3040,
+      "setCode": "swsh10",
+      "candidates": 345,
+      "stored": 16,
+      "proof": {
+        "stored": 16,
+        "valid": 16,
+        "lowest": "0.03",
+        "highest": "0.36"
+      },
+      "at": "2026-10-05T20:15:30.521Z"
+    },
+    {
+      "groupId": 2420,
+      "setCode": "sm10",
+      "candidates": 234,
+      "stored": 16,
+      "proof": {
+        "stored": 16,
+        "valid": 16,
+        "lowest": "0.14",
+        "highest": "1.69"
+      },
+      "at": "2026-10-05T20:15:45.883Z"
+    },
+    {
+      "groupId": 2545,
+      "setCode": "swshp",
+      "candidates": 305,
+      "stored": 0
+    },
+    {
+      "groupId": 22872,
+      "setCode": "svp",
+      "candidates": 227,
+      "stored": 1,
+      "proof": {
+        "stored": 1,
+        "valid": 1,
+        "lowest": "3.76",
+        "highest": "3.76"
+      },
+      "at": "2026-10-05T20:15:53.549Z"
+    },
+    {
+      "groupId": 1376,
+      "setCode": "ex3",
+      "candidates": 191,
+      "stored": 84,
+      "proof": {
+        "stored": 84,
+        "valid": 84,
+        "lowest": "0.31",
+        "highest": "247.71"
+      },
+      "at": "2026-10-05T20:16:20.268Z"
+    },
+    {
+      "groupId": 23821,
+      "setCode": "sv08.5",
+      "candidates": 281,
+      "stored": 48,
+      "proof": {
+        "stored": 48,
+        "valid": 48,
+        "lowest": "0.39",
+        "highest": "1004.99"
+      },
+      "at": "2026-10-05T20:21:52.511Z"
+    },
+    {
+      "groupId": 23537,
+      "setCode": "sv07",
+      "candidates": 304,
+      "stored": 76,
+      "proof": {
+        "stored": 76,
+        "valid": 76,
+        "lowest": "0.05",
+        "highest": "57.13"
+      },
+      "at": "2026-10-05T20:22:11.789Z"
+    },
+    {
+      "groupId": 24587,
+      "setCode": "me03",
+      "candidates": 212,
+      "stored": 71,
+      "proof": {
+        "stored": 71,
+        "valid": 71,
+        "lowest": "0.03",
+        "highest": "77.54"
+      },
+      "at": "2026-10-05T20:22:31.348Z"
+    },
+    {
+      "groupId": 1413,
+      "setCode": "bw8",
+      "candidates": 138,
+      "stored": 20,
+      "proof": {
+        "stored": 20,
+        "valid": 20,
+        "lowest": "0.18",
+        "highest": "2.48"
+      },
+      "at": "2026-10-05T20:22:38.352Z"
+    },
+    {
+      "groupId": 2377,
+      "setCode": "sm9",
+      "candidates": 196,
+      "stored": 14,
+      "proof": {
+        "stored": 14,
+        "valid": 14,
+        "lowest": "0.18",
+        "highest": "2.17"
+      },
+      "at": "2026-10-05T20:22:44.983Z"
+    },
+    {
+      "groupId": 1382,
+      "setCode": "bw9",
+      "candidates": 122,
+      "stored": 8,
+      "proof": {
+        "stored": 8,
+        "valid": 8,
+        "lowest": "0.19",
+        "highest": "1.66"
+      },
+      "at": "2026-10-05T20:40:05.945Z"
+    },
+    {
+      "groupId": 1451,
+      "setCode": "xyp",
+      "candidates": 216,
+      "stored": 0,
+      "proof": {
+        "stored": 0,
+        "valid": 0
+      },
+      "at": "2026-10-05T20:40:08.350Z"
+    },
+    {
+      "groupId": 24448,
+      "setCode": "me02",
+      "candidates": 218,
+      "stored": 69,
+      "proof": {
+        "stored": 69,
+        "valid": 69,
+        "lowest": "0.05",
+        "highest": "498.91"
+      },
+      "at": "2026-10-05T20:40:44.891Z"
+    },
+    {
+      "groupId": 23529,
+      "setCode": "sv06.5",
+      "candidates": 156,
+      "stored": 65,
+      "proof": {
+        "stored": 65,
+        "valid": 65,
+        "lowest": "0.03",
+        "highest": "57.18"
+      },
+      "at": "2026-10-05T20:41:02.207Z"
+    },
+    {
+      "groupId": 3118,
+      "setCode": "swsh11",
+      "candidates": 367,
+      "stored": 4,
+      "proof": {
+        "stored": 4,
+        "valid": 4,
+        "lowest": "0.09",
+        "highest": "0.20"
+      },
+      "at": "2026-10-05T20:41:09.490Z"
+    },
+    {
+      "groupId": 24073,
+      "setCode": "sv09",
+      "candidates": 349,
+      "stored": 77,
+      "proof": {
+        "stored": 77,
+        "valid": 77,
+        "lowest": "0.04",
+        "highest": "68.38"
+      },
+      "at": "2026-10-05T20:41:47.117Z"
+    },
+    {
+      "groupId": 2278,
+      "setCode": "sm7",
+      "candidates": 183,
+      "stored": 20,
+      "proof": {
+        "stored": 20,
+        "valid": 20,
+        "lowest": "0.13",
+        "highest": "1.30"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:43:33.093Z"
+    },
+    {
+      "groupId": 2626,
+      "setCode": "swsh2",
+      "candidates": 361,
+      "stored": 4,
+      "proof": {
+        "stored": 4,
+        "valid": 4,
+        "lowest": "0.14",
+        "highest": "0.28"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:43:44.017Z"
+    },
+    {
+      "groupId": 3170,
+      "setCode": "swsh12",
+      "candidates": 359,
+      "stored": 0,
+      "proof": {
+        "stored": 0,
+        "valid": 0
+      },
+      "sourceAt": "2026-10-04T20:05:38+00:00",
+      "at": "2026-10-05T20:43:47.659Z"
+    },
+    {
+      "groupId": 1417,
+      "setCode": "dp6",
+      "candidates": 294,
+      "stored": 39,
+      "proof": {
+        "stored": 39,
+        "valid": 39,
+        "lowest": "0.26",
+        "highest": "18.14"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:43:58.626Z"
+    },
+    {
+      "groupId": 1400,
+      "setCode": "bw1",
+      "candidates": 115,
+      "stored": 32,
+      "proof": {
+        "stored": 32,
+        "valid": 32,
+        "lowest": "0.16",
+        "highest": "0.85"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:44:12.390Z"
+    },
+    {
+      "groupId": 2209,
+      "setCode": "sm6",
+      "candidates": 146,
+      "stored": 12,
+      "proof": {
+        "stored": 12,
+        "valid": 12,
+        "lowest": "0.15",
+        "highest": "0.29"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:44:20.431Z"
+    },
+    {
+      "groupId": 2178,
+      "setCode": "sm5",
+      "candidates": 173,
+      "stored": 15,
+      "proof": {
+        "stored": 15,
+        "valid": 15,
+        "lowest": "0.06",
+        "highest": "2.02"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:44:28.262Z"
+    },
+    {
+      "groupId": 1369,
+      "setCode": "dp7",
+      "candidates": 204,
+      "stored": 32,
+      "proof": {
+        "stored": 32,
+        "valid": 32,
+        "lowest": "0.21",
+        "highest": "15.09"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:44:44.826Z"
+    },
+    {
+      "groupId": 1441,
+      "setCode": "gym1",
+      "candidates": 264,
+      "stored": 0,
+      "proof": {
+        "stored": 0,
+        "valid": 0
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:44:47.969Z"
+    },
+    {
+      "groupId": 1424,
+      "setCode": "bw2",
+      "candidates": 98,
+      "stored": 35,
+      "proof": {
+        "stored": 35,
+        "valid": 35,
+        "lowest": "0.18",
+        "highest": "1.17"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:45:06.925Z"
+    },
+    {
+      "groupId": 1406,
+      "setCode": "pl1",
+      "candidates": 257,
+      "stored": 24,
+      "proof": {
+        "stored": 24,
+        "valid": 24,
+        "lowest": "0.21",
+        "highest": "98.22"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:45:25.198Z"
+    },
+    {
+      "groupId": 1379,
+      "setCode": "ex13",
+      "candidates": 114,
+      "stored": 2,
+      "proof": {
+        "stored": 2,
+        "valid": 2,
+        "lowest": "0.20",
+        "highest": "0.28"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:45:36.460Z"
+    },
+    {
+      "groupId": 1534,
+      "setCode": "xy6",
+      "candidates": 112,
+      "stored": 11,
+      "proof": {
+        "stored": 11,
+        "valid": 11,
+        "lowest": "0.11",
+        "highest": "2.78"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:45:47.526Z"
+    },
+    {
+      "groupId": 1409,
+      "setCode": "bw11",
+      "candidates": 140,
+      "stored": 7,
+      "proof": {
+        "stored": 7,
+        "valid": 7,
+        "lowest": "0.21",
+        "highest": "2.59"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:46:47.449Z"
+    },
+    {
+      "groupId": 1390,
+      "setCode": "dp5",
+      "candidates": 200,
+      "stored": 32,
+      "proof": {
+        "stored": 32,
+        "valid": 32,
+        "lowest": "0.31",
+        "highest": "191.38"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:47:01.470Z"
+    },
+    {
+      "groupId": 2675,
+      "setCode": "swsh3",
+      "candidates": 358,
+      "stored": 4,
+      "proof": {
+        "stored": 4,
+        "valid": 4,
+        "lowest": "0.23",
+        "highest": "0.48"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:47:08.733Z"
+    },
+    {
+      "groupId": 1780,
+      "setCode": "xy10",
+      "candidates": 129,
+      "stored": 18,
+      "proof": {
+        "stored": 18,
+        "valid": 18,
+        "lowest": "0.11",
+        "highest": "0.51"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:47:21.917Z"
+    },
+    {
+      "groupId": 2948,
+      "setCode": "swsh9",
+      "candidates": 310,
+      "stored": 6,
+      "proof": {
+        "stored": 6,
+        "valid": 6,
+        "lowest": "0.15",
+        "highest": "0.30"
+      },
+      "sourceAt": "2026-10-04T20:05:38+00:00",
+      "at": "2026-10-05T20:47:30.234Z"
+    },
+    {
+      "groupId": 1661,
+      "setCode": "xy8",
+      "candidates": 165,
+      "stored": 17,
+      "proof": {
+        "stored": 17,
+        "valid": 17,
+        "lowest": "0.16",
+        "highest": "0.47"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:47:38.056Z"
+    },
+    {
+      "groupId": 1392,
+      "setCode": "ex2",
+      "candidates": 194,
+      "stored": 36,
+      "proof": {
+        "stored": 36,
+        "valid": 36,
+        "lowest": "0.41",
+        "highest": "44.39"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:47:49.100Z"
+    },
+    {
+      "groupId": 1402,
+      "setCode": "hgss1",
+      "candidates": 239,
+      "stored": 4,
+      "proof": {
+        "stored": 4,
+        "valid": 4,
+        "lowest": "1.23",
+        "highest": "12.85"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:47:57.532Z"
+    },
+    {
+      "groupId": 1394,
+      "setCode": "bw6",
+      "candidates": 128,
+      "stored": 22,
+      "proof": {
+        "stored": 22,
+        "valid": 22,
+        "lowest": "0.17",
+        "highest": "17.72"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:48:05.859Z"
+    },
+    {
+      "groupId": 1509,
+      "setCode": "xy5",
+      "candidates": 164,
+      "stored": 2,
+      "proof": {
+        "stored": 2,
+        "valid": 2,
+        "lowest": "0.21",
+        "highest": "0.23"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:48:14.841Z"
+    },
+    {
+      "groupId": 1576,
+      "setCode": "xy7",
+      "candidates": 101,
+      "stored": 12,
+      "proof": {
+        "stored": 12,
+        "valid": 12,
+        "lowest": "0.03",
+        "highest": "4.16"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:48:21.881Z"
+    },
+    {
+      "groupId": 1385,
+      "setCode": "bw3",
+      "candidates": 102,
+      "stored": 23,
+      "proof": {
+        "stored": 23,
+        "valid": 23,
+        "lowest": "0.21",
+        "highest": "8.10"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:48:30.692Z"
+    },
+    {
+      "groupId": 1410,
+      "setCode": "ex9",
+      "candidates": 203,
+      "stored": 33,
+      "proof": {
+        "stored": 33,
+        "valid": 33,
+        "lowest": "0.34",
+        "highest": "211.72"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:48:47.872Z"
+    },
+    {
+      "groupId": 1403,
+      "setCode": "hgss3",
+      "candidates": 177,
+      "stored": 28,
+      "proof": {
+        "stored": 28,
+        "valid": 28,
+        "lowest": "0.24",
+        "highest": "34.02"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:48:58.063Z"
+    },
+    {
+      "groupId": 1370,
+      "setCode": "bw10",
+      "candidates": 105,
+      "stored": 1,
+      "proof": {
+        "stored": 1,
+        "valid": 1,
+        "lowest": "1.18",
+        "highest": "1.18"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:49:05.017Z"
+    },
+    {
+      "groupId": 1428,
+      "setCode": "ex7",
+      "candidates": 210,
+      "stored": 32,
+      "proof": {
+        "stored": 32,
+        "valid": 32,
+        "lowest": "0.66",
+        "highest": "200.38"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:49:20.362Z"
+    },
+    {
+      "groupId": 1464,
+      "setCode": "xy2",
+      "candidates": 110,
+      "stored": 8,
+      "proof": {
+        "stored": 8,
+        "valid": 8,
+        "lowest": "0.16",
+        "highest": "0.57"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:49:29.471Z"
+    },
+    {
+      "groupId": 2765,
+      "setCode": "swsh5",
+      "candidates": 308,
+      "stored": 4,
+      "proof": {
+        "stored": 4,
+        "valid": 4,
+        "lowest": "0.13",
+        "highest": "0.23"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:49:36.668Z"
+    },
+    {
+      "groupId": 1957,
+      "setCode": "sm3",
+      "candidates": 289,
+      "stored": 4,
+      "proof": {
+        "stored": 4,
+        "valid": 4,
+        "lowest": "0.24",
+        "highest": "0.49"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:49:43.777Z"
+    },
+    {
+      "groupId": 1386,
+      "setCode": "bw5",
+      "candidates": 111,
+      "stored": 20,
+      "proof": {
+        "stored": 20,
+        "valid": 20,
+        "lowest": "0.23",
+        "highest": "17.88"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:49:51.883Z"
+    },
+    {
+      "groupId": 1416,
+      "setCode": "ex5",
+      "candidates": 199,
+      "stored": 32,
+      "proof": {
+        "stored": 32,
+        "valid": 32,
+        "lowest": "0.23",
+        "highest": "22.00"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:50:04.274Z"
+    },
+    {
+      "groupId": 1919,
+      "setCode": "sm2",
+      "candidates": 169,
+      "stored": 6,
+      "proof": {
+        "stored": 6,
+        "valid": 6,
+        "lowest": "0.14",
+        "highest": "0.27"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:50:11.922Z"
+    },
+    {
+      "groupId": 1395,
+      "setCode": "ex14",
+      "candidates": 105,
+      "stored": 16,
+      "proof": {
+        "stored": 16,
+        "valid": 16,
+        "lowest": "0.85",
+        "highest": "13.32"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:50:36.674Z"
+    },
+    {
+      "groupId": 1399,
+      "setCode": "hgss2",
+      "candidates": 184,
+      "stored": 12,
+      "proof": {
+        "stored": 12,
+        "valid": 12,
+        "lowest": "0.26",
+        "highest": "18.63"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:50:44.611Z"
+    },
+    {
+      "groupId": 1419,
+      "setCode": "ex6",
+      "candidates": 219,
+      "stored": 15,
+      "proof": {
+        "stored": 15,
+        "valid": 15,
+        "lowest": "1.59",
+        "highest": "207.42"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:50:54.190Z"
+    },
+    {
+      "groupId": 2295,
+      "setCode": "sm7.5",
+      "candidates": 78,
+      "stored": 6,
+      "proof": {
+        "stored": 6,
+        "valid": 6,
+        "lowest": "0.22",
+        "highest": "0.66"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:51:01.605Z"
+    },
+    {
+      "groupId": 1440,
+      "setCode": "gym2",
+      "candidates": 262,
+      "stored": 0,
+      "proof": {
+        "stored": 0,
+        "valid": 0
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:51:05.024Z"
+    },
+    {
+      "groupId": 1434,
+      "setCode": "neo2",
+      "candidates": 150,
+      "stored": 0,
+      "proof": {
+        "stored": 0,
+        "valid": 0
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:51:08.283Z"
+    },
+    {
+      "groupId": 1408,
+      "setCode": "bw7",
+      "candidates": 153,
+      "stored": 11,
+      "proof": {
+        "stored": 11,
+        "valid": 11,
+        "lowest": "0.23",
+        "highest": "12.27"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:51:23.150Z"
+    },
+    {
+      "groupId": 1396,
+      "setCode": "neo1",
+      "candidates": 222,
+      "stored": 0,
+      "proof": {
+        "stored": 0,
+        "valid": 0
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:51:26.329Z"
+    },
+    {
+      "groupId": 1494,
+      "setCode": "xy4",
+      "candidates": 124,
+      "stored": 2,
+      "proof": {
+        "stored": 2,
+        "valid": 2,
+        "lowest": "0.16",
+        "highest": "0.18"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:51:36.612Z"
+    },
+    {
+      "groupId": 1373,
+      "setCode": "base5",
+      "candidates": 166,
+      "stored": 0,
+      "proof": {
+        "stored": 0,
+        "valid": 0
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:51:39.795Z"
+    },
+    {
+      "groupId": 1412,
+      "setCode": "bw4",
+      "candidates": 103,
+      "stored": 10,
+      "proof": {
+        "stored": 10,
+        "valid": 10,
+        "lowest": "0.20",
+        "highest": "2.52"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:51:48.117Z"
+    },
+    {
+      "groupId": 635,
+      "setCode": "base2",
+      "candidates": 128,
+      "stored": 0,
+      "proof": {
+        "stored": 0,
+        "valid": 0
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:51:52.392Z"
+    },
+    {
+      "groupId": 1367,
+      "setCode": "pl2",
+      "candidates": 228,
+      "stored": 8,
+      "proof": {
+        "stored": 8,
+        "valid": 8,
+        "lowest": "7.92",
+        "highest": "59.28"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:52:05.455Z"
+    },
+    {
+      "groupId": 24451,
+      "setCode": "mep",
+      "candidates": 89,
+      "stored": 0,
+      "proof": {
+        "stored": 0,
+        "valid": 0
+      },
+      "sourceAt": "2026-10-04T20:05:38+00:00",
+      "at": "2026-10-05T20:52:08.963Z"
+    },
+    {
+      "groupId": 630,
+      "setCode": "base3",
+      "candidates": 124,
+      "stored": 0,
+      "proof": {
+        "stored": 0,
+        "valid": 0
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:52:12.204Z"
+    },
+    {
+      "groupId": 1701,
+      "setCode": "xy9",
+      "candidates": 126,
+      "stored": 2,
+      "proof": {
+        "stored": 2,
+        "valid": 2,
+        "lowest": "0.06",
+        "highest": "0.09"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:52:23.260Z"
+    },
+    {
+      "groupId": 1429,
+      "setCode": "ex11",
+      "candidates": 116,
+      "stored": 3,
+      "proof": {
+        "stored": 3,
+        "valid": 3,
+        "lowest": "0.46",
+        "highest": "7.11"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:52:31.060Z"
+    },
+    {
+      "groupId": 1481,
+      "setCode": "xy3",
+      "candidates": 114,
+      "stored": 4,
+      "proof": {
+        "stored": 4,
+        "valid": 4,
+        "lowest": "0.21",
+        "highest": "0.36"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:52:39.421Z"
+    },
+    {
+      "groupId": 1404,
+      "setCode": "ex8",
+      "candidates": 209,
+      "stored": 24,
+      "proof": {
+        "stored": 24,
+        "valid": 24,
+        "lowest": "0.36",
+        "highest": "47.88"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:52:49.136Z"
+    },
+    {
+      "groupId": 3064,
+      "setCode": "swsh10.5",
+      "candidates": 148,
+      "stored": 4,
+      "proof": {
+        "stored": 4,
+        "valid": 4,
+        "lowest": "0.29",
+        "highest": "2.02"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:52:56.951Z"
+    },
+    {
+      "groupId": 17688,
+      "setCode": "swsh12.5",
+      "candidates": 272,
+      "stored": 18,
+      "proof": {
+        "stored": 18,
+        "valid": 18,
+        "lowest": "0.02",
+        "highest": "9.13"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:53:05.083Z"
+    },
+    {
+      "groupId": 2754,
+      "setCode": "swsh4.5",
+      "candidates": 120,
+      "stored": 4,
+      "proof": {
+        "stored": 4,
+        "valid": 4,
+        "lowest": "0.17",
+        "highest": "0.32"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:53:14.822Z"
+    },
+    {
+      "groupId": 2480,
+      "setCode": "sm115",
+      "candidates": 69,
+      "stored": 5,
+      "proof": {
+        "stored": 5,
+        "valid": 5,
+        "lowest": "0.14",
+        "highest": "0.28"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:53:29.401Z"
+    },
+    {
+      "groupId": 1384,
+      "setCode": "pl3",
+      "candidates": 297,
+      "stored": 9,
+      "proof": {
+        "stored": 9,
+        "valid": 9,
+        "lowest": "4.48",
+        "highest": "293.63"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:53:37.189Z"
+    },
+    {
+      "groupId": 1405,
+      "setCode": "dp4",
+      "candidates": 213,
+      "stored": 4,
+      "proof": {
+        "stored": 4,
+        "valid": 4,
+        "lowest": "30.20",
+        "highest": "47.26"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:53:44.124Z"
+    },
+    {
+      "groupId": 1426,
+      "setCode": "dv1",
+      "candidates": 21,
+      "stored": 0,
+      "proof": {
+        "stored": 0,
+        "valid": 0
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:53:47.710Z"
+    },
+    {
+      "groupId": 1389,
+      "setCode": "neo3",
+      "candidates": 132,
+      "stored": 0,
+      "proof": {
+        "stored": 0,
+        "valid": 0
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:53:54.511Z"
+    },
+    {
+      "groupId": 1387,
+      "setCode": "base1",
+      "candidates": 110,
+      "stored": 0,
+      "proof": {
+        "stored": 0,
+        "valid": 0
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:53:57.928Z"
+    },
+    {
+      "groupId": 1522,
+      "setCode": "xy0",
+      "candidates": 39,
+      "stored": 2,
+      "proof": {
+        "stored": 2,
+        "valid": 2,
+        "lowest": "1.84",
+        "highest": "3.35"
+      },
+      "sourceAt": "2026-10-05T20:05:57+00:00",
+      "at": "2026-10-05T20:54:05.706Z"
+    }
+  ],
+  "excludedCaptures": [
+    {
+      "groupId": 24688,
+      "setCode": "me05",
+      "reason": "no_current_candidate_or_feed"
+    },
+    {
+      "groupId": 24688,
+      "setCode": "me05",
+      "reason": "no_current_candidate_or_feed"
+    }
+  ],
+  "migrations": [
+    {
+      "name": "retain_identity_bound_cheap_snapshots",
+      "stage": "20261005203143",
+      "production": "20261005203421"
+    },
+    {
+      "name": "bound_retained_cheap_native_evidence",
+      "stage": "20261005203902",
+      "production": "20261005203922"
+    },
+    {
+      "name": "scope_retained_cheap_provider_languages",
+      "stage": "20261005204523",
+      "production": "20261005204527"
+    },
+    {
+      "name": "select_latest_valid_retained_observation",
+      "stage": "20261005205459",
+      "production": "20261005205507"
+    }
+  ],
+  "functionProof": [
+    {
+      "project": "lmwfhvexfcoyeuoyrlco",
+      "data": [
+        {
+          "proname": "pricing_classification_page",
+          "hash": "5c541e6ee9d36496c74757ac1914a2e8",
+          "prosecdef": false,
+          "proconfig": [
+            "search_path=\"\"",
+            "plan_cache_mode=force_custom_plan"
+          ],
+          "authenticated": false,
+          "service": true
+        },
+        {
+          "proname": "pricing_classification_page_primary_evidence",
+          "hash": "fbb77448f99b8ba80ea430cb48f649d4",
+          "prosecdef": false,
+          "proconfig": [
+            "search_path=\"\"",
+            "plan_cache_mode=force_custom_plan"
+          ],
+          "authenticated": false,
+          "service": true
+        },
+        {
+          "proname": "retained_cheap_snapshot_resolution",
+          "hash": "8c2a3f050ca521a00ee093c13e8424e4",
+          "prosecdef": false,
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "authenticated": false,
+          "service": true
+        },
+        {
+          "proname": "retained_snapshot_is_valid",
+          "hash": "8c836d443fb546b833205b0e78c469cf",
+          "prosecdef": false,
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "authenticated": false,
+          "service": true
+        }
+      ]
+    },
+    {
+      "project": "oakdbbzdqwurpjnoqhmu",
+      "data": [
+        {
+          "proname": "pricing_classification_page",
+          "hash": "5c541e6ee9d36496c74757ac1914a2e8",
+          "prosecdef": false,
+          "proconfig": [
+            "search_path=\"\"",
+            "plan_cache_mode=force_custom_plan"
+          ],
+          "authenticated": false,
+          "service": true
+        },
+        {
+          "proname": "pricing_classification_page_primary_evidence",
+          "hash": "fbb77448f99b8ba80ea430cb48f649d4",
+          "prosecdef": false,
+          "proconfig": [
+            "search_path=\"\"",
+            "plan_cache_mode=force_custom_plan"
+          ],
+          "authenticated": false,
+          "service": true
+        },
+        {
+          "proname": "retained_cheap_snapshot_resolution",
+          "hash": "8c2a3f050ca521a00ee093c13e8424e4",
+          "prosecdef": false,
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "authenticated": false,
+          "service": true
+        },
+        {
+          "proname": "retained_snapshot_is_valid",
+          "hash": "8c836d443fb546b833205b0e78c469cf",
+          "prosecdef": false,
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "authenticated": false,
+          "service": true
+        }
+      ]
+    }
+  ],
+  "bulkRead": {
+    "references": 21,
+    "identities": [
+      {
+        "reference": "00006aeb-fca8-4524-903d-586eabb913ed",
+        "matching_candidates": 1,
+        "positive_direct_quotes": 0
+      },
+      {
+        "reference": "00012d45-6f4b-4698-a6b4-beb9a7950732",
+        "matching_candidates": 1,
+        "positive_direct_quotes": 0
+      },
+      {
+        "reference": "00021ece-533f-4306-9333-4afb1b01718d",
+        "matching_candidates": 1,
+        "positive_direct_quotes": 1
+      },
+      {
+        "reference": "00027c85-111b-4c36-8ef3-884c9daf93ff",
+        "matching_candidates": 1,
+        "positive_direct_quotes": 0
+      },
+      {
+        "reference": "00088bf3-51de-42a3-8ebb-41ce1d649631",
+        "matching_candidates": 1,
+        "positive_direct_quotes": 0
+      },
+      {
+        "reference": "00113adf-cd7e-4214-b467-04bb528bae21",
+        "matching_candidates": 1,
+        "positive_direct_quotes": 0
+      },
+      {
+        "reference": "001b9b8b-b485-433b-a36c-676a0de4c8ba",
+        "matching_candidates": 1,
+        "positive_direct_quotes": 1
+      },
+      {
+        "reference": "0031bf3a-8490-4328-9f12-115428fd5217",
+        "matching_candidates": 1,
+        "positive_direct_quotes": 1
+      },
+      {
+        "reference": "005080c5-6d68-44f5-a87f-150c91c4bb9e",
+        "matching_candidates": 1,
+        "positive_direct_quotes": 0
+      },
+      {
+        "reference": "010f4677-eb5a-48c2-9040-c6a2ffe25d1c",
+        "matching_candidates": 1,
+        "positive_direct_quotes": 1
+      },
+      {
+        "reference": "03b9bc46-f8c9-4316-9042-f9084dd965c8",
+        "matching_candidates": 1,
+        "positive_direct_quotes": 1
+      },
+      {
+        "reference": "11581a32-29a3-4c7f-b094-40c45084d25f",
+        "matching_candidates": 1,
+        "positive_direct_quotes": 1
+      },
+      {
+        "reference": "1cfb39db-5cf4-4014-88f8-4c9749b4c2eb",
+        "matching_candidates": 1,
+        "positive_direct_quotes": 0
+      },
+      {
+        "reference": "51e8ef87-871a-48b7-b27b-59713339db94",
+        "matching_candidates": 1,
+        "positive_direct_quotes": 1
+      },
+      {
+        "reference": "73d7b8df-40ec-40ce-92b0-b620a0daad92",
+        "matching_candidates": 1,
+        "positive_direct_quotes": 1
+      },
+      {
+        "reference": "b90c085b-d769-455d-a927-1e949a273c9a",
+        "matching_candidates": 1,
+        "positive_direct_quotes": 1
+      },
+      {
+        "reference": "f7d52194-e1c6-4e86-b96e-68b04b68018d",
+        "matching_candidates": 1,
+        "positive_direct_quotes": 1
+      },
+      {
+        "reference": "f7decc64-74aa-4d5a-b7a4-3c5fc9a6dcc9",
+        "matching_candidates": 1,
+        "positive_direct_quotes": 0
+      },
+      {
+        "reference": "febd3edb-b55e-43fc-8cb3-41c370a46bf5",
+        "matching_candidates": 1,
+        "positive_direct_quotes": 0
+      },
+      {
+        "reference": "fefe4be1-ccb2-41e7-b07e-4f7a7bf117ab",
+        "matching_candidates": 1,
+        "positive_direct_quotes": 1
+      },
+      {
+        "reference": "ff037c40-6a17-4d36-8751-61519d7988c8",
+        "matching_candidates": 1,
+        "positive_direct_quotes": 1
+      }
+    ],
+    "preparedSourceReaderPassed": true,
+    "samples": [
+      {
+        "variant_id": "00012d45-6f4b-4698-a6b4-beb9a7950732",
+        "printing_id": "c1ee3343-024d-482d-9975-7bf7bfc4dd6f",
+        "set_id": "66542fcc-a805-41d3-9390-f51faf82f570",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en",
+        "resolution": {
+          "exact": false,
+          "grade": null,
+          "setId": "66542fcc-a805-41d3-9390-f51faf82f570",
+          "value": null,
+          "finish": "normal",
+          "reason": "unresolved_provider_identity",
+          "currency": "GBP",
+          "language": "en",
+          "provider": null,
+          "sourceAt": null,
+          "checkedAt": "2026-10-05T16:27:25.792993+00:00",
+          "condition": "raw_market_unspecified",
+          "freshness": "unavailable",
+          "variantId": "00012d45-6f4b-4698-a6b4-beb9a7950732",
+          "confidence": 0,
+          "printingId": "c1ee3343-024d-482d-9975-7bf7bfc4dd6f",
+          "staleAfter": null,
+          "finishMatch": false,
+          "retrievedAt": null,
+          "evidenceType": "none",
+          "languageMatch": false,
+          "policyVersion": "classified-v1",
+          "printingMatch": false,
+          "classification": "PRICE_UNAVAILABLE",
+          "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+          "usableForHoldingsValuation": false
+        }
+      },
+      {
+        "variant_id": "00021ece-533f-4306-9333-4afb1b01718d",
+        "printing_id": "120b0541-d505-48c3-8a44-ad37c2075154",
+        "set_id": "ddc668c0-316e-4dab-8c51-625167508fd6",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en",
+        "resolution": {
+          "exact": false,
+          "grade": null,
+          "setId": "ddc668c0-316e-4dab-8c51-625167508fd6",
+          "value": 0.1,
+          "finish": "normal",
+          "reason": null,
+          "currency": "GBP",
+          "language": "en",
+          "provider": "tcgcsv",
+          "sourceAt": "2026-10-04T20:05:38+00:00",
+          "checkedAt": "2026-10-05T16:27:25.792993+00:00",
+          "condition": "raw_market_unspecified",
+          "freshness": "fresh",
+          "variantId": "00021ece-533f-4306-9333-4afb1b01718d",
+          "confidence": 0.85,
+          "printingId": "120b0541-d505-48c3-8a44-ad37c2075154",
+          "provenance": {
+            "scope": "exact_variant_market",
+            "value": 0.11,
+            "finish": "normal",
+            "set_id": "ddc668c0-316e-4dab-8c51-625167508fd6",
+            "currency": "GBP",
+            "language": "en",
+            "provider": "tcgcsv",
+            "source_at": "2026-10-04T20:05:38+00:00",
+            "variant_id": "00021ece-533f-4306-9333-4afb1b01718d",
+            "printing_id": "120b0541-d505-48c3-8a44-ad37c2075154",
+            "stale_after": "2026-10-06T20:05:38+00:00",
+            "retrieved_at": "2026-10-04T20:37:13.889332+00:00",
+            "variant_code": "normal",
+            "source_record": {
+              "set_id": "ddc668c0-316e-4dab-8c51-625167508fd6",
+              "subtype": "Normal",
+              "group_id": 24541,
+              "provider": "tcgcsv",
+              "dataset_at": "2026-10-04T20:05:38+00:00",
+              "product_id": 675853,
+              "variant_id": "00021ece-533f-4306-9333-4afb1b01718d",
+              "category_id": 3,
+              "printing_id": "120b0541-d505-48c3-8a44-ad37c2075154",
+              "recorded_at": "2026-10-04T20:37:13.889332+00:00",
+              "stale_after": "2026-10-06T20:05:38+00:00",
+              "exchange_rate": 0.757532293986637,
+              "language_code": "en",
+              "original_price": 0.14,
+              "central_estimate": 0.11,
+              "exchange_rate_at": "2026-10-02T00:00:00+00:00",
+              "original_currency": "USD",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+            },
+            "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+          },
+          "staleAfter": "2026-10-06T20:05:38+00:00",
+          "finishMatch": true,
+          "retrievedAt": "2026-10-04T20:37:13.889332+00:00",
+          "evidenceType": "exact_variant_market",
+          "languageMatch": true,
+          "policyVersion": "classified-v1",
+          "printingMatch": true,
+          "classification": "ESTIMATED_VALUE",
+          "marketSignalValue": 0.11,
+          "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+          "usableForHoldingsValuation": false
+        }
+      },
+      {
+        "variant_id": "00088bf3-51de-42a3-8ebb-41ce1d649631",
+        "printing_id": "c4cc3a63-6dc2-4ff4-98a3-fcfb70f2766a",
+        "set_id": "c5bc0f58-c30c-4115-acc9-3a6d64420cda",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en",
+        "resolution": {
+          "exact": false,
+          "grade": null,
+          "setId": "c5bc0f58-c30c-4115-acc9-3a6d64420cda",
+          "value": 12.43,
+          "finish": "normal",
+          "reason": null,
+          "currency": "GBP",
+          "language": "en",
+          "provider": "tcgcsv",
+          "sourceAt": "2026-10-05T20:05:57+00:00",
+          "checkedAt": "2026-10-05T20:55:45.809726+00:00",
+          "condition": "raw_market_unspecified",
+          "freshness": "fresh",
+          "variantId": "00088bf3-51de-42a3-8ebb-41ce1d649631",
+          "confidence": 0.65,
+          "printingId": "c4cc3a63-6dc2-4ff4-98a3-fcfb70f2766a",
+          "provenance": {
+            "scope": "printing_market",
+            "value": 12.43,
+            "finish": null,
+            "set_id": "c5bc0f58-c30c-4115-acc9-3a6d64420cda",
+            "currency": "GBP",
+            "language": "en",
+            "provider": "tcgcsv",
+            "source_at": "2026-10-05T20:05:57+00:00",
+            "printing_id": "c4cc3a63-6dc2-4ff4-98a3-fcfb70f2766a",
+            "stale_after": "2026-10-07T20:05:57+00:00",
+            "retrieved_at": "2026-10-05T20:37:41.652594+00:00",
+            "variant_code": null,
+            "source_record": {
+              "set_id": "c5bc0f58-c30c-4115-acc9-3a6d64420cda",
+              "subtype": "Holofoil",
+              "group_id": 1861,
+              "provider": "tcgcsv",
+              "dataset_at": "2026-10-05T20:05:57+00:00",
+              "product_id": 189756,
+              "category_id": 3,
+              "printing_id": "c4cc3a63-6dc2-4ff4-98a3-fcfb70f2766a",
+              "recorded_at": "2026-10-05T20:37:41.652594+00:00",
+              "stale_after": "2026-10-07T20:05:57+00:00",
+              "exchange_rate": 0.756158514816137,
+              "language_code": "en",
+              "original_price": 16.44,
+              "central_estimate": 12.43,
+              "exchange_rate_at": "2026-10-05T00:00:00+00:00",
+              "anchor_variant_id": "00088bf3-51de-42a3-8ebb-41ce1d649631",
+              "original_currency": "USD",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+            },
+            "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+          },
+          "staleAfter": "2026-10-07T20:05:57+00:00",
+          "finishMatch": false,
+          "retrievedAt": "2026-10-05T20:37:41.652594+00:00",
+          "evidenceType": "printing_market",
+          "languageMatch": true,
+          "policyVersion": "classified-v1",
+          "printingMatch": true,
+          "classification": "MARKET_GUIDE",
+          "marketSignalValue": 12.43,
+          "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+          "usableForHoldingsValuation": false
+        }
+      },
+      {
+        "variant_id": "010f4677-eb5a-48c2-9040-c6a2ffe25d1c",
+        "printing_id": "6913df81-eb2d-4e98-a644-47976e7bad12",
+        "set_id": "33342e0c-da19-4d33-a5c3-df0ede2260f4",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en",
+        "resolution": {
+          "exact": false,
+          "grade": null,
+          "setId": "33342e0c-da19-4d33-a5c3-df0ede2260f4",
+          "value": 0.1,
+          "finish": "normal",
+          "reason": null,
+          "currency": "GBP",
+          "language": "en",
+          "provider": "tcgcsv",
+          "sourceAt": "2026-10-05T20:05:57+00:00",
+          "checkedAt": "2026-10-05T20:55:45.809726+00:00",
+          "condition": "raw_market_unspecified",
+          "freshness": "fresh",
+          "variantId": "010f4677-eb5a-48c2-9040-c6a2ffe25d1c",
+          "confidence": 0.85,
+          "printingId": "6913df81-eb2d-4e98-a644-47976e7bad12",
+          "provenance": {
+            "scope": "exact_variant_market",
+            "value": 0.1,
+            "finish": "normal",
+            "set_id": "33342e0c-da19-4d33-a5c3-df0ede2260f4",
+            "currency": "GBP",
+            "language": "en",
+            "provider": "tcgcsv",
+            "source_at": "2026-10-05T20:05:57+00:00",
+            "variant_id": "010f4677-eb5a-48c2-9040-c6a2ffe25d1c",
+            "printing_id": "6913df81-eb2d-4e98-a644-47976e7bad12",
+            "stale_after": "2026-10-07T20:05:57+00:00",
+            "retrieved_at": "2026-10-05T20:51:12.269755+00:00",
+            "variant_code": "normal",
+            "source_record": {
+              "set_id": "33342e0c-da19-4d33-a5c3-df0ede2260f4",
+              "subtype": "Normal",
+              "group_id": 23120,
+              "provider": "tcgcsv",
+              "dataset_at": "2026-10-05T20:05:57+00:00",
+              "product_id": 497459,
+              "variant_id": "010f4677-eb5a-48c2-9040-c6a2ffe25d1c",
+              "category_id": 3,
+              "printing_id": "6913df81-eb2d-4e98-a644-47976e7bad12",
+              "recorded_at": "2026-10-05T20:51:12.269755+00:00",
+              "stale_after": "2026-10-07T20:05:57+00:00",
+              "exchange_rate": 0.756158514816137,
+              "language_code": "en",
+              "original_price": 0.13,
+              "central_estimate": 0.1,
+              "exchange_rate_at": "2026-10-05T00:00:00+00:00",
+              "original_currency": "USD",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+            },
+            "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+          },
+          "staleAfter": "2026-10-07T20:05:57+00:00",
+          "finishMatch": true,
+          "retrievedAt": "2026-10-05T20:51:12.269755+00:00",
+          "evidenceType": "exact_variant_market",
+          "languageMatch": true,
+          "policyVersion": "classified-v1",
+          "printingMatch": true,
+          "classification": "ESTIMATED_VALUE",
+          "marketSignalValue": 0.1,
+          "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+          "usableForHoldingsValuation": false
+        }
+      },
+      {
+        "variant_id": "03b9bc46-f8c9-4316-9042-f9084dd965c8",
+        "printing_id": "b7935e78-229d-4b59-9a25-472924c81e13",
+        "set_id": "c7e3d5ac-17b4-494e-b6af-53b6eeb75919",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en",
+        "resolution": {
+          "exact": false,
+          "grade": null,
+          "setId": "c7e3d5ac-17b4-494e-b6af-53b6eeb75919",
+          "value": 755.97,
+          "finish": "reverse_holo",
+          "reason": null,
+          "currency": "GBP",
+          "language": "en",
+          "provider": "tcgcsv",
+          "sourceAt": "2026-10-05T20:05:57+00:00",
+          "checkedAt": "2026-10-05T20:55:52.166719+00:00",
+          "condition": "raw_market_unspecified",
+          "freshness": "fresh",
+          "variantId": "03b9bc46-f8c9-4316-9042-f9084dd965c8",
+          "confidence": 0.85,
+          "printingId": "b7935e78-229d-4b59-9a25-472924c81e13",
+          "provenance": {
+            "scope": "exact_variant_market",
+            "value": 755.97,
+            "finish": "reverse_holo",
+            "set_id": "c7e3d5ac-17b4-494e-b6af-53b6eeb75919",
+            "currency": "GBP",
+            "language": "en",
+            "provider": "tcgcsv",
+            "source_at": "2026-10-05T20:05:57+00:00",
+            "variant_id": "03b9bc46-f8c9-4316-9042-f9084dd965c8",
+            "printing_id": "b7935e78-229d-4b59-9a25-472924c81e13",
+            "stale_after": "2026-10-07T20:05:57+00:00",
+            "retrieved_at": "2026-10-05T20:28:53.794137+00:00",
+            "variant_code": "reverse_holo",
+            "source_record": {
+              "set_id": "c7e3d5ac-17b4-494e-b6af-53b6eeb75919",
+              "subtype": "Reverse Holofoil",
+              "group_id": 1372,
+              "provider": "tcgcsv",
+              "dataset_at": "2026-10-05T20:05:57+00:00",
+              "product_id": 85988,
+              "variant_id": "03b9bc46-f8c9-4316-9042-f9084dd965c8",
+              "category_id": 3,
+              "printing_id": "b7935e78-229d-4b59-9a25-472924c81e13",
+              "recorded_at": "2026-10-05T20:28:53.794137+00:00",
+              "stale_after": "2026-10-07T20:05:57+00:00",
+              "exchange_rate": 0.756158514816137,
+              "language_code": "en",
+              "original_price": 999.75,
+              "central_estimate": 755.97,
+              "exchange_rate_at": "2026-10-05T00:00:00+00:00",
+              "original_currency": "USD",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+            },
+            "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+          },
+          "staleAfter": "2026-10-07T20:05:57+00:00",
+          "finishMatch": true,
+          "retrievedAt": "2026-10-05T20:28:53.794137+00:00",
+          "evidenceType": "exact_variant_market",
+          "languageMatch": true,
+          "policyVersion": "classified-v1",
+          "printingMatch": true,
+          "classification": "MARKET_GUIDE",
+          "marketSignalValue": 755.97,
+          "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+          "usableForHoldingsValuation": false
+        }
+      },
+      {
+        "variant_id": "11581a32-29a3-4c7f-b094-40c45084d25f",
+        "printing_id": "33867e53-f995-48bd-8aac-313316ed23bb",
+        "set_id": "fb3cd93c-9006-42f5-b026-96a9fedcf269",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en",
+        "resolution": {
+          "exact": false,
+          "grade": null,
+          "setId": "fb3cd93c-9006-42f5-b026-96a9fedcf269",
+          "value": 1000.74,
+          "finish": "holo",
+          "reason": null,
+          "currency": "GBP",
+          "language": "en",
+          "provider": "tcgcsv",
+          "sourceAt": "2026-10-05T20:05:57+00:00",
+          "checkedAt": "2026-10-05T21:11:55.124383+00:00",
+          "condition": "raw_market_unspecified",
+          "freshness": "fresh",
+          "variantId": "11581a32-29a3-4c7f-b094-40c45084d25f",
+          "confidence": 0.85,
+          "printingId": "33867e53-f995-48bd-8aac-313316ed23bb",
+          "provenance": {
+            "scope": "exact_variant_market",
+            "value": 1000.74,
+            "finish": "holo",
+            "set_id": "fb3cd93c-9006-42f5-b026-96a9fedcf269",
+            "currency": "GBP",
+            "language": "en",
+            "provider": "tcgcsv",
+            "source_at": "2026-10-05T20:05:57+00:00",
+            "variant_id": "11581a32-29a3-4c7f-b094-40c45084d25f",
+            "printing_id": "33867e53-f995-48bd-8aac-313316ed23bb",
+            "stale_after": "2026-10-07T20:05:57+00:00",
+            "retrieved_at": "2026-10-05T20:57:53.689116+00:00",
+            "variant_code": "holo",
+            "source_record": {
+              "set_id": "fb3cd93c-9006-42f5-b026-96a9fedcf269",
+              "subtype": "Holofoil",
+              "group_id": 23821,
+              "provider": "tcgcsv",
+              "dataset_at": "2026-10-05T20:05:57+00:00",
+              "product_id": 610516,
+              "variant_id": "11581a32-29a3-4c7f-b094-40c45084d25f",
+              "category_id": 3,
+              "printing_id": "33867e53-f995-48bd-8aac-313316ed23bb",
+              "recorded_at": "2026-10-05T20:57:53.689116+00:00",
+              "stale_after": "2026-10-07T20:05:57+00:00",
+              "exchange_rate": 0.756158514816137,
+              "language_code": "en",
+              "original_price": 1323.45,
+              "central_estimate": 1000.74,
+              "exchange_rate_at": "2026-10-05T00:00:00+00:00",
+              "original_currency": "USD",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+            },
+            "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+          },
+          "staleAfter": "2026-10-07T20:05:57+00:00",
+          "finishMatch": true,
+          "retrievedAt": "2026-10-05T20:57:53.689116+00:00",
+          "evidenceType": "exact_variant_market",
+          "languageMatch": true,
+          "policyVersion": "classified-v1",
+          "printingMatch": true,
+          "classification": "MARKET_GUIDE",
+          "marketSignalValue": 1000.74,
+          "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+          "usableForHoldingsValuation": false
+        }
+      },
+      {
+        "variant_id": "51e8ef87-871a-48b7-b27b-59713339db94",
+        "printing_id": "9a454800-23d5-42af-a78a-7176c7ae7626",
+        "set_id": "ddc668c0-316e-4dab-8c51-625167508fd6",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en",
+        "resolution": {
+          "exact": false,
+          "grade": null,
+          "setId": "ddc668c0-316e-4dab-8c51-625167508fd6",
+          "value": 701.57,
+          "finish": "holo",
+          "reason": null,
+          "currency": "GBP",
+          "language": "en",
+          "provider": "tcgcsv",
+          "sourceAt": "2026-10-04T20:05:38+00:00",
+          "checkedAt": "2026-10-05T20:58:04.864596+00:00",
+          "condition": "raw_market_unspecified",
+          "freshness": "fresh",
+          "variantId": "51e8ef87-871a-48b7-b27b-59713339db94",
+          "confidence": 0.85,
+          "printingId": "9a454800-23d5-42af-a78a-7176c7ae7626",
+          "provenance": {
+            "scope": "exact_variant_market",
+            "value": 701.57,
+            "finish": "holo",
+            "set_id": "ddc668c0-316e-4dab-8c51-625167508fd6",
+            "currency": "GBP",
+            "language": "en",
+            "provider": "tcgcsv",
+            "source_at": "2026-10-04T20:05:38+00:00",
+            "variant_id": "51e8ef87-871a-48b7-b27b-59713339db94",
+            "printing_id": "9a454800-23d5-42af-a78a-7176c7ae7626",
+            "stale_after": "2026-10-06T20:05:38+00:00",
+            "retrieved_at": "2026-10-05T20:06:01.492262+00:00",
+            "variant_code": "holo",
+            "source_record": {
+              "set_id": "ddc668c0-316e-4dab-8c51-625167508fd6",
+              "subtype": "Holofoil",
+              "group_id": 24541,
+              "provider": "tcgcsv",
+              "dataset_at": "2026-10-04T20:05:38+00:00",
+              "product_id": 676088,
+              "variant_id": "51e8ef87-871a-48b7-b27b-59713339db94",
+              "category_id": 3,
+              "printing_id": "9a454800-23d5-42af-a78a-7176c7ae7626",
+              "recorded_at": "2026-10-05T20:06:01.492262+00:00",
+              "stale_after": "2026-10-06T20:05:38+00:00",
+              "exchange_rate": 0.757532293986637,
+              "language_code": "en",
+              "original_price": 926.12,
+              "central_estimate": 701.57,
+              "exchange_rate_at": "2026-10-02T00:00:00+00:00",
+              "original_currency": "USD",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+            },
+            "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+          },
+          "staleAfter": "2026-10-06T20:05:38+00:00",
+          "finishMatch": true,
+          "retrievedAt": "2026-10-05T20:06:01.492262+00:00",
+          "evidenceType": "exact_variant_market",
+          "languageMatch": true,
+          "policyVersion": "classified-v1",
+          "printingMatch": true,
+          "classification": "MARKET_GUIDE",
+          "marketSignalValue": 701.57,
+          "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+          "usableForHoldingsValuation": false
+        }
+      },
+      {
+        "variant_id": "73d7b8df-40ec-40ce-92b0-b620a0daad92",
+        "printing_id": "d3d75098-0982-440e-9148-cd036d89562c",
+        "set_id": "33342e0c-da19-4d33-a5c3-df0ede2260f4",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en",
+        "resolution": {
+          "exact": false,
+          "grade": null,
+          "setId": "33342e0c-da19-4d33-a5c3-df0ede2260f4",
+          "value": 17.08,
+          "finish": "holo",
+          "reason": null,
+          "currency": "GBP",
+          "language": "en",
+          "provider": "tcgcsv",
+          "sourceAt": "2026-10-05T20:05:57+00:00",
+          "checkedAt": "2026-10-05T21:02:21.209364+00:00",
+          "condition": "raw_market_unspecified",
+          "freshness": "fresh",
+          "variantId": "73d7b8df-40ec-40ce-92b0-b620a0daad92",
+          "confidence": 0.85,
+          "printingId": "d3d75098-0982-440e-9148-cd036d89562c",
+          "provenance": {
+            "scope": "exact_variant_market",
+            "value": 17.08,
+            "finish": "holo",
+            "set_id": "33342e0c-da19-4d33-a5c3-df0ede2260f4",
+            "currency": "GBP",
+            "language": "en",
+            "provider": "tcgcsv",
+            "source_at": "2026-10-05T20:05:57+00:00",
+            "variant_id": "73d7b8df-40ec-40ce-92b0-b620a0daad92",
+            "printing_id": "d3d75098-0982-440e-9148-cd036d89562c",
+            "stale_after": "2026-10-07T20:05:57+00:00",
+            "retrieved_at": "2026-10-05T20:51:12.269755+00:00",
+            "variant_code": "holo",
+            "source_record": {
+              "set_id": "33342e0c-da19-4d33-a5c3-df0ede2260f4",
+              "subtype": "Holofoil",
+              "group_id": 23120,
+              "provider": "tcgcsv",
+              "dataset_at": "2026-10-05T20:05:57+00:00",
+              "product_id": 497608,
+              "variant_id": "73d7b8df-40ec-40ce-92b0-b620a0daad92",
+              "category_id": 3,
+              "printing_id": "d3d75098-0982-440e-9148-cd036d89562c",
+              "recorded_at": "2026-10-05T20:51:12.269755+00:00",
+              "stale_after": "2026-10-07T20:05:57+00:00",
+              "exchange_rate": 0.756158514816137,
+              "language_code": "en",
+              "original_price": 22.59,
+              "central_estimate": 17.08,
+              "exchange_rate_at": "2026-10-05T00:00:00+00:00",
+              "original_currency": "USD",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+            },
+            "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+          },
+          "staleAfter": "2026-10-07T20:05:57+00:00",
+          "finishMatch": true,
+          "retrievedAt": "2026-10-05T20:51:12.269755+00:00",
+          "evidenceType": "exact_variant_market",
+          "languageMatch": true,
+          "policyVersion": "classified-v1",
+          "printingMatch": true,
+          "classification": "MARKET_GUIDE",
+          "marketSignalValue": 17.08,
+          "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+          "usableForHoldingsValuation": false
+        }
+      },
+      {
+        "variant_id": "b90c085b-d769-455d-a927-1e949a273c9a",
+        "printing_id": "a6963041-73f0-4bd3-a237-064bb65867a4",
+        "set_id": "47e83522-7615-40cf-b62a-ffa3c0ad55a6",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en",
+        "resolution": {
+          "exact": false,
+          "grade": null,
+          "setId": "47e83522-7615-40cf-b62a-ffa3c0ad55a6",
+          "value": 659.85,
+          "finish": "holo",
+          "reason": null,
+          "currency": "GBP",
+          "language": "en",
+          "provider": "tcgcsv",
+          "sourceAt": "2026-10-05T20:05:57+00:00",
+          "checkedAt": "2026-10-05T21:03:10.986394+00:00",
+          "condition": "raw_market_unspecified",
+          "freshness": "fresh",
+          "variantId": "b90c085b-d769-455d-a927-1e949a273c9a",
+          "confidence": 0.85,
+          "printingId": "a6963041-73f0-4bd3-a237-064bb65867a4",
+          "provenance": {
+            "scope": "exact_variant_market",
+            "value": 659.85,
+            "finish": "holo",
+            "set_id": "47e83522-7615-40cf-b62a-ffa3c0ad55a6",
+            "currency": "GBP",
+            "language": "en",
+            "provider": "tcgcsv",
+            "source_at": "2026-10-05T20:05:57+00:00",
+            "variant_id": "b90c085b-d769-455d-a927-1e949a273c9a",
+            "printing_id": "a6963041-73f0-4bd3-a237-064bb65867a4",
+            "stale_after": "2026-10-07T20:05:57+00:00",
+            "retrieved_at": "2026-10-05T20:54:54.461081+00:00",
+            "variant_code": "holo",
+            "source_record": {
+              "set_id": "47e83522-7615-40cf-b62a-ffa3c0ad55a6",
+              "subtype": "Holofoil",
+              "group_id": 23353,
+              "provider": "tcgcsv",
+              "dataset_at": "2026-10-05T20:05:57+00:00",
+              "product_id": 534919,
+              "variant_id": "b90c085b-d769-455d-a927-1e949a273c9a",
+              "category_id": 3,
+              "printing_id": "a6963041-73f0-4bd3-a237-064bb65867a4",
+              "recorded_at": "2026-10-05T20:54:54.461081+00:00",
+              "stale_after": "2026-10-07T20:05:57+00:00",
+              "exchange_rate": 0.756158514816137,
+              "language_code": "en",
+              "original_price": 872.64,
+              "central_estimate": 659.85,
+              "exchange_rate_at": "2026-10-05T00:00:00+00:00",
+              "original_currency": "USD",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+            },
+            "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+          },
+          "staleAfter": "2026-10-07T20:05:57+00:00",
+          "finishMatch": true,
+          "retrievedAt": "2026-10-05T20:54:54.461081+00:00",
+          "evidenceType": "exact_variant_market",
+          "languageMatch": true,
+          "policyVersion": "classified-v1",
+          "printingMatch": true,
+          "classification": "MARKET_GUIDE",
+          "marketSignalValue": 659.85,
+          "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+          "usableForHoldingsValuation": false
+        }
+      },
+      {
+        "variant_id": "f7d52194-e1c6-4e86-b96e-68b04b68018d",
+        "printing_id": "b1f85e7a-b174-44ad-8140-8faff6f65604",
+        "set_id": "816ff627-a585-4953-99c4-a15c9b0b80e5",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en",
+        "resolution": {
+          "exact": false,
+          "grade": null,
+          "setId": "816ff627-a585-4953-99c4-a15c9b0b80e5",
+          "value": 0.2,
+          "finish": "reverse_holo",
+          "reason": null,
+          "currency": "GBP",
+          "language": "en",
+          "provider": "tcgcsv",
+          "sourceAt": "2026-10-04T20:05:38+00:00",
+          "checkedAt": "2026-10-05T21:04:07.879904+00:00",
+          "condition": "raw_market_unspecified",
+          "freshness": "fresh",
+          "variantId": "f7d52194-e1c6-4e86-b96e-68b04b68018d",
+          "confidence": 0.85,
+          "printingId": "b1f85e7a-b174-44ad-8140-8faff6f65604",
+          "provenance": {
+            "scope": "exact_variant_market",
+            "value": 0.15,
+            "finish": "reverse_holo",
+            "set_id": "816ff627-a585-4953-99c4-a15c9b0b80e5",
+            "currency": "GBP",
+            "language": "en",
+            "provider": "tcgcsv",
+            "source_at": "2026-10-04T20:05:38+00:00",
+            "variant_id": "f7d52194-e1c6-4e86-b96e-68b04b68018d",
+            "printing_id": "b1f85e7a-b174-44ad-8140-8faff6f65604",
+            "stale_after": "2026-10-06T20:05:38+00:00",
+            "retrieved_at": "2026-10-05T20:15:23.761392+00:00",
+            "variant_code": "reverse_holo",
+            "source_record": {
+              "set_id": "816ff627-a585-4953-99c4-a15c9b0b80e5",
+              "subtype": "Reverse Holofoil",
+              "group_id": 24655,
+              "provider": "tcgcsv",
+              "dataset_at": "2026-10-04T20:05:38+00:00",
+              "product_id": 693461,
+              "variant_id": "f7d52194-e1c6-4e86-b96e-68b04b68018d",
+              "category_id": 3,
+              "printing_id": "b1f85e7a-b174-44ad-8140-8faff6f65604",
+              "recorded_at": "2026-10-05T20:15:23.761392+00:00",
+              "stale_after": "2026-10-06T20:05:38+00:00",
+              "exchange_rate": 0.757532293986637,
+              "language_code": "en",
+              "original_price": 0.2,
+              "central_estimate": 0.15,
+              "exchange_rate_at": "2026-10-02T00:00:00+00:00",
+              "original_currency": "USD",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+            },
+            "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+          },
+          "staleAfter": "2026-10-06T20:05:38+00:00",
+          "finishMatch": true,
+          "retrievedAt": "2026-10-05T20:15:23.761392+00:00",
+          "evidenceType": "exact_variant_market",
+          "languageMatch": true,
+          "policyVersion": "classified-v1",
+          "printingMatch": true,
+          "classification": "ESTIMATED_VALUE",
+          "marketSignalValue": 0.15,
+          "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+          "usableForHoldingsValuation": false
+        }
+      },
+      {
+        "variant_id": "fefe4be1-ccb2-41e7-b07e-4f7a7bf117ab",
+        "printing_id": "88a73c45-eafc-4ff5-9cc3-4b1b8ff33050",
+        "set_id": "816ff627-a585-4953-99c4-a15c9b0b80e5",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en",
+        "resolution": {
+          "exact": false,
+          "grade": null,
+          "setId": "816ff627-a585-4953-99c4-a15c9b0b80e5",
+          "value": 0.1,
+          "finish": "normal",
+          "reason": null,
+          "currency": "GBP",
+          "language": "en",
+          "provider": "tcgcsv",
+          "sourceAt": "2026-10-04T20:05:38+00:00",
+          "checkedAt": "2026-10-05T21:04:13.623753+00:00",
+          "condition": "raw_market_unspecified",
+          "freshness": "fresh",
+          "variantId": "fefe4be1-ccb2-41e7-b07e-4f7a7bf117ab",
+          "confidence": 0.85,
+          "printingId": "88a73c45-eafc-4ff5-9cc3-4b1b8ff33050",
+          "provenance": {
+            "scope": "exact_variant_market",
+            "value": 0.05,
+            "finish": "normal",
+            "set_id": "816ff627-a585-4953-99c4-a15c9b0b80e5",
+            "currency": "GBP",
+            "language": "en",
+            "provider": "tcgcsv",
+            "source_at": "2026-10-04T20:05:38+00:00",
+            "variant_id": "fefe4be1-ccb2-41e7-b07e-4f7a7bf117ab",
+            "printing_id": "88a73c45-eafc-4ff5-9cc3-4b1b8ff33050",
+            "stale_after": "2026-10-06T20:05:38+00:00",
+            "retrieved_at": "2026-10-05T20:15:23.761392+00:00",
+            "variant_code": "normal",
+            "source_record": {
+              "set_id": "816ff627-a585-4953-99c4-a15c9b0b80e5",
+              "subtype": "Normal",
+              "group_id": 24655,
+              "provider": "tcgcsv",
+              "dataset_at": "2026-10-04T20:05:38+00:00",
+              "product_id": 693552,
+              "variant_id": "fefe4be1-ccb2-41e7-b07e-4f7a7bf117ab",
+              "category_id": 3,
+              "printing_id": "88a73c45-eafc-4ff5-9cc3-4b1b8ff33050",
+              "recorded_at": "2026-10-05T20:15:23.761392+00:00",
+              "stale_after": "2026-10-06T20:05:38+00:00",
+              "exchange_rate": 0.757532293986637,
+              "language_code": "en",
+              "original_price": 0.06,
+              "central_estimate": 0.05,
+              "exchange_rate_at": "2026-10-02T00:00:00+00:00",
+              "original_currency": "USD",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+            },
+            "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+          },
+          "staleAfter": "2026-10-06T20:05:38+00:00",
+          "finishMatch": true,
+          "retrievedAt": "2026-10-05T20:15:23.761392+00:00",
+          "evidenceType": "exact_variant_market",
+          "languageMatch": true,
+          "policyVersion": "classified-v1",
+          "printingMatch": true,
+          "classification": "ESTIMATED_VALUE",
+          "marketSignalValue": 0.05,
+          "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+          "usableForHoldingsValuation": false
+        }
+      },
+      {
+        "variant_id": "ff037c40-6a17-4d36-8751-61519d7988c8",
+        "printing_id": "0d2ecd6f-70d4-4990-b300-6728335180f1",
+        "set_id": "c7e3d5ac-17b4-494e-b6af-53b6eeb75919",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en",
+        "resolution": {
+          "exact": false,
+          "grade": null,
+          "setId": "c7e3d5ac-17b4-494e-b6af-53b6eeb75919",
+          "value": 907.2,
+          "finish": "reverse_holo",
+          "reason": null,
+          "currency": "GBP",
+          "language": "en",
+          "provider": "tcgcsv",
+          "sourceAt": "2026-10-05T20:05:57+00:00",
+          "checkedAt": "2026-10-05T21:04:13.623753+00:00",
+          "condition": "raw_market_unspecified",
+          "freshness": "fresh",
+          "variantId": "ff037c40-6a17-4d36-8751-61519d7988c8",
+          "confidence": 0.85,
+          "printingId": "0d2ecd6f-70d4-4990-b300-6728335180f1",
+          "provenance": {
+            "scope": "exact_variant_market",
+            "value": 907.2,
+            "finish": "reverse_holo",
+            "set_id": "c7e3d5ac-17b4-494e-b6af-53b6eeb75919",
+            "currency": "GBP",
+            "language": "en",
+            "provider": "tcgcsv",
+            "source_at": "2026-10-05T20:05:57+00:00",
+            "variant_id": "ff037c40-6a17-4d36-8751-61519d7988c8",
+            "printing_id": "0d2ecd6f-70d4-4990-b300-6728335180f1",
+            "stale_after": "2026-10-07T20:05:57+00:00",
+            "retrieved_at": "2026-10-05T20:28:53.794137+00:00",
+            "variant_code": "reverse_holo",
+            "source_record": {
+              "set_id": "c7e3d5ac-17b4-494e-b6af-53b6eeb75919",
+              "subtype": "Reverse Holofoil",
+              "group_id": 1372,
+              "provider": "tcgcsv",
+              "dataset_at": "2026-10-05T20:05:57+00:00",
+              "product_id": 85669,
+              "variant_id": "ff037c40-6a17-4d36-8751-61519d7988c8",
+              "category_id": 3,
+              "printing_id": "0d2ecd6f-70d4-4990-b300-6728335180f1",
+              "recorded_at": "2026-10-05T20:28:53.794137+00:00",
+              "stale_after": "2026-10-07T20:05:57+00:00",
+              "exchange_rate": 0.756158514816137,
+              "language_code": "en",
+              "original_price": 1199.75,
+              "central_estimate": 907.2,
+              "exchange_rate_at": "2026-10-05T00:00:00+00:00",
+              "original_currency": "USD",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+            },
+            "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+          },
+          "staleAfter": "2026-10-07T20:05:57+00:00",
+          "finishMatch": true,
+          "retrievedAt": "2026-10-05T20:28:53.794137+00:00",
+          "evidenceType": "exact_variant_market",
+          "languageMatch": true,
+          "policyVersion": "classified-v1",
+          "printingMatch": true,
+          "classification": "MARKET_GUIDE",
+          "marketSignalValue": 907.2,
+          "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+          "usableForHoldingsValuation": false
+        }
+      },
+      {
+        "variant_id": "00113adf-cd7e-4214-b467-04bb528bae21",
+        "printing_id": "056b7550-283b-4ef5-b434-6fc4815c102b",
+        "set_id": "c20234cb-c629-4383-b107-c49b38b682ae",
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja",
+        "resolution": {
+          "exact": false,
+          "grade": null,
+          "setId": "c20234cb-c629-4383-b107-c49b38b682ae",
+          "value": null,
+          "finish": "normal",
+          "reason": "no_provider_quote",
+          "currency": "GBP",
+          "language": "ja",
+          "provider": null,
+          "sourceAt": null,
+          "checkedAt": "2026-10-05T16:27:25.792993+00:00",
+          "condition": "raw_market_unspecified",
+          "freshness": "unavailable",
+          "variantId": "00113adf-cd7e-4214-b467-04bb528bae21",
+          "confidence": 0,
+          "printingId": "056b7550-283b-4ef5-b434-6fc4815c102b",
+          "staleAfter": null,
+          "finishMatch": false,
+          "retrievedAt": null,
+          "evidenceType": "none",
+          "languageMatch": false,
+          "policyVersion": "classified-v1",
+          "printingMatch": false,
+          "classification": "PRICE_UNAVAILABLE",
+          "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+          "usableForHoldingsValuation": false
+        }
+      },
+      {
+        "variant_id": "001b9b8b-b485-433b-a36c-676a0de4c8ba",
+        "printing_id": "7734445c-fd24-479a-8842-2d47b76fcc39",
+        "set_id": "b94f87ff-5d32-436a-87e4-50149151dba0",
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja",
+        "resolution": {
+          "exact": false,
+          "grade": null,
+          "setId": "b94f87ff-5d32-436a-87e4-50149151dba0",
+          "value": 0.1,
+          "finish": "normal",
+          "reason": null,
+          "currency": "GBP",
+          "language": "ja",
+          "provider": "tcgcsv",
+          "sourceAt": "2026-10-04T20:05:38+00:00",
+          "checkedAt": "2026-10-05T16:27:25.792993+00:00",
+          "condition": "raw_market_unspecified",
+          "freshness": "fresh",
+          "variantId": "001b9b8b-b485-433b-a36c-676a0de4c8ba",
+          "confidence": 0.85,
+          "printingId": "7734445c-fd24-479a-8842-2d47b76fcc39",
+          "provenance": {
+            "scope": "exact_variant_market",
+            "value": 0.06,
+            "finish": "normal",
+            "set_id": "b94f87ff-5d32-436a-87e4-50149151dba0",
+            "currency": "GBP",
+            "language": "ja",
+            "provider": "tcgcsv",
+            "source_at": "2026-10-04T20:05:38+00:00",
+            "variant_id": "001b9b8b-b485-433b-a36c-676a0de4c8ba",
+            "printing_id": "7734445c-fd24-479a-8842-2d47b76fcc39",
+            "stale_after": "2026-10-06T20:05:38+00:00",
+            "retrieved_at": "2026-10-04T21:21:30.187617+00:00",
+            "variant_code": "normal",
+            "source_record": {
+              "set_id": "b94f87ff-5d32-436a-87e4-50149151dba0",
+              "subtype": "Normal",
+              "group_id": 24400,
+              "provider": "tcgcsv",
+              "dataset_at": "2026-10-04T20:05:38+00:00",
+              "product_id": 647210,
+              "variant_id": "001b9b8b-b485-433b-a36c-676a0de4c8ba",
+              "category_id": 85,
+              "printing_id": "7734445c-fd24-479a-8842-2d47b76fcc39",
+              "recorded_at": "2026-10-04T21:21:30.187617+00:00",
+              "stale_after": "2026-10-06T20:05:38+00:00",
+              "exchange_rate": 0.757532293986637,
+              "language_code": "ja",
+              "original_price": 0.08,
+              "central_estimate": 0.06,
+              "exchange_rate_at": "2026-10-02T00:00:00+00:00",
+              "original_currency": "USD",
+              "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+              "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+            },
+            "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+          },
+          "staleAfter": "2026-10-06T20:05:38+00:00",
+          "finishMatch": true,
+          "retrievedAt": "2026-10-04T21:21:30.187617+00:00",
+          "evidenceType": "exact_variant_market",
+          "languageMatch": true,
+          "policyVersion": "classified-v1",
+          "printingMatch": true,
+          "classification": "ESTIMATED_VALUE",
+          "marketSignalValue": 0.06,
+          "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+          "usableForHoldingsValuation": false
+        }
+      },
+      {
+        "variant_id": "0031bf3a-8490-4328-9f12-115428fd5217",
+        "printing_id": "6aac6533-48e3-42b8-b2cc-df4dd54f3f0e",
+        "set_id": "9e539009-b72c-43e2-8f25-f183aa4bc4b7",
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja",
+        "resolution": {
+          "exact": false,
+          "grade": null,
+          "setId": "9e539009-b72c-43e2-8f25-f183aa4bc4b7",
+          "value": 2.56,
+          "finish": "holo",
+          "reason": null,
+          "currency": "GBP",
+          "language": "ja",
+          "provider": "tcgcsv",
+          "sourceAt": "2026-10-04T20:05:38+00:00",
+          "checkedAt": "2026-10-05T16:27:25.792993+00:00",
+          "condition": "raw_market_unspecified",
+          "freshness": "fresh",
+          "variantId": "0031bf3a-8490-4328-9f12-115428fd5217",
+          "confidence": 0.85,
+          "printingId": "6aac6533-48e3-42b8-b2cc-df4dd54f3f0e",
+          "provenance": {
+            "scope": "exact_variant_market",
+            "value": 2.56,
+            "finish": "holo",
+            "set_id": "9e539009-b72c-43e2-8f25-f183aa4bc4b7",
+            "currency": "GBP",
+            "language": "ja",
+            "provider": "tcgcsv",
+            "source_at": "2026-10-04T20:05:38+00:00",
+            "variant_id": "0031bf3a-8490-4328-9f12-115428fd5217",
+            "printing_id": "6aac6533-48e3-42b8-b2cc-df4dd54f3f0e",
+            "stale_after": "2026-10-06T20:05:38+00:00",
+            "retrieved_at": "2026-10-04T20:38:24.806625+00:00",
+            "variant_code": "holo",
+            "source_record": {
+              "set_id": "9e539009-b72c-43e2-8f25-f183aa4bc4b7",
+              "subtype": "Holofoil",
+              "group_id": 23601,
+              "provider": "tcgcsv",
+              "dataset_at": "2026-10-04T20:05:38+00:00",
+              "product_id": 567752,
+              "variant_id": "0031bf3a-8490-4328-9f12-115428fd5217",
+              "category_id": 85,
+              "printing_id": "6aac6533-48e3-42b8-b2cc-df4dd54f3f0e",
+              "recorded_at": "2026-10-04T20:38:24.806625+00:00",
+              "stale_after": "2026-10-06T20:05:38+00:00",
+              "exchange_rate": 0.757532293986637,
+              "language_code": "ja",
+              "original_price": 3.38,
+              "central_estimate": 2.56,
+              "exchange_rate_at": "2026-10-02T00:00:00+00:00",
+              "original_currency": "USD",
+              "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+              "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+            },
+            "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+          },
+          "staleAfter": "2026-10-06T20:05:38+00:00",
+          "finishMatch": true,
+          "retrievedAt": "2026-10-04T20:38:24.806625+00:00",
+          "evidenceType": "exact_variant_market",
+          "languageMatch": true,
+          "policyVersion": "classified-v1",
+          "printingMatch": true,
+          "classification": "MARKET_GUIDE",
+          "marketSignalValue": 2.56,
+          "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+          "usableForHoldingsValuation": false
+        }
+      },
+      {
+        "variant_id": "1cfb39db-5cf4-4014-88f8-4c9749b4c2eb",
+        "printing_id": "02323516-132b-4039-9f54-c51ff1eebf2e",
+        "set_id": "d6a23ad9-7d3d-482c-a477-304584a335e3",
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja",
+        "resolution": {
+          "exact": false,
+          "grade": null,
+          "setId": "d6a23ad9-7d3d-482c-a477-304584a335e3",
+          "value": 0.1,
+          "finish": "normal",
+          "reason": null,
+          "currency": "GBP",
+          "language": "ja",
+          "provider": "tcgdex_cardmarket",
+          "sourceAt": "2026-10-04T22:54:32.824+00:00",
+          "checkedAt": "2026-10-05T20:56:37.511712+00:00",
+          "condition": "raw_market_unspecified",
+          "freshness": "stale",
+          "variantId": "1cfb39db-5cf4-4014-88f8-4c9749b4c2eb",
+          "confidence": 0.55,
+          "printingId": "02323516-132b-4039-9f54-c51ff1eebf2e",
+          "provenance": {
+            "sourceAt": "2026-10-04T22:54:32.824+00:00",
+            "snapshotId": "eac5f4a0-9615-45bc-bb01-b9fda78cee2e",
+            "sourceUnit": "EUR",
+            "retrievedAt": "2026-10-05T18:05:59.927+00:00",
+            "quotedFinish": "normal",
+            "quotedVariant": "normal",
+            "sourcePricing": {
+              "tcgplayer": null,
+              "cardmarket": {
+                "avg": 0.1,
+                "low": 0.02,
+                "avg1": 0.11,
+                "avg7": 0.09,
+                "unit": "EUR",
+                "avg30": 0.08,
+                "trend": 0.1,
+                "updated": "2026-10-04T22:54:32.824Z",
+                "avg-holo": null,
+                "low-holo": null,
+                "avg1-holo": null,
+                "avg7-holo": null,
+                "idProduct": 687676,
+                "avg30-holo": null,
+                "trend-holo": 0
+              }
+            },
+            "providerCardId": "S12a-114",
+            "conversionQuality": "retained_conversion_without_rate_timestamp"
+          },
+          "staleAfter": "2026-10-05T04:54:32.824+00:00",
+          "finishMatch": false,
+          "retrievedAt": "2026-10-05T18:05:59.927+00:00",
+          "evidenceType": "retained_printing_market",
+          "languageMatch": true,
+          "policyVersion": "classified-v1-retained-cheap",
+          "printingMatch": true,
+          "classification": "ESTIMATED_VALUE",
+          "marketSignalValue": 0.09,
+          "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+          "usableForHoldingsValuation": false
+        }
+      },
+      {
+        "variant_id": "f7decc64-74aa-4d5a-b7a4-3c5fc9a6dcc9",
+        "printing_id": "74d1b1fe-bfe9-418f-a01b-c2152022f186",
+        "set_id": "d6a23ad9-7d3d-482c-a477-304584a335e3",
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja",
+        "resolution": {
+          "exact": false,
+          "grade": null,
+          "setId": "d6a23ad9-7d3d-482c-a477-304584a335e3",
+          "value": 0.1,
+          "finish": "normal",
+          "reason": null,
+          "currency": "GBP",
+          "language": "ja",
+          "provider": "tcgdex_cardmarket",
+          "sourceAt": "2026-10-04T22:54:32.824+00:00",
+          "checkedAt": "2026-10-05T21:04:07.879904+00:00",
+          "condition": "raw_market_unspecified",
+          "freshness": "stale",
+          "variantId": "f7decc64-74aa-4d5a-b7a4-3c5fc9a6dcc9",
+          "confidence": 0.55,
+          "printingId": "74d1b1fe-bfe9-418f-a01b-c2152022f186",
+          "provenance": {
+            "sourceAt": "2026-10-04T22:54:32.824+00:00",
+            "snapshotId": "8d7ef242-3f1a-4387-b600-6f8a191198ca",
+            "sourceUnit": "EUR",
+            "retrievedAt": "2026-10-05T06:15:00.335+00:00",
+            "quotedFinish": "normal",
+            "quotedVariant": "normal",
+            "sourcePricing": {
+              "tcgplayer": null,
+              "cardmarket": {
+                "avg": 0.08,
+                "low": 0.02,
+                "avg1": 0.07,
+                "avg7": 0.06,
+                "unit": "EUR",
+                "avg30": 0.07,
+                "trend": 0.06,
+                "updated": "2026-10-04T22:54:32.824Z",
+                "avg-holo": 0.86,
+                "low-holo": 0.14,
+                "avg1-holo": 0.45,
+                "avg7-holo": 0.71,
+                "idProduct": 687538,
+                "avg30-holo": 0.56,
+                "trend-holo": 0.79
+              }
+            },
+            "providerCardId": "S12a-058",
+            "conversionQuality": "retained_conversion_without_rate_timestamp"
+          },
+          "staleAfter": "2026-10-05T04:54:32.824+00:00",
+          "finishMatch": false,
+          "retrievedAt": "2026-10-05T06:15:00.335+00:00",
+          "evidenceType": "retained_printing_market",
+          "languageMatch": true,
+          "policyVersion": "classified-v1-retained-cheap",
+          "printingMatch": true,
+          "classification": "ESTIMATED_VALUE",
+          "marketSignalValue": 0.05,
+          "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+          "usableForHoldingsValuation": false
+        }
+      },
+      {
+        "variant_id": "febd3edb-b55e-43fc-8cb3-41c370a46bf5",
+        "printing_id": "a961135d-d13a-4d02-9d17-f76b306449b6",
+        "set_id": "d6a23ad9-7d3d-482c-a477-304584a335e3",
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja",
+        "resolution": {
+          "exact": false,
+          "grade": null,
+          "setId": "d6a23ad9-7d3d-482c-a477-304584a335e3",
+          "value": 0.1,
+          "finish": "normal",
+          "reason": null,
+          "currency": "GBP",
+          "language": "ja",
+          "provider": "tcgdex_cardmarket",
+          "sourceAt": "2026-10-04T22:54:32.817+00:00",
+          "checkedAt": "2026-10-05T21:04:13.623753+00:00",
+          "condition": "raw_market_unspecified",
+          "freshness": "stale",
+          "variantId": "febd3edb-b55e-43fc-8cb3-41c370a46bf5",
+          "confidence": 0.55,
+          "printingId": "a961135d-d13a-4d02-9d17-f76b306449b6",
+          "provenance": {
+            "sourceAt": "2026-10-04T22:54:32.817+00:00",
+            "snapshotId": "33810d95-7e58-42a9-bd33-d0c5bbdc5ca7",
+            "sourceUnit": "EUR",
+            "retrievedAt": "2026-10-05T06:15:13.767+00:00",
+            "quotedFinish": "normal",
+            "quotedVariant": "normal",
+            "sourcePricing": {
+              "tcgplayer": null,
+              "cardmarket": {
+                "avg": 0.11,
+                "low": 0.02,
+                "avg1": 0.07,
+                "avg7": 0.09,
+                "unit": "EUR",
+                "avg30": 0.11,
+                "trend": 0.08,
+                "updated": "2026-10-04T22:54:32.817Z",
+                "avg-holo": null,
+                "low-holo": null,
+                "avg1-holo": null,
+                "avg7-holo": null,
+                "idProduct": 687721,
+                "avg30-holo": null,
+                "trend-holo": 0
+              }
+            },
+            "providerCardId": "S12a-159",
+            "conversionQuality": "retained_conversion_without_rate_timestamp"
+          },
+          "staleAfter": "2026-10-05T04:54:32.817+00:00",
+          "finishMatch": false,
+          "retrievedAt": "2026-10-05T06:15:13.767+00:00",
+          "evidenceType": "retained_printing_market",
+          "languageMatch": true,
+          "policyVersion": "classified-v1-retained-cheap",
+          "printingMatch": true,
+          "classification": "ESTIMATED_VALUE",
+          "marketSignalValue": 0.07,
+          "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+          "usableForHoldingsValuation": false
+        }
+      },
+      {
+        "variant_id": "00027c85-111b-4c36-8ef3-884c9daf93ff",
+        "printing_id": "e07594be-1c67-4549-a191-72d47a6219dd",
+        "set_id": "92ffa013-edb7-4c49-8ed1-c50f0162d41d",
+        "catalogue_version_id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "language_code": "zh-cn",
+        "resolution": {
+          "exact": false,
+          "grade": null,
+          "setId": "92ffa013-edb7-4c49-8ed1-c50f0162d41d",
+          "value": null,
+          "finish": "normal",
+          "reason": "unsupported_provider_language",
+          "currency": "GBP",
+          "language": "zh-cn",
+          "provider": null,
+          "sourceAt": null,
+          "checkedAt": "2026-10-05T16:27:25.792993+00:00",
+          "condition": "raw_market_unspecified",
+          "freshness": "unavailable",
+          "variantId": "00027c85-111b-4c36-8ef3-884c9daf93ff",
+          "confidence": 0,
+          "printingId": "e07594be-1c67-4549-a191-72d47a6219dd",
+          "staleAfter": null,
+          "finishMatch": false,
+          "retrievedAt": null,
+          "evidenceType": "none",
+          "languageMatch": false,
+          "policyVersion": "classified-v1",
+          "printingMatch": false,
+          "classification": "PRICE_UNAVAILABLE",
+          "catalogueVersionId": "79f43e8f-7062-4d29-8571-569eccb7c249",
+          "usableForHoldingsValuation": false
+        }
+      },
+      {
+        "variant_id": "00006aeb-fca8-4524-903d-586eabb913ed",
+        "printing_id": "e25b8109-26d8-46a1-a6b7-1aaf25011a47",
+        "set_id": "ff1e5d11-3043-4137-a0a2-bc2b2da43d9e",
+        "catalogue_version_id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "language_code": "zh-tw",
+        "resolution": {
+          "exact": false,
+          "grade": null,
+          "setId": "ff1e5d11-3043-4137-a0a2-bc2b2da43d9e",
+          "value": null,
+          "finish": "normal",
+          "reason": "unsupported_provider_language",
+          "currency": "GBP",
+          "language": "zh-tw",
+          "provider": null,
+          "sourceAt": null,
+          "checkedAt": "2026-10-05T16:27:25.792993+00:00",
+          "condition": "raw_market_unspecified",
+          "freshness": "unavailable",
+          "variantId": "00006aeb-fca8-4524-903d-586eabb913ed",
+          "confidence": 0,
+          "printingId": "e25b8109-26d8-46a1-a6b7-1aaf25011a47",
+          "staleAfter": null,
+          "finishMatch": false,
+          "retrievedAt": null,
+          "evidenceType": "none",
+          "languageMatch": false,
+          "policyVersion": "classified-v1",
+          "printingMatch": false,
+          "classification": "PRICE_UNAVAILABLE",
+          "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+          "usableForHoldingsValuation": false
+        }
+      },
+      {
+        "variant_id": "005080c5-6d68-44f5-a87f-150c91c4bb9e",
+        "printing_id": "9cb38b5e-32a2-4d40-923f-2a88d88acb49",
+        "set_id": "f3d6f626-76dc-40f6-b20c-f37f76de7a69",
+        "catalogue_version_id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "language_code": "zh-tw",
+        "resolution": {
+          "exact": false,
+          "grade": null,
+          "setId": "f3d6f626-76dc-40f6-b20c-f37f76de7a69",
+          "value": 0.1,
+          "finish": "normal",
+          "reason": null,
+          "currency": "GBP",
+          "language": "zh-tw",
+          "provider": "cardmarket_public",
+          "sourceAt": "2026-10-04T00:40:55+00:00",
+          "checkedAt": "2026-10-05T16:27:25.792993+00:00",
+          "condition": "raw_market_unspecified",
+          "freshness": "fresh",
+          "variantId": "005080c5-6d68-44f5-a87f-150c91c4bb9e",
+          "confidence": 0.45,
+          "printingId": "9cb38b5e-32a2-4d40-923f-2a88d88acb49",
+          "provenance": {
+            "scope": "blended_printing_market",
+            "value": 0.03,
+            "finish": null,
+            "set_id": "f3d6f626-76dc-40f6-b20c-f37f76de7a69",
+            "mapping": {
+              "method": "reviewed_exact",
+              "printing_id": "9cb38b5e-32a2-4d40-923f-2a88d88acb49",
+              "reviewed_at": "2026-10-04T09:52:09.577407+00:00",
+              "mapping_scope": "blended_printing",
+              "finish_evidence": {
+                "type": "blended_public_guide_not_exact_finish",
+                "scope": "blended_public_guide_not_exact_finish",
+                "finishCodes": [
+                  "normal"
+                ],
+                "retainedPriceGuideSha256": "acdd6ed470fa738b7dd318d7548df425123d83b51d4ab258b0a0de43d9cf8e82",
+                "retainedPriceGuideCreatedAt": "2026-10-04T02:40:55+0200"
+              },
+              "review_reference": "root20261004/cardmarket-reviewed-exact-production; stage-provenance=235b; production-provenance=8c928e4d-37f2-48a7-a312-fb2fe787cf99; full-canonical-crosswalk=docs/releases/cardmarket-production-crosswalk-review-20261004.json",
+              "variant_evidence": {
+                "type": "current_tcgdex_canonical_printing",
+                "variantIds": [
+                  "005080c5-6d68-44f5-a87f-150c91c4bb9e"
+                ],
+                "externalIds": [
+                  "SV1a-017"
+                ]
+              },
+              "language_evidence": {
+                "type": "current_tcgdex_canonical_language",
+                "provenance": {
+                  "source": "tcgdex",
+                  "variantIds": [
+                    "005080c5-6d68-44f5-a87f-150c91c4bb9e"
+                  ],
+                  "externalIds": [
+                    "SV1a-017"
+                  ],
+                  "finishCodes": [
+                    "normal"
+                  ],
+                  "finishScope": "blended_public_guide_not_exact_finish",
+                  "rawRecordIds": [
+                    "ae65c679-8168-43e0-acd9-b788e87d00cc"
+                  ],
+                  "payloadHashes": [
+                    "2504f9f6777d3771b989f6a8dda156f9657a963a5a5eebd02adbe5bcf79a2ada"
+                  ]
+                },
+                "languageCode": "zh-tw",
+                "productionCrosswalk": {
+                  "type": "full_cohort_current_canonical_identity",
+                  "contract": "same printing UUID, language, collector number, set UUID and code, reviewed variant IDs, and reviewed TCGdex external IDs",
+                  "validation": "stage and production current published physical identities matched exactly; production catalogue version may differ by language",
+                  "validatedAt": "2026-10-04T09:44:48.598Z",
+                  "crosswalkReceipt": "docs/releases/cardmarket-production-crosswalk-review-20261004.json",
+                  "stageProvenanceRun": "235b",
+                  "sourceReviewReference": "root20261004/provenance235b/fullcohort/querychecks",
+                  "productionProvenanceRun": "8c928e4d-37f2-48a7-a312-fb2fe787cf99",
+                  "sourceCatalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+                  "productionCatalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e"
+                },
+                "retainedProductsSha256": "14a74405a86acfb80b42168e5cc019c0eae67925e8eee9893f53d35e4922d6ce",
+                "retainedProductsCreatedAt": "2026-10-03T11:44:53+0200"
+              },
+              "provider_product_id": 701070,
+              "catalogue_version_id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+              "provider_category_id": 51
+            },
+            "currency": "GBP",
+            "language": null,
+            "provider": "cardmarket_public",
+            "source_at": "2026-10-04T00:40:55+00:00",
+            "printing_id": "9cb38b5e-32a2-4d40-923f-2a88d88acb49",
+            "stale_after": "2026-10-06T00:40:55+00:00",
+            "retrieved_at": "2026-10-04T10:33:35.307839+00:00",
+            "variant_code": null,
+            "source_record": {
+              "printing_id": "9cb38b5e-32a2-4d40-923f-2a88d88acb49",
+              "recorded_at": "2026-10-04T10:33:35.307839+00:00",
+              "stale_after": "2026-10-06T00:40:55+00:00",
+              "display_scope": "blended_general_estimate",
+              "exchange_rate": 0.85033,
+              "original_price": 0.03,
+              "selected_field": "trend",
+              "exchange_rate_at": "2026-10-02T00:00:00+00:00",
+              "original_currency": "EUR",
+              "source_created_at": "2026-10-04T00:40:55+00:00",
+              "catalogue_version_id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+              "central_estimate_gbp": 0.03,
+              "exchange_rate_source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+              "price_guide_revision_id": "88df9af6-8055-4bf0-9c21-9c230681befe",
+              "product_catalogue_revision_id": "18956fc2-1835-42c2-809d-de4b45ac04e9"
+            },
+            "catalogue_version_id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e"
+          },
+          "staleAfter": "2026-10-06T00:40:55+00:00",
+          "finishMatch": false,
+          "retrievedAt": "2026-10-04T10:33:35.307839+00:00",
+          "evidenceType": "blended_printing_market",
+          "languageMatch": false,
+          "policyVersion": "classified-v1",
+          "printingMatch": true,
+          "classification": "ESTIMATED_VALUE",
+          "marketSignalValue": 0.03,
+          "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+          "usableForHoldingsValuation": false
+        }
+      }
+    ]
+  },
+  "runtime": {
+    "backendCommit": "28cbcfc7d68e",
+    "deploymentId": "e985732a-4ebe-4281-8811-963a61276a58",
+    "healthAt": "2026-10-05T20:48:34.005Z",
+    "publicPricingStatus": 401,
+    "publicPricingReason": "authentication_required",
+    "publicPricingAt": "2026-10-05T20:49:11.369Z",
+    "ownerAuthenticatedPricingVerified": false,
+    "phoneVerified": false,
+    "runtimeReleaseDeployed": false
+  },
+  "validation": {
+    "classifiedPricing": true,
+    "cataloguePriceCache": true,
+    "bulkProvider": true,
+    "appTypecheck": true,
+    "backendTypecheck": true,
+    "lintErrors": 0,
+    "existingLintWarnings": 9
+  },
+  "cohortSha256": "43c27a224027e6268b0b4b38d9a3947d75b55a6d92f616009548883f54c626d3",
+  "migrationBodyHashes": [
+    {
+      "name": "retain_identity_bound_cheap_snapshots",
+      "sha256NormalizedLf": "b58d832b507215f9581526ddb18c117c735fee357de934837a5fd126fde5b219"
+    },
+    {
+      "name": "bound_retained_cheap_native_evidence",
+      "sha256NormalizedLf": "8407a0970201b9955231a37b86ce757133cf06e1552c85be830725674211ae38"
+    },
+    {
+      "name": "scope_retained_cheap_provider_languages",
+      "sha256NormalizedLf": "8db1f0019379408ed87ad2e239d54a0532a7f1896fd7c0c5fdf6a3b46ee3be0e"
+    },
+    {
+      "name": "select_latest_valid_retained_observation",
+      "sha256NormalizedLf": "537ad9c60141327a2e915617d1f4927db224636ff58b917c36303adea72225d8"
+    }
+  ]
+}

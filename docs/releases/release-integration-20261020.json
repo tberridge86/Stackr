@@ -1,0 +1,58 @@
+{
+  "date": "2026-10-20",
+  "purpose": "Integrate verified release repairs while retaining original-video phone acceptance and concrete non-phone gaps",
+  "ownerInstruction": "Merge the work to a fixed state awaiting phone verification",
+  "statusAtPreparation": "Two repairs merged; two reconciled candidates independently reviewed and awaiting exact-head hosted checks",
+  "currentStatusReceipt": "https://github.com/tberridge86/Stackr/pull/313",
+  "repairs": [
+    {
+      "pr": 422,
+      "scope": "Shared saved-binder pagination deadline, cancellation and server-capped page completeness",
+      "merge": "57736ccd03be7493a764b812a18ac4d5eb95dd67",
+      "validation": "Independent review and all nine applicable PR jobs passed; canary and release-candidate gates skipped"
+    },
+    {
+      "pr": 413,
+      "scope": "Include falling market comparisons and omit unused edition price reads without dropping owned identities",
+      "head": "5e96fb59aef7377e3ed0c4123b8b3009119da94e",
+      "merge": "3b842d5bf90b63abc09c29aad66c5e5fb0fc2376",
+      "validation": "Actual-service baseline failures reproduced, corrected fixtures and independent review pass; hosted platform and owner pricing workflows pass, including route tests blocked locally"
+    },
+    {
+      "pr": 311,
+      "scope": "Remove unreachable competing search implementation and consolidate semantic feedback",
+      "head": "edf3ecf02bfecc94e88b84af20e7b027d7babea6",
+      "validation": "Retained search source is identical; haptic runtime and optional search deadline tests pass; independent review accepted. First hosted attempt hit a dependency-download timeout; failed job retried"
+    },
+    {
+      "pr": 313,
+      "scope": "Recover seven immutable applied migration sources and four historical receipts, with an offline preservation guard",
+      "validation": "Original Git blobs, aliases and recorded hashes independently verified; source-only recovery keeps newer PR418 reader and workers. Hosted checks required on final head"
+    }
+  ],
+  "localValidation": {
+    "typecheck": "pass",
+    "backendTypecheck": "pass",
+    "rootLint": "pass with eight existing warnings",
+    "hapticSuite": "pass, including 37 preview-motion cases",
+    "environmentLimits": "Local route HTTP fixtures are blocked by loopback EACCES; existing identity reference suite cannot start its Python subprocess. Hosted checks retain those tests"
+  },
+  "nonPhoneGaps": [
+    "The separately pinned primary API and new native build have not been delivered by these merges. Exact combined signed assets and configured API responses still require delivery evidence",
+    "Authenticated stored-price coverage/freshness and prepared history remain unverified. The pinned catalogue-price worker had a pre-existing statement timeout on 20 October; no database cause or new live coverage is claimed",
+    "Retain exact source/identity gaps for JA web1 #024, ordinary EN base1 #42, remaining Pikachu artwork, recorded listing media, exact Home Varoom printing and held SVP1 publication. Do not fabricate rights, editions or prices"
+  ],
+  "phoneVerification": [
+    "V01-V06: Home tile, honest valuation coverage, market/collection movers, history ranges and Retry",
+    "V07-V14: binder totals and quantities, standard/master membership, prices, saved/cold reopen, ownership/account changes, Storm artwork and supplied logo",
+    "V15-V16: Traditional Chinese logo fallbacks and November 2023 CoroCoro cover/opening",
+    "V17-V20: Wartortle complete continuation, ownership success/failure, partial Retry and image gaps",
+    "V21-V23: rapid Pikachu queries, retained/fresh/error states, Retry, thumbnails and listing media",
+    "Record installed build/update, device/network/cache, cold/warm/offline behavior and haptic preferences/teardown; retain existing sample requirements before any percentile claim"
+  ],
+  "preservedWork": "Historical/prototype/asset/commerce branches are retained. PR339 is tracking-only; prototype PR403 does not establish native delivery. No blanket old-branch merge or deletion",
+  "operations": "No SQL replay, manual provider refresh, catalogue promotion, worker schedule/configuration change, primary API deployment or native publication performed. Existing automatic main followers may react to merges; a configured trigger is not observed successful delivery",
+  "phoneClosedIssues": 0,
+  "all23OriginalIssuesRetained": true,
+  "phoneOnlyReadyClaimed": false
+}

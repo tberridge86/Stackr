@@ -55,11 +55,12 @@ async function main() {
     'frame-ready feedback must fire on a state transition, not every analysed frame',
   );
 
-  assert.match(
-    mainScanner,
-    /(?:stackrHaptics\.|Haptics\.(?:impactAsync|notificationAsync|selectionAsync))/, 
-    'the routed main scanner must retain tactile feedback',
-  );
+  assert.match(mainScanner, /stackrHaptics\.scannerCaptureLocked\(\)/,
+    'capture feedback must use the shared scanner facade');
+  assert.match(mainScanner, /cards\.length === 1 \? stackrHaptics\.analysisCompleted\(\) : stackrHaptics\.scannerAmbiguous\(\)/,
+    'one review candidate completes analysis without claiming an exact recognition match');
+  assert.doesNotMatch(mainScanner, /preferenceAwareHaptics|\bHaptics\.(?:impactAsync|notificationAsync|selectionAsync)/,
+    'scanner code must not choose native haptic effects locally');
   assert.match(
     scanResult,
     /logResultFeedback\('added_to_binder'/,

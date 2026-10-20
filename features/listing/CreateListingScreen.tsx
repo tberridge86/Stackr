@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as FileSystem from 'expo-file-system';
-import { preferenceAwareHaptics as Haptics } from '../../lib/haptics';
+import { stackrHaptics } from '../../lib/haptics';
 import * as ImagePicker from 'expo-image-picker';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -1851,7 +1851,7 @@ export default function CreateListingScreen() {
     setListingLanguage(normalizePokemonCardLanguage(card.language));
     setListingSubjectType(listingSubjectType === 'graded_slab' ? 'graded_slab' : 'raw_card');
     setStep('confirm');
-    await Haptics.selectionAsync();
+    await stackrHaptics.selection();
     void fetchPrices(card, listingSubjectType);
   };
 
@@ -1872,7 +1872,7 @@ export default function CreateListingScreen() {
     setSearchQuery(card.name);
     setSearchResults([]);
     setSellerCondition(getSlabConditionLabel(displayGradingCompany, grade));
-    await Haptics.selectionAsync();
+    await stackrHaptics.selection();
     void fetchPrices(card, 'graded_slab');
   };
 
@@ -1918,7 +1918,7 @@ export default function CreateListingScreen() {
       unavailable: product.latest_price?.average == null,
     });
     setStep('condition');
-    await Haptics.selectionAsync();
+    await stackrHaptics.selection();
   };
 
   const selectSellingType = async (type: ListingSubjectType) => {
@@ -1942,7 +1942,7 @@ export default function CreateListingScreen() {
       setSellerCondition('');
     }
     setStep('entry');
-    await Haptics.selectionAsync();
+    await stackrHaptics.selection();
   };
 
   const selectIdentificationMethod = (method: IdentificationMethod) => {
@@ -2449,7 +2449,7 @@ export default function CreateListingScreen() {
         certificationCandidate: assessment.candidate,
       } as any, 'system_camera');
       if (!saved) return;
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      await stackrHaptics.captureSaved().catch(() => {});
     } catch (error: any) {
       Alert.alert('Photo not captured', error?.message ?? 'Try again with the full item visible and good lighting.');
     }
@@ -2465,7 +2465,7 @@ export default function CreateListingScreen() {
 
       if (fromCamera) {
         setActiveCaptureRequirement(requirement);
-        await Haptics.selectionAsync().catch(() => {});
+        await stackrHaptics.selection().catch(() => {});
         return;
       }
 
@@ -2489,7 +2489,7 @@ export default function CreateListingScreen() {
         certificationCandidate: assessment.candidate,
       } as any, 'library');
       if (!saved) return;
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      await stackrHaptics.captureSaved();
     } catch (error: any) {
       Alert.alert('Photo not captured', error?.message ?? 'Try again with the full card visible and good lighting.');
     }
@@ -2510,7 +2510,7 @@ export default function CreateListingScreen() {
             onPress: () => {
               setSelectedProtectionTier('silver');
               setSilverLiabilityAccepted(false);
-              void Haptics.selectionAsync();
+              void stackrHaptics.selection();
             },
           },
         ]
@@ -2520,7 +2520,7 @@ export default function CreateListingScreen() {
 
     setSelectedProtectionTier(nextOverride);
     setSilverLiabilityAccepted(false);
-    void Haptics.selectionAsync();
+    void stackrHaptics.selection();
   };
 
   const readPhotoBase64 = async (photo: EvidencePhoto) => {
@@ -2571,7 +2571,7 @@ export default function CreateListingScreen() {
       };
       setXimilarEstimate(estimate);
       setXimilarStatus('complete');
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      await stackrHaptics.analysisCompleted();
     } catch (error: any) {
       setXimilarStatus('failed');
       setXimilarError(error?.message ?? 'AI condition checking is temporarily unavailable. Your photos and draft are safe.');
@@ -2867,7 +2867,7 @@ export default function CreateListingScreen() {
 
       await AsyncStorage.removeItem(authenticatedDraftKey);
       setStep('success');
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      await stackrHaptics.listingCompleted();
     } catch (error: any) {
       Alert.alert('Could not publish listing', error?.message ?? 'Something went wrong. Your draft is still saved.');
     } finally {
