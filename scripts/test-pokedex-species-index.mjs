@@ -75,8 +75,20 @@ assert.match(screen, /params: \{[\s\S]*?id: String\(item\.routeId\),[\s\S]*?name
 const detail = fs.readFileSync('app/pokemon/[id].tsx', 'utf8');
 assert.match(detail, /const cardSpeciesName = speciesName \?\? routeName \?\? nextPokemon\.name;/,
   'The detail screen must query canonical cards by the selected species, not its default form route.');
-assert.match(detail, /fetchCardsForPokemon\(cardSpeciesName, \{ onProgress: applyCards \}\)/,
+const detailTree = ts.createSourceFile('pokemon.tsx', detail, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+const cardReads = [];
+const findCardReads = (node) => {
+  if (ts.isCallExpression(node) && node.expression.getText(detailTree) === 'fetchCardsForPokemon') cardReads.push(node);
+  ts.forEachChild(node, findCardReads);
+};
+findCardReads(detailTree);
+assert.equal(cardReads.length, 1);
+assert.equal(cardReads[0].arguments[0].getText(detailTree), 'cardSpeciesName',
   'Async card retrieval must retain the selected species identity after metadata arrives.');
+const cardOptions = cardReads[0].arguments[1];
+assert.ok(ts.isObjectLiteralExpression(cardOptions));
+const progressOption = cardOptions.properties.find((property) => ts.isPropertyAssignment(property) && property.name.getText(detailTree) === 'onProgress');
+assert.equal(progressOption?.initializer.getText(detailTree), 'applyCards', 'Independent diagnostics must preserve factual streaming.');
 assert.match(detail, /const displayName = formatPokedexName\(speciesName \?\? pokemon\.name\);/,
   'The detail header must keep the species display label while route metadata loads.');
 console.log('Pokédex species index passed: one species denominator, explicit provider routes, legacy-cache rejection and form-safe list consumers.');

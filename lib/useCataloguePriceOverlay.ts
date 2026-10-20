@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../components/auth-context';
 import { stackrApiClient, type StackrCataloguePriceRow } from './stackrApiV1';
 import { cataloguePriceCache, cataloguePriceDisplay, cataloguePriceScope, fetchCataloguePrices, type CataloguePriceDisplay } from './cataloguePrices';
@@ -10,6 +10,8 @@ type CataloguePriceOverlayOptions<T extends DisplayCard> = {
   /** Cards whose saved quotes may be read now. Every display card still receives
    * an eligible modern bulk-card fallback immediately when a quote is unavailable. */
   requestCards?: T[];
+  /** Actual stored-price read settlement, never price coverage or display success. */
+  onReadDiagnostic?: (phase: 'complete' | 'failed') => void;
 };
 
 /** Bound stored-quote reads to an incremental list's visible and next window.
@@ -82,6 +84,8 @@ export function useCataloguePriceOverlay<T extends DisplayCard>(cards: T[], opti
   const { user } = useAuth();
   const ownerId = user?.id ?? null;
   const [saved, setSaved] = useState<{ ownerId: string | null; rows: Map<string, StackrCataloguePriceRow> }>({ ownerId: null, rows: new Map() });
+  const readObserver = useRef(options.onReadDiagnostic);
+  readObserver.current = options.onReadDiagnostic;
   const requestCards = options.requestCards ?? cards;
   const displayIdentityKey = cards.map((card) => `${languageFor(card)}:${referenceFor(card)}`).join('|');
   const displayKeys = useMemo(() => new Set(displayIdentityKey.split('|')), [displayIdentityKey]);
@@ -101,6 +105,11 @@ export function useCataloguePriceOverlay<T extends DisplayCard>(cards: T[], opti
   useEffect(() => {
     if (!ownerId || (process.env.EXPO_PUBLIC_STACKR_API_ENABLED !== 'true' && process.env.EXPO_PUBLIC_STACKR_API_ENABLED !== '1')) return;
     let active = true; let accountScope: string | null = null;
+    const observer = readObserver.current;
+    const reportRead = (phase: 'complete' | 'failed') => {
+      if (!active || !groups.size) return;
+      try { observer?.(phase); } catch { /* Diagnostics cannot alter price decoration. */ }
+    };
     const publish = () => {
       if (!active || !accountScope) return;
       const rows = new Map<string, StackrCataloguePriceRow>();
@@ -123,8 +132,9 @@ export function useCataloguePriceOverlay<T extends DisplayCard>(cards: T[], opti
     });
     void stackrApiClient.getPricingCacheScope().then((scope) => {
       if (!active) return; accountScope = scope; publish();
-      for (const [language, references] of groups) void fetchCataloguePrices(references, { language, estimateMode: 'general' }).then(publish).catch(() => undefined);
-    }).catch(() => undefined);
+      for (const [language, references] of groups) void fetchCataloguePrices(references, { language, estimateMode: 'general' })
+        .then(() => { publish(); reportRead('complete'); }).catch(() => { reportRead('failed'); });
+    }).catch(() => { reportRead('failed'); });
     return () => { active = false; unsubscribe(); };
   }, [displayKeys, groups, ownerId]);
   return useMemo(() => cards.map((card) => {

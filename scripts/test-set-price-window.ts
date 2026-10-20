@@ -11,8 +11,16 @@ function loadOverlay() {
   const pending: (() => void)[] = [];
   const requests: { owner: string; references: string[] }[] = [];
   const cache = new Map<string, Map<string, any>>();
+  let nextWait: Promise<void> | null = null;
+  let scopeFailure = false;
+  let readFailure = false;
   const changed = (left: unknown[] | undefined, right: unknown[]) => !left || right.some((value, index) => !Object.is(value, left[index]));
   const react = {
+    useRef(initial: unknown) {
+      const index = cursor++;
+      if (!slots[index]) slots[index] = { current: initial };
+      return slots[index];
+    },
     useState(initial: unknown) {
       const index = cursor++;
       if (!slots[index]) slots[index] = { value: initial };
@@ -42,7 +50,7 @@ function loadOverlay() {
     require(request: string) {
       if (request === 'react') return react;
       if (request.endsWith('auth-context')) return { useAuth: () => ({ user: owner ? { id: owner } : null }) };
-      if (request.endsWith('stackrApiV1')) return { stackrApiClient: { getPricingCacheScope: () => Promise.resolve(owner) } };
+      if (request.endsWith('stackrApiV1')) return { stackrApiClient: { getPricingCacheScope: () => scopeFailure ? Promise.reject(new Error('fixture scope failure')) : Promise.resolve(owner) } };
       if (request.endsWith('stackrDomainAdapter')) return { toStackrApiLanguage: (language: string) => language };
       if (request.endsWith('cataloguePriceBaseline')) return baseline;
       if (request.endsWith('cataloguePrices')) return {
@@ -57,10 +65,14 @@ function loadOverlay() {
         cataloguePriceDisplay: (row: { value: number; provisional?: boolean }) => ({ displayPrice: row.value, provisional: row.provisional ?? false }),
         fetchCataloguePrices: async (references: string[], options: { language: string }) => {
           assert.ok(owner);
-          requests.push({ owner, references: [...references] });
-          const scope = `${owner}:${options.language}`;
+          const readOwner = owner;
+          requests.push({ owner: readOwner, references: [...references] });
+          const wait = nextWait; nextWait = null;
+          if (wait) await wait;
+          if (readFailure) throw new Error('fixture stored-quote failure');
+          const scope = `${readOwner}:${options.language}`;
           const rows = cache.get(scope) ?? new Map();
-          references.forEach(reference => { if (!rows.has(reference)) rows.set(reference, { value: owner === 'owner-a' ? 1.05 : 10.25 }); });
+          references.forEach(reference => { if (!rows.has(reference)) rows.set(reference, { value: readOwner === 'owner-a' ? 1.05 : 10.25 }); });
           cache.set(scope, rows);
         },
       };
@@ -69,13 +81,17 @@ function loadOverlay() {
   });
   return {
     window: module.exports.cataloguePriceReadWindow as <T>(cards: T[], visibleCount: number, nearbyCount: number) => T[],
-    render(cards: any[], requestCards: any[]) {
+    render(cards: any[], requestCards: any[], onReadDiagnostic?: (phase: 'complete' | 'failed') => void) {
       cursor = 0;
-      const result = (module.exports.useCataloguePriceOverlay as Function)(cards, { requestCards });
+      const result = (module.exports.useCataloguePriceOverlay as Function)(cards, { requestCards, onReadDiagnostic });
       pending.splice(0).forEach(effect => effect());
       return result as any[];
     },
     owner(next: string | null) { owner = next; },
+    holdNextRead() { let release!: () => void; nextWait = new Promise<void>(resolve => { release = resolve; }); return release; },
+    failScope() { scopeFailure = true; },
+    failRead() { readFailure = true; },
+    unmount() { slots.forEach(slot => slot?.cleanup?.()); },
     retainedRows: () => slots[0].value.rows.size,
     requests,
     seed(reference: string, row: { value: number; provisional?: boolean; [key: string]: any }) {
@@ -184,6 +200,45 @@ async function main() {
     assert.equal(rejected.render([pokemonCard], [pokemonCard])[0].runtimeCataloguePricing, undefined,
       'A date-less client can only trust current published server estimates for the matching language and printing.');
   }
+  const diagnostic = loadOverlay();
+  let observedReads = 0;
+  diagnostic.render(cards, initial, () => { observedReads++; throw new Error('fixture observer failure'); });
+  await settle();
+  assert.equal(observedReads, 1, 'the real hook reports an actual stored-price read completion');
+  assert.equal(diagnostic.render(cards, initial)[0].runtimeCataloguePricing.displayPrice, 1.05,
+    'a throwing observer cannot fail the quote read or remove its display');
+  const originalReadCount = diagnostic.requests.length;
+  diagnostic.render(cards, initial, () => { throw new Error('a render-only observer change must not trigger a read'); });
+  await settle(); assert.equal(diagnostic.requests.length, originalReadCount, 'observer identity changes never resubscribe price reads');
+
+  const captured = loadOverlay(); const releaseCaptured = captured.holdNextRead();
+  const firstEvents: string[] = []; const replacementEvents: string[] = [];
+  captured.render(cards, initial, event => firstEvents.push(event)); await settle();
+  captured.render(cards, initial, event => replacementEvents.push(event));
+  releaseCaptured(); await settle();
+  assert.deepEqual(firstEvents, ['complete'], 'completion remains attached to the observer captured by the originating read');
+  assert.deepEqual(replacementEvents, [], 'a later render cannot inherit an older price read');
+
+  const switched = loadOverlay(); const releaseOld = switched.holdNextRead();
+  const oldEvents: string[] = []; const nextEvents: string[] = [];
+  switched.render(cards, initial, event => oldEvents.push(event)); await settle();
+  switched.owner('owner-b'); switched.render(cards, initial, event => nextEvents.push(event)); await settle();
+  releaseOld(); await settle();
+  assert.deepEqual(oldEvents, [], 'old-account completion is inactive after the effect cleanup');
+  assert.deepEqual(nextEvents, ['complete']);
+  assert.equal(switched.render(cards, initial)[0].runtimeCataloguePricing.displayPrice, 10.25);
+
+  const dismissed = loadOverlay(); const releaseDismissed = dismissed.holdNextRead(); const dismissedEvents: string[] = [];
+  dismissed.render(cards, initial, event => dismissedEvents.push(event)); await settle(); dismissed.unmount();
+  releaseDismissed(); await settle(); assert.deepEqual(dismissedEvents, [], 'unmount cancels source diagnostics as well as display publication');
+  const scopeFailed = loadOverlay(); const scopeEvents: string[] = []; scopeFailed.failScope();
+  scopeFailed.render(cards, initial, event => scopeEvents.push(event)); await settle();
+  assert.deepEqual(scopeEvents, ['failed']); assert.equal(scopeFailed.requests.length, 0);
+  const readFailed = loadOverlay(); const readEvents: string[] = []; readFailed.failRead();
+  readFailed.render(cards, initial, event => readEvents.push(event)); await settle();
+  assert.deepEqual(readEvents, ['failed']);
+  assert.equal(readFailed.render(cards, initial)[0].runtimeCataloguePricing.displayPrice, 0.09,
+    'failed stored-price measurement preserves the existing truthful eligible fallback');
   console.log('Set pricing passed: windowed requests, immediate fallbacks, quote retention, bounded memory and account isolation.');
 }
 void main().catch(error => { console.error(error); process.exitCode = 1; });

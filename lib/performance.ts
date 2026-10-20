@@ -99,7 +99,7 @@ export function setRetrievalCondition(condition: RetrievalCondition) { retrieval
 export type RetrievalSource = 'memory' | 'persisted' | 'network' | 'local-preview';
 export type RetrievalPhase = 'auth-ready' | 'binder-ready' | 'facts-ready' | 'facts-committed' | 'visible-rows'
   | 'network-complete' | 'card-source-ready' | 'ownership-ready' | 'artwork-ready' | 'thumbnail-loaded' | 'thumbnail-displayed'
-  | 'detail-loaded' | 'detail-displayed' | 'prices-ready' | 'facts-settled' | 'settled';
+  | 'detail-loaded' | 'detail-displayed' | 'prices-ready' | 'price-read-complete' | 'artwork-read-complete' | 'facts-settled' | 'settled';
 export type RetrievalFailure = 'access' | 'facts' | 'ownership' | 'artwork' | 'prices' | 'source';
 export type RetrievalImageEvent = {
   phase: 'loaded' | 'displayed' | 'retry' | 'failed';
@@ -112,7 +112,7 @@ export type RetrievalImageEvent = {
 };
 export type RetrievalObservation = {
   sequence: number;
-  journey: 'binder' | 'search' | 'inspection';
+  journey: 'binder' | 'search' | 'inspection' | 'pokedex';
   origin: RetrievalOrigin;
   source: RetrievalSource | null;
   phasesMs: Partial<Record<RetrievalPhase, number>>;
@@ -147,6 +147,9 @@ export function exportRetrievalObservations() {
   if (pendingBinderTap && retrievalClock() - pendingBinderTap.started > 15_000) {
     pendingBinderTap.trace.cancel(); pendingBinderTap = null;
   }
+  if (pendingPokedexTap && pendingPokedexTap.clock() - pendingPokedexTap.started > 15_000) {
+    pendingPokedexTap.trace.cancel(); pendingPokedexTap = null;
+  }
   return {
     schemaVersion: 1, measurement: 'device-local-js-callbacks' as const,
     capacity: RETRIEVAL_OBSERVATION_LIMIT, droppedObservations,
@@ -157,6 +160,8 @@ export function resetRetrievalObservations() {
   retrievalGeneration++;
   pendingBinderTap?.trace.cancel();
   pendingBinderTap = null;
+  pendingPokedexTap?.trace.cancel();
+  pendingPokedexTap = null;
   retrievalObservations.length = 0;
   droppedObservations = 0;
 }
@@ -180,6 +185,7 @@ export function beginRetrieval(journey: RetrievalObservation['journey'], origin:
   };
   return {
     phase,
+    current: isActive,
     pending() { return isActive() && observation.outcome === 'pending'; },
     source(source: RetrievalSource) { if (isActive()) observation.source ??= source; },
     image(event: RetrievalImageEvent) {
@@ -209,7 +215,7 @@ export function beginRetrieval(journey: RetrievalObservation['journey'], origin:
         }
       }
     },
-    facts(cards: number, source: RetrievalSource, complete = false) {
+    facts(cards: number, source: RetrievalSource | null, complete = false) {
       if (!isActive()) return;
       observation.cards = cards;
       observation.catalogueComplete = complete;
@@ -235,6 +241,21 @@ export function beginRetrieval(journey: RetrievalObservation['journey'], origin:
       active = false;
     },
   };
+}
+
+type PokedexTrace = ReturnType<typeof beginRetrieval>;
+let pendingPokedexTap: { routeKey: string; started: number; clock: () => number; trace: PokedexTrace } | null = null;
+/** A transient navigation match only. No species, route or account identifiers are exported. */
+export function startPokedexRetrieval(routeKey: string, origin: 'tap' | 'retry' = 'tap', clock = retrievalClock) {
+  pendingPokedexTap?.trace.cancel();
+  pendingPokedexTap = { routeKey, started: clock(), clock, trace: beginRetrieval('pokedex', origin, clock) };
+}
+export function beginPokedexRetrieval(routeKey: string, clock = retrievalClock) {
+  const pending = pendingPokedexTap;
+  pendingPokedexTap = null;
+  if (pending && pending.routeKey === routeKey && pending.clock() - pending.started <= 15_000 && pending.trace.current()) return pending.trace;
+  pending?.trace.cancel();
+  return beginRetrieval('pokedex', 'screen-load', clock);
 }
 
 export type BinderRetrievalObservation = {

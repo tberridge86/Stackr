@@ -170,8 +170,18 @@ function testScreenKnownNameDataflow() {
     'Metadata remains a late optional screen update for known routes');
   assert.match(source, /const cardSpeciesName = speciesName \?\? routeName \?\? nextPokemon\.name;/,
     'A list-selected species survives the optional provider-metadata update.');
-  assert.match(source, /fetchCardsForPokemon\(cardSpeciesName, \{ onProgress: applyCards \}\)/,
-    'The screen consumes progressive factual card publications using the selected species identity.');
+  const tree = ts.createSourceFile('pokemon.tsx', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const reads: ts.CallExpression[] = [];
+  const visit = (node: ts.Node) => {
+    if (ts.isCallExpression(node) && node.expression.getText(tree) === 'fetchCardsForPokemon') reads.push(node);
+    ts.forEachChild(node, visit);
+  };
+  visit(tree); assert.equal(reads.length, 1);
+  assert.equal(reads[0].arguments[0].getText(tree), 'cardSpeciesName', 'The factual request keeps the selected species.');
+  const options = reads[0].arguments[1]; assert.ok(ts.isObjectLiteralExpression(options));
+  const progress = options.properties.find((property) => ts.isPropertyAssignment(property) && property.name.getText(tree) === 'onProgress');
+  assert.ok(progress && ts.isPropertyAssignment(progress));
+  assert.equal(progress.initializer.getText(tree), 'applyCards', 'The screen retains progressive facts independently of diagnostics.');
 }
 
 async function testOwnedSpeciesEligibility() {

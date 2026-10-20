@@ -29,6 +29,7 @@ import { PokemonArtworkGlow, StackrScreen } from '../../components/StackrScreen'
 import { stackrIcons } from '../../lib/stackrIcons';
 import { usePokedexOwnership } from '../../lib/pokedexOwnershipState';
 import { readOptionalCatalogueEnrichment } from '../../lib/optionalCatalogueEnrichment';
+import { startPokedexRetrieval } from '../../lib/performance';
 
 type PokemonListItem = {
   name: string;
@@ -467,7 +468,8 @@ export default function PokedexScreen() {
 
     return (
       <Pressable
-        onPress={() =>
+        onPress={() => {
+          startPokedexRetrieval(JSON.stringify([String(item.routeId), item.routeName, item.speciesName]));
           router.push({
             pathname: '/pokemon/[id]',
             params: {
@@ -476,8 +478,8 @@ export default function PokedexScreen() {
               speciesId: String(item.speciesId),
               speciesName: item.speciesName,
             },
-          })
-        }
+          });
+        }}
         accessibilityRole="button"
         accessibilityLabel={`${formatPokemonName(item.speciesName)}, number ${String(item.speciesId).padStart(4, '0')}${!ownedPokemonNames ? ', ownership unknown' : owned ? ', owned' : ', not owned'}`}
         style={({ pressed }) => [styles.gridCard, { width: itemWidth }, pressed && styles.cardPressed]}
