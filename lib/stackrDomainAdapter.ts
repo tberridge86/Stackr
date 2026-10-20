@@ -1296,22 +1296,46 @@ export function stackrLegacyCardToRow(card: StackrLegacyCard) {
 
 export async function fetchStackrCardRows(
   references: string[],
-  options: { language?: string | null; concurrency?: number } = {},
+  options: {
+    language?: string | null;
+    concurrency?: number;
+    signal?: AbortSignal;
+    onCanonicalRows?: (rows: Map<string, ReturnType<typeof stackrLegacyCardToRow>>) => void;
+  } = {},
   client: StackrApiClient = stackrApiClient,
 ) {
+  throwIfOptionalCatalogueReadAborted(options.signal);
   const unique = [...new Set(references.map((value) => String(value ?? '').trim()).filter(Boolean))];
   if (!shouldUseStackrApi(client)) {
     const cards = await legacyCardMap(unique);
+    throwIfOptionalCatalogueReadAborted(options.signal);
     return new Map([...cards.entries()].map(([reference, card]) => [reference, stackrLegacyCardToRow(card)]));
   }
   const byReference = new Map<string, ReturnType<typeof stackrLegacyCardToRow>>();
+  const canonicalRows = new Map<string, ReturnType<typeof stackrLegacyCardToRow>>();
   const concurrency = Math.max(1, Math.min(10, options.concurrency ?? 6));
   for (let index = 0; index < unique.length; index += concurrency) {
+    throwIfOptionalCatalogueReadAborted(options.signal);
     const batch = unique.slice(index, index + concurrency);
     const rows = await Promise.all(batch.map(async (reference) => {
-      const card = await fetchStackrCard(reference, { language: options.language }, client).catch(() => null);
+      const card = await fetchStackrCard(reference, {
+        language: options.language,
+        onCanonicalCard: options.onCanonicalRows || options.signal ? (facts) => {
+          throwIfOptionalCatalogueReadAborted(options.signal);
+          if (!options.onCanonicalRows) return;
+          const row = stackrLegacyCardToRow(facts);
+          canonicalRows.set(reference, row);
+          canonicalRows.set(row.id, row);
+          // A detached snapshot cannot acquire later facts or artwork after a
+          // caller has projected it for display. Keep both exact lookup aliases.
+          options.onCanonicalRows?.(new Map(canonicalRows));
+        } : undefined,
+      }, client).catch(() => null);
       return card ? { reference, row: stackrLegacyCardToRow(card) } : null;
     }));
+    // In-flight cached facts may ignore cancellation. They must not dispatch
+    // another batch or return a successful partial read after the caller aborts.
+    throwIfOptionalCatalogueReadAborted(options.signal);
     for (const result of rows) {
       if (!result) continue;
       byReference.set(result.reference, result.row);
