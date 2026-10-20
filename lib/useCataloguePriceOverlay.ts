@@ -144,7 +144,13 @@ export function useCataloguePriceOverlay<T extends DisplayCard>(cards: T[], opti
     const embedded = card.pricing?.displayPrice ?? (card.price_source === 'stackr-api' ? card.estimated_value : null);
     if ((stored?.displayPrice == null || stored.provisional) && typeof embedded === 'number'
       && Number.isFinite(embedded) && embedded > 0) return card;
-    const baseline = stored?.displayPrice != null && !stored.provisional ? undefined : provisionalDisplay(card, reference, language);
+    // A stored decision for this account/reference/language must not be replaced
+    // by a local rarity baseline after a cold read or persisted-cache restart.
+    if (stored?.authoritativeUnavailable && row?.reference === reference && row.language === language) {
+      return { ...card, runtimeCataloguePricing: stored };
+    }
+    const provisional = stored?.displayPrice != null && !stored.provisional ? undefined : provisionalDisplay(card, reference, language);
+    const baseline = provisional ? { ...provisional, authoritativeUnavailable: false, classification: null, evidenceType: null } : undefined;
     const pricing = stored?.displayPrice != null && (!stored.provisional || baseline || publishedProvisional(row, reference, language)) ? stored : baseline;
     return pricing ? { ...card, runtimeCataloguePricing: pricing } : card;
   }), [cards, ownerId, saved]);

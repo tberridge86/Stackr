@@ -1127,6 +1127,11 @@ export interface components {
             knownRevisions?: {
                 [key: string]: string;
             };
+            /**
+             * @description Opt in to stored classified evidence and explicit per-reference readErrors. Omission retains the legacy read contract.
+             * @enum {string}
+             */
+            classificationVersion?: "classified-v1";
         };
         CataloguePriceItem: {
             reference: string;
@@ -1153,6 +1158,13 @@ export interface components {
             /** @enum {string} */
             quoteScope?: "exact_variant" | "printing_level";
             primarySource?: string;
+            /**
+             * @description Optional stored raw catalogue guide decision; never exact-condition or sale evidence.
+             * @enum {string}
+             */
+            classification?: "MARKET_GUIDE" | "ESTIMATED_VALUE" | "PRICE_UNAVAILABLE";
+            evidenceType?: string;
+            sourceLabel?: string;
             estimates: {
                 low: number | null;
                 central: number | null;
@@ -1205,6 +1217,11 @@ export interface components {
                 priceRevision: string;
                 /** @enum {string} */
                 estimateMode: "exact" | "general";
+                /** @description Failed references have no replacement price or cache checkpoint. Together with prices and unchangedReferences this partitions the request. */
+                readErrors?: {
+                    reference: string;
+                    code: string;
+                }[];
             };
         };
         CardPriceResponse: components["schemas"]["Envelope"] & {

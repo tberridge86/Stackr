@@ -87,6 +87,7 @@ async function main() {
     let printingQuote: Record<string, unknown> | null = null;
     let cardmarketQuote: Record<string, unknown> | null = null;
     const supabase = { schema: () => ({ rpc: async (name: string, args: any) => {
+      if (name === 'read_pricing_classifications') return { data: null, error: { code: 'PGRST202' } };
       if (name === 'read_catalogue_prices') {
         catalogueReads++;
         try { return { data: (await db.query('select * from api.read_catalogue_prices($1::text[],$2)', [args.p_references, args.p_language])).rows, error: null }; }
