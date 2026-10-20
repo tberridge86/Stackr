@@ -2046,6 +2046,10 @@ components:
           additionalProperties:
             type: string
             pattern: "^[a-f0-9]{64}$"
+        classificationVersion:
+          type: string
+          enum: [classified-v1]
+          description: Opt in to stored classified evidence and explicit per-reference readErrors. Omission retains the legacy read contract.
     CataloguePriceItem:
       type: object
       additionalProperties: false
@@ -2078,6 +2082,12 @@ components:
         priceBasis: { type: string }
         quoteScope: { type: string, enum: [exact_variant, printing_level] }
         primarySource: { type: string }
+        classification:
+          type: string
+          enum: [MARKET_GUIDE, ESTIMATED_VALUE, PRICE_UNAVAILABLE]
+          description: Optional stored raw catalogue guide decision; never exact-condition or sale evidence.
+        evidenceType: { type: string }
+        sourceLabel: { type: string }
         estimates:
           type: object
           additionalProperties: false
@@ -2148,6 +2158,17 @@ components:
                 estimateMode:
                   type: string
                   enum: [exact, general]
+                readErrors:
+                  type: array
+                  description: Failed references have no replacement price or cache checkpoint. Together with prices and unchangedReferences this partitions the request.
+                  maxItems: 100
+                  items:
+                    type: object
+                    additionalProperties: false
+                    required: [reference, code]
+                    properties:
+                      reference: { type: string }
+                      code: { type: string }
     CardPriceResponse:
       allOf:
         - $ref: "#/components/schemas/Envelope"

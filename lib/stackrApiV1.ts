@@ -293,6 +293,10 @@ export type StackrCardPrice = {
   priceBasis?: string;
   quoteScope?: 'exact_variant' | 'printing_level';
   primarySource?: string;
+  /** Stored raw guide decisions; never condition prices or completed sales. */
+  classification?: 'MARKET_GUIDE' | 'ESTIMATED_VALUE' | 'PRICE_UNAVAILABLE';
+  evidenceType?: string;
+  sourceLabel?: string;
   estimates: {
     low: number | null;
     central: number | null;
@@ -343,6 +347,8 @@ export type StackrCataloguePricePage = {
   unchangedReferences: string[];
   priceRevision: string;
   estimateMode: 'exact' | 'general';
+  /** Failed refs have no replacement row or cache checkpoint. Other rows remain usable. */
+  readErrors?: { reference: string; code: string }[];
 };
 
 export type StackrPriceHistoryObservation = {
@@ -1055,6 +1061,7 @@ export class StackrApiClient {
     language?: string;
     estimateMode?: 'exact' | 'general';
     knownRevisions?: Record<string, string>;
+    classificationVersion?: 'classified-v1';
   }) {
     if (!input.references.length || input.references.length > 100) throw new Error('cataloguePrices requires 1..100 references.');
     return this.authenticatedPost<StackrCataloguePricePage>('/market/catalogue-prices', input);
