@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import vm from 'node:vm';
 
 import { buildForeignCardPresentation } from '../lib/foreignCardPresentation';
+import { getEditionVariantImageUrl } from '../lib/editionImages';
 
 const japanese = buildForeignCardPresentation({
   id: 'ja:sv2a:006',
@@ -22,6 +24,7 @@ const japanese = buildForeignCardPresentation({
     english_display_name: 'Charizard ex',
     translations: {
       en: {
+        provenance: 'reviewed_translation',
         attacks: [{ name: 'Brave Wing', damage: '60', text: 'English effect text.' }],
       },
     },
@@ -106,12 +109,20 @@ assert.equal(english.details.attacks?.[0]?.name, 'Scratch');
 
 async function assertNativeImageBoundary() {
   const cardScreen = await readFile(path.resolve(process.cwd(), 'app/card/[id].tsx'), 'utf8');
-  assert.match(
-    cardScreen,
-    /uri=\{card\.images\?\.large \|\| card\.images\?\.small\}/,
-    'the card detail image must remain the selected native variant image',
-  );
-  assert.match(cardScreen, /name=\{presentation\.name\}/);
+  const inspectionExpression = cardScreen.match(/const inspectionImageUri = ([^;]+);/)?.[1];
+  assert.ok(inspectionExpression, 'the detail inspection must select its image explicitly');
+  const card = { images: { large: 'https://native.example/large', small: 'https://native.example/small' },
+    raw_data: { variants: [{ name: '1st edition', images: [{ large: 'https://native.example/first-edition' }] }] } };
+  const imageFor = (editionHint: string | null, selectedCard: unknown = card) => vm.runInNewContext(inspectionExpression,
+    { card: selectedCard, editionHint, getEditionVariantImageUrl });
+  assert.equal(imageFor(null), card.images.large, 'inspection must retain the native printing image');
+  assert.equal(imageFor('1st_edition'), 'https://native.example/first-edition', 'a selected native edition takes precedence');
+  assert.equal(imageFor(null, { ...card, images: { small: card.images.small } }), card.images.small,
+    'inspection must fall back to the same native thumbnail when its larger image is unavailable');
+  assert.match(cardScreen, /<EditionAwareCardImage\s+uri=\{card\.images\?\.small\}/,
+    'the detail preview must start with the selected native thumbnail');
+  assert.match(cardScreen, /fullUri=\{card\.images\?\.large\}/,
+    'the larger detail image must retain the selected native printing');
   assert.match(cardScreen, /name=\{presentation\.name\}/);
 
   const adapter = await readFile(path.resolve(process.cwd(), 'lib/stackrDomainAdapter.ts'), 'utf8');
@@ -125,3 +136,12 @@ async function assertNativeImageBoundary() {
 void assertNativeImageBoundary().then(() => {
   console.log('Foreign-card English presentation checks passed');
 });
+
+const unprovenEnglishDetails = buildForeignCardPresentation({
+  id: 'ja:unproven:001', name: '未検証', localName: '未検証', language: 'ja',
+  set: { id: 'ja:unproven', name: '未検証セット', localName: '未検証セット' },
+  attacks: [{ name: '技', text: '日本語' }],
+  raw_data: { translations: { en: { attacks: [{ name: 'Unproven Attack', text: 'Unproven text.' }] } } },
+});
+assert.equal(unprovenEnglishDetails.details.attacks, undefined, 'unproven Latin-script payload must not be displayed as an English translation');
+assert.equal(unprovenEnglishDetails.withheldNativeDetails, true);

@@ -8,6 +8,8 @@ const variantRows = new Map<string, number>();
 let failVariantInsert = true;
 let activeUserId = 'owner-a';
 let failStorageWrite = false;
+let failActivity = false;
+const activityIds = new Set<string>();
 const mock = (request: string, exports: unknown) => {
   const filename = require.resolve(request);
   require.cache[filename] = { id: filename, filename, loaded: true, exports } as any;
@@ -22,6 +24,14 @@ mock('@react-native-async-storage/async-storage', {
 });
 mock('../lib/binders', { fetchBinderById: async () => ({ id: 'binder-a', user_id: 'owner-a', language: 'en', default_condition: 'Near Mint' }), invalidateBinderCaches: () => undefined });
 mock('../lib/pokemonTcg', { normalizePokemonCardLanguage: (value: unknown) => String(value ?? 'en').toLowerCase() });
+mock('../lib/activity', {
+  createActivityPost: async (_input: unknown, options: { expectedUserId: string; eventId: string }) => {
+    assert.equal(options.expectedUserId, activeUserId);
+    if (failActivity) return { status: 'failed', error: new Error('simulated activity failure') };
+    activityIds.add(options.eventId);
+    return { status: 'created', snapshotStored: true };
+  },
+});
 const supabase = {
   auth: { getUser: async () => ({ data: { user: activeUserId ? { id: activeUserId } : null }, error: null }) },
   from: (table: string) => {
@@ -87,8 +97,39 @@ async function run() {
   assert.equal(variantRows.get('owner-a:card-a:set-a:holo:Near Mint::'), 1, 'the exact selected finish resumes after restart');
   assert.equal([...binderRows.values()][0].image_url, null, 'the database batch receives the same sanitized image payload');
   assert.deepEqual(await restarted.listPendingScanCollectionVariants('owner-a'), [], 'the durable operation clears only after both writes succeed');
+  assert.equal(activityIds.size, 1, 'a variant interruption and replay keep the same collection event identity');
+
+  failActivity = true;
+  const historyInput = {
+    ...input,
+    sourceSessionId: 'scan-result-101:add:holo',
+    cards: [{ ...input.cards[0], cardId: 'card-b', cardName: 'Card B' }],
+    variant: { ...input.variant, cardId: 'card-b' },
+  };
+  const historyFailed = await restarted.saveScanCollectionVariant(historyInput);
+  assert.equal(historyFailed.batch.activityFailures, 1, 'history failure preserves collection and variant success');
+  assert.equal(binderRows.get('binder-a:set-a:card-b:en').owned_quantity, 1);
+  assert.equal(variantRows.get('owner-a:card-b:set-a:holo:Near Mint::'), 1);
+  const historyPending = await restarted.listPendingScanCollectionVariants('owner-a');
+  assert.equal(historyPending.length, 1, 'an activity failure retains the original recoverable operation');
+  assert.equal(historyPending[0].historyOnly, true, 'the durable intent records that both holding writes are complete');
+  binderRows.get('binder-a:set-a:card-b:en').owned_quantity = 5;
+  binderRows.get('binder-a:set-a:card-b:en').notes = 'Later collector edit';
+  variantRows.delete('owner-a:card-b:set-a:holo:Near Mint::');
+  failActivity = false;
+  delete require.cache[require.resolve('../lib/collectionBatch')];
+  delete require.cache[require.resolve('../lib/scanCollectionVariantSave')];
+  const historyRestarted = require('../lib/scanCollectionVariantSave') as typeof import('../lib/scanCollectionVariantSave');
+  const historyRepaired = await historyRestarted.resumePendingScanCollectionVariant('owner-a', historyPending[0].sourceSessionId);
+  assert.equal(historyRepaired.batch.replayed, true);
+  assert.equal(historyRepaired.batch.activityFailures, undefined);
+  assert.equal(binderRows.get('binder-a:set-a:card-b:en').owned_quantity, 5, 'history repair preserves a later binder quantity edit');
+  assert.equal(binderRows.get('binder-a:set-a:card-b:en').notes, 'Later collector edit');
+  assert.equal(variantRows.has('owner-a:card-b:set-a:holo:Near Mint::'), false, 'history repair must not restore a subsequently removed finish');
+  assert.equal(activityIds.size, 2);
+  assert.deepEqual(await historyRestarted.listPendingScanCollectionVariants('owner-a'), [], 'completed history repair clears the retained operation');
   values.set('stackr:scan-composite-save:v1:owner:owner-a', '{bad json');
   await assert.rejects(() => restarted.listPendingScanCollectionVariants('owner-a'), /could not be verified/);
-  console.log('Scan composite save restart: owner-bound persistence, replay, exact variant recovery, and concurrency passed');
+  console.log('Scan composite save restart: owner-bound persistence, replay, exact variant recovery, activity repair and concurrency passed');
 }
 void run().catch((error) => { console.error(error); process.exitCode = 1; });

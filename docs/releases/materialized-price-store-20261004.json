@@ -1,0 +1,22 @@
+{
+  "observedAt": "2026-10-04T10:17:33.489Z",
+  "project": "lmwfhvexfcoyeuoyrlco",
+  "migration": "20261004101533_catalogue_bulk_store_materialization",
+  "group": {
+    "categoryId": 85,
+    "groupId": 23779
+  },
+  "candidates": 288,
+  "plannedPriced": 46,
+  "samples": [
+    {
+      "elapsedMs": 2594,
+      "stored": 288
+    },
+    {
+      "elapsedMs": 546,
+      "stored": 288
+    }
+  ],
+  "scope": "Actual staging service-role RPC writes from retained provider evidence; no provider group requests; network-inclusive, not phone"
+}

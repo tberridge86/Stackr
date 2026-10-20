@@ -207,7 +207,8 @@ async function sourcesFor(db,receipt) {
   }
   return new Map(sources.map(s=>[s.code,s.id]));
 }
-export async function writeMetadata(db,rows,receipt,approval,environment,journal,sourceResolver=sourcesFor,catalogueCorrection=null,nativeNameCorrections=null) {
+export async function writeMetadata(db,rows,receipt,approval,environment,journal,sourceResolver=sourcesFor,catalogueCorrection=null,nativeNameCorrections=null,metadataGuard=null) {
+  const metadataBefore=metadataGuard?await metadataGuard.before(db,rows,environment):null;
   if(catalogueCorrection){
     const correction=await catalogueCorrection(db,environment);
     check(Array.isArray(correction)&&correction.length===1&&correction[0].table==='catalog.sets'&&correction[0].column==='printed_total'&&typeof correction[0].changed==='boolean','Invalid bounded catalogue correction audit');
@@ -248,6 +249,7 @@ export async function writeMetadata(db,rows,receipt,approval,environment,journal
   }
   const visible=await visibleAssets(db,rows,cards);assertManifest(rows,visible,true);
   for(const p of plans){const a=visible.find(a=>a.asset_id===p.asset_id);check(a.storage_key===p.storage_key&&isDeepStrictEqual(a.derivative_list,p.derivative_list),'Manifest object drift');}
+  if(metadataGuard)journal.preservation=await metadataGuard.after(db,rows,environment,metadataBefore,journal);
 }
 export async function rehearse(db,write) {
   await db.query('begin isolation level serializable');
@@ -269,7 +271,7 @@ async function main() {
 export function createPublicationJournal(receipt,transferPolicy=null) {
   return {status:'preflight',revision:process.env.GITHUB_SHA,started_at:new Date().toISOString(),cohort_sha256:receipt.cohort_sha256,objects:[],assets:[],links:[],ownership_changes:0,metadata_changes:0,pricing_changes:0,device_verified:false,...(transferPolicy?{transfer_policy:transferPolicy.receipt}: {})};
 }
-export async function publishFrozenCohort({rows,receipt,approval,root,output,sourceResolver=sourcesFor,catalogueCorrection=null,nativeNameCorrections=null,transferPolicy=null}) {
+export async function publishFrozenCohort({rows,receipt,approval,root,output,sourceResolver=sourcesFor,catalogueCorrection=null,nativeNameCorrections=null,transferPolicy=null,metadataGuard=null}) {
   check(root&&output&&rows.length>0,'Package, receipt and frozen rows required');await mkdir(output,{recursive:true});
   const journal=createPublicationJournal(receipt,transferPolicy);
   const save=()=>writeFile(path.join(output,'receipt.json'),JSON.stringify(journal,null,2));await save();
@@ -285,8 +287,9 @@ export async function publishFrozenCohort({rows,receipt,approval,root,output,sou
   try {
     for(const environment of ['staging','production']) {
       db=createVerifiedSupabasePostgresClient(process.env[environment==='staging'?'SUPABASE_STAGING_DB_URL':'SUPABASE_DB_URL'],`stackr-artwork3303-${environment}`,{connectionTimeoutMillis:15000});await db.connect();connected=true;
-      const rehearsal={assets:[],links:[],metadata_changes:0,catalogue_corrections:[],native_name_corrections:[]};await rehearse(db,()=>writeMetadata(db,rows,receipt,approval,environment,rehearsal,sourceResolver,catalogueCorrection,nativeNameCorrections));
+      const rehearsal={assets:[],links:[],metadata_changes:0,catalogue_corrections:[],native_name_corrections:[]};await rehearse(db,()=>writeMetadata(db,rows,receipt,approval,environment,rehearsal,sourceResolver,catalogueCorrection,nativeNameCorrections,metadataGuard));
       journal[environment+'_rehearsal']={status:'passed_and_rolled_back',assets:rehearsal.assets.length,links:rehearsal.links.length,catalogue_corrections:rehearsal.catalogue_corrections.length,native_name_correction_counts:rehearsal.native_name_correction_counts??{total:0,changed:0},native_name_corrections:rehearsal.native_name_corrections,metadata_changes:rehearsal.metadata_changes};await save();
+      if(metadataGuard){journal[environment+'_rehearsal'].preservation=rehearsal.preservation;await save();}
       if(environment==='staging'){await db.end();connected=false;}
     }
     const secret=await resolveServerKey({project:PROJECTS.production,configuredKey:process.env.SUPABASE_PRODUCTION_SECRET_KEY,accessToken:process.env.SUPABASE_ACCESS_TOKEN,mask:key=>{if(process.env.GITHUB_ACTIONS==='true')process.stdout.write(`::add-mask::${key}\n`);}});
@@ -303,7 +306,7 @@ export async function publishFrozenCohort({rows,receipt,approval,root,output,sou
       }));await save();const bad=results.find(r=>r.status==='rejected');if(bad)throw bad.reason;
     }
     await db.query('begin isolation level serializable');await db.query("set local statement_timeout='45s'");await db.query("set local lock_timeout='5s'");await db.query("select pg_advisory_xact_lock(hashtext('stackr-artwork3303-publication'))");
-    await writeMetadata(db,rows,receipt,approval,'production',journal,sourceResolver,catalogueCorrection,nativeNameCorrections);journal.status='commit_intent';await save();commitAttempted=true;await db.query('commit');committed=true;
+    await writeMetadata(db,rows,receipt,approval,'production',journal,sourceResolver,catalogueCorrection,nativeNameCorrections,metadataGuard);journal.status='commit_intent';await save();commitAttempted=true;await db.query('commit');committed=true;
     journal.status='published';await save();
     const cards=await cardsFor(db,rows);bind(rows,cards,'production');assertManifest(rows,await visibleAssets(db,rows,cards),true);
     journal.status='published_manifest_and_public_bytes_verified';journal.fronts=rows.length;journal.derivatives=rows.length*3;journal.verified_at=new Date().toISOString();await save();

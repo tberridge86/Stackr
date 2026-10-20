@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 3,
+  "variants": 3,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "physical_finish_verified": false,
+  "physical_edition_verified": false,
+  "cohort_sha256": "a9c4439ecde035eefdde6fb42e4ed7e42097adc641cc9de9bee0cad1f3bf2aaa",
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "47d6562d64e659d75b642d6569f2b81e9ef99aaca662c94bb5a90353872065fa",
+    "finiteDecisionFileByteSha256": "df4d3c3463b7555a662a8a1d2bed8cb2c949b4739e4b2fbec7c76ea6393b6347",
+    "rootPrivateContextFileByteSha256": "a2aaea707a2e8ddc05e8c71d143bc672888642f29e3368757e3d4073965ddad2",
+    "sourceHandoffFileByteSha256s": [
+      "15e12e42c58e46c49e12b5a23686c19cc4aa8981ab101c42e9db746457d80a8d"
+    ],
+    "independentSourceReviewFileByteSha256s": [
+      "9798d92969e1f8acdae10e3d41c8c218640d54db462ec25ee15e3863ad4c7ef4"
+    ],
+    "fourSourceCheckpointFileByteSha256": "fab06b3d207933bfab65f82f61949c5fe6f77361b073a90ed4f0fbb2a6c033e1",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "6a27c693bef20c68d53d1c6647a75156b6df17d7f41d0429aafa83da19367e81",
+    "independentPrivatePackageReviewSha256": "6a4bffebd1737774a33188aebd5d2015e69699c4749b980a96d493ac7ca39b4d",
+    "rootPrivatePackageValidationSha256": "22096830da97143b8e225bb78c21ad6c373301ce028b30d163985a9482273d49",
+    "rootSourceArchiveBindingSha256": "12309b9fd761ff9c780b2615d77b2ab225d6bb1d36e1bbfff2eab28d059652a3",
+    "rootUploadReceiptSha256": "bffb4e00ef2f688b34dfb17ab0c24cb1dccc25cce49105c26577605b94ca44a0",
+    "actualMeasuredAppReportSha256": "8b698ddc2b5c2e921fb5f266d2a3f854c684c6cb4413deefbead60025e853fca",
+    "actualMeasuredDimensionAuditSha256": "9b810811ae02f6069916cba662cd53daee6c2a75d170ab5689e088f23e9dc4ab",
+    "rootPublisherContextSha256": "22446c27ce6c1d5f31275ebb2f1cb73010a6ea50d39b8f9ee190127d6981ae9b"
+  },
+  "production_source_changes_allowed": 0,
+  "scope": "Exactly PCG2-008/010/031 Japanese shared reference fronts. Current sole008 holo FALSE and010/031 normal TRUE variants/default API IDs remain unchanged; English/category null retained. Production19→25 adds3assets3links and preserves existing PCG2logo+link and all4full17-field sources; staging13→20→13 rolls back its temporary inactive Price fixture. Raw null evolution placements and false source flags remain unchanged; separate actual root literals remain bound. No physical/provider optical or live/device claim."
+}

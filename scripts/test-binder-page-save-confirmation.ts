@@ -63,7 +63,7 @@ walk(source);
 assert.ok(handlers.updatePockets && handlers.saveConfirmed, 'actual binder review handlers must be present');
 
 const factorySource = `function factory(deps: any) {
-  const { correctionOpen, correctionApplyInFlightRef, scanSessionId, session, pockets, sessionRef, pocketsRef, pendingPocketMutationRef, pocketMutationSequenceRef, pocketMutationFailuresRef, sessionLoadRequestRef, updateBinderPageScanSession, setSession, setPockets, bindersLoading, bindersError, selectedBinder, saveInFlightRef, setSaving, supabase, destinationPage, createCollectionBatchRequestKey, persistVerifiedCollectionBatchRecoveryIntent, addOwnedCardBatchToBinder, logScanLearningEvent, buildBinderPageAnalytics, gridLayout, buildPocketLearningCandidates, countPocketStatuses, invalidateBinderCaches, markBinderPageScanSessionSaved, Alert, router, getSelectedCandidate } = deps;
+  const { correctionOpen, correctionApplyInFlightRef, scanSessionId, session, pockets, sessionRef, pocketsRef, pendingPocketMutationRef, pocketMutationSequenceRef, pocketMutationFailuresRef, sessionLoadRequestRef, updateBinderPageScanSession, setSession, setPockets, bindersLoading, bindersError, selectedBinder, saveInFlightRef, setSaving, supabase, destinationPage, createCollectionBatchRequestKey, loadCollectionBatchRecoveryIntent, persistVerifiedCollectionBatchRecoveryIntent, resumeOwnedCardBatchToBinder, logScanLearningEvent, buildBinderPageAnalytics, gridLayout, buildPocketLearningCandidates, countPocketStatuses, invalidateBinderCaches, markBinderPageScanSessionSaved, Alert, router, getSelectedCandidate } = deps;
   const updatePockets = ${handlers.updatePockets};
   const saveConfirmed = ${handlers.saveConfirmed};
   return { updatePockets, saveConfirmed };
@@ -89,10 +89,14 @@ const createHandlerHarness = ({
   currentSession = session,
   submit,
   addOwnedCardBatch,
+  destinationPage = 1,
+  selectedBinderId = 'binder-a',
 }: {
   currentSession?: typeof session;
+  destinationPage?: number;
+  selectedBinderId?: string;
   submit: (cards: any[]) => Promise<void>;
-  addOwnedCardBatch?: (binderId: string, cards: any[], options: { requestKey: string }) => Promise<{ copiesAdded: number; distinctCards: number; replayed: boolean }>;
+  addOwnedCardBatch?: (binderId: string, cards: any[], options: { requestKey: string }) => Promise<{ copiesAdded: number; distinctCards: number; replayed: boolean; activityFailures?: number }>;
 }) => {
   const sessionRef = { current: structuredClone(currentSession) };
   const pocketsRef = { current: structuredClone(currentSession.pockets) };
@@ -118,14 +122,15 @@ const createHandlerHarness = ({
     setPockets: () => undefined,
     bindersLoading: false,
     bindersError: null,
-    selectedBinder: { id: 'binder-a' },
+    selectedBinder: { id: selectedBinderId },
     saveInFlightRef,
     setSaving: () => undefined,
     supabase: { auth: { getSession: async () => ({ data: { session: { user: { id: 'owner-a' } } } }) } },
-    destinationPage: 1,
+    destinationPage,
     createCollectionBatchRequestKey: batch.createCollectionBatchRequestKey,
+    loadCollectionBatchRecoveryIntent: batch.loadCollectionBatchRecoveryIntent,
     persistVerifiedCollectionBatchRecoveryIntent: batch.persistVerifiedCollectionBatchRecoveryIntent,
-    addOwnedCardBatchToBinder: addOwnedCardBatch ?? (async (_binderId: string, cards: any[]) => {
+    resumeOwnedCardBatchToBinder: addOwnedCardBatch ?? (async (_binderId: string, cards: any[]) => {
       await submit(cards);
       return { copiesAdded: cards.length, distinctCards: cards.length, replayed: false };
     }),
@@ -301,6 +306,41 @@ async function run() {
     (await store.loadBinderPageScanSession(collectionRetrySession.scanSessionId, 'owner-a'))?.reviewState,
     'saved',
   );
+
+  store.setBinderPageScanStorageForTests(null);
+  storageValues.clear();
+  const historySession = { ...collectionRetrySession, scanSessionId: 'binder-page-history-restart' };
+  await store.checkpointBinderPageScanSession(historySession);
+  const frozenRequests: any[] = [];
+  const firstHistoryAttempt = createHandlerHarness({
+    currentSession: historySession,
+    destinationPage: 3,
+    submit: async () => { throw new Error('Unexpected fresh submission'); },
+    addOwnedCardBatch: async (binderId, cards, options) => {
+      frozenRequests.push({ binderId, cards, requestKey: options.requestKey });
+      return { copiesAdded: 2, distinctCards: 2, replayed: false, activityFailures: 1 };
+    },
+  });
+  await firstHistoryAttempt.actual.saveConfirmed();
+  assert.equal((await store.loadBinderPageScanSession(historySession.scanSessionId, 'owner-a'))?.reviewState, 'reviewing',
+    'Failed history must leave the original review recoverable.');
+  assert.equal(frozenRequests[0].cards[0].slotOrder, 50);
+  const changedReview = { ...historySession, pockets: historySession.pockets.map(pocket => ({ ...pocket, status: 'empty' })) };
+  const restartedHistoryAttempt = createHandlerHarness({
+    currentSession: changedReview,
+    destinationPage: 1,
+    selectedBinderId: 'binder-b',
+    submit: async () => { throw new Error('History repair must never add copies'); },
+    addOwnedCardBatch: async (binderId, cards, options) => {
+      frozenRequests.push({ binderId, cards, requestKey: options.requestKey });
+      assert.deepEqual(frozenRequests[1], frozenRequests[0], 'Restart uses frozen binder, page, cards and request key despite changed controls.');
+      return { copiesAdded: 2, distinctCards: 2, replayed: true };
+    },
+  });
+  await restartedHistoryAttempt.actual.saveConfirmed();
+  assert.equal(frozenRequests.length, 2);
+  assert.equal((await store.loadBinderPageScanSession(historySession.scanSessionId, 'owner-a'))?.reviewState, 'saved');
+  assert.ok(!restartedHistoryAttempt.alerts.includes('Could not save page'));
   store.setBinderPageScanStorageForTests(null);
   console.log('Binder page confirmation/save race regression passed');
 }

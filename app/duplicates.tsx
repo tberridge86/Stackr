@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, Stack, useFocusEffect } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from '../components/StackrLoadingIndicator';
 import {
-  ActivityIndicator,
   FlatList,
   Modal,
   Pressable,
@@ -22,7 +22,7 @@ import { StackrBackButton } from '../components/StackrBackButton';
 import { StackrButton, StackrIconButton } from '../components/StackrControls';
 import { StackrImage } from '../components/StackrImage';
 import { StackrPageTitle } from '../components/StackrScreen';
-import { StackrEmptyState, StackrErrorState, StackrSkeleton } from '../components/StackrStates';
+import { StackrEmptyState, StackrErrorState } from '../components/StackrStates';
 import { Text } from '../components/Text';
 import { useAppMode } from '../components/app-mode-context';
 import { useTheme } from '../components/theme-context';
@@ -446,17 +446,10 @@ function DuplicateListRow({
 }
 
 function DuplicatesSkeleton() {
-  const { width } = useWindowDimensions();
-  const tileWidth = Math.floor((width - 36 - 12) / 2);
+  const { theme } = useTheme();
   return (
     <View style={styles.loadingWrap}>
-      <StackrSkeleton height={96} style={styles.summarySkeleton} />
-      <StackrSkeleton height={44} style={styles.utilitySkeleton} />
-      <View style={styles.skeletonGrid}>
-        {Array.from({ length: 6 }).map((_, index) => (
-          <StackrSkeleton key={index} height={272} style={[styles.tileSkeleton, { width: tileWidth }]} />
-        ))}
-      </View>
+      <ActivityIndicator color={theme.colors.primary} accessibilityLabel="Loading duplicates" />
     </View>
   );
 }
@@ -556,6 +549,7 @@ function DuplicateActionsSheet({
                   <StackrButton
                     label="Create beta listing"
                     variant="primary"
+                    stackrIcon="listings"
                     icon="storefront-outline"
                     onPress={() => onCreateListing(item)}
                   />
@@ -563,6 +557,7 @@ function DuplicateActionsSheet({
                 <StackrButton
                   label="View card"
                   variant="secondary"
+                  stackrIcon="discover"
                   icon="albums-outline"
                   onPress={() => onViewCard(item)}
                 />
@@ -721,6 +716,7 @@ export default function DuplicatesScreen() {
           <Text style={[styles.subtitle, { color: theme.colors.textSoft }]}>Extra cards in your collection</Text>
         </View>
         <StackrIconButton
+          stackrIcon={searchOpen ? undefined : 'search'}
           icon={searchOpen ? 'close-outline' : 'search-outline'}
           label={searchOpen ? 'Close duplicate search' : 'Search duplicates'}
           selected={searchOpen}
@@ -846,7 +842,7 @@ export default function DuplicatesScreen() {
             }
             ListEmptyComponent={
               <StackrEmptyState
-                icon={searchQuery ? 'search-outline' : 'copy-outline'}
+                stackrIcon={searchQuery ? 'search' : 'duplicates'}
                 title={searchQuery ? 'No matches found' : 'No duplicates yet'}
                 body={searchQuery ? 'Try a different card, set or binder name.' : 'Extra copies you scan or add will appear here.'}
                 actionLabel={searchQuery ? 'Clear search' : 'Scan cards'}

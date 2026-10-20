@@ -74,6 +74,7 @@ const SOURCES: Record<string, () => ImageSourcePropType> = {
   'corocoro-comic-2001-10': () => require('../assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2001-10-CoroCoro-Comic.png') as ImageSourcePropType,
   'corocoro-comic-2001-11': () => require('../assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2001-11-CoroCoro-Comic.png') as ImageSourcePropType,
   'corocoro-comic-2001-12': () => require('../assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Comic/2001-12-CoroCoro-Comic.png') as ImageSourcePropType,
+  'corocoro-comic-2023-11': () => require('../assets/magazine-covers/2023-11-corocoro-regular.jpg') as ImageSourcePropType,
   'corocoro-ichiban-2021-06': () => require('../assets/Pokemon_Magazine_Cover_Art_PNGs/CoroCoro Ichiban/2021-06-CoroCoro-Ichiban.png') as ImageSourcePropType,
   'pokemon-fan-japan-2021-issue-73': () => require('../assets/Pokemon_Magazine_Cover_Art_PNGs/Pokemon Fan Japan/2021-Issue-73-Pokemon-Fan-Japan.png') as ImageSourcePropType,
   'pokemon-fan-us-issue-01': () => require('../assets/Pokemon_Magazine_Cover_Art_PNGs/Pokemon Fan US/Pokemon-Fan-US-Issue-01.png') as ImageSourcePropType,

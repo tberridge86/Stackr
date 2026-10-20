@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-20",
+  "baseRevision": "b6fb68aa479bbb391554ff1c95b0f5311edd9b90",
+  "status": "locally_tested_and_independently_reviewed",
+  "problem": "Private saved binder pages each received a fresh transport budget. A screen deadline did not stop later pages. Short server-capped pages were also mistaken for completion.",
+  "repair": [
+    "Reuse the existing personalDataRead boundary for one 10000ms shared saved-row pagination budget",
+    "Forward its signal through the existing SDK, guard every dispatch and response, and cancel on sign-out or observed account transition",
+    "Continue short pages to a definitive empty response, advancing by actual received rows while preserving stable ordering and quantities",
+    "Reject duplicate/foreign rows and a 256-page overflow; failed work is not cached and subsequent callers can retry",
+    "Retain request coalescing, independent public catalogue loading and existing persisted binder previews; no extra cache or data schema"
+  ],
+  "validation": {
+    "baselineActualModule": "8 failing groups and 1 positive control before implementation; two additional auth cases added after this baseline",
+    "finalBudgetFixture": "11 groups pass using actual service and timeout modules with deterministic time; production 10000ms timeout asserted",
+    "parallelRetrieval": "12 groups pass",
+    "binderReopen": "54 checks pass including file-backed SQLite reopen and rollback",
+    "preloadRuntime": "Existing bounded preload/account/cache fixture passes",
+    "catalogueRetry": "Existing 3-to-237 card recovery, exact ownership, quantities and cache assertions pass with updated SDK mocks",
+    "typecheck": "npm run typecheck passes",
+    "lint": "npm run lint passes with 8 existing root warnings; changed-file lint passes with 8 existing binders.ts warnings",
+    "independentReview": "No actionable introduced P1/P2 found; runtime and deterministic budget fixture reviewed",
+    "environment": "Sparse committed-source export at the base revision into a permitted isolated directory. Named validation dependencies copied from existing current install; no dependency or lockfile changes. Initial setup-only typecheck failures resolved by restoring missing installed modules and the exact tracked synthetic fixture.",
+    "unpricedBinder": "Existing price/no-price cache separation, images, quantities and all1702 saved rows pass; expected terminal-empty query included",
+    "hostedFirstHead": "a033725: binder CI failed on missing AbortController in legacy unpriced test VM; compatibility fixture corrected and passed locally, runtime unchanged. Superseding-head CI required."
+  },
+  "limits": [
+    "The budget covers saved-row pagination only, after binder-record lookup. It is not a complete screen/public-catalogue/price deadline",
+    "The SDK query builder is mocked; signal forwarding and late-result guards do not prove live database query cancellation",
+    "Account transition protection covers the pagination interval; completed binder cache keys and later catalogue/price phases are not redesigned",
+    "An additional terminal empty-page request is required to distinguish server-capped short pages from complete results",
+    "No measured phone latency, installed-device acceptance, full release acceptance or new artwork/price coverage"
+  ],
+  "continuation": [
+    "Use D:/Stackr as the current integration repository; older Stackr-1 and recovery checkouts are historical sources",
+    "Reconcile held PR413 against current classified-price code before any backend delivery; its source merge can restart price workers",
+    "October18 public gateway checks supersede a blanket claim of an ongoing outage; the specific manifest endpoint has no fresh acceptance in that eight-read receipt",
+    "Retain all original-video device closure criteria and the current TestFlight hold"
+  ],
+  "delivery": {
+    "runtimeChanges": "app shared binder service only",
+    "backendGatewayDatabaseChanges": false,
+    "deployed": false,
+    "nativePublished": false,
+    "deviceVerified": false
+  }
+}

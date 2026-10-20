@@ -116,21 +116,25 @@ export async function proxyRequest({ request, route, env, requestId, trace, auth
     body: ['GET', 'HEAD'].includes(request.method) ? undefined : bodyBytes,
     redirect: 'manual',
   };
-  await checkCircuit(env, route.target);
+  // Optional artwork must not open or reset the circuit used by factual reads.
+  const circuitTarget = route.target === 'backend' && route.id === 'asset_manifest'
+    ? 'backend:asset_manifest'
+    : route.target;
+  await checkCircuit(env, circuitTarget);
   const attempts = request.method === 'GET' ? 2 : 1;
   let lastError;
   for (let attempt = 0; attempt < attempts; attempt += 1) {
     try {
       const response = await fetchWithTimeout(fetchImpl, destination.toString(), init, timeoutFor(route, env));
       if (RETRYABLE_STATUS.has(response.status) && attempt + 1 < attempts) continue;
-      await recordCircuit(env, route.target, response.status < 500);
+      await recordCircuit(env, circuitTarget, response.status < 500);
       return response;
     } catch (error) {
       lastError = error;
       if (attempt + 1 >= attempts) break;
     }
   }
-  await recordCircuit(env, route.target, false).catch(() => undefined);
+  await recordCircuit(env, circuitTarget, false).catch(() => undefined);
   if (lastError?.name === 'AbortError' || lastError?.name === 'TimeoutError' || String(lastError).includes('downstream timeout')) {
     throw new GatewayError(504, 'downstream_timeout', 'A Stackr dependency timed out.');
   }

@@ -114,9 +114,9 @@ assert.equal(
   'legacy free-form message events must be hidden completely during Gate 0',
 );
 
-const appLayout = fs.readFileSync('app/_layout.tsx', 'utf8');
+const appLayout = fs.readFileSync('components/StackrAppShell.tsx', 'utf8');
 const stripeProviderBranch = appLayout.match(
-  /BETA_TRADE_DEMO_MODE\s*\?\s*\(\s*<AppNavigation\s*\/>\s*\)\s*:\s*\(\s*<StripeAppProvider>/s,
+  /BETA_TRADE_DEMO_MODE\s*\?\s*\(\s*<AppNavigation\s+startupVisible=\{startupVisible\}\s+onReady=\{onReady\}\s*\/>\s*\)\s*:\s*\(\s*<StripeAppProvider>/s,
 );
 assert.ok(
   stripeProviderBranch,
@@ -297,11 +297,12 @@ const hubScreen = fs.readFileSync('features/home/HubScreen.tsx', 'utf8');
 assert.match(hubScreen, /\{premiumSellerAccess\.allowed \? \(\s*<StackrBottomSheet visible=\{roleModalOpen\}/s);
 assert.doesNotMatch(hubScreen, /ordinary Market listings remain available outside|create ordinary listings/);
 assert.doesNotMatch(hubScreen, /Use purchase history/);
+assert.match(hubScreen, /const posts = await readRecentHomeActivityRows\(supabase, trustedUserId, isCurrentRequest\)/);
 assert.match(
   hubScreen,
-  /const visibleFeed = \(feedResult\.data \?\? \[\]\)\s*\.filter\(\(post: any\) => !isGate0CommerceActivity\(post\)\)/s,
+  /const visibleFeed = posts\s*\.filter\(\(post: any\) => !isGate0CommerceActivity\(post\)\)/s,
 );
-assert.doesNotMatch(hubScreen, /premiumSellerAccess\.allowed\s*\?\s*\(feedResult\.data/);
+assert.doesNotMatch(hubScreen, /premiumSellerAccess\.allowed\s*\?\s*\(?\s*(?:feedResult\.data|posts)/);
 
 const duplicatesScreen = fs.readFileSync('app/duplicates.tsx', 'utf8');
 assert.match(duplicatesScreen, /\{canCreateListing \? \(\s*<StackrButton\s*label="Create beta listing"/s);

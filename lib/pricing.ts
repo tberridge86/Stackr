@@ -122,6 +122,7 @@ export type PokeTraceCardPriceInput = {
   gradingCompany?: string | null;
   grade?: string | number | null;
   gradeLabel?: string | null;
+  condition?: string | null;
 };
 
 export type PokeTraceHistoryPeriod = '7d' | '30d' | '90d' | '1y' | 'all';
@@ -173,6 +174,7 @@ const getPokeTracePriceCacheKey = (input: PokeTraceCardPriceInput) => JSON.strin
   gradingCompany: normalizeGraderKey(input.gradingCompany) ?? String(input.gradingCompany ?? '').trim().toLowerCase(),
   grade: normalizeGradeKey(input.grade).toLowerCase(),
   gradeLabel: normalizeGradeKey(input.gradeLabel).toLowerCase(),
+  condition: normalizePokeTraceTierKey(input.condition ?? 'NEAR_MINT').replace(/^RAW_/, ''),
 });
 
 export type TcgcsvCardVariantPrice = {
@@ -443,7 +445,10 @@ export async function fetchPokeTraceCardPrice(
       currency: 'GBP',
       grader: input.gradingCompany,
       grade: input.grade ?? input.gradeLabel,
+      condition: input.gradingCompany || input.grade ? undefined : input.condition ?? 'NEAR_MINT',
     });
+    const activeSession = await supabase.auth.getSession();
+    if (activeSession.data.session?.user?.id !== session.user.id) return null;
     if (!result) {
       if (pokeTracePriceInflight.get(cacheKey) === request) pokeTracePriceCache.set(cacheKey, { expiresAt: Date.now() + POKETRACE_ERROR_CACHE_TTL_MS, value: null });
       return null;
@@ -473,7 +478,7 @@ export async function fetchPokeTraceCardPrice(
         ? buildPokeTraceGradedTier(input.gradingCompany, input.grade, input.gradeLabel)
         : null,
       gradedOptions: [],
-      conditionOptions: input.gradingCompany || input.grade ? [] : ['NEAR_MINT'],
+      conditionOptions: input.gradingCompany || input.grade ? [] : [normalizePokeTraceTierKey(input.condition ?? 'NEAR_MINT').replace(/^RAW_/, '')],
       stackr_low: price.estimates.low,
       stackr_central: price.estimates.central,
       stackr_high: price.estimates.high,
@@ -510,10 +515,22 @@ export async function fetchPokeTraceCardPrice(
 export async function fetchPokeTracePriceHistory(
   providerCardId: string,
   tier: string,
-  period: PokeTraceHistoryPeriod = '30d'
+  period: PokeTraceHistoryPeriod = '30d',
+  identity: { productType?: 'raw_card' | 'graded_card'; currency?: string; grader?: string | null; grade?: string | number | null } = {}
 ): Promise<PokeTraceHistoryPoint[]> {
   if (!providerCardId || !tier) return [];
-  const cacheKey = JSON.stringify({ providerCardId, tier, period });
+  const normalizedTier = normalizePokeTraceTierKey(tier).replace(/^RAW_/, '');
+  const condition = ['NEAR_MINT', 'MINT', 'LIGHTLY_PLAYED', 'MODERATELY_PLAYED', 'HEAVILY_PLAYED', 'DAMAGED'].includes(normalizedTier)
+    ? `raw_${normalizedTier.toLowerCase()}` : null;
+  const productType = identity.productType ?? (condition ? 'raw_card' : 'graded_card');
+  const grader = normalizeGraderKey(identity.grader);
+  const grade = identity.grade == null ? null : String(identity.grade).trim();
+  if (productType === 'raw_card' && (identity.grader?.trim() || grade)) return [];
+  if (productType === 'raw_card' ? !condition : !grader || !grade || !/^\d+(?:\.\d+)?$/.test(grade)) return [];
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user?.id) return [];
+  const currency = (identity.currency ?? 'GBP').toUpperCase();
+  const cacheKey = JSON.stringify({ owner: session.user.id, providerCardId, productType, currency, condition, grader, grade, period });
   const cached = pokeTraceHistoryCache.get(cacheKey);
   if (cached && cached.expiresAt > Date.now()) return cached.value;
 
@@ -521,19 +538,37 @@ export async function fetchPokeTracePriceHistory(
   if (inflight) return inflight;
 
   const request = (async () => {
-    const limit = period === '7d' ? 14 : period === '30d' ? 45 : period === '90d' ? 100 : 365;
-    const response = await stackrApiClient.cardPriceHistory(providerCardId, { limit });
+    const limit = period === '7d' ? 14 : period === '30d' ? 45 : period === '90d' ? 100 : 200;
     const cutoffDays = period === '7d' ? 7 : period === '30d' ? 30 : period === '90d' ? 90 : period === '1y' ? 365 : null;
     const cutoff = cutoffDays == null ? null : Date.now() - cutoffDays * 24 * 60 * 60 * 1000;
+    const response = await stackrApiClient.cardPriceHistory(providerCardId, {
+      limit, productType, currency, observationType: 'sold_observation', provenOnly: true,
+      ...(cutoff == null ? {} : { soldSince: new Date(cutoff).toISOString() }),
+      ...(productType === 'raw_card' ? { condition: condition! } : { grader: grader!, grade: grade! }),
+    }).catch((error: { code?: string }) => {
+      if (error.code === 'unsupported_graded_history_identity') return { data: { observations: [] } };
+      throw error;
+    });
+    const activeSession = await supabase.auth.getSession();
+    if (activeSession.data.session?.user?.id !== session.user.id) return [];
+    const seen = new Set<string>();
     const value = response.data.observations
       .filter((row) => {
-        const date = row.soldAt ?? row.observedAt;
-        return !cutoff || !date || Date.parse(date) >= cutoff;
+        const date = Date.parse(row.soldAt ?? '');
+        if (row.variantId !== providerCardId || row.productType !== productType || row.currency !== currency
+          || row.observationType !== 'sold_observation' || row.provenLastSold !== true
+          || !Number.isFinite(date) || date > Date.now() || (cutoff != null && date < cutoff)
+          || row.observedPrice == null || !Number.isFinite(row.observedPrice) || row.observedPrice <= 0) return false;
+        if (productType === 'raw_card' ? row.conditionCode !== condition : row.graderCode !== grader || row.gradeLabel !== grade) return false;
+        const key = row.duplicateGroupId ?? `${row.providerCode}:${row.sourceItemId || row.observationId}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
       })
       .map((row): PokeTraceHistoryPoint => {
-        const amount = row.observedPrice == null ? null : row.observedPrice + (row.shippingPrice ?? 0);
+        const amount = row.observedPrice;
         return {
-          date: row.soldAt ?? row.observedAt ?? '',
+          date: row.soldAt!,
           source: row.providerCode,
           avg: amount,
           low: amount,

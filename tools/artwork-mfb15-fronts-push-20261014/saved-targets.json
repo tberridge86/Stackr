@@ -1,0 +1,197 @@
+[
+  {
+    "printing_id": "6e67a038-3e59-41af-bbce-d08ffef6c542",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "2",
+    "card_native_name": "Ivysaur",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "743ded85-24c1-43a1-ba84-92e5db9bf4b2"
+    ],
+    "batch_id": "EN-CARDS-006"
+  },
+  {
+    "printing_id": "e836c1e3-ddf5-42e7-9844-028f5068039a",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "3",
+    "card_native_name": "Oddish",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "fcb6b92d-a21d-4d0a-a54a-2ae3e9a12b36"
+    ],
+    "batch_id": "EN-CARDS-006"
+  },
+  {
+    "printing_id": "f70d1b01-4831-4861-b24a-36e75369377a",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "4",
+    "card_native_name": "Gloom",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "c669e433-ac2c-4746-998b-632bdd25c68f"
+    ],
+    "batch_id": "EN-CARDS-006"
+  },
+  {
+    "printing_id": "20853c8d-4a62-474f-9846-97b9b0613d8a",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "10",
+    "card_native_name": "Charmeleon",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "dbe0f482-20d9-4bee-af5c-d76a29f6064e"
+    ],
+    "batch_id": "EN-CARDS-006"
+  },
+  {
+    "printing_id": "5c65f487-f4cc-4f2f-b23c-ea4f3affdee6",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "12",
+    "card_native_name": "Ninetales",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "ca9ccf48-6c9b-43d9-8662-9261fb6abdc1"
+    ],
+    "batch_id": "EN-CARDS-006"
+  },
+  {
+    "printing_id": "86784c8d-053c-45fc-9a1f-7c28d408a022",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "13",
+    "card_native_name": "Growlithe",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "817e6d04-9e1e-42de-8451-9f8173b0dbb1"
+    ],
+    "batch_id": "EN-CARDS-006"
+  },
+  {
+    "printing_id": "e9ca8a0b-146f-4e17-8505-e6c85161b8d6",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "14",
+    "card_native_name": "Arcanine",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "9bb6f859-b100-4813-aae7-76061dbb83d2"
+    ],
+    "batch_id": "EN-CARDS-006"
+  },
+  {
+    "printing_id": "d24641fc-3122-4884-946c-24ac9f75aff6",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "15",
+    "card_native_name": "Magmar",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "9bde4350-5fd1-4adb-995b-a332b75289af"
+    ],
+    "batch_id": "EN-CARDS-006"
+  },
+  {
+    "printing_id": "7a2c8b92-4f23-4af6-aa73-c72e44613073",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "18",
+    "card_native_name": "Raichu",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "7547c440-fb32-4b16-b154-937538a7ece2"
+    ],
+    "batch_id": "EN-CARDS-006"
+  },
+  {
+    "printing_id": "86bd07d9-5469-4070-a9ae-b0218c27dd17",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "19",
+    "card_native_name": "Magnemite",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "98ad880e-9902-44fa-a47f-eaf5b01c0e6b"
+    ],
+    "batch_id": "EN-CARDS-006"
+  },
+  {
+    "printing_id": "caac57ef-b60b-43e6-95c7-44d01f2eed48",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "20",
+    "card_native_name": "Magneton",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "600036cf-40c2-45b9-ba2c-d2b973e2c9ba"
+    ],
+    "batch_id": "EN-CARDS-006"
+  },
+  {
+    "printing_id": "c732f0af-7106-4b09-b2df-77e6fadac5b6",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "21",
+    "card_native_name": "Voltorb",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "d50705b9-0227-4da9-a798-86384479b1e3"
+    ],
+    "batch_id": "EN-CARDS-006"
+  },
+  {
+    "printing_id": "ae51538b-0e19-468b-9045-fc05417107cf",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "22",
+    "card_native_name": "Electrode",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "34aa2c66-8f3a-4b8b-8688-2280d2d6a010"
+    ],
+    "batch_id": "EN-CARDS-006"
+  },
+  {
+    "printing_id": "66cb36e5-5d6e-4e33-a2bb-794a00c4cb54",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "28",
+    "card_native_name": "Poliwhirl",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "27b429ef-ea7e-4121-9b2e-cc679864df58"
+    ],
+    "batch_id": "EN-CARDS-007"
+  },
+  {
+    "printing_id": "8427b575-3c2f-45ed-bd48-aa1c5f93e690",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "30",
+    "card_native_name": "Gyarados",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "5934665d-c43c-42dc-b591-ddededc5d422"
+    ],
+    "batch_id": "EN-CARDS-007"
+  }
+]

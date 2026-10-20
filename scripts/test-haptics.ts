@@ -56,9 +56,9 @@ async function main() {
   );
 
   assert.match(mainScanner, /stackrHaptics\.scannerCaptureLocked\(\)/,
-    'capture lock feedback must be embedded through the semantic scanner facade');
-  assert.match(mainScanner, /cards\.length === 1 \? stackrHaptics\.scannerExactMatch\(\) : stackrHaptics\.scannerAmbiguous\(\)/,
-    'candidate-result feedback must distinguish exact and ambiguous results semantically');
+    'capture feedback must use the shared scanner facade');
+  assert.match(mainScanner, /cards\.length === 1 \? stackrHaptics\.analysisCompleted\(\) : stackrHaptics\.scannerAmbiguous\(\)/,
+    'one review candidate completes analysis without claiming an exact recognition match');
   assert.doesNotMatch(mainScanner, /preferenceAwareHaptics|\bHaptics\.(?:impactAsync|notificationAsync|selectionAsync)/,
     'scanner code must not choose native haptic effects locally');
   assert.match(

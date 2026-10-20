@@ -11,6 +11,9 @@ import * as pokemonDisplayNames from '../lib/pokemonDisplayNames';
 import * as resilientCatalogueRead from '../lib/resilientCatalogueRead';
 import * as optionalCatalogueEnrichment from '../lib/optionalCatalogueEnrichment';
 import * as cardArtworkPresentation from '../lib/cardArtworkPresentation';
+import * as chineseCatalogueCorrection from '../lib/chineseCatalogueCorrection';
+import * as stackrSetRetrieval from '../lib/stackrSetRetrieval';
+import * as stackrPreferredSetArtwork from '../lib/stackrPreferredSetArtwork';
 
 const PRISMATIC_ID = 'fb3cd93c-9006-42f5-b026-96a9fedcf269';
 const prismatic = {
@@ -56,7 +59,11 @@ async function main() {
   const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const defaultClient = {};
   const dependencies: Record<string, unknown> = {
+    './chineseCatalogueCorrection': chineseCatalogueCorrection,
+    './stackrSetRetrieval': stackrSetRetrieval,
+    './stackrPreferredSetArtwork': stackrPreferredSetArtwork,
     './cardArtworkPresentation': cardArtworkPresentation,
+    './stackrCatalogueCache': { getPersistentStackrSetFactsStore: async () => null },
     './stackrApiV1': { stackrApiClient: defaultClient },
     './englishSetIdentity': { getEnglishSetReferenceAliases, matchesEnglishSetReference },
     './pokemonSetSeries': pokemonSetSeries,
@@ -65,14 +72,19 @@ async function main() {
     './foreignCardPresentation': { buildForeignCardPresentation: () => ({ name: 'Card', setName: 'Prismatic Evolutions', englishDisplayName: 'Card', englishSetDisplayName: 'Prismatic Evolutions', translationStatus: 'not_required', isForeign: false, withheldNativeDetails: false, details: {} }) },
     './supabase': { supabase: {} },
     './tcgdexControlledCardReference': { enforceTcgdexRuntimeImagePolicy: (value: unknown) => value },
-    './resilientCatalogueRead': { firstNonEmptyCatalogueRows: async () => [], preferNonEmptyCatalogueRows: async () => [] },
-    './optionalCatalogueEnrichment': { readOptionalCatalogueEnrichment: async (read: any) => read(undefined), throwIfOptionalCatalogueReadAborted: () => {} },
+    './resilientCatalogueRead': resilientCatalogueRead,
+    './optionalCatalogueEnrichment': optionalCatalogueEnrichment,
     './publishedSetLogoFallbacks': { getPublishedSetCoverFallback: () => undefined, getPublishedSetLogoFallback: () => undefined },
   };
   const exports: any = {};
   let clock = 1_000_000;
   const TestDate = class extends Date { static now() { return clock; } };
-  vm.runInNewContext(compiled, { exports, require: (name: string) => dependencies[name] ?? {}, console, AbortController, setTimeout, clearTimeout, Date: TestDate });
+  vm.runInNewContext(`${compiled}\nexports.testLegacySetRow = legacySetRow;`, { exports, require: (name: string) => dependencies[name] ?? {}, console, AbortController, setTimeout, clearTimeout, Date: TestDate });
+  const legacyPrintedOnly = exports.testLegacySetRow({ id: PRISMATIC_ID, language: 'en', name: 'Prismatic Evolutions', printed_total: 131 });
+  assert.equal(legacyPrintedOnly.printedTotal, 131);
+  assert.equal(legacyPrintedOnly.total, 0, 'legacy fallback metadata must not fabricate an exact count either');
+  assert.equal(exports.testLegacySetRow({ id: PRISMATIC_ID, language: 'en', actual_total: 180, printed_total: 131 }).total, 180,
+    'an explicitly recorded actual legacy total remains usable');
 
   // Exercise the real preferred-read and enrichment deadlines at a shorter
   // test scale. A slow optional set response used to cancel successful card
@@ -174,6 +186,56 @@ async function main() {
   assert.equal(await exports.resolveStackrSetId('sv8pt5', 'en', ambiguousClient), null, 'two exact canonical matches must remain unresolved rather than selecting the first row');
   const cards = await exports.fetchStackrCardsForSet('sv8pt5', 'en', client);
   assert.equal(cards.length, 180, 'the legacy Prismatic reference resolves through the canonical 180-card set path');
+
+  // Exercise the public facts-first adapter with its actual set/client reads.
+  // A printed total is a display hint, not an exact completion denominator:
+  // Prismatic has 131 printed cards and 180 canonical cards including secrets.
+  const exactFactRows = Array.from({ length: 180 }, (_, index) => ({
+    cardId: `10000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
+    catalogueVersionId: '20000000-0000-4000-8000-000000000001', game: 'pokemon', languageCode: 'en',
+    set: prismatic, collectorNumber: { value: String(index + 1), sort: index + 1, prefix: null, suffix: null, sortKey: String(index + 1) },
+    names: { native: `Fact ${index + 1}`, englishDisplay: `Fact ${index + 1}`, englishDisplaySource: 'printing' },
+    rarity: { code: 'common', label: 'Common' }, details: {},
+    defaultVariantId: `30000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
+    variants: [{ variantId: `30000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`, canonicalId: `pokemon:en:${PRISMATIC_ID}:${index + 1}:normal`, variantCode: 'normal', variantLabel: 'Normal', finishCode: 'normal', finishLabel: 'Normal', artworkKey: null, imageVariantId: null, image: null, updatedAt: null }],
+    updatedAt: null,
+  }));
+  const exactFactsClient = (set: any, rows: any[], namespace: string): any => ({
+    catalogueCacheNamespace: namespace,
+    // Alias resolution and detail reads must describe the same catalogue row.
+    // The adapter can reuse canonical metadata learned while resolving aliases.
+    sets: async () => ({ data: { sets: [set] }, meta: { pagination: { nextCursor: null } } }),
+    set: async (id: string) => { assert.equal(id, PRISMATIC_ID); return { data: { set } }; },
+    setCards: async (_id: string, query: any) => {
+      assert.equal(query.includeAssets, false, 'facts validation must keep the facts-only request');
+      assert.equal(query.language, 'en');
+      return { data: { cards: rows }, meta: { pagination: { nextCursor: null } } };
+    },
+  });
+  // Read the same public set-mapping path consumed by Set Detail before it
+  // forwards a minimum. A mapper must not manufacture an exact total from a
+  // printed hint, otherwise the caller bypasses the facts adapter's guard.
+  const printedOnlyClient = exactFactsClient({ ...prismatic, total: null, printedTotal: 131 }, exactFactRows.slice(0, 131), 'facts-mapped-printed-only');
+  const printedOnlySet = await imageReads.fetchStackrSet(PRISMATIC_ID, 'en', { includeAssets: false }, printedOnlyClient);
+  assert.equal(printedOnlySet.printedTotal, 131, 'the separate printed display hint is retained');
+  assert.equal(printedOnlySet.total, 0, 'mapped set facts must preserve a missing exact canonical total');
+  await assert.rejects(
+    imageReads.fetchStackrCardsForSet(PRISMATIC_ID, 'en', printedOnlyClient, { includeAssets: false, minimumCardCount: printedOnlySet.total }),
+    /Exact canonical set total is unavailable/,
+    'a mapped printed hint cannot bypass the exact facts guard through the screen minimum',
+  );
+  await assert.rejects(
+    imageReads.fetchStackrCardsForSet('sv8pt5', 'en', exactFactsClient({ ...prismatic, total: null, printedTotal: 131 }, exactFactRows.slice(0, 131), 'facts-printed-only'), { includeAssets: false }),
+    /Exact canonical set total is unavailable/,
+    'printedTotal alone cannot make a partial secret-card set look complete',
+  );
+  const exactFacts = await imageReads.fetchStackrCardsForSet('sv8pt5', 'en', exactFactsClient(prismatic, exactFactRows, 'facts-canonical-total'), { includeAssets: false });
+  assert.equal(exactFacts.length, 180, 'the adapter accepts the full canonical total');
+  await assert.rejects(
+    imageReads.fetchStackrCardsForSet('sv8pt5', 'en', exactFactsClient(prismatic, exactFactRows.slice(0, 131), 'facts-partial-canonical-total'), { includeAssets: false }),
+    /expected 180, received 131/,
+    'a 131-card partial response cannot satisfy the canonical total',
+  );
 
   let resolutionSearches = 0;
   const resolutionClient: any = {
@@ -282,6 +344,26 @@ async function main() {
       'explicit language disagreement must not silently switch printings');
   }
   assert.equal(pokemonSetIdentity.getPokemonSetLanguageFromPrefixedId('zh-cn:CSV1C'), 'zh-cn');
+  const [retiredSetId, correctSetId] = Object.entries(chineseCatalogueCorrection.CHINESE_DUPLICATE_SET_CORRECTIONS)[0];
+  const reviewedMaps = JSON.parse(fs.readFileSync('backend/data/chinese-language-correction-aliases.json', 'utf8'));
+  assert.deepEqual(chineseCatalogueCorrection.CHINESE_DUPLICATE_SET_CORRECTIONS, reviewedMaps.sets);
+  assert.deepEqual(chineseCatalogueCorrection.correctedChineseSetContext(retiredSetId, 'ja'), { reference: retiredSetId, language: 'ja' });
+  assert.deepEqual(chineseCatalogueCorrection.correctedChineseSetContext('zh-cn:CSV1C', 'zh-cn'), { reference: 'zh-cn:CSV1C', language: 'zh-cn' });
+  const correctedSet = { ...prismatic, setId: correctSetId, languageCode: 'zh-tw', setCode: 'SV10', total: 1, printedTotal: 1 };
+  const correctedClient = {
+    set: async (id: string) => { assert.equal(id, correctSetId); return { data: { set: correctedSet } }; },
+    setCards: async (id: string, query: any) => {
+      assert.equal(id, correctSetId); assert.equal(query.language, 'zh-tw');
+      return { data: { cards: [{ ...cardRows[0], cardId: '11111111-1111-4111-8111-111111111111',
+        defaultVariantId: '22222222-2222-4222-8222-222222222222', variants: [{ ...cardRows[0].variants[0], variantId: '22222222-2222-4222-8222-222222222222' }],
+        set: correctedSet, languageCode: 'zh-tw', catalogueVersionId: PRISMATIC_ID }] }, meta: {} };
+    },
+  };
+  assert.equal((await exports.fetchStackrSet(`zh-cn:${retiredSetId}`, 'zh-cn', {}, correctedClient)).language, 'zh-tw');
+  assert.equal((await exports.fetchStackrSet(retiredSetId, 'ZH_HANS', {}, correctedClient)).language, 'zh-tw');
+  const correctedFacts = await imageReads.fetchPreferredStackrCardsForReferences([retiredSetId], 'zh-cn', correctedClient, { includeAssets: false, minimumCardCount: 1 });
+  assert.equal(correctedFacts.length, 1);
+  assert.equal(correctedFacts[0].language, 'zh-tw', 'active facts-first path accepts only the reviewed correction language');
   assert.equal(pokemonSetIdentity.getPokemonSetLanguageFromPrefixedId('zh-tw:SV2a'), 'zh-tw');
   assert.equal(pokemonSetIdentity.getPokemonSetLanguageFromPrefixedId('ko:SV2a'), 'ko');
 

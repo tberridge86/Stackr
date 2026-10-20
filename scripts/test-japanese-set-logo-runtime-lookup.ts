@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
@@ -23,19 +24,66 @@ function compileModule(path: string, dependencies: Record<string, unknown>) {
 const englishLogos = compileModule('lib/englishSetLogos.ts', {});
 const japaneseLogos = compileModule('lib/japaneseSetLogos.ts', {});
 const simplifiedChineseLogos = compileModule('lib/simplifiedChineseSetLogos.ts', {});
-const traditionalChineseLogos = compileModule('lib/traditionalChineseSetLogos.ts', {});
+const traditionalChineseLogos = compileModule('lib/traditionalChineseSetLogos.ts', {
+  './pokemonSetIdentity': compileModule('lib/pokemonSetIdentity.ts', {}),
+});
 const getEnglishSetLogoSourceForSet = englishLogos.getEnglishSetLogoSourceForSet as (input: Record<string, unknown>) => string | null;
 const getJapaneseSetLogoSourceForSet = japaneseLogos.getJapaneseSetLogoSourceForSet as (input: Record<string, unknown>, fallbackLanguage?: string | null) => string | null;
 const getJapaneseSetLogoSource = japaneseLogos.getJapaneseSetLogoSource as (setId?: string | null, language?: string | null) => string | null;
-const getTraditionalChineseSetLogoSourceForSet = traditionalChineseLogos.getTraditionalChineseSetLogoSourceForSet as (input: Record<string, unknown>, fallbackLanguage?: string | null) => string | null;
 const localArtwork = compileModule('lib/localSetArtwork.ts', {
   './englishSetLogos': { getEnglishSetLogoSourceForSet },
   './japaneseSetLogos': { getJapaneseSetLogoSourceForSet },
   './simplifiedChineseSetLogos': simplifiedChineseLogos,
-  './traditionalChineseSetLogos': { getTraditionalChineseSetLogoSourceForSet },
+  './traditionalChineseSetLogos': traditionalChineseLogos,
   './magazineSetCovers': { getMagazineSetCoverSourceForSet: () => null },
 });
 const getLocalSetArtworkSourceForSet = localArtwork.getLocalSetArtworkSourceForSet as (input: Record<string, unknown>) => string | null;
+const getLocalSetLogoSourceForSet = localArtwork.getLocalSetLogoSourceForSet as (input: Record<string, unknown>) => string | null;
+
+const storm = JSON.parse(readFileSync('assets/rev2/11-japanese-set-logo/storm-m6-owner-supplied-20261018.json', 'utf8'));
+const stormPermission = JSON.parse(readFileSync(storm.permissionRecord, 'utf8'));
+const stormBytes = readFileSync(storm.assetPath);
+assert.equal(storm.setId, '903d5baa-27c7-5690-b1d7-2395c770204a');
+assert.equal(storm.setCode, 'M6');
+assert.equal(storm.language, 'ja');
+assert.equal(createHash('sha256').update(stormBytes).digest('hex'), storm.sha256);
+assert.equal(stormBytes.length, storm.bytes);
+assert.equal(stormPermission.publicRuntimeDisplayAuthorized, true);
+assert.equal(stormPermission.assetPersistenceAuthorized, true);
+assert.equal(stormPermission.canonicalDatabaseWriteAuthorized, false);
+assert.equal(stormPermission.scope.sha256, storm.sha256);
+assert.equal(stormPermission.scope.assetPath, storm.assetPath);
+assert.equal(stormPermission.scope.setId, storm.setId);
+assert.equal(stormPermission.scope.assetCount, 1);
+assert.equal(storm.origin, 'owner_supplied_original_unchanged');
+assert.equal(storm.sha256, '383905581374e6a41be583303354be84a34891d52f8b6420ea632ff61a07f7ba');
+assert.equal(storm.width, 1280);
+assert.equal(storm.height, 544);
+assert.equal(storm.englishLetteringVisuallyVerified, true);
+assert.equal(storm.sourcePixelsUnchanged, true);
+const previousStorm = JSON.parse(readFileSync(storm.supersedes.manifestPath, 'utf8'));
+assert.equal(previousStorm.assetPath, storm.supersedes.assetPath);
+assert.equal(previousStorm.sha256, storm.supersedes.sha256);
+assert.equal(createHash('sha256').update(readFileSync(previousStorm.assetPath)).digest('hex'), previousStorm.sha256,
+  'The previous immutable M6 image remains available for rollback.');
+assert.equal(stormBytes.toString('ascii', 1, 4), 'PNG');
+assert.equal(stormBytes.readUInt32BE(16), storm.width);
+assert.equal(stormBytes.readUInt32BE(20), storm.height);
+const stormSource = `bundled:../${storm.assetPath}`;
+assert.equal(getLocalSetArtworkSourceForSet({ id: storm.setId, language: 'ja' }), stormSource,
+  'An existing exact Storm binder must show its bundled mark without a successful catalogue read.');
+assert.equal(getJapaneseSetLogoSource(`ja:${storm.setId}`), stormSource);
+assert.equal(getJapaneseSetLogoSource('ja:M6'), stormSource);
+assert.equal(getJapaneseSetLogoSourceForSet({ id: storm.setId, language: 'ja', setCode: 'M5' }), stormSource,
+  'The exact canonical Storm binding must win over a stale code.');
+assert.equal(getLocalSetArtworkSourceForSet({ language: 'ja', englishDisplayName: 'Storm Emeralda' }), stormSource);
+for (const language of ['en', 'zh-tw', 'zh-cn', 'ko']) {
+  assert.equal(getLocalSetArtworkSourceForSet({ id: storm.setId, language, setCode: 'M6', name: 'Storm Emeralda' }), null,
+    'The Japanese Storm logo must not cross languages.');
+}
+assert.equal(getJapaneseSetLogoSourceForSet({ id: storm.setId.slice(0, -1), language: 'ja' }), null);
+assert.match(getJapaneseSetLogoSourceForSet({ id: '88e351b5-8191-5ef4-854b-2978046cda53', language: 'ja', setCode: 'M6a' }) ?? '', /\/m6a\.png$/,
+  'Japanese anniversary keeps its own existing logo.');
 
 const japaneseSm6 = {
   id: '04fe9fe1-7206-4215-b9ab-ccea25916593',
@@ -84,6 +132,14 @@ assert.ok(getJapaneseSetLogoSource('ja:S8b'), 'An unambiguous Japanese-prefixed 
 assert.ok(getJapaneseSetLogoSource('S8b'), 'A language-omitted legacy lookup remains supported.');
 
 const traditionalChineseSca = { id: '41251d8a-6a1c-4f91-8e84-22e2fe7737fd', language: 'zh-tw' };
+const nativePacks = JSON.parse(readFileSync('assets/rev2/12-traditional-chinese-set-logo/owner-supplied-three-pack-art-20261018.json', 'utf8'));
+for (const pack of nativePacks.assets) {
+  for (const id of [pack.setId, `zh-tw:${pack.setId}`]) {
+    assert.equal(getLocalSetArtworkSourceForSet({ id, language: 'zh-tw' }), `bundled:../${pack.assetPath}`);
+    assert.equal(getLocalSetLogoSourceForSet({ id, language: 'zh-tw' }), null, 'The general artwork fallback must not leak packaging into logo-only slots.');
+    for (const language of ['en', 'ja', 'zh-cn', 'ko']) assert.equal(getLocalSetArtworkSourceForSet({ id, language }), null);
+  }
+}
 assert.match(
   getLocalSetArtworkSourceForSet(traditionalChineseSca) ?? '',
   /traditional-chinese-set-logo\/logos\/sca\.webp$/,

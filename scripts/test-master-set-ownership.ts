@@ -23,16 +23,27 @@ const compiled = ts.transpileModule([...definitions.values(), 'globalThis.action
 
 async function main() {
   const db = new Map<string, any>(); let failWrites = false; let loads = 0; const alerts: string[] = [];
+  const activity: { post: any; options: any }[] = [];
   const cards = [{ id: 'saved-row', card_id: 'canonical-printing', set_id: 'canonical-set', owned: true, owned_quantity: 4,
     notes: 'Do not lose me', ebay_price: 42, card: { raw_data: { stackr: { canonical: true, variants: [
       { variantId: 'base-id', variantCode: 'normal' }, { variantId: 'reverse-id', variantCode: 'reverse_holo' },
     ] } } } }];
   const context: any = { Map, Set, Math, Number, console, userId: 'owner', binderId: 'binder', isReadOnly: false,
     cards, selectedCard: cards[0], ownedVariants: new Map(), variantManagedCards: new Set(), updatingMasterSet: false,
-    masterSetEnabled: true, binder: { id: 'binder', master_set_enabled: true },
+    masterSetEnabled: true, binder: { id: 'binder', master_set_enabled: true, language: 'en' },
+    accountGenerationRef: { current: 1 }, loadRequestRef: { current: 1 }, activeAccountIdRef: { current: 'owner' },
     useCallback: (fn: any) => fn, getVariants: (card: any) => getCatalogueVariantKeys(card) ?? [],
     VARIANT_LABELS: {}, catalogueVariantLabel, getBinderCardDisplayName: () => 'Fixture',
-    createActivityPost: async () => {}, recordAchievementEvent: async () => {},
+    createActivityPost: async (post: any, options: any) => {
+      activity.push({ post, options });
+      return { status: 'created', snapshotStored: true };
+    },
+    createDirectCollectionHistoryIntent: (input: any) => ({ ...input, eventId: 'fixture-stable-history-event' }),
+    recordDirectCollectionHistory: async (intent: any) => context.createActivityPost(intent.activity, {
+      expectedUserId: intent.ownerUserId,
+      eventId: intent.eventId,
+    }),
+    recordAchievementEvent: async () => {},
     getMasterSetStorageKey: (id: string) => `master:${id}`, AsyncStorage: { setItem: async () => {} },
     Alert: { alert: (_: string, text: string) => alerts.push(text) }, load: async () => { loads++; reload(); },
   };
@@ -70,6 +81,15 @@ async function main() {
   assert.equal(db.get('canonical-set:canonical-printing:normal').quantity, 4, 'first Reverse edit retains four existing Base copies');
   assert.equal(db.get('canonical-set:canonical-printing:reverseHolofoil').quantity, 2);
   assert.equal(db.has('canonical-set:canonical-printing:holofoil'), false);
+  assert.deepEqual(JSON.parse(JSON.stringify(activity.at(-1)?.post.cardSnapshot)), {
+    name: 'Fixture', number: null, language: 'en', imageSmall: null, imageLarge: null,
+  }, 'the extracted consumer carries its original loaded card facts into durable history');
+  await context.actions.handleSetVariantQuantity('canonical-printing', 'canonical-set', 'reverseHolofoil', 3);
+  assert.equal(activity.at(-1)?.post.title, 'Quantity increased from 2 to 3');
+  assert.equal(activity.at(-1)?.post.type, 'binder_add');
+  assert.equal(activity.at(-1)?.options.expectedUserId, 'owner');
+  await context.actions.handleSetVariantQuantity('canonical-printing', 'canonical-set', 'reverseHolofoil', 2);
+  assert.equal(activity.at(-1)?.post.type, 'quantity_reduced');
   await context.actions.toggleMasterSet(false); reload(); await context.actions.toggleMasterSet(true);
   assert.equal(context.ownedVariants.get('canonical-set:canonical-printing:normal'), 4);
   assert.equal(context.ownedVariants.get('canonical-set:canonical-printing:reverseHolofoil'), 2);

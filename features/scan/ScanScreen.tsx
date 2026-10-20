@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { StackrNavigationIcon } from '../../components/StackrNavigationIcon';
 import { useIsFocused } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Buffer } from 'buffer';
@@ -10,8 +11,8 @@ import { Stack, router, useLocalSearchParams, usePathname } from 'expo-router';
 import { decode as decodeJpeg } from 'jpeg-js';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Svg, { Polygon } from 'react-native-svg';
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import {
-  ActivityIndicator,
   Alert,
   AppState,
   Image,
@@ -3363,7 +3364,7 @@ export default function ScanScreen() {
       }
 
       setScanMessage(cards.length === 1 ? 'Card found.' : `${cards.length} possible matches found.`);
-      await (cards.length === 1 ? stackrHaptics.scannerExactMatch() : stackrHaptics.scannerAmbiguous()).catch(() => {});
+      await (cards.length === 1 ? stackrHaptics.analysisCompleted() : stackrHaptics.scannerAmbiguous()).catch(() => {});
       if (!canContinueCapture()) return;
       saveDiagnostics('candidates_returned');
       setScannerState({ type: 'confirm' });
@@ -4144,7 +4145,7 @@ export default function ScanScreen() {
               accessibilityLabel={isListingFlow ? 'Add manually' : 'Search manually without scanning'}
               accessibilityHint={localQuickScanExperienceEnabled ? 'Keeps the scan context so you can choose a card manually.' : undefined}
             >
-              <Ionicons name="search-outline" size={20} color="#FFFFFF" />
+              <StackrNavigationIcon name="search" size={20} color="#FFFFFF" />
               <Text style={styles.secondaryActionText} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.76}>
                 {isListingFlow ? 'Add manually' : 'Manual search'}
               </Text>

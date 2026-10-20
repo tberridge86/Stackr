@@ -1,0 +1,213 @@
+{
+  "batch": "20261006-26",
+  "observedAt": "2026-10-06T07:37:48Z",
+  "source": {
+    "pricingPr": 312,
+    "state": "MERGED",
+    "mergedAt": "2026-10-06T07:04:48Z",
+    "main": "e9cb563446c632d53f317cf1fc48f28b85a3167f",
+    "head": "34f8c9924e23d2d50a4d0b5ab30e49bfb3ad8984",
+    "workflowBlob": "3aaba5c4a8762a78aafca81c09a2143f39cbd766",
+    "scopeMerged": true,
+    "scopeRun": false,
+    "workflowActive": true,
+    "stagingBaselineApprovalVariable": true,
+    "stagingProjectVariable": "lmwfhvexfcoyeuoyrlco",
+    "branchProtection": {
+      "customBranchPolicy": true
+    },
+    "candidatePersisted": false
+  },
+  "production": {
+    "tcgcsv": {
+      "scope": "deployment",
+      "deploymentId": "d1ef796c-f323-4da6-b00c-c4363568e492",
+      "serviceId": "a2e61d08-1910-4762-bf82-e0473e86ad5f",
+      "environmentId": "b4304736-cac8-4ca9-92a7-93f7f6499c2f",
+      "status": "CRASHED",
+      "deploy": [
+        {
+          "timestamp": "2026-10-06T07:19:17.897625459Z",
+          "severity": "info",
+          "message": "Starting Container",
+          "attributes": [
+            {
+              "key": "level",
+              "value": "\"info\""
+            }
+          ]
+        },
+        {
+          "timestamp": "2026-10-06T07:20:03.931905130Z",
+          "severity": "error",
+          "message": "TimeoutError: The operation was aborted due to timeout",
+          "attributes": [
+            {
+              "key": "level",
+              "value": "\"error\""
+            },
+            {
+              "key": "event",
+              "value": "\"catalogue_bulk_price_failed\""
+            },
+            {
+              "key": "rpc",
+              "value": "\"read_catalogue_bulk_feed\""
+            }
+          ]
+        },
+        {
+          "timestamp": "2026-10-06T07:20:03.931908270Z",
+          "severity": "info",
+          "message": "",
+          "attributes": [
+            {
+              "key": "level",
+              "value": "\"info\""
+            },
+            {
+              "key": "event",
+              "value": "\"catalogue_price_cron_finished\""
+            },
+            {
+              "key": "exitCode",
+              "value": "1"
+            },
+            {
+              "key": "signal",
+              "value": "null"
+            },
+            {
+              "key": "elapsedMs",
+              "value": "45610"
+            }
+          ]
+        }
+      ]
+    },
+    "cardmarket": {
+      "scope": "deployment",
+      "deploymentId": "a40e4ae4-b407-4b4d-bcfb-6058cbfa110d",
+      "serviceId": "1c4cf45c-816d-46cc-a416-78d8c18bd779",
+      "environmentId": "b4304736-cac8-4ca9-92a7-93f7f6499c2f",
+      "status": "CRASHED",
+      "deploy": [
+        {
+          "timestamp": "2026-10-06T07:20:31.293312235Z",
+          "severity": "info",
+          "message": "Mounting volume on: /var/lib/containers/railwayapp/bind-mounts/edb34447-a348-4799-99c5-b604e60d612c/vol_n6krkn4y683r3r8g",
+          "attributes": [
+            {
+              "key": "level",
+              "value": "\"info\""
+            }
+          ]
+        },
+        {
+          "timestamp": "2026-10-06T07:20:31.293405295Z",
+          "severity": "info",
+          "message": "Starting Container",
+          "attributes": [
+            {
+              "key": "level",
+              "value": "\"info\""
+            }
+          ]
+        },
+        {
+          "timestamp": "2026-10-06T07:21:16.288237348Z",
+          "severity": "error",
+          "message": "TimeoutError: The operation was aborted due to timeout",
+          "attributes": [
+            {
+              "key": "level",
+              "value": "\"error\""
+            }
+          ]
+        }
+      ]
+    },
+    "sourcePins": {
+      "tcgcsv": "7dc63aab2bb7be9ca69e77e686ef7722db6927a7",
+      "cardmarket": "f6aee12a18a89c28b8fd1b9c234a9d834e8ced4b"
+    },
+    "schedule": {
+      "tcgcsv": "13 * * * *",
+      "cardmarket": "17 * * * *"
+    },
+    "cache": {
+      "volume": "86718ccd-b9a3-4570-ad10-c114a3be4eb6",
+      "mountedAt": "/var/lib/cardmarket",
+      "sizeMB": 1024,
+      "retained": true
+    },
+    "functionObservation": {
+      "at": "2026-10-06T07:33:55.055010Z",
+      "guardHash": "ca77044f82345cc18fdc7f2be1cca8f6",
+      "querySucceeded": true
+    },
+    "nextNarrowFunctionRead": {
+      "ok": false,
+      "error": "Connection terminated due to connection timeout",
+      "repeated": false
+    },
+    "unauthenticatedRestEdge": {
+      "status": 401,
+      "elapsedMs": 309,
+      "meaning": "Edge reachable and rejects missing API key; not authenticated RPC/database health or owner pricing proof"
+    }
+  },
+  "staging": {
+    "tcgcsvScheduledSuccess": "2026-10-06T07:16:54.395Z",
+    "cardmarketScheduledSuccess": "2026-10-06T07:20:14.380Z",
+    "changedDataset40WritePath": "not newly verified"
+  },
+  "diagnosis": {
+    "repeatOfNotifiedIncident": true,
+    "tcgcsvFailedRpc": "read_catalogue_bulk_feed",
+    "cardmarketFailedRpc": "unidentified",
+    "cause": "unresolved",
+    "logs": {
+      "windowStart": "2026-10-06T07:15:00Z",
+      "windowEnd": "2026-10-06T07:36:00Z",
+      "summary": "15 postgres / 10 postgrest events; no timeout/client-exhaustion substring matches in log_attributes. Field-level negative evidence only, not a root-cause exclusion."
+    },
+    "guardFixDoesNotProveWorkerRepair": true
+  },
+  "coordination": {
+    "releaseChat": "01a10fe3-e931-7512-8924-3c11031c21a9",
+    "active": true,
+    "meaning": "Release owner is shipping build53 in another worktree; no native job or release PR body mutation by this heartbeat.",
+    "classificationChat": "01a10cd5-3cb4-7e20-88ac-1b59eb471330",
+    "idle": true,
+    "noMessages": true
+  },
+  "coverage": {
+    "lastCompleteCutoff": "2026-10-06T03:34:45.990Z",
+    "positive": 38371,
+    "denominator": 76030,
+    "percentHistorical": 50.47,
+    "fullPhysical": 76269,
+    "excludedKorean": 239,
+    "currentComplete": "unknown",
+    "ownerHttpPhone": "unmeasured",
+    "projectedFallback": "unmeasured",
+    "partialCheckpointUnchanged": true,
+    "manualCoverageGain": 0
+  },
+  "next": [
+    "Keep existing cron/cache and inspect next changed runtime/production RPC connectivity; no repeated broad SQL or raised deadlines.",
+    "Canonical rehearsal source is now on main with configured stage flags; exact protected workflow/release acceptance remains pending, no schema dispatch inferred from merge.",
+    "Do not overlap active native release. Complete reviewed rollback rehearsal/live controls before persistent single-guard promotion; then measure frozen native coverage."
+  ],
+  "actions": {
+    "deployment": false,
+    "remoteJobTrigger": false,
+    "schemaOrCatalogueWrite": false,
+    "priceOrMappingWrite": false,
+    "restartOrClearCache": false,
+    "paidActivation": false,
+    "koreanBatch": false,
+    "nativeBuild": false
+  }
+}

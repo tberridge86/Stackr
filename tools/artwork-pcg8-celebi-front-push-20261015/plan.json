@@ -1,0 +1,638 @@
+{
+  "schemaVersion": 1,
+  "queue_id": "PCG8-CELEBI-001-20261015",
+  "source_manifest_sha256": "c117ca58b3490d9ebaef11ef2150cbb17478fcd967a8f062570823629d7776f1",
+  "package_receipt_sha256": "5540d6b8cba4c3320316940a956818f74d333bcf52ff7345ce56861221950a3f",
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "889de3fbe2bb42b0fdb95a77aa8b6cdada6c0d04a668c024784ba0694dbea789",
+    "finiteDecisionFileByteSha256": "8c4ccdbd1faa51d073ae08cb0e06e827d6ca1454a103eb7848b5f23bad83fbb4",
+    "sourceHandoffFileByteSha256": "573e50c1895bb68f6ca511d140c387dfedc7b36ee6a7c3c5eacd2219e4eace0a",
+    "independentSourceReviewFileByteSha256": "372c2aca653a7cc3889a35503415b1f5eecb009fb0024d21b10e7e3f1f77986f",
+    "rootAdditiveCorrectedObservationFileByteSha256": "409942e3ba8f4e50bee53c148950874b1ceddc81c8d39d5a63093aee6226a977",
+    "fourSourceCheckpointFileByteSha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "ea3628d86cf1ea6326e270d24d20113cf753fa086c8c6d7a279656285eea2e3a",
+    "independentPrivatePackageReviewSha256": "61a4f069fa600267298d1541867b38af2f00a89aac6684bda8cdc09f0ae68aec",
+    "rootPrivatePackageValidationSha256": "d0e3f9b163db3608bc270e4eea74b53ee7182e93069121dd9a9677037b9b1ee1",
+    "rootSourceArchiveBindingSha256": "ddbe95fd11fee21bb453c336f9b3d148a3a7f4f8d8202948717df6291398eb29",
+    "rootUploadReceiptSha256": "e3f5e4dfadd81d49251b426d2499f117051b5292882a8e38e076e0048755ef14"
+  },
+  "archive": {
+    "id": 645368810,
+    "sha256": "a7d76f3b25ad7541e1eb9a1762bc096acf83b9f14e3abb8214f49afe063a8a43",
+    "byte_size": 164220,
+    "file_count": 8,
+    "name": "celebi1-fronts-20261015.zip"
+  },
+  "archive_metadata": [
+    {
+      "file": "manifest.json",
+      "sha256": "c117ca58b3490d9ebaef11ef2150cbb17478fcd967a8f062570823629d7776f1",
+      "byte_size": 26710
+    },
+    {
+      "file": "receipts/preparation-summary.json",
+      "sha256": "9f8839ff5fad13f8ec5eb7f3bab9e01160cd4ae2a97e15026b0fbae61fb52e7b",
+      "byte_size": 1311
+    },
+    {
+      "file": "receipts/current-card-bindings.json",
+      "sha256": "f846bf2b7dfbaa8aec89f13f5089b030292369b2bf41873376861bada642b95b",
+      "byte_size": 4602
+    },
+    {
+      "file": "receipts/finite-decision.json",
+      "sha256": "ac70723e6d2358419dd26f84b91b833deb85b146d000917eb4bb0ef4a3927df4",
+      "byte_size": 3839
+    }
+  ],
+  "rows": [
+    {
+      "printing_id": "fe6b6d80-68b7-4f89-9087-7f84b760e651",
+      "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+      "set_code": "PCG8",
+      "language_code": "ja",
+      "collector_number": "004",
+      "card_native_name": "セレビの星",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "f131958f-ac07-435c-b76c-d8a697cdec9a"
+      ],
+      "batch_id": "JP-CARDS-040",
+      "source_code": "pricecharting",
+      "provider_id": "pricecharting-image-url-sha256:8e0845a7ef2d92507055a63401a2fb458dd51478ccddee780d3993a4bbb50d33",
+      "image_url": "https://storage.googleapis.com/images.pricecharting.com/a5b43f818e44b0e7982998802ebf16d0613a04ee7f0104cc876b7b12024a8816/1600.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/2b203f91d7b2cf65fc4959b36e0f02ffee256cb923273e015c7a66cecbfd701a/original.jpg",
+          "sha256": "2b203f91d7b2cf65fc4959b36e0f02ffee256cb923273e015c7a66cecbfd701a",
+          "byte_size": 63097,
+          "width": 459,
+          "height": 648,
+          "mime_type": "image/jpeg",
+          "artifact_id": 645368810
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/e9ec6e1d70c996e9299a9c88ee27d57faada7c859aaf4cd22f54f56045d69ac6/card-grid.webp",
+          "sha256": "e9ec6e1d70c996e9299a9c88ee27d57faada7c859aaf4cd22f54f56045d69ac6",
+          "byte_size": 20550,
+          "width": 240,
+          "height": 339,
+          "mime_type": "image/webp",
+          "artifact_id": 645368810
+        },
+        {
+          "role": "search-result",
+          "file": "objects/3e070f8153a4ae9af663a1ddd50d5b8836c5b3d5a8e48bcd7c174b45254d7f2b/search-result.webp",
+          "sha256": "3e070f8153a4ae9af663a1ddd50d5b8836c5b3d5a8e48bcd7c174b45254d7f2b",
+          "byte_size": 4022,
+          "width": 96,
+          "height": 136,
+          "mime_type": "image/webp",
+          "artifact_id": 645368810
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/5e05854fb5345d6787d2255ecaf4d10ef30af2c6fa536ce59cf755e9d74f38c8/detail-page.webp",
+          "sha256": "5e05854fb5345d6787d2255ecaf4d10ef30af2c6fa536ce59cf755e9d74f38c8",
+          "byte_size": 65880,
+          "width": 459,
+          "height": 648,
+          "mime_type": "image/webp",
+          "artifact_id": 645368810
+        }
+      ],
+      "evidence": {
+        "source_url": "https://storage.googleapis.com/images.pricecharting.com/a5b43f818e44b0e7982998802ebf16d0613a04ee7f0104cc876b7b12024a8816/1600.jpg",
+        "source_page_url": "https://www.pricecharting.com/game/pokemon-japanese-miracle-crystal/celebi-gold-star-4",
+        "provider_id": "pricecharting-image-url-sha256:8e0845a7ef2d92507055a63401a2fb458dd51478ccddee780d3993a4bbb50d33",
+        "source_metadata_sha256": "d080ae2ca8cd39211e82714b633573203f30850892188a13a21ea346b841f712",
+        "source_body": {
+          "contract": "pcg8-celebi-one-japanese-shared-front-v1",
+          "work_type": "CARDS",
+          "accepted_category": "Pokemon",
+          "photo_identity_projection": {
+            "schemaVersion": 1,
+            "sourceCode": "pricecharting",
+            "sourceDetailUrl": "https://www.pricecharting.com/game/pokemon-japanese-miracle-crystal/celebi-gold-star-4",
+            "literalOriginalUrl": "https://storage.googleapis.com/images.pricecharting.com/a5b43f818e44b0e7982998802ebf16d0613a04ee7f0104cc876b7b12024a8816/1600.jpg",
+            "literalOriginalUrlSha256": "8e0845a7ef2d92507055a63401a2fb458dd51478ccddee780d3993a4bbb50d33",
+            "sourceProductId": "5075762",
+            "historicalProposedProductSourceId": "pricecharting:5075762",
+            "canonicalPrintingId": "fe6b6d80-68b7-4f89-9087-7f84b760e651",
+            "canonicalSetId": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+            "canonicalSetCode": "PCG8",
+            "languageCode": "ja",
+            "canonicalAlias": "004",
+            "printedCollectorNumber": "004/075",
+            "printedSetCodeLiteral": null,
+            "sourceSetAssociation": "Japanese Miracle Crystal",
+            "originalFileByteSha256": "2b203f91d7b2cf65fc4959b36e0f02ffee256cb923273e015c7a66cecbfd701a",
+            "originalByteSize": 63097,
+            "width": 459,
+            "height": 648,
+            "format": "jpeg",
+            "actualPrintedName": "セレビィ☆",
+            "historicalSelectedSourceCardId": null,
+            "physicalEditionCertified": false,
+            "physicalFinishCertified": false
+          },
+          "photo_identity_projection_canonical_sha256": "7c12ce23ddf8857e9b2ac03cf0091b4085ed9ee31bfa3cc5c11dc96b01ac899c",
+          "photo_raw_private_html_file_byte_sha256": "d080ae2ca8cd39211e82714b633573203f30850892188a13a21ea346b841f712",
+          "root_approved_raw_row_canonical_sha256": "75b8d04f2ab909a5ad9d34214558981b2ca3dccb0deb1053106d5187821085ec",
+          "actual_pixel_signature": {
+            "printedName": "セレビィ☆",
+            "observedLanguage": "ja",
+            "category": "Pokemon",
+            "stage": "たね",
+            "hp": 60,
+            "type": "Grass",
+            "printedCollectorNumber": "004/075",
+            "printedSetCodeLiteral": null,
+            "setMarkDescription": "Small dark curved/crystal-like mark at lower-right beside004/075; no literal SM or PCG8 set code.",
+            "setAssociation": "Japanese Miracle Crystal / PCG8, supported jointly by numbered card, exact Japanese product page, native card tuple and saved PCG8 set index.",
+            "art": "Pink Celebi with red antenna/feet and green eyes in a blue star field; green dotted body and silver rounded frame.",
+            "starDeckRule": "ポケモン☆は、デッキに1枚しか入れることができない。",
+            "ability": {
+              "type": "ポケパワー",
+              "name": "ときわたり",
+              "japaneseBody": "このパワーは、相手の番に、相手のワザによるダメージで、このポケモンの残りHPがなくなったとき、1回使うことができる。コインを1回投げてオモテなら、このポケモンはきぜつせず、このポケモンについているカードをすべてトラッシュし、このポケモンを自分の山札の一番下にもどす。",
+              "semanticConditions": {
+                "opponentsTurn": true,
+                "opponentsAttackDamageReducesRemainingHpToZero": true,
+                "oneUseAtThatTrigger": true,
+                "flipOneCoin": true,
+                "headsAvoidsKnockout": true,
+                "headsDiscardsAllCardsAttachedToThisPokemon": true,
+                "headsReturnsThisPokemonToBottomOfYourDeck": true
+              }
+            },
+            "attack": {
+              "name": "リーフシェイド",
+              "cost": [
+                "Grass"
+              ],
+              "printedDamageNumber": null,
+              "japaneseBody": "自分のエネルギーの数ぶんのダメージカウンターを、相手のポケモン1匹にのせる。",
+              "target": "One opposing Pokemon",
+              "energyScopeEnglishInterpretationCertified": false,
+              "energyScopeEnglishGloss": null,
+              "doesNotInventWholeBoardOrExplicitCelebiAttachmentRestriction": true
+            },
+            "weakness": "Fire",
+            "resistance": null,
+            "retreat": [
+              "Colorless"
+            ],
+            "artist": "Masakazu Fukuda",
+            "printedNationalDex": null,
+            "footerSmallSerialNotFullyTranscribed": true,
+            "copyrightYearRead": 2006,
+            "completeCopyrightLineNotCertified": true,
+            "noObviousWatermarkSlabOrFirstEditionStampObserved": true,
+            "stampAbsenceDoesNotCertifyUnlimited": true,
+            "physicalEditionCertified": false,
+            "physicalFinishAuthenticated": false
+          },
+          "actual_pixel_signature_canonical_sha256": "ee8a7bdb706eb66b7eb264ed3364287c342947a94f8b400b7059428d87b77f8a",
+          "root_additive_corrected_observation_file_byte_sha256": "409942e3ba8f4e50bee53c148950874b1ceddc81c8d39d5a63093aee6226a977",
+          "actual_signature_root_corrected_accepted": true,
+          "provider_body_verbatim_agreement_certified": false,
+          "native_provider_japanese_corruption_qualified": true,
+          "provider_body_qualification": "Native provider Japanese uses translated names, unresolved templates and mojibake; actual whole printed Japanese governs. Canonical label remains unchanged. Leaf Shade energy scope English interpretation is uncertified.",
+          "current_production_binding": {
+            "printing": {
+              "id": "fe6b6d80-68b7-4f89-9087-7f84b760e651",
+              "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": true
+              },
+              "collector_number": "004",
+              "printing_discriminator": "",
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "f131958f-ac07-435c-b76c-d8a697cdec9a",
+                "is_default": false,
+                "artwork_key": null,
+                "finish_code": "holo",
+                "printing_id": "fe6b6d80-68b7-4f89-9087-7f84b760e651",
+                "variant_code": "holo",
+                "canonical_key": "pokemon:ja:d832f428-8d51-4ac0-a3cf-a5d38bddb88d:004:holo",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+                "set_code": "PCG8",
+                "variant_id": "f131958f-ac07-435c-b76c-d8a697cdec9a",
+                "artwork_key": null,
+                "finish_code": "holo",
+                "printing_id": "fe6b6d80-68b7-4f89-9087-7f84b760e651",
+                "variant_code": "holo",
+                "canonical_key": "pokemon:ja:d832f428-8d51-4ac0-a3cf-a5d38bddb88d:004:holo",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "004",
+                "catalogue_version": "ja:magazine-promo-reconciliation-2026-09-27-v1",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "fe6b6d80-68b7-4f89-9087-7f84b760e651"
+          },
+          "current_staging_binding": {
+            "printing": {
+              "id": "fe6b6d80-68b7-4f89-9087-7f84b760e651",
+              "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+              "game_code": "pokemon",
+              "deprecated_at": null,
+              "language_code": "ja",
+              "_column_presence": {
+                "printing_discriminator": false
+              },
+              "collector_number": "004",
+              "printing_discriminator": null,
+              "corrected_by_printing_id": null
+            },
+            "variants": [
+              {
+                "id": "f131958f-ac07-435c-b76c-d8a697cdec9a",
+                "is_default": false,
+                "artwork_key": null,
+                "finish_code": "holo",
+                "printing_id": "fe6b6d80-68b7-4f89-9087-7f84b760e651",
+                "variant_code": "holo",
+                "canonical_key": "pokemon:ja:d832f428-8d51-4ac0-a3cf-a5d38bddb88d:004:holo",
+                "deprecated_at": null,
+                "image_signature": null,
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "native_image_status": "scan_acquisition_required",
+                "variant_display_name": null,
+                "explicit_shared_source": null,
+                "corrected_by_variant_id": null,
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "published_bindings": [
+              {
+                "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+                "set_code": "PCG8",
+                "variant_id": "f131958f-ac07-435c-b76c-d8a697cdec9a",
+                "artwork_key": null,
+                "finish_code": "holo",
+                "printing_id": "fe6b6d80-68b7-4f89-9087-7f84b760e651",
+                "variant_code": "holo",
+                "canonical_key": "pokemon:ja:d832f428-8d51-4ac0-a3cf-a5d38bddb88d:004:holo",
+                "language_code": "ja",
+                "_column_presence": {
+                  "native_image_status": true,
+                  "same_artwork_as_variant_id": true
+                },
+                "collector_number": "004",
+                "catalogue_version": "ja:tcgdex-796afd47e430-full-primary-2026-08-19",
+                "native_image_status": "scan_acquisition_required",
+                "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+                "same_artwork_as_variant_id": null
+              }
+            ],
+            "requested_printing_id": "fe6b6d80-68b7-4f89-9087-7f84b760e651"
+          },
+          "required_asset_scope": {
+            "printing_id": "fe6b6d80-68b7-4f89-9087-7f84b760e651",
+            "variant_id": null
+          },
+          "source_variant_id": null,
+          "required_delivery_kind": "shared",
+          "queue_controls": {
+            "identity_controls": {
+              "canonical_alias": "004",
+              "printed_collector_number": "004/075",
+              "catalogue_set_code": "PCG8",
+              "printed_set_code_literal": null,
+              "canonical_native_label_preserved": "セレビの星",
+              "actual_printed_japanese_name": "セレビィ☆",
+              "printed_national_dex": null,
+              "category": "Pokemon"
+            },
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "printed_body_language": "ja",
+              "full_actual_japanese_body_reviewed": true,
+              "artist": "Masakazu Fukuda",
+              "edition_stamp_observed": false,
+              "stamp_absence_does_not_certify_unlimited": true,
+              "coin_connector_te_preserved": true,
+              "literal_leaf_shade_japanese_preserved": true,
+              "english_energy_scope_certified": false
+            },
+            "source_qa": {
+              "actual_japanese_full_front_verified": true,
+              "original_sha256": "2b203f91d7b2cf65fc4959b36e0f02ffee256cb923273e015c7a66cecbfd701a",
+              "actual_signature_canonical_sha256": "ee8a7bdb706eb66b7eb264ed3364287c342947a94f8b400b7059428d87b77f8a",
+              "source_metadata_is_sole_identity_proof": false,
+              "provider_body_verbatim_agreement": false,
+              "native_japanese_corruption_qualified": true,
+              "physical_finish_certified": false,
+              "physical_edition_certified": false
+            }
+          },
+          "historical_authority": {
+            "selected_source_card_id": null,
+            "historical_product_proposal": "pricecharting:5075762",
+            "preparation_approved": false,
+            "publication_approved": false
+          },
+          "root_finite_authority": {
+            "decision_file_byte_sha256": "8c4ccdbd1faa51d073ae08cb0e06e827d6ca1454a103eb7848b5f23bad83fbb4",
+            "preparation_approved": true,
+            "conditional_future_publication_approved": true,
+            "private_package_is_production_ready": false
+          },
+          "coverage": {
+            "wholeUnchangedOriginalIndividuallyViewed": true,
+            "fullPILSharpRGBAAgreement": true,
+            "completeFrameAndFourOuterCornersVisible": true,
+            "printedJapaneseNameAndFullBodyReadable": true,
+            "actualNumberAndSetMarkAndArtistMatch": true
+          },
+          "quality_qualification": {
+            "original_width": 459,
+            "original_height": 648,
+            "detail_size": true,
+            "HD_size": false,
+            "detail_derivative_HD_size": false,
+            "source_path_1600_not_pixel_proof": true,
+            "current_configured_api_image_null": true
+          },
+          "new_source_requests": 0,
+          "full_commercial_html_or_provider_json_included": false,
+          "source_wide_approval": false,
+          "vendor_licence_certified": false,
+          "physical_finish_certified": false,
+          "physical_edition_certified": false,
+          "unlimited_edition_certified": false,
+          "provider_never_resized_certified": false,
+          "native_optical_gain_claimed": false,
+          "stackr_enlargement": false
+        },
+        "queue_controls": {
+          "identity_controls": {
+            "canonical_alias": "004",
+            "printed_collector_number": "004/075",
+            "catalogue_set_code": "PCG8",
+            "printed_set_code_literal": null,
+            "canonical_native_label_preserved": "セレビの星",
+            "actual_printed_japanese_name": "セレビィ☆",
+            "printed_national_dex": null,
+            "category": "Pokemon"
+          },
+          "pixel_observations": {
+            "whole_original_inspected": true,
+            "full_frame_visible": true,
+            "printed_body_language": "ja",
+            "full_actual_japanese_body_reviewed": true,
+            "artist": "Masakazu Fukuda",
+            "edition_stamp_observed": false,
+            "stamp_absence_does_not_certify_unlimited": true,
+            "coin_connector_te_preserved": true,
+            "literal_leaf_shade_japanese_preserved": true,
+            "english_energy_scope_certified": false
+          },
+          "source_qa": {
+            "actual_japanese_full_front_verified": true,
+            "original_sha256": "2b203f91d7b2cf65fc4959b36e0f02ffee256cb923273e015c7a66cecbfd701a",
+            "actual_signature_canonical_sha256": "ee8a7bdb706eb66b7eb264ed3364287c342947a94f8b400b7059428d87b77f8a",
+            "source_metadata_is_sole_identity_proof": false,
+            "provider_body_verbatim_agreement": false,
+            "native_japanese_corruption_qualified": true,
+            "physical_finish_certified": false,
+            "physical_edition_certified": false
+          }
+        },
+        "artwork_scope": "printing_front",
+        "delivery_kind": "shared",
+        "asset_variant_id": null,
+        "source_variant_id": null,
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "physical_edition_verified": false,
+        "vendor_licence_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    }
+  ],
+  "source_counts": {
+    "pricecharting": 1
+  },
+  "delivery_scope": {
+    "fixed_batch_ids": [
+      "JP-CARDS-040"
+    ],
+    "work_type": "CARDS",
+    "eligible_fronts": 1,
+    "eligible_aliases": [
+      "004"
+    ],
+    "printed_collector_number": "004/075",
+    "printed_set_code_literal": null,
+    "asset_variant_id": null,
+    "source_variant_id": null,
+    "delivery_kind": "shared",
+    "whole_batch_completion_asserted": false
+  },
+  "binding_expectations": {
+    "production": [
+      {
+        "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+        "set_code": "PCG8",
+        "game_code": "pokemon",
+        "variant_id": "f131958f-ac07-435c-b76c-d8a697cdec9a",
+        "finish_code": "holo",
+        "printing_id": "fe6b6d80-68b7-4f89-9087-7f84b760e651",
+        "variant_code": "holo",
+        "language_code": "ja",
+        "card_native_name": "セレビの星",
+        "collector_number": "004",
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "same_artwork_as_variant_id": null
+      }
+    ],
+    "staging": [
+      {
+        "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+        "set_code": "PCG8",
+        "game_code": "pokemon",
+        "variant_id": "f131958f-ac07-435c-b76c-d8a697cdec9a",
+        "finish_code": "holo",
+        "printing_id": "fe6b6d80-68b7-4f89-9087-7f84b760e651",
+        "variant_code": "holo",
+        "language_code": "ja",
+        "card_native_name": "セレビの星",
+        "collector_number": "004",
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9",
+        "same_artwork_as_variant_id": null
+      }
+    ]
+  },
+  "scope_counts": {
+    "production": {
+      "printings": 1,
+      "variants": 1,
+      "names": 2,
+      "sets": 1
+    },
+    "staging": {
+      "printings": 1,
+      "variants": 1,
+      "names": 2,
+      "sets": 1
+    }
+  },
+  "source_policies": {
+    "production": [
+      {
+        "code": "pokellector",
+        "display_name": "Pokellector (owner supplied Japanese card fronts)",
+        "source_type": "image",
+        "base_url": "https://jp.pokellector.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly2 Neo2 Ruin Wall reference fronts in STACKR-JA-LEGACY-TRAINER-FRONTS-20261015-008; owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval or independently verified vendor licence.",
+        "deprecated_at": null
+      },
+      {
+        "code": "pricecharting",
+        "display_name": "PriceCharting (owner supplied card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.pricecharting.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Owner-attested source use for exactly Aquapolis Mr. Mime95b and Porygon103b shared printing-front artwork in finite cohort AQUAPOLIS-SHARED-002-20261015. Independent vendor and underlying card licences are unverified. No source-wide approval; each later acquisition requires separate finite approval. Existing provenance rows and source policies must remain unchanged.",
+        "deprecated_at": null
+      },
+      {
+        "code": "scrydex",
+        "display_name": "Scrydex",
+        "source_type": "image",
+        "base_url": "https://scrydex.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Exactly 89 English MEP fronts approved by owner; catalogue/rights-evidence/mep89-scrydex-owner-confirmation.2026-09-27.json; 8c68bf3499de1e1e340b00fc03e5f1b469de7b65d259b5fba5a8b4cd31119ca9. No source-wide approval.",
+        "deprecated_at": null
+      },
+      {
+        "code": "tcgcollector",
+        "display_name": "TCGCollector (owner supplied Japanese card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.tcgcollector.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly3 independently accepted Leaders Stadium fronts019/081/096. Bind the final finite preparation/publication decision and exact source selection in the publisher plan. Owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval, independently verified vendor licence or physical finish/edition certification. Finite decision SHA256 68f1af735d5e481ed26d1aabbe94e493d520575d9d4191413508f9ec90cf68ff.",
+        "deprecated_at": null
+      }
+    ],
+    "staging": []
+  },
+  "new_sources": {
+    "production": [],
+    "staging": [
+      {
+        "code": "pricecharting",
+        "display_name": "PriceCharting (owner supplied card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.pricecharting.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Owner-attested source use for exactly Aquapolis Mr. Mime95b and Porygon103b shared printing-front artwork in finite cohort AQUAPOLIS-SHARED-002-20261015. Independent vendor and underlying card licences are unverified. No source-wide approval; each later acquisition requires separate finite approval. Existing provenance rows and source policies must remain unchanged.",
+        "deprecated_at": null
+      }
+    ]
+  },
+  "source_policy_checkpoint_sha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+  "existing_source_row_hashes": {
+    "pricecharting": "b4b74f69cac37abeee008806f6d8dd8ea63a0f0ce43fa065dce9261b428b421b",
+    "pokellector": "4a2a381f7146c0bfa0201c62e91e7682f18da6597c4743f23414f3606a942a71",
+    "tcgcollector": "f1f01d1b094986ad0a9f5efcf1e98fe7388e0e1c5452d23da6cf7cab97a1ca29",
+    "scrydex": "25af5b50521e6fd0942764536f62b0c53c3e72c69c874916241af47735407929"
+  },
+  "before_snapshot_hashes": {
+    "production": "589f1c25cf6f4a12b75311ca3fcaa6066c21a2eb44c8dda6ca235f57cfea0710",
+    "staging": "3d3130f2bbe42f62557f7687991f0513d45a8fe4bb36a4c8fe64b3d20599268f"
+  },
+  "before_snapshot_counts": {
+    "production": 11,
+    "staging": 5
+  },
+  "expected_after_snapshot_counts": {
+    "production": 13,
+    "staging": 8
+  },
+  "production_source_changes_allowed": 0,
+  "stage_only_fixture_source_code": "pricecharting",
+  "canonical_schema_qualification": {
+    "production": {
+      "id": "fe6b6d80-68b7-4f89-9087-7f84b760e651",
+      "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+      "game_code": "pokemon",
+      "deprecated_at": null,
+      "language_code": "ja",
+      "_column_presence": {
+        "printing_discriminator": true
+      },
+      "collector_number": "004",
+      "printing_discriminator": "",
+      "corrected_by_printing_id": null
+    },
+    "staging": {
+      "id": "fe6b6d80-68b7-4f89-9087-7f84b760e651",
+      "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+      "game_code": "pokemon",
+      "deprecated_at": null,
+      "language_code": "ja",
+      "_column_presence": {
+        "printing_discriminator": false
+      },
+      "collector_number": "004",
+      "printing_discriminator": null,
+      "corrected_by_printing_id": null
+    }
+  },
+  "saved_targets_sha256": "7ec57324f60f2e5f8f7175c45033df70e3424311c49b9bd890d487971d48968a",
+  "identity_table_sha256": "72cfc156a1883775227c0d994b39d397264f1d2f6faef878f894c03ee3a20b09"
+}

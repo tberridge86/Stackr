@@ -49,6 +49,112 @@ assert.equal(resolveCardArtwork(triple, [], triple.variants[1].variantId).source
 triple.variants[1].image.derivatives = [];
 assert.equal(resolveCardArtwork(triple, [], triple.variants[1].variantId).small, triple.variants[1].image.deliveryUrl, 'exact approved original beats another finish thumbnail');
 
+// Detail presentation can use a verified larger original without making list
+// thumbnails heavier or changing which printing/finish the artwork represents.
+const highResolution = card(['normal']);
+const highResolutionAsset = {
+  ...asset(highResolution), width: 850, height: 1200,
+  derivatives: [
+    { role: 'card-grid', deliveryPath: null, deliveryUrl: 'https://approved.example/grid.webp', width: 240, height: 330 },
+    { role: 'detail-page', deliveryPath: null, deliveryUrl: 'https://approved.example/detail.webp', width: 600, height: 825 },
+  ],
+};
+highResolution.variants[0].image = highResolutionAsset;
+const highResolutionBefore = structuredClone(highResolution);
+assert.equal(resolveCardArtwork(highResolution).small, 'https://approved.example/grid.webp');
+assert.equal(resolveCardArtwork(highResolution).large, highResolutionAsset.deliveryUrl, 'A known 1200px original must precede the 825px detail rendition');
+assert.ok(resolveCardArtwork(highResolution).candidates.some(candidate => candidate.uri === 'https://approved.example/detail.webp'), 'The useful smaller detail fallback remains available');
+assert.deepEqual(highResolution, highResolutionBefore, 'Resolution selection does not change printing, finish, source records or dimensions');
+highResolutionAsset.derivatives[1] = { ...highResolutionAsset.derivatives[1], width: 750, height: 1050 };
+assert.equal(resolveCardArtwork(highResolution).large, 'https://approved.example/detail.webp', 'A detail rendition meeting the target avoids the larger original');
+highResolutionAsset.height = 825;
+highResolutionAsset.width = 600;
+highResolutionAsset.derivatives[1] = { ...highResolutionAsset.derivatives[1], width: 600, height: 825 };
+assert.equal(resolveCardArtwork(highResolution).large, 'https://approved.example/detail.webp', 'Source-limited originals are retained without invented resolution');
+highResolutionAsset.height = Number.POSITIVE_INFINITY;
+assert.equal(resolveCardArtwork(highResolution).large, 'https://approved.example/detail.webp', 'Invalid dimension metadata must not qualify an original');
+const unknownResolution = card(['normal']);
+unknownResolution.variants[0].image = asset(unknownResolution);
+assert.equal(resolveCardArtwork(unknownResolution).large, unknownResolution.variants[0].image.derivatives[1].deliveryUrl, 'Unknown dimensions preserve existing presentation and remain unverified');
+assert.equal(highResolution.variants[0].variantId, highResolutionBefore.variants[0].variantId);
+assert.equal(resolveCardArtwork(highResolution).kind, 'exact');
+
+// The live card endpoint can return only the selected variant. Its approved
+// image still names the explicit same-artwork sibling, which is absent here.
+function narrowedReference(language: StackrCard['languageCode'] = 'ja', finish = 'reverse_holo') {
+  const c = card([finish], language);
+  const sourceVariantId = uuid(11);
+  c.variants[0].nativeImageStatus = 'same_artwork_reference';
+  c.variants[0].sameArtworkAsVariantId = sourceVariantId;
+  c.variants[0].imageVariantId = sourceVariantId;
+  c.variants[0].image = { ...asset(c), variantId: sourceVariantId, cardId: null, setId: null };
+  return c;
+}
+for (const language of ['en', 'ja', 'zh-cn', 'zh-tw', 'ko'] as const) {
+  const c = narrowedReference(language, language === 'en' ? 'normal' : 'reverse_holo');
+  const original = structuredClone(c);
+  const selected = c.variants[0];
+  const result = resolveCardArtwork(c, [structuredClone(selected.image!)]);
+  assert.equal(c.variants.some(v => v.variantId === selected.imageVariantId), false);
+  assert.equal(result.kind, 'shared', `${language}: approved absent-sibling artwork remains a reference`);
+  assert.equal(result.selectedVariantId, selected.variantId);
+  assert.equal(result.sourceVariantId, selected.imageVariantId);
+  assert.equal(result.assetId, selected.image!.assetId);
+  assert.equal(result.small, selected.image!.derivatives![0].deliveryUrl);
+  assert.equal(result.large, selected.image!.derivatives![1].deliveryUrl);
+  assert.ok(result.candidates.every(candidate => candidate.kind === 'shared'
+    && candidate.sourceVariantId === selected.imageVariantId));
+  assert.equal(result.candidates.length, 3, 'embedded and manifest copies do not duplicate rendition candidates');
+  assert.deepEqual(c, original, 'explicit references do not alter printing, language, finish or immutable image metadata');
+
+  const manifestImage = selected.image!;
+  selected.image = null;
+  assert.equal(resolveCardArtwork(c, [manifestImage]).kind, 'shared', 'the scoped manifest can supply the explicitly referenced image');
+}
+
+for (const change of [
+  { nativeImageStatus: undefined }, { nativeImageStatus: 'missing' }, { nativeImageStatus: 'available' },
+  { sameArtworkAsVariantId: null }, { sameArtworkAsVariantId: uuid(99) }, { sameArtworkAsVariantId: uuid(10) },
+  { imageVariantId: null }, { imageVariantId: uuid(99) }, { imageVariantId: uuid(10) },
+]) {
+  const c = narrowedReference();
+  Object.assign(c.variants[0], change);
+  assert.equal(resolveCardArtwork(c).kind, 'missing', 'absent siblings require a consistent approved reference status and both source pointers');
+}
+for (const change of [
+  { variantId: null }, { variantId: uuid(99) }, { cardId: uuid(99) }, { setId: uuid(99) },
+  { game: 'other-game' }, { assetType: 'set_logo' }, { permissionStatus: 'unknown' },
+  { permissionStatus: 'denied' }, { permissionStatus: 'restricted' }, { unavailableReason: 'withdrawn' },
+]) {
+  const c = narrowedReference();
+  Object.assign(c.variants[0].image!, change);
+  assert.equal(resolveCardArtwork(c).kind, 'missing', 'an explicit reference cannot bypass source identity, permission or availability');
+}
+const conflictingReference = narrowedReference();
+const matchingManifestImage = structuredClone(conflictingReference.variants[0].image!);
+conflictingReference.variants[0].image!.variantId = uuid(99);
+assert.equal(resolveCardArtwork(conflictingReference, [matchingManifestImage]).kind, 'missing',
+  'a manifest reference must not override a contradictory embedded source-variant identity');
+for (const special of ['first_edition', 'shadowless', 'pikachu_stamp', 'poke_ball', 'master_ball', 'alternate_art']) {
+  const c = narrowedReference('en', special);
+  assert.equal(resolveCardArtwork(c).kind, 'missing', `${special}: an absent sibling pointer cannot authorize ordinary face substitution`);
+}
+const narrowedPattern = narrowedReference();
+narrowedPattern.variants[0].finishCode = 'special_pattern';
+assert.equal(resolveCardArtwork(narrowedPattern).kind, 'missing', 'an explicit omitted sibling cannot bypass a special finish');
+for (const sourceChange of [{ variantCode: 'first_edition' }, { finishCode: 'special_pattern' }, { artworkKey: 'different-face' }]) {
+  const c = narrowedReference();
+  c.variants[0].artworkKey = 'selected-face';
+  const source = { ...card(['normal']).variants[0], variantId: uuid(11), artworkKey: 'selected-face', ...sourceChange };
+  c.variants.push(source);
+  assert.equal(resolveCardArtwork(c).kind, 'missing', 'a present sibling retains finish and artwork-key checks');
+}
+const narrowedWithExact = narrowedReference();
+const exactNarrowedImage = { ...asset(narrowedWithExact), assetId: 'exact-selected-face' };
+assert.equal(resolveCardArtwork(narrowedWithExact, [exactNarrowedImage]).kind, 'exact');
+assert.equal(resolveCardArtwork(narrowedWithExact, [exactNarrowedImage]).assetId, exactNarrowedImage.assetId,
+  'an approved exact selected-variant image remains preferred before its explicit shared reference');
+
 for (const special of ['first_edition', 'pikachu_stamp', 'poke_ball', 'master_ball', 'alternate_art']) {
   const c = card(['normal', special]); c.variants[0].image = asset(c);
   c.variants[1].sameArtworkAsVariantId = c.variants[0].variantId;
@@ -85,4 +191,4 @@ assert.equal(new Set(failures).size, failures.length, 'failed URLs cannot loop')
 assert.equal(failures.length, 3, 'thumbnail, detail and approved original are tried once');
 assert.equal(nextStackrImageCandidate(stackrImageCandidates([{ uri: 'https://approved.example/corrected.webp' }]), failures)?.uri,
   'https://approved.example/corrected.webp', 'new artwork recovers from an exhausted old candidate list');
-console.log('Master Set artwork: four languages, eligible finishes, exact priority, shared face, protected variants, originals, recovery and unchanged private state pass.');
+console.log('Master Set artwork: five languages, approved absent-sibling references, identity/permission conflicts, protected finishes, exact priority, recovery and unchanged private state pass.');

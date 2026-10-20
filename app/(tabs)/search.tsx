@@ -7,13 +7,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { enforceSetVisualRuntimePolicy } from '../../lib/providerSetMarkRuntimePolicy';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import {
-  ActivityIndicator,
   Alert,
   FlatList,
+  Keyboard,
   type ImageSourcePropType,
   RefreshControl,
   ScrollView,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -78,10 +80,12 @@ import { ROUTES } from '../../lib/routes';
 import { searchIcons } from '../../lib/searchIcons';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
-import { getIncrementalListWindow } from '../../lib/performance';
+import { beginRetrieval, getIncrementalListWindow, type RetrievalOrigin } from '../../lib/performance';
 import { supabase } from '../../lib/supabase';
 import { sanitizeGate0CommerceCopy } from '../../lib/gate0CommerceCopy';
-import { sanitizeMarketplaceListingPresentationFields } from '../../lib/marketplacePresentation';
+import { getMarketplaceListingThumbnail, sanitizeMarketplaceListingPresentationFields } from '../../lib/marketplacePresentation';
+import { fetchListingSearchWithMedia } from '../../lib/listingSearchMedia';
+import { useCataloguePriceOverlay } from '../../lib/useCataloguePriceOverlay';
 
 type SearchCategory = 'all' | 'cards' | 'sets' | 'sealed' | 'graded' | 'collectors' | ListingCategoryKey;
 type SearchSortKey = 'relevance' | 'priceAsc' | 'priceDesc' | 'rarity' | 'set' | 'gradeDesc' | 'newest';
@@ -193,6 +197,10 @@ const EMPTY_RESULTS: SearchResults = {
 };
 
 const SEARCH_FIRST_PAINT_BUDGET_MS = 420;
+// The public gateway's existing backend failure limit is four seconds. This
+// only bounds when the screen reports an unfinished source; it does not claim
+// to cancel transports that do not accept an AbortSignal.
+const SEARCH_FINAL_SETTLEMENT_TIMEOUT_MS = 4_000;
 
 const SEARCH_SORT_OPTIONS: { key: SearchSortKey; label: string }[] = [
   { key: 'relevance', label: 'Most relevant' },
@@ -260,6 +268,23 @@ function settleWithin<T>(promise: Promise<T>, ms = SEARCH_FIRST_PAINT_BUDGET_MS)
     ),
     delay(ms).then((): TimedSettled<T> => ({ status: 'pending' })),
   ]);
+}
+
+/**
+ * A primary source may never settle even after the first partial result is
+ * useful. Make that state visible and let the screen finish loading without
+ * converting the unfinished source into an authoritative empty result.
+ */
+function settleSearchSource<T>(promise: Promise<T>, timeoutMs = SEARCH_FINAL_SETTLEMENT_TIMEOUT_MS): Promise<PromiseSettledResult<T>> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => {
+      resolve({ status: 'rejected', reason: new Error('Search source timed out. Please try again.') });
+    }, timeoutMs);
+    promise.then(
+      (value) => { clearTimeout(timer); resolve({ status: 'fulfilled', value }); },
+      (reason) => { clearTimeout(timer); resolve({ status: 'rejected', reason }); },
+    );
+  });
 }
 
 function isFulfilled<T>(result: TimedSettled<T> | PromiseSettledResult<T>): result is PromiseFulfilledResult<T> {
@@ -466,9 +491,44 @@ function mapCardResults(
   });
 }
 
+function mapSetRow(row: any): SetResult {
+  const raw = row.raw_data ?? {};
+  const name = getPreferredSetDisplayName({
+    id: row.id,
+    sourceId: row.external_ids?.tcgdex ?? row.provider_id ?? row.id,
+    setCode: row.external_ids?.setCode ?? row.id,
+    language: row.language ?? raw.language ?? null,
+    region: row.region ?? raw.region ?? null,
+    localName: raw.local_name ?? raw.name ?? null,
+    englishDisplayName: raw.english_display_name ?? raw.englishDisplayName ?? null,
+    canonicalName: row.name,
+    raw,
+  });
+  return {
+    id: row.id,
+    name,
+    series: row.series ?? '',
+    printedTotal: row.printed_total ?? 0,
+    total: row.total ?? 0,
+    releaseDate: row.release_date ?? '',
+    language: row.language ?? 'en',
+    region: row.region ?? null,
+    externalIds: row.external_ids ?? {},
+    images: {
+      symbol: row.symbol_url ?? getPokemonSetSymbolUrl(row.id, row.language ?? raw.language),
+      logo: row.logo_url ?? getPokemonSetLogoUrl(row.id, row.language ?? raw.language),
+      cover: raw.cover_image_url ?? raw.images?.cover ?? raw.images?.artwork ?? undefined,
+      artwork: raw.cover_image_url ?? raw.images?.artwork ?? raw.images?.cover ?? undefined,
+    },
+  };
+}
+
 async function searchSetsQuick(primary: string, terms: string[], language: SearchLanguageFilter = 'all') {
   const safePrimary = primary.trim();
-  const mappedSets = await fetchAllSets({ language });
+  // Set facts are sufficient to rank the small result rail. The result tiles
+  // retain their approved/local logo fallbacks, so do not page every catalogue
+  // set-artwork manifest before showing a maximum of twelve matches.
+  const mappedSets = await fetchAllSets({ language, includeAssets: false });
   if (safePrimary.length < 2) return mappedSets;
 
   return mappedSets
@@ -675,8 +735,23 @@ export default function GlobalSearchScreen() {
   const [focusedResultLimit, setFocusedResultLimit] = useState(searchResultWindow.initialCount);
   const searchListRef = useRef<FlatList<number>>(null);
   const requestRef = useRef(0);
+  const searchTraceRef = useRef<ReturnType<typeof beginRetrieval> | null>(null);
+  const pendingSearchTraceRef = useRef<{ input: string; trace: ReturnType<typeof beginRetrieval> } | null>(null);
+  const searchCommitTraceRef = useRef<{ trace: ReturnType<typeof beginRetrieval>; cards: SearchResults['cards'] } | null>(null);
+  const trackSearchAction = useCallback((origin: RetrievalOrigin, input = query) => {
+    searchTraceRef.current?.cancel();
+    pendingSearchTraceRef.current?.trace.cancel();
+    pendingSearchTraceRef.current = { input: input.trim(), trace: beginRetrieval('search', origin) };
+  }, [query]);
+  useEffect(() => {
+    const committed = searchCommitTraceRef.current;
+    if (committed?.cards === results.cards && results.cards.length) committed.trace.phase('facts-committed');
+  }, [results.cards]);
   const previousSearchRef = useRef<{ key: string; results: SearchResults } | null>(null);
   const [searchIdentityEpoch, setSearchIdentityEpoch] = useState(0);
+  useEffect(() => () => {
+    searchTraceRef.current?.cancel(); pendingSearchTraceRef.current?.trace.cancel();
+  }, [searchIdentityEpoch]);
   const lastParamSignatureRef = useRef('');
   const recentSearchMountedRef = useRef(true);
   const observedRecentSearchUserIdRef = useRef<string | null | undefined>(undefined);
@@ -855,14 +930,15 @@ export default function GlobalSearchScreen() {
     lastParamSignatureRef.current = signature;
 
     if (profileShowcaseSlot) {
+      trackSearchAction('route', paramQuery ?? '');
       setCategory(isSearchCategory(paramCategory) ? paramCategory : getProfileShowcaseSearchConfig(profileShowcaseSlot).category);
       setQuery(paramQuery ?? '');
       return;
     }
 
     if (isSearchCategory(paramCategory)) setCategory(paramCategory);
-    if (paramQuery != null) setQuery(paramQuery);
-  }, [paramCategory, paramQuery, profileShowcaseSlot]);
+    if (paramQuery != null) { trackSearchAction('route', paramQuery); setQuery(paramQuery); }
+  }, [paramCategory, paramQuery, profileShowcaseSlot, trackSearchAction]);
 
   const rememberSearch = useCallback(async (value?: string) => {
     const trimmed = (value ?? query).trim();
@@ -899,6 +975,10 @@ export default function GlobalSearchScreen() {
     const requestId = ++requestRef.current;
 
     if (trimmed.length < 2 && category !== 'sets') {
+      searchTraceRef.current?.cancel();
+      if (pendingSearchTraceRef.current?.input === trimmed) {
+        pendingSearchTraceRef.current.trace.cancel(); pendingSearchTraceRef.current = null;
+      }
       previousSearchRef.current = null;
       setResults(EMPTY_RESULTS);
       setErrors({});
@@ -907,6 +987,13 @@ export default function GlobalSearchScreen() {
       setRefreshing(false);
       return;
     }
+
+    const pendingTrace = pendingSearchTraceRef.current;
+    const usesAction = !force && pendingTrace?.input === trimmed && pendingTrace.trace.pending();
+    const retrievalTrace = usesAction ? pendingTrace.trace : beginRetrieval('search', force ? 'retry' : 'route');
+    if (usesAction) pendingSearchTraceRef.current = null;
+    searchTraceRef.current?.cancel();
+    searchTraceRef.current = retrievalTrace;
 
     if (trimmed.length < 2 && category === 'sets') {
       previousSearchRef.current = null;
@@ -918,12 +1005,14 @@ export default function GlobalSearchScreen() {
       try {
         const sets = await searchSetsQuick('', [], selectedLanguage);
         if (requestId !== requestRef.current) return;
+        retrievalTrace.phase('network-complete');
         setResults({ ...EMPTY_RESULTS, sets });
       } catch {
         if (requestId !== requestRef.current) return;
+        retrievalTrace.fail('facts');
         setErrors({ sets: 'Set results could not be loaded.' });
       } finally {
-        if (requestId === requestRef.current) { setLoading(false); setRefreshing(false); }
+        if (requestId === requestRef.current) { retrievalTrace.settle(); setLoading(false); setRefreshing(false); }
       }
       return;
     }
@@ -935,7 +1024,6 @@ export default function GlobalSearchScreen() {
     setRefreshing(force);
     setErrors({});
 
-    const startedAt = Date.now();
     const expandedQueries = expandSearchQuery(trimmed);
     const primary = expandedQueries[0] ?? trimmed;
     const normalisedTerms = expandedQueries.map(normaliseSearchText);
@@ -950,13 +1038,18 @@ export default function GlobalSearchScreen() {
 
     const correctionPromise = correctPokemonNameQuery(trimmed, { allowIndex: false }).catch(() => null);
     let canonicalCards: SearchResults['cards'] | null = null;
+    let acceptingEarlyCards = true;
     const cachedCardsPromise = force
       ? Promise.resolve(null)
       : readCachedCanonicalSearch(primary, selectedLanguage).catch(() => null);
     void cachedCardsPromise.then((cachedRows) => {
-      if (requestId !== requestRef.current || canonicalCards !== null || !cachedRows?.length) return;
-      canonicalCards = mapCardResults(cachedRows);
-      setResults((current) => ({ ...current, cards: canonicalCards! }));
+      if (!acceptingEarlyCards || requestId !== requestRef.current || canonicalCards !== null || !cachedRows?.length) return;
+      const cards = mapCardResults(cachedRows);
+      canonicalCards = cards;
+      retrievalTrace.facts(cards.length, 'persisted');
+      searchCommitTraceRef.current = { trace: retrievalTrace, cards };
+      setResults((current) => acceptingEarlyCards && requestId === requestRef.current
+        ? { ...current, cards } : current);
     });
     const cardsPromise = searchLocalPokemonCards<any>(primary, {
       language: selectedLanguage,
@@ -967,11 +1060,20 @@ export default function GlobalSearchScreen() {
       skipIndexFallback: true,
       skipNameCorrection: true,
       onCanonicalResults: (rows) => {
-        if (requestId !== requestRef.current) return;
-        canonicalCards = mapCardResults(rows);
-        setResults((current) => ({ ...current, cards: canonicalCards! }));
+        if (!acceptingEarlyCards || requestId !== requestRef.current) return;
+        // The factual API response precedes optional manifest/image enrichment.
+        retrievalTrace.phase('network-complete');
+        const cards = mapCardResults(rows);
+        canonicalCards = cards;
+        retrievalTrace.facts(cards.length, 'network');
+        searchCommitTraceRef.current = { trace: retrievalTrace, cards };
+        setResults((current) => acceptingEarlyCards && requestId === requestRef.current
+          ? { ...current, cards } : current);
         void writeCachedCanonicalSearch(primary, selectedLanguage, rows).catch(() => {});
       },
+    }).then((rows) => {
+      if (acceptingEarlyCards && requestId === requestRef.current) retrievalTrace.phase('card-source-ready');
+      return rows;
     });
     const setsPromise = searchSetsQuick(primary, normalisedTerms, selectedLanguage);
     const productsPromise = shouldSearchProducts
@@ -982,18 +1084,20 @@ export default function GlobalSearchScreen() {
       .select('id, collector_name, avatar_url')
       .ilike('collector_name', `%${primary}%`)
       .limit(8));
-    let listingsQuery = supabase
-      .from('user_card_flags')
-      .select('id, card_id, set_id, product_name, product_type, pricing_mode, grade_company, grade, asking_price, trade_only, listing_status, condition, listing_images, official_image_url, created_at')
-      .eq('flag_type', 'trade')
-      .or('listing_status.eq.active,listing_status.is.null')
-      .or(`product_name.ilike.%${primary}%,card_id.ilike.%${primary}%,set_id.ilike.%${primary}%,product_type.ilike.%${primary}%,grade_company.ilike.%${primary}%,grade.ilike.%${primary}%,condition.ilike.%${primary}%`);
+    const listingsPromise: Promise<any> = fetchListingSearchWithMedia((select) => {
+      let listingsQuery = supabase
+        .from('user_card_flags')
+        .select(select)
+        .eq('flag_type', 'trade')
+        .or('listing_status.eq.active,listing_status.is.null')
+        .or(`product_name.ilike.%${primary}%,card_id.ilike.%${primary}%,set_id.ilike.%${primary}%,product_type.ilike.%${primary}%,grade_company.ilike.%${primary}%,grade.ilike.%${primary}%,condition.ilike.%${primary}%`);
 
-    if (listingProductTypeFilter) {
-      listingsQuery = listingsQuery.eq('product_type', listingProductTypeFilter);
-    }
+      if (listingProductTypeFilter) {
+        listingsQuery = listingsQuery.eq('product_type', listingProductTypeFilter);
+      }
 
-    const listingsPromise: Promise<any> = Promise.resolve(listingsQuery.limit(18));
+      return listingsQuery.limit(18);
+    }, () => requestId === requestRef.current);
 
     const [correctionFirst, cardsFirst, setsFirst, productsFirst, profilesFirst, listingsFirst] = await Promise.all([
       settleWithin(correctionPromise, 180),
@@ -1080,23 +1184,66 @@ export default function GlobalSearchScreen() {
     setLoading(firstPhaseStillLoading);
     setRefreshing(force && firstPhaseStillLoading);
 
-    console.log('Search first results rendered', {
-      query: trimmed,
-      elapsedMs: Date.now() - startedAt,
-      cards: firstResults.cards.length,
-      sets: firstResults.sets.length,
-      listings: firstResults.listings.length + firstResults.graded.length,
+    // A ready group must not wait for an unrelated source's final deadline.
+    // Keep the existing final reconciliation, error copy and same-query recovery.
+    const publishReadyGroups = (groups: Partial<SearchResults>, groupErrors: SearchErrorState = {}) => {
+      if (requestId !== requestRef.current) return;
+      setResults((current) => {
+        if (requestId !== requestRef.current) return current;
+        const recovered = retainFailedSearchGroups({ ...current, ...groups }, groupErrors, previous);
+        previousSearchRef.current = { key: searchKey, results: recovered };
+        return recovered;
+      });
+      setErrors((current) => {
+        if (requestId !== requestRef.current) return current;
+        const next = { ...current };
+        for (const group of Object.keys(groups) as (keyof SearchResults)[]) delete next[group];
+        return { ...next, ...groupErrors };
+      });
+    };
+    const settledSets = settleSearchSource(setsPromise).then((result) => {
+      publishReadyGroups({ sets: result.status === 'fulfilled' ? result.value : [] },
+        result.status === 'fulfilled' ? {} : { sets: 'Set results could not be loaded.' });
+      return result;
+    });
+    const settledProducts = settleSearchSource(productsPromise).then((result) => {
+      publishReadyGroups({ sealed: result.status === 'fulfilled' ? result.value : [] },
+        result.status === 'fulfilled' ? {} : { sealed: 'Sealed product results could not be loaded.' });
+      return result;
+    });
+    const settledProfiles = settleSearchSource(profilesPromise).then((result) => {
+      const success = result.status === 'fulfilled' && !result.value.error;
+      publishReadyGroups({ collectors: success ? (result.value.data ?? []).map((profile: any) => ({
+        id: profile.id,
+        name: sanitizeGate0CommerceCopy(profile.collector_name ?? null, 'Collector') ?? 'Collector',
+        avatarUrl: profile.avatar_url ?? null,
+      })) : [] }, success ? {} : { collectors: 'Collector results could not be loaded.' });
+      return result;
+    });
+    const settledListings = settleSearchSource(listingsPromise).then((result) => {
+      const success = result.status === 'fulfilled' && !result.value.error;
+      const rows = success ? result.value.data ?? [] : [];
+      publishReadyGroups({
+        graded: rows.filter((listing: any) => listing.pricing_mode === 'graded' || listing.grade_company || listing.grade).map(mapListingResult),
+        listings: rows.filter((listing: any) => !(listing.pricing_mode === 'graded' || listing.grade_company || listing.grade)).map(mapListingResult),
+      }, success ? {} : {
+        listings: 'Market listings could not be loaded.', graded: 'Graded listings could not be loaded.',
+      });
+      return result;
     });
 
-    const [correction, cardsResult, setsResult, productsResult, profilesResult, listingsResult] = await Promise.allSettled([
-      correctionPromise,
-      cardsPromise,
-      setsPromise,
-      productsPromise,
-      profilesPromise,
-      listingsPromise,
+    const [correction, cardsResult, setsResult, productsResult, profilesResult, listingsResult] = await Promise.all([
+      settleSearchSource(correctionPromise),
+      settleSearchSource(cardsPromise),
+      settledSets,
+      settledProducts,
+      settledProfiles,
+      settledListings,
     ]);
 
+    // A transport or storage read may outlive the UI deadline. Once this
+    // request settles, its early facts must not repaint that final snapshot.
+    acceptingEarlyCards = false;
     if (requestId !== requestRef.current) return;
 
     const nextErrors: SearchErrorState = {};
@@ -1113,8 +1260,13 @@ export default function GlobalSearchScreen() {
     if (cardsResult.status === 'fulfilled') {
       cardsForHydration = cardsResult.value ?? [];
       next.cards = mapCardResults(cardsForHydration);
+      retrievalTrace.facts(next.cards.length, 'network');
     } else if (canonicalCards !== null) {
       next.cards = canonicalCards;
+      // Cached or early canonical rows remain useful, but they must not make
+      // a failed fresh factual read appear current. The existing group error
+      // keeps those exact rows visible and offers the screen's retry action.
+      nextErrors.cards = 'Card results could not be refreshed.';
     } else {
       nextErrors.cards = 'Card results could not be loaded.';
     }
@@ -1154,7 +1306,10 @@ export default function GlobalSearchScreen() {
       nextErrors.graded = 'Graded listings could not be loaded.';
     }
 
-    const recovered = retainFailedSearchGroups(next, nextErrors, previous);
+    const recovered = retainFailedSearchGroups(next, nextErrors, previous, { cards: canonicalCards !== null });
+    if (Object.keys(nextErrors).length) retrievalTrace.fail(nextErrors.cards ? 'facts' : 'source');
+    searchCommitTraceRef.current = { trace: retrievalTrace, cards: recovered.cards };
+    retrievalTrace.settle(Object.values(recovered).some(rows => rows.length > 0));
     previousSearchRef.current = { key: searchKey, results: recovered };
     setResults(recovered);
     setErrors(nextErrors);
@@ -1173,6 +1328,7 @@ export default function GlobalSearchScreen() {
           ownedMap.set(row.card_id, (ownedMap.get(row.card_id) ?? 0) + Math.max(1, Number(row.quantity ?? 1) || 1));
         });
         setResults((current) => {
+          if (requestId !== requestRef.current) return current;
           const hydrated = {
             ...current,
             cards: mapCardResults(cardsForHydration, listingStats, ownedMap),
@@ -1186,18 +1342,21 @@ export default function GlobalSearchScreen() {
     if (productsResult.status === 'fulfilled' && productsResult.value.length) {
       fetchProductListingStats(productsResult.value).then((productListingStats) => {
         if (requestId !== requestRef.current) return;
-        setResults((current) => ({
-          ...current,
-          sealed: productsResult.value.map((product) => ({
-            ...product,
-            latest_price: product.latest_price
-              ? {
-                  ...product.latest_price,
-                  count: productListingStats.get(product.id)?.count ?? product.latest_price.count,
-                }
-              : product.latest_price,
-          })),
-        }));
+        setResults((current) => {
+          if (requestId !== requestRef.current) return current;
+          return {
+            ...current,
+            sealed: productsResult.value.map((product) => ({
+              ...product,
+              latest_price: product.latest_price
+                ? {
+                    ...product.latest_price,
+                    count: productListingStats.get(product.id)?.count ?? product.latest_price.count,
+                  }
+                : product.latest_price,
+            })),
+          };
+        });
       }).catch(() => {});
     }
   }, [category, searchIdentityEpoch, selectedLanguage]);
@@ -1377,6 +1536,12 @@ export default function GlobalSearchScreen() {
     return next;
   }, [results, searchSort, selectedGrade, selectedGrader, selectedLanguage, selectedPriceBucket, selectedRarities, selectedSetFilter]);
 
+  const pricedSearchCards = useCataloguePriceOverlay(visibleResults.cards);
+  const cataloguePriceByCardId = useMemo(
+    () => new Map(pricedSearchCards.map((card) => [card.id, card.runtimeCataloguePricing])),
+    [pricedSearchCards],
+  );
+
   const activeSearchFilterCount =
     Number(category !== 'all')
     + Number(searchSort !== 'relevance')
@@ -1465,7 +1630,7 @@ export default function GlobalSearchScreen() {
                   <RecentSearchPill
                     key={item}
                     label={item}
-                    onPress={() => setQuery(item)}
+                    onPress={() => { trackSearchAction('tap', item); setQuery(item); }}
                     onRemove={() => removeRecentSearch(item)}
                   />
                 ))}
@@ -1533,6 +1698,7 @@ export default function GlobalSearchScreen() {
           {visibleResults.cards.map((card) => (
             <SearchCardRailItem
               key={card.id}
+              onImageDiagnostic={searchCommitTraceRef.current?.trace.image}
               name={card.name}
               imageUri={card.imageUri}
               fullImageUri={card.fullImageUri}
@@ -1552,7 +1718,13 @@ export default function GlobalSearchScreen() {
               })}
               number={card.number}
               rarity={card.rarity}
-              estimatedValue={card.estimatedValue}
+              estimatedValue={cataloguePriceByCardId.has(card.id) ? cataloguePriceByCardId.get(card.id)?.displayPrice : card.estimatedValue}
+              priceUnavailable={cataloguePriceByCardId.has(card.id) && cataloguePriceByCardId.get(card.id)?.pricingStatus === 'unavailable'}
+              priceContext={(() => {
+                const guide = cataloguePriceByCardId.get(card.id);
+                if (!guide) return null;
+                return [guide.sourceLabel, guide.unavailableReason, guide.updatedAt ? `Updated ${new Date(guide.updatedAt).toLocaleDateString('en-GB')}` : null].filter(Boolean).join(' - ');
+              })()}
               listingCount={card.listingCount}
               ownedQuantity={card.ownedQuantity}
               inspectionRequest={card.imageUri ? {
@@ -1762,7 +1934,7 @@ export default function GlobalSearchScreen() {
               <StackrBrowseToolbar
                 horizontalInset={0}
                 search={query}
-                onSearchChange={setQuery}
+                onSearchChange={value => { trackSearchAction('input', value); setQuery(value); }}
                 onSubmitSearch={() => { void rememberSearch(); }}
                 loading={loading}
                 placeholder={showcaseConfig?.placeholder ?? 'Search cards, sets or sealed products'}
@@ -1779,7 +1951,7 @@ export default function GlobalSearchScreen() {
                       accessibilityRole="tab"
                       accessibilityLabel={language.key === 'all' ? 'All set languages' : `${language.label} sets`}
                       accessibilityState={{ selected: active }}
-                      onPress={() => { requestRef.current += 1; setFocusedResultLimit(searchResultWindow.initialCount); setSelectedLanguage(language.key); }}
+                      onPress={() => { trackSearchAction('filter'); requestRef.current += 1; setFocusedResultLimit(searchResultWindow.initialCount); setSelectedLanguage(language.key); }}
                       activeOpacity={0.8}
                       style={{ minHeight: 42, paddingHorizontal: 12, borderRadius: 21, borderWidth: 1,
                         borderColor: active ? theme.colors.primary : theme.colors.border,
@@ -1793,8 +1965,10 @@ export default function GlobalSearchScreen() {
               ) : null}
 
               {suggestion ? (
-                <TouchableOpacity onPress={() => setQuery(suggestion)} activeOpacity={0.82} style={{ alignSelf: 'flex-start' }}>
-                  <Text style={{ color: theme.colors.primary, fontSize: 11.5, lineHeight: 15, fontWeight: '900' }}>
+                <TouchableOpacity onPress={() => { trackSearchAction('tap', suggestion); setQuery(suggestion); }} activeOpacity={0.82}
+                  accessibilityRole="button" accessibilityLabel={`Search for ${suggestion} instead`}
+                  style={{ alignSelf: 'flex-start', minHeight: 48, minWidth: 48, justifyContent: 'center', paddingVertical: 12, paddingHorizontal: 4 }}>
+                  <Text style={{ color: theme.colors.primary, fontSize: 14, lineHeight: 20, fontWeight: '700' }}>
                     {`Search for "${suggestion}" instead`}
                   </Text>
                 </TouchableOpacity>
@@ -1853,7 +2027,7 @@ export default function GlobalSearchScreen() {
                 imageIcon={item.imageIcon}
                 icon={item.imageIcon ? undefined : item.icon}
                 active={category === item.key}
-                onPress={() => { setCategory(item.key); setFilterTypeExpanded(false); }}
+                onPress={() => { trackSearchAction('filter'); setCategory(item.key); setFilterTypeExpanded(false); }}
               />
             ))}
           </View>
@@ -1869,7 +2043,7 @@ export default function GlobalSearchScreen() {
                 label={language.label}
                 leading={language.flagLanguage ? <PokemonLanguageFlagIcon language={language.flagLanguage} size={16} decorative /> : undefined}
                 active={selectedLanguage === language.key}
-                onPress={() => setSelectedLanguage(language.key)}
+                onPress={() => { trackSearchAction('filter'); setSelectedLanguage(language.key); }}
               />
             ))}
           </View>
@@ -2018,7 +2192,7 @@ function mapListingResult(listing: any): ListingResult {
         : null,
       safeListing.condition,
     ].filter(Boolean).join(' · ') || null,
-    imageUri: safeListing.official_image_url ?? safeListing.listing_images?.[0] ?? null,
+    imageUri: getMarketplaceListingThumbnail(safeListing),
     price: safeListing.asking_price == null ? null : Number(safeListing.asking_price),
     modeLabel: isTrade ? 'Trade' : 'Offers',
     cardId: safeListing.card_id ?? null,

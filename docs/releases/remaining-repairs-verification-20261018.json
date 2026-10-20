@@ -1,0 +1,494 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-18T22:28:13.977Z",
+  "workingDirectory": "D:/Stackr",
+  "branch": "codex/stackr-repair-consolidation-20261018",
+  "sourceRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
+  "workContinues": true,
+  "phoneClosedIssues": 0,
+  "testFlightState": "held_until_repairs_verified",
+  "implemented": [
+    {
+      "issues": [
+        "V12"
+      ],
+      "revision": "d59c3a6e6f48fbb106866ed9e51edd2e0486a0b9",
+      "change": "Recovered exact catalogue artwork now advances tile, full-resolution inspection and provenance together. Live selected subsets recover the full canonical image-page budget; a cached complete set avoids the extra facts read. Existing approved sharper replacements still supersede old imageful cards.",
+      "identityAndOwnershipPreserved": true,
+      "phoneVerified": false
+    },
+    {
+      "issues": [
+        "V07",
+        "V12"
+      ],
+      "revision": "d59c3a6e6f48fbb106866ed9e51edd2e0486a0b9",
+      "change": "Metadata cache hits no longer renew their own60-second expiry indefinitely. A real-helper clock regression reproduces the old stale denominator and verifies the fresh read.",
+      "phoneVerified": false
+    },
+    {
+      "issues": [
+        "V02",
+        "V13"
+      ],
+      "revision": "d59c3a6e6f48fbb106866ed9e51edd2e0486a0b9",
+      "change": "Missing/unknown freshness no longer counts as fresh. Partial valuation labels disclose stale/unknown units while retaining supported stored values and general-estimate labels.",
+      "liveQuotesRefreshed": false,
+      "liveCoverageVerified": false,
+      "phoneVerified": false
+    },
+    {
+      "issues": [
+        "V16"
+      ],
+      "revision": "f047a5f577126502767e88cdf6d491c467914fcc",
+      "change": "The existing exact regular November2023 monthly CoroCoro issue uses the owner-approved complete released publisher cover offline. Original81supplied assets and card associations remain unchanged.",
+      "sha256": "f4c2b52e01077cb532acfd6118243767d4f7194b8f80204e19eb5b6441dc77ca",
+      "bytes": 287571,
+      "width": 450,
+      "height": 652,
+      "language": "ja",
+      "sourcePage": "https://corocoro-news.jp/news/374548/",
+      "highDefinitionMasterClaimed": false,
+      "phoneVerified": false
+    },
+    {
+      "issues": [
+        "V14",
+        "V15",
+        "V16"
+      ],
+      "revision": "c310ccd362efdbbe9133f726dda429c58506c15f",
+      "change": "The active release verifier requires the selected English-lettered Storm logo,27CoroCoro covers,36retained Chinese logos and3pack-art fallbacks:74distinct exact exported assets. The old gate failed27versus26; the current gate passes actual export and rejects four controlled missing/corrupt export cases.",
+      "frozenHistoricalNativeHelpersChanged": false
+    },
+    {
+      "issues": [
+        "V01"
+      ],
+      "revision": "d0f9e74aa099a4805383d1fabb4b5e6f91e59cdb",
+      "change": "Home card facts and verified names publish before optional artwork and prices. Existing same-card/set estimates survive ordinary transient failure; access denials clear private retained state and invalidate late callbacks. Loaded sheet facts remain usable with truthful status.",
+      "identityGuessed": false,
+      "phoneVerified": false
+    },
+    {
+      "issues": [
+        "V07",
+        "V12"
+      ],
+      "revision": "b379c5c48b4cdbe9f169c739467e362be93f3a0e",
+      "change": "Canonical set test fixture now returns consistent list/detail metadata. Missing exact totals and131/180partial lists still reject; no runtime weakening.",
+      "fixtureOnly": true
+    }
+  ],
+  "validation": {
+    "rootTypecheck": "PASS",
+    "rootLint": {
+      "errors": 0,
+      "existingWarnings": 8
+    },
+    "focusedCoverChecks": 7,
+    "independentReviews": "PASS; app,cover,export-verifier",
+    "actualPricingRedToGreen": true,
+    "actualBinderRedToGreen": true,
+    "metadataTtlRedToGreen": true,
+    "unsignedIos": {
+      "exportedSource": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
+      "runtimeRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+      "preservedIconCommits": [
+        "4fd177443d1e2f0a12e296728293d113c6a81f25",
+        "c85fa68f4e6dc7d62b290a76df59bd24d05446b3"
+      ],
+      "bundle": {
+        "path": "_expo/static/js/ios/entry-42dd80153c3289eb216419c5ede080c9.hbc",
+        "sha256": "c5e4e3f99c8f04e0508368b2c2d58453e5137f09bac49f133c489d1a840f6541",
+        "bytes": 11804174
+      },
+      "exactUniqueAssetsVerified": 74,
+      "listingMediaHelpersPackaged": true,
+      "iconComponentHelpersPackaged": true,
+      "exactSvgPathsPackaged": 44,
+      "receipt": {
+        "privatePath": "evidence/consolidation-20261018/combined-icons-ios-export-v1/asset-verification.json",
+        "sha256": "7b6754daa17475758abba077cc3a0423ccf9e5cbf75803bfbefc3ec1ae085b49"
+      },
+      "nativeSigned": false,
+      "uploaded": false,
+      "submitted": false,
+      "published": false,
+      "phoneVerified": false,
+      "testFlightHeld": true
+    },
+    "home": {
+      "focusedGroups": 7,
+      "progressiveCases": 13,
+      "denialCases": 24,
+      "independentReview": "PASS; finalv2",
+      "rootTypecheck": "PASS",
+      "rootLintErrors": 0,
+      "existingLintWarnings": 8
+    },
+    "englishSetFixture": {
+      "narrowGroups": 3,
+      "rootTypecheck": "PASS",
+      "rootLint": "PASS",
+      "targetedLint": "PASS",
+      "independentReview": "PASS"
+    },
+    "previousUnsignedIos": {
+      "exportedSource": "f047a5f577126502767e88cdf6d491c467914fcc",
+      "bundle": {
+        "path": "_expo/static/js/ios/entry-b870fab98eeb4d93b26feaa0965d0db9.hbc",
+        "sha256": "9f0c8c3164e80ba35c1f362a65dbe402d07102fd95180837b203d677234bfc64",
+        "bytes": 11784353
+      },
+      "exactUniqueAssetsVerified": 74,
+      "controlledNegativeCases": 4,
+      "nativeSigned": false,
+      "published": false,
+      "phoneVerified": false
+    },
+    "historicalUnsignedIos": [
+      {
+        "exportedSource": "d0f9e74aa099a4805383d1fabb4b5e6f91e59cdb",
+        "bundle": {
+          "path": "_expo/static/js/ios/entry-9c9783026f9b5fd791b6f325cfee2269.hbc",
+          "sha256": "42d845b1ce38adebbe02291f3cde0d22d68b4bcd468910e7801a2a21d3e7d549",
+          "bytes": 11787234
+        },
+        "exactUniqueAssetsVerified": 74,
+        "nativeSigned": false,
+        "published": false,
+        "phoneVerified": false
+      }
+    ],
+    "historicalUnsignedIosBeforeListingMedia": {
+      "exportedSource": "d0cf371080936ff538e86ac8883fed6af4d1200e",
+      "bundle": {
+        "path": "_expo/static/js/ios/entry-079ebd166aa22cedb2e79265d73810d8.hbc",
+        "sha256": "3d1e1c50bb0a8e7cecd295326caee48a3c3013c72fc1d7671341a1a3fe1325c3",
+        "bytes": 11796288
+      },
+      "exactUniqueAssetsVerified": 74,
+      "nativeSigned": false,
+      "published": false,
+      "phoneVerified": false
+    },
+    "currentHostedSourceChecks": {
+      "checkedAt": "2026-10-18T21:49:28.020Z",
+      "sourceHead": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
+      "succeeded": 10,
+      "failed": 0,
+      "pending": 0,
+      "skipped": [
+        "release-candidate-gate",
+        "canary-api-evidence"
+      ],
+      "evidence": {
+        "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-4e1cdf7.json",
+        "sha256": "9fb65f14b076e4fd7e5967948b5fc16b2cd1d31b2ff6661b70858160e0a2c1fc"
+      },
+      "scope": "Exact pushed source snapshot. Subsequent documentation commits need their own hosted status; skipped release/canary gates do not prove delivery or phone acceptance."
+    },
+    "previousUnsignedIosBeforeIconIntegration": {
+      "exportedSource": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
+      "runtimeRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+      "bundle": {
+        "path": "_expo/static/js/ios/entry-41e9e4fdecdc123f827f005aec05eb9e.hbc",
+        "sha256": "c279c5ea4c6b4f1ebab3a927f6b0bbd015908338908126910ddd6d365fbdb06a",
+        "bytes": 11798374
+      },
+      "exactUniqueAssetsVerified": 74,
+      "listingMediaHelpersPackaged": true,
+      "receipt": {
+        "privatePath": "evidence/consolidation-20261018/listing-search-media-source-v1/ios-export-asset-verification.json",
+        "sha256": "05e8008e52fe45fa329564434be000a2325bcef4860ba691dab5ccefccb4b878"
+      },
+      "nativeSigned": false,
+      "uploaded": false,
+      "submitted": false,
+      "published": false,
+      "phoneVerified": false,
+      "testFlightHeld": true
+    },
+    "preservedIconIntegration": {
+      "source": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
+      "separateImplementationRevision": "4fd177443d1e2f0a12e296728293d113c6a81f25",
+      "authoredByThisContinuation": false,
+      "review": {
+        "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/icon-integration-compatibility-review-v1-bounded-completion-review.json",
+        "sha256": "181489ad613aed983cbea06f5bd75b76c505d7d46c842f5cc756baf2f80bc0e5"
+      },
+      "outcome": "PASS_COMPATIBILITY_REVIEW",
+      "rootTypecheck": {
+        "exitCode": 0,
+        "settledToolSession": 41645
+      },
+      "rootLint": {
+        "exitCode": 0,
+        "errors": 0,
+        "existingWarnings": 8,
+        "settledToolSession": 28404
+      },
+      "scope": "Separate icon work retained and independently reviewed against immutable8dd..c85. Root current-source typecheck/lint and local unsigned package pass. No native publication or phone evidence."
+    }
+  },
+  "boundedStormEvidence": {
+    "factualPrintings": 113,
+    "preferredArtworkEligible": 113,
+    "decodedOriginalFiles": 113,
+    "actualMapperReplay": {
+      "sourceRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
+      "inputPrintings": 113,
+      "inspectableReferences": 113,
+      "manifestRequests": 0,
+      "offlineReplay": true,
+      "evidence": {
+        "privatePath": "evidence/consolidation-20261018/remaining-retrieval-20261018/storm-real-client-replay-warm-v2.json",
+        "sha256": "d5a0148eb7c5f9972643801296a5ca430e9c0c5986db99d29ea4c3ed578e71b6"
+      }
+    },
+    "interpretation": "All113captured approved shared printing-face references freshly fetched, hash/byte/dimension matched and decoded. Earlier two-file sample and113actual-client replay retained; exact physical finishes and phone rendering remain unverified.",
+    "separateWholeSetManifest": {
+      "status": 504,
+      "elapsedMs": 8228,
+      "causeEstablished": false,
+      "retried": false
+    },
+    "previousDecodedOriginalFiles": 2,
+    "fullCapturedCohortDelivery": {
+      "document": "docs/releases/storm-image-delivery-20261018.json",
+      "requests": 113,
+      "sha256BytesDimensionsDecoded": 113,
+      "collectorScope": "113capturedM6printingfacereferences",
+      "phoneVerified": false
+    }
+  },
+  "remaining": {
+    "homeBlankPrinting": "Owner confirms the same blank Home tile eventually becomes Varoom. Trace delayed name/image loading; exact printing fields remain unconfirmed and must not be guessed.",
+    "actualPrivateAccount": "Binder ownership/counts, real stored price coverage/freshness, history/movers, duplicates and listingmedia still need scoped acceptance.",
+    "exactArtwork": "Four earlier Wartortle/Pikachu exact-artwork gaps and broader promised source batches remain explicit.",
+    "installedDevice": "Repeated original journeys on confirmed build/network; offline/cancel/account/retry,inspection/haptics and required performance samples remain open.",
+    "consolidation": "Continue remaining classified preservation/relocations; original shared repository last. No permanent deletion or disk-space reclamation."
+  },
+  "privateReceiptDigests": [
+    {
+      "relativePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/app-review.json",
+      "sha256": "892eec6034d8e3779c3416a3c59d08eabbaeec3cd0e1d7514468805c566882e5"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/corocoro-cover-review.json",
+      "sha256": "e6d6492ff2c53da2b4c775895fc31c95db38e0dcd81e2b0e71e0a7ad92dc292c"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/export-verifier-review.json",
+      "sha256": "720a6037986b5cca3feb841139172c35c6821bf6258638d6dfc4c8a7935831b9"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/remaining-artwork-20261018/november-cover-owner-permission.json",
+      "sha256": "7679c509a2379a01e6e1265eb9b0dd56c29518547bc9c49352f65c11a004371c"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/remaining-artwork-20261018/november-cover-import.json",
+      "sha256": "a9929e40a64550f19281d5b05555db5944d14e04dc7e8a2c82fb938943bf719b"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/remaining-artwork-20261018/november-cover-validation.json",
+      "sha256": "e55cc2c956c03472d89a339d919dba03c2bccf5e4f1e7ba3e682573cc76f1e54"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/remaining-artwork-20261018/home-varoom-owner-clarification.json",
+      "sha256": "e5d54265a59ca5053dca0678e9587ade39c0a472ecc7b418f61f5eb30a7ac36d"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/remaining-artwork-20261018/ios-export-current-asset-verification.json",
+      "sha256": "21d0433ea55797b2299a28ae1e1085469b809da48e57fd779dd3235e47f85633"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/remaining-retrieval-20261018/local-checks.json",
+      "sha256": "8be5b424445fb406f95f2faf4dae31d9e6f29f331ae49e936c587b6d4722084c"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/remaining-retrieval-20261018/metadata-ttl-review-red.json",
+      "sha256": "246680b97a7ec056f3e8637c57b9fff9cf73a89c7d52d8cb74b89bfb5ce54eb7"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/remaining-retrieval-20261018/storm-real-client-replay-after-review.json",
+      "sha256": "8328732b60223703a3535ae529c67174326d069883249b313dc80802cfaf7417"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/remaining-retrieval-20261018/storm-two-image-read-outcome.json",
+      "sha256": "d4fc019f44e647a07cf3b7816be00b119a9bfe3bf294dda42bef4b3a7b9c9b81"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/remaining-retrieval-20261018/storm-manifest-1.json",
+      "sha256": "178b1833ef5646c75a47d9da45f1bb0dcd78dc1c2e2112ad697e784781edd3ea"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/pricing-freshness-20261018/green.json",
+      "sha256": "b90253d36db738d598033b17f7ad6effd02c150db5acd4a6200e06aa856ebf85"
+    },
+    {
+      "privatePath": "remaining-artwork-20261018/ios-export-home-asset-verification.json",
+      "sha256": "8806aeb1c8a3762df5d4694b75fe99be5a63bb515301bbba22d94ec7351fb114"
+    }
+  ],
+  "delivery": {
+    "committed": true,
+    "merged": false,
+    "nativeSigned": false,
+    "nativePublished": false,
+    "phoneVerified": false,
+    "testFlightHeld": true
+  },
+  "boundary": "Local implementation, tests and unsigned export only. No new database script/catalogue mutation,price refresh,job,deployment,TestFlight upload/submission or permanent deletion.",
+  "homeContinuationEvidence": {
+    "export": {
+      "file": "D:/Stackr-organization/evidence/consolidation-20261018/remaining-artwork-20261018/ios-export-home-asset-verification.json",
+      "sha256": "8806aeb1c8a3762df5d4694b75fe99be5a63bb515301bbba22d94ec7351fb114"
+    },
+    "rootValidation": {
+      "file": "D:/Stackr-organization/evidence/consolidation-20261018/home-display-integration-20261018/v2/root-validation.json",
+      "sha256": "655c766ca9c24c8c5095cbcb153eda86911796c7ebd6ee791353f109cbfa0e8b"
+    },
+    "independentReview": {
+      "file": "D:/Stackr-organization/evidence/consolidation-20261018/remaining-repairs-review-20261018/home-display-review-v2.json",
+      "sha256": "6c889ab09db3e22b02552d94bb5b3f51271c5def28cec0c205eca39d22a259de"
+    },
+    "fixtureValidation": {
+      "file": "D:/Stackr-organization/evidence/consolidation-20261018/remaining-artwork-20261018/english-set-fixture-validation.json",
+      "sha256": "7358d0d43dc64e4053dbcb4d2af7fbfe1b5994ce86838e686af0cf6cbbfc29af"
+    },
+    "fixtureReview": {
+      "file": "D:/Stackr-organization/evidence/consolidation-20261018/remaining-repairs-review-20261018/english-set-fixture-review.json",
+      "sha256": "15e9aed04bf539d79585e4a4406002b86d472f5907e7ac92bf33c9d489347026"
+    }
+  },
+  "warmArtworkReassignmentRepair": {
+    "document": "docs/releases/artwork-reassignment-repair-20261018.json",
+    "sourceRevision": "d0cf371080936ff538e86ac8883fed6af4d1200e",
+    "review": "PASS_SOURCE_TEST_ONLY",
+    "unsignedExportAssets": 74,
+    "liveDataUnchanged": true,
+    "phoneVerified": false
+  },
+  "currentRuntimeSourceCandidate": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+  "currentSourceSnapshot": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
+  "additionalListingMediaRepair": {
+    "recordedAt": "2026-10-18T21:35:01.645Z",
+    "issueId": "V23",
+    "sourceRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+    "sourceGapConfirmed": true,
+    "recordedListingIdentityConfirmed": false,
+    "change": "Search requests structured listing media and seller image fields. Valid available thumbnails use the existing official/legacy preference followed by seller front/labelled media/back. One compatibility retry is limited to an exact missing media-column error and a current request generation.",
+    "sourceFiles": [
+      "app/(tabs)/search.tsx",
+      "lib/listingSearchMedia.ts",
+      "lib/marketplacePresentation.ts"
+    ],
+    "safeguards": [
+      "Unchanged trade/active/product predicates,18-row limit and RLS/client path",
+      "No compatibility retry on permissions, timeouts, unrelated schema errors or superseded/account-invalidated queries",
+      "HTTPS-only validated image candidates; malformed or unavailable media stays explicit",
+      "No changes to listing publication, prices, quantities or private collection data"
+    ],
+    "validation": {
+      "newListingMediaRegression": "PASS",
+      "actualProgressiveSearch": "PASS",
+      "actualSearchCoordinatorSettlement": "PASS",
+      "searchRecovery": "PASS",
+      "typecheck": "PASS",
+      "lint": {
+        "errors": 0,
+        "existingWarnings": 8
+      },
+      "independentReview": {
+        "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/listing-search-media-source-review-v1-bounded-completion-review.json",
+        "sha256": "8e5d36613500c5686e2b95489f6137053770d7bfb6e005d8e541dffebe0fc2b5"
+      },
+      "sevenFileSourceBundle": {
+        "privatePath": "evidence/consolidation-20261018/listing-search-media-source-v1/source-pins.json",
+        "sha256": "39bd10a15d0f32ef9d139f379cbef74b549556e334507cdae650f4450d58c717"
+      },
+      "actualMapperBeforeAndAfter": {
+        "privatePath": "evidence/consolidation-20261018/listing-search-media-source-v1/actual-mapper-before-after.json",
+        "sha256": "cd497b6176327e55fe1221224a017fead6fec23312fd73ce875755f3961de25e"
+      },
+      "unsignedIos": {
+        "exportedSource": "c85fa68f4e6dc7d62b290a76df59bd24d05446b3",
+        "runtimeRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+        "preservedIconCommits": [
+          "4fd177443d1e2f0a12e296728293d113c6a81f25",
+          "c85fa68f4e6dc7d62b290a76df59bd24d05446b3"
+        ],
+        "bundle": {
+          "path": "_expo/static/js/ios/entry-42dd80153c3289eb216419c5ede080c9.hbc",
+          "sha256": "c5e4e3f99c8f04e0508368b2c2d58453e5137f09bac49f133c489d1a840f6541",
+          "bytes": 11804174
+        },
+        "exactUniqueAssetsVerified": 74,
+        "listingMediaHelpersPackaged": true,
+        "iconComponentHelpersPackaged": true,
+        "exactSvgPathsPackaged": 44,
+        "receipt": {
+          "privatePath": "evidence/consolidation-20261018/combined-icons-ios-export-v1/asset-verification.json",
+          "sha256": "7b6754daa17475758abba077cc3a0423ccf9e5cbf75803bfbefc3ec1ae085b49"
+        },
+        "nativeSigned": false,
+        "uploaded": false,
+        "submitted": false,
+        "published": false,
+        "phoneVerified": false,
+        "testFlightHeld": true
+      },
+      "hostedSourceChecks": {
+        "checkedAt": "2026-10-18T21:49:28.020Z",
+        "sourceHead": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
+        "succeeded": 10,
+        "failed": 0,
+        "pending": 0,
+        "skipped": [
+          "release-candidate-gate",
+          "canary-api-evidence"
+        ],
+        "evidence": {
+          "privatePath": "evidence/consolidation-20261018/validation/hosted-ci-4e1cdf7.json",
+          "sha256": "9fb65f14b076e4fd7e5967948b5fc16b2cd1d31b2ff6661b70858160e0a2c1fc"
+        },
+        "scope": "Exact pushed source snapshot. Subsequent documentation commits need their own hosted status; skipped release/canary gates do not prove delivery or phone acceptance."
+      },
+      "previousUnsignedIosBeforeIconIntegration": {
+        "exportedSource": "4e1cdf7d7f92f28a9f93107abc00d10f03533c8d",
+        "runtimeRevision": "32b97bbc2cec9d416072c0b17b011453987a3d4d",
+        "bundle": {
+          "path": "_expo/static/js/ios/entry-41e9e4fdecdc123f827f005aec05eb9e.hbc",
+          "sha256": "c279c5ea4c6b4f1ebab3a927f6b0bbd015908338908126910ddd6d365fbdb06a",
+          "bytes": 11798374
+        },
+        "exactUniqueAssetsVerified": 74,
+        "listingMediaHelpersPackaged": true,
+        "receipt": {
+          "privatePath": "evidence/consolidation-20261018/listing-search-media-source-v1/ios-export-asset-verification.json",
+          "sha256": "05e8008e52fe45fa329564434be000a2325bcef4860ba691dab5ccefccb4b878"
+        },
+        "nativeSigned": false,
+        "uploaded": false,
+        "submitted": false,
+        "published": false,
+        "phoneVerified": false,
+        "testFlightHeld": true
+      }
+    },
+    "delivery": {
+      "implemented": true,
+      "tested": true,
+      "independentlyReviewed": true,
+      "merged": false,
+      "nativePublished": false,
+      "phoneVerified": false,
+      "unsignedCurrentRevisionExportPending": false,
+      "unsignedIosVerified": true
+    },
+    "testFlightHeld": true
+  }
+}

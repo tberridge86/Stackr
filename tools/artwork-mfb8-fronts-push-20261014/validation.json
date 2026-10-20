@@ -1,0 +1,349 @@
+{
+  "schemaVersion": 1,
+  "at": "2026-10-14T20:54:52.086Z",
+  "status": "offline_validated_not_published",
+  "queue_id": "STACKR-EN-MFB-20261014-008",
+  "fronts": 8,
+  "derivative_references": 24,
+  "object_references": 32,
+  "unique_image_members": 32,
+  "delivery_scope": {
+    "batches": [
+      "EN-CARDS-006",
+      "EN-CARDS-007"
+    ],
+    "saved_batch_tasks": 34,
+    "eligible_fronts": 8,
+    "previous_cohort_fronts_required_live": 15,
+    "excluded_control_aliases": [
+      "6"
+    ],
+    "remaining_identity_holds_after_prior15_and_this8": 11,
+    "excluded_ambiguous_targets": 10,
+    "accepted_aliases": [
+      "5",
+      "7",
+      "11",
+      "23",
+      "26",
+      "27",
+      "29",
+      "31"
+    ],
+    "whole_batch_completion_asserted": false
+  },
+  "cohort_sha256": "1ca4f1f3243629478779473b6ded41d9ef03e0731bb817fa4253406eff0ff362",
+  "approval_sha256": "2366cca53757fcbf3d6f64ed2f8287e14f53dd6cf9a47653d657937f2f0c860d",
+  "identity_table_sha256": "aebb352a8c2bf4eec5fb415743366f07dd8fa41d373c09113a332dfc57e12ab0",
+  "source_manifest_sha256": "508970e62fbd29662fd9b6ef4c34db19b9c4aa9f9580941e2050cccd6ae0c0f0",
+  "saved_targets_sha256": "7868fb3f60d375903836238e13fc98a573359880f0ed472eaa87ae31fc25f0ab",
+  "archive": {
+    "id": 641631537,
+    "sha256": "f5146e5d8d7f1c1213c3a0d411a6df2c80f4700a8769ff120b637dd0936bc27a",
+    "byte_size": 4279822,
+    "file_count": 36,
+    "filename": "stackr-en-artwork-mfb-fronts8-20261014.zip",
+    "metadata_files": 4,
+    "exact_members": 36,
+    "provider_requests_during_publication": 0
+  },
+  "original_format": {
+    "mime_type": "image/jpeg",
+    "unchanged": true,
+    "count": 8,
+    "hd_dimensions": 8,
+    "detail_only": 0
+  },
+  "identity_controls": {
+    "unnumbered_printed_collector": null,
+    "canonical_alias_is_internal_only": true,
+    "printed_national_dex_is_not_collector_number": true,
+    "metadata_changes": 0,
+    "physical_edition_verified": false,
+    "physical_finish_verified": false
+  },
+  "source_controls": {
+    "owner_website_permission_attested": true,
+    "vendor_licence_verified": false,
+    "underlying_copyright_licence_verified": false,
+    "source_wide_activation": false,
+    "new_production_sources": [],
+    "existing_production_sources_preserved": 2,
+    "staging_temporary_source_fixtures": 2
+  },
+  "retained_source_distinctions": {
+    "accepted_aliases": [
+      "5",
+      "7",
+      "11",
+      "23",
+      "26",
+      "27",
+      "29",
+      "31"
+    ],
+    "separately_reconciled_originals": 8,
+    "basic_headers": 7,
+    "stage1_headers": 1,
+    "full_frames": 8,
+    "prior_holds_retained_as_history": true,
+    "original_source_handoff_unchanged": true,
+    "sorted_historical_signature_serializer_verified": true,
+    "current_structured_body_hashes_independently_pinned": true,
+    "reconciliation_sha256": "014bce750f1a96d86b08168285f6e9458b12fa69afee5d615b5b70c6513504a8",
+    "signature_clarification_sha256": "b696ffda1e03e7ba1847e3f3a7cab6eb8492fb51107559ce8ea23f45b25dc642",
+    "independent_source_review_sha256": "913975693886f76b617a6c176cfc77c56e7624787353bdb5af7c1c7c6e5135ac",
+    "exeggutor6_remains_excluded": true
+  },
+  "full_private_before_snapshots": {
+    "production": {
+      "sha256": "986f5b88e92ad723f6c02a6f6ac91e3598b0f2fe1b03e6d730664e0badf157f2",
+      "bytes": 35497
+    },
+    "staging": {
+      "sha256": "4e119a12c63d639cc8731d20e6205196ccff520a10e8c54ce60a45601de90f70",
+      "bytes": 28023
+    }
+  },
+  "scope_before_counts": {
+    "production": {
+      "printings": 8,
+      "variants": 8,
+      "names": 16,
+      "sets": 1,
+      "assets": 1,
+      "links": 1,
+      "sources": 2,
+      "rows": 37
+    },
+    "staging": {
+      "printings": 8,
+      "variants": 8,
+      "names": 16,
+      "sets": 1,
+      "assets": 0,
+      "links": 0,
+      "sources": 0,
+      "rows": 33
+    }
+  },
+  "checks": [
+    {
+      "command": "node mfb8-prepare.mjs",
+      "exact_source_inputs": 8,
+      "exit_code": 0
+    },
+    {
+      "command": "unchanged accepted prepare-local.mjs",
+      "full_originals": 8,
+      "full_derivatives": 24,
+      "sharp": "0.35.5",
+      "pipeline_sha256": "642eb05d57c921901cfa6241e1f0d32a71da602ea3594693b8d63247a05b0bb0",
+      "exit_code": 0
+    },
+    {
+      "command": "python mfb8-freeze-package.py",
+      "full_PIL_images": 32,
+      "exact_archive_members": 36,
+      "exit_code": 0
+    },
+    {
+      "command": "node --test <own publish.test.mjs> <shared publish.test.mjs> <native-name-corrections.test.mjs> <journal.integration.test.mjs>",
+      "passed": 67,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "python tools/artwork-mfb8-fronts-push-20261014/download-package.test.py",
+      "passed": 4,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "python <own downloader> <local package root> --archive <frozen local ZIP>",
+      "all_members": 36,
+      "provider_requests": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "node <own verify-packages.mjs> <local package root>",
+      "full_Sharp_images": 32,
+      "database_requests": 0,
+      "storage_writes": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "strict YAML parse and protected workflow assertions",
+      "exact_main": true,
+      "production_environment": true,
+      "shared_concurrency": true,
+      "pinned_actions": true,
+      "secret_scan_before_artifact_upload": true,
+      "exit_code": 0
+    },
+    {
+      "command": "node scripts/deploy/secret-scan.mjs --directory=<owned tool folder>",
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "command": "node scripts/deploy/secret-scan.mjs --directory=<owned frozen package>",
+      "metadata_files_scanned": 4,
+      "ok": true,
+      "exit_code": 0
+    }
+  ],
+  "implementation_hash_count": 17,
+  "total_owned_tool_files_including_validation": 18,
+  "file_hashes": [
+    {
+      "file": ".gitattributes",
+      "bytes": 54,
+      "sha256": "fb17a974f934f241f38ca5109abdd924cdbf3c0820ac9fb9966603b8f1f26ffd"
+    },
+    {
+      "file": ".gitignore",
+      "bytes": 19,
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793"
+    },
+    {
+      "file": "README.md",
+      "bytes": 3016,
+      "sha256": "db003cfca24b89f424e964c121935b4115774ee9e123a361104fc5dee3af0c7a"
+    },
+    {
+      "file": "approval.json",
+      "bytes": 1951,
+      "sha256": "2366cca53757fcbf3d6f64ed2f8287e14f53dd6cf9a47653d657937f2f0c860d"
+    },
+    {
+      "file": "before-query.sql",
+      "bytes": 4903,
+      "sha256": "654f7d09e4591d87013e394be820256b12296d556ff13551978f9f4418e24f97"
+    },
+    {
+      "file": "download-package.py",
+      "bytes": 5978,
+      "sha256": "d6f01e156bb2ade0c0dc7ed67eed93b748e9c6cda7cf597f8583926be069a493"
+    },
+    {
+      "file": "download-package.test.py",
+      "bytes": 4496,
+      "sha256": "213b1ee9277d94188f3f5308354773e8a69f00c424fd83b8d89831a2a7db4560"
+    },
+    {
+      "file": "freeze-inputs.json",
+      "bytes": 1965,
+      "sha256": "66db51e48b5f7e0ed6b1e3de2e506aeeb52fe56068a0f75976998ea34993976e"
+    },
+    {
+      "file": "freeze-local.mjs",
+      "bytes": 11266,
+      "sha256": "5ade863884fe0efdf6974a0ed7f5ea4f32c3a7836cc4628060c10261d758ace6"
+    },
+    {
+      "file": "frozen.mjs",
+      "bytes": 19235,
+      "sha256": "819072ac6dbaa8af3873ac93aecbaba01aef19dcdaaee7cf3067f89f0673a7ee"
+    },
+    {
+      "file": "identity-table.json",
+      "bytes": 8187,
+      "sha256": "aebb352a8c2bf4eec5fb415743366f07dd8fa41d373c09113a332dfc57e12ab0"
+    },
+    {
+      "file": "metadata-guard.mjs",
+      "bytes": 4032,
+      "sha256": "db92fb8038aecb727f6f7ff02a87ee7e201791ca2ca017f17f7d2ccd04b53fa2"
+    },
+    {
+      "file": "plan.json",
+      "bytes": 143040,
+      "sha256": "1ca4f1f3243629478779473b6ded41d9ef03e0731bb817fa4253406eff0ff362"
+    },
+    {
+      "file": "publish.mjs",
+      "bytes": 6188,
+      "sha256": "eeeb73ce23fc2d5fe5604bb394f03c7dc53398e1594d3788a853838697884690"
+    },
+    {
+      "file": "publish.test.mjs",
+      "bytes": 14197,
+      "sha256": "5f03ec550240fc93260a8ecfcefc3bee501984747444ca0292347270fb33babf"
+    },
+    {
+      "file": "saved-targets.json",
+      "bytes": 3279,
+      "sha256": "7868fb3f60d375903836238e13fc98a573359880f0ed472eaa87ae31fc25f0ab"
+    },
+    {
+      "file": "verify-packages.mjs",
+      "bytes": 1495,
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841"
+    }
+  ],
+  "workflow": {
+    "file": ".github/workflows/artwork-mfb8-fronts-production.yml",
+    "sha256": "1ee77f8236c67a3e228fc7a5bbecf9accf1b5c40d4e07ca8597d307b860295f0",
+    "bytes": 3668
+  },
+  "reused_dependency_hashes": [
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 9031,
+      "sha256": "5524305ba4bd6a0f3867ea2c097c57fb0d610e27ef1d9d64529b64e9c67249de"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/metadata-guard.mjs",
+      "bytes": 4018,
+      "sha256": "cca5354822fe11c007308f7d22ebf84649d2374619e0dd049c7347a9db9e116f"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/publish.mjs",
+      "bytes": 5885,
+      "sha256": "8451746bb6e188f56c5be31064742eaeecdc2f2c6d6e27cb31ab5c7227af6d1f"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "tools/artwork-next-push-20261013/frozen.mjs",
+      "bytes": 7732,
+      "sha256": "3e14eb76a012116492075328c50e6c5907f712004da02d4d3dae541d2617a95b"
+    },
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 30117,
+      "sha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24425,
+      "sha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 15024,
+      "sha256": "1d168e5407a5bdc6e027f58991de58a0664576d7c917d5b219fa13f9af4a1d0a"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/download-package.py",
+      "bytes": 5489,
+      "sha256": "53f1114f25bd995b4f05d9b2d3adad7ae2dadc85b4b13f038a84bcc5e7d6b09f"
+    }
+  ],
+  "existing_dependencies_changed": 0,
+  "production_writes": 0
+}

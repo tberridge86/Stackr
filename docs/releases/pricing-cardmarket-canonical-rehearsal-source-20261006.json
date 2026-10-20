@@ -1,0 +1,194 @@
+{
+  "batch": "20261006-28",
+  "observedAt": "2026-10-06T12:40:29Z",
+  "runtime": {
+    "tcgcsv": {
+      "scope": "deployment",
+      "deploymentId": "665d6c43-3fbc-4d47-8270-82acce36dc2e",
+      "serviceId": "a2e61d08-1910-4762-bf82-e0473e86ad5f",
+      "environmentId": "b4304736-cac8-4ca9-92a7-93f7f6499c2f",
+      "status": "CRASHED",
+      "deploy": [
+        {
+          "timestamp": "2026-10-06T12:18:19.773153148Z",
+          "severity": "info",
+          "message": "Starting Container",
+          "attributes": [
+            {
+              "key": "level",
+              "value": "\"info\""
+            }
+          ]
+        },
+        {
+          "timestamp": "2026-10-06T12:19:07.308420888Z",
+          "severity": "info",
+          "message": "",
+          "attributes": [
+            {
+              "key": "level",
+              "value": "\"info\""
+            },
+            {
+              "key": "event",
+              "value": "\"catalogue_price_cron_finished\""
+            },
+            {
+              "key": "exitCode",
+              "value": "1"
+            },
+            {
+              "key": "signal",
+              "value": "null"
+            },
+            {
+              "key": "elapsedMs",
+              "value": "48065"
+            }
+          ]
+        },
+        {
+          "timestamp": "2026-10-06T12:19:07.308443230Z",
+          "severity": "error",
+          "message": "canceling statement due to statement timeout",
+          "attributes": [
+            {
+              "key": "level",
+              "value": "\"error\""
+            },
+            {
+              "key": "event",
+              "value": "\"catalogue_bulk_price_failed\""
+            },
+            {
+              "key": "rpc",
+              "value": "\"begin_catalogue_bulk_sweep\""
+            }
+          ]
+        }
+      ]
+    },
+    "cardmarket": {
+      "scope": "deployment",
+      "deploymentId": "b2979d6d-f02d-4391-810e-b9161c3d5145",
+      "serviceId": "1c4cf45c-816d-46cc-a416-78d8c18bd779",
+      "environmentId": "b4304736-cac8-4ca9-92a7-93f7f6499c2f",
+      "status": "CRASHED",
+      "deploy": [
+        {
+          "timestamp": "2026-10-06T12:22:31.716280257Z",
+          "severity": "info",
+          "message": "Mounting volume on: /var/lib/containers/railwayapp/bind-mounts/4730493c-f9da-4e40-9b47-f653de593a85/vol_n6krkn4y683r3r8g",
+          "attributes": [
+            {
+              "key": "level",
+              "value": "\"info\""
+            }
+          ]
+        },
+        {
+          "timestamp": "2026-10-06T12:22:32.728241241Z",
+          "severity": "info",
+          "message": "Starting Container",
+          "attributes": [
+            {
+              "key": "level",
+              "value": "\"info\""
+            }
+          ]
+        },
+        {
+          "timestamp": "2026-10-06T12:23:18.390804443Z",
+          "severity": "error",
+          "message": "TimeoutError: The operation was aborted due to timeout",
+          "attributes": [
+            {
+              "key": "level",
+              "value": "\"error\""
+            }
+          ]
+        }
+      ]
+    },
+    "meaning": "Existing production incident persists; TCGCSV now fails begin_catalogue_bulk_sweep, not read_catalogue_bulk_feed. Cardmarket log still lacks RPC name."
+  },
+  "provider": {
+    "tcgcsvPublicAt": "2026-10-05T20:05:57+0000",
+    "datasetAdvanced": false,
+    "actualWorkerProcessedRevision": "not established by this failed run"
+  },
+  "canonicalIntegration": {
+    "workflow": ".github/workflows/deploy-staging.yml",
+    "scope": "cardmarket_ledger_rehearsal",
+    "sourceImplemented": true,
+    "merged": false,
+    "remoteDispatched": false,
+    "installed": false,
+    "sharesProtectedStagingBackupAndConcurrency": true,
+    "englishScopeUnchangedInFunctionSelection": true,
+    "singleAllowlistedFunction": "api.list_reviewed_cardmarket_printing_mappings(bigint,integer)",
+    "readCanary": "Two 100-row ordered native ledger pages; anon/auth denial, invalid/null cap rejection, strict cursor/category/evidence/review validation and complete source response parity",
+    "full9234LedgerRuntimeProof": false,
+    "baseline": "Immutable 200-entry staging ledger inventory from prior canonical baseline; current complete fingerprint verified only at execution",
+    "alwaysRollback": true,
+    "migrationRegistryWrite": false,
+    "productionRejected": true,
+    "unsafeSourceAndDriftRejected": true,
+    "statementDeadlineSeconds": 8,
+    "attestation": "non-secret signature/hashes/page-count/restoration; no ledger data uploaded"
+  },
+  "candidate": {
+    "path": "docs/releases/pricing-cardmarket-ledger-candidate-20261006.sql",
+    "predecessorDefinitionMd5": "8a23b5ed8bfb28bfc3bc38650f973f89",
+    "candidateDefinitionMd5": "0b412ef55657e19e5bd606a387fcdbaf",
+    "sourceLfSha256": "6ea53be5d373faea6db7a4fff3445b497f952919f3d3b7fdf745865ff5b39ff0",
+    "scopeSourcePinned": true
+  },
+  "stagingAt": "2026-10-06T12:38:37.422005Z",
+  "stagingPredecessorConfirmed": true,
+  "stagingAccess": {
+    "anon": false,
+    "authenticated": false,
+    "service": true
+  },
+  "validation": {
+    "cardmarketLocalControls": 18,
+    "englishGuardControls": 20,
+    "atomicRollbackAndRegistryControls": "pass",
+    "unknownFunctionRejected": true,
+    "injectedCardmarketFailureRestoresOriginal": true,
+    "workflowScopeSafety": "pass",
+    "deploymentTooling": "Stage13 tests pass",
+    "nodeSyntax": "pass",
+    "diffCheck": "pass",
+    "liveCandidateControls": "not run"
+  },
+  "coverage": {
+    "lastComplete": "2026-10-06T03:34:45.990Z",
+    "positiveHistorical": 38371,
+    "denominator": 76030,
+    "fullPhysical": 76269,
+    "excludedKorean": 239,
+    "currentComplete": "unknown",
+    "projection": "unknown",
+    "ownerDevice": "unknown",
+    "partialCheckpoint": "unchanged",
+    "netPositiveGain": "not measured"
+  },
+  "actions": {
+    "schemaCatalogueOrPriceMappingWrite": false,
+    "remoteJobTrigger": false,
+    "deployment": false,
+    "cacheRestartClear": false,
+    "deadlineIncreased": false,
+    "paidActivation": false,
+    "nativeOtaBuild": false,
+    "outsideMessages": false
+  },
+  "next": [
+    "Review PR315 exact canonical scope integration; after main merge and protected release acceptance use cardmarket_ledger_rehearsal with rollback-only flags, verified backups and exact current source/ledger/predecessor gates.",
+    "Do not bundle English/Cardmarket replacements; each dispatch selects only its own allowlisted source. Successful rehearsal still does not persist or prove full ledger runtime.",
+    "Prepare persistent forward migration/rollback and full installed native/access/ledger/runtime verification only after successful canonical rehearsal and protected review.",
+    "Investigate begin_catalogue_bulk_sweep separately with bounded evidence; do not infer Cardmarket query repair addresses it. Do not repeat broad diagnostics or increase timeouts."
+  ]
+}

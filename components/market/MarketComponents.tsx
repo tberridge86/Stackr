@@ -1,7 +1,8 @@
+import { StackrFunctionalIcon } from '../StackrFunctionalIcon';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from '../StackrLoadingIndicator';
 import {
-  ActivityIndicator,
   Image,
   type ImageSourcePropType,
   TextInput,
@@ -248,7 +249,7 @@ function MarketQuickLink({
       }}
     >
       {imageIcon ? (
-        <Image
+        <StackrFunctionalIcon
           source={imageIcon}
           resizeMode="contain"
           style={{ width: 18, height: 18, flexShrink: 0 }}
@@ -339,7 +340,7 @@ export function MarketModeSelector({
               borderColor: active ? theme.colors.border : 'transparent',
             }}
           >
-            <Image
+            <StackrFunctionalIcon
               source={mode === 'buy' ? stackrIcons.sellCard : stackrIcons.trade}
               resizeMode="contain"
               style={{
@@ -633,7 +634,7 @@ function ListingMetaPill({
       }}
     >
       {imageIcon ? (
-        <Image
+        <StackrFunctionalIcon
           source={imageIcon}
           resizeMode="contain"
           style={{ width: 14, height: 14, flexShrink: 0 }}
@@ -851,7 +852,7 @@ function FavoriteButton({
           justifyContent: 'center',
         }}
       >
-        <Image
+        <StackrFunctionalIcon
           source={stackrIcons.favorite}
           resizeMode="contain"
           style={{
@@ -1132,36 +1133,7 @@ export function MarketEmptyState({
 
 export function MarketSkeleton() {
   const { theme } = useTheme();
-  return (
-    <View style={{ gap: 11 }}>
-      {[0, 1, 2, 3].map((item) => (
-        <View
-          key={item}
-          style={{
-            borderRadius: 16,
-            borderWidth: 1,
-            borderColor: theme.colors.border,
-            backgroundColor: theme.colors.card,
-            padding: 11,
-            flexDirection: 'row',
-            gap: 12,
-          }}
-        >
-          <View style={{ width: 82, height: 114, borderRadius: 10, backgroundColor: theme.colors.surface }} />
-          <View style={{ flex: 1, gap: 8, paddingTop: 3 }}>
-            <View style={{ width: '78%', height: 15, borderRadius: 8, backgroundColor: theme.colors.surface }} />
-            <View style={{ width: '55%', height: 12, borderRadius: 8, backgroundColor: theme.colors.surface }} />
-            <View style={{ flexDirection: 'row', gap: 6 }}>
-              <View style={{ width: 58, height: 22, borderRadius: 11, backgroundColor: theme.colors.surface }} />
-              <View style={{ width: 72, height: 22, borderRadius: 11, backgroundColor: theme.colors.surface }} />
-            </View>
-            <View style={{ width: '38%', height: 20, borderRadius: 9, backgroundColor: theme.colors.surface, marginTop: 4 }} />
-            <View style={{ width: '66%', height: 11, borderRadius: 8, backgroundColor: theme.colors.surface }} />
-          </View>
-        </View>
-      ))}
-    </View>
-  );
+  return <View style={{ paddingVertical: 32, alignItems: 'center' }}><ActivityIndicator color={theme.colors.primary} accessibilityLabel="Loading market" /></View>;
 }
 
 export function StickyMarketActions({

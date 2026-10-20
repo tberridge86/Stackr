@@ -1,0 +1,7 @@
+# Exact93 Leaders Stadium artwork
+
+Exactly93 approved Japanese PMCG5 fronts:65Pokemon28Trainer,79normal14holo.019081096 remain held. Two Oddish and two Vulpix source pages cross their canonical aliases; literal URL/hash plus accepted full-body/art evidence binds each target. Accepted020Moltres is Basic with no coin clause;051Primeape mandatory remaining10HP trigger is disabled while Asleep/Paralyzed/Confused. Current canonical labels/variants remain unchanged.
+
+Original provided PNG bytes, including thumbnail/JPEG/ImageMagick processing history, stay unchanged. Three standard WebP derivatives per front use the pinned Sharp pipeline without enlargement.0HD, no optical native-resolution gain or provider-no-resize claim. Private TCGdex full JSON and PNG filesystem metadata remain outside public JSON; photo provenance is Pokellector. All raw/identity/accepted/public hash contracts and per-row partial peer coverage remain distinct. Source review covered55new direct views+1reused pilot and39record-only within95; no all-direct claim.
+
+Both full17-field existing sources remain inactive/under_review. PostgreSQL JSON reads preserve timestamp microseconds in snapshot and resolver. No new production source; staging Poke fixture rolls back. Protected exact-main manual workflow, shared concurrency, immutable archive, full old metadata/artwork preservation, failure journals and guarded rollback apply. Root owns live execution/API proof.

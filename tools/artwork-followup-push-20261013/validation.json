@@ -1,0 +1,119 @@
+{
+  "checked_at": "2026-10-13T19:38:45.873Z",
+  "status": "local_validation_passed_not_published",
+  "cohort_sha256": "1cf5f02c64dcdda97e5e3fffbaf053e467d3fed554d416750f854cf6acea5e81",
+  "approval_sha256": "8775125627e8e5bcaac94fc5b06e950a10e5eeaac87b3f09eb3e86d6fa7922c8",
+  "archive": {
+    "id": 638042830,
+    "bytes": 53091723,
+    "sha256": "af5cd84113f391caffa0383aab60163820cbc06c56d7bad02f4cadfca015dcaa",
+    "exact_members": 231
+  },
+  "checks": [
+    {
+      "command": "node --test tools/artwork-followup-push-20261013/publish.test.mjs tools/artwork-next-push-20261013/publish.test.mjs tools/artwork3303-publish-20260928/publish.test.mjs tools/artwork-vs1-native97-20261012/publish.test.mjs",
+      "passed": 62,
+      "failed": 0,
+      "new_followup_tests": 11,
+      "exit_code": 0
+    },
+    {
+      "command": "python tools/artwork-followup-push-20261013/download-package.test.py",
+      "passed": 2,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "python tools/artwork-followup-push-20261013/download-package.py <private-local-packages> --archive <frozen-local-zip>",
+      "status": "verified_and_extracted",
+      "exact_members": 231,
+      "exit_code": 0
+    },
+    {
+      "command": "node tools/artwork-followup-push-20261013/verify-packages.mjs <private-local-packages>",
+      "status": "all_frozen_files_fully_decoded",
+      "fronts": 57,
+      "derivatives": 171,
+      "files": 228,
+      "exit_code": 0
+    }
+  ],
+  "database_requests": 0,
+  "provider_requests": 0,
+  "storage_writes": 0,
+  "published": false,
+  "independent_review": "pending_coordinator",
+  "raw_private_snapshots_included": false,
+  "file_hashes": [
+    {
+      "file": ".gitattributes",
+      "bytes": 54,
+      "sha256": "5a4ffa8f62276e5e43264106e04022e901f0c4c5d4818000f800366bb43f2f30"
+    },
+    {
+      "file": ".gitignore",
+      "bytes": 19,
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793"
+    },
+    {
+      "file": "README.md",
+      "bytes": 5302,
+      "sha256": "40154bfbe825a8593faf65ba98211631316117760ffaa2e95f5c81dd0fdac319"
+    },
+    {
+      "file": "approval.json",
+      "bytes": 1321,
+      "sha256": "8775125627e8e5bcaac94fc5b06e950a10e5eeaac87b3f09eb3e86d6fa7922c8"
+    },
+    {
+      "file": "before-query.sql",
+      "bytes": 4240,
+      "sha256": "fd209ae1ae03f84136fc2353cbc69102bd9ad98981204577c4c5556936e0b64e"
+    },
+    {
+      "file": "download-package.py",
+      "bytes": 5267,
+      "sha256": "ec8fbdac3bb38147992b0f528bf6b91b1afec23f21a88cb46f670c38013a90f3"
+    },
+    {
+      "file": "download-package.test.py",
+      "bytes": 1799,
+      "sha256": "57a92232ba48f956e4588d32c80a06bb60019624e69d66058f164685737fb619"
+    },
+    {
+      "file": "freeze-local.mjs",
+      "bytes": 8308,
+      "sha256": "941f837740414b29b9548f2552b62c5c9201a678e735e3e1deaf37a887170a32"
+    },
+    {
+      "file": "frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "plan.json",
+      "bytes": 337473,
+      "sha256": "1cf5f02c64dcdda97e5e3fffbaf053e467d3fed554d416750f854cf6acea5e81"
+    },
+    {
+      "file": "publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "publish.test.mjs",
+      "bytes": 14542,
+      "sha256": "c57d2d2ea14f5b81a598a1085374893351385e0b0d828ac1d1de783c695ade54"
+    },
+    {
+      "file": "verify-packages.mjs",
+      "bytes": 1368,
+      "sha256": "15c093d78c806d03f5dbfd779652c096de85aff2e5ebe3a5fd91eb6c6a1a4b6f"
+    }
+  ]
+}

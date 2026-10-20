@@ -1,10 +1,11 @@
 import { useTheme } from '../../components/theme-context';
 import { Text } from '../../components/Text';
+import { StackrImage } from '../../components/StackrImage';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import {
-  ActivityIndicator,
   Alert,
   FlatList,
   Image,
@@ -18,6 +19,10 @@ import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../components/Rarit
 import {
   fetchCardsForPokemon,
   fetchOwnedPokedexCards,
+  hydratePokedexCardArtwork,
+  PokedexCardsProgress,
+  type PokedexReadDiagnostic,
+  type PokedexOwnershipReadOptions,
   formatPokedexName,
   PokedexCard,
   setPokedexCardOwned,
@@ -25,10 +30,14 @@ import {
 import { getDisplaySetName } from '../../lib/setDisplay';
 import { stackrCardImageSizes } from '../../lib/stackrSizing';
 import { stackrHaptics } from '../../lib/haptics';
-import { supabase } from '../../lib/supabase';
-import { createAccountLoadGeneration } from '../../lib/accountLoadGeneration';
+import { usePokedexOwnership } from '../../lib/pokedexOwnershipState';
 import { useCardInspection } from '../../components/CardInspectionProvider';
 import { CARD_INSPECTION_LONG_PRESS_MS } from '../../lib/cardInspection';
+import { useCataloguePriceOverlay } from '../../lib/useCataloguePriceOverlay';
+import type { CataloguePriceDisplay } from '../../lib/cataloguePrices';
+import { readOptionalCatalogueEnrichment } from '../../lib/optionalCatalogueEnrichment';
+import { beginPokedexRetrieval, startPokedexRetrieval } from '../../lib/performance';
+import { useAuth } from '../../components/auth-context';
 
 type PokemonData = {
   id: number;
@@ -53,8 +62,18 @@ const getPokemonSpriteUrl = (id: number) =>
   `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
 
 const makeOwnedKey = (card: Pick<PokedexCard, 'id' | 'set_id'>) => `${card.set_id ?? ''}:${card.id}`;
+const readOwnedKeys = async (accountId: string, options: PokedexOwnershipReadOptions) => new Set((await fetchOwnedPokedexCards(accountId, options)).keys());
 
 const getParamValue = (value?: string | string[]) => Array.isArray(value) ? value[0] : value;
+type PokedexTrace = ReturnType<typeof beginPokedexRetrieval>;
+function observePokedexRead(trace: PokedexTrace | null, event: PokedexReadDiagnostic) {
+  if (!trace?.current()) return;
+  if (event.source === 'canonical-facts') {
+    trace.source('network');
+    if (event.phase === 'complete') trace.phase('network-complete');
+  } else if (event.phase === 'failed') trace.fail(event.source);
+  else trace.phase(event.source === 'artwork' ? 'artwork-read-complete' : 'price-read-complete');
+}
 
 const formatMoney = (value: number | null | undefined) =>
   typeof value === 'number' && Number.isFinite(value)
@@ -75,9 +94,14 @@ export default function PokemonDetailScreen() {
   const { theme } = useTheme();
   const { inspectCard } = useCardInspection();
   const styles = React.useMemo(() => makeStyles(theme), [theme]);
-  const params = useLocalSearchParams<{ id: string; name?: string }>();
+  const params = useLocalSearchParams<{ id: string; name?: string; speciesId?: string; speciesName?: string }>();
   const id = getParamValue(params.id);
   const routeName = getParamValue(params.name);
+  const speciesName = getParamValue(params.speciesName);
+  const rawSpeciesId = Number(getParamValue(params.speciesId));
+  const speciesId = Number.isSafeInteger(rawSpeciesId) && rawSpeciesId > 0 ? rawSpeciesId : null;
+  const routeKey = JSON.stringify([id, routeName, speciesName]);
+  const auth = useAuth();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const columns = width >= 900 ? 5 : width >= 620 ? 4 : 2;
@@ -85,50 +109,99 @@ export default function PokemonDetailScreen() {
 
   const [pokemon, setPokemon] = useState<PokemonData | null>(null);
   const [cards, setCards] = useState<PokedexCard[]>([]);
-  const [ownedKeys, setOwnedKeys] = useState<Set<string>>(new Set());
+  const ownership = usePokedexOwnership(readOwnedKeys);
+  const ownedKeys = ownership.values;
   const [filter, setFilter] = useState<FilterKey>('all');
   const [loading, setLoading] = useState(true);
   const [cardsLoading, setCardsLoading] = useState(true);
   const [cardsError, setCardsError] = useState<string | null>(null);
+  const [collectionComplete, setCollectionComplete] = useState(false);
   const [retryEpoch, setRetryEpoch] = useState(0);
-  const [ownershipLoading, setOwnershipLoading] = useState(false);
-  const [busyCardId, setBusyCardId] = useState<string | null>(null);
-  const [failedImageUrls, setFailedImageUrls] = useState<Set<string>>(new Set());
+  const retrievalRef = useRef<{ routeKey: string; trace: PokedexTrace } | null>(null);
+  const publishedRef = useRef<{ cards: PokedexCard[]; trace: PokedexTrace } | null>(null);
+  const committedRef = useRef<{ rows: Set<PokedexCard>; trace: PokedexTrace } | null>(null);
+  // Invalidate before effects, so old native callbacks cannot be attributed to a new route.
+  if (retrievalRef.current && retrievalRef.current.routeKey !== routeKey) {
+    retrievalRef.current.trace.cancel();
+    retrievalRef.current = null; publishedRef.current = null; committedRef.current = null;
+  }
+  const retryCards = useCallback(() => {
+    retrievalRef.current?.trace.cancel();
+    startPokedexRetrieval(routeKey, 'retry');
+    setRetryEpoch((current) => current + 1);
+  }, [routeKey]);
+  useFocusEffect(useCallback(() => () => {
+    retrievalRef.current?.trace.cancel();
+    committedRef.current = null;
+  }, []));
   const longPressedCardId = useRef<string | null>(null);
-  const ownershipLoadGeneration = useRef(createAccountLoadGeneration()).current;
+  const mergeArtwork = useCallback((hydrated: PokedexCard[], trace?: PokedexTrace) => {
+    if (!hydrated.length) return;
+    const byId = new Map(hydrated.map((card) => [card.id, card]));
+    setCards((current) => {
+      const next = current.map((card) => {
+        const image = byId.get(card.id);
+        return image ? {
+          ...card,
+          image_small: image.image_small,
+          image_large: image.image_large,
+          image_urls: image.image_urls,
+        } : card;
+      });
+      if (trace?.current() && publishedRef.current?.trace === trace && publishedRef.current.cards === current) {
+        publishedRef.current = { cards: next, trace };
+      }
+      return next;
+    });
+  }, []);
 
-  const loadOwnership = useCallback(async () => {
-    const isCurrentLoad = ownershipLoadGeneration.begin();
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError) throw userError;
-    if (!isCurrentLoad()) return;
-    const requestedUserId = user?.id ?? null;
-    const owned = await fetchOwnedPokedexCards();
-    const { data: { user: currentUser }, error: currentUserError } = await supabase.auth.getUser();
-    if (currentUserError) throw currentUserError;
-    if (!isCurrentLoad() || currentUser?.id !== requestedUserId) return;
-    setOwnedKeys(new Set(Array.from(owned.keys())));
-  }, [ownershipLoadGeneration]);
+  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: { item: PokedexCard | null }[] }) => {
+    const visible = viewableItems
+      .map(({ item }) => item)
+      .filter((item): item is PokedexCard => Boolean(item))
+      .slice(0, 100);
+    if (!visible.length) return;
+    const committed = committedRef.current;
+    if (committed?.trace.current() && visible.some((card) => committed.rows.has(card))) committed.trace.phase('visible-rows');
+    void hydratePokedexCardArtwork(visible, (event) => observePokedexRead(committed?.trace ?? null, event))
+      .then((hydrated) => mergeArtwork(hydrated, committed?.trace)).catch(() => {});
+  }).current;
 
   useEffect(() => {
     let active = true;
+    const metadataController = new AbortController();
+    retrievalRef.current?.trace.cancel();
+    const trace = beginPokedexRetrieval(routeKey);
+    retrievalRef.current = { routeKey, trace };
+    const onDiagnostic = (event: PokedexReadDiagnostic) => observePokedexRead(trace, event);
 
-    const applyCanonicalCards = (nextCards: PokedexCard[]) => {
-      if (!active || !nextCards.length) return;
-      setCards(nextCards);
+    const applyCards = (progress: PokedexCardsProgress) => {
+      if (!active) return;
+      trace.facts(progress.cards.length, null, progress.complete);
+      if (progress.error) trace.fail('facts');
+      setCards((current) => {
+        const existing = new Map(current.map((card) => [card.id, card]));
+        const next = progress.cards.map((card) => {
+          const prior = existing.get(card.id);
+          return prior && !card.image_small && !card.image_large && (prior.image_small || prior.image_large)
+            ? { ...card, image_small: prior.image_small, image_large: prior.image_large, image_urls: prior.image_urls }
+            : card;
+        });
+        if (trace.current()) publishedRef.current = { cards: next, trace };
+        return next;
+      });
+      setCollectionComplete(progress.complete);
       setCardsLoading(false);
-      setCardsError(null);
+      setCardsError(progress.error?.message ?? null);
     };
 
     const load = async () => {
       setCardsLoading(true);
       setCardsError(null);
-
-      // The Pokédex grid already knows the species identity. Paint that route
-      // identity immediately and start Stackr card retrieval without waiting
-      // for the separate PokeAPI metadata request.
-      const routePokemon: PokemonData | null = routeName
-        ? { id: Number(id) || 0, name: routeName, types: [] }
+      setCollectionComplete(false);
+      const knownRouteName = routeName ?? speciesName;
+      const routePokemon: PokemonData | null = knownRouteName
+        ? { id: Number(id) || 0, name: knownRouteName, types: [] }
         : null;
       if (routePokemon && active) {
         setPokemon(routePokemon);
@@ -137,54 +210,44 @@ export default function PokemonDetailScreen() {
         setLoading(true);
       }
 
-      const routeCardsPromise = routePokemon
-        ? fetchCardsForPokemon(routePokemon.name, { onCanonicalCards: applyCanonicalCards })
-        : null;
+      // Display metadata is optional when the route already supplies the exact
+      // species name. Bound the entire response/body read even if abort is ignored.
+      const metadata = readOptionalCatalogueEnrichment(async (signal) => {
+        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`, { signal });
+        if (!response.ok) throw new Error(`PokeAPI returned ${response.status}`);
+        return await response.json() as PokemonData;
+      }, metadataController.signal).catch(() => null);
 
       try {
-        let nextPokemon: PokemonData | null = routePokemon;
-
-        try {
-          const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
-          if (!response.ok) throw new Error(`PokeAPI returned ${response.status}`);
-          const json = await response.json();
-          nextPokemon = json as PokemonData;
-          if (active) {
-            setPokemon(nextPokemon);
-            setLoading(false);
-          }
-        } catch (pokemonError) {
-          console.log('Pokedex Pokemon metadata lookup failed', {
-            id,
-            routeName,
-            error: pokemonError instanceof Error ? pokemonError.message : String(pokemonError),
-          });
-        }
-
+        const nextPokemon = routePokemon ?? await metadata;
         if (!nextPokemon) throw new Error('Pokemon metadata was unavailable.');
         if (!active) return;
-
-        const sameRouteSpecies = routePokemon
-          && formatPokedexName(routePokemon.name) === formatPokedexName(nextPokemon.name);
-        const pokemonCards = sameRouteSpecies && routeCardsPromise
-          ? await routeCardsPromise
-          : await fetchCardsForPokemon(nextPokemon.name, { onCanonicalCards: applyCanonicalCards });
-
+        if (!routePokemon) {
+          setPokemon(nextPokemon);
+          setLoading(false);
+        } else {
+          void metadata.then((details) => {
+            if (active && details) setPokemon(details);
+          });
+        }
+        // A list selection carries a National Dex species separately from the
+        // exact provider route used for PokeAPI metadata and artwork. Direct
+        // legacy/form routes have no species parameter, so retain their exact
+        // route name for card retrieval.
+        const cardSpeciesName = speciesName ?? routeName ?? nextPokemon.name;
+        const pokemonCards = await fetchCardsForPokemon(cardSpeciesName, { onProgress: applyCards, onDiagnostic });
         if (!active) return;
-        setCards(pokemonCards);
-        setCardsLoading(false);
-        setCardsError(null);
+        applyCards(pokemonCards);
+        trace.settle(pokemonCards.cards.length > 0);
         console.log('Pokedex cards loaded', {
-          pokemon: nextPokemon.name,
-          count: pokemonCards.length,
-        });
-
-        loadOwnership().catch((ownershipError) => {
-          console.log('Failed to load Pokemon ownership after cards', ownershipError);
+          pokemon: cardSpeciesName,
+          count: pokemonCards.cards.length,
+          complete: pokemonCards.complete,
         });
       } catch (error) {
         console.log('Failed to load Pokemon collection page', error);
         if (active) {
+          trace.fail('facts'); trace.settle();
           setCardsLoading(false);
           setCardsError('Cards could not be loaded. Check your connection and retry.');
         }
@@ -197,84 +260,72 @@ export default function PokemonDetailScreen() {
 
     return () => {
       active = false;
-      ownershipLoadGeneration.invalidate();
+      metadataController.abort();
+      trace.cancel();
     };
-  }, [id, loadOwnership, ownershipLoadGeneration, retryEpoch, routeName]);
+  }, [id, retryEpoch, routeKey, routeName, speciesName]);
 
-  useFocusEffect(
-    useCallback(() => {
-      let active = true;
-
-      setOwnershipLoading(true);
-      loadOwnership()
-        .catch((error) => {
-          console.log('Failed to refresh Pokemon ownership', error);
-        })
-        .finally(() => {
-          if (active) setOwnershipLoading(false);
-        });
-
-      return () => {
-        active = false;
-        ownershipLoadGeneration.invalidate();
-      };
-    }, [loadOwnership, ownershipLoadGeneration])
-  );
+  useEffect(() => {
+    const trace = retrievalRef.current?.trace;
+    if (!auth.loading && !auth.error) trace?.phase('auth-ready');
+    if (ownership.status === 'success') trace?.phase('ownership-ready');
+    if (ownership.status === 'error') trace?.fail('ownership');
+  }, [auth.loading, auth.error, ownership.status, retryEpoch, routeKey]);
 
   const ownedCount = useMemo(
-    () => cards.filter((card) => ownedKeys.has(makeOwnedKey(card))).length,
+    () => ownedKeys ? cards.filter((card) => ownedKeys.has(makeOwnedKey(card))).length : null,
     [cards, ownedKeys]
   );
   const totalCount = cards.length;
-  const progress = totalCount ? ownedCount / totalCount : 0;
+  const progress = totalCount && ownedCount !== null ? ownedCount / totalCount : 0;
+  const renderedTrace = publishedRef.current?.cards === cards ? publishedRef.current.trace : null;
+  const pricedCards = useCataloguePriceOverlay(cards, {
+    onReadDiagnostic: (phase) => observePokedexRead(renderedTrace, { source: 'prices', phase }),
+  });
 
   const filteredCards = useMemo(() => {
-    return cards.filter((card) => {
+    return pricedCards.filter((card) => {
+      if (!ownedKeys) return true;
       const owned = ownedKeys.has(makeOwnedKey(card));
       if (filter === 'owned') return owned;
       if (filter === 'missing') return !owned;
       return true;
     });
-  }, [cards, filter, ownedKeys]);
+  }, [pricedCards, filter, ownedKeys]);
+
+  useEffect(() => {
+    if (!renderedTrace?.current()) return;
+    if (cards.length) renderedTrace.phase('facts-committed');
+    committedRef.current = { rows: new Set(filteredCards), trace: renderedTrace };
+  }, [cards, filteredCards, renderedTrace]);
 
   const toggleCardOwned = useCallback(
     async (card: PokedexCard) => {
       const key = makeOwnedKey(card);
+      if (!ownedKeys || !ownership.canMutate) return;
       const nextOwned = !ownedKeys.has(key);
 
-      setBusyCardId(card.id);
-      setOwnedKeys((prev) => {
-        const next = new Set(prev);
-        if (nextOwned) next.add(key);
-        else next.delete(key);
-        return next;
-      });
-
-      try {
-        await setPokedexCardOwned(card, nextOwned);
-        await loadOwnership();
-      } catch (error: any) {
-        setOwnedKeys((prev) => {
-          const next = new Set(prev);
-          if (nextOwned) next.delete(key);
-          else next.add(key);
-          return next;
-        });
-        console.log('Failed to update Pokedex card ownership', error);
-        Alert.alert('Could not update card', error?.message ?? 'Please try again.');
-      } finally {
-        setBusyCardId(null);
-      }
+      const failure = await ownership.changeOwnership(key, nextOwned, (expectedAccountId, isCurrentAccount) => (
+        setPokedexCardOwned(card, nextOwned, { expectedAccountId, isCurrentAccount })
+      ));
+      if (!failure?.isCurrent()) return;
+      console.log('Failed to update Pokedex card ownership', failure.error);
+      const error = failure.error as { message?: string } | null;
+      Alert.alert('Could not update card', error?.message ?? 'Please try again.');
     },
-    [loadOwnership, ownedKeys]
+    [ownedKeys, ownership]
   );
 
   const renderFilter = (key: FilterKey, label: string) => {
     const active = filter === key;
+    const disabled = key !== 'all' && !ownedKeys;
 
     return (
       <Pressable
         onPress={() => setFilter(key)}
+        disabled={disabled}
+        accessibilityRole="button"
+        accessibilityState={{ disabled, selected: active }}
         style={[styles.filterChip, active && styles.filterChipActive]}
       >
         <Text style={[styles.filterText, active && styles.filterTextActive]}>{label}</Text>
@@ -282,16 +333,17 @@ export default function PokemonDetailScreen() {
     );
   };
 
-  const renderCard = ({ item }: { item: PokedexCard }) => {
-    const owned = ownedKeys.has(makeOwnedKey(item));
+  const renderCard = ({ item }: { item: PokedexCard & { runtimeCataloguePricing?: CataloguePriceDisplay } }) => {
+    const owned = ownedKeys?.has(makeOwnedKey(item)) ?? false;
     const setName = getDisplaySetName({
       setId: item.set_id,
       setName: item.set_name,
       rawData: item.raw_data,
     });
-    const imageUrl = (item.image_urls ?? [item.image_large, item.image_small])
-      .filter((url): url is string => Boolean(url))
-      .find((url) => !failedImageUrls.has(`${item.id}:${url}`));
+    const imageCandidates = (item.image_urls ?? [item.image_small, item.image_large])
+      .filter((url): url is string => Boolean(url));
+    const imageUrl = imageCandidates[0] ?? null;
+    const fullImageUrl = item.image_large ?? imageCandidates.at(-1) ?? imageUrl;
     const catalogueInspection = getCatalogueInspectionImage(item);
     const openDetails = () => router.push({ pathname: '/card/[id]', params: { id: item.id, setId: item.set_id ?? undefined } });
 
@@ -317,10 +369,11 @@ export default function PokemonDetailScreen() {
             return;
           }
           void stackrHaptics.selection();
+          if (!ownership.canMutate) { openDetails(); return; }
           toggleCardOwned(item);
         }}
         accessibilityRole="button"
-        accessibilityLabel={`${item.name}. Tap to change ownership. ${catalogueInspection ? 'Hold to inspect.' : 'Hold for details.'}`}
+        accessibilityLabel={`${item.name}. ${ownership.canMutate ? 'Tap to change ownership.' : 'Tap for details. Ownership changes unavailable.'} ${catalogueInspection ? 'Hold to inspect.' : 'Hold for details.'}`}
         accessibilityActions={catalogueInspection ? [{ name: 'inspect', label: 'Inspect card' }] : undefined}
         onAccessibilityAction={(event) => {
           if (event.nativeEvent.actionName !== 'inspect') return;
@@ -336,28 +389,26 @@ export default function PokemonDetailScreen() {
       >
         <View style={styles.cardImageWrap}>
           {imageUrl ? (
-            <Image
-              source={{ uri: imageUrl }}
+            <StackrImage
+              uri={imageUrl}
+              fullUri={fullImageUrl}
               style={styles.cardImage}
-              resizeMode="contain"
-              onError={() => {
-                setFailedImageUrls((prev) => {
-                  const next = new Set(prev);
-                  next.add(`${item.id}:${imageUrl}`);
-                  return next;
-                });
-              }}
+              contentFit="contain"
+              uriCandidates={imageCandidates}
+              cacheKey={`pokedex:${item.canonical_card?.cardId ?? item.raw_data?.stackr?.cardId ?? item.id}:${item.set_id ?? ''}:${item.number ?? ''}`}
+              accessibilityLabel={`${item.name} card image`}
+              onDiagnostic={renderedTrace?.image}
             />
           ) : (
             <Ionicons name="image-outline" size={34} color={theme.colors.textSoft} />
           )}
 
           <View style={[styles.ownedBadge, owned ? styles.ownedBadgeOn : styles.ownedBadgeOff]}>
-            {busyCardId === item.id ? (
+            {ownership.busyKey === makeOwnedKey(item) ? (
               <ActivityIndicator size="small" color={owned ? '#FFFFFF' : theme.colors.primary} />
             ) : (
               <Ionicons
-                name={owned ? 'checkmark' : 'add'}
+                name={owned ? 'checkmark' : ownership.canMutate ? 'add' : 'help-outline'}
                 size={14}
                 color={owned ? '#FFFFFF' : theme.colors.primary}
               />
@@ -372,7 +423,18 @@ export default function PokemonDetailScreen() {
 
         <Text numberOfLines={2} style={styles.cardName}>{item.name}</Text>
         <Text numberOfLines={1} style={styles.cardMeta}>{setName}</Text>
-        <Text numberOfLines={1} style={styles.cardValue}>{formatMoney(item.estimated_value)}</Text>
+        <Text numberOfLines={1} style={styles.cardValue}>
+          {item.runtimeCataloguePricing?.displayPrice != null
+            ? formatMoney(item.runtimeCataloguePricing.displayPrice)
+            : item.runtimeCataloguePricing?.pricingStatus === 'unavailable'
+              ? 'General price unavailable'
+              : formatMoney(item.estimated_value)}
+        </Text>
+        {item.runtimeCataloguePricing ? (
+          <Text numberOfLines={1} style={styles.cardMeta}>
+            {item.runtimeCataloguePricing.sourceLabel}{item.runtimeCataloguePricing.updatedAt ? ` · ${new Date(item.runtimeCataloguePricing.updatedAt).toLocaleDateString('en-GB')}` : ''}
+          </Text>
+        ) : null}
         <Text numberOfLines={1} style={styles.cardMeta}>
           {item.number ? `#${item.number}` : 'No number'}
         </Text>
@@ -395,13 +457,22 @@ export default function PokemonDetailScreen() {
     return (
       <SafeAreaView style={styles.safe}>
         <View style={styles.center}>
-          <Text style={{ color: theme.colors.text }}>Failed to load this Pokemon.</Text>
+          <Text style={{ color: theme.colors.text }}>{cardsError ?? 'Failed to load this Pokemon.'}</Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Retry loading Pokémon cards"
+            onPress={retryCards}
+            style={styles.retryButton}
+          >
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </Pressable>
         </View>
       </SafeAreaView>
     );
   }
 
-  const displayName = formatPokedexName(pokemon.name);
+  const displayName = formatPokedexName(speciesName ?? pokemon.name);
+  const displayNumber = speciesId ?? pokemon.id;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -415,9 +486,12 @@ export default function PokemonDetailScreen() {
           columnWrapperStyle={{ gap: 10, marginBottom: 12 }}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: insets.bottom + 140 }}
+          initialNumToRender={Math.max(16, columns * 4)}
+          onViewableItemsChanged={onViewableItemsChanged}
+          viewabilityConfig={{ itemVisiblePercentThreshold: 35 }}
           ListHeaderComponent={
             <View>
-              {ownershipLoading && (
+              {ownership.status === 'loading' && (
                 <View style={styles.syncRow}>
                   <ActivityIndicator color={theme.colors.primary} size="small" />
                 </View>
@@ -434,7 +508,7 @@ export default function PokemonDetailScreen() {
                     <Image source={{ uri: getPokemonSpriteUrl(pokemon.id) }} style={styles.sprite} />
                   </View>
                   <Text style={styles.name}>{displayName}</Text>
-                  <Text style={styles.number}>#{String(pokemon.id).padStart(4, '0')}</Text>
+                  <Text style={styles.number}>#{String(displayNumber).padStart(4, '0')}</Text>
                   <View style={styles.typeRow}>
                     {pokemon.types.map((entry) => (
                       <View key={entry.type.name} style={styles.typeChip}>
@@ -448,14 +522,27 @@ export default function PokemonDetailScreen() {
               <View style={styles.progressCard}>
                 <View style={styles.progressTop}>
                   <Text style={styles.progressTitle}>Pokemon card collection</Text>
-                  <Text style={styles.progressCount}>{ownedCount} / {totalCount}</Text>
+                  <Text style={styles.progressCount}>{collectionComplete ? (ownedCount === null ? 'Ownership unknown' : `${ownedCount} / ${totalCount}`) : cardsLoading && totalCount === 0 ? 'Loading cards…' : `${totalCount} cards loaded`}</Text>
                 </View>
-                <View style={styles.progressTrack}>
-                  <View style={[styles.progressFill, { width: `${Math.round(progress * 100)}%` }]} />
-                </View>
+                {collectionComplete ? (
+                  <View style={styles.progressTrack}>
+                    <View style={[styles.progressFill, { width: `${Math.round(progress * 100)}%` }]} />
+                  </View>
+                ) : null}
                 <Text style={styles.progressSub}>
-                  Tap cards below to mark them owned. Long hold a card to open its details.
+                  {collectionComplete
+                    ? ownership.canMutate ? 'Tap cards below to mark them owned. Long hold a card to open its details.' : 'Tap cards to open their details. Long hold to inspect.'
+                    : cardsError ? 'Only a partial card list is available. Retry to load the remaining cards.' : cardsLoading ? 'Loading more matching cards…' : 'Only a partial card list is available.'}
                 </Text>
+                {cardsError ? <Text style={styles.progressSub} accessibilityRole="alert">{cardsError}</Text> : null}
+                {cardsError ? <Pressable accessibilityRole="button" accessibilityLabel="Retry loading Pokémon cards" onPress={retryCards} style={styles.retryButton}><Text style={styles.retryButtonText}>Retry</Text></Pressable> : null}
+                {ownership.message ? <Text style={styles.progressSub} accessibilityRole={ownership.status === 'error' ? 'alert' : undefined}>{ownership.message}</Text> : null}
+                {ownership.status === 'error' ? (
+                  <Pressable accessibilityRole="button" accessibilityLabel="Retry Pokémon ownership"
+                    onPress={() => { void ownership.retryOwnership(); }} style={styles.retryButton}>
+                    <Text style={styles.retryButtonText}>Retry ownership</Text>
+                  </Pressable>
+                ) : null}
               </View>
 
               <View style={styles.filterRow}>
@@ -478,7 +565,7 @@ export default function PokemonDetailScreen() {
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Retry loading Pokémon cards"
-                  onPress={() => setRetryEpoch((current) => current + 1)}
+                  onPress={retryCards}
                   style={styles.retryButton}
                 >
                   <Text style={styles.retryButtonText}>Retry</Text>

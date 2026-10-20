@@ -1,0 +1,404 @@
+{
+  "observedAt": "2026-10-05T22:29:34Z",
+  "scope": {
+    "languages": [
+      "en",
+      "ja",
+      "zh-cn",
+      "zh-tw"
+    ],
+    "koreanExcluded": true,
+    "currentTargetComplete": false,
+    "lastFullVerifiedObservation": {
+      "at": "2026-10-05T19:18:57Z",
+      "positiveStoredVariants": 33422,
+      "fourLanguagePhysicalVariants": 76030,
+      "fullPhysicalCatalogue": 76269,
+      "excludedKorean": 239,
+      "separateGeneralAvailabilityProjection": 33658
+    },
+    "currentFullCoverage": "not measured; broad guarded aggregate still exceeds administrative20s limit; no historical count plus cohort inference",
+    "ownerHttpAndPhone": "not measured",
+    "publishedVersions": [
+      {
+        "language_code": "en",
+        "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "published_at": "2026-08-20 13:38:28.221+00"
+      },
+      {
+        "language_code": "ja",
+        "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "published_at": "2026-09-27 17:00:18.728003+00"
+      },
+      {
+        "language_code": "ko",
+        "id": "159eb902-143c-42ef-b682-93ba5f9e81f2",
+        "published_at": "2026-08-10 17:10:33.631+00"
+      },
+      {
+        "language_code": "zh-cn",
+        "id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "published_at": "2026-08-10 16:54:15.322+00"
+      },
+      {
+        "language_code": "zh-tw",
+        "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "published_at": "2026-08-20 13:58:03.35+00"
+      }
+    ]
+  },
+  "dailyRefresh": {
+    "provider": "tcgcsv",
+    "datasetAt": "2026-10-05T20:05:57Z",
+    "production": {
+      "deployment": "755c7a11-ce10-4b1c-9f8d-e17d3051d46c",
+      "configuredSource": "7dc63aab2bb7be9ca69e77e686ef7722db6927a7",
+      "buildMetaSource": "28cbcfc7d68eb11edc622078b0bbc3216810610f",
+      "completedAt": "2026-10-05T21:52:27.039143543Z",
+      "exitCode": 0,
+      "elapsedMs": 2070138,
+      "runId": "faaff017-f849-48b1-9721-9c148f6bf689",
+      "claimed": 489,
+      "completedThisInvocation": 182,
+      "unmappedThisInvocation": 305,
+      "retryDeferralsThisInvocation": 2,
+      "processedCards": 17581,
+      "processedPricedOutcomes": 10967,
+      "durableHealth": {
+        "runId": "faaff017-f849-48b1-9721-9c148f6bf689",
+        "groups": [
+          {
+            "total": 166,
+            "status": "complete",
+            "categoryId": 3
+          },
+          {
+            "total": 54,
+            "status": "unmapped",
+            "categoryId": 3
+          },
+          {
+            "total": 163,
+            "status": "complete",
+            "categoryId": 85
+          },
+          {
+            "total": 297,
+            "status": "unmapped",
+            "categoryId": 85
+          }
+        ],
+        "quotes": [
+          {
+            "stale": 0,
+            "total": 23091,
+            "provider": "tcgcsv",
+            "languageCode": "en"
+          },
+          {
+            "stale": 9,
+            "total": 6912,
+            "provider": "tcgcsv",
+            "languageCode": "ja"
+          }
+        ],
+        "outcomes": {
+          "total": 76272,
+          "no_provider_quote": 4027,
+          "unsupported_finish": 1240,
+          "unsupported_language": 28813
+        },
+        "datasetAt": "2026-10-05T20:05:57+00:00",
+        "runStatus": "needs_mapping",
+        "openRepairs": 38038
+      },
+      "coverage": null,
+      "coverageError": {
+        "rpc": "catalogue_bulk_price_coverage_page",
+        "message": "Catalogue bulk coverage page request failed: canceling statement due to statement timeout"
+      },
+      "interpretation": "All durable groups are complete/unmapped; no pending/running/failed groups in final health. Two invocation retry deferrals are preserved. Unmapped groups and diagnostic errors remain gaps, not100% prices."
+    },
+    "stagingCandidate": {
+      "source": "f6aee12a18a89c28b8fd1b9c234a9d834e8ced4b",
+      "deployment": "b4528cce-6d89-4fcd-a2d6-6678f93828e3",
+      "exitCode": 0,
+      "completedAt": "2026-10-05T21:18:20.858638006Z",
+      "claimed": 0,
+      "diagnostics": {
+        "pages": 38,
+        "scanned": 75797,
+        "catalogueVersions": [
+          {
+            "language_code": "en",
+            "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+          },
+          {
+            "language_code": "ja",
+            "id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+          },
+          {
+            "language_code": "ko",
+            "id": "159eb902-143c-42ef-b682-93ba5f9e81f2"
+          },
+          {
+            "language_code": "zh-cn",
+            "id": "79f43e8f-7062-4d29-8571-569eccb7c249"
+          },
+          {
+            "language_code": "zh-tw",
+            "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e"
+          }
+        ],
+        "observedAtBegin": "2026-10-05T21:17:55.305644+00:00",
+        "observedAtEnd": "2026-10-05T21:18:19.714543+00:00",
+        "atomic": false
+      },
+      "coverageError": null,
+      "actual40ResultWritesProvenInThisRuntime": false,
+      "interpretation": "Valid zero-work runtime; cannot prove the new write path."
+    }
+  },
+  "frozenManualGuideRefresh": {
+    "total": 582,
+    "uniquePrintings": 582,
+    "cohorts": [
+      {
+        "cohort": "swsh-promos",
+        "count": 134
+      },
+      {
+        "cohort": "me-promos",
+        "count": 2
+      },
+      {
+        "cohort": 1861,
+        "count": 177
+      },
+      {
+        "cohort": 1451,
+        "count": 154
+      },
+      {
+        "cohort": 23779,
+        "count": 58
+      },
+      {
+        "cohort": 23909,
+        "count": 57
+      }
+    ],
+    "rpc": "api.read_catalogue_printing_general_prices",
+    "rpcCap": 100,
+    "administrativeDeadlineSeconds": 8,
+    "proof": [
+      {
+        "cohort": "swsh-promos",
+        "start": 0,
+        "result": [
+          {
+            "expected": 100,
+            "returned": 100,
+            "valid_refreshed": 100
+          }
+        ]
+      },
+      {
+        "cohort": "swsh-promos",
+        "start": 100,
+        "result": [
+          {
+            "expected": 34,
+            "returned": 34,
+            "valid_refreshed": 34
+          }
+        ]
+      },
+      {
+        "cohort": "me-promos",
+        "start": 0,
+        "result": [
+          {
+            "expected": 2,
+            "returned": 2,
+            "valid_refreshed": 2
+          }
+        ]
+      },
+      {
+        "cohort": 1861,
+        "start": 0,
+        "result": [
+          {
+            "expected": 100,
+            "returned": 100,
+            "valid_refreshed": 100
+          }
+        ]
+      },
+      {
+        "cohort": 1861,
+        "start": 100,
+        "result": [
+          {
+            "expected": 77,
+            "returned": 77,
+            "valid_refreshed": 77
+          }
+        ]
+      },
+      {
+        "cohort": 1451,
+        "start": 0,
+        "result": [
+          {
+            "expected": 100,
+            "returned": 100,
+            "valid_refreshed": 100
+          }
+        ]
+      },
+      {
+        "cohort": 1451,
+        "start": 100,
+        "result": [
+          {
+            "expected": 54,
+            "returned": 54,
+            "valid_refreshed": 54
+          }
+        ]
+      },
+      {
+        "cohort": 23779,
+        "start": 0,
+        "result": [
+          {
+            "expected": 58,
+            "returned": 58,
+            "valid_refreshed": 58
+          }
+        ]
+      },
+      {
+        "cohort": 23909,
+        "start": 0,
+        "result": [
+          {
+            "expected": 57,
+            "returned": 57,
+            "valid_refreshed": 57
+          }
+        ]
+      }
+    ],
+    "allExpectedReturnedAndValid": true,
+    "validated": {
+      "sourceDate": "2026-10-05T20:05:57Z",
+      "expiresAt": "2026-10-07T20:05:57Z",
+      "originalCurrency": "USD",
+      "displayCurrency": "GBP",
+      "originalAndDisplayPositive": true,
+      "displayEqualsDatedFxConversion": true,
+      "fxAt": "2026-10-05T00:00:00Z",
+      "fxRate": 0.756158514816137,
+      "providerFinishRetained": true,
+      "nativeCategoryLanguage": true,
+      "scope": "printing_general_estimate",
+      "exact": false,
+      "holdings": false,
+      "conditionFinishGradeNull": true,
+      "currentPhysicalAnchorsAndMappingsGuardedByRpc": true
+    },
+    "interpretation": "Refresh proof for every previously accepted manual printing guide; neither582newly priced variants nor a whole-catalogue/phone coverage percentage."
+  },
+  "cardmarket": {
+    "stagedCandidate": {
+      "source": "f6aee12a18a89c28b8fd1b9c234a9d834e8ced4b",
+      "deployment": "f4d21fad-7090-41bb-b3dc-b4237c3f2ad8",
+      "completedAt": "2026-10-05T21:21:36.283247253Z",
+      "reviewedMappings": 9234,
+      "complete": true,
+      "stored": 0,
+      "pages": 0,
+      "revisions": {
+        "products": "dd615f15-f7f3-44f3-8799-137514404fbf",
+        "priceGuide": "00cd92f6-59fa-4e80-93f7-6fcc16337536"
+      },
+      "interpretation": "Complete100-row pagination loader and retained-source runtime; unchanged revisions produced zero new writes."
+    },
+    "production": {
+      "deployment": "0e66bdfc-160e-4a55-bded-291e1106f2b9",
+      "configuredSource": "0e4834409b0f024624e2d1882ae7d9c1fe359957",
+      "completedAt": "2026-10-05T21:22:02.491839478Z",
+      "reviewedMappings": 9234,
+      "complete": true,
+      "stored": 0,
+      "pages": 0,
+      "revisions": {
+        "products": "18956fc2-1835-42c2-809d-de4b45ac04e9",
+        "priceGuide": "88df9af6-8055-4bf0-9c21-9c230681befe"
+      },
+      "redeployInitiatedByThisChat": false,
+      "interpretation": "Recovered retained-cache runtime on existing500-row source; candidate not production promoted."
+    },
+    "productionVolume": "86718ccd-b9a3-4570-ad10-c114a3be4eb6",
+    "cacheCleared": false
+  },
+  "guardCandidate": {
+    "commit": "12215cbe4466fc5928e060c33bff2928aad26981",
+    "migration": "20261005221812_bounded_provider_identity_guards.sql",
+    "deployed": false,
+    "schemaMutationsThisHeartbeat": 0,
+    "baselineHashBothDatabases": "ca77044f82345cc18fdc7f2be1cca8f6",
+    "hashGuardRejectsDrift": true,
+    "change": "English exact-title helper uses physical published relations and materialized provider titles; preserves all published versions, prefix/name/collision/supported-finish checks and service-only invoker access.",
+    "stagingReadOnlyCanary": {
+      "group": 1464,
+      "setId": "cbfa835f-4cc7-466f-8945-91e25831a94e",
+      "valid": true,
+      "elapsedIncludingToolMs": 921,
+      "interpretation": "Candidate SELECT only; neither applied migration nor production performance proof."
+    },
+    "regression": {
+      "legacyParityChecks": 19,
+      "anonAndAuthenticatedDenied": true,
+      "serviceRoleAllowed": true,
+      "changedRevisionRejected": true,
+      "numberedTitleIdentitySuite": "passed",
+      "rootLint": {
+        "errors": 0,
+        "existingWarnings": 9
+      },
+      "syntaxAndDiff": "passed"
+    },
+    "remaining": "Apply/verify through canonical staged migration and release workflow before production; do not treat this candidate as a complete coverage-report fix."
+  },
+  "diagnosticAttempts": {
+    "initial20sTimeoutContext": "english_exact_price_set_is_current",
+    "revised20sAggregate": "timed out",
+    "revisedJitOff20sAggregate": "timed out",
+    "syntaxCorrection": "An intermediate generated query had a replacement-string quoting error, corrected before the next attempted execution.",
+    "furtherFullAggregatesStopped": true
+  },
+  "coordination": {
+    "otherChatTitle": "Classify Stackr pricing coverage",
+    "otherChatId": "01a10cd5-3cb4-7e20-88ac-1b59eb471330",
+    "observedIdle": true,
+    "otherChatReportedChinesePriceApi": "403 tier_required; not independently probed here; no paid activation or purchase",
+    "productionPendingPatch": "8e29d75c-d567-4a9a-9e96-8a40e51a22f3",
+    "pendingPatchTouchesUnrelatedService": "299d7ad4-5ed8-4301-b609-ef99274078d0",
+    "pendingPatchCommitted": false,
+    "workerSourcePromotionNotMixedWithUnrelatedPatch": true,
+    "outsideMessagesSent": 0,
+    "manualPriceOrMappingWritesThisHeartbeat": 0
+  },
+  "next": [
+    "Keep healthy scheduled workers and retained caches; verify future changed-source dates, not only platform status.",
+    "Do not accept the unrelated production environment patch to promote worker repairs; inspect scope first.",
+    "Stage canonical guard migration only after checking expected baseline hash, preserved access controls and relevant release authorization; verify guarded source reads before production.",
+    "Obtain resumable bounded positive coverage counts against complete current four-language physical membership; avoid repeat broad heavy aggregates.",
+    "Continue justified remaining native English/Japanese gaps then native Chinese evidence without paid activation or cross-language substitution.",
+    "Retain exact/general scope and provenance; Korean excluded."
+  ]
+}

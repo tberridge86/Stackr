@@ -1,0 +1,64 @@
+{
+  "schemaVersion": "stackr-marnie-applied-readback-v1",
+  "canonicalApplied": true,
+  "project": "oakdbbzdqwurpjnoqhmu",
+  "approvalReference": "Owner lets go TIF; bounded Marnie correction/backend/build55 sequence, 2026-10-11",
+  "executedAt": "2026-10-11T20:38:16.250674+00:00",
+  "afterCapturedAt": "2026-10-11T20:38:18.111168+00:00",
+  "proposalPath": "docs/audits/20261010/marnie-alias-correction.json",
+  "proposalNormalizedSha256": "4e45815a9eb6abcb8ac94c1986808557110fb1821559af30e0222510ba26b13b",
+  "beforeCapturePath": "docs/audits/20261011/marnie-canonical-commit.before.json",
+  "afterCapturePath": "docs/audits/20261011/marnie-canonical-commit.after.json",
+  "beforeCommitCaptureSha256": "8ceae7e3d1b417b9b057042cedfbd46b86346c690afcd4b2bc9dca1bc44fdb73",
+  "afterCommitCaptureSha256": "ad7258476484491834fdc316070928493f39b9585e759542c953035a72237a99",
+  "marniePrintingIds": [
+    "1386b19f-ada3-447a-83d0-105acf48752c",
+    "3467f1b3-cfed-47c1-bddb-73a6507009b4",
+    "44b54476-f33f-435f-8985-b412cb5edb4c",
+    "4a459e00-0853-43a7-b0a6-e9d0f56c42f6",
+    "4a9af5de-61f9-4bb7-8133-5d28e2b356ad",
+    "63019ce2-f59b-4aed-a3e0-025789ecb7ab",
+    "818b3095-25cf-491e-b536-6a2e7513a3a0",
+    "971eba73-3c5f-4306-a6d5-700e8b748c9b",
+    "a52f71c8-a76c-449a-8030-219ec64a61d8",
+    "c3ee4722-7304-4cbf-a905-93162e371e76",
+    "d2132ffe-de94-462d-be98-8b6fba08e8ad",
+    "f9c8c84e-1179-4585-8a38-9591727bb676"
+  ],
+  "counts": {
+    "names": 26,
+    "variants": 13,
+    "printings": 12,
+    "variantMembership": 13,
+    "printingMembership": 12
+  },
+  "genuinePikachuSentinelCount": 22,
+  "targetSentinelOverlap": 0,
+  "forwardReceiptCount": 25,
+  "deltaReceiptCount": 25,
+  "sequence": {
+    "max": 41944,
+    "min": 41920
+  },
+  "publishedMaximum": 41944,
+  "baseline": {
+    "sourceRevision": "154fb2287166415bd2b6dbdf6e9a08eca3f42c5a",
+    "generatedFileByteSha256": "10c2381e6f2db371fbb137724079e3819b0f7235cace9732073843d7654d64a4",
+    "recordsSha256": "3309ae44ba128205f00276e78a7eb05e5c00e0069eac140f653e951566b95581",
+    "legacyLinksSha256": "4c0350535e295f47ba41f3be333f0508bee94f7a256548e2db45abb980c683fb"
+  },
+  "recoveredProjectionProvenance": "RecoveredRuntimeProjection, not original accepted/bridged/proposals/legacy input provenance.",
+  "recoveredInputSha256": {
+    "accepted": "63a3ea5ef50e2c4411f85b141e91710c6ac989047f84228a64ce84a6edfdbd02",
+    "bridged": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "proposals": "9bf6afc54a2a3354fdcb261f231727978cfd597c096970416f7f11fdee31674e",
+    "legacy-links": "504a49ddbf3bd9ea957a6b988f7c716fd1d3c128fa7ca5d1dba67aa987b15935"
+  },
+  "expectedCorrectedRecordsSha256": "6de8551e043ced800b359a8fb952548649eb042922abf9cae7637c35933c636e",
+  "executionSourceSha256": "3dbcfca25ced6f751b291b2763a96ee216de41568f8a0f89322eecaa9f4ce233",
+  "executionCopySha256": "6f94c9e7196298513a2bd4d4560c3e17d0d33d459ee1f5162ea091dc2e216851",
+  "independentReadbackVerified": true,
+  "deviceVerified": false,
+  "runtimeGenerationPerformed": true,
+  "runtimeGeneratedAt": "2026-10-11T20:55:02.632Z"
+}

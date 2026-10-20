@@ -1,6 +1,7 @@
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import { getSimplifiedChineseSetLogoSourceForSet } from '../../lib/simplifiedChineseSetLogos';
 import { StackrBrowseToolbar, StackrBrowseFilterSheet, StackrBrowseFilterGroup } from '../../components/StackrBrowseControls';
-import { StackrNavigationIcon } from '../../components/StackrNavigationIcon';
+import { STACKR_ICON_OUTLINE, StackrNavigationIcon } from '../../components/StackrNavigationIcon';
 import { groupDiscoverSets as groupSetsBySeries, isDiscoverDateGroup } from '../../lib/discoverSetGroups';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
@@ -8,7 +9,6 @@ import {
   TouchableOpacity,
   FlatList,
   Image,
-  ActivityIndicator,
   RefreshControl,
 } from 'react-native';
 import { Text } from '../../components/Text';
@@ -79,6 +79,8 @@ function getLanguageHeaderCopy(language: Exclude<DiscoverSetLanguage, 'en'>) {
       seriesPrefix: 'Traditional Chinese',
     };
   }
+
+  if (language === 'ko') return { title: 'Korean Sets', subtitle: 'Expand for official Korean binders', seriesPrefix: 'Korean' };
 
   return {
     title: 'Japanese Sets',
@@ -158,6 +160,24 @@ function normaliseSetKey(setId?: string | null, language?: string | null) {
   return `${normalizePokemonCardLanguage(language)}:${String(setId ?? '').trim().toLowerCase()}`;
 }
 
+function mergeSetAssets(facts: PokemonSet[], enriched: PokemonSet[]) {
+  const byIdentity = new Map(enriched.map((set) => [normaliseSetKey(set.id, set.language), set]));
+  return facts.map((set) => {
+    const assetSet = byIdentity.get(normaliseSetKey(set.id, set.language));
+    if (!assetSet) return set;
+    return {
+      ...set,
+      images: {
+        ...set.images,
+        logo: assetSet.images?.logo ?? set.images?.logo,
+        symbol: assetSet.images?.symbol ?? set.images?.symbol,
+        cover: assetSet.images?.cover ?? set.images?.cover,
+        artwork: assetSet.images?.artwork ?? set.images?.artwork,
+      },
+    };
+  });
+}
+
 async function fetchExistingSetBinders() {
   const {
     data: { user },
@@ -200,7 +220,7 @@ function SetCard({
   item: PokemonSet;
   existingBinder?: ExistingBinderSummary;
 }) {
-  const [logoFailed, setLogoFailed] = useState(false);
+  const [failedLogoUrl, setFailedLogoUrl] = useState<string | null>(null);
   const { theme } = useTheme();
   const raw = (item as any).raw_data ?? {};
   const setIdentityInput = {
@@ -234,6 +254,7 @@ function SetCard({
     id: item.id, language: item.language, setCode: item.externalIds?.setCode, externalIds: item.externalIds,
   });
   const logoUrl = logoSource ? null : (getPokemonSetVisualUrl(item) ?? getPokemonSetLogoUrl(item.id, item.language));
+  const logoFailed = failedLogoUrl === logoUrl;
   // Owner-supplied Chinese logos: keep set codes as live text.
   const chineseSetDisplayCode = normalizePokemonCardLanguage(item.language) === 'zh-cn'
     ? String(item.externalIds?.setCode ?? raw.set_code ?? '').trim().toUpperCase()
@@ -242,7 +263,7 @@ function SetCard({
 
   return (
     <TouchableOpacity
-      onPress={() => router.push({ pathname: '/set/[id]', params: { id: item.id } })}
+      onPress={() => router.push({ pathname: '/set/[id]', params: { id: item.id, language: item.language ?? 'en' } })}
       accessibilityRole="button"
       accessibilityLabel={`Open set ${displayName}`}
       style={{
@@ -276,10 +297,11 @@ function SetCard({
           />
         ) : logoUrl && !logoFailed ? (
           <Image
+            key={logoUrl}
             source={{ uri: logoUrl }}
             style={{ width: 84, height: 40 }}
             resizeMode="contain"
-            onError={() => setLogoFailed(true)}
+            onError={() => setFailedLogoUrl(logoUrl)}
           />
         ) : (
           <Ionicons name="albums-outline" size={24} color={theme.colors.textSoft} />
@@ -347,7 +369,7 @@ function SetCard({
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-              <StackrNavigationIcon name="collection" color={theme.colors.primary} size={20} />
+              <StackrNavigationIcon name="collection" color={theme.dark ? theme.colors.text : STACKR_ICON_OUTLINE} accentColor={theme.colors.primary} size={20} />
               <Text style={{ color: theme.colors.primary, fontSize: 13, fontWeight: '700' }}>Binder</Text>
             </View>
           </TouchableOpacity>
@@ -369,6 +391,7 @@ export default function ExploreScreen() {
   const [japaneseSets, setJapaneseSets] = useState<PokemonSet[]>([]);
   const [simplifiedChineseSets, setSimplifiedChineseSets] = useState<PokemonSet[]>([]);
   const [traditionalChineseSets, setTraditionalChineseSets] = useState<PokemonSet[]>([]);
+  const [koreanSets, setKoreanSets] = useState<PokemonSet[]>([]);
   const [loading, setLoading] = useState(true);
   const loadRequestRef = useRef(0);
   const [pendingLanguages, setPendingLanguages] = useState<string[]>([]);
@@ -385,6 +408,7 @@ export default function ExploreScreen() {
   const [japaneseSetsExpanded, setJapaneseSetsExpanded] = useState(false);
   const [simplifiedChineseSetsExpanded, setSimplifiedChineseSetsExpanded] = useState(false);
   const [traditionalChineseSetsExpanded, setTraditionalChineseSetsExpanded] = useState(false);
+  const [koreanSetsExpanded, setKoreanSetsExpanded] = useState(false);
 
   // ===============================
   // LOAD
@@ -393,11 +417,13 @@ export default function ExploreScreen() {
   const load = useCallback(async (isRefresh = false) => {
     const request = ++loadRequestRef.current;
     const current = () => request === loadRequestRef.current;
+    let sharedArtwork: Promise<PokemonSet[]> | null = null;
     const languages = [
       { code: 'en', label: 'English', receive: setEnglishSets },
       { code: 'ja', label: 'Japanese', receive: setJapaneseSets },
       { code: 'zh-cn', label: 'Simplified Chinese', receive: setSimplifiedChineseSets },
       { code: 'zh-tw', label: 'Traditional Chinese', receive: setTraditionalChineseSets },
+      { code: 'ko', label: 'Korean', receive: setKoreanSets },
     ];
     setRefreshing(isRefresh);
     setLoadError(null);
@@ -409,11 +435,17 @@ export default function ExploreScreen() {
     }).catch(() => {});
     await Promise.allSettled(languages.map(async language => {
       try {
-        const sets = await fetchAllSets({ language: language.code, preferCanonicalApi: true });
+        const sets = await fetchAllSets({ language: language.code, preferCanonicalApi: true, includeAssets: false });
         if (!current()) return;
         language.receive(sets);
         setHasLoadedCatalogue(true);
         setLoading(false);
+        // Each language publishes facts independently; the existing all-language
+        // reader requests global asset manifests only once for this load.
+        sharedArtwork ??= fetchAllSets({ language: 'all', preferCanonicalApi: true, includeAssets: true });
+        void sharedArtwork.then((enriched) => {
+          if (current()) language.receive(currentSets => mergeSetAssets(currentSets, enriched));
+        }).catch(() => {});
       } catch {
         if (!current()) return;
         failed.push(language.label);
@@ -459,6 +491,11 @@ export default function ExploreScreen() {
     return traditionalChineseSets.filter((set) => matchesSetSearch(set, q));
   }, [traditionalChineseSets, search]);
 
+  const searchedKoreanSets = useMemo(() => {
+    const q = search.trim();
+    return koreanSets.filter((set) => matchesSetSearch(set, q));
+  }, [koreanSets, search]);
+
   const filteredEnglishSets = useMemo(
     () => languageFilter === 'all' || languageFilter === 'en' ? searchedEnglishSets : [],
     [languageFilter, searchedEnglishSets]
@@ -479,9 +516,14 @@ export default function ExploreScreen() {
     [languageFilter, searchedTraditionalChineseSets]
   );
 
+  const filteredKoreanSets = useMemo(
+    () => languageFilter === 'all' || languageFilter === 'ko' ? searchedKoreanSets : [],
+    [languageFilter, searchedKoreanSets]
+  );
+
   const filteredSets = useMemo(
-    () => [...filteredEnglishSets, ...filteredJapaneseSets, ...filteredSimplifiedChineseSets, ...filteredTraditionalChineseSets],
-    [filteredEnglishSets, filteredJapaneseSets, filteredSimplifiedChineseSets, filteredTraditionalChineseSets]
+    () => [...filteredEnglishSets, ...filteredJapaneseSets, ...filteredSimplifiedChineseSets, ...filteredTraditionalChineseSets, ...filteredKoreanSets],
+    [filteredEnglishSets, filteredJapaneseSets, filteredSimplifiedChineseSets, filteredTraditionalChineseSets, filteredKoreanSets]
   );
 
   const isSearching = search.trim().length > 0;
@@ -506,6 +548,8 @@ export default function ExploreScreen() {
     [filteredTraditionalChineseSets]
   );
 
+  const groupedKoreanSeries = useMemo(() => groupSetsBySeries(filteredKoreanSets), [filteredKoreanSets]);
+
   const toggleSeries = (language: DiscoverSetLanguage, series: string) => {
     const key = getSeriesKey(language, series);
     setExpandedSeries((prev) => {
@@ -523,11 +567,13 @@ export default function ExploreScreen() {
     setJapaneseSetsExpanded(true);
     setSimplifiedChineseSetsExpanded(true);
     setTraditionalChineseSetsExpanded(true);
+    setKoreanSetsExpanded(true);
     setExpandedSeries(new Set([
       ...groupedEnglishSeries.map((g) => getSeriesKey('en', g.series)),
       ...groupedJapaneseSeries.map((g) => getSeriesKey('ja', g.series)),
       ...groupedSimplifiedChineseSeries.map((g) => getSeriesKey('zh-cn', g.series)),
       ...groupedTraditionalChineseSeries.map((g) => getSeriesKey('zh-tw', g.series)),
+      ...groupedKoreanSeries.map((g) => getSeriesKey('ko', g.series)),
     ]));
   };
 
@@ -535,6 +581,7 @@ export default function ExploreScreen() {
     setJapaneseSetsExpanded(false);
     setSimplifiedChineseSetsExpanded(false);
     setTraditionalChineseSetsExpanded(false);
+    setKoreanSetsExpanded(false);
     setExpandedSeries(new Set());
   };
 
@@ -545,14 +592,18 @@ export default function ExploreScreen() {
     if (nextFilter === 'ja') setJapaneseSetsExpanded(true);
     if (nextFilter === 'zh-cn') setSimplifiedChineseSetsExpanded(true);
     if (nextFilter === 'zh-tw') setTraditionalChineseSetsExpanded(true);
+    if (nextFilter === 'ko') setKoreanSetsExpanded(true);
 
-    const groups = nextFilter === 'en'
-      ? groupedEnglishSeries
+    // The previous language filter hides the next language's grouped rows.
+    // Expand from its searched facts so changing flags works on the first tap.
+    const selectedSets = nextFilter === 'en'
+      ? searchedEnglishSets
       : nextFilter === 'ja'
-        ? groupedJapaneseSeries
+        ? searchedJapaneseSets
         : nextFilter === 'zh-cn'
-          ? groupedSimplifiedChineseSeries
-          : groupedTraditionalChineseSeries;
+          ? searchedSimplifiedChineseSets
+          : nextFilter === 'zh-tw' ? searchedTraditionalChineseSets : searchedKoreanSets;
+    const groups = groupSetsBySeries(selectedSets);
     setExpandedSeries((prev) => {
       const next = new Set(prev);
       groups.forEach((group) => next.add(getSeriesKey(nextFilter, group.series)));
@@ -652,22 +703,35 @@ export default function ExploreScreen() {
       }
     }
 
+    if (languageFilter === 'all') items.push({ type: 'languageHeader', language: 'ko', count: filteredKoreanSets.length, expanded: koreanSetsExpanded });
+    if (languageFilter === 'ko' || (languageFilter === 'all' && koreanSetsExpanded)) {
+      for (const group of groupedKoreanSeries) {
+        items.push({ type: 'header', language: 'ko', series: group.series, count: group.sets.length });
+        if (isDiscoverDateGroup(group.series) || expandedSeries.has(getSeriesKey('ko', group.series))) {
+          for (const set of group.sets) items.push({ type: 'set', set, series: group.series });
+        }
+      }
+    }
+
     return items;
   }, [
     expandedSeries,
     filteredJapaneseSets.length,
     filteredSimplifiedChineseSets.length,
     filteredTraditionalChineseSets.length,
+    filteredKoreanSets.length,
     filteredSets,
     groupedEnglishSeries,
     groupedJapaneseSeries,
     groupedSimplifiedChineseSeries,
     groupedTraditionalChineseSeries,
+    groupedKoreanSeries,
     isSearching,
     japaneseSetsExpanded,
     languageFilter,
     simplifiedChineseSetsExpanded,
     traditionalChineseSetsExpanded,
+    koreanSetsExpanded,
   ]);
 
   if (loading) {
@@ -715,6 +779,24 @@ export default function ExploreScreen() {
       <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 18 }}>
 
         <StackrPageTitle title="Discover Sets" accentText="Sets" style={{ marginBottom: 8 }} />
+        <View accessibilityRole="radiogroup" accessibilityLabel="Set language" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          {LANGUAGE_FILTERS.map((filter) => {
+            const selected = languageFilter === filter.key;
+            return <TouchableOpacity key={filter.key} accessibilityRole="radio" accessibilityLabel={`${filter.label} sets`} accessibilityState={{ selected }} onPress={() => selectLanguageFilter(filter.key)} style={{ width: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 22, backgroundColor: selected ? theme.colors.primary + '18' : 'transparent' }}>
+              {filter.key === 'all' ? <Ionicons name="globe-outline" size={22} color={selected ? theme.colors.primary : theme.colors.textSoft} /> : <PokemonLanguageFlagIcon language={filter.key} size={24} decorative />}
+            </TouchableOpacity>;
+          })}
+        </View>
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Browse CoroCoro magazine editions and their cards"
+          onPress={() => router.push('/corocoro')}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12, marginBottom: 8 }}
+        >
+          <Ionicons name="book-outline" size={22} color={theme.colors.primary} />
+          <Text style={{ color: theme.colors.primary, fontWeight: '800' }}>CoroCoro magazine library</Text>
+          <Ionicons name="chevron-forward" size={16} color={theme.colors.primary} />
+        </TouchableOpacity>
         {pendingLanguages.length ? <Text accessibilityLiveRegion="polite" style={{ color: theme.colors.textSoft, marginBottom: 8 }}>Loading {pendingLanguages.join(', ')} sets…</Text> : null}
         {loadError ? (
           <View accessibilityRole="alert" style={{ flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 12, borderWidth: 1, borderColor: theme.colors.border, backgroundColor: theme.colors.surface, paddingLeft: 12, marginBottom: 12 }}>
@@ -778,8 +860,10 @@ export default function ExploreScreen() {
                       setJapaneseSetsExpanded((current) => !current);
                     } else if (item.language === 'zh-cn') {
                       setSimplifiedChineseSetsExpanded((current) => !current);
-                    } else {
+                    } else if (item.language === 'zh-tw') {
                       setTraditionalChineseSetsExpanded((current) => !current);
+                    } else {
+                      setKoreanSetsExpanded((current) => !current);
                     }
                   }}
                   style={{

@@ -1,0 +1,2 @@
+-- Draft read-only full published identity bindings; expected exactly normal and reverse for the target if present.
+SELECT jsonb_build_object('cards',COALESCE((SELECT jsonb_agg(to_jsonb(c) ORDER BY variant_id) FROM(SELECT * FROM api.catalogue_cards WHERE printing_id='783db704-7783-4ef9-8d8d-c00da4c7defd'::uuid OR variant_id=ANY(ARRAY['272802e1-0bdb-49b3-b2ee-76c14e8c14a1','95c46d73-a9bc-4e36-aeee-fde9fee7a7ad']::uuid[]) LIMIT 5)c),'[]'::jsonb)) AS snapshot;

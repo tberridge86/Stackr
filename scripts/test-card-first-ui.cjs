@@ -1,4 +1,5 @@
 /* Actual shared-component interactions + source layout contracts, not native render timing. */
+/* global __dirname */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
@@ -15,6 +16,7 @@ const mocks = {
   '@expo/vector-icons': { Ionicons: 'Ionicons' },
   'react-native': { Keyboard: { dismiss() { dismissals++; } }, StyleSheet: { create: (styles) => styles, hairlineWidth: 1 }, TextInput: 'TextInput', TouchableOpacity: 'TouchableOpacity', View: 'View' },
   './StackrModalSystem': { StackrBottomSheet: 'StackrBottomSheet' },
+  './StackrLoadingIndicator': { StackrLoadingIndicator: 'StackrLoadingIndicator' },
   './StackrNavigationIcon': { StackrNavigationIcon: 'StackrNavigationIcon' },
   './Text': { Text: 'Text' },
   './theme-context': { useTheme: () => ({ theme }) },
@@ -95,13 +97,15 @@ function attr(node, name) { return attrs(node).properties.find((p) => ts.isJsxAt
 test('set has one two-column grid; identity summary is its scrollable header, advanced filters are outside it', () => {
   const source = sourceFile('app/set/[id].tsx'); const grids = elements(source, 'FlatList'); assert.equal(grids.length, 1);
   assert.equal(attr(grids[0], 'numColumns').initializer.expression.text, '2');
-  assert.match(attr(grids[0], 'data').getText(source), /visibleFilteredCards/);
+  assert.match(attr(grids[0], 'data').getText(source), /pricedVisibleFilteredCards/);
   assert.match(attr(grids[0], 'ListHeaderComponent').getText(source), /StackrBrowseSummary/);
   assert.equal(elements(source, 'StackrBrowseToolbar').length, 1);
   assert.equal(elements(source, 'StackrBrowseFilterSheet').length, 1);
   assert.equal(elements(source, 'StackrActionButton').length, 0, 'No full-width create-binder banner');
   const code = source.text; assert.ok(!code.includes('Collection Progress') && !code.includes('always pinned'));
-  assert.match(code, /ownershipReady \? .*catalogue entries owned/);
+  const summaries = elements(source, 'StackrBrowseSummary');
+  assert.equal(summaries.length, 1);
+  assert.match(summaries[0].getText(source), /ownershipVisible \? .*catalogue entries owned/);
   assert.match(code, /Published total:/); assert.match(code, /Loaded catalogue entries:/);
   assert.ok(!code.includes('progressPercent'), 'No percentage using an unverified mixed counting basis');
 });
@@ -138,7 +142,7 @@ test('Home retains brand, GBP pricing and artwork while placing collection ahead
 
 test('all changed native source parses without errors and there is no replacement bottom-nav halo', () => {
   for (const file of ['app/(tabs)/binder.tsx', 'app/(tabs)/explore.tsx', 'app/(tabs)/search.tsx', 'app/_layout.tsx', 'app/binder/new.tsx', 'app/set/[id].tsx', 'components/StackrBrowseControls.tsx', 'components/PremiumUI.tsx', 'components/HomeCollectorSections.tsx', 'components/HomeCommandCenter.tsx', 'features/binder/BinderDetailScreen.tsx', 'features/home/HubScreen.tsx', 'features/market/MarketTabScreen.tsx']) assert.equal(sourceFile(file).parseDiagnostics.length, 0, file);
-  const nav = read('app/_layout.tsx'); assert.ok(!nav.includes('activeGlowColor')); assert.ok(nav.includes('StackrNavigationIcon')); assert.ok(nav.includes('useSafeAreaInsets'));
+  const nav = read('components/StackrAppShell.tsx'); assert.ok(!nav.includes('activeGlowColor')); assert.ok(nav.includes('StackrNavigationIcon')); assert.ok(nav.includes('useSafeAreaInsets'));
 });
 
 

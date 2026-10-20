@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from './StackrLoadingIndicator';
 import {
-  ActivityIndicator,
   Keyboard,
   StyleSheet,
   TextInput,
@@ -11,7 +11,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { StackrBottomSheet } from './StackrModalSystem';
-import { StackrNavigationIcon } from './StackrNavigationIcon';
+import { STACKR_ICON_OUTLINE, StackrNavigationIcon } from './StackrNavigationIcon';
 import { Text } from './Text';
 import { useTheme } from './theme-context';
 
@@ -40,7 +40,7 @@ export function StackrBinderButton({
       activeOpacity={0.8}
       style={[styles.binderAction, { borderColor: theme.colors.border, backgroundColor: theme.colors.card, opacity: disabled ? 0.5 : 1 }, style]}
     >
-      <StackrNavigationIcon name="collection" color={theme.colors.primary} size={22} />
+      <StackrNavigationIcon name="collection" color={theme.dark ? theme.colors.text : STACKR_ICON_OUTLINE} accentColor={theme.colors.primary} size={22} />
       <Text style={[styles.actionLabel, { color: theme.colors.primary }]}>{label}</Text>
     </TouchableOpacity>
   );

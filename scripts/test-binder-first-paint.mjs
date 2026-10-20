@@ -32,6 +32,16 @@ for (const count of [124, 252]) await test(`complete ${count} identities without
   assert(rows.every((v) => v.variants.every((variant) => variant.image === null)));
 });
 
+await test('canonical total includes secret cards instead of accepting a smaller printed count', async () => {
+  const complete = makeCards(180);
+  const rows = await loadCompleteSetPages(key(180), async () => ({ cards: complete, nextCursor: null }), (values) => values);
+  assert.equal(rows.length, 180, 'the exact facts reader accepts all 180 canonical cards');
+  await assert.rejects(loadCompleteSetPages(key(131), async () => ({ cards: complete, nextCursor: null }), (values) => values),
+    /expected 131, received 180/, 'a smaller printed-card count cannot validate a 180-card canonical set');
+  await assert.rejects(loadCompleteSetPages(key(180), async () => ({ cards: complete.slice(0, 131), nextCursor: null }), (values) => values),
+    /expected 180, received 131/, 'a 131-card partial response cannot satisfy the canonical total');
+});
+
 await test('incomplete, duplicate, cross-language, cross-set and mixed-version responses fail closed', async () => {
   const cards = makeCards(124);
   assert.throws(() => validateCompleteSet(cards.slice(0, 117), key()));

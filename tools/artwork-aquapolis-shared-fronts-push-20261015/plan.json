@@ -1,0 +1,1106 @@
+{
+  "schemaVersion": 1,
+  "queue_id": "aquapolis-two-shared-fronts-20261015",
+  "source_manifest_sha256": "6a4589185a70dbe7b3745519502bafe554e976d9b8633aa8db2f3fbf33305ee6",
+  "package_receipt_sha256": "7d9df867df40356668caa2dbcb5bd1417675070698eea34a46145b341b6b7341",
+  "source_evidence": {
+    "rootApprovedFileByteSha256": "6e9787984304ec8617d0f8eea2c41cb1bb13fa8f53d84169a914a70836233c58",
+    "rootFiniteDecisionFileByteSha256": "825e18ab9a8fd9a8ae743052c77d4b2d47fcad7e77ecdc94e16fd1e5ac5ce9ce",
+    "eligibilityFileByteSha256": "fe5cbc6c8d97054319a8959f66e1713936c0f55edd45e63b427f4968a7b9cc3d",
+    "eligibilityProbeSha256": "52b268533df8cf63e4d80f8a5771d6cb3068b1e667f9fbea02560703714512a8",
+    "historicalSourceHandoffSha256": "cbdcffe0521f507c67384e85ecca33b6cffa431342e47aceeb6230e866cd2047",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "existingThreeSourcePolicyCheckpointSha256": "9fed86a8de20b4229f20cd0a91b617cb8e44b7e83623fd2939a6ab068e1c9228",
+    "privateSourceContractFileByteSha256": "dc1a75c84a1f63c08ae983ba5acd8e800df90a5abbfbb71ff3e387e72249345e",
+    "freshSourceCheckpointSha256": "fef1de93887a28ee980616ee1048a05d73fa3e7e9b065dad38d8836a48d35592",
+    "stagingSourceQualificationSha256": "3b58bba78eae6d1c7a1df6f9c826817d7f3ad5b9d23e5de230ac8a590d2ca4d1",
+    "independentPrivatePackageReviewSha256": "1457e86ca80f26167d72500d599198bc19de4915e8be479ec759ed9299a7e203",
+    "independentSourceAuthorityPreflightSha256": "09e8a0ef314ef02133a95faceaf447b6a89c73be802648059d8c10e16a18ceac",
+    "rootSourceArchiveBindingSha256": "6d675d94b085247e852feff10c8d435e9684ade54a4323905fcbb71c3eb4217a",
+    "rootUploadReceiptSha256": "fe394476e5f62131a9d6b5cec3018c12c0db32dd5d37adb44db8c4d022213992"
+  },
+  "archive": {
+    "id": 645177330,
+    "sha256": "97d39c1f4ef272951456a00093fecd14e2ba7a5751bcc0d8804050d71928c4d0",
+    "byte_size": 751422,
+    "file_count": 12,
+    "name": "aquapolis2-fronts-20261015.zip"
+  },
+  "archive_metadata": [
+    {
+      "file": "manifest.json",
+      "sha256": "6a4589185a70dbe7b3745519502bafe554e976d9b8633aa8db2f3fbf33305ee6",
+      "byte_size": 39601
+    },
+    {
+      "file": "receipts/preparation-summary.json",
+      "sha256": "cb7aecc871873e8d185595cc6765aacb45c7ad15260facc06e7c8378ee26cdd2",
+      "byte_size": 1313
+    },
+    {
+      "file": "receipts/current-card-bindings.json",
+      "sha256": "9644f75bb74dde566ad845a95acae8476bd25f2a763722c1efe9854065589ffd",
+      "byte_size": 4415
+    },
+    {
+      "file": "receipts/finite-decision.json",
+      "sha256": "46679eaf2b099baf9fb683247e60788f07fb88ef94455f192f6ce3310b502fd6",
+      "byte_size": 4045
+    }
+  ],
+  "rows": [
+    {
+      "printing_id": "5a6e6094-b847-4e50-bfb5-f8dec149e07e",
+      "set_id": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+      "set_code": "ecard2",
+      "language_code": "en",
+      "collector_number": "103b",
+      "card_native_name": "Porygon",
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "variant_ids": [
+        "00dbf2d3-a5cb-4e83-83bd-4eeef011d6bc",
+        "942e0c49-1234-4c4f-9af4-53bc522bade9"
+      ],
+      "batch_id": "EN-CARDS-003",
+      "source_code": "pricecharting",
+      "provider_id": "pricecharting-image-url-sha256:254b7efe813d735b1d874e847257bc384e7d0555b872e2f18f8745f60c4111d6",
+      "image_url": "https://storage.googleapis.com/images.pricecharting.com/97326bac8c6e3ea7000a29710bf00b50324ee16a73756a8a73b4d37be2456802/1600.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/80ce003685a84281d52ac2aa07a65d9fb3e63dfe94d01b8e4cb419e7bdec54e0/original.jpg",
+          "sha256": "80ce003685a84281d52ac2aa07a65d9fb3e63dfe94d01b8e4cb419e7bdec54e0",
+          "byte_size": 259136,
+          "width": 1107,
+          "height": 1527,
+          "mime_type": "image/jpeg",
+          "artifact_id": 645177330
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/f49aff1266e706ce55e90e1865ddefddbb393ae7c89d4e65f315af0b52189734/card-grid.webp",
+          "sha256": "f49aff1266e706ce55e90e1865ddefddbb393ae7c89d4e65f315af0b52189734",
+          "byte_size": 19852,
+          "width": 240,
+          "height": 331,
+          "mime_type": "image/webp",
+          "artifact_id": 645177330
+        },
+        {
+          "role": "search-result",
+          "file": "objects/ce25094ae2538afd91ab34918528650129d830e65340b0bc43956e1f05aed815/search-result.webp",
+          "sha256": "ce25094ae2538afd91ab34918528650129d830e65340b0bc43956e1f05aed815",
+          "byte_size": 3540,
+          "width": 96,
+          "height": 132,
+          "mime_type": "image/webp",
+          "artifact_id": 645177330
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/84add2b197515bc50fedfa945b461c089c24a6eb1004b44380a7b693dcdbb899/detail-page.webp",
+          "sha256": "84add2b197515bc50fedfa945b461c089c24a6eb1004b44380a7b693dcdbb899",
+          "byte_size": 152712,
+          "width": 720,
+          "height": 993,
+          "mime_type": "image/webp",
+          "artifact_id": 645177330
+        }
+      ],
+      "evidence": {
+        "source_url": "https://storage.googleapis.com/images.pricecharting.com/97326bac8c6e3ea7000a29710bf00b50324ee16a73756a8a73b4d37be2456802/1600.jpg",
+        "source_page_url": "https://www.pricecharting.com/game/pokemon-aquapolis/porygon-103b",
+        "provider_id": "pricecharting-image-url-sha256:254b7efe813d735b1d874e847257bc384e7d0555b872e2f18f8745f60c4111d6",
+        "source_metadata_sha256": "ceed14abf8af71bb14c01de2c41504895d90ea665c1cb775d222fce31aad3a97",
+        "source_body": {
+          "contract": "aquapolis-two-shared-printing-fronts-v1",
+          "sourceCode": "pricecharting",
+          "literalPhotoIdentityProjection": {
+            "sourceCode": "pricecharting",
+            "printingId": "5a6e6094-b847-4e50-bfb5-f8dec149e07e",
+            "currentCollectorAlias": "103b",
+            "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-aquapolis/porygon-103b",
+            "rawPrivateHtmlFileByteSha256": "ceed14abf8af71bb14c01de2c41504895d90ea665c1cb775d222fce31aad3a97",
+            "pageImageAlt": "Porygon #103b Pokemon Aquapolis",
+            "literalLargestImageHref": "https://storage.googleapis.com/images.pricecharting.com/97326bac8c6e3ea7000a29710bf00b50324ee16a73756a8a73b4d37be2456802/1600.jpg",
+            "literalLargestImageUrlSha256": "254b7efe813d735b1d874e847257bc384e7d0555b872e2f18f8745f60c4111d6",
+            "literalAnchorAndFullImageSrcAgree": true,
+            "filename1600IsNotMeasuredNativeResolution": true,
+            "sourcePageLabelIsNotPrintedSuffixProof": true,
+            "selectedSourceCardId": null
+          },
+          "literalPhotoIdentityProjectionCanonicalSha256": "0444806c0130034054e239bdb7463251a2c15e3ef3f1239142d9780529486eed",
+          "rawPrivateHtmlFileByteSha256": "ceed14abf8af71bb14c01de2c41504895d90ea665c1cb775d222fce31aad3a97",
+          "rawRootApprovedRowCanonicalSha256": "19ced4498c90ae49e1e176b1b03c66b22708bf7225d2fa0ebee6358a9666f149",
+          "rootApprovedProjectionFileByteSha256": "6e9787984304ec8617d0f8eea2c41cb1bb13fa8f53d84169a914a70836233c58",
+          "actualPixelSignature": {
+            "name": "Porygon",
+            "hp": 40,
+            "type": "Colorless",
+            "stage": "Basic",
+            "attacks": [
+              {
+                "name": "Data Sort",
+                "cost": [
+                  "Colorless"
+                ],
+                "printedDamage": null,
+                "effect": "Flip a coin. If heads, choose a Trainer card from your discard pile, show it to your opponent, and then shuffle it into your deck."
+              },
+              {
+                "name": "Peck",
+                "cost": [
+                  "Colorless"
+                ],
+                "printedDamage": "10"
+              }
+            ],
+            "weakness": "Fighting",
+            "resistance": null,
+            "retreat": 1,
+            "artist": "Masako Yamashita",
+            "artistReadCertain": true,
+            "printedCollectorNumber": "103b/147",
+            "collectorSuffixReadCertain": true,
+            "printedEReaderId": "C-32-b",
+            "printedEReaderIdReadCertain": true,
+            "art": "Pink-and-cyan polygonal Porygon floats amid curved pink/purple walls and rectangular play-themed panels; image is a warm-colour photograph with a brown surface visible outside the full card.",
+            "wholeNativeBodyTranscribed": true,
+            "exactNumberedBFrontIdentitySupported": true,
+            "qualityHold": null,
+            "category": "Pokemon",
+            "language": "en",
+            "printedEReaderPlatformAndDotCodeLayoutVisible": true,
+            "printedNationalDex": null,
+            "printedDexAbsenceCertified": false,
+            "completeOuterFrameAndAllFourCornersVisible": true,
+            "editionStampObserved": false,
+            "noObviousSourceWatermarkObserved": true,
+            "physicalFinishCertified": false,
+            "physicalEditionCertified": false,
+            "normalFinishInferredFromNonSparklingPhoto": false,
+            "reverseFinishInferredFromSurfaceGrain": false
+          },
+          "actualPixelSignatureCanonicalSha256": "dbdd729f36142ec7b4fce144be64377c61ffe23dd76276e00a364ac528008baa",
+          "actualSignatureIsRootAcceptedUnchanged": true,
+          "rawQualityHoldFieldIsHistoricalDetailClassification": false,
+          "currentProductionBindings": [
+            {
+              "set_id": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+              "set_code": "ecard2",
+              "game_code": "pokemon",
+              "variant_id": "00dbf2d3-a5cb-4e83-83bd-4eeef011d6bc",
+              "finish_code": "normal",
+              "printing_id": "5a6e6094-b847-4e50-bfb5-f8dec149e07e",
+              "variant_code": "normal",
+              "language_code": "en",
+              "card_native_name": "Porygon",
+              "collector_number": "103b",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "same_artwork_as_variant_id": null
+            },
+            {
+              "set_id": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+              "set_code": "ecard2",
+              "game_code": "pokemon",
+              "variant_id": "942e0c49-1234-4c4f-9af4-53bc522bade9",
+              "finish_code": "reverse_holo",
+              "printing_id": "5a6e6094-b847-4e50-bfb5-f8dec149e07e",
+              "variant_code": "reverse_holo",
+              "language_code": "en",
+              "card_native_name": "Porygon",
+              "collector_number": "103b",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "same_artwork_as_variant_id": null
+            }
+          ],
+          "currentStagingBindings": [
+            {
+              "set_id": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+              "set_code": "ecard2",
+              "game_code": "pokemon",
+              "variant_id": "00dbf2d3-a5cb-4e83-83bd-4eeef011d6bc",
+              "finish_code": "normal",
+              "printing_id": "5a6e6094-b847-4e50-bfb5-f8dec149e07e",
+              "variant_code": "normal",
+              "language_code": "en",
+              "card_native_name": "Porygon",
+              "collector_number": "103b",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "same_artwork_as_variant_id": null
+            },
+            {
+              "set_id": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+              "set_code": "ecard2",
+              "game_code": "pokemon",
+              "variant_id": "942e0c49-1234-4c4f-9af4-53bc522bade9",
+              "finish_code": "reverse_holo",
+              "printing_id": "5a6e6094-b847-4e50-bfb5-f8dec149e07e",
+              "variant_code": "reverse_holo",
+              "language_code": "en",
+              "card_native_name": "Porygon",
+              "collector_number": "103b",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "same_artwork_as_variant_id": null
+            }
+          ],
+          "eligibleVariantIds": [
+            "00dbf2d3-a5cb-4e83-83bd-4eeef011d6bc",
+            "942e0c49-1234-4c4f-9af4-53bc522bade9"
+          ],
+          "requiredAssetScope": {
+            "printing_id": "5a6e6094-b847-4e50-bfb5-f8dec149e07e",
+            "variant_id": null
+          },
+          "requiredDeliveryKind": "shared",
+          "canonicalEligibilityFileByteSha256": "fe5cbc6c8d97054319a8959f66e1713936c0f55edd45e63b427f4968a7b9cc3d",
+          "canonicalEligibilityProbeSha256": "52b268533df8cf63e4d80f8a5771d6cb3068b1e667f9fbea02560703714512a8",
+          "canonicalEligibilityByEnvironment": {
+            "production": {
+              "printingDiscriminatorColumnPresent": true,
+              "printingDiscriminator": "",
+              "variants": [
+                {
+                  "id": "00dbf2d3-a5cb-4e83-83bd-4eeef011d6bc",
+                  "printing_id": "5a6e6094-b847-4e50-bfb5-f8dec149e07e",
+                  "variant_code": "normal",
+                  "finish_code": "normal",
+                  "artwork_key": null,
+                  "image_signature": null,
+                  "same_artwork_as_variant_id": null,
+                  "deprecated_at": null
+                },
+                {
+                  "id": "942e0c49-1234-4c4f-9af4-53bc522bade9",
+                  "printing_id": "5a6e6094-b847-4e50-bfb5-f8dec149e07e",
+                  "variant_code": "reverse_holo",
+                  "finish_code": "reverse_holo",
+                  "artwork_key": null,
+                  "image_signature": null,
+                  "same_artwork_as_variant_id": null,
+                  "deprecated_at": null
+                }
+              ]
+            },
+            "staging": {
+              "printingDiscriminatorColumnPresent": false,
+              "printingDiscriminator": null,
+              "variants": [
+                {
+                  "id": "00dbf2d3-a5cb-4e83-83bd-4eeef011d6bc",
+                  "printing_id": "5a6e6094-b847-4e50-bfb5-f8dec149e07e",
+                  "variant_code": "normal",
+                  "finish_code": "normal",
+                  "artwork_key": null,
+                  "image_signature": null,
+                  "same_artwork_as_variant_id": null,
+                  "deprecated_at": null
+                },
+                {
+                  "id": "942e0c49-1234-4c4f-9af4-53bc522bade9",
+                  "printing_id": "5a6e6094-b847-4e50-bfb5-f8dec149e07e",
+                  "variant_code": "reverse_holo",
+                  "finish_code": "reverse_holo",
+                  "artwork_key": null,
+                  "image_signature": null,
+                  "same_artwork_as_variant_id": null,
+                  "deprecated_at": null
+                }
+              ]
+            }
+          },
+          "canonicalMetadataChangesRequired": 0,
+          "explicitSameArtworkPointerRequired": false,
+          "historicalAuthority": {
+            "sourceSelectedId": null,
+            "safePhotoSelectedId": null,
+            "sourcePreparationApproved": false,
+            "sourcePublicationApproved": false,
+            "eligibilityAuditPreparationOrPublicationApproved": false
+          },
+          "currentAuthority": {
+            "rootFiniteDecisionFileByteSha256": "825e18ab9a8fd9a8ae743052c77d4b2d47fcad7e77ecdc94e16fd1e5ac5ce9ce",
+            "rootFinitePreparationApproved": true,
+            "rootConditionalPublicationApproved": true,
+            "privatePackageIsProductionReady": false,
+            "publicationConditions": [
+              "Independent exact-head/package/source-binding review and hosted release checks pass.",
+              "Fresh protected preflight preserves all existing canonical rows, assets and links and all three existing complete17-field source rows using PostgresJSON timestamps.",
+              "PriceCharting source and domain aliases must be absent before creation; create only the exact inactive under_review image-provenance policy below; no source-wide or vendor licence approval is asserted.",
+              "Staging may create only the required temporary PriceCharting fixture and must roll back all metadata changes.",
+              "Publish exactly two printing-level assets/links with variant_idnull; normal/reverse_holo pairing remains unchanged and shared artwork is shown through existing delivery semantics.",
+              "Verify all four actual variant image responses and all eight original/display files through the configured production API before fixed tasks count complete."
+            ]
+          },
+          "coverage": {
+            "sourceAuthorDirectWholeFront": true,
+            "rootIndependentDirectWholeFront": true,
+            "wholeOriginalUnchanged": true,
+            "PILSharpRGBAAgreement": true
+          },
+          "sourceMetadataIsSoleIdentityProof": false,
+          "semanticProviderFullJsonIncluded": false,
+          "rawCommercialMetadataIncluded": false,
+          "vendorLicenceCertified": false,
+          "sourcewideApproval": false,
+          "physicalFinishCertified": false,
+          "physicalEditionCertified": false,
+          "exactNormalPhotoClaimed": false,
+          "exactReverseHoloPhotoClaimed": false,
+          "providerNeverResizedCertified": false,
+          "nativeOpticalGainClaimed": false,
+          "stackrEnlargement": false,
+          "quality": {
+            "originalDetailPixels": true,
+            "originalHdPixels": true,
+            "displayDerivativeHdPixels": false
+          }
+        },
+        "queue_controls": {
+          "g": {
+            "gameCode": "pokemon",
+            "category": "Pokemon",
+            "languageCode": "en"
+          },
+          "p": {
+            "actualEnglishWholeFrontReviewed": true,
+            "printedCollectorNumber": "103b/147",
+            "collectorSuffixReadCertain": true,
+            "printedEReaderId": "C-32-b",
+            "printedEReaderIdReadCertain": true,
+            "nativeNameHpStageOrderedAttacksArtistAndArtReviewed": true,
+            "printedNationalDex": null,
+            "printedDexAbsenceCertified": false
+          },
+          "q": {
+            "sourceOriginalHashVerified": true,
+            "completeOuterFrameAndAllFourCornersVisible": true,
+            "noObviousSourceWatermarkObserved": true,
+            "sourceBodyAcceptedFromActualPixels": true,
+            "sourceMetadataIsSoleIdentityProof": false,
+            "deliveryKind": "shared",
+            "physicalFinishCertified": false,
+            "physicalEditionCertified": false,
+            "exactNormalPhotoClaimed": false,
+            "exactReverseHoloPhotoClaimed": false
+          }
+        },
+        "artwork_scope": "printing_front",
+        "delivery_kind": "shared",
+        "asset_variant_id": null,
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "physical_edition_verified": false,
+        "vendor_licence_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "9884a2e7-1d5d-4355-99c5-0fe2556c4837",
+      "set_id": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+      "set_code": "ecard2",
+      "language_code": "en",
+      "collector_number": "95b",
+      "card_native_name": "Mr. Mime",
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "variant_ids": [
+        "1fc97b9f-48eb-4be8-a29c-cd1844bc2757",
+        "6a922068-873d-46d8-b5d8-5539df9ce8a1"
+      ],
+      "batch_id": "EN-CARDS-003",
+      "source_code": "pricecharting",
+      "provider_id": "pricecharting-image-url-sha256:1125ce624d88ae5627ad9d721a129b66798030f929ee6d6118691c2cb39dbcd3",
+      "image_url": "https://storage.googleapis.com/images.pricecharting.com/jnwylq374y25p6dz/1600.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/5c2d2ec38eeb77868f24c058cb34ec44b05a62dda3718f7bbfe8ccff625507f9/original.jpg",
+          "sha256": "5c2d2ec38eeb77868f24c058cb34ec44b05a62dda3718f7bbfe8ccff625507f9",
+          "byte_size": 130406,
+          "width": 690,
+          "height": 960,
+          "mime_type": "image/jpeg",
+          "artifact_id": 645177330
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/973b115622a19b94f2a2c76adad28f388413763c34489d8fbe857f53b780d59c/card-grid.webp",
+          "sha256": "973b115622a19b94f2a2c76adad28f388413763c34489d8fbe857f53b780d59c",
+          "byte_size": 17146,
+          "width": 240,
+          "height": 334,
+          "mime_type": "image/webp",
+          "artifact_id": 645177330
+        },
+        {
+          "role": "search-result",
+          "file": "objects/d5c884aa91fac2231c2ed7e8518d7d37261efeaed348df9013ed28455323784d/search-result.webp",
+          "sha256": "d5c884aa91fac2231c2ed7e8518d7d37261efeaed348df9013ed28455323784d",
+          "byte_size": 3216,
+          "width": 96,
+          "height": 134,
+          "mime_type": "image/webp",
+          "artifact_id": 645177330
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/3f231370574d0e98142a8b3057583ff877272305e5b8e2ea2c262567d71562c4/detail-page.webp",
+          "sha256": "3f231370574d0e98142a8b3057583ff877272305e5b8e2ea2c262567d71562c4",
+          "byte_size": 154446,
+          "width": 690,
+          "height": 960,
+          "mime_type": "image/webp",
+          "artifact_id": 645177330
+        }
+      ],
+      "evidence": {
+        "source_url": "https://storage.googleapis.com/images.pricecharting.com/jnwylq374y25p6dz/1600.jpg",
+        "source_page_url": "https://www.pricecharting.com/game/pokemon-aquapolis/mr-mime-95b",
+        "provider_id": "pricecharting-image-url-sha256:1125ce624d88ae5627ad9d721a129b66798030f929ee6d6118691c2cb39dbcd3",
+        "source_metadata_sha256": "731d781da61eb8c90078db6e50da5ca0674f12d406489d62764fc1f19b698a00",
+        "source_body": {
+          "contract": "aquapolis-two-shared-printing-fronts-v1",
+          "sourceCode": "pricecharting",
+          "literalPhotoIdentityProjection": {
+            "sourceCode": "pricecharting",
+            "printingId": "9884a2e7-1d5d-4355-99c5-0fe2556c4837",
+            "currentCollectorAlias": "95b",
+            "sourcePageUrl": "https://www.pricecharting.com/game/pokemon-aquapolis/mr-mime-95b",
+            "rawPrivateHtmlFileByteSha256": "731d781da61eb8c90078db6e50da5ca0674f12d406489d62764fc1f19b698a00",
+            "pageImageAlt": "Mr. Mime #95b Pokemon Aquapolis",
+            "literalLargestImageHref": "https://storage.googleapis.com/images.pricecharting.com/jnwylq374y25p6dz/1600.jpg",
+            "literalLargestImageUrlSha256": "1125ce624d88ae5627ad9d721a129b66798030f929ee6d6118691c2cb39dbcd3",
+            "literalAnchorAndFullImageSrcAgree": true,
+            "filename1600IsNotMeasuredNativeResolution": true,
+            "sourcePageLabelIsNotPrintedSuffixProof": true,
+            "selectedSourceCardId": null
+          },
+          "literalPhotoIdentityProjectionCanonicalSha256": "1263c491859600721d5327bda8ed4550a452beebf0fd200ba6091939646b1ef9",
+          "rawPrivateHtmlFileByteSha256": "731d781da61eb8c90078db6e50da5ca0674f12d406489d62764fc1f19b698a00",
+          "rawRootApprovedRowCanonicalSha256": "6587182686e00d56fcbe76af17ab9f017121dbc763066e1cc2aeca7c4ba208f1",
+          "rootApprovedProjectionFileByteSha256": "6e9787984304ec8617d0f8eea2c41cb1bb13fa8f53d84169a914a70836233c58",
+          "actualPixelSignature": {
+            "name": "Mr. Mime",
+            "hp": 50,
+            "type": "Psychic",
+            "stage": "Basic",
+            "abilities": [
+              {
+                "type": "Poke-BODY",
+                "name": "Energy Barrier",
+                "effect": "If Mr. Mime would be damaged by an attack, reduce that damage by10 for each basic Energy card attached to Mr. Mime. The maximum amount of damage that can be reduced by this ability is20."
+              }
+            ],
+            "attacks": [
+              {
+                "name": "Mind Shock",
+                "cost": [
+                  "Psychic",
+                  "Colorless"
+                ],
+                "printedDamage": "20",
+                "effect": "Don’t apply Weakness and Resistance."
+              }
+            ],
+            "weakness": "Psychic",
+            "resistance": null,
+            "retreat": 1,
+            "artist": "Yukiko Baba",
+            "artistReadCertain": true,
+            "printedCollectorNumber": "95b/147",
+            "collectorSuffixReadCertain": true,
+            "printedEReaderId": "C-22-b",
+            "printedEReaderIdReadCertain": true,
+            "art": "Pink-and-red Mr. Mime stands with both palms forward among brick town buildings and a round green tree; black shoes and head curls.",
+            "wholeNativeBodyTranscribed": true,
+            "exactNumberedBFrontIdentitySupported": true,
+            "qualityHold": "Actual690x960JPEG meetsdetailbutnotHDpixels.",
+            "category": "Pokemon",
+            "language": "en",
+            "printedEReaderPlatformAndDotCodeLayoutVisible": true,
+            "printedNationalDex": null,
+            "printedDexAbsenceCertified": false,
+            "completeOuterFrameAndAllFourCornersVisible": true,
+            "editionStampObserved": false,
+            "noObviousSourceWatermarkObserved": true,
+            "physicalFinishCertified": false,
+            "physicalEditionCertified": false,
+            "normalFinishInferredFromNonSparklingPhoto": false,
+            "reverseFinishInferredFromSurfaceGrain": false
+          },
+          "actualPixelSignatureCanonicalSha256": "e1ff820e229a0be45c7e7dd2983f123be8b8b9a123f1d7731f89bb74101e463c",
+          "actualSignatureIsRootAcceptedUnchanged": true,
+          "rawQualityHoldFieldIsHistoricalDetailClassification": true,
+          "currentProductionBindings": [
+            {
+              "set_id": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+              "set_code": "ecard2",
+              "game_code": "pokemon",
+              "variant_id": "1fc97b9f-48eb-4be8-a29c-cd1844bc2757",
+              "finish_code": "reverse_holo",
+              "printing_id": "9884a2e7-1d5d-4355-99c5-0fe2556c4837",
+              "variant_code": "reverse_holo",
+              "language_code": "en",
+              "card_native_name": "Mr. Mime",
+              "collector_number": "95b",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "same_artwork_as_variant_id": null
+            },
+            {
+              "set_id": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+              "set_code": "ecard2",
+              "game_code": "pokemon",
+              "variant_id": "6a922068-873d-46d8-b5d8-5539df9ce8a1",
+              "finish_code": "normal",
+              "printing_id": "9884a2e7-1d5d-4355-99c5-0fe2556c4837",
+              "variant_code": "normal",
+              "language_code": "en",
+              "card_native_name": "Mr. Mime",
+              "collector_number": "95b",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "same_artwork_as_variant_id": null
+            }
+          ],
+          "currentStagingBindings": [
+            {
+              "set_id": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+              "set_code": "ecard2",
+              "game_code": "pokemon",
+              "variant_id": "1fc97b9f-48eb-4be8-a29c-cd1844bc2757",
+              "finish_code": "reverse_holo",
+              "printing_id": "9884a2e7-1d5d-4355-99c5-0fe2556c4837",
+              "variant_code": "reverse_holo",
+              "language_code": "en",
+              "card_native_name": "Mr. Mime",
+              "collector_number": "95b",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "same_artwork_as_variant_id": null
+            },
+            {
+              "set_id": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+              "set_code": "ecard2",
+              "game_code": "pokemon",
+              "variant_id": "6a922068-873d-46d8-b5d8-5539df9ce8a1",
+              "finish_code": "normal",
+              "printing_id": "9884a2e7-1d5d-4355-99c5-0fe2556c4837",
+              "variant_code": "normal",
+              "language_code": "en",
+              "card_native_name": "Mr. Mime",
+              "collector_number": "95b",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "same_artwork_as_variant_id": null
+            }
+          ],
+          "eligibleVariantIds": [
+            "1fc97b9f-48eb-4be8-a29c-cd1844bc2757",
+            "6a922068-873d-46d8-b5d8-5539df9ce8a1"
+          ],
+          "requiredAssetScope": {
+            "printing_id": "9884a2e7-1d5d-4355-99c5-0fe2556c4837",
+            "variant_id": null
+          },
+          "requiredDeliveryKind": "shared",
+          "canonicalEligibilityFileByteSha256": "fe5cbc6c8d97054319a8959f66e1713936c0f55edd45e63b427f4968a7b9cc3d",
+          "canonicalEligibilityProbeSha256": "52b268533df8cf63e4d80f8a5771d6cb3068b1e667f9fbea02560703714512a8",
+          "canonicalEligibilityByEnvironment": {
+            "production": {
+              "printingDiscriminatorColumnPresent": true,
+              "printingDiscriminator": "",
+              "variants": [
+                {
+                  "id": "1fc97b9f-48eb-4be8-a29c-cd1844bc2757",
+                  "printing_id": "9884a2e7-1d5d-4355-99c5-0fe2556c4837",
+                  "variant_code": "reverse_holo",
+                  "finish_code": "reverse_holo",
+                  "artwork_key": null,
+                  "image_signature": null,
+                  "same_artwork_as_variant_id": null,
+                  "deprecated_at": null
+                },
+                {
+                  "id": "6a922068-873d-46d8-b5d8-5539df9ce8a1",
+                  "printing_id": "9884a2e7-1d5d-4355-99c5-0fe2556c4837",
+                  "variant_code": "normal",
+                  "finish_code": "normal",
+                  "artwork_key": null,
+                  "image_signature": null,
+                  "same_artwork_as_variant_id": null,
+                  "deprecated_at": null
+                }
+              ]
+            },
+            "staging": {
+              "printingDiscriminatorColumnPresent": false,
+              "printingDiscriminator": null,
+              "variants": [
+                {
+                  "id": "1fc97b9f-48eb-4be8-a29c-cd1844bc2757",
+                  "printing_id": "9884a2e7-1d5d-4355-99c5-0fe2556c4837",
+                  "variant_code": "reverse_holo",
+                  "finish_code": "reverse_holo",
+                  "artwork_key": null,
+                  "image_signature": null,
+                  "same_artwork_as_variant_id": null,
+                  "deprecated_at": null
+                },
+                {
+                  "id": "6a922068-873d-46d8-b5d8-5539df9ce8a1",
+                  "printing_id": "9884a2e7-1d5d-4355-99c5-0fe2556c4837",
+                  "variant_code": "normal",
+                  "finish_code": "normal",
+                  "artwork_key": null,
+                  "image_signature": null,
+                  "same_artwork_as_variant_id": null,
+                  "deprecated_at": null
+                }
+              ]
+            }
+          },
+          "canonicalMetadataChangesRequired": 0,
+          "explicitSameArtworkPointerRequired": false,
+          "historicalAuthority": {
+            "sourceSelectedId": null,
+            "safePhotoSelectedId": null,
+            "sourcePreparationApproved": false,
+            "sourcePublicationApproved": false,
+            "eligibilityAuditPreparationOrPublicationApproved": false
+          },
+          "currentAuthority": {
+            "rootFiniteDecisionFileByteSha256": "825e18ab9a8fd9a8ae743052c77d4b2d47fcad7e77ecdc94e16fd1e5ac5ce9ce",
+            "rootFinitePreparationApproved": true,
+            "rootConditionalPublicationApproved": true,
+            "privatePackageIsProductionReady": false,
+            "publicationConditions": [
+              "Independent exact-head/package/source-binding review and hosted release checks pass.",
+              "Fresh protected preflight preserves all existing canonical rows, assets and links and all three existing complete17-field source rows using PostgresJSON timestamps.",
+              "PriceCharting source and domain aliases must be absent before creation; create only the exact inactive under_review image-provenance policy below; no source-wide or vendor licence approval is asserted.",
+              "Staging may create only the required temporary PriceCharting fixture and must roll back all metadata changes.",
+              "Publish exactly two printing-level assets/links with variant_idnull; normal/reverse_holo pairing remains unchanged and shared artwork is shown through existing delivery semantics.",
+              "Verify all four actual variant image responses and all eight original/display files through the configured production API before fixed tasks count complete."
+            ]
+          },
+          "coverage": {
+            "sourceAuthorDirectWholeFront": true,
+            "rootIndependentDirectWholeFront": true,
+            "wholeOriginalUnchanged": true,
+            "PILSharpRGBAAgreement": true
+          },
+          "sourceMetadataIsSoleIdentityProof": false,
+          "semanticProviderFullJsonIncluded": false,
+          "rawCommercialMetadataIncluded": false,
+          "vendorLicenceCertified": false,
+          "sourcewideApproval": false,
+          "physicalFinishCertified": false,
+          "physicalEditionCertified": false,
+          "exactNormalPhotoClaimed": false,
+          "exactReverseHoloPhotoClaimed": false,
+          "providerNeverResizedCertified": false,
+          "nativeOpticalGainClaimed": false,
+          "stackrEnlargement": false,
+          "quality": {
+            "originalDetailPixels": true,
+            "originalHdPixels": false,
+            "displayDerivativeHdPixels": false
+          }
+        },
+        "queue_controls": {
+          "g": {
+            "gameCode": "pokemon",
+            "category": "Pokemon",
+            "languageCode": "en"
+          },
+          "p": {
+            "actualEnglishWholeFrontReviewed": true,
+            "printedCollectorNumber": "95b/147",
+            "collectorSuffixReadCertain": true,
+            "printedEReaderId": "C-22-b",
+            "printedEReaderIdReadCertain": true,
+            "nativeNameHpStageOrderedAttacksArtistAndArtReviewed": true,
+            "printedNationalDex": null,
+            "printedDexAbsenceCertified": false
+          },
+          "q": {
+            "sourceOriginalHashVerified": true,
+            "completeOuterFrameAndAllFourCornersVisible": true,
+            "noObviousSourceWatermarkObserved": true,
+            "sourceBodyAcceptedFromActualPixels": true,
+            "sourceMetadataIsSoleIdentityProof": false,
+            "deliveryKind": "shared",
+            "physicalFinishCertified": false,
+            "physicalEditionCertified": false,
+            "exactNormalPhotoClaimed": false,
+            "exactReverseHoloPhotoClaimed": false
+          }
+        },
+        "artwork_scope": "printing_front",
+        "delivery_kind": "shared",
+        "asset_variant_id": null,
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "physical_edition_verified": false,
+        "vendor_licence_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    }
+  ],
+  "source_counts": {
+    "pricecharting": 2
+  },
+  "delivery_scope": {
+    "fixed_batch_ids": [
+      "EN-CARDS-003"
+    ],
+    "eligible_printing_fronts": 2,
+    "fixed_variants": 4,
+    "eligible_aliases": [
+      "95b",
+      "103b"
+    ],
+    "held_aliases_unchanged": [
+      "50b",
+      "74b"
+    ],
+    "asset_variant_id": null,
+    "required_delivery_kind": "shared",
+    "whole_batch_completion_asserted": false
+  },
+  "binding_expectations": {
+    "production": [
+      {
+        "set_id": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+        "set_code": "ecard2",
+        "game_code": "pokemon",
+        "variant_id": "00dbf2d3-a5cb-4e83-83bd-4eeef011d6bc",
+        "finish_code": "normal",
+        "printing_id": "5a6e6094-b847-4e50-bfb5-f8dec149e07e",
+        "variant_code": "normal",
+        "language_code": "en",
+        "card_native_name": "Porygon",
+        "collector_number": "103b",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+        "set_code": "ecard2",
+        "game_code": "pokemon",
+        "variant_id": "1fc97b9f-48eb-4be8-a29c-cd1844bc2757",
+        "finish_code": "reverse_holo",
+        "printing_id": "9884a2e7-1d5d-4355-99c5-0fe2556c4837",
+        "variant_code": "reverse_holo",
+        "language_code": "en",
+        "card_native_name": "Mr. Mime",
+        "collector_number": "95b",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+        "set_code": "ecard2",
+        "game_code": "pokemon",
+        "variant_id": "6a922068-873d-46d8-b5d8-5539df9ce8a1",
+        "finish_code": "normal",
+        "printing_id": "9884a2e7-1d5d-4355-99c5-0fe2556c4837",
+        "variant_code": "normal",
+        "language_code": "en",
+        "card_native_name": "Mr. Mime",
+        "collector_number": "95b",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+        "set_code": "ecard2",
+        "game_code": "pokemon",
+        "variant_id": "942e0c49-1234-4c4f-9af4-53bc522bade9",
+        "finish_code": "reverse_holo",
+        "printing_id": "5a6e6094-b847-4e50-bfb5-f8dec149e07e",
+        "variant_code": "reverse_holo",
+        "language_code": "en",
+        "card_native_name": "Porygon",
+        "collector_number": "103b",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      }
+    ],
+    "staging": [
+      {
+        "set_id": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+        "set_code": "ecard2",
+        "game_code": "pokemon",
+        "variant_id": "00dbf2d3-a5cb-4e83-83bd-4eeef011d6bc",
+        "finish_code": "normal",
+        "printing_id": "5a6e6094-b847-4e50-bfb5-f8dec149e07e",
+        "variant_code": "normal",
+        "language_code": "en",
+        "card_native_name": "Porygon",
+        "collector_number": "103b",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+        "set_code": "ecard2",
+        "game_code": "pokemon",
+        "variant_id": "1fc97b9f-48eb-4be8-a29c-cd1844bc2757",
+        "finish_code": "reverse_holo",
+        "printing_id": "9884a2e7-1d5d-4355-99c5-0fe2556c4837",
+        "variant_code": "reverse_holo",
+        "language_code": "en",
+        "card_native_name": "Mr. Mime",
+        "collector_number": "95b",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+        "set_code": "ecard2",
+        "game_code": "pokemon",
+        "variant_id": "6a922068-873d-46d8-b5d8-5539df9ce8a1",
+        "finish_code": "normal",
+        "printing_id": "9884a2e7-1d5d-4355-99c5-0fe2556c4837",
+        "variant_code": "normal",
+        "language_code": "en",
+        "card_native_name": "Mr. Mime",
+        "collector_number": "95b",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      },
+      {
+        "set_id": "2cd06c25-7efb-442d-b1ff-8f00979d5fe4",
+        "set_code": "ecard2",
+        "game_code": "pokemon",
+        "variant_id": "942e0c49-1234-4c4f-9af4-53bc522bade9",
+        "finish_code": "reverse_holo",
+        "printing_id": "5a6e6094-b847-4e50-bfb5-f8dec149e07e",
+        "variant_code": "reverse_holo",
+        "language_code": "en",
+        "card_native_name": "Porygon",
+        "collector_number": "103b",
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "same_artwork_as_variant_id": null
+      }
+    ]
+  },
+  "scope_counts": {
+    "production": {
+      "printings": 2,
+      "variants": 4,
+      "names": 8,
+      "sets": 1
+    },
+    "staging": {
+      "printings": 2,
+      "variants": 4,
+      "names": 8,
+      "sets": 1
+    }
+  },
+  "source_policies": {
+    "production": [
+      {
+        "code": "pokellector",
+        "display_name": "Pokellector (owner supplied Japanese card fronts)",
+        "source_type": "image",
+        "base_url": "https://jp.pokellector.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly2 Neo2 Ruin Wall reference fronts in STACKR-JA-LEGACY-TRAINER-FRONTS-20261015-008; owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval or independently verified vendor licence.",
+        "deprecated_at": null
+      },
+      {
+        "code": "scrydex",
+        "display_name": "Scrydex",
+        "source_type": "image",
+        "base_url": "https://scrydex.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Exactly 89 English MEP fronts approved by owner; catalogue/rights-evidence/mep89-scrydex-owner-confirmation.2026-09-27.json; 8c68bf3499de1e1e340b00fc03e5f1b469de7b65d259b5fba5a8b4cd31119ca9. No source-wide approval.",
+        "deprecated_at": null
+      },
+      {
+        "code": "tcgcollector",
+        "display_name": "TCGCollector (owner supplied Japanese card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.tcgcollector.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly3 independently accepted Leaders Stadium fronts019/081/096. Bind the final finite preparation/publication decision and exact source selection in the publisher plan. Owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval, independently verified vendor licence or physical finish/edition certification. Finite decision SHA256 68f1af735d5e481ed26d1aabbe94e493d520575d9d4191413508f9ec90cf68ff.",
+        "deprecated_at": null
+      }
+    ],
+    "staging": []
+  },
+  "new_sources": {
+    "production": [
+      {
+        "code": "pricecharting",
+        "display_name": "PriceCharting (owner supplied card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.pricecharting.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "deprecated_at": null,
+        "internal_notes": "Owner-attested source use for exactly Aquapolis Mr. Mime95b and Porygon103b shared printing-front artwork in finite cohort AQUAPOLIS-SHARED-002-20261015. Independent vendor and underlying card licences are unverified. No source-wide approval; each later acquisition requires separate finite approval. Existing provenance rows and source policies must remain unchanged."
+      }
+    ],
+    "staging": [
+      {
+        "code": "pricecharting",
+        "display_name": "PriceCharting (owner supplied card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.pricecharting.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "deprecated_at": null,
+        "internal_notes": "Owner-attested source use for exactly Aquapolis Mr. Mime95b and Porygon103b shared printing-front artwork in finite cohort AQUAPOLIS-SHARED-002-20261015. Independent vendor and underlying card licences are unverified. No source-wide approval; each later acquisition requires separate finite approval. Existing provenance rows and source policies must remain unchanged."
+      }
+    ]
+  },
+  "source_policy_checkpoint_sha256": "fef1de93887a28ee980616ee1048a05d73fa3e7e9b065dad38d8836a48d35592",
+  "staging_source_qualification_sha256": "3b58bba78eae6d1c7a1df6f9c826817d7f3ad5b9d23e5de230ac8a590d2ca4d1",
+  "existing_source_row_hashes": {
+    "pokellector": "4a2a381f7146c0bfa0201c62e91e7682f18da6597c4743f23414f3606a942a71",
+    "tcgcollector": "f1f01d1b094986ad0a9f5efcf1e98fe7388e0e1c5452d23da6cf7cab97a1ca29",
+    "scrydex": "25af5b50521e6fd0942764536f62b0c53c3e72c69c874916241af47735407929"
+  },
+  "before_snapshot_hashes": {
+    "production": "a416d82b588bbdae434f941a04587b21766afe37cdc0a9bbd5b7925c4223c4b6",
+    "staging": "88e8d06e985ecb8e2a8b226aab02e7ae838b2a5d8494d35bcfa7d5c4995f2087"
+  },
+  "before_snapshot_counts": {
+    "production": 26,
+    "staging": 22
+  },
+  "expected_after_snapshot_counts": {
+    "production": 31,
+    "staging": 27
+  },
+  "canonical_schema_qualification": {
+    "production": [
+      {
+        "printingDiscriminatorColumnPresent": true,
+        "printingDiscriminator": "",
+        "variants": [
+          {
+            "id": "00dbf2d3-a5cb-4e83-83bd-4eeef011d6bc",
+            "printing_id": "5a6e6094-b847-4e50-bfb5-f8dec149e07e",
+            "variant_code": "normal",
+            "finish_code": "normal",
+            "artwork_key": null,
+            "image_signature": null,
+            "same_artwork_as_variant_id": null,
+            "deprecated_at": null
+          },
+          {
+            "id": "942e0c49-1234-4c4f-9af4-53bc522bade9",
+            "printing_id": "5a6e6094-b847-4e50-bfb5-f8dec149e07e",
+            "variant_code": "reverse_holo",
+            "finish_code": "reverse_holo",
+            "artwork_key": null,
+            "image_signature": null,
+            "same_artwork_as_variant_id": null,
+            "deprecated_at": null
+          }
+        ]
+      },
+      {
+        "printingDiscriminatorColumnPresent": true,
+        "printingDiscriminator": "",
+        "variants": [
+          {
+            "id": "1fc97b9f-48eb-4be8-a29c-cd1844bc2757",
+            "printing_id": "9884a2e7-1d5d-4355-99c5-0fe2556c4837",
+            "variant_code": "reverse_holo",
+            "finish_code": "reverse_holo",
+            "artwork_key": null,
+            "image_signature": null,
+            "same_artwork_as_variant_id": null,
+            "deprecated_at": null
+          },
+          {
+            "id": "6a922068-873d-46d8-b5d8-5539df9ce8a1",
+            "printing_id": "9884a2e7-1d5d-4355-99c5-0fe2556c4837",
+            "variant_code": "normal",
+            "finish_code": "normal",
+            "artwork_key": null,
+            "image_signature": null,
+            "same_artwork_as_variant_id": null,
+            "deprecated_at": null
+          }
+        ]
+      }
+    ],
+    "staging": [
+      {
+        "printingDiscriminatorColumnPresent": false,
+        "printingDiscriminator": null,
+        "variants": [
+          {
+            "id": "00dbf2d3-a5cb-4e83-83bd-4eeef011d6bc",
+            "printing_id": "5a6e6094-b847-4e50-bfb5-f8dec149e07e",
+            "variant_code": "normal",
+            "finish_code": "normal",
+            "artwork_key": null,
+            "image_signature": null,
+            "same_artwork_as_variant_id": null,
+            "deprecated_at": null
+          },
+          {
+            "id": "942e0c49-1234-4c4f-9af4-53bc522bade9",
+            "printing_id": "5a6e6094-b847-4e50-bfb5-f8dec149e07e",
+            "variant_code": "reverse_holo",
+            "finish_code": "reverse_holo",
+            "artwork_key": null,
+            "image_signature": null,
+            "same_artwork_as_variant_id": null,
+            "deprecated_at": null
+          }
+        ]
+      },
+      {
+        "printingDiscriminatorColumnPresent": false,
+        "printingDiscriminator": null,
+        "variants": [
+          {
+            "id": "1fc97b9f-48eb-4be8-a29c-cd1844bc2757",
+            "printing_id": "9884a2e7-1d5d-4355-99c5-0fe2556c4837",
+            "variant_code": "reverse_holo",
+            "finish_code": "reverse_holo",
+            "artwork_key": null,
+            "image_signature": null,
+            "same_artwork_as_variant_id": null,
+            "deprecated_at": null
+          },
+          {
+            "id": "6a922068-873d-46d8-b5d8-5539df9ce8a1",
+            "printing_id": "9884a2e7-1d5d-4355-99c5-0fe2556c4837",
+            "variant_code": "normal",
+            "finish_code": "normal",
+            "artwork_key": null,
+            "image_signature": null,
+            "same_artwork_as_variant_id": null,
+            "deprecated_at": null
+          }
+        ]
+      }
+    ]
+  },
+  "saved_targets_sha256": "96b95a57b33bc9778292f70297629cdcaa30877c85b9d56a395ed27ab3814e41",
+  "identity_table_sha256": "7507d6784edba2673e3fa6b638c4fffa7633264136c7fd05d0d5d57e58d84672"
+}

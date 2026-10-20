@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-18T23:31:13.018Z",
+  "repairCommit": "d70a222ac548ba6c7830163e94897fdc7e0cda6d",
+  "baseRevision": "0708673cde0ff60e8698b0053f77ff11b6de5dfb",
+  "issues": [
+    "V02",
+    "V08",
+    "V13"
+  ],
+  "problem": "Collection stored-price responses were accepted without asserting the returned card variant, product type or GBP currency.",
+  "behavior": "Missing or mismatched response identities yield unavailable with an explicit request error; matching exact/general/stale/unavailable results and healthy siblings remain separate.",
+  "files": [
+    {
+      "relativePath": "lib/collectionPricingApi.ts",
+      "sha256": "eb520640519eb8eda48c5f9c55a4430e9c248a785dc7d3912aab5dabaf5da32d"
+    },
+    {
+      "relativePath": "scripts/test-collection-pricing-api.ts",
+      "sha256": "a24b449541f1fa12970ac99c42a5a1e584036acf6bcaa5accd1a2441f3cb1d3f"
+    },
+    {
+      "relativePath": "scripts/test-binder-pricing.ts",
+      "sha256": "c2adc6701d7abc5e0cd06c25bc5e6fac4a0cdc2d16d4f74d277b3057ecda3ba4"
+    },
+    {
+      "relativePath": "scripts/test-collection-price-backpressure.mjs",
+      "sha256": "bc8505160b391c9c21c4a848e356a825f5519c11f888617f8beb19e28681cedf"
+    }
+  ],
+  "validation": {
+    "authorRed": {
+      "command": "node --import tsx scripts/test-collection-pricing-api.ts",
+      "exitCode": 1,
+      "sourceSha256": "e3055b0593afd3c611d6a0a6364be48c929296624f2450ab07b3cc511465c396",
+      "assertion": "different variant cannot contribute to an owned GBP valuation",
+      "actual": 12.34,
+      "expected": null
+    },
+    "authorFocused": [
+      {
+        "command": "node --import tsx scripts/test-collection-pricing-api.ts",
+        "exitCode": 0,
+        "stdout": "Collection pricing API tests passed"
+      },
+      {
+        "command": "node --import tsx scripts/test-binder-pricing.ts",
+        "exitCode": 0,
+        "stdout": "Binder pricing uses canonical facts, preserves saved quotes, and declines unproven finishes."
+      },
+      {
+        "command": "node --import tsx scripts/test-collection-price-backpressure.mjs",
+        "exitCode": 0,
+        "tests": 17,
+        "pass": 17,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    ],
+    "independentActualSourceCases": 11,
+    "typecheck": {
+      "session": 82767,
+      "exitCode": 0
+    },
+    "lint": {
+      "session": 22659,
+      "exitCode": 0,
+      "errors": 0,
+      "existingWarnings": 8
+    },
+    "review": {
+      "privatePath": "evidence/consolidation-20261018/remaining-repairs-review-20261018/collection-pricing-identity-source-review-v1-bounded-completion-review.json",
+      "sha256": "0c9786dd5cc1947df7a169990bbebd1037b17cc7002a837cc6e520ab3aae3d22"
+    }
+  },
+  "workerEvidenceClarification": "One saved historical timeout identifies the optional catalogue_bulk_price_coverage_page reporting RPC; five later saved reports recovered. This is not exact owned-card price coverage or a cause for all historical timeouts.",
+  "nativePublished": false,
+  "phoneVerified": false,
+  "liveQuoteCoverageVerified": false,
+  "remoteCalls": 0,
+  "priceRefreshes": 0,
+  "testFlightHeld": true
+}

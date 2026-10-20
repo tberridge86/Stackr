@@ -1,0 +1,396 @@
+{
+  "schemaVersion": "stackr-one-normal-variant-quality-upgrade-publisher-v1",
+  "cohortId": "OWNER-BULBASAUR-MEW001-UPGRADE-20261016",
+  "identity": {
+    "printingId": "783db704-7783-4ef9-8d8d-c00da4c7defd",
+    "setId": "f2d0385c-1aae-44a9-b301-bf13da9a131e",
+    "setCode": "sv03.5",
+    "languageCode": "en",
+    "collectorNumber": "001",
+    "normalVariantId": "272802e1-0bdb-49b3-b2ee-76c14e8c14a1",
+    "reverseVariantId": "95c46d73-a9bc-4e36-aeee-fde9fee7a7ad",
+    "publishedCatalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "oldNormalAssetId": "4971c906-4460-43cb-b660-07d1a1038627",
+    "oldUnavailableReverseAssetId": "b049d37b-3e80-426b-b359-622de6f16986",
+    "newAssetVariantId": "272802e1-0bdb-49b3-b2ee-76c14e8c14a1",
+    "newSourceVariantId": "272802e1-0bdb-49b3-b2ee-76c14e8c14a1",
+    "sourceCode": "pricecharting",
+    "sourceIdProduction": "5f5909c2-b088-43d7-9f84-5d8686e1c7e4"
+  },
+  "archive": {
+    "id": 647979461,
+    "name": "owner-bulbasaur-mew001-upgrade-20261016.zip",
+    "sha256": "3fa38a9b511af60503b1c37a7e13a81e35b0465990785d9b6ee3fc8ef32cc579",
+    "byte_size": 187012,
+    "file_count": 8
+  },
+  "objects": [
+    {
+      "role": "original",
+      "file": "objects/64fdfa3734988b42434506baa094259d6f82474dc8a8c1c9afd52b8262af633e/original.jpg",
+      "sha256": "64fdfa3734988b42434506baa094259d6f82474dc8a8c1c9afd52b8262af633e",
+      "byte_size": 85734,
+      "width": 655,
+      "height": 914,
+      "mime_type": "image/jpeg",
+      "storage_key": "public/card_image/64/fd/64fdfa3734988b42434506baa094259d6f82474dc8a8c1c9afd52b8262af633e/original.jpg"
+    },
+    {
+      "role": "card-grid",
+      "file": "objects/4a4250de8cbaf15e11c8533ae25b9768fa78bbcf54ba8123f5863666cbdb7633/card-grid.webp",
+      "sha256": "4a4250de8cbaf15e11c8533ae25b9768fa78bbcf54ba8123f5863666cbdb7633",
+      "byte_size": 15156,
+      "width": 240,
+      "height": 335,
+      "mime_type": "image/webp",
+      "storage_key": "public/card_image/4a/42/4a4250de8cbaf15e11c8533ae25b9768fa78bbcf54ba8123f5863666cbdb7633/card-grid.webp"
+    },
+    {
+      "role": "search-result",
+      "file": "objects/83c309790c64356ec6188dfa47641ffe80700c35bd19988e7b6b8498dd41d17c/search-result.webp",
+      "sha256": "83c309790c64356ec6188dfa47641ffe80700c35bd19988e7b6b8498dd41d17c",
+      "byte_size": 3126,
+      "width": 96,
+      "height": 134,
+      "mime_type": "image/webp",
+      "storage_key": "public/card_image/83/c3/83c309790c64356ec6188dfa47641ffe80700c35bd19988e7b6b8498dd41d17c/search-result.webp"
+    },
+    {
+      "role": "detail-page",
+      "file": "objects/f59a5d8ebbed2b8124c75ba38682869992922d4310d544f2380f337ffb5af905/detail-page.webp",
+      "sha256": "f59a5d8ebbed2b8124c75ba38682869992922d4310d544f2380f337ffb5af905",
+      "byte_size": 77756,
+      "width": 655,
+      "height": 914,
+      "mime_type": "image/webp",
+      "storage_key": "public/card_image/f5/9a/f59a5d8ebbed2b8124c75ba38682869992922d4310d544f2380f337ffb5af905/detail-page.webp"
+    }
+  ],
+  "archive_metadata": [
+    {
+      "file": "derivative-specifications.json",
+      "sha256": "c7ac47e526c7819fec4fc7db9304186b3de754ecb6c9e79861ba8656e2fe09c6",
+      "byte_size": 808
+    },
+    {
+      "file": "manifest.json",
+      "sha256": "cce0adb50f143ba576fc3f0967f7d872e7a3dacb61319248ccf998b9752a5a2a",
+      "byte_size": 5921
+    },
+    {
+      "file": "reviewed-supersession.json",
+      "sha256": "52ee79f744069418dc95ab516a0c0613a67072f56b75571c8c80de7441db0e37",
+      "byte_size": 3429
+    },
+    {
+      "file": "source-evidence.json",
+      "sha256": "a90deaba14389adfd166ca921c2af519ae18c4f564cfebe66feb23c727501266",
+      "byte_size": 2351
+    }
+  ],
+  "newAssetPublicId": "owner-bulbasaur-mew001-upgrade-20261016:272802e1-0bdb-49b3-b2ee-76c14e8c14a1:64fdfa3734988b42434506baa094259d6f82474dc8a8c1c9afd52b8262af633e",
+  "sourcePageURL": "https://www.pricecharting.com/game/pokemon-scarlet-&-violet-151/bulbasaur-1",
+  "sourceImageURL": "https://storage.googleapis.com/images.pricecharting.com/60b8b0b2391934e3583042e5593540326934153b83e88665db0626dcbf3ec081/1600.jpg",
+  "sourcePhotoId": "60b8b0b2391934e3583042e5593540326934153b83e88665db0626dcbf3ec081",
+  "witness": {
+    "set_id": "f2d0385c-1aae-44a9-b301-bf13da9a131e",
+    "set_code": "sv03.5",
+    "language_code": "en",
+    "collector_alias": "001",
+    "native_name": "Bulbasaur",
+    "english_display_name": "Bulbasaur",
+    "actual_printed_name": "Bulbasaur",
+    "actual_printed_set": "MEW EN",
+    "actual_printed_collector_fraction": "001/165"
+  },
+  "sourceAuthorFlags": {
+    "selection": false,
+    "preparation": false,
+    "publication": false
+  },
+  "proof": {
+    "rootPublisherContextSHA": "ec5c6b94c923dcc2306ce6a8726727427e9d60379fa9d9c8d5d978a99ee8d1a6",
+    "rootFiniteDecisionSHA": "f84f544aee361c63b60d199cf7e74b9a7b917b6fc576ad09547c3f0ce0ce4f0a",
+    "rootReferenceQualificationSHA": "3249fb89bc4802eb0903399a7567d5ea9582fec2bca0e64bfea9036826ea71c5",
+    "privateSourceContractSHA": "c5d7fdbcc2d614138a7f37c033635157554a6d317de0a84950df96a1fdb56dda",
+    "privateImportPlanSHA": "d2f7a0902a71faab4991b42d0159282312e167be925b59cd4592a5ba84aaf167",
+    "privateHandoffSHA": "76d2c3efda70a61e3466c5e07fb7b6360fb44d6f310b9e66afa83cb0b03148ea",
+    "independentPrivateReviewSHA": "8dde0f79abbb3d041695d25e4efd2d9b19e75fc7c0da9a29e32315e58e5c6800",
+    "rootPrivateValidationSHA": "b73864e8fd242203b6e542e67a3d7ab4a9eff2978b94467a66f924e9e5219bec",
+    "rootUploadReceiptSHA": "e657e4e6fc2986e861cc8fff9f50bdba8b3b885a3cbdc417f67c92425fc0c410",
+    "sourceManifestSHA": "cce0adb50f143ba576fc3f0967f7d872e7a3dacb61319248ccf998b9752a5a2a",
+    "sourcePackageReceiptSHA": "6812d6717d462a621525c5bb62eff46571fc34d713ac0e7df2e931a39b044f60"
+  },
+  "baselines": {
+    "production": {
+      "rows": 28,
+      "rowHashes": {
+        "assets:0fa76c40-0dc0-48c2-8f95-d567ff4da003": "ec324c1cba26e247cdc323e99705a6f3f57a7c382eac68f3784c44f17b4aac4d",
+        "assets:12ca8138-e96f-435b-9405-d5ed73b0cd9f": "429e67f80f63d7fabce37901d3fc80652dc87b933519bd927ac6dfd58b70a82c",
+        "assets:4971c906-4460-43cb-b660-07d1a1038627": "91fbf301d65331d2dbc037a12b87318af7a5ffc1db20e6158a05ba9f034550eb",
+        "assets:884a2ddf-73a9-4cc8-bcde-93f05fc71803": "55459fdaaeced70ef922b75047aead62401f96b4ed22c26941d543cebac92e24",
+        "assets:935c4162-cf35-417b-8bfc-bdf4de44e47d": "6dde869d0573e160d019890e9635af1d20440901d9444b32ed9fbd76997dd772",
+        "assets:b049d37b-3e80-426b-b359-622de6f16986": "b7a54ee00687e9a8425e38d02eb8805a598ebecab3a24efa097238fc9a51a30a",
+        "links:2a4a05d7-6e77-4bb9-ad09-83e627ea4538:0fa76c40-0dc0-48c2-8f95-d567ff4da003": "3b62a2bf4022ab0b4262f7d018a7a545578161de89c8026e1958a9397329f1dd",
+        "links:2a4a05d7-6e77-4bb9-ad09-83e627ea4538:4971c906-4460-43cb-b660-07d1a1038627": "4f8478ed4767961037aafb3123c8f7d297aab634b71611c08717973de6b64b6e",
+        "links:2a4a05d7-6e77-4bb9-ad09-83e627ea4538:935c4162-cf35-417b-8bfc-bdf4de44e47d": "056f393615ac684b3ad0ca5527a3838d5aeccb3b55059a861aae6fb30ca893ae",
+        "links:d6bdab54-ec11-4b54-85a9-311d6ce3b2c8:0fa76c40-0dc0-48c2-8f95-d567ff4da003": "760ea11fc174719947b0ca56f234e734599b410adb9017aa52909f1e1b6c3cdf",
+        "links:d6bdab54-ec11-4b54-85a9-311d6ce3b2c8:12ca8138-e96f-435b-9405-d5ed73b0cd9f": "647fca4454e5448364d6a6d03b786d86fd0b2279dc53c08a24c8834ec0859208",
+        "links:d6bdab54-ec11-4b54-85a9-311d6ce3b2c8:4971c906-4460-43cb-b660-07d1a1038627": "3069676d065d38f6314ea67f2b055a3853ae4d708d835957461feed46114bf9d",
+        "names:486a8dbe-6186-4541-813f-a4e98612aeb3": "b7a81fdc492eb2c8fbe0009ac103b66303aa70167754f5a268beeb9e9dcbc00c",
+        "names:4de3e01c-6b04-4cdb-ac13-c43d4d4a1f3d": "e85cc31902e28a946e804f4a4258c908098320c8fbb96826265cb6388fdf32e7",
+        "names:b8f5e180-4213-4e0d-aa1f-179cb8f4f242": "ec9a1fb99085e378cfc9f103f84a57f5a2a21e41cee1046ed8c13166bf3b87ab",
+        "names:df21d907-839a-4182-bcfe-45411733eb44": "d7b5f9e879eee4023f926de39e8d72ce7183d634e418811f327331bd58d23784",
+        "printings:783db704-7783-4ef9-8d8d-c00da4c7defd": "d64f6f6d12bb7bf8fdf6bff34c8fbc291757332c7418539bb355938c29f80388",
+        "sets:f2d0385c-1aae-44a9-b301-bf13da9a131e": "c7f28f6b7d1c43a2926ea83de6d8474a517376a24fc6c09f56155cb9bb0eec16",
+        "sources:5f5909c2-b088-43d7-9f84-5d8686e1c7e4": "b4b74f69cac37abeee008806f6d8dd8ea63a0f0ce43fa065dce9261b428b421b",
+        "sources:9aacaaee-8915-42aa-9e91-fceaa8422d03": "4a2a381f7146c0bfa0201c62e91e7682f18da6597c4743f23414f3606a942a71",
+        "sources:a23954d2-49ca-4f2e-8cee-ed628e179006": "1de3363a8c53c00743baa768b790f22766da3dc811e2706088057d931716a82a",
+        "sources:a6215bb2-738a-4fb5-ace2-18baf3adfe0c": "f1f01d1b094986ad0a9f5efcf1e98fe7388e0e1c5452d23da6cf7cab97a1ca29",
+        "sources:bf803646-8de3-4652-8da2-f9bd7dc0fc04": "889f94a1789b96522834352efd31e9b76cbc5c84821eeed0761bf10b7b6923c1",
+        "sources:cbcafdd8-f3df-4543-b4e3-b5e8fc6847ab": "25af5b50521e6fd0942764536f62b0c53c3e72c69c874916241af47735407929",
+        "variants:272802e1-0bdb-49b3-b2ee-76c14e8c14a1": "aa1578097db9f56d6bf6e2ae107542c6ea07a2aa4a9f4dc0a66959fec09872ce",
+        "variants:95c46d73-a9bc-4e36-aeee-fde9fee7a7ad": "e5288c0d5e89fbcc448253c46859b5d1f129316470d1b61182fbd476bafd8c83",
+        "versions:2a4a05d7-6e77-4bb9-ad09-83e627ea4538": "e9c6771ea791cf05d909cbfde533f9da7fad14c0025a355ee9783997547aa55e",
+        "versions:d6bdab54-ec11-4b54-85a9-311d6ce3b2c8": "0e2f9a7b286e9f91d895254d0181eb27a7b45a8166afdbffc9676f33a3e4bb75"
+      },
+      "snapshotHash": "24257f30379d04964d0c0ea4d88d60040a41d112ae557b7035339cccb7075cf9",
+      "bindingsHash": "80c362a730c05b96e3fcf33f951daa2402189583cb96a19c0a9b3b871bdd9632",
+      "viewsHash": "4753ff8f085e0f52f99dc2c825d41e640fa5e4d4f1cf70a31efe974411114455",
+      "manifestHash": "4006f42a1d2291e07708e74dcbd7d8b2cd7472608d8e16d16fa2219389db80c4",
+      "oldNormalImmutableHash": "92b23dfa042ed9c4733e86ef1b7e76912f4b8349523a8525e85e906426a91bb2",
+      "oldNormalBeforeUpdatedAt": "2026-08-12T18:14:40.182+00:00",
+      "assetColumns": [
+        "id",
+        "asset_type",
+        "game_code",
+        "set_id",
+        "printing_id",
+        "variant_id",
+        "source_id",
+        "url",
+        "storage_path",
+        "mime_type",
+        "width",
+        "height",
+        "sha256",
+        "rights_status",
+        "publicly_servable",
+        "attribution_text",
+        "licensing_review_notes",
+        "source_updated_at",
+        "deprecated_at",
+        "deprecated_reason",
+        "created_at",
+        "updated_at",
+        "asset_id",
+        "asset_visibility",
+        "storage_provider",
+        "storage_bucket",
+        "storage_key",
+        "original_source_url",
+        "original_source_identifier",
+        "source_attribution",
+        "permission_status",
+        "content_sha256",
+        "perceptual_hash",
+        "byte_size",
+        "derivative_list",
+        "cache_control",
+        "archival_storage_key",
+        "externally_referenced",
+        "unavailable_reason",
+        "last_verified_at",
+        "retention_status",
+        "retention_until",
+        "deleted_at",
+        "deletion_reason",
+        "acquisition_source",
+        "recognition_reference_eligible"
+      ],
+      "sourceRows": [
+        {
+          "id": "5f5909c2-b088-43d7-9f84-5d8686e1c7e4",
+          "code": "pricecharting",
+          "hash": "b4b74f69cac37abeee008806f6d8dd8ea63a0f0ce43fa065dce9261b428b421b"
+        },
+        {
+          "id": "9aacaaee-8915-42aa-9e91-fceaa8422d03",
+          "code": "pokellector",
+          "hash": "4a2a381f7146c0bfa0201c62e91e7682f18da6597c4743f23414f3606a942a71"
+        },
+        {
+          "id": "a23954d2-49ca-4f2e-8cee-ed628e179006",
+          "code": "stackr_manual",
+          "hash": "1de3363a8c53c00743baa768b790f22766da3dc811e2706088057d931716a82a"
+        },
+        {
+          "id": "a6215bb2-738a-4fb5-ace2-18baf3adfe0c",
+          "code": "tcgcollector",
+          "hash": "f1f01d1b094986ad0a9f5efcf1e98fe7388e0e1c5452d23da6cf7cab97a1ca29"
+        },
+        {
+          "id": "bf803646-8de3-4652-8da2-f9bd7dc0fc04",
+          "code": "tcgdex",
+          "hash": "889f94a1789b96522834352efd31e9b76cbc5c84821eeed0761bf10b7b6923c1"
+        },
+        {
+          "id": "cbcafdd8-f3df-4543-b4e3-b5e8fc6847ab",
+          "code": "scrydex",
+          "hash": "25af5b50521e6fd0942764536f62b0c53c3e72c69c874916241af47735407929"
+        }
+      ],
+      "publishedVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+    },
+    "staging": {
+      "rows": 23,
+      "rowHashes": {
+        "assets:0f4e6002-5f40-4ecd-8843-d948bd9a120b": "826db682d700378b27ad553a2a54e60be7c9e28d75cd965e53e2868b336f4f34",
+        "assets:0fa76c40-0dc0-48c2-8f95-d567ff4da003": "d58a855593cabaa509873c7ec7cd6bef7aeb7a91217b99f5deb5d3ba680fcfd4",
+        "assets:4971c906-4460-43cb-b660-07d1a1038627": "d80403da0144c6e82574bd41b65d8efc751502e8ce428d748eb474be51a1b16a",
+        "assets:935c4162-cf35-417b-8bfc-bdf4de44e47d": "3f149dd517d82cbd5dee820b8ba727c18ebf63a01eb2d0cd4f466288bad6b1d6",
+        "assets:b049d37b-3e80-426b-b359-622de6f16986": "e0a8b0cc0c09bb7bcf9b9f1e069b1cf90709f47f6b1939b0389a351df0ba6dcc",
+        "links:2a4a05d7-6e77-4bb9-ad09-83e627ea4538:0fa76c40-0dc0-48c2-8f95-d567ff4da003": "102f1b3a451b31de116a53daff2c745a539dedbd54920074d7b6bc9dba42f594",
+        "links:2a4a05d7-6e77-4bb9-ad09-83e627ea4538:4971c906-4460-43cb-b660-07d1a1038627": "8422cc922e65c9724403ecea41580b331bc374143370ac49cdac0d752e9790a3",
+        "links:2a4a05d7-6e77-4bb9-ad09-83e627ea4538:935c4162-cf35-417b-8bfc-bdf4de44e47d": "576ee93c50cde4374fba9215691bb940aa13f8e68a13db11c457de7c5fb07a06",
+        "links:d6bdab54-ec11-4b54-85a9-311d6ce3b2c8:0f4e6002-5f40-4ecd-8843-d948bd9a120b": "7357a302cdcb4a89c054f63a3245a684e7e4666a8fe64095d5fe7be408336841",
+        "links:d6bdab54-ec11-4b54-85a9-311d6ce3b2c8:0fa76c40-0dc0-48c2-8f95-d567ff4da003": "47b0ce8f13bcb5b0d2665a86780151b28e3b8685cd65f01ee76207327c8f4aac",
+        "links:d6bdab54-ec11-4b54-85a9-311d6ce3b2c8:4971c906-4460-43cb-b660-07d1a1038627": "065295f4a6983668ae454be17ae22925d870ce05eb8b76d768fcf4632a86a6f6",
+        "names:486a8dbe-6186-4541-813f-a4e98612aeb3": "6835ea39614c9f466307d2c76e58d2c7c4ff6e4a9ae3bb53fa22188733f77614",
+        "names:4de3e01c-6b04-4cdb-ac13-c43d4d4a1f3d": "1684a8ee2a6c947bfb9e8e786560f6868e3bfce0419efa082e602388ec1f6f6a",
+        "names:b8f5e180-4213-4e0d-aa1f-179cb8f4f242": "dc86e867bb3d8b6db46fcdc38a6b7f225948350cf28d3ac90a2a68bcd77f904e",
+        "names:df21d907-839a-4182-bcfe-45411733eb44": "74f2278aa317e0b78dc09773ba80f4d44747e4e24d7bfe506be0cd91726d362e",
+        "printings:783db704-7783-4ef9-8d8d-c00da4c7defd": "3c2dfbe92e9f75cbc86eac920f9492c5f6a83ba609335bcb46a8ce3718e1404f",
+        "sets:f2d0385c-1aae-44a9-b301-bf13da9a131e": "d6445a779f2b55ede8ae33dbc5e12754ce9ff3de921c4fe6797155d0300f6540",
+        "sources:5f294603-9e75-4c94-bad1-641f24dc65a3": "e536902a0692a5e539f8cbdeb2495e6136bf895bc13116432d2750e0cc2e2e7c",
+        "sources:c18bc87f-e4db-434c-9353-a2306136af47": "117a2ba7071849e4d132756d234150ebf118bfe77491ca7fa5937a4be9cc5479",
+        "variants:272802e1-0bdb-49b3-b2ee-76c14e8c14a1": "dd9cb52d81f4a95b3de0ce17e888026356801ed77cd365819f6cfd50b44cc5e4",
+        "variants:95c46d73-a9bc-4e36-aeee-fde9fee7a7ad": "d63a46e7ce3694ff3049e6cf266a53649b8e389fa5436b79f2836230d6ecc7d2",
+        "versions:2a4a05d7-6e77-4bb9-ad09-83e627ea4538": "4a7d9269f93673cfe32e1cdf7295b6835d267bf9d1e3f646a636bd297bcf0e08",
+        "versions:d6bdab54-ec11-4b54-85a9-311d6ce3b2c8": "5efef3c07d3963dc2e69c47e7370dff409679e239d87b6db53e8ebd0c5e5f86f"
+      },
+      "snapshotHash": "4a46f3e1598591ded78c2c78f15748cd2f159f8ed2f3bc58c875b471e7f29ef7",
+      "bindingsHash": "76d5e12cfc8cb3363af6dd8275621b40640f14db93e436d6e7c1504bd5004a37",
+      "viewsHash": "caeed77db00888cd364b3204743edaccd06298589b4ce8069a1ba9177e7d8d46",
+      "manifestHash": "11a2d9d21b42fdfac128f0fbf81e380097dafaaaaf5b49161b4a4c79b317b296",
+      "oldNormalImmutableHash": "05c7b99158567dcfd66b02d966346b3ba08669eefe69ea75d8fe3af43051d3c7",
+      "oldNormalBeforeUpdatedAt": "2026-08-06T10:48:41.93615+00:00",
+      "assetColumns": [
+        "id",
+        "asset_type",
+        "game_code",
+        "set_id",
+        "printing_id",
+        "variant_id",
+        "source_id",
+        "url",
+        "storage_path",
+        "mime_type",
+        "width",
+        "height",
+        "sha256",
+        "rights_status",
+        "publicly_servable",
+        "attribution_text",
+        "licensing_review_notes",
+        "source_updated_at",
+        "deprecated_at",
+        "deprecated_reason",
+        "created_at",
+        "updated_at",
+        "asset_id",
+        "asset_visibility",
+        "storage_provider",
+        "storage_bucket",
+        "storage_key",
+        "original_source_url",
+        "original_source_identifier",
+        "source_attribution",
+        "permission_status",
+        "content_sha256",
+        "perceptual_hash",
+        "byte_size",
+        "derivative_list",
+        "cache_control",
+        "archival_storage_key",
+        "externally_referenced",
+        "unavailable_reason",
+        "last_verified_at",
+        "retention_status",
+        "retention_until",
+        "deleted_at",
+        "deletion_reason",
+        "acquisition_source",
+        "recognition_reference_eligible"
+      ],
+      "sourceRows": [
+        {
+          "id": "5f294603-9e75-4c94-bad1-641f24dc65a3",
+          "code": "stackr_manual",
+          "hash": "e536902a0692a5e539f8cbdeb2495e6136bf895bc13116432d2750e0cc2e2e7c"
+        },
+        {
+          "id": "c18bc87f-e4db-434c-9353-a2306136af47",
+          "code": "tcgdex",
+          "hash": "117a2ba7071849e4d132756d234150ebf118bfe77491ca7fa5937a4be9cc5479"
+        }
+      ],
+      "publishedVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+    }
+  },
+  "stagingSourceFixture": {
+    "code": "pricecharting",
+    "display_name": "PriceCharting (owner supplied card fronts)",
+    "source_type": "image",
+    "base_url": "https://www.pricecharting.com",
+    "licence_status": "under_review",
+    "attribution_required": true,
+    "active": false,
+    "internal_notes": "Temporary provenance fixture for exactly the root-approved Bulbasaur MEW001 normal-front modest upgrade. No source-wide rights or physical-finish approval. Entire rehearsal transaction must roll back."
+  },
+  "accounting": {
+    "fixed2944PopulationDelta": 0,
+    "ordinary415PopulationDelta": 0,
+    "fixedMissingLiveCountDelta": 0,
+    "missingFormalQueueUnchanged": true,
+    "separateQualityUpgradeTargetCount": 1,
+    "rootOwnsSeparateLedgerUpdateAfterActualLive": true
+  },
+  "quality": {
+    "width": 655,
+    "height": 914,
+    "HDOriginalCertified": false,
+    "vendorLicenceVerified": false,
+    "physicalFinishCertified": false,
+    "physicalEditionCertified": false,
+    "noEnlargement": true
+  },
+  "confirmation": "PUBLISH OWNER BULBASAUR MEW001 UPGRADE",
+  "printedSignature": {
+    "name": "Bulbasaur",
+    "hp": 70,
+    "stage": "BASIC",
+    "type": "Grass",
+    "attack": {
+      "name": "Leech Seed",
+      "damage": 20,
+      "energy": [
+        "Grass",
+        "Colorless"
+      ],
+      "effect": "Heal 20 damage from this Pokémon."
+    },
+    "weakness": "Fire ×2",
+    "resistance": null,
+    "retreatColorless": 2,
+    "artist": "Yuu Nishida",
+    "regulation": "G",
+    "setLanguageFooter": "MEW EN",
+    "collectorFraction": "001/165",
+    "rarityMark": "blackcircle",
+    "copyright": "©2023 Pokémon/Nintendo/Creatures/GAME FREAK",
+    "completeFrameAndCorners": true,
+    "addedOverlayObserved": false,
+    "stampObserved": false
+  }
+}

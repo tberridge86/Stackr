@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "status": "passed_local_frozen_ready_for_independent_review",
+  "confirmation": "PUBLISH ARTWORK MC BASIC ENERGY FRONTS",
+  "archive": {
+    "id": 645030064,
+    "sha256": "383309f90b04dfe87bb87e0e7e65c75577e06064c97954ce5e01fcc35407668f",
+    "byte_size": 910831,
+    "file_count": 36,
+    "name": "stackr-ja-artwork-mc8-fronts-20261015.zip"
+  },
+  "sourcePolicyCheckpointSha256": "9fed86a8de20b4229f20cd0a91b617cb8e44b7e83623fd2939a6ab068e1c9228",
+  "publicationSupplementSha256": "597c96b61f46d45dcefacde19856c5659c65465dcad1b2b0b59a075e2ccef46a",
+  "publicationConditionsSatisfied": true,
+  "privateArchiveHistoricalProductionReadyRemainsFalse": true,
+  "checks": {
+    "publisherNodeTests": 17,
+    "failureJournalIntegrationTests": 1,
+    "archiveGuardTests": 6,
+    "queue": {
+      "actualReceiptsPassed": 8,
+      "jointRawManifestTamperRejections": 28,
+      "forgedAuthorityRejections": 2,
+      "localImageObjects": 32,
+      "queueWrites": 0,
+      "providerRequests": 0
+    },
+    "runtimeInstaller": {
+      "members": 36,
+      "fullPILDecodes": 32,
+      "fullSharpDecodes": 32,
+      "metadataPrivacyChecks": 4,
+      "allMembersHashAndByteSizeVerified": true
+    },
+    "priorTCGCollector3QueueRegression": {
+      "realReceipts": 3,
+      "jointTamperRejections": 25,
+      "forgedAuthorityRejections": 2
+    },
+    "workflow": {
+      "status": "passed",
+      "workflowActionPinsAndProductionGates": true,
+      "all20WorkingTextFilesLF": true,
+      "unchangedDependencyPins": 11,
+      "priorFrozenRepositoryFilesUnchanged": 60,
+      "genericQueueSha256": "360e0432baf9d677802833ce595ad4e9558d4a105e12359438c725034d6cf5f5",
+      "post100ExpectedQueueBaselineSha256": "dedbf487bad4cfb55c33a747d568359e8198b82dd8a6f56384de3e3a2777f3f4",
+      "genericQueueEdited": false
+    },
+    "secretScan": {
+      "ok": true,
+      "toolFilesScanned": 19
+    }
+  },
+  "metadata": {
+    "productionBeforeRows": 39,
+    "productionAfterRows": 55,
+    "productionAssetsAdded": 8,
+    "productionLinksAdded": 8,
+    "productionSourcesAdded": 0,
+    "allThreeSourcesFull17Unchanged": true,
+    "timestampMicrosecondsPreservedSnapshotAndResolver": true,
+    "fullFieldTamperRejections": 51,
+    "stagingBeforeAndAfterRollbackRows": 34,
+    "stagingOnlyTcgFixture": true,
+    "stagingDuringRehearsalRows": 51,
+    "unusedPokellectorStagingCreation": false,
+    "newTcgSourceDefaultsAndPostWriteDriftRejected": true,
+    "unchangedInitialFinite3TcgSourcePolicySha256": "207957571711627d17ab7e1ed0ef77f6635426ee9a5972d47d316e3fcba9bd1e"
+  },
+  "imageIdentity": {
+    "fronts": 8,
+    "category": "Energy",
+    "normal": 8,
+    "originalMime": "image/webp",
+    "originalDimensions": [
+      868,
+      1212
+    ],
+    "originalHDPixelsCount": 8,
+    "detailDerivativeDimensions": [
+      720,
+      1005
+    ],
+    "detailDerivativeHDCount": 0,
+    "noEnlargement": true,
+    "typeGlyphAndJapaneseFuriganaTitles": true,
+    "printedMCAndEightTypeFooterCodes": true,
+    "galleryNumericOrdinalsAreNotPrintedCollectorNumbers": true,
+    "printedNationalDex": null,
+    "pokemonFieldsAsserted": false,
+    "vendorLicenceCertified": false,
+    "sourceWidePermissionCertified": false,
+    "physicalFinishCertified": false,
+    "physicalEditionCertified": false,
+    "providerNeverResizedCertified": false,
+    "nativeOpticalGainClaimed": false
+  },
+  "execution": {
+    "localOnly": true,
+    "databaseRequests": 0,
+    "providerRequests": 0,
+    "storageWrites": 0,
+    "queueWrites": 0,
+    "ledgerWrites": 0,
+    "gitMutations": 0,
+    "livePublicationVerified": false
+  }
+}

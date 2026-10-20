@@ -1,0 +1,544 @@
+{
+  "schemaVersion": 1,
+  "at": "2026-10-14T20:24:00.942415+00:00",
+  "status": "offline_validated_not_published",
+  "queue_id": "STACKR-JA-CROSSING-RUINS-20261014-051",
+  "fronts": 51,
+  "derivative_references": 153,
+  "object_references": 204,
+  "unique_image_members": 204,
+  "delivery_scope": {
+    "fixed_batch_ids": [
+      "JP-CARDS-007",
+      "JP-CARDS-008",
+      "JP-CARDS-009"
+    ],
+    "saved_batch_tasks": 57,
+    "eligible_fronts": 51,
+    "by_batch": {
+      "JP-CARDS-007": {
+        "verified": 25,
+        "held": 0
+      },
+      "JP-CARDS-008": {
+        "verified": 24,
+        "held": 1
+      },
+      "JP-CARDS-009": {
+        "verified": 2,
+        "held": 5
+      }
+    },
+    "excluded_aliases": [
+      "049",
+      "053",
+      "054",
+      "055",
+      "056",
+      "057"
+    ],
+    "excluded": [
+      {
+        "printingId": "a00039a3-9121-49a7-b6d1-f2ec4a7d5608",
+        "variantId": "7699421e-d760-4251-a090-40166235602b",
+        "canonicalCollectorAlias": "049",
+        "batchId": "JP-CARDS-008",
+        "status": "wrong_language_original_rejected",
+        "reason": "Wrong language/printing: English Neo Discovery 38/75; canonical target Japanese Neo2 alias049."
+      },
+      {
+        "printingId": "03b21683-af68-4f9a-bbbd-647dec3d5b81",
+        "variantId": "e0b949b2-2bc9-4aca-bdec-f1584ec3f011",
+        "canonicalCollectorAlias": "053",
+        "batchId": "JP-CARDS-009",
+        "status": "canonical_trainer_body_art_identity_hold",
+        "reason": "Canonical Trainer body/artwork bridge absent; complete source front/rules retained provisionally and not packaged."
+      },
+      {
+        "printingId": "be1af7b3-7199-445e-89e3-2ad26f93ffc7",
+        "variantId": "33605fc7-7329-4191-ab47-25a8b8dfedc4",
+        "canonicalCollectorAlias": "055",
+        "batchId": "JP-CARDS-009",
+        "status": "canonical_trainer_body_art_identity_hold",
+        "reason": "Canonical Trainer body/artwork bridge absent; complete source front/rules retained provisionally and not packaged."
+      },
+      {
+        "printingId": "34a5728e-9e47-453f-8102-84259c8cdaf2",
+        "variantId": "9de3a61b-28c7-4cfa-8167-2ee54b2f62e4",
+        "canonicalCollectorAlias": "056",
+        "batchId": "JP-CARDS-009",
+        "status": "canonical_trainer_body_art_identity_hold",
+        "reason": "Canonical Trainer body/artwork bridge absent; complete source front/rules retained provisionally and not packaged."
+      },
+      {
+        "printingId": "9815742c-ab9c-47d5-a05e-8fa67d755b43",
+        "variantId": "e9c77163-1fa9-417f-ac99-caa57cce0533",
+        "canonicalCollectorAlias": "054",
+        "batchId": "JP-CARDS-009",
+        "status": "exact_wall_art_variant_unbound",
+        "reason": "Two canonical wall artwork variants but only one observed Scrydex image pointer. TCGdex provides no art/artist/body/image metadata for either; provider ID/order/name cannot select the Kabuto or Aerodactyl front."
+      },
+      {
+        "printingId": "4ec6bdf6-3a65-4dd6-a3d7-84ea96cb77d6",
+        "variantId": "a4b5fd43-f9f0-494f-8fc8-e1dcc7398386",
+        "canonicalCollectorAlias": "057",
+        "batchId": "JP-CARDS-009",
+        "status": "exact_wall_art_variant_unbound",
+        "reason": "Two canonical wall artwork variants but only one observed Scrydex image pointer. TCGdex provides no art/artist/body/image metadata for either; provider ID/order/name cannot select the Kabuto or Aerodactyl front."
+      }
+    ],
+    "whole_batch_completion_asserted": false
+  },
+  "current_metadata_finishes": {
+    "normal": 31,
+    "holo": 20
+  },
+  "known_native_label_differences_preserved": 49,
+  "canonical_alias_is_not_printed_national_dex": true,
+  "source_evidence": {
+    "handoff": "f7610d61a4c2ccdeab8cba87cacd2eaca7edbe350e94c2e576228cc5a0a45ada",
+    "subset": "05c0f6681346d6b316958f30772b53c63f7fb7f167556b808a068e01854aeb22",
+    "validation": "2801854f21f2df027be70137f4e2bab4f631bcaa4c8b9d4ebc000558826d8ffc",
+    "decision": "9bff75f8339e88b45eb9b590484b4f8d876f72e355dd4293660f57684ddc47c0",
+    "unownApproval": "d1bcbe07659f0e0b71ac79d91a84cdf547dece34b4f558b7bf99c33455fd7a99",
+    "unownReceipt": "0820a366b34ae46c9667e98230651f29a7be10740f44a7e2b4299b7a15cf7153",
+    "sourceChecksums": "bab53e7c0e4dda55762b9fc60f57b146e411591d097c513f0fc8cd1f63e78ba8"
+  },
+  "narrow_source_pixel_exception_rows": [
+    {
+      "alias": "015",
+      "printing_id": "30ea0f4d-2882-4b10-af78-48afdf58242c",
+      "original_sha256": "d17741e4839286b3c141fb1f23bcf9a2636d6af4b6aa51bd57d4dc24463eb18b",
+      "metadata_sha256": "abf70f7a2fba4cdd0a811d1f532ce2bcc4d8ef1719c1f7b771f16d16fe2cb0bc",
+      "body_sha256": "c2f29fda50b437869c00611c66b8d4b6b50ca5cd8844c3ea33743f603274919a",
+      "fields": [
+        "attack.name"
+      ]
+    },
+    {
+      "alias": "019",
+      "printing_id": "aa5b2de7-83a0-4e51-9614-99a2ba59ec10",
+      "original_sha256": "90ae1729f3a68e0ccaf11ad9a85193d250ca02b1a0aa90055a0a2619fcf81d1f",
+      "metadata_sha256": "c2c5e716b37a58998594a1f215ea664401d262aafb438796b7dff3a6404d9719",
+      "body_sha256": "5bc43fd88d582325132bc83dc37fdb5e900f20b627fcf6ef8c0cb275379057a7",
+      "fields": [
+        "attack.name"
+      ]
+    },
+    {
+      "alias": "025",
+      "printing_id": "1a4c65a1-c904-4710-808c-2723f2762a01",
+      "original_sha256": "21943471e730d28eba4c5ab8c0c9bdb5d8abde7214fdb20a866fb35ee8ccb830",
+      "metadata_sha256": "0bb4baa14d9271e77adf5eb24cfdab55c26589f379745649d56200eff0860a52",
+      "body_sha256": "b540222d8d7c02e51b8c93a5e01a4a84eb5d795411a91b7946530241166b6d69",
+      "fields": [
+        "source.title_and_ability_identity"
+      ]
+    },
+    {
+      "alias": "026",
+      "printing_id": "35275d82-364f-46d4-8c91-e66867d9f1d2",
+      "original_sha256": "6900f050b2d8b3af4e624087262dfe5e6bebd67684888806eb8d2df98605d6c1",
+      "metadata_sha256": "c3be8733370a8f0f2006aa1419303ebde51370ce75e54b96638871d00b26aa91",
+      "body_sha256": "acbbdd6edb80e3463670e688243da92bf79a8535f7a3b09949cecd2e4e1965d2",
+      "fields": [
+        "source.title_and_ability_identity"
+      ]
+    },
+    {
+      "alias": "027",
+      "printing_id": "205d0c2b-1eec-4d3c-92f2-2414f7951c04",
+      "original_sha256": "77959acb3602b6e6effb71dc1366cd775b09e71d1c8778471026fd22dbc77963",
+      "metadata_sha256": "c1db2047b1a870f3b6585a8ce0e05881f3da4c109f84d2506731c93e35282262",
+      "body_sha256": "497cf05773e962044f89de4c3196d747195503f67119ebb664ecc4c3fe9b6690",
+      "fields": [
+        "body.effect_semantics"
+      ]
+    },
+    {
+      "alias": "033",
+      "printing_id": "5750b389-e0e3-4e2e-9df9-43371b007d52",
+      "original_sha256": "772c2bcab857ac90f40045758784c423bf8c20c17f070e075479f05f5edf9794",
+      "metadata_sha256": "a3a00fb6fb26fd715c6210cffbcaa4b913cd36b8b8d47552cfdb16be3b885eb1",
+      "body_sha256": "2c931aafa0b14244c7b8135d6897b39dd06c3aff285cf85ed71aa1320b3505b7",
+      "fields": [
+        "baby_rule_and_evolution_direction"
+      ]
+    },
+    {
+      "alias": "036",
+      "printing_id": "48faa124-75d9-421b-879f-6248214895bd",
+      "original_sha256": "93c94fdca99af97bb1c95a0cc340a3c990be2f0924323def44d50734a038cdd7",
+      "metadata_sha256": "34990e550b1f0fbc0a3fcbe5ff3139d1ce1a8e9aa6544dbec0ca2421be533156",
+      "body_sha256": "1b8301e3f83cc30b89b825553abbb84348365409a6f768f10c7fe7dfd83e2e49",
+      "fields": [
+        "body.effect_semantics"
+      ]
+    },
+    {
+      "alias": "043",
+      "printing_id": "f5c74bc7-73e3-4a57-9137-74324482f92c",
+      "original_sha256": "df1f230bdce16011b5fdf93ebff8db7595adc4567c1f72454d32e535a893fb59",
+      "metadata_sha256": "619c2cf766739510731a0506a205a8d70bb28a7cdc9ba1e3393dfca591650b8f",
+      "body_sha256": "b525c80d4477ae8582787c8bdfd91d073f22002de5e6cca7fa5468e89dde9392",
+      "fields": [
+        "artist"
+      ]
+    },
+    {
+      "alias": "045",
+      "printing_id": "5637e211-9b42-4e1e-9ec2-460d2bee1331",
+      "original_sha256": "1ddb3776125ae805025a48d90370c72106848333ff8a716558bc5d7731cfea24",
+      "metadata_sha256": "b9a0a3360a3e893200d8edb2342c62bcfa5abad06096f96d05c237f2b84b455f",
+      "body_sha256": "f3e1616c3b9aa1a3eab310cef1fb5173519dd579fcbcfafce7ad27eaefab8603",
+      "fields": [
+        "attack.damage",
+        "body.effect_semantics"
+      ]
+    },
+    {
+      "alias": "050",
+      "printing_id": "9205301b-450a-45c3-b69e-af15bb40070a",
+      "original_sha256": "1d1aab87d26eda11e316cff246cf121fabe5969a68133f7688678f78a1bc3197",
+      "metadata_sha256": "0b25f4e785586a6e668980589ead7daf7b08ce9b5b8f4d251ceaba83d1230064",
+      "body_sha256": "221278ad289548a835b59a06aadabade74803e74ee909ce6eb258406824b0a2b",
+      "fields": [
+        "baby_rule_and_evolution_direction"
+      ]
+    }
+  ],
+  "unown_forms_with_complete_actual_guards": 6,
+  "exact_root_approved_df_cross_bindings": 2,
+  "generic_form_body_guard_relaxation": false,
+  "scizor_first_printed_damage_column": null,
+  "scizor_source_damage_field": "?",
+  "scizor_second_printed_damage": "20+",
+  "complete_observed_artist_043": "K. Hoshiba / CR CG gangs",
+  "effects_are_observed_paraphrases": true,
+  "provider_metadata_rewritten": false,
+  "copyright_year_inferred": false,
+  "outer_scan_edges_retained": true,
+  "aspect_ratio_is_crop_proof": false,
+  "cohort_sha256": "5da9df04d1266be2a6b333a4e5d0b1e3192765f442f5a684bdfc295976e5850b",
+  "approval_sha256": "fb6069d84d3efef5817c8cd53fa436f7cdffcc66c937f03c0db5ed9211f38f52",
+  "identity_table_sha256": "82717270c28ec82df57d7ef9d39937e2893db6c96341b4e388389b8acb5c5570",
+  "saved_targets_sha256": "2ef3131174e1f5188d4bdf998c666950345f9ffba1402d2fda5393a94dbf7055",
+  "source_manifest_sha256": "5e800bd7427f4d654ca7912423d167a8ac0c86a23a7723aa663d8e398e38ae18",
+  "archive": {
+    "id": 641543488,
+    "sha256": "2bbfdde7b2cb5c7619bf272b24ec6cc3b90af1c4d24abb6cd405c98c18adc492",
+    "byte_size": 27170559,
+    "file_count": 208,
+    "filename": "stackr-ja-artwork-crossing-ruins-fronts51-20261014.zip",
+    "exact_members": 208,
+    "unique_image_members": 204,
+    "metadata_files": 4,
+    "provider_requests_during_publication": 0
+  },
+  "source_capture": {
+    "named_file_hashes_checked": 131,
+    "original_GETs": 55,
+    "accepted_originals": 51,
+    "held_captured_originals": 4,
+    "uncaptured_wall_variants": 2,
+    "automatic_retries": 0,
+    "fallback_image_GETs": 0,
+    "prepared_by_this_task": 51
+  },
+  "scope_before_counts": {
+    "production": {
+      "printings": 51,
+      "variants": 51,
+      "names": 102,
+      "sets": 1,
+      "assets": 2,
+      "links": 5,
+      "sources": 1,
+      "rows": 213
+    },
+    "staging": {
+      "printings": 51,
+      "variants": 51,
+      "names": 102,
+      "sets": 1,
+      "assets": 2,
+      "links": 2,
+      "sources": 0,
+      "rows": 209
+    }
+  },
+  "before_snapshot_hashes": {
+    "production": {
+      "sha256": "1be32234601ec9a4f128359762027d945600ec11b8c55b8d33202aafdb4e6c46",
+      "rows": 213
+    },
+    "staging": {
+      "sha256": "c60573d3263c64c7b14ef7ba5dccc206765f0f4b8d7c92ab6fedae30ca644624",
+      "rows": 209
+    }
+  },
+  "binding_snapshot_hashes": {
+    "production": {
+      "sha256": "e0f0aad2854198b33b561327a4041213923c50fbf5cbc21541f128ba1464c86d",
+      "cards": 51
+    },
+    "staging": {
+      "sha256": "b1a748bd7c43a1fdf559139f1e62d664d87cc24fb1db264e748410c00db793ec",
+      "cards": 51
+    }
+  },
+  "checks": [
+    {
+      "command": "node prepare-crossing-ruins51-source-input.mjs",
+      "status": "accepted_originals_and_all_131_source_hashes_verified",
+      "fronts": 51,
+      "exit_code": 0
+    },
+    {
+      "command": "accepted offline prepare-local.mjs",
+      "status": "originals_and_derivatives_hashes_dimensions_and_full_decodes_verified",
+      "fronts": 51,
+      "derivatives": 153,
+      "sharp": "0.35.5",
+      "pipeline_sha256": "642eb05d57c921901cfa6241e1f0d32a71da602ea3594693b8d63247a05b0bb0",
+      "exit_code": 0
+    },
+    {
+      "command": "python freeze-crossing-ruins51.py",
+      "status": "archive_hashes_sizes_dimensions_and_full_PIL_decodes_verified",
+      "images": 204,
+      "members": 208,
+      "exit_code": 0
+    },
+    {
+      "command": "node --test tools/artwork-crossing-ruins51-push-20261014/publish.test.mjs",
+      "passed": 16,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "node --test tools/artwork-crossing-ruins51-push-20261014/publish.test.mjs tools/artwork3303-publish-20260928/publish.test.mjs tools/artwork3303-publish-20260928/native-name-corrections.test.mjs",
+      "passed": 72,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "python tools/artwork-crossing-ruins51-push-20261014/download-package.test.py",
+      "passed": 5,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "node --test tools/artwork3303-publish-20260928/journal.integration.test.mjs",
+      "passed": 1,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "python tools/artwork-crossing-ruins51-push-20261014/download-package.py <local-packages> --archive <frozen-local-zip>",
+      "status": "verified_and_extracted",
+      "members": 208,
+      "exit_code": 0
+    },
+    {
+      "command": "node tools/artwork-crossing-ruins51-push-20261014/verify-packages.mjs <local-packages>",
+      "status": "all_frozen_files_fully_decoded",
+      "images": 204,
+      "exit_code": 0
+    },
+    {
+      "command": "existing yaml parser and strict protected-workflow guards",
+      "status": "parsed_protected_guards_passed"
+    },
+    {
+      "command": "node scripts/deploy/secret-scan.mjs --directory=tools/artwork-crossing-ruins51-push-20261014",
+      "status": "passed",
+      "exit_code": 0
+    }
+  ],
+  "workflow": {
+    "file": ".github/workflows/artwork-crossing-ruins51-production.yml",
+    "sha256": "30f48b71ba6fe2c3ec50e9a556fe27904ad42f5ecd0f120f2f1427f43c91b556",
+    "job": "artwork_crossing_ruins51",
+    "confirmation": "PUBLISH ARTWORK CROSSING RUINS 51",
+    "production_environment": true,
+    "manual_exact_main": true,
+    "shared_production_concurrency": true,
+    "token_contents_permission": "read",
+    "hosted_private_output_unset": true,
+    "secret_scan_required_before_upload": true
+  },
+  "implementation_hash_count": 16,
+  "total_owned_tool_files_including_validation": 17,
+  "file_hashes": [
+    {
+      "file": ".gitattributes",
+      "bytes": 54,
+      "sha256": "fb17a974f934f241f38ca5109abdd924cdbf3c0820ac9fb9966603b8f1f26ffd"
+    },
+    {
+      "file": ".gitignore",
+      "bytes": 19,
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793"
+    },
+    {
+      "file": "approval.json",
+      "bytes": 1515,
+      "sha256": "fb6069d84d3efef5817c8cd53fa436f7cdffcc66c937f03c0db5ed9211f38f52"
+    },
+    {
+      "file": "before-query.sql",
+      "bytes": 22458,
+      "sha256": "d0c8e54c157599d6b32185e41ed47cc1fae50a3f70d7191862670059fe999cbd"
+    },
+    {
+      "file": "download-package.py",
+      "bytes": 5965,
+      "sha256": "1bf60ae54037e5587ee7fca513518c16d29b3479c9544764a3efefb4af341b8c"
+    },
+    {
+      "file": "download-package.test.py",
+      "bytes": 6102,
+      "sha256": "06a1544ee1c5721d6fc67de217532a859d94f7ecccb66ff7df201165e51a5b17"
+    },
+    {
+      "file": "freeze-inputs.json",
+      "bytes": 2494,
+      "sha256": "e7df08a7dc9a38f63c0df7753dfeedf0182f08ee137ecfc9c7bb82a7bcd826e6"
+    },
+    {
+      "file": "freeze-local.mjs",
+      "bytes": 9601,
+      "sha256": "29781522c8ed40c3935c22cea2de977d9f95f444541633afcf05bc929c9511a1"
+    },
+    {
+      "file": "frozen.mjs",
+      "bytes": 57524,
+      "sha256": "2c9bdab48fcc92e6f01907da15f53dfee7f01cdb90ff651c1a1911e3ed5ce9aa"
+    },
+    {
+      "file": "identity-table.json",
+      "bytes": 44544,
+      "sha256": "82717270c28ec82df57d7ef9d39937e2893db6c96341b4e388389b8acb5c5570"
+    },
+    {
+      "file": "plan.json",
+      "bytes": 692120,
+      "sha256": "5da9df04d1266be2a6b333a4e5d0b1e3192765f442f5a684bdfc295976e5850b"
+    },
+    {
+      "file": "publish.mjs",
+      "bytes": 4889,
+      "sha256": "92fc76067124f9fa8066c43f7a353c6312f492cb709ee012a79820b3559f6861"
+    },
+    {
+      "file": "publish.test.mjs",
+      "bytes": 20790,
+      "sha256": "6a75831f61e3b3b68701662215070584bf4f8168a14b70c4af8e6e5df5808a88"
+    },
+    {
+      "file": "README.md",
+      "bytes": 6049,
+      "sha256": "bc9fdadd46336a93298e3f57b0328aae69c02ac22f5aa5537ede5077850af8ce"
+    },
+    {
+      "file": "saved-targets.json",
+      "bytes": 21153,
+      "sha256": "2ef3131174e1f5188d4bdf998c666950345f9ffba1402d2fda5393a94dbf7055"
+    },
+    {
+      "file": "verify-packages.mjs",
+      "bytes": 1495,
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841"
+    }
+  ],
+  "reused_dependency_hashes": [
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 9031,
+      "sha256": "5524305ba4bd6a0f3867ea2c097c57fb0d610e27ef1d9d64529b64e9c67249de"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/metadata-guard.mjs",
+      "bytes": 4018,
+      "sha256": "cca5354822fe11c007308f7d22ebf84649d2374619e0dd049c7347a9db9e116f"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/publish.mjs",
+      "bytes": 5885,
+      "sha256": "8451746bb6e188f56c5be31064742eaeecdc2f2c6d6e27cb31ab5c7227af6d1f"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "tools/artwork-next-push-20261013/frozen.mjs",
+      "bytes": 7732,
+      "sha256": "3e14eb76a012116492075328c50e6c5907f712004da02d4d3dae541d2617a95b"
+    },
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 30117,
+      "sha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24425,
+      "sha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 15024,
+      "sha256": "1d168e5407a5bdc6e027f58991de58a0664576d7c917d5b219fa13f9af4a1d0a"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/download-package.py",
+      "bytes": 5489,
+      "sha256": "53f1114f25bd995b4f05d9b2d3adad7ae2dadc85b4b13f038a84bcc5e7d6b09f"
+    }
+  ],
+  "unchanged_dependencies": 11,
+  "preparation_script_hashes": [
+    {
+      "file": "prepare-crossing-ruins51-source-input.mjs",
+      "sha256": "9e966112abf5111c74706886780b74252854baad66a151d52be3ef259401669a"
+    },
+    {
+      "file": "package-crossing-ruins51.mjs",
+      "sha256": "c93a48c77b5f7d180500411b49cc26b3f455a5c22f8172ac5bb1147f649df615"
+    },
+    {
+      "file": "freeze-crossing-ruins51.py",
+      "sha256": "94a592a18e3c167d9e48dc6ca2114cb6c14149858c6dc3f6793e74b8bcd670dd"
+    }
+  ],
+  "database_requests_by_this_task": 0,
+  "provider_requests_by_this_task": 0,
+  "storage_writes_by_this_task": 0,
+  "production_source_insertions": 0,
+  "staging_source_fixture_rollback_only": true,
+  "staging_artwork_visibility_fixture": false,
+  "metadata_changes": 0,
+  "pricing_changes": 0,
+  "ownership_changes": 0,
+  "physical_finish_certified": false,
+  "physical_edition_certified": false,
+  "independent_vendor_licence_verified": false,
+  "source_wide_approval": false,
+  "published": false,
+  "independent_review": "pending_coordinator",
+  "raw_private_snapshots_included": false,
+  "private_paths_in_public_plan": false
+}

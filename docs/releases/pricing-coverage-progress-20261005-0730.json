@@ -1,0 +1,307 @@
+{
+  "observedAt": "2026-10-05T07:30:00Z",
+  "activeScope": {
+    "languages": [
+      "en",
+      "ja",
+      "zh-cn",
+      "zh-tw"
+    ],
+    "koreanExcluded": true,
+    "priced": 31997,
+    "total": 76030,
+    "percent": 42.08,
+    "netSince1032October4": 2908
+  },
+  "coverage": {
+    "rows": [
+      {
+        "language_code": "en",
+        "observed_at": "2026-10-05 07:17:31.514045+00",
+        "physical_total": 33359,
+        "tcgcsv_saved": 17679,
+        "tcgcsv_fresh": 17679,
+        "cardmarket_saved": 7802,
+        "cardmarket_fresh": 7802,
+        "combined_saved": 20619,
+        "combined_fresh": 20619
+      },
+      {
+        "language_code": "ja",
+        "observed_at": "2026-10-05 07:27:23.8537+00",
+        "physical_total": 14100,
+        "tcgcsv_saved": 6907,
+        "tcgcsv_fresh": 6907,
+        "cardmarket_saved": 1032,
+        "cardmarket_fresh": 1032,
+        "combined_saved": 7324,
+        "combined_fresh": 7324
+      },
+      {
+        "language_code": "zh-cn",
+        "observed_at": "2026-10-05 07:27:36.838986+00",
+        "physical_total": 20405,
+        "tcgcsv_saved": 0,
+        "tcgcsv_fresh": 0,
+        "cardmarket_saved": 0,
+        "cardmarket_fresh": 0,
+        "combined_saved": 0,
+        "combined_fresh": 0
+      },
+      {
+        "language_code": "zh-tw",
+        "observed_at": "2026-10-05 07:27:39.061332+00",
+        "physical_total": 8166,
+        "tcgcsv_saved": 0,
+        "tcgcsv_fresh": 0,
+        "cardmarket_saved": 4054,
+        "cardmarket_fresh": 4054,
+        "combined_saved": 4054,
+        "combined_fresh": 4054
+      }
+    ],
+    "atomic": false,
+    "publicationVersionsBefore": [
+      {
+        "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en",
+        "published_at": "2026-08-20 13:38:28.221+00"
+      },
+      {
+        "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja",
+        "published_at": "2026-09-27 17:00:18.728003+00"
+      },
+      {
+        "id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "language_code": "zh-cn",
+        "published_at": "2026-08-10 16:54:15.322+00"
+      },
+      {
+        "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "language_code": "zh-tw",
+        "published_at": "2026-08-20 13:58:03.35+00"
+      }
+    ],
+    "publicationVersionsAfter": [
+      {
+        "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en",
+        "published_at": "2026-08-20 13:38:28.221+00"
+      },
+      {
+        "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja",
+        "published_at": "2026-09-27 17:00:18.728003+00"
+      },
+      {
+        "id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "language_code": "zh-cn",
+        "published_at": "2026-08-10 16:54:15.322+00"
+      },
+      {
+        "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "language_code": "zh-tw",
+        "published_at": "2026-08-20 13:58:03.35+00"
+      }
+    ],
+    "versionsUnchanged": true,
+    "window": "Serial reads 07:17:31–07:27:39 UTC, not an atomic snapshot.",
+    "queryTemplate": "with physical as materialized (\n  select cvv.variant_id, cvv.printing_id, cvv.set_id, cvv.language_code,\n         cvv.catalogue_version_id\n  from catalog.catalogue_version_variants cvv\n  join catalog.card_variants v on v.id=cvv.variant_id\n    and v.deprecated_at is null and v.language_code=cvv.language_code\n    and v.printing_id=cvv.printing_id\n  join catalog.card_printings p on p.id=cvv.printing_id\n    and p.deprecated_at is null and p.set_id=cvv.set_id\n    and p.language_code=cvv.language_code\n  join catalog.sets s on s.id=p.set_id\n    and s.deprecated_at is null and s.language_code=cvv.language_code\n  join catalog.languages l on l.code=cvv.language_code\n  where cvv.catalogue_version_id = :catalogue_version_id\n    and cvv.language_code = :language_code\n), assessed as (\n  select c.*,\n    exists (select 1 from market.catalogue_general_prices g\n      where g.variant_id=c.variant_id and g.printing_id=c.printing_id\n        and g.set_id=c.set_id and g.language_code=c.language_code\n        and g.catalogue_version_id=c.catalogue_version_id) as tcgcsv_saved,\n    exists (select 1 from market.catalogue_general_prices g\n      where g.variant_id=c.variant_id and g.printing_id=c.printing_id\n        and g.set_id=c.set_id and g.language_code=c.language_code\n        and g.catalogue_version_id=c.catalogue_version_id\n        and g.stale_after > now()) as tcgcsv_fresh,\n    exists (select 1 from market.cardmarket_blended_general_prices cm\n      where cm.printing_id=c.printing_id\n        and cm.catalogue_version_id=c.catalogue_version_id) as cardmarket_saved,\n    exists (select 1 from market.cardmarket_blended_general_prices cm\n      where cm.printing_id=c.printing_id\n        and cm.catalogue_version_id=c.catalogue_version_id\n        and cm.stale_after > now()) as cardmarket_fresh\n  from physical c\n)\nselect :language_code as language_code, now() as observed_at, count(*) as physical_total,\n count(*) filter(where tcgcsv_saved) as tcgcsv_saved,\n count(*) filter(where tcgcsv_fresh) as tcgcsv_fresh,\n count(*) filter(where cardmarket_saved) as cardmarket_saved,\n count(*) filter(where cardmarket_fresh) as cardmarket_fresh,\n count(*) filter(where tcgcsv_saved or cardmarket_saved) as combined_saved,\n count(*) filter(where tcgcsv_fresh or cardmarket_fresh) as combined_fresh\nfrom assessed;"
+  },
+  "batch": {
+    "id": "20261005-09",
+    "sourceAt": "2026-10-04T20:05:38Z",
+    "staleAfter": "2026-10-06T20:05:38Z",
+    "cohorts": [
+      {
+        "key": "bw-promos",
+        "groupId": 1407,
+        "name": "Black and White Promos",
+        "code": "bwp",
+        "setId": "ba16466a-a048-4563-acf2-5507fa211b96",
+        "canonicalName": "BW Black Star Promos",
+        "stage": {
+          "reviewed": 69,
+          "stored": 101,
+          "proof": {
+            "expected": 12,
+            "stored": 12,
+            "verified": 12
+          },
+          "finished": true,
+          "stats": {
+            "cards": 101,
+            "priced": 12,
+            "mapped": 69,
+            "pages": 1,
+            "storeBatches": 4,
+            "manualRetainedFeedRecovery": true
+          }
+        },
+        "production": {
+          "reviewed": 69,
+          "stored": 101,
+          "proof": {
+            "expected": 12,
+            "stored": 12,
+            "verified": 12
+          },
+          "finished": true,
+          "stats": {
+            "cards": 101,
+            "priced": 12,
+            "mapped": 69,
+            "pages": 1,
+            "storeBatches": 4,
+            "manualRetainedFeedRecovery": true
+          },
+          "api": {
+            "references": 12,
+            "verified": 12
+          }
+        }
+      },
+      {
+        "key": "dp-promos",
+        "groupId": 1421,
+        "name": "Diamond and Pearl Promos",
+        "code": "dpp",
+        "setId": "145e94b6-56f3-4f63-bfc6-473a472b661d",
+        "canonicalName": "DP Black Star Promos",
+        "stage": {
+          "reviewed": 34,
+          "stored": 58,
+          "proof": {
+            "expected": 32,
+            "stored": 32,
+            "verified": 32
+          },
+          "finished": true,
+          "stats": {
+            "cards": 58,
+            "priced": 32,
+            "mapped": 34,
+            "pages": 1,
+            "storeBatches": 2,
+            "manualRetainedFeedRecovery": true
+          }
+        },
+        "production": {
+          "reviewed": 34,
+          "stored": 58,
+          "proof": {
+            "expected": 32,
+            "stored": 32,
+            "verified": 32
+          },
+          "finished": true,
+          "stats": {
+            "cards": 58,
+            "priced": 32,
+            "mapped": 34,
+            "pages": 1,
+            "storeBatches": 2,
+            "manualRetainedFeedRecovery": true
+          },
+          "api": {
+            "references": 32,
+            "verified": 32
+          }
+        }
+      },
+      {
+        "key": "nintendo-promos",
+        "groupId": 1423,
+        "name": "Nintendo Promos",
+        "code": "np",
+        "setId": "e6a38c42-178e-4875-8090-fe559404207f",
+        "canonicalName": "Nintendo Black Star Promos",
+        "stage": null,
+        "production": null
+      }
+    ],
+    "reviewedMappingsEachEnvironment": 103,
+    "storedOutcomesEachEnvironment": 159,
+    "positiveQuotesAddedEachEnvironment": 44,
+    "previousPrimaryOrBackupOverlap": 0,
+    "netPreviouslyUnpriced": 44,
+    "titleAliasPolicy": "Only bare terminal BW/DP printed collector suffixes whose complete number equals both provider and canonical collector, preceding name equals current English name, supported exact finish and collision preflight pass. Campaign/stamp/Prerelease/Founder/Winner/LV.X/G modifiers are not stripped; generic matcher unchanged.",
+    "nintendo": "48 current candidates, zero accepted aliases or quotes; campaign/title evidence unresolved.",
+    "fx": {
+      "rate": 0.757532293986637,
+      "at": "2026-10-02T00:00:00.000Z",
+      "source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+    }
+  },
+  "afterBatch": {
+    "primaryEnglish": 17679,
+    "primaryJapanese": 6907,
+    "primaryTotal": 24586,
+    "manualReviewedPrimaryQuotesAdded": 1444,
+    "manualNetCombinedGain": 1031,
+    "overnightNetCombinedGain": 1877,
+    "groupLedger": [
+      {
+        "category_id": 3,
+        "status": "complete",
+        "groups": 153
+      },
+      {
+        "category_id": 3,
+        "status": "unmapped",
+        "groups": 67
+      },
+      {
+        "category_id": 85,
+        "status": "complete",
+        "groups": 163
+      },
+      {
+        "category_id": 85,
+        "status": "unmapped",
+        "groups": 296
+      }
+    ]
+  },
+  "foreignInvestigation": {
+    "simplifiedChinese": [
+      {
+        "code": "pikaqian",
+        "aliases": 19431,
+        "valid_physical_aliases": 19431,
+        "valid_variants": 19431
+      },
+      {
+        "code": "stackr_manual",
+        "aliases": 6,
+        "valid_physical_aliases": 6,
+        "valid_variants": 6
+      },
+      {
+        "code": "tcgdex",
+        "aliases": 1779,
+        "valid_physical_aliases": 1683,
+        "valid_variants": 974
+      }
+    ],
+    "diagnosis": "96 TCGdex card aliases in the published version point to retired physical rows; first twelve sorted aliases are retired. 1683 current valid aliases represent 974 current variants. Existing retention runner aborts the entire first page rather than progressing past explicit retirements.",
+    "sourceRepair": "Runner now advances raw identity cursors and durable skipped-identity accounting for explicit physical retirements, without fetching or retaining retired cards. Missing/conflicting live identities remain hard failures. Not a deployed runtime or new-price claim.",
+    "japanese": "Current published native Best of XY is absent in stage and production; CP4 is Premium Champion Pack EX×M×BREAK (2016), not the 2017 Best of XY provider group. No guessed mapping accepted."
+  },
+  "checks": {
+    "focusedPriceCacheScriptsPassed": 19,
+    "typecheckPassed": true,
+    "lintErrors": 0,
+    "existingLintWarnings": 9,
+    "retiredIdentityRegressionPassed": true,
+    "sourceRepairNotDeployed": true
+  },
+  "boundaries": {
+    "noKoreanWork": true,
+    "noCatalogueMutation": true,
+    "noNewNativeBuild": true,
+    "fullTargetAchieved": false,
+    "serviceSqlApiNotOwnerHttpOrPhoneVisibility": true
+  }
+}

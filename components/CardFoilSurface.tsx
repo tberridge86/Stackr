@@ -1,3 +1,4 @@
+import React from 'react';
 import type { CardFoilSurfaceProps } from './CardFoilSurface.types';
 
 /**

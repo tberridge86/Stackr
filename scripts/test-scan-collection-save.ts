@@ -20,6 +20,7 @@ mock('../lib/binders', {
   invalidateBinderCaches: () => undefined,
 });
 mock('../lib/pokemonTcg', { normalizePokemonCardLanguage: (value: unknown) => String(value ?? 'en').toLowerCase() });
+mock('../lib/activity', { createActivityPost: async () => ({ status: 'created', snapshotStored: true }) });
 
 const supabase = {
   auth: { getUser: async () => ({ data: { user: { id: 'owner-a' } }, error: null }) },

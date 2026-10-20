@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import vm from 'node:vm';
+import ts from 'typescript';
 
 import {
   defineTcgdexRuntimeImageOverlay,
@@ -573,7 +575,57 @@ const scanResultSource = readFileSync('app/scan/result.tsx', 'utf8');
 const collectionBatchSource = readFileSync('lib/collectionBatch.ts', 'utf8');
 const compositeSaveSource = readFileSync('lib/scanCollectionVariantSave.ts', 'utf8');
 assert.match(scanResultSource, /await saveScanCollectionVariant\(/);
-assert.match(compositeSaveSource, /await addOwnedCardBatchToBinder\(/, 'Composite scan saves must retain the shared controlled-image persistence boundary.');
+assert.match(compositeSaveSource, /sanitizeCollectionBatchCards\(raw\.cards\)/,
+  'Recovered composite inputs must retain the controlled-image persistence boundary.');
+const compositeTree = ts.createSourceFile('composite.ts', compositeSaveSource, ts.ScriptTarget.Latest, true);
+const resumeFunction = compositeTree.statements.find((node): node is ts.FunctionDeclaration =>
+  ts.isFunctionDeclaration(node) && node.name?.text === 'resumeIntent',
+);
+assert.ok(resumeFunction, 'The actual composite recovery function must be present.');
+const resumeCode = ts.transpileModule(`${resumeFunction.getText(compositeTree)}\nexports.resume = resumeIntent;`, {
+  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+async function verifyCompositePersistenceRouting() {
+  for (const historyOnly of [false, true]) {
+    let holdingWrites = 0;
+    let variantWrites = 0;
+    let historyRepairs = 0;
+    const input = { ownerUserId: 'owner-a', sourceSessionId: 'scan-a', binderId: 'binder-a', historyOnly,
+      cards: [{ cardId: 'card-a', setId: 'set-a', imageUrl: 'https://assets.tcgdex.net/ja/cards/sv2a/157/low.webp' }],
+      variant: { userId: 'owner-a', cardId: 'card-a', setId: 'set-a', variant: 'holo' } };
+    const assertPersistedCards = (binderId: string, cards: typeof input.cards, options: { requestKey: string }) => {
+      assert.equal(binderId, input.binderId);
+      assert.equal(cards[0].imageUrl, null, 'Both save and repair must use the sanitized recovery-intent cards.');
+      assert.equal(options.requestKey, 'original-request');
+    };
+    const exports: any = {};
+    vm.runInNewContext(resumeCode, {
+      exports,
+      createCollectionBatchRequestKey: () => 'original-request',
+      persistVerifiedCollectionBatchRecoveryIntent: async (intent: typeof input) => ({ ...intent, requestKey: 'original-request',
+        cards: intent.cards.map((card) => ({ ...card, imageUrl: stripTcgdexReferenceBeforePersistence(card.imageUrl) })) }),
+      verifyOwner: async (owner: string) => { assert.equal(owner, input.ownerUserId); },
+      addOwnedCardBatchToBinder: async (binderId: string, cards: typeof input.cards, options: { requestKey: string }) => {
+        assertPersistedCards(binderId, cards, options);
+        holdingWrites += 1;
+        return { copiesAdded: 1 };
+      },
+      repairOwnedCardBatchActivity: async (binderId: string, cards: typeof input.cards, options: { requestKey: string }) => {
+        assertPersistedCards(binderId, cards, options);
+        historyRepairs += 1;
+        return { copiesAdded: 1, replayed: true };
+      },
+      addScannedVariantCopy: async () => { variantWrites += 1; return {}; },
+      clearCollectionBatchRecoveryIntent: async () => {},
+      clearPending: async () => {},
+      retainHistoryRepair: async () => {},
+    });
+    await exports.resume(input);
+    assert.equal(holdingWrites, historyOnly ? 0 : 1, 'History-only recovery must never apply the holding batch.');
+    assert.equal(variantWrites, historyOnly ? 0 : 1, 'History-only recovery must never apply the finish quantity.');
+    assert.equal(historyRepairs, historyOnly ? 1 : 0, 'History-only recovery uses the dedicated activity repair boundary.');
+  }
+}
 assert.match(scanResultSource, /select\('set_id, language, condition'\)/);
 assert.match(scanResultSource, /condition: existingCard\?\.condition \|\| selectedBinder\?\.default_condition \|\| 'Near Mint'/);
 assert.match(collectionBatchSource, /stripTcgdexReferenceBeforePersistence\(card\.imageUrl\)/);
@@ -671,4 +723,6 @@ const backendServerSource = readFileSync('backend/server.js', 'utf8');
 assert.match(backendServerSource, /app\.post\('\/admin\/catalogue\/jp\/sync'[\s\S]{0,500}res\.status\(410\)/);
 assert.doesNotMatch(backendServerSource, /syncJapaneseCatalogue\(supabase/);
 
-console.log('TCGdex controlled low-resolution card-reference route remains green-gated, memory-only, attributed, and fail-closed.');
+void verifyCompositePersistenceRouting().then(() => {
+  console.log('TCGdex controlled low-resolution card-reference route remains green-gated, memory-only, attributed, and fail-closed; history-only recovery applies no holdings.');
+}).catch((error) => { console.error(error); process.exitCode = 1; });

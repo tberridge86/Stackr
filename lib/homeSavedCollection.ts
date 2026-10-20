@@ -1,12 +1,21 @@
 import { fetchBinders, type BinderCardRecord, type BinderRecord } from './binders';
 import { fetchOwnedCardRows } from './ownership';
 import { supabase } from './supabase';
+import { withPersonalDataReadTimeout } from './personalDataRead';
 
 /** Read saved collection records before requesting optional catalogue artwork or prices. */
-export async function fetchHomeSavedCollection(userId: string) {
+export async function fetchHomeSavedCollection(userId: string, options: {
+  onBindersReady?: (binders: BinderRecord[]) => void;
+} = {}) {
   const [binders, ownedRows] = await Promise.all([
-    fetchBinders({ enrich: false }),
-    fetchOwnedCardRows(),
+    withPersonalDataReadTimeout(() => fetchBinders({ enrich: false })).then((savedBinders) => {
+      if (savedBinders.some((binder) => binder.user_id !== userId)) {
+        throw new Error('The collection account changed. Please retry.');
+      }
+      options.onBindersReady?.(savedBinders);
+      return savedBinders;
+    }),
+    withPersonalDataReadTimeout(() => fetchOwnedCardRows()),
   ]);
   if (binders.some((binder) => binder.user_id !== userId)
     || ownedRows.some((row) => row.user_id && row.user_id !== userId)) {
@@ -18,9 +27,9 @@ export async function fetchHomeSavedCollection(userId: string) {
   for (let offset = 0; offset < binders.length; offset += 100) {
     const ids = binders.slice(offset, offset + 100).map((binder) => binder.id);
     for (let from = 0; ; from += 1000) {
-      const { data, error } = await supabase.from('binder_cards').select('*')
+      const { data, error } = await withPersonalDataReadTimeout((signal) => supabase.from('binder_cards').select('*')
         .in('binder_id', ids)
-        .order('id', { ascending: true }).range(from, from + 999);
+        .order('id', { ascending: true }).range(from, from + 999).abortSignal(signal));
       if (error) throw error;
       const page = (data ?? []) as BinderCardRecord[];
       if (page.some((row) => !knownBinders.has(row.binder_id))) {
@@ -30,7 +39,9 @@ export async function fetchHomeSavedCollection(userId: string) {
       if (page.length < 1000) break;
     }
   }
-  const byBinder = new Map<string, BinderCardRecord[]>();
+  // A successful paginated read also proves an empty binder; absence from a
+  // partial map must never be mistaken for a complete zero-card download.
+  const byBinder = new Map<string, BinderCardRecord[]>(binders.map((binder) => [binder.id, []]));
   for (const row of rows) {
     const cards = byBinder.get(row.binder_id) ?? [];
     cards.push(row);

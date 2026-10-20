@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const SEARCH_CARD_CACHE_VERSION = 1;
-const SEARCH_CARD_CACHE_PREFIX = 'stackr:canonical-search-cards:v1:';
+const SEARCH_CARD_CACHE_VERSION = 2;
+const SEARCH_CARD_CACHE_PREFIX = 'stackr:canonical-search-cards:v2:';
 const SEARCH_CARD_CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 const SEARCH_CARD_CACHE_LIMIT = 48;
 

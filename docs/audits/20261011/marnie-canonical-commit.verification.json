@@ -1,0 +1,241 @@
+{
+  "verifiedAt": "2026-10-11T20:38:43.509Z",
+  "project": "oakdbbzdqwurpjnoqhmu",
+  "sourceRevision": "63b09f3bf02771fb395d475bf6fada00a8f2487b",
+  "ownerApprovalReference": "Owner lets go TIF; bounded Marnie correction/backend/build55 sequence, 2026-10-11",
+  "canonicalApplied": true,
+  "sourceExecutionSha256": "6f94c9e7196298513a2bd4d4560c3e17d0d33d459ee1f5162ea091dc2e216851",
+  "beforeCapturedAt": "2026-10-11T20:38:10.60175+00:00",
+  "afterCapturedAt": "2026-10-11T20:38:18.111168+00:00",
+  "changed": [
+    {
+      "table": "printings",
+      "id": "1386b19f-ada3-447a-83d0-105acf48752c",
+      "fields": [
+        "updated_at",
+        "english_display_name"
+      ]
+    },
+    {
+      "table": "printings",
+      "id": "3467f1b3-cfed-47c1-bddb-73a6507009b4",
+      "fields": [
+        "updated_at",
+        "english_display_name"
+      ]
+    },
+    {
+      "table": "printings",
+      "id": "44b54476-f33f-435f-8985-b412cb5edb4c",
+      "fields": [
+        "updated_at",
+        "english_display_name"
+      ]
+    },
+    {
+      "table": "printings",
+      "id": "4a459e00-0853-43a7-b0a6-e9d0f56c42f6",
+      "fields": [
+        "updated_at",
+        "english_display_name"
+      ]
+    },
+    {
+      "table": "printings",
+      "id": "4a9af5de-61f9-4bb7-8133-5d28e2b356ad",
+      "fields": [
+        "updated_at",
+        "english_display_name"
+      ]
+    },
+    {
+      "table": "printings",
+      "id": "63019ce2-f59b-4aed-a3e0-025789ecb7ab",
+      "fields": [
+        "updated_at",
+        "english_display_name"
+      ]
+    },
+    {
+      "table": "printings",
+      "id": "818b3095-25cf-491e-b536-6a2e7513a3a0",
+      "fields": [
+        "updated_at",
+        "english_display_name"
+      ]
+    },
+    {
+      "table": "printings",
+      "id": "971eba73-3c5f-4306-a6d5-700e8b748c9b",
+      "fields": [
+        "updated_at",
+        "english_display_name"
+      ]
+    },
+    {
+      "table": "printings",
+      "id": "a52f71c8-a76c-449a-8030-219ec64a61d8",
+      "fields": [
+        "updated_at",
+        "english_display_name"
+      ]
+    },
+    {
+      "table": "printings",
+      "id": "c3ee4722-7304-4cbf-a905-93162e371e76",
+      "fields": [
+        "updated_at",
+        "english_display_name"
+      ]
+    },
+    {
+      "table": "printings",
+      "id": "d2132ffe-de94-462d-be98-8b6fba08e8ad",
+      "fields": [
+        "updated_at",
+        "english_display_name"
+      ]
+    },
+    {
+      "table": "printings",
+      "id": "f9c8c84e-1179-4585-8a38-9591727bb676",
+      "fields": [
+        "updated_at",
+        "english_display_name"
+      ]
+    },
+    {
+      "table": "names",
+      "id": "0070936d-d340-47ad-96d5-da42862035a7",
+      "fields": [
+        "name",
+        "updated_at",
+        "normalized_name"
+      ]
+    },
+    {
+      "table": "names",
+      "id": "31969f87-600d-45fe-898f-8e3afff13492",
+      "fields": [
+        "name",
+        "updated_at",
+        "normalized_name"
+      ]
+    },
+    {
+      "table": "names",
+      "id": "379f69f1-850f-477f-adae-446b68ec3d73",
+      "fields": [
+        "name",
+        "updated_at",
+        "normalized_name"
+      ]
+    },
+    {
+      "table": "names",
+      "id": "52a953c0-ea98-4c81-8f5f-63baceca8f38",
+      "fields": [
+        "name",
+        "updated_at",
+        "normalized_name"
+      ]
+    },
+    {
+      "table": "names",
+      "id": "840bdc42-fb72-4139-a7cf-cfd0537594c2",
+      "fields": [
+        "name",
+        "updated_at",
+        "normalized_name"
+      ]
+    },
+    {
+      "table": "names",
+      "id": "9b2526f7-1b50-4457-8bbf-e82e85e34384",
+      "fields": [
+        "name",
+        "updated_at",
+        "normalized_name"
+      ]
+    },
+    {
+      "table": "names",
+      "id": "a367df2a-938d-4d61-9d0c-b3d69bfff11f",
+      "fields": [
+        "name",
+        "updated_at",
+        "normalized_name"
+      ]
+    },
+    {
+      "table": "names",
+      "id": "aabed11b-9f46-4d5b-9f60-4b82b7d31916",
+      "fields": [
+        "name",
+        "updated_at",
+        "normalized_name"
+      ]
+    },
+    {
+      "table": "names",
+      "id": "acef624e-6440-4b91-b745-8424d893fea9",
+      "fields": [
+        "name",
+        "updated_at",
+        "normalized_name"
+      ]
+    },
+    {
+      "table": "names",
+      "id": "d1ca9223-84a3-415e-9a3a-2f3eca600e05",
+      "fields": [
+        "name",
+        "updated_at",
+        "normalized_name"
+      ]
+    },
+    {
+      "table": "names",
+      "id": "d7aefa3d-1179-44c5-8ab1-e8d673037cb4",
+      "fields": [
+        "name",
+        "updated_at",
+        "normalized_name"
+      ]
+    },
+    {
+      "table": "names",
+      "id": "e0a4fffb-ae6b-4d4c-ba4a-926f6dca7759",
+      "fields": [
+        "name",
+        "updated_at",
+        "normalized_name"
+      ]
+    },
+    {
+      "table": "names",
+      "id": "ed115f7d-9902-49c2-a47b-6303803f416b",
+      "fields": [
+        "name",
+        "updated_at",
+        "normalized_name"
+      ]
+    }
+  ],
+  "immutableVariantsAndMemberships": true,
+  "immutableNativeAliases": true,
+  "genuinePikachuUnchanged": true,
+  "printingCount": 12,
+  "englishAliasCount": 13,
+  "nativeAliasCount": 13,
+  "forwardReceipts": 25,
+  "deltaRows": 25,
+  "sequence": {
+    "max": 41944,
+    "min": 41920
+  },
+  "publishedMaximum": 41944,
+  "runtimeGenerationPerformed": false,
+  "backendDelivered": false,
+  "deviceVerified": false
+}

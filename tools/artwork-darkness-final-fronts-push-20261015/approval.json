@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 13,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "approved_at": "2026-10-15",
+  "cohort_sha256": "6fd3c62cef8c21ea33743bd281470ca9ff55186347f345354f91e7ac566fe155",
+  "source_counts": {
+    "scrydex": 13
+  },
+  "source_evidence": {
+    "approvedProjection": "ce963e5abed6043cb918f9b3dc1f0ccc402dbcb370cfaf963f2243b526fb3ebd",
+    "decision": "5e9d786c4feb935071776266e42f83bf25d43f1620d76faddabd6caca477e27c",
+    "source12Handoff": "e6bc310c71e25c91df4900e75d0ed2ada65e20b02779d1889a4678b764374b02",
+    "source110Handoff": "a6f32becfd53f51e2c2fd98f0eb31bb33c6c48053a15901b8078c164ac381b03",
+    "selection12": "1d17d436f1bd9d2382b661c388300763883ed0338fd2ed55d4a373a2d91c1fb1",
+    "review12": "f521d577476b7be6e858eb683ae42a8d557437ddbad24d0ffa1a9d5f90032a24",
+    "selection110": "b80acc2a2f92dbad8f68ac8905fb6e7a2e68892cf28e10e8a9a1c54ed08a7a83",
+    "review110": "43846928060053e198d7460ece9e81bf25fe4ce2e9d1e8bd59eb04db83649ffb"
+  },
+  "scope": "Store, resize and display exactly13 independently accepted Japanese Darkness final fronts and39 derivatives:11 unnumbered Trainers,1 unnumbered Special Energy and1 Pokemon with actual National Dex229. Preserve current11normal/2holo variants and labels, qualified null artist112, full native body/reference bridges, historical null selections and110 partial/attempt2 metadata. No source activation, catalogue/price edits, physical edition/finish or independent licence certification."
+}

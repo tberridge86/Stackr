@@ -1,0 +1,96 @@
+{
+  "observedAt": "2026-10-04T10:03:36.634Z",
+  "project": "oakdbbzdqwurpjnoqhmu",
+  "scope": "Production database through backend createMarketPricingService, service role; not live owner HTTP or handset",
+  "references": 100,
+  "samples": [
+    {
+      "elapsedMs": 10614,
+      "rows": 100,
+      "priced": 100,
+      "cardmarket": 99
+    },
+    {
+      "elapsedMs": 3184,
+      "rows": 100,
+      "priced": 100,
+      "cardmarket": 99
+    }
+  ],
+  "exactModeCardmarket": 0,
+  "unchangedReferences": 100,
+  "changedRows": 0,
+  "providerRequests": 0,
+  "sample": {
+    "reference": "0004dc82-8139-450b-88f7-d08ec8ccb3c1",
+    "cardId": "0004dc82-8139-450b-88f7-d08ec8ccb3c1",
+    "variantId": "b1eea552-1645-45c5-aada-551b64c159b6",
+    "language": "en",
+    "price": {
+      "variantId": "b1eea552-1645-45c5-aada-551b64c159b6",
+      "productType": "raw_card",
+      "identityKey": null,
+      "currency": "GBP",
+      "status": "market_estimate",
+      "priceType": "market_estimate",
+      "estimates": {
+        "low": null,
+        "central": 0.76,
+        "high": null
+      },
+      "sample": {
+        "total": 0,
+        "sold": 0,
+        "active": 0,
+        "sources": 0,
+        "dateRange": {
+          "from": null,
+          "to": null
+        }
+      },
+      "confidence": {
+        "score": 0,
+        "label": "insufficient_evidence"
+      },
+      "freshness": "fresh",
+      "sourceBreakdown": [
+        {
+          "provider": "cardmarket_public",
+          "evidenceType": "blended_general_estimate",
+          "selectedField": "trend",
+          "originalCurrency": "EUR",
+          "originalPrice": 0.89,
+          "exchangeRate": 0.85033,
+          "exchangeRateAt": "2026-10-02T00:00:00+00:00",
+          "exchangeRateSource": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+          "providerCategoryId": 51,
+          "providerProductId": 701130,
+          "timestampBasis": "provider_dataset",
+          "language": null,
+          "condition": null,
+          "finish": null,
+          "grade": null,
+          "usableForExactVariant": false,
+          "usableForHoldingsValuation": false
+        }
+      ],
+      "outliers": {},
+      "fallbackEstimate": {
+        "identityKey": "b1eea552-1645-45c5-aada-551b64c159b6",
+        "exact": false,
+        "reason": "general_card_estimate",
+        "baseVariantId": "b1eea552-1645-45c5-aada-551b64c159b6",
+        "printingId": "0004dc82-8139-450b-88f7-d08ec8ccb3c1",
+        "language": "en",
+        "finishCode": "holo"
+      },
+      "unavailableReason": null,
+      "calculatedAt": "2026-10-04T00:40:55+00:00",
+      "staleAfter": "2026-10-06T00:40:55+00:00",
+      "estimateVersion": "market-pricing-v1.0.0"
+    },
+    "unavailableReason": null,
+    "nextRetryAt": "2026-10-05T09:18:42.274794+00:00",
+    "revision": "6e0834baf0c8261a9392b8ee561338fc4103616611a17e9a088069a1be8c7ab8"
+  }
+}

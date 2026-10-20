@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "source_manifest_file": "challenge97-fronts-source-manifest.json",
+  "source_manifest_sha256": "e346dc6290bd98e61c681633f53783574365a9f07f0f7b5b1449a403653ebdf5",
+  "package_receipt_file": "challenge97-fronts-package-receipt.json",
+  "package_receipt_sha256": "d7e30d02c029a06f0d0b98837a38619825a15df639480ef1914797646f874a1e",
+  "saved_targets_sha256": "5b3bfb8bd2c4455b2761f9211a7d59d1759b458ab4a6397a90e611cf66bebacb",
+  "source_evidence": {
+    "approvedProjection": "af244b02d665d34a33f13d1b48f77bcdcd0c674bb0d0529be8f66e54ad22f1c6",
+    "finiteDecision": "f9dbf5790906048d1adf05b4cdf10da42e929509bf97ddf0064cc91a93ac2f8b",
+    "independentSelection": "3cd80c2577f23b2c9fdd9471a106431e0692ec9933623c500ab910bc911ac5d6",
+    "independentReview": "d82c51ba3bb2b75db9629e9f54969fcf84dd5a261195e009e3b19500c475ed95",
+    "sourcePolicyCheckpoint": "2013e3ecdb0bf05501b2cc7a66733c73e20ba80b3a7876e5d0442f1a32eb00e9",
+    "ownerPermissionAttestation": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d"
+  },
+  "before_snapshots": {
+    "production": {
+      "file": "publish-review/challenge97-20261015-production-before.json",
+      "sha256": "be3ff54ee83dbeda0261bb4725c0d6a36c3f91265e33b689fa25111f7213a5a7",
+      "rows": 394
+    },
+    "staging": {
+      "file": "publish-review/challenge97-20261015-staging-before.json",
+      "sha256": "030f5636b703cf4b2c4aa66c19b17be0511b9861517acdf415befc81f512609c",
+      "rows": 390
+    }
+  },
+  "bindings": {
+    "production": {
+      "file": "publish-review/challenge97-20261015-production-bindings.json",
+      "sha256": "fac3121808e04756a3ec63aa5cc56c80127b28d7113e6d7411e3d36cfdf3cba7"
+    },
+    "staging": {
+      "file": "publish-review/challenge97-20261015-staging-bindings.json",
+      "sha256": "d6c24081bc78b43ff5dbc84e6ce7d9793f6761961f16518802874f4432d51570"
+    }
+  },
+  "archive": {
+    "id": 644915851,
+    "sha256": "827eaa332cb9bbfad6364d0031c23de95dcc012cc3793f3fe92974d3edfb42f3",
+    "byte_size": 16022937,
+    "file_count": 392,
+    "name": "stackr-ja-artwork-challenge97-fronts-20261015.zip"
+  },
+  "metadata": [
+    {
+      "file": "manifest.json",
+      "sha256": "e346dc6290bd98e61c681633f53783574365a9f07f0f7b5b1449a403653ebdf5",
+      "byte_size": 1910408
+    },
+    {
+      "file": "receipts/preparation-summary.json",
+      "sha256": "eec21555e6b6acc5513ab3c6ca1434f0bb649f8668546a10a0ea349b7b326e3f",
+      "byte_size": 1319
+    },
+    {
+      "file": "receipts/current-card-bindings.json",
+      "sha256": "c6750374622ee601555222def128a6727f92715e9785f0e04a08778f022fd263",
+      "byte_size": 104287
+    },
+    {
+      "file": "receipts/finite-decision.json",
+      "sha256": "e3b77f6719fb49d5c9e9f1e0daf24413168a6ee03eb39e3318c32a864fda38bb",
+      "byte_size": 2234
+    }
+  ],
+  "unchanged_dependencies": [
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 9031,
+      "sha256": "5524305ba4bd6a0f3867ea2c097c57fb0d610e27ef1d9d64529b64e9c67249de"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/metadata-guard.mjs",
+      "bytes": 4018,
+      "sha256": "cca5354822fe11c007308f7d22ebf84649d2374619e0dd049c7347a9db9e116f"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/publish.mjs",
+      "bytes": 5885,
+      "sha256": "8451746bb6e188f56c5be31064742eaeecdc2f2c6d6e27cb31ab5c7227af6d1f"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "tools/artwork-next-push-20261013/frozen.mjs",
+      "bytes": 7732,
+      "sha256": "3e14eb76a012116492075328c50e6c5907f712004da02d4d3dae541d2617a95b"
+    },
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 30117,
+      "sha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24425,
+      "sha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 15024,
+      "sha256": "1d168e5407a5bdc6e027f58991de58a0664576d7c917d5b219fa13f9af4a1d0a"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/download-package.py",
+      "bytes": 5489,
+      "sha256": "53f1114f25bd995b4f05d9b2d3adad7ae2dadc85b4b13f038a84bcc5e7d6b09f"
+    }
+  ],
+  "private_capture_receipt_sha256": "2b172d5b94b8f20b37ae62c16adea8ece01a6240eb03706004f812bc61c4da0f",
+  "source_checkpoint": {
+    "file": "publish-review/root-source-policy-checkpoint-after-legacy8-20261015.json",
+    "sha256": "2013e3ecdb0bf05501b2cc7a66733c73e20ba80b3a7876e5d0442f1a32eb00e9"
+  }
+}

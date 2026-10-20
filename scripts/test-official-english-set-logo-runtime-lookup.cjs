@@ -52,12 +52,13 @@ assert.equal(fileHashes.size, 15);
 
 const englishLogos = compileModule('lib/englishSetLogos.ts', {});
 const japaneseLogos = compileModule('lib/japaneseSetLogos.ts', {});
-const traditionalChineseLogos = compileModule('lib/traditionalChineseSetLogos.ts', {});
+const traditionalChineseLogos = compileModule('lib/traditionalChineseSetLogos.ts', {
+  './pokemonSetIdentity': compileModule('lib/pokemonSetIdentity.ts', {}),
+});
 const getEnglishSetLogoMatch = englishLogos.getEnglishSetLogoMatch;
 const getEnglishSetLogoMatchForSet = englishLogos.getEnglishSetLogoMatchForSet;
 const getEnglishSetLogoSourceForSet = englishLogos.getEnglishSetLogoSourceForSet;
 const getJapaneseSetLogoSourceForSet = japaneseLogos.getJapaneseSetLogoSourceForSet;
-const getTraditionalChineseSetLogoSourceForSet = traditionalChineseLogos.getTraditionalChineseSetLogoSourceForSet;
 
 for (const row of manifest) {
   const expectedSource = `bundled:../${row.image_file}`;
@@ -93,7 +94,7 @@ const localArtwork = compileModule('lib/localSetArtwork.ts', {
   './englishSetLogos': { getEnglishSetLogoSourceForSet },
   './japaneseSetLogos': { getJapaneseSetLogoSourceForSet },
   './simplifiedChineseSetLogos': compileModule('lib/simplifiedChineseSetLogos.ts', {}),
-  './traditionalChineseSetLogos': { getTraditionalChineseSetLogoSourceForSet },
+  './traditionalChineseSetLogos': traditionalChineseLogos,
   './magazineSetCovers': {
     getMagazineSetCoverSourceForSet: (input) => input?.id === 'magazine:test' ? 'bundled:magazine' : null,
   },

@@ -48,9 +48,47 @@ async function fetchWithTimeout(url, options, timeoutMs) {
   }
 }
 
-function normalizeBrowseItem(item, query) {
+const languageAspectNames = new Set(['language', 'card language', 'language of card']);
+
+function aspectValues(aspect) {
+  const values = [aspect?.value, aspect?.valueName, aspect?.localizedValue, ...(Array.isArray(aspect?.values) ? aspect.values : []), ...(Array.isArray(aspect?.aspectValues) ? aspect.aspectValues : [])];
+  return values.flatMap((value) => typeof value === 'object' && value !== null
+    ? [value.value, value.valueName, value.localizedValue]
+    : [value]);
+}
+
+/** Retains whether listing language is absent, generic, conflicting, or exact. */
+export function ebayListingLanguageEvidence(item) {
+  const aspects = [...(Array.isArray(item?.localizedAspects) ? item.localizedAspects : []), ...(Array.isArray(item?.aspects) ? item.aspects : [])];
+  const values = aspects
+    .filter((aspect) => languageAspectNames.has(String(aspect?.name ?? aspect?.aspectName ?? aspect?.localizedName ?? '').trim().toLowerCase()))
+    .flatMap(aspectValues)
+    .map((value) => String(value ?? '').normalize('NFKC').trim().toLowerCase())
+    .filter(Boolean);
+  const matches = new Set();
+  for (const value of values) {
+    if (['zh-cn', 'zh_cn', 'zh-hans', 'simplified chinese', 'chinese simplified', 'mainland chinese', '简体中文', '簡體中文', '简中', '簡中'].includes(value)) matches.add('zh-CN');
+    else if (['zh-tw', 'zh_tw', 'zh-hant', 'traditional chinese', 'chinese traditional', 'taiwan chinese', '繁體中文', '繁体中文', '繁中'].includes(value)) matches.add('zh-TW');
+    else if (['ko', 'kr', 'kor', 'korean'].includes(value)) matches.add('ko');
+    else if (['ja', 'jp', 'jpn', 'japanese', 'japan'].includes(value)) matches.add('ja');
+    else if (['en', 'eng', 'english'].includes(value)) matches.add('en');
+  }
+  if (matches.size === 1) return { status: 'declared', language: [...matches][0], reason: null };
+  if (matches.size > 1) return { status: 'conflicting', language: null, reason: 'LANGUAGE_EVIDENCE_CONFLICT' };
+  if (values.length > 0) return { status: 'ambiguous', language: null, reason: 'LANGUAGE_EVIDENCE_AMBIGUOUS' };
+  return { status: 'absent', language: null, reason: null };
+}
+
+/** Returns a target language only when an eBay listing declares it unambiguously. */
+export function declaredEbayListingLanguage(item) {
+  return ebayListingLanguageEvidence(item).language;
+}
+
+export function normaliseEbayActiveListing(item, query) {
   const price = item?.price?.value ?? item?.currentBidPrice?.value ?? item?.itemWebUrlPrice ?? null;
   const currency = item?.price?.currency ?? item?.currentBidPrice?.currency ?? 'GBP';
+  const languageEvidence = ebayListingLanguageEvidence(item);
+  const declaredLanguage = languageEvidence.language;
   const shipping = Array.isArray(item?.shippingOptions)
     ? item.shippingOptions[0]?.shippingCost?.value ?? 0
     : 0;
@@ -66,6 +104,8 @@ function normalizeBrowseItem(item, query) {
     listedAt: item?.itemCreationDate ?? null,
     soldAt: null,
     condition: item?.condition ?? null,
+    language: declaredLanguage,
+    languageEvidence,
     metadata: {
       query,
       buyingOptions: item?.buyingOptions ?? [],
@@ -73,6 +113,8 @@ function normalizeBrowseItem(item, query) {
       sellerFeedbackPercentage: item?.seller?.feedbackPercentage ?? null,
       sellerFeedbackScore: item?.seller?.feedbackScore ?? null,
       imageUrl: item?.image?.imageUrl ?? null,
+      declaredLanguage,
+      languageEvidence,
     },
     rawPayload: item,
   };
@@ -139,7 +181,7 @@ export function createEbayActiveAdapter(config = pricingV2Config.sources.ebay_ac
               const options = Array.isArray(item?.buyingOptions) ? item.buyingOptions : [];
               return options.includes('FIXED_PRICE') || options.includes('AUCTION');
             })
-            .map((item) => normalizeBrowseItem(item, query))
+            .map((item) => normaliseEbayActiveListing(item, query))
         );
       }
 

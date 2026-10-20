@@ -1,3 +1,4 @@
+import { StackrFunctionalIcon } from '../../components/StackrFunctionalIcon';
 import { takeRotatingStringBatch } from '../../lib/homePriceRefreshCore';
 import { hasLowerPreparedPriceCoverage, isPreparedGeneralValuation, preferredPreparedValuation, preparedGeneralPricingSummary, preparedPricingSummary, preparedValuationTrend } from '../../lib/preparedCollectionValuation';
 import { blocksIndependentPriceRead, mergeCollectionPriceRead, storedCollectionPriceResults, type StoredCollectionPrice } from '../../lib/stableCollectionPrices';
@@ -15,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Alert,
   Image,
+  InteractionManager,
   Linking,
   RefreshControl,
   ScrollView,
@@ -28,13 +30,17 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FeatureTipModal } from '../../components/FeatureTipModal';
 import { useAppMode } from '../../components/app-mode-context';
-import { useAuth } from '../../components/auth-context';
+import { isKnownAuthDenial, useAuth } from '../../components/auth-context';
 import { useProfile } from '../../components/profile-context';
 import { StackrProfileAvatar } from '../../components/StackrProfileAvatar';
 import { fetchBinders, fetchBinderCards, type BinderCardRecord, type BinderRecord } from '../../lib/binders';
 import type { OwnedCardRow } from '../../lib/ownership';
 import { fetchHomeSavedCollection, savedBinderCatalogueTotal } from '../../lib/homeSavedCollection';
+import { writePersistedBinderOverview } from '../../lib/binderLibraryCache';
+import { getCollectionSummaryVersion } from '../../lib/collectionSummaryInvalidation';
+import { readRecentHomeActivityRows } from '../../lib/homeActivity';
 import { supabase } from '../../lib/supabase';
+import { withPersonalDataReadTimeout } from '../../lib/personalDataRead';
 import { PRICE_API_URL } from '../../lib/config';
 import { ValueTrackerCard } from '../../components/ValueTrackerCard';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
@@ -43,6 +49,7 @@ import { attachLiveTcgdexCardReferences, getPokemonCardImageUrls } from '../../l
 import { getCardArtworkPresentation } from '../../lib/cardArtworkPresentation';
 import { stackrBrand } from '../../lib/stackrBrand';
 import { stackrIcons } from '../../lib/stackrIcons';
+import { STACKR_ICON_OUTLINE, StackrNavigationIcon } from '../../components/StackrNavigationIcon';
 import { getStackrHomeWordmarkWidth, stackrLogoSizes, stackrTabContentPadding } from '../../lib/stackrSizing';
 import {
   ChaseCardsSheet,
@@ -112,11 +119,45 @@ import {
   serializeHomeCollectionCache,
 } from '../../lib/homeCollectionCache';
 
-const fetchHomeDisplayCardRows = async (cardIds: string[]) => (
-  hydrateCardReferenceRowMapWithLiveTcgdexReferences(
-    await fetchStackrCardRows(cardIds), attachLiveTcgdexCardReferences,
-  )
-);
+type HomeDisplayCardRows = Awaited<ReturnType<typeof fetchStackrCardRows>>;
+
+const fetchHomeDisplayCardRows = async (
+  cardIds: string[],
+  onFactsReady?: (rows: HomeDisplayCardRows, state: 'partial' | 'complete') => void,
+): Promise<HomeDisplayCardRows> => {
+  let acceptingFacts = true;
+  let factsRevision = 0;
+  try {
+    const rows = await withPersonalDataReadTimeout(async (signal) => {
+      const publishFacts = async (snapshot: HomeDisplayCardRows, state: 'partial' | 'complete') => {
+        if (!acceptingFacts || signal.aborted || !onFactsReady) return;
+        const revision = ++factsRevision;
+        // Reuse the fail-closed image projection without a provider read. Each
+        // verified card can paint before its optional manifest or batch peers.
+        const facts = await hydrateCardReferenceRowMapWithLiveTcgdexReferences(snapshot, async (cards) => cards, 0);
+        if (acceptingFacts && !signal.aborted && factsRevision === revision) onFactsReady(facts, state);
+      };
+      const result = await fetchStackrCardRows(cardIds, {
+        signal,
+        onCanonicalRows: onFactsReady ? (snapshot) => {
+          // Observe detached projections, including ones superseded by a newer
+          // snapshot. The final projection below remains part of this deadline.
+          void publishFacts(snapshot, 'partial').catch(() => undefined);
+        } : undefined,
+      });
+      await publishFacts(result, 'complete');
+      return result;
+    });
+    acceptingFacts = false;
+    return withPersonalDataReadTimeout(() => (
+      hydrateCardReferenceRowMapWithLiveTcgdexReferences(rows, attachLiveTcgdexCardReferences)
+    ));
+  } finally {
+    // An uncooperative read may deliver a callback after the deadline. It cannot
+    // publish again, even when the owning screen request is otherwise current.
+    acceptingFacts = false;
+  }
+};
 
 // ===============================
 // TYPES
@@ -215,6 +256,7 @@ const HUB_TIP_ITEMS = [
   },
   {
     icon: 'trending-up-outline' as const,
+    imageIcon: stackrIcons.marketMovers,
     title: 'Top movers',
     body: 'Spot the cards causing your value to rise or fall.',
   },
@@ -832,7 +874,10 @@ const activityTypeForFeedType = (type?: string | null): HomeActivityItem['activi
   return 'generic';
 };
 
-const enrichActivityItemsWithCardImages = async (items: HomeActivityItem[]): Promise<HomeActivityItem[]> => {
+const enrichActivityItemsWithCardImages = async (
+  items: HomeActivityItem[],
+  onFactsReady?: (items: HomeActivityItem[]) => void,
+): Promise<HomeActivityItem[]> => {
   const cardIds = [
     ...new Set(
       items
@@ -843,9 +888,8 @@ const enrichActivityItemsWithCardImages = async (items: HomeActivityItem[]): Pro
 
   if (!cardIds.length) return items;
 
-  try {
-    const officialCards = await fetchHomeDisplayCardRows(cardIds);
-
+  let latestItems = items;
+  const applyCardRows = (officialCards: HomeDisplayCardRows): HomeActivityItem[] => {
     const activityImageByCardId = new Map<string, { small: string | null; large: string | null; candidates: string[]; cacheKey: string | null }>();
     const cardNameByCardId = new Map<string, string>();
     const cardMetadataByCardId = new Map<string, ReturnType<typeof getHomeCardDisplayMetadata>>();
@@ -900,9 +944,17 @@ const enrichActivityItemsWithCardImages = async (items: HomeActivityItem[]): Pro
           : item.title,
       };
     });
+  };
+
+  try {
+    const officialCards = await fetchHomeDisplayCardRows(cardIds, (facts) => {
+      latestItems = applyCardRows(facts);
+      onFactsReady?.(latestItems);
+    });
+    return applyCardRows(officialCards);
   } catch (error) {
     console.log('Failed to enrich home activity cards', error);
-    return items;
+    return latestItems;
   }
 };
 
@@ -1006,6 +1058,17 @@ export default function HubScreen() {
   const livePricePollInFlightRef = useRef(false);
   const cachedHomeSnapshotUserIdRef = useRef<string | null>(null);
   const homeSessionUserIdRef = useRef<string | null>(null);
+  const homeSessionExpiresAtRef = useRef<number>(0);
+  const homeSessionInitializedRef = useRef(false);
+  const homeSessionGenerationRef = useRef(0);
+  const homeLiveMetadataGenerationRef = useRef(-1);
+  const homeLiveValuationGenerationRef = useRef(-1);
+  const homeCacheRestoreRef = useRef<{ generation: number; promise: Promise<boolean> } | null>(null);
+  const homeFocusedRef = useRef(false);
+  const homeFocusGenerationRef = useRef(0);
+  const homeStartupKeyRef = useRef<string | null>(null);
+  const homeSecondaryCancelRef = useRef<(() => void) | null>(null);
+  const homeBinderPreloadCancelRef = useRef<(() => void) | null>(null);
   const homeCollectionRequestRef = useRef(0);
   const homeGeneralRequestRef = useRef(0);
   const homeChaseRequestRef = useRef(0);
@@ -1157,6 +1220,7 @@ export default function HubScreen() {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
+      if (mintyInsightRequestRef.current !== requestId) return;
       const trustedUserId = user?.id ?? null;
       if (!trustedUserId) {
         setApiMintyInsight(null);
@@ -1211,7 +1275,8 @@ export default function HubScreen() {
 
       const { data: { user } } = await supabase.auth.getUser();
       const trustedUserId = user?.id ?? null;
-      homeSessionUserIdRef.current = trustedUserId;
+      if (homeGeneralRequestRef.current !== requestId
+        || homeSessionUserIdRef.current !== trustedUserId) return;
       const isCurrentRequest = () => (
         homeGeneralRequestRef.current === requestId
         && homeSessionUserIdRef.current === trustedUserId
@@ -1337,12 +1402,20 @@ export default function HubScreen() {
   // LOAD COLLECTION VALUE
   // ===============================
 
-  const applyCachedHomeCollection = useCallback(async () => {
+  const restoreCachedHomeCollection = useCallback(async () => {
+    const generation = homeSessionGenerationRef.current;
+    const cachedOwnerId = homeSessionUserIdRef.current;
+    const isCurrentRestore = () => generation === homeSessionGenerationRef.current
+      && homeSessionUserIdRef.current === cachedOwnerId
+      && homeSessionExpiresAtRef.current * 1000 > Date.now()
+      && homeLiveValuationGenerationRef.current !== generation;
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
+      // A local session selects a saved display, not permission for a live read.
+      // Server verification remains on the fresh collection and write paths.
+      const user = cachedOwnerId ? { id: cachedOwnerId } : null;
+      if (!isCurrentRestore()) return false;
 
-      await AsyncStorage.removeItem(LEGACY_HOME_COLLECTION_CACHE_KEY);
+      void AsyncStorage.removeItem(LEGACY_HOME_COLLECTION_CACHE_KEY).catch(() => {});
 
       const trustedUserId = user?.id ?? null;
       if (!trustedUserId) {
@@ -1402,7 +1475,7 @@ export default function HubScreen() {
 
       const storageKey = getHomeCollectionCacheKey(trustedUserId);
       const raw = await AsyncStorage.getItem(storageKey);
-      if (!raw) return false;
+      if (!raw || !isCurrentRestore()) return false;
 
       const snapshot = parseHomeCollectionCache<Partial<HomeCollectionCacheSnapshot>>(
         raw,
@@ -1422,28 +1495,24 @@ export default function HubScreen() {
         return false;
       }
 
-      const { data: { user: confirmedUser }, error: confirmationError } = await supabase.auth.getUser();
-      if (confirmationError) throw confirmationError;
-      if (confirmedUser?.id !== trustedUserId) {
-        hasLoadedCollectionValueRef.current = false;
-        hasSuccessfulCollectionPricingRef.current = false;
-        collectionPriceEvidenceRef.current = [];
-        legacyManualRefreshCursorRef.current = 0;
-        preparedValuationAvailableRef.current = false;
-        return false;
-      }
+      if (!isCurrentRestore() || homeSessionUserIdRef.current !== trustedUserId) return false;
       cachedHomeSnapshotUserIdRef.current = trustedUserId;
       collectionPriceEvidenceRef.current = Array.isArray(snapshot.priceEvidence) ? snapshot.priceEvidence : [];
 
       setCollectionTotal(snapshot.collectionTotal);
       setCollectionPricingSummary(snapshot.collectionPricingSummary as CollectionPricingSummary);
-      setCollectionPricingWarning(null);
+      setCollectionPricingWarning((current) => current ?? 'Showing your last successful stored-price read while current prices refresh.');
+      setCollectionValueError(null);
       setCollectionChangeAmount(Number(snapshot.collectionChangeAmount ?? 0));
       setCollectionChangePercent(Number(snapshot.collectionChangePercent ?? 0));
-      setOwnedCardCount(Number(snapshot.ownedCardCount ?? 0));
-      setActiveBinder(snapshot.activeBinder ?? null);
-      setDuplicateSummary(snapshot.duplicateSummary ?? EMPTY_DUPLICATE_SUMMARY);
-      setMissingCards(Array.isArray(snapshot.missingCards) ? snapshot.missingCards : []);
+      // Saved ownership can arrive before prices. Restore price/history then,
+      // but never replace newer binder or ownership metadata with the snapshot.
+      if (homeLiveMetadataGenerationRef.current !== generation) {
+        setOwnedCardCount(Number(snapshot.ownedCardCount ?? 0));
+        setActiveBinder(snapshot.activeBinder ?? null);
+        setDuplicateSummary(snapshot.duplicateSummary ?? EMPTY_DUPLICATE_SUMMARY);
+        setMissingCards(Array.isArray(snapshot.missingCards) ? snapshot.missingCards : []);
+      }
       setMintyDataRefreshedAt(snapshot.mintyDataRefreshedAt ?? null);
       collectionValueReadsRef.current = Array.isArray(snapshot.collectionValueReads)
         ? snapshot.collectionValueReads.slice(-MAX_COLLECTION_VALUE_READS)
@@ -1462,6 +1531,18 @@ export default function HubScreen() {
       return false;
     }
   }, []);
+
+  const applyCachedHomeCollection = useCallback(() => {
+    const generation = homeSessionGenerationRef.current;
+    const previous = homeCacheRestoreRef.current;
+    if (previous?.generation === generation) return previous.promise;
+    const promise = restoreCachedHomeCollection();
+    homeCacheRestoreRef.current = { generation, promise };
+    void promise.finally(() => {
+      if (homeCacheRestoreRef.current?.promise === promise) homeCacheRestoreRef.current = null;
+    });
+    return promise;
+  }, [restoreCachedHomeCollection]);
 
   const saveHomeCollectionCache = useCallback(async (
     trustedUserId: string,
@@ -1493,13 +1574,29 @@ export default function HubScreen() {
 
   const loadCollectionValue = useCallback(async () => {
     const requestId = ++homeCollectionRequestRef.current;
+    const generation = homeSessionGenerationRef.current;
+    const expectedUserId = homeSessionUserIdRef.current;
+    const preloadVersion = getCollectionSummaryVersion();
+    const preloadStartedAt = Date.now();
     let collectorDataLoaded = false;
+    let accountDenied = false;
+    let preloadCandidates: BinderRecord[] = [];
+    let preloadSavedCards: Map<string, BinderCardRecord[]> | undefined;
     setCollectionValueError(null);
     setCollectionPricingWarning(null);
     setHomeDataError(null);
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
+      const { data: { user }, error: userError } = await withPersonalDataReadTimeout(() => supabase.auth.getUser()).catch((error) => {
+        accountDenied = isKnownAuthDenial(error);
+        throw error;
+      });
+      if (userError) {
+        accountDenied = isKnownAuthDenial(userError);
+        throw userError;
+      }
+      if (requestId !== homeCollectionRequestRef.current
+        || generation !== homeSessionGenerationRef.current
+        || (user?.id ?? null) !== expectedUserId) return;
       if (!user) {
         pendingManualPriceRefreshesRef.current.clear();
         manualPriceRefreshUserIdRef.current = null;
@@ -1513,15 +1610,21 @@ export default function HubScreen() {
         pendingManualPriceRefreshesRef.current.clear();
       }
       manualPriceRefreshUserIdRef.current = trustedUserId;
-      homeSessionUserIdRef.current = trustedUserId;
       const isCurrentRequest = () => (
         homeCollectionRequestRef.current === requestId
+        && homeSessionGenerationRef.current === generation
         && homeSessionUserIdRef.current === trustedUserId
       );
       const confirmCurrentRequest = async () => {
         if (!isCurrentRequest()) return false;
-        const { data: { user: confirmedUser }, error: confirmationError } = await supabase.auth.getUser();
-        if (confirmationError) throw confirmationError;
+        const { data: { user: confirmedUser }, error: confirmationError } = await withPersonalDataReadTimeout(() => supabase.auth.getUser()).catch((error) => {
+          accountDenied = isKnownAuthDenial(error);
+          throw error;
+        });
+        if (confirmationError) {
+          accountDenied = isKnownAuthDenial(confirmationError);
+          throw confirmationError;
+        }
         return isCurrentRequest() && confirmedUser?.id === trustedUserId;
       };
       const hadLoadedCollectionValue =
@@ -1529,11 +1632,48 @@ export default function HubScreen() {
         && hasLoadedCollectionValueRef.current;
       setCollectionValueLoading(!hadLoadedCollectionValue);
       if (!hadLoadedCollectionValue) {
-        await applyCachedHomeCollection();
+        // Restore independently: slow local storage/auth confirmation must not
+        // hold up a fresh read. The restore's version guard protects live data.
+        void applyCachedHomeCollection();
       }
 
-      const { binders, ownedRows, cardsByBinder } = await fetchHomeSavedCollection(trustedUserId);
-      const binderGroups: HomeBinderCardGroup[] = await Promise.all(
+      const { binders, ownedRows, cardsByBinder } = await fetchHomeSavedCollection(trustedUserId, {
+        onBindersReady: (savedBinders) => {
+          preloadCandidates = savedBinders;
+          // Warm the same account's library before slower card/price retrieval.
+          // A mutation or session change also invalidates queued disk writes.
+          void writePersistedBinderOverview(trustedUserId, { binders: savedBinders, customNameArtKeys: {} }, {
+            savedAt: preloadStartedAt,
+            isCurrent: () => isCurrentRequest()
+              && homeSessionExpiresAtRef.current * 1000 > Date.now()
+              && getCollectionSummaryVersion() === preloadVersion,
+          });
+        },
+      });
+      preloadSavedCards = cardsByBinder;
+      if (isCurrentRequest() && expectedUserId && preloadCandidates.length) {
+        homeBinderPreloadCancelRef.current?.();
+        let cancelled = false;
+        const isCurrentPreload = () => !cancelled
+          && homeCollectionRequestRef.current === requestId
+          && homeSessionGenerationRef.current === generation
+          && homeSessionUserIdRef.current === expectedUserId
+          && homeSessionExpiresAtRef.current * 1000 > Date.now()
+          && getCollectionSummaryVersion() === preloadVersion;
+        const task = InteractionManager.runAfterInteractions(() => {
+          if (!isCurrentPreload()) return;
+          // Start after private rows arrive, before optional prices and charts.
+          void import('../../lib/binderReopenRuntime').then(({ preloadBinderReopenViews }) => {
+            if (isCurrentPreload()) return preloadBinderReopenViews(preloadCandidates, expectedUserId, isCurrentPreload, {
+              completeSavedCardsByBinder: preloadSavedCards,
+            });
+          }).catch(() => {});
+        });
+        homeBinderPreloadCancelRef.current = () => { cancelled = true; task.cancel?.(); };
+      }
+      // Local settings can stall independently of the network. Keep the same
+      // retry boundary without guessing master-set accounting defaults.
+      const binderGroups: HomeBinderCardGroup[] = await withPersonalDataReadTimeout(() => Promise.all(
         binders.map(async (binder) => {
             const binderCards = cardsByBinder.get(binder.id) ?? [];
             const masterSetEnabled = await isHomeMasterSetEnabled(binder.id);
@@ -1555,22 +1695,23 @@ export default function HubScreen() {
               })),
             };
         })
-      );
+      ));
       const allCards = binderGroups.flatMap((group) => group.cards);
-      const customNameArtEntries = await Promise.all(
+      const customNameArtEntries = await withPersonalDataReadTimeout(() => Promise.all(
         binderGroups
           .filter((group) => group.binder.type === 'custom')
           .map(async (group) => [
             group.binder.id,
             await getCustomBinderNameArtKeyForBinder(group.binder.id, group.binder.name),
           ] as const)
-      );
+      ));
       let binderSummaries = buildBinderSummaries(binderGroups, Object.fromEntries(customNameArtEntries));
       const nextActiveBinder = selectActiveBinder(binderSummaries);
       let nextDuplicateSummary = buildDuplicateSummary(binderGroups);
       let nextMissingCards = buildMissingCards(binderGroups, nextActiveBinder);
 
       if (!await confirmCurrentRequest()) return;
+      homeLiveMetadataGenerationRef.current = generation;
       collectorDataLoaded = true;
       setActiveBinder((current) => current?.id === nextActiveBinder?.id && current && nextActiveBinder
         ? { ...nextActiveBinder, value: current.value, valueAvailable: current.valueAvailable, valueCoverageLabel: current.valueCoverageLabel }
@@ -1618,6 +1759,7 @@ export default function HubScreen() {
       const ownedUnitCount = ownedUnits.reduce((total, unit) => total + unit.quantity, 0);
       if (!await confirmCurrentRequest()) return;
       // Account and collection content can render while exact prices/history load.
+      setOwnedCardCount(ownedUnitCount);
       setCollectionValueLoading(false);
       const priceInputs = ownedUnits.map(pricingInputForHomeUnit);
       const unavailablePriceResults = () => priceInputs.map((input) => unavailableCollectionPrice(input, {
@@ -1627,7 +1769,7 @@ export default function HubScreen() {
       // One private prepared generation replaces the phone-side price fan-out.
       // A 404 or lower-coverage partial summary uses exact stored-price reads.
       let prepared = null;
-      try { prepared = (await stackrApiClient.collectionValuation()).data; }
+      try { prepared = (await withPersonalDataReadTimeout(() => stackrApiClient.collectionValuation())).data; }
       catch (error) { if ((error as { status?: number }).status !== 404) throw error; }
       if (!await confirmCurrentRequest()) return;
       if (prepared) {
@@ -1661,6 +1803,7 @@ export default function HubScreen() {
           valueCoverageLabel: getCollectionPriceCoverageLabel(isPreparedGeneralValuation(summary)
             ? preparedGeneralPricingSummary(coverage as import('../../lib/preparedCollectionValuation').GeneralPreparedCoverage) ?? preparedPricingSummary(coverage)
             : preparedPricingSummary(coverage)) } : nextActiveBinder;
+        homeLiveValuationGenerationRef.current = generation;
         setCollectionTotal(pricing.total);
         setCollectionPricingSummary(pricing);
         setOwnedCardCount(summary.totalUnits);
@@ -1731,6 +1874,7 @@ export default function HubScreen() {
           if (!isCurrentRequest() || hasSuccessfulCollectionPricingRef.current) return;
           const partial = pricingSummaryForResults(applyLegacyResults(read.results));
           if (partial.total == null) return;
+          homeLiveValuationGenerationRef.current = generation;
           setCollectionTotal(partial.total);
           setCollectionPricingSummary(partial);
           setCollectionPricingWarning(`Reading stored prices: ${partial.pricedUnits} of ${partial.totalUnits} owned cards priced. Showing the known subtotal.`);
@@ -1752,6 +1896,7 @@ export default function HubScreen() {
             }
             const partial = pricingSummaryForResults(combined);
             if (partial.total == null) return;
+            homeLiveValuationGenerationRef.current = generation;
             setCollectionTotal(partial.total);
             setCollectionPricingSummary(partial);
             setCollectionValueLoading(false);
@@ -1843,6 +1988,7 @@ export default function HubScreen() {
       setActiveBinder(nextPricedActiveBinder);
       setDuplicateSummary(nextDuplicateSummary);
       setMissingCards(nextMissingCards);
+      homeLiveValuationGenerationRef.current = generation;
       setCollectionTotal(nextPricingSummary.total);
       setCollectionPricingSummary(nextPricingSummary);
       setCollectionPricingWarning(refreshFollowUp.warning ?? pricingWarning);
@@ -1893,6 +2039,16 @@ export default function HubScreen() {
     } catch (error) {
       console.log('Failed to calculate collection value', error);
       if (homeCollectionRequestRef.current !== requestId) return;
+      if (accountDenied) {
+        // A known server denial revokes the local preview; a transport failure
+        // only leaves an honestly labelled saved display.
+        homeSessionExpiresAtRef.current = 0;
+        cachedHomeSnapshotUserIdRef.current = null;
+        hasSuccessfulCollectionPricingRef.current = false;
+        hasLoadedCollectionValueRef.current = false;
+        collectionPriceEvidenceRef.current = [];
+        setOwnedCardCount(0);
+      }
       if (!hasSuccessfulCollectionPricingRef.current) {
         setCollectionTotal(null);
         setCollectionPricingSummary(EMPTY_COLLECTION_PRICING);
@@ -2026,8 +2182,38 @@ export default function HubScreen() {
     const requestId = ++homeChaseRequestRef.current;
     setChaseLoading(true);
     setChaseError(null);
+    const revokeDeniedRequest = (error: unknown) => {
+      if (homeChaseRequestRef.current !== requestId || !isKnownAuthDenial(error)) return false;
+      // Revoke the request before clearing its private data: facts, artwork or
+      // prices still in flight must not restore rows after access was denied.
+      homeChaseRequestRef.current += 1;
+      homeChaseListingsRequestRef.current += 1;
+      setChaseCards([]);
+      setSelectedChaseKey(null);
+      setChaseListingsByKey({});
+      setChaseListingsLoading(false);
+      setChaseListingsError(null);
+      setChaseError('Chase access could not be confirmed. Please try again.');
+      setChaseLoading(false);
+      return true;
+    };
+    const readSavedChaseRows = async <T extends { error: unknown },>(query: PromiseLike<T>): Promise<T> => {
+      try {
+        const result = await query;
+        if (result.error) {
+          // PostgREST carries HTTP status on the response, outside its error.
+          revokeDeniedRequest(result);
+          throw result.error;
+        }
+        return result;
+      } catch (error) {
+        revokeDeniedRequest(error);
+        throw error;
+      }
+    };
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await withPersonalDataReadTimeout(() => supabase.auth.getUser());
+      if (userError) throw userError;
       if (!user) {
         if (homeChaseRequestRef.current === requestId) setChaseCards([]);
         return;
@@ -2037,33 +2223,31 @@ export default function HubScreen() {
         homeChaseRequestRef.current === requestId
         && homeSessionUserIdRef.current === trustedUserId
       );
+      if (!isCurrentRequest()) return;
 
-      const [wishlistResult, watchlistResult, showcaseResult] = await Promise.all([
-        supabase
+      const [wishlistResult, watchlistResult, showcaseResult] = await withPersonalDataReadTimeout((signal) => Promise.all([
+        readSavedChaseRows(supabase
           .from('user_card_flags')
           .select('id, card_id, set_id, asking_price, market_estimate, created_at')
           .eq('user_id', user.id)
           .eq('flag_type', 'wishlist')
           .order('created_at', { ascending: false })
-          .limit(30),
-        supabase
+          .limit(30).abortSignal(signal)),
+        readSavedChaseRows(supabase
           .from('market_watchlist')
           .select('id, card_id, set_id, created_at')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
-          .limit(30),
-        supabase
+          .limit(30).abortSignal(signal)),
+        readSavedChaseRows(supabase
           .from('binder_card_showcases')
           .select('id, card_id, set_id, sort_order')
           .eq('user_id', user.id)
           .eq('showcase_type', 'chase')
           .order('sort_order', { ascending: true })
-          .limit(30),
-      ]);
-
-      if (wishlistResult.error) throw wishlistResult.error;
-      if (watchlistResult.error) throw watchlistResult.error;
-      if (showcaseResult.error) throw showcaseResult.error;
+          .limit(30).abortSignal(signal)),
+      ]));
+      if (!isCurrentRequest()) return;
 
       const mergedRows: any[] = [];
       const seen = new Set<string>();
@@ -2082,56 +2266,90 @@ export default function HubScreen() {
       }
 
       const cardIds = [...new Set(mergedRows.map((row) => row.card_id))];
-      const [officialCardMap, priceMap] = await Promise.all([
-        fetchHomeDisplayCardRows(cardIds),
-        fetchStackrPriceSnapshots(cardIds),
-      ]);
-
-      if (!isCurrentRequest()) return;
-      setChaseCards(mergedRows.map((row) => {
-        const officialCard = officialCardMap.get(row.card_id) ?? null;
-        const estimated = row.market_estimate ?? row.asking_price ?? priceMap.get(row.card_id)?.market_central ?? null;
-        const cardNumber = officialCard?.number ?? null;
-        const setId = officialCard?.set_id ?? row.set_id ?? null;
-        const officialImages = getPokemonCardImageUrls(row.card_id, setId, cardNumber);
-        const rawImages = (officialCard?.raw_data as any)?.images ?? null;
-        const officialImage =
-          officialCard?.image_small ??
-          officialCard?.image_large ??
-          rawImages?.small ??
-          rawImages?.large ??
-          officialImages.small ??
-          officialImages.large ??
-          null;
-        return {
-          cardId: row.card_id,
-          setId,
-          name: officialCard?.name ?? row.card_id,
-          setName: (officialCard?.raw_data as any)?.set?.name ?? row.set_id ?? 'Wanted card',
-          ...getHomeCardDisplayMetadata({
-            id: row.card_id,
+      let officialCardMap: HomeDisplayCardRows | null = null;
+      let factsComplete = false;
+      let priceMap: Awaited<ReturnType<typeof fetchStackrPriceSnapshots>> | null = null;
+      const publishCards = () => {
+        if (!isCurrentRequest() || !officialCardMap) return;
+        const facts = officialCardMap;
+        setChaseCards((current) => mergedRows.map((row) => {
+          const officialCard = facts.get(row.card_id) ?? null;
+          const cardNumber = officialCard?.number ?? null;
+          const setId = officialCard?.set_id ?? row.set_id ?? null;
+          // Keep the last estimate only for the same reference and set while its
+          // new snapshot is pending. A different printing never inherits it.
+          const previous = current.find((card) => card.cardId === row.card_id && card.setId === setId);
+          const prior = priceMap === null ? previous?.estimatedValue : null;
+          const estimated = row.market_estimate ?? row.asking_price ?? priceMap?.get(row.card_id)?.market_central ?? prior ?? null;
+          const estimatedValue = typeof estimated === 'number' ? estimated : estimated == null ? null : Number(estimated);
+          // A partial snapshot cannot establish that this reference is absent.
+          // Preserve its complete display (including language, edition
+          // and inspection artwork) only within this current authorised request.
+          // A completed absence below must instead clear the previous facts.
+          if (!officialCard && !factsComplete && previous) return { ...previous, estimatedValue };
+          const officialImages = getPokemonCardImageUrls(row.card_id, setId, cardNumber);
+          const rawImages = (officialCard?.raw_data as any)?.images ?? null;
+          const officialImage =
+            officialCard?.image_small ??
+            officialCard?.image_large ??
+            rawImages?.small ??
+            rawImages?.large ??
+            officialImages.small ??
+            officialImages.large ??
+            null;
+          return {
+            cardId: row.card_id,
             setId,
-            name: officialCard?.name,
-            setName: (officialCard?.raw_data as any)?.set?.name,
-            number: cardNumber,
-            language: officialCard?.language,
-            raw: officialCard?.raw_data as Record<string, any> | null,
-          }),
-          number: cardNumber,
-          rarity: officialCard?.rarity ?? null,
-          imageUrl: officialImage ?? null,
-          inspectionRequest: getHomeCatalogueInspectionRequest({
             name: officialCard?.name ?? row.card_id,
-            language: officialCard?.language ?? null,
-            rawData: officialCard?.raw_data,
-            imageUrl: officialImage,
-          }),
-          estimatedValue: typeof estimated === 'number' ? estimated : estimated == null ? null : Number(estimated),
-        };
-      }));
+            setName: (officialCard?.raw_data as any)?.set?.name ?? row.set_id ?? 'Wanted card',
+            ...getHomeCardDisplayMetadata({
+              id: row.card_id,
+              setId,
+              name: officialCard?.name,
+              setName: (officialCard?.raw_data as any)?.set?.name,
+              number: cardNumber,
+              language: officialCard?.language,
+              raw: officialCard?.raw_data as Record<string, any> | null,
+            }),
+            number: cardNumber,
+            rarity: officialCard?.rarity ?? null,
+            imageUrl: officialImage ?? null,
+            inspectionRequest: getHomeCatalogueInspectionRequest({
+              name: officialCard?.name ?? row.card_id,
+              language: officialCard?.language ?? null,
+              rawData: officialCard?.raw_data,
+              imageUrl: officialImage,
+            }),
+            estimatedValue,
+          };
+        }));
+        setChaseLoading(false);
+      };
+      await Promise.all([
+        fetchHomeDisplayCardRows(cardIds, (facts, state) => {
+          officialCardMap = facts;
+          factsComplete = state === 'complete';
+          publishCards();
+        }).then((cards) => {
+          officialCardMap = cards;
+          factsComplete = true;
+          publishCards();
+        }).catch((error) => {
+          revokeDeniedRequest(error);
+          throw error;
+        }),
+        withPersonalDataReadTimeout(() => fetchStackrPriceSnapshots(cardIds)).then((prices) => {
+          priceMap = prices;
+          publishCards();
+        }).catch((error) => {
+          revokeDeniedRequest(error);
+          throw error;
+        }),
+      ]);
     } catch (error) {
       console.log('Failed to load home chase cards', error);
       if (homeChaseRequestRef.current !== requestId) return;
+      if (revokeDeniedRequest(error)) return;
       // Retain this session's last successful cards; account changes clear them separately.
       setChaseError('Could not refresh chase cards.');
     } finally {
@@ -2246,7 +2464,8 @@ export default function HubScreen() {
     setActivityLoading(true);
     setActivityError(null);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
       if (!user) {
         if (homeActivityRequestRef.current === requestId) setRecentActivity([]);
         return;
@@ -2257,16 +2476,8 @@ export default function HubScreen() {
         && homeSessionUserIdRef.current === trustedUserId
       );
 
-      const feedResult = await supabase
-        .from('activity_feed')
-        .select('id, type, title, subtitle, card_id, set_id, value_change, is_positive, created_at, card_name_snapshot, card_number_snapshot, card_language_snapshot, card_image_small_snapshot, card_image_large_snapshot, canonical_printing_id, canonical_variant_id')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      if (feedResult.error) throw feedResult.error;
-
-      const visibleFeed = (feedResult.data ?? [])
+      const posts = await readRecentHomeActivityRows(supabase, trustedUserId, isCurrentRequest);
+      const visibleFeed = posts
         .filter((post: any) => !isGate0CommerceActivity(post));
       const feedItems: HomeActivityItem[] = visibleFeed.map((post: any) => ({
         id: `post:${post.id}`,
@@ -2293,9 +2504,15 @@ export default function HubScreen() {
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         .slice(0, 10);
 
-      const enriched = await enrichActivityItemsWithCardImages(combined);
       if (!isCurrentRequest()) return;
-      setRecentActivity(enriched);
+      setRecentActivity(combined);
+      // The event is usable before optional artwork; stale enrichment cannot
+      // replace a newer history read or cross an account change.
+      void enrichActivityItemsWithCardImages(combined, (facts) => {
+        if (isCurrentRequest()) setRecentActivity(facts);
+      }).then((enriched) => {
+        if (isCurrentRequest()) setRecentActivity(enriched);
+      }).catch((error) => console.log('Failed to enrich home activity cards', error));
     } catch (error) {
       console.log('Failed to load recent home activity', error);
       if (homeActivityRequestRef.current !== requestId) return;
@@ -2333,17 +2550,67 @@ export default function HubScreen() {
   // EFFECTS
   // ===============================
 
+  const startHomeForCurrentFocus = useCallback(() => {
+    const userId = homeSessionUserIdRef.current;
+    if (!homeFocusedRef.current || !userId) return;
+    const generation = homeSessionGenerationRef.current;
+    const key = `${generation}:${homeFocusGenerationRef.current}`;
+    if (homeStartupKeyRef.current === key) return;
+    homeStartupKeyRef.current = key;
+    const isCurrent = () => homeFocusedRef.current
+      && homeStartupKeyRef.current === key
+      && homeSessionGenerationRef.current === generation
+      && homeSessionUserIdRef.current === userId;
+
+    // Focus and INITIAL_SESSION converge here. Cached and fresh reads run once
+    // for this account/focus, independently of secondary Home content.
+    void applyCachedHomeCollection();
+    void loadCollectionValueRef.current();
+    homeSecondaryCancelRef.current?.();
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const task = InteractionManager.runAfterInteractions(() => {
+      if (!isCurrent()) return;
+      timer = setTimeout(() => {
+        if (!isCurrent()) return;
+        void loadAll();
+        void loadChaseCards();
+        void loadRecentActivity();
+        void loadMintyPreferences(userId);
+        void loadApiMintyInsight(false);
+      }, 180);
+    });
+    homeSecondaryCancelRef.current = () => {
+      task.cancel?.();
+      if (timer) clearTimeout(timer);
+    };
+  }, [applyCachedHomeCollection, loadAll, loadApiMintyInsight, loadChaseCards, loadMintyPreferences, loadRecentActivity]);
+
   useEffect(() => {
     let mounted = true;
-    let reloadTimer: ReturnType<typeof setTimeout> | null = null;
-
-    const bindHomeSession = (nextUserId: string | null) => {
+    let authEventVersion = 0;
+    let sessionStartTimer: ReturnType<typeof setTimeout> | null = null;
+    const bindHomeSession = (nextUserId: string | null, expiresAt = 0) => {
       if (!mounted) return;
-      if (homeSessionUserIdRef.current === nextUserId) {
-        if (nextUserId) void loadMintyPreferences(nextUserId);
+      const hadValidLocalSession = homeSessionExpiresAtRef.current * 1000 > Date.now();
+      homeSessionExpiresAtRef.current = Number.isFinite(expiresAt) ? expiresAt : 0;
+      if (homeSessionInitializedRef.current && homeSessionUserIdRef.current === nextUserId) {
+        if (nextUserId && !hadValidLocalSession && homeSessionExpiresAtRef.current * 1000 > Date.now()) {
+          // A same-account renewal can make a previously expired local preview
+          // eligible without duplicating the pending live collection request.
+          if (sessionStartTimer) clearTimeout(sessionStartTimer);
+          sessionStartTimer = setTimeout(() => {
+            if (mounted) void applyCachedHomeCollection();
+          }, 0);
+        }
         return;
       }
+      homeSessionInitializedRef.current = true;
       homeSessionUserIdRef.current = nextUserId;
+      homeSessionGenerationRef.current += 1;
+      homeSecondaryCancelRef.current?.();
+      homeSecondaryCancelRef.current = null;
+      homeBinderPreloadCancelRef.current?.();
+      homeBinderPreloadCancelRef.current = null;
       homeCollectionRequestRef.current += 1;
       homeGeneralRequestRef.current += 1;
       homeChaseRequestRef.current += 1;
@@ -2386,65 +2653,73 @@ export default function HubScreen() {
       setApiMintyInsight(null);
       setMintyInsightError(null);
       setMintyInsightRefreshing(false);
+      setCollectionValueLoading(Boolean(nextUserId));
+      setChaseLoading(Boolean(nextUserId));
+      setActivityLoading(Boolean(nextUserId));
 
-      if (reloadTimer) clearTimeout(reloadTimer);
-      if (!nextUserId) return;
-      reloadTimer = setTimeout(() => {
-        if (!mounted || homeSessionUserIdRef.current !== nextUserId) return;
-        void applyCachedHomeCollection();
-        void loadCollectionValueRef.current();
-        void loadAll();
-        void loadChaseCards();
-        void loadRecentActivity();
-        void loadMintyPreferences(nextUserId);
-        void loadApiMintyInsight(false);
+      // Leave the Supabase auth callback before starting auth-dependent reads.
+      if (sessionStartTimer) clearTimeout(sessionStartTimer);
+      sessionStartTimer = setTimeout(() => {
+        if (mounted) startHomeForCurrentFocus();
       }, 0);
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      bindHomeSession(session?.user?.id ?? null);
+      authEventVersion += 1;
+      bindHomeSession(session?.user?.id ?? null, Number(session?.expires_at ?? 0));
     });
-    void supabase.auth.getUser().then(({ data, error }) => {
+    const lookupVersion = authEventVersion;
+    void supabase.auth.getSession().then(({ data, error }) => {
+      // A late cold-start lookup cannot undo a newer sign-in/out event.
+      if (!mounted || authEventVersion !== lookupVersion) return;
       if (error) {
         console.log('Home session lookup failed:', error.message);
         bindHomeSession(null);
         return;
       }
-      bindHomeSession(data.user?.id ?? null);
+      bindHomeSession(data.session?.user?.id ?? null, Number(data.session?.expires_at ?? 0));
+    }).catch((error) => {
+      if (mounted && authEventVersion === lookupVersion) {
+        console.log('Home session lookup failed:', error);
+        bindHomeSession(null);
+      }
     });
 
     return () => {
       mounted = false;
-      if (reloadTimer) clearTimeout(reloadTimer);
+      if (sessionStartTimer) clearTimeout(sessionStartTimer);
+      homeSessionGenerationRef.current += 1;
+      homeCollectionRequestRef.current += 1;
+      homeGeneralRequestRef.current += 1;
+      homeChaseRequestRef.current += 1;
+      homeChaseListingsRequestRef.current += 1;
+      homeActivityRequestRef.current += 1;
+      mintyPreferenceGenerationRef.current += 1;
+      mintyInsightRequestRef.current += 1;
+      homeSecondaryCancelRef.current?.();
+      homeSecondaryCancelRef.current = null;
+      homeBinderPreloadCancelRef.current?.();
+      homeBinderPreloadCancelRef.current = null;
       subscription.unsubscribe();
     };
-  }, [applyCachedHomeCollection, loadAll, loadApiMintyInsight, loadChaseCards, loadMintyPreferences, loadRecentActivity]);
+  }, [applyCachedHomeCollection, startHomeForCurrentFocus]);
 
   useFocusEffect(useCallback(() => {
-    let cancelled = false;
-    let secondaryTimer: ReturnType<typeof setTimeout> | null = null;
+    homeFocusedRef.current = true;
+    homeFocusGenerationRef.current += 1;
+    startHomeForCurrentFocus();
     const livePriceTimer = setInterval(() => {
       void pollLivePrices();
     }, HOME_STORED_PRICE_POLL_MS);
 
-    void (async () => {
-      await applyCachedHomeCollection();
-      if (!cancelled) void pollLivePrices();
-    })();
-    void loadAll();
-
-    secondaryTimer = setTimeout(() => {
-      if (cancelled) return;
-      void loadChaseCards();
-      void loadRecentActivity();
-    }, 180);
-
     return () => {
-      cancelled = true;
+      homeFocusedRef.current = false;
+      homeStartupKeyRef.current = null;
+      homeSecondaryCancelRef.current?.();
+      homeSecondaryCancelRef.current = null;
       clearInterval(livePriceTimer);
-      if (secondaryTimer) clearTimeout(secondaryTimer);
     };
-  }, [applyCachedHomeCollection, loadAll, loadChaseCards, loadRecentActivity, pollLivePrices]));
+  }, [startHomeForCurrentFocus, pollLivePrices]));
 
   useEffect(() => {
     if (appModeHydrated && premiumSellerAccess.allowed && !hasChosenMode) {
@@ -2454,9 +2729,6 @@ export default function HubScreen() {
     if (!appModeHydrated) return;
     checkHubTip();
   }, [appModeHydrated, checkHubTip, hasChosenMode, premiumSellerAccess.allowed]);
-  useEffect(() => {
-    loadApiMintyInsight(false);
-  }, [loadApiMintyInsight]);
   useEffect(() => {
     if (previousChartRangeRef.current === chartRange) return;
     previousChartRangeRef.current = chartRange;
@@ -2670,7 +2942,7 @@ export default function HubScreen() {
               accessibilityRole="button"
               accessibilityLabel="Open Stackr tips"
             >
-              <Image
+              <StackrFunctionalIcon
                 source={stackrIcons.info}
                 style={{ width: 30, height: 30 }}
                 resizeMode="contain"
@@ -2685,7 +2957,7 @@ export default function HubScreen() {
               accessibilityRole="button"
               accessibilityLabel="Open notifications"
             >
-              <Image
+              <StackrFunctionalIcon
                 source={stackrIcons.notifications}
                 style={{ width: 31, height: 31 }}
                 resizeMode="contain"
@@ -2723,7 +2995,7 @@ export default function HubScreen() {
             onPress={() => router.push('/(tabs)/search')}
             style={{ flex: 1, minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 9, paddingHorizontal: 13, borderRadius: 16, backgroundColor: theme.colors.card, borderColor: theme.colors.border, borderWidth: 1 }}
           >
-            <Image source={stackrIcons.searchCard} style={{ width: 24, height: 24 }} resizeMode="contain" />
+            <StackrFunctionalIcon source={stackrIcons.searchCard} style={{ width: 24, height: 24 }} resizeMode="contain" />
             <Text style={{ flex: 1, color: theme.colors.textSoft, fontSize: 14 }}>Find your next card</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -2732,7 +3004,7 @@ export default function HubScreen() {
             onPress={() => router.push('/scan')}
             style={{ minHeight: 48, paddingHorizontal: 15, borderRadius: 16, flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: theme.colors.primary }}
           >
-            <Image source={stackrIcons.scanCard} style={{ width: 25, height: 25 }} resizeMode="contain" />
+            <StackrFunctionalIcon source={stackrIcons.scanCard} style={{ width: 25, height: 25 }} resizeMode="contain" />
             <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700' }}>Scan</Text>
           </TouchableOpacity>
         </View>
@@ -2820,7 +3092,7 @@ export default function HubScreen() {
           onPress={() => router.push('/(tabs)/community')}
           style={{ minHeight: 76, borderTopWidth: 1, borderTopColor: theme.colors.border, flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 16 }}
         >
-          <Image source={stackrIcons.social} style={{ width: 35, height: 35 }} resizeMode="contain" />
+          <StackrFunctionalIcon source={stackrIcons.social} style={{ width: 35, height: 35 }} resizeMode="contain" />
           <View style={{ flex: 1 }}>
             <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: '700' }}>Collecting is better together</Text>
             <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 19, marginTop: 3 }}>Collector posts, trades and local meet ups</Text>
@@ -2929,13 +3201,13 @@ export default function HubScreen() {
             </View>
 
             {[
-              { icon: 'scan-outline' as const, text: 'Scan stock out to keep inventory accurate' },
-              { icon: 'bar-chart-outline' as const, text: 'Keep inventory accurate on the go' },
-              { icon: 'storefront-outline' as const, text: 'Built for conventions, events and higher-volume sellers' },
+              { icon: 'scan-outline' as const, stackrIcon: 'outbound' as const, text: 'Scan stock out to keep inventory accurate' },
+              { icon: 'bar-chart-outline' as const, stackrIcon: 'inventory' as const, text: 'Keep inventory accurate on the go' },
+              { icon: 'storefront-outline' as const, stackrIcon: 'market' as const, text: 'Built for conventions, events and higher-volume sellers' },
             ].map((item) => (
               <View key={item.text} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                 <View style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: `${theme.colors.primary}12`, alignItems: 'center', justifyContent: 'center' }}>
-                  <Ionicons name={item.icon} size={20} color={theme.colors.primary} />
+                  <StackrNavigationIcon name={item.stackrIcon} size={20} color={theme.dark ? theme.colors.text : STACKR_ICON_OUTLINE} accentColor={theme.colors.primary} />
                 </View>
                 <Text style={{ flex: 1, color: theme.colors.text, fontSize: 13, fontWeight: '800', lineHeight: 18 }}>{item.text}</Text>
               </View>

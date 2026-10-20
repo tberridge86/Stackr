@@ -5,6 +5,7 @@ import React from 'react';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import ts from 'typescript';
 import * as support from '../lib/supportHelp';
+import * as performance from '../lib/performance';
 
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 function load(file: string, dependencies: Record<string, unknown>) {
@@ -49,9 +50,12 @@ async function main() {
 
   let account: any = { id: 'A', email: 'A@example.invalid', identities: [{ provider: 'apple' }] };
   let failEmail = true; const mail: string[] = [];
+  const sharedMeasurements: { message: string }[] = [];
   const route: string[] = [];
   const common: Record<string, any> = {
-    'react-native': { Alert: { alert() {} }, Platform: { OS: 'web', Version: 'test' }, Pressable: 'Pressable', Switch: 'Switch', TextInput: 'TextInput', View: 'View', Linking: { openURL: async (url: string) => { mail.push(url); if (failEmail) throw new Error('mail app unavailable'); } } },
+    'react-native': { Alert: { alert() {} }, Platform: { OS: 'web', Version: 'test' }, Pressable: 'Pressable', Switch: 'Switch', TextInput: 'TextInput', View: 'View',
+      Share: { share: async (payload: { message: string }) => { sharedMeasurements.push(payload); } },
+      Linking: { openURL: async (url: string) => { mail.push(url); if (failEmail) throw new Error('mail app unavailable'); } } },
     '@react-native-async-storage/async-storage': disk,
     'expo-constants': { nativeAppVersion: '1.0.4', nativeBuildVersion: 'test' },
     'expo-updates': { updateId: 'support-ref' },
@@ -62,12 +66,28 @@ async function main() {
     '../components/auth-context': { useAuth: () => ({ user: account, loading: false }) },
     '../lib/supportHelp': support,
     '../lib/haptics': { testStackrHaptics: async () => 'disabled' },
+    '../lib/performance': performance,
   };
   const Help = load('app/help.tsx', common).default;
   let root!: ReactTestRenderer;
   await act(async () => { root = create(React.createElement(Help)); });
   const messageInput = () => root.root.findByProps({ accessibilityLabel: 'Support message' });
   await act(async () => { messageInput().props.onChangeText('My private report'); });
+  performance.resetRetrievalObservations();
+  performance.beginRetrieval('search', 'input').cancel();
+  await act(async () => { root.root.findByProps({ title: 'Network label' }).props.onPress(); });
+  await act(async () => { root.root.findByProps({ title: 'Cache label' }).props.onPress(); });
+  performance.beginRetrieval('search', 'input').cancel();
+  await act(async () => { root.root.findByProps({ title: 'Share load measurements' }).props.onPress(); });
+  assert.equal(sharedMeasurements.length, 1, 'measurements share only after an explicit local action');
+  const measurementPayload = JSON.parse(sharedMeasurements[0].message);
+  assert.equal(measurementPayload.environment.build, 'test');
+  assert.equal(measurementPayload.observations[0].condition.network, 'unverified');
+  assert.equal(measurementPayload.observations[1].condition.network, 'wifi');
+  assert.equal(measurementPayload.observations[1].condition.cache, 'memory');
+  assert.doesNotMatch(sharedMeasurements[0].message, /My private report|A@example|cardId|https:/);
+  await act(async () => { root.root.findByProps({ title: 'Reset load measurements' }).props.onPress(); });
+  assert.equal(performance.exportRetrievalObservations().observations.length, 0);
   const compose = () => root.root.findAllByType('Pressable' as React.ElementType).find(node => node.findAllByType('Text' as React.ElementType).some(child => child.props.children === 'Open email'))!;
   await act(async () => { compose().props.onPress(); });
   assert.equal(messageInput().props.value, 'My private report', 'mail failure must retain the editable draft');
@@ -96,6 +116,7 @@ async function main() {
   assert.equal(mail.length, openedBeforeExit, 'leaving Help must cancel a delayed composer open');
   disk.setItem = saveImmediately;
   let haptics = true;
+  let hapticTests = 0;
   const signOutScopes: string[] = [];
   let buttons: { text: string; onPress?: () => void }[] = [];
   common['react-native'].Alert.alert = (_title: string, _body: string, actions: typeof buttons) => { buttons = actions; };
@@ -106,7 +127,8 @@ async function main() {
   common['../lib/authRedirects'] = { getPasswordResetRedirectUrl: () => 'stackr://reset-password' };
   common['../lib/cardMotionPreference'] = { cardMotionPreference: { save: async () => {} }, useCardMotionPreference: () => ({ reduced: false, loaded: true, error: false }) };
   common['../lib/haptics'] = { getStackrHapticsEnabled: () => haptics, hydrateStackrHapticsPreference: async () => haptics,
-    saveStackrHapticsEnabled: async (value: boolean) => { if (failSave) throw new Error('disk'); haptics = value; } };
+    saveStackrHapticsEnabled: async (value: boolean) => { if (failSave) throw new Error('disk'); haptics = value; },
+    testStackrHaptics: async () => { hapticTests += 1; return 'requested'; } };
   common['../lib/supabase'] = { supabase: { auth: { getUser: async () => ({ data: { user: account } }),
     signOut: async ({ scope }: { scope: string }) => { signOutScopes.push(scope); return {}; } } } };
   account = { id: 'A', email: 'A@example.invalid', identities: [{ provider: 'apple' }] };
@@ -120,6 +142,8 @@ async function main() {
   failSave = false;
   await act(async () => { hapticSwitch().props.onValueChange(false); });
   assert.equal(hapticSwitch().props.value, false);
+  await act(async () => { root.root.findByProps({ title: 'Test touch feedback' }).props.onPress(); });
+  assert.equal(hapticTests, 1, 'Settings must expose the existing preference-aware haptic request.');
   await act(async () => { root.root.findByProps({ title: 'Sign out other sessions' }).props.onPress(); });
   const oldConfirmation = buttons.find(button => button.text === 'Sign out others')!.onPress!;
   account = { id: 'B', email: 'B@example.invalid', identities: [{ provider: 'email' }] };

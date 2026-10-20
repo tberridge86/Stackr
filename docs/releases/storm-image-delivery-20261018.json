@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-18T19:15:21.952Z",
+  "scope": "Fresh file delivery for the complete113M6shared printing-face references returned in the two preserved preferred-artwork API pages. This is the declared captured catalogue population, not a new catalogue census or phone test.",
+  "catalogue": {
+    "game": "pokemon",
+    "language": "ja",
+    "setCode": "M6",
+    "setId": "903d5baa-27c7-5690-b1d7-2395c770204a",
+    "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "distinctPrintings": 113
+  },
+  "files": {
+    "requests": 113,
+    "retries": 0,
+    "maxConcurrent": 4,
+    "successfulHttp200": 113,
+    "sha256AndByteSizeMatched": 113,
+    "decodedAndDimensionsMatched": 113,
+    "totalBytes": 39844631,
+    "jpeg": 110,
+    "png": 3,
+    "sourceHost": "www.pokemon-card.com",
+    "startedAt": "2026-10-18T19:14:42.306Z",
+    "completedAt": "2026-10-18T19:14:44.913Z"
+  },
+  "evidence": [
+    {
+      "privatePath": "evidence/consolidation-20261018/remaining-retrieval-20261018/full-captured-m6-image-cohort-v2/plan.json",
+      "sha256": "03b237ce55999467deec57ec1e289738ea3484e945cd4044fec62b9b616c2497"
+    },
+    {
+      "privatePath": "evidence/consolidation-20261018/remaining-retrieval-20261018/full-captured-m6-image-cohort-v2/http-results.json",
+      "sha256": "3c4238ad170c800004ec8ab964f3041bcfca83018407ded2b2a4512e714de12a"
+    },
+    {
+      "privatePath": "evidence/consolidation-20261018/remaining-retrieval-20261018/full-captured-m6-image-cohort-v2/decoded-results.json",
+      "sha256": "5f15c96eeefb35de53c91d8cd47e173c104992b76f9cb7e4f3849e3cd1e8ef9a"
+    },
+    {
+      "privatePath": "evidence/consolidation-20261018/remaining-retrieval-20261018/full-captured-m6-image-cohort-v2/decoder-execution.json",
+      "sha256": "2485f39c25b810b1ecc07ff5f56c1db187822eea7e75323b3532ea4d53318168"
+    }
+  ],
+  "previousTwoFileSampleRetained": true,
+  "preflightHistory": "The first verifier stopped before requests because3approvedPNGoriginals used a second observed official M6path. Its empty cohort and preflight-failure receipt are retained. V2 binds both actual source path/MIME pairs without changing the113target population.",
+  "limitations": [
+    "API descriptor pages were captured earlier; this run verifies fresh file responses against those exact immutable hashes. No new full catalogue membership read was made.",
+    "Artwork is approved shared printing-face reference material; exact physical finish photographs are not claimed.",
+    "Historical whole-set manifest504 and its unknown cause remain recorded.",
+    "No sustained reliability, latency p95, UI render, signed build or phone acceptance is established."
+  ],
+  "operations": {
+    "catalogueWrites": 0,
+    "providerRefreshes": 0,
+    "jobs": 0,
+    "uploads": 0,
+    "imports": 0,
+    "nativeBuilds": 0,
+    "submissions": 0,
+    "phoneClosedIssues": 0
+  },
+  "testFlightState": "held_until_repairs_verified"
+}

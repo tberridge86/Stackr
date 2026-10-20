@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 2,
+  "variants": 2,
+  "work_type": "SHARP",
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "physical_finish_verified": false,
+  "physical_edition_verified": false,
+  "cohort_sha256": "295673228ed3273dbb02291973f3ae35f36bb94428a5b99711ef8fff8c80e85c",
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "9f5b4f3a6a0ad916e04ab3a5636e50d219c9a08090823208f990281e1862750a",
+    "finiteDecisionFileByteSha256": "0fd57f13f1e5683a81beb901f607a26f3c4480fe97b22c03dded22d3ed822882",
+    "sourceHandoffFileByteSha256": "461cc760a4a1a78a46c0e51bbef1762a9874d34c1a087151c425d61238041a87",
+    "independentSourceReviewFileByteSha256": "84cd8726f5847b69dacdf855ea09ebec711ea1bc5421baa5f0befa6f4fd56537",
+    "fourSourceCheckpointFileByteSha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "afaa2f9e78af05686bb474d5f7f2f1a89886e7d22486cc62e44d72f386eb9af5",
+    "independentPrivatePackageReviewSha256": "efd91b72ecfd21b200211f733fddc569f47c7015fe3240ff478b612ddc277954",
+    "rootPrivatePackageValidationSha256": "6a047e3c737f47280b29966ae077004ddcd5969e9197ae338a7ddf417ecd4884",
+    "rootSourceArchiveBindingSha256": "55cd6ed30e662187e0c24ecd2ec77da96743af451759059a07615045dbacc92a",
+    "rootUploadReceiptSha256": "e72d3db6f2e66d955a468cc79cd593ead131ad436fafa31e0d8cecb55b8a6010"
+  },
+  "production_source_changes_allowed": 0,
+  "scope": "Exactly Japanese SM1+ SylveonGX064/051HR and BasicGrassEnergy068/051UR; printing-shared assets/sourceVariantId null for existing sole holo variants. Preserve both category-specific signatures, unchanged PNG processing metadata and public embedded local URI exposure. No physical material/edition, provider no-resize or native optical gain certificate. All four production full17 sources unchanged; no production source creation/policy edits. Stage temporary Pokellector fixture fully rolls back. SHARP tasks close only the sharper-original group."
+}

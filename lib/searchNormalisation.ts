@@ -20,13 +20,17 @@ const GRADER_ALIASES: Record<string, string> = {
 
 export function normaliseSearchText(value: string | null | undefined) {
   return String(value ?? '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
     .replace(/\u00e2\u20ac[\u2122\u02dc]/g, "'")
+    .normalize('NFKC')
+    .normalize('NFD')
+    // Fold Latin accents without removing identity-bearing native marks such
+    // as Japanese dakuten/handakuten, then recompose native text.
+    .replace(/(\p{Script=Latin})[\u0300-\u036f]+/gu, '$1')
+    .normalize('NFC')
     .replace(/[\u2018\u2019`]/g, "'")
     .toLowerCase()
     .replace(/\bpokemon\b/g, 'pokemon')
-    .replace(/[^a-z0-9#'&/.\s-]+/g, ' ')
+    .replace(/[^\p{L}\p{N}\p{M}#'&/.\s♀♂-]+/gu, ' ')
     .replace(/#\s*/g, '#')
     .replace(/\s+/g, ' ')
     .trim();

@@ -9,7 +9,7 @@ import {
 } from './japaneseSetLogos';
 import { getMagazineSetCoverSourceForSet } from './magazineSetCovers';
 import { getSimplifiedChineseSetLogoSourceForSet } from './simplifiedChineseSetLogos';
-import { getTraditionalChineseSetLogoSourceForSet } from './traditionalChineseSetLogos';
+import { getTraditionalChineseSetArtworkSourceForSet, getTraditionalChineseSetLogoSourceForSet } from './traditionalChineseSetLogos';
 
 export type LocalSetArtworkLookupInput = EnglishSetLogoLookupInput & JapaneseSetLogoLookupInput;
 
@@ -19,7 +19,8 @@ export type LocalSetArtworkLookupInput = EnglishSetLogoLookupInput & JapaneseSet
  *
  * Resolution order is deliberate: exact magazine issues retain their cover,
  * reviewed English set identities use the canonical bundled logo, and native
- * Japanese sets retain the existing Japanese-only fallback.
+ * Japanese sets retain the existing Japanese-only fallback. Reviewed Chinese
+ * marks and native pack artwork retain their exact language and set identity.
  */
 export function getLocalSetArtworkSourceForSet(
   input?: LocalSetArtworkLookupInput | null,
@@ -29,7 +30,7 @@ export function getLocalSetArtworkSourceForSet(
     ?? getEnglishSetLogoSourceForSet(input, fallbackLanguage)
     ?? getJapaneseSetLogoSourceForSet(input, fallbackLanguage)
     ?? getSimplifiedChineseSetLogoSourceForSet(input, fallbackLanguage)
-    ?? getTraditionalChineseSetLogoSourceForSet(input, fallbackLanguage);
+    ?? getTraditionalChineseSetArtworkSourceForSet(input, fallbackLanguage);
 }
 
 /** Logo/mark-only resolver. Magazine issue covers are deliberately excluded so

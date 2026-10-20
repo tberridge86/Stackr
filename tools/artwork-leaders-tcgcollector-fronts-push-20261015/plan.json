@@ -1,0 +1,1353 @@
+{
+  "schemaVersion": 1,
+  "queue_id": "STACKR-JA-LEADERS-STADIUM-TCGCOLLECTOR-FRONTS-20261015-003",
+  "source_manifest_sha256": "2efae5c0d1c682aae68e058c1eac75802e5b02c2255027c2554868f6c634a3a5",
+  "package_receipt_sha256": "3a987b0bd9e5ef7eb7ad4d1077e7e8da7822650816c4d03942455e224e89919c",
+  "saved_targets_sha256": "702d5311eefad4a7faa629239de068a95a2039370197c3a7e17ac5aeb4e0de09",
+  "identity_table_sha256": "b739e77c3d211a69e6da9ae11f92c23eef0ef8abccc807c2bfca6014e4efc67a",
+  "source_evidence": {
+    "approvedProjection": "96631c9294588374bf8c7fa58d29861fe4704fa68854cb9b7ba6fb7b3743c7ca",
+    "finiteDecision": "68f1af735d5e481ed26d1aabbe94e493d520575d9d4191413508f9ec90cf68ff",
+    "independentSelection": "eb873e66e2492671b9b0df09c6059b84457850bac1ef63f671832c24a6e1306e",
+    "independentReview": "6a1a35be6d9c9e5c8d2bbaf68c5e24293b555b7e1b7ac72e8b3e07fb7cecf3ab",
+    "sourceDesign": "898276b53dc4ee4cc29ac680d824a542bc41e2b442363889362d454cea748828",
+    "sourcePolicyCheckpoint": "2013e3ecdb0bf05501b2cc7a66733c73e20ba80b3a7876e5d0442f1a32eb00e9",
+    "ownerPermissionAttestation": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d"
+  },
+  "source_policy_checkpoint_sha256": "2013e3ecdb0bf05501b2cc7a66733c73e20ba80b3a7876e5d0442f1a32eb00e9",
+  "existing_source_row_hashes": {
+    "pokellector": "4a2a381f7146c0bfa0201c62e91e7682f18da6597c4743f23414f3606a942a71",
+    "scrydex": "25af5b50521e6fd0942764536f62b0c53c3e72c69c874916241af47735407929"
+  },
+  "private_capture_receipt_sha256": "592b7cd1665cc25882e3105be2f77a5894ccf4cbddac1143bbe550f30f5c18fd",
+  "archive": {
+    "id": 644968141,
+    "sha256": "8657585abf4e519b9912ded25b020f53f68427c4ca32374e1fa37bdb789ae00c",
+    "byte_size": 529425,
+    "file_count": 16,
+    "name": "stackr-ja-artwork-leaders3tcg-fronts-20261015.zip"
+  },
+  "archive_metadata": [
+    {
+      "file": "manifest.json",
+      "sha256": "2efae5c0d1c682aae68e058c1eac75802e5b02c2255027c2554868f6c634a3a5",
+      "byte_size": 61071
+    },
+    {
+      "file": "receipts/preparation-summary.json",
+      "sha256": "8633b46c451aad18b877484dc2773fa636299c8c193c73e27f402c2e246db4b7",
+      "byte_size": 1313
+    },
+    {
+      "file": "receipts/current-card-bindings.json",
+      "sha256": "e16ab948afb6bf4bac856e627e54414517b485ca564b26fbcf2988732a3a3a59",
+      "byte_size": 3339
+    },
+    {
+      "file": "receipts/finite-decision.json",
+      "sha256": "2b62910d0db0b0579f5cfa24f6c78b42b237c0ddac6ea614929205f972523143",
+      "byte_size": 3141
+    }
+  ],
+  "rows": [
+    {
+      "printing_id": "f732147f-deef-4c65-a092-4ed2e7bbfcad",
+      "set_id": "c24a6f11-2b12-4dbd-8d50-61f17e8e6a4f",
+      "set_code": "PMCG5",
+      "language_code": "ja",
+      "collector_number": "019",
+      "card_native_name": "タケシのキュウコン",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "41b979bb-0d07-4b9e-bf3f-04de506c2831"
+      ],
+      "batch_id": "JP-CARDS-058",
+      "source_code": "tcgcollector",
+      "provider_id": "tcgcollector-image-url-sha256:d469579f51d639ea2d9c0f378f99d73c42c84f0cdb02f23fbce49a9c68de014f",
+      "image_url": "https://static.tcgcollector.com/content/images/e0/57/44/e05744a819e0fca3d78fc10a3c1d20990b42a2f1b23e9398701ea2431805c6a7.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/cd305a07dd316800bc7a3bb17951c7e28245c7197c22ad182198b090c115ca9b/original.jpg",
+          "sha256": "cd305a07dd316800bc7a3bb17951c7e28245c7197c22ad182198b090c115ca9b",
+          "byte_size": 93116,
+          "width": 593,
+          "height": 834,
+          "mime_type": "image/jpeg",
+          "artifact_id": 644968141
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/8fb7a2e9ede16c394cc7f934b7bcf2bcd2805a77e13945643afc0312c58b8ead/card-grid.webp",
+          "sha256": "8fb7a2e9ede16c394cc7f934b7bcf2bcd2805a77e13945643afc0312c58b8ead",
+          "byte_size": 18424,
+          "width": 240,
+          "height": 338,
+          "mime_type": "image/webp",
+          "artifact_id": 644968141
+        },
+        {
+          "role": "search-result",
+          "file": "objects/453480ac3f49fa447e2d93ae81c4e3d750acd5020e8c092ac9eb5f5d85b49575/search-result.webp",
+          "sha256": "453480ac3f49fa447e2d93ae81c4e3d750acd5020e8c092ac9eb5f5d85b49575",
+          "byte_size": 3708,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 644968141
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/484036c51a30e706169f09ef88842bc54c0b791c5fefc909160e575cad328df7/detail-page.webp",
+          "sha256": "484036c51a30e706169f09ef88842bc54c0b791c5fefc909160e575cad328df7",
+          "byte_size": 83060,
+          "width": 593,
+          "height": 834,
+          "mime_type": "image/webp",
+          "artifact_id": 644968141
+        }
+      ],
+      "evidence": {
+        "source_url": "https://static.tcgcollector.com/content/images/e0/57/44/e05744a819e0fca3d78fc10a3c1d20990b42a2f1b23e9398701ea2431805c6a7.jpg",
+        "source_page_url": "https://www.tcgcollector.com/cards/29746/brocks-ninetales-leaders-stadium-no-019",
+        "provider_id": "tcgcollector-image-url-sha256:d469579f51d639ea2d9c0f378f99d73c42c84f0cdb02f23fbce49a9c68de014f",
+        "source_metadata_sha256": "fdc53810c9427736cb4c99f46c8cef276ca26f84bf1255473a84d554d0e5c964",
+        "source_body": {
+          "contract": "stackr-ja-leaders3tcg-identity-v1",
+          "accepted_category": "Pokemon",
+          "photo_source_provider": "tcgcollector",
+          "photo_source_identifier": "tcgcollector-image-url-sha256:d469579f51d639ea2d9c0f378f99d73c42c84f0cdb02f23fbce49a9c68de014f",
+          "photo_source_url_sha256": "d469579f51d639ea2d9c0f378f99d73c42c84f0cdb02f23fbce49a9c68de014f",
+          "photo_source_raw_html_sha256": "fdc53810c9427736cb4c99f46c8cef276ca26f84bf1255473a84d554d0e5c964",
+          "photo_identity_projection": {
+            "canonicalAlias": "019",
+            "printingId": "f732147f-deef-4c65-a092-4ed2e7bbfcad",
+            "sourceProvider": "tcgcollector",
+            "sourcePageUrl": "https://www.tcgcollector.com/cards/29746/brocks-ninetales-leaders-stadium-no-019",
+            "sourceRawHtml": {
+              "sha256": "fdc53810c9427736cb4c99f46c8cef276ca26f84bf1255473a84d554d0e5c964",
+              "bytes": 631387
+            },
+            "galleryLiteralLink": "/cards/29746/brocks-ninetales-leaders-stadium-no-019",
+            "observedCardImageAlt": "Brock&#039;s Ninetales (Leaders&#039; Stadium No. 019)",
+            "cardImageSrc": "https://static.tcgcollector.com/content/images/0f/41/29/0f4129727fcb45ecaac094edcdd816135eb8ee9ff6b8c3210ba25215840f1a90.jpg",
+            "observedLiteralSrcset": [
+              {
+                "url": "https://static.tcgcollector.com/content/images/0f/41/29/0f4129727fcb45ecaac094edcdd816135eb8ee9ff6b8c3210ba25215840f1a90.jpg",
+                "declaredWidth": 320
+              },
+              {
+                "url": "https://static.tcgcollector.com/content/images/e0/57/44/e05744a819e0fca3d78fc10a3c1d20990b42a2f1b23e9398701ea2431805c6a7.jpg",
+                "declaredWidth": 593
+              }
+            ],
+            "largestLiteralPointer": {
+              "url": "https://static.tcgcollector.com/content/images/e0/57/44/e05744a819e0fca3d78fc10a3c1d20990b42a2f1b23e9398701ea2431805c6a7.jpg",
+              "declaredWidth": 593
+            },
+            "JapanesePageContext": true,
+            "sourceOrdinalNotIdentityProof": true,
+            "actualPixelsStillUnverified": true,
+            "formatUnlimitedIsPlayingFormatNotEdition": true
+          },
+          "photo_identity_projection_sha256": "099a4fa60c5c66dcd92e04858e61084d8b2ed06e876e4440d39cc2dae1fcce5d",
+          "photo_private_projection_canonical_sha256": "b6f2741cb24baef1df9e0ae4b9943bb3a15f70065b9dc351dfeb1e8a2bd7e73a",
+          "photo_projection_transform": "Remove only sourceRawHtml.path from the frozen capture-stage photo projection; preserve historical actualPixelsStillUnverified flag. Current accepted actual and root authority remain separate.",
+          "semantic_metadata_provider": "tcgdex",
+          "semantic_metadata_is_photo_provenance": false,
+          "semantic_native_identity_projection": {
+            "id": "PMCG5-019",
+            "localId": "019",
+            "name": "タケシのキュウコン",
+            "category": "Pokemon",
+            "hp": 70,
+            "types": [
+              "Fire"
+            ],
+            "stage": "Stage1",
+            "illustrator": "Ken Sugimori",
+            "rarity": "Holo Rare",
+            "dexId": [
+              38
+            ],
+            "retreat": 1,
+            "attacks": [
+              {
+                "cost": [
+                  "Fire",
+                  "Fire"
+                ],
+                "name": "will-o'-the-wisp",
+                "damage": 30
+              }
+            ],
+            "abilities": [
+              {
+                "type": "Pokemon Power",
+                "name": "Shapeshift",
+                "effect": "順番<em>（攻撃の前に）</em> </em>になったら、手からブロックのニネタールに進化カードを添付することができます。 （これは、進化するブロックのnineTalesとしてカウントされません。）BrockのNineTalesを代わりにPokmonであるかのように扱います。そのポクモンのポクモンの力を進化させたり、委ねたり、使用したりすることはできません。ターン中、ブロックのニネタールに取り付けられた進化カードを破棄することができます。ブロックのニネタールが眠っている、混乱し、麻痺している場合、このパワーは使用できません。ブロックのニネタールが眠り、混乱、または麻痺した場合、それに取り付けられたすべての進化カードを破棄します。"
+              }
+            ],
+            "set": {
+              "cardCount": {
+                "official": 96,
+                "total": 96
+              },
+              "id": "PMCG5",
+              "name": "リーダーズスタジアム"
+            },
+            "variants": {
+              "firstEdition": false,
+              "holo": true,
+              "normal": false,
+              "reverse": false,
+              "wPromo": false
+            },
+            "variants_detailed": [
+              {
+                "type": "holo",
+                "size": "standard",
+                "variantId": "jr7oetx1mqug9"
+              }
+            ]
+          },
+          "semantic_native_identity_projection_sha256": "7f77bd659e775abd433b53df54fd0cd5c898a475b7478583e7d7e0940d5f98d1",
+          "semantic_provider_full_captured_json_file_sha256": "2308bc6ce92c4206f26ee282b8f92746bff2390374c0688f64144d7edf9d299e",
+          "semantic_provider_full_captured_json_canonical_sha256": "ec5f06c4380ef4832019519732188d18dadfc9e9e8c343c6a7996b008eed9f7e",
+          "provider_capture_contract": "TCGCollector photo HTML/file and raw/public photo projection hashes, private complete TCGdex JSON file/canonical hashes, whitelisted native identity, root accepted actual and safe peer projection hashes are distinct. Full raw commercial/session fields and local paths remain private.",
+          "actual_pixel_signature": {
+            "category": "Pokemon",
+            "nativeName": "タケシのキュウコン",
+            "language": "ja",
+            "printedJapaneseScript": true,
+            "printedNationalDex": 38,
+            "printedCollectorNumber": null,
+            "printedNumberIsNationalDex": true,
+            "canonicalAliasIsInternalOnly": true,
+            "hp": 70,
+            "level": 30,
+            "type": "Fire",
+            "stage": "Stage1",
+            "evolvesFrom": "タケシのロコン",
+            "attacks": [
+              {
+                "nativeName": "おにび",
+                "cost": [
+                  "Fire",
+                  "Fire"
+                ],
+                "printedDamage": "30",
+                "effectPrinted": false
+              }
+            ],
+            "abilities": [
+              {
+                "nativeName": "ばける",
+                "header": "特殊能力",
+                "type": "Pokemon Power",
+                "nativeClausesRead": [
+                  "自分の番ごとに1回だけ使える",
+                  "手札から「進化カード」を1枚選び、このカードの上にのせる",
+                  "そのせた「進化カード」のポケモンとしてあつかう",
+                  "ただし「進化・退化」はできない",
+                  "自分の番に、のせた「進化カード」をトラッシュして「タケシのキュウコン」にもどせる",
+                  "「ねむり・マヒ・こんらん」状態ではこの力は使えず、タケシのキュウコンにもどり、のせてあった「進化カード」はトラッシュされる"
+                ],
+                "meaning": "Once each own turn choose an Evolution card from hand and put it on this card, treating this card as that Pokemon; evolution/devolution not allowed. May discard the overlaid card during own turn to revert. Sleep/Paralysis/Confusion disables this Power and reverts/discards the overlaid Evolution card.",
+                "clausesAreSelectiveActualReadingNotFullVerbatimTranscript": true,
+                "copiedPowerUseProhibitionLiteralClaimed": false
+              }
+            ],
+            "retreat": 1,
+            "weakness": {
+              "type": "Water",
+              "printedMultiplier": null
+            },
+            "resistance": null,
+            "artist": "Ken Sugimori",
+            "artistReadCertain": true,
+            "rarityMark": "black star",
+            "setMark": "Leaders Stadium gym symbol",
+            "trainerPortrait": "Brock",
+            "artDescription": "Ninetales in left-facing stance, large raised curling tails, purple-black sparkling illustration background.",
+            "allFourOuterEdgesVisible": true,
+            "completeCardFrameVisible": true,
+            "editionStampVisible": false,
+            "watermarkVisible": false,
+            "copyrightLineVisible": false,
+            "physicalEditionVerified": false,
+            "physicalFinishVerified": false,
+            "visibleFinishEvidence": "Sparkling illustration, consistent with current holo tuple; photograph does not certify physical finish.",
+            "fullLiteralBodyEqualityCertified": false
+          },
+          "actual_pixel_signature_sha256": "7313c696c95ef8200de20420914a890b822611fd7567a2594951a4f02ec093c2",
+          "approved_projection_row_canonical_json_sha256": "0a43d37483c66d5033582903a4a297a2682f67307fd46f35fe89230a1a406ccd",
+          "independent_selection_raw_canonical_json_sha256": "f2ac63a015c5f55198b1fb3c960bff76e120e06d9ff8f3f0ea54f2fb7b7715cf",
+          "independent_selection_public_canonical_json_sha256": "e3749d7d244f14b4294ab5b03095e2521986460ebed256fc8cb86c3ab4b665cd",
+          "independent_selection": {
+            "printingId": "f732147f-deef-4c65-a092-4ed2e7bbfcad",
+            "setId": "c24a6f11-2b12-4dbd-8d50-61f17e8e6a4f",
+            "setCode": "PMCG5",
+            "languageCode": "ja",
+            "canonicalAlias": "019",
+            "sourceCode": "tcgcollector",
+            "originalSha256": "cd305a07dd316800bc7a3bb17951c7e28245c7197c22ad182198b090c115ca9b",
+            "selectedSourceCardId": "tcgcollector-image-url-sha256:d469579f51d639ea2d9c0f378f99d73c42c84f0cdb02f23fbce49a9c68de014f",
+            "actualPixelSignature": {
+              "category": "Pokemon",
+              "nativeName": "タケシのキュウコン",
+              "language": "ja",
+              "printedJapaneseScript": true,
+              "printedNationalDex": 38,
+              "printedCollectorNumber": null,
+              "printedNumberIsNationalDex": true,
+              "canonicalAliasIsInternalOnly": true,
+              "hp": 70,
+              "level": 30,
+              "type": "Fire",
+              "stage": "Stage1",
+              "evolvesFrom": "タケシのロコン",
+              "attacks": [
+                {
+                  "nativeName": "おにび",
+                  "cost": [
+                    "Fire",
+                    "Fire"
+                  ],
+                  "printedDamage": "30",
+                  "effectPrinted": false
+                }
+              ],
+              "abilities": [
+                {
+                  "nativeName": "ばける",
+                  "header": "特殊能力",
+                  "type": "Pokemon Power",
+                  "nativeClausesRead": [
+                    "自分の番ごとに1回だけ使える",
+                    "手札から「進化カード」を1枚選び、このカードの上にのせる",
+                    "そのせた「進化カード」のポケモンとしてあつかう",
+                    "ただし「進化・退化」はできない",
+                    "自分の番に、のせた「進化カード」をトラッシュして「タケシのキュウコン」にもどせる",
+                    "「ねむり・マヒ・こんらん」状態ではこの力は使えず、タケシのキュウコンにもどり、のせてあった「進化カード」はトラッシュされる"
+                  ],
+                  "meaning": "Once each own turn choose an Evolution card from hand and put it on this card, treating this card as that Pokemon; evolution/devolution not allowed. May discard the overlaid card during own turn to revert. Sleep/Paralysis/Confusion disables this Power and reverts/discards the overlaid Evolution card.",
+                  "clausesAreSelectiveActualReadingNotFullVerbatimTranscript": true,
+                  "copiedPowerUseProhibitionLiteralClaimed": false
+                }
+              ],
+              "retreat": 1,
+              "weakness": {
+                "type": "Water",
+                "printedMultiplier": null
+              },
+              "resistance": null,
+              "artist": "Ken Sugimori",
+              "artistReadCertain": true,
+              "rarityMark": "black star",
+              "setMark": "Leaders Stadium gym symbol",
+              "trainerPortrait": "Brock",
+              "artDescription": "Ninetales in left-facing stance, large raised curling tails, purple-black sparkling illustration background.",
+              "allFourOuterEdgesVisible": true,
+              "completeCardFrameVisible": true,
+              "editionStampVisible": false,
+              "watermarkVisible": false,
+              "copyrightLineVisible": false,
+              "physicalEditionVerified": false,
+              "physicalFinishVerified": false,
+              "visibleFinishEvidence": "Sparkling illustration, consistent with current holo tuple; photograph does not certify physical finish.",
+              "fullLiteralBodyEqualityCertified": false
+            },
+            "independentDirectWholeFrontView": true,
+            "providerFullBodyAgreementCertified": false
+          },
+          "independent_coverage": {
+            "independentDirectWholeFrontView": true,
+            "wholeOriginalActuallyViewedByRoot": true,
+            "allSourceBytesAndPixelHashesChecked": true,
+            "fullVerbatimNativeParagraphCertified": false
+          },
+          "historical_association": {
+            "selected_source_card_id": null,
+            "source_only_preparation_approved": false,
+            "source_only_publication_approved": false,
+            "old_quality_hold_evidence_must_remain_unchanged": true,
+            "historical_actual_signature_sha256": "7313c696c95ef8200de20420914a890b822611fd7567a2594951a4f02ec093c2"
+          },
+          "provider_metadata_discrepancies_historical": [
+            {
+              "field": "Power effect",
+              "provider": "Machine-translated full text including copied Pokemon Power prohibition.",
+              "actual": "Printed selected clauses are recorded separately; no full provider equivalence or extra copied-Power clause asserted.",
+              "rawMetadataUnchanged": true
+            }
+          ],
+          "source_quality_qualifications": {
+            "actual_original_format": "JPEG",
+            "actual_original_mime": "image/jpeg",
+            "original_bytes_unchanged": true,
+            "complete_frame_accepted": true,
+            "hd_original_certified": false,
+            "stackr_enlargement_performed": false,
+            "provider_processing_unknown": true,
+            "provider_no_resize_certified": false,
+            "native_optical_resolution_gain_claimed": false,
+            "current_quality_assessment": "Entire Power paragraph readable enough to distinguish the exact printing and its transform/revert/status clauses; selective actual native clauses recorded, no full provider equality claim."
+          },
+          "provider_full_body_agreement_certified": false,
+          "provider_native_rules_agreement_certified": false,
+          "full_verbatim_native_transcription_certified": false,
+          "current_acceptance": {
+            "independently_accepted": true,
+            "source_code": "tcgcollector",
+            "source_card_id": "tcgcollector-image-url-sha256:d469579f51d639ea2d9c0f378f99d73c42c84f0cdb02f23fbce49a9c68de014f",
+            "original_sha256": "cd305a07dd316800bc7a3bb17951c7e28245c7197c22ad182198b090c115ca9b",
+            "category": "Pokemon"
+          },
+          "source_variant_support": {
+            "variant_id": "41b979bb-0d07-4b9e-bf3f-04de506c2831",
+            "variant_code": "holo",
+            "finish_code": "holo",
+            "physical_finish_certified": false
+          },
+          "finite_source_policy_projection": {
+            "code": "tcgcollector",
+            "display_name": "TCGCollector (owner supplied Japanese card fronts)",
+            "source_type": "image",
+            "base_url": "https://www.tcgcollector.com",
+            "licence_status": "under_review",
+            "attribution_required": true,
+            "active": false,
+            "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly3 independently accepted Leaders Stadium fronts019/081/096. Bind the final finite preparation/publication decision and exact source selection in the publisher plan. Owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval, independently verified vendor licence or physical finish/edition certification. Finite decision SHA256 68f1af735d5e481ed26d1aabbe94e493d520575d9d4191413508f9ec90cf68ff.",
+            "deprecated_at": null
+          },
+          "finite_source_policy_projection_sha256": "207957571711627d17ab7e1ed0ef77f6635426ee9a5972d47d316e3fcba9bd1e",
+          "source_use_facts": {
+            "owner_provided_site_permission_attested": true,
+            "owner_permission_attestation_sha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+            "vendor_licence_verified": false,
+            "sourcewide_approval": false,
+            "physical_edition_verified": false,
+            "physical_finish_verified": false
+          },
+          "queue_controls": {
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "name_number_and_symbol_readable": true,
+              "name_and_set_symbol_readable": true,
+              "full_native_body_verified": true,
+              "full_native_nonpokemon_body_verified": false,
+              "exact_art_reference_verified": true,
+              "full_verbatim_native_body_certified": false
+            },
+            "identity_controls": {
+              "canonical_alias": "019",
+              "canonical_alias_is_internal_only": true,
+              "canonical_alias_is_not_printed_national_dex": true,
+              "printed_collector_number": null,
+              "printed_national_dex": 38,
+              "pokemon_identity_asserted": true
+            },
+            "source_qa": {
+              "actual_japanese_full_front_verified": true,
+              "actual_japanese_pokemon_front_verified": true,
+              "actual_japanese_unnumbered_trainer_front_verified": false,
+              "actual_japanese_unnumbered_energy_front_verified": false,
+              "printed_number_and_national_dex_absent_verified": false,
+              "original_sha256": "cd305a07dd316800bc7a3bb17951c7e28245c7197c22ad182198b090c115ca9b",
+              "actual_pixel_signature_sha256": "7313c696c95ef8200de20420914a890b822611fd7567a2594951a4f02ec093c2",
+              "independent_direct_whole_front_view": true
+            }
+          },
+          "generic_other_rows_may_relax": false,
+          "vendor_licence_verified": false,
+          "sourcewide_approval": false,
+          "physical_edition_verified": false,
+          "physical_finish_verified": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "58053385-0e6d-45a1-b7aa-ba11abe75091",
+      "set_id": "c24a6f11-2b12-4dbd-8d50-61f17e8e6a4f",
+      "set_code": "PMCG5",
+      "language_code": "ja",
+      "collector_number": "081",
+      "card_native_name": "マチスの交渉",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "4a752b13-fdf9-4b5a-a94b-8964e50a2ad3"
+      ],
+      "batch_id": "JP-CARDS-061",
+      "source_code": "tcgcollector",
+      "provider_id": "tcgcollector-image-url-sha256:960013b61e95f821151e7a04b8fc5b7c801f0597cb35897484bb609ad088ad31",
+      "image_url": "https://static.tcgcollector.com/content/images/97/bf/86/97bf86b62623d5298b6cfd18e975a71a06a764363ceaf86eafaa031dd9a5db76.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/627fe0e7530b61a0fd9ef4cb53f7ec0e626034a94d8ce9fff04ed355178768b9/original.jpg",
+          "sha256": "627fe0e7530b61a0fd9ef4cb53f7ec0e626034a94d8ce9fff04ed355178768b9",
+          "byte_size": 82445,
+          "width": 593,
+          "height": 834,
+          "mime_type": "image/jpeg",
+          "artifact_id": 644968141
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/4daf978aa148df1f61d90bbcb69b9ec12b639fc972501d4fd78c238013edb893/card-grid.webp",
+          "sha256": "4daf978aa148df1f61d90bbcb69b9ec12b639fc972501d4fd78c238013edb893",
+          "byte_size": 15636,
+          "width": 240,
+          "height": 338,
+          "mime_type": "image/webp",
+          "artifact_id": 644968141
+        },
+        {
+          "role": "search-result",
+          "file": "objects/7f42bd881c203f8ce3c48d9a26137f07511984bf63063eab35bae4bed87e5b55/search-result.webp",
+          "sha256": "7f42bd881c203f8ce3c48d9a26137f07511984bf63063eab35bae4bed87e5b55",
+          "byte_size": 3514,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 644968141
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/be4ebcd2c2f35d67912cf6da26f5b78db3e8609d86bb1cae66fb967862f0116f/detail-page.webp",
+          "sha256": "be4ebcd2c2f35d67912cf6da26f5b78db3e8609d86bb1cae66fb967862f0116f",
+          "byte_size": 68048,
+          "width": 593,
+          "height": 834,
+          "mime_type": "image/webp",
+          "artifact_id": 644968141
+        }
+      ],
+      "evidence": {
+        "source_url": "https://static.tcgcollector.com/content/images/97/bf/86/97bf86b62623d5298b6cfd18e975a71a06a764363ceaf86eafaa031dd9a5db76.jpg",
+        "source_page_url": "https://www.tcgcollector.com/cards/29808/lt-surges-treaty-leaders-stadium-no-081",
+        "provider_id": "tcgcollector-image-url-sha256:960013b61e95f821151e7a04b8fc5b7c801f0597cb35897484bb609ad088ad31",
+        "source_metadata_sha256": "32fb072d5b33bc0a24778328ec3b2ce54a6a4c755fd29cfaae4b28b8c8f439fe",
+        "source_body": {
+          "contract": "stackr-ja-leaders3tcg-identity-v1",
+          "accepted_category": "Trainer",
+          "photo_source_provider": "tcgcollector",
+          "photo_source_identifier": "tcgcollector-image-url-sha256:960013b61e95f821151e7a04b8fc5b7c801f0597cb35897484bb609ad088ad31",
+          "photo_source_url_sha256": "960013b61e95f821151e7a04b8fc5b7c801f0597cb35897484bb609ad088ad31",
+          "photo_source_raw_html_sha256": "32fb072d5b33bc0a24778328ec3b2ce54a6a4c755fd29cfaae4b28b8c8f439fe",
+          "photo_identity_projection": {
+            "canonicalAlias": "081",
+            "printingId": "58053385-0e6d-45a1-b7aa-ba11abe75091",
+            "sourceProvider": "tcgcollector",
+            "sourcePageUrl": "https://www.tcgcollector.com/cards/29808/lt-surges-treaty-leaders-stadium-no-081",
+            "sourceRawHtml": {
+              "sha256": "32fb072d5b33bc0a24778328ec3b2ce54a6a4c755fd29cfaae4b28b8c8f439fe",
+              "bytes": 622907
+            },
+            "galleryLiteralLink": "/cards/29808/lt-surges-treaty-leaders-stadium-no-081",
+            "observedCardImageAlt": "Lt. Surge&#039;s Treaty (Leaders&#039; Stadium No. 081)",
+            "cardImageSrc": "https://static.tcgcollector.com/content/images/58/29/ea/5829ea14daafdbd8001b12cc70d5f1d682a64837d1fabf76a6cf199d1cc6920e.jpg",
+            "observedLiteralSrcset": [
+              {
+                "url": "https://static.tcgcollector.com/content/images/58/29/ea/5829ea14daafdbd8001b12cc70d5f1d682a64837d1fabf76a6cf199d1cc6920e.jpg",
+                "declaredWidth": 320
+              },
+              {
+                "url": "https://static.tcgcollector.com/content/images/97/bf/86/97bf86b62623d5298b6cfd18e975a71a06a764363ceaf86eafaa031dd9a5db76.jpg",
+                "declaredWidth": 593
+              }
+            ],
+            "largestLiteralPointer": {
+              "url": "https://static.tcgcollector.com/content/images/97/bf/86/97bf86b62623d5298b6cfd18e975a71a06a764363ceaf86eafaa031dd9a5db76.jpg",
+              "declaredWidth": 593
+            },
+            "JapanesePageContext": true,
+            "sourceOrdinalNotIdentityProof": true,
+            "actualPixelsStillUnverified": true,
+            "formatUnlimitedIsPlayingFormatNotEdition": true
+          },
+          "photo_identity_projection_sha256": "b2b8e77bdf1032372538429cebea24038635f5255e85652defe30c4be53702a4",
+          "photo_private_projection_canonical_sha256": "fea1fa5175b85a74bcdcd349105faf2cc22d7eab6190e64fe0ed215a8ffc2f7a",
+          "photo_projection_transform": "Remove only sourceRawHtml.path from the frozen capture-stage photo projection; preserve historical actualPixelsStillUnverified flag. Current accepted actual and root authority remain separate.",
+          "semantic_metadata_provider": "tcgdex",
+          "semantic_metadata_is_photo_provenance": false,
+          "semantic_native_identity_projection": {
+            "id": "PMCG5-081",
+            "localId": "081",
+            "name": "マチスの交渉",
+            "category": "Trainer",
+            "illustrator": "Ken Sugimori",
+            "rarity": "Uncommon",
+            "set": {
+              "cardCount": {
+                "official": 96,
+                "total": 96
+              },
+              "id": "PMCG5",
+              "name": "リーダーズスタジアム"
+            },
+            "variants": {
+              "firstEdition": false,
+              "holo": false,
+              "normal": true,
+              "reverse": false,
+              "wPromo": false
+            },
+            "variants_detailed": [
+              {
+                "type": "normal",
+                "size": "standard",
+                "variantId": "endfynwn4n10gzq"
+              }
+            ]
+          },
+          "semantic_native_identity_projection_sha256": "995c2fe2018b6f628282e79f524dc550a32917af78572f481652dedc17795c62",
+          "semantic_provider_full_captured_json_file_sha256": "87d825a6d0c3773e6c17d6a040d0e9bade2506b9153df9c44bc02ea3a72bd260",
+          "semantic_provider_full_captured_json_canonical_sha256": "2a2c180823d4cf67f9ba6d86f9d26401d47fcdfd9cd56f66ae526231412ef4aa",
+          "provider_capture_contract": "TCGCollector photo HTML/file and raw/public photo projection hashes, private complete TCGdex JSON file/canonical hashes, whitelisted native identity, root accepted actual and safe peer projection hashes are distinct. Full raw commercial/session fields and local paths remain private.",
+          "actual_pixel_signature": {
+            "category": "Trainer",
+            "nativeName": "マチスの交渉",
+            "language": "ja",
+            "printedHeader": "TRAINER",
+            "trainerSubtype": null,
+            "printedJapaneseScript": true,
+            "printedCollectorNumber": null,
+            "printedNationalDex": null,
+            "printedNumberIsNationalDex": false,
+            "hp": null,
+            "stage": null,
+            "retreat": null,
+            "attacks": [],
+            "abilities": [],
+            "nativeRules": "お互いにサイドカードを1枚ずつ取るかどうか、相手プレイヤーにたずねる。オーケーなら、お互いのプレイヤーは、それぞれ自分のサイドカードから1枚を選び、取って手札に加える。オーケーでないなら、あなたは山札からカードを1枚引く。",
+            "nativeRulesLiteralReading": true,
+            "artist": "Ken Sugimori",
+            "artistReadCertain": true,
+            "rarityMark": "black diamond",
+            "setMark": "Leaders Stadium gym symbol",
+            "artDescription": "Lt. Surge shakes hands with Electabuzz before orange-yellow fiery foliage/background.",
+            "allFourOuterEdgesVisible": true,
+            "completeCardFrameVisible": true,
+            "topLeftCornerFullyVisible": true,
+            "editionStampVisible": false,
+            "watermarkVisible": false,
+            "copyrightLineVisible": false,
+            "physicalEditionVerified": false,
+            "physicalFinishVerified": false,
+            "visibleFinishEvidence": "No prominent foil illustration pattern; current normal tuple retained, physical finish uncertified.",
+            "fullLiteralBodyEqualityCertified": false
+          },
+          "actual_pixel_signature_sha256": "f87e9c7e030a9b4ca5d984f734dceedd404e31ff8fa782c3e2d8d1f9a97133ee",
+          "approved_projection_row_canonical_json_sha256": "504bbf6155e056ebb39dc4dd9d2ce158a2b2c7e9c2e81d60d885758dfb5cef70",
+          "independent_selection_raw_canonical_json_sha256": "d9799280634d5d1768779523dcec3ca648118262ee94faed530425bfd49feebb",
+          "independent_selection_public_canonical_json_sha256": "e9bb04436dc3dc685ec16a21030896f2713079501d036cc328ff247a034a40bd",
+          "independent_selection": {
+            "printingId": "58053385-0e6d-45a1-b7aa-ba11abe75091",
+            "setId": "c24a6f11-2b12-4dbd-8d50-61f17e8e6a4f",
+            "setCode": "PMCG5",
+            "languageCode": "ja",
+            "canonicalAlias": "081",
+            "sourceCode": "tcgcollector",
+            "originalSha256": "627fe0e7530b61a0fd9ef4cb53f7ec0e626034a94d8ce9fff04ed355178768b9",
+            "selectedSourceCardId": "tcgcollector-image-url-sha256:960013b61e95f821151e7a04b8fc5b7c801f0597cb35897484bb609ad088ad31",
+            "actualPixelSignature": {
+              "category": "Trainer",
+              "nativeName": "マチスの交渉",
+              "language": "ja",
+              "printedHeader": "TRAINER",
+              "trainerSubtype": null,
+              "printedJapaneseScript": true,
+              "printedCollectorNumber": null,
+              "printedNationalDex": null,
+              "printedNumberIsNationalDex": false,
+              "hp": null,
+              "stage": null,
+              "retreat": null,
+              "attacks": [],
+              "abilities": [],
+              "nativeRules": "お互いにサイドカードを1枚ずつ取るかどうか、相手プレイヤーにたずねる。オーケーなら、お互いのプレイヤーは、それぞれ自分のサイドカードから1枚を選び、取って手札に加える。オーケーでないなら、あなたは山札からカードを1枚引く。",
+              "nativeRulesLiteralReading": true,
+              "artist": "Ken Sugimori",
+              "artistReadCertain": true,
+              "rarityMark": "black diamond",
+              "setMark": "Leaders Stadium gym symbol",
+              "artDescription": "Lt. Surge shakes hands with Electabuzz before orange-yellow fiery foliage/background.",
+              "allFourOuterEdgesVisible": true,
+              "completeCardFrameVisible": true,
+              "topLeftCornerFullyVisible": true,
+              "editionStampVisible": false,
+              "watermarkVisible": false,
+              "copyrightLineVisible": false,
+              "physicalEditionVerified": false,
+              "physicalFinishVerified": false,
+              "visibleFinishEvidence": "No prominent foil illustration pattern; current normal tuple retained, physical finish uncertified.",
+              "fullLiteralBodyEqualityCertified": false
+            },
+            "independentDirectWholeFrontView": true,
+            "providerFullBodyAgreementCertified": false
+          },
+          "independent_coverage": {
+            "independentDirectWholeFrontView": true,
+            "wholeOriginalActuallyViewedByRoot": true,
+            "allSourceBytesAndPixelHashesChecked": true,
+            "fullVerbatimNativeParagraphCertified": false
+          },
+          "historical_association": {
+            "selected_source_card_id": null,
+            "source_only_preparation_approved": false,
+            "source_only_publication_approved": false,
+            "old_quality_hold_evidence_must_remain_unchanged": true,
+            "historical_actual_signature_sha256": "f87e9c7e030a9b4ca5d984f734dceedd404e31ff8fa782c3e2d8d1f9a97133ee"
+          },
+          "provider_metadata_discrepancies_historical": [
+            {
+              "field": "nativeRuleBody",
+              "provider": null,
+              "actual": "お互いにサイドカードを1枚ずつ取るかどうか、相手プレイヤーにたずねる。オーケーなら、お互いのプレイヤーは、それぞれ自分のサイドカードから1枚を選び、取って手札に加える。オーケーでないなら、あなたは山札からカードを1枚引く。",
+              "qualification": "TCGdex has no body; actual front supplies native rule evidence. No provider agreement claim.",
+              "rawMetadataUnchanged": true
+            },
+            {
+              "field": "English title crosswalk",
+              "provider": "TCGCollector Lt. Surge Treaty / current lead Lt. Surge Negotiation",
+              "actual": "マチスの交渉",
+              "qualification": "Exact Japanese printed title, full rule, Ken Sugimori handshake art and set association bridge the current target; no catalogue rename."
+            }
+          ],
+          "source_quality_qualifications": {
+            "actual_original_format": "JPEG",
+            "actual_original_mime": "image/jpeg",
+            "original_bytes_unchanged": true,
+            "complete_frame_accepted": true,
+            "hd_original_certified": false,
+            "stackr_enlargement_performed": false,
+            "provider_processing_unknown": true,
+            "provider_no_resize_certified": false,
+            "native_optical_resolution_gain_claimed": false,
+            "current_quality_assessment": "All four outside edges/corners are complete; title, whole rule paragraph, artist and set mark readable."
+          },
+          "provider_full_body_agreement_certified": false,
+          "provider_native_rules_agreement_certified": false,
+          "full_verbatim_native_transcription_certified": false,
+          "current_acceptance": {
+            "independently_accepted": true,
+            "source_code": "tcgcollector",
+            "source_card_id": "tcgcollector-image-url-sha256:960013b61e95f821151e7a04b8fc5b7c801f0597cb35897484bb609ad088ad31",
+            "original_sha256": "627fe0e7530b61a0fd9ef4cb53f7ec0e626034a94d8ce9fff04ed355178768b9",
+            "category": "Trainer"
+          },
+          "source_variant_support": {
+            "variant_id": "4a752b13-fdf9-4b5a-a94b-8964e50a2ad3",
+            "variant_code": "normal",
+            "finish_code": "normal",
+            "physical_finish_certified": false
+          },
+          "finite_source_policy_projection": {
+            "code": "tcgcollector",
+            "display_name": "TCGCollector (owner supplied Japanese card fronts)",
+            "source_type": "image",
+            "base_url": "https://www.tcgcollector.com",
+            "licence_status": "under_review",
+            "attribution_required": true,
+            "active": false,
+            "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly3 independently accepted Leaders Stadium fronts019/081/096. Bind the final finite preparation/publication decision and exact source selection in the publisher plan. Owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval, independently verified vendor licence or physical finish/edition certification. Finite decision SHA256 68f1af735d5e481ed26d1aabbe94e493d520575d9d4191413508f9ec90cf68ff.",
+            "deprecated_at": null
+          },
+          "finite_source_policy_projection_sha256": "207957571711627d17ab7e1ed0ef77f6635426ee9a5972d47d316e3fcba9bd1e",
+          "source_use_facts": {
+            "owner_provided_site_permission_attested": true,
+            "owner_permission_attestation_sha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+            "vendor_licence_verified": false,
+            "sourcewide_approval": false,
+            "physical_edition_verified": false,
+            "physical_finish_verified": false
+          },
+          "queue_controls": {
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "name_number_and_symbol_readable": false,
+              "name_and_set_symbol_readable": true,
+              "full_native_body_verified": true,
+              "full_native_nonpokemon_body_verified": true,
+              "exact_art_reference_verified": true,
+              "full_verbatim_native_body_certified": false
+            },
+            "identity_controls": {
+              "canonical_alias": "081",
+              "canonical_alias_is_internal_only": true,
+              "canonical_alias_is_not_printed_national_dex": true,
+              "printed_collector_number": null,
+              "printed_national_dex": null,
+              "pokemon_identity_asserted": false
+            },
+            "source_qa": {
+              "actual_japanese_full_front_verified": true,
+              "actual_japanese_pokemon_front_verified": false,
+              "actual_japanese_unnumbered_trainer_front_verified": true,
+              "actual_japanese_unnumbered_energy_front_verified": false,
+              "printed_number_and_national_dex_absent_verified": true,
+              "original_sha256": "627fe0e7530b61a0fd9ef4cb53f7ec0e626034a94d8ce9fff04ed355178768b9",
+              "actual_pixel_signature_sha256": "f87e9c7e030a9b4ca5d984f734dceedd404e31ff8fa782c3e2d8d1f9a97133ee",
+              "independent_direct_whole_front_view": true
+            }
+          },
+          "generic_other_rows_may_relax": false,
+          "vendor_licence_verified": false,
+          "sourcewide_approval": false,
+          "physical_edition_verified": false,
+          "physical_finish_verified": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "99246359-6f35-43db-9f85-2ccca99bceec",
+      "set_id": "c24a6f11-2b12-4dbd-8d50-61f17e8e6a4f",
+      "set_code": "PMCG5",
+      "language_code": "ja",
+      "collector_number": "096",
+      "card_native_name": "ロケット団のワナ",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+      "variant_ids": [
+        "96320f61-2e8c-4145-8fbc-7c5f43eeba5c"
+      ],
+      "batch_id": "JP-CARDS-061",
+      "source_code": "tcgcollector",
+      "provider_id": "tcgcollector-image-url-sha256:128798334e1a9e0f90343f143af152e493cc1948ff9af07703149d20aa1b4244",
+      "image_url": "https://static.tcgcollector.com/content/images/9c/ce/0d/9cce0deba604504d64afd62a6e58db4f2d429acb5194b67e37826bbee3cc9617.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/6f6becbb06a1af7c1f9627685581ba470da630a10f096f0c855a5e04ad534d54/original.jpg",
+          "sha256": "6f6becbb06a1af7c1f9627685581ba470da630a10f096f0c855a5e04ad534d54",
+          "byte_size": 73131,
+          "width": 593,
+          "height": 834,
+          "mime_type": "image/jpeg",
+          "artifact_id": 644968141
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/c8f394367a645207c448160e35f77a18a21062980cae0e561104c3a2d26de083/card-grid.webp",
+          "sha256": "c8f394367a645207c448160e35f77a18a21062980cae0e561104c3a2d26de083",
+          "byte_size": 13820,
+          "width": 240,
+          "height": 338,
+          "mime_type": "image/webp",
+          "artifact_id": 644968141
+        },
+        {
+          "role": "search-result",
+          "file": "objects/42102edb717aa090897cdc1616497e8c96f9e368c4117dee6e3ea32fc7178cff/search-result.webp",
+          "sha256": "42102edb717aa090897cdc1616497e8c96f9e368c4117dee6e3ea32fc7178cff",
+          "byte_size": 3062,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 644968141
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/e4878e43eafddafabd1ebbd64dae7fe3b4aa901ff7810fa658e2e922496013a9/detail-page.webp",
+          "sha256": "e4878e43eafddafabd1ebbd64dae7fe3b4aa901ff7810fa658e2e922496013a9",
+          "byte_size": 57560,
+          "width": 593,
+          "height": 834,
+          "mime_type": "image/webp",
+          "artifact_id": 644968141
+        }
+      ],
+      "evidence": {
+        "source_url": "https://static.tcgcollector.com/content/images/9c/ce/0d/9cce0deba604504d64afd62a6e58db4f2d429acb5194b67e37826bbee3cc9617.jpg",
+        "source_page_url": "https://www.tcgcollector.com/cards/29823/the-rockets-trap-leaders-stadium-no-096",
+        "provider_id": "tcgcollector-image-url-sha256:128798334e1a9e0f90343f143af152e493cc1948ff9af07703149d20aa1b4244",
+        "source_metadata_sha256": "57b0edc610a1aef387a94211046355f760833d04f40d81db9da60f19db879218",
+        "source_body": {
+          "contract": "stackr-ja-leaders3tcg-identity-v1",
+          "accepted_category": "Trainer",
+          "photo_source_provider": "tcgcollector",
+          "photo_source_identifier": "tcgcollector-image-url-sha256:128798334e1a9e0f90343f143af152e493cc1948ff9af07703149d20aa1b4244",
+          "photo_source_url_sha256": "128798334e1a9e0f90343f143af152e493cc1948ff9af07703149d20aa1b4244",
+          "photo_source_raw_html_sha256": "57b0edc610a1aef387a94211046355f760833d04f40d81db9da60f19db879218",
+          "photo_identity_projection": {
+            "canonicalAlias": "096",
+            "printingId": "99246359-6f35-43db-9f85-2ccca99bceec",
+            "sourceProvider": "tcgcollector",
+            "sourcePageUrl": "https://www.tcgcollector.com/cards/29823/the-rockets-trap-leaders-stadium-no-096",
+            "sourceRawHtml": {
+              "sha256": "57b0edc610a1aef387a94211046355f760833d04f40d81db9da60f19db879218",
+              "bytes": 622924
+            },
+            "galleryLiteralLink": "/cards/29823/the-rockets-trap-leaders-stadium-no-096",
+            "observedCardImageAlt": "The Rocket&#039;s Trap (Leaders&#039; Stadium No. 096)",
+            "cardImageSrc": "https://static.tcgcollector.com/content/images/d3/dd/34/d3dd345cff57c9383d59c719df30889405bb4b2f0682c94bd465463f792debbb.jpg",
+            "observedLiteralSrcset": [
+              {
+                "url": "https://static.tcgcollector.com/content/images/d3/dd/34/d3dd345cff57c9383d59c719df30889405bb4b2f0682c94bd465463f792debbb.jpg",
+                "declaredWidth": 320
+              },
+              {
+                "url": "https://static.tcgcollector.com/content/images/9c/ce/0d/9cce0deba604504d64afd62a6e58db4f2d429acb5194b67e37826bbee3cc9617.jpg",
+                "declaredWidth": 593
+              }
+            ],
+            "largestLiteralPointer": {
+              "url": "https://static.tcgcollector.com/content/images/9c/ce/0d/9cce0deba604504d64afd62a6e58db4f2d429acb5194b67e37826bbee3cc9617.jpg",
+              "declaredWidth": 593
+            },
+            "JapanesePageContext": true,
+            "sourceOrdinalNotIdentityProof": true,
+            "actualPixelsStillUnverified": true,
+            "formatUnlimitedIsPlayingFormatNotEdition": true
+          },
+          "photo_identity_projection_sha256": "dfca036bb7782cf7f73be3c26f6db0e33e6c0f9360bfcdb6ad6fd000272c2655",
+          "photo_private_projection_canonical_sha256": "3ae2ed7a4ca904e380ce62604478f7ed0e1c842dd382587eab4154541b868e0e",
+          "photo_projection_transform": "Remove only sourceRawHtml.path from the frozen capture-stage photo projection; preserve historical actualPixelsStillUnverified flag. Current accepted actual and root authority remain separate.",
+          "semantic_metadata_provider": "tcgdex",
+          "semantic_metadata_is_photo_provenance": false,
+          "semantic_native_identity_projection": {
+            "id": "PMCG5-096",
+            "localId": "096",
+            "name": "ロケット団のワナ",
+            "category": "Trainer",
+            "illustrator": "Ken Sugimori",
+            "rarity": "Holo Rare",
+            "set": {
+              "cardCount": {
+                "official": 96,
+                "total": 96
+              },
+              "id": "PMCG5",
+              "name": "リーダーズスタジアム"
+            },
+            "variants": {
+              "firstEdition": false,
+              "holo": true,
+              "normal": false,
+              "reverse": false,
+              "wPromo": false
+            },
+            "variants_detailed": [
+              {
+                "type": "holo",
+                "size": "standard",
+                "variantId": "jr7oetx1mqug9"
+              }
+            ]
+          },
+          "semantic_native_identity_projection_sha256": "30e5c44755c5353807aef902915259b3e0a06d36013b9c26276055202a9b8c29",
+          "semantic_provider_full_captured_json_file_sha256": "ba5320f06602120ab0b38915f5d33a5b89c1ed3dcd636433f76c04b4cec4f2c7",
+          "semantic_provider_full_captured_json_canonical_sha256": "b86b4b98786fb6d67467912492ae19fe2e40bf78fe73e7ae30af351b203c83a1",
+          "provider_capture_contract": "TCGCollector photo HTML/file and raw/public photo projection hashes, private complete TCGdex JSON file/canonical hashes, whitelisted native identity, root accepted actual and safe peer projection hashes are distinct. Full raw commercial/session fields and local paths remain private.",
+          "actual_pixel_signature": {
+            "category": "Trainer",
+            "nativeName": "ロケット団のワナ",
+            "language": "ja",
+            "printedHeader": "TRAINER",
+            "trainerSubtype": null,
+            "printedJapaneseScript": true,
+            "printedCollectorNumber": null,
+            "printedNationalDex": null,
+            "printedNumberIsNationalDex": false,
+            "hp": null,
+            "stage": null,
+            "retreat": null,
+            "attacks": [],
+            "abilities": [],
+            "nativeRules": "コインを投げて「おもて」なら、相手の手札から、おもてを見ないで最大3枚を選び、相手の山札にもどす。その後、その山札をよく切る。",
+            "nativeRulesLiteralReading": true,
+            "artist": "Ken Sugimori",
+            "artistReadCertain": true,
+            "rarityMark": "black star",
+            "setMark": "Leaders Stadium gym symbol",
+            "artDescription": "Red-haired female Rocket member pointing left with Rocket members behind, dark sparkling illustration background.",
+            "allFourOuterEdgesVisible": true,
+            "completeCardFrameVisible": true,
+            "bottomBorderAndArtistVisible": true,
+            "editionStampVisible": false,
+            "watermarkVisible": false,
+            "copyrightLineVisible": false,
+            "physicalEditionVerified": false,
+            "physicalFinishVerified": false,
+            "visibleFinishEvidence": "Sparkling illustration, consistent with current holo tuple; photograph does not certify physical finish.",
+            "fullLiteralBodyEqualityCertified": false
+          },
+          "actual_pixel_signature_sha256": "dcbe60c7e1372c73e1b34542481ba599de6749630b291e13bcde7e8602d79670",
+          "approved_projection_row_canonical_json_sha256": "35f43e9fedf4dd6d78536d4071dc76d22e1c4034bbe64f1efba386e7200e111a",
+          "independent_selection_raw_canonical_json_sha256": "8604b559875cd430b6a64eb575083eac0ddb6a5a932d56df96f046ea5bd7feb5",
+          "independent_selection_public_canonical_json_sha256": "2c8b4e024a3e7aac0ce81c784dd51d5790165fef4d250f691a0c1791a9f3c586",
+          "independent_selection": {
+            "printingId": "99246359-6f35-43db-9f85-2ccca99bceec",
+            "setId": "c24a6f11-2b12-4dbd-8d50-61f17e8e6a4f",
+            "setCode": "PMCG5",
+            "languageCode": "ja",
+            "canonicalAlias": "096",
+            "sourceCode": "tcgcollector",
+            "originalSha256": "6f6becbb06a1af7c1f9627685581ba470da630a10f096f0c855a5e04ad534d54",
+            "selectedSourceCardId": "tcgcollector-image-url-sha256:128798334e1a9e0f90343f143af152e493cc1948ff9af07703149d20aa1b4244",
+            "actualPixelSignature": {
+              "category": "Trainer",
+              "nativeName": "ロケット団のワナ",
+              "language": "ja",
+              "printedHeader": "TRAINER",
+              "trainerSubtype": null,
+              "printedJapaneseScript": true,
+              "printedCollectorNumber": null,
+              "printedNationalDex": null,
+              "printedNumberIsNationalDex": false,
+              "hp": null,
+              "stage": null,
+              "retreat": null,
+              "attacks": [],
+              "abilities": [],
+              "nativeRules": "コインを投げて「おもて」なら、相手の手札から、おもてを見ないで最大3枚を選び、相手の山札にもどす。その後、その山札をよく切る。",
+              "nativeRulesLiteralReading": true,
+              "artist": "Ken Sugimori",
+              "artistReadCertain": true,
+              "rarityMark": "black star",
+              "setMark": "Leaders Stadium gym symbol",
+              "artDescription": "Red-haired female Rocket member pointing left with Rocket members behind, dark sparkling illustration background.",
+              "allFourOuterEdgesVisible": true,
+              "completeCardFrameVisible": true,
+              "bottomBorderAndArtistVisible": true,
+              "editionStampVisible": false,
+              "watermarkVisible": false,
+              "copyrightLineVisible": false,
+              "physicalEditionVerified": false,
+              "physicalFinishVerified": false,
+              "visibleFinishEvidence": "Sparkling illustration, consistent with current holo tuple; photograph does not certify physical finish.",
+              "fullLiteralBodyEqualityCertified": false
+            },
+            "independentDirectWholeFrontView": true,
+            "providerFullBodyAgreementCertified": false
+          },
+          "independent_coverage": {
+            "independentDirectWholeFrontView": true,
+            "wholeOriginalActuallyViewedByRoot": true,
+            "allSourceBytesAndPixelHashesChecked": true,
+            "fullVerbatimNativeParagraphCertified": false
+          },
+          "historical_association": {
+            "selected_source_card_id": null,
+            "source_only_preparation_approved": false,
+            "source_only_publication_approved": false,
+            "old_quality_hold_evidence_must_remain_unchanged": true,
+            "historical_actual_signature_sha256": "dcbe60c7e1372c73e1b34542481ba599de6749630b291e13bcde7e8602d79670"
+          },
+          "provider_metadata_discrepancies_historical": [
+            {
+              "field": "nativeRuleBody",
+              "provider": null,
+              "actual": "コインを投げて「おもて」なら、相手の手札から、おもてを見ないで最大3枚を選び、相手の山札にもどす。その後、その山札をよく切る。",
+              "qualification": "TCGdex has no body; actual front supplies native rule evidence. No provider agreement claim.",
+              "rawMetadataUnchanged": true
+            }
+          ],
+          "source_quality_qualifications": {
+            "actual_original_format": "JPEG",
+            "actual_original_mime": "image/jpeg",
+            "original_bytes_unchanged": true,
+            "complete_frame_accepted": true,
+            "hd_original_certified": false,
+            "stackr_enlargement_performed": false,
+            "provider_processing_unknown": true,
+            "provider_no_resize_certified": false,
+            "native_optical_resolution_gain_claimed": false,
+            "current_quality_assessment": "All four outside edges/corners complete, including bottom yellow border and full printed Ken Sugimori credit. Entire native rule paragraph readable."
+          },
+          "provider_full_body_agreement_certified": false,
+          "provider_native_rules_agreement_certified": false,
+          "full_verbatim_native_transcription_certified": false,
+          "current_acceptance": {
+            "independently_accepted": true,
+            "source_code": "tcgcollector",
+            "source_card_id": "tcgcollector-image-url-sha256:128798334e1a9e0f90343f143af152e493cc1948ff9af07703149d20aa1b4244",
+            "original_sha256": "6f6becbb06a1af7c1f9627685581ba470da630a10f096f0c855a5e04ad534d54",
+            "category": "Trainer"
+          },
+          "source_variant_support": {
+            "variant_id": "96320f61-2e8c-4145-8fbc-7c5f43eeba5c",
+            "variant_code": "holo",
+            "finish_code": "holo",
+            "physical_finish_certified": false
+          },
+          "finite_source_policy_projection": {
+            "code": "tcgcollector",
+            "display_name": "TCGCollector (owner supplied Japanese card fronts)",
+            "source_type": "image",
+            "base_url": "https://www.tcgcollector.com",
+            "licence_status": "under_review",
+            "attribution_required": true,
+            "active": false,
+            "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly3 independently accepted Leaders Stadium fronts019/081/096. Bind the final finite preparation/publication decision and exact source selection in the publisher plan. Owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval, independently verified vendor licence or physical finish/edition certification. Finite decision SHA256 68f1af735d5e481ed26d1aabbe94e493d520575d9d4191413508f9ec90cf68ff.",
+            "deprecated_at": null
+          },
+          "finite_source_policy_projection_sha256": "207957571711627d17ab7e1ed0ef77f6635426ee9a5972d47d316e3fcba9bd1e",
+          "source_use_facts": {
+            "owner_provided_site_permission_attested": true,
+            "owner_permission_attestation_sha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+            "vendor_licence_verified": false,
+            "sourcewide_approval": false,
+            "physical_edition_verified": false,
+            "physical_finish_verified": false
+          },
+          "queue_controls": {
+            "pixel_observations": {
+              "whole_original_inspected": true,
+              "full_frame_visible": true,
+              "name_number_and_symbol_readable": false,
+              "name_and_set_symbol_readable": true,
+              "full_native_body_verified": true,
+              "full_native_nonpokemon_body_verified": true,
+              "exact_art_reference_verified": true,
+              "full_verbatim_native_body_certified": false
+            },
+            "identity_controls": {
+              "canonical_alias": "096",
+              "canonical_alias_is_internal_only": true,
+              "canonical_alias_is_not_printed_national_dex": true,
+              "printed_collector_number": null,
+              "printed_national_dex": null,
+              "pokemon_identity_asserted": false
+            },
+            "source_qa": {
+              "actual_japanese_full_front_verified": true,
+              "actual_japanese_pokemon_front_verified": false,
+              "actual_japanese_unnumbered_trainer_front_verified": true,
+              "actual_japanese_unnumbered_energy_front_verified": false,
+              "printed_number_and_national_dex_absent_verified": true,
+              "original_sha256": "6f6becbb06a1af7c1f9627685581ba470da630a10f096f0c855a5e04ad534d54",
+              "actual_pixel_signature_sha256": "dcbe60c7e1372c73e1b34542481ba599de6749630b291e13bcde7e8602d79670",
+              "independent_direct_whole_front_view": true
+            }
+          },
+          "generic_other_rows_may_relax": false,
+          "vendor_licence_verified": false,
+          "sourcewide_approval": false,
+          "physical_edition_verified": false,
+          "physical_finish_verified": false
+        },
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    }
+  ],
+  "source_counts": {
+    "tcgcollector": 3
+  },
+  "delivery_scope": {
+    "fixed_batch_ids": [
+      "JP-CARDS-058",
+      "JP-CARDS-061"
+    ],
+    "saved_batch_tasks": 3,
+    "eligible_fronts": 3,
+    "by_batch": {
+      "JP-CARDS-058": {
+        "verified": 1,
+        "held": 0
+      },
+      "JP-CARDS-061": {
+        "verified": 2,
+        "held": 0
+      }
+    },
+    "excluded_aliases": [],
+    "excluded": [],
+    "outside_fixed_cohort": [],
+    "whole_batch_completion_asserted": false
+  },
+  "binding_expectations": {
+    "production": [
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "c24a6f11-2b12-4dbd-8d50-61f17e8e6a4f",
+        "set_code": "PMCG5",
+        "printing_id": "f732147f-deef-4c65-a092-4ed2e7bbfcad",
+        "collector_number": "019",
+        "card_native_name": "タケシのキュウコン",
+        "variant_id": "41b979bb-0d07-4b9e-bf3f-04de506c2831",
+        "variant_code": "holo",
+        "finish_code": "holo",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "c24a6f11-2b12-4dbd-8d50-61f17e8e6a4f",
+        "set_code": "PMCG5",
+        "printing_id": "58053385-0e6d-45a1-b7aa-ba11abe75091",
+        "collector_number": "081",
+        "card_native_name": "マチスの交渉",
+        "variant_id": "4a752b13-fdf9-4b5a-a94b-8964e50a2ad3",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "c24a6f11-2b12-4dbd-8d50-61f17e8e6a4f",
+        "set_code": "PMCG5",
+        "printing_id": "99246359-6f35-43db-9f85-2ccca99bceec",
+        "collector_number": "096",
+        "card_native_name": "ロケット団のワナ",
+        "variant_id": "96320f61-2e8c-4145-8fbc-7c5f43eeba5c",
+        "variant_code": "holo",
+        "finish_code": "holo",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+      }
+    ],
+    "staging": [
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "c24a6f11-2b12-4dbd-8d50-61f17e8e6a4f",
+        "set_code": "PMCG5",
+        "printing_id": "f732147f-deef-4c65-a092-4ed2e7bbfcad",
+        "collector_number": "019",
+        "card_native_name": "タケシのキュウコン",
+        "variant_id": "41b979bb-0d07-4b9e-bf3f-04de506c2831",
+        "variant_code": "holo",
+        "finish_code": "holo",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "c24a6f11-2b12-4dbd-8d50-61f17e8e6a4f",
+        "set_code": "PMCG5",
+        "printing_id": "58053385-0e6d-45a1-b7aa-ba11abe75091",
+        "collector_number": "081",
+        "card_native_name": "マチスの交渉",
+        "variant_id": "4a752b13-fdf9-4b5a-a94b-8964e50a2ad3",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "ja",
+        "set_id": "c24a6f11-2b12-4dbd-8d50-61f17e8e6a4f",
+        "set_code": "PMCG5",
+        "printing_id": "99246359-6f35-43db-9f85-2ccca99bceec",
+        "collector_number": "096",
+        "card_native_name": "ロケット団のワナ",
+        "variant_id": "96320f61-2e8c-4145-8fbc-7c5f43eeba5c",
+        "variant_code": "holo",
+        "finish_code": "holo",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+      }
+    ]
+  },
+  "scope_counts": {
+    "production": {
+      "printings": 3,
+      "variants": 3,
+      "names": 6,
+      "sets": 1
+    },
+    "staging": {
+      "printings": 3,
+      "variants": 3,
+      "names": 6,
+      "sets": 1
+    }
+  },
+  "source_policies": {
+    "production": [
+      {
+        "code": "pokellector",
+        "display_name": "Pokellector (owner supplied Japanese card fronts)",
+        "source_type": "image",
+        "base_url": "https://jp.pokellector.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly2 Neo2 Ruin Wall reference fronts in STACKR-JA-LEGACY-TRAINER-FRONTS-20261015-008; owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval or independently verified vendor licence.",
+        "deprecated_at": null
+      },
+      {
+        "code": "scrydex",
+        "display_name": "Scrydex",
+        "source_type": "image",
+        "base_url": "https://scrydex.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Exactly 89 English MEP fronts approved by owner; catalogue/rights-evidence/mep89-scrydex-owner-confirmation.2026-09-27.json; 8c68bf3499de1e1e340b00fc03e5f1b469de7b65d259b5fba5a8b4cd31119ca9. No source-wide approval.",
+        "deprecated_at": null
+      }
+    ],
+    "staging": []
+  },
+  "new_sources": {
+    "production": [
+      {
+        "code": "tcgcollector",
+        "display_name": "TCGCollector (owner supplied Japanese card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.tcgcollector.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly3 independently accepted Leaders Stadium fronts019/081/096. Bind the final finite preparation/publication decision and exact source selection in the publisher plan. Owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval, independently verified vendor licence or physical finish/edition certification. Finite decision SHA256 68f1af735d5e481ed26d1aabbe94e493d520575d9d4191413508f9ec90cf68ff.",
+        "deprecated_at": null
+      }
+    ],
+    "staging": [
+      {
+        "code": "tcgcollector",
+        "display_name": "TCGCollector (owner supplied Japanese card fronts)",
+        "source_type": "image",
+        "base_url": "https://www.tcgcollector.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly3 independently accepted Leaders Stadium fronts019/081/096. Bind the final finite preparation/publication decision and exact source selection in the publisher plan. Owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval, independently verified vendor licence or physical finish/edition certification. Finite decision SHA256 68f1af735d5e481ed26d1aabbe94e493d520575d9d4191413508f9ec90cf68ff.",
+        "deprecated_at": null
+      }
+    ]
+  }
+}

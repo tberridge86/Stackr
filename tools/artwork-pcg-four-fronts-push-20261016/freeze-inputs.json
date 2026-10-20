@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 1,
+  "private_inputs": [
+    {
+      "file": "publish-review/pcg1234-four-sources-20261016-production-before-raw.json",
+      "sha256": "52dd355aa5c2929fb1d26f9017dddaa41483b2c3b82cf801074b3062f7554e29"
+    },
+    {
+      "file": "publish-review/pcg1234-four-sources-20261016-production-before.json",
+      "sha256": "8aa9578f474b0574c0cf9d3e1a24be4be36b487d137531d6a27b018fc9afab13"
+    },
+    {
+      "file": "publish-review/pcg1234-four-sources-20261016-production-bindings-raw.json",
+      "sha256": "c330512274870a9cfd45170bda73de29f18888c16ff85c08c26a233fd266f570"
+    },
+    {
+      "file": "publish-review/pcg1234-four-sources-20261016-production-bindings.json",
+      "sha256": "b97d89a3e4efb7416684f91a257c159f48a923c6898455be4eceaeefab40e188"
+    },
+    {
+      "file": "publish-review/pcg1234-four-sources-20261016-staging-before-raw.json",
+      "sha256": "42fc465f6441159f5b56e9530cc14304517cad2d1524f0da0cda1e110e4a28f5"
+    },
+    {
+      "file": "publish-review/pcg1234-four-sources-20261016-staging-before.json",
+      "sha256": "32d89d6f22da2968efa35d5ba143c2454e1f8624c9ff6091adbbdee1b81b88b4"
+    },
+    {
+      "file": "publish-review/pcg1234-four-sources-20261016-staging-bindings-raw.json",
+      "sha256": "4f7cd64aaaf1a667e058e857b59321146b5d4f9c852da8002e6babc308087f12"
+    },
+    {
+      "file": "publish-review/pcg1234-four-sources-20261016-staging-bindings.json",
+      "sha256": "6fae44168b8bcb2f7fe3518088455d6c48d75003e5be2117b5cf438a26494577"
+    },
+    {
+      "file": "source-batches/pcg1234-four-approved-fronts-20261016/root-approved4-source-originals.json",
+      "sha256": "5976b3017578cbe04a0c6d57f54f8b98f3c857de37894ad5f2381e021e973b23"
+    },
+    {
+      "file": "source-batches/pcg1234-four-approved-fronts-20261016/root-finite4-preparation-publication-decision.json",
+      "sha256": "7608cc5c480280744f3c8f8c503b3f0f94c7c23ff9f1a23aa897d419888e3007"
+    },
+    {
+      "file": "source-batches/pcg1234-four-approved-fronts-20261016/root-private-preparation-context.json",
+      "sha256": "d7ee6bd2932672edb17c93611e17bebef2c9bb8dd924b80482b81093eeddeaf5"
+    },
+    {
+      "file": "publish-review/pcg1234-four-independent-private-package-review-20261016.json",
+      "sha256": "55fcfbfa0178b8beab4866b3a978b0e432c801b3278a3eac6340abfc35d4bf63"
+    },
+    {
+      "file": "publish-review/pcg1234-root-private-binding-validation-20261016.json",
+      "sha256": "0a32f4e1ea07f73fc1bad71c051984e44c22f14b70a474c42c30771f9b739fe5"
+    },
+    {
+      "file": "publish-review/pcg1234-root-source-archive-binding-20261016.json",
+      "sha256": "954276417a26bf7100c247fce8a58897fa4b31235d2c154694ee520b6922fa55"
+    },
+    {
+      "file": "publish-review/pcg1234-root-upload-receipt-20261016.json",
+      "sha256": "ef9bb9fea382852f4b0209e1b0cd5972067c54798227a5b40e65a83cf34f8b39"
+    },
+    {
+      "file": "publish-review/pcg1234-root-upload-record-format-correction-20261016.json",
+      "sha256": "b89038ce239ddd9bd00ed6844a7029c26c8a5c79db6556c466ea9c8fdb22a608"
+    },
+    {
+      "file": "pcg1234-root-publisher-context-20261016.json",
+      "sha256": "12dd3e078e6dd482f95c036b50d7f433e72cfd8e6bc48f2047463c0dd5c2495c"
+    },
+    {
+      "file": "publish-review/root-four-source-policy-checkpoint-after-aquapolis2-20261015.json",
+      "sha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f"
+    },
+    {
+      "file": "pcg1234-four-private-preparation-20261016/source-contract.json",
+      "sha256": "3d1478238a990fa8b4ac72c3eb9008dc6fe219535a842beec184f1abefd1fe24"
+    },
+    {
+      "file": "pcg1234-four-private-preparation-20261016/private-projection-inputs.json",
+      "sha256": "d3b20c4dd14ab5e08346ba6c7867316f49443efb33b73dbed9b0aa83fb1454cf"
+    },
+    {
+      "file": "pcg1234-four-private-preparation-20261016/private-package-handoff.json",
+      "sha256": "8223290823be5513cdc70e79a31547e91b2aaeca7c80e280fc03833f9638bcb2"
+    }
+  ],
+  "source_manifest_file": "pcg1234-four-private-preparation-20261016/source-manifest.json",
+  "source_manifest_sha256": "a2c5e3647ad5f74ca2f19d958af2c2b807b22407ffe4f2a1b025cff7712dcc63",
+  "package_receipt_file": "pcg1234-four-private-preparation-20261016/package-receipt.json",
+  "package_receipt_sha256": "b7623d43f21cdca4f1a13a0715d72ab05639bf93a0a0a3ef0a5dcd657ebacbe9",
+  "archive": {
+    "id": 646214227,
+    "sha256": "b8a5112200e40f5be101f602263e14ef165595cdc380df2e8fa5ca83f06f6635",
+    "byte_size": 2977622,
+    "file_count": 20,
+    "name": "pcg1234-fronts-20261016.zip"
+  },
+  "unchanged_dependencies": [
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 9031,
+      "sha256": "5524305ba4bd6a0f3867ea2c097c57fb0d610e27ef1d9d64529b64e9c67249de"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/metadata-guard.mjs",
+      "bytes": 4018,
+      "sha256": "cca5354822fe11c007308f7d22ebf84649d2374619e0dd049c7347a9db9e116f"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/publish.mjs",
+      "bytes": 5885,
+      "sha256": "8451746bb6e188f56c5be31064742eaeecdc2f2c6d6e27cb31ab5c7227af6d1f"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "tools/artwork-next-push-20261013/frozen.mjs",
+      "bytes": 7732,
+      "sha256": "3e14eb76a012116492075328c50e6c5907f712004da02d4d3dae541d2617a95b"
+    },
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 30117,
+      "sha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24425,
+      "sha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 15024,
+      "sha256": "1d168e5407a5bdc6e027f58991de58a0664576d7c917d5b219fa13f9af4a1d0a"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/download-package.py",
+      "bytes": 5489,
+      "sha256": "53f1114f25bd995b4f05d9b2d3adad7ae2dadc85b4b13f038a84bcc5e7d6b09f"
+    }
+  ],
+  "staging_fixture_policy": {
+    "code": "pricecharting",
+    "display_name": "PriceCharting (owner supplied card fronts)",
+    "source_type": "image",
+    "base_url": "https://www.pricecharting.com",
+    "licence_status": "under_review",
+    "attribution_required": true,
+    "active": false,
+    "internal_notes": "Owner-attested source use for exactly Aquapolis Mr. Mime95b and Porygon103b shared printing-front artwork in finite cohort AQUAPOLIS-SHARED-002-20261015. Independent vendor and underlying card licences are unverified. No source-wide approval; each later acquisition requires separate finite approval. Existing provenance rows and source policies must remain unchanged.",
+    "deprecated_at": null
+  },
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "5976b3017578cbe04a0c6d57f54f8b98f3c857de37894ad5f2381e021e973b23",
+    "finiteDecisionFileByteSha256": "7608cc5c480280744f3c8f8c503b3f0f94c7c23ff9f1a23aa897d419888e3007",
+    "rootPrivateContextFileByteSha256": "d7ee6bd2932672edb17c93611e17bebef2c9bb8dd924b80482b81093eeddeaf5",
+    "sourceHandoffFileByteSha256s": [
+      "9bfccf1ad8d67f40bbee23cb683ce073555151142493acfd7df1ef22eb594741",
+      "8d4a2bcc569e1e292dba7b037bb5f7ca92ea50aace028ce48812ce04c6397580"
+    ],
+    "independentSourceReviewFileByteSha256s": [
+      "5bb022cd60e4d1ef02aef359a49c428bd6e7adc1ffc0340d129d1faec6e45d8a",
+      "fac11c6626a96324944e88a21a161fc6c4650d4335c6675c8d3aa87382da10aa"
+    ],
+    "fourSourceCheckpointFileByteSha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "3d1478238a990fa8b4ac72c3eb9008dc6fe219535a842beec184f1abefd1fe24",
+    "independentPrivatePackageReviewSha256": "55fcfbfa0178b8beab4866b3a978b0e432c801b3278a3eac6340abfc35d4bf63",
+    "rootPrivatePackageValidationSha256": "0a32f4e1ea07f73fc1bad71c051984e44c22f14b70a474c42c30771f9b739fe5",
+    "rootSourceArchiveBindingSha256": "954276417a26bf7100c247fce8a58897fa4b31235d2c154694ee520b6922fa55",
+    "rootUploadReceiptSha256": "ef9bb9fea382852f4b0209e1b0cd5972067c54798227a5b40e65a83cf34f8b39",
+    "rootUploadRecordFormatCorrectionSha256": "b89038ce239ddd9bd00ed6844a7029c26c8a5c79db6556c466ea9c8fdb22a608",
+    "rootPublisherContextSha256": "12dd3e078e6dd482f95c036b50d7f433e72cfd8e6bc48f2047463c0dd5c2495c"
+  }
+}

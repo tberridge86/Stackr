@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 7,
+  "variants": 7,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "physical_finish_verified": false,
+  "physical_edition_verified": false,
+  "cohort_sha256": "902aa9114eaddc584a42b4afc31ea12a8b5deb05c0e00747f2c220fc9b8ccbee",
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "dc6e6c127985faa143797e35c71ead75e87cd2660a966551d99097269c25cc6b",
+    "finiteDecisionFileByteSha256": "647ce73c16477d7824dab7ef5c76ebeff6eff6840032f45c5ad8f3d08abc59cc",
+    "rootPrivateContextFileByteSha256": "ff5d4e675fd48f2983686d78b6fad76509264afe632ef7f619c778468424f860",
+    "sourceHandoffFileByteSha256s": [
+      "bc26a1d108c875571577624c327999cee8d8bbd1e319a0f6fc418697dd8244ef",
+      "b7e7d1673330b2e09ab208b8cd40280c28694e8b043569abd9abb43503e10ba9"
+    ],
+    "independentSourceReviewFileByteSha256s": [
+      "da505c25d2d1fc7acbbe0826b73cce1c964477f6dff5103eb1b1ecb8de7cac86",
+      "ac4f2c66794419f2cd5d16d070de6b32603e8a30d8f6add2ad57568745d980d8"
+    ],
+    "priorPerWaveFiniteDecisionFileByteSha256s": [
+      "2d17748cc6ef5884b2fd4d2048bf1de1f56afc2413eaebd02ee456492f57f9db",
+      "872785dde9255e9cec6832aa6ed5177f1737d4ab7dc4433e3f8c281c02e628b2"
+    ],
+    "rootSourceRegistrationFileByteSha256s": [
+      "1f6849b890cbf13a216043af4d91f475e8c5242c0371ed358b3a54f6a2f36d70",
+      "97b466b41f9c367b98bf04e62d62331c4a71eed9f2555093760349854f74b8ec"
+    ],
+    "fourSourceCheckpointFileByteSha256": "19844bbc58c147c54a601377abb242cd9515bba9a2ea7bd743af47e38d44841f",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "7c24dd8fca44471df257f6d8985a8dfa1a3170db6b05c07384a0b59a35e290bf",
+    "independentPrivatePackageReviewSha256": "6348fb7d92e3aeceec76963dd24381c167ecf5228a415f0983cb470765c26847",
+    "rootPrivatePackageValidationSha256": "1180dbceec873d5bfdfcde1d10ad4518bb881a6bec232fce775f3ed9a72a71b6",
+    "rootSourceArchiveBindingSha256": "f047cc9230a1c33664176ea6adc95773a80f0deaee37dd935f738aa664f8ad66",
+    "rootUploadReceiptSha256": "fac78a4555dcac1c887b05816847c162ad02ca1eb62d86e8de6290762ed5a1d3",
+    "actualMeasuredAppReportSha256": "3edce61912b4fc8430dc6a1ec1e0c64377837ebf899417cb8b72545baff1a11e",
+    "actualMeasuredDimensionAuditSha256": "d967f9d1c1a70d19a1a59b31a76527dd65f24a211285d63be3065b9d0accf92e",
+    "rootPublisherContextSha256": "b65bb2735f9a70a8477972b468060c36d8eb4f4a83b0f323d3f76cd89d80d0c7"
+  },
+  "production_source_changes_allowed": 0,
+  "scope": "Exactly seven PCG3 printing-shared fronts003009037041050065074 from genuine source003(3)/004(4). Canonical English/category null and4normalTRUE/3holoFALSE defaults/API IDs remain unchanged. Dark037/dual-type rule, owner065 distinct from form and Trainer074/fullrule/nullPokemon fields retained. Production35→49 adds7assets7links, preserving PCG3logo/link and all4full17-field sources; stage29→44→29 rolls back its temporary inactive Price fixture. Actual LARGE4detail/3original,HDcanvas6source/2detail;074native500 fallback. No source-wide/vendor/physical/provider-optical/handset certificate."
+}

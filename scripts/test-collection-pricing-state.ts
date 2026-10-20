@@ -75,6 +75,42 @@ const unknownFreshness = summariseCollectionPricing([
 ], { now });
 assert.equal(unknownFreshness.state, 'stale', 'Unknown freshness must not be presented as fresh.');
 
+for (const freshness of [undefined, null, '', '  ', 'not-a-freshness-status']) {
+  const unverified = summariseCollectionPricing([
+    { quantity: 2, centralValue: 3, evidenceStatus: 'market_estimate', freshness },
+  ], { now });
+  assert.equal(unverified.total, 6, 'A missing freshness label does not erase an available stored value.');
+  assert.equal(unverified.pricedUnits, 2);
+  assert.equal(unverified.staleUnits, 2, 'Unverified freshness must retain the update-needed coverage.');
+  assert.equal(unverified.state, 'stale', `Freshness ${String(freshness)} cannot establish a fresh quote.`);
+  assert.equal(getCollectionPriceCoverageLabel(unverified), 'Prices for 2 cards need updating');
+}
+
+const mixedUnknownFreshness = summariseCollectionPricing([
+  { quantity: 1, centralValue: 4, evidenceStatus: 'market_estimate', freshness: 'fresh' },
+  { quantity: 2, centralValue: 3, evidenceStatus: 'market_estimate' },
+  { quantity: 1, centralValue: null, evidenceStatus: 'unavailable' },
+], { now });
+assert.equal(mixedUnknownFreshness.total, 10);
+assert.equal(mixedUnknownFreshness.staleUnits, 2);
+assert.equal(mixedUnknownFreshness.unpricedUnits, 1);
+assert.equal(mixedUnknownFreshness.state, 'partial', 'Missing quotes remain distinct from unknown freshness.');
+assert.equal(getCollectionPriceCoverageLabel(mixedUnknownFreshness), 'Prices for 3 of 4 cards · 2 need updating',
+  'Partial price coverage must not hide that some available quotes need updating.');
+
+const normalizedFreshness = summariseCollectionPricing([
+  { quantity: 1, centralValue: 4, evidenceStatus: 'market_estimate', freshness: ' FRESH ' },
+], { now });
+assert.equal(normalizedFreshness.state, 'fresh', 'An explicit fresh status retains existing case/space normalization.');
+
+const generalStalePartial = summariseCollectionPricing([
+  { quantity: 1, centralValue: 3, evidenceStatus: 'market_estimate', freshness: 'stale', pricingKind: 'general' },
+  { quantity: 1, centralValue: null, evidenceStatus: 'unavailable' },
+], { now });
+assert.equal(getCollectionPriceCoverageLabel(generalStalePartial),
+  'Prices for 1 of 2 cards · 1 needs updating · Includes 1 general estimate',
+  'Coverage, freshness and general-estimate labels remain visible together.');
+
 assert.equal(getCollectionPriceHistoryState([]), 'building');
 assert.equal(getCollectionPriceHistoryState([Number.NaN, 4]), 'building');
 assert.equal(getCollectionPriceHistoryState([0, 4]), 'ready');

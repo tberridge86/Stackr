@@ -1,0 +1,114 @@
+[
+  {
+    "printing_id": "99d92c62-48a1-4f46-8c52-f8bd29aa7925",
+    "set_id": "f8cb8c30-41dc-42a3-977a-23baba96fa69",
+    "set_code": "PCG5",
+    "language_code": "ja",
+    "collector_number": "054",
+    "card_native_name": "カブトップス",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-031",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "626589f6-6316-4bc7-a5fd-bb74b8e4e755"
+    ]
+  },
+  {
+    "printing_id": "3b42d0a6-58d9-440f-a4fa-5dedd29bd2c1",
+    "set_id": "f8cb8c30-41dc-42a3-977a-23baba96fa69",
+    "set_code": "PCG5",
+    "language_code": "ja",
+    "collector_number": "072",
+    "card_native_name": "絶対",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-031",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "ddf6a830-3656-4f5b-8da3-e9cfbc560d81"
+    ]
+  },
+  {
+    "printing_id": "d375bdec-7d0e-46ff-a6b9-b156ed9af609",
+    "set_id": "f8cb8c30-41dc-42a3-977a-23baba96fa69",
+    "set_code": "PCG5",
+    "language_code": "ja",
+    "collector_number": "077",
+    "card_native_name": "爪の化石",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-032",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "d71666c9-c454-4631-9227-4856ada8dd39"
+    ]
+  },
+  {
+    "printing_id": "54ab745b-392e-46a6-8480-b4dc593124a7",
+    "set_id": "f8cb8c30-41dc-42a3-977a-23baba96fa69",
+    "set_code": "PCG5",
+    "language_code": "ja",
+    "collector_number": "078",
+    "card_native_name": "神秘的な化石",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-032",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "a10ab207-e6d6-4928-ae33-867327a1898d"
+    ]
+  },
+  {
+    "printing_id": "f1ccf730-c3d2-44b6-a59d-72c0f1f6f2b9",
+    "set_id": "f8cb8c30-41dc-42a3-977a-23baba96fa69",
+    "set_code": "PCG5",
+    "language_code": "ja",
+    "collector_number": "079",
+    "card_native_name": "根の化石",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-032",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "79bced78-be34-4302-a910-cee858b410ff"
+    ]
+  },
+  {
+    "printing_id": "495d3e13-53cf-4193-b897-892e492dcef1",
+    "set_id": "f8cb8c30-41dc-42a3-977a-23baba96fa69",
+    "set_code": "PCG5",
+    "language_code": "ja",
+    "collector_number": "081",
+    "card_native_name": "奇妙な洞窟",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-032",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "78e7a14a-74c6-47ff-8454-c4284b4804b3"
+    ]
+  },
+  {
+    "printing_id": "48be3163-e728-45e7-b7d5-e4b5d2267507",
+    "set_id": "f8cb8c30-41dc-42a3-977a-23baba96fa69",
+    "set_code": "PCG5",
+    "language_code": "ja",
+    "collector_number": "082",
+    "card_native_name": "フルフレーム",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-032",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "50961470-7633-422f-8a47-197f20af5be5"
+    ]
+  },
+  {
+    "printing_id": "060248e6-200d-4e55-9c59-693b622a2bb0",
+    "set_id": "f8cb8c30-41dc-42a3-977a-23baba96fa69",
+    "set_code": "PCG5",
+    "language_code": "ja",
+    "collector_number": "084",
+    "card_native_name": "呪われた石",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-032",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "1e5676ae-212e-4311-9a26-0fb18b7d280c"
+    ]
+  }
+]

@@ -1,0 +1,643 @@
+{
+  "logoCount": 36,
+  "sourceBase": "0ef9166bc8585ec63808443bb0d7bf8ecb2b23ef",
+  "typecheck": "passed",
+  "lint": {
+    "exitCode": 0,
+    "errors": 0,
+    "existingWarnings": 8
+  },
+  "logoRegression": "passed: 36 new IDs and six preserved marks, aliases, foreign-language and unknown-ID controls",
+  "preferredSetLogoDelivery": "passed",
+  "publishedSetLogoFallbacks": "passed: 280 existing marks, 43 SC covers, nine Crown/Gallery tests",
+  "imageValidation": [
+    {
+      "setCode": "S10a",
+      "setId": "9a71e2aa-241a-4895-9224-959e6983c4a3",
+      "sha256": "28411df100bd9f7948262b309db4a9ea8d92483cb6569664157feb26052c9779",
+      "size": [
+        1962,
+        801
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "S10b",
+      "setId": "ff1e5d11-3043-4137-a0a2-bc2b2da43d9e",
+      "sha256": "06e083a292209ecb7ffb86f65ffdc75074959c9f3d9f3cf315820aac4134b229",
+      "size": [
+        1860,
+        1190
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "S10D",
+      "setId": "fd0c18a1-c4c3-451d-a43f-4593cd07804e",
+      "sha256": "fb18b068b13f0e17ffe499a70e69ab5afa4e796d38b186e8b011a06a51f77b55",
+      "size": [
+        2170,
+        725
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "S10P",
+      "setId": "71a109c6-2c3a-4e6d-ae1b-4cdce9441c8c",
+      "sha256": "4fc672911ce322f4754d7af7d58d641033aaee33e88a9819e67d601760abf000",
+      "size": [
+        2167,
+        725
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "S11",
+      "setId": "a7f84e96-a008-47f0-8b41-a05de3f23618",
+      "sha256": "061c86f950d39ab71756ac34deee27f0aa3c24f2b230f083238614b83aea55c4",
+      "size": [
+        2172,
+        724
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "S11a",
+      "setId": "545b8020-25d6-4e10-b380-1856f905956f",
+      "sha256": "27e2a3c78f9f1b597489b539744720b00dcef57d3e0d0918b77f1fa0c56c29bc",
+      "size": [
+        1973,
+        797
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "S12",
+      "setId": "eb834c9a-e8b3-474b-8ddb-6f57bf58d3d2",
+      "sha256": "1a545443610d8276d06e59c5462370b8d089f97926d1e6e8584ebb22a22b9797",
+      "size": [
+        2171,
+        724
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "S12a",
+      "setId": "eed3fcbd-fd4c-4b7f-9b75-a68e15d61476",
+      "sha256": "daf38d03dcd547d09f61594aca5ea575f531fccd3c8078a03d58935309e6befb",
+      "size": [
+        2009,
+        783
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "S4a",
+      "setId": "e6feffca-611b-479c-bfb2-43b80374458f",
+      "sha256": "3521f2c9884d6bb2c01dafaaa34851277ff40738403d9b408ce31155fdd3dfa4",
+      "size": [
+        2169,
+        725
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "S5a",
+      "setId": "8ee58e69-05d9-4aca-94be-9b1099f0aa3f",
+      "sha256": "4599afce26f7b16a9c23f0b4625e056eeb37aa1febde639293fbe39a591ab85f",
+      "size": [
+        1774,
+        887
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "S5I",
+      "setId": "384319e0-5887-4575-933c-5d05848e8e1f",
+      "sha256": "91674eb59c67f0813caf13aa4516f5e8854222c6fd066b682670d215f2e2cdde",
+      "size": [
+        2056,
+        765
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "S5R",
+      "setId": "fa4fe313-ee43-4824-91bd-b3a6c16aaf7c",
+      "sha256": "13d892353d027e8c6dcae093589c71974aa09f4022475419da45e5d5af97b9f3",
+      "size": [
+        2022,
+        778
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "S6a",
+      "setId": "b4dbdf8f-b0ec-4185-8e74-0c3b2b0e7648",
+      "sha256": "cf2bf83751a539a2fc3a4c5880fd784283e19b448e38ca625950db3ded9354d8",
+      "size": [
+        1918,
+        820
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "S6H",
+      "setId": "631ac177-7fbc-4a0f-9ec5-85660f4009cd",
+      "sha256": "8bd57cf7c1cf2a43c69e728c77ec29d8c083e33b91961bb17704025c8c575fe3",
+      "size": [
+        2167,
+        726
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "S6K",
+      "setId": "565ca9b6-c3b7-4398-a96a-d0dfd1bc1886",
+      "sha256": "0ccf0032c3357fdf338e7ab0a6919b362211c98fa6afd1b2469f8b4832140f73",
+      "size": [
+        2038,
+        771
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "S7D",
+      "setId": "4a00009f-25a3-4dce-83dd-7bc6b757c046",
+      "sha256": "d740e3dda6f05787099d5c75b8ff40733448967f5d7594dbfccbf070a8d1a158",
+      "size": [
+        1900,
+        828
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "S7R",
+      "setId": "dfc21eb0-e33a-4cc8-b368-82e5bafa71da",
+      "sha256": "962be68eeca2ed8fee847cce543415f4a4b35e55d7bab13d3b0564b17e0f37e2",
+      "size": [
+        1998,
+        787
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "S8",
+      "setId": "87c0562d-f7e7-4395-8a2a-a17705341951",
+      "sha256": "a103471199716527f2877ec319355dada8c01f6890367453339dc4b7e44eab21",
+      "size": [
+        2172,
+        724
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "S8b",
+      "setId": "7201a603-407b-491c-b118-467f6549e400",
+      "sha256": "8f30695fca8d4b6c1ef61b6b39600ce06b018157132f30cae748ed4becde7685",
+      "size": [
+        2170,
+        725
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "S9",
+      "setId": "ec704d48-6e26-4489-9063-4eb4f5924233",
+      "sha256": "5314448c9fcb21a0c6250071e6dba626753a4d9f83e251401c6c0edc61a1685e",
+      "size": [
+        2169,
+        725
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "S9a",
+      "setId": "834c9416-bd5e-4a1d-9170-d8e4ba817d20",
+      "sha256": "9e69a2ffb76ba3313591010f626984e13f2093888adac9a44763bd855185987c",
+      "size": [
+        1774,
+        887
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "SH",
+      "setId": "929a6c13-5b43-4aba-b887-1f86cc94ce31",
+      "sha256": "0cc630cb5e0463bcc97ef7850782e0968d88304dcdd71c42b02974c3661c5d6c",
+      "size": [
+        2169,
+        725
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "SJ",
+      "setId": "6c446b0c-155d-4926-b0ee-5369f6ac44d3",
+      "sha256": "db38a359a68e44395cf1de445b62b526e0f1793e0ab1bdfd6de2122d66d2e08d",
+      "size": [
+        2170,
+        725
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "SK",
+      "setId": "1217161f-69bf-4176-acce-93f23e475d04",
+      "sha256": "16aba1f972122fc7ea3a15bb065a6721f9b41946780dc363176f77a01fcbd720",
+      "size": [
+        2172,
+        724
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "SLD",
+      "setId": "99d2cff9-6664-4b0f-8e9a-f9c9ed4fd563",
+      "sha256": "44513a1d8031a759301b8cb28202639884bee3d9e9bcb1f46153cbcfc3cbc15d",
+      "size": [
+        1823,
+        863
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "SLL",
+      "setId": "c1a9f285-94bb-40a6-acef-547a5a0b0fb0",
+      "sha256": "eaacc5afdbfe7823cb34f0564b9ac17920c9c27a33f7890cd9169ad32b326e8a",
+      "size": [
+        1808,
+        870
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "SP5",
+      "setId": "104c8230-fefa-450c-8b97-0773154d456b",
+      "sha256": "447813261a0ece7ba0b51bd3d85569b06248923d4927071d642aea89446b0f29",
+      "size": [
+        1743,
+        902
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "SP6",
+      "setId": "b29d2b28-f5a2-474a-9173-0d29fb5aeb55",
+      "sha256": "6fc60f0a3adc1f92407d78d40cf351e889035d825e701a8aece96cb61e2caea3",
+      "size": [
+        2170,
+        725
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "SPD",
+      "setId": "2d2c36be-9511-4b30-9979-ad6af1a4f9ee",
+      "sha256": "2668112fdd1562ffa303cc192b77c1e5e5c8f5b05e56d5ea6c054794ffc6216e",
+      "size": [
+        1983,
+        793
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "SPZ",
+      "setId": "0dc7982d-2a45-4984-b930-0d4e688d4fa9",
+      "sha256": "8a827a667eefae0659f5370593a031b21a36a342b8e89ba22d668a42cee8c1e2",
+      "size": [
+        2170,
+        725
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "SV1S",
+      "setId": "92afdf21-b16e-4e85-b54f-5f0603cbf6fa",
+      "sha256": "5b792efd36682b52a22410652a4a0e16ffc0e0ddda24f752fd957683e929c30e",
+      "size": [
+        1774,
+        887
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "SV1V",
+      "setId": "496f02eb-5cda-4b1b-a5cf-e46816c6f834",
+      "sha256": "aebac3a22fb2e7af0172b2384c614e5372874df5c86a83cccde62b3aaf1e58b1",
+      "size": [
+        1968,
+        799
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "SV2P",
+      "setId": "0c790038-ee1a-411f-bd9c-fed9238c1c42",
+      "sha256": "e9ec3d32dc8c49f29a2ac134311a8f4475dc0549ae1a8420a8fa58a1ff2d9fc5",
+      "size": [
+        1991,
+        789
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "SVC",
+      "setId": "0c39417c-7e51-4c2e-83a4-e7180ff18ed1",
+      "sha256": "2135dce5bdebdb07d3ef1be27ee99fcae56b36b037f030a714083134420508aa",
+      "size": [
+        2172,
+        724
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "SVD",
+      "setId": "aeacc226-2669-41be-87af-adb0792b6a26",
+      "sha256": "0daa9476b69e520595f01281256a8011d3dce5eb79267377142ed2589be97fac",
+      "size": [
+        2170,
+        725
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    },
+    {
+      "setCode": "SVP1",
+      "setId": "34e5af6e-66d0-4fea-98ce-b1fa1ec1d1dd",
+      "sha256": "3f9e60d5c6e6225a60c6ac8d0b1bc75794860b101318e3ed3a9cd82b0574272f",
+      "size": [
+        2171,
+        724
+      ],
+      "fullDecode": true,
+      "transparent": true,
+      "opaqueEdgePixels": 0
+    }
+  ],
+  "iosExport": {
+    "status": "passed",
+    "totalAssets": 754,
+    "newLogoAssetsVerified": 36,
+    "all36ExportedBytesMatch": true,
+    "metadataSha256": "09aaa01ef1eb12b117f61fb968741387fa719c3a97b21bc556827bed283cbe79",
+    "bundle": "_expo/static/js/ios/entry-cba2a2907b28de27a9d564199ee2ff62.hbc",
+    "temporarySharedDependencyAdapter": "Applied only for local export; tracked Metro configuration restored byte-for-byte.",
+    "warning": "Expo reported absent android.googleServicesFile in this isolated checkout; iOS export completed successfully. No native signing or installed-device verification claimed.",
+    "assets": [
+      {
+        "setCode": "S10a",
+        "bundleAsset": "assets\\c2885b88e489694c5644d4026cb69fd0",
+        "sha256": "28411df100bd9f7948262b309db4a9ea8d92483cb6569664157feb26052c9779"
+      },
+      {
+        "setCode": "S10b",
+        "bundleAsset": "assets\\bd711c0b5f4ce4a73af6c9691705d475",
+        "sha256": "06e083a292209ecb7ffb86f65ffdc75074959c9f3d9f3cf315820aac4134b229"
+      },
+      {
+        "setCode": "S10D",
+        "bundleAsset": "assets\\d2fbbcf5d03cc5a5e8e25fb115bf1476",
+        "sha256": "fb18b068b13f0e17ffe499a70e69ab5afa4e796d38b186e8b011a06a51f77b55"
+      },
+      {
+        "setCode": "S10P",
+        "bundleAsset": "assets\\469705a99602b001549a88cc33525a81",
+        "sha256": "4fc672911ce322f4754d7af7d58d641033aaee33e88a9819e67d601760abf000"
+      },
+      {
+        "setCode": "S11",
+        "bundleAsset": "assets\\8c711a2814bff72cd1210222dbded26d",
+        "sha256": "061c86f950d39ab71756ac34deee27f0aa3c24f2b230f083238614b83aea55c4"
+      },
+      {
+        "setCode": "S11a",
+        "bundleAsset": "assets\\2ac1d8456aaf961231c78ace4e8571a7",
+        "sha256": "27e2a3c78f9f1b597489b539744720b00dcef57d3e0d0918b77f1fa0c56c29bc"
+      },
+      {
+        "setCode": "S12",
+        "bundleAsset": "assets\\c1ef5676c94df9e93c0d35e7c29230ea",
+        "sha256": "1a545443610d8276d06e59c5462370b8d089f97926d1e6e8584ebb22a22b9797"
+      },
+      {
+        "setCode": "S12a",
+        "bundleAsset": "assets\\3d87d03dfd01e89df366f946641b7224",
+        "sha256": "daf38d03dcd547d09f61594aca5ea575f531fccd3c8078a03d58935309e6befb"
+      },
+      {
+        "setCode": "S4a",
+        "bundleAsset": "assets\\cd844d788d8f1c399f0032bbb39b81c4",
+        "sha256": "3521f2c9884d6bb2c01dafaaa34851277ff40738403d9b408ce31155fdd3dfa4"
+      },
+      {
+        "setCode": "S5a",
+        "bundleAsset": "assets\\73a9c176bdd100c405828c48b0390a48",
+        "sha256": "4599afce26f7b16a9c23f0b4625e056eeb37aa1febde639293fbe39a591ab85f"
+      },
+      {
+        "setCode": "S5I",
+        "bundleAsset": "assets\\4594208f401c9cd4a4d88a11e50b3905",
+        "sha256": "91674eb59c67f0813caf13aa4516f5e8854222c6fd066b682670d215f2e2cdde"
+      },
+      {
+        "setCode": "S5R",
+        "bundleAsset": "assets\\94789b2f042a580ddf8741faad441e45",
+        "sha256": "13d892353d027e8c6dcae093589c71974aa09f4022475419da45e5d5af97b9f3"
+      },
+      {
+        "setCode": "S6a",
+        "bundleAsset": "assets\\e12bdc1c4308375713683fbc59e2ab07",
+        "sha256": "cf2bf83751a539a2fc3a4c5880fd784283e19b448e38ca625950db3ded9354d8"
+      },
+      {
+        "setCode": "S6H",
+        "bundleAsset": "assets\\b21fa5fabcf3413a80f7be4313d58240",
+        "sha256": "8bd57cf7c1cf2a43c69e728c77ec29d8c083e33b91961bb17704025c8c575fe3"
+      },
+      {
+        "setCode": "S6K",
+        "bundleAsset": "assets\\5b9be2158f2e2f12e167e923074cdc22",
+        "sha256": "0ccf0032c3357fdf338e7ab0a6919b362211c98fa6afd1b2469f8b4832140f73"
+      },
+      {
+        "setCode": "S7D",
+        "bundleAsset": "assets\\869fe0b8e64fca065b29f0e2312a33f1",
+        "sha256": "d740e3dda6f05787099d5c75b8ff40733448967f5d7594dbfccbf070a8d1a158"
+      },
+      {
+        "setCode": "S7R",
+        "bundleAsset": "assets\\2812678e119237953d50d346a5193dc5",
+        "sha256": "962be68eeca2ed8fee847cce543415f4a4b35e55d7bab13d3b0564b17e0f37e2"
+      },
+      {
+        "setCode": "S8",
+        "bundleAsset": "assets\\7b7c5ce07543251e096a8e2077147237",
+        "sha256": "a103471199716527f2877ec319355dada8c01f6890367453339dc4b7e44eab21"
+      },
+      {
+        "setCode": "S8b",
+        "bundleAsset": "assets\\13c9ea2c55171f3adddae0593a91980e",
+        "sha256": "8f30695fca8d4b6c1ef61b6b39600ce06b018157132f30cae748ed4becde7685"
+      },
+      {
+        "setCode": "S9",
+        "bundleAsset": "assets\\324e3c22b8e69e6d184f2f5df1a36303",
+        "sha256": "5314448c9fcb21a0c6250071e6dba626753a4d9f83e251401c6c0edc61a1685e"
+      },
+      {
+        "setCode": "S9a",
+        "bundleAsset": "assets\\1f1dbf43040ef986c3e25329c0f3d204",
+        "sha256": "9e69a2ffb76ba3313591010f626984e13f2093888adac9a44763bd855185987c"
+      },
+      {
+        "setCode": "SH",
+        "bundleAsset": "assets\\51a1655b13a9d264438323e37c6b4f3f",
+        "sha256": "0cc630cb5e0463bcc97ef7850782e0968d88304dcdd71c42b02974c3661c5d6c"
+      },
+      {
+        "setCode": "SJ",
+        "bundleAsset": "assets\\cf0f7d87b9ba23bed69a70a8dc17f74e",
+        "sha256": "db38a359a68e44395cf1de445b62b526e0f1793e0ab1bdfd6de2122d66d2e08d"
+      },
+      {
+        "setCode": "SK",
+        "bundleAsset": "assets\\c424c291e11e52621e6ad47207c172a5",
+        "sha256": "16aba1f972122fc7ea3a15bb065a6721f9b41946780dc363176f77a01fcbd720"
+      },
+      {
+        "setCode": "SLD",
+        "bundleAsset": "assets\\50d2ee0cb0277f1de4178b81b6a2e57b",
+        "sha256": "44513a1d8031a759301b8cb28202639884bee3d9e9bcb1f46153cbcfc3cbc15d"
+      },
+      {
+        "setCode": "SLL",
+        "bundleAsset": "assets\\7897539f5e788615b51185a3d231cf48",
+        "sha256": "eaacc5afdbfe7823cb34f0564b9ac17920c9c27a33f7890cd9169ad32b326e8a"
+      },
+      {
+        "setCode": "SP5",
+        "bundleAsset": "assets\\03813d6feabff181b4f5af012dd2c045",
+        "sha256": "447813261a0ece7ba0b51bd3d85569b06248923d4927071d642aea89446b0f29"
+      },
+      {
+        "setCode": "SP6",
+        "bundleAsset": "assets\\cfe6af1de153253b373a6bc75f399a1b",
+        "sha256": "6fc60f0a3adc1f92407d78d40cf351e889035d825e701a8aece96cb61e2caea3"
+      },
+      {
+        "setCode": "SPD",
+        "bundleAsset": "assets\\8f1f974b9b13edf800073e5fe10dc9e4",
+        "sha256": "2668112fdd1562ffa303cc192b77c1e5e5c8f5b05e56d5ea6c054794ffc6216e"
+      },
+      {
+        "setCode": "SPZ",
+        "bundleAsset": "assets\\b1cd11062c914fa93468c952c8e7bf1d",
+        "sha256": "8a827a667eefae0659f5370593a031b21a36a342b8e89ba22d668a42cee8c1e2"
+      },
+      {
+        "setCode": "SV1S",
+        "bundleAsset": "assets\\60514a0dab96d0b444da2b476da2f735",
+        "sha256": "5b792efd36682b52a22410652a4a0e16ffc0e0ddda24f752fd957683e929c30e"
+      },
+      {
+        "setCode": "SV1V",
+        "bundleAsset": "assets\\7d2f2700e152acf13f3704d1ada858c8",
+        "sha256": "aebac3a22fb2e7af0172b2384c614e5372874df5c86a83cccde62b3aaf1e58b1"
+      },
+      {
+        "setCode": "SV2P",
+        "bundleAsset": "assets\\59a469cb98665ca95a16fd0749f749af",
+        "sha256": "e9ec3d32dc8c49f29a2ac134311a8f4475dc0549ae1a8420a8fa58a1ff2d9fc5"
+      },
+      {
+        "setCode": "SVC",
+        "bundleAsset": "assets\\67edc09aa724733a5477c3f0ffbb37eb",
+        "sha256": "2135dce5bdebdb07d3ef1be27ee99fcae56b36b037f030a714083134420508aa"
+      },
+      {
+        "setCode": "SVD",
+        "bundleAsset": "assets\\a8b004e920556be31b0bf5b1cf5054b8",
+        "sha256": "0daa9476b69e520595f01281256a8011d3dce5eb79267377142ed2589be97fac"
+      },
+      {
+        "setCode": "SVP1",
+        "bundleAsset": "assets\\6f3032f67c93a03a4e733ca58704df1a",
+        "sha256": "3f9e60d5c6e6225a60c6ac8d0b1bc75794860b101318e3ed3a9cd82b0574272f"
+      }
+    ]
+  },
+  "productionPublished": false,
+  "iosReleaseWorkflowRegression": "passed",
+  "resolverSha256": "109407d9ca3ed04e8fb76dc027d93d9fca45f151493b3592c620c40887f9ef3f",
+  "assetManifestSha256": "5f823fdf0d2b7c43268783112456354c9eb96be7bc9e2d3d88b5eec7ead545c4"
+}

@@ -1,6 +1,7 @@
+import { StackrFunctionalIcon } from '../components/StackrFunctionalIcon';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { Image, ScrollView, TouchableOpacity, useWindowDimensions, View, type ImageSourcePropType } from 'react-native';
+import { ScrollView, TouchableOpacity, useWindowDimensions, View, type ImageSourcePropType } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackrBackdrop } from '../components/StackrBackdrop';
 import { StackrBackButton } from '../components/StackrBackButton';
@@ -104,7 +105,7 @@ export default function AchievementsScreen() {
               <View key={achievement.id} style={{ width: singleColumn ? '100%' : '48%', minHeight: 148, borderRadius: 20, padding: 12, backgroundColor: unlocked ? '#FFFFFF' : 'rgba(255,255,255,0.62)', borderWidth: 1, borderColor: unlocked ? tierColour : '#E8E1FF', opacity: unlocked ? 1 : 0.66 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                   <View style={{ width: 46, height: 46, borderRadius: 23, borderWidth: 3, borderColor: unlocked ? tierColour : '#DCD5F4', backgroundColor: unlocked ? `${tierColour}18` : '#F7F3FF', alignItems: 'center', justifyContent: 'center' }}>
-                    <Image source={getIcon(achievement)} resizeMode="contain" style={{ width: 28, height: 28, opacity: unlocked ? 1 : 0.56 }} />
+                    <StackrFunctionalIcon source={getIcon(achievement)} resizeMode="contain" style={{ width: 28, height: 28, opacity: unlocked ? 1 : 0.56 }} />
                   </View>
                   <Text style={{ color: unlocked ? tierColour : theme.colors.textSoft, fontSize: 10.5, lineHeight: 13, fontWeight: '900', textTransform: 'uppercase' }}>{achievement.tier}</Text>
                 </View>

@@ -14,6 +14,7 @@ import {
 import { useTheme } from './theme-context';
 import { stackrCardImageSizes } from '../lib/stackrSizing';
 import { nextStackrImageCandidate, stackrImageCandidates } from '../lib/stackrImageCandidates';
+import type { RetrievalImageEvent } from '../lib/performance';
 import {
   enforceTcgdexRuntimeImagePolicy,
   isTcgdexControlledCardReferenceUrl,
@@ -29,6 +30,9 @@ type StackrImageProps = {
   source?: ImageSourcePropType | null;
   fallbackSource?: ImageSourcePropType | null;
   fallbackUris?: readonly string[];
+  uriCandidates?: readonly (string | null | undefined)[];
+  fallback?: React.ReactNode;
+  cropToCard?: boolean;
   style?: StyleProp<ViewStyle>;
   imageStyle?: StyleProp<ImageStyle>;
   contentFit?: ImageContentFit;
@@ -45,9 +49,23 @@ type StackrImageProps = {
   onLoad?: () => void;
   onError?: () => void;
   onSourceChange?: (uri: string | null) => void;
+  /** Anonymous native image callbacks; a display event is distinct from decoding/loading. */
+  onDiagnostic?: (event: RetrievalImageEvent) => void;
+  /** Retain source pixels for enlarged card inspection and pinch zoom. */
+  preserveDetail?: boolean;
 };
 
 const prefetchedUris = new Set<string>();
+const MAX_PREFETCHED_URIS = 256;
+
+function rememberPrefetchedUri(uri: string) {
+  prefetchedUris.add(uri);
+  while (prefetchedUris.size > MAX_PREFETCHED_URIS) {
+    const oldest = prefetchedUris.values().next().value;
+    if (oldest === undefined) break;
+    prefetchedUris.delete(oldest);
+  }
+}
 
 function sanitizeImageSource(source?: ImageSourcePropType | null): ImageSourcePropType | null {
   if (source == null || typeof source === 'number') return source ?? null;
@@ -75,7 +93,7 @@ export async function prefetchStackrImages(
   const nextUrls = uniqueUrls.slice(0, limit);
   if (!nextUrls.length) return false;
 
-  nextUrls.forEach((url) => prefetchedUris.add(url));
+  nextUrls.forEach(rememberPrefetchedUri);
 
   try {
     const controlled = nextUrls.filter(isTcgdexControlledCardReferenceUrl);
@@ -112,11 +130,14 @@ function StackrImageBase({
   source,
   fallbackSource,
   fallbackUris,
+  uriCandidates,
+  fallback,
+  cropToCard = false,
   style,
   imageStyle,
   contentFit = 'cover',
   priority = 'normal',
-  transition = 180,
+  transition = 0,
   prefetch = false,
   cacheKey,
   rounded,
@@ -127,14 +148,17 @@ function StackrImageBase({
   onLoad,
   onError,
   onSourceChange,
+  onDiagnostic,
+  preserveDetail = false,
 }: StackrImageProps) {
   const [cardFrame, setCardFrame] = React.useState<{ width: number; height: number } | null>(null);
+  const shape = cardShape || cropToCard;
   const faceWidth = cardFrame ? Math.min(cardFrame.width, cardFrame.height * stackrCardImageSizes.cardAspectRatio) : 0;
   const faceHeight = faceWidth / stackrCardImageSizes.cardAspectRatio;
   const { theme } = useTheme();
   const candidates = stackrImageCandidates([
     sanitizeImageSource(source),
-    ...[thumbnailUri, uri, fullUri].map((value) => {
+    ...[...(uriCandidates ?? []), ...(preserveDetail ? [fullUri, uri, thumbnailUri] : [thumbnailUri, uri, fullUri])].map((value) => {
       const allowedUri = enforceTcgdexRuntimeImagePolicy(value);
       return allowedUri ? { uri: allowedUri } : null;
     }),
@@ -154,16 +178,28 @@ function StackrImageBase({
   // Renditions need distinct cache entries. A failed thumbnail must not poison
   // a supplied full-size fallback that uses the same card-level cache key.
   const retryAttempt = candidate && retryState.setKey === candidateSetKey ? retryState.attempts[candidate.key] ?? 0 : 0;
+  const diagnosticKey = `${candidateSetKey}:${candidate?.key ?? ''}:${retryAttempt}`;
+  const activeDiagnosticRef = React.useRef(diagnosticKey);
+  activeDiagnosticRef.current = diagnosticKey;
+  const diagnostic = (phase: RetrievalImageEvent['phase'], details: Partial<RetrievalImageEvent> = {}) => {
+    if (activeDiagnosticRef.current !== diagnosticKey) return;
+    try {
+      onDiagnostic?.({ phase, rendition: preserveDetail || Boolean(fullUri && fullUri !== uri && remoteUri === fullUri) ? 'detail' : 'thumbnail',
+        attempt: retryAttempt + 1, ...details });
+    } catch { /* Optional diagnostics cannot interrupt image delivery. */ }
+  };
   const imageSource = remoteUri && resolvedSource && typeof resolvedSource === 'object'
     ? { ...resolvedSource, cacheKey: cacheKey ? `${cacheKey}:${remoteUri}:retry-${retryAttempt}` : `${remoteUri}:retry-${retryAttempt}` }
     : resolvedSource;
   const backgroundColor = placeholderColor ?? theme.colors.surface;
+  const thumbnailPlaceholder = preserveDetail && thumbnailUri && thumbnailUri !== remoteUri
+    ? sanitizeImageSource({ uri: thumbnailUri }) ?? undefined : undefined;
 
   React.useEffect(() => { onSourceChange?.(remoteUri); }, [onSourceChange, remoteUri]);
 
   React.useEffect(() => {
     if (!prefetch || !remoteUri || prefetchedUris.has(remoteUri)) return;
-    prefetchedUris.add(remoteUri);
+    rememberPrefetchedUri(remoteUri);
     let started = false;
     const task = InteractionManager.runAfterInteractions(() => {
       started = true;
@@ -182,7 +218,7 @@ function StackrImageBase({
 
   return (
     <View
-      onLayout={cardShape ? ({ nativeEvent: { layout } }) => setCardFrame(previous =>
+      onLayout={shape ? ({ nativeEvent: { layout } }) => setCardFrame(previous =>
         previous?.width === layout.width && previous.height === layout.height ? previous
           : { width: layout.width, height: layout.height }) : undefined}
       style={[
@@ -195,7 +231,7 @@ function StackrImageBase({
         <ExpoImage
           key={candidate ? `${candidate.key}:retry-${retryAttempt}` : undefined}
           source={imageSource}
-          style={[styles.image, cardShape && cardFrame ? {
+          style={[styles.image, shape && cardFrame ? {
             width: faceWidth, height: faceHeight,
             left: (cardFrame.width - faceWidth) / 2, top: (cardFrame.height - faceHeight) / 2,
             // styles.image is absolute-fill. Clear its opposing edges so Yoga
@@ -204,14 +240,20 @@ function StackrImageBase({
             borderRadius: faceWidth * 0.045, overflow: 'hidden',
           } : undefined, imageStyle]}
           contentFit={contentFit}
-          placeholder={isRemoteImage ? { blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' } : undefined}
+          placeholder={thumbnailPlaceholder}
           placeholderContentFit={contentFit}
           cachePolicy={isTcgdexControlledCardReferenceUrl(remoteUri) ? 'memory' : 'memory-disk'}
           priority={priority}
+          allowDownscaling={!preserveDetail}
+          decodeFormat={preserveDetail ? 'argb' : undefined}
           transition={transition}
           recyclingKey={remoteUri ?? cacheKey ?? undefined}
           accessibilityLabel={accessibilityLabel}
-          onLoad={() => onLoad?.()}
+          onLoad={event => {
+            diagnostic('loaded', { cache: event?.cacheType ?? 'unknown', width: event?.source?.width, height: event?.source?.height });
+            onLoad?.();
+          }}
+          onDisplay={() => diagnostic('displayed')}
           onError={() => {
             if (!candidate || activeCandidateSetRef.current !== candidateSetKey) return;
             const attempts = retryState.setKey === candidateSetKey ? retryState.attempts[candidate.key] ?? 0 : 0;
@@ -219,12 +261,15 @@ function StackrImageBase({
             // from a genuinely unavailable rendition. We never jump to artwork from
             // another printing: only the already-vetted candidate list may follow.
             if (isRemoteImage && attempts < 1) {
+              diagnostic('retry');
               setRetryState((previous) => ({
                 setKey: candidateSetKey,
                 attempts: { ...(previous.setKey === candidateSetKey ? previous.attempts : {}), [candidate.key]: attempts + 1 },
               }));
               return;
             }
+            diagnostic('failed', { terminal: !nextStackrImageCandidate(candidates,
+              [...(failures.setKey === candidateSetKey ? failures.keys : []), candidate.key]) });
             setFailures((previous) => ({
               setKey: candidateSetKey,
               keys: [...new Set([
@@ -237,7 +282,7 @@ function StackrImageBase({
         />
       ) : null}
 
-      {!resolvedSource && showFallbackIcon ? (
+      {!resolvedSource && fallback ? fallback : !resolvedSource && showFallbackIcon ? (
         <View style={styles.fallbackIcon}>
           <Ionicons name="image-outline" size={20} color={theme.colors.textSoft} />
         </View>

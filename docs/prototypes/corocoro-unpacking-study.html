@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stackr · CoroCoro unpacking study</title>
+<style>
+@font-face {
+  font-family:Inter;
+  src:url('/Inter_400Regular.ttf');
+}
+@font-face {
+  font-family:Inter;
+  src:url('/Inter_600SemiBold.ttf');
+  font-weight:600;
+}
+:root {
+  color-scheme:light;
+  --ink:#433650;
+  --soft:#746879;
+  --purple:#6938f5;
+}
+* {
+  box-sizing:border-box;
+}
+body {
+  margin:0;
+  background:#faf9fc;
+  color:var(--ink);
+  font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+main {
+  width:min(100%,470px);
+  margin:auto;
+  padding:24px 20px 36px;
+}
+header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+  margin-bottom:28px;
+}
+header img {
+  width:116px;
+}
+a {
+  color:var(--purple);
+  text-underline-offset:3px;
+}
+header a {
+  font-size:12px;
+}
+h1 {
+  font-size:28px;
+  line-height:1.2;
+  font-weight:600;
+  letter-spacing:-.8px;
+  margin:7px 0 10px;
+}
+.eyebrow {
+  color:var(--purple);
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  margin:0;
+}
+.intro,.detail {
+  color:var(--soft);
+  font-size:13px;
+  line-height:1.6;
+}
+.selector {
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  margin:18px 0;
+  font-size:12px;
+  color:var(--soft);
+}
+select {
+  width:100%;
+  font:inherit;
+  font-size:13px;
+  padding:12px;
+  border:1px solid #ddd3e8;
+  border-radius:12px;
+  background:white;
+  color:var(--ink);
+}
+.issue {
+  display:flex;
+  align-items:center;
+  gap:13px;
+  margin:18px 0;
+}
+.issue img {
+  width:43px;
+  height:60px;
+  object-fit:contain;
+}
+.issue p {
+  margin:0 0 4px;
+  font-size:12px;
+}
+.issue strong {
+  font-size:13px;
+  font-weight:600;
+}
+.mat {
+  position:relative;
+  height:430px;
+  overflow:hidden;
+  border-radius:28px;
+  isolation:isolate;
+  background:#eee8f6;
+  background-image:radial-gradient(#bcb0ce40 .7px,transparent .7px);
+  background-size:7px 7px;
+  box-shadow:inset 0 0 0 1px #e6dfee,0 14px 36px #6b528b0b;
+}
+.mat::before {
+  content:'';
+  position:absolute;
+  inset:13px;
+  border:1px dashed #a88dc32d;
+  border-radius:19px;
+  pointer-events:none;
+}
+.mount {
+  position:absolute;
+  top:56px;
+  left:50%;
+  width:calc(100% - 44px);
+  max-width:340px;
+  aspect-ratio:1079 / 917;
+  transform:translateX(-50%) rotate(-2deg);
+  perspective:1100px;
+}
+.sheet-photo {
+  position:absolute;
+  inset:0;
+  box-shadow:2px 5px 0 #d9cddd,0 13px 20px #59456822;
+  background:#fffaf0;
+}
+.mount.single-sheet {
+  top:64px;
+  max-width:228px;
+  transform:translateX(-50%) rotate(-1deg);
+}
+.sheet-photo svg {
+  width:100%;
+  height:100%;
+  display:block;
+}
+.study-card,.vacancy,.peel-paper,.peel-shadow {
+  position:absolute;
+  left:var(--slot-x);
+  top:var(--slot-y);
+  width:var(--slot-w);
+  height:var(--slot-h);
+  border-radius:3px;
+}
+.vacancy {
+  background:#fff9ed;
+  z-index:1;
+  clip-path:inset(calc((1 - var(--peel-progress,0)) * 100%) 0 0 0);
+  box-shadow:inset 0 0 0 1px #d6c8b3;
+}
+.vacancy[data-open='true'] {
+  clip-path:inset(0);
+}
+.study-card {
+  padding:0;
+  border:0;
+  background:transparent;
+  box-shadow:none;
+  z-index:5;
+  cursor:pointer;
+  touch-action:pan-y;
+  perspective:1000px;
+  transform-style:preserve-3d;
+  transform-origin:top center;
+  transform:translate(var(--card-x,0%),var(--card-y,0%))
+    rotate(var(--card-angle,0deg)) rotateX(var(--card-lift,0deg));
+}
+.study-card[data-phase='loose'],.study-card[data-phase='revealed'] {
+  box-shadow:2px 12px 16px #4a316040,0 1px 2px #5a49334d;
+}
+.study-card.is-peeling {
+  z-index:7;
+  box-shadow:0 calc(2px + var(--lift,0) * 7px)
+    calc(3px + var(--lift,0) * 9px) #4a31602d;
+}
+.turn {
+  position:absolute;
+  inset:0;
+  transform-style:preserve-3d;
+}
+.face {
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  border-radius:3px;
+  backface-visibility:hidden;
+  background:#fffaf0;
+}
+.face svg,.face img {
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:contain;
+}
+.front {
+  transform:rotateY(180deg);
+}
+.study-card[data-phase='revealed'] .turn {
+  transform:rotateY(180deg);
+}
+.peel-paper {
+  z-index:4;
+  opacity:0;
+  overflow:visible;
+  filter:drop-shadow(1px 4px 3px #5a493337);
+  pointer-events:none;
+}
+.peel-paper svg {
+  display:block;
+  width:100%;
+  height:170%;
+  overflow:visible;
+}
+.peel-underside {
+  fill:#fff8e9;
+  stroke:#d6c6a7;
+  stroke-width:.4;
+}
+.peel-fold {
+  fill:var(--peel-fold-fill,#e7d8bf);
+  stroke:#c5b18e;
+  stroke-width:.4;
+}
+.peel-edge {
+  fill:none;
+  stroke:#af9473;
+  stroke-width:.65;
+}
+.peel-shadow {
+  z-index:3;
+  opacity:0;
+  background:radial-gradient(ellipse at 50% 80%,#4734564d,transparent 72%);
+  filter:blur(4px);
+  transform:translateY(calc(var(--lift,0) * 6px));
+  pointer-events:none;
+}
+.phase {
+  position:absolute;
+  bottom:22px;
+  left:18px;
+  right:18px;
+  margin:0;
+  text-align:center;
+  color:#786a88;
+  font-size:12px;
+  line-height:1.5;
+}
+.hint {
+  position:absolute;
+  left:20px;
+  right:20px;
+  top:20px;
+  font-size:10px;
+  color:#887699;
+  letter-spacing:.1em;
+  text-align:center;
+  text-transform:uppercase;
+}
+.controls {
+  display:flex;
+  gap:9px;
+  margin-top:18px;
+}
+.controls button {
+  font:inherit;
+  font-size:13px;
+  border:1px solid #e4deed;
+  background:white;
+  color:var(--soft);
+  border-radius:15px;
+  min-height:50px;
+  padding:12px 14px;
+  cursor:pointer;
+}
+.controls .primary {
+  flex:1;
+  border:0;
+  background:var(--purple);
+  color:white;
+  font-weight:600;
+}
+.controls button:disabled {
+  opacity:.65;
+}
+.study-card:disabled {
+  cursor:default;
+}
+button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible {
+  outline:3px solid #a184ff;
+  outline-offset:4px;
+}
+.option {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  font-size:12px;
+  margin:17px 3px;
+  color:var(--soft);
+}
+.option input {
+  width:18px;
+  height:18px;
+  accent-color:var(--purple);
+}
+.boundary {
+  font-size:11px;
+  line-height:1.6;
+  text-align:center;
+  color:#887c93;
+}
+.sources {
+  font-size:12px;
+  line-height:1.6;
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  margin-top:20px;
+}
+details {
+  margin-top:18px;
+  font-size:12px;
+  line-height:1.6;
+}
+summary {
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  color:var(--purple);
+  cursor:pointer;
+}
+details p {
+  margin:7px 0 12px;
+}
+.packet-mount {
+  position:absolute;
+  top:56px;
+  left:50%;
+  width:calc(100% - 48px);
+  max-width:350px;
+  height:285px;
+  transform:translateX(-50%);
+  perspective:1000px;
+}
+.packet-card {
+  position:absolute;
+  top:33px;
+  left:4%;
+  width:36%;
+  aspect-ratio:214 / 300;
+  border:0;
+  padding:0;
+  background:transparent;
+  z-index:2;
+  border-radius:5px;
+  overflow:hidden;
+  cursor:pointer;
+}
+.packet-card img,.packet-card svg {
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
+.packet-card[data-phase='revealed'] {
+  transform:translateX(127.777778%);
+  box-shadow:0 10px 16px #4a316033;
+}
+.packet-sleeve {
+  position:absolute;
+  top:0;
+  left:0;
+  width:48%;
+  aspect-ratio:750 / 1080;
+  z-index:3;
+  border:1px solid #d7c9b1;
+  border-right:0;
+  border-radius:3px;
+  background:#fff9ed;
+  box-shadow:2px 5px 0 #d9cddd,0 13px 20px #59456822;
+  pointer-events:none;
+}
+.packet-sleeve img,.packet-sleeve svg {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.packet-cetitan {
+  top:88px;
+}
+.packet-cetitan .packet-card {
+  top:22px;
+  left:26%;
+  width:34%;
+  aspect-ratio:868 / 1212;
+}
+.packet-cetitan .packet-card[data-phase='revealed'] {
+  transform:translateX(88.235294%);
+}
+.packet-cetitan .packet-sleeve {
+  width:50%;
+  aspect-ratio:820 / 980;
+  border:0;
+  background:transparent;
+  clip-path:polygon(9.88% 0,94.51% .51%,99.88% 99.28%,.49% 98.88%);
+}
+.packet-sleeve .packet-label {
+  position:absolute;
+  inset:25px 17px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:15px;
+  color:#766047;
+  text-align:center;
+  font-size:12px;
+  line-height:1.5;
+}
+.packet-sleeve[data-open='true'] {
+  box-shadow:2px 5px 0 #d9cddd,0 10px 18px #59456816;
+}
+.loading-note {
+  position:absolute;
+  inset:40px;
+  display:grid;
+  place-items:center;
+  font-size:13px;
+  color:var(--soft);
+  line-height:1.7;
+  text-align:center;
+}
+@media(max-width:355px) {
+  main {
+    padding:18px 13px 30px;
+  }
+  h1 {
+    font-size:25px;
+  }
+  header img {
+    width:105px;
+  }
+  header a {
+    max-width:120px;
+    text-align:right;
+  }
+  .mat {
+    height:390px;
+  }
+  .mount {
+    top:70px;
+  }
+  .mount.single-sheet {
+    top:64px;
+  }
+  .controls button {
+    font-size:12px;
+    padding:11px 9px;
+  }
+}
+</style>
+</head>
+<body>
+<main>
+<header><img src="/wordmark.png" alt="Stackr"><a href="/">Original Mew reveal ↗</a></header>
+<p class="eyebrow">CoroCoro opening study</p>
+<h1 id="title">Peel the paper. Then turn the card.</h1>
+<p class="intro" id="intro">The old Pocket Monsters backs stay facing up. Release the backing first, then flip each card to reveal its front.</p>
+<label class="selector">Choose an insert<select id="case"><option value="1996-sheet">November 1996 · Ivy Pikachu &amp; Jigglypuff</option><option value="2000-cleffa">February 2000 · Cleffa</option><option value="2000-wooper">January 2000 · Wooper · additional issue</option><option value="2022-packet">February 2022 · Pikachu VMAX</option><option value="2023-cetitan">June 2023 · Cetitan</option></select></label>
+<div class="issue"><img id="cover" src="/covers/1996-11.png" alt="Supplied November 1996 CoroCoro Comic cover"><div><p id="issue-label">Monthly CoroCoro Comic · November 1996</p><strong id="card-label">Ivy Pikachu &amp; Jigglypuff</strong></div></div>
+<p class="detail" id="reference-note">Ivy Pikachu shows the original Ken Sugimori credit. Jigglypuff uses a small reference image; its pictured copy cannot distinguish the 1996 original from the identical 1998 reprint.</p>
+<section class="mat" id="mat" aria-label="CoroCoro card-opening reference preview"><span class="hint" id="hint">Backs facing up · then peel and flip</span><div id="stage"></div><p class="phase" id="phase" role="status">Loading the local reference images…</p></section>
+<div class="controls"><button class="primary" id="play" type="button" disabled>Loading references…</button><button id="skip" type="button" disabled>Skip motion</button><button id="reset" type="button">Reset</button></div>
+<label class="option"><input id="reduce" type="checkbox"> Reduce motion</label>
+<p class="boundary" id="boundary">Private reference preview. The action order follows watched footage; the speed, curl and flip axis are design choices. Source images are held for production reuse review.</p>
+<nav class="sources" id="sources" aria-label="Opening footage references"><a href="https://www.youtube.com/watch?v=8A5KDZAzDMs&t=1333s" target="_blank" rel="noopener noreferrer">Watch the original sheet opening · 22:13 ↗</a><a href="https://www.youtube.com/watch?v=8A5KDZAzDMs&t=1385s" target="_blank" rel="noopener noreferrer">Watch Jigglypuff being flipped · 23:05 ↗</a></nav>
+<details><summary>What the evidence shows</summary><div id="evidence"><p>The two original card backs are registered to their sheet. In the watched film the card stays supported while the backing curls away, then the card is turned to inspect its face.</p><p>Neither opening changes your collection. The original 2001 Mew reveal remains the visual benchmark.</p></div></details>
+<details>
+<summary>Other filmed openings</summary>
+<nav class="sources" aria-label="Additional opening footage">
+<a href="https://www.youtube.com/watch?v=iXaufqXi2Zg" target="_blank" rel="noopener noreferrer">Cleffa · single-card peel and front reveal ↗</a>
+<a href="https://www.youtube.com/watch?v=JEnnOd7vZfM&amp;t=16s" target="_blank" rel="noopener noreferrer">Wooper · carrier curls away · 0:16 ↗</a>
+<a href="https://www.youtube.com/watch?v=bHNdXPlKO2U&amp;t=65s" target="_blank" rel="noopener noreferrer">Cetitan · pouch removal and partial extraction · 1:05 ↗</a>
+<a href="https://www.youtube.com/watch?v=8A5KDZAzDMs&amp;t=2700s" target="_blank" rel="noopener noreferrer">Lilypad Mew · loose-carrier preparation · 45:00 ↗</a>
+<a href="https://www.youtube.com/watch?v=BPGYODwpqns&amp;t=312s" target="_blank" rel="noopener noreferrer">Shining Mew · alternate packet opening · 5:12 ↗</a>
+</nav>
+<a href="https://www.youtube.com/watch?v=8A5KDZAzDMs&amp;t=2285s" target="_blank" rel="noopener noreferrer">Farfetch’d · loose April-family carrier · 38:05 ↗</a>
+<a href="https://www.youtube.com/watch?v=eL7o-Atd7JU" target="_blank" rel="noopener noreferrer">Togepi · carrier peel and front reveal ↗</a>
+<p>Cleffa's February front and its own carrier are now matched. Wooper is an additional case outside the current issue list, and its footage is sped up. Both can be tried above. The Lilypad Mew carrier is loose or pre-production material. The Shining Mew video shows a collector's alternate opening; your original reveal stays unchanged.</p>
+<p>Cetitan's own pouch is now matched. Its animation begins after the film edit, with the card already partly out. Farfetch’d and Togepi have useful opening footage, but their own carrier photos are still needed before an animation is added.</p>
+<p>The other inserts still need their own opening evidence before receiving an animation.</p>
+</details>
+</main>
+<script src="/corocoro-unpacking-study.js"></script>
+</body>
+</html>

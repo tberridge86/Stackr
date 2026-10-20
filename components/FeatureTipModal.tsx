@@ -80,7 +80,7 @@ export function FeatureTipModal({
   };
 
   return (
-    <StackrCenterModal visible={visible} onClose={close} contentStyle={styles.card}>
+    <StackrCenterModal visible={visible} onClose={close} accessibilityLabel={title} contentStyle={styles.card}>
           <StackrHeroBackdrop opacity={0.18} />
           <TouchableOpacity
             onPress={close}

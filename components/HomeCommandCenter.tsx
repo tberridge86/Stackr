@@ -1,10 +1,11 @@
-import { StackrNavigationIcon, type StackrNavigationIconName } from './StackrNavigationIcon';
+import { StackrFunctionalIcon } from './StackrFunctionalIcon';
+import { STACKR_ICON_OUTLINE, StackrNavigationIcon, type StackrNavigationIconName } from './StackrNavigationIcon';
 import { Ionicons } from '@expo/vector-icons';
 import { enforceSetVisualRuntimePolicy } from '../lib/providerSetMarkRuntimePolicy';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from './StackrLoadingIndicator';
 import {
-  ActivityIndicator,
   Animated,
   Image,
   Modal,
@@ -263,8 +264,9 @@ const getActivityType = (item: HomeActivityItem): HomeActivityType => {
   return 'generic';
 };
 
-function SkeletonLine({ width, height = 12 }: { width: number | `${number}%`; height?: number }) {
-  return <View style={[styles.skeletonLine, { width, height }]} />;
+function SectionLoadingRing() {
+  const { theme } = useTheme();
+  return <View style={{ paddingVertical: 24, alignItems: 'center' }}><ActivityIndicator color={theme.colors.primary} accessibilityLabel="Loading collection" /></View>;
 }
 
 function EmptyMessage({
@@ -302,7 +304,7 @@ function EmptyMessage({
             frameSize={imageIconSize ? imageIconSize + 10 : 42}
             artworkSize={imageIconSize ?? 32}
           />
-        ) : navigationIcon ? <StackrNavigationIcon name={navigationIcon} size={24} color={theme.colors.primary} /> : icon ? (
+        ) : navigationIcon ? <StackrNavigationIcon name={navigationIcon} size={24} color={theme.dark ? theme.colors.text : STACKR_ICON_OUTLINE} accentColor={theme.colors.primary} /> : icon ? (
           <Ionicons name={icon} size={24} color={HOME_HERO_PRIMARY} />
         ) : null}
       </View>
@@ -533,7 +535,7 @@ export function HomeActionsRow({
           ]}
         >
           <View style={styles.communityUtilityIcon}>
-            <Image
+            <StackrFunctionalIcon
               source={stackrIcons.social}
               style={styles.communityUtilityImageIcon as ImageStyle}
               resizeMode="contain"
@@ -570,6 +572,7 @@ export function ContinueBinderCard({
 }) {
   const { theme } = useTheme();
   const hasBinder = Boolean(!isLoading && !error && binder);
+  const { fontScale } = useWindowDimensions();
   const [setLogoFailed, setSetLogoFailed] = React.useState(false);
   const setLogoSource = binder?.type === 'official'
     ? getLocalSetArtworkSourceForSet({
@@ -632,21 +635,7 @@ export function ContinueBinderCard({
             { backgroundColor: theme.colors.card, borderColor: theme.colors.border },
           ]}
         >
-        {isLoading ? (
-          <View style={styles.binderSkeleton}>
-            <View style={[styles.binderCoverSkeleton, { backgroundColor: theme.colors.surface }]} />
-            <View style={{ flex: 1 }}>
-              <SkeletonLine width="74%" height={18} />
-              <SkeletonLine width="52%" />
-              <SkeletonLine width="92%" height={10} />
-              <View style={styles.statRow}>
-                <SkeletonLine width="30%" height={34} />
-                <SkeletonLine width="30%" height={34} />
-                <SkeletonLine width="30%" height={34} />
-              </View>
-            </View>
-          </View>
-        ) : error ? (
+        {isLoading ? (<SectionLoadingRing />) : error ? (
           <EmptyMessage icon="alert-circle-outline" title="Could not load binder progress" subtitle={error} />
         ) : binder ? (
           <>
@@ -748,6 +737,8 @@ export function ContinueBinderCard({
                         styles.grailCardSlot,
                         item.featured && styles.grailCardSlotFeatured,
                         {
+                          minWidth: (item.featured ? 80 : 72) * fontScale,
+                          maxWidth: (item.featured ? 120 : 112) * fontScale,
                           borderColor: item.featured ? `${HOME_HERO_PRIMARY}55` : theme.colors.border,
                           backgroundColor: theme.colors.card,
                         },
@@ -783,7 +774,7 @@ export function ContinueBinderCard({
                           <Ionicons name="sparkles-outline" size={18} color={HOME_HERO_PRIMARY} />
                         </View>
                       )}
-                      <Text style={[styles.grailValue, { color: item.featured ? HOME_HERO_PRIMARY : theme.colors.text }]} numberOfLines={1}>
+                      <Text style={[styles.grailValue, { color: item.featured ? HOME_HERO_PRIMARY : theme.colors.text }]}>
                         {item.card?.estimatedValue != null ? formatMoney(item.card.estimatedValue) : '--'}
                       </Text>
                     </View>
@@ -924,7 +915,7 @@ function DuplicateResultCard({ item }: { item: HomeDuplicateItem }) {
           ) : (
             <Text style={[styles.rowSub, styles.duplicateRailSetText, { color: theme.colors.textSoft }]} numberOfLines={1}>{item.setName}</Text>
           )}
-          <Text style={[styles.duplicateRailValue, { color: HOME_HERO_PRIMARY }]} numberOfLines={1}>
+          <Text style={[styles.duplicateRailValue, { color: HOME_HERO_PRIMARY }]}>
             {item.estimatedValueAvailable ? formatMoney(item.estimatedValue) : 'Price unavailable'}
           </Text>
         </View>
@@ -952,7 +943,7 @@ function DuplicateSummaryBar({
       <StackrButtonPattern tone="light" />
       <View style={styles.duplicateSummaryMain}>
         <View style={styles.duplicateSummaryIcon}>
-          <Image source={stackrIcons.duplicates} style={styles.duplicateSummaryIconImage as ImageStyle} resizeMode="contain" />
+          <StackrFunctionalIcon source={stackrIcons.duplicates} style={styles.duplicateSummaryIconImage as ImageStyle} resizeMode="contain" />
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={styles.duplicateSummaryTitle} numberOfLines={1}>
@@ -961,10 +952,10 @@ function DuplicateSummaryBar({
         </View>
       </View>
       <View style={styles.duplicateSummaryValuePill}>
-        <Text numeric style={styles.duplicateSummaryValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>
+        <Text numeric style={styles.duplicateSummaryValue}>
           {valueAvailable ? formatMoney(value) : 'Unavailable'}
         </Text>
-        <Text style={styles.duplicateSummaryValueLabel}>{valueAvailable ? 'known value' : 'price status'}</Text>
+        <Text style={styles.duplicateSummaryValueLabel}>{valueAvailable ? 'Known value' : 'Price status'}</Text>
       </View>
     </LinearGradient>
   );
@@ -1081,13 +1072,7 @@ export function DuplicatesCard({
         </View>
       </View>
       <View style={[styles.card, styles.duplicatesCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-        {isLoading ? (
-          <>
-            <SkeletonLine width="60%" height={22} />
-            <SkeletonLine width="46%" />
-            <SkeletonLine width="100%" height={54} />
-          </>
-        ) : error ? (
+        {isLoading ? (<SectionLoadingRing />) : error ? (
           <EmptyMessage icon="alert-circle-outline" title="Could not load duplicates" subtitle={error} />
         ) : hasDuplicates ? (
           <DuplicatePremiumBody
@@ -1137,7 +1122,7 @@ function OpportunityRow({
     >
       <View style={styles.opportunityIconV2}>
         {imageIcon ? (
-          <Image source={imageIcon} style={styles.opportunityImageIconV2 as ImageStyle} resizeMode="contain" />
+          <StackrFunctionalIcon source={imageIcon} style={styles.opportunityImageIconV2 as ImageStyle} resizeMode="contain" />
         ) : (
           <Ionicons name={icon} size={20} color={HOME_HERO_PRIMARY} />
         )}
@@ -1226,17 +1211,7 @@ export function HomeOpportunitiesSection({
     <View style={{ marginBottom: 20 }}>
       <HomeSectionHeader title="On your radar" />
       <View>
-        {isLoading && rows.length === 0 ? (
-          [0, 1, 2].map((index) => (
-            <View key={index} style={styles.opportunitySkeletonV2}>
-              <View style={[styles.opportunityIconV2, { backgroundColor: theme.colors.surface }]} />
-              <View style={{ flex: 1, gap: 7 }}>
-                <SkeletonLine width="74%" height={13} />
-                <SkeletonLine width="48%" height={9} />
-              </View>
-            </View>
-          ))
-        ) : rows.length ? (
+        {isLoading && rows.length === 0 ? (<SectionLoadingRing />) : rows.length ? (
           rows.map((row, index) => (
             <View key={row.key} style={index === rows.length - 1 ? styles.opportunityLastRowV2 : undefined}>
               <OpportunityRow {...row} />
@@ -1246,7 +1221,7 @@ export function HomeOpportunitiesSection({
           <EmptyMessage icon="alert-circle-outline" title="Could not load collection updates" subtitle={error} actionLabel="Open chase list" onAction={onChase} />
         ) : (
           <EmptyMessage
-            icon="albums-outline"
+            navigationIcon="collection"
             title="No opportunities yet"
             subtitle="Add cards to binders or track chase cards to surface trades and market changes."
           />
@@ -1293,13 +1268,7 @@ export function ChaseOrMissingSection({
         onAction={onViewAll}
       />
       <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-        {isLoading ? (
-          <View style={[styles.previewRail, isChase && styles.chasePreviewRail]}>
-            {[0, 1, 2].map((index) => (
-              <View key={index} style={[isChase ? styles.chasePreviewSkeleton : styles.previewSkeleton, { backgroundColor: theme.colors.surface }]} />
-            ))}
-          </View>
-        ) : error ? (
+        {isLoading ? (<SectionLoadingRing />) : error ? (
           <EmptyMessage icon="alert-circle-outline" title={mode === 'chase' ? 'Could not load chase cards' : 'Could not load missing cards'} subtitle={error} />
         ) : items.length > 0 ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.previewRail, isChase && styles.chasePreviewRail]}>
@@ -1348,7 +1317,7 @@ export function ChaseOrMissingSection({
                   <Text style={[isChase ? styles.chasePreviewSub : styles.previewSub, { color: theme.colors.textSoft }]} numberOfLines={1}>
                     {isChase ? getHomeCardSetDisplayName(item) : item.number ? `#${item.number}` : getHomeCardSetDisplayName(item)}
                   </Text>
-                  <Text style={[isChase ? styles.chasePreviewAction : styles.previewValue, { color: HOME_HERO_PRIMARY }]} numberOfLines={1}>
+                  <Text style={[isChase ? styles.chasePreviewAction : styles.previewValue, { color: HOME_HERO_PRIMARY }]}>
                     {isChase ? item.estimatedValue != null ? formatMoney(item.estimatedValue) : 'Value pending' : item.estimatedValue != null ? formatMoney(item.estimatedValue) : 'View'}
                   </Text>
                 </View>
@@ -1455,13 +1424,13 @@ export function ChaseCardsSheet({
             </TouchableOpacity>
           </View>
 
-          {isLoading ? (
+          {isLoading && items.length === 0 ? (
             <View style={[styles.chaseSheetStateCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
               <ActivityIndicator color={HOME_HERO_PRIMARY} />
               <Text style={[styles.chaseSheetStateTitle, { color: theme.colors.text }]}>Loading chase cards</Text>
               <Text style={[styles.chaseSheetStateCopy, { color: theme.colors.textSoft }]}>Getting your hunt list ready.</Text>
             </View>
-          ) : error ? (
+          ) : error && items.length === 0 ? (
             <View style={[styles.chaseSheetStateCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
               <Ionicons name="alert-circle-outline" size={26} color={HOME_HERO_PRIMARY} />
               <Text style={[styles.chaseSheetStateTitle, { color: theme.colors.text }]}>Could not load chase cards</Text>
@@ -1469,7 +1438,7 @@ export function ChaseCardsSheet({
             </View>
           ) : !items.length ? (
             <View style={[styles.chaseSheetStateCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-              <Image source={stackrIcons.chase} style={styles.chaseSheetEmptyIcon as ImageStyle} resizeMode="contain" />
+              <StackrFunctionalIcon source={stackrIcons.chase} style={styles.chaseSheetEmptyIcon as ImageStyle} resizeMode="contain" />
               <Text style={[styles.chaseSheetStateTitle, { color: theme.colors.text }]}>No chase cards yet</Text>
               <Text style={[styles.chaseSheetStateCopy, { color: theme.colors.textSoft }]}>
                 Add cards you are hunting to track value and find listings.
@@ -1483,6 +1452,7 @@ export function ChaseCardsSheet({
               showsVerticalScrollIndicator={false}
               contentContainerStyle={[styles.chaseSheetScrollContent, { paddingBottom: insets.bottom + 28 }]}
             >
+              {error ? <Text style={[styles.chaseSheetStateCopy, { color: theme.colors.textSoft }]}>{error}</Text> : null}
               <View style={[styles.chaseSummaryCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
                 <View>
                   <Text style={[styles.chaseSummaryValue, { color: theme.colors.text }]}>{items.length}</Text>
@@ -1681,17 +1651,7 @@ export function RecentActivitySection({
     <View style={{ marginBottom: 20 }}>
       <HomeSectionHeader title="From your collection" subtitle="Your latest additions and activity" />
       <View style={openLayout ? undefined : [styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-        {isLoading && items.length === 0 ? (
-          [0, 1].map((index) => (
-            <View key={index} style={styles.activitySkeletonRow}>
-              <View style={[styles.activityCardThumb, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]} />
-              <View style={{ flex: 1 }}>
-                <SkeletonLine width="72%" height={14} />
-                <SkeletonLine width="48%" height={10} />
-              </View>
-            </View>
-          ))
-        ) : error && items.length === 0 ? (
+        {isLoading && items.length === 0 ? (<SectionLoadingRing />) : error && items.length === 0 ? (
           <EmptyMessage icon="alert-circle-outline" title="Could not refresh recent activity" subtitle={error} actionLabel="Retry" onAction={onRetry} />
         ) : visibleItems.length > 0 ? (
           <>
@@ -1730,7 +1690,7 @@ export function RecentActivitySection({
                     ) : (
                       <View style={styles.activityImageFallback}>
                         {visual.imageIcon ? (
-                          <Image source={visual.imageIcon} style={styles.activityFallbackImage as ImageStyle} resizeMode="contain" />
+                          <StackrFunctionalIcon source={visual.imageIcon} style={styles.activityFallbackImage as ImageStyle} resizeMode="contain" />
                         ) : (
                           <Ionicons name={item.icon ?? visual.icon} size={17} color={visual.color} />
                         )}
@@ -1738,7 +1698,7 @@ export function RecentActivitySection({
                     )}
                     <View style={[styles.activityBadge, { backgroundColor: visual.color }]}>
                       {visual.imageIcon ? (
-                        <Image source={visual.imageIcon} style={styles.activityBadgeImage as ImageStyle} resizeMode="contain" />
+                        <StackrFunctionalIcon source={visual.imageIcon} style={[styles.activityBadgeImage as ImageStyle, { tintColor: '#FFFFFF' }]} resizeMode="contain" />
                       ) : (
                         <Ionicons name={visual.icon} size={10} color="#FFFFFF" />
                       )}
@@ -1854,7 +1814,7 @@ export function TradeProtectionSummaryCard({ onPress }: { onPress: () => void })
     >
       <View style={styles.protectionHeader}>
         <View style={styles.protectionIcon}>
-          <Image source={stackrIcons.protect} style={styles.protectionIconImage as ImageStyle} resizeMode="contain" />
+          <StackrFunctionalIcon source={stackrIcons.protect} style={styles.protectionIconImage as ImageStyle} resizeMode="contain" />
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={[styles.protectionTitle, { color: theme.colors.text }]}>Trade protection, matched to value</Text>
@@ -2261,7 +2221,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: HOME_TOKENS.spacing.sm,
     paddingVertical: HOME_TOKENS.spacing.sm,
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: HOME_TOKENS.spacing.xs,
     overflow: 'visible',
   },
@@ -2316,11 +2278,6 @@ const styles = StyleSheet.create({
     padding: 14,
     ...cardShadow,
   },
-  skeletonLine: {
-    borderRadius: 999,
-    backgroundColor: 'rgba(121,112,169,0.18)',
-    marginBottom: 10,
-  },
   emptyBox: {
     borderWidth: 1,
     borderRadius: HOME_TOKENS.radius.lg,
@@ -2366,15 +2323,6 @@ const styles = StyleSheet.create({
     ...typeScale.buttonPrimary,
     color: '#FFFFFF',
     fontSize: 12,
-  },
-  binderSkeleton: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  binderCoverSkeleton: {
-    width: 78,
-    height: 104,
-    borderRadius: 16,
   },
   binderMain: {
     flexDirection: 'row',
@@ -2452,7 +2400,7 @@ const styles = StyleSheet.create({
   },
   grailColumn: {
     flex: 1,
-    minWidth: 0,
+    minWidth: 248,
     justifyContent: 'center',
   },
   grailTitleRow: {
@@ -2471,12 +2419,14 @@ const styles = StyleSheet.create({
   },
   grailTierRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'flex-end',
     justifyContent: 'center',
     gap: 4,
   },
   grailCardSlot: {
-    width: 48,
+    flex: 1,
+    minWidth: 72,
     minHeight: 92,
     borderRadius: 14,
     borderWidth: 1,
@@ -2488,7 +2438,7 @@ const styles = StyleSheet.create({
     overflow: 'visible',
   },
   grailCardSlotFeatured: {
-    width: 58,
+    minWidth: 80,
     minHeight: 112,
     paddingTop: 23,
     shadowColor: HOME_HERO_PRIMARY,
@@ -2543,10 +2493,11 @@ const styles = StyleSheet.create({
   },
   grailValue: {
     ...numericTextStyle,
-    fontSize: 9.5,
-    lineHeight: 12,
+    fontSize: 14,
+    lineHeight: 20,
     marginTop: 5,
     maxWidth: '100%',
+    textAlign: 'center',
   },
   continueCompactStatRow: {
     marginTop: 10,
@@ -2834,13 +2785,6 @@ const styles = StyleSheet.create({
     lineHeight: 15,
     fontWeight: '900',
   },
-  opportunitySkeletonV2: {
-    minHeight: 64,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: HOME_TOKENS.spacing.sm,
-    paddingVertical: HOME_TOKENS.spacing.sm,
-  },
   duplicatesCard: {
     position: 'relative',
     paddingBottom: 34,
@@ -2920,15 +2864,16 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 18,
     fontWeight: '900',
+    textAlign: 'center',
   },
   duplicateSummaryValueLabel: {
     ...typeScale.micro,
-    color: 'rgba(255,255,255,0.76)',
-    fontSize: 8.5,
-    lineHeight: 10,
-    fontWeight: '900',
+    color: '#FFFFFF',
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: '700',
+    textAlign: 'center',
     marginTop: 1,
-    textTransform: 'uppercase',
   },
   duplicateCountBlock: {
     minWidth: 84,
@@ -3085,8 +3030,8 @@ const styles = StyleSheet.create({
   },
   duplicateRailValue: {
     ...numericTextStyle,
-    fontSize: 12,
-    lineHeight: 15,
+    fontSize: 14,
+    lineHeight: 20,
     fontWeight: '900',
     marginTop: 4,
     textAlign: 'center',
@@ -3164,16 +3109,6 @@ const styles = StyleSheet.create({
   chasePreviewRail: {
     gap: 12,
     paddingRight: 12,
-  },
-  previewSkeleton: {
-    width: 208,
-    height: 106,
-    borderRadius: 18,
-  },
-  chasePreviewSkeleton: {
-    width: 126,
-    height: 252,
-    borderRadius: 18,
   },
   previewCard: {
     width: 208,
@@ -3258,14 +3193,14 @@ const styles = StyleSheet.create({
   },
   previewValue: {
     ...numericTextStyle,
-    fontSize: 11,
-    lineHeight: 14,
+    fontSize: 14,
+    lineHeight: 20,
     marginTop: 5,
   },
   chasePreviewAction: {
     ...typeScale.buttonSecondary,
-    fontSize: 13,
-    lineHeight: 16,
+    fontSize: 14,
+    lineHeight: 20,
     marginTop: 7,
   },
   chaseSheetBackdrop: {
@@ -3627,12 +3562,6 @@ const styles = StyleSheet.create({
     ...typeScale.buttonSecondary,
     fontSize: 13,
     fontWeight: '900',
-  },
-  activitySkeletonRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: HOME_TOKENS.spacing.sm,
-    marginBottom: HOME_TOKENS.spacing.sm,
   },
   activityRow: {
     minHeight: 64,

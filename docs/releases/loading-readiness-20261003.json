@@ -1,0 +1,47 @@
+{
+  "observedAt": "2026-10-03T23:47:19.229Z",
+  "sourceBase": "9044564e109eb77a244a9e511999f7d4e3ae817e",
+  "video": {
+    "source": "D:/stackr-loading-screen-exact.mp4",
+    "bundle": "assets/startup/stackr-loading-screen-exact.mp4",
+    "sha256": "14b82efa2bdf8bbf98debde5e0138f2a3b419e32e011e7d0d91faf0a57ab697c",
+    "bytes": 67013,
+    "width": 720,
+    "height": 720,
+    "durationSeconds": 5.534,
+    "encoding": "H.264 avc1"
+  },
+  "checks": {
+    "startupRouting": "passed",
+    "motionCompletionTimeoutCleanup": "passed",
+    "rootFontsVideoAccessibility": "passed",
+    "iosHermesExport": "passed",
+    "exportedAssetHash": "identical",
+    "installedDevice": "unverified",
+    "testFlight": "held"
+  },
+  "inAppLoading": "small ring or three-pixel bar",
+  "productionAssetRead": {
+    "project": "oakdbbzdqwurpjnoqhmu",
+    "printingId": "056b7550-283b-4ef5-b434-6fc4815c102b",
+    "variantId": "00113adf-cd7e-4214-b467-04bb528bae21",
+    "rpc": "api.card_image_manifest_for_identities",
+    "firstDatabaseExecutionMs": 245.261,
+    "repeatDatabaseExecutionMs": 12.506,
+    "rows": 1,
+    "scope": "one Japanese printing, PostgreSQL EXPLAIN ANALYZE via privileged read; not phone, HTTP or whole catalogue latency"
+  },
+  "broadAssetViewDiagnostic": {
+    "status": "timed out at 12 seconds",
+    "scope": "unfiltered asset type/COALESCE view printing filter; real card-image path already uses the bounded RPC above"
+  },
+  "releaseBlockers": [
+    "incomplete measured price coverage and deployed recurring freshness",
+    "Cardmarket retained daily import and reviewed printing mappings",
+    "reviewed Korean native artwork provenance",
+    "audited English counterpart/translation ingestion coverage",
+    "signed-in staging and native device cold/warm/offline/expiry acceptance",
+    "dependency/security review and native runtime/binary checks"
+  ],
+  "readinessReport": "stackr-readiness-audit-20261004.md"
+}

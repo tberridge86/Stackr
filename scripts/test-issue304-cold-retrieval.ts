@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
+import { readOptionalCatalogueEnrichment } from '../lib/optionalCatalogueEnrichment';
+import { beginPokedexRetrieval } from '../lib/performance';
 
 const tick = () => new Promise<void>((resolve) => setImmediate(resolve));
 
@@ -24,22 +26,19 @@ async function testPersistedSearchCache() {
   });
 
   const rows = Array.from({ length: 60 }, (_, index) => ({ id: `card-${index}`, language: 'ja' }));
+  store.set('stackr:canonical-search-cards:v1:zh-cn:sv10', JSON.stringify({ version: 1, cachedAt: 1000, rows: [{ id: 'old-false-cn', language: 'zh-cn' }] }));
+  assert.equal(await exports.readCachedCanonicalSearch('SV10', 'zh-cn', 2000), null, 'the corrected app ignores old Chinese search snapshots');
   await exports.writeCachedCanonicalSearch('M5 002', 'ja', rows, 1_000);
   assert.equal((await exports.readCachedCanonicalSearch('M5 002', 'ja', 2_000)).length, 48, 'canonical cold cache stays bounded');
   assert.equal(await exports.readCachedCanonicalSearch('M5 002', 'en', 2_000), null, 'language shards never share cached rows');
   assert.equal(await exports.readCachedCanonicalSearch('M5 002', 'ja', 1_000 + 24 * 60 * 60 * 1000 + 1), null, 'stale search cache is not presented as current');
 }
 
-async function testPokedexLanguageFanout() {
-  const pending = new Map<string, { resolve: (rows: any[]) => void; promise: Promise<any[]> }>();
-  const requestedLanguages: string[] = [];
-  const searchLocalPokemonCards = (_term: string, options: any) => {
-    requestedLanguages.push(options.language);
-    let resolve!: (rows: any[]) => void;
-    const promise = new Promise<any[]>((done) => { resolve = done; });
-    pending.set(options.language, { resolve, promise });
-    return promise;
-  };
+async function testPokedexCanonicalPaging() {
+  const requestedPages: Array<{ name: string; cursor: string | null; limit: number }> = [];
+  const firstPage = Array.from({ length: 24 }, (_, index) => ({ cardId: `card-${index}`, defaultVariantId: `variant-${index}` }));
+  let finishSecondPage!: (value: any) => void;
+  const secondPage = new Promise<any>((resolve) => { finishSecondPage = resolve; });
   const source = fs.readFileSync('lib/pokedexCollection.ts', 'utf8');
   const compiled = ts.transpileModule(source, {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
@@ -49,36 +48,39 @@ async function testPokedexLanguageFanout() {
     exports,
     console,
     require: (name: string) => ({
-      './cardSearch': { searchLocalPokemonCards },
+      './cardSearch': { searchLocalPokemonCards: async () => { throw new Error('Canonical paging must not use language fanout'); } },
       './supabase': { supabase: {} },
-      './pokemonDisplayNames': { getPreferredSetDisplayName: () => 'Set' },
-      './stackrDomainAdapter': { fetchStackrCardRows: async () => new Map(), fetchStackrSetRows: async () => new Map() },
+      './pokemonDisplayNames': { getPreferredCardDisplayName: () => 'Pikachu', getEnglishCardDisplayName: () => 'Pikachu', getPreferredSetDisplayName: () => 'Set', getEnglishSetDisplayName: () => 'Set' },
+      './stackrDomainAdapter': {
+        stackrCardToLegacyCard: (card: any) => ({ id: card.cardId, name: 'Pikachu', number: '1', language: 'en', set: { id: 'set-a', name: 'Set' }, raw_data: { set: { id: 'set-a', name: 'Set' }, images: {} } }),
+        fetchStackrCardRows: async () => new Map(), fetchStackrSetRows: async () => new Map(), fetchStackrPriceSnapshots: async () => new Map(),
+      },
+      './stackrApiV1': { stackrApiClient: { assetManifest: async () => ({ data: { assets: [] }, meta: {} }), pokemonCards: async (name: string, query: any) => {
+        requestedPages.push({ name, cursor: query.cursor, limit: query.limit });
+        return requestedPages.length === 1
+          ? { data: { cards: firstPage }, meta: { pagination: { nextCursor: 'opaque-next' } } }
+          : secondPage;
+      } } },
+      './pokedexCollectionCore': { buildOwnedPokedexCards: () => new Map(), canRemovePokedexOwnershipMarker: () => true },
     } as Record<string, any>)[name] ?? {},
   });
 
-  const canonicalSnapshots: any[][] = [];
+  const canonicalSnapshots: any[] = [];
   const resultPromise = exports.fetchCardsForPokemon('pikachu', {
-    onCanonicalCards: (cards: any[]) => canonicalSnapshots.push(cards),
+    onProgress: (progress: any) => canonicalSnapshots.push(progress),
   });
   await tick();
-  assert.deepEqual(requestedLanguages, ['en', 'ja', 'zh-cn', 'zh-tw', 'ko'], 'Pokédex starts every supported language shard without serial waits');
-
-  for (const language of requestedLanguages) {
-    const row = {
-      id: `${language}-pikachu`,
-      name: 'Pikachu',
-      language,
-      number: '1',
-      set_id: `${language}-set`,
-      raw_data: { set: { id: `${language}-set`, name: 'Set' }, images: {} },
-    };
-    const request = pending.get(language)!;
-    request.resolve([row]);
-  }
-
-  const cards = await resultPromise;
-  assert.equal(cards.length, 5, 'Pokédex preserves cards from every successful language shard');
-  assert.ok(canonicalSnapshots.length >= 1, 'Pokédex exposes canonical cards before optional enrichment is required');
+  assert.deepEqual(requestedPages, [
+    { name: 'pikachu', cursor: null, limit: 24 },
+    { name: 'pikachu', cursor: 'opaque-next', limit: 120 },
+  ], 'Pokédex starts a bounded all-language canonical page and follows its opaque cursor');
+  assert.ok(canonicalSnapshots.some((progress) => progress.cards.length === 24 && !progress.complete),
+    'The first canonical page is published while the later page remains pending');
+  finishSecondPage({ data: { cards: [firstPage[0], { cardId: 'card-later', defaultVariantId: 'variant-later' }] }, meta: { pagination: { nextCursor: null } } });
+  const result = await resultPromise;
+  assert.equal(result.complete, true, 'A fully paged canonical result is explicitly complete');
+  assert.equal(result.cards.length, 25, 'Later canonical pages deduplicate identities without losing their unique cards');
+  assert.ok(result.cards.some((card: any) => card.id === 'card-later'));
 }
 
 function testScreenOrdering() {
@@ -87,15 +89,10 @@ function testScreenOrdering() {
   const cacheRead = binder.indexOf('readPersistedBinderOverview(accountId)', loadStart);
   const sessionRead = binder.indexOf('supabase.auth.getSession()', loadStart);
   assert.ok(loadStart >= 0 && cacheRead > loadStart && sessionRead > cacheRead, 'binder paints the account-keyed persisted overview before the refresh auth round trip');
-  assert.match(binder, /BINDER_OVERVIEW_CACHE_PREFIX/);
-  assert.match(binder, /encodeURIComponent\(userId\)/, 'binder cache is account scoped');
-
-  const detail = fs.readFileSync('app/pokemon/[id].tsx', 'utf8');
-  const routeSearch = detail.indexOf('const routeCardsPromise');
-  const metadataFetch = detail.indexOf('fetch(\`https:\/\/pokeapi\.co\/api\/v2\/pokemon\/\${id}\`)', routeSearch);
-  assert.ok(routeSearch >= 0 && metadataFetch > routeSearch, 'Pokédex card retrieval begins before external species metadata');
-  assert.match(detail, /cardsError/);
-  assert.match(detail, /setRetryEpoch/, 'Pokédex exposes a bounded user retry after connectivity failure');
+  const binderCache = fs.readFileSync('lib/binderLibraryCache.ts', 'utf8');
+  assert.match(binder, /from '\.\.\/\.\.\/lib\/binderLibraryCache'/, 'the screen reuses the shared persisted overview cache');
+  assert.match(binderCache, /BINDER_OVERVIEW_CACHE_PREFIX/);
+  assert.match(binderCache, /encodeURIComponent\(normalizeTrustedUserId\(userId\)\)/, 'binder cache is account scoped');
 
   const search = fs.readFileSync('app/(tabs)/search.tsx', 'utf8');
   const cachePromise = search.indexOf('readCachedCanonicalSearch(primary, selectedLanguage)');
@@ -104,11 +101,317 @@ function testScreenOrdering() {
   assert.match(search, /requestId !== requestRef\.current/, 'late search results remain guarded by request identity');
 }
 
+async function testKnownPokedexRouteColdPath() {
+  const file = 'app/pokemon/[id].tsx';
+  const source = fs.readFileSync(file, 'utf8');
+  const tree = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let effect = '';
+  const visit = (node: ts.Node) => {
+    if (ts.isCallExpression(node) && node.expression.getText(tree) === 'useEffect'
+      && node.arguments[0]?.getText(tree).includes('fetchCardsForPokemon')) {
+      effect = node.arguments[0].getText(tree);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(tree);
+  assert.ok(effect, 'exercise the actual screen load effect');
+  const compiled = ts.transpileModule(`globalThis.screenEffect = ${effect};`, {
+    compilerOptions: { target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+
+  for (const [routeName, speciesName, expected] of [
+    ['wartortle', undefined, 'wartortle'],
+    [undefined, 'wartortle', 'wartortle'],
+    ['pikachu-cosplay', 'pikachu', 'pikachu'],
+  ]) {
+    const state: Record<string, any> = { cards: [] };
+    const requested: string[] = [];
+    let metadataSignal: AbortSignal | undefined;
+    const context: Record<string, any> = {
+      id: '8', routeName, speciesName, AbortController, readOptionalCatalogueEnrichment,
+      routeKey: JSON.stringify(['8', routeName, speciesName]), beginPokedexRetrieval,
+      retrievalRef: { current: null }, publishedRef: { current: null }, committedRef: { current: null },
+      console: { log() {} },
+      fetch: (_url: string, options: { signal?: AbortSignal }) => {
+        metadataSignal = options.signal;
+        return new Promise(() => {});
+      },
+      fetchCardsForPokemon: async (name: string) => {
+        requested.push(name);
+        return { cards: [{ id: 'canonical-card' }], complete: true };
+      },
+    };
+    for (const name of ['Cards', 'CollectionComplete', 'CardsLoading', 'CardsError', 'Pokemon', 'Loading']) {
+      const key = name[0].toLowerCase() + name.slice(1);
+      context[`set${name}`] = (value: any) => {
+        state[key] = typeof value === 'function' ? value(state[key]) : value;
+      };
+    }
+    vm.runInNewContext(compiled, context);
+    const cleanup = context.screenEffect();
+    try {
+      await tick();
+      assert.deepEqual(requested, [expected], 'known species starts factual cards while metadata remains pending');
+      assert.equal(state.cards[0]?.id, 'canonical-card', 'canonical facts are usable before metadata arrives');
+      assert.equal(state.cardsLoading, false);
+      assert.equal(state.loading, false);
+      assert.equal(state.collectionComplete, true);
+      assert.equal(metadataSignal?.aborted, false, 'the optional metadata read is still pending');
+    } finally {
+      cleanup();
+    }
+    assert.equal(metadataSignal?.aborted, true, 'unmount aborts the outstanding optional read');
+    await tick();
+  }
+}
+
+function testPokedexTabStagedLoadingSource() {
+  const pokedex = fs.readFileSync('app/(tabs)/pokedex.tsx', 'utf8');
+  assert.match(pokedex, /const POKEDEX_INITIAL_LIST_LIMIT = 151;/,
+    'the main Pokédex has a bounded first factual page');
+  assert.match(pokedex, /export async function loadPokedexRemote/,
+    'the tab delegates its cold path to a runtime-testable staged loader');
+  assert.match(pokedex, /Could not load the full Pokédex\. Showing the Pokémon loaded so far\./,
+    'a failed continuation reports partial data honestly');
+  assert.match(pokedex, /onPress=\{\(\) => setReloadEpoch\(\(current\) => current \+ 1\)\}/,
+    'the partial/error state offers an explicit retry');
+}
+
+function loadPokedexTabModule() {
+  const source = fs.readFileSync('app/(tabs)/pokedex.tsx', 'utf8');
+  const compiled = ts.transpileModule(source, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React, esModuleInterop: true },
+  }).outputText;
+  const exports: any = {};
+  const mocks: Record<string, unknown> = {
+    react: { __esModule: true, default: {} },
+    'react-native': {},
+    '@react-native-async-storage/async-storage': { __esModule: true, default: {} },
+    'expo-router': {},
+    'react-native-safe-area-context': {},
+    '@expo/vector-icons': {},
+    '../../components/theme-context': {},
+    '../../components/StackrLoadingIndicator': {},
+    '../../components/Text': {},
+    '../../components/FeatureTipModal': {},
+    '../../lib/pokedexCollection': {},
+    '../../components/StackrBackdrop': {},
+    '../../components/StackrScreen': {},
+    '../../lib/stackrIcons': { stackrIcons: { pokedex: {} } },
+  };
+  vm.runInNewContext(compiled, {
+    exports,
+    console,
+    require: (name: string) => mocks[name] ?? {},
+  });
+  return exports as {
+    loadPokedexRemote: (fetcher: (url: string) => Promise<any>, options: any) => Promise<'complete' | 'stale'>;
+  };
+}
+
+const pokedexPage = (start: number, count: number) => Array.from({ length: count }, (_, index) => {
+  const id = start + index;
+  return {
+    // This fixture mirrors the published species-aware contract. The legacy
+    // name/url pair remains present for older mobile builds, while the screen
+    // consumes the explicit species and provider-route identities.
+    name: `pokemon-${id}`,
+    url: `https://pokeapi.co/api/v2/pokemon/${id}/`,
+    speciesId: id,
+    speciesName: `pokemon-${id}`,
+    routeId: id,
+    routeName: `pokemon-${id}`,
+  };
+});
+
+function extractPokedexExpression(name: string, scope: Record<string, unknown>) {
+  const file = 'app/(tabs)/pokedex.tsx';
+  const source = fs.readFileSync(file, 'utf8');
+  const tree = ts.createSourceFile(file, source, ts.ScriptTarget.ESNext, true, ts.ScriptKind.TSX);
+  let expression = '';
+  const visit = (node: ts.Node) => {
+    if (ts.isVariableDeclaration(node) && node.name.getText(tree) === name) expression = node.initializer?.getText(tree) ?? '';
+    ts.forEachChild(node, visit);
+  };
+  visit(tree);
+  assert.ok(expression, `${name} must remain in the mounted Pokédex source.`);
+  const compiled = ts.transpileModule(`const tested = ${expression};`, {
+    compilerOptions: { target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+  return new Function(...Object.keys(scope), `${compiled}; return tested;`)(...Object.values(scope));
+}
+
+function testLegacyPokedexCacheRejection() {
+  const getPokemonIdFromUrl = (url: string) => Number(String(url).split('/').filter(Boolean).at(-1));
+  const isPokemonEntryArray = extractPokedexExpression('isPokemonEntryArray', { getPokemonIdFromUrl }) as (value: unknown) => boolean;
+  assert.equal(isPokemonEntryArray([{ name: 'raichu-alola', url: 'https://pokeapi.co/api/v2/pokemon/10100/' }]), false,
+    'The old provider-only cache cannot inflate species progress after the index contract changes.');
+  assert.equal(isPokemonEntryArray(pokedexPage(1, 1).map((entry) => ({ ...entry, id: entry.routeId }))), true,
+    'A complete species/route entry remains cacheable.');
+}
+
+async function testPokedexTabColdPathRuntime() {
+  const { loadPokedexRemote } = loadPokedexTabModule();
+  const firstPage = pokedexPage(1, 151);
+  const continuation = pokedexPage(152, 874);
+  const calls: string[] = [];
+  let resolveContinuation!: (response: any) => void;
+  const continuationPending = new Promise<any>((resolve) => { resolveContinuation = resolve; });
+  const fetcher = async (url: string) => {
+    calls.push(url);
+    if (calls.length === 1) return { ok: true, status: 200, json: async () => ({ count: 1025, indexVersion: 'fixture-species-v2', results: firstPage }) };
+    return continuationPending;
+  };
+  let active = true;
+  const partials: any[][] = [];
+  const completes: any[][] = [];
+  const cached: any[][] = [];
+  const load = loadPokedexRemote(fetcher, {
+    hasCachedPokemon: false,
+    isActive: () => active,
+    publishPartial: (entries: any[]) => partials.push(entries),
+    publishComplete: (entries: any[]) => completes.push(entries),
+    persistComplete: async (entries: any[]) => { cached.push(entries); },
+    setLoadingMore: () => {},
+  });
+  await tick();
+  assert.equal(partials.length, 1, 'the first 151 rows publish while the continuation is pending');
+  assert.equal(partials[0].length, 151);
+  assert.equal(completes.length, 0, 'a partial page is not treated as complete');
+  assert.equal(cached.length, 0, 'a partial page is never cached');
+  assert.match(calls[0], /offset=0&limit=151/);
+  assert.match(calls[1], /offset=151&limit=874/);
+  resolveContinuation({ ok: true, status: 200, json: async () => ({ count: 1025, indexVersion: 'fixture-species-v2', results: continuation }) });
+  assert.equal(await load, 'complete');
+  assert.equal(completes[0].length, 1025, 'the completed continuation merges into the dated reviewed species list');
+  assert.equal(cached[0].length, 1025, 'only the validated full species list reaches cache');
+
+  const savedComplete = completes[0];
+  const failedWrites: any[][] = [];
+  await assert.rejects(loadPokedexRemote(async (url: string) => (
+    url.includes('offset=0')
+      ? { ok: true, status: 200, json: async () => ({ count: 1025, indexVersion: 'fixture-species-v2', results: firstPage }) }
+      : { ok: false, status: 503, json: async () => ({}) }
+  ), {
+    hasCachedPokemon: true,
+    isActive: () => true,
+    publishPartial: () => assert.fail('saved full results must not be replaced by a partial refresh'),
+    publishComplete: () => assert.fail('a failed continuation cannot publish a complete refresh'),
+    persistComplete: async (entries: any[]) => { failedWrites.push(entries); },
+    setLoadingMore: () => {},
+  }), /Pokédex API returned 503/);
+  assert.equal(failedWrites.length, 0, 'a failed continuation cannot overwrite the saved complete cache');
+  assert.equal(savedComplete.length, 1025, 'the caller retains the previously saved complete data on failure');
+
+  const retryWrites: any[][] = [];
+  const retryResult = await loadPokedexRemote(async (url: string) => (
+    url.includes('offset=0')
+      ? { ok: true, status: 200, json: async () => ({ count: 1025, indexVersion: 'fixture-species-v2', results: firstPage }) }
+      : { ok: true, status: 200, json: async () => ({ count: 1025, indexVersion: 'fixture-species-v2', results: continuation }) }
+  ), {
+    hasCachedPokemon: false,
+    isActive: () => true,
+    publishPartial: () => {},
+    publishComplete: () => {},
+    persistComplete: async (entries: any[]) => { retryWrites.push(entries); },
+    setLoadingMore: () => {},
+  });
+  assert.equal(retryResult, 'complete', 'a retry can replace the partial attempt with a validated full list');
+  assert.equal(retryWrites[0].length, 1025, 'the successful retry persists the merged species list');
+
+  const truncatedWrites: any[][] = [];
+  await assert.rejects(loadPokedexRemote(async (url: string) => (
+    url.includes('offset=0')
+      ? { ok: true, status: 200, json: async () => ({ count: 1025, indexVersion: 'fixture-species-v2', results: firstPage }) }
+      : { ok: true, status: 200, json: async () => ({ count: 1025, indexVersion: 'fixture-species-v2', results: continuation.slice(0, 8) }) }
+  ), {
+    hasCachedPokemon: false,
+    isActive: () => true,
+    publishPartial: () => {},
+    publishComplete: () => assert.fail('a truncated continuation cannot become a complete list'),
+    persistComplete: async (entries: any[]) => { truncatedWrites.push(entries); },
+    setLoadingMore: () => {},
+  }), /truncated Pokémon continuation/);
+  assert.equal(truncatedWrites.length, 0, 'malformed/truncated continuation data is never cached');
+
+  await assert.rejects(loadPokedexRemote(async (url: string) => ({
+    ok: true, status: 200, json: async () => url.includes('offset=0')
+      ? { count: 1025, indexVersion: 'fixture-species-v2', results: firstPage }
+      : { count: 1025, indexVersion: 'fixture-species-v3', results: continuation },
+  }), {
+    hasCachedPokemon: false, isActive: () => true, publishPartial: () => {},
+    publishComplete: () => assert.fail('Mixed revisions cannot publish a complete index'),
+    persistComplete: async () => assert.fail('Mixed revisions cannot reach cache'), setLoadingMore: () => {},
+  }), /index changed during loading/);
+
+  let staleContinuation!: (response: any) => void;
+  const stalePending = new Promise<any>((resolve) => { staleContinuation = resolve; });
+  active = true;
+  const staleComplete: any[][] = [];
+  const staleCache: any[][] = [];
+  const staleLoad = loadPokedexRemote(async (url: string) => (
+    url.includes('offset=0')
+      ? { ok: true, status: 200, json: async () => ({ count: 1025, indexVersion: 'fixture-species-v2', results: firstPage }) }
+      : stalePending
+  ), {
+    hasCachedPokemon: false,
+    isActive: () => active,
+    publishPartial: () => {},
+    publishComplete: (entries: any[]) => staleComplete.push(entries),
+    persistComplete: async (entries: any[]) => { staleCache.push(entries); },
+    setLoadingMore: () => {},
+  });
+  await tick();
+  active = false;
+  staleContinuation({ ok: true, status: 200, json: async () => ({ count: 1025, indexVersion: 'fixture-species-v2', results: continuation }) });
+  assert.equal(await staleLoad, 'stale', 'an unmounted/superseded continuation reports stale');
+  assert.equal(staleComplete.length, 0, 'an unmounted/superseded load does not publish a final list');
+  assert.equal(staleCache.length, 0, 'an unmounted/superseded load does not write cache');
+}
+
+function testSearchSetFactsFirst() {
+  const search = fs.readFileSync('app/(tabs)/search.tsx', 'utf8');
+  assert.match(search, /fetchAllSets\(\{ language, includeAssets: false \}\)/,
+    'set ranking reads facts only instead of globally enumerating set artwork');
+}
+
+function testSetDetailFactsFirst() {
+  const setDetail = fs.readFileSync('app/set/[id].tsx', 'utf8');
+  const cardsRead = setDetail.indexOf('const fetchedCards = await fetchCardsForSet(currentSet.id, {');
+  const cardPublish = setDetail.indexOf('setCards(fetchedCards);', cardsRead);
+  const artworkEnrichment = setDetail.indexOf('void fetchPokemonSetForDetail(currentSet.id, { language: currentSet.language, includeAssets: true })', cardPublish);
+  const cardMinimum = setDetail.slice(setDetail.lastIndexOf('const currentSetCardMinimum', cardsRead), cardsRead);
+
+  assert.ok(cardsRead >= 0, 'set detail reads its factual cards before it starts optional set artwork enrichment');
+  assert.match(setDetail.slice(cardsRead, cardPublish), /includeAssets:\s*false/,
+    'set detail uses the facts-only card lane so optional artwork/provider enrichment cannot delay factual cards');
+  assert.match(setDetail.slice(cardsRead, cardPublish), /minimumCardCount:\s*currentSetCardMinimum/,
+    'set detail keeps a known card-count minimum when it uses the facts-only lane');
+  assert.ok(cardPublish > cardsRead && artworkEnrichment > cardPublish,
+    'set detail publishes factual cards before its guarded optional artwork refresh');
+  assert.match(cardMinimum, /getExactPokemonSetCardTotal\(currentSet\) \?\? 0/,
+    'set detail delegates the facts-only completeness minimum to the canonical-total helper');
+  assert.match(setDetail, /\.then\(\(enriched\) => \{ if \(enriched && isCurrent\(\)\) setSetInfo\(enriched\); \}\)/,
+    'late artwork enrichment remains bound to the active request and account');
+  assert.match(setDetail, /void enrichStackrCardArtworkFromFacts\(fetchedCards, artworkAbort\.signal, undefined, \(progress\) => \{[\s\S]*?if \(!isCurrent\(\) \|\| artworkAbort\.signal\.aborted\) return;[\s\S]*?setCards\(\(current\) => mergeSetCardArtwork\(current, progress\)\);/,
+    'Set Detail recovers per-card artwork after first paint without awaiting it');
+  assert.match(setDetail, /\.then\(\(enriched\) => \{[\s\S]*?if \(!isCurrent\(\) \|\| artworkAbort\.signal\.aborted\) return;[\s\S]*?mergeSetCardArtwork\(current, enriched\)/,
+    'a completed artwork read cannot overwrite a newer route or account');
+  assert.match(setDetail, /artworkAbortRef\.current\?\.abort\(\);[\s\S]*?return \(\) => \{[\s\S]*?artworkAbortRef\.current\?\.abort\(\);/,
+    'a replacement route and unmount cancel optional artwork work');
+}
+
 async function main() {
   await testPersistedSearchCache();
-  await testPokedexLanguageFanout();
+  await testPokedexCanonicalPaging();
   testScreenOrdering();
-  console.log('Issue #304 cold retrieval checks passed: persisted Search/Binders, parallel Pokédex shards, retry and stale-request guards.');
+  await testKnownPokedexRouteColdPath();
+  testPokedexTabStagedLoadingSource();
+  testLegacyPokedexCacheRejection();
+  await testPokedexTabColdPathRuntime();
+  testSearchSetFactsFirst();
+  testSetDetailFactsFirst();
+  console.log('Issue #304 cold retrieval checks passed: persisted Search/Binders, progressive canonical Pokédex paging, retry and stale-request guards.');
 }
 
 void main();

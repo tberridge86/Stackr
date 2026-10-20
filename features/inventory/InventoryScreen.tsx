@@ -1,9 +1,11 @@
+import { CardFinishArtwork } from '../../components/CardFinishArtwork';
+import { getCardFinishMetadata } from '../../lib/cardFinishProfiles';
 import { Ionicons } from '@expo/vector-icons';
 import { stackrHaptics } from '../../lib/haptics';
 import { router, useFocusEffect } from 'expo-router';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import {
-  ActivityIndicator,
   Alert,
   Animated,
   FlatList,
@@ -50,6 +52,7 @@ import { attachLiveTcgdexCardReferences, getPokemonSetLogoUrl } from '../../lib/
 import { hydrateScanCardRowsWithLiveTcgdexReferences } from '../../lib/scanCardReferenceHydration';
 import { ROUTES } from '../../lib/routes';
 import { stackrIcons } from '../../lib/stackrIcons';
+import { StackrNavigationIcon } from '../../components/StackrNavigationIcon';
 import { stackrCardImageSizes, stackrTabContentPadding } from '../../lib/stackrSizing';
 import { stackrListPerformance } from '../../lib/performance';
 import {
@@ -594,7 +597,7 @@ function VaultTerminalPanel({
             backgroundColor: activeColor,
           }}
         >
-          <Ionicons name="scan-outline" size={23} color="#FFFFFF" />
+          <StackrNavigationIcon name="scan" size={23} color="#FFFFFF" />
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: '900' }}>{scanLabel}</Text>
@@ -2254,7 +2257,9 @@ export default function InventoryScreen() {
           </TouchableOpacity>
           <View style={{ flexDirection: 'row', gap: 12 }}>
             {item.card.image_small ? (
-              <StackrImage
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={`View ${item.card.name} details`} onPress={() => item.card.is_product ? openProductStockModal(item.card) : router.push({ pathname: '/card/[id]', params: { id: item.card.id, setId: item.card.set_id ?? undefined, variant: item.card.variant ?? undefined, finish: item.card.finish ?? undefined } })}>
+<CardFinishArtwork cardMetadata={getCardFinishMetadata(item.card)} style={{ width: imageWidth, height: imageHeight }} borderRadius={imageRadius}>
+<StackrImage
                 uri={item.card.image_small}
                 style={{ width: imageWidth, height: imageHeight, borderRadius: imageRadius, backgroundColor: theme.colors.surface }}
                 contentFit="contain"
@@ -2262,6 +2267,8 @@ export default function InventoryScreen() {
                 rounded={imageRadius}
                 showFallbackIcon={false}
               />
+</CardFinishArtwork>
+</TouchableOpacity>
             ) : (
               <View style={{ width: imageWidth, height: imageHeight, borderRadius: imageRadius, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
                 <Ionicons name={item.card.is_product ? 'cube-outline' : 'albums-outline'} size={26} color={theme.colors.primary} />
@@ -2350,7 +2357,9 @@ export default function InventoryScreen() {
           <Ionicons name="add" size={17} color="#FFFFFF" />
         </TouchableOpacity>
         {item.card.image_small ? (
-          <StackrImage
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={`View ${item.card.name} details`} onPress={() => item.card.is_product ? openProductStockModal(item.card) : router.push({ pathname: '/card/[id]', params: { id: item.card.id, setId: item.card.set_id ?? undefined, variant: item.card.variant ?? undefined, finish: item.card.finish ?? undefined } })}>
+<CardFinishArtwork cardMetadata={getCardFinishMetadata(item.card)} style={{ width: imageWidth, height: imageHeight }} borderRadius={imageRadius}>
+<StackrImage
             uri={item.card.image_small}
             style={{ width: '100%', aspectRatio: item.card.is_product ? 1 : stackrCardImageSizes.cardAspectRatio, borderRadius: 10 }}
             contentFit="contain"
@@ -2358,6 +2367,8 @@ export default function InventoryScreen() {
             rounded={10}
             showFallbackIcon={false}
           />
+</CardFinishArtwork>
+</TouchableOpacity>
         ) : (
           <View style={{ width: '100%', aspectRatio: item.card.is_product ? 1 : stackrCardImageSizes.cardAspectRatio, borderRadius: 10, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
             <Ionicons name={item.card.is_product ? 'cube-outline' : 'albums-outline'} size={28} color={theme.colors.primary} />
@@ -2419,8 +2430,8 @@ export default function InventoryScreen() {
         title="Seller Mode"
         subtitle="Scan stock in, build out carts, and keep an audit trail."
         items={[
-          { icon: 'scan-outline', title: 'Stock In', body: 'Scan purchases, trade-ins, consignment, or store intake into a reviewable batch.' },
-          { icon: 'log-out-outline', title: 'Stock Out', body: 'Build an out cart for sales, trades, transfers, or lost or damaged stock.' },
+          { icon: 'scan-outline', imageIcon: stackrIcons.inbound, title: 'Stock In', body: 'Scan purchases, trade-ins, consignment, or store intake into a reviewable batch.' },
+          { icon: 'log-out-outline', imageIcon: stackrIcons.outbound, title: 'Stock Out', body: 'Build an out cart for sales, trades, transfers, or lost or damaged stock.' },
           { icon: 'time-outline', title: 'Audit trail', body: 'Committed inventory movements keep reason and value context where supported.' },
         ]}
       />

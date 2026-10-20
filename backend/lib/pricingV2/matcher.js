@@ -59,11 +59,23 @@ function titleHasCollectorNumber(title, value) {
   return false;
 }
 
+function chineseTitleLanguageEvidence(title) {
+  const normalizedTitle = normalizeTitle(title);
+  const traditional = /\b(traditional chinese|chinese traditional|zh[- ]?tw|zh[- ]?hant|taiwan(?:ese)? chinese)\b/i.test(normalizedTitle)
+    || /繁體中文|繁体中文|繁中/.test(title);
+  const simplified = /\b(simplified chinese|chinese simplified|zh[- ]?cn|zh[- ]?hans|mainland chinese)\b/i.test(normalizedTitle)
+    || /简体中文|簡體中文|简中|簡中/.test(title);
+  if (traditional && simplified) return { language: null, reason: 'LANGUAGE_AMBIGUOUS_CHINESE' };
+  if (traditional) return { language: 'zh-TW', reason: null };
+  if (simplified) return { language: 'zh-CN', reason: null };
+  if (/\bchinese\b/i.test(normalizedTitle) || /[\u3400-\u9fff]/.test(title)) return { language: null, reason: 'LANGUAGE_AMBIGUOUS_CHINESE' };
+  return { language: null, reason: 'LANGUAGE_NOT_EXPLICIT' };
+}
+
 function languageScore(title, language) {
   const normalizedLanguage = normalizeLanguage(language);
   const normalizedTitle = normalizeTitle(title);
   const hasJapanese = /[\u3040-\u30ff]/.test(title);
-  const hasCjk = /[\u3400-\u9fff]/.test(title);
 
   if (normalizedLanguage === 'en') {
     if (/\b(japanese|japan|jpn|korean|chinese|zh|taiwan)\b/i.test(normalizedTitle) || hasJapanese || hasCjk) {
@@ -80,8 +92,9 @@ function languageScore(title, language) {
 
   if (normalizedLanguage === 'zh-TW' || normalizedLanguage === 'zh-CN') {
     if (/\benglish\b/i.test(normalizedTitle)) return { score: 0, reason: 'LANGUAGE_MISMATCH' };
-    if (/\b(chinese|taiwan|zh|traditional|simplified)\b/i.test(normalizedTitle) || hasCjk) return { score: 1, reason: null };
-    return { score: 0.55, reason: 'LANGUAGE_NOT_EXPLICIT' };
+    const evidence = chineseTitleLanguageEvidence(title);
+    if (evidence.language === normalizedLanguage) return { score: 1, reason: null };
+    return { score: 0, reason: evidence.language ? 'LANGUAGE_MISMATCH' : evidence.reason };
   }
 
   if (normalizedLanguage === 'ko') {
@@ -169,6 +182,15 @@ export function scoreObservationMatch(rawObservation, identity, config = {}) {
   const title = rawObservation?.title ?? '';
   const reasons = getHardExclusionReasons(rawObservation, identity);
   reasons.push(...productTypeReasons(title, identity));
+  const languageEvidence = rawObservation?.languageEvidence;
+  if (languageEvidence?.status === 'conflicting') reasons.push('LANGUAGE_EVIDENCE_CONFLICT');
+  if ((normalizeLanguage(identity.language) === 'zh-CN' || normalizeLanguage(identity.language) === 'zh-TW')
+    && languageEvidence?.status === 'declared') {
+    const titleEvidence = chineseTitleLanguageEvidence(title);
+    if (titleEvidence.language && titleEvidence.language !== languageEvidence.language) {
+      reasons.push('LANGUAGE_EVIDENCE_TITLE_CONFLICT');
+    }
+  }
 
   const weightedScores = [];
   const addScore = (weight, score, reason) => {

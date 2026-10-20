@@ -1,7 +1,7 @@
+import { StackrLoadingIndicator } from './StackrLoadingIndicator';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
-  ActivityIndicator,
   StyleProp,
   TextStyle,
   TouchableOpacity,
@@ -9,21 +9,12 @@ import {
 } from 'react-native';
 import { Text } from './Text';
 import { useTheme } from './theme-context';
+import { STACKR_ICON_OUTLINE, StackrNavigationIcon, type StackrNavigationIconName } from './StackrNavigationIcon';
+import { stackrControlTokens } from '../lib/stackrSizing';
+
+export { stackrControlTokens } from '../lib/stackrSizing';
 
 type IconName = keyof typeof Ionicons.glyphMap;
-
-export const stackrControlTokens = {
-  minTapTarget: 44,
-  primaryHeight: 52,
-  secondaryHeight: 46,
-  utilityHeight: 44,
-  radius: 16,
-  utilityRadius: 14,
-  iconSize: 22,
-  iconButtonSize: 44,
-  horizontalPadding: 18,
-  iconTextGap: 8,
-} as const;
 
 export type StackrButtonVariant = 'primary' | 'secondary' | 'ghost' | 'utility' | 'destructive';
 
@@ -32,6 +23,7 @@ export function StackrButton({
   onPress,
   variant = 'secondary',
   icon,
+  stackrIcon,
   disabled = false,
   loading = false,
   style,
@@ -42,6 +34,7 @@ export function StackrButton({
   onPress?: () => void;
   variant?: StackrButtonVariant;
   icon?: IconName;
+  stackrIcon?: StackrNavigationIconName;
   disabled?: boolean;
   loading?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -57,7 +50,7 @@ export function StackrButton({
     : isPrimary
       ? '#FFFFFF'
       : isDestructive
-        ? '#C2410C'
+        ? theme.colors.semantic.error
         : variant === 'utility'
           ? theme.colors.text
           : theme.colors.primary;
@@ -69,11 +62,18 @@ export function StackrButton({
       activeOpacity={0.82}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}
+      accessibilityState={{ disabled: disabled || loading || !onPress, busy: loading }}
+      aria-disabled={disabled || loading || !onPress}
+      aria-busy={loading}
       style={[
         {
           minHeight: isPrimary ? stackrControlTokens.primaryHeight : isGhost ? stackrControlTokens.minTapTarget : stackrControlTokens.secondaryHeight,
+          minWidth: stackrControlTokens.minTapTarget,
+          maxWidth: '100%',
+          flexShrink: 1,
           borderRadius: isGhost ? stackrControlTokens.utilityRadius : stackrControlTokens.radius,
           paddingHorizontal: isGhost ? 10 : stackrControlTokens.horizontalPadding,
+          paddingVertical: 10,
           alignItems: 'center',
           justifyContent: 'center',
           flexDirection: 'row',
@@ -85,21 +85,25 @@ export function StackrButton({
               : isGhost
                 ? 'transparent'
                 : isDestructive
-                  ? '#FFF7ED'
+                  ? theme.colors.semantic.destructiveSurface
                   : theme.colors.card,
           borderWidth: isPrimary || isGhost ? 0 : 1,
-          borderColor: isDestructive ? '#FDBA74' : theme.colors.border,
+          borderColor: isDestructive ? theme.colors.semantic.destructiveBorder : theme.colors.border,
           opacity: disabled ? 0.72 : 1,
         },
         style,
       ]}
     >
       {loading ? (
-        <ActivityIndicator size="small" color={fg} />
+        <StackrLoadingIndicator size="small" color={fg} />
+      ) : stackrIcon ? (
+        <StackrNavigationIcon name={stackrIcon} size={isPrimary ? 21 : 19}
+          color={disabled || isPrimary || isDestructive ? fg : theme.dark ? theme.colors.text : STACKR_ICON_OUTLINE}
+          accentColor={disabled || isPrimary || isDestructive ? fg : theme.colors.primary} />
       ) : icon ? (
         <Ionicons name={icon} size={isPrimary ? 21 : 19} color={fg} />
       ) : null}
-      <Text style={[{ color: fg, fontSize: isPrimary ? 16 : 15, lineHeight: 20, fontWeight: '900' }, textStyle]} numberOfLines={1}>
+      <Text style={[{ color: fg, flexShrink: 1, fontSize: isPrimary ? 16 : 15, lineHeight: 20, fontWeight: '900', textAlign: 'center' }, textStyle]}>
         {label}
       </Text>
     </TouchableOpacity>
@@ -108,6 +112,7 @@ export function StackrButton({
 
 export function StackrIconButton({
   icon,
+  stackrIcon,
   onPress,
   label,
   selected = false,
@@ -115,6 +120,7 @@ export function StackrIconButton({
   style,
 }: {
   icon: IconName;
+  stackrIcon?: StackrNavigationIconName;
   onPress?: () => void;
   label: string;
   selected?: boolean;
@@ -129,7 +135,9 @@ export function StackrIconButton({
       activeOpacity={0.78}
       accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityState={{ selected, disabled }}
+      accessibilityState={{ selected, disabled: disabled || !onPress }}
+      aria-pressed={selected}
+      aria-disabled={disabled || !onPress}
       style={[
         {
           width: stackrControlTokens.iconButtonSize,
@@ -145,7 +153,11 @@ export function StackrIconButton({
         style,
       ]}
     >
-      <Ionicons name={icon} size={22} color={selected ? theme.colors.primary : theme.colors.text} />
+      {stackrIcon ? (
+        <StackrNavigationIcon name={stackrIcon} size={22}
+          color={selected ? theme.colors.primary : theme.dark ? theme.colors.text : STACKR_ICON_OUTLINE}
+          accentColor={theme.colors.primary} />
+      ) : <Ionicons name={icon} size={22} color={selected ? theme.colors.primary : theme.colors.text} />}
     </TouchableOpacity>
   );
 }
@@ -170,12 +182,19 @@ export function StackrChip({
       disabled={disabled || !onPress}
       activeOpacity={0.78}
       accessibilityRole="button"
-      accessibilityState={{ selected, disabled }}
+      accessibilityLabel={label}
+      accessibilityState={{ selected, disabled: disabled || !onPress }}
+      aria-pressed={selected}
+      aria-disabled={disabled || !onPress}
       style={[
         {
           minHeight: stackrControlTokens.minTapTarget,
+          minWidth: stackrControlTokens.minTapTarget,
+          maxWidth: '100%',
+          flexShrink: 1,
           borderRadius: 999,
           paddingHorizontal: 13,
+          paddingVertical: 8,
           alignItems: 'center',
           justifyContent: 'center',
           backgroundColor: selected ? theme.colors.primary + '12' : theme.colors.card,
@@ -186,7 +205,7 @@ export function StackrChip({
         style,
       ]}
     >
-      <Text style={{ color: selected ? theme.colors.primary : theme.colors.text, fontSize: 13, lineHeight: 17, fontWeight: '900' }} numberOfLines={1}>
+      <Text style={{ color: selected ? theme.colors.primary : theme.colors.text, flexShrink: 1, fontSize: 13, lineHeight: 17, fontWeight: '900', textAlign: 'center' }}>
         {label}
       </Text>
     </TouchableOpacity>

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 47,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "approved_at": "2026-10-14",
+  "cohort_sha256": "8ca7378e5cbee652878fbe2464c30831cf81149e323b0d0122e42313f6b1975d",
+  "source_counts": {
+    "scrydex": 47
+  },
+  "source_evidence": {
+    "approvedProjection": "b5b45e75ccc71b8cab12abb9d9dd5b3a0d30e90489aaf46fdccb5fc399b19b0c",
+    "decision": "b8a6f91bc142e7e55b050eccb4de7e1e3769750d982f09f324ced5c347e1298b",
+    "handoff": "5a12a3ce854ba800a4a2d97695ab9c0b4366cf0813fae170c2ce9a919d3c8e1e",
+    "independentSelection": "97acdbd7bf4e178c843d72fda7df6d7b652c87b2371179f7b7c992d27840b06e",
+    "independentAcceptance": "3e1dc6bc37de6d3d7fc7795933620f430c873355beb327b9cc76f8983bbe7eb0"
+  },
+  "scope": "Store, resize and display exactly47 independently accepted Japanese Darkness fronts and141 derivatives. Preserve three finish holds, completed024 outside scope, all current41 normal/6 holo names and variants, immutable raw provider metadata and signatures, historical comparison modes/null Unown selections, independent acceptance and corrected actual S HP50/Psychic+Colorless20/retreat1 guard. No source policy activation, catalogue edits, physical edition/finish or independent licence certification."
+}

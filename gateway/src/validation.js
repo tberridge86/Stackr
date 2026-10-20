@@ -28,8 +28,8 @@ export function validatePath(pathname) {
   }
 }
 
-function validateQueryValue(name, value, allowShortSetCollector = false) {
-  if (value.length > 2048) bad('invalid_query', `${name} is too long.`);
+function validateQueryValue(name, value, allowShortSetCollector = false, allowAssetPrintingBatch = false, maxLimit = 500) {
+  if (value.length > (allowAssetPrintingBatch && name === 'printingIds' ? 4096 : 2048)) bad('invalid_query', `${name} is too long.`);
   if (name === 'legacyIds') {
     const ids = value.split(',');
     if (!ids.length || ids.length > 24 || new Set(ids.map((id) => id.toLowerCase())).size !== ids.length
@@ -41,6 +41,13 @@ function validateQueryValue(name, value, allowShortSetCollector = false) {
   if (name === 'legacySetId' && !/^[A-Za-z0-9][A-Za-z0-9:._-]{0,79}$/.test(value)) {
     bad('invalid_legacy_set', 'legacySetId must be a saved set reference.');
   }
+  if (name === 'printingIds' && allowAssetPrintingBatch) {
+    const ids = value.split(',');
+    if (ids.length < 1 || ids.length > 100 || ids.some((id) => !UUID_PATTERN.test(id))) {
+      bad('invalid_printing_ids', 'printingIds must contain between 1 and 100 canonical UUIDs.');
+    }
+    return;
+  }
   if (name === 'variantIds' || name === 'printingIds') {
     validateVariantIds(value.split(','), 24);
     return;
@@ -51,8 +58,11 @@ function validateQueryValue(name, value, allowShortSetCollector = false) {
   if (name === 'latestOnly' && value !== '1') {
     bad('invalid_latest_only', 'latestOnly must be 1.');
   }
-  if (name === 'limit' && (!/^\d+$/.test(value) || Number(value) < 1 || Number(value) > 500)) {
-    bad('invalid_limit', 'limit must be an integer between 1 and 500.');
+  if (name === 'limit' && (!/^\d+$/.test(value) || Number(value) < 1 || Number(value) > maxLimit)) {
+    bad('invalid_limit', `limit must be an integer between 1 and ${maxLimit}.`);
+  }
+  if (name === 'offset' && (!/^\d+$/.test(value) || !Number.isSafeInteger(Number(value)))) {
+    bad('invalid_offset', 'offset must be a non-negative integer.');
   }
   if (name === 'since' && (!/^\d+$/.test(value) || Number(value) < 0)) {
     bad('invalid_change_sequence', 'since must be a non-negative integer.');
@@ -74,6 +84,20 @@ function validateQueryValue(name, value, allowShortSetCollector = false) {
   }
   if (name === 'observationType' && !OBSERVATION_TYPES.has(value)) {
     bad('invalid_observation_type', 'observationType is not supported.');
+  }
+  if (name === 'provenOnly' && !['true', 'false'].includes(value)) {
+    bad('invalid_proven_only', 'provenOnly must be true or false.');
+  }
+  if (name === 'soldSince') {
+    const timestamp = Date.parse(value);
+    const calendarDay = Date.parse(`${value.slice(0, 10)}T00:00:00Z`);
+    if (value.length > 35
+      || !/^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,9})?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)$/.test(value)
+      || !Number.isFinite(timestamp) || timestamp > Date.now()
+      || !Number.isFinite(calendarDay) || new Date(calendarDay).toISOString().slice(0, 10) !== value.slice(0, 10)) {
+      bad('invalid_sold_since', 'soldSince must be a valid ISO timestamp in the past.');
+    }
+    return;
   }
   if (['seriesId', 'setId', 'sourceId', 'printingId', 'variantId'].includes(name) && !UUID_PATTERN.test(value)) {
     bad('invalid_identifier', `${name} must be a UUID.`);
@@ -100,7 +124,10 @@ export function validateQuery(route, url) {
     }
     if (seen.has(name)) bad('duplicate_query_parameter', `Query parameter ${name} may only be supplied once.`);
     seen.add(name);
-    validateQueryValue(name, value, allowShortSetCollector);
+    validateQueryValue(name, value, allowShortSetCollector, route.id === 'asset_manifest', route.id === 'pokemon_index' ? 1350 : 500);
+  }
+  if (route.id === 'asset_manifest' && seen.has('printingId') && seen.has('printingIds')) {
+    bad('ambiguous_printing_filter', 'printingId and printingIds cannot be used together.');
   }
   if (route.id === 'market_price_snapshots' && ['variantIds', 'printingIds', 'legacyIds'].filter((key) => seen.has(key)).length !== 1) {
     bad('variant_ids_required', 'Supply exactly one group of card references.');
@@ -410,6 +437,23 @@ function validatePriceRefresh(payload, batch) {
   }
 }
 
+function validateCataloguePrices(payload) {
+  rejectUnknownKeys(payload, new Set(['references', 'language', 'estimateMode', 'knownRevisions']));
+  const refs = payload.references;
+  if (!Array.isArray(refs) || refs.length < 1 || refs.length > 100
+    || refs.some((ref) => typeof ref !== 'string' || !/^[A-Za-z0-9._:/+-]{1,160}$/.test(ref))) {
+    bad('invalid_price_references', 'Supply between 1 and 100 exact card references.');
+  }
+  if (payload.language != null && !LANGUAGE_CODES.has(payload.language)) bad('invalid_language', 'language is not supported.');
+  if (payload.estimateMode != null && !['exact', 'general'].includes(payload.estimateMode)) bad('invalid_estimate_mode', 'estimateMode must be exact or general.');
+  if (payload.knownRevisions != null) {
+    requireObject(payload.knownRevisions);
+    if (Object.entries(payload.knownRevisions).some(([ref, rev]) => !refs.includes(ref) || !/^[a-f0-9]{64}$/.test(rev))) {
+      bad('invalid_price_revisions', 'knownRevisions must contain revisions for requested references only.');
+    }
+  }
+}
+
 export function parseAndValidateJson(bodyBytes, kind, pathname = '') {
   let payload;
   try {
@@ -420,6 +464,7 @@ export function parseAndValidateJson(bodyBytes, kind, pathname = '') {
   requireObject(payload);
   if (kind === 'priceRefresh') validatePriceRefresh(payload, false);
   if (kind === 'priceRefreshBatch') validatePriceRefresh(payload, true);
+  if (kind === 'cataloguePrices') validateCataloguePrices(payload);
   if (kind === 'recognitionIdentify') validateRecognitionIdentify(payload);
   if (kind === 'recognitionEmbed') validateRecognitionEmbed(payload);
   if (kind === 'recognitionFeedback') validateRecognitionFeedback(payload);

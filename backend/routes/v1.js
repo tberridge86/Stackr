@@ -1,5 +1,6 @@
 /* eslint-env node */
 import express from 'express';
+import { readPublishedPokedexIndex } from '../lib/pokedexIndex.js';
 import { createClient } from '@supabase/supabase-js';
 import {
   ApiError,
@@ -17,7 +18,7 @@ import {
   MARKET_HISTORY_CACHE_CONTROL,
   createMarketPricingService,
 } from '../lib/marketPricing/service.js';
-import { createTracedFetch } from '../lib/traceContext.js';
+import { catalogueReadSignal, createTracedFetch, publicCatalogueRead } from '../lib/traceContext.js';
 import { createPersonalPricingMiddleware, PERSONAL_PRICING_CACHE_CONTROL, verifiedPricingUserId } from '../lib/marketPricing/personalAccess.js';
 
 let supabaseAdmin = null;
@@ -141,6 +142,7 @@ async function defaultSetCards(setId, query) {
   try {
     return await fetchFastSetCards(getAssetSupabase(), setId, query);
   } catch (error) {
+    catalogueReadSignal()?.throwIfAborted();
     if (error instanceof ApiError) throw error;
     console.warn(JSON.stringify({
       level: 'warn',
@@ -175,6 +177,7 @@ function logRequest(req, res, startedAt) {
 }
 
 function sendEnvelope(req, res, payload, options = {}) {
+  if (res.destroyed || res.writableEnded || catalogueReadSignal()?.aborted) return;
   const status = options.status ?? 200;
   const cacheControl = res.locals.personalPricing
     ? PERSONAL_PRICING_CACHE_CONTROL
@@ -188,7 +191,13 @@ function sendEnvelope(req, res, payload, options = {}) {
       ...(options.pagination ? { pagination: options.pagination } : {}),
     },
   };
-  const etag = options.etag ?? etagFor(body);
+  // Transport metadata changes per request; validate the published facts and
+  // pagination instead. This is weak because the envelope bytes can differ.
+  const etag = options.etag ?? `W/${etagFor({
+    data: payload,
+    apiVersion: STACKR_API_V1,
+    ...(options.pagination ? { pagination: options.pagination } : {}),
+  })}`;
   res.setHeader('X-Request-Id', req.stackrRequestId);
   res.setHeader('X-Stackr-Api-Version', STACKR_API_V1);
   res.setHeader('Cache-Control', cacheControl);
@@ -206,6 +215,7 @@ function sendEnvelope(req, res, payload, options = {}) {
 }
 
 function sendError(req, res, error) {
+  if (res.destroyed || res.writableEnded || catalogueReadSignal()?.aborted) return;
   const status = Number(error?.status ?? 500);
   const code = error?.code ?? (status >= 500 ? 'internal_error' : 'request_error');
   const message = error instanceof Error ? error.message : String(error);
@@ -258,6 +268,7 @@ function asyncRoute(handler) {
     try {
       await handler(req, res);
     } catch (error) {
+      if (res.destroyed || res.writableEnded || catalogueReadSignal()?.aborted) return;
       console.error(JSON.stringify({
         level: 'error',
         event: 'stackr_api_error',
@@ -298,19 +309,19 @@ export function createV1Router(options = {}) {
     getAuthenticatedUserId,
   }));
 
-  router.get('/health', asyncRoute(async (req, res) => {
+  router.get('/health', publicCatalogueRead, asyncRoute(async (req, res) => {
     sendEnvelope(req, res, await getService().health(req.query), {
       cacheControl: NO_STORE_CACHE_CONTROL,
     });
   }));
 
-  router.get('/ready', asyncRoute(async (req, res) => {
+  router.get('/ready', publicCatalogueRead, asyncRoute(async (req, res) => {
     sendEnvelope(req, res, await getService().ready(req.query), {
       cacheControl: NO_STORE_CACHE_CONTROL,
     });
   }));
 
-  router.get('/catalog/manifest', asyncRoute(async (req, res) => {
+  router.get('/catalog/manifest', publicCatalogueRead, asyncRoute(async (req, res) => {
     const manifest = await getService().manifest(req.query);
     sendEnvelope(req, res, manifest, {
       etag: manifest.etag,
@@ -318,7 +329,7 @@ export function createV1Router(options = {}) {
     });
   }));
 
-  router.get('/catalog/delta', asyncRoute(async (req, res) => {
+  router.get('/catalog/delta', publicCatalogueRead, asyncRoute(async (req, res) => {
     const delta = await getService().delta(req.query);
     sendEnvelope(req, res, { sinceChangeSequence: delta.sinceChangeSequence, changes: delta.changes }, {
       pagination: delta.pagination,
@@ -326,50 +337,62 @@ export function createV1Router(options = {}) {
     });
   }));
 
-  router.get('/languages', asyncRoute(async (req, res) => {
+  router.get('/languages', publicCatalogueRead, asyncRoute(async (req, res) => {
     sendEnvelope(req, res, await getService().languages(req.query));
   }));
 
-  router.get('/series', asyncRoute(async (req, res) => {
+  router.get('/series', publicCatalogueRead, asyncRoute(async (req, res) => {
     const series = await getService().series(req.query);
     sendEnvelope(req, res, { series: series.series }, {
       pagination: series.pagination,
     });
   }));
 
-  router.get('/sets', asyncRoute(async (req, res) => {
+  router.get('/sets', publicCatalogueRead, asyncRoute(async (req, res) => {
     const sets = await getService().sets(req.query);
     sendEnvelope(req, res, { sets: sets.sets }, {
       pagination: sets.pagination,
     });
   }));
 
-  router.get('/sets/:setId', asyncRoute(async (req, res) => {
+  router.get('/sets/:setId', publicCatalogueRead, asyncRoute(async (req, res) => {
     sendEnvelope(req, res, await getService().set(req.params.setId));
   }));
 
-  router.get('/sets/:setId/cards', asyncRoute(async (req, res) => {
+  router.get('/sets/:setId/cards', publicCatalogueRead, asyncRoute(async (req, res) => {
     const cards = await getSetCards(req.params.setId, req.query);
     sendEnvelope(req, res, { cards: cards.cards }, {
       pagination: cards.pagination,
     });
   }));
 
-  router.get('/cards/:cardId', asyncRoute(async (req, res) => {
+  router.get('/pokemon', publicCatalogueRead, asyncRoute(async (req, res) => {
+    sendEnvelope(req, res, readPublishedPokedexIndex(req.query));
+  }));
+
+  router.get('/pokemon/:name/cards', publicCatalogueRead, asyncRoute(async (req, res) => {
+    const cards = await getService().pokemonCards(req.params.name, req.query);
+    sendEnvelope(req, res, { cards: cards.cards }, {
+      pagination: cards.pagination,
+      cacheControl: DEFAULT_CATALOGUE_CACHE_CONTROL,
+    });
+  }));
+
+  router.get('/cards/:cardId', publicCatalogueRead, asyncRoute(async (req, res) => {
     sendEnvelope(req, res, await getService().card(req.params.cardId));
   }));
 
-  router.get('/cards/:cardId/variants', asyncRoute(async (req, res) => {
+  router.get('/cards/:cardId/variants', publicCatalogueRead, asyncRoute(async (req, res) => {
     sendEnvelope(req, res, await getService().cardVariants(req.params.cardId));
   }));
 
-  router.post('/cards/display-artwork-references', asyncRoute(async (req, res) => {
+  router.post('/cards/display-artwork-references', publicCatalogueRead, asyncRoute(async (req, res) => {
     sendEnvelope(req, res, await getService().sameArtworkDisplayReferences(req.body ?? {}), {
       cacheControl: NO_STORE_CACHE_CONTROL,
     });
   }));
 
-  router.get('/assets/manifest', asyncRoute(async (req, res) => {
+  router.get('/assets/manifest', publicCatalogueRead, asyncRoute(async (req, res) => {
     const manifest = await getService().assetManifest(req.query);
     sendEnvelope(req, res, { assets: manifest.assets }, {
       pagination: manifest.pagination,
@@ -388,6 +411,14 @@ export function createV1Router(options = {}) {
     sendEnvelope(req, res, { variantId: history.variantId, observations: history.observations }, {
       cacheControl: MARKET_CACHE_CONTROL,
       pagination: history.pagination,
+    });
+  }));
+
+  router.post('/market/catalogue-prices', asyncRoute(async (req, res) => {
+    // The router-level personal-pricing middleware has already authenticated
+    // and authorized this request. Saved pages must never be shared by caches.
+    sendEnvelope(req, res, await getPricingService().cataloguePrices(req.body ?? {}), {
+      cacheControl: PERSONAL_PRICING_CACHE_CONTROL,
     });
   }));
 
@@ -464,7 +495,7 @@ export function createV1Router(options = {}) {
     });
   }));
 
-  router.get('/search', asyncRoute(async (req, res) => {
+  router.get('/search', publicCatalogueRead, asyncRoute(async (req, res) => {
     const search = await getService().search(req.query);
     sendEnvelope(req, res, { query: search.query, normalizedQuery: search.normalizedQuery, results: search.results }, {
       pagination: search.pagination,

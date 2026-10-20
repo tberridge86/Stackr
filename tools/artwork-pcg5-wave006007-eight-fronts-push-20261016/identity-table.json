@@ -1,0 +1,162 @@
+[
+  {
+    "printing_id": "99d92c62-48a1-4f46-8c52-f8bd29aa7925",
+    "set_id": "f8cb8c30-41dc-42a3-977a-23baba96fa69",
+    "set_code": "PCG5",
+    "language_code": "ja",
+    "collector_number": "054",
+    "card_native_name": "カブトップス",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-031",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "626589f6-6316-4bc7-a5fd-bb74b8e4e755"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:61300637e00bc4b093331ef847c4217719ade13ae4bb8c7dec13522612632e8b",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/3fpauxxmjtsaapsc/1600.jpg",
+    "original_sha256": "1aef481590a120ab907c90032de39a5bc1d7c92fad83fcf13f7137198c99e0d0",
+    "body_sha256": "0408bfb6095a71d1aec083f84d60abf7c80bc2ae9ed57cec02835b16dc97b837",
+    "evidence_sha256": "aafdf67e0a12f2e122715ebab8fddfa3515bd1c15af479972b82d9367c44d7b1"
+  },
+  {
+    "printing_id": "3b42d0a6-58d9-440f-a4fa-5dedd29bd2c1",
+    "set_id": "f8cb8c30-41dc-42a3-977a-23baba96fa69",
+    "set_code": "PCG5",
+    "language_code": "ja",
+    "collector_number": "072",
+    "card_native_name": "絶対",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-031",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "ddf6a830-3656-4f5b-8da3-e9cfbc560d81"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:b2d34101babf7b399430c38d8b3ef9a86a82fcdb5914248614bb4765050685d8",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/refd29f4010b69927460b3652ea75e593200192a4f11bcfb6d4c6328fc034cc9896/1600.jpg",
+    "original_sha256": "7cc5d4e4fbb7a20be902c7c9682dde8d2c0be82a6406a2c673a53ef02cf774e9",
+    "body_sha256": "a972448ca5e3c076fc4b7d0e625b3b9f0ae1fefe56969bc7a176e2faa2b8d97d",
+    "evidence_sha256": "a304c51c2ddd68afe4476954cf9adcc256574466dcd1b7ba2761528c30d48de5"
+  },
+  {
+    "printing_id": "d375bdec-7d0e-46ff-a6b9-b156ed9af609",
+    "set_id": "f8cb8c30-41dc-42a3-977a-23baba96fa69",
+    "set_code": "PCG5",
+    "language_code": "ja",
+    "collector_number": "077",
+    "card_native_name": "爪の化石",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-032",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "d71666c9-c454-4631-9227-4856ada8dd39"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:a6b00a82609adfbc976e9c6bfb6421e9ceeb00a492ab43e3c487dc5178cc67d8",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/wxtzkrzlxkam3hvn/1600.jpg",
+    "original_sha256": "80a8126ec1cbd48660d25971cce8d87a6b725d9e542f820ef4eb51b32ff74792",
+    "body_sha256": "e3ba46e6ff7d7ce0b6b701c4dbe661085278273745dcc95bde5431ba4e6cdeb4",
+    "evidence_sha256": "9ced9a48f4ea32177161260910adb74f650b7937abb57fe5e0f734f447e4b756"
+  },
+  {
+    "printing_id": "54ab745b-392e-46a6-8480-b4dc593124a7",
+    "set_id": "f8cb8c30-41dc-42a3-977a-23baba96fa69",
+    "set_code": "PCG5",
+    "language_code": "ja",
+    "collector_number": "078",
+    "card_native_name": "神秘的な化石",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-032",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "a10ab207-e6d6-4928-ae33-867327a1898d"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:eb0f79f70a005df21967ca554727b19d8bdc5c6067e39f297b728ca3be410db7",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/corrkqozukjbnmfyf362/1600.jpg",
+    "original_sha256": "a2763347bb5a41905d1ea130bae478174c12543583e4e19634722e673f5db1d2",
+    "body_sha256": "f88d2557c84967a9c84d8c7f2830313868ae8c7c579abfb73efb0f7fb4f857fa",
+    "evidence_sha256": "4652f4d63fcde2f1379560b50a5804a21aa774cb66a7d825a95557882bce0243"
+  },
+  {
+    "printing_id": "f1ccf730-c3d2-44b6-a59d-72c0f1f6f2b9",
+    "set_id": "f8cb8c30-41dc-42a3-977a-23baba96fa69",
+    "set_code": "PCG5",
+    "language_code": "ja",
+    "collector_number": "079",
+    "card_native_name": "根の化石",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-032",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "79bced78-be34-4302-a910-cee858b410ff"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:9d0e5498240d36f81663345da5410b37fc0ff42d5a5fd6c51e3421d7fb629cca",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/7ehneb3eptyghl5c/1600.jpg",
+    "original_sha256": "2060e56662f5366e10b2a3d7bb3099a39d36e7223b225f0338e6f8fb938e85ca",
+    "body_sha256": "1082d8cc12802b2ed23562882e7248cc7ba04995d88646e841abb80f1fdad573",
+    "evidence_sha256": "da44989ce6795628ef88a618870c2df4b21c4fc23ca9c274998c3ac04f25eee9"
+  },
+  {
+    "printing_id": "495d3e13-53cf-4193-b897-892e492dcef1",
+    "set_id": "f8cb8c30-41dc-42a3-977a-23baba96fa69",
+    "set_code": "PCG5",
+    "language_code": "ja",
+    "collector_number": "081",
+    "card_native_name": "奇妙な洞窟",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-032",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "78e7a14a-74c6-47ff-8454-c4284b4804b3"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:5add5e6371ae36057465d55eedd33c8d0866d3419f4d8a372a985a98e4e67534",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/corrd2xb3li3rfxlwbn5/1600.jpg",
+    "original_sha256": "4c4455af9208fe0fd572ad09fd0504d5ee389f5d1f8c55be9b8cb1ef740272b1",
+    "body_sha256": "1f4a454b7a3779eb597693b7250f182ec7bd81e71b9f389bf56f1c57be2d01b7",
+    "evidence_sha256": "c90a5f939a5b332d7230cd4b76010f830b86cb5686fc1f3b228e245d398e07dc"
+  },
+  {
+    "printing_id": "48be3163-e728-45e7-b7d5-e4b5d2267507",
+    "set_id": "f8cb8c30-41dc-42a3-977a-23baba96fa69",
+    "set_code": "PCG5",
+    "language_code": "ja",
+    "collector_number": "082",
+    "card_native_name": "フルフレーム",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-032",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "50961470-7633-422f-8a47-197f20af5be5"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:4cdf40381d4465965de38961c738d265e73ff68ca160571052bfba7fb067fcc8",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/34ybxcgrv5bmb4mq/1600.jpg",
+    "original_sha256": "ad3e88bea140fa6b8b130530fb40921ebb455dca957729639aac008508035feb",
+    "body_sha256": "f67266ececb3157955e57ffaa01c7db99c4a1f827a9eb5e932da2c50bee1eada",
+    "evidence_sha256": "7d355610f3e2b575d2676c2d8082d6783436f73eccd19aba2177ec6e7d90436c"
+  },
+  {
+    "printing_id": "060248e6-200d-4e55-9c59-693b622a2bb0",
+    "set_id": "f8cb8c30-41dc-42a3-977a-23baba96fa69",
+    "set_code": "PCG5",
+    "language_code": "ja",
+    "collector_number": "084",
+    "card_native_name": "呪われた石",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-032",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "1e5676ae-212e-4311-9a26-0fb18b7d280c"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:df349ed039e3a7e3fd574faaed4795ae69626866fc6a3f0250ea4d90c7d9fbdc",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/uh34rolsdlxqxghb/1600.jpg",
+    "original_sha256": "8de54f528a843598606c69bf9fb2af28b72c8c10e213bd46b0b40c7cc973bc6d",
+    "body_sha256": "39ec13ad0f7245a52340f8a511a09be7b3406ee5e04f8f667827f115264b930b",
+    "evidence_sha256": "cf72222bcbd1756606eb04be602ac2e2a29beb8b093f90efa730f8068a3a7777"
+  }
+]

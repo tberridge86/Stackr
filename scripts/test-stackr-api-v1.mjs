@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import './test-printing-asset-manifest.mjs';
+import './test-backend-search-enrichment.mjs';
 import { Buffer } from 'node:buffer';
 import { readFile } from 'node:fs/promises';
 import express from 'express';
 import createV1Router from '../backend/routes/v1.js';
+import { fetchFastSetCards } from '../backend/lib/fastSetCards.js';
 import {
   ApiError,
   createCatalogueV1Service,
@@ -240,6 +242,85 @@ async function assertPublishedCatalogueSources() {
   );
 }
 
+async function assertFastSetFactsPublishedVersion() {
+  const publishedVersionId = '44444444-4444-4444-8444-444444444444';
+  const previousVersionId = '66666666-6666-4666-8666-666666666666';
+  const row = {
+    printing_id: cardId, variant_id: variantId, set_id: setId,
+    game_code: 'pokemon', language_code: 'ja', card_native_name: 'リザードンex',
+    card_english_display_name: 'Charizard ex', collector_number: '157/165',
+    variant_code: 'normal', catalogue_version_id: publishedVersionId,
+  };
+  function factClient(publishedSet, lookupError = null) {
+    const reads = [];
+    const client = {
+      schema(name) {
+        assert.equal(name, 'api');
+        return {
+          from(tableName) {
+            reads.push(tableName);
+            const filters = [];
+            let maximum = Infinity;
+            const query = {
+              select() { return this; },
+              eq(column, value) { filters.push((candidate) => candidate[column] === value); return this; },
+              gt(column, value) { filters.push((candidate) => candidate[column] > value); return this; },
+              order() { return this; },
+              limit(value) { maximum = value; return this; },
+              maybeSingle() {
+                assert.equal(tableName, 'catalogue_sets');
+                return Promise.resolve({ data: publishedSet, error: lookupError });
+              },
+              then(resolve, reject) {
+                assert.equal(tableName, 'catalogue_cards');
+                const rows = [
+                  { ...row, catalogue_version_id: previousVersionId },
+                  row,
+                  { ...row, variant_id: sharedArtworkVariantId },
+                ].filter((candidate) => filters.every((filter) => filter(candidate))).slice(0, maximum);
+                return Promise.resolve({ data: rows, error: null }).then(resolve, reject);
+              },
+            };
+            return query;
+          },
+          rpc() { assert.fail('facts-only pages must not request artwork'); },
+        };
+      },
+    };
+    return { client, reads };
+  }
+
+  const normal = factClient({ catalogue_version_id: publishedVersionId });
+  const page = await fetchFastSetCards(normal.client, setId, { includeAssets: false, language: 'ja', limit: 1 });
+  assert.deepEqual(normal.reads, ['catalogue_sets', 'catalogue_cards']);
+  assert.equal(page.cards.length, 1);
+  assert.equal(page.cards[0].catalogueVersionId, publishedVersionId);
+  assert.equal(page.cards[0].variants.length, 1, 'a prior version must not duplicate a published variant');
+  assert.equal(parseCursor(page.pagination.nextCursor).variant_id, variantId);
+
+  const known = factClient(null);
+  const knownPage = await fetchFastSetCards(known.client, setId, { includeAssets: false, limit: 1 }, {
+    catalogueVersionId: publishedVersionId,
+  });
+  assert.deepEqual(known.reads, ['catalogue_cards'], 'trusted server metadata must avoid a redundant set read');
+  assert.equal(knownPage.cards[0].catalogueVersionId, publishedVersionId);
+
+  const absent = factClient(null);
+  assert.deepEqual(await fetchFastSetCards(absent.client, setId, { includeAssets: false }), {
+    cards: [], pagination: { limit: 120, nextCursor: null },
+  });
+  assert.deepEqual(absent.reads, ['catalogue_sets']);
+
+  const invalid = factClient({ catalogue_version_id: null });
+  await assert.rejects(() => fetchFastSetCards(invalid.client, setId, { includeAssets: false }),
+    (error) => error instanceof ApiError && error.code === 'catalogue_version_unavailable');
+  assert.deepEqual(invalid.reads, ['catalogue_sets']);
+
+  const failed = factClient(null, new Error('published set read failed'));
+  await assert.rejects(() => fetchFastSetCards(failed.client, setId, { includeAssets: false }), /published set read failed/);
+  assert.deepEqual(failed.reads, ['catalogue_sets'], 'a failed version lookup must not become a broad or empty read');
+}
+
 async function assertAssetManifestServerClientIsolation() {
   const route = await readFile(new URL('../backend/routes/v1.js', import.meta.url), 'utf8');
   const selectorStart = route.indexOf('function getSupabaseServerKeyCandidate()');
@@ -401,6 +482,7 @@ async function assertSearchServerClientIsolation(exactOriginalAvailable = false)
             in(column, value) { filters.push(['in', column, value]); return this; },
             order(column, options) { filters.push(['order', column, options]); return this; },
             range(from, to) { filters.push(['range', from, to]); return this; },
+            abortSignal(signal) { filters.push(['abortSignal', signal]); return this; },
             then(resolve, reject) {
               assetOperations.push(filters);
               const variantFilter = filters.find(([name, column]) => name === 'in' && column === 'variant_id');
@@ -473,6 +555,8 @@ async function assertSearchServerClientIsolation(exactOriginalAvailable = false)
   assert.ok(assetOperations.some((filters) => filters.some(([name, column]) => name === 'in' && column === 'variant_id')));
   assert.ok(assetOperations.some((filters) => filters.some(([name, column]) => name === 'in' && column === 'printing_id')));
   assert.ok(assetOperations.every((filters) => filters.some(([name]) => name === 'range')));
+  assert.ok(assetOperations.every((filters) => filters.some(([name, signal]) => name === 'abortSignal' && signal instanceof AbortSignal)),
+    'Optional search image reads receive the child cancellation signal');
 }
 
 async function assertSiblingVariantIsNotAnImageFallback() {
@@ -1098,8 +1182,31 @@ await assertHydrationPaginatesAssetRows();
 await assertOptInIdentityRpcHydration();
 
 await assertEnglishPresentationProjection();
+await assertFastSetFactsPublishedVersion();
 
 await withServer(async (baseUrl) => {
+  const indexPage = await fetch(`${baseUrl}/pokemon?offset=0&limit=151`);
+  assert.equal(indexPage.status, 200);
+  const firstIndex = (await indexPage.json()).data;
+  assert.equal(firstIndex.count, 1025);
+  assert.equal(firstIndex.results.length, 151);
+  assert.equal(firstIndex.results[0].name, 'bulbasaur');
+  const restIndex = (await (await fetch(`${baseUrl}/pokemon?offset=151&limit=1199`)).json()).data;
+  assert.equal(restIndex.indexVersion, firstIndex.indexVersion);
+  assert.equal(restIndex.results.length, 874);
+  assert.equal(new Set([...firstIndex.results, ...restIndex.results].map((entry) => entry.speciesId)).size, 1025);
+  assert.equal(firstIndex.results[0].speciesId, 1);
+  assert.equal(firstIndex.results[25].speciesId, 26);
+  assert.equal(firstIndex.results[25].routeName, 'raichu');
+  assert.ok(![...firstIndex.results, ...restIndex.results].some((entry) => entry.routeName === 'raichu-alola'));
+  const deoxys = restIndex.results.find((entry) => entry.speciesId === 386);
+  assert.equal(deoxys.speciesName, 'deoxys');
+  assert.equal(deoxys.routeName, 'deoxys-normal');
+  assert.equal((await fetch(`${baseUrl}/pokemon?offset=0&limit=151`, {
+    headers: { 'If-None-Match': indexPage.headers.get('etag') },
+  })).status, 304);
+  assert.equal((await fetch(`${baseUrl}/pokemon?offset=-1`)).status, 400);
+
   const health = await fetch(`${baseUrl}/health`, {
     headers: { 'X-Request-Id': 'test-request-id' },
   });
@@ -1131,10 +1238,41 @@ await withServer(async (baseUrl) => {
   const languages = await fetch(`${baseUrl}/languages`);
   assert.equal(languages.status, 200);
   assert.equal((await readJson(languages)).data.languages[0].code, 'ja');
+  assert.match(languages.headers.get('etag'), /^W\//, 'per-request metadata requires a weak entity tag');
+  const sameLanguages = await fetch(`${baseUrl}/languages`, {
+    headers: { 'If-None-Match': languages.headers.get('etag'), 'X-Request-Id': 'new-transport-request' },
+  });
+  assert.equal(sameLanguages.status, 304, 'unchanged facts must validate despite different transport metadata');
+  assert.equal(sameLanguages.headers.get('etag'), languages.headers.get('etag'));
+  assert.equal(sameLanguages.headers.get('x-request-id'), 'new-transport-request');
+  const originalLanguages = service.languages;
+  try {
+    service.languages = async () => ({ languages: [{ code: 'en' }] });
+    const changedLanguages = await fetch(`${baseUrl}/languages`, {
+      headers: { 'If-None-Match': languages.headers.get('etag') },
+    });
+    assert.equal(changedLanguages.status, 200, 'changed facts must invalidate the entity tag');
+    assert.notEqual(changedLanguages.headers.get('etag'), languages.headers.get('etag'));
+    assert.equal((await readJson(changedLanguages)).data.languages[0].code, 'en');
+  } finally {
+    service.languages = originalLanguages;
+  }
 
   const sets = await fetch(`${baseUrl}/sets`);
   assert.equal(sets.status, 200);
   assert.equal((await readJson(sets)).data.sets[0].setCode, 'SV2a');
+  const originalSets = service.sets;
+  try {
+    service.sets = async () => ({ sets: [stackrSet()], pagination: { limit: 50, nextCursor: 'next-page' } });
+    const changedPagination = await fetch(`${baseUrl}/sets`, {
+      headers: { 'If-None-Match': sets.headers.get('etag') },
+    });
+    assert.equal(changedPagination.status, 200, 'pagination changes must invalidate the entity tag');
+    assert.notEqual(changedPagination.headers.get('etag'), sets.headers.get('etag'));
+    assert.equal((await readJson(changedPagination)).meta.pagination.nextCursor, 'next-page');
+  } finally {
+    service.sets = originalSets;
+  }
 
   const set = await fetch(`${baseUrl}/sets/${setId}`);
   assert.equal(set.status, 200);
@@ -1223,8 +1361,9 @@ assert.match(domainAdapter, /resolveCardArtwork\(card, assets\)/);
 const artworkPresentation = await readFile(new URL('../lib/cardArtworkPresentation.ts', import.meta.url), 'utf8');
 assert.match(artworkPresentation, /!asset\.variantId && asset\.cardId === card\.cardId/);
 assert.match(domainAdapter, /const needsManifestFallback = cards\.some/);
-assert.match(domainAdapter, /fetchStackrAssetsForPrinting\(client, printingId, signal\)/,
-  'optional search manifests retain the printing identity and bounded child cancellation');
+assert.match(domainAdapter,
+  /client\.assetManifest\(\s*\{\s*printingIds:\s*\w+,\s*assetType:\s*'card_image',\s*cursor,\s*limit:\s*250,?\s*\},\s*\{ signal \}\)/,
+  'optional search manifests retain exact printing batches, pagination and bounded child cancellation');
 assert.doesNotMatch(domainAdapter, /const hasEmbeddedImages = cards\.some/);
 for (const method of [
   'health',

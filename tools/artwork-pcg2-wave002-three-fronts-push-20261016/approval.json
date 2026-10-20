@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 3,
+  "variants": 3,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "physical_finish_verified": false,
+  "physical_edition_verified": false,
+  "cohort_sha256": "27de94568b4454977ff64b99e9e989a08a69178de8b0f6afd140927bbb4a415c",
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "2aaad4065081121ae0cb1feb3875fe80544f654d3931e1b1f978bf8659f83178",
+    "finiteDecisionFileByteSha256": "2dc42c9600d0c921cbe8cb625cca8410aa8dccf7f43a9ca45c49b65ea67e0d10",
+    "rootPrivateContextFileByteSha256": "61cf54eb91f20f4efc28d31e887f6cacd87dc270e03a03ac85b065a226891dc5",
+    "sourceHandoffFileByteSha256s": [
+      "f8ccc869d98bf89ffc9c269c146b4361459888f9a9b15c28286ac29b9b2c47b7"
+    ],
+    "independentSourceReviewFileByteSha256s": [
+      "3a87e6253e608fd912ea3c6623ab108b35401f7a3f9b364c9fa71c643f87c712"
+    ],
+    "fourSourceCheckpointFileByteSha256": "73961c3c040dff4bc536a4b6dbc73171af7156d68f92f1c10d43ec1da7d2746e",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "f3e8df61672f0896aa02dbdbc99fe96cdcc85926735e332bf673d42589443398",
+    "independentPrivatePackageReviewSha256": "a1619e120609c2163a0ebff7742a5a1a628db22e4e1e98b806f619ff75bb4a55",
+    "rootPrivatePackageValidationSha256": "da886b7cc13e41cad782a982cabd67893658d72ccc6e605fd9692134498a5d50",
+    "rootSourceArchiveBindingSha256": "837d66032d7f1052744ff2330e10fc8472ab1b7108b160d6cc89792ba3fe2cfd",
+    "rootUploadReceiptSha256": "5ae49dacb02d0db5e47b74eea3ac28ceb61967381f22f8a28d8d70e7d4861994",
+    "actualMeasuredAppReportSha256": "1b4ef65535a447b40ebc592f55b7c6117678b00515dead534422a71b9e5ea1fa",
+    "actualMeasuredDimensionAuditSha256": "a1b08708b5242fafba6b1954fd325c5d24dacf77c983ee0fea377118588ec7fe",
+    "rootPublisherContextSha256": "320315c68ce9d08e0a7e177aa5e72f20d9d627d6934281134f921cd6081554a9"
+  },
+  "production_source_changes_allowed": 0,
+  "scope": "Exactly PCG2-056/077/079 readable native500x700 Japanese shared reference fronts. All three current normal/default TRUE tuples and API IDs remain unchanged; English/category null retained. Production19→25 adds3assets3links and preserves the existing PCG2logo/link and all4full17-field sources. Staging13→20→13 rolls back its temporary inactive Price fixture. Direct raw observation schema/hash and historical false flags retained. Trainer077/079 full two rules and null Pokemon fields preserved. LARGE all3 detail-page500x700; HD signals0, no enlargement or optical/physical/vendor certification."
+}

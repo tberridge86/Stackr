@@ -1,0 +1,390 @@
+{
+  "schemaVersion": 2,
+  "observedAt": "2026-10-04T10:52:42.353Z",
+  "sourceRevision": "a69b2b0a095dc9f49040f527e5a7fc99e8ba00dd",
+  "stagingProject": "lmwfhvexfcoyeuoyrlco",
+  "productionProject": "oakdbbzdqwurpjnoqhmu",
+  "productionWritesPerformed": true,
+  "authorization": "User pasted end-to-end release mandate and requested daily refresh with a good beta stopping point.",
+  "appliedMigrations": [
+    {
+      "name": "catalogue_price_bulk_cache",
+      "version": "20261003224016"
+    },
+    {
+      "name": "restore_full_catalogue_price_guide",
+      "version": "20261003224031"
+    },
+    {
+      "name": "catalogue_price_feed_access_indexes",
+      "version": "20261003224558"
+    },
+    {
+      "name": "catalogue_price_repair_reads",
+      "version": "20261003225316"
+    },
+    {
+      "name": "cardmarket_general_price_backup",
+      "version": "20261003225832"
+    },
+    {
+      "name": "batch_catalogue_price_identity_reads",
+      "version": "20261003231006"
+    },
+    {
+      "name": "japanese_exact_price_identities",
+      "version": "20261003232812"
+    },
+    {
+      "name": "bounded_published_price_read",
+      "version": "20261003234257"
+    },
+    {
+      "name": "cover_general_price_foreign_keys",
+      "version": "20261003234442"
+    },
+    {
+      "name": "english_exact_title_price_identities",
+      "version": "20261004084131"
+    },
+    {
+      "name": "cardmarket_current_provenance_candidates",
+      "version": "20261004084237"
+    },
+    {
+      "name": "cardmarket_bounded_provenance_candidates",
+      "version": "20261004084956"
+    },
+    {
+      "name": "cardmarket_resumable_provenance_index",
+      "version": "20261004090339"
+    },
+    {
+      "name": "catalogue_bulk_sweep_bounded_initialisation",
+      "version": "20261004091559"
+    },
+    {
+      "name": "bounded_collector_search_identity_view",
+      "version": "20261004091600"
+    },
+    {
+      "name": "bounded_catalogue_bulk_sweep_finish",
+      "version": "20261004093356"
+    },
+    {
+      "name": "cardmarket_reviewed_mapping_loader",
+      "version": "20261004093530"
+    },
+    {
+      "name": "cardmarket_daily_revision_resume",
+      "version": "20261004094846"
+    },
+    {
+      "name": "thin_published_price_identities",
+      "version": "20261004094851"
+    },
+    {
+      "name": "catalogue_bulk_store_materialization",
+      "version": "20261004101533"
+    },
+    {
+      "name": "cardmarket_source_revision_lease",
+      "version": "20261004102720"
+    }
+  ],
+  "migrationParity": {
+    "environments": [
+      "staging",
+      "production"
+    ],
+    "bodiesIdentical": true,
+    "ledgerVersionsAligned": true
+  },
+  "productionGuideHealth": {
+    "runId": "b232d400-1e11-4fa9-995d-158e0cf8ee94",
+    "groups": [
+      {
+        "total": 121,
+        "status": "complete",
+        "categoryId": 3
+      },
+      {
+        "total": 99,
+        "status": "unmapped",
+        "categoryId": 3
+      },
+      {
+        "total": 163,
+        "status": "complete",
+        "categoryId": 85
+      },
+      {
+        "total": 296,
+        "status": "unmapped",
+        "categoryId": 85
+      }
+    ],
+    "quotes": [
+      {
+        "stale": 0,
+        "total": 13614,
+        "provider": "tcgcsv",
+        "languageCode": "en"
+      },
+      {
+        "stale": 0,
+        "total": 6902,
+        "provider": "tcgcsv",
+        "languageCode": "ja"
+      }
+    ],
+    "outcomes": {
+      "total": 76272,
+      "no_provider_quote": 3317,
+      "unsupported_finish": 1240,
+      "unsupported_language": 28813
+    },
+    "datasetAt": "2026-10-03T20:05:38+00:00",
+    "runStatus": "needs_mapping",
+    "openRepairs": 46529
+  },
+  "coverage": {
+    "publishedVariants": 76269,
+    "tcgSupportedVariants": 46219,
+    "tcgPricedVariants": 20516,
+    "cardmarketEligiblePrintings": 9223,
+    "cardmarketEligiblePresentationVariants": 12898,
+    "combinedGeneralEstimateVariants": 29099,
+    "combinedAvailabilityPercent": 38.15,
+    "tcgAndCardmarketPresentationVariants": 4315,
+    "tcgOnlyPresentationVariants": 16201,
+    "cardmarketOnlyPresentationVariants": 8583,
+    "unit": "published variant",
+    "receipt": "production-price-coverage-20261004.json",
+    "note": "All 679 feed groups are terminal; 395 require mappings. Coverage is deduplicated by current published presentation variant. No complete card-price claim."
+  },
+  "retainedFeeds": {
+    "rows": 1361,
+    "groups": 2,
+    "prices": 679,
+    "products": 679
+  },
+  "backupProviders": {
+    "ebay": {
+      "oauthAndBrowse": "passed",
+      "observedAt": "2026-10-03T22:58:29.813Z",
+      "candidateDeployed": true,
+      "scope": "Active-listing asking prices, not completed sales."
+    },
+    "cardmarket": {
+      "operational": true,
+      "reviewedMappings": 9224,
+      "storedGeneralPrintings": 9223,
+      "fresh": true,
+      "sourceMetadata": {
+        "feeds": [
+          {
+            "id": "18956fc2-1835-42c2-809d-de4b45ac04e9",
+            "sha256": "1b9b25ec38f02ff414ce99222499b9b86b1474e153d3991206bbcbc589c09aa1",
+            "feed_kind": "products",
+            "byte_length": 13677937,
+            "retrieved_at": "2026-10-04T10:32:51.031706+00:00",
+            "source_created_at": "2026-10-04T08:17:16+00:00"
+          },
+          {
+            "id": "88df9af6-8055-4bf0-9c21-9c230681befe",
+            "sha256": "acdd6ed470fa738b7dd318d7548df425123d83b51d4ab258b0a0de43d9cf8e82",
+            "feed_kind": "price_guide",
+            "byte_length": 15630955,
+            "retrieved_at": "2026-10-04T09:52:33.790157+00:00",
+            "source_created_at": "2026-10-04T00:40:55+00:00"
+          },
+          {
+            "id": "ae42de16-eb38-414d-a45d-c688d558eeb7",
+            "sha256": "14a74405a86acfb80b42168e5cc019c0eae67925e8eee9893f53d35e4922d6ce",
+            "feed_kind": "products",
+            "byte_length": 13677937,
+            "retrieved_at": "2026-10-04T09:52:33.527384+00:00",
+            "source_created_at": "2026-10-03T09:44:53+00:00"
+          }
+        ],
+        "prices": {
+          "rows": 9223,
+          "stale": 0,
+          "latestSource": "2026-10-04T00:40:55+00:00",
+          "earliestSource": "2026-10-04T00:40:55+00:00",
+          "latestRecorded": "2026-10-04T10:34:08.89318+00:00"
+        },
+        "observedAt": "2026-10-04T10:41:13.759849+00:00"
+      },
+      "scope": "Reviewed exact printing crosswalk; public value is blended general evidence, not exact language/finish/condition/grade or holdings valuation.",
+      "readReceipt": "cardmarket-production-read-20261004.json"
+    }
+  },
+  "schedule": {
+    "enabled": true,
+    "deployed": true,
+    "newDailyProviderRevisionsRefreshed": true,
+    "hourlyChecksUtc": {
+      "tcgcsvMinute": 13,
+      "cardmarketMinute": 17
+    },
+    "actualExecutionVerified": true,
+    "executionReceipt": "daily-pricing-execution-20261004.json",
+    "unchangedFeedsReuseRetainedFiles": true,
+    "cardmarketPersistentVolumes": true
+  },
+  "retrieval": {
+    "earlierStagingReadSamples": {
+      "scope": "Real service-role staging PostgREST RPC, 100 known priced references per language; no gateway, owner UI or phone; first request is not a guaranteed cold database cache",
+      "englishBefore": {
+        "observedAt": "2026-10-03T23:10:34.739Z",
+        "project": "lmwfhvexfcoyeuoyrlco",
+        "evidence": "real service-role PostgREST RPC; not gateway, owner UI or phone",
+        "measurements": [
+          {
+            "pass": 1,
+            "references": 100,
+            "rows": 100,
+            "elapsedMs": 7662,
+            "pricedRows": 100
+          },
+          {
+            "pass": 2,
+            "references": 100,
+            "rows": 100,
+            "elapsedMs": 293,
+            "pricedRows": 100
+          }
+        ],
+        "repairPage": 100,
+        "cardmarketStoredRows": 0
+      },
+      "japaneseBefore": {
+        "observedAt": "2026-10-03T23:34:49.624Z",
+        "project": "lmwfhvexfcoyeuoyrlco",
+        "evidence": "real service-role PostgREST RPC; not gateway, owner UI or phone",
+        "measurements": [
+          {
+            "pass": 1,
+            "references": 100,
+            "rows": 100,
+            "elapsedMs": 1038,
+            "pricedRows": 100
+          },
+          {
+            "pass": 2,
+            "references": 100,
+            "rows": 100,
+            "elapsedMs": 392,
+            "pricedRows": 100
+          }
+        ],
+        "repairPage": 100,
+        "cardmarketStoredRows": 0
+      },
+      "englishAfter": {
+        "observedAt": "2026-10-03T23:43:26.696Z",
+        "project": "lmwfhvexfcoyeuoyrlco",
+        "evidence": "real service-role PostgREST RPC; not gateway, owner UI or phone",
+        "measurements": [
+          {
+            "pass": 1,
+            "references": 100,
+            "rows": 100,
+            "elapsedMs": 2775,
+            "pricedRows": 100
+          },
+          {
+            "pass": 2,
+            "references": 100,
+            "rows": 100,
+            "elapsedMs": 108,
+            "pricedRows": 100
+          }
+        ],
+        "repairPage": 100,
+        "cardmarketStoredRows": 0
+      },
+      "japaneseAfter": {
+        "observedAt": "2026-10-03T23:43:28.311Z",
+        "project": "lmwfhvexfcoyeuoyrlco",
+        "evidence": "real service-role PostgREST RPC; not gateway, owner UI or phone",
+        "measurements": [
+          {
+            "pass": 1,
+            "references": 100,
+            "rows": 100,
+            "elapsedMs": 747,
+            "pricedRows": 100
+          },
+          {
+            "pass": 2,
+            "references": 100,
+            "rows": 100,
+            "elapsedMs": 116,
+            "pricedRows": 100
+          }
+        ],
+        "repairPage": 100,
+        "cardmarketStoredRows": 0
+      },
+      "boundedFiveVariantDatabasePlan": {
+        "executionMs": 55.105,
+        "planningMs": 210.485,
+        "sharedHitBlocks": 94,
+        "sharedReadBlocks": 0
+      }
+    },
+    "actualProductionCardmarketReadReceipt": "cardmarket-production-read-20261004.json",
+    "materializedWriterReceipt": "materialized-price-store-20261004.json",
+    "limitations": [
+      "First Cardmarket-backed 100-reference service read took 10,614 ms including network and processing; repeated read 3,184 ms.",
+      "Optional wide coverage RPC can still hit its eight-second limit; operational health and bounded physical coverage receipts work.",
+      "No signed-in owner HTTP or installed-phone timings are claimed."
+    ]
+  },
+  "acl": {
+    "readCataloguePrices": {
+      "anon": false,
+      "authenticated": false,
+      "serviceRole": true
+    }
+  },
+  "advisors": {
+    "historicalSnapshotObservedAt": "2026-10-03T23:46:39.377Z",
+    "historicalSnapshot": {
+      "newPriceSecurityFindings": 0,
+      "newPriceUncoveredForeignKeys": 0,
+      "existingSecurityWarnings": {
+        "authenticatedSecurityDefinerFunctions": 10,
+        "leakedPasswordProtectionDisabled": true
+      },
+      "newUnusedIndexInformationalFindings": "Expected on newly created indexes and empty Cardmarket tables; retained for future feed/maintenance use"
+    },
+    "currentServiceFunctionAcl": "Both bulk store and source-revision lease verified service-role only; no anonymous/authenticated execute.",
+    "finalReceipt": "database-advisors-20261004.json"
+  },
+  "testFlight": {
+    "decision": "authorized_constrained_beta",
+    "version": "1.0.5",
+    "build": "52",
+    "easBuildId": "dbbc2425-0788-4c98-b289-d5d860da4b26",
+    "submissionId": "4f3db0bb-8983-4c23-b10c-50d3f21ce6e2",
+    "submissionState": "FINISHED",
+    "deliveryReceipt": "testflight52-delivery-20261004.json",
+    "nativeDeviceAcceptance": "unverified",
+    "newBuildUploaded": true,
+    "appleBuildId": "ab7ada32-5e74-4830-ba9d-7f4f2b6fbd7f",
+    "appleProcessing": "VALID",
+    "internalAvailability": "IN_BETA_TESTING",
+    "externalAvailability": "WAITING_FOR_BETA_REVIEW"
+  },
+  "generalReleaseGates": [
+    "Incomplete safe price mappings, provider quotes and language/finish support; 38.15% current all-published availability.",
+    "Complete authoritative English descriptive translation and Korean native artwork remain unproven.",
+    "Signed-in owner HTTP and physical-device cold/warm/offline/expiry/error acceptance remain outstanding.",
+    "Native runtime update/router and remaining dependency findings require qualified acceptance."
+  ],
+  "betaDecision": "CI, server, signed-artifact and recurring-guide checks support a truthful beta. This does not close general-release gates."
+}

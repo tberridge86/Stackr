@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 import { Text } from './Text';
 import { StackrImage } from './StackrImage';
+import { CardFinishArtwork } from './CardFinishArtwork';
+import { StackrCardArtworkFallback } from './StackrArtworkFallback';
 import { useTheme } from './theme-context';
 import { stackrCardImageSizes } from '../lib/stackrSizing';
 import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from './RaritySymbol';
@@ -32,6 +34,11 @@ type StackrCardTileProps = {
   onPress?: () => void;
   onLongPress?: () => void;
   accessibilityLabel?: string;
+  fullImageUri?: string | null;
+  variant?: string | null;
+  isHolographic?: boolean;
+  finish?: string | null;
+  cardMetadata?: unknown;
 };
 
 function StackrCardTileBase({
@@ -52,6 +59,11 @@ function StackrCardTileBase({
   onPress,
   onLongPress,
   accessibilityLabel,
+  fullImageUri,
+  variant,
+  isHolographic,
+  finish,
+  cardMetadata,
 }: StackrCardTileProps) {
   const { theme } = useTheme();
   const active = selected || collected;
@@ -87,22 +99,35 @@ function StackrCardTileBase({
         style,
       ]}
     >
-      <View style={[compact ? styles.gridImageFrame : styles.rowImageFrame, { backgroundColor: theme.colors.surface }]}>
-        {imageUri ? (
-          <StackrImage
-            uri={imageUri}
-            style={{
-              width: imageWidth,
-              height: imageHeight,
-              aspectRatio: compact ? stackrCardImageSizes.cardAspectRatio : undefined,
-            }}
-            contentFit="contain"
-            priority="low"
-            showFallbackIcon={false}
-          />
-        ) : (
-          <Ionicons name="image-outline" size={compact ? 26 : 20} color={theme.colors.textSoft} />
-        )}
+      <View style={[compact ? styles.gridImageFrame : styles.rowImageFrame, { backgroundColor: compact ? 'transparent' : theme.colors.surface }]}>
+        <CardFinishArtwork
+          cardMetadata={cardMetadata ?? { rarity, isHolographic }}
+          variant={variant}
+          finish={finish}
+          style={{ width: imageWidth, height: imageHeight, aspectRatio: compact ? stackrCardImageSizes.cardAspectRatio : undefined }}
+          borderRadius={compact ? stackrCardImageSizes.cardCornerRadius : stackrCardImageSizes.rowCard.radius}
+        >
+        <StackrImage
+          uri={imageUri}
+          style={{
+            width: imageWidth,
+            height: imageHeight,
+            aspectRatio: compact ? stackrCardImageSizes.cardAspectRatio : undefined,
+          }}
+          contentFit="contain"
+          cropToCard={compact}
+          priority="low"
+          showFallbackIcon={false}
+          fallback={(
+            <StackrCardArtworkFallback
+              name={name}
+              setName={setName}
+              number={number}
+              density={compact ? 'standard' : 'compact'}
+            />
+          )}
+        />
+        </CardFinishArtwork>
         {active ? (
           <View style={[styles.checkBadge, { backgroundColor: theme.colors.primary }]}>
             <Ionicons name="checkmark" size={14} color="#FFFFFF" />

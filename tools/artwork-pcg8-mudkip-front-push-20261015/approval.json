@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 1,
+  "variants": 1,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "physical_finish_verified": false,
+  "physical_edition_verified": false,
+  "cohort_sha256": "14f93cf2bb271af2a1d2f58d7e85a1ec39c0bd6aa934e669eec053d3184155c2",
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "881d8f89601c9490a9f973e8bc403652ba3d7847cb5be95a927f25deb95e6cf3",
+    "finiteDecisionFileByteSha256": "7c958bfa3bd63b3cec05ea32952fcd367c53aebd24a094fcbe6a7c1043727b40",
+    "scopeCorrectionReceiptFileByteSha256": "aebfc103657ac6f98c0774fc1fde537cb8b6ed65015632cbc0292232c48139ad",
+    "historicalWrongScopeApprovalFileByteSha256": "af1a25a61f05fac2aefc204d1d3fdf684e594fbbb64d2e3910c8bd60fba60630",
+    "historicalWrongScopeDecisionFileByteSha256": "b50b5d76be627a62aeae49dd6cf01dce705a586b26046ae0cbaaee9ae175429e",
+    "sourceHandoffFileByteSha256": "00dd0b07376dcc3896aa68e17110fc11785c6f59fcb25c48e9d7407bae6e7198",
+    "independentSourceReviewFileByteSha256": "775660e85ecba9aecb92b90d6f56f8ec2557a909c86f9f27878946936fdca9d3",
+    "fourSourceCheckpointFileByteSha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "54664638d122442bc6b52efdd458d22436230993367dd31434326faba9f052d2",
+    "independentPrivatePackageReviewSha256": "bf81345f37018a1a9bab3de87cf800415f6c45e1e72e8d9c002508deecbba9cd",
+    "rootPrivatePackageValidationSha256": "2a392298b5fa3901a228ed95e2599ac252efef1eebdc1c6ae8307004d3ea152f",
+    "rootSourceArchiveBindingSha256": "94fec11a356b1b8ceea1d907cf5e51ca3cf2b078a1dd0daca2d23eb715be36aa",
+    "rootUploadReceiptSha256": "1d0c2ad41de52f0ede915c471c95f3c3947fe5c1b3991dd485928fecef712f8b"
+  },
+  "production_source_changes_allowed": 0,
+  "scope": "Exactly one Japanese PCG8ミズゴロウHP50Waterたね021/075 shared printing front, sole default normal variant and currentマッドキップ label unchanged. Full actualJapaneseひとやすみ removes2self counters with no damage;たきのぼり Water+Colorless20/noeffect, HajimeKusajima/footer and full corners retained. No Delta, ability, Dex or literal PCG8 invented. Only corrected approval/decision and scope-correction receipt govern; historical wrong nested asset-scope packets stay preserved and rejected. Original1022x1409 unchanged, detail720x993 non-HD, app large expected original. Preserve unresolved physical edition/material/finish/unlimited qualification and provider nonverbatim text. Preserve existing PCG8logo/link and all4full17 sources/microseconds. Only1asset1link11to13prod; stagePricefixture5to8to5;0production source or policy changes."
+}

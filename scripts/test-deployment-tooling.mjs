@@ -538,7 +538,9 @@ assert.match(rollbackTool, /serviceId environmentId/);
 assert.match(rollbackTool, /RAILWAY_BACKEND_SERVICE_ID/);
 assert.match(rollbackTool, /RAILWAY_RECOGNITION_SERVICE_ID/);
 assert.match(rollbackTool, /RAILWAY_ENVIRONMENT_ID/);
-assert.match(rollbackTool, /deployment\.status !== 'SUCCESS'/);
+assert.match(rollbackTool, /\['SUCCESS', 'REMOVED', 'CRASHED'\]\.includes\(deployment\.status\)/);
+assert.match(rollbackTool, /MAX_PREDEPLOY_RECEIPT_AGE_MS/);
+assert.match(rollbackTool, /stackr-staging-backend-predeploy-health-v1/);
 assert.match(rollbackTool, /verifyOnly/);
 assert.match(
   rollbackTool,
@@ -620,13 +622,139 @@ assert.equal(
 assert.match(backendRollbackVerification.stdout, /"verified": true/);
 assert.doesNotMatch(backendRollbackVerification.stdout, /"deploymentRollback": true/);
 
+const removedEligibleBackendRollbackTarget = run(
+  'scripts/deploy/railway-rollback.mjs',
+  ['--component=backend', '--deployment=backend-deployment', '--verify-only'],
+  { ...backendRollbackEnvironment, MOCK_RAILWAY_DEPLOYMENT_STATUS: 'REMOVED' },
+);
+assert.equal(
+  removedEligibleBackendRollbackTarget.status,
+  0,
+  removedEligibleBackendRollbackTarget.stderr || removedEligibleBackendRollbackTarget.stdout,
+);
+assert.match(removedEligibleBackendRollbackTarget.stdout, /"status": "REMOVED"/);
+
+const removedIneligibleBackendRollbackTarget = run(
+  'scripts/deploy/railway-rollback.mjs',
+  ['--component=backend', '--deployment=backend-deployment', '--verify-only'],
+  {
+    ...backendRollbackEnvironment,
+    MOCK_RAILWAY_DEPLOYMENT_STATUS: 'REMOVED',
+    MOCK_RAILWAY_CAN_ROLLBACK: 'false',
+  },
+);
+assert.notEqual(removedIneligibleBackendRollbackTarget.status, 0, 'removed deployments still require Railway rollback eligibility');
+assert.match(removedIneligibleBackendRollbackTarget.stderr, /not rollback-eligible/);
+
 const failedBackendRollbackTarget = run(
   'scripts/deploy/railway-rollback.mjs',
   ['--component=backend', '--deployment=backend-deployment', '--verify-only'],
   { ...backendRollbackEnvironment, MOCK_RAILWAY_DEPLOYMENT_STATUS: 'FAILED' },
 );
 assert.notEqual(failedBackendRollbackTarget.status, 0, 'failed deployments must not be accepted as rollback targets');
-assert.match(failedBackendRollbackTarget.stderr, /not a known-good successful deployment/);
+assert.match(failedBackendRollbackTarget.stderr, /not a known-good successful or superseded deployment/);
+
+const stagingBackendRollbackEnvironment = {
+  ...backendRollbackEnvironment,
+  STACKR_DEPLOYMENT_ENVIRONMENT: 'staging',
+  RAILWAY_BACKEND_SERVICE_ID: '66641988-1846-4775-bcc4-5d1f6985db91',
+  RAILWAY_ENVIRONMENT_ID: '88986bd6-970f-4bfe-9cea-15aada4d466c',
+  MOCK_RAILWAY_SERVICE_ID: '66641988-1846-4775-bcc4-5d1f6985db91',
+  MOCK_RAILWAY_ENVIRONMENT_ID: '88986bd6-970f-4bfe-9cea-15aada4d466c',
+  MOCK_RAILWAY_DEPLOYMENT_STATUS: 'CRASHED',
+};
+const rollbackReceiptTemp = mkdtempSync(path.join(tmpdir(), 'stackr-rollback-receipt-test-'));
+const writeRollbackReceipt = (name, patch = {}) => {
+  const receipt = {
+    schemaVersion: 'stackr-staging-backend-predeploy-health-v1',
+    observedAt: new Date().toISOString(),
+    deployment: {
+      id: 'backend-deployment',
+      serviceId: '66641988-1846-4775-bcc4-5d1f6985db91',
+      environmentId: '88986bd6-970f-4bfe-9cea-15aada4d466c',
+      status: 'SUCCESS',
+    },
+    health: {
+      status: 200,
+      ok: true,
+      deploymentId: 'backend-deployment',
+      railwayEnvironment: 'staging',
+      supabaseProjectRef: 'lmwfhvexfcoyeuoyrlco',
+      gitCommit: '0c1254e45dfb',
+      gitCommitSource: 'bundled_workflow_sha',
+    },
+    ...patch,
+  };
+  const receiptPath = path.join(rollbackReceiptTemp, name);
+  writeFileSync(receiptPath, JSON.stringify(receipt));
+  return receiptPath;
+};
+try {
+  const crashedWithoutReceipt = run(
+    'scripts/deploy/railway-rollback.mjs',
+    ['--component=backend', '--deployment=backend-deployment', '--verify-only'],
+    stagingBackendRollbackEnvironment,
+  );
+  assert.notEqual(crashedWithoutReceipt.status, 0, 'crashed staging targets require a verified pre-deploy receipt');
+  assert.match(crashedWithoutReceipt.stderr, /verified pre-deploy receipt is required/);
+
+  const validReceiptPath = writeRollbackReceipt('valid.json');
+  const crashedWithVerifiedReceipt = run(
+    'scripts/deploy/railway-rollback.mjs',
+    ['--component=backend', '--deployment=backend-deployment', '--verify-only', `--verified-before=${validReceiptPath}`],
+    stagingBackendRollbackEnvironment,
+  );
+  assert.equal(crashedWithVerifiedReceipt.status, 0, crashedWithVerifiedReceipt.stderr || crashedWithVerifiedReceipt.stdout);
+  assert.match(crashedWithVerifiedReceipt.stdout, /"status": "CRASHED"/);
+
+  const crashedOutsideStagingWithReceipt = run(
+    'scripts/deploy/railway-rollback.mjs',
+    ['--component=backend', '--deployment=backend-deployment', '--verify-only', `--verified-before=${validReceiptPath}`],
+    { ...backendRollbackEnvironment, MOCK_RAILWAY_DEPLOYMENT_STATUS: 'CRASHED' },
+  );
+  assert.notEqual(crashedOutsideStagingWithReceipt.status, 0, 'the crashed-target exception is restricted to the protected staging backend');
+  assert.match(crashedOutsideStagingWithReceipt.stderr, /valid only for the protected staging backend rollback path/);
+
+  const failedWithVerifiedReceipt = run(
+    'scripts/deploy/railway-rollback.mjs',
+    ['--component=backend', '--deployment=backend-deployment', '--verify-only', `--verified-before=${validReceiptPath}`],
+    { ...stagingBackendRollbackEnvironment, MOCK_RAILWAY_DEPLOYMENT_STATUS: 'FAILED' },
+  );
+  assert.notEqual(failedWithVerifiedReceipt.status, 0, 'failed targets must stay blocked even with a valid pre-deploy receipt');
+  assert.match(failedWithVerifiedReceipt.stderr, /not a known-good successful or superseded deployment/);
+
+  const malformedReceiptPath = path.join(rollbackReceiptTemp, 'malformed.json');
+  writeFileSync(malformedReceiptPath, '{');
+  const crashedWithMalformedReceipt = run(
+    'scripts/deploy/railway-rollback.mjs',
+    ['--component=backend', '--deployment=backend-deployment', '--verify-only', `--verified-before=${malformedReceiptPath}`],
+    stagingBackendRollbackEnvironment,
+  );
+  assert.notEqual(crashedWithMalformedReceipt.status, 0, 'malformed crashed-target receipts must fail closed');
+  assert.match(crashedWithMalformedReceipt.stderr, /receipt is unreadable/);
+
+  const mismatchedReceiptPath = writeRollbackReceipt('mismatched.json', {
+    health: { status: 200, ok: true, deploymentId: 'other-deployment', railwayEnvironment: 'staging', supabaseProjectRef: 'lmwfhvexfcoyeuoyrlco', gitCommit: '0c1254e45dfb', gitCommitSource: 'bundled_workflow_sha' },
+  });
+  const crashedWithMismatchedReceipt = run(
+    'scripts/deploy/railway-rollback.mjs',
+    ['--component=backend', '--deployment=backend-deployment', '--verify-only', `--verified-before=${mismatchedReceiptPath}`],
+    stagingBackendRollbackEnvironment,
+  );
+  assert.notEqual(crashedWithMismatchedReceipt.status, 0, 'mismatched crashed-target receipts must fail closed');
+  assert.match(crashedWithMismatchedReceipt.stderr, /does not match the crashed staging backend target/);
+
+  const staleReceiptPath = writeRollbackReceipt('stale.json', { observedAt: new Date(Date.now() - (21 * 60 * 1000)).toISOString() });
+  const crashedWithStaleReceipt = run(
+    'scripts/deploy/railway-rollback.mjs',
+    ['--component=backend', '--deployment=backend-deployment', '--verify-only', `--verified-before=${staleReceiptPath}`],
+    stagingBackendRollbackEnvironment,
+  );
+  assert.notEqual(crashedWithStaleReceipt.status, 0, 'stale crashed-target receipts must fail closed');
+  assert.match(crashedWithStaleReceipt.stderr, /receipt is stale or has an invalid timestamp/);
+} finally {
+  rmSync(rollbackReceiptTemp, { recursive: true, force: true });
+}
 
 const ineligibleBackendRollbackTarget = run(
   'scripts/deploy/railway-rollback.mjs',
@@ -646,6 +774,24 @@ assert.match(backendRollback.stdout, /"component": "backend"/);
 assert.match(backendRollback.stdout, /"deploymentRollback": true/);
 
 const stagingWorkflow = readFileSync('.github/workflows/deploy-staging.yml', 'utf8');
+const stagingBackendLane = stagingWorkflow.slice(stagingWorkflow.indexOf('  backend_only:'));
+assert.ok(stagingBackendLane.length > 0);
+assert.match(stagingWorkflow, /inputs.release_scope != 'backend_only'/);
+assert.match(stagingBackendLane, /github.ref == 'refs\/heads\/main'.*inputs.release_scope == 'backend_only'/);
+assert.match(stagingBackendLane, /environment: staging/);
+assert.match(stagingBackendLane, /git rev-parse HEAD.*EXPECTED_MAIN_SHA/);
+for (const target of ['d205637b-5376-41aa-9169-1015ba88fec3','88986bd6-970f-4bfe-9cea-15aada4d466c','66641988-1846-4775-bcc4-5d1f6985db91','lmwfhvexfcoyeuoyrlco']) assert.ok(stagingBackendLane.includes(target));
+for (const control of ['apply_migrations','publish_mobile_update','release_candidate']) assert.ok(stagingBackendLane.includes(`test "\${{ inputs.${control} }}" = 'false'`));
+assert.match(stagingBackendLane, /gitCommitSource !== 'bundled_workflow_sha'/);
+assert.doesNotMatch(stagingBackendLane, /variable set/);
+assert.match(stagingBackendLane, /railway-rollback.mjs --component=backend --deployment="\$PREVIOUS_BACKEND_DEPLOYMENT_ID" --verified-before=outputs\/releases\/backend-before-health\.json/);
+assert.match(stagingBackendLane, /schemaVersion:'stackr-staging-backend-predeploy-health-v1'/);
+assert.match(stagingBackendLane, /health:\{status:response\.status,ok:health\.ok,\.\.\.health\.runtime\}/);
+assert.match(stagingBackendLane, /verify-chinese-staging-resolution.mjs/);
+assert.match(stagingBackendLane, /--allowed-origin=https:\/\/staging\.stackr\.app/);
+assert.doesNotMatch(stagingBackendLane, /--allowed-origin=https:\/\/stackr\.app/);
+assert.doesNotMatch(stagingBackendLane, /db push|supabase_apply_migration|eas update|wrangler deploy/);
+
 const platformCiWorkflow = readFileSync('.github/workflows/platform-ci.yml', 'utf8');
 const productionWorkflow = readFileSync('.github/workflows/deploy-production.yml', 'utf8');
 const productionBackendOnlyJob = productionWorkflow.match(
@@ -665,6 +811,7 @@ const priceSchedules = [...priceRefreshWorkflow.matchAll(/- cron: '([^']+)'/g)].
 assert.deepEqual(priceSchedules, [
   '*/5 * * * *', '*/30 * * * *', '2 */6 * * *',
   '17 */6 * * *', '32 */6 * * *', '47 */12 * * *',
+  '8 2 * * *', '13 * * * *',
 ]);
 for (const [lane, schedule] of [
   ['queued', '*/30 * * * *'],
@@ -677,6 +824,37 @@ for (const [lane, schedule] of [
     .find((block) => block.includes(`run: npm run price-refresh:${lane}`));
   assert.ok(step?.includes(`github.event.schedule == '${schedule}'`), `${lane} must use its own scheduled cadence`);
 }
+for (const [name, schedule] of [
+  ['Refresh full catalogue price guide', '8 2 * * *'],
+  ['Resume catalogue price guide checkpoint', '13 * * * *'],
+]) {
+  const step = priceRefreshWorkflow.split(/\r?\n      - name:/).find((block) => block.trimStart().startsWith(name));
+  assert.ok(step?.includes(`github.event.schedule == '${schedule}'`), `${name} must use its own clock`);
+  assert.ok(step?.includes("vars.STACKR_CATALOGUE_BULK_PRICING_ENABLED == 'true'"), `${name} must remain explicitly gated`);
+}
+const priceJobGuard = priceRefreshWorkflow.match(/refresh-prices:\r?\n[\s\S]*?    if: >-\r?\n([\s\S]*?)\r?\n    runs-on:/)?.[1];
+assert.ok(priceJobGuard, 'Price refresh job must have an activation guard');
+const acceptsPriceLane = new Function('github', 'vars', `return (${priceJobGuard});`);
+for (const schedule of ['8 2 * * *', '13 * * * *']) {
+  for (const scheduler of ['railway_catalogue', 'github']) {
+    const github = { event_name: 'schedule', event: { schedule } };
+    const vars = { STACKR_PRICING_SCHEDULER: scheduler, STACKR_CATALOGUE_BULK_PRICING_ENABLED: 'false' };
+    assert.equal(acceptsPriceLane(github, vars), false, 'Disabled guide schedules must not install dependencies or refresh prices');
+    assert.equal(acceptsPriceLane(github, { ...vars, STACKR_CATALOGUE_BULK_PRICING_ENABLED: 'true' }), true,
+      'Whole-guide schedules must remain independent of the owner-worker scheduler');
+    assert.equal(acceptsPriceLane(github, { ...vars, STACKR_CATALOGUE_BULK_PRICING_ENABLED: 'true', STACKR_CATALOGUE_PRICING_SCHEDULER: 'railway' }), false,
+      'Railway guide ownership must suppress competing GitHub guide jobs');
+  }
+}
+assert.equal(acceptsPriceLane({ event_name: 'workflow_dispatch', event: { inputs: { lane: 'full-universe' } } },
+  { STACKR_CATALOGUE_PRICING_SCHEDULER: 'railway' }), true, 'Explicit manual recovery remains available behind its enable guard');
+assert.equal(acceptsPriceLane({ event_name: 'schedule', event: { schedule: '47 */12 * * *' } },
+  { STACKR_PRICING_SCHEDULER: 'railway_catalogue', STACKR_CATALOGUE_BULK_PRICING_ENABLED: 'true' }), false,
+  'Enabling the guide must not start a competing owner-price lane');
+const manualGuideStep = priceRefreshWorkflow.indexOf('- name: Run manual full catalogue guide');
+const priceDependencyStep = priceRefreshWorkflow.indexOf('- name: Install dependencies');
+assert.ok(priceDependencyStep >= 0 && manualGuideStep > priceDependencyStep, 'Manual guide requires installed dependencies');
+assert.match(priceRefreshWorkflow, /Block disabled full universe sync[\s\S]*?exit 1/);
 const rollbackWorkflow = readFileSync('.github/workflows/rollback.yml', 'utf8');
 const recoveryWorkflow = readFileSync('.github/workflows/staging-recovery-drill.yml', 'utf8');
 const productionBaselineWorkflow = readFileSync('.github/workflows/capture-production-schema-baseline.yml', 'utf8');
@@ -1022,12 +1200,15 @@ assert.doesNotMatch(priceRefreshWorkflow, /SUPABASE_URL: \$\{\{ secrets\.SUPABAS
 assert.doesNotMatch(priceRefreshWorkflow, /PRICE_API_URL: \$\{\{ secrets\.PRICE_API_URL \}\}/);
 assert.doesNotMatch(
   priceRefreshWorkflow,
-  /cron: '8 2 \* \* \*'|npm run daily-tcgcsv-sync/,
-  'the broken full-universe Node lane must not run on a schedule or invoke its mobile pricing import',
+  /npm run daily-tcgcsv-sync/,
+  'scheduled guide work must not invoke the old mobile pricing import path',
 );
+const catalogueGuideWorker = readFileSync('scripts/refresh-catalogue-bulk-prices.mjs', 'utf8');
+assert.doesNotMatch(catalogueGuideWorker, /from\s+['"](?:react-native|expo(?:-|\/)|.*stackrDomainAdapter)/,
+  'the scheduled guide worker must keep a Node-only provider boundary');
 assert.match(
   priceRefreshWorkflow,
-  /Block disabled full universe sync[\s\S]*full-universe lane is disabled until a reviewed Node-only provider boundary exists[\s\S]*exit 1/,
+  /Block disabled full universe sync[\s\S]*full-universe lane is disabled until the price-guide readiness gates pass[\s\S]*exit 1/,
 );
 assert.equal(productionBackendHardeningApproval.status, 'approved');
 assert.equal(productionBackendHardeningApproval.scope, 'production_backend_hardening_only');
@@ -1099,7 +1280,7 @@ assert.match(
   /SUPABASE_ACCESS_TOKEN:\s+\$\{\{ secrets\.STACKR_GITHUB_PRODUCTION_BACKUPS \|\| secrets\.SUPABASE_ACCESS_TOKEN \}\}/,
   'production must prefer the dedicated backup-read token without removing the standard token fallback',
 );
-assert.match(stagingWorkflow, /release_scope:[\s\S]+options: \[gate0_hardening, catalogue_api, full_platform\]/);
+assert.match(stagingWorkflow, /release_scope:[\s\S]+options: \[backend_only, gate0_hardening, pricing_identity_guard_rehearsal, cardmarket_ledger_rehearsal, catalogue_api, full_platform\]/);
 assert.match(
   stagingWorkflow,
   /if \[ "\$\{\{ inputs\.release_scope \}\}" != "gate0_hardening" \] && \[ "\$\{\{ inputs\.release_candidate \}\}" != "true" \]; then[\s\S]*Non-Gate-0 staging deployments require release_candidate=true and reviewed evidence\.[\s\S]*exit 1/,

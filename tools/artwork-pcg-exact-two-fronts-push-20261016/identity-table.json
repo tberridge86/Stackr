@@ -1,0 +1,42 @@
+[
+  {
+    "printing_id": "b7574fc2-64bf-499e-9c6c-5122ce550a62",
+    "set_id": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+    "set_code": "PCG8",
+    "language_code": "ja",
+    "collector_number": "040",
+    "card_native_name": "Dusclops",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "1a449bbf-02f3-4d07-8741-45475431ad07"
+    ],
+    "batch_id": "JP-CARDS-041",
+    "work_type": "CARDS",
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:48f9327567668b712767e8d1d80f6477d0f034609348ba8985f7259418152394",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/corr77pfzpfza2cffpog/1600.jpg",
+    "original_sha256": "a18971270b9349e31075719eab6e7759ffdac8debf00c44e7f02d04b6499368f",
+    "body_sha256": "564c8af16bad020800b6c4328673b6bcc3cde1b4d298cd528b870dc60d4a1dd7",
+    "evidence_sha256": "0e5756dd900caf4cba9f0ba50def48c037a3efbb93cfee6a826ea9046ebc1ce8"
+  },
+  {
+    "printing_id": "6920ca9b-a187-4cf1-9f56-7a1a48d4762f",
+    "set_id": "b5ef438a-ddcb-4093-8c9b-572639565af5",
+    "set_code": "PCG9",
+    "language_code": "ja",
+    "collector_number": "026",
+    "card_native_name": "feraligatr（デルタ種）",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "variant_ids": [
+      "fb44782b-ef4c-416a-a9f0-5b6adad52144"
+    ],
+    "batch_id": "JP-CARDS-044",
+    "work_type": "CARDS",
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:b31746ea3064b305e6124affdccfafa91fac53c8510c3e6ab87ce3e602308a26",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/gu6avofk4mc24kia/1600.jpg",
+    "original_sha256": "a949bcdb5a0569e0e4940412ebfe0dce35e701df31530e77edf6475fdbc28d25",
+    "body_sha256": "6f8795940feb531b345a0bfbdd32a4b995ba82132c4ec7fb4e5ea6512a912a6a",
+    "evidence_sha256": "6af1e7158e5413ea648449622452e198eba26b7fa3fceb8797963584affeb197"
+  }
+]

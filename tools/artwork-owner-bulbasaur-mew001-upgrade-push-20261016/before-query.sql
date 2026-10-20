@@ -1,0 +1,11 @@
+-- Draft SELECT only. Run independently in production and staging; freeze raw PostgreSQL JSON strings without Date conversion. Sentinel caps must cause review if reached.
+WITH target_variants AS (SELECT * FROM catalog.card_variants WHERE printing_id='783db704-7783-4ef9-8d8d-c00da4c7defd'::uuid OR id=ANY(ARRAY['272802e1-0bdb-49b3-b2ee-76c14e8c14a1','95c46d73-a9bc-4e36-aeee-fde9fee7a7ad']::uuid[]) LIMIT 5), target_assets AS (SELECT * FROM catalog.assets WHERE printing_id='783db704-7783-4ef9-8d8d-c00da4c7defd'::uuid OR variant_id IN(SELECT id FROM target_variants) OR id=ANY(ARRAY['4971c906-4460-43cb-b660-07d1a1038627','b049d37b-3e80-426b-b359-622de6f16986']::uuid[]) OR (printing_id IS NULL AND variant_id IS NULL AND set_id='f2d0385c-1aae-44a9-b301-bf13da9a131e'::uuid) LIMIT 21), target_links AS (SELECT * FROM catalog.catalogue_version_assets WHERE asset_id IN(SELECT id FROM target_assets) OR printing_id='783db704-7783-4ef9-8d8d-c00da4c7defd'::uuid OR variant_id IN(SELECT id FROM target_variants) LIMIT 41)
+SELECT 'printings' AS scope,id::text AS identity,to_jsonb(p) AS payload FROM catalog.card_printings p WHERE id='783db704-7783-4ef9-8d8d-c00da4c7defd'::uuid
+UNION ALL SELECT 'variants',id::text,to_jsonb(v) FROM target_variants v
+UNION ALL SELECT 'names',id::text,to_jsonb(n) FROM catalog.card_names n WHERE printing_id='783db704-7783-4ef9-8d8d-c00da4c7defd'::uuid OR variant_id IN(SELECT id FROM target_variants)
+UNION ALL SELECT 'sets',id::text,to_jsonb(s) FROM catalog.sets s WHERE id='f2d0385c-1aae-44a9-b301-bf13da9a131e'::uuid
+UNION ALL SELECT 'assets',id::text,to_jsonb(a) FROM target_assets a
+UNION ALL SELECT 'links',catalogue_version_id::text||':'||asset_id::text,to_jsonb(l) FROM target_links l
+UNION ALL SELECT 'versions',id::text,to_jsonb(cv) FROM catalog.catalogue_versions cv WHERE id IN(SELECT catalogue_version_id FROM target_links) OR(language_code='en' AND status='published')
+UNION ALL SELECT 'sources',id::text,to_jsonb(src) FROM ingest.sources src WHERE id IN(SELECT source_id FROM target_assets WHERE source_id IS NOT NULL) OR lower(code)=ANY(ARRAY['scrydex','pokellector','tcgcollector','pricecharting','tcgdex']::text[]) OR lower(base_url) LIKE ANY(ARRAY['%scrydex.com%','%pokellector.com%','%tcgcollector.com%','%pricecharting.com%','%tcgdex.net%'])
+ORDER BY scope,identity;

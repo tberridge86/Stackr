@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "private_inputs": [
+    {
+      "file": "publish-review/sm1plus-two-four-sources-20261015-production-before.json",
+      "sha256": "7af6b67b66158cf10caaeed35805b5b1c8d3789e3ede520a6920979fc3519d6f"
+    },
+    {
+      "file": "publish-review/sm1plus-two-four-sources-20261015-production-bindings.json",
+      "sha256": "6b07a6f21b8375275af760e293164082fc39617c841dfe06dcec0a061b1936c6"
+    },
+    {
+      "file": "publish-review/sm1plus-two-four-sources-20261015-staging-before.json",
+      "sha256": "f4c5175b4df881f47a953cc31d6b1d2bdb53f3fe033f9ba12346c464c30de93a"
+    },
+    {
+      "file": "publish-review/sm1plus-two-four-sources-20261015-staging-bindings.json",
+      "sha256": "4716d69eb4517b79b092a39dc1885df1c68327df79dd0d72098ed8b652b16db5"
+    },
+    {
+      "file": "source-batches/sm1plus-two-approved-fronts-20261015/root-approved2-source-originals.json",
+      "sha256": "9f5b4f3a6a0ad916e04ab3a5636e50d219c9a08090823208f990281e1862750a"
+    },
+    {
+      "file": "source-batches/sm1plus-two-approved-fronts-20261015/root-finite2-preparation-publication-decision.json",
+      "sha256": "0fd57f13f1e5683a81beb901f607a26f3c4480fe97b22c03dded22d3ed822882"
+    },
+    {
+      "file": "publish-review/root-four-source-policy-checkpoint-after-aquapolis2-20261015.json",
+      "sha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f"
+    },
+    {
+      "file": "publish-review/sm1sharp2-independent-private-package-review-20261015.json",
+      "sha256": "efd91b72ecfd21b200211f733fddc569f47c7015fe3240ff478b612ddc277954"
+    },
+    {
+      "file": "publish-review/sm1sharp2-root-private-package-validation-20261015.json",
+      "sha256": "6a047e3c737f47280b29966ae077004ddcd5969e9197ae338a7ddf417ecd4884"
+    },
+    {
+      "file": "sm1sharp2-root-source-archive-binding.json",
+      "sha256": "55cd6ed30e662187e0c24ecd2ec77da96743af451759059a07615045dbacc92a"
+    },
+    {
+      "file": "sm1sharp2-root-upload-receipt.json",
+      "sha256": "e72d3db6f2e66d955a468cc79cd593ead131ad436fafa31e0d8cecb55b8a6010"
+    },
+    {
+      "file": "publish-review/sm1plus-two-independent-source-review-20261015.json",
+      "sha256": "84cd8726f5847b69dacdf855ea09ebec711ea1bc5421baa5f0befa6f4fd56537"
+    }
+  ],
+  "source_manifest_file": "sm1sharp2-fronts-source-manifest.json",
+  "source_manifest_sha256": "36c93fa4f6ddb4a3160279355b5fe82083d1b7f7ef5d338953c99d20422b3f7a",
+  "package_receipt_file": "sm1sharp2-fronts-package-receipt.json",
+  "package_receipt_sha256": "d8cfc4301452234f623b69d7467e4468e0f4ffa5f6529c0c73d0da6517e474e3",
+  "archive": {
+    "id": 645329722,
+    "sha256": "cedc81f0fa2859ae34335db3abf5844176d760a8e76d557f85c195242fc9737e",
+    "byte_size": 1683207,
+    "file_count": 12,
+    "name": "sm1sharp2-fronts-20261015.zip"
+  },
+  "unchanged_dependencies": [
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 9031,
+      "sha256": "5524305ba4bd6a0f3867ea2c097c57fb0d610e27ef1d9d64529b64e9c67249de"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/metadata-guard.mjs",
+      "bytes": 4018,
+      "sha256": "cca5354822fe11c007308f7d22ebf84649d2374619e0dd049c7347a9db9e116f"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/publish.mjs",
+      "bytes": 5885,
+      "sha256": "8451746bb6e188f56c5be31064742eaeecdc2f2c6d6e27cb31ab5c7227af6d1f"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "tools/artwork-next-push-20261013/frozen.mjs",
+      "bytes": 7732,
+      "sha256": "3e14eb76a012116492075328c50e6c5907f712004da02d4d3dae541d2617a95b"
+    },
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 30117,
+      "sha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24425,
+      "sha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 15024,
+      "sha256": "1d168e5407a5bdc6e027f58991de58a0664576d7c917d5b219fa13f9af4a1d0a"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/download-package.py",
+      "bytes": 5489,
+      "sha256": "53f1114f25bd995b4f05d9b2d3adad7ae2dadc85b4b13f038a84bcc5e7d6b09f"
+    }
+  ],
+  "staging_fixture_policy": {
+    "code": "pokellector",
+    "display_name": "Pokellector (owner supplied Japanese card fronts)",
+    "source_type": "image",
+    "base_url": "https://jp.pokellector.com",
+    "licence_status": "under_review",
+    "attribution_required": true,
+    "active": false,
+    "internal_notes": "Provenance only; automated acquisition inactive. Owner-attested supplied-site permission for exactly2 Neo2 Ruin Wall reference fronts in STACKR-JA-LEGACY-TRAINER-FRONTS-20261015-008; owner-permission-attestation SHA7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d. No source-wide approval or independently verified vendor licence.",
+    "deprecated_at": null
+  },
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "9f5b4f3a6a0ad916e04ab3a5636e50d219c9a08090823208f990281e1862750a",
+    "finiteDecisionFileByteSha256": "0fd57f13f1e5683a81beb901f607a26f3c4480fe97b22c03dded22d3ed822882",
+    "sourceHandoffFileByteSha256": "461cc760a4a1a78a46c0e51bbef1762a9874d34c1a087151c425d61238041a87",
+    "independentSourceReviewFileByteSha256": "84cd8726f5847b69dacdf855ea09ebec711ea1bc5421baa5f0befa6f4fd56537",
+    "fourSourceCheckpointFileByteSha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "afaa2f9e78af05686bb474d5f7f2f1a89886e7d22486cc62e44d72f386eb9af5",
+    "independentPrivatePackageReviewSha256": "efd91b72ecfd21b200211f733fddc569f47c7015fe3240ff478b612ddc277954",
+    "rootPrivatePackageValidationSha256": "6a047e3c737f47280b29966ae077004ddcd5969e9197ae338a7ddf417ecd4884",
+    "rootSourceArchiveBindingSha256": "55cd6ed30e662187e0c24ecd2ec77da96743af451759059a07615045dbacc92a",
+    "rootUploadReceiptSha256": "e72d3db6f2e66d955a468cc79cd593ead131ad436fafa31e0d8cecb55b8a6010"
+  }
+}

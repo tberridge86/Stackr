@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import { buildCardmarketReviewedLedger } from './cardmarket-reviewed-ledger.mjs';
+const base = id => ({ providerProductId: id, providerCategoryId: 51, printingId: `00000000-0000-4000-8000-${String(id).padStart(12, '0')}`, catalogueVersionId: '10000000-0000-4000-8000-000000000001', provenance: { rawRecordIds: ['raw'], payloadHashes: ['hash'], finishCodes: ['normal'] }, mappingTemplate: { languageEvidence: { languageCode: 'en' }, variantEvidence: { externalIds: ['xy-1'] }, finishEvidence: { type: 'blended_public_guide_not_exact_finish' } } });
+const duplicate = base(2); duplicate.printingId = base(1).printingId;
+const wrongCategory = base(3); wrongCategory.providerCategoryId = 99;
+const { ledger, receipt } = buildCardmarketReviewedLedger({ provenanceRunId: 'run', candidates: [base(1), duplicate, wrongCategory] }, { feeds: { products: { sha256: 'a'.repeat(64), createdAt: '2026-10-03T00:00:00Z' }, priceGuide: { sha256: 'b'.repeat(64), createdAt: '2026-10-04T00:00:00Z' } } });
+assert.equal(ledger.mappings.length, 0, 'every product sharing a printing is quarantined');
+assert.equal(receipt.quarantinedCount, 3);
+assert.deepEqual(receipt.quarantined.filter(item => item.reason === 'duplicate_canonical_target').map(item => item.providerProductId), [1, 2]);
+console.log('Cardmarket reviewed ledger quarantines every duplicate printing target and preserves retained-feed provenance.');

@@ -6,6 +6,7 @@ import {
 
 const TCGDEX_BASE_URL = process.env.TCGDEX_API_BASE_URL || 'https://api.tcgdex.net/v2';
 const TCGDEX_CACHE_TTL_MS = Number(process.env.TCGDEX_CACHE_TTL_MS || 10 * 60 * 1000);
+const TCGDEX_REQUEST_TIMEOUT_MS = Number(process.env.TCGDEX_REQUEST_TIMEOUT_MS || 8_000);
 const USD_TO_GBP = Number(process.env.USD_TO_GBP || 0.79);
 const EUR_TO_GBP = Number(process.env.EUR_TO_GBP || 0.86);
 const CONTROLLED_CARD_REFERENCE_LANGUAGES = new Set(['ja', 'zh-tw', 'zh-cn']);
@@ -117,7 +118,7 @@ function toGbp(value, unit) {
   return money(num * USD_TO_GBP);
 }
 
-async function fetchJson(path, { timeoutMs = null, isolateInflight = false, forceRefresh = false } = {}) {
+async function fetchJson(path, { timeoutMs = TCGDEX_REQUEST_TIMEOUT_MS, isolateInflight = false, forceRefresh = false } = {}) {
   const url = `${TCGDEX_BASE_URL.replace(/\/$/, '')}${path}`;
   const now = Date.now();
   const cached = tcgdexCache.get(url);
@@ -319,11 +320,11 @@ function getTcgplayerVariants(pricing) {
       lowGbp: toGbp(value.lowPrice, unit),
       midGbp: toGbp(value.midPrice, unit),
       highGbp: toGbp(value.highPrice, unit),
-      marketGbp: toGbp(value.marketPrice ?? value.midPrice ?? value.lowPrice, unit),
+      marketGbp: toGbp(value.marketPrice ?? value.midPrice, unit),
       directLowGbp: toGbp(value.directLowPrice, unit),
       externalProductId: value.productId ?? null,
     }))
-    .filter((entry) => entry.lowGbp != null || entry.midGbp != null || entry.marketGbp != null);
+    .filter((entry) => entry.midGbp != null || entry.marketGbp != null);
 }
 
 function getCardmarketVariants(pricing) {
@@ -347,7 +348,7 @@ function getCardmarketVariants(pricing) {
     average1Gbp: toGbp(cardmarket.avg1, unit),
     average7Gbp: toGbp(cardmarket.avg7, unit),
     average30Gbp: toGbp(cardmarket.avg30, unit),
-    marketGbp: toGbp(cardmarket.trend ?? cardmarket.avg30 ?? cardmarket.avg ?? cardmarket.low, unit),
+    marketGbp: toGbp(cardmarket.trend ?? cardmarket.avg30 ?? cardmarket.avg, unit),
     externalProductId: cardmarket.idProduct ?? null,
   };
   const holo = {
@@ -367,11 +368,11 @@ function getCardmarketVariants(pricing) {
     average1Gbp: toGbp(cardmarket['avg1-holo'], unit),
     average7Gbp: toGbp(cardmarket['avg7-holo'], unit),
     average30Gbp: toGbp(cardmarket['avg30-holo'], unit),
-    marketGbp: toGbp(cardmarket['trend-holo'] ?? cardmarket['avg30-holo'] ?? cardmarket['avg-holo'] ?? cardmarket['low-holo'], unit),
+    marketGbp: toGbp(cardmarket['trend-holo'] ?? cardmarket['avg30-holo'] ?? cardmarket['avg-holo'], unit),
     externalProductId: cardmarket.idProduct ?? null,
   };
 
-  return [standard, holo].filter((entry) => entry.marketGbp != null || entry.lowGbp != null);
+  return [standard, holo].filter((entry) => entry.marketGbp != null);
 }
 
 export function summariseTcgdexPricing(card, language = 'en') {
@@ -383,7 +384,7 @@ export function summariseTcgdexPricing(card, language = 'en') {
     : cardmarket[0] ?? null;
 
   return {
-    preferredGbp: preferred?.marketGbp ?? preferred?.averageGbp ?? preferred?.midGbp ?? preferred?.lowGbp ?? null,
+    preferredGbp: preferred?.marketGbp ?? preferred?.averageGbp ?? preferred?.midGbp ?? null,
     preferredSource: preferred?.source ?? null,
     preferredVariant: preferred?.variant ?? null,
     cardmarket,
@@ -561,14 +562,14 @@ function getTcgplayerPrice(pricing) {
       updated: tcgplayer.updated ?? null,
       productId: entry.productId ?? null,
     }))
-    .find((entry) => entry.market != null || entry.mid != null || entry.low != null);
+    .find((entry) => entry.market != null || entry.mid != null);
 
   if (!preferred) return null;
   return {
     source: 'tcgdex_tcgplayer',
     low: preferred.low,
-    mid: preferred.market ?? preferred.mid ?? preferred.low,
-    market: preferred.market ?? preferred.mid ?? preferred.low,
+    mid: preferred.market ?? preferred.mid,
+    market: preferred.market ?? preferred.mid,
     updatedAt: preferred.updated,
     externalProductId: preferred.productId,
   };
@@ -582,7 +583,7 @@ function getCardmarketPrice(pricing) {
   const avg30 = toGbp(cardmarket.avg30, unit);
   const avg = toGbp(cardmarket.avg, unit);
   const low = toGbp(cardmarket.low, unit);
-  const value = trend ?? avg30 ?? avg ?? low;
+  const value = trend ?? avg30 ?? avg;
   if (value == null) return null;
 
   return {
@@ -667,7 +668,7 @@ function resolveTcgdexPrice(card, language = 'ja') {
     tcg_low: preferred.source === 'tcgdex_tcgplayer' ? preferred.low : null,
     tcg_mid: preferred.source === 'tcgdex_tcgplayer' ? preferred.market : null,
     cardmarket_trend: preferred.source === 'tcgdex_cardmarket' ? preferred.market : null,
-    price: preferred.market ?? preferred.mid ?? preferred.low,
+    price: preferred.market ?? preferred.mid,
     priceSource: preferred.source,
     pricingUpdatedAt: preferred.updatedAt,
     externalProductId: preferred.externalProductId,
@@ -690,7 +691,8 @@ function summariseTcgdexPriceEntry(card, lang, preferred) {
   if (!preferred) return null;
   const sourceCurrency = String(preferred.currency ?? '').toUpperCase();
   if (!['GBP', 'EUR', 'USD'].includes(sourceCurrency)) return null;
-  const price = preferred.marketGbp ?? preferred.averageGbp ?? preferred.midGbp ?? preferred.lowGbp;
+  // A lowest asking price is a range field, not a provider market estimate.
+  const price = preferred.marketGbp ?? preferred.averageGbp ?? preferred.midGbp;
   if (!Number.isFinite(price) || price <= 0) return null;
   let responseLanguage;
   try { responseLanguage = card?.language == null ? lang : normalizeLanguage(card.language); } catch { return null; }
@@ -743,7 +745,7 @@ export function summariseTcgdexExactVariantPricing(card, language, variantCode =
   }
   if (matches.length !== 1) return null;
   const entry = matches[0];
-  const price = entry.marketGbp ?? entry.midGbp ?? entry.lowGbp;
+  const price = entry.marketGbp ?? entry.midGbp;
   if (!Number.isFinite(price) || price <= 0 || !['GBP','USD','EUR'].includes(String(entry.currency).toUpperCase())) return null;
   return { providerCardId: card.id, providerSetId: card.set?.id, language: card.language ?? language, number: card.localId,
     variantCode, price, priceSource: entry.source, sourceCurrency: entry.currency, pricingUpdatedAt: entry.updatedAt,

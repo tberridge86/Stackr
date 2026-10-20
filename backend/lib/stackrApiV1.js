@@ -1,6 +1,10 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { Buffer } from 'node:buffer';
-import { getEnglishCardDisplayName } from './cardDisplayNames.js';
+import { getEnglishCardDisplaySupplement } from './cardDisplayNames.js';
+import { findNativeCardNamesForEnglishQuery, normalizeCardEnglishSearchText } from './cardNameTranslations.js';
+import { matchesPokedexSpeciesName, normalisePokedexName, pokedexCardLookupName } from './pokedexCards.js';
+import { correctedCatalogueCardId, correctedCatalogueSetId, CORRECTION_LANGUAGE } from './catalogueLanguageCorrections.js';
+import { catalogueReadSignal, observeCatalogueManifestRead, readCatalogueQuery } from './traceContext.js';
 
 export const STACKR_API_V1 = '1';
 export const DEFAULT_CATALOGUE_CACHE_CONTROL = 'public, max-age=60, stale-while-revalidate=300';
@@ -10,6 +14,8 @@ export const SUPPORTED_LANGUAGE_CODES = ['en', 'ja', 'zh-tw', 'zh-cn', 'ko'];
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const EXACT_NAME_TYPES = new Set(['native', 'english_display']);
 const ALIAS_NAME_TYPES = new Set(['alias', 'translated', 'search_normalized']);
+const POKEDEX_EMPTY_SOURCE_PAGE_LIMIT = 4;
+const OPTIONAL_CARD_ARTWORK_TIMEOUT_MS = 500;
 const SAME_ARTWORK_DISPLAY_REFERENCE_LIMIT = 50;
 const SAME_ARTWORK_MAX_WIDTH = 512;
 const SAME_ARTWORK_MAX_HEIGHT = 720;
@@ -164,14 +170,14 @@ function table(supabase, schema, name) {
   return supabase.schema(schema).from(name);
 }
 
-async function queryRows(query) {
-  const { data, error } = await query;
+async function queryRows(query, signal) {
+  const { data, error } = await readCatalogueQuery(query, signal);
   if (error) throw error;
   return data ?? [];
 }
 
 async function queryMaybeOne(query) {
-  const { data, error } = await query;
+  const { data, error } = await readCatalogueQuery(query);
   if (error) throw error;
   return data ?? null;
 }
@@ -473,6 +479,7 @@ async function fetchCardImageAssets(assetSupabase, cards, options = {}) {
             .order('catalogue_version_id', { ascending: true })
             .order('asset_row_id', { ascending: true })
             .range(from, from + pageSize - 1),
+          options.signal,
         );
         rows.push(...page);
         if (page.length < pageSize) break;
@@ -496,7 +503,7 @@ async function fetchCardImageAssets(assetSupabase, cards, options = {}) {
             p_after_asset_id: cursor?.assetRowId ?? null,
             p_limit: 1000,
           },
-        ));
+        ), options.signal);
         rows.push(...page);
         if (page.length < 1000) break;
         const nextCursor = manifestCursorFromRow(page.at(-1));
@@ -519,6 +526,7 @@ async function fetchCardImageAssets(assetSupabase, cards, options = {}) {
     ]);
     fetchedRows = [...variantRows, ...printingRows];
   }
+  options.signal?.throwIfAborted();
   const uniqueRows = new Map();
   for (const row of fetchedRows) {
     const rowId = clean(row?.asset_row_id) ?? clean(row?.asset_id);
@@ -569,6 +577,34 @@ async function fetchCardImageAssets(assetSupabase, cards, options = {}) {
       };
     }),
   }));
+}
+
+async function enrichCardImagesOptionally(assetSupabase, cards, options) {
+  if (!cards.length) return cards;
+  const controller = new AbortController();
+  let timeout;
+  const deadline = new Promise((_, reject) => {
+    timeout = setTimeout(() => {
+      reject(new ApiError(504, 'card_artwork_timeout', 'Optional card artwork timed out.'));
+      controller.abort();
+    }, OPTIONAL_CARD_ARTWORK_TIMEOUT_MS);
+  });
+  try {
+    // Identity facts are already usable. An optional image read (including its
+    // body) must not turn those cards into an unavailable response.
+    return await Promise.race([
+      fetchCardImageAssets(assetSupabase, cards, { ...options, signal: controller.signal }),
+      deadline,
+    ]);
+  } catch (error) {
+    catalogueReadSignal()?.throwIfAborted();
+    const code = typeof error?.code === 'string' && /^[A-Za-z0-9_]{1,64}$/.test(error.code) ? error.code : null;
+    console.warn(JSON.stringify({ event: 'optional_card_artwork_failed', code }));
+    return cards;
+  } finally {
+    clearTimeout(timeout);
+    controller.abort();
+  }
 }
 
 export function toLanguage(row) {
@@ -641,26 +677,21 @@ export function toVariant(row) {
 }
 
 function cardEnglishDisplay(row) {
-  const printing = getEnglishCardDisplayName({
+  const supplement = getEnglishCardDisplaySupplement({
     id: row.printing_id,
     setId: row.set_id,
     collectorNumber: row.collector_number,
     language: row.language_code,
     localName: row.card_native_name,
     englishDisplayName: row.card_english_display_name,
+    englishDisplayProvenance: row.card_english_display_provenance,
+    raw: { english_display_name: row.concept_english_display_name },
   });
-  if (printing) return { value: printing, source: 'printing' };
-  const concept = getEnglishCardDisplayName({
-    id: row.printing_id,
-    setId: row.set_id,
-    collectorNumber: row.collector_number,
-    language: row.language_code,
-    localName: row.card_native_name,
-    englishDisplayName: row.concept_english_display_name,
-  });
-  return concept
-    ? { value: concept, source: 'concept' }
-    : { value: null, source: null };
+  if (!supplement) return { value: null, source: null, supplement: null };
+  const source = supplement.provenance === 'explicit_english_metadata'
+    && supplement.value === row.concept_english_display_name
+    && supplement.value !== row.card_english_display_name ? 'concept' : 'printing';
+  return { value: supplement.value, source, supplement };
 }
 
 export function toCardSummary(rows) {
@@ -693,6 +724,7 @@ export function toCardSummary(rows) {
       native: row.card_native_name,
       englishDisplay: englishDisplay.value,
       englishDisplaySource: englishDisplay.source,
+      englishSupplement: englishDisplay.supplement,
     },
     details: {
       supertype: row.supertype ?? null,
@@ -775,6 +807,27 @@ async function fetchCardRowsByVariants(supabase, variantIds) {
     .limit(Math.max(ids.length, 1) * 4));
 }
 
+async function fetchPublishedPokemonCardRows(supabase, printingIds, language) {
+  const ids = [...new Set(printingIds.filter(Boolean))];
+  if (!ids.length) return [];
+  const rows = [];
+  let afterVariantId = null;
+  do {
+    let query = table(supabase, 'api', 'catalogue_cards')
+      .select('*')
+      .in('printing_id', ids)
+      .eq('game_code', 'pokemon')
+      .order('variant_id', { ascending: true })
+      .limit(501);
+    query = applyLanguageFilter(query, language);
+    if (afterVariantId) query = query.gt('variant_id', afterVariantId);
+    const page = await queryRows(query);
+    rows.push(...page.slice(0, 500));
+    afterVariantId = page.length > 500 ? clean(page[499]?.variant_id) : null;
+  } while (afterVariantId);
+  return rows;
+}
+
 async function fetchCardRowsByPrintings(supabase, printingIds) {
   const ids = [...new Set(printingIds.filter(Boolean))];
   if (!ids.length) return [];
@@ -852,6 +905,7 @@ function sortCardsForDisplay(rows) {
 }
 
 async function searchCanonicalId(supabase, parsed, limit) {
+  if (isUuid(parsed.raw)) parsed = { ...parsed, raw: correctedCatalogueCardId(parsed.raw) };
   const exact = [];
   if (isCanonicalCatalogueKey(parsed.raw)) {
     exact.push(...await queryRows(table(supabase, 'api', 'catalogue_cards')
@@ -1051,6 +1105,50 @@ async function searchFuzzyName(supabase, parsed, limit, language) {
   });
 }
 
+/** Query only published native-name candidates, then verify each actual printing. */
+export async function searchPublishedEnglishTranslations(supabase, query, limit, language, selectedSetId = null, signal = null) {
+  const needle = normalizeCardEnglishSearchText(query);
+  const matches = findNativeCardNamesForEnglishQuery(query, language);
+  if (!needle || !matches.length) return [];
+  const languages = [...new Set(matches.map((match) => match.language))];
+  const pages = await Promise.all(languages.map(async (code) => {
+    const nativeNames = [...new Set(matches.filter((match) => match.language === code).map((match) => match.nativeName))].slice(0, 80);
+    let request = table(supabase, 'api', 'catalogue_cards').select('*')
+      .eq('language_code', code).in('card_native_name', nativeNames)
+      .order('variant_id', { ascending: true }).limit(Math.min(500, limit * 4));
+    if (selectedSetId) request = request.eq('set_id', selectedSetId);
+    return queryRows(request, signal);
+  }));
+  return dedupeByVariant(pages.flat()).filter((row) => (
+    (!language || row.language_code === language) && (!selectedSetId || row.set_id === selectedSetId)
+  )).flatMap((row) => {
+    const supplement = getEnglishCardDisplaySupplement({ id: row.printing_id, language: row.language_code,
+      localName: row.card_native_name, englishDisplayName: row.card_english_display_name,
+      englishDisplayProvenance: row.card_english_display_provenance });
+    const translated = normalizeCardEnglishSearchText(supplement?.value);
+    if (!translated || !translated.includes(needle)) return [];
+    return [toSearchResult(row, translated === needle ? 'exact_translated_name' : 'fuzzy_name', {
+      matchedName: supplement.value, matchedNameType: 'published_english_translation',
+    })];
+  }).slice(0, limit);
+}
+
+export function mergePublishedTranslationSearchResults(stored, translated, limit) {
+  const merged = [];
+  const seen = new Set();
+  for (let index = 0; index < Math.max(stored.length, translated.length); index++) {
+    for (const result of [stored[index], translated[index]]) {
+      if (!result) continue;
+      const key = result.variantId ?? result.cardId ?? result.setId;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      merged.push(result);
+      if (merged.length === limit) return merged;
+    }
+  }
+  return merged;
+}
+
 export function searchFixtureCatalogue(query, fixture, options = {}) {
   const parsed = parseSearchQuery(query, options);
   const limit = parseLimit(options.limit, 20, 100);
@@ -1146,6 +1244,17 @@ export function searchFixtureCatalogue(query, fixture, options = {}) {
   return results.slice(0, limit);
 }
 
+function parsePrintingIds(value) {
+  if (typeof value !== 'string') {
+    throw new ApiError(400, 'invalid_printing_ids', 'printingIds must contain between 1 and 100 canonical UUIDs.');
+  }
+  const ids = value.split(',').map((item) => item.trim());
+  if (!ids.length || ids.length > 100 || ids.some((id) => !id || !isUuid(id))) {
+    throw new ApiError(400, 'invalid_printing_ids', 'printingIds must contain between 1 and 100 canonical UUIDs.');
+  }
+  return [...new Set(ids.map((id) => id.toLowerCase()))];
+}
+
 export function createCatalogueV1Service(options) {
   const supabase = options.supabase;
   const searchSupabase = options.searchSupabase ?? supabase;
@@ -1202,18 +1311,18 @@ export function createCatalogueV1Service(options) {
 
     async manifest() {
       const [versions, latest, languages] = await Promise.all([
-        queryRows(table(supabase, 'api', 'published_catalogue_versions')
+        observeCatalogueManifestRead('manifest_versions', () => queryRows(table(supabase, 'api', 'published_catalogue_versions')
           .select('id,version_key,version_label,language_code,min_change_sequence,max_change_sequence,published_at,updated_at,language_sort_order')
           .order('language_sort_order', { ascending: true })
-          .order('language_code', { ascending: true })),
-        queryMaybeOne(table(supabase, 'api', 'catalogue_delta_changes')
+          .order('language_code', { ascending: true }))),
+        observeCatalogueManifestRead('manifest_latest_change', () => queryMaybeOne(table(supabase, 'api', 'catalogue_delta_changes')
           .select('change_sequence')
           .order('change_sequence', { ascending: false })
           .limit(1)
-          .maybeSingle()),
-        queryRows(table(supabase, 'api', 'catalogue_languages')
+          .maybeSingle())),
+        observeCatalogueManifestRead('manifest_languages', () => queryRows(table(supabase, 'api', 'catalogue_languages')
           .select('code,bcp47_code,english_name,native_name,script_code,sort_order')
-          .order('sort_order', { ascending: true })),
+          .order('sort_order', { ascending: true }))),
       ]);
       const currentCatalogueVersion = versions.length
         ? versions.map((version) => version.version_key).join('|')
@@ -1306,16 +1415,25 @@ export function createCatalogueV1Service(options) {
 
     async set(setId) {
       if (!isUuid(setId)) throw new ApiError(400, 'invalid_set_id', 'setId must be a canonical UUID.');
+      const originalSetId = setId;
+      setId = correctedCatalogueSetId(setId);
       const row = await queryMaybeOne(table(supabase, 'api', 'catalogue_sets')
         .select('*')
         .eq('set_id', setId)
         .maybeSingle());
       if (!row) throw new ApiError(404, 'set_not_found', 'Set was not found.');
+      if (setId !== originalSetId && row.language_code !== CORRECTION_LANGUAGE) throw new ApiError(502, 'invalid_language_correction', 'The reviewed correction target is unavailable.');
       return { set: toSet(row) };
     },
 
     async setCards(setId, input = {}) {
       if (!isUuid(setId)) throw new ApiError(400, 'invalid_set_id', 'setId must be a canonical UUID.');
+      const targetSetId = correctedCatalogueSetId(setId);
+      const isLanguageCorrection = targetSetId !== setId;
+      if (targetSetId !== setId) {
+        setId = targetSetId;
+        input = { ...input, language: CORRECTION_LANGUAGE };
+      }
       const limit = parseLimit(input.limit, 120, 500);
       let query = table(supabase, 'api', 'catalogue_cards')
         .select('*')
@@ -1328,9 +1446,10 @@ export function createCatalogueV1Service(options) {
       // this predicate Postgres can walk every published version's variants
       // before applying the set filter, even for a tiny binder page.
       const publishedSet = await queryMaybeOne(table(supabase, 'api', 'catalogue_sets')
-        .select('catalogue_version_id')
+        .select('catalogue_version_id,language_code')
         .eq('set_id', setId)
         .maybeSingle());
+      if (isLanguageCorrection && (!publishedSet || publishedSet.language_code !== CORRECTION_LANGUAGE)) throw new ApiError(502, 'invalid_language_correction', 'The reviewed correction target is unavailable.');
       if (!publishedSet) return { cards: [], pagination: { limit, nextCursor: null } };
       if (!isUuid(publishedSet.catalogue_version_id)) {
         throw new ApiError(502, 'catalogue_version_unavailable', 'The published set catalogue version is unavailable.');
@@ -1341,8 +1460,67 @@ export function createCatalogueV1Service(options) {
       return { cards: await fetchCardImageAssets(assetSupabase, cards, assetUrlOptions), pagination };
     },
 
+    async pokemonCards(pokemonName, input = {}) {
+      const name = clean(pokemonName);
+      const normalizedName = normalisePokedexName(name);
+      if (!name || !normalizedName || name.length > 120 || /[\u0000-\u001f\u007f]/.test(name)) {
+        throw new ApiError(400, 'invalid_pokemon_name', 'name must be a valid Pokémon species or form name.');
+      }
+      const limit = parseLimit(input.limit, 120, 250);
+      const language = clean(input.language);
+      if (language && !SUPPORTED_LANGUAGE_CODES.includes(language)) {
+        throw new ApiError(400, 'invalid_language', 'Unsupported catalogue language.');
+      }
+
+      // Published names are the cross-language bridge. A token-boundary check
+      // below accepts only an explicit English species/form match, while still
+      // covering native English, reviewed translations and aliases. A cursor
+      // advances through source rows (not assembled cards), ensuring a later
+      // page can never hide an unexamined matching printing.
+      // Published catalogues sometimes normalize gender glyphs away. Search
+      // their ungendered source token too, then restore the strict form check
+      // in `matchesPokedexSpeciesName` below.
+      const lookupName = pokedexCardLookupName(normalizedName);
+      const contains = lookupName.replace(/[%_]/g, ' ').replace(/\s+/g, '%');
+      let cursor = input.cursor;
+      for (let page = 0; page < POKEDEX_EMPTY_SOURCE_PAGE_LIMIT; page += 1) {
+        let namesQuery = table(searchSupabase, 'api', 'catalogue_card_names')
+          .select('id,printing_id,name,normalized_name')
+          .in('name_type', [...EXACT_NAME_TYPES, ...ALIAS_NAME_TYPES])
+          .ilike('normalized_name', `%${contains}%`)
+          .order('id', { ascending: true })
+          .limit(limit + 1);
+        namesQuery = applyIdCursor(namesQuery, 'id', cursor);
+        const sourceRows = await queryRows(namesQuery);
+        const { rows: pageNames, pagination } = pageFromRows(sourceRows, limit, 'id');
+        const printingIds = [...new Set(pageNames
+          .filter((row) => matchesPokedexSpeciesName(normalizedName, row.name ?? row.normalized_name))
+          .map((row) => row.printing_id)
+          .filter(Boolean))];
+
+        // Name-source pagination must never skip a matched printing because it
+        // has many variants. Exhaust only this source page's printing IDs.
+        const rows = await fetchPublishedPokemonCardRows(searchSupabase, printingIds, language);
+        // A published alias can be wrong. Explicit Trainer/Energy identities
+        // must never become species cards merely because a name matches.
+        const pokemonRows = rows.filter((row) => !['trainer', 'energy'].includes(
+          String(row.supertype ?? '').normalize('NFKC').trim().toLowerCase(),
+        ));
+        const cards = groupCardRows(sortCardsForDisplay(pokemonRows));
+        // Reach useful facts when an early alias or language-filtered slice is
+        // empty, without scanning the entire species in one request. A bounded
+        // empty response retains its cursor and cannot imply an empty total.
+        if (cards.length || !pagination.nextCursor || page === POKEDEX_EMPTY_SOURCE_PAGE_LIMIT - 1) {
+          return { cards, pagination };
+        }
+        cursor = pagination.nextCursor;
+      }
+    },
+
     async card(cardId) {
       if (!isUuid(cardId)) throw new ApiError(400, 'invalid_card_id', 'cardId must be a canonical UUID.');
+      const originalCardId = cardId;
+      cardId = correctedCatalogueCardId(cardId);
       let rows = await queryRows(table(supabase, 'api', 'catalogue_cards')
         .select('*')
         .eq('printing_id', cardId)
@@ -1354,7 +1532,8 @@ export function createCatalogueV1Service(options) {
           .limit(50));
       }
       if (!rows.length) throw new ApiError(404, 'card_not_found', 'Card was not found.');
-      const [card] = await fetchCardImageAssets(
+      if (cardId !== originalCardId && rows.some(row => row.language_code !== CORRECTION_LANGUAGE)) throw new ApiError(502, 'invalid_language_correction', 'The reviewed correction target is unavailable.');
+      const [card] = await enrichCardImagesOptionally(
         assetSupabase,
         [toCardSummary(sortCardsForDisplay(rows))].filter(Boolean),
         assetUrlOptions,
@@ -1421,6 +1600,15 @@ export function createCatalogueV1Service(options) {
     },
 
     async assetManifest(input = {}) {
+      const printingId = clean(input.printingId);
+      if (printingId && !isUuid(printingId)) {
+        throw new ApiError(400, 'invalid_printing_id', 'printingId must be a canonical UUID.');
+      }
+      const printingIdsInput = clean(input.printingIds);
+      if (printingId && printingIdsInput) {
+        throw new ApiError(400, 'ambiguous_printing_filter', 'printingId and printingIds cannot be used together.');
+      }
+      const printingIds = printingIdsInput ? parsePrintingIds(printingIdsInput) : null;
       const limit = parseLimit(input.limit, 250, 1000);
       const cursor = parseCursor(input.cursor);
       if (cursor && (!isUuid(cursor.catalogueVersionId) || !isUuid(cursor.assetRowId))) {
@@ -1429,8 +1617,8 @@ export function createCatalogueV1Service(options) {
       // Identity predicates on the full manifest expand inherited
       // identities across the catalogue. Card fallback requests can use the
       // existing bounded RPC without changing the generic manifest contract.
-      const printingOnly = isUuid(input.printingId) && !clean(input.variantId);
-      const variantOnly = isUuid(input.variantId) && !clean(input.printingId);
+      const printingOnly = (isUuid(printingId) || printingIds) && !clean(input.variantId);
+      const variantOnly = isUuid(input.variantId) && !printingId && !printingIds;
       if (assetUrlOptions.assetIdentityRpc && input.assetType === 'card_image'
         && (printingOnly || variantOnly) && !clean(input.setId)) {
         const rows = [];
@@ -1440,7 +1628,7 @@ export function createCatalogueV1Service(options) {
           const batch = await queryRows(assetSupabase.schema('api').rpc(
             'card_image_manifest_for_identities', {
               p_variant_ids: variantOnly ? [clean(input.variantId)] : [],
-              p_printing_ids: printingOnly ? [clean(input.printingId)] : [],
+              p_printing_ids: printingOnly ? (printingIds ?? [printingId]) : [],
               p_after_version_id: after?.catalogueVersionId ?? null,
               p_after_asset_id: after?.assetRowId ?? null,
               p_limit: pageSize,
@@ -1471,6 +1659,7 @@ export function createCatalogueV1Service(options) {
       if (clean(input.assetType)) query = query.eq('asset_type', clean(input.assetType));
       if (clean(input.setId)) query = query.eq('set_id', clean(input.setId));
       if (clean(input.printingId)) query = query.eq('printing_id', clean(input.printingId));
+      if (printingIds) query = query.in('printing_id', printingIds);
       if (clean(input.variantId)) query = query.eq('variant_id', clean(input.variantId));
       if (cursor) {
         const catalogueVersionId = clean(cursor.catalogueVersionId);
@@ -1506,17 +1695,33 @@ export function createCatalogueV1Service(options) {
       if (!q || (q.length < 2 && !shortSetCollector)) throw new ApiError(400, 'invalid_search_query', 'Search query must contain at least two characters, or a collector identifier within a selected set.');
       if (q.length > 160) throw new ApiError(400, 'invalid_search_query', 'Search query is too long.');
       const limit = parseLimit(input.limit, 20, 100);
-      const language = clean(input.language);
+      let language = clean(input.language);
       if (language && !SUPPORTED_LANGUAGE_CODES.includes(language)) {
         throw new ApiError(400, 'invalid_language', 'Unsupported catalogue language.');
       }
-      const selectedSetId = clean(input.setId);
+      let selectedSetId = clean(input.setId);
       if (selectedSetId && !isUuid(selectedSetId)) throw new ApiError(400, 'invalid_set_id', 'setId must be a canonical UUID.');
+      const targetSetId = selectedSetId ? correctedCatalogueSetId(selectedSetId) : null;
+      if (targetSetId !== selectedSetId || (isUuid(q) && correctedCatalogueCardId(q) !== q)) {
+        selectedSetId = targetSetId;
+        language = CORRECTION_LANGUAGE;
+      }
       const parsed = parseSearchQuery(q, { setId: selectedSetId });
       const requestedSetIds = parsed.setCode && parsed.setCollectorNumber
         ? await fetchSetIdsByCode(searchSupabase, parsed.setCode, language) : null;
       const exactSetCollector = () => searchSetCodeCollector(searchSupabase, parsed, limit, language,
         options.collectorIdentityLookup === true, requestedSetIds);
+      const nameInSet = () => searchNameWithSetCode(searchSupabase, parsed, limit, language);
+      const nameStrategies = [
+        () => searchNames(searchSupabase, parsed, limit, language, EXACT_NAME_TYPES, () => 'exact_name'),
+        () => searchNames(searchSupabase, parsed, limit, language, ALIAS_NAME_TYPES, (type) => type === 'alias' ? 'exact_alias' : 'exact_translated_name'),
+        () => searchFuzzyName(searchSupabase, parsed, limit, language),
+      ];
+      let translationResults;
+      const translatedNames = async () => {
+        translationResults ??= await searchPublishedEnglishTranslations(searchSupabase, q, limit, language, selectedSetId);
+        return translationResults;
+      };
 
       const strategies = requestedSetIds?.length ? [exactSetCollector] : [
         () => searchCanonicalId(searchSupabase, parsed, limit),
@@ -1528,21 +1733,49 @@ export function createCatalogueV1Service(options) {
         // A set code containing digits is also a possible collector token.
         // Resolve the exact name/set pair before attempting a catalogue-wide
         // collector fallback for queries such as "Pinsir sv08.5".
-        () => searchNameWithSetCode(searchSupabase, parsed, limit, language),
+        nameInSet,
         () => searchCollectorNumber(searchSupabase, parsed, limit, language, selectedSetId, options.collectorIdentityLookup === true),
-        () => searchNames(searchSupabase, parsed, limit, language, EXACT_NAME_TYPES, () => 'exact_name'),
-        () => searchNames(searchSupabase, parsed, limit, language, ALIAS_NAME_TYPES, (type) => type === 'alias' ? 'exact_alias' : 'exact_translated_name'),
-        () => searchFuzzyName(searchSupabase, parsed, limit, language),
+        ...nameStrategies,
+        translatedNames,
       ];
 
       for (const strategy of strategies) {
-        const results = (await strategy()).filter((result) => (
+        let results = (await strategy()).filter((result) => (
           (!language || result.languageCode === language)
           && (!selectedSetId || result.setId === selectedSetId)
         ));
+        if (results.length && (strategy === nameInSet || nameStrategies.includes(strategy))) {
+          // Optional aliases must not erase a successful stored-name search.
+          // Abort the optional published-view enrichment after 450ms; the sole
+          // translation fallback still exposes genuine database failures.
+          const controller = new AbortController();
+          let timeout;
+          const deadline = new Promise((_, reject) => {
+            timeout = setTimeout(() => {
+              controller.abort();
+              reject(new ApiError(504, 'translation_search_timeout', 'Optional translation search timed out.'));
+            }, 450);
+          });
+          try {
+            // Race consumes later transport failures and prevents a late page
+            // from changing the already-returned stored-result snapshot.
+            translationResults ??= await Promise.race([
+              searchPublishedEnglishTranslations(searchSupabase, q, limit, language, selectedSetId, controller.signal),
+              deadline,
+            ]);
+            results = mergePublishedTranslationSearchResults(results, translationResults, limit);
+          } catch (error) {
+            catalogueReadSignal()?.throwIfAborted();
+            const code = typeof error?.code === 'string' && /^[A-Za-z0-9_]{1,64}$/.test(error.code) ? error.code : null;
+            console.warn(JSON.stringify({ event: 'optional_translation_search_failed', code }));
+          } finally {
+            clearTimeout(timeout);
+            controller.abort();
+          }
+        }
         if (results.length) {
           const cards = results.filter((result) => result.type === 'card' && result.card).map((result) => result.card);
-          const hydratedCards = await fetchCardImageAssets(assetSupabase, cards, assetUrlOptions);
+          const hydratedCards = await enrichCardImagesOptionally(assetSupabase, cards, assetUrlOptions);
           let cardIndex = 0;
           return {
             query: q,

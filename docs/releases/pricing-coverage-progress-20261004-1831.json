@@ -1,0 +1,539 @@
+{
+  "recordedAt": "2026-10-04T18:31:55.530092Z",
+  "combinedCoverage": {
+    "basis": "Independent bounded current physical language reads; exact TCGCSV variant quotes and reviewed Cardmarket printing-scoped general estimates counted once.",
+    "atomic": false,
+    "measuredBetween": [
+      "2026-10-04T17:43:45.306962Z",
+      "2026-10-04T17:44:04.293691Z"
+    ],
+    "total": 76269,
+    "priced": 29845,
+    "percent": 39.13123287312014,
+    "baselinePriced": 29099,
+    "netNew": 746,
+    "languages": [
+      {
+        "language": "en",
+        "total": 33359,
+        "priced": 18461
+      },
+      {
+        "language": "ja",
+        "total": 14100,
+        "priced": 7320
+      },
+      {
+        "language": "ko",
+        "total": 239,
+        "priced": 10
+      },
+      {
+        "language": "zh-cn",
+        "total": 20405,
+        "priced": 0
+      },
+      {
+        "language": "zh-tw",
+        "total": 8166,
+        "priced": 4054
+      }
+    ]
+  },
+  "thisContinuation": {
+    "newExactPrimaryQuotes": 122,
+    "newlyPricedCombinedVariants": 75,
+    "batches": [
+      {
+        "id": "20261004-05",
+        "providerGroups": [
+          1411,
+          1429
+        ],
+        "quoted": 109,
+        "netCombinedGain": 73
+      },
+      {
+        "id": "20261004-06",
+        "providerGroups": [
+          1433
+        ],
+        "quoted": 13,
+        "netCombinedGain": 2
+      }
+    ],
+    "cumulativeNewExactPrimaryQuotes": 1083
+  },
+  "pagedPrimaryReport": {
+    "groups": [
+      {
+        "category_id": 3,
+        "status": "complete",
+        "total": 135
+      },
+      {
+        "category_id": 3,
+        "status": "unmapped",
+        "total": 85
+      },
+      {
+        "category_id": 85,
+        "status": "complete",
+        "total": 163
+      },
+      {
+        "category_id": 85,
+        "status": "unmapped",
+        "total": 296
+      }
+    ],
+    "openRepairs": 45991,
+    "runStatus": "needs_mapping",
+    "diagnostics": {
+      "pages": 39,
+      "scanned": 76317,
+      "catalogueVersions": [
+        {
+          "language_code": "en",
+          "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+        },
+        {
+          "language_code": "ja",
+          "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+        },
+        {
+          "language_code": "ko",
+          "id": "159eb902-143c-42ef-b682-93ba5f9e81f2"
+        },
+        {
+          "language_code": "zh-cn",
+          "id": "79f43e8f-7062-4d29-8571-569eccb7c249"
+        },
+        {
+          "language_code": "zh-tw",
+          "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e"
+        }
+      ],
+      "observedAtBegin": "2026-10-04T18:30:53.212593+00:00",
+      "observedAtEnd": "2026-10-04T18:31:55.530092+00:00",
+      "atomic": false
+    },
+    "totals": {
+      "total": 76269,
+      "supported": 46219,
+      "mapped": 24966,
+      "unmapped": 21253,
+      "priced": 21599,
+      "stale": 0,
+      "missing_quote": 3350,
+      "retry": 0,
+      "unsupported": 30050
+    },
+    "pageTiming": [
+      {
+        "page": 1,
+        "ms": 6323,
+        "scanned": 2000,
+        "sets": 444,
+        "observedAt": "2026-10-04T18:30:53.212593+00:00",
+        "nextAfter": "067b959d-fed4-45dc-9bf0-f31a2f8c7aef",
+        "complete": false
+      },
+      {
+        "page": 2,
+        "ms": 2289,
+        "scanned": 2000,
+        "sets": 442,
+        "observedAt": "2026-10-04T18:30:59.537217+00:00",
+        "nextAfter": "0d21bd9d-f70f-4671-898f-278daad9cda2",
+        "complete": false
+      },
+      {
+        "page": 3,
+        "ms": 1676,
+        "scanned": 2000,
+        "sets": 452,
+        "observedAt": "2026-10-04T18:31:01.695981+00:00",
+        "nextAfter": "13daa524-10fe-44a5-b21b-2db31d5c95a7",
+        "complete": false
+      },
+      {
+        "page": 4,
+        "ms": 1631,
+        "scanned": 2000,
+        "sets": 450,
+        "observedAt": "2026-10-04T18:31:03.453885+00:00",
+        "nextAfter": "1aa99092-d168-4e9a-82b2-a04e1d4c5ee9",
+        "complete": false
+      },
+      {
+        "page": 5,
+        "ms": 1697,
+        "scanned": 2000,
+        "sets": 456,
+        "observedAt": "2026-10-04T18:31:05.214578+00:00",
+        "nextAfter": "21877a53-adce-49e8-8c2b-0a61de2a8c5e",
+        "complete": false
+      },
+      {
+        "page": 6,
+        "ms": 1770,
+        "scanned": 2000,
+        "sets": 433,
+        "observedAt": "2026-10-04T18:31:07.415022+00:00",
+        "nextAfter": "287a2ed2-32d9-4ea4-b812-d288d1f2238f",
+        "complete": false
+      },
+      {
+        "page": 7,
+        "ms": 1161,
+        "scanned": 2000,
+        "sets": 454,
+        "observedAt": "2026-10-04T18:31:08.626518+00:00",
+        "nextAfter": "2f423dd4-1970-4d87-a2f5-aba4cd16617b",
+        "complete": false
+      },
+      {
+        "page": 8,
+        "ms": 1567,
+        "scanned": 2000,
+        "sets": 444,
+        "observedAt": "2026-10-04T18:31:10.214853+00:00",
+        "nextAfter": "3632f509-34ba-4984-8305-4ebd8d06a9f1",
+        "complete": false
+      },
+      {
+        "page": 9,
+        "ms": 1296,
+        "scanned": 2000,
+        "sets": 451,
+        "observedAt": "2026-10-04T18:31:11.519778+00:00",
+        "nextAfter": "3d04bc9f-a00d-4c5c-bb38-bab20d05bd6c",
+        "complete": false
+      },
+      {
+        "page": 10,
+        "ms": 1582,
+        "scanned": 2000,
+        "sets": 445,
+        "observedAt": "2026-10-04T18:31:13.078228+00:00",
+        "nextAfter": "43aba730-f276-4a64-881d-5dfe8f4ba298",
+        "complete": false
+      },
+      {
+        "page": 11,
+        "ms": 1578,
+        "scanned": 2000,
+        "sets": 439,
+        "observedAt": "2026-10-04T18:31:14.557854+00:00",
+        "nextAfter": "4a8a24e0-6163-48bf-a8f5-59768101e2b3",
+        "complete": false
+      },
+      {
+        "page": 12,
+        "ms": 2236,
+        "scanned": 2000,
+        "sets": 442,
+        "observedAt": "2026-10-04T18:31:16.157083+00:00",
+        "nextAfter": "512af4fc-22b6-456f-8a00-d4190899181f",
+        "complete": false
+      },
+      {
+        "page": 13,
+        "ms": 1457,
+        "scanned": 2000,
+        "sets": 438,
+        "observedAt": "2026-10-04T18:31:18.00077+00:00",
+        "nextAfter": "57da37ac-c20f-4d67-9104-7c8944bd5ff9",
+        "complete": false
+      },
+      {
+        "page": 14,
+        "ms": 1943,
+        "scanned": 2000,
+        "sets": 444,
+        "observedAt": "2026-10-04T18:31:19.608315+00:00",
+        "nextAfter": "5eb8b6e6-00a5-4a9f-a46b-8655ff340351",
+        "complete": false
+      },
+      {
+        "page": 15,
+        "ms": 1895,
+        "scanned": 2000,
+        "sets": 452,
+        "observedAt": "2026-10-04T18:31:21.663331+00:00",
+        "nextAfter": "656d68f4-8c26-45e2-9e4f-fec27f558ae4",
+        "complete": false
+      },
+      {
+        "page": 16,
+        "ms": 1528,
+        "scanned": 2000,
+        "sets": 441,
+        "observedAt": "2026-10-04T18:31:23.254713+00:00",
+        "nextAfter": "6c367adc-20a4-4059-8198-f5ef8d268ae0",
+        "complete": false
+      },
+      {
+        "page": 17,
+        "ms": 1308,
+        "scanned": 2000,
+        "sets": 448,
+        "observedAt": "2026-10-04T18:31:24.769138+00:00",
+        "nextAfter": "72da5f83-07bd-47c7-896d-4f9dbf6737ff",
+        "complete": false
+      },
+      {
+        "page": 18,
+        "ms": 1157,
+        "scanned": 2000,
+        "sets": 452,
+        "observedAt": "2026-10-04T18:31:25.973394+00:00",
+        "nextAfter": "796e05d7-4859-4988-8012-6f5347b2ba00",
+        "complete": false
+      },
+      {
+        "page": 19,
+        "ms": 1833,
+        "scanned": 2000,
+        "sets": 452,
+        "observedAt": "2026-10-04T18:31:27.382384+00:00",
+        "nextAfter": "801689d5-03d9-49ac-8e08-5434cfecdbe4",
+        "complete": false
+      },
+      {
+        "page": 20,
+        "ms": 1249,
+        "scanned": 2000,
+        "sets": 440,
+        "observedAt": "2026-10-04T18:31:29.114522+00:00",
+        "nextAfter": "86b826a1-a65b-40d2-87b2-96607d433004",
+        "complete": false
+      },
+      {
+        "page": 21,
+        "ms": 1457,
+        "scanned": 2000,
+        "sets": 442,
+        "observedAt": "2026-10-04T18:31:30.35632+00:00",
+        "nextAfter": "8d55e3df-6e54-4f23-832f-34b1df1d6c08",
+        "complete": false
+      },
+      {
+        "page": 22,
+        "ms": 1682,
+        "scanned": 2000,
+        "sets": 449,
+        "observedAt": "2026-10-04T18:31:32.177581+00:00",
+        "nextAfter": "940e37be-e496-40ab-b4ef-c06b3e42c133",
+        "complete": false
+      },
+      {
+        "page": 23,
+        "ms": 1415,
+        "scanned": 2000,
+        "sets": 458,
+        "observedAt": "2026-10-04T18:31:33.695338+00:00",
+        "nextAfter": "9ae7daf5-5b98-4328-8f77-7da00bb93465",
+        "complete": false
+      },
+      {
+        "page": 24,
+        "ms": 1636,
+        "scanned": 2000,
+        "sets": 433,
+        "observedAt": "2026-10-04T18:31:35.350226+00:00",
+        "nextAfter": "a16fddb5-59b5-459b-a724-0a5fecc214b7",
+        "complete": false
+      },
+      {
+        "page": 25,
+        "ms": 1298,
+        "scanned": 2000,
+        "sets": 446,
+        "observedAt": "2026-10-04T18:31:36.665008+00:00",
+        "nextAfter": "a81bbc00-9b74-47aa-ace6-0e1be411cd95",
+        "complete": false
+      },
+      {
+        "page": 26,
+        "ms": 1517,
+        "scanned": 2000,
+        "sets": 451,
+        "observedAt": "2026-10-04T18:31:38.250478+00:00",
+        "nextAfter": "aed325f9-dea8-4320-8cc9-a215ef487ad5",
+        "complete": false
+      },
+      {
+        "page": 27,
+        "ms": 1066,
+        "scanned": 2000,
+        "sets": 443,
+        "observedAt": "2026-10-04T18:31:39.307674+00:00",
+        "nextAfter": "b56209c2-2dee-43c5-86ce-142398a73fd7",
+        "complete": false
+      },
+      {
+        "page": 28,
+        "ms": 1527,
+        "scanned": 2000,
+        "sets": 444,
+        "observedAt": "2026-10-04T18:31:40.866353+00:00",
+        "nextAfter": "bc2f8ac6-4e1b-4e02-ae6d-ceae71c3ca7a",
+        "complete": false
+      },
+      {
+        "page": 29,
+        "ms": 1473,
+        "scanned": 2000,
+        "sets": 448,
+        "observedAt": "2026-10-04T18:31:41.994377+00:00",
+        "nextAfter": "c2cbf136-64b9-4e9f-9355-9c7a3960862a",
+        "complete": false
+      },
+      {
+        "page": 30,
+        "ms": 1008,
+        "scanned": 2000,
+        "sets": 448,
+        "observedAt": "2026-10-04T18:31:43.311241+00:00",
+        "nextAfter": "c9428fba-eebf-5a77-b9fc-1c987f18271a",
+        "complete": false
+      },
+      {
+        "page": 31,
+        "ms": 1005,
+        "scanned": 2000,
+        "sets": 448,
+        "observedAt": "2026-10-04T18:31:44.359701+00:00",
+        "nextAfter": "cfcf684b-df12-4df3-bdec-862bf95e8230",
+        "complete": false
+      },
+      {
+        "page": 32,
+        "ms": 1182,
+        "scanned": 2000,
+        "sets": 444,
+        "observedAt": "2026-10-04T18:31:45.554177+00:00",
+        "nextAfter": "d69c845e-9621-42ef-9aee-a4f5d0708131",
+        "complete": false
+      },
+      {
+        "page": 33,
+        "ms": 1339,
+        "scanned": 2000,
+        "sets": 446,
+        "observedAt": "2026-10-04T18:31:46.913475+00:00",
+        "nextAfter": "dd512833-2d03-4cac-b722-f95fffaf2006",
+        "complete": false
+      },
+      {
+        "page": 34,
+        "ms": 2213,
+        "scanned": 2000,
+        "sets": 454,
+        "observedAt": "2026-10-04T18:31:49.023999+00:00",
+        "nextAfter": "e410a430-efc2-4ea9-b335-e3d2d3f7aa1d",
+        "complete": false
+      },
+      {
+        "page": 35,
+        "ms": 2020,
+        "scanned": 2000,
+        "sets": 439,
+        "observedAt": "2026-10-04T18:31:51.119318+00:00",
+        "nextAfter": "eae04e30-9310-46d2-8aad-8828b8dca491",
+        "complete": false
+      },
+      {
+        "page": 36,
+        "ms": 1088,
+        "scanned": 2000,
+        "sets": 454,
+        "observedAt": "2026-10-04T18:31:52.244324+00:00",
+        "nextAfter": "f1839ce8-7bc4-4cf3-b30e-e7885ed71a1b",
+        "complete": false
+      },
+      {
+        "page": 37,
+        "ms": 1139,
+        "scanned": 2000,
+        "sets": 449,
+        "observedAt": "2026-10-04T18:31:53.402633+00:00",
+        "nextAfter": "f8574520-95c8-4ca6-ac6c-0f9fc392e702",
+        "complete": false
+      },
+      {
+        "page": 38,
+        "ms": 1138,
+        "scanned": 2000,
+        "sets": 452,
+        "observedAt": "2026-10-04T18:31:54.535091+00:00",
+        "nextAfter": "fef5d87a-e3cd-4e8e-891c-a4f5e9bbd9fb",
+        "complete": false
+      },
+      {
+        "page": 39,
+        "ms": 950,
+        "scanned": 317,
+        "sets": 208,
+        "observedAt": "2026-10-04T18:31:55.530092+00:00",
+        "nextAfter": "fffe8a09-35d9-532c-af27-932931198e1d",
+        "complete": true
+      }
+    ]
+  },
+  "worker": {
+    "localValidation": {
+      "cataloguePriceCache": "passed",
+      "typecheck": "passed",
+      "lint": "passed with 9 existing warnings",
+      "nodeSyntax": "passed",
+      "diffWhitespace": "passed"
+    },
+    "deployedArtifact": "Previous artifact; new paged-report integration is source-only at receipt time.",
+    "productionExecutions": [
+      {
+        "at": "2026-10-04T17:16:00Z",
+        "exitCode": 0,
+        "optionalLegacyWholeReport": "statement timeout"
+      },
+      {
+        "beganAt": "2026-10-04T18:17:21Z",
+        "endedAt": "2026-10-04T18:17:45Z",
+        "exitCode": 0,
+        "optionalLegacyWholeReport": "statement timeout"
+      }
+    ]
+  },
+  "foreignSourceRetention": {
+    "stageAndProductionContract": "applied and service-only ACL verified",
+    "currentPhysicalCanaries": [
+      {
+        "language": "ko",
+        "externalId": "SV4K-001:normal"
+      },
+      {
+        "language": "zh-cn",
+        "externalId": "SV9a-039:normal"
+      },
+      {
+        "language": "zh-tw",
+        "externalId": "SV9a-039"
+      }
+    ],
+    "retainedPerEnvironment": 3,
+    "productionRun": "4ca63db6-39aa-4193-a591-12560fde81b0",
+    "stageRun": "039b270c-e9bb-4813-8f6b-c6a6461ad712",
+    "newPricedCoverage": 0,
+    "reason": "Retained provider identities need reviewed mapping; shared Cardmarket IDs across foreign languages are not accepted as exact prices."
+  },
+  "limitations": [
+    "Full coverage remains 39.13%; needs_mapping is not complete.",
+    "Primary paged report totals differ from combined primary/backup coverage by design.",
+    "Latest coverage reads and paged report are not atomic snapshots.",
+    "No authenticated owner HTTP or phone visibility proof in these batches.",
+    "Two earlier whole-report optimisation migrations are staging-only; the new paged RPC is applied identically in both environments.",
+    "No new native/OTA build."
+  ]
+}

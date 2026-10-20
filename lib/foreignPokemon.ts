@@ -132,12 +132,17 @@ export type ForeignPokemonCard = ForeignPokemonCardBrief & {
 };
 
 const FOREIGN_SET_REFERENCE_CACHE_TTL_MS = 10 * 60 * 1000;
+const FOREIGN_CARD_REFERENCE_CACHE_TTL_MS = 5 * 60 * 1000;
+const FOREIGN_API_TIMEOUT_MS = 8_000;
 const foreignSetReferenceCache = new Map<string, { expiresAt: number; value: ForeignPokemonSet | null }>();
 const foreignSetReferenceInflight = new Map<string, Promise<ForeignPokemonSet | null>>();
+const foreignCardReferenceCache = new Map<string, { expiresAt: number; value: ForeignPokemonCard | null }>();
+const foreignCardReferenceInflight = new Map<string, Promise<ForeignPokemonCard | null>>();
 
 /** Explicit user retry only; this clears runtime responses, never stored assets. */
 export function invalidateForeignPokemonSetReferenceCache() {
   foreignSetReferenceCache.clear();
+  foreignCardReferenceCache.clear();
 }
 
 function sanitizeForeignSetRaw(value: unknown) {
@@ -158,14 +163,18 @@ function assertPriceApiUrl() {
 }
 
 async function fetchForeignJson<T>(path: string): Promise<T> {
-  const response = await fetch(`${assertPriceApiUrl()}${path}`);
-  const json = await response.json().catch(() => null);
-  if (!response.ok) {
-    throw new Error(json?.detail?.message ?? json?.detail ?? json?.error ?? `Foreign Pokemon API failed: ${response.status}`);
-  }
-  return json as T;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FOREIGN_API_TIMEOUT_MS);
+  try {
+    const response = await fetch(`${assertPriceApiUrl()}${path}`, { signal: controller.signal });
+    const json = await response.json().catch(() => null);
+    if (!response.ok) throw new Error(json?.detail?.message ?? json?.detail ?? json?.error ?? `Foreign Pokemon API failed: ${response.status}`);
+    return json as T;
+  } catch (error) {
+    if ((error as { name?: string } | null)?.name === 'AbortError') throw new Error('Foreign Pokemon API timed out. Saved catalogue results remain available.');
+    throw error;
+  } finally { clearTimeout(timeout); }
 }
-
 export function hydrateForeignPokemonControlledCardReference(
   card: ForeignPokemonCardBrief | ForeignPokemonCard,
   envelope: { source?: string | null; language?: string | null; providerSetId?: string | null },
@@ -262,15 +271,28 @@ export async function fetchForeignPokemonCard(
   cardId: string,
   options: { language?: ForeignPokemonLanguageCode | string | null } = {}
 ): Promise<ForeignPokemonCard | null> {
-  const params = new URLSearchParams();
-  if (options.language) params.set('language', String(options.language));
-  const query = params.toString();
-  const json = await fetchForeignJson<{ source?: string; language?: string; card: ForeignPokemonCard }>(
-    `/api/foreign/cards/${encodeURIComponent(cardId)}${query ? `?${query}` : ''}`
-  );
-  return json.card ? hydrateForeignPokemonControlledCardReference(json.card, { source: json.source, language: json.language }) as ForeignPokemonCard : null;
+  const language = String(options.language ?? '').trim().toLowerCase();
+  const cacheKey = `${language}:${cardId.trim()}`;
+  const cached = foreignCardReferenceCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) return cached.value;
+  const inflight = foreignCardReferenceInflight.get(cacheKey);
+  if (inflight) return inflight;
+  const request = (async () => {
+    const params = new URLSearchParams();
+    if (options.language) params.set('language', String(options.language));
+    const query = params.toString();
+    const json = await fetchForeignJson<{ source?: string; language?: string; card: ForeignPokemonCard }>(
+      `/api/foreign/cards/${encodeURIComponent(cardId)}${query ? `?${query}` : ''}`
+    );
+    return json.card ? hydrateForeignPokemonControlledCardReference(json.card, { source: json.source, language: json.language }) as ForeignPokemonCard : null;
+  })();
+  foreignCardReferenceInflight.set(cacheKey, request);
+  try {
+    const value = await request;
+    foreignCardReferenceCache.set(cacheKey, { expiresAt: Date.now() + FOREIGN_CARD_REFERENCE_CACHE_TTL_MS, value });
+    return value;
+  } finally { foreignCardReferenceInflight.delete(cacheKey); }
 }
-
 export async function fetchForeignPokemonCardPricing(
   cardId: string,
   options: { language?: ForeignPokemonLanguageCode | string | null } = {}

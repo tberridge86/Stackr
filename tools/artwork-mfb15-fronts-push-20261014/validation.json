@@ -1,0 +1,372 @@
+{
+  "schemaVersion": 1,
+  "metadata_revision": 2,
+  "at": "2026-10-14T20:33:29.141Z",
+  "status": "offline_validated_not_published",
+  "observation_correction_sha256": "04e10cb81935fd3d440705a849e886f86a56e6fca319a84ee9fc0e7dedad2d9e",
+  "image_byte_changes_from_v1": 0,
+  "original_v1_archive_and_metadata_preserved": true,
+  "queue_id": "STACKR-EN-MFB-20261014-015",
+  "fronts": 15,
+  "derivative_references": 45,
+  "object_references": 60,
+  "unique_image_members": 60,
+  "delivery_scope": {
+    "batches": [
+      "EN-CARDS-006",
+      "EN-CARDS-007"
+    ],
+    "saved_batch_tasks": 34,
+    "eligible_fronts": 15,
+    "held_captured_originals": 9,
+    "excluded_ambiguous_targets": 10,
+    "accepted_aliases": [
+      "2",
+      "3",
+      "4",
+      "10",
+      "12",
+      "13",
+      "14",
+      "15",
+      "18",
+      "19",
+      "20",
+      "21",
+      "22",
+      "28",
+      "30"
+    ],
+    "whole_batch_completion_asserted": false
+  },
+  "prior_unpublished_metadata": {
+    "manifest_sha256": "3d839e824d3b864b493ec1ace68ce708a40bafad2a05d6291267087d2fbb290e",
+    "archive_asset_id": 641545169,
+    "archive_sha256": "f85adabfe543a301d0204f1d6e7aace914c0cc7127e4164fa396f5f0c33f1c5e",
+    "superseded_observation": "Magneton species line was transcribed as082; corrected to visibly printed0082.",
+    "original_and_derivative_byte_changes": 0,
+    "old_files_and_release_asset_preserved": true
+  },
+  "held_original_observation_reconciliation": {
+    "canonical_alias": "29",
+    "printing_id": "44beac31-c0da-423b-9ea4-4e1359eb2bed",
+    "original_sha256": "f8264864f0df481c5452e903a6b7c9d41abe7590c66fe9ce61311bbdf6ee3fe8",
+    "status": "historical_hold_observation_under_reconciliation",
+    "included_in_this_publication": false,
+    "new_crop_or_language_observation_asserted": false,
+    "eligibility_or_count_changed": false,
+    "historical_original_and_observation_preserved": true
+  },
+  "cohort_sha256": "4b8406e829a4637e588d44cd3df78806e0a1ed638f46928c07252f59eecae42c",
+  "approval_sha256": "5257dca32408ebe76a6f69bc3553842e8d7d8f20ab69394a248b22d254b174e7",
+  "identity_table_sha256": "2f28d436eca77ead4ed87040410f84597e2c962044263d8f5cce1e3b7ea1327c",
+  "source_manifest_sha256": "a22455e63ed49dd421587c230682a28f616003ba8f02cefff89a14655526b4a2",
+  "saved_targets_sha256": "ac98fc53f9a6b027a77a075e6322817cba903fbec7ff31d023cbfb8f2cb1383e",
+  "archive": {
+    "id": 641581207,
+    "sha256": "b73668b35e12b8687aaeaf9e30e7102215df2bdaef74b3934b2fffa9789e69e9",
+    "byte_size": 6626688,
+    "file_count": 64,
+    "filename": "stackr-en-artwork-mfb-fronts15-20261014-v2.zip",
+    "metadata_files": 4,
+    "exact_members": 64,
+    "provider_requests_during_publication": 0
+  },
+  "original_format": {
+    "mime_type": "image/jpeg",
+    "unchanged": true,
+    "count": 15,
+    "hd_dimensions": 7,
+    "detail_only": 8
+  },
+  "identity_controls": {
+    "unnumbered_printed_collector": null,
+    "canonical_alias_is_internal_only": true,
+    "printed_national_dex_is_not_collector_number": true,
+    "metadata_changes": 0,
+    "physical_edition_verified": false,
+    "physical_finish_verified": false
+  },
+  "source_controls": {
+    "owner_website_permission_attested": true,
+    "vendor_licence_verified": false,
+    "underlying_copyright_licence_verified": false,
+    "source_wide_activation": false,
+    "new_production_sources": [
+      {
+        "code": "bulbapedia",
+        "active": false,
+        "licence_status": "under_review",
+        "attribution_required": true
+      }
+    ],
+    "staging_temporary_source_fixtures": 2
+  },
+  "retained_source_distinctions": {
+    "magneton_printed_dex": "0082",
+    "magneton_numeric_dex": 82,
+    "magneton_internal_alias": "20",
+    "obsolete_dex_discrepancy_removed": true,
+    "observation_correction_sha256": "04e10cb81935fd3d440705a849e886f86a56e6fca319a84ee9fc0e7dedad2d9e",
+    "magneton_metadata_dex": "0082",
+    "magneton_inline_lightning_glyph_preserved": true,
+    "voltorb_file_attribution_links": 0,
+    "voltorb_official_database_fair_use_tag_preserved": true,
+    "historical_source_signature_hashes_retained": true,
+    "historical_hash_serializer_unverified": true,
+    "current_structured_signature_serializer": "SHA256(UTF8(JSON.stringify(projected source.signature)))",
+    "source_body_serializer": "SHA256(UTF8(JSON.stringify(projected source.body)))",
+    "prior_evidence_overwritten": false
+  },
+  "full_private_before_snapshots": {
+    "production": {
+      "sha256": "66dd6d244e9a484049ff1ae7a938514634cb01e3217967d38e55fed8b65564ab",
+      "bytes": 58294
+    },
+    "staging": {
+      "sha256": "bd28859d1da5a40516870d8e06a1d6718d7f03c3ea0f005537f8eb8b6e07357c",
+      "bytes": 51861
+    }
+  },
+  "scope_before_counts": {
+    "production": {
+      "printings": 15,
+      "variants": 15,
+      "names": 30,
+      "sets": 1,
+      "assets": 1,
+      "links": 1,
+      "sources": 1,
+      "rows": 64
+    },
+    "staging": {
+      "printings": 15,
+      "variants": 15,
+      "names": 30,
+      "sets": 1,
+      "assets": 0,
+      "links": 0,
+      "sources": 0,
+      "rows": 61
+    }
+  },
+  "checks": [
+    {
+      "command": "node prepare-mfb15-v2.mjs",
+      "exact_source_inputs": 15,
+      "exit_code": 0
+    },
+    {
+      "command": "historical unchanged prepare-local.mjs; all60 v1 image bytes reused and independently hash-checked in v2",
+      "full_originals": 15,
+      "full_derivatives": 45,
+      "sharp": "0.35.5",
+      "pipeline_sha256": "642eb05d57c921901cfa6241e1f0d32a71da602ea3594693b8d63247a05b0bb0",
+      "exit_code": 0
+    },
+    {
+      "command": "python freeze-mfb15-package-v2.py",
+      "full_PIL_images": 60,
+      "exact_archive_members": 64,
+      "exit_code": 0
+    },
+    {
+      "command": "node --test <own publish.test.mjs> <shared publish.test.mjs> <native-name-corrections.test.mjs> <journal.integration.test.mjs>",
+      "passed": 71,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "python tools/artwork-mfb15-fronts-push-20261014/download-package.test.py",
+      "passed": 4,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "python <own downloader> <local package root> --archive <frozen local ZIP>",
+      "all_members": 64,
+      "provider_requests": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "node <own verify-packages.mjs> <local package root>",
+      "full_Sharp_images": 60,
+      "database_requests": 0,
+      "storage_writes": 0,
+      "exit_code": 0
+    },
+    {
+      "command": "strict YAML parse and protected workflow assertions",
+      "exact_main": true,
+      "production_environment": true,
+      "shared_concurrency": true,
+      "pinned_actions": true,
+      "secret_scan_before_artifact_upload": true,
+      "exit_code": 0
+    },
+    {
+      "command": "node scripts/deploy/secret-scan.mjs --directory=<owned tool folder>",
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "command": "node scripts/deploy/secret-scan.mjs --directory=<owned frozen package>",
+      "metadata_files_scanned": 4,
+      "ok": true,
+      "exit_code": 0
+    }
+  ],
+  "implementation_hash_count": 17,
+  "total_owned_tool_files_including_validation": 18,
+  "file_hashes": [
+    {
+      "file": ".gitattributes",
+      "bytes": 57,
+      "sha256": "c071ae24521cafb3292632393d3eb25c664d5bb5a97d43fc5cee9078f0aaf1b9"
+    },
+    {
+      "file": ".gitignore",
+      "bytes": 21,
+      "sha256": "01d8d0360f02a0c00e236a4eb2a1d8bdf83377acf442eaafad7a136bf14d6bb0"
+    },
+    {
+      "file": "README.md",
+      "bytes": 3652,
+      "sha256": "8b9e7b4fda268c13abd1bf447cbee27e64aa8d4d7c21fd6fc96f3e5cb79d79ec"
+    },
+    {
+      "file": "approval.json",
+      "bytes": 1996,
+      "sha256": "5257dca32408ebe76a6f69bc3553842e8d7d8f20ab69394a248b22d254b174e7"
+    },
+    {
+      "file": "before-query.sql",
+      "bytes": 7740,
+      "sha256": "7f3fdbd5f954a96f222cddaae82f90dbc6db5c2722a1e41d99c57fca1121335c"
+    },
+    {
+      "file": "download-package.py",
+      "bytes": 6107,
+      "sha256": "688ab87bea701dc72693d00f5f17e95da3fc715f6c96ccf875c074101a4998e7"
+    },
+    {
+      "file": "download-package.test.py",
+      "bytes": 4588,
+      "sha256": "4ed8f443502784a2d83af97ebdd43b0b51a8f311eb2198f8587c6b58ae12e59a"
+    },
+    {
+      "file": "freeze-inputs.json",
+      "bytes": 2205,
+      "sha256": "bfb2d7ccab169b3554e1778314f60e1065f7679bde1cc949170654a16bd8ebb4"
+    },
+    {
+      "file": "freeze-local.mjs",
+      "bytes": 11695,
+      "sha256": "318555f4f095e1edaed81d80bbb10876bb73d560831ca62a4947a37e476c983a"
+    },
+    {
+      "file": "frozen.mjs",
+      "bytes": 19749,
+      "sha256": "9c2614642cfd499c3c6649b35d891a8eeeb6dd2ca29b42aeb1d75cdb36005f8b"
+    },
+    {
+      "file": "identity-table.json",
+      "bytes": 15331,
+      "sha256": "2f28d436eca77ead4ed87040410f84597e2c962044263d8f5cce1e3b7ea1327c"
+    },
+    {
+      "file": "metadata-guard.mjs",
+      "bytes": 4081,
+      "sha256": "6ecdb868f5bf491a6cc909192d2c95444d3248baf9b891d26370898a1e2b76a0"
+    },
+    {
+      "file": "plan.json",
+      "bytes": 221151,
+      "sha256": "4b8406e829a4637e588d44cd3df78806e0a1ed638f46928c07252f59eecae42c"
+    },
+    {
+      "file": "publish.mjs",
+      "bytes": 6114,
+      "sha256": "21606dc09646da79f80517a8ef9411c38f134d4b0c8f285bbb4122a647223cd3"
+    },
+    {
+      "file": "publish.test.mjs",
+      "bytes": 17547,
+      "sha256": "a0b5a0ff53437390019ce7fbbdd5ebd0c01b576d10ef9a86e9cd67ed8cbdbbf0"
+    },
+    {
+      "file": "saved-targets.json",
+      "bytes": 6146,
+      "sha256": "ac98fc53f9a6b027a77a075e6322817cba903fbec7ff31d023cbfb8f2cb1383e"
+    },
+    {
+      "file": "verify-packages.mjs",
+      "bytes": 1514,
+      "sha256": "e8faca31e75cdae9c2ba75ba0c83d2fabcf30def1289c8c59c5ab089aef9a4c9"
+    }
+  ],
+  "workflow": {
+    "file": ".github/workflows/artwork-mfb15-fronts-production.yml",
+    "sha256": "d81e5d43dcc87f6bcf8d6e91dff43c5862749f888116f31b888ac9bfc2b77b68",
+    "bytes": 3771
+  },
+  "reused_dependency_hashes": [
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 9031,
+      "sha256": "5524305ba4bd6a0f3867ea2c097c57fb0d610e27ef1d9d64529b64e9c67249de"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/metadata-guard.mjs",
+      "bytes": 4018,
+      "sha256": "cca5354822fe11c007308f7d22ebf84649d2374619e0dd049c7347a9db9e116f"
+    },
+    {
+      "file": "tools/artwork-trainer-kit-push-20261013/publish.mjs",
+      "bytes": 5885,
+      "sha256": "8451746bb6e188f56c5be31064742eaeecdc2f2c6d6e27cb31ab5c7227af6d1f"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/frozen.mjs",
+      "bytes": 11085,
+      "sha256": "171ba7813fe7a5eee8f1eae00d02fb43be020918690d27f617b5f2deeac6260b"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/metadata-guard.mjs",
+      "bytes": 8178,
+      "sha256": "287b6ed80e45417bb0465268d3e32e1cffe8e66212e4a5abba0c5a1a7ed4c26a"
+    },
+    {
+      "file": "tools/artwork-followup-push-20261013/publish.mjs",
+      "bytes": 5996,
+      "sha256": "5aa65efe7e3df95f77f1887e3cf8fc5b215e1a0c7eb2113f7f8a9707e6445b94"
+    },
+    {
+      "file": "tools/artwork-next-push-20261013/frozen.mjs",
+      "bytes": 7732,
+      "sha256": "3e14eb76a012116492075328c50e6c5907f712004da02d4d3dae541d2617a95b"
+    },
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 30117,
+      "sha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24425,
+      "sha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/frozen.mjs",
+      "bytes": 15024,
+      "sha256": "1d168e5407a5bdc6e027f58991de58a0664576d7c917d5b219fa13f9af4a1d0a"
+    },
+    {
+      "file": "tools/artwork-latios-trainer-kit-push-20261013/download-package.py",
+      "bytes": 5489,
+      "sha256": "53f1114f25bd995b4f05d9b2d3adad7ae2dadc85b4b13f038a84bcc5e7d6b09f"
+    }
+  ],
+  "existing_dependencies_changed": 0,
+  "production_writes": 0
+}

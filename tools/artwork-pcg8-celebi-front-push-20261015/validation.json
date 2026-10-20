@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_FROZEN_PUBLICATION_HANDOFF_READY",
+  "confirmation": "PUBLISH ARTWORK PCG8 CELEBI FRONT",
+  "fronts": 1,
+  "fixedVariantTuplesPerEnvironment": 1,
+  "workType": "CARDS",
+  "batchId": "JP-CARDS-040",
+  "printingAssetVariantId": null,
+  "sourceVariantId": null,
+  "deliveryKind": "shared",
+  "tests": {
+    "publisherNode": {
+      "passed": 17,
+      "failed": 0
+    },
+    "archiveGuardsPython": {
+      "passed": 6,
+      "failed": 0
+    },
+    "persistedFailureJournal": {
+      "passed": 1,
+      "failed": 0
+    },
+    "priorSM1PlusPublisherRegression": {
+      "passed": 17,
+      "failed": 0
+    },
+    "priorEeveePublisherRegression": {
+      "passed": 15,
+      "failed": 0
+    },
+    "priorAquapolisPublisherRegression": {
+      "passed": 15,
+      "failed": 0
+    },
+    "phase1SourceContract": {
+      "passed": 34,
+      "failed": 0
+    },
+    "queue": {
+      "realReceipts": 1,
+      "localImageByteObjects": 4,
+      "jointRawEntryTamperRejections": 36,
+      "forgedAuthorityRejections": 7,
+      "priorSM1PlusEeveeAndAquapolisReadOnlyReceipts": 5,
+      "priorLocalImageObjects": 20,
+      "unchangedSharpMetricCases": 2,
+      "previousJapaneseSM1PlusEeveeAndAquapolisBehaviourPreserved": true,
+      "sharedQueueUnchanged": true,
+      "currentNativeLabelAndDefaultFalsePreserved": true,
+      "correctedFullJapaneseSignaturePreserved": true,
+      "englishEnergyScopeCertified": false,
+      "productionWrites": 0
+    }
+  },
+  "archiveInstaller": {
+    "assetId": 645368810,
+    "membersVerifiedAndExtracted": 8,
+    "runtimeSharpFullyDecoded": 4,
+    "privatePILSharpRgbaAgreements": 4,
+    "privacySafeJsonFiles": 4,
+    "originalHdPixelFronts": 0,
+    "derivativeHdPixelFiles": 0,
+    "noEnlargement": true
+  },
+  "sourceGuard": {
+    "externalAuthorityAndBaselineFilesRehashed": 13,
+    "oldProductionSources": 4,
+    "oldFullSourceFieldsProtected": 68,
+    "productionNewSources": 0,
+    "productionPolicyChangesAllowed": 0,
+    "explicitProductionResolverHasNoInsertPath": true,
+    "missingOrDriftedExistingPriceFails": true,
+    "existingPriceFinite2NotesUnchanged": true,
+    "full17MicrosecondsRetainedByBothJsonReaders": true,
+    "stagingBaselineScopedSources": 0,
+    "onlyTemporaryStagingFixture": "pricecharting",
+    "stageGeneratedFull17DefaultsAndCreationReceiptChecked": true,
+    "frozenFullBeforeSnapshotsChecked": true
+  },
+  "transactionFixtures": {
+    "production": {
+      "beforeRows": 11,
+      "afterRows": 13,
+      "assetsAdded": 1,
+      "linksAdded": 1,
+      "sourcesAdded": 0
+    },
+    "staging": {
+      "beforeRows": 5,
+      "temporaryRows": 8,
+      "afterRollbackRows": 5
+    },
+    "existingPCG8SetLogoAndLinkUnchanged": true,
+    "oldCanonicalMetadataAssetsLinksAndSourcePoliciesUnchanged": true,
+    "sourceAndLinkWriteFailuresRollBack": true
+  },
+  "identity": {
+    "currentNativeLabelPreserved": "セレビの星",
+    "actualPrintedName": "セレビィ☆",
+    "canonicalAlias": "004",
+    "printedCollectorNumber": "004/075",
+    "printedSetCodeLiteral": null,
+    "printedNationalDex": null,
+    "correctedCoinConnectorTePreserved": true,
+    "fullOpponentsTurnAttackHpZeroCoinHeadsDiscardBottomDeckAndStarDeckRulePreserved": true,
+    "literalLeafShadeJapanesePreserved": true,
+    "englishAttackEnergyScopeCertified": false,
+    "nativeCorruptedProviderJapaneseQualified": true,
+    "sourcePhotoUrlHashDistinctFromProduct5075762": true,
+    "currentSoleHoloIsDefaultFalsePreservedBothEnvs": true,
+    "actualApiDefaultVariantIdAlreadySelectsHolo": "f131958f-ac07-435c-b76c-d8a697cdec9a",
+    "actualDefaultSharedAppSelectionStillRequiresLiveVerification": true,
+    "providerBodyVerbatimAgreement": false,
+    "editionStampAbsenceIsNotUnlimitedProof": true,
+    "physicalEditionCertified": false,
+    "physicalFinishCertified": false,
+    "providerNeverResizedCertified": false,
+    "nativeOpticalGainClaimed": false
+  },
+  "unchangedPriorRepositoryFilesRehashed": 160,
+  "unchangedSharedDependenciesRehashed": 11,
+  "unchangedPhase1PrivatePinsRehashed": 33,
+  "unchangedSourceAuthorityPinsRehashed": 64,
+  "workflow": {
+    "protectedProduction": true,
+    "exactMainSha": true,
+    "sharedDeploymentConcurrency": true,
+    "shaPinnedActions": 3,
+    "exact20FileSecretScanPassed": true,
+    "failureJournalAndRollbackReceipts": true
+  },
+  "planSha256": "de0193dad540bd6b9d74ef78feb2a47041acc14ec77d0307c784b6c768f76556",
+  "approvalSha256": "b7b003e8acfc1935ef6dcac9cbf6129db4ccd505c957f6707dbb8e8db80b8b14",
+  "sourceManifestSha256": "c117ca58b3490d9ebaef11ef2150cbb17478fcd967a8f062570823629d7776f1",
+  "archiveSha256": "a7d76f3b25ad7541e1eb9a1762bc096acf83b9f14e3abb8214f49afe063a8a43",
+  "newProviderRequests": 0,
+  "databaseRequests": 0,
+  "gitMutations": 0,
+  "sharedQueueWrites": 0,
+  "ledgerWrites": 0,
+  "storageWrites": 0,
+  "productionWrites": 0,
+  "livePublicationVerified": false,
+  "independentExactHeadAndHostedChecksStillRequired": true
+}

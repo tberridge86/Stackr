@@ -1,0 +1,9 @@
+# Exact21 Neo1 final artwork
+
+Exactly21 JP-CARDS-006 unnumbered Japanese fronts:18Trainers and3SpecialEnergy,20current normal and1current holo095. All21 lossless source originals and63 derivatives remain unchanged/unenlarged. Accepted081 printed artist stays optically qualified/null;077 cow-udder scene has no guessed human/species identity;087 says maximum2 and no reveal;092 is actualTRAINER despite sourceEnergy. Complete Tool/Stadium/Energy rules, qualified null rarity and all outer artifact strips are preserved.
+
+Complete21 private provider JSON records were saved from pinned review JSON pointers. Raw HTML bytes, private parsed file bytes, complete JSON canonical hashes, safe identity whitelist, historical peer row, root positive projection and public peer projection hashes are separate contracts. Full private review/commercial JSON is excluded from publication. Historical null selections and false preparation/publication flags remain historical evidence.
+
+No new production provenance source or existing source-policy update is authorised. The final postLegacy8 V2 checkpoint must pin every field of both existing17-field source rows. Both snapshot and resolver use the same PostgreSQL to_jsonb(source) reader to preserve timestamp microseconds. Only a missing staging Scrydex fixture is allowed inside rollback rehearsal. Existing immutable assets/set marks/all scoped links remain unchanged; rollback hides new artwork only.
+
+Protected manual workflow requires exact main SHA and `PUBLISH ARTWORK NEO1 FINAL FRONTS`, shared production concurrency, immutable archive checks, staging rollback, production rehearse, full metadata/source preservation, failure journals and receipt secret scan. Bound to immutable release asset644418419 and the final postLegacy8 V2 full-source checkpoint. The model preserves91 production rows and adds21assets+21links (133total); staging87 rows remain unchanged after rollback. Live completion requires root API verification.

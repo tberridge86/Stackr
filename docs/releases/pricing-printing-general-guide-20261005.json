@@ -1,0 +1,432 @@
+{
+  "observedAt": "2026-10-05T09:58:42Z",
+  "scope": {
+    "languages": [
+      "en",
+      "ja",
+      "zh-cn",
+      "zh-tw"
+    ],
+    "koreanExcluded": true,
+    "publishedPhysicalVariants": 76030,
+    "fullTargetAchieved": false
+  },
+  "sourceCommit": "7dc63aab2bb7be9ca69e77e686ef7722db6927a7",
+  "verificationCommit": "28cbcfc7d68eb11edc622078b0bbc3216810610f",
+  "cohorts": [
+    {
+      "name": "SWSH promos",
+      "categoryId": 3,
+      "groupId": 2545,
+      "canonicalSet": "swshp",
+      "reviewedCurrentMappings": 134,
+      "positivePrintingGuides": 134
+    },
+    {
+      "name": "ME promos",
+      "categoryId": 3,
+      "groupId": 24451,
+      "canonicalSet": "mep",
+      "reviewedCurrentMappings": 2,
+      "positivePrintingGuides": 2
+    }
+  ],
+  "newEvidence": {
+    "printingGuides": 136,
+    "exactVariantQuotes": 0,
+    "existingPositiveFreshCardmarketOverlap": 2,
+    "netGeneralStoredGuideVariants": 134,
+    "existingNormalHoloFallbackCohortOverlap": 0,
+    "independentStageProductionPlansAgree": true,
+    "stageWriteAcknowledgements": 136,
+    "productionWriteAcknowledgements": 136
+  },
+  "pricingScope": {
+    "table": "market.catalogue_printing_general_prices",
+    "priceScope": "printing_general_estimate",
+    "sourceSubtypes": [
+      "Normal",
+      "Holofoil"
+    ],
+    "requestedFinishPreserved": true,
+    "usableForExactVariant": false,
+    "usableForHoldingsValuation": false,
+    "condition": null,
+    "finish": null,
+    "grade": null,
+    "soldEvidence": false
+  },
+  "provider": {
+    "provider": "tcgcsv",
+    "datasetAt": "2026-10-04T20:05:38Z",
+    "staleAfter": "2026-10-06T20:05:38Z",
+    "originalCurrency": "USD",
+    "exchangeRate": 0.757532293986637,
+    "exchangeRateAt": "2026-10-02T00:00:00Z",
+    "exchangeRateSource": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+    "newProviderFetches": 0,
+    "retainedFeedEvidenceRequired": true
+  },
+  "coverage": {
+    "metric": "Positive fresh stored guides including distinct printing estimates; each current physical variant counted once",
+    "previousPositiveExactTcgcsvOrBlendedCardmarket": 32899,
+    "priced": 33033,
+    "total": 76030,
+    "percent": 43.45,
+    "rows": [
+      {
+        "language_code": "en",
+        "observed_at": "2026-10-05 09:58:20.928471+00",
+        "physical_total": 33359,
+        "tcgcsv_saved": 18879,
+        "tcgcsv_fresh": 18879,
+        "cardmarket_saved": 7802,
+        "cardmarket_fresh": 7802,
+        "combined_saved": 21556,
+        "legacy_positive_fresh": 21556,
+        "printing_guide_fresh": 136,
+        "combined_fresh": 21690
+      },
+      {
+        "language_code": "ja",
+        "observed_at": "2026-10-05 09:58:33.701673+00",
+        "physical_total": 14100,
+        "tcgcsv_saved": 6907,
+        "tcgcsv_fresh": 6907,
+        "cardmarket_saved": 1015,
+        "cardmarket_fresh": 1015,
+        "combined_saved": 7307,
+        "legacy_positive_fresh": 7307,
+        "printing_guide_fresh": 0,
+        "combined_fresh": 7307
+      },
+      {
+        "language_code": "zh-cn",
+        "observed_at": "2026-10-05 09:58:36.030803+00",
+        "physical_total": 20405,
+        "tcgcsv_saved": 0,
+        "tcgcsv_fresh": 0,
+        "cardmarket_saved": 0,
+        "cardmarket_fresh": 0,
+        "combined_saved": 0,
+        "legacy_positive_fresh": 0,
+        "printing_guide_fresh": 0,
+        "combined_fresh": 0
+      },
+      {
+        "language_code": "zh-tw",
+        "observed_at": "2026-10-05 09:58:37.986213+00",
+        "physical_total": 8166,
+        "tcgcsv_saved": 0,
+        "tcgcsv_fresh": 0,
+        "cardmarket_saved": 4036,
+        "cardmarket_fresh": 4036,
+        "combined_saved": 4036,
+        "legacy_positive_fresh": 4036,
+        "printing_guide_fresh": 0,
+        "combined_fresh": 4036
+      }
+    ],
+    "knownAdditionalBaseFallbackVariants": 236,
+    "generalSourceAvailabilityProjection": 33269,
+    "generalSourceAvailabilityProjectionPercent": 43.76,
+    "ownerHttpMeasured": false,
+    "phoneVisibilityMeasured": false,
+    "method": "Native service guide reads validated all 136 fresh positive rows first. Physical-language counts then used that verified cohort with positive exact TCGCSV and Cardmarket predicates. Publication versions were identical before and after the observation window. This is not an atomic snapshot or a full-population owner API measurement.",
+    "publicationVersionsBefore": [
+      {
+        "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en"
+      },
+      {
+        "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja"
+      },
+      {
+        "id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "language_code": "zh-cn"
+      },
+      {
+        "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "language_code": "zh-tw"
+      }
+    ],
+    "publicationVersionsAfter": [
+      {
+        "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en"
+      },
+      {
+        "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja"
+      },
+      {
+        "id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "language_code": "zh-cn"
+      },
+      {
+        "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "language_code": "zh-tw"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "version": "20261005093440",
+      "name": "printing_general_price_guide",
+      "originalStageToolVersion": "20261005094321",
+      "originalProductionToolVersion": "20261005094837"
+    },
+    {
+      "version": "20261005095334",
+      "name": "printing_guide_native_set_language",
+      "originalStageToolVersion": "20261005095446",
+      "originalProductionToolVersion": "20261005095449"
+    }
+  ],
+  "schemaVerification": {
+    "canonicalLedgersAligned": true,
+    "readFunctionHash": "faaeb1d4a89b4029cb535e8168f59fe8",
+    "storeFunctionHash": "d5e6eb0ab85de629e0712dbfb793a490",
+    "rowLevelSecurity": true,
+    "anonymousExecute": false,
+    "authenticatedExecute": false,
+    "serviceExecute": true,
+    "nativeSetLanguageGuard": true
+  },
+  "liveSqlReplay": {
+    "stage": {
+      "positiveFresh": 136,
+      "printingGuideUsed": 136,
+      "exactUnavailable": 136,
+      "printingGuideCalls": 2,
+      "exactPrintingGuideCalls": 0
+    },
+    "production": {
+      "positiveFresh": 136,
+      "printingGuideUsed": 136,
+      "exactUnavailable": 136,
+      "printingGuideCalls": 2,
+      "exactPrintingGuideCalls": 0
+    },
+    "proofBoundary": "Live service SQL candidates and guide rows replayed through the actual backend module. No owner HTTP or phone claim."
+  },
+  "performance": {
+    "batchSize": 100,
+    "stageExecutionMs": 611.89,
+    "productionExecutionMs": 1141.103,
+    "method": "EXPLAIN ANALYZE BUFFERS TIMING OFF on the native service guide RPC with default planner settings.",
+    "failedDiagnostic": "A full-coverage diagnostic forced enable_nestloop=off into the bounded guide RPC and hit the 20-second diagnostic budget. Normal bounded reads subsequently returned 100 rows within 612 ms in staging and 1,142 ms in production. Coverage was separated from the bounded read and completed using the verified cohort."
+  },
+  "validation": {
+    "cataloguePriceCacheScripts": 19,
+    "result": "passed",
+    "typecheck": "passed",
+    "backendTypecheck": "passed",
+    "lint": {
+      "errors": 0,
+      "existingWarnings": 9
+    },
+    "additionalFixtures": [
+      "daily revision updates printing guides without rebuilding the catalogue",
+      "old retained builds cannot overwrite newer evidence",
+      "native Japanese provider category retained",
+      "set/printing/variant/language/current-publication mismatch rejected",
+      "cross-finish and cross-page product ownership rejected",
+      "zero/rounded-zero/duplicate/invalid FX/invalid scope rejected",
+      "exact reads never query or use printing guides",
+      "general freshness and saved stale-price priority preserved"
+    ],
+    "latestNarrowMigrationTest": "passed",
+    "ci": {
+      "sourceHead": "28cbcfc7d68eb11edc622078b0bbc3216810610f",
+      "applicableChecksPassed": 12,
+      "intentionalReleaseChecksSkipped": 2,
+      "result": "passed"
+    }
+  },
+  "rollout": {
+    "stageBackend": {
+      "configuredPin": "7dc63aab2bb7be9ca69e77e686ef7722db6927a7",
+      "deploymentId": "07e56dca-7214-4bd4-9397-b1b445e92765",
+      "status": "SUCCESS",
+      "healthAttestedCommit": "7dc63aab2bb7",
+      "environment": "staging",
+      "supabaseProjectRef": "lmwfhvexfcoyeuoyrlco"
+    },
+    "stageTcgcsvWorker": {
+      "configuredPin": "7dc63aab2bb7be9ca69e77e686ef7722db6927a7",
+      "deploymentId": "ec7a9dfd-b5a4-4b13-b655-54646f7026a3",
+      "status": "SUCCESS",
+      "cronSchedule": "13 * * * *",
+      "scheduledRuntimeObserved": true,
+      "runtime": {
+        "startedAt": "2026-10-05T16:17:09.290Z",
+        "finishedAt": "2026-10-05T16:18:03.067Z",
+        "exitCode": 0,
+        "elapsedMs": 49501,
+        "project": "lmwfhvexfcoyeuoyrlco",
+        "datasetAt": "2026-10-04T20:05:38+0000",
+        "runId": "0778cb55-e99b-4100-a08b-6ce4026f2960",
+        "status": "needs_mapping",
+        "setsClaimed": 3,
+        "complete": 3,
+        "deferred": 0,
+        "cards": 36,
+        "priced": 36,
+        "coverageError": null,
+        "coverageDiagnostics": {
+          "pages": 38,
+          "scanned": 75797,
+          "catalogueVersions": [
+            {
+              "language_code": "en",
+              "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+            },
+            {
+              "language_code": "ja",
+              "id": "d560cd01-de2a-4713-9518-b967fb4c5ac9"
+            },
+            {
+              "language_code": "ko",
+              "id": "159eb902-143c-42ef-b682-93ba5f9e81f2"
+            },
+            {
+              "language_code": "zh-cn",
+              "id": "79f43e8f-7062-4d29-8571-569eccb7c249"
+            },
+            {
+              "language_code": "zh-tw",
+              "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e"
+            }
+          ],
+          "observedAtBegin": "2026-10-05T16:17:32.61779+00:00",
+          "observedAtEnd": "2026-10-05T16:17:58.11455+00:00",
+          "atomic": false
+        },
+        "health": {
+          "runId": "0778cb55-e99b-4100-a08b-6ce4026f2960",
+          "groups": [
+            {
+              "total": 159,
+              "status": "complete",
+              "categoryId": 3
+            },
+            {
+              "total": 61,
+              "status": "unmapped",
+              "categoryId": 3
+            },
+            {
+              "total": 113,
+              "status": "complete",
+              "categoryId": 85
+            },
+            {
+              "total": 346,
+              "status": "unmapped",
+              "categoryId": 85
+            }
+          ],
+          "quotes": [
+            {
+              "stale": 0,
+              "total": 18007,
+              "provider": "tcgcsv",
+              "languageCode": "en"
+            },
+            {
+              "stale": 0,
+              "total": 6725,
+              "provider": "tcgcsv",
+              "languageCode": "ja"
+            }
+          ],
+          "outcomes": {
+            "total": 74672,
+            "no_provider_quote": 3562,
+            "unsupported_finish": 120,
+            "unsupported_language": 28813
+          },
+          "datasetAt": "2026-10-04T20:05:38+00:00",
+          "runStatus": "needs_mapping",
+          "openRepairs": 44021
+        }
+      },
+      "scope": "Actual scheduled staging runtime processed 36 priced outcomes. It does not establish production coverage or the next changed provider revision."
+    },
+    "productionBackend": {
+      "configuredPin": "7dc63aab2bb7be9ca69e77e686ef7722db6927a7",
+      "deploymentId": "e985732a-4ebe-4281-8811-963a61276a58",
+      "status": "SUCCESS",
+      "healthPending": false,
+      "healthAttestedCommit": "28cbcfc7d68e",
+      "attestationBasis": "railway_git_sha",
+      "configuredAndAttestedCommitsHaveIdenticalBackendAndWorkerFiles": true,
+      "environment": "production",
+      "supabaseProjectRef": "oakdbbzdqwurpjnoqhmu",
+      "publicSmoke": {
+        "observedAt": "2026-10-05T17:11:00Z",
+        "checksPassed": 4,
+        "requiredLanguages": [
+          "en",
+          "ja",
+          "zh-cn",
+          "zh-tw"
+        ]
+      },
+      "anonymousPricing": {
+        "directStage": 401,
+        "directProduction": 401,
+        "gateway": 401,
+        "gatewayCacheControl": "private, no-store",
+        "ownerHttpVisibility": "not measured"
+      }
+    },
+    "productionTcgcsvWorker": {
+      "configuredPin": "7dc63aab2bb7be9ca69e77e686ef7722db6927a7",
+      "previousPin": "3d9ccdd5f9301605f9d3070619636d42dcc92472",
+      "deploymentId": "ba85de72-ae0d-4dd3-b5a2-be0075a94763",
+      "printingGuidePlannerPromoted": true,
+      "status": "SUCCESS",
+      "promotionTriggeredAt": "2026-10-05T17:12:42Z",
+      "scheduledRuntimeObserved": false,
+      "cronSchedule": "13 * * * *",
+      "reason": "Build succeeded. First complete scheduled production runtime and the next changed provider revision still require observation.",
+      "buildVerifiedAt": "2026-10-05T17:17:05Z"
+    },
+    "productionCardmarketWorker": {
+      "configuredPin": "0e4834409b0f024624e2d1882ae7d9c1fe359957",
+      "deploymentId": "65b4d9d0-60f3-4117-a68b-90851e14a9d6",
+      "cacheVolume": "86718ccd-b9a3-4570-ad10-c114a3be4eb6",
+      "cacheMount": "/var/lib/cardmarket",
+      "scheduledRuntime": {
+        "startedAt": "2026-10-05T16:17:39.548Z",
+        "finishedAt": "2026-10-05T16:18:09.816328880Z",
+        "level": "info",
+        "project": "oakdbbzdqwurpjnoqhmu",
+        "revisions": {
+          "products": "18956fc2-1835-42c2-809d-de4b45ac04e9",
+          "priceGuide": "88df9af6-8055-4bf0-9c21-9c230681befe"
+        },
+        "reviewedMappings": 9234,
+        "stored": 0,
+        "repairs": 0,
+        "pages": 0,
+        "complete": true
+      },
+      "scope": "Scheduled retained-cache reuse completed; zero stores/pages does not independently prove changed-selector ingestion."
+    }
+  },
+  "remainingGates": [
+    "promoted production TCGCSV complete scheduled runtime",
+    "printing guide refresh on the next changed provider dataset",
+    "Chinese source provenance and remaining English/Japanese provider mappings",
+    "owner HTTP and handset visibility"
+  ],
+  "newNativeBuilds": 0,
+  "newOtaUpdates": 0,
+  "newPaidProviderActivations": 0,
+  "canonicalCatalogueMutations": 0,
+  "verificationCompletedAt": "2026-10-05T17:17:05Z"
+}

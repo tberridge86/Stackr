@@ -1,0 +1,2222 @@
+{
+  "schemaVersion": 1,
+  "priorPublisherFiles": 420,
+  "priorRepositoryFiles": [
+    {
+      "file": "tools/artwork-leaders-stadium-fronts-push-20261015/.gitattributes",
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+      "bytes": 14
+    },
+    {
+      "file": "tools/artwork-leaders-stadium-fronts-push-20261015/.gitignore",
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "bytes": 19
+    },
+    {
+      "file": "tools/artwork-leaders-stadium-fronts-push-20261015/approval.json",
+      "sha256": "89e80d8e30d6c1b46a67613fa3439fc91559c0618a30286daeaa0b16aa23bf6a",
+      "bytes": 1588
+    },
+    {
+      "file": "tools/artwork-leaders-stadium-fronts-push-20261015/before-query.sql",
+      "sha256": "4ed8fe2712d748096874fa3a359962478b13a5c1f1752632b90f669f5afe2261",
+      "bytes": 39565
+    },
+    {
+      "file": "tools/artwork-leaders-stadium-fronts-push-20261015/download-package.py",
+      "sha256": "82c6c5c6cb6ae16fb7e5cdc74b5211a909fda7d0e0b57f96a6d264bd598f382d",
+      "bytes": 6091
+    },
+    {
+      "file": "tools/artwork-leaders-stadium-fronts-push-20261015/download-package.test.py",
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41",
+      "bytes": 6940
+    },
+    {
+      "file": "tools/artwork-leaders-stadium-fronts-push-20261015/freeze-inputs.json",
+      "sha256": "9918c142efe767d725f14377a0c2de093782a825e55190c496553850d0d75957",
+      "bytes": 5172
+    },
+    {
+      "file": "tools/artwork-leaders-stadium-fronts-push-20261015/freeze-local.mjs",
+      "sha256": "9311b71ef21741352837c20a81c804014595c20e9068bc9373ec9bf36fb2630f",
+      "bytes": 10206
+    },
+    {
+      "file": "tools/artwork-leaders-stadium-fronts-push-20261015/frozen.mjs",
+      "sha256": "5afc6b11bd56eef26b356d3ee75b97790c7a1ed26c72ea783bd995c89a3547b0",
+      "bytes": 91311
+    },
+    {
+      "file": "tools/artwork-leaders-stadium-fronts-push-20261015/identity-table.json",
+      "sha256": "b35b90ab3724eb66208be7471accc83bb3a3366b47ca18e2413157fe2bc3e7ab",
+      "bytes": 92291
+    },
+    {
+      "file": "tools/artwork-leaders-stadium-fronts-push-20261015/metadata-guard.mjs",
+      "sha256": "598405ead861610326a6f4de549a8eccca01c453b9bfdbd44186f35a1020aa9b",
+      "bytes": 9142
+    },
+    {
+      "file": "tools/artwork-leaders-stadium-fronts-push-20261015/plan.json",
+      "sha256": "00621bdb7805bf6f6f1b83c2cbd24434b76ce5a3a4474e1239a4756359158e1a",
+      "bytes": 1809556
+    },
+    {
+      "file": "tools/artwork-leaders-stadium-fronts-push-20261015/publish.mjs",
+      "sha256": "6c753625e39cfc05663cf8f7eecaef0c2f5b26426721a4452c5e1833570bd1cd",
+      "bytes": 6330
+    },
+    {
+      "file": "tools/artwork-leaders-stadium-fronts-push-20261015/publish.test.mjs",
+      "sha256": "a517b7b321e68782c6e2e6ddad913c0b413e914942736142ba6d09ab5dabb7b1",
+      "bytes": 23951
+    },
+    {
+      "file": "tools/artwork-leaders-stadium-fronts-push-20261015/README.md",
+      "sha256": "ae8efef3672fe25997424f26eb54c9f9305f49c90f2741d81af7ab857b1b637c",
+      "bytes": 1446
+    },
+    {
+      "file": "tools/artwork-leaders-stadium-fronts-push-20261015/saved-targets.json",
+      "sha256": "294a9dc6a5c0d6e7fe3addb441037a5fe54a8f257212c7131fb2dd93834f8a55",
+      "bytes": 39816
+    },
+    {
+      "file": "tools/artwork-leaders-stadium-fronts-push-20261015/source-proof.mjs",
+      "sha256": "b0e7065893388c675dd69a808310bf1d0d5df108c8dfdfc44f3c27851eb36c5a",
+      "bytes": 115868
+    },
+    {
+      "file": "tools/artwork-leaders-stadium-fronts-push-20261015/validation.json",
+      "sha256": "71984dd83ca818a9bc7d9b608cfd68b105862557063b2de63473308852251370",
+      "bytes": 2423
+    },
+    {
+      "file": "tools/artwork-leaders-stadium-fronts-push-20261015/verify-packages.mjs",
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841",
+      "bytes": 1495
+    },
+    {
+      "file": ".github/workflows/artwork-leaders-stadium-fronts-push-20261015.yml",
+      "sha256": "fd8e2116490998c7950b86543a32d95d8d21a618de838d0a344670a43294a42e",
+      "bytes": 3730
+    },
+    {
+      "file": "tools/artwork-challenge-darkness-fronts-push-20261015/.gitattributes",
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+      "bytes": 14
+    },
+    {
+      "file": "tools/artwork-challenge-darkness-fronts-push-20261015/.gitignore",
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "bytes": 19
+    },
+    {
+      "file": "tools/artwork-challenge-darkness-fronts-push-20261015/approval.json",
+      "sha256": "9a1d9c45a79a664f7c805225d13289cd0cdfb2ae33e98936a54e4297d9fe351e",
+      "bytes": 1621
+    },
+    {
+      "file": "tools/artwork-challenge-darkness-fronts-push-20261015/before-query.sql",
+      "sha256": "890ee29414c4779c41f86b0fd0afbfb0723c89a7d1dc4a395511c25fee346c63",
+      "bytes": 41185
+    },
+    {
+      "file": "tools/artwork-challenge-darkness-fronts-push-20261015/download-package.py",
+      "sha256": "012707438b4a81306dd2400e8d05a8bbc721515953381119f9220ca249da24b6",
+      "bytes": 6103
+    },
+    {
+      "file": "tools/artwork-challenge-darkness-fronts-push-20261015/download-package.test.py",
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41",
+      "bytes": 6940
+    },
+    {
+      "file": "tools/artwork-challenge-darkness-fronts-push-20261015/freeze-inputs.json",
+      "sha256": "7e5d80349297df7381a36a223351a5441dadabcc0771d600ba8fb3e81eda03df",
+      "bytes": 5187
+    },
+    {
+      "file": "tools/artwork-challenge-darkness-fronts-push-20261015/freeze-local.mjs",
+      "sha256": "fdf68099aaf6ebe954032e3208545b9468ffb6c95a554b414a4ec4fafae1cc06",
+      "bytes": 10241
+    },
+    {
+      "file": "tools/artwork-challenge-darkness-fronts-push-20261015/frozen.mjs",
+      "sha256": "dbe6920b214719ad6397e9ef466da43e8be3919ba6e98b021bb39b9d962827fe",
+      "bytes": 87349
+    },
+    {
+      "file": "tools/artwork-challenge-darkness-fronts-push-20261015/identity-table.json",
+      "sha256": "4b13caad3dce9f31e33a11a2a4b77e27073e72b1cab22e09e750799996e62189",
+      "bytes": 89673
+    },
+    {
+      "file": "tools/artwork-challenge-darkness-fronts-push-20261015/metadata-guard.mjs",
+      "sha256": "598405ead861610326a6f4de549a8eccca01c453b9bfdbd44186f35a1020aa9b",
+      "bytes": 9142
+    },
+    {
+      "file": "tools/artwork-challenge-darkness-fronts-push-20261015/plan.json",
+      "sha256": "dc48d716b7a44da26f550461a8f4921ee94d2cf3031fbddfde00ef06c83424ad",
+      "bytes": 2068468
+    },
+    {
+      "file": "tools/artwork-challenge-darkness-fronts-push-20261015/publish.mjs",
+      "sha256": "f2781b85c87cd2ab0e1e08002506f4c9a9f03c575be45c7390f829cad0fac156",
+      "bytes": 6360
+    },
+    {
+      "file": "tools/artwork-challenge-darkness-fronts-push-20261015/publish.test.mjs",
+      "sha256": "973f75baa78d6ea86a60646bfb4f80fd36653a1a02c1e5d0de3d5907f5aba128",
+      "bytes": 24353
+    },
+    {
+      "file": "tools/artwork-challenge-darkness-fronts-push-20261015/README.md",
+      "sha256": "81924fc92e1764ab765d2fff1e32d847d51e916d47d1e4424ead0401a94195cb",
+      "bytes": 1583
+    },
+    {
+      "file": "tools/artwork-challenge-darkness-fronts-push-20261015/saved-targets.json",
+      "sha256": "5b3bfb8bd2c4455b2761f9211a7d59d1759b458ab4a6397a90e611cf66bebacb",
+      "bytes": 41661
+    },
+    {
+      "file": "tools/artwork-challenge-darkness-fronts-push-20261015/source-proof.mjs",
+      "sha256": "b069ccc9b95802a17e081f13bdb18a5fb1c1d39e93aa90910ad1ebbafb3dd643",
+      "bytes": 124937
+    },
+    {
+      "file": "tools/artwork-challenge-darkness-fronts-push-20261015/validation.json",
+      "sha256": "bdd86f31c3479b52b1cc45f5347b19ba4559194da82a96526571c93eb45de6c6",
+      "bytes": 2829
+    },
+    {
+      "file": "tools/artwork-challenge-darkness-fronts-push-20261015/verify-packages.mjs",
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841",
+      "bytes": 1495
+    },
+    {
+      "file": ".github/workflows/artwork-challenge-darkness-fronts-push-20261015.yml",
+      "sha256": "0947d3354fdcc019fee7150603e3741f5aa023f032c68dda87cda78aca88c1cd",
+      "bytes": 3793
+    },
+    {
+      "file": "tools/artwork-leaders-tcgcollector-fronts-push-20261015/.gitattributes",
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+      "bytes": 14
+    },
+    {
+      "file": "tools/artwork-leaders-tcgcollector-fronts-push-20261015/.gitignore",
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "bytes": 19
+    },
+    {
+      "file": "tools/artwork-leaders-tcgcollector-fronts-push-20261015/approval.json",
+      "sha256": "bd892f96a5a9a1f64785180c818b1c89b114b7047c52401cbe32cb8e8e0cd9e2",
+      "bytes": 1702
+    },
+    {
+      "file": "tools/artwork-leaders-tcgcollector-fronts-push-20261015/before-query.sql",
+      "sha256": "54aca5e87ea4a4cc6baba99ae4dc492ac6b9339460028673b4513d34f65e7d93",
+      "bytes": 3223
+    },
+    {
+      "file": "tools/artwork-leaders-tcgcollector-fronts-push-20261015/download-package.py",
+      "sha256": "51555df4c4282f1ff987f74126afe7e23016342287473381aeb84dc406c7d830",
+      "bytes": 6103
+    },
+    {
+      "file": "tools/artwork-leaders-tcgcollector-fronts-push-20261015/download-package.test.py",
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41",
+      "bytes": 6940
+    },
+    {
+      "file": "tools/artwork-leaders-tcgcollector-fronts-push-20261015/freeze-inputs.json",
+      "sha256": "f93c8bc8f35bd6f5aead4f8041f158585803469aa0e9fd849f7978edfb319a40",
+      "bytes": 6218
+    },
+    {
+      "file": "tools/artwork-leaders-tcgcollector-fronts-push-20261015/freeze-local.mjs",
+      "sha256": "a7dd1fc97d5c28653cd14b5ebe9799b070e087bd5ad0cdc5eda4f70ebdd78c11",
+      "bytes": 10393
+    },
+    {
+      "file": "tools/artwork-leaders-tcgcollector-fronts-push-20261015/frozen.mjs",
+      "sha256": "77e102e1ad975fda8bd550370caa164cba1330c965a9a44ab325c33a098a4351",
+      "bytes": 18572
+    },
+    {
+      "file": "tools/artwork-leaders-tcgcollector-fronts-push-20261015/identity-table.json",
+      "sha256": "b739e77c3d211a69e6da9ae11f92c23eef0ef8abccc807c2bfca6014e4efc67a",
+      "bytes": 3150
+    },
+    {
+      "file": "tools/artwork-leaders-tcgcollector-fronts-push-20261015/metadata-guard.mjs",
+      "sha256": "36fd832753297ab11558456cd4d94d9f99c78e023284e3a1e5f492a7db200441",
+      "bytes": 11541
+    },
+    {
+      "file": "tools/artwork-leaders-tcgcollector-fronts-push-20261015/plan.json",
+      "sha256": "bbc2786b263b482444d8a2581d5fdf09bb75ee0e37c095906daef0ed8b4f1e74",
+      "bytes": 70804
+    },
+    {
+      "file": "tools/artwork-leaders-tcgcollector-fronts-push-20261015/publish.mjs",
+      "sha256": "311c317d2521dca5d062eb97510c26260620599474cdd9ab765eda8629522ca2",
+      "bytes": 7074
+    },
+    {
+      "file": "tools/artwork-leaders-tcgcollector-fronts-push-20261015/publish.test.mjs",
+      "sha256": "e8b4880b51d6ee3f9b93593a51f422ce6d52aa36ed6041c45ff7e5a6772b39eb",
+      "bytes": 28609
+    },
+    {
+      "file": "tools/artwork-leaders-tcgcollector-fronts-push-20261015/README.md",
+      "sha256": "5cc48b06498556bbed16d1a5813e20060e2156ec1c9bea64426a61e55e81d076",
+      "bytes": 1713
+    },
+    {
+      "file": "tools/artwork-leaders-tcgcollector-fronts-push-20261015/saved-targets.json",
+      "sha256": "702d5311eefad4a7faa629239de068a95a2039370197c3a7e17ac5aeb4e0de09",
+      "bytes": 1287
+    },
+    {
+      "file": "tools/artwork-leaders-tcgcollector-fronts-push-20261015/source-proof.mjs",
+      "sha256": "c15e058b16754ce107c4d2917538c7777086c31d71de2335a4000755db79da38",
+      "bytes": 9169
+    },
+    {
+      "file": "tools/artwork-leaders-tcgcollector-fronts-push-20261015/validation.json",
+      "sha256": "1c8bb37f0415a526a4a5c0734d2259625d57b7bd0e2d1527a639d715bcf6dc2f",
+      "bytes": 3233
+    },
+    {
+      "file": "tools/artwork-leaders-tcgcollector-fronts-push-20261015/verify-packages.mjs",
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841",
+      "bytes": 1495
+    },
+    {
+      "file": ".github/workflows/artwork-leaders-tcgcollector-fronts-push-20261015.yml",
+      "sha256": "d94d3083b88225340581dbfcfc27b6d2545e19886f3605470d186793f334d81b",
+      "bytes": 3828
+    },
+    {
+      "file": "tools/artwork-mc-basic-energy-fronts-push-20261015/.gitattributes",
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+      "bytes": 14
+    },
+    {
+      "file": "tools/artwork-mc-basic-energy-fronts-push-20261015/.gitignore",
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "bytes": 19
+    },
+    {
+      "file": "tools/artwork-mc-basic-energy-fronts-push-20261015/approval.json",
+      "sha256": "9b0c2c490eff8ea690a359f9505020bbd1920988dfe66cdff4b5bc83835d74b2",
+      "bytes": 1683
+    },
+    {
+      "file": "tools/artwork-mc-basic-energy-fronts-push-20261015/before-query.sql",
+      "sha256": "e867bbe5efb753b55da54f7081fe58b30d7a4139fb60a15a1ff31e0ba1c9a019",
+      "bytes": 5249
+    },
+    {
+      "file": "tools/artwork-mc-basic-energy-fronts-push-20261015/download-package.py",
+      "sha256": "158504a81c05d79eebb74ae24e280184c3f5c72a9dccc5f0d2b919869e58aa32",
+      "bytes": 6093
+    },
+    {
+      "file": "tools/artwork-mc-basic-energy-fronts-push-20261015/download-package.test.py",
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41",
+      "bytes": 6940
+    },
+    {
+      "file": "tools/artwork-mc-basic-energy-fronts-push-20261015/freeze-inputs.json",
+      "sha256": "b9463177be4591502465ed5588a189ede11c41c009f32b55a923b56ee16cebee",
+      "bytes": 6315
+    },
+    {
+      "file": "tools/artwork-mc-basic-energy-fronts-push-20261015/freeze-local.mjs",
+      "sha256": "7e9784bae3a40b98362e3627bb170219e8b2a49d74ae0073fc5c9a3bca17ab62",
+      "bytes": 11433
+    },
+    {
+      "file": "tools/artwork-mc-basic-energy-fronts-push-20261015/frozen.mjs",
+      "sha256": "748ffba0d1ffd005c45bbc784401b8dc0ce1719f93eabd77c8f04b58d7e57e9f",
+      "bytes": 23504
+    },
+    {
+      "file": "tools/artwork-mc-basic-energy-fronts-push-20261015/identity-table.json",
+      "sha256": "2d1621e57e120401e6d8f8d1a216fd9b34309ce26758f396b77027b03fce7289",
+      "bytes": 8395
+    },
+    {
+      "file": "tools/artwork-mc-basic-energy-fronts-push-20261015/metadata-guard.mjs",
+      "sha256": "eff4c2b297cc631b1fcf9d6343831f6b0f54117adcf272d0f13f0c8623b1700e",
+      "bytes": 11605
+    },
+    {
+      "file": "tools/artwork-mc-basic-energy-fronts-push-20261015/plan.json",
+      "sha256": "8be6a84e59101aa8a1903966c68a8882e55fd7707355539878838d7461786a83",
+      "bytes": 174679
+    },
+    {
+      "file": "tools/artwork-mc-basic-energy-fronts-push-20261015/publish.mjs",
+      "sha256": "91f758c6c3afc774a2dc3cdf3dc623fd3cf4974818504a10404d2cfe22935b04",
+      "bytes": 6909
+    },
+    {
+      "file": "tools/artwork-mc-basic-energy-fronts-push-20261015/publish.test.mjs",
+      "sha256": "b7c3efb16198165d5739ec9f341a7a482a8f12644c586470ac2e8f49756ec62e",
+      "bytes": 28135
+    },
+    {
+      "file": "tools/artwork-mc-basic-energy-fronts-push-20261015/README.md",
+      "sha256": "9aefe13dfb1dbe12004098dcb4779d532fbcf23fa2315fee4c42848aef369243",
+      "bytes": 1353
+    },
+    {
+      "file": "tools/artwork-mc-basic-energy-fronts-push-20261015/saved-targets.json",
+      "sha256": "5a6458909042bcff2ffac23ac3fc2f82286a3b6cc48a0560a629046367af343c",
+      "bytes": 3411
+    },
+    {
+      "file": "tools/artwork-mc-basic-energy-fronts-push-20261015/source-proof.mjs",
+      "sha256": "1df16926f8344ffd84800e96ac446a70382b7c904d5eb355cdcc664c3de21edd",
+      "bytes": 15858
+    },
+    {
+      "file": "tools/artwork-mc-basic-energy-fronts-push-20261015/validation.json",
+      "sha256": "0851eba9b296ac25fe32d7bb2df1bfa0f579a697b7ea0695ea4a351b1dd534c9",
+      "bytes": 3604
+    },
+    {
+      "file": "tools/artwork-mc-basic-energy-fronts-push-20261015/verify-packages.mjs",
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841",
+      "bytes": 1495
+    },
+    {
+      "file": ".github/workflows/artwork-mc-basic-energy-fronts-push-20261015.yml",
+      "sha256": "cb1a952f0e38356daeffd220b0b6092717b8b316aef547f2dd2501d148a22fbd",
+      "bytes": 3730
+    },
+    {
+      "file": "tools/artwork-expansion-base-fronts-push-20261015/.gitattributes",
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+      "bytes": 14
+    },
+    {
+      "file": "tools/artwork-expansion-base-fronts-push-20261015/.gitignore",
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "bytes": 19
+    },
+    {
+      "file": "tools/artwork-expansion-base-fronts-push-20261015/approval.json",
+      "sha256": "cb56ea8f83bc95a55a00b8a07185ef3f1b6b03e35fb6fe8f1c68a093f8187e1a",
+      "bytes": 2281
+    },
+    {
+      "file": "tools/artwork-expansion-base-fronts-push-20261015/before-query.sql",
+      "sha256": "db2d463f81989d25659d678277512615594da7a12108a4b6f9e99942c8649a0a",
+      "bytes": 42522
+    },
+    {
+      "file": "tools/artwork-expansion-base-fronts-push-20261015/download-package.py",
+      "sha256": "20ead5390b58c3ec3010ba183086c80db23ffc63fd37084cf1b7b8817cc789e1",
+      "bytes": 6091
+    },
+    {
+      "file": "tools/artwork-expansion-base-fronts-push-20261015/download-package.test.py",
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41",
+      "bytes": 6940
+    },
+    {
+      "file": "tools/artwork-expansion-base-fronts-push-20261015/freeze-inputs.json",
+      "sha256": "0dba537dfa64e271f2e14005084044b54e37c563ec8dbd421f773c230f7978f9",
+      "bytes": 6865
+    },
+    {
+      "file": "tools/artwork-expansion-base-fronts-push-20261015/freeze-local.mjs",
+      "sha256": "96b04739bbcede06fcce2821b049c00fc1564f81668c238fa97aa17af1e73386",
+      "bytes": 12045
+    },
+    {
+      "file": "tools/artwork-expansion-base-fronts-push-20261015/frozen.mjs",
+      "sha256": "82c72f4c33212000b69e05ec9091fb6061b29e4f274e881976762771bf62bf06",
+      "bytes": 89877
+    },
+    {
+      "file": "tools/artwork-expansion-base-fronts-push-20261015/identity-table.json",
+      "sha256": "df2a7dba52aa3c3b6fed51091429e59612e240f7f7a7dd3714a8375fb14648f3",
+      "bytes": 91115
+    },
+    {
+      "file": "tools/artwork-expansion-base-fronts-push-20261015/metadata-guard.mjs",
+      "sha256": "b07b7275aca6b1b4069519334137c2e7ae479ae9c6341dee4905c95be6d60ad5",
+      "bytes": 9255
+    },
+    {
+      "file": "tools/artwork-expansion-base-fronts-push-20261015/plan.json",
+      "sha256": "e4e22a917a248d7119fc78a74c4b0f27ad88e86dea43af97fbe9797b0b56a0bc",
+      "bytes": 2079265
+    },
+    {
+      "file": "tools/artwork-expansion-base-fronts-push-20261015/publish.mjs",
+      "sha256": "b2e4abe8ea867915d611f03506a1b45981b43f402da92d9b45ffa2c1dcee6da0",
+      "bytes": 6320
+    },
+    {
+      "file": "tools/artwork-expansion-base-fronts-push-20261015/publish.test.mjs",
+      "sha256": "787ecac6522be954274cf5688ae633b76cf43ddaaefe205ba414ab7ebdeb5c56",
+      "bytes": 30614
+    },
+    {
+      "file": "tools/artwork-expansion-base-fronts-push-20261015/README.md",
+      "sha256": "29ae1f8d6c1df2c4b0ee30982d3a7921f352ae51de705b98a0d5e4ba427815c6",
+      "bytes": 2198
+    },
+    {
+      "file": "tools/artwork-expansion-base-fronts-push-20261015/saved-targets.json",
+      "sha256": "c4980f73313e6908074e036b20e7f837f16cad8e88dff6fcb18b8bd343f1c811",
+      "bytes": 42087
+    },
+    {
+      "file": "tools/artwork-expansion-base-fronts-push-20261015/source-proof.mjs",
+      "sha256": "d7d14a0d7d8deadc94d392996d6eea9a5d6c5fbff557488888fd8eab3b2b7168",
+      "bytes": 143162
+    },
+    {
+      "file": "tools/artwork-expansion-base-fronts-push-20261015/validation.json",
+      "sha256": "ec51b810e24d518e22ad681c090aa34151ebf9a0503280596d5b1fa0d03f7384",
+      "bytes": 5654
+    },
+    {
+      "file": "tools/artwork-expansion-base-fronts-push-20261015/verify-packages.mjs",
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841",
+      "bytes": 1495
+    },
+    {
+      "file": ".github/workflows/artwork-expansion-base-fronts-push-20261015.yml",
+      "sha256": "ee2e4dfb10db7521b345fadccac93d89e9f5ff6b9592a96f049408935ab8e84f",
+      "bytes": 3712
+    },
+    {
+      "file": ".github/workflows/artwork-aquapolis-shared-fronts-push-20261015.yml",
+      "sha256": "487a14b5d7d5e448046b09f5a811bf1c7d9fe9f500c22fb7cf5217e56bf07b1a",
+      "bytes": 3753
+    },
+    {
+      "file": "tools/artwork-aquapolis-shared-fronts-push-20261015/.gitattributes",
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+      "bytes": 14
+    },
+    {
+      "file": "tools/artwork-aquapolis-shared-fronts-push-20261015/.gitignore",
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "bytes": 19
+    },
+    {
+      "file": "tools/artwork-aquapolis-shared-fronts-push-20261015/approval.json",
+      "sha256": "af20708b53b91319d99acfd0d256752b1c8975802a83be4b0a4c8682d8d161b0",
+      "bytes": 2455
+    },
+    {
+      "file": "tools/artwork-aquapolis-shared-fronts-push-20261015/before-query.sql",
+      "sha256": "4dca4a09e0c788c4f8f02dff070d4aa8323ef6775daab519232c9be41067bc53",
+      "bytes": 2727
+    },
+    {
+      "file": "tools/artwork-aquapolis-shared-fronts-push-20261015/download-package.py",
+      "sha256": "2b3d4433382160f1b594066e9f1ace6866b0427c45f783485abe8a6ecae1fa4d",
+      "bytes": 6106
+    },
+    {
+      "file": "tools/artwork-aquapolis-shared-fronts-push-20261015/download-package.test.py",
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41",
+      "bytes": 6940
+    },
+    {
+      "file": "tools/artwork-aquapolis-shared-fronts-push-20261015/freeze-inputs.json",
+      "sha256": "508b6fbf7267f1caa55b69119b18e59c1b13a15af17e96a473d7a3b75244e207",
+      "bytes": 7226
+    },
+    {
+      "file": "tools/artwork-aquapolis-shared-fronts-push-20261015/freeze-local.mjs",
+      "sha256": "2b31d37131496e15ef5bb9244dc8890273f3e6b66f69895f687b148cf0fb28a7",
+      "bytes": 1911
+    },
+    {
+      "file": "tools/artwork-aquapolis-shared-fronts-push-20261015/frozen.mjs",
+      "sha256": "dc679cbecfe6faebf6503e5405448ff64c2537b34ebc826ff86118cbdeae2d18",
+      "bytes": 14854
+    },
+    {
+      "file": "tools/artwork-aquapolis-shared-fronts-push-20261015/identity-table.json",
+      "sha256": "7507d6784edba2673e3fa6b638c4fffa7633264136c7fd05d0d5d57e58d84672",
+      "bytes": 2021
+    },
+    {
+      "file": "tools/artwork-aquapolis-shared-fronts-push-20261015/metadata-guard.mjs",
+      "sha256": "e285ba31fc451dac4f7db944a9cdcacbfd03d40e91eb4dc319d142b6567635e9",
+      "bytes": 11963
+    },
+    {
+      "file": "tools/artwork-aquapolis-shared-fronts-push-20261015/plan.json",
+      "sha256": "96f6a0cd92b31b9e37bef04a6dfa7cec52366e780095a5c16f8c31f6320da43a",
+      "bytes": 49770
+    },
+    {
+      "file": "tools/artwork-aquapolis-shared-fronts-push-20261015/publish.mjs",
+      "sha256": "6969e6a6cae7454e61cee5bce1f6217acd7f3cf848a399d171764100e129661e",
+      "bytes": 7043
+    },
+    {
+      "file": "tools/artwork-aquapolis-shared-fronts-push-20261015/publish.test.mjs",
+      "sha256": "c10e15e57689c25d8ad551a8766c2a1361f1544d832bd06301648babc3df5ef1",
+      "bytes": 22173
+    },
+    {
+      "file": "tools/artwork-aquapolis-shared-fronts-push-20261015/README.md",
+      "sha256": "ebe8d0185f6b10515b3a464aa6b949c394b06f53c3d9dae3a47bfdbcb39adcf2",
+      "bytes": 1185
+    },
+    {
+      "file": "tools/artwork-aquapolis-shared-fronts-push-20261015/saved-targets.json",
+      "sha256": "96b95a57b33bc9778292f70297629cdcaa30877c85b9d56a395ed27ab3814e41",
+      "bytes": 923
+    },
+    {
+      "file": "tools/artwork-aquapolis-shared-fronts-push-20261015/source-proof.mjs",
+      "sha256": "f3046df0d5894480ec732dbb1c9bf73a7d3cf609b0c2fd9e9babc8b8adb6749b",
+      "bytes": 11702
+    },
+    {
+      "file": "tools/artwork-aquapolis-shared-fronts-push-20261015/validation.json",
+      "sha256": "c05e435dfd7399c1ac14ff734259186271e55583d77b563e29c366c41c7c4a2c",
+      "bytes": 3240
+    },
+    {
+      "file": "tools/artwork-aquapolis-shared-fronts-push-20261015/verify-packages.mjs",
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841",
+      "bytes": 1495
+    },
+    {
+      "file": ".github/workflows/artwork-neo2-eevee-front-push-20261015.yml",
+      "sha256": "cb10205782d6742f4776f64fb5a8a8d5098cb439fed6699b10e42bfabe6a4f33",
+      "bytes": 3623
+    },
+    {
+      "file": "tools/artwork-neo2-eevee-front-push-20261015/.gitattributes",
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+      "bytes": 14
+    },
+    {
+      "file": "tools/artwork-neo2-eevee-front-push-20261015/.gitignore",
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "bytes": 19
+    },
+    {
+      "file": "tools/artwork-neo2-eevee-front-push-20261015/approval.json",
+      "sha256": "a08c48c4a85b1a2f691e1975fc6f0d4a9e13a63b24559f0a43257b212b3c1b5b",
+      "bytes": 2150
+    },
+    {
+      "file": "tools/artwork-neo2-eevee-front-push-20261015/before-query.sql",
+      "sha256": "6d1c55189bbc20ece65045e3d8949ddd65e0c0ee2ed8ae463fe1eb31b410c80d",
+      "bytes": 2025
+    },
+    {
+      "file": "tools/artwork-neo2-eevee-front-push-20261015/download-package.py",
+      "sha256": "f9bc9f3d02fa7e59ea17b99165b14427a26a51d884a826151ff23e12c0bcd11a",
+      "bytes": 6109
+    },
+    {
+      "file": "tools/artwork-neo2-eevee-front-push-20261015/download-package.test.py",
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41",
+      "bytes": 6940
+    },
+    {
+      "file": "tools/artwork-neo2-eevee-front-push-20261015/freeze-inputs.json",
+      "sha256": "b6d7018899b82f0162bc67fbbd1ef06dc7890af7092e06044dfae9d3e148d08f",
+      "bytes": 6773
+    },
+    {
+      "file": "tools/artwork-neo2-eevee-front-push-20261015/freeze-local.mjs",
+      "sha256": "52b9a0526592b928c0edab0a24d304dfa5197cac29381dd00eeac95c9bb5179d",
+      "bytes": 1907
+    },
+    {
+      "file": "tools/artwork-neo2-eevee-front-push-20261015/frozen.mjs",
+      "sha256": "61a72d73e49a1b6dd4e52d21b2539ab615097dc3bd45f1d5e31876beb8a76a76",
+      "bytes": 15389
+    },
+    {
+      "file": "tools/artwork-neo2-eevee-front-push-20261015/identity-table.json",
+      "sha256": "c52ef9fdd93ea75c149be4fd3c3ece19f230f535f69cb7d42a90224ed5aa5663",
+      "bytes": 985
+    },
+    {
+      "file": "tools/artwork-neo2-eevee-front-push-20261015/metadata-guard.mjs",
+      "sha256": "078bacf409319a9c76e56fa78d772be0a8fce5538fa7b3aabec144a88290584d",
+      "bytes": 12056
+    },
+    {
+      "file": "tools/artwork-neo2-eevee-front-push-20261015/plan.json",
+      "sha256": "0ac7a38d3b021d5559edf822dcd4a2baf9bad6bb906030b40052e402cbf5df43",
+      "bytes": 30322
+    },
+    {
+      "file": "tools/artwork-neo2-eevee-front-push-20261015/publish.mjs",
+      "sha256": "e657c6c2824c7bdab92440b762e9eeb741d49003dba57c36c8501d3715f29402",
+      "bytes": 7171
+    },
+    {
+      "file": "tools/artwork-neo2-eevee-front-push-20261015/publish.test.mjs",
+      "sha256": "cf814e27b77c44076d3254dba816b51094607bbdab9eaf6972c2881dc5cfa04d",
+      "bytes": 24152
+    },
+    {
+      "file": "tools/artwork-neo2-eevee-front-push-20261015/README.md",
+      "sha256": "133e69c264323706a1778489e5f84aab6fb4f699bee5c90323c79e29921a92aa",
+      "bytes": 1403
+    },
+    {
+      "file": "tools/artwork-neo2-eevee-front-push-20261015/saved-targets.json",
+      "sha256": "41c81d733d9da870b27499571fa9ec2a272ae32ca92c229390326fbba68a5b8b",
+      "bytes": 412
+    },
+    {
+      "file": "tools/artwork-neo2-eevee-front-push-20261015/source-proof.mjs",
+      "sha256": "57381f7d4f142776a16408afd8ab2997f5bf56be7cbde85bfe8e061ea4e7d9a9",
+      "bytes": 5831
+    },
+    {
+      "file": "tools/artwork-neo2-eevee-front-push-20261015/validation.json",
+      "sha256": "5f84bfa4d97c6f38a422d3743bd696ca3d0d201544df8e8930407c0d94c27397",
+      "bytes": 3862
+    },
+    {
+      "file": "tools/artwork-neo2-eevee-front-push-20261015/verify-packages.mjs",
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841",
+      "bytes": 1495
+    },
+    {
+      "file": ".github/workflows/artwork-sm1plus-sharper-fronts-push-20261015.yml",
+      "sha256": "2909fc9893d8a2e21684d6d5ee9db2be22e17606c8094cbb53a6dea880bf3150",
+      "bytes": 3734
+    },
+    {
+      "file": "tools/artwork-sm1plus-sharper-fronts-push-20261015/.gitattributes",
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+      "bytes": 14
+    },
+    {
+      "file": "tools/artwork-sm1plus-sharper-fronts-push-20261015/.gitignore",
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "bytes": 19
+    },
+    {
+      "file": "tools/artwork-sm1plus-sharper-fronts-push-20261015/approval.json",
+      "sha256": "72e8ceeb2f92e2b5d1dd4d83df79d732e2055638002bc5026aac6844abdfb48b",
+      "bytes": 2308
+    },
+    {
+      "file": "tools/artwork-sm1plus-sharper-fronts-push-20261015/before-query.sql",
+      "sha256": "d0748b76b6c5fff1c2724f5b6cd601512e281215cf6b7d4bb6ddff194930cbb6",
+      "bytes": 2415
+    },
+    {
+      "file": "tools/artwork-sm1plus-sharper-fronts-push-20261015/download-package.py",
+      "sha256": "ceccd700dfda57ccd69aba574d3ec060ef158cbeca3337ad54493ca0216e9235",
+      "bytes": 6113
+    },
+    {
+      "file": "tools/artwork-sm1plus-sharper-fronts-push-20261015/download-package.test.py",
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41",
+      "bytes": 6940
+    },
+    {
+      "file": "tools/artwork-sm1plus-sharper-fronts-push-20261015/freeze-inputs.json",
+      "sha256": "d2be52809e603519ed69468e07f0c1cb2ffabf38d3a00d685e74fc2beb5d6c00",
+      "bytes": 6794
+    },
+    {
+      "file": "tools/artwork-sm1plus-sharper-fronts-push-20261015/freeze-local.mjs",
+      "sha256": "a46c5dc71e1fcbb7cd6e6e358163a7aa450d75cb5dc4dc358df47ab76964ca3b",
+      "bytes": 1912
+    },
+    {
+      "file": "tools/artwork-sm1plus-sharper-fronts-push-20261015/frozen.mjs",
+      "sha256": "5647baf39dcbb582bab6297284edc4e550b92913e0cb69a2b777fd0356c0c231",
+      "bytes": 15407
+    },
+    {
+      "file": "tools/artwork-sm1plus-sharper-fronts-push-20261015/identity-table.json",
+      "sha256": "78db7be5a93785f1f5d852f546bcff63b148211baff68062e7a2922aec327710",
+      "bytes": 1778
+    },
+    {
+      "file": "tools/artwork-sm1plus-sharper-fronts-push-20261015/metadata-guard.mjs",
+      "sha256": "1e77588bf05efd7d03b4418a192a52d4343a2f522c08ba3b45bbec51428ac879",
+      "bytes": 12052
+    },
+    {
+      "file": "tools/artwork-sm1plus-sharper-fronts-push-20261015/plan.json",
+      "sha256": "295673228ed3273dbb02291973f3ae35f36bb94428a5b99711ef8fff8c80e85c",
+      "bytes": 52122
+    },
+    {
+      "file": "tools/artwork-sm1plus-sharper-fronts-push-20261015/publish.mjs",
+      "sha256": "e1a211211f75575d252cb99891470514985296024821e7c0c94266bbf8822668",
+      "bytes": 7238
+    },
+    {
+      "file": "tools/artwork-sm1plus-sharper-fronts-push-20261015/publish.test.mjs",
+      "sha256": "d212821c1090ca4430e79f6cd5a060bd3b69410c93766d5aeb06be46068b430d",
+      "bytes": 27356
+    },
+    {
+      "file": "tools/artwork-sm1plus-sharper-fronts-push-20261015/README.md",
+      "sha256": "ec05a31ee04ee1441ef3ce81d7429395edf25040c1bdf22b121ca3a7dd965415",
+      "bytes": 1916
+    },
+    {
+      "file": "tools/artwork-sm1plus-sharper-fronts-push-20261015/saved-targets.json",
+      "sha256": "cbf6166649e4694af875762372061f71e760f0f43c462712a17ae3370ee58fcb",
+      "bytes": 904
+    },
+    {
+      "file": "tools/artwork-sm1plus-sharper-fronts-push-20261015/source-proof.mjs",
+      "sha256": "7e6bf48ed8262cd850703977bdc0df6f2fd83c42cb355423edccce688acb3375",
+      "bytes": 10076
+    },
+    {
+      "file": "tools/artwork-sm1plus-sharper-fronts-push-20261015/validation.json",
+      "sha256": "661a5aa11cec21356892bb3088df9dfea90e202811e25cfe4755bf2c9e1ceb73",
+      "bytes": 4806
+    },
+    {
+      "file": "tools/artwork-sm1plus-sharper-fronts-push-20261015/verify-packages.mjs",
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841",
+      "bytes": 1495
+    },
+    {
+      "file": ".github/workflows/artwork-pcg8-celebi-front-push-20261015.yml",
+      "sha256": "94fa4ed2b11ce91f871466911def8a29b4b45769155e2340661f14d4e8cefcac",
+      "bytes": 3641
+    },
+    {
+      "file": "tools/artwork-pcg8-celebi-front-push-20261015/.gitattributes",
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+      "bytes": 14
+    },
+    {
+      "file": "tools/artwork-pcg8-celebi-front-push-20261015/.gitignore",
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "bytes": 19
+    },
+    {
+      "file": "tools/artwork-pcg8-celebi-front-push-20261015/approval.json",
+      "sha256": "b7b003e8acfc1935ef6dcac9cbf6129db4ccd505c957f6707dbb8e8db80b8b14",
+      "bytes": 2543
+    },
+    {
+      "file": "tools/artwork-pcg8-celebi-front-push-20261015/before-query.sql",
+      "sha256": "a3e6618474c09bc2a86045793c2d9ac9898d2f026d409c64850aedae83a03a1f",
+      "bytes": 2026
+    },
+    {
+      "file": "tools/artwork-pcg8-celebi-front-push-20261015/download-package.py",
+      "sha256": "0e4a4c4c7c037fa535146fe083bac65ad8c91097f314736ad0ca01fa12d6fd56",
+      "bytes": 6111
+    },
+    {
+      "file": "tools/artwork-pcg8-celebi-front-push-20261015/download-package.test.py",
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41",
+      "bytes": 6940
+    },
+    {
+      "file": "tools/artwork-pcg8-celebi-front-push-20261015/freeze-inputs.json",
+      "sha256": "4d83f90284eb67da4b9963e801f21aa26a374837ab8bd359e07af090b7ea9753",
+      "bytes": 7123
+    },
+    {
+      "file": "tools/artwork-pcg8-celebi-front-push-20261015/freeze-local.mjs",
+      "sha256": "9c70a7691cddce2e382c9b4fb0648e221f5655ddd0991ce53e86b9e5e52b32ba",
+      "bytes": 1908
+    },
+    {
+      "file": "tools/artwork-pcg8-celebi-front-push-20261015/frozen.mjs",
+      "sha256": "824e17cd2b89a8c2a54c49dd5385c831511ef1e83b96e05dc5e7f15f8094e6b1",
+      "bytes": 15486
+    },
+    {
+      "file": "tools/artwork-pcg8-celebi-front-push-20261015/identity-table.json",
+      "sha256": "72cfc156a1883775227c0d994b39d397264f1d2f6faef878f894c03ee3a20b09",
+      "bytes": 995
+    },
+    {
+      "file": "tools/artwork-pcg8-celebi-front-push-20261015/metadata-guard.mjs",
+      "sha256": "8c048fd47ed07474a25076bce70a00cb309dc7cc88795a5dc315d03dc009c39c",
+      "bytes": 12055
+    },
+    {
+      "file": "tools/artwork-pcg8-celebi-front-push-20261015/plan.json",
+      "sha256": "de0193dad540bd6b9d74ef78feb2a47041acc14ec77d0307c784b6c768f76556",
+      "bytes": 29927
+    },
+    {
+      "file": "tools/artwork-pcg8-celebi-front-push-20261015/publish.mjs",
+      "sha256": "730309e497b593da301b427b128744b2615569f5ae8eaa7f614b5d9eab87c0be",
+      "bytes": 7187
+    },
+    {
+      "file": "tools/artwork-pcg8-celebi-front-push-20261015/publish.test.mjs",
+      "sha256": "1d6043f77aaa8cc38dad62bd26ddcabb6f03341d7c16d6c807b4ed509293c6d6",
+      "bytes": 27974
+    },
+    {
+      "file": "tools/artwork-pcg8-celebi-front-push-20261015/README.md",
+      "sha256": "0bbf72ae21d98d52c034d6ae7a01fa622fb5cf73c1e51d4e165c1f3a1d7f93ff",
+      "bytes": 1801
+    },
+    {
+      "file": "tools/artwork-pcg8-celebi-front-push-20261015/saved-targets.json",
+      "sha256": "7ec57324f60f2e5f8f7175c45033df70e3424311c49b9bd890d487971d48968a",
+      "bytes": 422
+    },
+    {
+      "file": "tools/artwork-pcg8-celebi-front-push-20261015/source-proof.mjs",
+      "sha256": "a0d533689d9cff348ff18875debea801fae6b5d9eea6ec3313eb466ddcf0c74e",
+      "bytes": 7923
+    },
+    {
+      "file": "tools/artwork-pcg8-celebi-front-push-20261015/validation.json",
+      "sha256": "994f1f7edce1b6fb27f1b30a37c7ab92f090be58d879e06b51ee9bd0273f667a",
+      "bytes": 4973
+    },
+    {
+      "file": "tools/artwork-pcg8-celebi-front-push-20261015/verify-packages.mjs",
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841",
+      "bytes": 1495
+    },
+    {
+      "file": ".github/workflows/artwork-tksmr-lightning2-front-push-20261015.yml",
+      "sha256": "a084b3fbe2194b2b734a068a03a780440dc745ad7ffd427897fd158c3fe9afa5",
+      "bytes": 3730
+    },
+    {
+      "file": "tools/artwork-tksmr-lightning2-front-push-20261015/.gitattributes",
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+      "bytes": 14
+    },
+    {
+      "file": "tools/artwork-tksmr-lightning2-front-push-20261015/.gitignore",
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "bytes": 19
+    },
+    {
+      "file": "tools/artwork-tksmr-lightning2-front-push-20261015/approval.json",
+      "sha256": "315991230ce3d91fadc90b11dd223ddc3fd25a651a3a5883725344b9e273a48f",
+      "bytes": 2406
+    },
+    {
+      "file": "tools/artwork-tksmr-lightning2-front-push-20261015/before-query.sql",
+      "sha256": "2eef13d5ea4b11315cd4a6f9f4b3c736fc4f1ad4e5a4eae80a13297f76bde1ba",
+      "bytes": 2026
+    },
+    {
+      "file": "tools/artwork-tksmr-lightning2-front-push-20261015/download-package.py",
+      "sha256": "c3a7f7aa24086e173d7a76680b050293970f4116967d8d85406bab9edeffdf64",
+      "bytes": 6120
+    },
+    {
+      "file": "tools/artwork-tksmr-lightning2-front-push-20261015/download-package.test.py",
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41",
+      "bytes": 6940
+    },
+    {
+      "file": "tools/artwork-tksmr-lightning2-front-push-20261015/freeze-inputs.json",
+      "sha256": "bc5f1d991e674319c377e21a188b928e31b28c7339ba936f32233e6531998c3b",
+      "bytes": 6835
+    },
+    {
+      "file": "tools/artwork-tksmr-lightning2-front-push-20261015/freeze-local.mjs",
+      "sha256": "c1ed1a5eebcb045f9c2489dc3eb3212f21c29f7f84ee5b4155b5855226c0aba8",
+      "bytes": 1911
+    },
+    {
+      "file": "tools/artwork-tksmr-lightning2-front-push-20261015/frozen.mjs",
+      "sha256": "ea94d4acea83b9e69ed699e5b2a5103d6c474adc21352f2f925715a45fcff61c",
+      "bytes": 15437
+    },
+    {
+      "file": "tools/artwork-tksmr-lightning2-front-push-20261015/identity-table.json",
+      "sha256": "b4e8ce7317d0a1412e4330b52aca6b38f79b1c25c011d9ee153367c11c10efb2",
+      "bytes": 1023
+    },
+    {
+      "file": "tools/artwork-tksmr-lightning2-front-push-20261015/metadata-guard.mjs",
+      "sha256": "8c048fd47ed07474a25076bce70a00cb309dc7cc88795a5dc315d03dc009c39c",
+      "bytes": 12055
+    },
+    {
+      "file": "tools/artwork-tksmr-lightning2-front-push-20261015/plan.json",
+      "sha256": "54575156221082ad95851a3b4899014b5a5aa9231ffb394edfe2785c4e46af8f",
+      "bytes": 29047
+    },
+    {
+      "file": "tools/artwork-tksmr-lightning2-front-push-20261015/publish.mjs",
+      "sha256": "6db81f894ef5c6c0e7a7687e4ec014fcad8ab5a06883e60e619e4c2ad9b39f22",
+      "bytes": 7231
+    },
+    {
+      "file": "tools/artwork-tksmr-lightning2-front-push-20261015/publish.test.mjs",
+      "sha256": "94b6fa4be258db053d3a6401fc83c3f1a4986fbae4986cd35616a2c4201bf03f",
+      "bytes": 26817
+    },
+    {
+      "file": "tools/artwork-tksmr-lightning2-front-push-20261015/README.md",
+      "sha256": "a88a259cb6cca172e1e8e0405946dda476f61979bad898ed1ff4b201a80c01c0",
+      "bytes": 1671
+    },
+    {
+      "file": "tools/artwork-tksmr-lightning2-front-push-20261015/saved-targets.json",
+      "sha256": "357fdc542cf8df83b0823f280ac75d3baf8ee78e89bac739adba41eab0f718dc",
+      "bytes": 450
+    },
+    {
+      "file": "tools/artwork-tksmr-lightning2-front-push-20261015/source-proof.mjs",
+      "sha256": "2f8441bb6ce44aa517f22f4b55527063e6aa61b0449db90bec99e7596919f05a",
+      "bytes": 7450
+    },
+    {
+      "file": "tools/artwork-tksmr-lightning2-front-push-20261015/validation.json",
+      "sha256": "30cda922d9602acf8985b0af1ce98a6a3d31c87cb8bce68f17658a37e13b54d7",
+      "bytes": 5200
+    },
+    {
+      "file": "tools/artwork-tksmr-lightning2-front-push-20261015/verify-packages.mjs",
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841",
+      "bytes": 1495
+    },
+    {
+      "file": ".github/workflows/artwork-pcg9-wooper-front-push-20261015.yml",
+      "sha256": "7415985f50934f9b7e2a6626043c961592f57ff78733c1b5717dafb2d2c298f2",
+      "bytes": 3641
+    },
+    {
+      "file": "tools/artwork-pcg9-wooper-front-push-20261015/.gitattributes",
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+      "bytes": 14
+    },
+    {
+      "file": "tools/artwork-pcg9-wooper-front-push-20261015/.gitignore",
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "bytes": 19
+    },
+    {
+      "file": "tools/artwork-pcg9-wooper-front-push-20261015/approval.json",
+      "sha256": "9b85f2b35695694b4dea3ad2b099cdb767417fbfc04ee387c1dae06458e5b804",
+      "bytes": 2620
+    },
+    {
+      "file": "tools/artwork-pcg9-wooper-front-push-20261015/before-query.sql",
+      "sha256": "a5cf31e93a6ef605f6f36e885a83e3f3ef1ba0bbc96883284dd31949af2665c8",
+      "bytes": 2026
+    },
+    {
+      "file": "tools/artwork-pcg9-wooper-front-push-20261015/download-package.py",
+      "sha256": "4262087be39c9055a1945a1131df45c76c31754676a268c355c0f72df71eb9d6",
+      "bytes": 6111
+    },
+    {
+      "file": "tools/artwork-pcg9-wooper-front-push-20261015/download-package.test.py",
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41",
+      "bytes": 6940
+    },
+    {
+      "file": "tools/artwork-pcg9-wooper-front-push-20261015/freeze-inputs.json",
+      "sha256": "f3ceabe0f83106a2c54e5e835cf4a2d08607c9ca77e5ff49b1620f8651c879fe",
+      "bytes": 6785
+    },
+    {
+      "file": "tools/artwork-pcg9-wooper-front-push-20261015/freeze-local.mjs",
+      "sha256": "214fcb4a68bbddc56b1df4f4a1ed6d6119a2216db84ba9683234a07170d9d755",
+      "bytes": 1908
+    },
+    {
+      "file": "tools/artwork-pcg9-wooper-front-push-20261015/frozen.mjs",
+      "sha256": "dfb592e4801c19f9ee6d6e27e28c69e0f8a4d717b06dd09cf30954308b9ff930",
+      "bytes": 15448
+    },
+    {
+      "file": "tools/artwork-pcg9-wooper-front-push-20261015/identity-table.json",
+      "sha256": "fd80bfcd952bd22f3d19aec543a58248fd5bc33d699c70f000d32ba0af6d6dc4",
+      "bytes": 988
+    },
+    {
+      "file": "tools/artwork-pcg9-wooper-front-push-20261015/metadata-guard.mjs",
+      "sha256": "8c048fd47ed07474a25076bce70a00cb309dc7cc88795a5dc315d03dc009c39c",
+      "bytes": 12055
+    },
+    {
+      "file": "tools/artwork-pcg9-wooper-front-push-20261015/plan.json",
+      "sha256": "fe3d4dbd3597ade317b904c2cbc2be41914c728bddaa16b540ec0141b415ca3c",
+      "bytes": 30099
+    },
+    {
+      "file": "tools/artwork-pcg9-wooper-front-push-20261015/publish.mjs",
+      "sha256": "c719fbc4963cad0bff2459652c586df74f8307b86de23d5952c9808193ab82e2",
+      "bytes": 7182
+    },
+    {
+      "file": "tools/artwork-pcg9-wooper-front-push-20261015/publish.test.mjs",
+      "sha256": "e9bdf2f73095629d2d597c46436a1f6f9aa6cda144810b0bd944e04f8dca3e5f",
+      "bytes": 29644
+    },
+    {
+      "file": "tools/artwork-pcg9-wooper-front-push-20261015/README.md",
+      "sha256": "e958c3193c3dc1287ba4b6c8eef5797738588ade648d37d33560e8a23eab3f6c",
+      "bytes": 1926
+    },
+    {
+      "file": "tools/artwork-pcg9-wooper-front-push-20261015/saved-targets.json",
+      "sha256": "fb713ecb9bf81573ac967388258243760b1f335a7720d9be1351fdaa8c4c5d92",
+      "bytes": 463
+    },
+    {
+      "file": "tools/artwork-pcg9-wooper-front-push-20261015/source-proof.mjs",
+      "sha256": "d8a84be4ac00fbac8e0b547aaa65f06f75ead0f382354218c86727dd19d5e4e8",
+      "bytes": 9532
+    },
+    {
+      "file": "tools/artwork-pcg9-wooper-front-push-20261015/validation.json",
+      "sha256": "b4a4463f2b8da9f180d6e18ea15c87b3c1649cff2eee08ebe5515edf9101beb2",
+      "bytes": 6208
+    },
+    {
+      "file": "tools/artwork-pcg9-wooper-front-push-20261015/verify-packages.mjs",
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841",
+      "bytes": 1495
+    },
+    {
+      "file": ".github/workflows/artwork-pcg8-mudkip-front-push-20261015.yml",
+      "sha256": "a1f182740d66d5f5e4dedc6610a3d13f081edb68f355cd56fe24884a3d353c19",
+      "bytes": 3641
+    },
+    {
+      "file": "tools/artwork-pcg8-mudkip-front-push-20261015/.gitattributes",
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+      "bytes": 14
+    },
+    {
+      "file": "tools/artwork-pcg8-mudkip-front-push-20261015/.gitignore",
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "bytes": 19
+    },
+    {
+      "file": "tools/artwork-pcg8-mudkip-front-push-20261015/approval.json",
+      "sha256": "1bf99343e33696398739769810a6d2cfc146845ef50a724f779b78d80470119e",
+      "bytes": 2950
+    },
+    {
+      "file": "tools/artwork-pcg8-mudkip-front-push-20261015/before-query.sql",
+      "sha256": "e7ea7a62181b271c28cfd9de28669f2ba33dd9007caff23e833b1a81ec6dd22d",
+      "bytes": 2026
+    },
+    {
+      "file": "tools/artwork-pcg8-mudkip-front-push-20261015/download-package.py",
+      "sha256": "5b575cdcc6549dab9ea584ec6ca7152c8b9e73f98be8955b3501bd83c163979f",
+      "bytes": 6111
+    },
+    {
+      "file": "tools/artwork-pcg8-mudkip-front-push-20261015/download-package.test.py",
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41",
+      "bytes": 6940
+    },
+    {
+      "file": "tools/artwork-pcg8-mudkip-front-push-20261015/freeze-inputs.json",
+      "sha256": "1b630eebb2dc05171293b402fa2758252b1046924c6d8143873f36a5fba14fd1",
+      "bytes": 7794
+    },
+    {
+      "file": "tools/artwork-pcg8-mudkip-front-push-20261015/freeze-local.mjs",
+      "sha256": "0e40fd6df8546ba91da7f6f23e671386b89f23f4d144db6a98a7d3849a5dc0d9",
+      "bytes": 1908
+    },
+    {
+      "file": "tools/artwork-pcg8-mudkip-front-push-20261015/frozen.mjs",
+      "sha256": "1202999d4ac39c6e7f13658b6496175a20e8950880b1bf4d42abcd689a94a55d",
+      "bytes": 15790
+    },
+    {
+      "file": "tools/artwork-pcg8-mudkip-front-push-20261015/identity-table.json",
+      "sha256": "d7ede8a5b95c3bf722e8b14ca6f7d0e78e0dcaccd1677c51b5e89276c2c39669",
+      "bytes": 1024
+    },
+    {
+      "file": "tools/artwork-pcg8-mudkip-front-push-20261015/metadata-guard.mjs",
+      "sha256": "8c048fd47ed07474a25076bce70a00cb309dc7cc88795a5dc315d03dc009c39c",
+      "bytes": 12055
+    },
+    {
+      "file": "tools/artwork-pcg8-mudkip-front-push-20261015/plan.json",
+      "sha256": "14f93cf2bb271af2a1d2f58d7e85a1ec39c0bd6aa934e669eec053d3184155c2",
+      "bytes": 30354
+    },
+    {
+      "file": "tools/artwork-pcg8-mudkip-front-push-20261015/publish.mjs",
+      "sha256": "6c2e55fbb69ae6880db1f220897cee2db2d2267b545a32b2e2f970c9f964cdb4",
+      "bytes": 7182
+    },
+    {
+      "file": "tools/artwork-pcg8-mudkip-front-push-20261015/publish.test.mjs",
+      "sha256": "3d3e40ce8950be0acf5e0c6eff0687ba661e4d1785693813b7a797defb89bb22",
+      "bytes": 31071
+    },
+    {
+      "file": "tools/artwork-pcg8-mudkip-front-push-20261015/README.md",
+      "sha256": "cd09a2e40cd94e52b0c471e3b932fd53bedd1e1d610c4117b8a383bbbf2d2be7",
+      "bytes": 1994
+    },
+    {
+      "file": "tools/artwork-pcg8-mudkip-front-push-20261015/saved-targets.json",
+      "sha256": "41d65d4007271d80242515d4f26bb84ea55ca2a273fd2f44bfd6aa6021a6c89f",
+      "bytes": 451
+    },
+    {
+      "file": "tools/artwork-pcg8-mudkip-front-push-20261015/source-proof.mjs",
+      "sha256": "a084b5db07d52667d302141b22c966dcde0ed74026ed850c083bab6959b1ed98",
+      "bytes": 12675
+    },
+    {
+      "file": "tools/artwork-pcg8-mudkip-front-push-20261015/validation.json",
+      "sha256": "ccc7c9178fe2afdf2057f249f5ab3b01e96a43a8c444e0c1a40b2d5afd812963",
+      "bytes": 6775
+    },
+    {
+      "file": "tools/artwork-pcg8-mudkip-front-push-20261015/verify-packages.mjs",
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841",
+      "bytes": 1495
+    },
+    {
+      "file": ".github/workflows/artwork-pcg8-luvdisc-front-push-20261016.yml",
+      "sha256": "b2d049f5af9d2d360d2f5d179fa011c64ae42e71b1a30c03df43808eb9504b37",
+      "bytes": 3659
+    },
+    {
+      "file": "tools/artwork-pcg8-luvdisc-front-push-20261016/.gitattributes",
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+      "bytes": 14
+    },
+    {
+      "file": "tools/artwork-pcg8-luvdisc-front-push-20261016/.gitignore",
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "bytes": 19
+    },
+    {
+      "file": "tools/artwork-pcg8-luvdisc-front-push-20261016/README.md",
+      "sha256": "f70c6afed70f92225813241b1daade7d0a0427ba7c6677ba8c446306c500e15e",
+      "bytes": 1993
+    },
+    {
+      "file": "tools/artwork-pcg8-luvdisc-front-push-20261016/approval.json",
+      "sha256": "f71e6f189bd9683eb45eddc1f13598af0c8979c544e341de7c01cb2709ee5d88",
+      "bytes": 2709
+    },
+    {
+      "file": "tools/artwork-pcg8-luvdisc-front-push-20261016/before-query.sql",
+      "sha256": "f10e07b6aed59b318b24928462bd80103bed6d3c9b5e777149015df3c5a715a3",
+      "bytes": 2026
+    },
+    {
+      "file": "tools/artwork-pcg8-luvdisc-front-push-20261016/download-package.py",
+      "sha256": "d83f583a0353066fdb353e3a9de0cf177cb171e3dbb04bb416d2d4aed8d68d2b",
+      "bytes": 6113
+    },
+    {
+      "file": "tools/artwork-pcg8-luvdisc-front-push-20261016/download-package.test.py",
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41",
+      "bytes": 6940
+    },
+    {
+      "file": "tools/artwork-pcg8-luvdisc-front-push-20261016/freeze-inputs.json",
+      "sha256": "055c570d32c86125006a48cdbae9624e3d78a0ec6e0d169463e166187e46ef5a",
+      "bytes": 7378
+    },
+    {
+      "file": "tools/artwork-pcg8-luvdisc-front-push-20261016/freeze-local.mjs",
+      "sha256": "dbec4d06edcc9ddb19dcc728af82c76c9cd09f4dfbc0af73cf97e7b5f86226f4",
+      "bytes": 1909
+    },
+    {
+      "file": "tools/artwork-pcg8-luvdisc-front-push-20261016/frozen.mjs",
+      "sha256": "b34dfbdfccf376371de344463f730b8f5dcc626521b371780e19f9054a689b33",
+      "bytes": 15654
+    },
+    {
+      "file": "tools/artwork-pcg8-luvdisc-front-push-20261016/identity-table.json",
+      "sha256": "1dbb29d9a61ef13659cceb39f84912b51ef52612330f4d16a894fba1edf60bf6",
+      "bytes": 1013
+    },
+    {
+      "file": "tools/artwork-pcg8-luvdisc-front-push-20261016/metadata-guard.mjs",
+      "sha256": "8c048fd47ed07474a25076bce70a00cb309dc7cc88795a5dc315d03dc009c39c",
+      "bytes": 12055
+    },
+    {
+      "file": "tools/artwork-pcg8-luvdisc-front-push-20261016/plan.json",
+      "sha256": "a485736a9db61e7f59cacf7aa0248a02addedf31a84f4f878f1df8c2338b3763",
+      "bytes": 31667
+    },
+    {
+      "file": "tools/artwork-pcg8-luvdisc-front-push-20261016/publish.mjs",
+      "sha256": "2a614383cd1784cd7129e8c21b617f5d08b0b8835dab42ff56aceea9846f50b7",
+      "bytes": 7193
+    },
+    {
+      "file": "tools/artwork-pcg8-luvdisc-front-push-20261016/publish.test.mjs",
+      "sha256": "3b20192d10879033e17b67c83a1a49a070d5aaf1b8aa2cfa075aa64fdba3f54e",
+      "bytes": 30417
+    },
+    {
+      "file": "tools/artwork-pcg8-luvdisc-front-push-20261016/saved-targets.json",
+      "sha256": "1a851d3164b28f1bb12528554194482e9792dde58c39e52f2f4a75778743a501",
+      "bytes": 440
+    },
+    {
+      "file": "tools/artwork-pcg8-luvdisc-front-push-20261016/source-proof.mjs",
+      "sha256": "769fcc8e1299dd06cc60e5eea39fb4c0962deb9594f5d02369c57c1da45afa5b",
+      "bytes": 13007
+    },
+    {
+      "file": "tools/artwork-pcg8-luvdisc-front-push-20261016/validation.json",
+      "sha256": "36040dae100349bc8f5f7a50a016a84a6a3e231de54950261a5bc14671705d47",
+      "bytes": 6429
+    },
+    {
+      "file": "tools/artwork-pcg8-luvdisc-front-push-20261016/verify-packages.mjs",
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841",
+      "bytes": 1495
+    },
+    {
+      "file": "tools/artwork-pcg-exact-two-fronts-push-20261016/.gitattributes",
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+      "bytes": 14
+    },
+    {
+      "file": "tools/artwork-pcg-exact-two-fronts-push-20261016/.gitignore",
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "bytes": 19
+    },
+    {
+      "file": "tools/artwork-pcg-exact-two-fronts-push-20261016/approval.json",
+      "sha256": "5a613138cb451ac73347a6000d34e1fd7b616786cf7261e64f729d1d89c3bb61",
+      "bytes": 2798
+    },
+    {
+      "file": "tools/artwork-pcg-exact-two-fronts-push-20261016/before-query.sql",
+      "sha256": "caec855bc881e97a7803a06e5b38f8bf789805b8cca4fb7820034189abe9146b",
+      "bytes": 2571
+    },
+    {
+      "file": "tools/artwork-pcg-exact-two-fronts-push-20261016/download-package.py",
+      "sha256": "5755d410b6e46caf22494aa3f2c175efe7b31e919aec87f8521dc8c6460cd48a",
+      "bytes": 6131
+    },
+    {
+      "file": "tools/artwork-pcg-exact-two-fronts-push-20261016/download-package.test.py",
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41",
+      "bytes": 6940
+    },
+    {
+      "file": "tools/artwork-pcg-exact-two-fronts-push-20261016/freeze-inputs.json",
+      "sha256": "c72f63038e1410ac18e41980d2f50000aaca613774466c20262292900ea74824",
+      "bytes": 9152
+    },
+    {
+      "file": "tools/artwork-pcg-exact-two-fronts-push-20261016/freeze-local.mjs",
+      "sha256": "740c40a930f5f16cd0c7cc140e6e4e0ee826e84609d3cc207ea27a6d82f89d54",
+      "bytes": 1910
+    },
+    {
+      "file": "tools/artwork-pcg-exact-two-fronts-push-20261016/frozen.mjs",
+      "sha256": "3e12760dc9d70c636a2fadfaa5cc11bafaf246198bf54e4c8d22911fd94242d9",
+      "bytes": 16146
+    },
+    {
+      "file": "tools/artwork-pcg-exact-two-fronts-push-20261016/identity-table.json",
+      "sha256": "3c131f149f6fdbaf2df1aea271d66ff00dcb749fdaf7469566b941dd81ad45c7",
+      "bytes": 1953
+    },
+    {
+      "file": "tools/artwork-pcg-exact-two-fronts-push-20261016/metadata-guard.mjs",
+      "sha256": "8c048fd47ed07474a25076bce70a00cb309dc7cc88795a5dc315d03dc009c39c",
+      "bytes": 12055
+    },
+    {
+      "file": "tools/artwork-pcg-exact-two-fronts-push-20261016/plan.json",
+      "sha256": "366a73399dc328ff64b4ef7bb5b3d0452ace3ad11c167ec8839d6b45e065c108",
+      "bytes": 53803
+    },
+    {
+      "file": "tools/artwork-pcg-exact-two-fronts-push-20261016/publish.mjs",
+      "sha256": "9718ea96fbb5e84bf6f68627d9e7c4d5fce7a2d93e658dc9df5ba4adb1dd4472",
+      "bytes": 7215
+    },
+    {
+      "file": "tools/artwork-pcg-exact-two-fronts-push-20261016/publish.test.mjs",
+      "sha256": "091743d1d7a34dd8bd57fcdb1de51b24a9ea9b30bbfc2f1c902342d71004d86c",
+      "bytes": 28018
+    },
+    {
+      "file": "tools/artwork-pcg-exact-two-fronts-push-20261016/README.md",
+      "sha256": "67149167c3dd8bd877f429876648f76a6ac63c89703a5f9c457447c07e860541",
+      "bytes": 1751
+    },
+    {
+      "file": "tools/artwork-pcg-exact-two-fronts-push-20261016/saved-targets.json",
+      "sha256": "f1a52509bc4cecb907ce0848f484c535d2715a7f29ae99597850f47dd27ea87f",
+      "bytes": 899
+    },
+    {
+      "file": "tools/artwork-pcg-exact-two-fronts-push-20261016/source-proof.mjs",
+      "sha256": "2f605d53e04979021b0f4a7ba34b1b1755d7f8e1c7deb6a4f28d8145dffd47e3",
+      "bytes": 15944
+    },
+    {
+      "file": "tools/artwork-pcg-exact-two-fronts-push-20261016/validation.json",
+      "sha256": "7f9141d8a0eab9b4c38d21e38a19416c35732fef3a8a812ed518eb26e0d04840",
+      "bytes": 8367
+    },
+    {
+      "file": "tools/artwork-pcg-exact-two-fronts-push-20261016/verify-packages.mjs",
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841",
+      "bytes": 1495
+    },
+    {
+      "file": ".github/workflows/artwork-pcg-exact-two-fronts-production.yml",
+      "sha256": "66cde81ae5e5e50b005a13f87846e1b5d6c092d9e2a890777a73cfc6fc65329a",
+      "bytes": 3700
+    },
+    {
+      "file": ".github/workflows/artwork-pcg-four-fronts-production.yml",
+      "sha256": "3da73dd67e451eebbd02538c71f9b5a0f8537cff051909d594e85ec694433806",
+      "bytes": 3610
+    },
+    {
+      "file": "tools/artwork-pcg-four-fronts-push-20261016/.gitattributes",
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+      "bytes": 14
+    },
+    {
+      "file": "tools/artwork-pcg-four-fronts-push-20261016/.gitignore",
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "bytes": 19
+    },
+    {
+      "file": "tools/artwork-pcg-four-fronts-push-20261016/approval.json",
+      "sha256": "cfa62dea549f2444706b6502918c3e48710660a1fa4c54d4de7ca0836562c6d9",
+      "bytes": 2911
+    },
+    {
+      "file": "tools/artwork-pcg-four-fronts-push-20261016/before-query.sql",
+      "sha256": "7ba7bfee68290c0e3e22a98884e7c35a4f860d3c097038566ab2130e03a4acec",
+      "bytes": 3507
+    },
+    {
+      "file": "tools/artwork-pcg-four-fronts-push-20261016/download-package.py",
+      "sha256": "45490fbd00fda85c1817d3da0b0b152f099df589e6fc46853c59e93c73fa3126",
+      "bytes": 6107
+    },
+    {
+      "file": "tools/artwork-pcg-four-fronts-push-20261016/download-package.test.py",
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41",
+      "bytes": 6940
+    },
+    {
+      "file": "tools/artwork-pcg-four-fronts-push-20261016/freeze-inputs.json",
+      "sha256": "d109a019a3a931e2ca63c775084564440e6eda55b532fca4e54a9f5ee636f7ad",
+      "bytes": 9048
+    },
+    {
+      "file": "tools/artwork-pcg-four-fronts-push-20261016/freeze-local.mjs",
+      "sha256": "d5959453e1b3ba70abb7f9a4ce04d89d0e8f151e25b9844ec37ad331425b8094",
+      "bytes": 1908
+    },
+    {
+      "file": "tools/artwork-pcg-four-fronts-push-20261016/frozen.mjs",
+      "sha256": "e03176ff24ff0efe047e880d14347465927003b3813c32a7783859b2cc533f71",
+      "bytes": 16758
+    },
+    {
+      "file": "tools/artwork-pcg-four-fronts-push-20261016/identity-table.json",
+      "sha256": "0b6499c290c9fa0cf22d5cb09cb14110c4fd6e316d9f19e178994355f0085299",
+      "bytes": 4064
+    },
+    {
+      "file": "tools/artwork-pcg-four-fronts-push-20261016/metadata-guard.mjs",
+      "sha256": "8c048fd47ed07474a25076bce70a00cb309dc7cc88795a5dc315d03dc009c39c",
+      "bytes": 12055
+    },
+    {
+      "file": "tools/artwork-pcg-four-fronts-push-20261016/plan.json",
+      "sha256": "d79fd3367b40be0d0a852ec774c761c7276ac4b8f4b10343a05de5b9134eae04",
+      "bytes": 98324
+    },
+    {
+      "file": "tools/artwork-pcg-four-fronts-push-20261016/publish.mjs",
+      "sha256": "33faca5985027a9b638f55a1765d294f933206d68ac2bf39895f2f88440ce9c7",
+      "bytes": 7160
+    },
+    {
+      "file": "tools/artwork-pcg-four-fronts-push-20261016/publish.test.mjs",
+      "sha256": "7bdb7b8c2bffef1cd6d8acc497ae76c00ce698aed49667508d14be99fbd70d18",
+      "bytes": 26833
+    },
+    {
+      "file": "tools/artwork-pcg-four-fronts-push-20261016/README.md",
+      "sha256": "67b29bf89b7cea87319f84edc13fa49202c4147f3fed81ab230b5e92e4819401",
+      "bytes": 1856
+    },
+    {
+      "file": "tools/artwork-pcg-four-fronts-push-20261016/saved-targets.json",
+      "sha256": "8b9679c99d31b7ce6f9f3f44f57a63b4a5bccd2ca4f1c916663201d77aef130a",
+      "bytes": 1769
+    },
+    {
+      "file": "tools/artwork-pcg-four-fronts-push-20261016/source-proof.mjs",
+      "sha256": "bf2df734268c0dc618da674ecf8f69996c0f262021085be9a20995a35b2d7488",
+      "bytes": 24114
+    },
+    {
+      "file": "tools/artwork-pcg-four-fronts-push-20261016/validation.json",
+      "sha256": "3f4f8e4ffe7756113138d0f99a2edc46517ae022f3ad01e4bf92d6a742884a0f",
+      "bytes": 11610
+    },
+    {
+      "file": "tools/artwork-pcg-four-fronts-push-20261016/verify-packages.mjs",
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841",
+      "bytes": 1495
+    },
+    {
+      "file": ".github/workflows/artwork-web-three-fronts-production.yml",
+      "sha256": "a09bf459b97102237a5dba34ac77f17a8f09a27f3ed306b3b12905a8a41644a9",
+      "bytes": 3628
+    },
+    {
+      "file": "tools/artwork-web-three-fronts-push-20261016/.gitattributes",
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+      "bytes": 14
+    },
+    {
+      "file": "tools/artwork-web-three-fronts-push-20261016/.gitignore",
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "bytes": 19
+    },
+    {
+      "file": "tools/artwork-web-three-fronts-push-20261016/approval.json",
+      "sha256": "9418793a2e5b0dc361c42a9f75860b4cec55a035f42742b9cd1ddcdb829e7dfa",
+      "bytes": 2940
+    },
+    {
+      "file": "tools/artwork-web-three-fronts-push-20261016/before-query.sql",
+      "sha256": "8c6998bb4e761fca25ec1f48dc99b09719e568f91bf3cf8d6d1df0cbcb345586",
+      "bytes": 2805
+    },
+    {
+      "file": "tools/artwork-web-three-fronts-push-20261016/download-package.py",
+      "sha256": "b112c016fe8942eb198e1afde1e67ccebd5dd36b6a638d8bdfc48a44334f45b8",
+      "bytes": 6107
+    },
+    {
+      "file": "tools/artwork-web-three-fronts-push-20261016/download-package.test.py",
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41",
+      "bytes": 6940
+    },
+    {
+      "file": "tools/artwork-web-three-fronts-push-20261016/freeze-inputs.json",
+      "sha256": "32c5e3fa2fbd8bdbfcecb692b86ef33fc35c9b5602bb265d6fcf49590e3c6243",
+      "bytes": 9894
+    },
+    {
+      "file": "tools/artwork-web-three-fronts-push-20261016/freeze-local.mjs",
+      "sha256": "5e79fd94a073b02c151197dd29ff57e26ecb69f8abdb240c055443ba0ac46c33",
+      "bytes": 1909
+    },
+    {
+      "file": "tools/artwork-web-three-fronts-push-20261016/frozen.mjs",
+      "sha256": "42392569e6e15a341d76d1bb3acb2aeab264b34d23baa6561148070f87d0d849",
+      "bytes": 16653
+    },
+    {
+      "file": "tools/artwork-web-three-fronts-push-20261016/identity-table.json",
+      "sha256": "7f4c30ae7537e48e8812ee17ff46ee81aa6c4264ef6c41baa67cfacb31c48442",
+      "bytes": 2890
+    },
+    {
+      "file": "tools/artwork-web-three-fronts-push-20261016/metadata-guard.mjs",
+      "sha256": "8c048fd47ed07474a25076bce70a00cb309dc7cc88795a5dc315d03dc009c39c",
+      "bytes": 12055
+    },
+    {
+      "file": "tools/artwork-web-three-fronts-push-20261016/plan.json",
+      "sha256": "634da12b31508fd5038b4b8453143ac298a7f411a741a0d0b14d409cf934a8e4",
+      "bytes": 79732
+    },
+    {
+      "file": "tools/artwork-web-three-fronts-push-20261016/publish.mjs",
+      "sha256": "8d8a9b1ab39bfc806c3c8c146b8e1dc5b94cb2a36cd5d8213ea2ed62591d9832",
+      "bytes": 7170
+    },
+    {
+      "file": "tools/artwork-web-three-fronts-push-20261016/publish.test.mjs",
+      "sha256": "0a5ed8da2be4c012bfceaf889a3516c7d74f3e5d84f374fbe52a55a048e17247",
+      "bytes": 27178
+    },
+    {
+      "file": "tools/artwork-web-three-fronts-push-20261016/README.md",
+      "sha256": "b1c9b83e17be66bad6f7eef8e3ff8342b86adb2f700861f5f7c5216eddc57eca",
+      "bytes": 1606
+    },
+    {
+      "file": "tools/artwork-web-three-fronts-push-20261016/saved-targets.json",
+      "sha256": "d968d4478ba7247e98e8b55714a870373296c9b8bdf1787fe90988f395a178f1",
+      "bytes": 1315
+    },
+    {
+      "file": "tools/artwork-web-three-fronts-push-20261016/source-proof.mjs",
+      "sha256": "d64cd3ab4c697bc1de4ac8596233642aa93a19fe7b3d49d3cafacb93b320be1a",
+      "bytes": 20557
+    },
+    {
+      "file": "tools/artwork-web-three-fronts-push-20261016/validation.json",
+      "sha256": "9371c2df5c59435643d91140f54feb593b6aa3ac77cc65648ef86f09da47e053",
+      "bytes": 10501
+    },
+    {
+      "file": "tools/artwork-web-three-fronts-push-20261016/verify-packages.mjs",
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841",
+      "bytes": 1495
+    },
+    {
+      "file": "tools/artwork-web-seven-fronts-push-20261016/.gitattributes",
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+      "bytes": 14
+    },
+    {
+      "file": "tools/artwork-web-seven-fronts-push-20261016/.gitignore",
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "bytes": 19
+    },
+    {
+      "file": "tools/artwork-web-seven-fronts-push-20261016/approval.json",
+      "sha256": "9fc2604b48286b1d81251c05e50b7054579b83764c193b6de8e3ffd092002dc8",
+      "bytes": 2889
+    },
+    {
+      "file": "tools/artwork-web-seven-fronts-push-20261016/before-query.sql",
+      "sha256": "1e7d0b091d2f832ad07bb2ffd635e42e11d615032e8c4c54c988fe8f6a0a5c75",
+      "bytes": 4365
+    },
+    {
+      "file": "tools/artwork-web-seven-fronts-push-20261016/download-package.py",
+      "sha256": "4869458b87610d8a4c62e5fe558feef13950fdecc7391e95d81b351498a53922",
+      "bytes": 6109
+    },
+    {
+      "file": "tools/artwork-web-seven-fronts-push-20261016/download-package.test.py",
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41",
+      "bytes": 6940
+    },
+    {
+      "file": "tools/artwork-web-seven-fronts-push-20261016/freeze-inputs.json",
+      "sha256": "92d2bcfe48cdf0c62fc185cff63171b370f5ef65e1cd8d6c1a9e0bffd5c150f7",
+      "bytes": 10620
+    },
+    {
+      "file": "tools/artwork-web-seven-fronts-push-20261016/freeze-local.mjs",
+      "sha256": "48c2e490402d5b92e8cd51eb8d6b45d2c45ddcb6259aeab7b3913ae318b28978",
+      "bytes": 1906
+    },
+    {
+      "file": "tools/artwork-web-seven-fronts-push-20261016/frozen.mjs",
+      "sha256": "24bf010be5761d900cb02baa147dc3d117147e49f1f7b77c79c5d3256d5fa36d",
+      "bytes": 17107
+    },
+    {
+      "file": "tools/artwork-web-seven-fronts-push-20261016/identity-table.json",
+      "sha256": "a11c5ee8182bbe973af12d6adf7c1b17b3adf5ea4510c9a1276e858df20355c6",
+      "bytes": 6970
+    },
+    {
+      "file": "tools/artwork-web-seven-fronts-push-20261016/metadata-guard.mjs",
+      "sha256": "8c048fd47ed07474a25076bce70a00cb309dc7cc88795a5dc315d03dc009c39c",
+      "bytes": 12055
+    },
+    {
+      "file": "tools/artwork-web-seven-fronts-push-20261016/plan.json",
+      "sha256": "9eb559d543b303c19c5af6874564b021302819821a3035e6650d4c3c51f0c0c1",
+      "bytes": 201914
+    },
+    {
+      "file": "tools/artwork-web-seven-fronts-push-20261016/publish.mjs",
+      "sha256": "b848db57d093a2caf5ee5d7943f8011101f39cc4df191b00e88c43f318988a81",
+      "bytes": 7170
+    },
+    {
+      "file": "tools/artwork-web-seven-fronts-push-20261016/publish.test.mjs",
+      "sha256": "2c9cbc2079452c635414a9432642462fd813d450e39eec7e07a1a170cca32b00",
+      "bytes": 30707
+    },
+    {
+      "file": "tools/artwork-web-seven-fronts-push-20261016/README.md",
+      "sha256": "81f29cfd5f0bbdac2c7da415bc82d060ff39c9125b04a76989c738f923e4157e",
+      "bytes": 1989
+    },
+    {
+      "file": "tools/artwork-web-seven-fronts-push-20261016/saved-targets.json",
+      "sha256": "7ce069c02b01c8ba59912a5a6b956bf9c05a57785997c2656f6541864affed9d",
+      "bytes": 3151
+    },
+    {
+      "file": "tools/artwork-web-seven-fronts-push-20261016/source-proof.mjs",
+      "sha256": "0f2ed74518dbdd11f0ddc1952dffe71cebbae946c811fa79d57af4f9c2aec52b",
+      "bytes": 43448
+    },
+    {
+      "file": "tools/artwork-web-seven-fronts-push-20261016/validation.json",
+      "sha256": "dc6c041aea407947dca9b61538050413bf52c9fa1bbf5d8d9cc9169c83c24645",
+      "bytes": 7278
+    },
+    {
+      "file": "tools/artwork-web-seven-fronts-push-20261016/verify-packages.mjs",
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841",
+      "bytes": 1495
+    },
+    {
+      "file": ".github/workflows/artwork-web-seven-fronts-production-20261016.yml",
+      "sha256": "e86d46d75792a71feab1c0a3badf4575e056a357c65f5ccfafda5c887d7a3c80",
+      "bytes": 3628
+    },
+    {
+      "file": "tools/artwork-pcg2-wave001-three-fronts-push-20261016/.gitattributes",
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+      "bytes": 14
+    },
+    {
+      "file": "tools/artwork-pcg2-wave001-three-fronts-push-20261016/.gitignore",
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "bytes": 19
+    },
+    {
+      "file": "tools/artwork-pcg2-wave001-three-fronts-push-20261016/approval.json",
+      "sha256": "59e03fc9079cf484f07dfc2e9664132ac5afe2704ec22bd7cc9aa4e3686a34af",
+      "bytes": 2714
+    },
+    {
+      "file": "tools/artwork-pcg2-wave001-three-fronts-push-20261016/before-query.sql",
+      "sha256": "1c0340a75b4552d4c45b2c8dde1d4b297e2e1ddb6c6f6d7b7f2185def6b37f09",
+      "bytes": 2805
+    },
+    {
+      "file": "tools/artwork-pcg2-wave001-three-fronts-push-20261016/download-package.py",
+      "sha256": "22ce320d9cc310d91562cdaa28c40dc4bb27c7f499647d0a252e993857b3a184",
+      "bytes": 6109
+    },
+    {
+      "file": "tools/artwork-pcg2-wave001-three-fronts-push-20261016/download-package.test.py",
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41",
+      "bytes": 6940
+    },
+    {
+      "file": "tools/artwork-pcg2-wave001-three-fronts-push-20261016/freeze-inputs.json",
+      "sha256": "0f4193fb9d1a8fb8c37f749bdaacf8cf441d5029bd2661c31b3e14f333ccdcda",
+      "bytes": 9450
+    },
+    {
+      "file": "tools/artwork-pcg2-wave001-three-fronts-push-20261016/freeze-local.mjs",
+      "sha256": "b570a984050466b84839cb7179385603e8fd1a6d401c31f42ca0e61b08aeff32",
+      "bytes": 1899
+    },
+    {
+      "file": "tools/artwork-pcg2-wave001-three-fronts-push-20261016/frozen.mjs",
+      "sha256": "4217bb29c1a2ee2e45b31af109fd63c78e03cc322876a96cfd3e18b3ef1b4c2d",
+      "bytes": 16531
+    },
+    {
+      "file": "tools/artwork-pcg2-wave001-three-fronts-push-20261016/identity-table.json",
+      "sha256": "3b8963f1f896e77584416aa7aeb40a20dce8e8c6e2d51fbe7aa8589c5b211bdb",
+      "bytes": 2917
+    },
+    {
+      "file": "tools/artwork-pcg2-wave001-three-fronts-push-20261016/metadata-guard.mjs",
+      "sha256": "8c048fd47ed07474a25076bce70a00cb309dc7cc88795a5dc315d03dc009c39c",
+      "bytes": 12055
+    },
+    {
+      "file": "tools/artwork-pcg2-wave001-three-fronts-push-20261016/plan.json",
+      "sha256": "a9c4439ecde035eefdde6fb42e4ed7e42097adc641cc9de9bee0cad1f3bf2aaa",
+      "bytes": 90927
+    },
+    {
+      "file": "tools/artwork-pcg2-wave001-three-fronts-push-20261016/publish.mjs",
+      "sha256": "96130b09ec554936756b7f857c8e72203e442f1e79529c099cc2245958470586",
+      "bytes": 7265
+    },
+    {
+      "file": "tools/artwork-pcg2-wave001-three-fronts-push-20261016/publish.test.mjs",
+      "sha256": "9909ac9ab013b602c2e18b57946a2bef05a2717af4edd9e5ef834c02eb15b13f",
+      "bytes": 28527
+    },
+    {
+      "file": "tools/artwork-pcg2-wave001-three-fronts-push-20261016/README.md",
+      "sha256": "1d75bce7bcbcb0ab581fea20a9c2185823cae1d729ae52b32a3071cb8d9db24e",
+      "bytes": 1655
+    },
+    {
+      "file": "tools/artwork-pcg2-wave001-three-fronts-push-20261016/saved-targets.json",
+      "sha256": "d5a34b072b02790a84f4a85b1863366ce7d4173a14d2fcea9eed42aaa62bd842",
+      "bytes": 1338
+    },
+    {
+      "file": "tools/artwork-pcg2-wave001-three-fronts-push-20261016/source-proof.mjs",
+      "sha256": "acef127d663be22af544f672c2e7d55ae752e73f321563f150f04a1fbe926695",
+      "bytes": 23700
+    },
+    {
+      "file": "tools/artwork-pcg2-wave001-three-fronts-push-20261016/validation.json",
+      "sha256": "f4fa1c43723d9acdb5a4f6ecd33de16b427b6d33a2a510b503633949519936d6",
+      "bytes": 4461
+    },
+    {
+      "file": "tools/artwork-pcg2-wave001-three-fronts-push-20261016/verify-packages.mjs",
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841",
+      "bytes": 1495
+    },
+    {
+      "file": ".github/workflows/artwork-pcg2-wave001-three-fronts-production-20261016.yml",
+      "sha256": "07ad57e783ef32895e21e21123e261acc89190d62b1a4bc48be980b7802f9d23",
+      "bytes": 3790
+    },
+    {
+      "file": "tools/artwork-pcg2-wave002-three-fronts-push-20261016/.gitattributes",
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+      "bytes": 14
+    },
+    {
+      "file": "tools/artwork-pcg2-wave002-three-fronts-push-20261016/.gitignore",
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "bytes": 19
+    },
+    {
+      "file": "tools/artwork-pcg2-wave002-three-fronts-push-20261016/approval.json",
+      "sha256": "fdb4793c0a78b3069126ebabc7b5b5469d49efe83f7e8af69644127df27c5ef1",
+      "bytes": 2795
+    },
+    {
+      "file": "tools/artwork-pcg2-wave002-three-fronts-push-20261016/before-query.sql",
+      "sha256": "ff26df6e890bd6c1c91b5629605cec8b5954999ddb0c0446ee80861e4d78dc53",
+      "bytes": 2805
+    },
+    {
+      "file": "tools/artwork-pcg2-wave002-three-fronts-push-20261016/download-package.py",
+      "sha256": "49fc70bb1c0df2c82b49cf69cdbf386849143db390ca3af9d6a3628d0a73644a",
+      "bytes": 6109
+    },
+    {
+      "file": "tools/artwork-pcg2-wave002-three-fronts-push-20261016/download-package.test.py",
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41",
+      "bytes": 6940
+    },
+    {
+      "file": "tools/artwork-pcg2-wave002-three-fronts-push-20261016/freeze-inputs.json",
+      "sha256": "a63d3cc56bf87af21490bd602970dd7a39112ce68da0426304a6500dceb26d57",
+      "bytes": 9449
+    },
+    {
+      "file": "tools/artwork-pcg2-wave002-three-fronts-push-20261016/freeze-local.mjs",
+      "sha256": "9fad97cb88c1acacfbe2ff84bd5cd4c8399a35dcf2845b510fc4489dd48dfeda",
+      "bytes": 1899
+    },
+    {
+      "file": "tools/artwork-pcg2-wave002-three-fronts-push-20261016/frozen.mjs",
+      "sha256": "fda45345e4d1bbebfa721b5b919ec98a68b877cc532c0bfefa6b0dfe8a02c107",
+      "bytes": 16550
+    },
+    {
+      "file": "tools/artwork-pcg2-wave002-three-fronts-push-20261016/identity-table.json",
+      "sha256": "15fb2c919a155b7f85e101b02c0d9e3c475f8a6046c2c01b0213f1a42a1db5be",
+      "bytes": 2916
+    },
+    {
+      "file": "tools/artwork-pcg2-wave002-three-fronts-push-20261016/metadata-guard.mjs",
+      "sha256": "8c048fd47ed07474a25076bce70a00cb309dc7cc88795a5dc315d03dc009c39c",
+      "bytes": 12055
+    },
+    {
+      "file": "tools/artwork-pcg2-wave002-three-fronts-push-20261016/plan.json",
+      "sha256": "27de94568b4454977ff64b99e9e989a08a69178de8b0f6afd140927bbb4a415c",
+      "bytes": 87662
+    },
+    {
+      "file": "tools/artwork-pcg2-wave002-three-fronts-push-20261016/publish.mjs",
+      "sha256": "a0c2876850b9b9b2976a9c1c9c2dc2222b38ed33cbee3aed0ec178aaa7f1e9f7",
+      "bytes": 7265
+    },
+    {
+      "file": "tools/artwork-pcg2-wave002-three-fronts-push-20261016/publish.test.mjs",
+      "sha256": "16379fa2f6ba2157100530787f24c9d7d6f75081ea579ab9eb948b1334a5962b",
+      "bytes": 29495
+    },
+    {
+      "file": "tools/artwork-pcg2-wave002-three-fronts-push-20261016/README.md",
+      "sha256": "4e48dec86b5ff4507b825b47938ecf44be2c80058a4b1f2ec5cb923466ae720b",
+      "bytes": 1677
+    },
+    {
+      "file": "tools/artwork-pcg2-wave002-three-fronts-push-20261016/saved-targets.json",
+      "sha256": "8c923b5d622f884c63546fdf112b7dccf21554c2ea11bd2f65f10fba84cff700",
+      "bytes": 1341
+    },
+    {
+      "file": "tools/artwork-pcg2-wave002-three-fronts-push-20261016/source-proof.mjs",
+      "sha256": "1828d2d6374a08e55f138db027654683f9297fdaec178948ea590a4dc949679b",
+      "bytes": 25502
+    },
+    {
+      "file": "tools/artwork-pcg2-wave002-three-fronts-push-20261016/validation.json",
+      "sha256": "8f968f18bb3118f807908a5d23d308d5e08722d8285011399d4c5481b8d4d21c",
+      "bytes": 4667
+    },
+    {
+      "file": "tools/artwork-pcg2-wave002-three-fronts-push-20261016/verify-packages.mjs",
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841",
+      "bytes": 1495
+    },
+    {
+      "file": ".github/workflows/artwork-pcg2-wave002-three-fronts-production-20261016.yml",
+      "sha256": "c73b94ce529b4c792bb20e81d511ce560c168d2206510c29962279da64c6ab8a",
+      "bytes": 3790
+    },
+    {
+      "file": "tools/artwork-pcg3-wave003004-seven-fronts-push-20261016/.gitattributes",
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+      "bytes": 14
+    },
+    {
+      "file": "tools/artwork-pcg3-wave003004-seven-fronts-push-20261016/.gitignore",
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "bytes": 19
+    },
+    {
+      "file": "tools/artwork-pcg3-wave003004-seven-fronts-push-20261016/approval.json",
+      "sha256": "518323462369c89e1dafdb6fc5459b6ae7e63c9546bf5a2b5fecec664dfa5f6f",
+      "bytes": 3346
+    },
+    {
+      "file": "tools/artwork-pcg3-wave003004-seven-fronts-push-20261016/before-query.sql",
+      "sha256": "cc218e154d4b063a65d2c1dda7d6747e2021e9486d28dc7c1ee4ef83a3f8c937",
+      "bytes": 4365
+    },
+    {
+      "file": "tools/artwork-pcg3-wave003004-seven-fronts-push-20261016/download-package.py",
+      "sha256": "29104bfddc41fc4afc0257212816619e7211bd59fcda9359bf565facaa1c5e5b",
+      "bytes": 6109
+    },
+    {
+      "file": "tools/artwork-pcg3-wave003004-seven-fronts-push-20261016/download-package.test.py",
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41",
+      "bytes": 6940
+    },
+    {
+      "file": "tools/artwork-pcg3-wave003004-seven-fronts-push-20261016/freeze-inputs.json",
+      "sha256": "6ff1e1df0e7db746a5106f2fcb5af546ef1bf04c21bbb7049b0e947c16fe54e8",
+      "bytes": 11108
+    },
+    {
+      "file": "tools/artwork-pcg3-wave003004-seven-fronts-push-20261016/freeze-local.mjs",
+      "sha256": "bff42e37913ed86f3fb7746e61d95ed1ed562b9d61f4e8099a840a1122609c7a",
+      "bytes": 1902
+    },
+    {
+      "file": "tools/artwork-pcg3-wave003004-seven-fronts-push-20261016/frozen.mjs",
+      "sha256": "346544e0bb86b91020c451c19bb48a602aa64c246b18b1e18b33984bd6aa23de",
+      "bytes": 17558
+    },
+    {
+      "file": "tools/artwork-pcg3-wave003004-seven-fronts-push-20261016/identity-table.json",
+      "sha256": "43c0aa6cd24c0fd06e478d9d67066b045881ed68b94482abbb86374a455768f2",
+      "bytes": 6938
+    },
+    {
+      "file": "tools/artwork-pcg3-wave003004-seven-fronts-push-20261016/metadata-guard.mjs",
+      "sha256": "8c048fd47ed07474a25076bce70a00cb309dc7cc88795a5dc315d03dc009c39c",
+      "bytes": 12055
+    },
+    {
+      "file": "tools/artwork-pcg3-wave003004-seven-fronts-push-20261016/plan.json",
+      "sha256": "902aa9114eaddc584a42b4afc31ea12a8b5deb05c0e00747f2c220fc9b8ccbee",
+      "bytes": 205323
+    },
+    {
+      "file": "tools/artwork-pcg3-wave003004-seven-fronts-push-20261016/publish.mjs",
+      "sha256": "190c002681eed4717fe832b245d7fb35d00b93fd049e5f88df09b67deb65000c",
+      "bytes": 7305
+    },
+    {
+      "file": "tools/artwork-pcg3-wave003004-seven-fronts-push-20261016/publish.test.mjs",
+      "sha256": "679b00d99d4f73fbdfcd17e89901291b8afe13beb5c4f9f1fe312a4b91ba267f",
+      "bytes": 32081
+    },
+    {
+      "file": "tools/artwork-pcg3-wave003004-seven-fronts-push-20261016/README.md",
+      "sha256": "b1f707a82b82ceeaba71d43196e7838139e1afa73aee8d1e40a36a3eefd53c49",
+      "bytes": 1636
+    },
+    {
+      "file": "tools/artwork-pcg3-wave003004-seven-fronts-push-20261016/saved-targets.json",
+      "sha256": "bc16ebdeea2c5dbb2b7e20ac2b36f3223be03259b9dc56e6561047dfec38f592",
+      "bytes": 3160
+    },
+    {
+      "file": "tools/artwork-pcg3-wave003004-seven-fronts-push-20261016/source-proof.mjs",
+      "sha256": "10c23bec60eb0b882957925c0307ac59ef03880b8760fe061ecc0306c12134a6",
+      "bytes": 48188
+    },
+    {
+      "file": "tools/artwork-pcg3-wave003004-seven-fronts-push-20261016/validation.json",
+      "sha256": "433d4fd474f08d31ed74b4a6789fa39499078d426736a68f96dbc78c3cd18b32",
+      "bytes": 6670
+    },
+    {
+      "file": "tools/artwork-pcg3-wave003004-seven-fronts-push-20261016/verify-packages.mjs",
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841",
+      "bytes": 1495
+    },
+    {
+      "file": ".github/workflows/artwork-pcg3-wave003004-seven-fronts-production-20261016.yml",
+      "sha256": "370efc0637d34ffa18028a38e7614e1f6ac08b0f694998062f3ad65e9ae94434",
+      "bytes": 3844
+    },
+    {
+      "file": ".github/workflows/artwork-pcg5-wave006007-eight-fronts-production-20261016.yml",
+      "bytes": 3852,
+      "sha256": "7f6bb9380b6778a97a28c7eeded77d2c829d80476ce381d1d3e54b565a05f6f3"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/.gitattributes",
+      "bytes": 14,
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/.gitignore",
+      "bytes": 19,
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/README.md",
+      "bytes": 1810,
+      "sha256": "cfd71433e59e33ecd200505b01a315dc035015bdae114bb953b7deed5b038bbe"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/approval.json",
+      "bytes": 3475,
+      "sha256": "6f20811a2edeacc0dc8a522059d900adab56d8c3975247d0066752fdc6ab3a06"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/before-query.sql",
+      "bytes": 4755,
+      "sha256": "79250016c23e11cb4b9aefe9566640a8b5295132c37f2f2cb898161a0a6e6630"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/download-package.py",
+      "bytes": 6075,
+      "sha256": "67ff8392b0012f9c9919a4328e4c510da8299bfe8a7649db7ac5347ba0f878ba"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/download-package.test.py",
+      "bytes": 6940,
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/freeze-inputs.json",
+      "bytes": 13096,
+      "sha256": "1237f33bccf012f6a05b9b1c016f11c4b800bc63387cf88b1fc8877b41364cfe"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/freeze-local.mjs",
+      "bytes": 1965,
+      "sha256": "7c3369be7e0bd9fcd0b5f4ea3b3ed0cd437c117a337e390724de56db5cb116a3"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/frozen.mjs",
+      "bytes": 17778,
+      "sha256": "da1ecf7f029919ea2d9bee9c7187f0cfae0c85969fedf4fdd326bf09dab22e79"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/identity-table.json",
+      "bytes": 7816,
+      "sha256": "1cbd3bb008552c81c255b161cdb910fbcfbd937b7e8337170761829cca449a2c"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/metadata-guard.mjs",
+      "bytes": 12055,
+      "sha256": "8c048fd47ed07474a25076bce70a00cb309dc7cc88795a5dc315d03dc009c39c"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/plan.json",
+      "bytes": 239752,
+      "sha256": "074c3c63473345e578ce9bf8db30af43e81d192e96f86a564c015058c1635df3"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/publish.mjs",
+      "bytes": 7309,
+      "sha256": "2f9b2cfa232cdafd678ae1e9411bba05140ce3267e04042836a01541ceb663cf"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/publish.test.mjs",
+      "bytes": 32239,
+      "sha256": "f8e25f49187baaea03fc4e32c6862914bca6573247a324f8c2ac6bea4a2ce0a7"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/saved-targets.json",
+      "bytes": 3557,
+      "sha256": "5f90cd92fba39012cfff844695e1932b69886427bd11c975b70366fe997599ea"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/source-proof.mjs",
+      "bytes": 61461,
+      "sha256": "9aa6a1daf0c736604eabf4ead77080cf38e4759c0a0ac5adfb2fecac849b53be"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/validation.json",
+      "bytes": 7255,
+      "sha256": "f0ffaac32d9c01187d65d599a340914d04ecef4ef118f45341c367d6ba782a06"
+    },
+    {
+      "file": "tools/artwork-pcg5-wave006007-eight-fronts-push-20261016/verify-packages.mjs",
+      "bytes": 1495,
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841"
+    }
+  ],
+  "additionalDependencyFiles": [
+    {
+      "file": "tools/artwork3303-publish-20260928/publish.mjs",
+      "bytes": 29801,
+      "sha256": "fd0a3d333989b0ad429002b0f5acf787e295bfc111c103a4f24dd39a5c172a2f",
+      "checkoutBytes": 30117,
+      "checkoutSha256": "71505b730a170b0df37a92779bd55e5621e95f3124c8dd68d702611d03c3e5a4",
+      "checkoutDifference": "Verified CRLF/LF only; both exact byte forms pinned"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/publish.mjs",
+      "bytes": 24137,
+      "sha256": "653badac03557f4307bdc7e674087248bb92c3a9d17b122357ee1469caa4e537",
+      "checkoutBytes": 24425,
+      "checkoutSha256": "72067f48492b8af771551d41f6be095a8472a100973bf079d5ba374292c7644d",
+      "checkoutDifference": "Verified CRLF/LF only; both exact byte forms pinned"
+    },
+    {
+      "file": "tools/queue1-publish-20260927/credentials.mjs",
+      "bytes": 1954,
+      "sha256": "94f7f652c5cc11b22f8da19c57f5b632aacc984d664afb314caaaee62515da10",
+      "checkoutBytes": 1984,
+      "checkoutSha256": "86e798e624e4831736e297bebfeb1e7c57a3723dac465835bd6347563470aa05",
+      "checkoutDifference": "Verified CRLF/LF only; both exact byte forms pinned"
+    },
+    {
+      "file": "scripts/deploy/verified-supabase-postgres.mjs",
+      "bytes": 2515,
+      "sha256": "8e2bf4f392a465fad9bd6669dba5b68fb081a6ca9489b5b4d3b75ac5e5327cb7",
+      "checkoutBytes": 2587,
+      "checkoutSha256": "e85c8e1a32e2d53a1373fc41fdaf9f80daef4125bb8361a903cb9644662e537f",
+      "checkoutDifference": "Verified CRLF/LF only; both exact byte forms pinned"
+    },
+    {
+      "file": "scripts/deploy/secret-scan.mjs",
+      "bytes": 4816,
+      "sha256": "bd959f5054a2f53a579943554bb3a83c64f0c7a80bbb3e91dafdb82c35000696",
+      "checkoutBytes": 4937,
+      "checkoutSha256": "fb9d7542ea635defe778d877bb58a767b8b99d0818e6aeb06afeae4540b62416",
+      "checkoutDifference": "Verified CRLF/LF only; both exact byte forms pinned"
+    },
+    {
+      "file": "package.json",
+      "bytes": 37633,
+      "sha256": "3ade21dfefd7b39399e9d62d07dd90261dd1ef4c9dc79af6e66f3053b1110f2f",
+      "checkoutBytes": 37949,
+      "checkoutSha256": "6ae940f7b60904598072d20e58db9932523bbcbb603ab45913017072ecc6919a",
+      "checkoutDifference": "Verified CRLF/LF only; both exact byte forms pinned"
+    },
+    {
+      "file": "package-lock.json",
+      "bytes": 576136,
+      "sha256": "5b3334f08d3be0527c50b3253a57ac545f025b95d884e75f836e8d6cae708642",
+      "checkoutBytes": 591761,
+      "checkoutSha256": "4b1dc320e5e97b2d27551dcb562db922962ff29983522071ad28800c945c600d",
+      "checkoutDifference": "Verified CRLF/LF only; both exact byte forms pinned"
+    },
+    {
+      "file": "backend/package.json",
+      "bytes": 768,
+      "sha256": "194eba8780dbc78caf166f0bdeae0c08a184fd0292c86067bddf4b8634177b2e",
+      "checkoutBytes": 800,
+      "checkoutSha256": "fbf82b91e5d45d88e627a20278f26d64028ebc04e3c8be3492c8fa3cb54cacce",
+      "checkoutDifference": "Verified CRLF/LF only; both exact byte forms pinned"
+    },
+    {
+      "file": "backend/package-lock.json",
+      "bytes": 133412,
+      "sha256": "9432d13603e41bbe63bd19829635d4ae073f6a742302d103e7dade22da998879",
+      "checkoutBytes": 137218,
+      "checkoutSha256": "24e316cc68c531a93148998e5ac836d10604d933243d95d37275b5e7fcd5eead",
+      "checkoutDifference": "Verified CRLF/LF only; both exact byte forms pinned"
+    },
+    {
+      "file": "scripts/deploy/postgres-url-guard.mjs",
+      "bytes": 420,
+      "sha256": "169bbef8e8aebbf969fc9ad4b2e5a719e3818949025113b14d4dc544709eac2a",
+      "checkoutBytes": 439,
+      "checkoutSha256": "8308f5d0328f73cb2a0d4f57e77eca3411f790cdecd32bad73c849ee59b4f41e",
+      "checkoutDifference": "Verified CRLF/LF only; both exact byte forms pinned"
+    },
+    {
+      "file": "deploy/certificates/supabase-prod-ca-2021.crt",
+      "bytes": 1367,
+      "sha256": "6d4d3c3a03d113daba89bb5266da6092b61056f519f919cac72490f96b411e34",
+      "checkoutBytes": 1390,
+      "checkoutSha256": "cbf767c549de8e4052e48298ae6c246757487c3595b14c97f3b2e3f74fab4dda",
+      "checkoutDifference": "Verified CRLF/LF only; both exact byte forms pinned"
+    }
+  ],
+  "proof": {
+    "rootPublisherContextSHA": "ec5c6b94c923dcc2306ce6a8726727427e9d60379fa9d9c8d5d978a99ee8d1a6",
+    "rootFiniteDecisionSHA": "f84f544aee361c63b60d199cf7e74b9a7b917b6fc576ad09547c3f0ce0ce4f0a",
+    "rootReferenceQualificationSHA": "3249fb89bc4802eb0903399a7567d5ea9582fec2bca0e64bfea9036826ea71c5",
+    "privateSourceContractSHA": "c5d7fdbcc2d614138a7f37c033635157554a6d317de0a84950df96a1fdb56dda",
+    "privateImportPlanSHA": "d2f7a0902a71faab4991b42d0159282312e167be925b59cd4592a5ba84aaf167",
+    "privateHandoffSHA": "76d2c3efda70a61e3466c5e07fb7b6360fb44d6f310b9e66afa83cb0b03148ea",
+    "independentPrivateReviewSHA": "8dde0f79abbb3d041695d25e4efd2d9b19e75fc7c0da9a29e32315e58e5c6800",
+    "rootPrivateValidationSHA": "b73864e8fd242203b6e542e67a3d7ab4a9eff2978b94467a66f924e9e5219bec",
+    "rootUploadReceiptSHA": "e657e4e6fc2986e861cc8fff9f50bdba8b3b885a3cbdc417f67c92425fc0c410",
+    "sourceManifestSHA": "cce0adb50f143ba576fc3f0967f7d872e7a3dacb61319248ccf998b9752a5a2a",
+    "sourcePackageReceiptSHA": "6812d6717d462a621525c5bb62eff46571fc34d713ac0e7df2e931a39b044f60",
+    "rootPublisherRepairContextSHA": "0abf165255ec1687cca60eb7027612eb1e9d443e548c12b09e335d3ad33277c4",
+    "supersededPublisherReviewSHA": "41b363e2819890a24b198fae7bf37439d9e3bcc6cbbd00c38f3d3b0561cdafd3",
+    "mergedMainSHA": "9c70b88040f88c82c1b4e92eb2551fa142183593",
+    "manifestTimeoutRepairContextSHA": "048a2e960e3e0b8d8688f4e32f788d878c3cb8ba23f1a652fc1ad370311393f6",
+    "failedRunReceiptSHA": "e885f1fc1a3a748b469e6527a2287824eb62f288af634caf5c43b591605667c2",
+    "rootFailurePreservationSHA": "592735e2f0addc1722ac7c5e8c18bfa64c559f3df2c4db888e56a9f7a6ccf22d",
+    "unrelated420BaselineSHA": "fb62981464feff8474b1541f74c3b3524356e05dd5a87ba57447636f43d897a1",
+    "repairBaseMainSHA": "e40a6b0354703de2a2e325671a9c53686615f130",
+    "existingObjectsOnly": true,
+    "rootActualNarrowMeasurementSHA": "b7f1de89bdac4f573a08f07929ecddc49e4df7e13bbdc6790fdb9994eae5575e"
+  },
+  "private166PinsVerified": true,
+  "privatePathsNotPublished": true,
+  "additionalDependencyExactEOLForms": 11
+}

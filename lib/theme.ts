@@ -18,6 +18,8 @@ export const stackrSemanticColors = {
   success: '#087F73',
   warning: '#F59E0B',
   error: '#DC2626',
+  destructiveSurface: '#FEF2F2',
+  destructiveBorder: '#FECACA',
   information: '#2563EB',
   marketRise: '#087F73',
   marketFall: '#B91C1C',
@@ -66,7 +68,7 @@ export const stackrShadows = {
 export const stackrGradients = {
   actionLight: ['#FFFFFF', '#FAF9FC', '#F2EFF7'] as const,
   actionDark: ['#2B145C', '#4F22D8', '#6938F5'] as const,
-  actionPrimary: ['#8B55FF', '#6938F5', '#5226D9'] as const,
+  actionPrimary: ['#8048ED', '#6938F5', '#5226D9'] as const,
 } as const;
 
 export const lightTheme = {

@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 2,
+  "variants": 2,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "physical_finish_verified": false,
+  "physical_edition_verified": false,
+  "cohort_sha256": "366a73399dc328ff64b4ef7bb5b3d0452ace3ad11c167ec8839d6b45e065c108",
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "31aae4b963a67dcf1aae3a6a174616c7ad036c12590d4a6d3516e6c2d9138fe9",
+    "finiteDecisionFileByteSha256": "912c4fcac1656776b60357da92cb1424ad8d787b4b0464cd89f9661acbcad974",
+    "rootPrivateContextFileByteSha256": "abda4ad4db5a19555b74e863d758771bb00076b8780b75bcdee65902d68feb9a",
+    "sourceHandoffFileByteSha256s": [
+      "6f77b38b21f8121fff5b6c480b72d362984f0576a3d38eb4b9c0f5491f068dcf",
+      "61caf6f78ab4cc403b6b019fd173ddd2349ed791e5758762b6745f7b812ea0eb"
+    ],
+    "independentSourceReviewFileByteSha256s": [
+      "83db568fac391d69f2c54231ac004fbb6cf586e1deaf30f1f98fb535ca7ede15",
+      "8202fcefc2ce77895fb0e36e3a747cbb2ec33deb1214c1571810176132c39516"
+    ],
+    "fourSourceCheckpointFileByteSha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "e05db5618cce8dbd2f01841aa13cf55e2b8ed866ae3c23a6a13123a8960e06e9",
+    "independentPrivatePackageReviewSha256": "05328d2cb08bf3841262bd4ada13ad0749ca9010dbe89d616bea2c47fae2fe57",
+    "rootPrivatePackageValidationSha256": "1e375b74a6f3dc632627fa5d38ebd49215b3a79e2030edbf29a7933e60d432c2",
+    "rootSourceArchiveBindingSha256": "e17b2c8c73fda3f9c186e7f0bef0fbb08ef57cede1d5d5d033313b1d2b8f430c",
+    "rootUploadReceiptSha256": "ec9306e89fe20cfb3fb0a4a6de6c707a39f05edc4ecce61626414e230fb9e0bd",
+    "rootPublisherContextSha256": "930a26b2ee77ad00d41b5db851cbe9200f60cb7b8a0564d5c978608a6f29ad32"
+  },
+  "production_source_changes_allowed": 0,
+  "scope": "Exact two Japanese shared printing-front originals: Dusclops PCG8-040 normal/defaulttrue and Feraligatr PCG9-026 delta holo/defaultfalse. Retain complete Japanese wrapped bodies, canonical labels, shared null asset/source variants and existing fallback defaults. No physical edition/finish/material/unlimited/vendor/source-wide/native optical certification. Preserve all4 full17-field sources and microsecond timestamps, both set logos/links and immutable prior assets. Production18→22 only2assets2links; staging10→15→10 with only one temporary PriceCharting fixture. Conditional protected exact-main publication and actual app/API byte verification remain required."
+}

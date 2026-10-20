@@ -165,9 +165,9 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
 
 const ACHIEVEMENT_BY_ID = new Map(ACHIEVEMENTS.map((achievement) => [achievement.id, achievement]));
 
-let notifyUnlocks: ((unlocks: AchievementUnlock[]) => void) | null = null;
+let notifyUnlocks: ((userId: string, unlocks: AchievementUnlock[]) => void) | null = null;
 
-export function setAchievementUnlockNotifier(callback: ((unlocks: AchievementUnlock[]) => void) | null) {
+export function setAchievementUnlockNotifier(callback: ((userId: string, unlocks: AchievementUnlock[]) => void) | null) {
   notifyUnlocks = callback;
 }
 
@@ -305,6 +305,10 @@ export async function recordAchievementEvent(
 }
 
 export async function checkAchievements(context: Record<string, unknown> = {}) {
+  // Keep the account-bound provider lease that existed when this work began.
+  // Looking up the current global listener after awaits could deliver an old
+  // account's completed work to a later same-identity provider generation.
+  const unlockNotifier = notifyUnlocks;
   const userId = await getCurrentUserId();
   if (!userId) return [];
 
@@ -364,7 +368,7 @@ export async function checkAchievements(context: Record<string, unknown> = {}) {
     .filter(Boolean) as AchievementUnlock[];
 
   if (unlocks.length) {
-    notifyUnlocks?.(unlocks);
+    unlockNotifier?.(userId, unlocks);
   }
   return unlocks;
 }

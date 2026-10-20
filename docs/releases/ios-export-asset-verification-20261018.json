@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-10-18T14:21:19.927Z",
+  "platform": "ios",
+  "environment": "production",
+  "output": "D:/Stackr-organization/active-runtime/repair-consolidation-20261018/ios-export-search-artwork-batching",
+  "sourceCommit": "66156ca9893e8767a4e594173f63accae015354e",
+  "localExportPassed": true,
+  "nativeSigned": false,
+  "published": false,
+  "deviceVerified": false,
+  "bundle": {
+    "path": "_expo/static/js/ios/entry-cd0bf373501d893c76eb61d0fa71dab2.hbc",
+    "bytes": 11781395,
+    "sha256": "d2f8302a0f99026e284387224cef9f51ef3a5aad85014360ec782d897ef251db"
+  },
+  "assetMapSha256": "46be09cc3263bced8d76be61fd52a9fcfd8c49b3520f25b64cb9d0d4d3cb3a47",
+  "assets": [
+    {
+      "setCode": "M6",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos-owner-supplied-20261018/m6.png",
+      "sha256": "383905581374e6a41be583303354be84a34891d52f8b6420ea632ff61a07f7ba",
+      "exportedPath": "assets/9f26dfbda7ca2dc11e9356ab6d599d36",
+      "bytes": 900649,
+      "width": 1280,
+      "height": 544,
+      "exactBytesVerified": true
+    },
+    {
+      "setCode": "SV9",
+      "assetPath": "assets/rev2/12-traditional-chinese-set-logo/owner-supplied-pack-art-20261018/sv9.png",
+      "sha256": "6b5f779a7449ed770b1ffe0953bc2ac2eb5f4a38a0fcf5605896be385954a4fa",
+      "exportedPath": "assets/eebbca067fc395f02c7a7b1c76e4e9e5",
+      "bytes": 472375,
+      "width": 359,
+      "height": 699,
+      "exactBytesVerified": true
+    },
+    {
+      "setCode": "SV9a",
+      "assetPath": "assets/rev2/12-traditional-chinese-set-logo/owner-supplied-pack-art-20261018/sv9a.png",
+      "sha256": "9419f4174d3264b848a66e1518786289062bd158d4fbe2d61021edc2498d804b",
+      "exportedPath": "assets/1db3f512e281873fc08262a47acbdb2d",
+      "bytes": 278562,
+      "width": 511,
+      "height": 1000,
+      "exactBytesVerified": true
+    },
+    {
+      "setCode": "SV10",
+      "assetPath": "assets/rev2/12-traditional-chinese-set-logo/owner-supplied-pack-art-20261018/sv10.png",
+      "sha256": "cef902ae715ba078286c6b47cabda824a126b1caa790e42dfe8f773f600e7f79",
+      "exportedPath": "assets/41168f9e3f88c3cf01403a4f57f22062",
+      "bytes": 1243819,
+      "width": 537,
+      "height": 1048,
+      "exactBytesVerified": true
+    }
+  ],
+  "limitation": "A local production export proves packaged bytes, not signed/native inclusion, API image delivery or installed-phone rendering.",
+  "previousVerifiedExport": {
+    "sourceCommit": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+    "bundleSha256": "e37e7563866a918a28961f72d8928018475a5242bc35984374ec69e90e89a02c",
+    "retainedPrivateOutput": "D:/Stackr-organization/active-runtime/repair-consolidation-20261018/ios-export-final"
+  }
+}

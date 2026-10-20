@@ -1,0 +1,418 @@
+{
+  "observedAt": "2026-10-05T08:32:00Z",
+  "activeScope": {
+    "languages": [
+      "en",
+      "ja",
+      "zh-cn",
+      "zh-tw"
+    ],
+    "koreanExcluded": true,
+    "priced": 32934,
+    "total": 76030,
+    "percent": 43.32,
+    "netSince1032October4": 3845
+  },
+  "coverage": {
+    "rows": [
+      {
+        "language_code": "en",
+        "observed_at": "2026-10-05 08:31:47.844591+00",
+        "physical_total": 33359,
+        "tcgcsv_saved": 18879,
+        "tcgcsv_fresh": 18879,
+        "cardmarket_saved": 7802,
+        "cardmarket_fresh": 7802,
+        "combined_saved": 21556,
+        "combined_fresh": 21556
+      },
+      {
+        "language_code": "ja",
+        "observed_at": "2026-10-05 08:31:57.523408+00",
+        "physical_total": 14100,
+        "tcgcsv_saved": 6907,
+        "tcgcsv_fresh": 6907,
+        "cardmarket_saved": 1032,
+        "cardmarket_fresh": 1032,
+        "combined_saved": 7324,
+        "combined_fresh": 7324
+      },
+      {
+        "language_code": "zh-cn",
+        "observed_at": "2026-10-05 08:31:59.408981+00",
+        "physical_total": 20405,
+        "tcgcsv_saved": 0,
+        "tcgcsv_fresh": 0,
+        "cardmarket_saved": 0,
+        "cardmarket_fresh": 0,
+        "combined_saved": 0,
+        "combined_fresh": 0
+      },
+      {
+        "language_code": "zh-tw",
+        "observed_at": "2026-10-05 08:32:00.803414+00",
+        "physical_total": 8166,
+        "tcgcsv_saved": 0,
+        "tcgcsv_fresh": 0,
+        "cardmarket_saved": 4054,
+        "cardmarket_fresh": 4054,
+        "combined_saved": 4054,
+        "combined_fresh": 4054
+      }
+    ],
+    "atomic": false,
+    "observationWindow": "08:31:47–08:32:00 UTC, separate physical-language reads",
+    "publicationVersionsBefore": [
+      {
+        "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en",
+        "published_at": "2026-08-20 13:38:28.221+00"
+      },
+      {
+        "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja",
+        "published_at": "2026-09-27 17:00:18.728003+00"
+      },
+      {
+        "id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "language_code": "zh-cn",
+        "published_at": "2026-08-10 16:54:15.322+00"
+      },
+      {
+        "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "language_code": "zh-tw",
+        "published_at": "2026-08-20 13:58:03.35+00"
+      }
+    ],
+    "publicationVersionsAfter": [
+      {
+        "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en",
+        "published_at": "2026-08-20 13:38:28.221+00"
+      },
+      {
+        "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja",
+        "published_at": "2026-09-27 17:00:18.728003+00"
+      },
+      {
+        "id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "language_code": "zh-cn",
+        "published_at": "2026-08-10 16:54:15.322+00"
+      },
+      {
+        "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "language_code": "zh-tw",
+        "published_at": "2026-08-20 13:58:03.35+00"
+      }
+    ],
+    "versionsUnchanged": true,
+    "queryTemplate": "with physical as materialized (\n  select cvv.variant_id, cvv.printing_id, cvv.set_id, cvv.language_code,\n         cvv.catalogue_version_id\n  from catalog.catalogue_version_variants cvv\n  join catalog.card_variants v on v.id=cvv.variant_id\n    and v.deprecated_at is null and v.language_code=cvv.language_code\n    and v.printing_id=cvv.printing_id\n  join catalog.card_printings p on p.id=cvv.printing_id\n    and p.deprecated_at is null and p.set_id=cvv.set_id\n    and p.language_code=cvv.language_code\n  join catalog.sets s on s.id=p.set_id\n    and s.deprecated_at is null and s.language_code=cvv.language_code\n  join catalog.languages l on l.code=cvv.language_code\n  where cvv.catalogue_version_id = :catalogue_version_id\n    and cvv.language_code = :language_code\n), assessed as (\n  select c.*,\n    exists (select 1 from market.catalogue_general_prices g\n      where g.variant_id=c.variant_id and g.printing_id=c.printing_id\n        and g.set_id=c.set_id and g.language_code=c.language_code\n        and g.catalogue_version_id=c.catalogue_version_id) as tcgcsv_saved,\n    exists (select 1 from market.catalogue_general_prices g\n      where g.variant_id=c.variant_id and g.printing_id=c.printing_id\n        and g.set_id=c.set_id and g.language_code=c.language_code\n        and g.catalogue_version_id=c.catalogue_version_id\n        and g.stale_after > now()) as tcgcsv_fresh,\n    exists (select 1 from market.cardmarket_blended_general_prices cm\n      where cm.printing_id=c.printing_id\n        and cm.catalogue_version_id=c.catalogue_version_id) as cardmarket_saved,\n    exists (select 1 from market.cardmarket_blended_general_prices cm\n      where cm.printing_id=c.printing_id\n        and cm.catalogue_version_id=c.catalogue_version_id\n        and cm.stale_after > now()) as cardmarket_fresh\n  from physical c\n)\nselect :language_code as language_code, now() as observed_at, count(*) as physical_total,\n count(*) filter(where tcgcsv_saved) as tcgcsv_saved,\n count(*) filter(where tcgcsv_fresh) as tcgcsv_fresh,\n count(*) filter(where cardmarket_saved) as cardmarket_saved,\n count(*) filter(where cardmarket_fresh) as cardmarket_fresh,\n count(*) filter(where tcgcsv_saved or cardmarket_saved) as combined_saved,\n count(*) filter(where tcgcsv_fresh or cardmarket_fresh) as combined_fresh\nfrom assessed;"
+  },
+  "batch": {
+    "id": "20261005-13",
+    "sourceAt": "2026-10-04T20:05:38Z",
+    "staleAfter": "2026-10-06T20:05:38Z",
+    "cohorts": [
+      {
+        "key": "swsh-promos",
+        "groupId": 2545,
+        "code": "swshp",
+        "setId": "ef15c432-0542-4fee-ba25-b4719b9d4f84",
+        "canonicalName": "SWSH Black Star Promos",
+        "name": "SWSH: Sword & Shield Promo Cards",
+        "stage": {
+          "reviewed": 238,
+          "stored": 305,
+          "proof": {
+            "expected": 109,
+            "stored": 109,
+            "verified": 109
+          },
+          "finished": true,
+          "stats": {
+            "cards": 305,
+            "mapped": 243,
+            "priced": 109,
+            "pages": 1,
+            "storeBatches": 7,
+            "manualRetainedFeedRecovery": true
+          }
+        },
+        "production": {
+          "reviewed": 238,
+          "stored": 305,
+          "proof": {
+            "expected": 109,
+            "stored": 109,
+            "verified": 109
+          },
+          "api": {
+            "references": 109,
+            "verified": 109
+          },
+          "finished": true,
+          "stats": {
+            "cards": 305,
+            "mapped": 243,
+            "priced": 109,
+            "pages": 1,
+            "storeBatches": 7,
+            "manualRetainedFeedRecovery": true
+          }
+        },
+        "preflight": {
+          "stage": {
+            "expected": 305,
+            "valid_physical": 305,
+            "collisions": 0,
+            "conflicts": 0,
+            "prior_primary": 0,
+            "backup_overlap": 0
+          },
+          "production": {
+            "expected": 305,
+            "valid_physical": 305,
+            "collisions": 0,
+            "conflicts": 0,
+            "prior_primary": 0,
+            "backup_overlap": 0
+          }
+        },
+        "reviewedMappings": 238,
+        "independentPlanSemanticsAgree": true,
+        "reasons": {
+          "priced": 109,
+          "no_provider_quote": 134,
+          "unresolved_provider_identity": 62
+        }
+      },
+      {
+        "key": "sv-promos",
+        "groupId": 22872,
+        "code": "svp",
+        "setId": "6700cb91-6deb-45ab-935a-0f262b32dd59",
+        "canonicalName": "SVP Black Star Promos",
+        "name": "SV: Scarlet & Violet Promo Cards",
+        "stage": {
+          "reviewed": 147,
+          "stored": 227,
+          "proof": {
+            "expected": 153,
+            "stored": 153,
+            "verified": 153
+          },
+          "finished": true,
+          "stats": {
+            "cards": 227,
+            "mapped": 153,
+            "priced": 153,
+            "pages": 1,
+            "storeBatches": 5,
+            "manualRetainedFeedRecovery": true
+          }
+        },
+        "production": {
+          "reviewed": 147,
+          "stored": 227,
+          "proof": {
+            "expected": 153,
+            "stored": 153,
+            "verified": 153
+          },
+          "api": {
+            "references": 153,
+            "verified": 153
+          },
+          "finished": true,
+          "stats": {
+            "cards": 227,
+            "mapped": 153,
+            "priced": 153,
+            "pages": 1,
+            "storeBatches": 5,
+            "manualRetainedFeedRecovery": true
+          }
+        },
+        "preflight": {
+          "stage": {
+            "expected": 227,
+            "valid_physical": 227,
+            "collisions": 0,
+            "conflicts": 0,
+            "prior_primary": 0,
+            "backup_overlap": 37
+          },
+          "production": {
+            "expected": 227,
+            "valid_physical": 227,
+            "collisions": 0,
+            "conflicts": 0,
+            "prior_primary": 0,
+            "backup_overlap": 37
+          }
+        },
+        "reviewedMappings": 147,
+        "independentPlanSemanticsAgree": true,
+        "reasons": {
+          "priced": 153,
+          "unresolved_provider_identity": 74
+        }
+      },
+      {
+        "key": "me-promos",
+        "groupId": 24451,
+        "code": "mep",
+        "setId": "36c13b17-0e5f-42aa-a7c9-9ff7acd71e01",
+        "canonicalName": "MEP Black Star Promos",
+        "name": "ME: Mega Evolution Promo",
+        "stage": {
+          "reviewed": 71,
+          "stored": 89,
+          "proof": {
+            "expected": 69,
+            "stored": 69,
+            "verified": 69
+          },
+          "finished": true,
+          "stats": {
+            "cards": 89,
+            "mapped": 71,
+            "priced": 69,
+            "pages": 1,
+            "storeBatches": 2,
+            "manualRetainedFeedRecovery": true
+          }
+        },
+        "production": {
+          "reviewed": 71,
+          "stored": 89,
+          "proof": {
+            "expected": 69,
+            "stored": 69,
+            "verified": 69
+          },
+          "api": {
+            "references": 69,
+            "verified": 69
+          },
+          "finished": true,
+          "stats": {
+            "cards": 89,
+            "mapped": 71,
+            "priced": 69,
+            "pages": 1,
+            "storeBatches": 2,
+            "manualRetainedFeedRecovery": true
+          }
+        },
+        "preflight": {
+          "stage": {
+            "expected": 89,
+            "valid_physical": 89,
+            "collisions": 0,
+            "conflicts": 0,
+            "prior_primary": 0,
+            "backup_overlap": 17
+          },
+          "production": {
+            "expected": 89,
+            "valid_physical": 89,
+            "collisions": 0,
+            "conflicts": 0,
+            "prior_primary": 0,
+            "backup_overlap": 17
+          }
+        },
+        "reviewedMappings": 71,
+        "independentPlanSemanticsAgree": true,
+        "reasons": {
+          "priced": 69,
+          "unresolved_provider_identity": 18,
+          "no_provider_quote": 2
+        }
+      }
+    ],
+    "reviewedMappingsEachEnvironment": 456,
+    "storedOutcomesEachEnvironment": 621,
+    "positiveQuotesAddedEachEnvironment": 331,
+    "backupOverlap": 54,
+    "netPreviouslyUnpriced": 277,
+    "stageProductionPhysicalIdentitiesAgree": true,
+    "independentPlanSemanticsAgree": true,
+    "policy": "Finite reviewed bare terminal collector suffixes, exact preceding English names and matching complete provider/current collector identities. SWSH suffixes require SWSH digits; SV/ME suffixes require numeric digits. Whitespace after hyphen may repeat. No semantic, campaign, stamp, event, Staff, Prerelease, Cosmos or edition modifiers removed. Current physical publication, unique product/finish and global collision checks remain mandatory. Generic matcher unchanged.",
+    "fx": {
+      "rate": 0.757532293986637,
+      "at": "2026-10-02T00:00:00.000Z",
+      "source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+    }
+  },
+  "afterBatch": {
+    "primaryEnglish": 18879,
+    "primaryJapanese": 6907,
+    "primaryTotal": 25786,
+    "manualReviewedPrimaryQuotesAdded": 2644,
+    "manualNetCombinedGain": 1968,
+    "overnightNetCombinedGain": 1877,
+    "groupLedger": [
+      {
+        "groups": 163,
+        "status": "complete",
+        "category_id": 3
+      },
+      {
+        "groups": 57,
+        "status": "unmapped",
+        "category_id": 3
+      },
+      {
+        "groups": 163,
+        "status": "complete",
+        "category_id": 85
+      },
+      {
+        "groups": 296,
+        "status": "unmapped",
+        "category_id": 85
+      }
+    ],
+    "zeroPriceAndStalenessAudit": {
+      "stale": 0,
+      "total": 25786,
+      "zeroDisplay": 0,
+      "zeroOriginal": 0
+    }
+  },
+  "checks": {
+    "sourceHead": "75f254810b7efa926e8263b5353685b5218a304d",
+    "applicableGitHubChecksPassed": 12,
+    "intentionalSkips": 2,
+    "noNewCodeOrMigrationsThisBatch": true,
+    "validation": "Independent complete current physical and global collision preflight; current API candidate readback; all 621 guarded outcomes per environment; all 331 retained source/USD/FX/GBP/current identity/freshness proofs per environment; all 331 production service API readbacks; all leases completed; full active-scope physical recount with unchanged publication versions."
+  },
+  "pikaqianInvestigation": {
+    "sourceCode": "pikaqian",
+    "registeredState": "approved_active",
+    "baseUrl": null,
+    "termsUrl": null,
+    "retainedSourceRecords": 0,
+    "importRuns": 0,
+    "currentAdapter": "Reviewed metadata file; cards/variants/assets/manual_import; no price capability; automatedRefreshAllowed false.",
+    "optionalApiAdapter": "Dormant API metadata adapter needs API key and declares no prices capability. Not activated.",
+    "conclusion": "Current retained Simplified Chinese metadata has no price feed; this is source-specific evidence, not proof that the market cannot be priced."
+  },
+  "boundaries": {
+    "noKoreanWork": true,
+    "noCatalogueMutation": true,
+    "noNewPhoneBuild": true,
+    "noPaidProviderActivation": true,
+    "fullTargetAchieved": false,
+    "generalGuideNotSoldConditionOrGradedValuation": true,
+    "serviceSqlApiNotOwnerHttpOrPhoneVisibility": true
+  },
+  "next": [
+    "Measure the existing general-mode same-printing Normal/Holo fallback separately from exact-variant stored quote coverage, verifying actual live API candidate semantics.",
+    "Review remaining finite English special-expansion and Japanese native set identities; preserve distinct event/deck/finish printings.",
+    "Repair Chinese provider-native-language/source proof without cross-language quote substitution."
+  ]
+}

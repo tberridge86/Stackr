@@ -1,0 +1,71 @@
+{
+  "observedAt": "2026-10-04T09:50:08.118Z",
+  "scope": "Read-only service-role database measurements; no provider, mapping, price, outcome, or repair writes were made by this receipt.",
+  "thinPublishedPriceIdentities": {
+    "migration": "20261004094851_thin_published_price_identities",
+    "productionProject": "oakdbbzdqwurpjnoqhmu",
+    "stagingProject": "lmwfhvexfcoyeuoyrlco",
+    "sample": {
+      "categoryId": 3,
+      "groupId": 1376,
+      "limit": 500,
+      "expectedRows": 191
+    },
+    "beforeProduction": {
+      "executionMs": 7515.21,
+      "rows": 191,
+      "sharedHitBlocks": 13665,
+      "tempReadBlocks": 1394,
+      "tempWrittenBlocks": 1394,
+      "budgetMs": 8000
+    },
+    "afterProduction": {
+      "executionMs": 622.083,
+      "functionStartupMs": 620.226,
+      "rows": 191,
+      "sharedHitBlocks": 5621,
+      "sharedReadBlocks": 4,
+      "tempReadBlocks": 0,
+      "tempWrittenBlocks": 0,
+      "budgetMs": 8000
+    },
+    "afterStaging": {
+      "executionMs": 1029.008,
+      "functionStartupMs": 1028.127,
+      "rows": 191,
+      "sharedHitBlocks": 5222,
+      "sharedReadBlocks": 295,
+      "tempReadBlocks": 0,
+      "tempWrittenBlocks": 0,
+      "budgetMs": 8000
+    },
+    "productionCandidateReadback": {
+      "candidateCount": 191,
+      "versionedCount": 191,
+      "firstVariantId": "00547a1b-3811-411b-8cdf-549dde2b7b0a",
+      "lastVariantId": "fe51de75-f333-46e1-9a9e-d6b6df97356d"
+    },
+    "result": "The production candidate RPC is below the eight-second request budget with the same 191-row cohort and no temporary spill."
+  },
+  "fixture": {
+    "command": "npx tsx scripts/test-thin-published-price-identities.ts",
+    "result": "passed",
+    "coverage": [
+      "current published catalogue-version identity",
+      "printing/variant language agreement",
+      "nondeprecated set and language membership",
+      "bounded candidate page",
+      "stale-version refusal in the writer",
+      "English title collision rejection",
+      "changed exact-title group preflight before writes",
+      "service-role-only helper access"
+    ]
+  },
+  "cardmarketProductionReadback": {
+    "observedAt": "2026-10-04T09:50:08.118Z",
+    "blendedGeneralPrices": 0,
+    "printingMappings": 0,
+    "tcgcsvGeneralPrices": 14250,
+    "generalRead100": "pending: no production Cardmarket quote cohort existed at observation time"
+  }
+}

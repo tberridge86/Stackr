@@ -1,6 +1,7 @@
 import { useTheme } from '../../components/theme-context';
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import {
   StyleSheet,
   Text,
@@ -8,7 +9,6 @@ import {
   Image,
   TextInput,
   Pressable,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,

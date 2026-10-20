@@ -1,0 +1,52 @@
+{
+  "observedAt": "2026-10-03T22:38:05.294Z",
+  "environment": "production",
+  "printingId": "056b7550-283b-4ef5-b434-6fc4815c102b",
+  "probes": [
+    {
+      "iteration": 1,
+      "status": 200,
+      "httpMs": 2141,
+      "cacheStatus": "DYNAMIC",
+      "cacheControl": "public, max-age=60, stale-while-revalidate=300, stale-if-error=300",
+      "assetCount": 1,
+      "matchingPrinting": null,
+      "identityCheckNote": "Initial probe used printingId; API projects that field as cardId. Follow-up below validates the actual contract."
+    },
+    {
+      "iteration": 2,
+      "status": 200,
+      "httpMs": 207,
+      "cacheStatus": "HIT",
+      "cacheControl": "public, max-age=60, stale-while-revalidate=300, stale-if-error=300",
+      "assetCount": 1,
+      "matchingPrinting": null,
+      "identityCheckNote": "Initial probe used printingId; API projects that field as cardId. Follow-up below validates the actual contract."
+    },
+    {
+      "name": "unauthenticatedPersonalPriceRead",
+      "status": 404,
+      "cacheControl": "no-store"
+    }
+  ],
+  "followUp": {
+    "observedAt": "2026-10-03T22:39:49.176Z",
+    "status": 200,
+    "matchingCardId": true,
+    "assetCount": 1,
+    "image": {
+      "status": 200,
+      "httpMs": 1664,
+      "contentType": "image/jpeg",
+      "cacheControl": null,
+      "bytes": 364747,
+      "dimensions": {
+        "height": 1212,
+        "width": 868,
+        "type": "jpg"
+      },
+      "permissionStatus": "approved",
+      "unavailableReason": null
+    }
+  }
+}

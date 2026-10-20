@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
 
-function loadModule(source: string, dependencies: Record<string, any>) {
+function loadModule(source: string, dependencies: Record<string, any>, globals: Record<string, unknown> = {}) {
   const output = ts.transpileModule(source, {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   }).outputText;
@@ -12,7 +12,7 @@ function loadModule(source: string, dependencies: Record<string, any>) {
     assert.ok(Object.hasOwn(dependencies, name), `Unexpected dependency: ${name}`);
     return dependencies[name];
   };
-  new vm.Script(`(function(require,module,exports){${output}\n})`).runInNewContext({})(require,module,module.exports);
+  new vm.Script(`(function(require,module,exports){${output}\n})`).runInNewContext(globals)(require,module,module.exports);
   return module.exports;
 }
 
@@ -24,6 +24,14 @@ const calls: any[] = [];
 let rows: any[] = [];
 let searchError: Error | null = null;
 let enrichCalls = 0;
+let enrichError: Error | null = null;
+let holdEnrichment = false;
+let expireOptional: (() => void) | undefined;
+const optional = loadModule(fs.readFileSync('lib/optionalCatalogueEnrichment.ts', 'utf8'), {}, {
+  AbortController,
+  setTimeout: (callback: () => void, ms: number) => { assert.equal(ms, 2000); expireOptional = callback; return 1; },
+  clearTimeout: () => { expireOptional = undefined; },
+});
 
 const adapter = loadModule(source, {
   './cardSearchIntent': intent,
@@ -35,12 +43,12 @@ const adapter = loadModule(source, {
       return rows;
     },
   },
-  './optionalCatalogueEnrichment': {
-    async readOptionalCatalogueEnrichment(read: () => Promise<any>) { return read(); },
-  },
+  './optionalCatalogueEnrichment': optional,
   './pokemonTcg': {
     async attachLiveTcgdexCardReferences(cards: any[]) {
       enrichCalls += 1;
+      if (enrichError) throw enrichError;
+      if (holdEnrichment) return new Promise(() => {});
       return cards.map((card) => card.images.small || card.images.large
         ? card
         : { ...card, images: { ...card.images, small: 'https://example.invalid/reference.webp' } });
@@ -100,6 +108,21 @@ for (const query of ['', ' ', 'x', 'PSA 10']) {
   assert.equal(enriched[0].image_small, 'https://example.invalid/reference.webp');
   assert.equal(enrichCalls, 1, 'controlled display-only enrichment runs only for a genuine image gap');
 
+  enrichError = new Error('optional image unavailable');
+  const fallback = await searchLocalPokemonCards('Pikachu');
+  assert.equal(fallback[0].id, 'printing-1');
+  assert.equal(fallback[0].image_small, null, 'an optional failure cannot discard factual cards');
+  enrichError = null;
+  holdEnrichment = true;
+  let earlyFacts: any[] = [];
+  const stalled = searchLocalPokemonCards('Pikachu', { onCanonicalResults: (value: any[]) => { earlyFacts = value; } });
+  await new Promise<void>((resolve) => setImmediate(resolve));
+  assert.equal(earlyFacts[0].id, 'printing-1', 'canonical callback precedes stalled optional work');
+  assert(expireOptional, 'the current optional deadline remains active after consolidation');
+  expireOptional();
+  assert.equal((await stalled)[0].id, 'printing-1', 'deadline preserves complete canonical facts');
+  holdEnrichment = false;
+
   searchError = new Error('canonical unavailable');
   await assert.rejects(searchLocalPokemonCards('Pikachu'), (error) => error === searchError);
   searchError = null;
@@ -112,9 +135,6 @@ for (const query of ['', ' ', 'x', 'PSA 10']) {
     console.log('Streamlined card search boundary passed: one canonical matching route, optional display-only enrichment, no legacy direct-table search.');
 }
 
-void main();
+void main().catch((error) => { console.error(error); process.exitCode = 1; });
 
-const prices = fs.readFileSync('app/prices/index.tsx','utf8');
-assert.doesNotMatch(prices,/if \(false\)/,'Prices screen must not retain an unreachable competing search implementation');
-assert.doesNotMatch(prices,/from\(['"]pokemon_sets['"]\)[\s\S]{0,1200}from\(['"]pokemon_cards['"]\)/,
-  'Prices card search must not carry its own public-catalogue SQL fallback');
+

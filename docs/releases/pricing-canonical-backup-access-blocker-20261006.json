@@ -1,0 +1,44 @@
+{
+  "batch": "20261006-30",
+  "observedAt": "2026-10-06T13:51:47Z",
+  "pr": "https://github.com/tberridge86/Stackr/pull/317",
+  "reviewedHead": "b03d4c85fb970a158c27186df7c7fd28e024e5d5",
+  "ci": "eight exact-head checks successful; release-candidate gate intentionally skipped",
+  "merge": "86e21c0b4d7e84110ca1cba03438ba617de4414e",
+  "mergedAt": "2026-10-06T13:50:23Z",
+  "run": {
+    "id": 37474015185,
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/37474015185",
+    "head": "86e21c0b4d7e84110ca1cba03438ba617de4414e",
+    "createdAt": "2026-10-06T13:50:35Z",
+    "scope": "cardmarket_ledger_rehearsal",
+    "conclusion": "failure",
+    "failedStep": "Verify physical and ephemeral logical backups",
+    "failedAt": "2026-10-06T13:51:31Z",
+    "sanitizedCode": "staging_backup_credentials_rejected",
+    "meaning": "The fixed staging backup endpoint rejected every distinct configured credential with401/403; no accepted credential exists in this job. Distinctness, individual status and token values are deliberately not exposed.",
+    "sourceTestsTarget": "passed",
+    "candidateExecuted": false,
+    "platformJob": "skipped",
+    "cleanup": "success",
+    "attestation": null
+  },
+  "actualFunctionCheck": {
+    "stageObservedAt": "2026-10-06T13:46:37Z",
+    "cardmarketNormalizedDefinitionMd5": "8a23b5ed8bfb28bfc3bc38650f973f89",
+    "englishNormalizedDefinitionMd5": "ca77044f82345cc18fdc7f2be1cca8f6",
+    "productionCheck": "connection timeout; not repeated; no current production function state claimed",
+    "rawVsNormalized": "Initial raw English hash differed only because the comparison did not normalize CRLF. The exact canonical normalized hash matches; no function drift is inferred."
+  },
+  "requiredAction": {
+    "environment": "GitHub staging",
+    "secret": "STACKR_GITHUB_STAGING_BACKUPS",
+    "requirement": "Valid Supabase credential authorized to read backups for staging projectlmwfhvexfcoyeuoyrlco. Fine-grained tokens requirebackups_read; OAuth scope isdatabase:read. Do not send token in chat, downgrade gates, buy services or rotate unrelated credentials.",
+    "documentation": "https://supabase.com/docs/reference/api/v1-list-all-backups",
+    "resume": "Once configured, rerun the same canonical main-only scope after exact-source and target review; first prove backup verification and actual rollback-only native/access/keyset/source parity. No automatic repeated failing dispatches."
+  },
+  "stillPending": ["live rollback-only Cardmarket candidate acceptance", "English rollback-only rehearsal", "reviewed canonical persistent forward migrations and rollback", "full installed control/runtime performance", "current complete positive coverage and owner HTTP/phone visibility"],
+  "coverage": {"historicalCutoff": "2026-10-06T03:34:45.990Z", "historicalPositive": 38371, "fourLanguageDenominator": 76030, "fullPhysical": 76269, "excludedKorean": 239, "currentCompletePositive": null},
+  "preserved": ["mounted caches", "healthy/normal worker schedules", "actual source age", "four intentional dirty worker/test copies", "dirty primary checkout", "unaccepted paid-provider patch", "04:39 partial coverage checkpoint", "historical receipts"],
+  "noActions": ["persistent schema/migration installation", "price/mapping/catalogue write", "cache restart or clear", "paid provider activation", "native/OTA build", "outside chat messages"]
+}

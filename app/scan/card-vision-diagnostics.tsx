@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, TouchableOpacity, View } from 'react-native';
+import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
+import { ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackrBackButton } from '../../components/StackrBackButton';
 import { Text } from '../../components/Text';

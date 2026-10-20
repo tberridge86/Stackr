@@ -1,0 +1,405 @@
+{
+  "observedAt": "2026-10-05T08:01:34Z",
+  "activeScope": {
+    "languages": [
+      "en",
+      "ja",
+      "zh-cn",
+      "zh-tw"
+    ],
+    "koreanExcluded": true,
+    "priced": 32043,
+    "total": 76030,
+    "percent": 42.15,
+    "netSince1032October4": 2954
+  },
+  "coverage": {
+    "rows": [
+      {
+        "language_code": "en",
+        "observed_at": "2026-10-05 08:01:11.512011+00",
+        "physical_total": 33359,
+        "tcgcsv_saved": 17725,
+        "tcgcsv_fresh": 17725,
+        "cardmarket_saved": 7802,
+        "cardmarket_fresh": 7802,
+        "combined_saved": 20665,
+        "combined_fresh": 20665
+      },
+      {
+        "language_code": "ja",
+        "observed_at": "2026-10-05 08:01:24.961272+00",
+        "physical_total": 14100,
+        "tcgcsv_saved": 6907,
+        "tcgcsv_fresh": 6907,
+        "cardmarket_saved": 1032,
+        "cardmarket_fresh": 1032,
+        "combined_saved": 7324,
+        "combined_fresh": 7324
+      },
+      {
+        "language_code": "zh-cn",
+        "observed_at": "2026-10-05 08:01:28.426249+00",
+        "physical_total": 20405,
+        "tcgcsv_saved": 0,
+        "tcgcsv_fresh": 0,
+        "cardmarket_saved": 0,
+        "cardmarket_fresh": 0,
+        "combined_saved": 0,
+        "combined_fresh": 0
+      },
+      {
+        "language_code": "zh-tw",
+        "observed_at": "2026-10-05 08:01:31.395822+00",
+        "physical_total": 8166,
+        "tcgcsv_saved": 0,
+        "tcgcsv_fresh": 0,
+        "cardmarket_saved": 4054,
+        "cardmarket_fresh": 4054,
+        "combined_saved": 4054,
+        "combined_fresh": 4054
+      }
+    ],
+    "atomic": false,
+    "observationWindow": "08:01:11–08:01:31 UTC",
+    "publicationVersionsBefore": [
+      {
+        "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en",
+        "published_at": "2026-08-20 13:38:28.221+00"
+      },
+      {
+        "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja",
+        "published_at": "2026-09-27 17:00:18.728003+00"
+      },
+      {
+        "id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "language_code": "zh-cn",
+        "published_at": "2026-08-10 16:54:15.322+00"
+      },
+      {
+        "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "language_code": "zh-tw",
+        "published_at": "2026-08-20 13:58:03.35+00"
+      }
+    ],
+    "publicationVersionsAfter": [
+      {
+        "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en",
+        "published_at": "2026-08-20 13:38:28.221+00"
+      },
+      {
+        "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja",
+        "published_at": "2026-09-27 17:00:18.728003+00"
+      },
+      {
+        "id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "language_code": "zh-cn",
+        "published_at": "2026-08-10 16:54:15.322+00"
+      },
+      {
+        "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "language_code": "zh-tw",
+        "published_at": "2026-08-20 13:58:03.35+00"
+      }
+    ],
+    "versionsUnchanged": true,
+    "contract": "Current physical CVV+variant+printing+set+language membership; exact TCGCSV variant quotes or reviewed Cardmarket current printing estimate; stale_after > observation.",
+    "queryTemplate": "with physical as materialized (\n  select cvv.variant_id, cvv.printing_id, cvv.set_id, cvv.language_code,\n         cvv.catalogue_version_id\n  from catalog.catalogue_version_variants cvv\n  join catalog.card_variants v on v.id=cvv.variant_id\n    and v.deprecated_at is null and v.language_code=cvv.language_code\n    and v.printing_id=cvv.printing_id\n  join catalog.card_printings p on p.id=cvv.printing_id\n    and p.deprecated_at is null and p.set_id=cvv.set_id\n    and p.language_code=cvv.language_code\n  join catalog.sets s on s.id=p.set_id\n    and s.deprecated_at is null and s.language_code=cvv.language_code\n  join catalog.languages l on l.code=cvv.language_code\n  where cvv.catalogue_version_id = :catalogue_version_id\n    and cvv.language_code = :language_code\n), assessed as (\n  select c.*,\n    exists (select 1 from market.catalogue_general_prices g\n      where g.variant_id=c.variant_id and g.printing_id=c.printing_id\n        and g.set_id=c.set_id and g.language_code=c.language_code\n        and g.catalogue_version_id=c.catalogue_version_id) as tcgcsv_saved,\n    exists (select 1 from market.catalogue_general_prices g\n      where g.variant_id=c.variant_id and g.printing_id=c.printing_id\n        and g.set_id=c.set_id and g.language_code=c.language_code\n        and g.catalogue_version_id=c.catalogue_version_id\n        and g.stale_after > now()) as tcgcsv_fresh,\n    exists (select 1 from market.cardmarket_blended_general_prices cm\n      where cm.printing_id=c.printing_id\n        and cm.catalogue_version_id=c.catalogue_version_id) as cardmarket_saved,\n    exists (select 1 from market.cardmarket_blended_general_prices cm\n      where cm.printing_id=c.printing_id\n        and cm.catalogue_version_id=c.catalogue_version_id\n        and cm.stale_after > now()) as cardmarket_fresh\n  from physical c\n)\nselect :language_code as language_code, now() as observed_at, count(*) as physical_total,\n count(*) filter(where tcgcsv_saved) as tcgcsv_saved,\n count(*) filter(where tcgcsv_fresh) as tcgcsv_fresh,\n count(*) filter(where cardmarket_saved) as cardmarket_saved,\n count(*) filter(where cardmarket_fresh) as cardmarket_fresh,\n count(*) filter(where tcgcsv_saved or cardmarket_saved) as combined_saved,\n count(*) filter(where tcgcsv_fresh or cardmarket_fresh) as combined_fresh\nfrom assessed;"
+  },
+  "batch": {
+    "id": "20261005-11",
+    "sourceAt": "2026-10-04T20:05:38Z",
+    "staleAfter": "2026-10-06T20:05:38Z",
+    "cohorts": [
+      {
+        "key": "xy-promos",
+        "groupId": 1451,
+        "code": "xyp",
+        "setId": "603fd3a2-e829-4ca3-bb6d-3c235cde5373",
+        "canonicalName": "XY Black Star Promos",
+        "name": "XY Promos",
+        "stage": {
+          "reviewed": 118,
+          "stored": 216,
+          "proof": {
+            "expected": 10,
+            "stored": 10,
+            "verified": 10
+          },
+          "finished": true,
+          "stats": {
+            "cards": 216,
+            "mapped": 164,
+            "priced": 10,
+            "pages": 1,
+            "storeBatches": 8,
+            "manualRetainedFeedRecovery": true
+          }
+        },
+        "production": {
+          "reviewed": 118,
+          "stored": 216,
+          "proof": {
+            "expected": 10,
+            "stored": 10,
+            "verified": 10
+          },
+          "api": {
+            "references": 10,
+            "verified": 10
+          },
+          "finished": true,
+          "stats": {
+            "cards": 216,
+            "mapped": 164,
+            "priced": 10,
+            "pages": 1,
+            "storeBatches": 8,
+            "manualRetainedFeedRecovery": true
+          },
+          "verificationCorrection": "Initial API check expected a freshness field absent in the raw response; corrected to actual stale_after timestamp and reverified before finishing. No price writes were repeated."
+        },
+        "preflight": {
+          "stage": {
+            "expected": 216,
+            "valid_physical": 216,
+            "collisions": 0,
+            "conflicts": 0,
+            "prior_primary": 0,
+            "backup_overlap": 0
+          },
+          "production": {
+            "expected": 216,
+            "valid_physical": 216,
+            "collisions": 0,
+            "conflicts": 0,
+            "prior_primary": 0,
+            "backup_overlap": 0
+          }
+        },
+        "reasons": {
+          "no_provider_quote": 154,
+          "unresolved_provider_identity": 52,
+          "priced": 10
+        }
+      },
+      {
+        "key": "hgss-promos",
+        "groupId": 1453,
+        "code": "hgssp",
+        "setId": "5de74297-bb54-4c56-8b1a-701f89e41bc4",
+        "canonicalName": "HGSS Black Star Promos",
+        "name": "HGSS Promos",
+        "stage": {
+          "reviewed": 19,
+          "stored": 25,
+          "proof": {
+            "expected": 19,
+            "stored": 19,
+            "verified": 19
+          },
+          "finished": true,
+          "stats": {
+            "cards": 25,
+            "mapped": 19,
+            "priced": 19,
+            "pages": 1,
+            "storeBatches": 1,
+            "manualRetainedFeedRecovery": true
+          }
+        },
+        "production": {
+          "reviewed": 19,
+          "stored": 25,
+          "proof": {
+            "expected": 19,
+            "stored": 19,
+            "verified": 19
+          },
+          "api": {
+            "references": 19,
+            "verified": 19
+          },
+          "finished": true,
+          "stats": {
+            "cards": 25,
+            "mapped": 19,
+            "priced": 19,
+            "pages": 1,
+            "storeBatches": 1,
+            "manualRetainedFeedRecovery": true
+          }
+        },
+        "preflight": {
+          "stage": {
+            "expected": 25,
+            "valid_physical": 25,
+            "collisions": 0,
+            "conflicts": 0,
+            "prior_primary": 0,
+            "backup_overlap": 0
+          },
+          "production": {
+            "expected": 25,
+            "valid_physical": 25,
+            "collisions": 0,
+            "conflicts": 0,
+            "prior_primary": 0,
+            "backup_overlap": 0
+          }
+        },
+        "reasons": {
+          "priced": 19,
+          "unresolved_provider_identity": 6
+        }
+      },
+      {
+        "key": "sm-promos",
+        "groupId": 1861,
+        "code": "smp",
+        "setId": "c5bc0f58-c30c-4115-acc9-3a6d64420cda",
+        "canonicalName": "SM Black Star Promos",
+        "name": "SM Promos",
+        "stage": {
+          "reviewed": 190,
+          "stored": 248,
+          "proof": {
+            "expected": 17,
+            "stored": 17,
+            "verified": 17
+          },
+          "finished": true,
+          "stats": {
+            "cards": 248,
+            "mapped": 194,
+            "priced": 17,
+            "pages": 1,
+            "storeBatches": 9,
+            "manualRetainedFeedRecovery": true
+          }
+        },
+        "production": {
+          "reviewed": 190,
+          "stored": 248,
+          "proof": {
+            "expected": 17,
+            "stored": 17,
+            "verified": 17
+          },
+          "api": {
+            "references": 17,
+            "verified": 17
+          },
+          "finished": true,
+          "stats": {
+            "cards": 248,
+            "mapped": 194,
+            "priced": 17,
+            "pages": 1,
+            "storeBatches": 9,
+            "manualRetainedFeedRecovery": true
+          }
+        },
+        "preflight": {
+          "stage": {
+            "expected": 248,
+            "valid_physical": 248,
+            "collisions": 0,
+            "conflicts": 0,
+            "prior_primary": 0,
+            "backup_overlap": 0
+          },
+          "production": {
+            "expected": 248,
+            "valid_physical": 248,
+            "collisions": 0,
+            "conflicts": 0,
+            "prior_primary": 0,
+            "backup_overlap": 0
+          }
+        },
+        "reasons": {
+          "no_provider_quote": 177,
+          "unresolved_provider_identity": 54,
+          "priced": 17
+        }
+      }
+    ],
+    "reviewedMappingsEachEnvironment": 327,
+    "storedOutcomesEachEnvironment": 489,
+    "positiveQuotesAddedEachEnvironment": 46,
+    "netPreviouslyUnpriced": 46,
+    "priorPrimaryOrBackupOverlap": 0,
+    "stageProductionPhysicalIdentitiesAndPlansAgree": true,
+    "collisionPreflightPassed": true,
+    "reviewPolicy": "Only bare XY/HGSS/SM terminal full printed collector suffixes; preceding English name, complete provider/canonical collector, physical current membership, exact finish and global collision guard required. Campaign/stamp/Staff/Worlds/Prime/Cosmos/Cracked Ice descriptors remain unresolved. Exact automatic names also retained. Generic matcher unchanged.",
+    "fx": {
+      "rate": 0.757532293986637,
+      "at": "2026-10-02T00:00:00.000Z",
+      "source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+    }
+  },
+  "afterBatch": {
+    "primaryEnglish": 17725,
+    "primaryJapanese": 6907,
+    "primaryTotal": 24632,
+    "manualReviewedPrimaryQuotesAdded": 1490,
+    "manualNetCombinedGain": 1077,
+    "overnightNetCombinedGain": 1877,
+    "groupLedger": [
+      {
+        "category_id": 3,
+        "status": "complete",
+        "groups": 156
+      },
+      {
+        "category_id": 3,
+        "status": "unmapped",
+        "groups": 64
+      },
+      {
+        "category_id": 85,
+        "status": "complete",
+        "groups": 163
+      },
+      {
+        "category_id": 85,
+        "status": "unmapped",
+        "groups": 296
+      }
+    ],
+    "zeroPriceAudit": [
+      {
+        "total": 24632,
+        "zero_original": 0,
+        "zero_display": 0,
+        "stale": 0
+      }
+    ]
+  },
+  "checks": {
+    "headBeforeReceipt": "cb9ef94",
+    "applicableGitHubChecksPassed": 12,
+    "intentionalSkips": 2,
+    "noNewCodeOrMigrationsThisBatch": true,
+    "actualValidation": "Independent stage/prod current identity and global collision preflight, finite aliases, guarded complete outcome writes, exact positive source amount/FX/date/expiry verification, all46 production service API quote readbacks, lease-bound checkpoints. Full four-language coverage reread with stable versions."
+  },
+  "boundaries": {
+    "noKoreanWork": true,
+    "noCatalogueMutation": true,
+    "noNewBuild": true,
+    "noPaidProviderActivation": true,
+    "fullTargetAchieved": false,
+    "generalGuideNotConditionGradeOrSold": true,
+    "serviceSqlApiNotOwnerHttpOrPhoneVisibility": true
+  },
+  "next": [
+    "Review remaining provider promo/aggregate identities using complete native variant proof.",
+    "Resolve Chinese provider/native-language identity gaps; shared Traditional Chinese pointers do not establish Simplified Chinese prices.",
+    "Consider an explicitly printing-scoped general guide lane for valid provider products where exact canonical finish quotes are absent, preserving scope labels and current physical identity."
+  ]
+}

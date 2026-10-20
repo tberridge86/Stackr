@@ -1,0 +1,16 @@
+{
+  "source_manifest_file": "ss-trainer-kit60-source-manifest.json",
+  "source_manifest_sha256": "def3ac20fdb222217376ae5ad52d1a1fb62bde3e386d68aa34279ae29f8d8279",
+  "checked_handoff_file": "source-batches/receipts/en031-en035-checked-handoff-20261013T222745883451Z.json",
+  "checked_handoff_sha256": "fc0b7440d9cb64bf0427681ea177136f4cfe0fa0fd3b84339989c6f8e8170161",
+  "eligible_fronts": 60,
+  "binding_prefix": "ss60",
+  "archive": {
+    "id": 638434423,
+    "kind": "github_release_asset",
+    "artifact_directory": "638434423",
+    "sha256": "1f06df02a94f68cdd71115f0144809a95ea05e869a6f556a5f4d7d07d94c87a2",
+    "byte_size": 56995023,
+    "file_count": 242
+  }
+}

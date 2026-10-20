@@ -1,0 +1,217 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-18T14:07:31.471Z",
+  "projectRef": "oakdbbzdqwurpjnoqhmu",
+  "ownerAnswer": "Approve the four read-only checks",
+  "approvedFile": "docs/releases/diagnostics-followup-20261018-read-only.sql",
+  "approvedFileSha256": "265488c166e457cc47de024b32a6910eaef0141c0aede67b48866c5ad5d4dc3f",
+  "execution": {
+    "completed": true,
+    "calls": 4,
+    "oneSequentialCallPerPart": true,
+    "allSucceeded": true,
+    "firstStartedAt": "2026-10-18T14:05:58.108Z",
+    "lastCompletedAt": "2026-10-18T14:06:14.184Z",
+    "statementTimeoutSeconds": 5,
+    "lockTimeoutSeconds": 1,
+    "readOnly": true,
+    "rollbackIncluded": true,
+    "analyze": false,
+    "writes": false,
+    "providerRefresh": false,
+    "jobs": false,
+    "deployment": false
+  },
+  "checks": [
+    {
+      "ordinal": 1,
+      "querySha256": "de31c9cc92cb3b5310b7b6b2ff5c3730d41676f9587d19cbf2968eb1e98ed137",
+      "startedAt": "2026-10-18T14:05:58.108Z",
+      "endedAt": "2026-10-18T14:05:59.155Z",
+      "rows": 42
+    },
+    {
+      "ordinal": 2,
+      "querySha256": "247d64671f3a9dae4bc2766996c17f3e3556cd187fcc8923b1d1482d5f072d46",
+      "startedAt": "2026-10-18T14:06:03.122Z",
+      "endedAt": "2026-10-18T14:06:03.824Z",
+      "rows": 1
+    },
+    {
+      "ordinal": 3,
+      "querySha256": "42d3f516b13c904048c094df4faea7dada3ddeca828e12fa5e70c75b67fcd069",
+      "startedAt": "2026-10-18T14:06:07.606Z",
+      "endedAt": "2026-10-18T14:06:08.707Z",
+      "rows": 1
+    },
+    {
+      "ordinal": 4,
+      "querySha256": "dc5d54a4e2abbf80e6ea994103d5c8e42fbf7954f246a10f1050a5b632353a63",
+      "startedAt": "2026-10-18T14:06:13.143Z",
+      "endedAt": "2026-10-18T14:06:14.184Z",
+      "rows": 1
+    }
+  ],
+  "metadata": {
+    "indexDefinitions": 42,
+    "physicalTables": [
+      "catalog.card_printings",
+      "catalog.card_variants",
+      "catalog.catalogue_version_sets",
+      "catalog.catalogue_versions",
+      "market.cardmarket_printing_mappings",
+      "public.market_price_snapshots"
+    ],
+    "view": "api.market_price_estimates",
+    "viewInputs": [
+      "market.price_estimates",
+      "market.market_identities",
+      "market.price_estimate_versions",
+      "market.conditions",
+      "market.graders",
+      "market.grades"
+    ],
+    "viewActivePredicate": "pe.superseded_at IS NULL",
+    "actualQuotesRead": false
+  },
+  "plans": {
+    "setLogo": {
+      "estimatedStartupCost": 756.92,
+      "estimatedTotalCost": 756.93,
+      "estimatedRows": 1,
+      "scans": [
+        {
+          "node": "Index Scan",
+          "relation": "assets",
+          "index": "assets_manifest_public_idx",
+          "indexCondition": "((asset_type = 'set_logo'::text) AND (asset_visibility = 'public_catalogue'::text) AND (publicly_servable = true) AND (permission_status = 'approved'::text))"
+        },
+        {
+          "node": "Index Only Scan",
+          "relation": "catalogue_version_assets",
+          "index": "catalogue_version_assets_asset_lookup_idx",
+          "indexCondition": "(asset_id = a.id)"
+        },
+        {
+          "node": "Index Scan",
+          "relation": "catalogue_versions",
+          "index": "catalogue_versions_pkey",
+          "indexCondition": "(id = cva.catalogue_version_id)"
+        },
+        {
+          "node": "Index Scan",
+          "relation": "card_variants",
+          "index": "card_variants_pkey",
+          "indexCondition": "(id = COALESCE(cva.variant_id, a.variant_id))"
+        },
+        {
+          "node": "Index Only Scan",
+          "relation": "card_printings",
+          "index": "card_printings_id_game_code_language_code_set_id_collector__key",
+          "indexCondition": "(id = COALESCE(cva.printing_id, a.printing_id, av.printing_id))"
+        }
+      ]
+    },
+    "knownVersionCardFacts": {
+      "estimatedStartupCost": 305.01,
+      "estimatedTotalCost": 305.02,
+      "estimatedRows": 4,
+      "scans": [
+        {
+          "node": "Index Scan",
+          "relation": "languages",
+          "index": "languages_pkey",
+          "indexCondition": "(code = 'ja'::text)"
+        },
+        {
+          "node": "Index Scan",
+          "relation": "sets",
+          "index": "sets_pkey",
+          "indexCondition": "(id = '903d5baa-27c7-5690-b1d7-2395c770204a'::uuid)"
+        },
+        {
+          "node": "Index Scan",
+          "relation": "catalogue_versions",
+          "index": "catalogue_versions_pkey",
+          "indexCondition": "(id = '1a23b7a7-c50e-4601-9180-a25c950d27ea'::uuid)"
+        },
+        {
+          "node": "Index Scan",
+          "relation": "card_printings",
+          "index": "card_printings_set_sort_idx",
+          "indexCondition": "(set_id = '903d5baa-27c7-5690-b1d7-2395c770204a'::uuid)"
+        },
+        {
+          "node": "Index Scan",
+          "relation": "card_variants",
+          "index": "card_variants_printing_idx",
+          "indexCondition": "(printing_id = p.id)"
+        },
+        {
+          "node": "Index Only Scan",
+          "relation": "catalogue_version_variants",
+          "index": "catalogue_price_version_variant_lookup_idx",
+          "indexCondition": "((variant_id = v.id) AND (catalogue_version_id = '1a23b7a7-c50e-4601-9180-a25c950d27ea'::uuid))"
+        },
+        {
+          "node": "Index Scan",
+          "relation": "card_concepts",
+          "index": "card_concepts_pkey",
+          "indexCondition": "(id = p.card_concept_id)"
+        },
+        {
+          "node": "Index Scan",
+          "relation": "rarities",
+          "index": "rarities_pkey",
+          "indexCondition": "(id = p.rarity_id)"
+        },
+        {
+          "node": "Index Scan",
+          "relation": "variant_taxonomy",
+          "index": "variant_taxonomy_pkey",
+          "indexCondition": "(code = v.variant_code)"
+        },
+        {
+          "node": "Index Scan",
+          "relation": "finishes",
+          "index": "finishes_code_key",
+          "indexCondition": "(code = v.finish_code)"
+        }
+      ]
+    }
+  },
+  "conclusion": {
+    "timeoutCauseEstablished": false,
+    "missingIndexEstablished": false,
+    "providerFreshnessEstablished": false,
+    "phoneVerified": false
+  },
+  "limits": [
+    "The first index-name filter was incomplete; these 42 definitions cover six corrected physical tables, not every pricing/catalogue relation.",
+    "EXPLAIN is estimated planning only with the tool database role. It does not execute the API query, reproduce the production service role or measure runtime/locks/pool waits.",
+    "Only first-page REST query shapes with the observed exact M6 version are represented; RPC flags, later cursor pages and private owned-card scope remain separate.",
+    "The stored-price view definition contains no actual owned-card quote coverage or timestamp evidence. No provider refresh or restart was performed."
+  ],
+  "privateReceiptDigests": [
+    {
+      "relativePath": "evidence/consolidation-20261018/production-diagnostics-followup-20261018/approved-plan.json",
+      "sha256": "b7f777e035a72e7b92f4ffb0579f99ad74369a0fb040dea8dc17a841f303ec3d"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/production-diagnostics-followup-20261018/part-01-result.json",
+      "sha256": "a144d6c572a8aba687eee9d4150515614049fd98aec7faa66c513eb10508c0cb"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/production-diagnostics-followup-20261018/part-02-result.json",
+      "sha256": "56d7cea2e91cee6b25e974f324698d7f1701494c78a15718ff4ee9e742041aae"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/production-diagnostics-followup-20261018/part-03-result.json",
+      "sha256": "0410ab5fee08e6bd142e1582a1379ae08bc369af4ac930d4f23d81630fadab29"
+    },
+    {
+      "relativePath": "evidence/consolidation-20261018/production-diagnostics-followup-20261018/part-04-result.json",
+      "sha256": "56a8f3c635b12c2731bdc4143cb4deb1509f9d2ba17cc9f27cef23dc776af6c9"
+    }
+  ]
+}

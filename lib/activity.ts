@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { assertActivityPostIdentity } from './activityIdentity';
+import { isMissingActivitySnapshotColumn } from './activitySchema';
 
 export type ActivityPost = {
   id: string;
@@ -32,9 +33,21 @@ export type ActivityPost = {
 
 export type ReactionType = 'like' | 'want' | 'watching';
 
-type CreateActivityPostOptions = {
+export type CreateActivityPostOptions = {
   expectedUserId?: string;
+  /** Stable UUID for a recoverable operation; an existing event is verified. */
+  eventId?: string;
 };
+
+export type ActivityPostWriteResult =
+  | { status: 'created'; snapshotStored: boolean }
+  | { status: 'failed'; error: unknown }
+  | { status: 'signed_out' };
+
+function activityWriteFailure(error: unknown): ActivityPostWriteResult {
+  console.warn('Collection activity could not be recorded', error);
+  return { status: 'failed', error };
+}
 
 export async function fetchActivityFeed(): Promise<{
   posts: ActivityPost[];
@@ -139,33 +152,80 @@ export async function createActivityPost(input: {
     canonicalPrintingId?: string | null;
     canonicalVariantId?: string | null;
   } | null;
-}, options: CreateActivityPostOptions = {}) {
+}, options: CreateActivityPostOptions = {}): Promise<ActivityPostWriteResult> {
+  let authenticated;
+  try {
+    authenticated = await supabase.auth.getUser();
+  } catch (error) {
+    return activityWriteFailure(error);
+  }
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+    error: userError,
+  } = authenticated;
 
+  if (userError) return activityWriteFailure(userError);
   assertActivityPostIdentity(options.expectedUserId, user?.id ?? null);
-  if (!user) return;
+  if (!user) return { status: 'signed_out' };
+  const ownerUserId = options.expectedUserId ?? user.id;
+
+  // Artwork resolution and schema retries may cross an account change. Never
+  // let a follow-up request use another account's session for this event.
+  const verifyOwner = async () => {
+    let verified;
+    try {
+      verified = await supabase.auth.getUser();
+    } catch (error) {
+      return error;
+    }
+    if (verified.error) return verified.error;
+    assertActivityPostIdentity(ownerUserId, verified.data.user?.id ?? null);
+    return null;
+  };
 
   let snapshot = input.cardSnapshot ?? null;
   if (!snapshot && input.cardId) {
     // Exact legacy-id lookup only. Historical artwork must never be repaired by
     // a name/number fuzzy match because that can silently show another printing.
-    const { data: exactCard } = await supabase
-      .from('pokemon_cards')
-      .select('id,name,number,language,image_small,image_large')
-      .eq('id', input.cardId)
-      .maybeSingle();
-    if (exactCard?.id === input.cardId) snapshot = {
-      name: exactCard.name ?? null,
-      number: exactCard.number ?? null,
-      language: exactCard.language ?? null,
-      imageSmall: exactCard.image_small ?? null,
-      imageLarge: exactCard.image_large ?? null,
-    };
+    const controller = new AbortController();
+    let deadline: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<null>((resolve) => {
+      deadline = setTimeout(() => {
+        resolve(null);
+        controller.abort();
+      }, 450);
+    });
+    // Keep the lookup rejection consumed even when it arrives after timeout.
+    const lookup = (async () => {
+      const { data } = await supabase.from('pokemon_cards')
+        .select('id,name,number,language,image_small,image_large')
+        .eq('id', input.cardId)
+        .abortSignal(controller.signal)
+        .maybeSingle();
+      return data;
+    })().catch((error) => {
+      if (!controller.signal.aborted) console.warn('Activity artwork snapshot could not be resolved', error);
+      return null;
+    });
+    try {
+      const exactCard = await Promise.race([lookup, timeout]);
+      if (exactCard?.id === input.cardId) snapshot = {
+        name: exactCard.name ?? null,
+        number: exactCard.number ?? null,
+        language: exactCard.language ?? null,
+        imageSmall: exactCard.image_small ?? null,
+        imageLarge: exactCard.image_large ?? null,
+      };
+    } finally {
+      if (deadline !== undefined) clearTimeout(deadline);
+      controller.abort();
+    }
   }
 
-  const { error } = await supabase.from('activity_feed').insert({
+  const ownerError = await verifyOwner();
+  if (ownerError) return activityWriteFailure(ownerError);
+  const basePayload = {
+    ...(options.eventId ? { id: options.eventId } : {}),
     user_id: options.expectedUserId ?? user.id,
     type: input.type ?? 'generic',
     title: input.title,
@@ -174,6 +234,8 @@ export async function createActivityPost(input: {
     set_id: input.setId ?? null,
     value_change: input.valueChange ?? null,
     is_positive: input.isPositive ?? null,
+  };
+  const snapshotPayload = {
     card_name_snapshot: snapshot?.name ?? null,
     card_number_snapshot: snapshot?.number ?? null,
     card_language_snapshot: snapshot?.language ?? null,
@@ -181,11 +243,63 @@ export async function createActivityPost(input: {
     card_image_large_snapshot: snapshot?.imageLarge ?? null,
     canonical_printing_id: snapshot?.canonicalPrintingId ?? null,
     canonical_variant_id: snapshot?.canonicalVariantId ?? null,
-  });
+  };
+  const insert = async (payload: typeof basePayload | (typeof basePayload & typeof snapshotPayload)) => {
+    try {
+      return await supabase.from('activity_feed').insert(payload);
+    } catch (error) {
+      return { error };
+    }
+  };
+  const verifyExistingEvent = async (error: unknown): Promise<ActivityPostWriteResult> => {
+    if (!options.eventId || (error as { code?: string } | null)?.code !== '23505') {
+      return activityWriteFailure(error);
+    }
+    const identityError = await verifyOwner();
+    if (identityError) return activityWriteFailure(identityError);
+    let existing;
+    try {
+      existing = await supabase.from('activity_feed')
+        .select('*')
+        .eq('id', options.eventId)
+        .eq('user_id', ownerUserId)
+        .maybeSingle();
+    } catch (readError) {
+      return activityWriteFailure(readError);
+    }
+    const readOwnerError = await verifyOwner();
+    if (readOwnerError) return activityWriteFailure(readOwnerError);
+    if (existing.error) return activityWriteFailure(existing.error);
+    const row = existing.data;
+    const exactBasePayload = row && Object.entries(basePayload).every(([field, value]) =>
+      field === 'value_change' && value !== null
+        ? row[field] != null && Number(row[field]) === value
+        : row[field] === value,
+    );
+    const compatibleSnapshot = row && Object.entries(snapshotPayload).every(([field, value]) =>
+      row[field] == null || row[field] === value,
+    );
+    if (!exactBasePayload || !compatibleSnapshot) return activityWriteFailure(error);
+    const snapshotStored = Object.entries(snapshotPayload).every(([field, value]) =>
+      field in row && row[field] === value,
+    );
+    return { status: 'created', snapshotStored };
+  };
 
-  if (error) {
-    console.log('Failed to create activity post', error);
+  const { error } = await insert({ ...basePayload, ...snapshotPayload });
+  if (!error) return { status: 'created', snapshotStored: true };
+  if (!isMissingActivitySnapshotColumn(error)) return verifyExistingEvent(error);
+
+  // Only an explicit missing optional column permits this retry. Permission,
+  // network and identity errors stay visible to the caller; a committed card
+  // must not be reported as rolled back because recording its history failed.
+  const retryOwnerError = await verifyOwner();
+  if (retryOwnerError) return activityWriteFailure(retryOwnerError);
+  const { error: retryError } = await insert(basePayload);
+  if (retryError) {
+    return verifyExistingEvent(retryError);
   }
+  return { status: 'created', snapshotStored: false };
 }
 
 export async function toggleActivityReaction(

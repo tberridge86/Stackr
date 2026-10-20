@@ -1,0 +1,100 @@
+[
+  {
+    "printing_id": "7b63e002-ca85-4d4d-be9d-fbaa54f6b959",
+    "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+    "set_code": "web1",
+    "language_code": "ja",
+    "collector_number": "007",
+    "card_native_name": "チャームレオン",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-068",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "63a7646e-f0e5-48c3-967f-f2a222992bcb"
+    ]
+  },
+  {
+    "printing_id": "221185d3-e4f8-4669-b339-5f06c86c0d50",
+    "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+    "set_code": "web1",
+    "language_code": "ja",
+    "collector_number": "025",
+    "card_native_name": "サーフィンピカチュ",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-068",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "b4c11fcc-df60-4b5e-ad4f-32f861555c7f"
+    ]
+  },
+  {
+    "printing_id": "7bab8d58-4c34-47a8-a07f-b34c8ab0bd98",
+    "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+    "set_code": "web1",
+    "language_code": "ja",
+    "collector_number": "036",
+    "card_native_name": "ライチュ",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-069",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "bfe40325-ca29-4c73-8917-194c4f83dc88"
+    ]
+  },
+  {
+    "printing_id": "2229f37c-46cb-4cb5-9e3c-22b10735ec5c",
+    "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+    "set_code": "web1",
+    "language_code": "ja",
+    "collector_number": "038",
+    "card_native_name": "ドラゴナイト",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-069",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "96b4e038-d8b8-4d7b-85a5-3ba621001f61"
+    ]
+  },
+  {
+    "printing_id": "96fe50ae-f69c-4ddb-a401-fa7d97c9ad46",
+    "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+    "set_code": "web1",
+    "language_code": "ja",
+    "collector_number": "040",
+    "card_native_name": "ロケットのスニーク攻撃",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-069",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "79e20e98-58f0-4275-bfd2-78d72f52c24c"
+    ]
+  },
+  {
+    "printing_id": "1f42fce8-0f6a-48bd-ad47-8b0217f7db53",
+    "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+    "set_code": "web1",
+    "language_code": "ja",
+    "collector_number": "046",
+    "card_native_name": "ザプドス",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-069",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "65789ad6-bc36-46d8-a06d-68cac9ec0a5e"
+    ]
+  },
+  {
+    "printing_id": "fe52e1d7-ea84-4456-b139-61f4c83d1de2",
+    "set_id": "cdb922a5-eaec-4696-ae6f-3ad4d263c66b",
+    "set_code": "web1",
+    "language_code": "ja",
+    "collector_number": "048",
+    "card_native_name": "マチャンプ",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-069",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "598ec080-7293-417b-95a5-a1e5a0909f80"
+    ]
+  }
+]

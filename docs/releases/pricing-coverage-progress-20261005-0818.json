@@ -1,0 +1,482 @@
+{
+  "observedAt": "2026-10-05T08:18:12Z",
+  "activeScope": {
+    "languages": [
+      "en",
+      "ja",
+      "zh-cn",
+      "zh-tw"
+    ],
+    "koreanExcluded": true,
+    "priced": 32657,
+    "total": 76030,
+    "percent": 42.95,
+    "netSince1032October4": 3568
+  },
+  "coverage": {
+    "rows": [
+      {
+        "language_code": "en",
+        "observed_at": "2026-10-05 08:17:54.87729+00",
+        "physical_total": 33359,
+        "tcgcsv_saved": 18548,
+        "tcgcsv_fresh": 18548,
+        "cardmarket_saved": 7802,
+        "cardmarket_fresh": 7802,
+        "combined_saved": 21279,
+        "combined_fresh": 21279
+      },
+      {
+        "language_code": "ja",
+        "observed_at": "2026-10-05 08:18:06.628387+00",
+        "physical_total": 14100,
+        "tcgcsv_saved": 6907,
+        "tcgcsv_fresh": 6907,
+        "cardmarket_saved": 1032,
+        "cardmarket_fresh": 1032,
+        "combined_saved": 7324,
+        "combined_fresh": 7324
+      },
+      {
+        "language_code": "zh-cn",
+        "observed_at": "2026-10-05 08:18:09.902764+00",
+        "physical_total": 20405,
+        "tcgcsv_saved": 0,
+        "tcgcsv_fresh": 0,
+        "cardmarket_saved": 0,
+        "cardmarket_fresh": 0,
+        "combined_saved": 0,
+        "combined_fresh": 0
+      },
+      {
+        "language_code": "zh-tw",
+        "observed_at": "2026-10-05 08:18:08.767507+00",
+        "physical_total": 8166,
+        "tcgcsv_saved": 0,
+        "tcgcsv_fresh": 0,
+        "cardmarket_saved": 4054,
+        "cardmarket_fresh": 4054,
+        "combined_saved": 4054,
+        "combined_fresh": 4054
+      }
+    ],
+    "atomic": false,
+    "observationWindow": "08:17:54–08:18:09 UTC, separate physical-language reads",
+    "publicationVersionsBefore": [
+      {
+        "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en",
+        "published_at": "2026-08-20 13:38:28.221+00"
+      },
+      {
+        "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja",
+        "published_at": "2026-09-27 17:00:18.728003+00"
+      },
+      {
+        "id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "language_code": "zh-cn",
+        "published_at": "2026-08-10 16:54:15.322+00"
+      },
+      {
+        "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "language_code": "zh-tw",
+        "published_at": "2026-08-20 13:58:03.35+00"
+      }
+    ],
+    "publicationVersionsAfter": [
+      {
+        "id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "language_code": "en",
+        "published_at": "2026-08-20 13:38:28.221+00"
+      },
+      {
+        "id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "language_code": "ja",
+        "published_at": "2026-09-27 17:00:18.728003+00"
+      },
+      {
+        "id": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "language_code": "zh-cn",
+        "published_at": "2026-08-10 16:54:15.322+00"
+      },
+      {
+        "id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "language_code": "zh-tw",
+        "published_at": "2026-08-20 13:58:03.35+00"
+      }
+    ],
+    "versionsUnchanged": true,
+    "queryTemplate": "with physical as materialized (\n  select cvv.variant_id, cvv.printing_id, cvv.set_id, cvv.language_code,\n         cvv.catalogue_version_id\n  from catalog.catalogue_version_variants cvv\n  join catalog.card_variants v on v.id=cvv.variant_id\n    and v.deprecated_at is null and v.language_code=cvv.language_code\n    and v.printing_id=cvv.printing_id\n  join catalog.card_printings p on p.id=cvv.printing_id\n    and p.deprecated_at is null and p.set_id=cvv.set_id\n    and p.language_code=cvv.language_code\n  join catalog.sets s on s.id=p.set_id\n    and s.deprecated_at is null and s.language_code=cvv.language_code\n  join catalog.languages l on l.code=cvv.language_code\n  where cvv.catalogue_version_id = :catalogue_version_id\n    and cvv.language_code = :language_code\n), assessed as (\n  select c.*,\n    exists (select 1 from market.catalogue_general_prices g\n      where g.variant_id=c.variant_id and g.printing_id=c.printing_id\n        and g.set_id=c.set_id and g.language_code=c.language_code\n        and g.catalogue_version_id=c.catalogue_version_id) as tcgcsv_saved,\n    exists (select 1 from market.catalogue_general_prices g\n      where g.variant_id=c.variant_id and g.printing_id=c.printing_id\n        and g.set_id=c.set_id and g.language_code=c.language_code\n        and g.catalogue_version_id=c.catalogue_version_id\n        and g.stale_after > now()) as tcgcsv_fresh,\n    exists (select 1 from market.cardmarket_blended_general_prices cm\n      where cm.printing_id=c.printing_id\n        and cm.catalogue_version_id=c.catalogue_version_id) as cardmarket_saved,\n    exists (select 1 from market.cardmarket_blended_general_prices cm\n      where cm.printing_id=c.printing_id\n        and cm.catalogue_version_id=c.catalogue_version_id\n        and cm.stale_after > now()) as cardmarket_fresh\n  from physical c\n)\nselect :language_code as language_code, now() as observed_at, count(*) as physical_total,\n count(*) filter(where tcgcsv_saved) as tcgcsv_saved,\n count(*) filter(where tcgcsv_fresh) as tcgcsv_fresh,\n count(*) filter(where cardmarket_saved) as cardmarket_saved,\n count(*) filter(where cardmarket_fresh) as cardmarket_fresh,\n count(*) filter(where tcgcsv_saved or cardmarket_saved) as combined_saved,\n count(*) filter(where tcgcsv_fresh or cardmarket_fresh) as combined_fresh\nfrom assessed;"
+  },
+  "batch": {
+    "id": "20261005-12",
+    "sourceAt": "2026-10-04T20:05:38Z",
+    "staleAfter": "2026-10-06T20:05:38Z",
+    "cohorts": [
+      {
+        "key": "swsh-base",
+        "groupId": 2585,
+        "code": "swsh1",
+        "setId": "b6278586-87f3-46cd-8860-85df64612cfc",
+        "canonicalName": "Sword & Shield",
+        "name": "SWSH01: Sword & Shield Base Set",
+        "providerPublishedOn": "2020-02-07T00:00:00",
+        "canonicalReleaseDate": "2020-02-07",
+        "stage": {
+          "reviewedSetAlias": true,
+          "stored": 380,
+          "proof": {
+            "expected": 244,
+            "stored": 244,
+            "verified": 244
+          },
+          "finished": true,
+          "stats": {
+            "cards": 380,
+            "mapped": 244,
+            "priced": 244,
+            "pages": 1,
+            "storeBatches": 8,
+            "manualRetainedFeedRecovery": true
+          }
+        },
+        "production": {
+          "reviewedSetAlias": true,
+          "stored": 380,
+          "proof": {
+            "expected": 244,
+            "stored": 244,
+            "verified": 244
+          },
+          "api": {
+            "references": 244,
+            "verified": 244
+          },
+          "finished": true,
+          "stats": {
+            "cards": 380,
+            "mapped": 244,
+            "priced": 244,
+            "pages": 1,
+            "storeBatches": 8,
+            "manualRetainedFeedRecovery": true
+          }
+        },
+        "preflight": {
+          "stage": {
+            "expected": 380,
+            "valid_physical": 380,
+            "collisions": 0,
+            "conflicts": 0,
+            "prior_primary": 0,
+            "backup_overlap": 58
+          },
+          "production": {
+            "expected": 380,
+            "valid_physical": 380,
+            "collisions": 0,
+            "conflicts": 0,
+            "prior_primary": 0,
+            "backup_overlap": 58
+          }
+        },
+        "reasons": {
+          "priced": 244,
+          "unresolved_provider_identity": 136
+        }
+      },
+      {
+        "key": "pokemon-go",
+        "groupId": 3064,
+        "code": "swsh10.5",
+        "setId": "ffec8524-253a-4e66-884c-7e647a15d40d",
+        "canonicalName": "Pokémon GO",
+        "name": "Pokemon GO",
+        "providerPublishedOn": "2022-07-01T00:00:00",
+        "canonicalReleaseDate": "2022-07-01",
+        "stage": {
+          "reviewedSetAlias": true,
+          "stored": 148,
+          "proof": {
+            "expected": 121,
+            "stored": 121,
+            "verified": 121
+          },
+          "finished": true,
+          "stats": {
+            "cards": 148,
+            "mapped": 123,
+            "priced": 121,
+            "pages": 1,
+            "storeBatches": 3,
+            "manualRetainedFeedRecovery": true
+          }
+        },
+        "production": {
+          "reviewedSetAlias": true,
+          "stored": 148,
+          "proof": {
+            "expected": 121,
+            "stored": 121,
+            "verified": 121
+          },
+          "api": {
+            "references": 121,
+            "verified": 121
+          },
+          "finished": true,
+          "stats": {
+            "cards": 148,
+            "mapped": 123,
+            "priced": 121,
+            "pages": 1,
+            "storeBatches": 3,
+            "manualRetainedFeedRecovery": true
+          }
+        },
+        "preflight": {
+          "stage": {
+            "expected": 148,
+            "valid_physical": 148,
+            "collisions": 0,
+            "conflicts": 0,
+            "prior_primary": 0,
+            "backup_overlap": 43
+          },
+          "production": {
+            "expected": 148,
+            "valid_physical": 148,
+            "collisions": 0,
+            "conflicts": 0,
+            "prior_primary": 0,
+            "backup_overlap": 43
+          }
+        },
+        "reasons": {
+          "priced": 121,
+          "unresolved_provider_identity": 25,
+          "no_provider_quote": 2
+        }
+      },
+      {
+        "key": "sv-base",
+        "groupId": 22873,
+        "code": "sv01",
+        "setId": "23addc10-7c42-4f3d-aa94-21a2a6ec6011",
+        "canonicalName": "Scarlet & Violet",
+        "name": "SV01: Scarlet & Violet Base Set",
+        "providerPublishedOn": "2023-03-31T00:00:00",
+        "canonicalReleaseDate": "2023-03-31",
+        "stage": {
+          "reviewedSetAlias": true,
+          "stored": 444,
+          "proof": {
+            "expected": 196,
+            "stored": 196,
+            "verified": 196
+          },
+          "finished": true,
+          "stats": {
+            "cards": 444,
+            "mapped": 196,
+            "priced": 196,
+            "pages": 1,
+            "storeBatches": 9,
+            "manualRetainedFeedRecovery": true
+          }
+        },
+        "production": {
+          "reviewedSetAlias": true,
+          "stored": 444,
+          "proof": {
+            "stored": 196,
+            "expected": 196,
+            "verified": 196
+          },
+          "api": {
+            "verified": 196,
+            "references": 196
+          },
+          "finished": true,
+          "stats": {
+            "cards": 444,
+            "mapped": 196,
+            "priced": 196,
+            "pages": 1,
+            "storeBatches": 9,
+            "manualRetainedFeedRecovery": true
+          },
+          "retry": "Connector throttled API verification. Rechecked the same live lease and all stored quotes, repeated read-only API proof and finished the existing checkpoint without replaying price writes."
+        },
+        "preflight": {
+          "stage": {
+            "expected": 444,
+            "valid_physical": 444,
+            "collisions": 0,
+            "conflicts": 0,
+            "prior_primary": 0,
+            "backup_overlap": 48
+          },
+          "production": {
+            "expected": 444,
+            "valid_physical": 444,
+            "collisions": 0,
+            "conflicts": 0,
+            "prior_primary": 0,
+            "backup_overlap": 48
+          }
+        },
+        "reasons": {
+          "priced": 196,
+          "unresolved_provider_identity": 248
+        }
+      },
+      {
+        "key": "sv-151",
+        "groupId": 23237,
+        "code": "sv03.5",
+        "setId": "f2d0385c-1aae-44a9-b301-bf13da9a131e",
+        "canonicalName": "151",
+        "name": "SV: Scarlet & Violet 151",
+        "providerPublishedOn": "2023-09-22T00:00:00",
+        "canonicalReleaseDate": "2023-09-22",
+        "stage": {
+          "reviewedSetAlias": true,
+          "stored": 362,
+          "proof": {
+            "expected": 262,
+            "stored": 262,
+            "verified": 262
+          },
+          "finished": true,
+          "stats": {
+            "cards": 362,
+            "mapped": 262,
+            "priced": 262,
+            "pages": 1,
+            "storeBatches": 8,
+            "manualRetainedFeedRecovery": true
+          },
+          "retry": "Connector throttled one bounded store request. Rechecked the same live lease and resumed it with idempotent outcome stores; no job restart. Provider timestamps and expiry retained."
+        },
+        "production": {
+          "reviewedSetAlias": true,
+          "stored": 362,
+          "proof": {
+            "expected": 262,
+            "stored": 262,
+            "verified": 262
+          },
+          "api": {
+            "references": 262,
+            "verified": 262
+          },
+          "finished": true,
+          "stats": {
+            "cards": 362,
+            "mapped": 262,
+            "priced": 262,
+            "pages": 1,
+            "storeBatches": 8,
+            "manualRetainedFeedRecovery": true
+          }
+        },
+        "preflight": {
+          "stage": {
+            "expected": 362,
+            "valid_physical": 362,
+            "collisions": 0,
+            "conflicts": 0,
+            "prior_primary": 0,
+            "backup_overlap": 60
+          },
+          "production": {
+            "expected": 362,
+            "valid_physical": 362,
+            "collisions": 0,
+            "conflicts": 0,
+            "prior_primary": 0,
+            "backup_overlap": 60
+          }
+        },
+        "reasons": {
+          "priced": 262,
+          "unresolved_provider_identity": 100
+        }
+      }
+    ],
+    "setOnlyMappingsReviewedEachEnvironment": 4,
+    "storedOutcomesEachEnvironment": 1334,
+    "positiveQuotesAddedEachEnvironment": 823,
+    "backupOverlap": 209,
+    "netPreviouslyUnpriced": 614,
+    "stageProductionPhysicalIdentitiesAgree": true,
+    "independentPlanSemanticsAgree": true,
+    "nextRetryTimestampDifference": "Independent plans differ only by millisecond planning timestamps. The semantically verified staging results are reused for production stores; actual original prices, dated FX, identity, source revision and finish agree.",
+    "policy": "Finite reviewed expansion-name aliases with matching provider/canonical release dates. Per-card exact English names, complete collectors, finish, retained feeds and global collision checks remain mandatory. No card-title, stamped, event, edition, or other modifiers removed; no generic matcher changes.",
+    "fx": {
+      "rate": 0.757532293986637,
+      "at": "2026-10-02T00:00:00.000Z",
+      "source": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+    }
+  },
+  "afterBatch": {
+    "primaryEnglish": 18548,
+    "primaryJapanese": 6907,
+    "primaryTotal": 25455,
+    "manualReviewedPrimaryQuotesAdded": 2313,
+    "manualNetCombinedGain": 1691,
+    "overnightNetCombinedGain": 1877,
+    "groupLedger": [
+      {
+        "groups": 160,
+        "status": "complete",
+        "category_id": 3
+      },
+      {
+        "groups": 60,
+        "status": "unmapped",
+        "category_id": 3
+      },
+      {
+        "groups": 163,
+        "status": "complete",
+        "category_id": 85
+      },
+      {
+        "groups": 296,
+        "status": "unmapped",
+        "category_id": 85
+      }
+    ],
+    "zeroPriceAndStalenessAudit": {
+      "stale": 0,
+      "total": 25455,
+      "zeroDisplay": 0,
+      "zeroOriginal": 0
+    }
+  },
+  "checks": {
+    "sourceHead": "cb9ef94",
+    "applicableGitHubChecksPassed": 12,
+    "intentionalSkips": 2,
+    "noNewCodeOrMigrationsThisBatch": true,
+    "validation": "Independent whole-cohort current physical and global collision preflight, exact release dates and reviewed set-only aliases, current API candidate readback, complete guarded outcome writes,823 exact source/USD/FX/GBP/source-age/expiry proofs per environment, all823 production API readbacks, all live leases completed, whole active-scope physical recount with versions unchanged.",
+    "transientConnectorThrottling": "Staging151 resumed the same live lease with idempotent stores. ProductionSV base resumed the same live lease after repeating read-only API checks; no price writes were repeated. Source revisions/expiry preserved."
+  },
+  "boundaries": {
+    "noKoreanWork": true,
+    "noCatalogueMutation": true,
+    "noNewPhoneBuild": true,
+    "noPaidProviderActivation": true,
+    "fullTargetAchieved": false,
+    "generalGuideNotSoldConditionOrGradedValuation": true,
+    "serviceSqlApiNotOwnerHttpOrPhoneVisibility": true
+  },
+  "next": [
+    "Review SWSH/SV/ME promo aliases and remaining bounded special expansion identities; keep deck, stamped, Prize Pack, Jumbo and World Championship products physically distinct.",
+    "Investigate the major no-quote finish gap with an explicitly printing-scoped general estimate design rather than relabelling a different finish as exact.",
+    "Repair Chinese source/native-language proof; do not inherit Traditional Chinese pointers as Simplified Chinese pricing."
+  ]
+}

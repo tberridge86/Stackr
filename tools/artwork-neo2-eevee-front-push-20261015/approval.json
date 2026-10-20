@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 1,
+  "variants": 1,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "ja",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "physical_finish_verified": false,
+  "physical_edition_verified": false,
+  "cohort_sha256": "0ac7a38d3b021d5559edf822dcd4a2baf9bad6bb906030b40052e402cbf5df43",
+  "source_evidence": {
+    "approvedProjectionFileByteSha256": "ae3dfc347f5e33e58485cb970007b271a522cd3af46d596ec837fe937d5b68c4",
+    "finiteDecisionFileByteSha256": "494973642eefdb112edd3b8f28bf26953dab140e0a231ef48de385496f5d7218",
+    "sourceHandoffFileByteSha256": "d09860d1b42a10d1e9600346a99468510716f70fa185839f9c303dba89ef722b",
+    "independentSourceReviewFileByteSha256": "39e6be7bd41f13cdd524534095d235b8e488c972797e225f509849194dfef8bb",
+    "fourSourceCheckpointFileByteSha256": "9e93a6ebf16895b0cd71bd24bd7a9e6742d3f9819b163640cfc27f3771c05c8f",
+    "ownerPermissionAttestationSha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+    "privateSourceContractFileByteSha256": "d27019988f4584f6464530f3d3df0b722c8761b6801d49f0cfda5bd34a938ca6",
+    "independentPrivatePackageReviewSha256": "0056cc89fb464a7fe2da97c548f68eeb238bbcde40fc2ba9502957f6435b0479",
+    "rootPrivatePackageValidationSha256": "3ae528187b4ec22a9511bb6329187191f872c47d6a7cfa21f113cc129fee7149",
+    "rootSourceArchiveBindingSha256": "1c86f2dc3c1d75d1132450968783257cd7e57e47c0e88ba4adbfa2a35932a5f1",
+    "rootUploadReceiptSha256": "4ea17b88a682739452138cfa8da4f393a7a25735339a3d40cb294a2b66bb76d7"
+  },
+  "production_source_changes_allowed": 0,
+  "scope": "Exactly one Japanese Neo2 Eevee printed No.133, internal049/currentEevee/normal singleton. Shared printing-front asset/sourceVariantId null. All four production full17 sources unchanged; no production source creation. Staging zero scoped sources, only temporary PriceCharting fixture rolled back. Full optional Energy Evolution actual clauses govern; no verbatim-provider, physical edition or finish certificate."
+}

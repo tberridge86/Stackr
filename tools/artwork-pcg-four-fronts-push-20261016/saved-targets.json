@@ -1,0 +1,58 @@
+[
+  {
+    "printing_id": "3c83ecfe-306a-4f64-8003-e455fb4be4f9",
+    "set_id": "8063eabc-362a-4f15-a4ec-4ed73824252d",
+    "set_code": "PCG1",
+    "language_code": "ja",
+    "collector_number": "034",
+    "card_native_name": "Magikarp",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-019",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "e2710b68-93f0-4cdd-8537-57a1e6046a0f"
+    ]
+  },
+  {
+    "printing_id": "aec39508-e7ed-4d3d-a876-51dc5f7c258e",
+    "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+    "set_code": "PCG2",
+    "language_code": "ja",
+    "collector_number": "023",
+    "card_native_name": "Magikarp",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-021",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "41385d11-8aac-4618-b8b0-b810bdfcaa8a"
+    ]
+  },
+  {
+    "printing_id": "db02f454-b7b4-497d-b2a0-a9e5ab074665",
+    "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+    "set_code": "PCG3",
+    "language_code": "ja",
+    "collector_number": "030",
+    "card_native_name": "Delibird",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-025",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "1f58b1ed-c5fe-4d9b-9d05-a3f3cc24cd2e"
+    ]
+  },
+  {
+    "printing_id": "bd47b01b-2694-4e7a-a446-9c2f7a5cbba7",
+    "set_id": "12f2bb10-ec15-4783-bc9b-c946546a1abc",
+    "set_code": "PCG3",
+    "language_code": "ja",
+    "collector_number": "060",
+    "card_native_name": "Rocket's Hitmonchan ex",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-026",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "d782e5b3-f7f7-4ac9-84ff-c9c6dfa05aca"
+    ]
+  }
+]

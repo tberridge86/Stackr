@@ -1,0 +1,178 @@
+[
+  {
+    "printing_id": "2a5d9bbe-1174-4676-9c36-4bcc24020f1e",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "26",
+    "card_native_name": "Wartortle",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "7d7cc996-5388-47eb-820f-ec3acdf2bc6c"
+    ],
+    "batch_id": "EN-CARDS-007",
+    "source_code": "bulbapedia",
+    "provider_id": "File:WartortleMyFirstBattle.jpg",
+    "image_url": "https://archives.bulbagarden.net/media/upload/1/1a/WartortleMyFirstBattle.jpg",
+    "source_metadata_sha256": "a398486f4e1ef372670ba73d8004099644754f3ee4419dceb932bb720084c84e",
+    "source_body_sha256": "aefcac4bd0514c701f2aada6b81c557bdcbb6d41289638684d305fc7fd59ce58",
+    "evidence_sha256": "b8ed6c6e9fd2211800be34049b65caaff3d1d1f32c4cdb8af6e718b766c082c1",
+    "original_sha256": "9b32817e2eb289ef9794ff3a13269377bdb1cd112339d50490b3531141a9b881",
+    "original_width": 1375,
+    "original_height": 1920
+  },
+  {
+    "printing_id": "41395dbd-f317-44f6-a49e-0fa095e03e7a",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "27",
+    "card_native_name": "Poliwag",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "d9beeafa-9972-4d97-9c31-d9100fa6a4e9"
+    ],
+    "batch_id": "EN-CARDS-007",
+    "source_code": "bulbapedia",
+    "provider_id": "File:PoliwagMyFirstBattle.jpg",
+    "image_url": "https://archives.bulbagarden.net/media/upload/8/86/PoliwagMyFirstBattle.jpg",
+    "source_metadata_sha256": "40a74fe026a8d96c29a6af94e65d2bb75ca6813bf836820777c5401bb5b9c585",
+    "source_body_sha256": "5aae8da5460775e92ed0182839cda93c8d9ed5f8e93a46f39027048a96eb42ae",
+    "evidence_sha256": "c9702fb1bce4f88ea7335d1a9feb24db581a9bef4bd43dc28e67d4bd97edde4b",
+    "original_sha256": "81617fe78557295d9f49c347bbcd96a4af6aa04d7ada6c4d88c48eda1a481118",
+    "original_width": 1375,
+    "original_height": 1920
+  },
+  {
+    "printing_id": "44beac31-c0da-423b-9ea4-4e1359eb2bed",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "29",
+    "card_native_name": "Magikarp",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "1593d7e0-58f7-49c2-a5b7-e47b200fd131"
+    ],
+    "batch_id": "EN-CARDS-007",
+    "source_code": "bulbapedia",
+    "provider_id": "File:MagikarpMyFirstBattle.jpg",
+    "image_url": "https://archives.bulbagarden.net/media/upload/5/55/MagikarpMyFirstBattle.jpg",
+    "source_metadata_sha256": "ec4096085ec6b3864d67106d959ed711045ad25ded3bcc199c533b4110b02c4c",
+    "source_body_sha256": "2323628fb49067e4a0790ff18123b31f70cf81a1567a239e83a067e04d5fab5b",
+    "evidence_sha256": "dc9ebca6b4e7235ded7e8a22fadd849f0d02ae00e63911e11fd60af8afa01fd6",
+    "original_sha256": "f8264864f0df481c5452e903a6b7c9d41abe7590c66fe9ce61311bbdf6ee3fe8",
+    "original_width": 1375,
+    "original_height": 1920
+  },
+  {
+    "printing_id": "593f2452-0513-4304-964d-017756266f91",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "23",
+    "card_native_name": "Electabuzz",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "6a0f530d-1148-446d-b1d6-f3d97a043f39"
+    ],
+    "batch_id": "EN-CARDS-006",
+    "source_code": "bulbapedia",
+    "provider_id": "File:ElectabuzzMyFirstBattle.jpg",
+    "image_url": "https://archives.bulbagarden.net/media/upload/5/5c/ElectabuzzMyFirstBattle.jpg",
+    "source_metadata_sha256": "aeb664e06193806bb4c486b86974eb77a971fd4c918d1125f7072ae696c52136",
+    "source_body_sha256": "9262a783db0463a87b272936c44d751e228493f0bae14b7fc103352a8aa64352",
+    "evidence_sha256": "4ad4f6c5f807d95fe029176587cfb66821fdb77190fe8d9ce09934080174bb1b",
+    "original_sha256": "52656bfc23f0b82ebf9e16898a719188a669166317e5da837004a7b50941e8e4",
+    "original_width": 1375,
+    "original_height": 1920
+  },
+  {
+    "printing_id": "7d7382ef-d5c9-40b8-9cb8-d37487dffaeb",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "31",
+    "card_native_name": "Lapras",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "7c8f4063-caf5-453d-ac80-bcb7df971093"
+    ],
+    "batch_id": "EN-CARDS-007",
+    "source_code": "bulbapedia",
+    "provider_id": "File:LaprasMyFirstBattle.jpg",
+    "image_url": "https://archives.bulbagarden.net/media/upload/c/c8/LaprasMyFirstBattle.jpg",
+    "source_metadata_sha256": "8c5b304f023f0e7c5628018e46e65b4bc083bec42ff18260e8eb97c4d4373a71",
+    "source_body_sha256": "ccde28fbbac4631c238fc634c8993b17ae352850fcffbb37232a31f3a324cb0c",
+    "evidence_sha256": "25e72a8514981ea8e654050d8fd1fb2a359c2cb1257d79821169c7ce83311f92",
+    "original_sha256": "a28354dbc1c3d65c5ae8ac1fccec627b75a4ae9c8fbc81fb5429956f6cf0a266",
+    "original_width": 1375,
+    "original_height": 1920
+  },
+  {
+    "printing_id": "8e7ca31f-4b3d-438b-958e-c48462617a2a",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "11",
+    "card_native_name": "Vulpix",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "0d77a10f-8d23-46a5-a0f8-fc93ba2b3492"
+    ],
+    "batch_id": "EN-CARDS-006",
+    "source_code": "bulbapedia",
+    "provider_id": "File:VulpixMyFirstBattle.jpg",
+    "image_url": "https://archives.bulbagarden.net/media/upload/7/78/VulpixMyFirstBattle.jpg",
+    "source_metadata_sha256": "2b5c04cc2eb4abc5e5b638050153edbaede7828d1a1603497d970796e385c2cd",
+    "source_body_sha256": "8364e50ba57aa33a5e63b365ab9625d04218269f84e0ae82077e06e0cb6cb584",
+    "evidence_sha256": "e68f5b3f214dc89ae82f72bde35379c4511a560bacd8ef0f3ef047918f17cd84",
+    "original_sha256": "f8c0b93a0ccedb0c7b2c87ed4c528bf2fcd4d87312cfe7d72b602935d0fedfb1",
+    "original_width": 1375,
+    "original_height": 1920
+  },
+  {
+    "printing_id": "9851560d-25ac-4a1c-815d-dd6793598d98",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "7",
+    "card_native_name": "Scyther",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "794e4d54-a754-4a89-b42f-30b1a9a6d41c"
+    ],
+    "batch_id": "EN-CARDS-006",
+    "source_code": "bulbapedia",
+    "provider_id": "File:ScytherMyFirstBattle.jpg",
+    "image_url": "https://archives.bulbagarden.net/media/upload/3/31/ScytherMyFirstBattle.jpg",
+    "source_metadata_sha256": "e8b12590effeeb7f9f595c7fded0f0cdb18479cbad375377a804aa4fba1ac1b3",
+    "source_body_sha256": "4bbbf7607be469ca19e88defefb233a4670ad128e9a18a481bdf7c056036a0c8",
+    "evidence_sha256": "8a19d3f590d5c260d3ab4c268cb69e562aaa3ca9aa97b15d7a325125d02d0386",
+    "original_sha256": "a527c4ddc9e9ff4341b761fd8db107a4aa7b7f53308183949a93544a6ab69415",
+    "original_width": 1375,
+    "original_height": 1920
+  },
+  {
+    "printing_id": "9bb77118-3c6d-4219-a42d-b41fdb68ca05",
+    "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+    "set_code": "mfb",
+    "language_code": "en",
+    "collector_number": "5",
+    "card_native_name": "Exeggcute",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "cca1b099-30a3-48e8-969a-b35ba450379f"
+    ],
+    "batch_id": "EN-CARDS-006",
+    "source_code": "bulbapedia",
+    "provider_id": "File:ExeggcuteMyFirstBattle.jpg",
+    "image_url": "https://archives.bulbagarden.net/media/upload/f/fc/ExeggcuteMyFirstBattle.jpg",
+    "source_metadata_sha256": "9d09bb678c8ec460ca086d81227d9898212291fc96c19e1dcd2949e5e8299b08",
+    "source_body_sha256": "0577004492b8c2e698a5c0102daa984b75ef65d84c87feb9ccc0af64d17c1f6c",
+    "evidence_sha256": "a82bd275e367beb2ba8b57e3b4d797957593d4822f2e6078400a97ad36384b15",
+    "original_sha256": "5ae547a9384c41fb6e0757be5a4ca3199587e457a319ba7ace461363b0509377",
+    "original_width": 1375,
+    "original_height": 1920
+  }
+]

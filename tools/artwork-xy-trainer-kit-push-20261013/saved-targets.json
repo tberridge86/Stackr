@@ -1,0 +1,758 @@
+[
+  {
+    "printing_id": "01738d8b-45f5-494b-8c67-978549fa0a47",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "1",
+    "card_native_name": "Grass Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "b2fbf551-58d4-44b5-9f72-156bd714fa21"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "07e0b301-0b21-47b2-8121-11d87818aecf",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "4",
+    "card_native_name": "Vigoroth",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "a568e96f-a5cf-42af-8d87-a6ca32948fe4"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "0866b4c4-0db2-47a2-8dbe-4072f84dda47",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "27",
+    "card_native_name": "Honedge",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "f4a44e8b-1e02-4b76-b662-fb6359e8c5a6"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "09f1b04a-b1de-436d-87f6-01ce812a6a2a",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "5",
+    "card_native_name": "Metal Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "3a68419c-369d-4088-8c0c-7510abf9f143"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "0a75f5ce-e37a-408e-91d8-4e3524e99e20",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "17",
+    "card_native_name": "Psychic Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "247c795f-ed05-401a-b768-eae8daddaa4d"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "0b280b35-35de-4b74-ba66-d100c70aecbd",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "16",
+    "card_native_name": "Bisharp",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "4cd7d2a9-4a0c-45e4-9ad5-7c31e05bbf54"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "123cb592-bcf1-420f-972f-2fa158e11acc",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "6",
+    "card_native_name": "Lombre",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "660c36ad-d7e9-47e0-a726-1fda6380e02b"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "198e435c-42e8-4665-89db-b0cb8ca0fa00",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "2",
+    "card_native_name": "Metal Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "89f03784-3924-4d01-82f9-7b9350050298"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "1eb614e6-e49d-4da5-be2d-e5938fca82be",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "29",
+    "card_native_name": "Potion",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "55b8e60b-cc58-41ab-a49e-03b0f275658b"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "2a06c0d9-2cba-4936-96b1-241f49a4d5b1",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "11",
+    "card_native_name": "Honedge",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "d7bfbfbf-ee66-4223-b7ab-21b4752c08db"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "31e40d30-c143-4633-9284-d9cddd1c826b",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "21",
+    "card_native_name": "Pawniard",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "464bff8b-398a-4078-b80e-ad107b298b34"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "346834ec-c516-450b-94f6-8c2fa35e0d7c",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "7",
+    "card_native_name": "Metal Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "e3743536-ef0b-402e-9091-8fae934b8c0d"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "34ee9f99-eef7-4466-aec6-b4b74ce6c272",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "3",
+    "card_native_name": "Metal Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "c54f6d8c-44f5-4511-a6ff-f4893e16821c"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "3d014e18-d406-4ff6-8af7-289241e7a834",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "22",
+    "card_native_name": "Psychic Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "7ff354d9-1503-4b1e-a439-7d620b99d6b1"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "3dac0e4a-945a-4b17-ad6a-fa6101fa9191",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "8",
+    "card_native_name": "Psychic Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "8fdb17f6-4ff6-45f1-8c90-42d6ca3354a2"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "3ef2f7d9-5ac9-4196-8d8f-1fce8e3f79ec",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "17",
+    "card_native_name": "Patrat",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "4779da25-f080-486a-954b-2573c1254bf4"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "41416e4f-dba6-4102-af42-55aaae20b2dd",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "15",
+    "card_native_name": "Slakoth",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "fb2f628d-2e75-4261-b3e4-854bebf70132"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "44813c0d-ba23-40f9-a708-d6e814ebfd55",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "24",
+    "card_native_name": "Metal Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "8a171ccf-184a-497d-acb1-8ce29c1faf46"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "470c1b7d-360e-42d5-8d47-97bb1b1123a8",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "6",
+    "card_native_name": "Metal Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "878e777e-7b99-41ca-944e-0d9f609f6be8"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "5e1218aa-4682-474b-9b9c-05791a2648bb",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "4",
+    "card_native_name": "Fletchling",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "c39cb2bc-af72-47c9-88d3-018ee3886fca"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "5ef9e7c2-2554-49df-9c04-0616f1ff8805",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "18",
+    "card_native_name": "Metal Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "3388c5d5-9f8e-4a9d-9e29-72a1b9a8734f"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "6349bf59-22db-4d09-9b5b-82a8434d2846",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "23",
+    "card_native_name": "Doublade",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "bf9c9977-58e9-4169-ad5e-ad4b304b8fc6"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "64698c96-9598-41c5-a4e6-fe409d3c5b8c",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "25",
+    "card_native_name": "Tangrowth",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "a16319b0-1de0-4b12-bfd2-e956b58e6e70"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "767740d5-8c5d-4da7-a266-88706eeddead",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "10",
+    "card_native_name": "Metal Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "8e638606-a494-4bc2-8a2a-78b8dd640712"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "7d53e658-7997-4a16-907d-746f47e7d8ab",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "3",
+    "card_native_name": "Grass Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "3f881aea-0b60-4497-9054-dc09f04578c6"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "7f4726e6-2cea-4ffa-9393-b13a8e04f5b9",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "14",
+    "card_native_name": "Doublade",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "5a4e2cbd-f13c-41d9-ad45-cba080984f59"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "8b0536d8-d599-47ba-8d05-2750521af86c",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "9",
+    "card_native_name": "Metal Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "8c6f1dd7-4679-403a-afc3-d0e878bd00aa"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "90e3c837-43c3-4030-b562-0f5468482f24",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "1",
+    "card_native_name": "Fletchling",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "9dd54579-e451-4bcf-bab5-c6391478b294"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "90ffb419-2dd2-4c8a-ad83-4e2ef74ae6c7",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "22",
+    "card_native_name": "Metal Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "66d30a4e-ce34-48de-a18d-cbf4a17768e5"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "93b96720-51ed-478a-b750-bdf8bab4becc",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "2",
+    "card_native_name": "Grass Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "91226243-6138-4158-a418-71ec667773bf"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "9e338967-821b-4056-abcc-c3179a62f777",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "20",
+    "card_native_name": "Acro Bike",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "cb4c859c-ca75-4009-a988-99730166fd06"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "a51e74a6-62ce-4b93-a1b7-6f25a2873424",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "13",
+    "card_native_name": "Tangela",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "4b94a2e0-0c3e-484b-8eb0-017ecd150972"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "ab8556ce-16a0-437f-a003-14398cbd0ffe",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "26",
+    "card_native_name": "Slakoth",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "1f2908db-7bad-410b-abb7-9d1b6e08d33b"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "ad2b8c57-0d00-49cd-a86f-efaa4f7b29d9",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "19",
+    "card_native_name": "Grass Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "ea80ff5d-57d6-4742-936c-08e16c1d1a7f"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "ae76c834-b7fd-4ee1-b35c-6bb322f7672b",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "5",
+    "card_native_name": "Grass Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "0db84af5-38da-4302-a47c-3d506fd4e91d"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "b10bfd91-c927-4685-a5db-a2c23d7861cd",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "12",
+    "card_native_name": "Tangrowth",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "cc691b19-4f86-4f45-abe9-3965387efbcc"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "b2175b9b-a246-4c32-8e39-4fb8d3f54091",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "18",
+    "card_native_name": "Grovyle",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "5741c618-1673-4cf0-a35b-57c08395bde2"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "bbe21b58-c37b-425e-9c17-24cc085b97e6",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "11",
+    "card_native_name": "Lotad",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "a79769e7-449c-48f0-86b6-dd26bb99ba42"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "c50e14c5-374b-4a7c-aa7b-7027800cd63c",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "16",
+    "card_native_name": "Surskit",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "cc477091-c6d9-49ce-b507-36108196b8ad"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "c5c67e6b-0774-482f-8c3d-8bf7cb762772",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "21",
+    "card_native_name": "Lombre",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "da08122b-9982-4889-a374-de7c27de75df"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "cf876d71-863e-4a9d-9c9d-e766d99c5707",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "8",
+    "card_native_name": "Metal Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "ae72ace6-f9df-4555-8a40-e63d29085990"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "d0e62137-8209-4c5e-95d1-9df9b538bf45",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "19",
+    "card_native_name": "Tierno",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "fa8ca508-ea91-4908-af74-c27fd2d0fe5c"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "d2db1993-e34e-4fca-9eca-ae241f297156",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "14",
+    "card_native_name": "Latias",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "534affee-a34e-47ed-8bc5-f65b4e51bea0"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "d8d9510f-8d02-4ae6-8bff-bda010520f82",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "9",
+    "card_native_name": "Psychic Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "4b02e03a-2d29-4f81-b81b-b0c35d3406bf"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "daa532ac-cdbb-4077-9e45-281799aeb080",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "28",
+    "card_native_name": "Vigoroth",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "05c75fb6-6e2d-41ba-a8c6-c41bd4d4f6f3"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "e5794ef6-db20-402f-b15a-eaedbb5bb774",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "23",
+    "card_native_name": "Lotad",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "f6dbded5-91e8-4e6c-8be7-d442df5c5dd1"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "e6a125b9-5c47-4e24-87a1-6d15664634a4",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "25",
+    "card_native_name": "Potion",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "797914da-0b63-4943-8e0f-d3ec691f890b"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "ea080be0-5dc9-4fa4-bb71-b2c56e1dd38b",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "13",
+    "card_native_name": "Pawniard",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "fcd2bb04-3ab3-412e-95a4-bb1843848e06"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "ec056356-b258-4e45-9199-d074732983a5",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "12",
+    "card_native_name": "Bidoof",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "c4936ba8-a6dd-4d5f-aade-b28f6e7fd85f"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "ecaa0fee-22a2-4cda-82e9-278ec886c7b8",
+    "set_id": "12cede6a-64b0-4fe1-9450-d70056d82cb5",
+    "set_code": "tk-xy-b",
+    "language_code": "en",
+    "collector_number": "30",
+    "card_native_name": "Bisharp",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "2f6daedc-b385-43cd-9177-fb736666f4cf"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "f3ce8a82-239d-4d64-ad98-fe99ee106ad0",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "10",
+    "card_native_name": "Psychic Energy",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "22128c96-4e98-4d24-8d74-3d9674456b2c"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "f8b19ee7-99e7-4475-a389-1f302c4074e2",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "15",
+    "card_native_name": "Potion",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "74c51baf-e693-4c5c-adba-327fa6c18d9a"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "f9103807-6da5-4c3d-b094-6c8e81efb62f",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "7",
+    "card_native_name": "Treecko",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "3274105f-0ec9-4417-93ba-52a928fa3e93"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  },
+  {
+    "printing_id": "faaed3bc-bd99-4462-b620-6a18139f66cb",
+    "set_id": "dae37fb1-7d7a-47d2-8d4b-de7de16a6b0e",
+    "set_code": "tk-xy-latia",
+    "language_code": "en",
+    "collector_number": "24",
+    "card_native_name": "Treecko",
+    "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+    "variant_ids": [
+      "6d2dd0b7-4352-4291-b851-10a9f77628bf"
+    ],
+    "variant_code": "normal",
+    "finish_code": "normal"
+  }
+]

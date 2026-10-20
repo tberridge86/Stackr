@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "fronts": 28,
+  "store_resize_display": true,
+  "decision_type": "owner_authorised_exact_cohort_business_decision",
+  "language_code": "en",
+  "source_wide_approval": false,
+  "human_review_required": false,
+  "vendor_licence_verified": false,
+  "approved_at": "2026-10-13",
+  "cohort_sha256": "f0324a9caaa00da9856db0e4d37a5da32e5618c2012d9bf4e47ef9e605c68a06",
+  "owner_instructions": [
+    "gather batch EN-CARDS-001 - hey Tif can you take over and process these artworks in their batvhes until we are complete - as you do them make sure they all livwe in production",
+    "using your internet sourcs you can queue it for the production push - we dont need to review",
+    "continue your work flow please - i want to set you loose to work through this Tif can you manage this?"
+  ],
+  "scope": "Store, resize and display exactly these 28 eligible Wigglytuff trainer-kit source originals and 84 derivatives. The original 29 saved target identities remain fixed; 1 targets are excluded from this exact release. Per-printing source aliases, original hashes, readable footer/deck/name evidence and minimum detail dimensions are frozen. No canonical metadata/pricing changes, production source insertion, source-wide activation or per-batch human review. No independent vendor licence or physical foil certification is asserted.",
+  "source_counts": {
+    "scrydex": 28
+  }
+}

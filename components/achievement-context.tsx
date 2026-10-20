@@ -206,52 +206,115 @@ function AchievementToast({
 }
 
 export function AchievementProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, cachedReadSession } = useAuth();
+  const accountId = user?.id ?? null;
+  // This is only a lifetime marker for UI work. It never grants access: the
+  // live user ID remains required, and account switches with the same final
+  // ID still invalidate earlier asynchronous reads and notifier leases.
+  const accountEpoch = accountId && cachedReadSession?.userId === accountId
+    ? cachedReadSession?.epoch ?? 0
+    : 0;
   const [unlocks, setUnlocks] = useState<AchievementUnlock[]>([]);
   const [coinBalance, setCoinBalance] = useState(0);
-  const [queue, setQueue] = useState<AchievementUnlock[]>([]);
-  const [currentUnlock, setCurrentUnlock] = useState<AchievementUnlock | null>(null);
+  const [queue, setQueue] = useState<{ generation: number; unlock: AchievementUnlock }[]>([]);
+  const [currentUnlock, setCurrentUnlock] = useState<{ generation: number; unlock: AchievementUnlock } | null>(null);
+  const mountedRef = useRef(false);
+  const accountRef = useRef({ id: accountId, epoch: accountEpoch, generation: 0 });
+  const unlocksGenerationRef = useRef(-1);
+  const coinsGenerationRef = useRef(-1);
+  if (accountRef.current.id !== accountId || accountRef.current.epoch !== accountEpoch) {
+    accountRef.current = { id: accountId, epoch: accountEpoch, generation: accountRef.current.generation + 1 };
+  }
+  const activeAccount = accountRef.current;
+  const isCurrentAccount = useCallback((expectedId: string | null, expectedGeneration: number) => (
+    mountedRef.current
+    && accountRef.current.id === expectedId
+    && accountRef.current.generation === expectedGeneration
+  ), []);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
   const refreshCoins = useCallback(async () => {
-    if (!user?.id) {
+    const expectedId = user?.id ?? null;
+    const expectedEpoch = accountEpoch;
+    if (accountRef.current.epoch !== expectedEpoch) return;
+    const expectedGeneration = accountRef.current.generation;
+    if (!expectedId) {
+      if (!isCurrentAccount(null, expectedGeneration)) return;
+      coinsGenerationRef.current = expectedGeneration;
       setCoinBalance(0);
       return;
     }
 
-    const next = await fetchUserCoinBalance(user.id);
+    const next = await fetchUserCoinBalance(expectedId);
+    if (!isCurrentAccount(expectedId, expectedGeneration)) return;
+    coinsGenerationRef.current = expectedGeneration;
     setCoinBalance(next);
-  }, [user?.id]);
+  }, [accountEpoch, isCurrentAccount, user?.id]);
 
   const refreshAchievements = useCallback(async () => {
-    if (!user?.id) {
+    const expectedId = user?.id ?? null;
+    const expectedEpoch = accountEpoch;
+    if (accountRef.current.epoch !== expectedEpoch) return;
+    const expectedGeneration = accountRef.current.generation;
+    if (!expectedId) {
+      if (!isCurrentAccount(null, expectedGeneration)) return;
+      unlocksGenerationRef.current = expectedGeneration;
+      coinsGenerationRef.current = expectedGeneration;
       setUnlocks([]);
       setCoinBalance(0);
       return;
     }
 
     const [next, nextCoins] = await Promise.all([
-      fetchUserAchievementUnlocks(user.id),
-      fetchUserCoinBalance(user.id),
+      fetchUserAchievementUnlocks(expectedId),
+      fetchUserCoinBalance(expectedId),
     ]);
+    if (!isCurrentAccount(expectedId, expectedGeneration)) return;
+    unlocksGenerationRef.current = expectedGeneration;
+    coinsGenerationRef.current = expectedGeneration;
     setUnlocks(next);
     setCoinBalance(nextCoins);
-  }, [user?.id]);
+  }, [accountEpoch, isCurrentAccount, user?.id]);
 
-  const enqueueUnlocks = useCallback((nextUnlocks: AchievementUnlock[]) => {
-    if (!nextUnlocks.length) return;
+  const enqueueUnlocks = useCallback((expectedId: string, expectedGeneration: number, nextUnlocks: AchievementUnlock[]) => {
+    if (!nextUnlocks.length || !isCurrentAccount(expectedId, expectedGeneration)) return;
+    // State is render-masked during an account transition, but React still
+    // retains its previous values. Capture their provenance before marking
+    // this generation current so an early B notification cannot merge A.
+    const hasCurrentUnlocks = unlocksGenerationRef.current === expectedGeneration;
+    const hasCurrentCoins = coinsGenerationRef.current === expectedGeneration;
+    unlocksGenerationRef.current = expectedGeneration;
+    coinsGenerationRef.current = expectedGeneration;
     setUnlocks((prev) => {
-      const existing = new Set(prev.map((unlock) => unlock.id));
-      const merged = [...nextUnlocks.filter((unlock) => !existing.has(unlock.id)), ...prev];
+      const baseline = hasCurrentUnlocks ? prev : [];
+      const existing = new Set(baseline.map((unlock) => unlock.id));
+      const merged = [...nextUnlocks.filter((unlock) => !existing.has(unlock.id)), ...baseline];
       return merged;
     });
-    setCoinBalance((prev) => prev + nextUnlocks.reduce((total, unlock) => total + unlock.coinReward, 0));
-    setQueue((prev) => [...prev, ...nextUnlocks]);
-  }, []);
+    setCoinBalance((prev) => (hasCurrentCoins ? prev : 0) + nextUnlocks.reduce((total, unlock) => total + unlock.coinReward, 0));
+    setQueue((prev) => [...prev, ...nextUnlocks.map((unlock) => ({ generation: expectedGeneration, unlock }))]);
+  }, [isCurrentAccount]);
 
   useEffect(() => {
-    setAchievementUnlockNotifier(enqueueUnlocks);
+    const expectedId = activeAccount.id;
+    const expectedGeneration = activeAccount.generation;
+    setAchievementUnlockNotifier((notifierUserId, nextUnlocks) => {
+      if (!expectedId || notifierUserId !== expectedId || !isCurrentAccount(expectedId, expectedGeneration)) return;
+      enqueueUnlocks(expectedId, expectedGeneration, nextUnlocks);
+    });
     return () => setAchievementUnlockNotifier(null);
-  }, [enqueueUnlocks]);
+  }, [activeAccount.generation, activeAccount.id, enqueueUnlocks, isCurrentAccount]);
+
+  useEffect(() => {
+    // The render-time generation mask prevents a cross-account flash; clearing
+    // stale toast work here lets the current account's queue continue normally.
+    setQueue((previous) => previous.filter((entry) => entry.generation === activeAccount.generation));
+    setCurrentUnlock((current) => current?.generation === activeAccount.generation ? current : null);
+  }, [activeAccount.generation]);
 
   useEffect(() => {
     refreshAchievements();
@@ -260,9 +323,13 @@ export function AchievementProvider({ children }: { children: React.ReactNode })
   useEffect(() => {
     if (currentUnlock || queue.length === 0) return;
     const [next, ...rest] = queue;
+    if (next.generation !== activeAccount.generation) {
+      setQueue(rest);
+      return;
+    }
     setCurrentUnlock(next);
     setQueue(rest);
-  }, [currentUnlock, queue]);
+  }, [activeAccount.generation, currentUnlock, queue]);
 
   const recordEvent = useCallback(async (eventType: AchievementEvent, metadata: Record<string, unknown> = {}) => {
     await recordAchievementEvent(eventType, metadata);
@@ -273,21 +340,23 @@ export function AchievementProvider({ children }: { children: React.ReactNode })
   }, []);
 
   const value = useMemo<AchievementContextType>(() => ({
-    unlocks,
-    coinBalance,
+    unlocks: unlocksGenerationRef.current === activeAccount.generation ? unlocks : [],
+    coinBalance: coinsGenerationRef.current === activeAccount.generation ? coinBalance : 0,
     refreshAchievements,
     refreshCoins,
     recordEvent,
     checkNow,
-  }), [checkNow, coinBalance, recordEvent, refreshAchievements, refreshCoins, unlocks]);
+  }), [activeAccount.generation, checkNow, coinBalance, recordEvent, refreshAchievements, refreshCoins, unlocks]);
 
   return (
     <AchievementContext.Provider value={value}>
       {children}
-      {currentUnlock && (
+      {currentUnlock?.generation === activeAccount.generation && (
         <AchievementToast
-          unlock={currentUnlock}
-          onDone={() => setCurrentUnlock(null)}
+          unlock={currentUnlock.unlock}
+          onDone={() => setCurrentUnlock((current) => (
+            current?.generation === activeAccount.generation ? null : current
+          ))}
         />
       )}
     </AchievementContext.Provider>

@@ -1,0 +1,310 @@
+{
+  "schemaVersion": "stackr-positive-physical-price-coverage-v1",
+  "observationAt": "2026-10-05T23:19:16Z",
+  "readWindow": {
+    "begin": "2026-10-05 23:19:38.346669+00",
+    "end": "2026-10-05 23:31:54.893284+00",
+    "atomic": false
+  },
+  "verificationCompletedAt": "2026-10-05 23:33:34.949239+00",
+  "scope": {
+    "targetLanguages": [
+      "en",
+      "ja",
+      "zh-cn",
+      "zh-tw"
+    ],
+    "koreanExcluded": true,
+    "targetPhysicalVariants": 76030,
+    "fullPhysicalCatalogueVariants": 76269,
+    "excludedKoreanVariants": 239,
+    "invalidChinesePhysicalMembershipsExcluded": 48
+  },
+  "positiveStoredGuideCoverage": {
+    "positive": 38371,
+    "denominator": 76030,
+    "percent": 50.47,
+    "fullTargetAchieved": false,
+    "definition": "Deduplicated complete current physical publication, with positive unexpired native-identity TCGCSV stored variant guides, guarded printing guides or current reviewed Cardmarket blended printing guides. General guides are not exact raw-condition, finish, graded, holdings or sold values.",
+    "languages": [
+      {
+        "language": "en",
+        "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+        "complete": true,
+        "pages": 81,
+        "scannedMemberships": 33359,
+        "physicalVariants": 33359,
+        "invalidPhysicalMemberships": 0,
+        "positiveStoredVariants": 26549,
+        "positiveVariantQuotes": 23091,
+        "positiveCardmarketVariants": 7802,
+        "additionalPrintingGuideVariants": 1592,
+        "percent": 79.59
+      },
+      {
+        "language": "ja",
+        "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+        "complete": true,
+        "pages": 30,
+        "scannedMemberships": 14100,
+        "physicalVariants": 14100,
+        "invalidPhysicalMemberships": 0,
+        "positiveStoredVariants": 7786,
+        "positiveVariantQuotes": 6903,
+        "positiveCardmarketVariants": 1015,
+        "additionalPrintingGuideVariants": 483,
+        "percent": 55.22
+      },
+      {
+        "language": "zh-cn",
+        "catalogueVersionId": "79f43e8f-7062-4d29-8571-569eccb7c249",
+        "complete": true,
+        "pages": 21,
+        "scannedMemberships": 20453,
+        "physicalVariants": 20405,
+        "invalidPhysicalMemberships": 48,
+        "positiveStoredVariants": 0,
+        "positiveVariantQuotes": 0,
+        "positiveCardmarketVariants": 0,
+        "additionalPrintingGuideVariants": 0,
+        "percent": 0
+      },
+      {
+        "language": "zh-tw",
+        "catalogueVersionId": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e",
+        "complete": true,
+        "pages": 9,
+        "scannedMemberships": 8166,
+        "physicalVariants": 8166,
+        "invalidPhysicalMemberships": 0,
+        "positiveStoredVariants": 4036,
+        "positiveVariantQuotes": 0,
+        "positiveCardmarketVariants": 4036,
+        "additionalPrintingGuideVariants": 0,
+        "percent": 49.42
+      }
+    ],
+    "comparedWithHistoricalObservation": {
+      "at": "2026-10-05T19:18:57Z",
+      "positive": 33422,
+      "percent": 43.96,
+      "morePositiveVariantsObserved": 4949,
+      "notWritesByThisHeartbeat": true
+    }
+  },
+  "projectedGeneralSourceAvailability": {
+    "current": "not measured",
+    "historical": {
+      "positive": 33658,
+      "percent": 44.27,
+      "at": "2026-10-05T19:18:57Z"
+    }
+  },
+  "ownerHttpPhoneVisibility": "not measured",
+  "measurement": {
+    "readOnly": true,
+    "statementDeadlineSeconds": 8,
+    "maximumMembershipPage": 1000,
+    "englishAndJapanesePageReduction": [
+      1000,
+      500,
+      250
+    ],
+    "actualPrintingGuideRead": "api.read_catalogue_printing_general_prices",
+    "printingReferencesMaximum": 100,
+    "printingGuideReadOnlyForUncoveredIdentities": true,
+    "printingGuideMetric": "Additional variants after positive stored variant/Cardmarket guide coverage, not all stored printing rows.",
+    "partitions": 142,
+    "partitionsRechecked": 142,
+    "membershipHashesAndPhysicalCountsAllMatched": true,
+    "publicationVersionsCheckedEveryPageAndAtEnd": true,
+    "publicationVersionsUnchanged": true,
+    "checkpoint": "pricing-positive-coverage-checkpoint-20261005.json",
+    "helper": "scripts/lib/published-price-coverage-page.mjs",
+    "failedReads": "Several 1000-row and one 500-row guide reads exceeded eight seconds. Failed reads did not advance checkpoints. Reduced indexed cohorts completed. A separate read-only eligible-set metadata query also timed out and was not repeated.",
+    "freshnessAtObservationAndVerification": true
+  },
+  "sourceBreakdown": [
+    {
+      "scope": "variant_quote",
+      "expires": "2026-10-07 20:05:57+00",
+      "provider": "tcgcsv",
+      "variants": 23087,
+      "source_date": "2026-10-05 20:05:57+00",
+      "language": "en"
+    },
+    {
+      "scope": "printing_guide",
+      "expires": "2026-10-07T20:05:57+00:00",
+      "provider": "tcgcsv",
+      "variants": 1592,
+      "source_date": "2026-10-05T20:05:57+00:00",
+      "language": "en"
+    },
+    {
+      "scope": "printing_guide",
+      "expires": "2026-10-06 00:40:55+00",
+      "provider": "cardmarket_public",
+      "variants": 7802,
+      "source_date": "2026-10-04 00:40:55+00",
+      "language": "en"
+    },
+    {
+      "scope": "variant_quote",
+      "expires": "2026-10-06 20:05:38+00",
+      "provider": "tcgcsv",
+      "variants": 4,
+      "source_date": "2026-10-04 20:05:38+00",
+      "language": "en"
+    },
+    {
+      "scope": "variant_quote",
+      "expires": "2026-10-07 20:05:57+00",
+      "provider": "tcgcsv",
+      "variants": 6894,
+      "source_date": "2026-10-05 20:05:57+00",
+      "language": "ja"
+    },
+    {
+      "scope": "variant_quote",
+      "expires": "2026-10-06 20:05:38+00",
+      "provider": "tcgcsv",
+      "variants": 9,
+      "source_date": "2026-10-04 20:05:38+00",
+      "language": "ja"
+    },
+    {
+      "scope": "printing_guide",
+      "expires": "2026-10-07T20:05:57+00:00",
+      "provider": "tcgcsv",
+      "variants": 483,
+      "source_date": "2026-10-05T20:05:57+00:00",
+      "language": "ja"
+    },
+    {
+      "scope": "printing_guide",
+      "expires": "2026-10-06 00:40:55+00",
+      "provider": "cardmarket_public",
+      "variants": 1015,
+      "source_date": "2026-10-04 00:40:55+00",
+      "language": "ja"
+    },
+    {
+      "scope": "printing_guide",
+      "expires": "2026-10-06 00:40:55+00",
+      "provider": "cardmarket_public",
+      "variants": 4036,
+      "source_date": "2026-10-04 00:40:55+00",
+      "language": "zh-tw"
+    }
+  ],
+  "sourceNotes": [
+    "Scope counts by source overlap and must not be summed into deduplicated total.",
+    "TCGCSV retains 4 English and 9 Japanese usable quotes from 4 October; most quotes and all additional printing guides use 5 October 20:05:57 and 7 October expiry.",
+    "Cardmarket's unchanged actual 4 October 00:40:55 source date is preserved. Current expiry is 6 October 00:40:55; do not extend by fetch time or restart the retained cache to disguise this."
+  ],
+  "dailyWorkers": {
+    "productionTCGCSV": {
+      "deployment": "755c7a11-ce10-4b1c-9f8d-e17d3051d46c",
+      "configuredSource": "7dc63aa",
+      "completedAt": "2026-10-05T22:16:45.197913631Z",
+      "elapsedMs": 78775,
+      "exit": 0,
+      "groupsClaimed": 0,
+      "pricesImported": 0,
+      "deferred": 0,
+      "dataset": "2026-10-05T20:05:57Z",
+      "coverageDiagnostic": {
+        "pages": 39,
+        "scanned": 76317,
+        "error": null,
+        "physicalPriceDenominator": false
+      }
+    },
+    "stagingTCGCSV": {
+      "deployment": "b4528cce-6d89-4fcd-a2d6-6678f93828e3",
+      "configuredSource": "f6aee12",
+      "completedAt": "2026-10-05T22:15:16.785189421Z",
+      "elapsedMs": 42731,
+      "exit": 0,
+      "groupsClaimed": 0,
+      "pricesImported": 0,
+      "deferred": 0,
+      "coverageDiagnostic": {
+        "pages": 38,
+        "error": null
+      },
+      "new40ResultWritePathExercised": false
+    },
+    "productionCardmarket": {
+      "deployment": "0e66bdfc-160e-4a55-bded-291e1106f2b9",
+      "configuredSource": "0e48344",
+      "completedAt": "2026-10-05T22:22:32.024076410Z",
+      "mappings": 9234,
+      "unchangedSource": true,
+      "newStores": 0
+    },
+    "stagingCardmarket": {
+      "deployment": "f4d21fad-7090-41bb-b3dc-b4237c3f2ad8",
+      "configuredSource": "f6aee12",
+      "completedAt": "2026-10-05T22:21:48.704678882Z",
+      "mappings": 9234,
+      "newStores": 0,
+      "complete100RowLedgerPathVerified": true
+    },
+    "cacheRestarted": false,
+    "deploymentsTriggered": false
+  },
+  "guardCandidate": {
+    "source": "12215cbe4466fc5928e060c33bff2928aad26981",
+    "migration": "20261005221812_bounded_provider_identity_guards.sql",
+    "applied": false,
+    "productionPredecessorHash": "ca77044f82345cc18fdc7f2be1cca8f6",
+    "canonicalWorkflowReview": {
+      "staging": ".github/workflows/deploy-staging.yml",
+      "mainBranchRequired": true,
+      "isolatedLedger": "supabase/staging-migrations/manifest.json",
+      "candidateInIsolatedLedger": false,
+      "manifestLastPending": "20260827124944_gate0_financial_route_containment",
+      "production": ".github/workflows/deploy-production.yml",
+      "protectedGatesPreserved": true,
+      "action": "Do not blindly push the unrelated manifest or rewrite remote migration history. Prepare an exact scoped migration rehearsal/promotion path before applying this candidate."
+    }
+  },
+  "workerCandidate": {
+    "source": "f6aee12a18a89c28b8fd1b9c234a9d834e8ced4b",
+    "staged": true,
+    "mergedIntoPR312": false,
+    "productionPromoted": false,
+    "ownedLocalWorkerCopiesPreserved": 4
+  },
+  "unrelatedPendingProductionPatch": {
+    "id": "8e29d75c-d567-4a9a-9e96-8a40e51a22f3",
+    "service": "299d7ad4-5ed8-4301-b609-ef99274078d0",
+    "accepted": false
+  },
+  "otherChat": {
+    "title": "Classify Stackr pricing coverage",
+    "id": "01a10cd5-3cb4-7e20-88ac-1b59eb471330",
+    "observedIdle": true,
+    "messaged": false,
+    "Chinese403TierRequired": "Reported by that chat; not independently price-probed here. No paid activation."
+  },
+  "validation": {
+    "meaningfulPGliteControls": "Passed keyset boundaries, native identity mismatch, expired/zero quotes, overlapping providers, missing publication, oversized guide/cursor/overlap checkpoint controls.",
+    "lint": {
+      "errors": 0,
+      "existingWarnings": 9
+    },
+    "sqlDdlApplied": false,
+    "providerMappingOrPriceWrites": false
+  },
+  "next": [
+    "Recheck source freshness, particularly the actual Cardmarket daily dataset when 00:40:55 expiry approaches; continue schedules without cache restart/date inflation.",
+    "Use bounded set/cohort reads to rank native English/Japanese remaining gaps; 6810 English and 6314 Japanese current variants lack fresh positive stored guides.",
+    "Prepare scoped live staging guard rehearsal with native/duplicate/unsupported/access/API controls and canonical migration provenance before protected production promotion.",
+    "Prove the staged worker's 40-result write path on a genuinely changed dataset; zero-work runtime does not close that gate.",
+    "Continue Chinese native-source evidence without paid activation or shared IDs; 20405 Simplified Chinese and 4130 Traditional Chinese variants lack fresh positive stored guides.",
+    "Measure projected fallback availability and real owner HTTP/phone separately; do not recycle old projection as current."
+  ]
+}

@@ -1,0 +1,247 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_FROZEN_PUBLICATION_HANDOFF_READY",
+  "confirmation": "PUBLISH ARTWORK PCG EXACT TWO FRONTS",
+  "queueId": "PCG-EXACT2-SHARED-FRONTS-20261016",
+  "fronts": 2,
+  "fixedVariantTuplesPerEnvironment": 2,
+  "workType": "CARDS",
+  "batchIds": [
+    "JP-CARDS-041",
+    "JP-CARDS-044"
+  ],
+  "category": "Pokemon",
+  "identities": [
+    {
+      "printingId": "b7574fc2-64bf-499e-9c6c-5122ce550a62",
+      "setId": "d832f428-8d51-4ac0-a3cf-a5d38bddb88d",
+      "setCode": "PCG8",
+      "languageCode": "ja",
+      "canonicalAlias": "040",
+      "currentNativeLabel": "Dusclops",
+      "actualPrintedName": "サマヨール",
+      "actualPrintedForm": null,
+      "printedHP": 70,
+      "printedType": "Psychic",
+      "printedStage": "1進化",
+      "printedEvolutionFrom": "ヨマワル",
+      "abilityCount": 1,
+      "attackCount": 2,
+      "printedCollectorNumber": "040/075",
+      "printedArtist": "Kagemaru Himeno",
+      "printedNationalDex": null,
+      "printedSetCodeLiteral": null,
+      "currentVariantId": "1a449bbf-02f3-4d07-8741-45475431ad07",
+      "currentVariantCode": "normal",
+      "currentFinishCode": "normal",
+      "currentIsDefaultFlag": true,
+      "actualApiFallbackDefaultVariantId": "1a449bbf-02f3-4d07-8741-45475431ad07",
+      "assetVariantId": null,
+      "sourceVariantId": null,
+      "deliveryKind": "shared",
+      "actualWrappedSignatureCanonicalSha256": "002f0d63823b6742956cfb280137e005ea51f6da636a08273b2cec4f29d1a1c7",
+      "completeActualJapaneseBodyPreserved": true,
+      "sourcePhotoUrlHashDistinctFromCommercialProduct": true
+    },
+    {
+      "printingId": "6920ca9b-a187-4cf1-9f56-7a1a48d4762f",
+      "setId": "b5ef438a-ddcb-4093-8c9b-572639565af5",
+      "setCode": "PCG9",
+      "languageCode": "ja",
+      "canonicalAlias": "026",
+      "currentNativeLabel": "feraligatr（デルタ種）",
+      "actualPrintedName": "オーダイル",
+      "actualPrintedForm": "δ-デルタ種",
+      "printedHP": 120,
+      "printedType": "Lightning",
+      "printedStage": "2進化",
+      "printedEvolutionFrom": "アリゲイツ",
+      "abilityCount": 1,
+      "attackCount": 2,
+      "printedCollectorNumber": "026/068",
+      "printedArtist": "Kouki Saitou",
+      "printedNationalDex": null,
+      "printedSetCodeLiteral": null,
+      "currentVariantId": "fb44782b-ef4c-416a-a9f0-5b6adad52144",
+      "currentVariantCode": "holo",
+      "currentFinishCode": "holo",
+      "currentIsDefaultFlag": false,
+      "actualApiFallbackDefaultVariantId": "fb44782b-ef4c-416a-a9f0-5b6adad52144",
+      "assetVariantId": null,
+      "sourceVariantId": null,
+      "deliveryKind": "shared",
+      "actualWrappedSignatureCanonicalSha256": "ee847bfa2f44d063175ac8c8a803ebf84dee0fcde434afe55aa5416099b12e09",
+      "completeActualJapaneseBodyPreserved": true,
+      "sourcePhotoUrlHashDistinctFromCommercialProduct": true
+    }
+  ],
+  "tests": {
+    "publisherNode": {
+      "passed": 17,
+      "failed": 0
+    },
+    "archiveGuardsPython": {
+      "passed": 6,
+      "failed": 0
+    },
+    "priorPublisherRegressions": [
+      {
+        "tool": "Luvdisc",
+        "passed": 17
+      },
+      {
+        "tool": "SM1+SHARP2",
+        "passed": 17
+      },
+      {
+        "tool": "Aquapolis2",
+        "passed": 15
+      },
+      {
+        "tool": "Eevee1",
+        "passed": 15
+      }
+    ],
+    "persistedFailureJournal": {
+      "passed": 1,
+      "failed": 0
+    },
+    "private83ContractCasesReusedThroughIndependentReviewSha256": "05328d2cb08bf3841262bd4ada13ad0749ca9010dbe89d616bea2c47fae2fe57",
+    "queue": {
+      "status": "PASS",
+      "realReceipts": 2,
+      "localImageByteObjects": 8,
+      "jointRawEntryTamperRejections": 84,
+      "forgedRawAuthorityRejections": 14,
+      "rootAuthorityPacketRejections": 10,
+      "private83ContractCasesReusedThroughIndependentPeerPin": true,
+      "priorReadOnlyReceipts": 10,
+      "priorLocalImageObjects": 40,
+      "sharpMetricCasePassed": true,
+      "allPriorExactPredicatesPreserved": true,
+      "inMemoryCompleteHelperDryRun": {
+        "priorEntries": 1213,
+        "afterEntries": 1215,
+        "onlyExactTwoAdded": true,
+        "prior1213ByteValuesUnchanged": true,
+        "sharedWritesIntercepted": 4
+      },
+      "sharedFilesUnchanged": true,
+      "productionWrites": 0
+    }
+  },
+  "archiveInstaller": {
+    "assetId": 646111909,
+    "membersVerifiedAndExtracted": 12,
+    "runtimeSharpFullyDecoded": 8,
+    "privatePeerPILSharpRgbaAgreements": 8,
+    "privacySafeJsonFiles": 4,
+    "originalHdPixelFronts": 2,
+    "derivativeHdPixelFiles": 1,
+    "hdMeaning": "Existing dimension audit delivered-pixel threshold only; no provider-native optical certification",
+    "noEnlargement": true,
+    "localPinnedArchiveOnly": true
+  },
+  "sourceGuard": {
+    "externalAuthorityAndBaselineFilesRehashed": 22,
+    "queueVerifierExternalPins": 38,
+    "oldProductionSources": 4,
+    "oldFullSourceFieldsProtected": 68,
+    "productionNewSources": 0,
+    "productionPolicyChangesAllowed": 0,
+    "explicitProductionResolverHasNoInsertPath": true,
+    "existingPriceFinite2NotesUnchanged": true,
+    "full17MicrosecondsRetainedByBothJsonReaders": true,
+    "stagingBaselineScopedSources": 0,
+    "onlyTemporaryStagingFixture": "pricecharting",
+    "frozenCorrectedCombinedBeforeSnapshotsChecked": true,
+    "rejectedHistorical13Production7StagingScope": true
+  },
+  "transactionFixtures": {
+    "production": {
+      "beforeRows": 18,
+      "afterRows": 22,
+      "assetsAdded": 2,
+      "linksAdded": 2,
+      "sourcesAdded": 0
+    },
+    "staging": {
+      "beforeRows": 10,
+      "temporaryRows": 15,
+      "afterRollbackRows": 10
+    },
+    "bothExistingPCG8PCG9SetLogosAndLinksUnchanged": true,
+    "canonicalMetadataAssetsLinksAndAllSourceRowsUnchanged": true,
+    "sourceAndLinkFailuresRollBack": true
+  },
+  "appSelection": [
+    {
+      "printing_id": "b7574fc2-64bf-499e-9c6c-5122ce550a62",
+      "large_role": "detail-page",
+      "large_dimensions": [
+        720,
+        1038
+      ],
+      "large_object_path": "objects/c8613aaa11c281498e74917fb775aca13509b04de98ef903cb30216b60712342/detail-page.webp",
+      "detail_dimensions": [
+        720,
+        1038
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    },
+    {
+      "printing_id": "6920ca9b-a187-4cf1-9f56-7a1a48d4762f",
+      "large_role": "original",
+      "large_dimensions": [
+        1200,
+        1600
+      ],
+      "large_object_path": "objects/a949bcdb5a0569e0e4940412ebfe0dce35e701df31530e77edf6475fdbc28d25/original.jpg",
+      "detail_dimensions": [
+        720,
+        960
+      ],
+      "planned_default_and_explicit_verified": true,
+      "actual_live_verification_still_required": true
+    }
+  ],
+  "qualifications": {
+    "historicalSourceNullFalseFlagsUnchanged": true,
+    "sharedFrontEligibilityDoesNotAuthenticatePhysicalEdition": true,
+    "providerBodyVerbatimAgreement": false,
+    "providerNeverResizedCertified": false,
+    "nativeOpticalGainClaimed": false,
+    "physicalEditionCertified": false,
+    "physicalFinishCertified": false,
+    "unlimitedEditionCertified": false,
+    "materialAuthenticityCertified": false,
+    "vendorLicenceCertified": false,
+    "sourcewideApproval": false
+  },
+  "unchangedPriorRepositoryFilesRehashed": 260,
+  "unchangedSharedDependenciesRehashed": 11,
+  "unchangedPrivateOwnedFilesPlusHandoffRehashed": 50,
+  "workflow": {
+    "protectedProduction": true,
+    "expectedProtectedProductionEnvironmentId": 19553872513,
+    "exactMainSha": true,
+    "sharedDeploymentConcurrency": true,
+    "shaPinnedActions": 3,
+    "exact20FileSecretScanRequired": true,
+    "failureJournalAndRollbackReceipts": true
+  },
+  "planSha256": "366a73399dc328ff64b4ef7bb5b3d0452ace3ad11c167ec8839d6b45e065c108",
+  "approvalSha256": "5a613138cb451ac73347a6000d34e1fd7b616786cf7261e64f729d1d89c3bb61",
+  "sourceManifestSha256": "8331b4bacfe4ceff55741f6f296e3923d2a5368d054bf1373ff85a76d4c3bb67",
+  "archiveSha256": "03ec8c24e1706d7384796b996b93c146e97399c5f758322e01452f87b1ff4683",
+  "newProviderRequests": 0,
+  "databaseRequests": 0,
+  "gitMutations": 0,
+  "sharedQueueWrites": 0,
+  "ledgerWrites": 0,
+  "storageWrites": 0,
+  "productionWrites": 0,
+  "livePublicationVerified": false,
+  "independentExactHeadAndHostedChecksStillRequired": true
+}

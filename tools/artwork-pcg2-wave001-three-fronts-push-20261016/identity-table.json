@@ -1,0 +1,62 @@
+[
+  {
+    "printing_id": "36710a9b-7b22-4412-b2a9-2fb4af5aeb7c",
+    "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+    "set_code": "PCG2",
+    "language_code": "ja",
+    "collector_number": "008",
+    "card_native_name": "美しい",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-021",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "fe011d15-fd0e-46ef-b420-d95348d67754"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:c779e166499e1173e010e40c23bc0140d598a77a6ca53c8a402595d09d670973",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/fb5wlnohphod7fii/1600.jpg",
+    "original_sha256": "861fbd4da10c9beb392818d5a8517cb8689ee6ad8fe5230c2068683aa694a360",
+    "body_sha256": "a3eae91b8447c9e1c7cdb6cbc62f56717be3472ae01124bc027a613dcd3cf0a4",
+    "evidence_sha256": "94575fa248988681a22b36db92822360994b22224e96e3c2e4b783743bda1739"
+  },
+  {
+    "printing_id": "e6192b59-9593-4315-a414-591df5f3fe51",
+    "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+    "set_code": "PCG2",
+    "language_code": "ja",
+    "collector_number": "010",
+    "card_native_name": "仮面舞踏会",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-021",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "bf6f9b6b-1597-4526-8104-adcc0e460d54"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:330999facfd17b50664a453cea055615f9c1a68a0a71b389f2dc9e4f30539db4",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/corrzh2gd6riqnbbxfa3/1600.jpg",
+    "original_sha256": "373f4913a06262a776cce6813e6eceed3c100d6b1f6bf166bd2e3a47a7ab2c7c",
+    "body_sha256": "23b20a038478df55b81e9e534df75c076a9c3f89ee0d06392234ec153adce50d",
+    "evidence_sha256": "ec08c8c73555200cfe5df35f43066d5a408a14d61bf36a04c7217b4c59c5a3c7"
+  },
+  {
+    "printing_id": "c61d1e2b-a65c-4b2a-bce6-6f66d236b4fb",
+    "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+    "set_code": "PCG2",
+    "language_code": "ja",
+    "collector_number": "031",
+    "card_native_name": "コーフィッシュ",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-021",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "0ee290c9-af9e-4d82-8cd0-a0d15dbee95e"
+    ],
+    "source_code": "pricecharting",
+    "provider_id": "pricecharting-image-url-sha256:2f8a21d9cfefbd0ec5007d061c7e7e95f1c1f41ed9ce1fa290f4e42becbaa574",
+    "image_url": "https://storage.googleapis.com/images.pricecharting.com/wji2ibwhnmotp72b/1600.jpg",
+    "original_sha256": "0dc9046dab435e01ee2dc2d20d975633d67a403292f20e7c7bcd0e99e542ecc6",
+    "body_sha256": "78c41072a80f45450b7c3b90231d4d0bc3873899f9a71144eb624a8de915f35f",
+    "evidence_sha256": "99afd73c2eb7933a0c433184f901c5ba97c236f74ec842c646871d6e9f5a6a2d"
+  }
+]

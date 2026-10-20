@@ -12,6 +12,8 @@ import {
   stripStackrPreviewProxyAuthorization,
 } from './stackrPreviewApiProxy';
 import { supabase } from './supabase';
+import { Buffer } from 'buffer';
+import { sha256Text } from './cataloguePriceHash';
 
 const STACKR_CANONICAL_UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -163,6 +165,13 @@ export type StackrCard = {
     native: string;
     englishDisplay: string | null;
     englishDisplaySource?: 'printing' | 'concept' | null;
+    englishSupplement?: {
+      value: string;
+      provenance: string;
+      authoritative: boolean;
+      sourceCardIds?: string[];
+      canonicalProvenance?: Record<string, unknown>;
+    } | null;
   };
   details?: {
     supertype: string | null;
@@ -261,7 +270,7 @@ export type StackrSearchResult = {
 
 export type StackrMarketProductType = 'raw_card' | 'graded_card' | 'sealed_product';
 /** A labelled general estimate may use the same printing when no exact quote exists. */
-export type StackrPriceEstimateMode = 'general';
+export type StackrPriceEstimateMode = 'exact' | 'general';
 export type StackrMarketEvidenceStatus =
   | 'legacy_cached_market_estimate'
   | 'recent_sold_market_estimate'
@@ -272,6 +281,9 @@ export type StackrMarketEvidenceStatus =
   | 'unavailable';
 
 export type StackrCardPrice = {
+  provenLastSold?: boolean;
+  lastSoldObservationId?: string | null;
+  lastSoldEvidence?: { observationId?: string | null } | null;
   variantId: string;
   productType: StackrMarketProductType;
   identityKey: string | null;
@@ -281,6 +293,10 @@ export type StackrCardPrice = {
   priceBasis?: string;
   quoteScope?: 'exact_variant' | 'printing_level';
   primarySource?: string;
+  /** Stored raw guide decisions; never condition prices or completed sales. */
+  classification?: 'MARKET_GUIDE' | 'ESTIMATED_VALUE' | 'PRICE_UNAVAILABLE';
+  evidenceType?: string;
+  sourceLabel?: string;
   estimates: {
     low: number | null;
     central: number | null;
@@ -313,6 +329,26 @@ export type StackrCardPrice = {
   calculatedAt: string | null;
   staleAfter: string | null;
   estimateVersion: string;
+};
+
+export type StackrCataloguePriceRow = {
+  reference: string;
+  cardId: string | null;
+  variantId: string | null;
+  language: string | null;
+  price: StackrCardPrice | null;
+  unavailableReason: string | null;
+  nextRetryAt: string | null;
+  revision: string;
+};
+
+export type StackrCataloguePricePage = {
+  prices: StackrCataloguePriceRow[];
+  unchangedReferences: string[];
+  priceRevision: string;
+  estimateMode: 'exact' | 'general';
+  /** Failed refs have no replacement row or cache checkpoint. Other rows remain usable. */
+  readErrors?: { reference: string; code: string }[];
 };
 
 export type StackrPriceHistoryObservation = {
@@ -708,6 +744,18 @@ function assertNoImagePayload(value: unknown) {
 
 export class StackrApiClient {
   private readonly baseUrl: string;
+
+  /** Cache keys use a stable account fingerprint and never retain a bearer token. */
+  async getPricingCacheScope() {
+    const token = await this.getAccessToken();
+    if (!token) throw new Error('Sign in to read saved prices.');
+    let identity = token;
+    try {
+      const claims = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString('utf8'));
+      if (typeof claims.sub === 'string' && typeof claims.iss === 'string') identity = JSON.stringify([claims.iss, claims.sub]);
+    } catch { /* Opaque credentials receive their own fingerprint. */ }
+    return `${this.baseUrl}|account:${sha256Text(identity)}`;
+  }
   private readonly fetchImpl: StackrApiFetch;
   private readonly headers: Record<string, string>;
   private readonly getAccessToken: () => Promise<string | null>;
@@ -920,7 +968,7 @@ export class StackrApiClient {
   }
 
   // STACKR_IDENTITIES_FIRST_V2
-  get catalogueCacheNamespace() { return this.baseUrl; }
+  get catalogueCacheNamespace() { return `${this.baseUrl}|chinese-identity-correction-20261010`; }
 
   setCards(
     setId: string,
@@ -928,6 +976,35 @@ export class StackrApiClient {
     init: RequestInit = {},
   ) {
     return this.request<{ cards: StackrCard[] }>(`/sets/${encodeURIComponent(setId)}/cards`, query, init);
+  }
+
+  pokemonCards(
+    name: string,
+    query: { language?: StackrApiLanguageCode; cursor?: string | null; limit?: number } = {},
+  ) {
+    const species = name.trim();
+    if (!species || species.length > 120) {
+      throw new Error('pokemonCards requires a Pokemon species or form name.');
+    }
+    return this.request<{ cards: StackrCard[] }>(`/pokemon/${encodeURIComponent(species)}/cards`, query);
+  }
+
+  pokemonIndex(query: { offset?: number; limit?: number } = {}) {
+    return this.request<{
+      count: number;
+      indexVersion: string;
+      // Existing builds retain the route URL and provider name. Species identity
+      // is explicit so newer clients do not treat alternate provider forms as
+      // separate National Dex progress entries.
+      results: {
+        name: string;
+        url: string;
+        speciesId: number;
+        speciesName: string;
+        routeId: number;
+        routeName: string;
+      }[];
+    }>('/pokemon', query);
   }
 
   card(cardId: string) {
@@ -968,11 +1045,26 @@ export class StackrApiClient {
     assetType?: string;
     setId?: string;
     printingId?: string;
+    printingIds?: string[];
     variantId?: string;
     cursor?: string | null;
     limit?: number;
   } = {}, init: RequestInit = {}) {
-    return this.request<{ assets: StackrCatalogueAsset[] }>('/assets/manifest', query, init);
+    return this.request<{ assets: StackrCatalogueAsset[] }>('/assets/manifest', {
+      ...query,
+      printingIds: query.printingIds?.join(','),
+    }, init);
+  }
+
+  cataloguePrices(input: {
+    references: string[];
+    language?: string;
+    estimateMode?: 'exact' | 'general';
+    knownRevisions?: Record<string, string>;
+    classificationVersion?: 'classified-v1';
+  }) {
+    if (!input.references.length || input.references.length > 100) throw new Error('cataloguePrices requires 1..100 references.');
+    return this.authenticatedPost<StackrCataloguePricePage>('/market/catalogue-prices', input);
   }
 
   cardPrice(variantId: string, query: {
@@ -993,6 +1085,8 @@ export class StackrApiClient {
     grader?: string;
     grade?: string;
     observationType?: 'sold_observation' | 'active_listing';
+    provenOnly?: boolean;
+    soldSince?: string;
     cursor?: string | null;
     limit?: number;
   } = {}) {

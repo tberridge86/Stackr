@@ -9,6 +9,7 @@ import {
 import { buildCanonicalIdentity } from '../pricingV2/identity.js';
 import { fetchTcgdexNormalCardPrice, isUnambiguousHolo } from '../tcgdex.js';
 import { generalPriceBaseCandidates, wrapGeneralEstimate } from './generalEstimate.js';
+import { createCataloguePriceRead } from './cataloguePriceRead.js';
 
 export const MARKET_PRICING_VERSION = 'market-pricing-v1.0.0';
 export const MARKET_CACHE_CONTROL = 'public, max-age=60, stale-while-revalidate=300';
@@ -205,7 +206,7 @@ function legacySource(row) {
 function legacySnapshotEstimate(row, variantId, scope) {
   const source = legacySource(row);
   const central = source === 'tcgdex'
-    ? snapshotValue(row, 'tcgdex_price', 'tcg_mid', 'tcg_low', 'market_price_gbp')
+    ? snapshotValue(row, 'tcgdex_price', 'tcg_mid', 'market_price_gbp')
     : null;
   if (!source || central == null) return null;
   const calculatedAt = dateOrNull(row.tcgdex_price_updated_at) ?? dateOrNull(row.calculated_at) ?? dateOrNull(row.snapshot_at);
@@ -463,9 +464,9 @@ function applyHistoryFilters(query, input = {}) {
   const currency = normalizeCurrency(input.currency);
   query = query.eq('product_kind', productType).eq('currency_code', currency);
   if (clean(input.observationType)) query = query.eq('observation_type', clean(input.observationType));
-  const condition = normalizeConditionCode(input.condition);
+  const condition = normalizeConditionCode(input.condition)
+    ?? (productType === 'raw_card' ? RAW_NEAR_MINT : null);
   if (condition) query = query.eq('condition_code', condition);
-  if (clean(input.grader)) query = query.eq('grader_code', clean(input.grader).toUpperCase());
   return query;
 }
 
@@ -553,6 +554,7 @@ async function readSnapshotHistoryRpc(supabase, cardIds, rangeDays) {
 function supportedLegacyInput(input = {}) {
   if (normalizeProductType(input.productType) !== 'raw_card') return false;
   if (normalizeCurrency(input.currency) !== 'GBP') return false;
+  if (clean(input.grader) || clean(input.grade)) return false;
   const condition = normalizeConditionCode(input.condition);
   return !condition || condition === RAW_NEAR_MINT;
 }
@@ -1131,6 +1133,9 @@ async function refreshExactLegacyProviderEstimate(supabase, variantId, input, pr
 }
 
 async function refreshPersonalProviderEstimate(supabase, variantId, input, providerFetch) {
+  // Unsupported requests must never join a raw/NM/GBP refresh already in
+  // flight or inherit its cooldown merely because the variant UUID matches.
+  if (!supportedLegacyInput(input)) throw new ApiError(422, 'unsupported_refresh_scope', 'Provider refresh supports only raw near-mint GBP cards.');
   const now = Date.now();
   prunePersonalProviderRefreshes(now);
   const existing = personalProviderRefreshes.get(variantId);
@@ -1175,8 +1180,32 @@ export function createMarketPricingService(options) {
   const supabase = options.supabase;
   const refreshEnabled = options.refreshEnabled ?? process.env.MARKET_PRICE_REFRESH_ENABLED === 'true';
   const providerFetch = options.fetchTcgdexNormalCardPrice ?? fetchTcgdexNormalCardPrice;
+  const cataloguePrices = createCataloguePriceRead({
+    supabase,
+    toEstimatePrice: toPriceResponse,
+    unavailablePrice,
+    toSnapshotPrice: (row, variantId) => {
+      const snapshot = toSnapshotHistoryItem(row, variantId, 'exact_variant');
+      if (!snapshot || snapshot.marketCentral == null) return null;
+      const unavailable = unavailablePrice(variantId, { productType: 'raw_card', currency: 'GBP' });
+      return {
+        ...unavailable,
+        status: 'market_estimate',
+        priceType: 'market_estimate',
+        unavailableReason: null,
+        estimates: { low: snapshot.marketLow, central: snapshot.marketCentral, high: snapshot.marketHigh },
+        calculatedAt: snapshot.calculatedAt ?? snapshot.snapshotAt,
+        staleAfter: snapshot.staleAfter,
+        freshness: snapshot.freshness,
+        confidence: snapshot.confidence,
+        sample: { ...unavailable.sample, total: snapshot.sampleCount },
+        sourceBreakdown: [{ provider: snapshot.primarySource, evidenceType: 'market_estimate' }],
+      };
+    },
+  });
 
   return {
+    cataloguePrices,
     async collectionValuation(userId, refresh = false) {
       if (!isUuid(userId)) throw new ApiError(401, 'authentication_required', 'Sign in to read your collection.');
       const { data, error } = await supabase.schema('api').rpc('request_collection_valuation', { p_owner: userId, p_refresh: refresh });
@@ -1200,6 +1229,9 @@ export function createMarketPricingService(options) {
       if (input.estimateMode != null && !['exact', 'general'].includes(input.estimateMode)) {
         throw new ApiError(400, 'invalid_estimate_mode', 'estimateMode must be exact or general.');
       }
+      if (normalizeProductType(input.productType) === 'graded_card' && (!clean(input.grader) || !clean(input.grade))) {
+        return unavailablePrice(variantId, input, 'grader_and_grade_required_for_graded_price');
+      }
       let query = table(supabase, 'api', 'market_price_estimates')
         .select('*')
         .eq('variant_id', variantId);
@@ -1210,12 +1242,8 @@ export function createMarketPricingService(options) {
         .maybeSingle();
       const row = await queryMaybeOne(query);
       if (!row) {
-        const reason = normalizeProductType(input.productType) === 'graded_card' && (!clean(input.grader) || !clean(input.grade))
-          ? 'grader_and_grade_required_for_graded_price'
-          : 'insufficient_exact_market_evidence';
-        const legacy = reason === 'insufficient_exact_market_evidence'
-          ? await findLegacySnapshotEstimate(supabase, variantId, input)
-          : null;
+        const reason = 'insufficient_exact_market_evidence';
+        const legacy = await findLegacySnapshotEstimate(supabase, variantId, input);
         if (legacy) return legacy;
         if (input.estimateMode === 'general') {
           const general = await findGeneralStoredEstimate(supabase, variantId, input);
@@ -1233,12 +1261,30 @@ export function createMarketPricingService(options) {
 
     async priceHistory(variantId, input = {}) {
       if (!isUuid(variantId)) throw new ApiError(400, 'invalid_variant_id', 'variantId must be a canonical UUID.');
+      // The current projection has a grade display label, not its exact numeric
+      // identity. Do not ignore a requested grade or mix unrelated slab sales.
+      if (normalizeProductType(input.productType) === 'graded_card' || clean(input.grader) || clean(input.grade)) {
+        throw new ApiError(422, 'unsupported_graded_history_identity', 'Exact graded history requires a numeric-grade projection that is not available yet.');
+      }
       const limit = parseLimit(input.limit, 50, 200);
       const cursor = parseCursor(input.cursor);
+      if (input.provenOnly != null && ![true, false, 'true', 'false'].includes(input.provenOnly)) {
+        throw new ApiError(400, 'invalid_proven_only', 'provenOnly must be true or false.');
+      }
+      const provenOnly = input.provenOnly === true || input.provenOnly === 'true';
+      const soldSince = clean(input.soldSince);
+      if (soldSince && (!/^\d{4}-\d{2}-\d{2}T.*(?:Z|[+-]\d{2}:?\d{2})$/.test(soldSince)
+        || !Number.isFinite(Date.parse(soldSince)) || Date.parse(soldSince) > Date.now())) {
+        throw new ApiError(400, 'invalid_sold_since', 'soldSince must be a past ISO timestamp.');
+      }
       let query = table(supabase, 'api', 'market_price_history')
         .select('*')
         .eq('variant_id', variantId);
       query = applyHistoryFilters(query, input);
+      // Filter evidence and sale window before the cap; recent unverified rows
+      // must not crowd genuine matching sales out of a small history page.
+      if (provenOnly) query = query.eq('proven_last_sold', true).lte('sold_at', new Date().toISOString());
+      if (soldSince) query = query.gte('sold_at', new Date(soldSince).toISOString());
       if (cursor?.observedAt) query = query.lt('observed_at', cursor.observedAt);
       query = query
         .order('observed_at', { ascending: false })

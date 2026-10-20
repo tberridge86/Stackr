@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { TouchableOpacity, type StyleProp, type ViewStyle } from 'react-native';
 import { useTheme } from './theme-context';
-import { stackrHaptics } from '../lib/haptics';
+import { stackrControlTokens } from '../lib/stackrSizing';
 
 export function StackrBackButton({
   onPress,
@@ -17,18 +17,15 @@ export function StackrBackButton({
 
   return (
     <TouchableOpacity
-      onPress={() => {
-        void stackrHaptics.selection();
-        onPress();
-      }}
+      onPress={onPress}
       activeOpacity={0.72}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       style={[
         {
-          width: 40,
-          height: 40,
+          width: stackrControlTokens.minTapTarget,
+          height: stackrControlTokens.minTapTarget,
           alignItems: 'center',
           justifyContent: 'center',
           backgroundColor: 'transparent',

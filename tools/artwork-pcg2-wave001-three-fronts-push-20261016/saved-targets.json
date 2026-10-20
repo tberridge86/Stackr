@@ -1,0 +1,44 @@
+[
+  {
+    "printing_id": "36710a9b-7b22-4412-b2a9-2fb4af5aeb7c",
+    "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+    "set_code": "PCG2",
+    "language_code": "ja",
+    "collector_number": "008",
+    "card_native_name": "美しい",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-021",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "fe011d15-fd0e-46ef-b420-d95348d67754"
+    ]
+  },
+  {
+    "printing_id": "e6192b59-9593-4315-a414-591df5f3fe51",
+    "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+    "set_code": "PCG2",
+    "language_code": "ja",
+    "collector_number": "010",
+    "card_native_name": "仮面舞踏会",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-021",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "bf6f9b6b-1597-4526-8104-adcc0e460d54"
+    ]
+  },
+  {
+    "printing_id": "c61d1e2b-a65c-4b2a-bce6-6f66d236b4fb",
+    "set_id": "9fa08d47-d2cd-4829-85b6-819692a6850a",
+    "set_code": "PCG2",
+    "language_code": "ja",
+    "collector_number": "031",
+    "card_native_name": "コーフィッシュ",
+    "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+    "batch_id": "JP-CARDS-021",
+    "work_type": "CARDS",
+    "variant_ids": [
+      "0ee290c9-af9e-4d82-8cd0-a0d15dbee95e"
+    ]
+  }
+]

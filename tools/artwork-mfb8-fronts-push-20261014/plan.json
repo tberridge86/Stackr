@@ -1,0 +1,3292 @@
+{
+  "schemaVersion": 1,
+  "queue_id": "STACKR-EN-MFB-20261014-008",
+  "source_manifest_sha256": "508970e62fbd29662fd9b6ef4c34db19b9c4aa9f9580941e2050cccd6ae0c0f0",
+  "package_receipt_sha256": "3e6ec594484ec82fff36dc09891f0a20e18bd49bf132212bd1da3a6f9dff1210",
+  "original_handoff_sha256": "93cc99cd760a8980489256bdbcb29fd77afde003f3eba4e229288b2041651456",
+  "finite_decision_sha256": "0d85c039a030d779b8721b4d34c77d94cafe70166bf258a228b8f64aeb2f77df",
+  "owner_permission_attestation_sha256": "7978e1e3806482acc9b44030ef6071c7b8c4d53529dbea3c75ebbb78c0eb6e3d",
+  "reconciliation_sha256": "014bce750f1a96d86b08168285f6e9458b12fa69afee5d615b5b70c6513504a8",
+  "signature_clarification_sha256": "b696ffda1e03e7ba1847e3f3a7cab6eb8492fb51107559ce8ea23f45b25dc642",
+  "independent_source_review_sha256": "913975693886f76b617a6c176cfc77c56e7624787353bdb5af7c1c7c6e5135ac",
+  "saved_targets_sha256": "7868fb3f60d375903836238e13fc98a573359880f0ed472eaa87ae31fc25f0ab",
+  "identity_table_sha256": "aebb352a8c2bf4eec5fb415743366f07dd8fa41d373c09113a332dfc57e12ab0",
+  "archive": {
+    "id": 641631537,
+    "sha256": "f5146e5d8d7f1c1213c3a0d411a6df2c80f4700a8769ff120b637dd0936bc27a",
+    "byte_size": 4279822,
+    "file_count": 36
+  },
+  "archive_metadata": [
+    {
+      "file": "manifest.json",
+      "sha256": "508970e62fbd29662fd9b6ef4c34db19b9c4aa9f9580941e2050cccd6ae0c0f0",
+      "byte_size": 124558
+    },
+    {
+      "file": "receipts/preparation-summary.json",
+      "sha256": "817cd6afd2e3b4f6bb4402e573d821724790f11ce9a540bfab15cad7430ccd55",
+      "byte_size": 1316
+    },
+    {
+      "file": "receipts/current-card-bindings.json",
+      "sha256": "d8aa09ce914a9e68ea01d287518bc4b9878e3b58202772733581aa6898289360",
+      "byte_size": 8461
+    },
+    {
+      "file": "receipts/finite-decision.json",
+      "sha256": "ef9cb3a1bd809dfb244a09d1878b6633577c8e4ac4599880bba0661ba87c2612",
+      "byte_size": 5171
+    }
+  ],
+  "rows": [
+    {
+      "printing_id": "9bb77118-3c6d-4219-a42d-b41fdb68ca05",
+      "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+      "set_code": "mfb",
+      "language_code": "en",
+      "collector_number": "5",
+      "card_native_name": "Exeggcute",
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "variant_ids": [
+        "cca1b099-30a3-48e8-969a-b35ba450379f"
+      ],
+      "batch_id": "EN-CARDS-006",
+      "source_code": "bulbapedia",
+      "provider_id": "File:ExeggcuteMyFirstBattle.jpg",
+      "image_url": "https://archives.bulbagarden.net/media/upload/f/fc/ExeggcuteMyFirstBattle.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/5ae547a9384c41fb6e0757be5a4ca3199587e457a319ba7ace461363b0509377/original.jpg",
+          "sha256": "5ae547a9384c41fb6e0757be5a4ca3199587e457a319ba7ace461363b0509377",
+          "byte_size": 373439,
+          "width": 1375,
+          "height": 1920,
+          "mime_type": "image/jpeg",
+          "artifact_id": 641631537
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/04ac28ad2524ed5cf5e03a99a8d6ab1909a328bd1b435e437fc2147925e213b8/card-grid.webp",
+          "sha256": "04ac28ad2524ed5cf5e03a99a8d6ab1909a328bd1b435e437fc2147925e213b8",
+          "byte_size": 14260,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp",
+          "artifact_id": 641631537
+        },
+        {
+          "role": "search-result",
+          "file": "objects/031c59848198224c9f312ae96fbbc3de9497caa01335d09968999e67cebebeef/search-result.webp",
+          "sha256": "031c59848198224c9f312ae96fbbc3de9497caa01335d09968999e67cebebeef",
+          "byte_size": 3146,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 641631537
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/519f6377e68cac4931d108dfe5e88b4d2e37a3c930825685dc472da0e32c7cd0/detail-page.webp",
+          "sha256": "519f6377e68cac4931d108dfe5e88b4d2e37a3c930825685dc472da0e32c7cd0",
+          "byte_size": 110882,
+          "width": 720,
+          "height": 1005,
+          "mime_type": "image/webp",
+          "artifact_id": 641631537
+        }
+      ],
+      "evidence": {
+        "source_url": "https://archives.bulbagarden.net/media/upload/f/fc/ExeggcuteMyFirstBattle.jpg",
+        "source_page_url": "https://bulbapedia.bulbagarden.net/wiki/Exeggcute_(My_First_Battle)",
+        "source_file_description_url": "https://bulbapedia.bulbagarden.net/wiki/File:ExeggcuteMyFirstBattle.jpg",
+        "provider_id": "File:ExeggcuteMyFirstBattle.jpg",
+        "source_metadata_sha256": "9d09bb678c8ec460ca086d81227d9898212291fc96c19e1dcd2949e5e8299b08",
+        "retained_source_signature_sha256": "c066646e48c9558858879d6f25e0faca3aa095cd91325b9e39604089e4fc073a",
+        "actual_structured_signature_sha256": "dbd7485420b650a8c13c2a39081009dc07bcdd2d22c8641730bd07c95f15718f",
+        "source_body": {
+          "signature": {
+            "name": "Exeggcute",
+            "languageCode": "en",
+            "canonicalSetCode": "mfb",
+            "sourceEnglishDeck": "Bulbasaur Deck",
+            "hp": 60,
+            "stageAndEvolutionText": "Basic Pokémon",
+            "nationalDexNumber": "0102",
+            "printedCollectorNumber": null,
+            "unnumberedPerSourceDeckList": true,
+            "artist": "Jerky",
+            "attacks": [
+              {
+                "name": "Rollout",
+                "costSymbols": [
+                  "Grass",
+                  "Grass"
+                ],
+                "damage": "40",
+                "bodyText": []
+              }
+            ],
+            "canonicalCollectorAliasIsInternalOnly": true
+          },
+          "metadata": {
+            "rawSha256": "9d09bb678c8ec460ca086d81227d9898212291fc96c19e1dcd2949e5e8299b08",
+            "fileDescriptionRawSha256": "96f3b2439417da5e08c3e61262775e988ac5c541d6de0058b8086be21c78c27e",
+            "sourceName": "Exeggcute",
+            "sourceDeck": "Bulbasaur Deck",
+            "sourceHP": 60,
+            "sourceStageAndEvolution": "Basic Pokémon",
+            "sourceNationalDex": "0102",
+            "printedCollectorNumber": null,
+            "artist": "Jerky",
+            "attacks": [
+              {
+                "name": "Rollout",
+                "costSymbols": [
+                  "Grass",
+                  "Grass"
+                ],
+                "damage": "40",
+                "bodyText": []
+              }
+            ],
+            "attacksSha256": "3dc79b7cfc66a60eb38cb7965ca2215be117692ef7d271c98f26b6b81ec2cf2b",
+            "inlineGlyphResolution": null,
+            "retainedTcgWitness": {
+              "sourceCardId": "42768",
+              "pageUrl": "https://www.tcgcollector.com/cards/42768/exeggcute-my-first-battle-bulbasaur-no-007",
+              "sourceDeck": "bulbasaur",
+              "sourceMetadata": {
+                "category": "Pokemon",
+                "hp": 60,
+                "stage": "Basic",
+                "illustrator": "Jerky",
+                "cardFormatLabel": "Unlimited",
+                "cardFormatLabelIsPhysicalEditionProof": false,
+                "attacks": [
+                  {
+                    "name": "Rollout",
+                    "costSymbols": [
+                      "Grass",
+                      "Grass"
+                    ],
+                    "damage": "40",
+                    "additionalPublishedRuleEffects": [],
+                    "ruleAbsenceDoesNotEstablishPixelAbsence": true
+                  }
+                ],
+                "trainerEffect": null,
+                "sourceTextExplicitlyIdentifiesBlueOrStartingRole": false
+              }
+            }
+          },
+          "actual_pixels": {
+            "printingId": "9bb77118-3c6d-4219-a42d-b41fdb68ca05",
+            "variantId": "cca1b099-30a3-48e8-969a-b35ba450379f",
+            "canonicalCollectorAlias": "5",
+            "originalSha256": "5ae547a9384c41fb6e0757be5a4ca3199587e457a319ba7ace461363b0509377",
+            "wholeOriginalIndividuallyViewed": true,
+            "viewedAtNativePixelDimensions": true,
+            "printedNameObserved": "Exeggcute",
+            "printedHPObserved": 60,
+            "printedStageHeaderObserved": "BASIC",
+            "printedEvolutionTextObserved": null,
+            "printedTypeGlyphObserved": "Grass",
+            "printedNationalDexTextObserved": "0102",
+            "printedNationalDexNumericValue": 102,
+            "printedCollectorNumberObserved": null,
+            "cardIsUnnumberedPerDeckList": true,
+            "canonicalAliasNotTreatedAsPrintedNumber": true,
+            "artistObserved": "Jerky",
+            "orderedAttacksObserved": [
+              {
+                "name": "Rollout",
+                "costSymbols": [
+                  "Grass",
+                  "Grass"
+                ],
+                "damage": "40",
+                "bodyText": []
+              }
+            ],
+            "deckSilhouetteObserved": "Bulbasaur",
+            "fullCardFrameObserved": true,
+            "printedBodyLanguageObserved": "en",
+            "wholePrintingLanguageVerified": true,
+            "completeCopyrightLineLegible": true,
+            "observedCopyrightLine": "©2023 Pokémon / Nintendo / Creatures / GAME FREAK",
+            "copyrightYearInferredFromReleaseDate": false,
+            "metadataNameMatches": true,
+            "metadataHPMatches": true,
+            "metadataStageHeaderMatches": true,
+            "metadataOrderedAttackNamesCostsDamageMatch": true,
+            "metadataArtistMatchesIgnoringCase": true,
+            "sourceBytesUnchanged": true,
+            "localResizeOrUpscalePerformed": false,
+            "pixelsGenerated": false,
+            "physicalEditionVerified": false,
+            "physicalFinishVerified": false,
+            "holds": [],
+            "acceptedExactEnglishWholeFront": true
+          },
+          "observation_reconciliation": {
+            "schemaVersion": "stackr-single-original-observation-reconciliation-v1",
+            "recordedAtUtc": "2026-10-14T20:36:41.019Z",
+            "alias": "5",
+            "nameObserved": "Exeggcute",
+            "stageHeaderObserved": "BASIC",
+            "stageFinalLetterObserved": "C",
+            "stageHeaderAmbiguity": false,
+            "hpObserved": 60,
+            "evolvesFromObserved": null,
+            "typeGlyphObserved": "Grass",
+            "artistObserved": "Jerky",
+            "nationalDexTextObserved": "0102",
+            "orderedAttacksObserved": [
+              {
+                "name": "Rollout",
+                "costSymbols": [
+                  "Grass",
+                  "Grass"
+                ],
+                "damage": "40",
+                "bodyText": []
+              }
+            ],
+            "allFourGreyOuterEdgesAndRoundedCornersVisible": true,
+            "fullFrameObserved": true,
+            "deckSilhouetteObserved": "Bulbasaur",
+            "copyrightLineComplete": true,
+            "copyrightLineObserved": "©2023 Pokémon / Nintendo / Creatures / GAME FREAK",
+            "copyrightYearInferred": false,
+            "bodyLanguageObserved": "en",
+            "correction": "Retract the earlier BASIS stage-header claim; the final letter is C in BASIC and the full front is present.",
+            "futureCohortArtworkEligible": true,
+            "remainingHolds": [],
+            "printingId": "9bb77118-3c6d-4219-a42d-b41fdb68ca05",
+            "variantId": "cca1b099-30a3-48e8-969a-b35ba450379f",
+            "originalSha256": "5ae547a9384c41fb6e0757be5a4ca3199587e457a319ba7ace461363b0509377",
+            "originalWidth": 1375,
+            "originalHeight": 1920,
+            "hashVerifiedImmediatelyBeforeSingleOriginalView": true,
+            "viewMethod": "tools.view_image detail original; one original in that tool result, no contact sheet or multi-image result.",
+            "priorReceiptHeldObservationPreserved": true,
+            "priorHolds": [
+              {
+                "code": "stage_header_language_or_printing_mismatch",
+                "observed": "BASIS",
+                "expected": "BASIC",
+                "action": "Verify an unchanged exact English printing with the English stage header. Retain this mixed-header file separately; do not overlay or edit it."
+              }
+            ],
+            "sourceImagesModified": false,
+            "newImageRequests": 0,
+            "prepared": false,
+            "published": false,
+            "productionWrites": 0
+          },
+          "independent_body_checks": {
+            "alias": "5",
+            "printingId": "9bb77118-3c6d-4219-a42d-b41fdb68ca05",
+            "variantId": "cca1b099-30a3-48e8-969a-b35ba450379f",
+            "comparison": {
+              "name": true,
+              "artist": true,
+              "orderedAttackNamesCostsDamage": true,
+              "effects": true,
+              "deck": true,
+              "typeGlyphMatchesRetainedBulbapediaType": true,
+              "nationalDex": true,
+              "hp": true,
+              "stage": true
+            },
+            "observedOriginalSha256": "5ae547a9384c41fb6e0757be5a4ca3199587e457a319ba7ace461363b0509377",
+            "cardRawMetadataSha256": "9d09bb678c8ec460ca086d81227d9898212291fc96c19e1dcd2949e5e8299b08",
+            "fileDescriptionRawMetadataSha256": "96f3b2439417da5e08c3e61262775e988ac5c541d6de0058b8086be21c78c27e",
+            "independentTcgSourceCardId": "42768",
+            "independentTcgSourceCardPageUrl": "https://www.tcgcollector.com/cards/42768/exeggcute-my-first-battle-bulbasaur-no-007",
+            "independentTcgReportSha256": "55d0c91c7a78b1a6cc03553dab3ad0478930a33bde63c6fc1b39619f48583de3",
+            "retainedBulbapediaMetadataSha256": "beaec9b6efff379f4e089c2e7fc9a9080dd1253c6b3448f41dba50a226d0f59f",
+            "currentCanonicalTuple": {
+              "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+              "set_code": "mfb",
+              "game_code": "pokemon",
+              "variant_id": "cca1b099-30a3-48e8-969a-b35ba450379f",
+              "finish_code": "normal",
+              "printing_id": "9bb77118-3c6d-4219-a42d-b41fdb68ca05",
+              "variant_code": "normal",
+              "language_code": "en",
+              "card_native_name": "Exeggcute",
+              "collector_number": "5",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "same_artwork_as_variant_id": null
+            },
+            "canonicalAliasIsNotPrintedCollectorNumber": true,
+            "printedCollectorNumberObserved": null,
+            "allComparedFieldsAgree": true,
+            "sourceAttributionAndRightsUnchanged": true
+          },
+          "prior_holds_retained_as_history": [
+            {
+              "code": "stage_header_language_or_printing_mismatch",
+              "observed": "BASIS",
+              "expected": "BASIC",
+              "action": "Verify an unchanged exact English printing with the English stage header. Retain this mixed-header file separately; do not overlay or edit it."
+            }
+          ],
+          "current_holds": [],
+          "observation_correction_only": true,
+          "reconciliation_receipt_sha256": "014bce750f1a96d86b08168285f6e9458b12fa69afee5d615b5b70c6513504a8",
+          "canonical_metadata_changes": 0,
+          "original_byte_changes": 0
+        },
+        "printed_identity": {
+          "canonical_alias": "5",
+          "printed_collector_number": null,
+          "canonical_alias_is_internal_only": true,
+          "printed_national_dex_is_not_collector_number": true,
+          "printed_national_dex": "0102",
+          "printed_name": "Exeggcute",
+          "deck_silhouette": "Bulbasaur",
+          "source_english_deck": "Bulbasaur Deck"
+        },
+        "source_rights": {
+          "source_attribution": [
+            {
+              "label": "https://twitter.com/bananajerky/status/1791401085120467411",
+              "url": "https://twitter.com/bananajerky/status/1791401085120467411"
+            }
+          ],
+          "artwork_specific_rights_tag": "This image is artwork from the Pokémon TCG, or substantially derived from it. The contributor claims this to be fair use .",
+          "generic_footer_licence_is_not_artwork_licence": true,
+          "owner_website_permission_attested": true,
+          "vendor_licence_verified": false,
+          "underlying_copyright_licence_verified": false,
+          "sourcewide_approval": false
+        },
+        "identity_limits": {
+          "canonical_alias_is_internal_only": true,
+          "printed_collector_number": null,
+          "printed_national_dex_is_not_collector_number": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "source_has_hd_dimensions": true,
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedCollectorOpticallyVerified": false,
+          "canonicalAliasIsInternalOnly": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "9851560d-25ac-4a1c-815d-dd6793598d98",
+      "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+      "set_code": "mfb",
+      "language_code": "en",
+      "collector_number": "7",
+      "card_native_name": "Scyther",
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "variant_ids": [
+        "794e4d54-a754-4a89-b42f-30b1a9a6d41c"
+      ],
+      "batch_id": "EN-CARDS-006",
+      "source_code": "bulbapedia",
+      "provider_id": "File:ScytherMyFirstBattle.jpg",
+      "image_url": "https://archives.bulbagarden.net/media/upload/3/31/ScytherMyFirstBattle.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/a527c4ddc9e9ff4341b761fd8db107a4aa7b7f53308183949a93544a6ab69415/original.jpg",
+          "sha256": "a527c4ddc9e9ff4341b761fd8db107a4aa7b7f53308183949a93544a6ab69415",
+          "byte_size": 367970,
+          "width": 1375,
+          "height": 1920,
+          "mime_type": "image/jpeg",
+          "artifact_id": 641631537
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/7be3f9a3e50f1ac07e24defeb2ea07617899af4d7b6e6a032030fcd85ec1412e/card-grid.webp",
+          "sha256": "7be3f9a3e50f1ac07e24defeb2ea07617899af4d7b6e6a032030fcd85ec1412e",
+          "byte_size": 16706,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp",
+          "artifact_id": 641631537
+        },
+        {
+          "role": "search-result",
+          "file": "objects/e7aaa5a2a2707dc5ba319ad4edc4593ef7a62ba1c405dd7bd4481df48cdd778f/search-result.webp",
+          "sha256": "e7aaa5a2a2707dc5ba319ad4edc4593ef7a62ba1c405dd7bd4481df48cdd778f",
+          "byte_size": 3352,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 641631537
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/0495474b8daeb8b9a71fd9a39293d2cae76590533cddc636754132fe14f613b9/detail-page.webp",
+          "sha256": "0495474b8daeb8b9a71fd9a39293d2cae76590533cddc636754132fe14f613b9",
+          "byte_size": 109058,
+          "width": 720,
+          "height": 1005,
+          "mime_type": "image/webp",
+          "artifact_id": 641631537
+        }
+      ],
+      "evidence": {
+        "source_url": "https://archives.bulbagarden.net/media/upload/3/31/ScytherMyFirstBattle.jpg",
+        "source_page_url": "https://bulbapedia.bulbagarden.net/wiki/Scyther_(My_First_Battle)",
+        "source_file_description_url": "https://bulbapedia.bulbagarden.net/wiki/File:ScytherMyFirstBattle.jpg",
+        "provider_id": "File:ScytherMyFirstBattle.jpg",
+        "source_metadata_sha256": "e8b12590effeeb7f9f595c7fded0f0cdb18479cbad375377a804aa4fba1ac1b3",
+        "retained_source_signature_sha256": "f80b125abd14e791382bcd8bae33660c1bf42c3c1d626d29dec5cec72a02e0d1",
+        "actual_structured_signature_sha256": "0594cda7fa43e4e1dd32fa4e373af9d0768c771b391e7c05b4536a366e07ee2a",
+        "source_body": {
+          "signature": {
+            "name": "Scyther",
+            "languageCode": "en",
+            "canonicalSetCode": "mfb",
+            "sourceEnglishDeck": "Bulbasaur Deck",
+            "hp": 80,
+            "stageAndEvolutionText": "Basic Pokémon",
+            "nationalDexNumber": "0123",
+            "printedCollectorNumber": null,
+            "unnumberedPerSourceDeckList": true,
+            "artist": "Kouki Saitou",
+            "attacks": [
+              {
+                "name": "X-Scissor",
+                "costSymbols": [
+                  "Grass"
+                ],
+                "damage": "20+",
+                "bodyText": [
+                  "Flip a coin. If heads, this attack does 40 more damage."
+                ]
+              }
+            ],
+            "canonicalCollectorAliasIsInternalOnly": true
+          },
+          "metadata": {
+            "rawSha256": "e8b12590effeeb7f9f595c7fded0f0cdb18479cbad375377a804aa4fba1ac1b3",
+            "fileDescriptionRawSha256": "ae64de80ef510cd408d5378c9b7401ce6b248d3aade874a74b8a464f41e2570a",
+            "sourceName": "Scyther",
+            "sourceDeck": "Bulbasaur Deck",
+            "sourceHP": 80,
+            "sourceStageAndEvolution": "Basic Pokémon",
+            "sourceNationalDex": "0123",
+            "printedCollectorNumber": null,
+            "artist": "Kouki Saitou",
+            "attacks": [
+              {
+                "name": "X-Scissor",
+                "costSymbols": [
+                  "Grass"
+                ],
+                "damage": "20+",
+                "bodyText": [
+                  "Flip a coin. If heads, this attack does 40 more damage."
+                ]
+              }
+            ],
+            "attacksSha256": "ca52cd6014fb54e0b40aac009bf1eb0289f201ef21970081befb090376dfad47",
+            "inlineGlyphResolution": null,
+            "retainedTcgWitness": {
+              "sourceCardId": "42770",
+              "pageUrl": "https://www.tcgcollector.com/cards/42770/scyther-my-first-battle-bulbasaur-no-009",
+              "sourceDeck": "bulbasaur",
+              "sourceMetadata": {
+                "category": "Pokemon",
+                "hp": 80,
+                "stage": "Basic",
+                "illustrator": "Kouki Saitou",
+                "cardFormatLabel": "Unlimited",
+                "cardFormatLabelIsPhysicalEditionProof": false,
+                "attacks": [
+                  {
+                    "name": "X-Scissor",
+                    "costSymbols": [
+                      "Grass"
+                    ],
+                    "damage": "20+",
+                    "additionalPublishedRuleEffects": [
+                      {
+                        "kind": "coin_bonus_damage",
+                        "headsBonus": 40
+                      }
+                    ],
+                    "ruleAbsenceDoesNotEstablishPixelAbsence": true
+                  }
+                ],
+                "trainerEffect": null,
+                "sourceTextExplicitlyIdentifiesBlueOrStartingRole": false
+              }
+            }
+          },
+          "actual_pixels": {
+            "printingId": "9851560d-25ac-4a1c-815d-dd6793598d98",
+            "variantId": "794e4d54-a754-4a89-b42f-30b1a9a6d41c",
+            "canonicalCollectorAlias": "7",
+            "originalSha256": "a527c4ddc9e9ff4341b761fd8db107a4aa7b7f53308183949a93544a6ab69415",
+            "wholeOriginalIndividuallyViewed": true,
+            "viewedAtNativePixelDimensions": true,
+            "printedNameObserved": "Scyther",
+            "printedHPObserved": 80,
+            "printedStageHeaderObserved": "BASIC",
+            "printedEvolutionTextObserved": null,
+            "printedTypeGlyphObserved": "Grass",
+            "printedNationalDexTextObserved": "0123",
+            "printedNationalDexNumericValue": 123,
+            "printedCollectorNumberObserved": null,
+            "cardIsUnnumberedPerDeckList": true,
+            "canonicalAliasNotTreatedAsPrintedNumber": true,
+            "artistObserved": "Kouki Saitou",
+            "orderedAttacksObserved": [
+              {
+                "name": "X-Scissor",
+                "costSymbols": [
+                  "Grass"
+                ],
+                "damage": "20+",
+                "bodyText": [
+                  "Flip a coin. If heads, this attack does 40 more damage."
+                ]
+              }
+            ],
+            "deckSilhouetteObserved": "Bulbasaur",
+            "fullCardFrameObserved": true,
+            "printedBodyLanguageObserved": "en",
+            "wholePrintingLanguageVerified": true,
+            "completeCopyrightLineLegible": true,
+            "observedCopyrightLine": "©2023 Pokémon / Nintendo / Creatures / GAME FREAK",
+            "copyrightYearInferredFromReleaseDate": false,
+            "metadataNameMatches": true,
+            "metadataHPMatches": true,
+            "metadataStageHeaderMatches": true,
+            "metadataOrderedAttackNamesCostsDamageMatch": true,
+            "metadataArtistMatchesIgnoringCase": true,
+            "sourceBytesUnchanged": true,
+            "localResizeOrUpscalePerformed": false,
+            "pixelsGenerated": false,
+            "physicalEditionVerified": false,
+            "physicalFinishVerified": false,
+            "holds": [],
+            "acceptedExactEnglishWholeFront": true
+          },
+          "observation_reconciliation": {
+            "schemaVersion": "stackr-single-original-observation-reconciliation-v1",
+            "recordedAtUtc": "2026-10-14T20:37:37.993Z",
+            "alias": "7",
+            "nameObserved": "Scyther",
+            "stageHeaderObserved": "BASIC",
+            "stageFinalLetterObserved": "C",
+            "stageHeaderAmbiguity": false,
+            "hpObserved": 80,
+            "evolvesFromObserved": null,
+            "typeGlyphObserved": "Grass",
+            "artistObserved": "Kouki Saitou",
+            "nationalDexTextObserved": "0123",
+            "orderedAttacksObserved": [
+              {
+                "name": "X-Scissor",
+                "costSymbols": [
+                  "Grass"
+                ],
+                "damage": "20+",
+                "bodyText": [
+                  "Flip a coin. If heads, this attack does 40 more damage."
+                ]
+              }
+            ],
+            "allFourGreyOuterEdgesAndRoundedCornersVisible": true,
+            "fullFrameObserved": true,
+            "deckSilhouetteObserved": "Bulbasaur",
+            "copyrightLineComplete": true,
+            "copyrightLineObserved": "©2023 Pokémon / Nintendo / Creatures / GAME FREAK",
+            "copyrightYearInferred": false,
+            "bodyLanguageObserved": "en",
+            "correction": "Retract the earlier BASIS and right-frame/deck-area crop claims. The exact original has BASIC with final C, all four rounded edges, the Bulbasaur silhouette and a complete copyright line.",
+            "repeatedStandaloneViewUsedToResolveEarlierVisualReading": true,
+            "previewGeometryVerified": {
+              "format": "jpeg",
+              "width": 1375,
+              "height": 1920
+            },
+            "futureCohortArtworkEligible": true,
+            "remainingHolds": [],
+            "printingId": "9851560d-25ac-4a1c-815d-dd6793598d98",
+            "variantId": "794e4d54-a754-4a89-b42f-30b1a9a6d41c",
+            "originalSha256": "a527c4ddc9e9ff4341b761fd8db107a4aa7b7f53308183949a93544a6ab69415",
+            "originalWidth": 1375,
+            "originalHeight": 1920,
+            "hashVerifiedImmediatelyBeforeSingleOriginalView": true,
+            "viewMethod": "tools.view_image detail original; one original in that tool result, no contact sheet or multi-image result.",
+            "priorReceiptHeldObservationPreserved": true,
+            "priorHolds": [
+              {
+                "code": "stage_header_language_or_printing_mismatch",
+                "observed": "BASIS",
+                "expected": "BASIC",
+                "action": "Verify an unchanged exact English printing with the English stage header. Retain this mixed-header file separately; do not overlay or edit it."
+              },
+              {
+                "code": "right_frame_and_deck_area_cut_off",
+                "action": "Find an unchanged original containing the complete right card edge and deck silhouette; do not construct a border."
+              }
+            ],
+            "sourceImagesModified": false,
+            "newImageRequests": 0,
+            "prepared": false,
+            "published": false,
+            "productionWrites": 0
+          },
+          "independent_body_checks": {
+            "alias": "7",
+            "printingId": "9851560d-25ac-4a1c-815d-dd6793598d98",
+            "variantId": "794e4d54-a754-4a89-b42f-30b1a9a6d41c",
+            "comparison": {
+              "name": true,
+              "artist": true,
+              "orderedAttackNamesCostsDamage": true,
+              "effects": true,
+              "deck": true,
+              "typeGlyphMatchesRetainedBulbapediaType": true,
+              "nationalDex": true,
+              "hp": true,
+              "stage": true
+            },
+            "observedOriginalSha256": "a527c4ddc9e9ff4341b761fd8db107a4aa7b7f53308183949a93544a6ab69415",
+            "cardRawMetadataSha256": "e8b12590effeeb7f9f595c7fded0f0cdb18479cbad375377a804aa4fba1ac1b3",
+            "fileDescriptionRawMetadataSha256": "ae64de80ef510cd408d5378c9b7401ce6b248d3aade874a74b8a464f41e2570a",
+            "independentTcgSourceCardId": "42770",
+            "independentTcgSourceCardPageUrl": "https://www.tcgcollector.com/cards/42770/scyther-my-first-battle-bulbasaur-no-009",
+            "independentTcgReportSha256": "55d0c91c7a78b1a6cc03553dab3ad0478930a33bde63c6fc1b39619f48583de3",
+            "retainedBulbapediaMetadataSha256": "beaec9b6efff379f4e089c2e7fc9a9080dd1253c6b3448f41dba50a226d0f59f",
+            "currentCanonicalTuple": {
+              "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+              "set_code": "mfb",
+              "game_code": "pokemon",
+              "variant_id": "794e4d54-a754-4a89-b42f-30b1a9a6d41c",
+              "finish_code": "normal",
+              "printing_id": "9851560d-25ac-4a1c-815d-dd6793598d98",
+              "variant_code": "normal",
+              "language_code": "en",
+              "card_native_name": "Scyther",
+              "collector_number": "7",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "same_artwork_as_variant_id": null
+            },
+            "canonicalAliasIsNotPrintedCollectorNumber": true,
+            "printedCollectorNumberObserved": null,
+            "allComparedFieldsAgree": true,
+            "sourceAttributionAndRightsUnchanged": true
+          },
+          "prior_holds_retained_as_history": [
+            {
+              "code": "stage_header_language_or_printing_mismatch",
+              "observed": "BASIS",
+              "expected": "BASIC",
+              "action": "Verify an unchanged exact English printing with the English stage header. Retain this mixed-header file separately; do not overlay or edit it."
+            },
+            {
+              "code": "right_frame_and_deck_area_cut_off",
+              "action": "Find an unchanged original containing the complete right card edge and deck silhouette; do not construct a border."
+            }
+          ],
+          "current_holds": [],
+          "observation_correction_only": true,
+          "reconciliation_receipt_sha256": "014bce750f1a96d86b08168285f6e9458b12fa69afee5d615b5b70c6513504a8",
+          "canonical_metadata_changes": 0,
+          "original_byte_changes": 0
+        },
+        "printed_identity": {
+          "canonical_alias": "7",
+          "printed_collector_number": null,
+          "canonical_alias_is_internal_only": true,
+          "printed_national_dex_is_not_collector_number": true,
+          "printed_national_dex": "0123",
+          "printed_name": "Scyther",
+          "deck_silhouette": "Bulbasaur",
+          "source_english_deck": "Bulbasaur Deck"
+        },
+        "source_rights": {
+          "source_attribution": [
+            {
+              "label": "https://twitter.com/Kouglof0513/status/1795654493864091885",
+              "url": "https://twitter.com/Kouglof0513/status/1795654493864091885"
+            }
+          ],
+          "artwork_specific_rights_tag": "This image is artwork from the Pokémon TCG, or substantially derived from it. The contributor claims this to be fair use .",
+          "generic_footer_licence_is_not_artwork_licence": true,
+          "owner_website_permission_attested": true,
+          "vendor_licence_verified": false,
+          "underlying_copyright_licence_verified": false,
+          "sourcewide_approval": false
+        },
+        "identity_limits": {
+          "canonical_alias_is_internal_only": true,
+          "printed_collector_number": null,
+          "printed_national_dex_is_not_collector_number": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "source_has_hd_dimensions": true,
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedCollectorOpticallyVerified": false,
+          "canonicalAliasIsInternalOnly": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "8e7ca31f-4b3d-438b-958e-c48462617a2a",
+      "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+      "set_code": "mfb",
+      "language_code": "en",
+      "collector_number": "11",
+      "card_native_name": "Vulpix",
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "variant_ids": [
+        "0d77a10f-8d23-46a5-a0f8-fc93ba2b3492"
+      ],
+      "batch_id": "EN-CARDS-006",
+      "source_code": "bulbapedia",
+      "provider_id": "File:VulpixMyFirstBattle.jpg",
+      "image_url": "https://archives.bulbagarden.net/media/upload/7/78/VulpixMyFirstBattle.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/f8c0b93a0ccedb0c7b2c87ed4c528bf2fcd4d87312cfe7d72b602935d0fedfb1/original.jpg",
+          "sha256": "f8c0b93a0ccedb0c7b2c87ed4c528bf2fcd4d87312cfe7d72b602935d0fedfb1",
+          "byte_size": 452673,
+          "width": 1375,
+          "height": 1920,
+          "mime_type": "image/jpeg",
+          "artifact_id": 641631537
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/d43ddfc2b6367b063bff4a58edfd895589f08eaab1390f5f4496fbc29923782e/card-grid.webp",
+          "sha256": "d43ddfc2b6367b063bff4a58edfd895589f08eaab1390f5f4496fbc29923782e",
+          "byte_size": 20686,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp",
+          "artifact_id": 641631537
+        },
+        {
+          "role": "search-result",
+          "file": "objects/7a80bfaf635de220bffb25c18f602604601acc0c8a437612da87bb211664139d/search-result.webp",
+          "sha256": "7a80bfaf635de220bffb25c18f602604601acc0c8a437612da87bb211664139d",
+          "byte_size": 3894,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 641631537
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/6cf2fc89e79710f6d0b6268b656f255d563b528633e4c1bcb4366ea7e1e1cac0/detail-page.webp",
+          "sha256": "6cf2fc89e79710f6d0b6268b656f255d563b528633e4c1bcb4366ea7e1e1cac0",
+          "byte_size": 149836,
+          "width": 720,
+          "height": 1005,
+          "mime_type": "image/webp",
+          "artifact_id": 641631537
+        }
+      ],
+      "evidence": {
+        "source_url": "https://archives.bulbagarden.net/media/upload/7/78/VulpixMyFirstBattle.jpg",
+        "source_page_url": "https://bulbapedia.bulbagarden.net/wiki/Vulpix_(My_First_Battle)",
+        "source_file_description_url": "https://bulbapedia.bulbagarden.net/wiki/File:VulpixMyFirstBattle.jpg",
+        "provider_id": "File:VulpixMyFirstBattle.jpg",
+        "source_metadata_sha256": "2b5c04cc2eb4abc5e5b638050153edbaede7828d1a1603497d970796e385c2cd",
+        "retained_source_signature_sha256": "7179c44e88158c2f6285463ceb87e6a71d6fdcaadf1cb0844b88c68e2312a48e",
+        "actual_structured_signature_sha256": "87215d1086cbc48c537063460af452477bc542313663d8c9cfd34b73d5b1f46f",
+        "source_body": {
+          "signature": {
+            "name": "Vulpix",
+            "languageCode": "en",
+            "canonicalSetCode": "mfb",
+            "sourceEnglishDeck": "Charmander Deck",
+            "hp": 60,
+            "stageAndEvolutionText": "Basic Pokémon",
+            "nationalDexNumber": "0037",
+            "printedCollectorNumber": null,
+            "unnumberedPerSourceDeckList": true,
+            "artist": "Mina Nakai",
+            "attacks": [
+              {
+                "name": "Will-O-Wisp",
+                "costSymbols": [
+                  "Fire"
+                ],
+                "damage": "20",
+                "bodyText": []
+              }
+            ],
+            "canonicalCollectorAliasIsInternalOnly": true
+          },
+          "metadata": {
+            "rawSha256": "2b5c04cc2eb4abc5e5b638050153edbaede7828d1a1603497d970796e385c2cd",
+            "fileDescriptionRawSha256": "f7b5dc7de31ac4cdc9847124869a1d244d68cfc99766ba6ab2f943ef046c79ca",
+            "sourceName": "Vulpix",
+            "sourceDeck": "Charmander Deck",
+            "sourceHP": 60,
+            "sourceStageAndEvolution": "Basic Pokémon",
+            "sourceNationalDex": "0037",
+            "printedCollectorNumber": null,
+            "artist": "Mina Nakai",
+            "attacks": [
+              {
+                "name": "Will-O-Wisp",
+                "costSymbols": [
+                  "Fire"
+                ],
+                "damage": "20",
+                "bodyText": []
+              }
+            ],
+            "attacksSha256": "b2b2f48f131a013510ec080c05130f4687bc9a15a5a8d7857fdbcac285c9c1eb",
+            "inlineGlyphResolution": null,
+            "retainedTcgWitness": {
+              "sourceCardId": "42778",
+              "pageUrl": "https://www.tcgcollector.com/cards/42778/vulpix-my-first-battle-charmander-no-005",
+              "sourceDeck": "charmander",
+              "sourceMetadata": {
+                "category": "Pokemon",
+                "hp": 60,
+                "stage": "Basic",
+                "illustrator": "Mina Nakai",
+                "cardFormatLabel": "Unlimited",
+                "cardFormatLabelIsPhysicalEditionProof": false,
+                "attacks": [
+                  {
+                    "name": "Will-O-Wisp",
+                    "costSymbols": [
+                      "Fire"
+                    ],
+                    "damage": "20",
+                    "additionalPublishedRuleEffects": [],
+                    "ruleAbsenceDoesNotEstablishPixelAbsence": true
+                  }
+                ],
+                "trainerEffect": null,
+                "sourceTextExplicitlyIdentifiesBlueOrStartingRole": false
+              }
+            }
+          },
+          "actual_pixels": {
+            "printingId": "8e7ca31f-4b3d-438b-958e-c48462617a2a",
+            "variantId": "0d77a10f-8d23-46a5-a0f8-fc93ba2b3492",
+            "canonicalCollectorAlias": "11",
+            "originalSha256": "f8c0b93a0ccedb0c7b2c87ed4c528bf2fcd4d87312cfe7d72b602935d0fedfb1",
+            "wholeOriginalIndividuallyViewed": true,
+            "viewedAtNativePixelDimensions": true,
+            "printedNameObserved": "Vulpix",
+            "printedHPObserved": 60,
+            "printedStageHeaderObserved": "BASIC",
+            "printedEvolutionTextObserved": null,
+            "printedTypeGlyphObserved": "Fire",
+            "printedNationalDexTextObserved": "0037",
+            "printedNationalDexNumericValue": 37,
+            "printedCollectorNumberObserved": null,
+            "cardIsUnnumberedPerDeckList": true,
+            "canonicalAliasNotTreatedAsPrintedNumber": true,
+            "artistObserved": "Mina Nakai",
+            "orderedAttacksObserved": [
+              {
+                "name": "Will-O-Wisp",
+                "costSymbols": [
+                  "Fire"
+                ],
+                "damage": "20",
+                "bodyText": []
+              }
+            ],
+            "deckSilhouetteObserved": "Charmander",
+            "fullCardFrameObserved": true,
+            "printedBodyLanguageObserved": "en",
+            "wholePrintingLanguageVerified": true,
+            "completeCopyrightLineLegible": true,
+            "observedCopyrightLine": "©2023 Pokémon / Nintendo / Creatures / GAME FREAK",
+            "copyrightYearInferredFromReleaseDate": false,
+            "metadataNameMatches": true,
+            "metadataHPMatches": true,
+            "metadataStageHeaderMatches": true,
+            "metadataOrderedAttackNamesCostsDamageMatch": true,
+            "metadataArtistMatchesIgnoringCase": true,
+            "sourceBytesUnchanged": true,
+            "localResizeOrUpscalePerformed": false,
+            "pixelsGenerated": false,
+            "physicalEditionVerified": false,
+            "physicalFinishVerified": false,
+            "holds": [],
+            "acceptedExactEnglishWholeFront": true
+          },
+          "observation_reconciliation": {
+            "schemaVersion": "stackr-single-original-observation-reconciliation-v1",
+            "recordedAtUtc": "2026-10-14T20:37:47.683Z",
+            "alias": "11",
+            "nameObserved": "Vulpix",
+            "stageHeaderObserved": "BASIC",
+            "stageFinalLetterObserved": "C",
+            "stageHeaderAmbiguity": false,
+            "hpObserved": 60,
+            "evolvesFromObserved": null,
+            "typeGlyphObserved": "Fire",
+            "artistObserved": "Mina Nakai",
+            "nationalDexTextObserved": "0037",
+            "orderedAttacksObserved": [
+              {
+                "name": "Will-O-Wisp",
+                "costSymbols": [
+                  "Fire"
+                ],
+                "damage": "20",
+                "bodyText": []
+              }
+            ],
+            "allFourGreyOuterEdgesAndRoundedCornersVisible": true,
+            "fullFrameObserved": true,
+            "deckSilhouetteObserved": "Charmander",
+            "copyrightLineComplete": true,
+            "copyrightLineObserved": "©2023 Pokémon / Nintendo / Creatures / GAME FREAK",
+            "copyrightYearInferred": false,
+            "bodyLanguageObserved": "en",
+            "correction": "Retract the earlier BASIS claim; the stage header ends in C and the complete English front is present.",
+            "futureCohortArtworkEligible": true,
+            "remainingHolds": [],
+            "printingId": "8e7ca31f-4b3d-438b-958e-c48462617a2a",
+            "variantId": "0d77a10f-8d23-46a5-a0f8-fc93ba2b3492",
+            "originalSha256": "f8c0b93a0ccedb0c7b2c87ed4c528bf2fcd4d87312cfe7d72b602935d0fedfb1",
+            "originalWidth": 1375,
+            "originalHeight": 1920,
+            "hashVerifiedImmediatelyBeforeSingleOriginalView": true,
+            "viewMethod": "tools.view_image detail original; one original in that tool result, no contact sheet or multi-image result.",
+            "priorReceiptHeldObservationPreserved": true,
+            "priorHolds": [
+              {
+                "code": "stage_header_language_or_printing_mismatch",
+                "observed": "BASIS",
+                "expected": "BASIC",
+                "action": "Verify an unchanged exact English printing with the English stage header. Retain this mixed-header file separately; do not overlay or edit it."
+              }
+            ],
+            "sourceImagesModified": false,
+            "newImageRequests": 0,
+            "prepared": false,
+            "published": false,
+            "productionWrites": 0
+          },
+          "independent_body_checks": {
+            "alias": "11",
+            "printingId": "8e7ca31f-4b3d-438b-958e-c48462617a2a",
+            "variantId": "0d77a10f-8d23-46a5-a0f8-fc93ba2b3492",
+            "comparison": {
+              "name": true,
+              "artist": true,
+              "orderedAttackNamesCostsDamage": true,
+              "effects": true,
+              "deck": true,
+              "typeGlyphMatchesRetainedBulbapediaType": true,
+              "nationalDex": true,
+              "hp": true,
+              "stage": true
+            },
+            "observedOriginalSha256": "f8c0b93a0ccedb0c7b2c87ed4c528bf2fcd4d87312cfe7d72b602935d0fedfb1",
+            "cardRawMetadataSha256": "2b5c04cc2eb4abc5e5b638050153edbaede7828d1a1603497d970796e385c2cd",
+            "fileDescriptionRawMetadataSha256": "f7b5dc7de31ac4cdc9847124869a1d244d68cfc99766ba6ab2f943ef046c79ca",
+            "independentTcgSourceCardId": "42778",
+            "independentTcgSourceCardPageUrl": "https://www.tcgcollector.com/cards/42778/vulpix-my-first-battle-charmander-no-005",
+            "independentTcgReportSha256": "55d0c91c7a78b1a6cc03553dab3ad0478930a33bde63c6fc1b39619f48583de3",
+            "retainedBulbapediaMetadataSha256": "beaec9b6efff379f4e089c2e7fc9a9080dd1253c6b3448f41dba50a226d0f59f",
+            "currentCanonicalTuple": {
+              "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+              "set_code": "mfb",
+              "game_code": "pokemon",
+              "variant_id": "0d77a10f-8d23-46a5-a0f8-fc93ba2b3492",
+              "finish_code": "normal",
+              "printing_id": "8e7ca31f-4b3d-438b-958e-c48462617a2a",
+              "variant_code": "normal",
+              "language_code": "en",
+              "card_native_name": "Vulpix",
+              "collector_number": "11",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "same_artwork_as_variant_id": null
+            },
+            "canonicalAliasIsNotPrintedCollectorNumber": true,
+            "printedCollectorNumberObserved": null,
+            "allComparedFieldsAgree": true,
+            "sourceAttributionAndRightsUnchanged": true
+          },
+          "prior_holds_retained_as_history": [
+            {
+              "code": "stage_header_language_or_printing_mismatch",
+              "observed": "BASIS",
+              "expected": "BASIC",
+              "action": "Verify an unchanged exact English printing with the English stage header. Retain this mixed-header file separately; do not overlay or edit it."
+            }
+          ],
+          "current_holds": [],
+          "observation_correction_only": true,
+          "reconciliation_receipt_sha256": "014bce750f1a96d86b08168285f6e9458b12fa69afee5d615b5b70c6513504a8",
+          "canonical_metadata_changes": 0,
+          "original_byte_changes": 0
+        },
+        "printed_identity": {
+          "canonical_alias": "11",
+          "printed_collector_number": null,
+          "canonical_alias_is_internal_only": true,
+          "printed_national_dex_is_not_collector_number": true,
+          "printed_national_dex": "0037",
+          "printed_name": "Vulpix",
+          "deck_silhouette": "Charmander",
+          "source_english_deck": "Charmander Deck"
+        },
+        "source_rights": {
+          "source_attribution": [
+            {
+              "label": "https://twitter.com/nakaiMEMO/status/1791371575066870103",
+              "url": "https://twitter.com/nakaiMEMO/status/1791371575066870103"
+            }
+          ],
+          "artwork_specific_rights_tag": "This image is artwork from the Pokémon TCG, or substantially derived from it. The contributor claims this to be fair use .",
+          "generic_footer_licence_is_not_artwork_licence": true,
+          "owner_website_permission_attested": true,
+          "vendor_licence_verified": false,
+          "underlying_copyright_licence_verified": false,
+          "sourcewide_approval": false
+        },
+        "identity_limits": {
+          "canonical_alias_is_internal_only": true,
+          "printed_collector_number": null,
+          "printed_national_dex_is_not_collector_number": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "source_has_hd_dimensions": true,
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedCollectorOpticallyVerified": false,
+          "canonicalAliasIsInternalOnly": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "593f2452-0513-4304-964d-017756266f91",
+      "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+      "set_code": "mfb",
+      "language_code": "en",
+      "collector_number": "23",
+      "card_native_name": "Electabuzz",
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "variant_ids": [
+        "6a0f530d-1148-446d-b1d6-f3d97a043f39"
+      ],
+      "batch_id": "EN-CARDS-006",
+      "source_code": "bulbapedia",
+      "provider_id": "File:ElectabuzzMyFirstBattle.jpg",
+      "image_url": "https://archives.bulbagarden.net/media/upload/5/5c/ElectabuzzMyFirstBattle.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/52656bfc23f0b82ebf9e16898a719188a669166317e5da837004a7b50941e8e4/original.jpg",
+          "sha256": "52656bfc23f0b82ebf9e16898a719188a669166317e5da837004a7b50941e8e4",
+          "byte_size": 343264,
+          "width": 1375,
+          "height": 1920,
+          "mime_type": "image/jpeg",
+          "artifact_id": 641631537
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/06dd617a7e4950675ac12fd791708b3138c55deda38dc855aa553dea88571f25/card-grid.webp",
+          "sha256": "06dd617a7e4950675ac12fd791708b3138c55deda38dc855aa553dea88571f25",
+          "byte_size": 17700,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp",
+          "artifact_id": 641631537
+        },
+        {
+          "role": "search-result",
+          "file": "objects/e9db109e1d72b3134914bc0bed0ec58fc6479c5c243a4e9c5b37d40ebdb7efeb/search-result.webp",
+          "sha256": "e9db109e1d72b3134914bc0bed0ec58fc6479c5c243a4e9c5b37d40ebdb7efeb",
+          "byte_size": 3874,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 641631537
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/bee4023243f0d44664426b79aa3f430eb892dcda0d5383806023a67d7672dd12/detail-page.webp",
+          "sha256": "bee4023243f0d44664426b79aa3f430eb892dcda0d5383806023a67d7672dd12",
+          "byte_size": 97602,
+          "width": 720,
+          "height": 1005,
+          "mime_type": "image/webp",
+          "artifact_id": 641631537
+        }
+      ],
+      "evidence": {
+        "source_url": "https://archives.bulbagarden.net/media/upload/5/5c/ElectabuzzMyFirstBattle.jpg",
+        "source_page_url": "https://bulbapedia.bulbagarden.net/wiki/Electabuzz_(My_First_Battle)",
+        "source_file_description_url": "https://bulbapedia.bulbagarden.net/wiki/File:ElectabuzzMyFirstBattle.jpg",
+        "provider_id": "File:ElectabuzzMyFirstBattle.jpg",
+        "source_metadata_sha256": "aeb664e06193806bb4c486b86974eb77a971fd4c918d1125f7072ae696c52136",
+        "retained_source_signature_sha256": "a526e5e3858a80f947c10cbf5940f5045e5331afc37146253fc9121b10512178",
+        "actual_structured_signature_sha256": "1b7b198a27d9cb9586ef5d5cd5890333c7bd4d3da90055743369589e3793ecbd",
+        "source_body": {
+          "signature": {
+            "name": "Electabuzz",
+            "languageCode": "en",
+            "canonicalSetCode": "mfb",
+            "sourceEnglishDeck": "Pikachu Deck",
+            "hp": 90,
+            "stageAndEvolutionText": "Basic Pokémon",
+            "nationalDexNumber": "0125",
+            "printedCollectorNumber": null,
+            "unnumberedPerSourceDeckList": true,
+            "artist": "hncl",
+            "attacks": [
+              {
+                "name": "Low Kick",
+                "costSymbols": [
+                  "Lightning"
+                ],
+                "damage": "20",
+                "bodyText": []
+              },
+              {
+                "name": "Electro Punch",
+                "costSymbols": [
+                  "Lightning",
+                  "Lightning"
+                ],
+                "damage": "50",
+                "bodyText": []
+              }
+            ],
+            "canonicalCollectorAliasIsInternalOnly": true
+          },
+          "metadata": {
+            "rawSha256": "aeb664e06193806bb4c486b86974eb77a971fd4c918d1125f7072ae696c52136",
+            "fileDescriptionRawSha256": "359cb5e35a724ebdf9a02cc813c7e75e4b839ba2cbedfb02a327ebbbb144824e",
+            "sourceName": "Electabuzz",
+            "sourceDeck": "Pikachu Deck",
+            "sourceHP": 90,
+            "sourceStageAndEvolution": "Basic Pokémon",
+            "sourceNationalDex": "0125",
+            "printedCollectorNumber": null,
+            "artist": "hncl",
+            "attacks": [
+              {
+                "name": "Low Kick",
+                "costSymbols": [
+                  "Lightning"
+                ],
+                "damage": "20",
+                "bodyText": []
+              },
+              {
+                "name": "Electro Punch",
+                "costSymbols": [
+                  "Lightning",
+                  "Lightning"
+                ],
+                "damage": "50",
+                "bodyText": []
+              }
+            ],
+            "attacksSha256": "5bb6f455bd34d46154a7ed02f553ec1564c4f39f074c96e57dc493e52aa8820e",
+            "inlineGlyphResolution": null,
+            "retainedTcgWitness": {
+              "sourceCardId": "42794",
+              "pageUrl": "https://www.tcgcollector.com/cards/42794/electabuzz-my-first-battle-pikachu-no-009",
+              "sourceDeck": "pikachu",
+              "sourceMetadata": {
+                "category": "Pokemon",
+                "hp": 90,
+                "stage": "Basic",
+                "illustrator": "hncl",
+                "cardFormatLabel": "Unlimited",
+                "cardFormatLabelIsPhysicalEditionProof": false,
+                "attacks": [
+                  {
+                    "name": "Low Kick",
+                    "costSymbols": [
+                      "Lightning"
+                    ],
+                    "damage": "20",
+                    "additionalPublishedRuleEffects": [],
+                    "ruleAbsenceDoesNotEstablishPixelAbsence": true
+                  },
+                  {
+                    "name": "Electro Punch",
+                    "costSymbols": [
+                      "Lightning",
+                      "Lightning"
+                    ],
+                    "damage": "50",
+                    "additionalPublishedRuleEffects": [],
+                    "ruleAbsenceDoesNotEstablishPixelAbsence": true
+                  }
+                ],
+                "trainerEffect": null,
+                "sourceTextExplicitlyIdentifiesBlueOrStartingRole": false
+              }
+            }
+          },
+          "actual_pixels": {
+            "printingId": "593f2452-0513-4304-964d-017756266f91",
+            "variantId": "6a0f530d-1148-446d-b1d6-f3d97a043f39",
+            "canonicalCollectorAlias": "23",
+            "originalSha256": "52656bfc23f0b82ebf9e16898a719188a669166317e5da837004a7b50941e8e4",
+            "wholeOriginalIndividuallyViewed": true,
+            "viewedAtNativePixelDimensions": true,
+            "printedNameObserved": "Electabuzz",
+            "printedHPObserved": 90,
+            "printedStageHeaderObserved": "BASIC",
+            "printedEvolutionTextObserved": null,
+            "printedTypeGlyphObserved": "Lightning",
+            "printedNationalDexTextObserved": "0125",
+            "printedNationalDexNumericValue": 125,
+            "printedCollectorNumberObserved": null,
+            "cardIsUnnumberedPerDeckList": true,
+            "canonicalAliasNotTreatedAsPrintedNumber": true,
+            "artistObserved": "hncl",
+            "orderedAttacksObserved": [
+              {
+                "name": "Low Kick",
+                "costSymbols": [
+                  "Lightning"
+                ],
+                "damage": "20",
+                "bodyText": []
+              },
+              {
+                "name": "Electro Punch",
+                "costSymbols": [
+                  "Lightning",
+                  "Lightning"
+                ],
+                "damage": "50",
+                "bodyText": []
+              }
+            ],
+            "deckSilhouetteObserved": "Pikachu",
+            "fullCardFrameObserved": true,
+            "printedBodyLanguageObserved": "en",
+            "wholePrintingLanguageVerified": true,
+            "completeCopyrightLineLegible": true,
+            "observedCopyrightLine": "©2023 Pokémon / Nintendo / Creatures / GAME FREAK",
+            "copyrightYearInferredFromReleaseDate": false,
+            "metadataNameMatches": true,
+            "metadataHPMatches": true,
+            "metadataStageHeaderMatches": true,
+            "metadataOrderedAttackNamesCostsDamageMatch": true,
+            "metadataArtistMatchesIgnoringCase": true,
+            "sourceBytesUnchanged": true,
+            "localResizeOrUpscalePerformed": false,
+            "pixelsGenerated": false,
+            "physicalEditionVerified": false,
+            "physicalFinishVerified": false,
+            "holds": [],
+            "acceptedExactEnglishWholeFront": true
+          },
+          "observation_reconciliation": {
+            "schemaVersion": "stackr-single-original-observation-reconciliation-v1",
+            "recordedAtUtc": "2026-10-14T20:37:55.830Z",
+            "alias": "23",
+            "nameObserved": "Electabuzz",
+            "stageHeaderObserved": "BASIC",
+            "stageFinalLetterObserved": "C",
+            "stageHeaderAmbiguity": false,
+            "hpObserved": 90,
+            "evolvesFromObserved": null,
+            "typeGlyphObserved": "Lightning",
+            "artistObserved": "hncl",
+            "nationalDexTextObserved": "0125",
+            "orderedAttacksObserved": [
+              {
+                "name": "Low Kick",
+                "costSymbols": [
+                  "Lightning"
+                ],
+                "damage": "20",
+                "bodyText": []
+              },
+              {
+                "name": "Electro Punch",
+                "costSymbols": [
+                  "Lightning",
+                  "Lightning"
+                ],
+                "damage": "50",
+                "bodyText": []
+              }
+            ],
+            "allFourGreyOuterEdgesAndRoundedCornersVisible": true,
+            "fullFrameObserved": true,
+            "deckSilhouetteObserved": "Pikachu",
+            "copyrightLineComplete": true,
+            "copyrightLineObserved": "©2023 Pokémon / Nintendo / Creatures / GAME FREAK",
+            "copyrightYearInferred": false,
+            "bodyLanguageObserved": "en",
+            "correction": "Retract the earlier BASIS claim; the final stage-header letter is C and all frame/copyright/deck details are visible.",
+            "futureCohortArtworkEligible": true,
+            "remainingHolds": [],
+            "printingId": "593f2452-0513-4304-964d-017756266f91",
+            "variantId": "6a0f530d-1148-446d-b1d6-f3d97a043f39",
+            "originalSha256": "52656bfc23f0b82ebf9e16898a719188a669166317e5da837004a7b50941e8e4",
+            "originalWidth": 1375,
+            "originalHeight": 1920,
+            "hashVerifiedImmediatelyBeforeSingleOriginalView": true,
+            "viewMethod": "tools.view_image detail original; one original in that tool result, no contact sheet or multi-image result.",
+            "priorReceiptHeldObservationPreserved": true,
+            "priorHolds": [
+              {
+                "code": "stage_header_language_or_printing_mismatch",
+                "observed": "BASIS",
+                "expected": "BASIC",
+                "action": "Verify an unchanged exact English printing with the English stage header. Retain this mixed-header file separately; do not overlay or edit it."
+              }
+            ],
+            "sourceImagesModified": false,
+            "newImageRequests": 0,
+            "prepared": false,
+            "published": false,
+            "productionWrites": 0
+          },
+          "independent_body_checks": {
+            "alias": "23",
+            "printingId": "593f2452-0513-4304-964d-017756266f91",
+            "variantId": "6a0f530d-1148-446d-b1d6-f3d97a043f39",
+            "comparison": {
+              "name": true,
+              "artist": true,
+              "orderedAttackNamesCostsDamage": true,
+              "effects": true,
+              "deck": true,
+              "typeGlyphMatchesRetainedBulbapediaType": true,
+              "nationalDex": true,
+              "hp": true,
+              "stage": true
+            },
+            "observedOriginalSha256": "52656bfc23f0b82ebf9e16898a719188a669166317e5da837004a7b50941e8e4",
+            "cardRawMetadataSha256": "aeb664e06193806bb4c486b86974eb77a971fd4c918d1125f7072ae696c52136",
+            "fileDescriptionRawMetadataSha256": "359cb5e35a724ebdf9a02cc813c7e75e4b839ba2cbedfb02a327ebbbb144824e",
+            "independentTcgSourceCardId": "42794",
+            "independentTcgSourceCardPageUrl": "https://www.tcgcollector.com/cards/42794/electabuzz-my-first-battle-pikachu-no-009",
+            "independentTcgReportSha256": "55d0c91c7a78b1a6cc03553dab3ad0478930a33bde63c6fc1b39619f48583de3",
+            "retainedBulbapediaMetadataSha256": "beaec9b6efff379f4e089c2e7fc9a9080dd1253c6b3448f41dba50a226d0f59f",
+            "currentCanonicalTuple": {
+              "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+              "set_code": "mfb",
+              "game_code": "pokemon",
+              "variant_id": "6a0f530d-1148-446d-b1d6-f3d97a043f39",
+              "finish_code": "normal",
+              "printing_id": "593f2452-0513-4304-964d-017756266f91",
+              "variant_code": "normal",
+              "language_code": "en",
+              "card_native_name": "Electabuzz",
+              "collector_number": "23",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "same_artwork_as_variant_id": null
+            },
+            "canonicalAliasIsNotPrintedCollectorNumber": true,
+            "printedCollectorNumberObserved": null,
+            "allComparedFieldsAgree": true,
+            "sourceAttributionAndRightsUnchanged": true
+          },
+          "prior_holds_retained_as_history": [
+            {
+              "code": "stage_header_language_or_printing_mismatch",
+              "observed": "BASIS",
+              "expected": "BASIC",
+              "action": "Verify an unchanged exact English printing with the English stage header. Retain this mixed-header file separately; do not overlay or edit it."
+            }
+          ],
+          "current_holds": [],
+          "observation_correction_only": true,
+          "reconciliation_receipt_sha256": "014bce750f1a96d86b08168285f6e9458b12fa69afee5d615b5b70c6513504a8",
+          "canonical_metadata_changes": 0,
+          "original_byte_changes": 0
+        },
+        "printed_identity": {
+          "canonical_alias": "23",
+          "printed_collector_number": null,
+          "canonical_alias_is_internal_only": true,
+          "printed_national_dex_is_not_collector_number": true,
+          "printed_national_dex": "0125",
+          "printed_name": "Electabuzz",
+          "deck_silhouette": "Pikachu",
+          "source_english_deck": "Pikachu Deck"
+        },
+        "source_rights": {
+          "source_attribution": [
+            {
+              "label": "https://twitter.com/click_burgundy/status/1792837958439153891",
+              "url": "https://twitter.com/click_burgundy/status/1792837958439153891"
+            }
+          ],
+          "artwork_specific_rights_tag": "This image is artwork from the Pokémon TCG, or substantially derived from it. The contributor claims this to be fair use .",
+          "generic_footer_licence_is_not_artwork_licence": true,
+          "owner_website_permission_attested": true,
+          "vendor_licence_verified": false,
+          "underlying_copyright_licence_verified": false,
+          "sourcewide_approval": false
+        },
+        "identity_limits": {
+          "canonical_alias_is_internal_only": true,
+          "printed_collector_number": null,
+          "printed_national_dex_is_not_collector_number": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "source_has_hd_dimensions": true,
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedCollectorOpticallyVerified": false,
+          "canonicalAliasIsInternalOnly": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "2a5d9bbe-1174-4676-9c36-4bcc24020f1e",
+      "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+      "set_code": "mfb",
+      "language_code": "en",
+      "collector_number": "26",
+      "card_native_name": "Wartortle",
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "variant_ids": [
+        "7d7cc996-5388-47eb-820f-ec3acdf2bc6c"
+      ],
+      "batch_id": "EN-CARDS-007",
+      "source_code": "bulbapedia",
+      "provider_id": "File:WartortleMyFirstBattle.jpg",
+      "image_url": "https://archives.bulbagarden.net/media/upload/1/1a/WartortleMyFirstBattle.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/9b32817e2eb289ef9794ff3a13269377bdb1cd112339d50490b3531141a9b881/original.jpg",
+          "sha256": "9b32817e2eb289ef9794ff3a13269377bdb1cd112339d50490b3531141a9b881",
+          "byte_size": 451136,
+          "width": 1375,
+          "height": 1920,
+          "mime_type": "image/jpeg",
+          "artifact_id": 641631537
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/7fe92604308dc33187dccac49f43f593497eb9e4a198b20e578b66ffc1e479b3/card-grid.webp",
+          "sha256": "7fe92604308dc33187dccac49f43f593497eb9e4a198b20e578b66ffc1e479b3",
+          "byte_size": 20756,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp",
+          "artifact_id": 641631537
+        },
+        {
+          "role": "search-result",
+          "file": "objects/31a7cb26c584564682f53ed41378ba0ee75979aacc64ac050c0f6af5c83b396c/search-result.webp",
+          "sha256": "31a7cb26c584564682f53ed41378ba0ee75979aacc64ac050c0f6af5c83b396c",
+          "byte_size": 3864,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 641631537
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/0640be22183ab0a3211ece585e561cf4d9b10525d9bcbb0dd5641756e987b4fe/detail-page.webp",
+          "sha256": "0640be22183ab0a3211ece585e561cf4d9b10525d9bcbb0dd5641756e987b4fe",
+          "byte_size": 148754,
+          "width": 720,
+          "height": 1005,
+          "mime_type": "image/webp",
+          "artifact_id": 641631537
+        }
+      ],
+      "evidence": {
+        "source_url": "https://archives.bulbagarden.net/media/upload/1/1a/WartortleMyFirstBattle.jpg",
+        "source_page_url": "https://bulbapedia.bulbagarden.net/wiki/Wartortle_(My_First_Battle)",
+        "source_file_description_url": "https://bulbapedia.bulbagarden.net/wiki/File:WartortleMyFirstBattle.jpg",
+        "provider_id": "File:WartortleMyFirstBattle.jpg",
+        "source_metadata_sha256": "a398486f4e1ef372670ba73d8004099644754f3ee4419dceb932bb720084c84e",
+        "retained_source_signature_sha256": "13b0c47db9e47a1f49a98bc8aaaadadd1be4fd3469cbd90b0560d67c9a55a452",
+        "actual_structured_signature_sha256": "8bef3ffe5b36cb8555ca36721572657f0c1b7715f8fcad93721954ab7ee0ce57",
+        "source_body": {
+          "signature": {
+            "name": "Wartortle",
+            "languageCode": "en",
+            "canonicalSetCode": "mfb",
+            "sourceEnglishDeck": "Squirtle Deck",
+            "hp": 100,
+            "stageAndEvolutionText": "Stage 1 Pokémon Evolves from Squirtle",
+            "nationalDexNumber": "0008",
+            "printedCollectorNumber": null,
+            "unnumberedPerSourceDeckList": true,
+            "artist": "Hitoshi Ariga",
+            "attacks": [
+              {
+                "name": "Water Gun",
+                "costSymbols": [
+                  "Water"
+                ],
+                "damage": "30",
+                "bodyText": []
+              },
+              {
+                "name": "Skull Bash",
+                "costSymbols": [
+                  "Water",
+                  "Water",
+                  "Water"
+                ],
+                "damage": "60",
+                "bodyText": []
+              }
+            ],
+            "canonicalCollectorAliasIsInternalOnly": true
+          },
+          "metadata": {
+            "rawSha256": "a398486f4e1ef372670ba73d8004099644754f3ee4419dceb932bb720084c84e",
+            "fileDescriptionRawSha256": "b16a2e6e38a9e8f0b0a97f7b8eff164bfe27359076de300c38c680743bd068f7",
+            "sourceName": "Wartortle",
+            "sourceDeck": "Squirtle Deck",
+            "sourceHP": 100,
+            "sourceStageAndEvolution": "Stage 1 Pokémon Evolves from Squirtle",
+            "sourceNationalDex": "0008",
+            "printedCollectorNumber": null,
+            "artist": "Hitoshi Ariga",
+            "attacks": [
+              {
+                "name": "Water Gun",
+                "costSymbols": [
+                  "Water"
+                ],
+                "damage": "30",
+                "bodyText": []
+              },
+              {
+                "name": "Skull Bash",
+                "costSymbols": [
+                  "Water",
+                  "Water",
+                  "Water"
+                ],
+                "damage": "60",
+                "bodyText": []
+              }
+            ],
+            "attacksSha256": "76703c85eda1b4780382af0044378eff4fd0498d312b62f952b7df813acfa7a3",
+            "inlineGlyphResolution": null,
+            "retainedTcgWitness": {
+              "sourceCardId": "42801",
+              "pageUrl": "https://www.tcgcollector.com/cards/42801/wartortle-my-first-battle-squirtle-no-004",
+              "sourceDeck": "squirtle",
+              "sourceMetadata": {
+                "category": "Pokemon",
+                "hp": 100,
+                "stage": null,
+                "illustrator": "Hitoshi Ariga",
+                "cardFormatLabel": "Unlimited",
+                "cardFormatLabelIsPhysicalEditionProof": false,
+                "attacks": [
+                  {
+                    "name": "Water Gun",
+                    "costSymbols": [
+                      "Water"
+                    ],
+                    "damage": "30",
+                    "additionalPublishedRuleEffects": [],
+                    "ruleAbsenceDoesNotEstablishPixelAbsence": true
+                  },
+                  {
+                    "name": "Skull Bash",
+                    "costSymbols": [
+                      "Water",
+                      "Water",
+                      "Water"
+                    ],
+                    "damage": "60",
+                    "additionalPublishedRuleEffects": [],
+                    "ruleAbsenceDoesNotEstablishPixelAbsence": true
+                  }
+                ],
+                "trainerEffect": null,
+                "sourceTextExplicitlyIdentifiesBlueOrStartingRole": false
+              }
+            }
+          },
+          "actual_pixels": {
+            "printingId": "2a5d9bbe-1174-4676-9c36-4bcc24020f1e",
+            "variantId": "7d7cc996-5388-47eb-820f-ec3acdf2bc6c",
+            "canonicalCollectorAlias": "26",
+            "originalSha256": "9b32817e2eb289ef9794ff3a13269377bdb1cd112339d50490b3531141a9b881",
+            "wholeOriginalIndividuallyViewed": true,
+            "viewedAtNativePixelDimensions": true,
+            "printedNameObserved": "Wartortle",
+            "printedHPObserved": 100,
+            "printedStageHeaderObserved": "STAGE 1",
+            "printedEvolutionTextObserved": "Squirtle",
+            "printedTypeGlyphObserved": "Water",
+            "printedNationalDexTextObserved": "0008",
+            "printedNationalDexNumericValue": 8,
+            "printedCollectorNumberObserved": null,
+            "cardIsUnnumberedPerDeckList": true,
+            "canonicalAliasNotTreatedAsPrintedNumber": true,
+            "artistObserved": "Hitoshi Ariga",
+            "orderedAttacksObserved": [
+              {
+                "name": "Water Gun",
+                "costSymbols": [
+                  "Water"
+                ],
+                "damage": "30",
+                "bodyText": []
+              },
+              {
+                "name": "Skull Bash",
+                "costSymbols": [
+                  "Water",
+                  "Water",
+                  "Water"
+                ],
+                "damage": "60",
+                "bodyText": []
+              }
+            ],
+            "deckSilhouetteObserved": "Squirtle",
+            "fullCardFrameObserved": true,
+            "printedBodyLanguageObserved": "en",
+            "wholePrintingLanguageVerified": true,
+            "completeCopyrightLineLegible": true,
+            "observedCopyrightLine": "©2023 Pokémon / Nintendo / Creatures / GAME FREAK",
+            "copyrightYearInferredFromReleaseDate": false,
+            "metadataNameMatches": true,
+            "metadataHPMatches": true,
+            "metadataStageHeaderMatches": true,
+            "metadataOrderedAttackNamesCostsDamageMatch": true,
+            "metadataArtistMatchesIgnoringCase": true,
+            "sourceBytesUnchanged": true,
+            "localResizeOrUpscalePerformed": false,
+            "pixelsGenerated": false,
+            "physicalEditionVerified": false,
+            "physicalFinishVerified": false,
+            "holds": [],
+            "acceptedExactEnglishWholeFront": true
+          },
+          "observation_reconciliation": {
+            "schemaVersion": "stackr-single-original-observation-reconciliation-v1",
+            "recordedAtUtc": "2026-10-14T20:38:25.197Z",
+            "alias": "26",
+            "nameObserved": "Wartortle",
+            "stageHeaderObserved": "STAGE 1",
+            "stageFinalLetterObserved": null,
+            "stageHeaderAmbiguity": false,
+            "hpObserved": 100,
+            "evolvesFromObserved": "Squirtle",
+            "typeGlyphObserved": "Water",
+            "artistObserved": "Hitoshi Ariga",
+            "nationalDexTextObserved": "0008",
+            "orderedAttacksObserved": [
+              {
+                "name": "Water Gun",
+                "costSymbols": [
+                  "Water"
+                ],
+                "damage": "30",
+                "bodyText": []
+              },
+              {
+                "name": "Skull Bash",
+                "costSymbols": [
+                  "Water",
+                  "Water",
+                  "Water"
+                ],
+                "damage": "60",
+                "bodyText": []
+              }
+            ],
+            "allFourGreyOuterEdgesAndRoundedCornersVisible": true,
+            "fullFrameObserved": true,
+            "deckSilhouetteObserved": "Squirtle",
+            "copyrightLineComplete": true,
+            "copyrightLineObserved": "©2023 Pokémon / Nintendo / Creatures / GAME FREAK",
+            "copyrightYearInferred": false,
+            "bodyLanguageObserved": "en",
+            "correction": "Retract the earlier lower copyright/frame crop claim. The exact original shows the complete copyright line and grey rounded lower edge with margin below the text.",
+            "futureCohortArtworkEligible": true,
+            "remainingHolds": [],
+            "printingId": "2a5d9bbe-1174-4676-9c36-4bcc24020f1e",
+            "variantId": "7d7cc996-5388-47eb-820f-ec3acdf2bc6c",
+            "originalSha256": "9b32817e2eb289ef9794ff3a13269377bdb1cd112339d50490b3531141a9b881",
+            "originalWidth": 1375,
+            "originalHeight": 1920,
+            "hashVerifiedImmediatelyBeforeSingleOriginalView": true,
+            "viewMethod": "tools.view_image detail original; one original in that tool result, no contact sheet or multi-image result.",
+            "priorReceiptHeldObservationPreserved": true,
+            "priorHolds": [
+              {
+                "code": "bottom_copyright_and_frame_cut_off",
+                "action": "Find an unchanged whole front with the complete bottom copyright line and outer frame; do not generate missing pixels."
+              }
+            ],
+            "sourceImagesModified": false,
+            "newImageRequests": 0,
+            "prepared": false,
+            "published": false,
+            "productionWrites": 0
+          },
+          "independent_body_checks": {
+            "alias": "26",
+            "printingId": "2a5d9bbe-1174-4676-9c36-4bcc24020f1e",
+            "variantId": "7d7cc996-5388-47eb-820f-ec3acdf2bc6c",
+            "comparison": {
+              "name": true,
+              "artist": true,
+              "orderedAttackNamesCostsDamage": true,
+              "effects": true,
+              "deck": true,
+              "typeGlyphMatchesRetainedBulbapediaType": true,
+              "nationalDex": true,
+              "hp": true,
+              "stage": true
+            },
+            "observedOriginalSha256": "9b32817e2eb289ef9794ff3a13269377bdb1cd112339d50490b3531141a9b881",
+            "cardRawMetadataSha256": "a398486f4e1ef372670ba73d8004099644754f3ee4419dceb932bb720084c84e",
+            "fileDescriptionRawMetadataSha256": "b16a2e6e38a9e8f0b0a97f7b8eff164bfe27359076de300c38c680743bd068f7",
+            "independentTcgSourceCardId": "42801",
+            "independentTcgSourceCardPageUrl": "https://www.tcgcollector.com/cards/42801/wartortle-my-first-battle-squirtle-no-004",
+            "independentTcgReportSha256": "55d0c91c7a78b1a6cc03553dab3ad0478930a33bde63c6fc1b39619f48583de3",
+            "retainedBulbapediaMetadataSha256": "beaec9b6efff379f4e089c2e7fc9a9080dd1253c6b3448f41dba50a226d0f59f",
+            "currentCanonicalTuple": {
+              "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+              "set_code": "mfb",
+              "game_code": "pokemon",
+              "variant_id": "7d7cc996-5388-47eb-820f-ec3acdf2bc6c",
+              "finish_code": "normal",
+              "printing_id": "2a5d9bbe-1174-4676-9c36-4bcc24020f1e",
+              "variant_code": "normal",
+              "language_code": "en",
+              "card_native_name": "Wartortle",
+              "collector_number": "26",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "same_artwork_as_variant_id": null
+            },
+            "canonicalAliasIsNotPrintedCollectorNumber": true,
+            "printedCollectorNumberObserved": null,
+            "allComparedFieldsAgree": true,
+            "sourceAttributionAndRightsUnchanged": true
+          },
+          "prior_holds_retained_as_history": [
+            {
+              "code": "bottom_copyright_and_frame_cut_off",
+              "action": "Find an unchanged whole front with the complete bottom copyright line and outer frame; do not generate missing pixels."
+            }
+          ],
+          "current_holds": [],
+          "observation_correction_only": true,
+          "reconciliation_receipt_sha256": "014bce750f1a96d86b08168285f6e9458b12fa69afee5d615b5b70c6513504a8",
+          "canonical_metadata_changes": 0,
+          "original_byte_changes": 0
+        },
+        "printed_identity": {
+          "canonical_alias": "26",
+          "printed_collector_number": null,
+          "canonical_alias_is_internal_only": true,
+          "printed_national_dex_is_not_collector_number": true,
+          "printed_national_dex": "0008",
+          "printed_name": "Wartortle",
+          "deck_silhouette": "Squirtle",
+          "source_english_deck": "Squirtle Deck"
+        },
+        "source_rights": {
+          "source_attribution": [
+            {
+              "label": "https://twitter.com/ariga_megamix/status/1791401286245773346",
+              "url": "https://twitter.com/ariga_megamix/status/1791401286245773346"
+            }
+          ],
+          "artwork_specific_rights_tag": "This image is artwork from the Pokémon TCG, or substantially derived from it. The contributor claims this to be fair use .",
+          "generic_footer_licence_is_not_artwork_licence": true,
+          "owner_website_permission_attested": true,
+          "vendor_licence_verified": false,
+          "underlying_copyright_licence_verified": false,
+          "sourcewide_approval": false
+        },
+        "identity_limits": {
+          "canonical_alias_is_internal_only": true,
+          "printed_collector_number": null,
+          "printed_national_dex_is_not_collector_number": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "source_has_hd_dimensions": true,
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedCollectorOpticallyVerified": false,
+          "canonicalAliasIsInternalOnly": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "41395dbd-f317-44f6-a49e-0fa095e03e7a",
+      "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+      "set_code": "mfb",
+      "language_code": "en",
+      "collector_number": "27",
+      "card_native_name": "Poliwag",
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "variant_ids": [
+        "d9beeafa-9972-4d97-9c31-d9100fa6a4e9"
+      ],
+      "batch_id": "EN-CARDS-007",
+      "source_code": "bulbapedia",
+      "provider_id": "File:PoliwagMyFirstBattle.jpg",
+      "image_url": "https://archives.bulbagarden.net/media/upload/8/86/PoliwagMyFirstBattle.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/81617fe78557295d9f49c347bbcd96a4af6aa04d7ada6c4d88c48eda1a481118/original.jpg",
+          "sha256": "81617fe78557295d9f49c347bbcd96a4af6aa04d7ada6c4d88c48eda1a481118",
+          "byte_size": 393580,
+          "width": 1375,
+          "height": 1920,
+          "mime_type": "image/jpeg",
+          "artifact_id": 641631537
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/a0c1d496c270eb6516ef183866ad1fb307811b17e0df09514a7f331a75a44075/card-grid.webp",
+          "sha256": "a0c1d496c270eb6516ef183866ad1fb307811b17e0df09514a7f331a75a44075",
+          "byte_size": 15468,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp",
+          "artifact_id": 641631537
+        },
+        {
+          "role": "search-result",
+          "file": "objects/b7a34922b2281726f15361ae34b8a4fe37d4ff23078150b1ba3f8f7214806bad/search-result.webp",
+          "sha256": "b7a34922b2281726f15361ae34b8a4fe37d4ff23078150b1ba3f8f7214806bad",
+          "byte_size": 3374,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 641631537
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/27813cf369c512a2c3ecaf7bdde26686a47eb25289703836b552215e6dbe5a07/detail-page.webp",
+          "sha256": "27813cf369c512a2c3ecaf7bdde26686a47eb25289703836b552215e6dbe5a07",
+          "byte_size": 120428,
+          "width": 720,
+          "height": 1005,
+          "mime_type": "image/webp",
+          "artifact_id": 641631537
+        }
+      ],
+      "evidence": {
+        "source_url": "https://archives.bulbagarden.net/media/upload/8/86/PoliwagMyFirstBattle.jpg",
+        "source_page_url": "https://bulbapedia.bulbagarden.net/wiki/Poliwag_(My_First_Battle)",
+        "source_file_description_url": "https://bulbapedia.bulbagarden.net/wiki/File:PoliwagMyFirstBattle.jpg",
+        "provider_id": "File:PoliwagMyFirstBattle.jpg",
+        "source_metadata_sha256": "40a74fe026a8d96c29a6af94e65d2bb75ca6813bf836820777c5401bb5b9c585",
+        "retained_source_signature_sha256": "cedc5741933ca8a363cc215ea834195d648b06cdb9ff5c49db226f5c0fbe17f8",
+        "actual_structured_signature_sha256": "dcc3b92d40d6856b7b4e1b65453b2ba1c84da25d65ab8cfc7e8e4b46beff1fa1",
+        "source_body": {
+          "signature": {
+            "name": "Poliwag",
+            "languageCode": "en",
+            "canonicalSetCode": "mfb",
+            "sourceEnglishDeck": "Squirtle Deck",
+            "hp": 60,
+            "stageAndEvolutionText": "Basic Pokémon",
+            "nationalDexNumber": "0060",
+            "printedCollectorNumber": null,
+            "unnumberedPerSourceDeckList": true,
+            "artist": "0313",
+            "attacks": [
+              {
+                "name": "Pound",
+                "costSymbols": [
+                  "Water"
+                ],
+                "damage": "20",
+                "bodyText": []
+              }
+            ],
+            "canonicalCollectorAliasIsInternalOnly": true
+          },
+          "metadata": {
+            "rawSha256": "40a74fe026a8d96c29a6af94e65d2bb75ca6813bf836820777c5401bb5b9c585",
+            "fileDescriptionRawSha256": "2634431c3857a270ea535e958774a3a6c8300e4e98d456be69d0cc6e9e93af92",
+            "sourceName": "Poliwag",
+            "sourceDeck": "Squirtle Deck",
+            "sourceHP": 60,
+            "sourceStageAndEvolution": "Basic Pokémon",
+            "sourceNationalDex": "0060",
+            "printedCollectorNumber": null,
+            "artist": "0313",
+            "attacks": [
+              {
+                "name": "Pound",
+                "costSymbols": [
+                  "Water"
+                ],
+                "damage": "20",
+                "bodyText": []
+              }
+            ],
+            "attacksSha256": "cae4801901476828f830189e3e42fa77f413fbe70fd329bdf4694acb0c9ef02b",
+            "inlineGlyphResolution": null,
+            "retainedTcgWitness": {
+              "sourceCardId": "42802",
+              "pageUrl": "https://www.tcgcollector.com/cards/42802/poliwag-my-first-battle-squirtle-no-005",
+              "sourceDeck": "squirtle",
+              "sourceMetadata": {
+                "category": "Pokemon",
+                "hp": 60,
+                "stage": "Basic",
+                "illustrator": "0313",
+                "cardFormatLabel": "Unlimited",
+                "cardFormatLabelIsPhysicalEditionProof": false,
+                "attacks": [
+                  {
+                    "name": "Pound",
+                    "costSymbols": [
+                      "Water"
+                    ],
+                    "damage": "20",
+                    "additionalPublishedRuleEffects": [],
+                    "ruleAbsenceDoesNotEstablishPixelAbsence": true
+                  }
+                ],
+                "trainerEffect": null,
+                "sourceTextExplicitlyIdentifiesBlueOrStartingRole": false
+              }
+            }
+          },
+          "actual_pixels": {
+            "printingId": "41395dbd-f317-44f6-a49e-0fa095e03e7a",
+            "variantId": "d9beeafa-9972-4d97-9c31-d9100fa6a4e9",
+            "canonicalCollectorAlias": "27",
+            "originalSha256": "81617fe78557295d9f49c347bbcd96a4af6aa04d7ada6c4d88c48eda1a481118",
+            "wholeOriginalIndividuallyViewed": true,
+            "viewedAtNativePixelDimensions": true,
+            "printedNameObserved": "Poliwag",
+            "printedHPObserved": 60,
+            "printedStageHeaderObserved": "BASIC",
+            "printedEvolutionTextObserved": null,
+            "printedTypeGlyphObserved": "Water",
+            "printedNationalDexTextObserved": "0060",
+            "printedNationalDexNumericValue": 60,
+            "printedCollectorNumberObserved": null,
+            "cardIsUnnumberedPerDeckList": true,
+            "canonicalAliasNotTreatedAsPrintedNumber": true,
+            "artistObserved": "0313",
+            "orderedAttacksObserved": [
+              {
+                "name": "Pound",
+                "costSymbols": [
+                  "Water"
+                ],
+                "damage": "20",
+                "bodyText": []
+              }
+            ],
+            "deckSilhouetteObserved": "Squirtle",
+            "fullCardFrameObserved": true,
+            "printedBodyLanguageObserved": "en",
+            "wholePrintingLanguageVerified": true,
+            "completeCopyrightLineLegible": true,
+            "observedCopyrightLine": "©2023 Pokémon / Nintendo / Creatures / GAME FREAK",
+            "copyrightYearInferredFromReleaseDate": false,
+            "metadataNameMatches": true,
+            "metadataHPMatches": true,
+            "metadataStageHeaderMatches": true,
+            "metadataOrderedAttackNamesCostsDamageMatch": true,
+            "metadataArtistMatchesIgnoringCase": true,
+            "sourceBytesUnchanged": true,
+            "localResizeOrUpscalePerformed": false,
+            "pixelsGenerated": false,
+            "physicalEditionVerified": false,
+            "physicalFinishVerified": false,
+            "holds": [],
+            "acceptedExactEnglishWholeFront": true
+          },
+          "observation_reconciliation": {
+            "schemaVersion": "stackr-single-original-observation-reconciliation-v1",
+            "recordedAtUtc": "2026-10-14T20:38:04.002Z",
+            "alias": "27",
+            "nameObserved": "Poliwag",
+            "stageHeaderObserved": "BASIC",
+            "stageFinalLetterObserved": "C",
+            "stageHeaderAmbiguity": false,
+            "hpObserved": 60,
+            "evolvesFromObserved": null,
+            "typeGlyphObserved": "Water",
+            "artistObserved": "0313",
+            "nationalDexTextObserved": "0060",
+            "orderedAttacksObserved": [
+              {
+                "name": "Pound",
+                "costSymbols": [
+                  "Water"
+                ],
+                "damage": "20",
+                "bodyText": []
+              }
+            ],
+            "allFourGreyOuterEdgesAndRoundedCornersVisible": true,
+            "fullFrameObserved": true,
+            "deckSilhouetteObserved": "Squirtle",
+            "copyrightLineComplete": true,
+            "copyrightLineObserved": "©2023 Pokémon / Nintendo / Creatures / GAME FREAK",
+            "copyrightYearInferred": false,
+            "bodyLanguageObserved": "en",
+            "correction": "Retract the earlier BASIS claim; this is BASIC with final C and a complete English frame/body.",
+            "futureCohortArtworkEligible": true,
+            "remainingHolds": [],
+            "printingId": "41395dbd-f317-44f6-a49e-0fa095e03e7a",
+            "variantId": "d9beeafa-9972-4d97-9c31-d9100fa6a4e9",
+            "originalSha256": "81617fe78557295d9f49c347bbcd96a4af6aa04d7ada6c4d88c48eda1a481118",
+            "originalWidth": 1375,
+            "originalHeight": 1920,
+            "hashVerifiedImmediatelyBeforeSingleOriginalView": true,
+            "viewMethod": "tools.view_image detail original; one original in that tool result, no contact sheet or multi-image result.",
+            "priorReceiptHeldObservationPreserved": true,
+            "priorHolds": [
+              {
+                "code": "stage_header_language_or_printing_mismatch",
+                "observed": "BASIS",
+                "expected": "BASIC",
+                "action": "Verify an unchanged exact English printing with the English stage header. Retain this mixed-header file separately; do not overlay or edit it."
+              }
+            ],
+            "sourceImagesModified": false,
+            "newImageRequests": 0,
+            "prepared": false,
+            "published": false,
+            "productionWrites": 0
+          },
+          "independent_body_checks": {
+            "alias": "27",
+            "printingId": "41395dbd-f317-44f6-a49e-0fa095e03e7a",
+            "variantId": "d9beeafa-9972-4d97-9c31-d9100fa6a4e9",
+            "comparison": {
+              "name": true,
+              "artist": true,
+              "orderedAttackNamesCostsDamage": true,
+              "effects": true,
+              "deck": true,
+              "typeGlyphMatchesRetainedBulbapediaType": true,
+              "nationalDex": true,
+              "hp": true,
+              "stage": true
+            },
+            "observedOriginalSha256": "81617fe78557295d9f49c347bbcd96a4af6aa04d7ada6c4d88c48eda1a481118",
+            "cardRawMetadataSha256": "40a74fe026a8d96c29a6af94e65d2bb75ca6813bf836820777c5401bb5b9c585",
+            "fileDescriptionRawMetadataSha256": "2634431c3857a270ea535e958774a3a6c8300e4e98d456be69d0cc6e9e93af92",
+            "independentTcgSourceCardId": "42802",
+            "independentTcgSourceCardPageUrl": "https://www.tcgcollector.com/cards/42802/poliwag-my-first-battle-squirtle-no-005",
+            "independentTcgReportSha256": "55d0c91c7a78b1a6cc03553dab3ad0478930a33bde63c6fc1b39619f48583de3",
+            "retainedBulbapediaMetadataSha256": "beaec9b6efff379f4e089c2e7fc9a9080dd1253c6b3448f41dba50a226d0f59f",
+            "currentCanonicalTuple": {
+              "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+              "set_code": "mfb",
+              "game_code": "pokemon",
+              "variant_id": "d9beeafa-9972-4d97-9c31-d9100fa6a4e9",
+              "finish_code": "normal",
+              "printing_id": "41395dbd-f317-44f6-a49e-0fa095e03e7a",
+              "variant_code": "normal",
+              "language_code": "en",
+              "card_native_name": "Poliwag",
+              "collector_number": "27",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "same_artwork_as_variant_id": null
+            },
+            "canonicalAliasIsNotPrintedCollectorNumber": true,
+            "printedCollectorNumberObserved": null,
+            "allComparedFieldsAgree": true,
+            "sourceAttributionAndRightsUnchanged": true
+          },
+          "prior_holds_retained_as_history": [
+            {
+              "code": "stage_header_language_or_printing_mismatch",
+              "observed": "BASIS",
+              "expected": "BASIC",
+              "action": "Verify an unchanged exact English printing with the English stage header. Retain this mixed-header file separately; do not overlay or edit it."
+            }
+          ],
+          "current_holds": [],
+          "observation_correction_only": true,
+          "reconciliation_receipt_sha256": "014bce750f1a96d86b08168285f6e9458b12fa69afee5d615b5b70c6513504a8",
+          "canonical_metadata_changes": 0,
+          "original_byte_changes": 0
+        },
+        "printed_identity": {
+          "canonical_alias": "27",
+          "printed_collector_number": null,
+          "canonical_alias_is_internal_only": true,
+          "printed_national_dex_is_not_collector_number": true,
+          "printed_national_dex": "0060",
+          "printed_name": "Poliwag",
+          "deck_silhouette": "Squirtle",
+          "source_english_deck": "Squirtle Deck"
+        },
+        "source_rights": {
+          "source_attribution": [
+            {
+              "label": "https://twitter.com/zerosanichisan/status/1791034069289189524",
+              "url": "https://twitter.com/zerosanichisan/status/1791034069289189524"
+            }
+          ],
+          "artwork_specific_rights_tag": "This image is artwork from the Pokémon TCG, or substantially derived from it. The contributor claims this to be fair use .",
+          "generic_footer_licence_is_not_artwork_licence": true,
+          "owner_website_permission_attested": true,
+          "vendor_licence_verified": false,
+          "underlying_copyright_licence_verified": false,
+          "sourcewide_approval": false
+        },
+        "identity_limits": {
+          "canonical_alias_is_internal_only": true,
+          "printed_collector_number": null,
+          "printed_national_dex_is_not_collector_number": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "source_has_hd_dimensions": true,
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedCollectorOpticallyVerified": false,
+          "canonicalAliasIsInternalOnly": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "44beac31-c0da-423b-9ea4-4e1359eb2bed",
+      "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+      "set_code": "mfb",
+      "language_code": "en",
+      "collector_number": "29",
+      "card_native_name": "Magikarp",
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "variant_ids": [
+        "1593d7e0-58f7-49c2-a5b7-e47b200fd131"
+      ],
+      "batch_id": "EN-CARDS-007",
+      "source_code": "bulbapedia",
+      "provider_id": "File:MagikarpMyFirstBattle.jpg",
+      "image_url": "https://archives.bulbagarden.net/media/upload/5/55/MagikarpMyFirstBattle.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/f8264864f0df481c5452e903a6b7c9d41abe7590c66fe9ce61311bbdf6ee3fe8/original.jpg",
+          "sha256": "f8264864f0df481c5452e903a6b7c9d41abe7590c66fe9ce61311bbdf6ee3fe8",
+          "byte_size": 385583,
+          "width": 1375,
+          "height": 1920,
+          "mime_type": "image/jpeg",
+          "artifact_id": 641631537
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/d040a0db3e81f2701fed6d4922129de42d7c5be55c5edeeb4b5ec56e04f9441a/card-grid.webp",
+          "sha256": "d040a0db3e81f2701fed6d4922129de42d7c5be55c5edeeb4b5ec56e04f9441a",
+          "byte_size": 15280,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp",
+          "artifact_id": 641631537
+        },
+        {
+          "role": "search-result",
+          "file": "objects/63985102e8ad8c3d78e8cefb66d0fc0210ae61e66f24847701bd6548cea957aa/search-result.webp",
+          "sha256": "63985102e8ad8c3d78e8cefb66d0fc0210ae61e66f24847701bd6548cea957aa",
+          "byte_size": 3542,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 641631537
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/c765ff104487c4fb7cfc2b057796b656e9aa9827f74dab4f3fe8ad85972a3f18/detail-page.webp",
+          "sha256": "c765ff104487c4fb7cfc2b057796b656e9aa9827f74dab4f3fe8ad85972a3f18",
+          "byte_size": 119264,
+          "width": 720,
+          "height": 1005,
+          "mime_type": "image/webp",
+          "artifact_id": 641631537
+        }
+      ],
+      "evidence": {
+        "source_url": "https://archives.bulbagarden.net/media/upload/5/55/MagikarpMyFirstBattle.jpg",
+        "source_page_url": "https://bulbapedia.bulbagarden.net/wiki/Magikarp_(My_First_Battle)",
+        "source_file_description_url": "https://bulbapedia.bulbagarden.net/wiki/File:MagikarpMyFirstBattle.jpg",
+        "provider_id": "File:MagikarpMyFirstBattle.jpg",
+        "source_metadata_sha256": "ec4096085ec6b3864d67106d959ed711045ad25ded3bcc199c533b4110b02c4c",
+        "retained_source_signature_sha256": "80441c8324ae3edf5bb86793167753605adf5ab1cdd45eeebcd2c058ad0a85cf",
+        "actual_structured_signature_sha256": "be6bb95603662ee86427197660c1dd702389ffe0f5c4d6175db4fe862d7ac4d4",
+        "source_body": {
+          "signature": {
+            "name": "Magikarp",
+            "languageCode": "en",
+            "canonicalSetCode": "mfb",
+            "sourceEnglishDeck": "Squirtle Deck",
+            "hp": 30,
+            "stageAndEvolutionText": "Basic Pokémon",
+            "nationalDexNumber": "0129",
+            "printedCollectorNumber": null,
+            "unnumberedPerSourceDeckList": true,
+            "artist": "Amelicart",
+            "attacks": [
+              {
+                "name": "Splash",
+                "costSymbols": [
+                  "Water"
+                ],
+                "damage": "10",
+                "bodyText": []
+              }
+            ],
+            "canonicalCollectorAliasIsInternalOnly": true
+          },
+          "metadata": {
+            "rawSha256": "ec4096085ec6b3864d67106d959ed711045ad25ded3bcc199c533b4110b02c4c",
+            "fileDescriptionRawSha256": "977cdc5af5389e3acb04e1743e75c0a2f33b8d6b5880fb757344346f437f28e9",
+            "sourceName": "Magikarp",
+            "sourceDeck": "Squirtle Deck",
+            "sourceHP": 30,
+            "sourceStageAndEvolution": "Basic Pokémon",
+            "sourceNationalDex": "0129",
+            "printedCollectorNumber": null,
+            "artist": "Amelicart",
+            "attacks": [
+              {
+                "name": "Splash",
+                "costSymbols": [
+                  "Water"
+                ],
+                "damage": "10",
+                "bodyText": []
+              }
+            ],
+            "attacksSha256": "59b56ed3f275baf4233275627acdb028d475243b4303c7b8bb81f0ca37944d78",
+            "inlineGlyphResolution": null,
+            "retainedTcgWitness": {
+              "sourceCardId": "42804",
+              "pageUrl": "https://www.tcgcollector.com/cards/42804/magikarp-my-first-battle-squirtle-no-007",
+              "sourceDeck": "squirtle",
+              "sourceMetadata": {
+                "category": "Pokemon",
+                "hp": 30,
+                "stage": "Basic",
+                "illustrator": "Amelicart",
+                "cardFormatLabel": "Unlimited",
+                "cardFormatLabelIsPhysicalEditionProof": false,
+                "attacks": [
+                  {
+                    "name": "Splash",
+                    "costSymbols": [
+                      "Water"
+                    ],
+                    "damage": "10",
+                    "additionalPublishedRuleEffects": [],
+                    "ruleAbsenceDoesNotEstablishPixelAbsence": true
+                  }
+                ],
+                "trainerEffect": null,
+                "sourceTextExplicitlyIdentifiesBlueOrStartingRole": false
+              }
+            }
+          },
+          "actual_pixels": {
+            "printingId": "44beac31-c0da-423b-9ea4-4e1359eb2bed",
+            "variantId": "1593d7e0-58f7-49c2-a5b7-e47b200fd131",
+            "canonicalCollectorAlias": "29",
+            "originalSha256": "f8264864f0df481c5452e903a6b7c9d41abe7590c66fe9ce61311bbdf6ee3fe8",
+            "wholeOriginalIndividuallyViewed": true,
+            "viewedAtNativePixelDimensions": true,
+            "printedNameObserved": "Magikarp",
+            "printedHPObserved": 30,
+            "printedStageHeaderObserved": "BASIC",
+            "printedEvolutionTextObserved": null,
+            "printedTypeGlyphObserved": "Water",
+            "printedNationalDexTextObserved": "0129",
+            "printedNationalDexNumericValue": 129,
+            "printedCollectorNumberObserved": null,
+            "cardIsUnnumberedPerDeckList": true,
+            "canonicalAliasNotTreatedAsPrintedNumber": true,
+            "artistObserved": "Amelicart",
+            "orderedAttacksObserved": [
+              {
+                "name": "Splash",
+                "costSymbols": [
+                  "Water"
+                ],
+                "damage": "10",
+                "bodyText": []
+              }
+            ],
+            "deckSilhouetteObserved": "Squirtle",
+            "fullCardFrameObserved": true,
+            "printedBodyLanguageObserved": "en",
+            "wholePrintingLanguageVerified": true,
+            "completeCopyrightLineLegible": true,
+            "observedCopyrightLine": "©2023 Pokémon / Nintendo / Creatures / GAME FREAK",
+            "copyrightYearInferredFromReleaseDate": false,
+            "metadataNameMatches": true,
+            "metadataHPMatches": true,
+            "metadataStageHeaderMatches": true,
+            "metadataOrderedAttackNamesCostsDamageMatch": true,
+            "metadataArtistMatchesIgnoringCase": true,
+            "sourceBytesUnchanged": true,
+            "localResizeOrUpscalePerformed": false,
+            "pixelsGenerated": false,
+            "physicalEditionVerified": false,
+            "physicalFinishVerified": false,
+            "holds": [],
+            "acceptedExactEnglishWholeFront": true
+          },
+          "observation_reconciliation": {
+            "schemaVersion": "stackr-single-original-observation-reconciliation-v1",
+            "recordedAtUtc": "2026-10-14T20:36:25.298Z",
+            "alias": "29",
+            "nameObserved": "Magikarp",
+            "stageHeaderObserved": "BASIC",
+            "stageFinalLetterObserved": "C",
+            "stageHeaderAmbiguity": false,
+            "hpObserved": 30,
+            "evolvesFromObserved": null,
+            "typeGlyphObserved": "Water",
+            "artistObserved": "Amelicart",
+            "nationalDexTextObserved": "0129",
+            "orderedAttacksObserved": [
+              {
+                "name": "Splash",
+                "costSymbols": [
+                  "Water"
+                ],
+                "damage": "10",
+                "bodyText": []
+              }
+            ],
+            "allFourGreyOuterEdgesAndRoundedCornersVisible": true,
+            "fullFrameObserved": true,
+            "deckSilhouetteObserved": "Squirtle",
+            "copyrightLineComplete": true,
+            "copyrightLineObserved": "©2023 Pokémon / Nintendo / Creatures / GAME FREAK",
+            "copyrightYearInferred": false,
+            "bodyLanguageObserved": "en",
+            "correction": "Retract the earlier BASIS stage-header claim. The original visibly reads BASIC and is a complete English front.",
+            "futureCohortArtworkEligible": true,
+            "remainingHolds": [],
+            "printingId": "44beac31-c0da-423b-9ea4-4e1359eb2bed",
+            "variantId": "1593d7e0-58f7-49c2-a5b7-e47b200fd131",
+            "originalSha256": "f8264864f0df481c5452e903a6b7c9d41abe7590c66fe9ce61311bbdf6ee3fe8",
+            "originalWidth": 1375,
+            "originalHeight": 1920,
+            "hashVerifiedImmediatelyBeforeSingleOriginalView": true,
+            "viewMethod": "tools.view_image detail original; one original in that tool result, no contact sheet or multi-image result.",
+            "priorReceiptHeldObservationPreserved": true,
+            "priorHolds": [
+              {
+                "code": "stage_header_language_or_printing_mismatch",
+                "observed": "BASIS",
+                "expected": "BASIC",
+                "action": "Verify an unchanged exact English printing with the English stage header. Retain this mixed-header file separately; do not overlay or edit it."
+              }
+            ],
+            "sourceImagesModified": false,
+            "newImageRequests": 0,
+            "prepared": false,
+            "published": false,
+            "productionWrites": 0
+          },
+          "independent_body_checks": {
+            "alias": "29",
+            "printingId": "44beac31-c0da-423b-9ea4-4e1359eb2bed",
+            "variantId": "1593d7e0-58f7-49c2-a5b7-e47b200fd131",
+            "comparison": {
+              "name": true,
+              "artist": true,
+              "orderedAttackNamesCostsDamage": true,
+              "effects": true,
+              "deck": true,
+              "typeGlyphMatchesRetainedBulbapediaType": true,
+              "nationalDex": true,
+              "hp": true,
+              "stage": true
+            },
+            "observedOriginalSha256": "f8264864f0df481c5452e903a6b7c9d41abe7590c66fe9ce61311bbdf6ee3fe8",
+            "cardRawMetadataSha256": "ec4096085ec6b3864d67106d959ed711045ad25ded3bcc199c533b4110b02c4c",
+            "fileDescriptionRawMetadataSha256": "977cdc5af5389e3acb04e1743e75c0a2f33b8d6b5880fb757344346f437f28e9",
+            "independentTcgSourceCardId": "42804",
+            "independentTcgSourceCardPageUrl": "https://www.tcgcollector.com/cards/42804/magikarp-my-first-battle-squirtle-no-007",
+            "independentTcgReportSha256": "55d0c91c7a78b1a6cc03553dab3ad0478930a33bde63c6fc1b39619f48583de3",
+            "retainedBulbapediaMetadataSha256": "beaec9b6efff379f4e089c2e7fc9a9080dd1253c6b3448f41dba50a226d0f59f",
+            "currentCanonicalTuple": {
+              "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+              "set_code": "mfb",
+              "game_code": "pokemon",
+              "variant_id": "1593d7e0-58f7-49c2-a5b7-e47b200fd131",
+              "finish_code": "normal",
+              "printing_id": "44beac31-c0da-423b-9ea4-4e1359eb2bed",
+              "variant_code": "normal",
+              "language_code": "en",
+              "card_native_name": "Magikarp",
+              "collector_number": "29",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "same_artwork_as_variant_id": null
+            },
+            "canonicalAliasIsNotPrintedCollectorNumber": true,
+            "printedCollectorNumberObserved": null,
+            "allComparedFieldsAgree": true,
+            "sourceAttributionAndRightsUnchanged": true
+          },
+          "prior_holds_retained_as_history": [
+            {
+              "code": "stage_header_language_or_printing_mismatch",
+              "observed": "BASIS",
+              "expected": "BASIC",
+              "action": "Verify an unchanged exact English printing with the English stage header. Retain this mixed-header file separately; do not overlay or edit it."
+            }
+          ],
+          "current_holds": [],
+          "observation_correction_only": true,
+          "reconciliation_receipt_sha256": "014bce750f1a96d86b08168285f6e9458b12fa69afee5d615b5b70c6513504a8",
+          "canonical_metadata_changes": 0,
+          "original_byte_changes": 0
+        },
+        "printed_identity": {
+          "canonical_alias": "29",
+          "printed_collector_number": null,
+          "canonical_alias_is_internal_only": true,
+          "printed_national_dex_is_not_collector_number": true,
+          "printed_national_dex": "0129",
+          "printed_name": "Magikarp",
+          "deck_silhouette": "Squirtle",
+          "source_english_deck": "Squirtle Deck"
+        },
+        "source_rights": {
+          "source_attribution": [
+            {
+              "label": "https://twitter.com/amelicart/status/1791004841189560461",
+              "url": "https://twitter.com/amelicart/status/1791004841189560461"
+            }
+          ],
+          "artwork_specific_rights_tag": "This image is artwork from the Pokémon TCG, or substantially derived from it. The contributor claims this to be fair use .",
+          "generic_footer_licence_is_not_artwork_licence": true,
+          "owner_website_permission_attested": true,
+          "vendor_licence_verified": false,
+          "underlying_copyright_licence_verified": false,
+          "sourcewide_approval": false
+        },
+        "identity_limits": {
+          "canonical_alias_is_internal_only": true,
+          "printed_collector_number": null,
+          "printed_national_dex_is_not_collector_number": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "source_has_hd_dimensions": true,
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedCollectorOpticallyVerified": false,
+          "canonicalAliasIsInternalOnly": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    },
+    {
+      "printing_id": "7d7382ef-d5c9-40b8-9cb8-d37487dffaeb",
+      "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+      "set_code": "mfb",
+      "language_code": "en",
+      "collector_number": "31",
+      "card_native_name": "Lapras",
+      "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "variant_ids": [
+        "7c8f4063-caf5-453d-ac80-bcb7df971093"
+      ],
+      "batch_id": "EN-CARDS-007",
+      "source_code": "bulbapedia",
+      "provider_id": "File:LaprasMyFirstBattle.jpg",
+      "image_url": "https://archives.bulbagarden.net/media/upload/c/c8/LaprasMyFirstBattle.jpg",
+      "objects": [
+        {
+          "role": "original",
+          "file": "objects/a28354dbc1c3d65c5ae8ac1fccec627b75a4ae9c8fbc81fb5429956f6cf0a266/original.jpg",
+          "sha256": "a28354dbc1c3d65c5ae8ac1fccec627b75a4ae9c8fbc81fb5429956f6cf0a266",
+          "byte_size": 389682,
+          "width": 1375,
+          "height": 1920,
+          "mime_type": "image/jpeg",
+          "artifact_id": 641631537
+        },
+        {
+          "role": "card-grid",
+          "file": "objects/ac337b5d25d1e62761535b24a7ce93e8770fc8044f9932bebcbde467a281fba4/card-grid.webp",
+          "sha256": "ac337b5d25d1e62761535b24a7ce93e8770fc8044f9932bebcbde467a281fba4",
+          "byte_size": 18294,
+          "width": 240,
+          "height": 336,
+          "mime_type": "image/webp",
+          "artifact_id": 641631537
+        },
+        {
+          "role": "search-result",
+          "file": "objects/f9c659388f85a62176db1d0c78e14382911c504f187b1ebd3b3b119eb6dbb365/search-result.webp",
+          "sha256": "f9c659388f85a62176db1d0c78e14382911c504f187b1ebd3b3b119eb6dbb365",
+          "byte_size": 3550,
+          "width": 96,
+          "height": 135,
+          "mime_type": "image/webp",
+          "artifact_id": 641631537
+        },
+        {
+          "role": "detail-page",
+          "file": "objects/7b9557907872f1ff0e773d37587f29a86c2639fa1ff7c2e4b91960df447fb194/detail-page.webp",
+          "sha256": "7b9557907872f1ff0e773d37587f29a86c2639fa1ff7c2e4b91960df447fb194",
+          "byte_size": 137742,
+          "width": 720,
+          "height": 1005,
+          "mime_type": "image/webp",
+          "artifact_id": 641631537
+        }
+      ],
+      "evidence": {
+        "source_url": "https://archives.bulbagarden.net/media/upload/c/c8/LaprasMyFirstBattle.jpg",
+        "source_page_url": "https://bulbapedia.bulbagarden.net/wiki/Lapras_(My_First_Battle)",
+        "source_file_description_url": "https://bulbapedia.bulbagarden.net/wiki/File:LaprasMyFirstBattle.jpg",
+        "provider_id": "File:LaprasMyFirstBattle.jpg",
+        "source_metadata_sha256": "8c5b304f023f0e7c5628018e46e65b4bc083bec42ff18260e8eb97c4d4373a71",
+        "retained_source_signature_sha256": "0bf69fbe2cc25f367a10dc8d21bed9a729d70236e876fd64a80956acaa691a54",
+        "actual_structured_signature_sha256": "0641c44be2073399d67fd11f270944669fd5924344721db17066cf2087f69007",
+        "source_body": {
+          "signature": {
+            "name": "Lapras",
+            "languageCode": "en",
+            "canonicalSetCode": "mfb",
+            "sourceEnglishDeck": "Squirtle Deck",
+            "hp": 110,
+            "stageAndEvolutionText": "Basic Pokémon",
+            "nationalDexNumber": "0131",
+            "printedCollectorNumber": null,
+            "unnumberedPerSourceDeckList": true,
+            "artist": "Akira Komayama",
+            "attacks": [
+              {
+                "name": "Surf",
+                "costSymbols": [
+                  "Water",
+                  "Water"
+                ],
+                "damage": "50",
+                "bodyText": []
+              }
+            ],
+            "canonicalCollectorAliasIsInternalOnly": true
+          },
+          "metadata": {
+            "rawSha256": "8c5b304f023f0e7c5628018e46e65b4bc083bec42ff18260e8eb97c4d4373a71",
+            "fileDescriptionRawSha256": "24e7549220eebd624b922e12eb11185a0da2acf00cda57c1e7dfc09a6b73928b",
+            "sourceName": "Lapras",
+            "sourceDeck": "Squirtle Deck",
+            "sourceHP": 110,
+            "sourceStageAndEvolution": "Basic Pokémon",
+            "sourceNationalDex": "0131",
+            "printedCollectorNumber": null,
+            "artist": "Akira Komayama",
+            "attacks": [
+              {
+                "name": "Surf",
+                "costSymbols": [
+                  "Water",
+                  "Water"
+                ],
+                "damage": "50",
+                "bodyText": []
+              }
+            ],
+            "attacksSha256": "205c0bd11e52998e5373ea29e8cd9f15f46404903e706d5bfa311826f7967af2",
+            "inlineGlyphResolution": null,
+            "retainedTcgWitness": {
+              "sourceCardId": "42806",
+              "pageUrl": "https://www.tcgcollector.com/cards/42806/lapras-my-first-battle-squirtle-no-009",
+              "sourceDeck": "squirtle",
+              "sourceMetadata": {
+                "category": "Pokemon",
+                "hp": 110,
+                "stage": "Basic",
+                "illustrator": "Akira Komayama",
+                "cardFormatLabel": "Unlimited",
+                "cardFormatLabelIsPhysicalEditionProof": false,
+                "attacks": [
+                  {
+                    "name": "Surf",
+                    "costSymbols": [
+                      "Water",
+                      "Water"
+                    ],
+                    "damage": "50",
+                    "additionalPublishedRuleEffects": [],
+                    "ruleAbsenceDoesNotEstablishPixelAbsence": true
+                  }
+                ],
+                "trainerEffect": null,
+                "sourceTextExplicitlyIdentifiesBlueOrStartingRole": false
+              }
+            }
+          },
+          "actual_pixels": {
+            "printingId": "7d7382ef-d5c9-40b8-9cb8-d37487dffaeb",
+            "variantId": "7c8f4063-caf5-453d-ac80-bcb7df971093",
+            "canonicalCollectorAlias": "31",
+            "originalSha256": "a28354dbc1c3d65c5ae8ac1fccec627b75a4ae9c8fbc81fb5429956f6cf0a266",
+            "wholeOriginalIndividuallyViewed": true,
+            "viewedAtNativePixelDimensions": true,
+            "printedNameObserved": "Lapras",
+            "printedHPObserved": 110,
+            "printedStageHeaderObserved": "BASIC",
+            "printedEvolutionTextObserved": null,
+            "printedTypeGlyphObserved": "Water",
+            "printedNationalDexTextObserved": "0131",
+            "printedNationalDexNumericValue": 131,
+            "printedCollectorNumberObserved": null,
+            "cardIsUnnumberedPerDeckList": true,
+            "canonicalAliasNotTreatedAsPrintedNumber": true,
+            "artistObserved": "Akira Komayama",
+            "orderedAttacksObserved": [
+              {
+                "name": "Surf",
+                "costSymbols": [
+                  "Water",
+                  "Water"
+                ],
+                "damage": "50",
+                "bodyText": []
+              }
+            ],
+            "deckSilhouetteObserved": "Squirtle",
+            "fullCardFrameObserved": true,
+            "printedBodyLanguageObserved": "en",
+            "wholePrintingLanguageVerified": true,
+            "completeCopyrightLineLegible": true,
+            "observedCopyrightLine": "©2023 Pokémon / Nintendo / Creatures / GAME FREAK",
+            "copyrightYearInferredFromReleaseDate": false,
+            "metadataNameMatches": true,
+            "metadataHPMatches": true,
+            "metadataStageHeaderMatches": true,
+            "metadataOrderedAttackNamesCostsDamageMatch": true,
+            "metadataArtistMatchesIgnoringCase": true,
+            "sourceBytesUnchanged": true,
+            "localResizeOrUpscalePerformed": false,
+            "pixelsGenerated": false,
+            "physicalEditionVerified": false,
+            "physicalFinishVerified": false,
+            "holds": [],
+            "acceptedExactEnglishWholeFront": true
+          },
+          "observation_reconciliation": {
+            "schemaVersion": "stackr-single-original-observation-reconciliation-v1",
+            "recordedAtUtc": "2026-10-14T20:38:11.431Z",
+            "alias": "31",
+            "nameObserved": "Lapras",
+            "stageHeaderObserved": "BASIC",
+            "stageFinalLetterObserved": "C",
+            "stageHeaderAmbiguity": false,
+            "hpObserved": 110,
+            "evolvesFromObserved": null,
+            "typeGlyphObserved": "Water",
+            "artistObserved": "Akira Komayama",
+            "nationalDexTextObserved": "0131",
+            "orderedAttacksObserved": [
+              {
+                "name": "Surf",
+                "costSymbols": [
+                  "Water",
+                  "Water"
+                ],
+                "damage": "50",
+                "bodyText": []
+              }
+            ],
+            "allFourGreyOuterEdgesAndRoundedCornersVisible": true,
+            "fullFrameObserved": true,
+            "deckSilhouetteObserved": "Squirtle",
+            "copyrightLineComplete": true,
+            "copyrightLineObserved": "©2023 Pokémon / Nintendo / Creatures / GAME FREAK",
+            "copyrightYearInferred": false,
+            "bodyLanguageObserved": "en",
+            "correction": "Retract the earlier BASIS claim; the header visibly reads BASIC, ending in C, and all four edges and copyright are complete.",
+            "futureCohortArtworkEligible": true,
+            "remainingHolds": [],
+            "printingId": "7d7382ef-d5c9-40b8-9cb8-d37487dffaeb",
+            "variantId": "7c8f4063-caf5-453d-ac80-bcb7df971093",
+            "originalSha256": "a28354dbc1c3d65c5ae8ac1fccec627b75a4ae9c8fbc81fb5429956f6cf0a266",
+            "originalWidth": 1375,
+            "originalHeight": 1920,
+            "hashVerifiedImmediatelyBeforeSingleOriginalView": true,
+            "viewMethod": "tools.view_image detail original; one original in that tool result, no contact sheet or multi-image result.",
+            "priorReceiptHeldObservationPreserved": true,
+            "priorHolds": [
+              {
+                "code": "stage_header_language_or_printing_mismatch",
+                "observed": "BASIS",
+                "expected": "BASIC",
+                "action": "Verify an unchanged exact English printing with the English stage header. Retain this mixed-header file separately; do not overlay or edit it."
+              }
+            ],
+            "sourceImagesModified": false,
+            "newImageRequests": 0,
+            "prepared": false,
+            "published": false,
+            "productionWrites": 0
+          },
+          "independent_body_checks": {
+            "alias": "31",
+            "printingId": "7d7382ef-d5c9-40b8-9cb8-d37487dffaeb",
+            "variantId": "7c8f4063-caf5-453d-ac80-bcb7df971093",
+            "comparison": {
+              "name": true,
+              "artist": true,
+              "orderedAttackNamesCostsDamage": true,
+              "effects": true,
+              "deck": true,
+              "typeGlyphMatchesRetainedBulbapediaType": true,
+              "nationalDex": true,
+              "hp": true,
+              "stage": true
+            },
+            "observedOriginalSha256": "a28354dbc1c3d65c5ae8ac1fccec627b75a4ae9c8fbc81fb5429956f6cf0a266",
+            "cardRawMetadataSha256": "8c5b304f023f0e7c5628018e46e65b4bc083bec42ff18260e8eb97c4d4373a71",
+            "fileDescriptionRawMetadataSha256": "24e7549220eebd624b922e12eb11185a0da2acf00cda57c1e7dfc09a6b73928b",
+            "independentTcgSourceCardId": "42806",
+            "independentTcgSourceCardPageUrl": "https://www.tcgcollector.com/cards/42806/lapras-my-first-battle-squirtle-no-009",
+            "independentTcgReportSha256": "55d0c91c7a78b1a6cc03553dab3ad0478930a33bde63c6fc1b39619f48583de3",
+            "retainedBulbapediaMetadataSha256": "beaec9b6efff379f4e089c2e7fc9a9080dd1253c6b3448f41dba50a226d0f59f",
+            "currentCanonicalTuple": {
+              "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+              "set_code": "mfb",
+              "game_code": "pokemon",
+              "variant_id": "7c8f4063-caf5-453d-ac80-bcb7df971093",
+              "finish_code": "normal",
+              "printing_id": "7d7382ef-d5c9-40b8-9cb8-d37487dffaeb",
+              "variant_code": "normal",
+              "language_code": "en",
+              "card_native_name": "Lapras",
+              "collector_number": "31",
+              "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+              "same_artwork_as_variant_id": null
+            },
+            "canonicalAliasIsNotPrintedCollectorNumber": true,
+            "printedCollectorNumberObserved": null,
+            "allComparedFieldsAgree": true,
+            "sourceAttributionAndRightsUnchanged": true
+          },
+          "prior_holds_retained_as_history": [
+            {
+              "code": "stage_header_language_or_printing_mismatch",
+              "observed": "BASIS",
+              "expected": "BASIC",
+              "action": "Verify an unchanged exact English printing with the English stage header. Retain this mixed-header file separately; do not overlay or edit it."
+            }
+          ],
+          "current_holds": [],
+          "observation_correction_only": true,
+          "reconciliation_receipt_sha256": "014bce750f1a96d86b08168285f6e9458b12fa69afee5d615b5b70c6513504a8",
+          "canonical_metadata_changes": 0,
+          "original_byte_changes": 0
+        },
+        "printed_identity": {
+          "canonical_alias": "31",
+          "printed_collector_number": null,
+          "canonical_alias_is_internal_only": true,
+          "printed_national_dex_is_not_collector_number": true,
+          "printed_national_dex": "0131",
+          "printed_name": "Lapras",
+          "deck_silhouette": "Squirtle",
+          "source_english_deck": "Squirtle Deck"
+        },
+        "source_rights": {
+          "source_attribution": [
+            {
+              "label": "https://twitter.com/Akira_Komayama/status/1796124141784879615",
+              "url": "https://twitter.com/Akira_Komayama/status/1796124141784879615"
+            }
+          ],
+          "artwork_specific_rights_tag": "This image is artwork from the Pokémon TCG, or substantially derived from it. The contributor claims this to be fair use .",
+          "generic_footer_licence_is_not_artwork_licence": true,
+          "owner_website_permission_attested": true,
+          "vendor_licence_verified": false,
+          "underlying_copyright_licence_verified": false,
+          "sourcewide_approval": false
+        },
+        "identity_limits": {
+          "canonical_alias_is_internal_only": true,
+          "printed_collector_number": null,
+          "printed_national_dex_is_not_collector_number": true,
+          "physical_edition_certified": false,
+          "physical_finish_certified": false,
+          "copyright_year_inferred": false
+        },
+        "source_has_hd_dimensions": true,
+        "artwork_scope": "printing_front",
+        "source_kind": "third_party_original",
+        "identity_checks": {
+          "savedMetadataMatched": true,
+          "currentProductionCardBindingMatched": true,
+          "printedCollectorOpticallyVerified": false,
+          "canonicalAliasIsInternalOnly": true,
+          "physicalFinishVerified": false
+        },
+        "exact_finish_verified": false,
+        "vendor_licence_verified": false,
+        "physical_edition_verified": false,
+        "owner_business_decision": {
+          "kind": "owner_authorised_exact_cohort_business_decision",
+          "source_wide_approval": false,
+          "human_review_required": false,
+          "vendor_licence_verified": false
+        }
+      }
+    }
+  ],
+  "source_counts": {
+    "bulbapedia": 8
+  },
+  "delivery_scope": {
+    "batches": [
+      "EN-CARDS-006",
+      "EN-CARDS-007"
+    ],
+    "saved_batch_tasks": 34,
+    "eligible_fronts": 8,
+    "previous_cohort_fronts_required_live": 15,
+    "excluded_control_aliases": [
+      "6"
+    ],
+    "remaining_identity_holds_after_prior15_and_this8": 11,
+    "excluded_ambiguous_targets": 10,
+    "accepted_aliases": [
+      "5",
+      "7",
+      "11",
+      "23",
+      "26",
+      "27",
+      "29",
+      "31"
+    ],
+    "whole_batch_completion_asserted": false
+  },
+  "binding_expectations": {
+    "production": [
+      {
+        "game_code": "pokemon",
+        "language_code": "en",
+        "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+        "set_code": "mfb",
+        "printing_id": "8e7ca31f-4b3d-438b-958e-c48462617a2a",
+        "collector_number": "11",
+        "card_native_name": "Vulpix",
+        "variant_id": "0d77a10f-8d23-46a5-a0f8-fc93ba2b3492",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "en",
+        "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+        "set_code": "mfb",
+        "printing_id": "44beac31-c0da-423b-9ea4-4e1359eb2bed",
+        "collector_number": "29",
+        "card_native_name": "Magikarp",
+        "variant_id": "1593d7e0-58f7-49c2-a5b7-e47b200fd131",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "en",
+        "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+        "set_code": "mfb",
+        "printing_id": "593f2452-0513-4304-964d-017756266f91",
+        "collector_number": "23",
+        "card_native_name": "Electabuzz",
+        "variant_id": "6a0f530d-1148-446d-b1d6-f3d97a043f39",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "en",
+        "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+        "set_code": "mfb",
+        "printing_id": "9851560d-25ac-4a1c-815d-dd6793598d98",
+        "collector_number": "7",
+        "card_native_name": "Scyther",
+        "variant_id": "794e4d54-a754-4a89-b42f-30b1a9a6d41c",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "en",
+        "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+        "set_code": "mfb",
+        "printing_id": "7d7382ef-d5c9-40b8-9cb8-d37487dffaeb",
+        "collector_number": "31",
+        "card_native_name": "Lapras",
+        "variant_id": "7c8f4063-caf5-453d-ac80-bcb7df971093",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "en",
+        "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+        "set_code": "mfb",
+        "printing_id": "2a5d9bbe-1174-4676-9c36-4bcc24020f1e",
+        "collector_number": "26",
+        "card_native_name": "Wartortle",
+        "variant_id": "7d7cc996-5388-47eb-820f-ec3acdf2bc6c",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "en",
+        "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+        "set_code": "mfb",
+        "printing_id": "9bb77118-3c6d-4219-a42d-b41fdb68ca05",
+        "collector_number": "5",
+        "card_native_name": "Exeggcute",
+        "variant_id": "cca1b099-30a3-48e8-969a-b35ba450379f",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "en",
+        "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+        "set_code": "mfb",
+        "printing_id": "41395dbd-f317-44f6-a49e-0fa095e03e7a",
+        "collector_number": "27",
+        "card_native_name": "Poliwag",
+        "variant_id": "d9beeafa-9972-4d97-9c31-d9100fa6a4e9",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+      }
+    ],
+    "staging": [
+      {
+        "game_code": "pokemon",
+        "language_code": "en",
+        "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+        "set_code": "mfb",
+        "printing_id": "8e7ca31f-4b3d-438b-958e-c48462617a2a",
+        "collector_number": "11",
+        "card_native_name": "Vulpix",
+        "variant_id": "0d77a10f-8d23-46a5-a0f8-fc93ba2b3492",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "en",
+        "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+        "set_code": "mfb",
+        "printing_id": "44beac31-c0da-423b-9ea4-4e1359eb2bed",
+        "collector_number": "29",
+        "card_native_name": "Magikarp",
+        "variant_id": "1593d7e0-58f7-49c2-a5b7-e47b200fd131",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "en",
+        "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+        "set_code": "mfb",
+        "printing_id": "593f2452-0513-4304-964d-017756266f91",
+        "collector_number": "23",
+        "card_native_name": "Electabuzz",
+        "variant_id": "6a0f530d-1148-446d-b1d6-f3d97a043f39",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "en",
+        "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+        "set_code": "mfb",
+        "printing_id": "9851560d-25ac-4a1c-815d-dd6793598d98",
+        "collector_number": "7",
+        "card_native_name": "Scyther",
+        "variant_id": "794e4d54-a754-4a89-b42f-30b1a9a6d41c",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "en",
+        "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+        "set_code": "mfb",
+        "printing_id": "7d7382ef-d5c9-40b8-9cb8-d37487dffaeb",
+        "collector_number": "31",
+        "card_native_name": "Lapras",
+        "variant_id": "7c8f4063-caf5-453d-ac80-bcb7df971093",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "en",
+        "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+        "set_code": "mfb",
+        "printing_id": "2a5d9bbe-1174-4676-9c36-4bcc24020f1e",
+        "collector_number": "26",
+        "card_native_name": "Wartortle",
+        "variant_id": "7d7cc996-5388-47eb-820f-ec3acdf2bc6c",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "en",
+        "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+        "set_code": "mfb",
+        "printing_id": "9bb77118-3c6d-4219-a42d-b41fdb68ca05",
+        "collector_number": "5",
+        "card_native_name": "Exeggcute",
+        "variant_id": "cca1b099-30a3-48e8-969a-b35ba450379f",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+      },
+      {
+        "game_code": "pokemon",
+        "language_code": "en",
+        "set_id": "460a0854-bfcb-48b9-8531-6f0565a8dd6c",
+        "set_code": "mfb",
+        "printing_id": "41395dbd-f317-44f6-a49e-0fa095e03e7a",
+        "collector_number": "27",
+        "card_native_name": "Poliwag",
+        "variant_id": "d9beeafa-9972-4d97-9c31-d9100fa6a4e9",
+        "variant_code": "normal",
+        "finish_code": "normal",
+        "same_artwork_as_variant_id": null,
+        "catalogue_version_id": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8"
+      }
+    ]
+  },
+  "scope_counts": {
+    "production": {
+      "printings": 8,
+      "variants": 8,
+      "names": 16,
+      "sets": 1
+    },
+    "staging": {
+      "printings": 8,
+      "variants": 8,
+      "names": 16,
+      "sets": 1
+    }
+  },
+  "source_policies": {
+    "production": [
+      {
+        "code": "bulbapedia",
+        "display_name": "Bulbapedia",
+        "source_type": "image",
+        "base_url": "https://bulbapedia.bulbagarden.net",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only for exactly fifteen inspected unnumbered English My First Battle fronts in STACKR-EN-MFB-20261014-015. Owner attests website permission; per-file TCG Collector/artist attribution and artwork-specific fair-use tags retained. No independently verified vendor or underlying copyright licence, physical edition/finish certification, or source-wide acquisition approval.",
+        "deprecated_at": null
+      },
+      {
+        "code": "scrydex",
+        "display_name": "Scrydex",
+        "source_type": "image",
+        "base_url": "https://scrydex.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Exactly 89 English MEP fronts approved by owner; catalogue/rights-evidence/mep89-scrydex-owner-confirmation.2026-09-27.json; 8c68bf3499de1e1e340b00fc03e5f1b469de7b65d259b5fba5a8b4cd31119ca9. No source-wide approval.",
+        "deprecated_at": null
+      }
+    ],
+    "staging": []
+  },
+  "new_sources": {
+    "production": [],
+    "staging": [
+      {
+        "code": "bulbapedia",
+        "display_name": "Bulbapedia",
+        "source_type": "image",
+        "base_url": "https://bulbapedia.bulbagarden.net",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only for exactly fifteen inspected unnumbered English My First Battle fronts in STACKR-EN-MFB-20261014-015. Owner attests website permission; per-file TCG Collector/artist attribution and artwork-specific fair-use tags retained. No independently verified vendor or underlying copyright licence, physical edition/finish certification, or source-wide acquisition approval.",
+        "deprecated_at": null
+      },
+      {
+        "code": "scrydex",
+        "display_name": "Scrydex",
+        "source_type": "image",
+        "base_url": "https://scrydex.com",
+        "licence_status": "under_review",
+        "attribution_required": true,
+        "active": false,
+        "internal_notes": "Provenance only; automated acquisition inactive. Exactly 89 English MEP fronts approved by owner; catalogue/rights-evidence/mep89-scrydex-owner-confirmation.2026-09-27.json; 8c68bf3499de1e1e340b00fc03e5f1b469de7b65d259b5fba5a8b4cd31119ca9. No source-wide approval.",
+        "deprecated_at": null
+      }
+    ]
+  }
+}

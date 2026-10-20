@@ -1,0 +1,583 @@
+import assert from 'node:assert/strict';
+import { Buffer } from 'node:buffer';
+import { readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
+import ts from 'typescript';
+import express from 'express';
+import { ApiError, createCatalogueV1Service } from '../backend/lib/stackrApiV1.js';
+import createV1Router from '../backend/routes/v1.js';
+import { matchesPokedexSpeciesName } from '../backend/lib/pokedexCards.js';
+const setId = '11111111-1111-4111-8111-111111111111';
+
+async function assertScreenMetadataRecovery() {
+  const screenSource = readFileSync('app/pokemon/[id].tsx', 'utf8');
+  const syntax = ts.createSourceFile('pokemon.tsx', screenSource, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let effect;
+  let failureBranch;
+  let retryAction;
+  const visit = (node) => {
+    if (ts.isCallExpression(node) && node.expression.getText(syntax) === 'useEffect'
+      && node.arguments[0]?.getText(syntax).includes('fetchCardsForPokemon')) effect = node.arguments[0].getText(syntax);
+    if (ts.isIfStatement(node) && node.expression.getText(syntax) === '!pokemon') failureBranch = node.getText(syntax);
+    if (ts.isVariableDeclaration(node) && node.name.getText(syntax) === 'retryCards') retryAction = node.initializer.arguments[0].getText(syntax);
+    ts.forEachChild(node, visit);
+  };
+  visit(syntax);
+  assert.ok(effect, 'exercise the actual Pokémon screen load effect');
+  assert.ok(failureBranch, 'exercise the actual no-metadata screen state');
+  assert.ok(retryAction, 'exercise the actual shared card Retry action');
+  const effectJs = ts.transpileModule(`globalThis.screenEffect = ${effect};`, {
+    compilerOptions: { target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+  const helperJs = ts.transpileModule(readFileSync('lib/optionalCatalogueEnrichment.ts', 'utf8'), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+  const performanceExports = {};
+  runInNewContext(ts.transpileModule(readFileSync('lib/performance.ts', 'utf8'), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  }).outputText, { exports: performanceExports, Date, Map, Set });
+  const retryJs = ts.transpileModule(`globalThis.retryCards = ${retryAction};`, {
+    compilerOptions: { target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+  const failureJs = ts.transpileModule(`globalThis.renderFailure = () => { ${failureBranch} };`, {
+    compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React },
+  }).outputText;
+  const flush = async () => { for (let index = 0; index < 30; index++) await Promise.resolve(); };
+  const fixture = (routeName, speciesName) => {
+    const timers = new Map();
+    const calls = [];
+    const updates = [];
+    let resolveFetch;
+    let rejectFetch;
+    let fetchSignal;
+    let retryEpoch = 0;
+    let cleanup;
+    const state = { cards: [] };
+    const context = {
+      id: '8', routeName, speciesName, AbortController,
+      routeKey: JSON.stringify(['8', routeName, speciesName]),
+      retrievalRef: { current: null }, publishedRef: { current: null }, committedRef: { current: null },
+      beginPokedexRetrieval: performanceExports.beginPokedexRetrieval,
+      startPokedexRetrieval: performanceExports.startPokedexRetrieval,
+      exports: {}, console: { log() {} },
+      setTimeout(callback, milliseconds) { const token = {}; timers.set(token, { callback, milliseconds }); return token; },
+      clearTimeout(token) { timers.delete(token); },
+      fetch(_url, options) {
+        fetchSignal = options?.signal;
+        return new Promise((resolve, reject) => { resolveFetch = resolve; rejectFetch = reject; });
+      },
+      fetchCardsForPokemon: async (name) => { calls.push(name); return { cards: [], complete: true }; },
+      setRetryEpoch(update) { retryEpoch = update(retryEpoch); cleanup(); cleanup = context.screenEffect(); },
+      React: { createElement: (type, props, ...children) => ({ type, props, children }) },
+      SafeAreaView: 'SafeAreaView', View: 'View', Text: 'Text', Pressable: 'Pressable',
+      styles: {}, theme: { colors: {} },
+    };
+    for (const name of ['Cards', 'CollectionComplete', 'CardsLoading', 'CardsError', 'Pokemon', 'Loading']) {
+      const key = name[0].toLowerCase() + name.slice(1);
+      context[`set${name}`] = (value) => {
+        state[key] = typeof value === 'function' ? value(state[key]) : value;
+        updates.push(key);
+      };
+    }
+    runInNewContext(helperJs, context);
+    context.readOptionalCatalogueEnrichment = context.exports.readOptionalCatalogueEnrichment;
+    runInNewContext(effectJs, context);
+    runInNewContext(retryJs, context);
+    runInNewContext(failureJs, context);
+    cleanup = context.screenEffect();
+    return {
+      calls, state, updates, cleanup: () => cleanup(), timers,
+      signal: () => fetchSignal,
+      retryEpoch: () => retryEpoch,
+      renderFailure: () => { context.pokemon = state.pokemon; context.cardsError = state.cardsError; return context.renderFailure(); },
+      respond: (data = { id: 8, name: 'wartortle', types: [] }) => resolveFetch({ ok: true, json: async () => data }),
+      respondWithPendingBody: () => resolveFetch({ ok: true, json: () => new Promise(() => {}) }),
+      fail: () => rejectFetch(new Error('offline fixture')),
+      expire: () => {
+        assert.equal(timers.size, 1);
+        for (const [token, timer] of timers) {
+          assert.equal(timer.milliseconds, 2_000, 'reuse the existing optional-enrichment deadline');
+          timers.delete(token); timer.callback();
+        }
+      },
+    };
+  };
+
+  const named = fixture('wartortle');
+  await flush();
+  assert.deepEqual(named.calls, ['wartortle'], 'known route facts do not wait for display metadata');
+  named.expire(); await flush();
+  assert.equal(named.signal().aborted, true);
+  assert.equal(named.state.cardsError, null, 'an optional metadata timeout cannot fail successful facts');
+  named.cleanup();
+
+  const selectedSpecies = fixture(undefined, 'wartortle');
+  await flush();
+  assert.deepEqual(selectedSpecies.calls, ['wartortle'], 'an explicit species name also starts facts immediately');
+  assert.equal(selectedSpecies.state.pokemon.name, 'wartortle');
+  selectedSpecies.cleanup(); await flush();
+  assert.equal(selectedSpecies.signal().aborted, true);
+  assert.equal(selectedSpecies.timers.size, 0, 'cleanup releases the metadata deadline');
+
+  const direct = fixture();
+  await flush();
+  assert.deepEqual(direct.calls, [], 'a direct numeric route does not invent a species');
+  direct.respond(); await flush();
+  assert.deepEqual(direct.calls, ['wartortle']);
+  assert.equal(direct.timers.size, 0, 'a successful metadata read releases its deadline');
+  direct.cleanup();
+
+  const timedOut = fixture();
+  await flush(); timedOut.expire(); await flush();
+  assert.equal(timedOut.signal().aborted, true, 'a hung transport receives abort');
+  assert.equal(timedOut.state.cardsLoading, false, 'a transport ignoring abort still settles the screen');
+  assert.match(timedOut.state.cardsError, /retry/i);
+  assert.deepEqual(timedOut.calls, [], 'timeout does not fabricate a card identity');
+  const failedUpdates = timedOut.updates.length;
+  timedOut.respond(); await flush();
+  assert.equal(timedOut.updates.length, failedUpdates, 'late metadata cannot replace the settled timeout');
+  const failedTree = timedOut.renderFailure();
+  const elements = [];
+  const collect = (node) => {
+    if (!node || typeof node !== 'object') return;
+    elements.push(node); node.children?.forEach(collect);
+  };
+  collect(failedTree);
+  assert.ok(elements.some((node) => node.type === 'Text' && node.children.includes(timedOut.state.cardsError)),
+    'the actual no-metadata state explains the retryable failure');
+  const retryButton = elements.find((node) => node.type === 'Pressable'
+    && node.props.accessibilityLabel === 'Retry loading Pokémon cards');
+  assert.ok(retryButton, 'a direct-route timeout renders an accessible Retry action');
+  retryButton.props.onPress(); await flush();
+  assert.equal(timedOut.retryEpoch(), 1, 'the rendered Retry advances the actual screen epoch');
+  assert.equal(timedOut.state.cardsError, null);
+  timedOut.respond(); await flush();
+  assert.deepEqual(timedOut.calls, ['wartortle'], 'the same failed screen recovers through its rendered Retry');
+  assert.equal(timedOut.timers.size, 0);
+  timedOut.cleanup();
+
+  const pendingBody = fixture();
+  await flush(); pendingBody.respondWithPendingBody(); await flush();
+  pendingBody.expire(); await flush();
+  assert.equal(pendingBody.state.cardsLoading, false, 'the deadline includes response-body parsing');
+  assert.match(pendingBody.state.cardsError, /retry/i);
+  pendingBody.cleanup();
+
+  const dismissed = fixture();
+  await flush(); dismissed.cleanup(); await flush();
+  const dismissedUpdates = dismissed.updates.length;
+  assert.equal(dismissed.signal().aborted, true);
+  assert.equal(dismissed.timers.size, 0);
+  dismissed.respond(); await flush();
+  assert.equal(dismissed.updates.length, dismissedUpdates, 'dismissal prevents late state updates');
+  assert.deepEqual(dismissed.calls, []);
+
+  const optionalFailure = fixture('wartortle');
+  await flush(); optionalFailure.fail(); await flush();
+  assert.equal(optionalFailure.state.cardsError, null);
+  assert.deepEqual(optionalFailure.calls, ['wartortle']);
+  assert.equal(optionalFailure.timers.size, 0);
+  optionalFailure.cleanup();
+
+}
+
+async function assertBatchAssetManifestPrintingFilter() {
+  const printingId = '99999999-9999-4999-8999-999999999991';
+  const otherPrintingId = '99999999-9999-4999-8999-999999999992';
+  const events = [];
+  const catalogue = createCatalogueV1Service({
+    supabase: createReadOnlyCatalogueSupabase({
+      asset_manifest: [
+        { asset_id: '99999999-9999-4999-8999-999999999901', asset_type: 'card_image', printing_id: printingId, permission_status: 'approved', storage_key: 'approved/a.webp' },
+        { asset_id: '99999999-9999-4999-8999-999999999902', asset_type: 'card_image', printing_id: otherPrintingId, permission_status: 'approved', storage_key: 'approved/b.webp' },
+      ],
+    }, events),
+    assetBaseUrl: 'https://assets.stackr.test',
+  });
+  const page = await catalogue.assetManifest({ printingIds: printingId, limit: 500 });
+  assert.deepEqual(page.assets.map((asset) => asset.cardId), [printingId], 'a batch request may return only its requested canonical printing identities');
+  assert.deepEqual(events.filter((event) => event.tableName === 'asset_manifest' && event.operation === 'in')
+    .map((event) => [event.column, event.values]), [['printing_id', [printingId]]], 'batch artwork must be one bounded printing_id select');
+  await assert.rejects(
+    () => catalogue.assetManifest({ printingIds: 'not-a-uuid' }),
+    (error) => error instanceof ApiError && error.code === 'invalid_printing_ids',
+  );
+  await assert.rejects(
+    () => catalogue.assetManifest({ printingIds: Array.from({ length: 101 }, () => printingId).join(',') }),
+    (error) => error instanceof ApiError && error.code === 'invalid_printing_ids',
+  );
+  await assert.rejects(
+    () => catalogue.assetManifest({ printingId, printingIds: otherPrintingId }),
+    (error) => error instanceof ApiError && error.code === 'ambiguous_printing_filter',
+  );
+}
+
+function createReadOnlyCatalogueSupabase(tables, queryEvents = []) {
+  class Query {
+    constructor(tableName, rows) {
+      this.tableName = tableName;
+      this.rows = rows;
+      this.filters = [];
+      this.limitValue = null;
+      this.single = false;
+    }
+
+    select(columns = '*') { queryEvents.push({ tableName: this.tableName, operation: 'select', columns }); return this; }
+    order(column, options = {}) { this.orderBy = { column, ascending: options.ascending !== false }; return this; }
+    eq(column, value) { this.filters.push((row) => row[column] === value); return this; }
+    gt(column, value) { this.filters.push((row) => row[column] > value); return this; }
+    ilike(column, value) {
+      queryEvents.push({ tableName: this.tableName, operation: 'ilike', column, value });
+      const pattern = String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/%/g, '.*').replace(/_/g, '.');
+      const matcher = new RegExp(`^${pattern}$`, 'i');
+      this.filters.push((row) => matcher.test(String(row[column] ?? '')));
+      return this;
+    }
+    in(column, values) {
+      queryEvents.push({ tableName: this.tableName, operation: 'in', column, values: [...values] });
+      this.filters.push((row) => values.includes(row[column]));
+      return this;
+    }
+    gte(column, value) { this.filters.push((row) => Number(row[column]) >= Number(value)); return this; }
+    limit(value) { this.limitValue = value; return this; }
+    maybeSingle() { this.single = true; return this; }
+    then(resolve, reject) {
+      const filtered = this.rows.filter((row) => this.filters.every((filter) => filter(row)));
+      if (this.orderBy) filtered.sort((left, right) => {
+        const order = String(left[this.orderBy.column] ?? '').localeCompare(String(right[this.orderBy.column] ?? ''));
+        return this.orderBy.ascending ? order : -order;
+      });
+      const data = this.single ? (filtered[0] ?? null) : (this.limitValue == null ? filtered : filtered.slice(0, this.limitValue));
+      return Promise.resolve({ data, error: null }).then(resolve, reject);
+    }
+  }
+  return {
+    schema(schema) {
+      assert.equal(schema, 'api');
+      return {
+        from(name) {
+          return new Query(name, tables[name] ?? []);
+        },
+      };
+    },
+  };
+}
+
+async function assertPokemonCardsPagination() {
+  const makeId = (index) => `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`;
+  const names = Array.from({ length: 251 }, (_, index) => ({
+    id: makeId(index + 1), printing_id: makeId(index + 501), language_code: 'en',
+    name_type: index === 0 ? 'native' : index === 1 ? 'translated' : 'english_display',
+    name: `Pikachu ${index + 1}`, normalized_name: `pikachu ${index + 1}`,
+  }));
+  names[1].language_code = 'ja';
+  const cards = names.map((name, index) => ({
+    printing_id: name.printing_id, variant_id: makeId(index + 1001),
+    canonical_key: `pokemon:en:${setId}:${index + 1}:normal`, game_code: 'pokemon', language_code: 'en',
+    set_id: setId, set_code: 'PK', set_native_name: 'Pikachu fixtures', collector_number: String(index + 1),
+    collector_number_sort_key: String(index + 1).padStart(5, '0'), card_native_name: name.name,
+    card_english_display_name: name.name, variant_code: 'normal',
+  }));
+  const catalogue = createCatalogueV1Service({
+    supabase: createReadOnlyCatalogueSupabase({ catalogue_card_names: names, catalogue_cards: cards }),
+  });
+  const seen = new Set(); let cursor = null; let pages = 0;
+  do {
+    const page = await catalogue.pokemonCards('Pikachu', { cursor, limit: 120 });
+    for (const card of page.cards) {
+      assert.ok(!seen.has(card.cardId), 'each canonical printing must appear on exactly one client page');
+      seen.add(card.cardId);
+    }
+    cursor = page.pagination.nextCursor;
+    pages += 1;
+  } while (cursor);
+  assert.equal(pages, 3);
+  assert.equal(seen.size, 251);
+  assert.ok(seen.has(names[0].printing_id), 'native English card names must remain discoverable');
+  assert.ok(seen.has(names[1].printing_id), 'published translated foreign names must remain discoverable');
+  assert.deepEqual((await catalogue.pokemonCards('Mew', { limit: 120 })).cards, [], 'token matching must not include Mewtwo');
+}
+
+async function assertPokemonCardTypesAndEmptyPageContinuation() {
+  const ids = Array.from({ length: 4 }, (_, index) => `50000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`);
+  const catalogue = createCatalogueV1Service({
+    supabase: createReadOnlyCatalogueSupabase({
+      catalogue_card_names: ids.map((id) => ({ id, printing_id: id, name: 'Pikachu', normalized_name: 'pikachu', name_type: 'english_display' })),
+      catalogue_cards: ids.map((id, index) => ({
+        printing_id: id, variant_id: id, game_code: 'pokemon', language_code: 'en', set_id: setId,
+        card_native_name: index === 0 ? 'Trainer fixture' : 'Pikachu', card_english_display_name: 'Pikachu',
+        supertype: ['Trainer', 'Energy', 'Pokémon', null][index], variant_code: 'normal',
+      })),
+    }),
+  });
+  const first = await catalogue.pokemonCards('Pikachu', { limit: 1 });
+  assert.deepEqual(first.cards.map((card) => card.cardId), [ids[2]], 'skip misleading Trainer/Energy aliases to reach the first useful species printing');
+  assert.ok(first.pagination.nextCursor, 'continuation follows the last consumed name rather than the rejected first alias');
+  const next = await catalogue.pokemonCards('Pikachu', { cursor: first.pagination.nextCursor, limit: 3 });
+  assert.deepEqual(next.cards.map((card) => card.cardId), [ids[3]], 'resume after the returned printing while retaining legacy unclassified species cards');
+  assert.equal(next.pagination.nextCursor, null);
+}
+
+async function assertPokemonEmptyScanRemainsBounded() {
+  const ids = Array.from({ length: 6 }, (_, index) => `60000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`);
+  const events = [];
+  const catalogue = createCatalogueV1Service({
+    supabase: createReadOnlyCatalogueSupabase({
+      catalogue_card_names: ids.map((id) => ({ id, printing_id: id, name: 'Pikachu', normalized_name: 'pikachu', name_type: 'english_display' })),
+      catalogue_cards: ids.map((id, index) => ({
+        printing_id: id, variant_id: id, game_code: 'pokemon', language_code: 'en', set_id: setId,
+        card_native_name: index === 5 ? 'Pikachu' : 'Trainer fixture', card_english_display_name: 'Pikachu',
+        supertype: index === 5 ? 'Pokémon' : 'Trainer', variant_code: 'normal',
+      })),
+    }, events),
+  });
+  const first = await catalogue.pokemonCards('Pikachu', { limit: 1 });
+  assert.deepEqual(first.cards, [], 'rejected aliases remain excluded when the bounded source scan is exhausted');
+  assert.ok(first.pagination.nextCursor, 'bounded empty results must remain explicitly incomplete');
+  assert.equal(events.filter((event) => event.tableName === 'catalogue_card_names' && event.operation === 'select').length, 4,
+    'one request must not sweep every matching alias when useful printings are farther away');
+  const next = await catalogue.pokemonCards('Pikachu', { cursor: first.pagination.nextCursor, limit: 1 });
+  assert.deepEqual(next.cards.map((card) => card.cardId), [ids[5]], 'the continuation must still reach the unexamined valid printing');
+  assert.equal(next.pagination.nextCursor, null);
+}
+
+async function assertPokemonEmptyLanguageSliceContinues() {
+  const ids = ['70000000-0000-4000-8000-000000000001', '70000000-0000-4000-8000-000000000002'];
+  const catalogue = createCatalogueV1Service({
+    supabase: createReadOnlyCatalogueSupabase({
+      catalogue_card_names: ids.map((id, index) => ({ id, printing_id: id, name: 'Pikachu', normalized_name: 'pikachu', name_type: index ? 'translated' : 'native' })),
+      catalogue_cards: ids.map((id, index) => ({
+        printing_id: id, variant_id: id, game_code: 'pokemon', language_code: index ? 'ja' : 'en', set_id: setId,
+        card_native_name: index ? 'ピカチュウ' : 'Pikachu', card_english_display_name: 'Pikachu', supertype: 'Pokémon', variant_code: 'normal',
+      })),
+    }),
+  });
+  const page = await catalogue.pokemonCards('Pikachu', { language: 'ja', limit: 1 });
+  assert.deepEqual(page.cards.map((card) => card.cardId), [ids[1]], 'an earlier English source name must not hide the approved Japanese printing');
+  assert.equal(page.pagination.nextCursor, null);
+}
+
+async function assertPokemonGenderSymbolLookup() {
+  const printingId = '44444444-4444-4444-8444-444444444444';
+  const events = [];
+  const catalogue = createCatalogueV1Service({
+    supabase: createReadOnlyCatalogueSupabase({
+      catalogue_card_names: [{
+        id: 'nidoran-symbol', printing_id: printingId, name: 'Nidoran♀',
+        // Older source normalization omitted the glyph. The broad candidate
+        // retrieval must still reach this row before form matching restores it.
+        normalized_name: 'nidoran', name_type: 'native', language: 'en',
+      }],
+      catalogue_cards: [{
+        printing_id: printingId, card_concept_id: printingId, set_id: setId,
+        game_code: 'pokemon', language: 'en', set_code: 'PK', set_native_name: 'Gender fixtures',
+        collector_number: '1', collector_number_sort_key: '000001', card_native_name: 'Nidoran♀',
+        card_english_display_name: 'Nidoran♀', variant_code: 'normal',
+      }],
+    }, events),
+  });
+  const cards = await catalogue.pokemonCards('Nidoran-f', { limit: 20 });
+  assert.equal(cards.cards.length, 1);
+  assert.equal(cards.cards[0].cardId, printingId);
+  assert.ok(events.some((event) => event.tableName === 'catalogue_card_names'
+    && event.operation === 'ilike' && event.value === '%nidoran%'),
+  'gender routes must include the ungendered normalized candidate in the source lookup');
+}
+
+async function assertPokemonReviewedRouteAliases() {
+  const fixtures = [
+    ['Nidoran♀', 'nidoran', 'en', 'Nidoran♀'],
+    ['Nidoran♂', 'nidoran', 'en', 'Nidoran♂'],
+    ['Alolan Raichu ex', 'alolan raichu ex', 'en', 'Alolan Raichu ex'],
+    ['Alolan Raichu', 'alolan raichu', 'ja', 'アローラライチュウ'],
+    ['Alolan Raichu', 'alolan raichu', 'zh-tw', '阿羅拉雷丘'],
+    ['Raichu', 'raichu', 'en', 'Raichu'],
+    ['Deoxys', 'deoxys', 'en', 'Deoxys'],
+    ['Deoxys V', 'deoxys v', 'en', 'Deoxys V'],
+    ['Deoxys Attack Forme', 'deoxys attack forme', 'en', 'Deoxys Attack Forme'],
+    ['Deoxys Cosmic Forme', 'deoxys cosmic forme', 'en', 'Deoxys Cosmic Forme'],
+    ['Mew', 'mew', 'en', 'Mew'],
+    ['Mewtwo', 'mewtwo', 'en', 'Mewtwo'],
+    ['Cosmic Deoxys', 'cosmic deoxys', 'en', 'Cosmic Deoxys'],
+    ['Future Deoxys', 'future deoxys', 'en', 'Future Deoxys'],
+    ['Origin Deoxys V', 'origin deoxys v', 'en', 'Origin Deoxys V'],
+  ].map(([name, normalized_name, language, nativeName], index) => ({
+    id: `81000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
+    name, normalized_name, language, nativeName,
+  }));
+  const events = [];
+  const catalogue = createCatalogueV1Service({
+    supabase: createReadOnlyCatalogueSupabase({
+      catalogue_card_names: fixtures.map(({ id, name, normalized_name, language }) => ({
+        id, printing_id: id, name, normalized_name, language_code: language,
+        name_type: language === 'en' ? 'native' : 'translated',
+      })),
+      catalogue_cards: fixtures.flatMap(({ id, name, language, nativeName }, index) => (
+        (index === 3 ? ['normal', 'reverse_holofoil'] : ['normal']).map((finish, variantIndex) => ({
+          printing_id: id, variant_id: `82000000-0000-4000-8000-${String(index * 2 + variantIndex + 1).padStart(12, '0')}`,
+          game_code: 'pokemon', language_code: language, set_id: setId,
+          collector_number: String(index + 1), card_native_name: nativeName,
+          card_english_display_name: name, supertype: 'Pokémon', variant_code: finish, finish_code: finish,
+        }))
+      )),
+    }, events),
+  });
+  const cases = [
+    ['nidoran-f', [0]], ['nidoran-m', [1]], ['raichu-alola', [2, 3, 4]],
+    ['deoxys-normal', [6, 7]], ['deoxys-attack', [8]],
+    ['raichu-future', []], ['deoxys-future', []], ['mew', [10]],
+  ];
+  for (const [route, expectedIndexes] of cases) {
+    const page = await catalogue.pokemonCards(route, { limit: 20 });
+    assert.deepEqual(page.cards.map((card) => card.cardId).sort(), expectedIndexes.map((index) => fixtures[index].id).sort(),
+      `${route} must retrieve reviewed title aliases while preserving form and whole-token boundaries`);
+  }
+  const japanese = await catalogue.pokemonCards('raichu-alola', { language: 'ja', limit: 1 });
+  assert.equal(japanese.cards.length, 1, 'rejected base/other-language source slices must still reach the reviewed Japanese title');
+  assert.equal(japanese.cards[0].cardId, fixtures[3].id);
+  assert.equal(japanese.cards[0].names.native, 'アローラライチュウ', 'native titles must remain intact');
+  assert.equal(japanese.cards[0].names.englishDisplay, 'Alolan Raichu');
+  assert.equal(japanese.cards[0].languageCode, 'ja');
+  assert.equal(japanese.cards[0].set.setId, setId);
+  assert.equal(japanese.cards[0].collectorNumber.value, '4');
+  assert.deepEqual(japanese.cards[0].variants.map((variant) => variant.finishCode).sort(), ['normal', 'reverse_holofoil']);
+  assert.ok(events.some((event) => event.operation === 'ilike' && event.value === '%raichu%'),
+    'source queries must reach reordered regional aliases before strict form filtering');
+  assert.ok(events.some((event) => event.operation === 'ilike' && event.value === '%deoxys%'),
+    'source queries must reach the bare default species title');
+  assert.equal(matchesPokedexSpeciesName('raichu-alola', 'Raichu'), false);
+  assert.equal(matchesPokedexSpeciesName('deoxys-normal', 'Speed Forme Deoxys'), false);
+  assert.equal(matchesPokedexSpeciesName('deoxys-normal', 'Deoxys Future'), false);
+}
+
+async function assertPokemonCardsRetainHighVariantPrintings() {
+  const makeId = (index) => `30000000-0000-4000-8000-${String(index).padStart(12, '0')}`;
+  const crowdedPrintingId = '33333333-3333-4333-8333-333333333333';
+  const otherPrintingId = '33333333-3333-4333-8333-333333333334';
+  const names = [
+    { id: makeId(1), printing_id: crowdedPrintingId, name: 'Pikachu', normalized_name: 'pikachu', name_type: 'english_display' },
+    { id: makeId(2), printing_id: otherPrintingId, name: 'Pikachu', normalized_name: 'pikachu', name_type: 'english_display' },
+  ];
+  const crowdedVariants = Array.from({ length: 1001 }, (_, index) => ({
+    printing_id: crowdedPrintingId, variant_id: makeId(index + 100), canonical_key: `pokemon:en:${setId}:crowded:${index}`,
+    game_code: 'pokemon', language_code: 'en', set_id: setId, set_code: 'PK', set_native_name: 'Variant fixtures',
+    collector_number: '1', collector_number_sort_key: '000001', card_native_name: 'Pikachu', card_english_display_name: 'Pikachu', variant_code: `variant-${index}`,
+  }));
+  const otherVariant = {
+    printing_id: otherPrintingId, variant_id: makeId(2000), canonical_key: `pokemon:en:${setId}:other`,
+    game_code: 'pokemon', language_code: 'en', set_id: setId, set_code: 'PK', set_native_name: 'Variant fixtures',
+    collector_number: '2', collector_number_sort_key: '000002', card_native_name: 'Pikachu', card_english_display_name: 'Pikachu', variant_code: 'normal',
+  };
+  const catalogue = createCatalogueV1Service({
+    supabase: createReadOnlyCatalogueSupabase({ catalogue_card_names: names, catalogue_cards: [...crowdedVariants, otherVariant] }),
+  });
+  const page = await catalogue.pokemonCards('Pikachu', { limit: 20 });
+  const crowded = page.cards.find((card) => card.cardId === crowdedPrintingId);
+  assert.equal(page.cards.length, 2, 'all matched printings survive a high-variant neighbour');
+  assert.equal(crowded?.variants.length, 1001, 'all variants for a matched printing are read before name-source pagination advances');
+}
+
+async function withV1Server(service, run) {
+  const app = express();
+  app.use('/v1', createV1Router({ service }));
+  const server = await new Promise((resolve) => {
+    const listener = app.listen(0, '127.0.0.1', () => resolve(listener));
+  });
+  try {
+    const address = server.address();
+    await run(`http://127.0.0.1:${address.port}`);
+  } finally {
+    await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+  }
+}
+
+async function assertPokemonRouteEnvelope() {
+  const calls = [];
+  const service = {
+    pokemonCards(name, query) {
+      calls.push({ name, query });
+      return Promise.resolve({ cards: [], pagination: { limit: 120, nextCursor: null } });
+    },
+  };
+  await withV1Server(service, async (origin) => {
+    const response = await fetch(`${origin}/v1/pokemon/Pikachu/cards?limit=120`);
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    assert.deepEqual(body.data.cards, []);
+    assert.equal(body.meta.pagination.limit, 120);
+  });
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].name, 'Pikachu');
+  assert.equal(calls[0].query.limit, '120', 'the Express v1 route must forward the query unchanged to the canonical service');
+}
+
+async function assertAssetManifestIdentityRpc() {
+  const printingId = '99999999-9999-4999-8999-999999999991';
+  const versionId = '88888888-8888-4888-8888-888888888881';
+  const assetA = '77777777-7777-4777-8777-777777777771';
+  const assetB = '77777777-7777-4777-8777-777777777772';
+  const calls = [];
+  const rpcRows = [assetA, assetB].map((asset_row_id) => ({
+    asset_id: asset_row_id, asset_row_id, catalogue_version_id: versionId,
+    asset_type: 'card_image', printing_id: printingId, permission_status: 'approved',
+    storage_key: `cards/${asset_row_id}.webp`,
+  }));
+  const assetSupabase = {
+    schema(schema) {
+      assert.equal(schema, 'api');
+      return {
+        rpc(name, args) {
+          assert.equal(name, 'card_image_manifest_for_identities');
+          calls.push(args);
+          return Promise.resolve({ data: args.p_after_asset_id ? [rpcRows[1]] : rpcRows, error: null });
+        },
+      };
+    },
+  };
+  const catalogue = createCatalogueV1Service({ supabase: assetSupabase, assetSupabase, assetIdentityRpc: true });
+  const first = await catalogue.assetManifest({ assetType: 'card_image', printingIds: printingId, limit: 1 });
+  assert.deepEqual(first.assets.map((asset) => asset.cardId), [printingId]);
+  assert.deepEqual(calls[0].p_variant_ids, []);
+  assert.deepEqual(calls[0].p_printing_ids, [printingId]);
+  const cursor = JSON.parse(Buffer.from(first.pagination.nextCursor, 'base64url').toString('utf8'));
+  const second = await catalogue.assetManifest({ assetType: 'card_image', printingIds: printingId, limit: 1, cursor: first.pagination.nextCursor });
+  assert.equal(second.assets[0].assetId, assetB);
+  assert.equal(calls[1].p_after_version_id, cursor.catalogueVersionId);
+  assert.equal(calls[1].p_after_asset_id, cursor.assetRowId);
+  await assert.rejects(
+    () => catalogue.assetManifest({ assetType: 'card_image', printingIds: printingId, cursor: Buffer.from('{}').toString('base64url') }),
+    (error) => error instanceof ApiError && error.code === 'invalid_cursor',
+  );
+}
+
+
+await assertBatchAssetManifestPrintingFilter();
+await assertScreenMetadataRecovery();
+await assertPokemonCardsPagination();
+await assertPokemonCardTypesAndEmptyPageContinuation();
+await assertPokemonEmptyScanRemainsBounded();
+await assertPokemonEmptyLanguageSliceContinues();
+await assertPokemonGenderSymbolLookup();
+await assertPokemonReviewedRouteAliases();
+await assertPokemonCardsRetainHighVariantPrintings();
+await assertPokemonRouteEnvelope();
+await assertAssetManifestIdentityRpc();
+console.log("Pokédex pagination, complete variants, strict species, and asset batch tests passed.");
+
+const invalidIdEvents = [];
+const invalidIdService = createCatalogueV1Service({ supabase: createReadOnlyCatalogueSupabase({}, invalidIdEvents) });
+await assert.rejects(() => invalidIdService.assetManifest({ printingId: "not-a-uuid" }), (error) => error instanceof ApiError && error.code === "invalid_printing_id");
+assert.equal(invalidIdEvents.length, 0, "invalid single identities must fail before any catalogue read");
+
+const publishedReaderEvents = [];
+const publishedReaderId = '44444444-4444-4444-8444-444444444444';
+const publishedReader = createReadOnlyCatalogueSupabase({
+  catalogue_card_names: [{ id: publishedReaderId, printing_id: publishedReaderId, name: 'Pikachu', normalized_name: 'pikachu', name_type: 'native' }],
+  catalogue_cards: [{ printing_id: publishedReaderId, variant_id: publishedReaderId, game_code: 'pokemon', language_code: 'en', set_id: setId, card_native_name: 'Pikachu', variant_code: 'normal' }],
+}, publishedReaderEvents);
+const dedicatedReaderService = createCatalogueV1Service({
+  supabase: { schema() { throw new Error('species search must use its existing published-search reader'); } },
+  searchSupabase: publishedReader,
+});
+assert.equal((await dedicatedReaderService.pokemonCards('Pikachu', { limit: 120 })).cards[0].cardId, publishedReaderId);
+assert.deepEqual([...new Set(publishedReaderEvents.map(e => e.tableName))].sort(), ['catalogue_card_names', 'catalogue_cards'], 'the search reader must access only explicitly published API views');

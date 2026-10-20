@@ -26,6 +26,12 @@ const DEFAULT_DETAIL_CONCURRENCY = 8;
 const DEFAULT_REQUEST_TIMEOUT_MS = 30_000;
 const MAX_REQUEST_ATTEMPTS = 3;
 
+// Reviewed 2026-09-30 and rechecked against production 2026-10-10:
+// these zh-cn provider cohorts duplicate exact Traditional Chinese identities.
+// A provider language endpoint is not evidence of the physical printing language.
+// Reject imports rather than relabeling them or borrowing zh-tw images/prices.
+const CHINESE_LANGUAGE_CONFLICT_SETS = new Set(['sv7a', 'sv8', 'sv8a', 'sv9', 'sv10']);
+
 type TcgdexAdapterOptions = {
   language?: string;
   baseUrl?: string;
@@ -555,6 +561,25 @@ export class TcgdexSourceAdapter implements SourceAdapter {
     const set = payload?.set && typeof payload.set === 'object'
       ? payload.set as Record<string, unknown> : {};
     const sourceSetId = cleanText(record.recordType === 'set' ? payload?.id : set.id ?? payload?.setId);
+    const language = stackrLanguage(record.languageCode ?? this.language);
+    const candidateSetIds = [
+      sourceSetId,
+      cleanText(set.code),
+      cleanText(payload?.setId),
+      record.recordType === 'set' ? cleanText(payload?.code) : null,
+      // Card, variant and asset identifiers can retain the set prefix even
+      // when their provider payload omits the nested set object.
+      cleanText(record.providerRecordId)?.split(/[-:]/, 1)[0],
+    ];
+    if (language === 'zh-cn' && candidateSetIds.some(id => id && CHINESE_LANGUAGE_CONFLICT_SETS.has(id.toLowerCase()))) {
+      result.issues.push({
+        code: 'tcgdex_chinese_printing_language_conflict',
+        severity: 'error',
+        message: 'This reviewed TCGdex zh-cn cohort duplicates Traditional Chinese printings. Retain the source for review; do not import identities, artwork or prices until an authoritative Simplified Chinese source is verified.',
+        path: 'languageCode',
+      });
+      result.ok = false;
+    }
     if (sourceSetId === '30th-c' || /^30th-c(?:-|$)/i.test(record.providerRecordId)) {
       result.issues.push({
         code: 'classic_collection_printed_identity_required',

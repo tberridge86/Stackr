@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "stackr-owner-directed-magazine-cover-review-v1",
+  "decisionId": "corocoro-monthly-2023-11-regular:2026-10-18",
+  "recordedOn": "2026-10-18",
+  "status": "authorized_on_direct_owner_permission_attestation",
+  "ownerAnswer": "Yes, my permission covers this regular November 2023 cover",
+  "recordBasis": "Direct owner reply to the exact regular November2023 issue-cover question, within the continuing repair instruction. This records represented permission; it does not assert independent verification of a third-party licence.",
+  "activationAuthorized": true,
+  "sourceRightsIndependentlyVerified": false,
+  "canonicalDatabaseWriteAuthorized": false,
+  "productionPublishingAuthorizedByThisRecord": false,
+  "scope": {
+    "issueId": "monthly:2023-11",
+    "coverKey": "corocoro-comic-2023-11",
+    "publication": "Monthly CoroCoro Comic",
+    "language": "ja",
+    "edition": "regular",
+    "assetPath": "assets/magazine-covers/2023-11-corocoro-regular.jpg",
+    "bytes": 287571,
+    "sha256": "f4c2b52e01077cb532acfd6118243767d4f7194b8f80204e19eb5b6441dc77ca",
+    "width": 450,
+    "height": 652,
+    "mimeType": "image/jpeg",
+    "sourcePage": "https://corocoro-news.jp/news/374548/",
+    "sourceUrl": "https://corocoro-news.jp/wp-content/uploads/2023/10/7738e61ea010e763c3f547f9050ae837.jpg",
+    "corroboratingPublisherPages": [
+      "https://corocoro-news.jp/news/374137/",
+      "https://corocoro-news.jp/news/374206/"
+    ],
+    "attribution": "Shogakukan / CoroCoro Online",
+    "permittedPurpose": "Existing exact-issue cover and corresponding set/binder/search/catalogue identification. No card-face replacement, invented collectible, seller photo or ownership binding.",
+    "storageAndDisplay": "Bundle the exact unchanged released publisher original for the existing in-app issue; retain private immutable source and review evidence. No image-content edits, generated reconstruction or unapproved source-wide mirror.",
+    "excluded": ["combined MiraCoro edition", "early masked teaser rendition", "card-face replacement", "new promo/finish/ownership associations", "standalone artwork export", "model training"],
+    "quality": "Unscaled 450x652 publisher original; no claim of a high-definition master."
+  },
+  "runtimeControls": {
+    "exactPublicationMonthLanguageRequired": true,
+    "globalDisable": ["EXPO_PUBLIC_DISABLE_MAGAZINE_SET_COVERS", "STACKR_DISABLE_MAGAZINE_SET_COVERS"],
+    "perIssueDenylistKey": "corocoro-comic-2023-11",
+    "fallbackOnDisableOrWithdrawal": "Existing explicitly named missing-cover placeholder",
+    "noPersistenceOfBundledRuntimeUri": true
+  },
+  "rollback": {
+    "previousState": "Existing monthly:2023-11 issue record with an explicit missing-cover placeholder; no previous cover asset is overwritten.",
+    "previousSourceRevision": "d59c3a6",
+    "previousImmutablePreviewRetainedPrivately": true,
+    "method": "Use existing per-issue denylist or revert this additive source binding in the next reviewed app delivery; preserve original issue/card references and evidence."
+  },
+  "delivery": { "sourceVerified": true, "appSourceBound": true, "signedNativeVerified": false, "phoneRendered": false }
+}

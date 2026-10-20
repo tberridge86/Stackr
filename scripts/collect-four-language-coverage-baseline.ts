@@ -71,7 +71,7 @@ export function collectFourLanguageCoverageBaseline(input: { providerRoot: strin
 }
 
 function main() {
-  const values = args(); const providerRoot = resolve(values.get('provider-root') ?? 'D:/Stackr-1/reports/catalogue/provider-baseline/2026-08-14'); const evidenceRoot = resolve(values.get('evidence-root') ?? 'D:/Stackr-1/.tmp/canonical-evidence/current-gap-audit-20260903-v3'); const output = resolve(values.get('output') ?? 'D:/Stackr-1/.tmp/four-language-coverage/20260905-baseline/report.json');
+  const values = args(); const providerRoot = resolve(values.get('provider-root') ?? 'D:/Stackr-1/reports/catalogue/provider-baseline/2026-08-14'); const evidenceRoot = resolve(values.get('evidence-root') ?? 'D:/Stackr-1/.tmp/canonical-evidence/current-gap-audit-20260903-v3'); const output = resolve(values.get('output') ?? 'D:/Stackr-organization/active-runtime/four-language-coverage/20260905-baseline/report.json');
   if (existsSync(output)) throw new Error('Refusing to overwrite baseline report.'); const report = collectFourLanguageCoverageBaseline({ providerRoot, evidenceRoot }); mkdirSync(resolve(output, '..'), { recursive: true }); writeFileSync(output, stableJson(report), { flag: 'wx' }); process.stdout.write(`${JSON.stringify({ ok: true, output, providerSets: report.baseline.providerSetResolution.length, unresolvedOrAmbiguous: report.baseline.providerSetResolution.filter((row) => row.status !== 'matched_exact').length })}\n`);
 }
 if (require.main === module) { try { main(); } catch (error) { process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`); process.exitCode = 1; } }

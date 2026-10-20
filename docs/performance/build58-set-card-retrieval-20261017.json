@@ -1,0 +1,407 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-17T09:55:31.823Z",
+  "source": "ec37dd85035f4a5d58158915a2c2c29e188f76d7",
+  "branch": "codex/build58-set-card-retrieval-20261017",
+  "ownerReport": {
+    "installedBuildConfirmed": true,
+    "reportedAfterBuild58Availability": true,
+    "symptoms": [
+      "Storm Emeralda binder logo absent",
+      "30th normal and Classic sets unavailable",
+      "Celebi search loader bounced then Search unavailable",
+      "No set or card accessible through Discover, Search or binders",
+      "Card haptics could not be tested"
+    ],
+    "installedBuild": "1.0.6 (58)",
+    "latestFeedback": {
+      "receivedDate": "2026-10-17",
+      "source": "Direct owner report in this repair chat",
+      "startup": "App opens beautifully quick",
+      "binders": "Binder unavailable",
+      "search": "Mew returns sets but not cards",
+      "home": "Home stops loading after using binder/search",
+      "interpretation": "Confirms continued retrieval failure; does not prove a particular phone-side causal sequence."
+    }
+  },
+  "activeDelivery": {
+    "app": "1.0.6 (58)",
+    "source": "ec37dd85035f4a5d58158915a2c2c29e188f76d7",
+    "internalTestFlightAvailable": true,
+    "pullRequest": "https://github.com/tberridge86/Stackr/pull/404",
+    "installedDeviceAccepted": false
+  },
+  "publicApiEvidence": {
+    "environment": "production",
+    "probeEnvironment": "desktop, not the owner phone",
+    "backendSource": "0188361a1b1e278ea180f9eec5ec487af52ca8cd",
+    "deploymentId": "0ec29984-7ac0-4cc6-93d9-4c26beb871d9",
+    "observedWindowUtc": "2026-10-17 08:36–08:39",
+    "healthStatus": 200,
+    "readinessStatus": 200,
+    "celebiSearch": {
+      "status": 504,
+      "elapsedMs": 9013,
+      "code": "downstream_timeout",
+      "requestId": "55a938f0-2691-4a54-9f54-74952b96096d"
+    },
+    "setLookup": {
+      "status": 504,
+      "elapsedMs": 9016,
+      "requestId": "6b0b9b81-30b7-45c2-8c2c-5e3d11218bbf"
+    },
+    "exactSetFacts": [
+      {
+        "label": "storm",
+        "path": "/v1/sets/903d5baa-27c7-5690-b1d7-2395c770204a/cards?language=ja&includeAssets=false&limit=500",
+        "language": "ja",
+        "sourceExpectedPrintings": 113,
+        "startedAt": "2026-10-17T08:38:43.302Z",
+        "elapsedMs": 8408,
+        "status": 504,
+        "requestId": "8bd66418-744a-4c3c-9a35-821e755fa0b7",
+        "returnedCount": null
+      },
+      {
+        "label": "en30th",
+        "path": "/v1/sets/258cb8e5-c769-540d-9e3c-40d4ed4dafdb/cards?language=en&includeAssets=false&limit=500",
+        "language": "en",
+        "sourceExpectedPrintings": 161,
+        "startedAt": "2026-10-17T08:38:43.355Z",
+        "elapsedMs": 8343,
+        "status": 504,
+        "requestId": "874e95ed-3297-4de5-9780-375850210d09",
+        "returnedCount": null
+      },
+      {
+        "label": "ja30th",
+        "path": "/v1/sets/88e351b5-8191-5ef4-854b-2978046cda53/cards?language=ja&includeAssets=false&limit=500",
+        "language": "ja",
+        "sourceExpectedPrintings": 176,
+        "startedAt": "2026-10-17T08:38:51.712Z",
+        "elapsedMs": 8270,
+        "status": 504,
+        "requestId": "95c81b11-66af-4be8-a2eb-cce6d32c9772",
+        "returnedCount": null
+      },
+      {
+        "label": "classic",
+        "path": "/v1/sets/07422e07-e2a2-5966-b0e1-008afc08d97c/cards?language=en&includeAssets=false&limit=500",
+        "language": "en",
+        "sourceExpectedPrintings": 30,
+        "startedAt": "2026-10-17T08:38:51.713Z",
+        "elapsedMs": 8435,
+        "status": 504,
+        "requestId": "36439ff8-4eec-4fed-8ddd-9ce9f90afb8c",
+        "returnedCount": null
+      }
+    ],
+    "probesRepeated": false,
+    "interpretation": "Initial four exact set reads failed. The later Storm facts-only read returned exactly113 Japanese printings in1048ms; Celebi still504. Anniversary and Classic current publication/card counts remain unverified.",
+    "followup": {
+      "recordedAt": "2026-10-17T09:32:52.354Z",
+      "scope": "One publicverificationpairafterapprovedfastDBplans",
+      "sourceInspected": "6ed69415e9722142db060ab610fa74ea2ef57770",
+      "lastVerifiedBackend": "0188361a1b1e",
+      "backendVersionRechecked": false,
+      "installedBuildOwnerConfirmed": "1.0.6(58)",
+      "requests": 2,
+      "mutation": false,
+      "results": [
+        {
+          "label": "celebi",
+          "path": "/v1/search?q=Celebi&language=en&limit=40",
+          "startedAt": "2026-10-17T09:32:43.692Z",
+          "elapsedMs": 8660,
+          "status": 504,
+          "requestId": "78422b19-5259-473f-a0a4-ef3ffbbc90af",
+          "apiVersion": "1",
+          "generatedAt": "2026-10-17T09:32:51.653Z",
+          "error": {
+            "code": "downstream_timeout",
+            "message": "Stackr API request failed.",
+            "requestId": "78422b19-5259-473f-a0a4-ef3ffbbc90af"
+          },
+          "cardCount": null,
+          "nextCursor": null,
+          "catalogueVersionIds": [],
+          "allStormIdentities": null,
+          "sampleIdentities": []
+        },
+        {
+          "label": "storm",
+          "path": "/v1/sets/903d5baa-27c7-5690-b1d7-2395c770204a/cards?language=ja&includeAssets=false&limit=500",
+          "expectedCount": 113,
+          "startedAt": "2026-10-17T09:32:43.743Z",
+          "elapsedMs": 1048,
+          "status": 200,
+          "requestId": "5538dc66-6578-489d-845c-83b0d373036f",
+          "apiVersion": "1",
+          "generatedAt": "2026-10-17T09:32:44.024Z",
+          "error": null,
+          "cardCount": 113,
+          "nextCursor": null,
+          "catalogueVersionIds": [
+            "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+          ],
+          "allStormIdentities": true,
+          "sampleIdentities": [
+            {
+              "cardId": "2a295d0a-cec3-56d4-a1ce-91f51c389801",
+              "languageCode": "ja",
+              "nativeName": "ヘラクロス",
+              "englishDisplayName": "Heracross",
+              "setId": "903d5baa-27c7-5690-b1d7-2395c770204a",
+              "collectorNumber": "001"
+            },
+            {
+              "cardId": "4abd1072-726e-5044-bd3a-b50be909b53c",
+              "languageCode": "ja",
+              "nativeName": "アメタマ",
+              "englishDisplayName": "Surskit",
+              "setId": "903d5baa-27c7-5690-b1d7-2395c770204a",
+              "collectorNumber": "002"
+            },
+            {
+              "cardId": "1cc9b8be-9e4c-5b65-93f4-75ca19aed713",
+              "languageCode": "ja",
+              "nativeName": "アメモース",
+              "englishDisplayName": "Masquerain",
+              "setId": "903d5baa-27c7-5690-b1d7-2395c770204a",
+              "collectorNumber": "003"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "dependencyEvidence": {
+    "source": "Read-only Railway and Supabase logs, not a Postgres diagnostic script",
+    "confirmed": [
+      "PostgreSQL SQLSTATE 57014 statement timeouts for exact api.catalogue_sets lookup",
+      "Service-role set-card reads and public set lookup both time out",
+      "Observability RPC also timed out",
+      "At09:32:52 two image-manifest RPC57014 timeout log entries followed the Celebi/Storm verification pair; Storm requested no assets and succeeded. This supports optional-artwork involvement but lacks request-ID correlation or proof the log entries represent distinct requests."
+    ],
+    "unknown": [
+      "Underlying cause of wider intermittent database/connection distress",
+      "Activity/settings/view/policy results discarded by the diagnostic tool",
+      "Measured query execution times: EXPLAIN did not use ANALYZE",
+      "Owner phone private Home/binder query failure details"
+    ],
+    "diagnosis": "Database-dependent retrieval failure reproduced; underlying database cause remains unresolved.",
+    "latestLogObservation": {
+      "windowUtc": "2026-10-17T09:37:00Z–09:47:00Z",
+      "mode": "One bounded read-only ClickHouse logs aggregate after new owner feedback; no Postgres script or personal records",
+      "postgresStatementTimeoutMessages": 1,
+      "postgrestStatementTimeoutMessages": 1,
+      "postgrestTimeoutManagerMessages": 2,
+      "exactRequestAttributionAvailable": false,
+      "managementStatus": "ACTIVE_HEALTHY",
+      "interpretation": "Management liveness does not prove successful app data retrieval; wider timeout evidence remains."
+    }
+  },
+  "localSearchRepair": {
+    "files": [
+      "app/(tabs)/search.tsx",
+      "scripts/test-search-settlement-runtime.ts"
+    ],
+    "implemented": true,
+    "independentlyReviewed": true,
+    "typecheck": "PASS",
+    "lint": "PASS; 0 errors, 8 pre-existing warnings",
+    "narrowChecks": "Actual coordinator, progressive search, settlement reliability and diff checks passed",
+    "regressions": [
+      "Late canonical/cache callbacks cannot repaint a settled request",
+      "Queued callbacks recheck the active request",
+      "Queued card/product hydration cannot restore results after replacement or account invalidation",
+      "Same-request ownership and listing hydration still work after settlement"
+    ],
+    "adjacentExistingRisk": "Reviewer reproduced old-account ownership quantity returning from an already queued updater; fixed and regression-tested.",
+    "merged": false,
+    "deployed": false,
+    "resolvesLiveApiFailure": false
+  },
+  "stormLogo": {
+    "setId": "903d5baa-27c7-5690-b1d7-2395c770204a",
+    "language": "ja",
+    "setCode": "M6",
+    "bundledLogoPresent": true,
+    "publishedFallbackRowPresent": false,
+    "approvedProviderMetadata": {
+      "url": "https://api.tcgdex.net/v2/ja/sets/M6",
+      "status": 200,
+      "logoFieldPresent": false,
+      "symbolFieldPresent": false
+    },
+    "sourceCandidate": {
+      "candidateId": "JA-M6-LOGO-BILLSARCHIVE-001",
+      "sourcePage": "https://billsarchive.com/storm-emeralda",
+      "literalAssetUrl": "https://billsarchive.com/assets/logos/japanese/jp-storm-emeralda.webp",
+      "assetType": "set_logo",
+      "htmlDeclaredWidth": 1918,
+      "htmlDeclaredHeight": 510,
+      "actualWidth": 640,
+      "actualHeight": 170,
+      "actualBytes": 16610,
+      "sha256": "ef4ea9578d26a3b9ed3aacc731a447014946e776bf3bdf438fa0306e58d70b50",
+      "dimensionEvidence": "Fully decoded source WebP; HTML dimensions describe display sizing and are not original resolution.",
+      "pixelsViewedBy": [
+        "artwork specialist",
+        "root",
+        "independent reviewer"
+      ],
+      "sourcePixelsUnchanged": true,
+      "rightsStatus": "Exact download/bundle/in-app display authorised on direct owner permission attestation; no independently issued licensor grant verified",
+      "permissionRecord": "catalogue/rights-reviews/billsarchive-m6-set-logo-owner-approved.2026-10-17.json",
+      "disposition": "Exact source original bundled locally; no catalogue write, source-registry activation or new publication performed"
+    },
+    "pixelsVerified": true,
+    "acquisitionOrPublicationPerformed": {
+      "acquisition": true,
+      "localBundleIntegration": true,
+      "publication": false
+    },
+    "blocker": "Native bundle inclusion and release/device verification pending; source permission and pixel verification resolved.",
+    "bundledLogoStatus": "LOCAL_REVIEWED_SOURCE_NOT_YET_RELEASED",
+    "binding": "Exact canonical binder setID resolves locally ahead of stale metadata; explicit foreign languages rejected; M5/M6a remain distinct.",
+    "historicalManifestUnchanged": true
+  },
+  "diagnostic": {
+    "status": "OWNER_APPROVED_EXECUTED_PARTIAL_RESULTS_CONNECTION_TIMEOUT_ON_FORMAT_RECOVERY",
+    "targetProject": "oakdbbzdqwurpjnoqhmu",
+    "ownerAnswer": "Approve the read-only diagnostic",
+    "proposalFile": "proposed-readonly-db-diagnostic.sql (private task evidence)",
+    "proposalSha256": "5e48ced4e155254dea0ed651cbfd76c31d34fd5484a0fd8b20c718abd12af04d",
+    "scope": "Four READ ONLY/ROLLBACK blocks once each; aggregate waits, named definitions/indexes, EXPLAIN without ANALYZE under existing roles; 3s statement / 500ms lock limits",
+    "executed": true,
+    "executionWindowUtc": "2026-10-17T09:30:58Z–09:31:12Z",
+    "returnedEvidence": {
+      "lockSummary": "8 AccessShare and1 virtualxid locks, all granted in this snapshot only",
+      "namedIndexesReturned": 23,
+      "anonEstimatedPlanCost": 3038.69,
+      "serviceRoleEstimatedPlanCost": 23.37
+    },
+    "resultLimitation": "Only the final SELECT in each block was exposed. Earlier activity/settings/view/policy outputs are unavailable; costs are estimates, not execution times.",
+    "sameScopeOutputRecovery": {
+      "scope": "One JSON SELECT wrapper for previously approved missing settings/activity/view/policy outputs; no new tables, EXPLAIN or index reads",
+      "sha256": "7d37f7c6b56ede465c48fc94118f21f4596b5286c31295f6133beb0186faf328",
+      "attemptedOnce": true,
+      "result": "Connection terminated due to connection timeout; no outputs. No retry.",
+      "statementExecutionKnown": false
+    },
+    "dataWrites": 0,
+    "rootCauseEstablished": false
+  },
+  "haptics": {
+    "status": "NOT_TESTED_BLOCKED_BY_CARD_ACCESS",
+    "defectEstablished": false
+  },
+  "operations": {
+    "remotePostgresToolCalls": 5,
+    "approvedOriginalBlocksExecuted": 4,
+    "formatRecoveryCallsFailedWithoutOutputs": 1,
+    "databaseWrites": 0,
+    "catalogueChanges": 0,
+    "priceRefreshes": 0,
+    "deployments": 0,
+    "nativePublications": 0,
+    "otaPublications": 0
+  },
+  "remaining": [
+    "Verify actual clean frozen iOS export and exact M6 bytes, then exact-head hosted checks",
+    "Obtain matching approval for reviewed PR406 merge/backend deployment and conditional normal-production TestFlight release",
+    "After authorised backend deployment verify Mew/Celebi cards, all four target set metadata/card responses, individual-card detail and existing published-mobile gate. Keep native publication on hold if these fail",
+    "Resolve any remaining wider database/private Home/binder failures with evidence; repeat physical app journeys and haptics. Existing artwork programme remains separate and unresolved batches are not claimed complete"
+  ],
+  "candidate": {
+    "pullRequest": "https://github.com/tberridge86/Stackr/pull/406",
+    "committedBase": "6ed69415e9722142db060ab610fa74ea2ef57770",
+    "followup": "Final backend Search/card-detail, client early facts, Home deadline, exact M6 logo and native verifier are tested and independently reviewed. Actual clean frozen export and hosted checks follow this source commit.",
+    "merged": false,
+    "deployed": false,
+    "nativePublished": false
+  },
+  "backendOptionalArtworkRepair": {
+    "sourceFiles": [
+      "backend/lib/stackrApiV1.js",
+      "scripts/test-backend-search-enrichment.mjs",
+      "scripts/test-stackr-api-v1.mjs"
+    ],
+    "reproduction": "Actual backend with installed Supabase SDK and mocked HTTP: successful exact card facts were discarded on optional imageRPC57014 or held by a nonsettling image read.",
+    "behavior": "Optional artwork has500ms absolute budget through fetch and body consumption, propagates cancellation, and rejects late pagination/publication. Exact factual identity and provenance rules remain; essential fact errors remain failures.",
+    "search": {
+      "implemented": true,
+      "independentlyReviewed": true,
+      "narrowChecks": "PASS",
+      "backendTypecheck": "PASS"
+    },
+    "singleCardDetail": {
+      "implemented": true,
+      "independentlyReviewed": true,
+      "narrowChecks": "PASS; actual installed Supabase SDK with mocked HTTP",
+      "essentialFactErrorsAnd404Preserved": true
+    },
+    "setOpeningTrace": "Discover, Set Detail and Binder Detail already paint facts with includeAssets:false before background artwork; this patch is not evidence of repaired essential database reads.",
+    "merged": false,
+    "deployed": false,
+    "actualProductionSearchRecovered": false
+  },
+  "integratedChecks": {
+    "typecheck": "PASS final client/Home source",
+    "lint": "PASS final client/Home source;0errors8existingwarnings",
+    "logoRuntime": "PASS",
+    "additiveLogoAuditor": "PASS",
+    "logoIndependentReview": "ACCEPTED",
+    "currentBackendExtensionReview": "ACCEPTED",
+    "actualIosBundle": "PENDING_AFTER_THIS_SOURCE_FREEZE",
+    "bundleVerifierIndependentReview": "ACCEPTED; actual verifier positive virtual34assetexport and missingM6/alteredsource/alteredexport negatives",
+    "backendTypecheck": "PASS",
+    "uncachedCardIndependentReview": "ACCEPTED",
+    "homeIndependentReview": "ACCEPTED",
+    "deviceFeedback": "PASS including new uncached regression",
+    "homeRelease": "PASS",
+    "hostedChecks": "PENDING_ON_NEW_HEAD; historical6edchecks9pass1skip do not cover followup"
+  },
+  "homeLocalSettingsRepair": {
+    "status": "LOCALLY_TESTED_INDEPENDENTLY_REVIEWED_NOT_RELEASED",
+    "reproduction": "Actual Home hook: successful network and saved collection reads, no cache and one deferred master-setting read kept collectionValueLoading true after60 simulated seconds. Custom artwork had same unbounded wait.",
+    "files": [
+      "features/home/HubScreen.tsx",
+      "scripts/test-home-startup-runtime.ts"
+    ],
+    "behavior": "Both local pre-facts Promise.all stages now use the existing10second deadline. No master-setting or value defaults invented. Existing retry/error and valid saved valuation behavior retained.",
+    "verification": [
+      "New actual-hook regression RED against139c2a4e, GREEN after repair, independently reproduced",
+      "Both waits: no-cache error, no invented valuation, late completion ignored, explicit retry succeeds",
+      "Both waits: valid cached value retained, late completion after sign-out cannot restore private data",
+      "Existing startup runtime and Home release checks pass"
+    ],
+    "independentReview": "ACCEPTED",
+    "phoneIncidentCausalityEstablished": false,
+    "deviceVerified": false
+  },
+  "uncachedCardFirstFactsRepair": {
+    "status": "LOCALLY_TESTED_INDEPENDENTLY_REVIEWED_NOT_RELEASED",
+    "sourceFinding": "Uncached Card Detail awaited optional2second image manifest and eligible Japanese/Chinese provider fallback before rendering facts. Provider set and card stages can each take8seconds. English Mew/Celebi do not use that provider fallback.",
+    "explainsWiderPrivateHomeBinderFailure": false,
+    "files": [
+      "lib/stackrDomainAdapter.ts",
+      "lib/pokemonTcg.ts",
+      "app/card/[id].tsx",
+      "scripts/test-uncached-card-facts-runtime.ts",
+      "package.json"
+    ],
+    "behavior": "Publish selected exact canonical/variant-checked facts under current route guard, retain existing final guarded image pipeline.",
+    "verification": [
+      "Actual uncached screen/adapter regression RED against prior implementation, GREEN after handoff",
+      "Selected canonical/variant facts display while manifest/provider deferred",
+      "Final valid image retains non-enumerable display-only overlay; optional failure retains facts",
+      "Route/account transitions and late queued updates cannot repaint old context; essential failure remains unavailable",
+      "Existing device-feedback lane, cancellation, finish identity, provider policy and English canonical resolution/cache regressions pass"
+    ],
+    "independentReview": "ACCEPTED",
+    "priceReadStability": "Image-only updates retain the current quote and one automatic read; genuine printing/account identity changes reload and edition restrictions remain. Actual-screen RED2reads/GREEN1read and independent review passed."
+  },
+  "releaseEvidence": "docs/releases/build58-retrieval-repair-20261017.md"
+}

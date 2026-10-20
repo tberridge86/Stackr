@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "status": "frozen_local_checks_passed_pending_independent_review_and_protected_publication",
+  "checkedAt": "2026-10-15T16:57:33.334Z",
+  "fronts": 64,
+  "categoryCounts": {
+    "Pokemon": 53,
+    "Trainer": 8,
+    "Energy": 3
+  },
+  "variantCounts": {
+    "normal": 48,
+    "holo": 16
+  },
+  "heldWholePrinting": {
+    "alias": "062",
+    "printingId": "60478fbb-50c8-4d7e-b980-36e4166262a0",
+    "reason": "Two normal/holo variants unresolved; whole printing excluded"
+  },
+  "queueId": "STACKR-JA-VINTAGE-ROCKET-FRONTS-20261015-064",
+  "confirmation": "PUBLISH ARTWORK VINTAGE ROCKET FRONTS",
+  "immutableArchive": {
+    "id": 644510720,
+    "sha256": "abe19c1c0dae857d1cd5d28ef8a50d3adc213c40d79fb431b7e6cefd399b3fea",
+    "byte_size": 10282029,
+    "file_count": 260,
+    "name": "stackr-ja-artwork-rocket64-fronts-20261015.zip"
+  },
+  "sourcePolicyCheckpointSha256": "2013e3ecdb0bf05501b2cc7a66733c73e20ba80b3a7876e5d0442f1a32eb00e9",
+  "expectedSnapshotRows": {
+    "productionBefore": 264,
+    "productionAfter": 392,
+    "stagingBefore": 258,
+    "stagingAfterRollback": 258
+  },
+  "sourcePolicy": {
+    "fullExistingSourceFieldsPerRow": 17,
+    "existingSourceCodes": [
+      "scrydex",
+      "pokellector"
+    ],
+    "allExistingSourceFieldsPreserved": true,
+    "newProductionSourceRows": 0,
+    "sourceActivationOrExistingPolicyUpdates": 0,
+    "stagingRollbackOnlyFixtureCodes": [
+      "pokellector"
+    ],
+    "snapshotAndResolverUsePostgresqlJson": true,
+    "timestampMicrosecondTamperRejected": true
+  },
+  "pipelineHashQualification": {
+    "finiteDecisionPreparationPipelineHashRefersTo": "backend/lib/assetPipeline.js",
+    "assetPipelinePolicySha256": "642eb05d57c921901cfa6241e1f0d32a71da602ea3594693b8d63247a05b0bb0",
+    "actualPrepareLocalScriptSha256": "f143cea995c4f0fb3c659b33cab67d9d745a1b9b18af039a5616ee5cbc180696",
+    "rootDecisionUnchanged": true
+  },
+  "checks": {
+    "focusedNodeTests": 16,
+    "archiveSafetyTests": 6,
+    "actualQueueReceipts": 64,
+    "jointRawManifestTamperRejections": 26,
+    "nonPokemonFalseAgreementRejections": 11,
+    "missingOrHeldAuthorityRejections": 2,
+    "sourceContractActualRows": 64,
+    "sourceContractTamperRejections": 33,
+    "privateEvidenceFileHashesVerified": 257,
+    "literalPhotoHtmlPointersVerified": 64,
+    "fullySharpDecodedImages": 256,
+    "fullyPilDecodedImages": 256,
+    "allArchiveMembersVerified": 260,
+    "persistedFailureJournal": {
+      "status": "passed_on_unchanged_shared_module",
+      "tests": 1,
+      "reusedEvidence": "vintage96-frozen-handoff.json"
+    },
+    "newTextFilesLfEqualGitLf": 20,
+    "oldFrozen96RepoFilesUnchanged": 20,
+    "oldExact96QueueHelpersUnchanged": 2,
+    "workflowConfig": "protected_manual_exact_main_confirmation_concurrency_actions_pins_receipt_secret_scan",
+    "publicMetadataPrivacyCommercialScan": 4,
+    "secretScan": {
+      "status": "passed",
+      "textFilesScanned": 20,
+      "findings": 0
+    },
+    "finiteApprovalScopeMatches64CategoryCounts": true
+  },
+  "files": {
+    ".github/workflows/artwork-vintage-rocket-fronts-production.yml": {
+      "sha256": "080237304d8f2e7845fd4feff6d4525a3f3987463ef0b81ae8fe1453db8c0bf4",
+      "bytes": 3712
+    },
+    "tools/artwork-vintage-rocket-fronts-push-20261015/.gitattributes": {
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+      "bytes": 14
+    },
+    "tools/artwork-vintage-rocket-fronts-push-20261015/.gitignore": {
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "bytes": 19
+    },
+    "tools/artwork-vintage-rocket-fronts-push-20261015/approval.json": {
+      "sha256": "ac6e33f75c8f4a8781f4baec28d5d6d5137b8c86db546f8d3c15cfde98a62c6e",
+      "bytes": 1378
+    },
+    "tools/artwork-vintage-rocket-fronts-push-20261015/before-query.sql": {
+      "sha256": "b0f78b188a1a6d9ade7c20f822983772e318788c9bc19978c165b9d6de707112",
+      "bytes": 27832
+    },
+    "tools/artwork-vintage-rocket-fronts-push-20261015/download-package.py": {
+      "sha256": "5d70cf2066a7634bd98f8744262779241552b644af031043bd3fdc1da551d7d7",
+      "bytes": 6078
+    },
+    "tools/artwork-vintage-rocket-fronts-push-20261015/download-package.test.py": {
+      "sha256": "1aaddf4708f5d87355e7cd2660e46226a69ddd70906b4d184520ef7d2db7cf41",
+      "bytes": 6940
+    },
+    "tools/artwork-vintage-rocket-fronts-push-20261015/freeze-inputs.json": {
+      "sha256": "adf29aa591654c79b88ab6d9449fbdcfe2242d044f776ca9b8045b8de85e6619",
+      "bytes": 5108
+    },
+    "tools/artwork-vintage-rocket-fronts-push-20261015/freeze-local.mjs": {
+      "sha256": "026f961519375fe6dfd9be7fb0e48331a7b554aeb149eca82ebc6840d86ea3b6",
+      "bytes": 10101
+    },
+    "tools/artwork-vintage-rocket-fronts-push-20261015/frozen.mjs": {
+      "sha256": "7cef250ee887a7cded0e1197dfacaee6ceef0a37f2d19e138c2a3781615f475f",
+      "bytes": 68494
+    },
+    "tools/artwork-vintage-rocket-fronts-push-20261015/identity-table.json": {
+      "sha256": "bc0619e998fabb9725c7199c69b735c4f75d595c918bed05059bb926ab28a49d",
+      "bytes": 63090
+    },
+    "tools/artwork-vintage-rocket-fronts-push-20261015/metadata-guard.mjs": {
+      "sha256": "598405ead861610326a6f4de549a8eccca01c453b9bfdbd44186f35a1020aa9b",
+      "bytes": 9142
+    },
+    "tools/artwork-vintage-rocket-fronts-push-20261015/plan.json": {
+      "sha256": "68b4a260e25ac4e92c21c0f334c43aed58c0fedc1caaaeb409df07c37277ffd6",
+      "bytes": 2727835
+    },
+    "tools/artwork-vintage-rocket-fronts-push-20261015/publish.mjs": {
+      "sha256": "514b329bba01109786841cd88646ebeef967c353dfac476d2f9780ebdf6500aa",
+      "bytes": 6327
+    },
+    "tools/artwork-vintage-rocket-fronts-push-20261015/publish.test.mjs": {
+      "sha256": "9d9698b4d52eec747c673ddad05528fabe542cf657c2121349b217bdfdd2c3c7",
+      "bytes": 24230
+    },
+    "tools/artwork-vintage-rocket-fronts-push-20261015/README.md": {
+      "sha256": "b1cb6e6dd4b641408ad05eaa95346870385b96c5738105194f7f133a0671a49b",
+      "bytes": 2315
+    },
+    "tools/artwork-vintage-rocket-fronts-push-20261015/saved-targets.json": {
+      "sha256": "e7c27f5d3c1f6e2ace4bb8835cc15f47377817cc2974815760427fc0fd2b0d1d",
+      "bytes": 27221
+    },
+    "tools/artwork-vintage-rocket-fronts-push-20261015/source-proof.mjs": {
+      "sha256": "d29fe740450ba7ecdcd7ad5959e9dd3eb27915290dea9e8589be10af2347b162",
+      "bytes": 119556
+    },
+    "tools/artwork-vintage-rocket-fronts-push-20261015/verify-packages.mjs": {
+      "sha256": "a3f746a92649448c5142ee46bfc0b996508554f3dea8aa21774bf0eb8883b841",
+      "bytes": 1495
+    }
+  },
+  "limits": {
+    "providerRequests": 0,
+    "databaseRequests": 0,
+    "queueWrites": 0,
+    "storageWrites": 0,
+    "gitMutations": 0,
+    "livePublicationPerformed": false,
+    "independentPublisherReview": "root_next_step",
+    "apiAndDeviceDelivery": "not_verified_for_this_batch"
+  }
+}
