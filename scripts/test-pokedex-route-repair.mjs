@@ -14,20 +14,30 @@ async function assertScreenMetadataRecovery() {
   const syntax = ts.createSourceFile('pokemon.tsx', screenSource, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   let effect;
   let failureBranch;
+  let retryAction;
   const visit = (node) => {
     if (ts.isCallExpression(node) && node.expression.getText(syntax) === 'useEffect'
       && node.arguments[0]?.getText(syntax).includes('fetchCardsForPokemon')) effect = node.arguments[0].getText(syntax);
     if (ts.isIfStatement(node) && node.expression.getText(syntax) === '!pokemon') failureBranch = node.getText(syntax);
+    if (ts.isVariableDeclaration(node) && node.name.getText(syntax) === 'retryCards') retryAction = node.initializer.arguments[0].getText(syntax);
     ts.forEachChild(node, visit);
   };
   visit(syntax);
   assert.ok(effect, 'exercise the actual Pokémon screen load effect');
   assert.ok(failureBranch, 'exercise the actual no-metadata screen state');
+  assert.ok(retryAction, 'exercise the actual shared card Retry action');
   const effectJs = ts.transpileModule(`globalThis.screenEffect = ${effect};`, {
     compilerOptions: { target: ts.ScriptTarget.ES2022 },
   }).outputText;
   const helperJs = ts.transpileModule(readFileSync('lib/optionalCatalogueEnrichment.ts', 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+  const performanceExports = {};
+  runInNewContext(ts.transpileModule(readFileSync('lib/performance.ts', 'utf8'), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  }).outputText, { exports: performanceExports, Date, Map, Set });
+  const retryJs = ts.transpileModule(`globalThis.retryCards = ${retryAction};`, {
+    compilerOptions: { target: ts.ScriptTarget.ES2022 },
   }).outputText;
   const failureJs = ts.transpileModule(`globalThis.renderFailure = () => { ${failureBranch} };`, {
     compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React },
@@ -45,6 +55,10 @@ async function assertScreenMetadataRecovery() {
     const state = { cards: [] };
     const context = {
       id: '8', routeName, speciesName, AbortController,
+      routeKey: JSON.stringify(['8', routeName, speciesName]),
+      retrievalRef: { current: null }, publishedRef: { current: null }, committedRef: { current: null },
+      beginPokedexRetrieval: performanceExports.beginPokedexRetrieval,
+      startPokedexRetrieval: performanceExports.startPokedexRetrieval,
       exports: {}, console: { log() {} },
       setTimeout(callback, milliseconds) { const token = {}; timers.set(token, { callback, milliseconds }); return token; },
       clearTimeout(token) { timers.delete(token); },
@@ -68,6 +82,7 @@ async function assertScreenMetadataRecovery() {
     runInNewContext(helperJs, context);
     context.readOptionalCatalogueEnrichment = context.exports.readOptionalCatalogueEnrichment;
     runInNewContext(effectJs, context);
+    runInNewContext(retryJs, context);
     runInNewContext(failureJs, context);
     cleanup = context.screenEffect();
     return {

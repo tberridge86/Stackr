@@ -5,6 +5,7 @@ import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
 import * as core from '../lib/pokedexCollectionCore';
 import { readOptionalCatalogueEnrichment } from '../lib/optionalCatalogueEnrichment';
+import * as retrieval from '../lib/performance';
 
 const tick = () => new Promise<void>((resolve) => setImmediate(resolve));
 function deferred<T>() {
@@ -119,6 +120,8 @@ function screenHarness(kind: 'list' | 'detail') {
     '@expo/vector-icons': { Ionicons: 'Icon' }, '@react-native-async-storage/async-storage': { getItem: async () => null, setItem: async () => {} },
     '../../lib/pokedexCollection': collection,
     '../../lib/pokedexOwnershipState': shared,
+    '../../lib/performance': retrieval,
+    '../../components/auth-context': { useAuth: () => auth },
     '../../lib/optionalCatalogueEnrichment': { readOptionalCatalogueEnrichment },
     '../../lib/stackrApiV1': { stackrApiClient: { pokemonIndex: async () => ({ data: { count: pokemonRows.length, indexVersion: 'fixture', results: pokemonRows } }) } },
     '../../components/StackrBackdrop': { StackrBackdrop: 'Backdrop' },

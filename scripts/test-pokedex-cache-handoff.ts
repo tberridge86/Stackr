@@ -4,6 +4,7 @@ import { runInNewContext } from 'node:vm';
 import React from 'react';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import ts from 'typescript';
+import * as retrieval from '../lib/performance';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -63,6 +64,7 @@ function harness(cache: Promise<string | null>) {
     '../../lib/stackrIcons': { stackrIcons: { pokedex: 'pokedex-icon' } },
     '../../lib/pokedexOwnershipState': { usePokedexOwnership: () => ({ values: null, status: 'loading', message: null }) },
     '../../lib/optionalCatalogueEnrichment': optional,
+    '../../lib/performance': retrieval,
   };
   return { Screen: compile('app/(tabs)/pokedex.tsx', dependencies).default as React.ComponentType, requests, writes, timers };
 }

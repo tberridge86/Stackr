@@ -128,6 +128,14 @@ export type PokedexCardsProgress = {
   error?: Error | null;
 };
 
+export type PokedexReadDiagnostic =
+  | { source: 'canonical-facts'; phase: 'page' | 'complete' }
+  | { source: 'artwork' | 'prices'; phase: 'complete' | 'failed' };
+type PokedexReadObserver = (event: PokedexReadDiagnostic) => void;
+function reportPokedexRead(observer: PokedexReadObserver | undefined, event: PokedexReadDiagnostic) {
+  try { observer?.(event); } catch { /* Optional measurement must not change retrieval. */ }
+}
+
 const getPokedexCardNames = (card: any) => {
   const raw = card.raw_data ?? card.raw_payload ?? card;
   const input = {
@@ -240,7 +248,7 @@ const mergePokedexArtwork = (source: PokedexCard, hydrated: any): PokedexCard =>
  * Hydrates at most one visible-card batch. The promise cache avoids repeat
  * asset reads as a FlatList recycles cells while preserving canonical facts.
  */
-export async function hydratePokedexCardArtwork(cards: PokedexCard[]): Promise<PokedexCard[]> {
+export async function hydratePokedexCardArtwork(cards: PokedexCard[], onDiagnostic?: PokedexReadObserver): Promise<PokedexCard[]> {
   pruneArtworkHydrationCache();
   const unique = [...new Map(cards
     .filter((card) => card.canonical_card && !card.image_small && !card.image_large)
@@ -249,7 +257,7 @@ export async function hydratePokedexCardArtwork(cards: PokedexCard[]): Promise<P
     .slice(0, 100);
   const newCards = unique.filter((card) => !artworkHydrationByCardId.has(card.id));
   if (newCards.length) {
-    const batch = fetchVisiblePokedexArtwork(newCards)
+    const batch = fetchVisiblePokedexArtwork(newCards, onDiagnostic)
       .then((assets) => new Map(newCards.map((card) => [
         card.id,
         stackrCardToLegacyCard(card.canonical_card!, assets),
@@ -289,11 +297,18 @@ async function addSetNames(cards: PokedexCard[]): Promise<PokedexCard[]> {
   }));
 }
 
-async function addLatestPrices(cards: PokedexCard[]): Promise<PokedexCard[]> {
+async function addLatestPrices(cards: PokedexCard[], onDiagnostic?: PokedexReadObserver): Promise<PokedexCard[]> {
   const cardIds = [...new Set(cards.map((card) => card.id).filter(Boolean))];
   if (!cardIds.length) return cards;
 
-  const snapshotMap = await fetchStackrPriceSnapshots(cardIds);
+  let snapshotMap: Awaited<ReturnType<typeof fetchStackrPriceSnapshots>>;
+  try {
+    snapshotMap = await fetchStackrPriceSnapshots(cardIds);
+    reportPokedexRead(onDiagnostic, { source: 'prices', phase: 'complete' });
+  } catch (error) {
+    reportPokedexRead(onDiagnostic, { source: 'prices', phase: 'failed' });
+    throw error;
+  }
 
   return cards.map((card) => {
     const price = snapshotMap.get(card.id);
@@ -306,13 +321,13 @@ async function addLatestPrices(cards: PokedexCard[]): Promise<PokedexCard[]> {
   });
 }
 
-async function enrichPokedexCards(cards: PokedexCard[]): Promise<PokedexCard[]> {
+async function enrichPokedexCards(cards: PokedexCard[], onDiagnostic?: PokedexReadObserver): Promise<PokedexCard[]> {
   // Card retrieval is the primary detail-screen content. Set labels and prices
   // are optional enrichments, so an unavailable auxiliary endpoint must never
   // turn a populated Pokémon collection into an empty error state.
   const [setNames, prices] = await Promise.allSettled([
     addSetNames(cards),
-    addLatestPrices(cards),
+    addLatestPrices(cards, onDiagnostic),
   ]);
 
   const withSetNames = setNames.status === 'fulfilled' ? setNames.value : cards;
@@ -360,6 +375,7 @@ const CANONICAL_PAGE_LIMIT = 120;
 async function fetchCanonicalPokedexCards(
   pokemonName: string,
   onProgress?: (progress: PokedexCardsProgress) => void,
+  onDiagnostic?: PokedexReadObserver,
 ): Promise<PokedexCardsProgress> {
   const cardsById = new Map<string, PokedexCard>();
   let cursor: string | null = null;
@@ -378,13 +394,14 @@ async function fetchCanonicalPokedexCards(
         cardsById.set(legacy.id, { ...mapCardRow(legacy), canonical_card: card });
       }
       cursor = response.meta.pagination?.nextCursor ?? null;
+      reportPokedexRead(onDiagnostic, { source: 'canonical-facts', phase: 'page' });
       onProgress?.({ cards: sortPokedexCards([...cardsById.values()]), complete: false });
       // The first visible row gets thumbnails without waiting for later
       // source pages, pricing, or set labels. Subsequent visible chunks are
       // requested by the detail FlatList.
       if (!publishedFirstPage) {
         publishedFirstPage = true;
-        void hydratePokedexCardArtwork(sortPokedexCards([...cardsById.values()]).slice(0, 16))
+        void hydratePokedexCardArtwork(sortPokedexCards([...cardsById.values()]).slice(0, 16), onDiagnostic)
           .then((hydrated) => {
             for (const card of hydrated) {
               const current = cardsById.get(card.id) ?? card;
@@ -410,8 +427,9 @@ async function fetchCanonicalPokedexCards(
   // indefinitely on optional set or pricing services.
   const factual = { cards, complete: true };
   factsComplete = true;
+  reportPokedexRead(onDiagnostic, { source: 'canonical-facts', phase: 'complete' });
   onProgress?.(factual);
-  void enrichPokedexCards(cards)
+  void enrichPokedexCards(cards, onDiagnostic)
     .then((enriched) => {
       for (const card of enriched) {
         const current = cardsById.get(card.id);
@@ -426,10 +444,10 @@ async function fetchCanonicalPokedexCards(
 
 export async function fetchCardsForPokemon(
   pokemonName: string,
-  options: { onProgress?: (progress: PokedexCardsProgress) => void } = {},
+  options: { onProgress?: (progress: PokedexCardsProgress) => void; onDiagnostic?: PokedexReadObserver } = {},
 ): Promise<PokedexCardsProgress> {
   try {
-    const result = await fetchCanonicalPokedexCards(pokemonName, options.onProgress);
+    const result = await fetchCanonicalPokedexCards(pokemonName, options.onProgress, options.onDiagnostic);
     options.onProgress?.(result);
     return result;
   } catch {
@@ -514,23 +532,29 @@ const fetchOwnedBinderIds = async (userId: string) => {
 };
 
 /** Fetch only visible canonical printings; never enumerate an entire set. */
-async function fetchVisiblePokedexArtwork(cards: PokedexCard[]): Promise<StackrCatalogueAsset[]> {
+async function fetchVisiblePokedexArtwork(cards: PokedexCard[], onDiagnostic?: PokedexReadObserver): Promise<StackrCatalogueAsset[]> {
   const printingIds = [...new Set(cards.map((card) => card.canonical_card?.cardId).filter((id): id is string => Boolean(id)))];
   const assets: StackrCatalogueAsset[] = [];
-  for (let start = 0; start < printingIds.length; start += ARTWORK_MANIFEST_BATCH_SIZE) {
-    const printingBatch = printingIds.slice(start, start + ARTWORK_MANIFEST_BATCH_SIZE);
-    let cursor: string | null = null;
-    for (let page = 0; page < ARTWORK_MANIFEST_MAX_PAGES; page += 1) {
-      const response = await stackrApiClient.assetManifest({
-        assetType: 'card_image',
-        printingIds: printingBatch,
-        cursor,
-        limit: ARTWORK_MANIFEST_BATCH_SIZE,
-      });
-      assets.push(...response.data.assets);
-      cursor = response.meta.pagination?.nextCursor ?? null;
-      if (!cursor) break;
+  try {
+    for (let start = 0; start < printingIds.length; start += ARTWORK_MANIFEST_BATCH_SIZE) {
+      const printingBatch = printingIds.slice(start, start + ARTWORK_MANIFEST_BATCH_SIZE);
+      let cursor: string | null = null;
+      for (let page = 0; page < ARTWORK_MANIFEST_MAX_PAGES; page += 1) {
+        const response = await stackrApiClient.assetManifest({
+          assetType: 'card_image',
+          printingIds: printingBatch,
+          cursor,
+          limit: ARTWORK_MANIFEST_BATCH_SIZE,
+        });
+        assets.push(...response.data.assets);
+        cursor = response.meta.pagination?.nextCursor ?? null;
+        if (!cursor) break;
+      }
     }
+    if (printingIds.length) reportPokedexRead(onDiagnostic, { source: 'artwork', phase: 'complete' });
+  } catch (error) {
+    reportPokedexRead(onDiagnostic, { source: 'artwork', phase: 'failed' });
+    throw error;
   }
   return assets;
 }

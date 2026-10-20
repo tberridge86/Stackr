@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
 import { readOptionalCatalogueEnrichment } from '../lib/optionalCatalogueEnrichment';
+import { beginPokedexRetrieval } from '../lib/performance';
 
 const tick = () => new Promise<void>((resolve) => setImmediate(resolve));
 
@@ -128,6 +129,8 @@ async function testKnownPokedexRouteColdPath() {
     let metadataSignal: AbortSignal | undefined;
     const context: Record<string, any> = {
       id: '8', routeName, speciesName, AbortController, readOptionalCatalogueEnrichment,
+      routeKey: JSON.stringify(['8', routeName, speciesName]), beginPokedexRetrieval,
+      retrievalRef: { current: null }, publishedRef: { current: null }, committedRef: { current: null },
       console: { log() {} },
       fetch: (_url: string, options: { signal?: AbortSignal }) => {
         metadataSignal = options.signal;
