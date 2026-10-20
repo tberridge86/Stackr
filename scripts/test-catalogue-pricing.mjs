@@ -187,6 +187,100 @@ assert.equal(mergeValuationTrend([point],{...point,total:9,evidence:'b'},true).l
 assert.equal(mergeValuationTrend([point],{...point,total:9,evidence:'b',at:'2026-09-19T02:00:00Z'},true).length,2,'a comparable partial generation adds genuine history');
 assert.equal(await prepareStoredValuationIfEnabled({env:{},dryRun:false}),null,'default-off worker does not touch database');
 assert.equal(await prepareStoredValuationIfEnabled({env:{STACKR_PREPARED_VALUATIONS_ENABLED:'true'},dryRun:true}),null,'dry run does not publish');
+// Exercise the real worker with synthetic catalogue/claim transports. A regular
+// official binder must not read its unowned First Edition siblings, while an
+// explicit First Edition binder still needs normal same-printing general bases.
+const storedEditionId=(prefix,n)=>`${prefix}0000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
+const storedEditionSet=storedEditionId('3',1),storedEditionVersion=storedEditionId('7',1);
+const storedEditionCatalogue=Array.from({length:200},(_,index)=>{
+ const n=index+1,base={printing_id:storedEditionId('2',n),set_id:storedEditionSet,language_code:'en',catalogue_version_id:storedEditionVersion};
+ return [{...base,variant_id:storedEditionId('1',n),variant_code:'normal',finish_code:'normal'},
+  {...base,variant_id:storedEditionId('4',n),variant_code:'first_edition',finish_code:'normal'}];
+}).flat();
+async function storedEditionPreparation({edition='normal',mixedEditions=false,ownedEdition=null,omitFirstEdition=false,includeUnusedQuotes=false}={}) {
+ const batches=[];
+ const binders=[{id:storedEditionId('5',1),type:'official',source_set_id:storedEditionSet,language:'en',edition,card_mode:'raw'}];
+ if(mixedEditions)binders.push({...binders[0],id:storedEditionId('5',2),edition:'first_edition'});
+ const ownedRows=ownedEdition?[{id:storedEditionId('9',1),set_id:storedEditionSet,
+  card_id:storedEditionId(ownedEdition==='first_edition'?'4':'1',1),quantity:2,condition:'near_mint',
+  language:'en',variant:ownedEdition,edition:ownedEdition}]:[];
+ const fixtureClaim={inputs:{ownedRows,binderCards:[],binders,collectionRevision:'edition-fixture'},
+  previousCollectionRevision:'edition-fixture',lease:storedEditionId('9',2)};
+ let calls=0;
+ const rpc=async(name)=>{
+  assert(++calls<=100,'synthetic preparation remains bounded');
+  const responses={claim_collection_valuation:fixtureClaim,published_price_catalogue_revision:[storedEditionVersion],
+   catalogue_price_cycle_status:null,collection_valuation_trend:[],publish_collection_valuation:true};
+  assert(Object.hasOwn(responses,name),`unexpected synthetic RPC ${name}`);
+  return {data:responses[name],error:null};
+ };
+ const from=(name)=>{
+  assert(++calls<=100,'synthetic preparation remains bounded');
+  const filters=[];
+  let start=0,end=Infinity;
+  const rows=()=>{
+   if(name==='catalogue_cards')return storedEditionCatalogue.filter(row=>filters.every(filter=>filter(row)))
+    .sort((a,b)=>a.variant_id.localeCompare(b.variant_id)).slice(start,end+1);
+   assert(['catalogue_external_identifiers','catalogue_price_state'].includes(name),`unexpected synthetic table ${name}`);
+   return [];
+  };
+  const query={select(){return query;},eq(key,value){filters.push(row=>row[key]===value);return query;},
+   in(key,values){filters.push(row=>values.includes(row[key]));return query;},order(){return query;},
+   range(a,b){start=a;end=b;return query;},
+   then(resolve,reject){return Promise.resolve({data:rows(),error:null}).then(resolve,reject);}};
+  return query;
+ };
+ const fixtureDb={from,rpc,schema(name){assert.equal(name,'api');return fixtureDb;}};
+ const result=await prepareCollectionValuation({supabase:fixtureDb,ownerId:storedEditionId('8',1),service:{
+  async storedExactPrices(ids){
+   assert(ids.length>0&&ids.length<=200,'the exact-price RPC keeps its existing 200-ID cap');
+   batches.push([...ids]);
+   const selected=includeUnusedQuotes?storedEditionCatalogue.map(row=>row.variant_id):ids;
+   return selected.filter(id=>!omitFirstEdition||id[0]!=='4').map(id=>({variantId:id,productType:'raw_card',currency:'GBP',
+    status:'market_estimate',estimates:{central:id[0]==='4'?777:1},calculatedAt:'2026-10-19T00:00:00Z',
+    staleAfter:'2099-01-01T00:00:00Z',freshness:'fresh'}));
+  },
+  async requestSnapshotRefresh(){throw Error('Provider work forbidden during stored-read fixture');},
+ }});
+ assert.equal(result.published,true);
+ const ids=batches.flat();
+ assert.equal(new Set(ids).size,ids.length,'a union does not repeat identities across batches or binders');
+ return {batches,ids,summary:result.summary};
+}
+// Only generation UUIDs and calculation/trend times vary between preparations.
+const stablePreparedSummary=value=>Array.isArray(value)?value.map(stablePreparedSummary):value&&typeof value==='object'
+ ?Object.fromEntries(Object.entries(value).filter(([key])=>!['valuationRevision','calculatedAt','at'].includes(key))
+  .map(([key,child])=>[key,stablePreparedSummary(child)])):value;
+const regularEditionRead=await storedEditionPreparation();
+assert.equal(regularEditionRead.ids.length,200,'regular set summaries skip 200 unused First Edition siblings');
+assert.equal(regularEditionRead.batches.length,1,'the regular fixture needs one bounded read instead of two');
+assert(regularEditionRead.ids.every(id=>id[0]==='1'));
+const broadEditionQuotes=await storedEditionPreparation({includeUnusedQuotes:true});
+assert.deepEqual(stablePreparedSummary(regularEditionRead.summary),stablePreparedSummary(broadEditionQuotes.summary),
+ 'the complete summary is unchanged when unused other-edition quotes are present');
+assert.equal(regularEditionRead.summary.binders[0].standardSet.total,200);
+assert.equal(regularEditionRead.summary.binders[0].masterSet.total,200);
+const mixedEditionRead=await storedEditionPreparation({mixedEditions:true});
+assert.equal(mixedEditionRead.ids.length,400,'mixed official editions retain both sets of exact identities');
+assert.equal(mixedEditionRead.batches.length,2);
+assert.equal(mixedEditionRead.summary.binders[0].standardSet.total,200);
+assert.equal(mixedEditionRead.summary.binders[1].standardSet.total,155400,'the stronger exact First Edition values remain');
+const firstEditionFallbackRead=await storedEditionPreparation({edition:'first_edition',omitFirstEdition:true});
+assert.equal(firstEditionFallbackRead.ids.length,400,'First Edition totals retain their necessary normal general bases');
+assert.equal(firstEditionFallbackRead.summary.binders[0].standardSet.total,null,'missing exact edition quotes stay unavailable');
+assert.equal(firstEditionFallbackRead.summary.general.binders[0].standardSet.total,200);
+assert.equal(firstEditionFallbackRead.summary.general.binders[0].standardSet.generalEstimateUnits,200);
+const ownedOtherEditionRead=await storedEditionPreparation({ownedEdition:'first_edition'});
+assert.equal(ownedOtherEditionRead.ids.length,201,'an owned other-edition identity is retained independently of set totals');
+assert.equal(ownedOtherEditionRead.ids.filter(id=>id[0]==='4').length,1,'unowned other-edition siblings remain excluded');
+assert.equal(ownedOtherEditionRead.summary.total,1554);
+assert.equal(ownedOtherEditionRead.summary.binders[0].standardSet.total,200);
+const broadOwnedEditionQuotes=await storedEditionPreparation({ownedEdition:'first_edition',includeUnusedQuotes:true});
+assert.deepEqual(stablePreparedSummary(ownedOtherEditionRead.summary),stablePreparedSummary(broadOwnedEditionQuotes.summary),
+ 'all collection, binder, general, coverage and trend facts retain the complete-read result');
+const ownedNormalInFirstEditionRead=await storedEditionPreparation({edition:'first_edition',ownedEdition:'normal'});
+assert.equal(ownedNormalInFirstEditionRead.summary.total,2,'explicit normal holdings survive a First Edition set selection');
+assert.equal(ownedNormalInFirstEditionRead.summary.general.total,2);
 const db=new PGlite();
 await db.exec("create function public.test_uuid(v text) returns uuid language sql immutable as $$ select (substr(md5(v),1,8)||'-'||substr(md5(v),9,4)||'-4'||substr(md5(v),14,3)||'-8'||substr(md5(v),18,3)||'-'||substr(md5(v),21,12))::uuid $$;");
 await db.exec(`create schema api; create schema auth; create schema catalog;

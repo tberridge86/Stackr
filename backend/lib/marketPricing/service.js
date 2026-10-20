@@ -1562,15 +1562,60 @@ export function createMarketPricingService(options) {
     async marketMovers(input = {}) {
       const limit = parseLimit(input.limit, 25, 100);
       const currency = normalizeCurrency(input.currency);
-      let query = table(supabase, 'api', 'market_movers')
-        .select('*')
-        .eq('display_currency_code', currency)
-        .order('percentage_change', { ascending: false, nullsFirst: false })
-        .limit(limit + 1);
-      if (clean(input.productType)) query = query.eq('product_kind', normalizeProductType(input.productType));
-      const rows = await queryRows(query);
+      const productType = clean(input.productType) ? normalizeProductType(input.productType) : null;
+      // This is a bounded percentage-movement sample, not a complete market or
+      // global cash ranking. One descending page can exclude every real faller.
+      const readExtreme = (ascending) => {
+        let query = table(supabase, 'api', 'market_movers').select('*')
+          .eq('display_currency_code', currency)
+          .order('percentage_change', { ascending, nullsFirst: false })
+          .order('market_identity_id', { ascending: true })
+          .limit(limit + 1);
+        if (productType) query = query.eq('product_kind', productType);
+        return queryRows(query);
+      };
+      const reads = await Promise.allSettled([readExtreme(false), readExtreme(true)]);
+      const comparisons = new Map();
+      for (const read of reads) {
+        if (read.status === 'rejected') throw read.reason;
+        if (!Array.isArray(read.value) || read.value.length > limit + 1) {
+          throw new ApiError(503, 'market_comparison_read_invalid', 'Stored market comparisons could not be verified. Retry stored data.');
+        }
+        for (const row of read.value) {
+          if (!isUuid(row?.market_identity_id) || row.display_currency_code !== currency
+            || !['raw_card', 'graded_card', 'sealed_product'].includes(row.product_kind)
+            || (productType && row.product_kind !== productType)) {
+            throw new ApiError(503, 'market_comparison_read_invalid', 'Stored market comparisons could not be verified. Retry stored data.');
+          }
+          // Different conditions/grades share a variant, not a market identity.
+          // Concurrent reads must agree on all exposed evidence for an overlap.
+          const key = `${row.market_identity_id.toLowerCase()}:${currency}`;
+          const fingerprint = JSON.stringify([row.variant_id ?? null, row.sealed_product_variant_id ?? null,
+            row.product_kind, row.current_estimate, row.previous_estimate, row.percentage_change,
+            row.confidence_score, row.confidence_label, row.calculated_at, row.previous_calculated_at]);
+          const existing = comparisons.get(key);
+          if (existing && existing.fingerprint !== fingerprint) {
+            throw new ApiError(503, 'market_comparison_changed', 'Stored market comparisons changed during this read. Retry stored data.');
+          }
+          comparisons.set(key, { row, fingerprint });
+        }
+      }
+      const rows = [...comparisons.values()].map(({ row }) => row);
+      const identityOrder = (a, b) => a.market_identity_id.localeCompare(b.market_identity_id);
+      const strongestFirst = (a, b) => Number(numeric(a.percentage_change) == null) - Number(numeric(b.percentage_change) == null)
+        || Math.abs(numeric(b.percentage_change) ?? 0) - Math.abs(numeric(a.percentage_change) ?? 0) || identityOrder(a, b);
+      const quota = Math.floor(limit / 2);
+      const selected = [
+        ...rows.filter((row) => numeric(row.percentage_change) > 0).sort(strongestFirst).slice(0, quota),
+        ...rows.filter((row) => numeric(row.percentage_change) < 0).sort(strongestFirst).slice(0, quota),
+      ];
+      const selectedIds = new Set(selected.map((row) => row.market_identity_id));
+      selected.push(...rows.filter((row) => !selectedIds.has(row.market_identity_id))
+        .sort(strongestFirst).slice(0, limit - selected.length));
+      selected.sort((a, b) => Number(numeric(a.percentage_change) == null) - Number(numeric(b.percentage_change) == null)
+        || (numeric(b.percentage_change) ?? 0) - (numeric(a.percentage_change) ?? 0) || identityOrder(a, b));
       return {
-        movers: rows.slice(0, limit).map((row) => ({
+        movers: selected.map((row) => ({
           variantId: row.variant_id ?? null,
           sealedProductVariantId: row.sealed_product_variant_id ?? null,
           productType: row.product_kind,
