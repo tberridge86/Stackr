@@ -11,6 +11,11 @@ on:
         description: Exact reviewed backend source already deployed and serving the mobile API
         required: true
         type: string
+      verify_only:
+        description: Verify source, native export and public API without requesting or submitting a native build
+        required: false
+        default: false
+        type: boolean
       build_profile:
         description: Approved iOS build audience; normal production is distinct from owner recognition
         required: false
@@ -38,6 +43,7 @@ jobs:
       FROZEN_SOURCE_SHA: ${{ inputs.expected_main_sha }}
       EXPECTED_BACKEND_SHA: ${{ inputs.expected_backend_sha }}
       RELEASE_BUILD_PROFILE: ${{ inputs.build_profile }}
+      VERIFY_ONLY: ${{ inputs.verify_only }}
     steps:
       - name: Check out frozen reviewed source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -63,7 +69,9 @@ jobs:
           test "$GITHUB_SHA" = "$FROZEN_SOURCE_SHA"
           test "$(git rev-parse HEAD)" = "$FROZEN_SOURCE_SHA"
           test -z "$(git status --porcelain)"
-          test -n "$EXPO_TOKEN"
+          if [[ "$VERIFY_ONLY" != 'true' ]]; then
+            test -n "$EXPO_TOKEN"
+          fi
 
       - name: Install locked dependencies
         run: npm ci
@@ -106,12 +114,19 @@ jobs:
           node scripts/verify-ios-release-delivery.mjs
 
       - name: Start iOS build without submission
+        if: ${{ !inputs.verify_only }}
         shell: bash
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$FROZEN_SOURCE_SHA"
           test -z "$(git status --porcelain)"
           node <<'NODE'
+          if (process.env.VERIFY_ONLY !== 'false') {
+            throw new Error('Verification-only runs cannot request a native build.');
+          }
+          if (!process.env.EXPO_TOKEN?.trim()) {
+            throw new Error('EXPO_TOKEN is required to request a native build.');
+          }
           const fs = require('node:fs');
           const { spawnSync, execFileSync } = require('node:child_process');
           const eas = require('./eas.json');
@@ -189,13 +204,23 @@ jobs:
           NODE
 
       - name: Upload non-secret native build receipt
-        if: success()
+        if: ${{ success() && !inputs.verify_only }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: frozen-ios-build-receipt-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             outputs/releases/frozen-ios-build-receipt.json
             outputs/releases/mobile-delivery-receipt.json
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 9
+
+      - name: Upload verification-only receipt
+        if: ${{ success() && inputs.verify_only }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: ios-verification-only-receipt-${{ github.run_id }}-${{ github.run_attempt }}
+          path: outputs/releases/mobile-delivery-receipt.json
           if-no-files-found: error
           retention-days: 14
           compression-level: 9
