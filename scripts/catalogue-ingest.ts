@@ -77,7 +77,7 @@ Commands:
   rebuild-record          Rebuild one provider record.
   enqueue                 Add a durable queue item.
   conflicts               Inspect quarantined conflicts.
-  quality-report          Print catalogue-quality report JSON.
+  quality-report          Print paginated quality JSON (optional --limit is a sample cap).
 
 Supported sources:
   ${supportedSourceAdapters.join(', ')}
@@ -138,7 +138,7 @@ async function main() {
     const db = adminSupabase();
     const report = await fetchCatalogueQualityReport(db, {
       language: languageArg(),
-      limit: Number(arg('limit', '500')),
+      limit: arg('limit') ? Number(arg('limit')) : undefined,
     });
     console.log(JSON.stringify(report, null, 2));
     return;

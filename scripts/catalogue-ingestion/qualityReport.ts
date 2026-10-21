@@ -27,7 +27,14 @@ export type CatalogueQualityRow = {
 };
 
 export function summariseQualityRows(rows: CatalogueQualityRow[]) {
-  return rows.reduce(
+  const groups = new Map<string, CatalogueQualityRow[]>();
+  for (const row of rows) {
+    const key = JSON.stringify([row.game_code, row.language_code]);
+    const group = groups.get(key) ?? [];
+    group.push(row);
+    groups.set(key, group);
+  }
+  const summary = rows.reduce(
     (summary, row) => ({
       sets: summary.sets + 1,
       expectedSetTotal: Math.max(summary.expectedSetTotal, Number(row.expected_set_total ?? 0)),
@@ -61,25 +68,78 @@ export function summariseQualityRows(rows: CatalogueQualityRow[]) {
       recordsWithoutLegalUseStatus: 0,
     },
   );
+  // View-level set totals repeat per game/language; count each group once.
+  for (const field of ['expectedSetTotal', 'importedSetTotal', 'expectedVsImportedSetDelta'] as const) summary[field] = 0;
+  for (const group of groups.values()) {
+    summary.expectedSetTotal += Math.max(...group.map(row => Number(row.expected_set_total ?? 0)));
+    summary.importedSetTotal += Math.max(...group.map(row => Number(row.imported_set_total ?? 0)));
+    summary.expectedVsImportedSetDelta += Math.max(...group.map(row => Number(row.expected_vs_imported_set_delta ?? 0)));
+  }
+  return { ...summary, unknownExpectedCardTotalSets: rows.filter(row => row.expected_card_total == null).length };
 }
 
 export async function fetchCatalogueQualityReport(
   db: SupabaseClientLike,
   options: { language?: string; limit?: number } = {},
 ) {
-  let query = db.schema('ingest')
-    .from('catalogue_quality_report')
-    .select('*')
-    .order('language_code', { ascending: true })
-    .order('native_name', { ascending: true })
-    .limit(options.limit ?? 500);
-  if (options.language) query = query.eq('language_code', options.language);
-  const { data, error } = await query;
-  if (error) throw error;
-  const rows = (data ?? []) as CatalogueQualityRow[];
+  const pageSize = 250;
+  const maxPages = 20;
+  if (options.limit !== undefined && (!Number.isSafeInteger(options.limit) || options.limit < 1)) {
+    throw new Error('catalogue_quality_limit_must_be_positive_integer');
+  }
+  const rows: CatalogueQualityRow[] = [];
+  let cursor: string | null = null;
+  let complete = false;
+  let terminationReason = 'page_budget';
+  let pagesFetched = 0;
+  for (; pagesFetched < maxPages;) {
+    // An extra one-row read distinguishes an exact limit from a partial sample.
+    const remaining = options.limit === undefined ? pageSize : options.limit - rows.length;
+    const requested = remaining === 0 ? 1 : Math.min(pageSize, remaining);
+    let query = db.schema('ingest').from('catalogue_quality_report')
+      .select('*').order('set_id', { ascending: true }).limit(requested);
+    if (options.language) query = query.eq('language_code', options.language);
+    if (cursor) query = query.gt('set_id', cursor);
+    const { data, error } = await query;
+    pagesFetched += 1;
+    if (error) throw error;
+    if (!Array.isArray(data) || data.length > requested) throw new Error('catalogue_quality_invalid_page');
+    if (data.length === 0) {
+      complete = true;
+      terminationReason = 'end_of_results';
+      break;
+    }
+    for (const row of data as CatalogueQualityRow[]) {
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(row.set_id)
+        || (cursor !== null && row.set_id <= cursor)
+        || (options.language !== undefined && row.language_code !== options.language)) {
+        throw new Error('catalogue_quality_page_identity_mismatch');
+      }
+      cursor = row.set_id;
+    }
+    if (remaining === 0) {
+      terminationReason = 'requested_limit';
+      break;
+    }
+    rows.push(...data);
+  }
+  const groups = new Map<string, CatalogueQualityRow[]>();
+  for (const row of rows) {
+    const key = JSON.stringify([row.game_code, row.language_code]);
+    const group = groups.get(key) ?? [];
+    group.push(row);
+    groups.set(key, group);
+  }
   return {
     generatedAt: new Date().toISOString(),
+    pagination: { complete, terminationReason, rowsFetched: rows.length, pagesFetched,
+      pageSize, maxPages, requestedLimit: options.limit ?? null,
+      language: options.language ?? null, consistency: 'keyset_scan_not_snapshot' },
     summary: summariseQualityRows(rows),
+    byGameAndLanguage: [...groups.values()].map(group => ({
+      game: group[0].game_code, language: group[0].language_code,
+      summary: summariseQualityRows(group),
+    })),
     rows,
   };
 }
