@@ -1,6 +1,11 @@
 name: Submit verified Stackr Build 60
 on:
   workflow_dispatch: {}
+  push:
+    branches:
+      - codex/submit-build60-20261021
+    if: >-
+      ${{ github.commit_message == 'release: submit verified Stackr Build 60' }}
 jobs:
   submit_build_60:
     name: Submit existing 1.0.6 (60) to TestFlight
