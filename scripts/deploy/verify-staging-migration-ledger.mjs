@@ -178,5 +178,12 @@ function safeErrorCode(error) {
 }
 
 result.ok = result.errors.length === 0;
+if (phase !== 'local' && !result.ok) {
+  // Row count is only a hint until every ledger and connection check passes.
+  result.remoteCountState = result.remoteState ?? null;
+  result.remoteState = 'unverified';
+  result.applyRequired = false;
+}
 console.log(JSON.stringify(result, null, 2));
 if (!result.ok) process.exit(1);
+
