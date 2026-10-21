@@ -102,7 +102,7 @@ jobs:
               '--require-safe-release-flags',
             ], { env, stdio: 'inherit' });
             process.exit(result.status ?? 1);
-            NODE
+          NODE
           fi
 
       - name: Prove native content and published API delivery
