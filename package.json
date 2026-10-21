@@ -178,7 +178,7 @@
     "report:variant-resolver": "tsx scripts/report-variant-resolver-accuracy.ts",
     "test:variant-resolver": "tsx scripts/test-variant-resolver.ts",
     "test:catalogue-schema": "tsx scripts/test-canonical-catalogue-schema.ts",
-    "test:catalogue-ingestion": "tsx scripts/test-catalogue-ingestion.ts",
+    "test:catalogue-ingestion": "npm run test:catalogue-quality-report && tsx scripts/test-catalogue-ingestion.ts",
     "test:master-catalogue-importer": "tsx scripts/test-master-catalogue-importer.ts",
     "test:catalogue-gap-report": "node scripts/test-catalogue-gap-report.mjs",
     "test:four-language-catalogue-backfill": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-four-language-catalogue-backfill.ts && node scripts/test-catalogue-mirror-attempts.mjs",
@@ -232,7 +232,8 @@
     "test:classified-price-read": "node scripts/test-classified-price-read.mjs && node --import tsx scripts/test-classified-price-overlay.ts",
     "test:device-feedback": "node --import tsx scripts/test-corocoro-screen-runtime.ts && node --import tsx scripts/test-explore-discover-runtime.ts && node --import tsx scripts/test-preferred-set-logo-delivery.ts && node --import tsx scripts/test-artwork-loading-recovery.ts && node --import tsx scripts/test-uncached-card-facts-runtime.ts && node --import tsx scripts/test-pokedex-cache-handoff.ts",
     "test:mobile-recovery": "node --import tsx scripts/test-stackr-loading-indicator.ts && node --import tsx scripts/test-startup-reduce-motion.ts && node --import tsx scripts/test-corocoro-issue-archive.ts && node --import tsx scripts/test-corocoro-mobile-delivery.ts && node --import tsx scripts/test-set-price-window.ts && node --import tsx scripts/test-card-inspection-interactions.ts && node --import tsx scripts/test-settings-help.ts && node --import tsx scripts/test-issue304-cold-retrieval.ts && npm run test:device-feedback",
-    "test:server-delivery": "node scripts/test-backend-approved-card-names.mjs && node scripts/test-backend-translation-search.mjs && node --import tsx scripts/test-server-name-delivery.mjs && node --import tsx scripts/test-foreign-card-presentation.ts && node --import tsx scripts/test-server-catalogue-price-baseline.ts && node scripts/test-published-mobile-delivery.mjs && node scripts/test-ios-release-build-workflow.mjs && node --import tsx scripts/test-stackr-preview-proxy.ts && node --import tsx scripts/test-stackr-api-cache-recovery.ts && node scripts/test-stackr-api-v1.mjs && node scripts/test-marnie-canonical-correction-preparation.mjs && node scripts/test-marnie-runtime-correction-preparation.mjs"
+    "test:server-delivery": "node scripts/test-backend-approved-card-names.mjs && node scripts/test-backend-translation-search.mjs && node --import tsx scripts/test-server-name-delivery.mjs && node --import tsx scripts/test-foreign-card-presentation.ts && node --import tsx scripts/test-server-catalogue-price-baseline.ts && node scripts/test-published-mobile-delivery.mjs && node scripts/test-ios-release-build-workflow.mjs && node --import tsx scripts/test-stackr-preview-proxy.ts && node --import tsx scripts/test-stackr-api-cache-recovery.ts && node scripts/test-stackr-api-v1.mjs && node scripts/test-marnie-canonical-correction-preparation.mjs && node scripts/test-marnie-runtime-correction-preparation.mjs",
+    "test:catalogue-quality-report": "node --import tsx scripts/test-catalogue-quality-report.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",
@@ -326,3 +327,4 @@
     }
   }
 }
+
