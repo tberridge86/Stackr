@@ -588,8 +588,10 @@ async function main() {
     completeOwned,
   });
   const valuation=await prepareStoredValuationIfEnabled({supabase,service,ownerId,dryRun});
+  // Keep the receipt in one log entry: line-oriented hosts can reorder or
+  // truncate pretty-printed selections and detach failures from their IDs.
   console.log(JSON.stringify({ worker: 'owner-provider-price-refresh', ...summary,
-    valuationPublished:valuation?.published??false,valuationDiagnostics:valuation?.diagnostics??null }, null, 2));
+    valuationPublished:valuation?.published??false,valuationDiagnostics:valuation?.diagnostics??null }));
   if (summary.failed || summary.completeOwnedCompleted === false) process.exitCode = 1;
 }
 
