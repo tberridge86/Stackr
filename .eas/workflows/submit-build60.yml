@@ -1,0 +1,17 @@
+name: Submit verified Stackr Build 60
+on:
+  workflow_dispatch:
+jobs:
+  submit_build_60:
+    name: Submit existing 1.0.6 (60) to TestFlight
+    type: testflight
+    params:
+      build_id: 23565784-9fa5-4f9c-ae48-2376756891fb
+      profile: production
+      internal_groups:
+        - Team (Expo)
+      changelog: |
+        Consolidated retrieval, Home loading, search, rounded icons, spacing, haptics, naming safeguards and bundled artwork repairs.
+        Please verify cold/warm loading, binder reopening, search results, artwork, navigation and haptics on your phone.
+        Known artwork identity gaps, pricing coverage/freshness and whole-catalogue translation completeness remain disclosed.
+      submit_beta_review: false
