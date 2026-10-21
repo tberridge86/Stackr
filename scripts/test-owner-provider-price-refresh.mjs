@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import './test-owner-provider-price-receipt.mjs';
 import { readFileSync } from 'node:fs';
 import {
   OWNER_PRICE_REFRESH_COMPLETE_MAX_VARIANTS,
