@@ -2,11 +2,35 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { runInNewContext } from 'node:vm';
+import { spawnSync } from 'node:child_process';
 
 const require = createRequire(import.meta.url);
 const workflow = readFileSync('.github/workflows/build-owner-ios-release.yml', 'utf8').replace(/\r\n/gu, '\n');
 const eas = JSON.parse(readFileSync('eas.json', 'utf8'));
 const config = JSON.parse(readFileSync('app.json', 'utf8')).expo;
+
+// Preserve shell indentation after YAML removes the ten-space block prefix.
+// bash -n parses both profile branches without executing commands or requesting a build.
+const shellBlocks = [...workflow.matchAll(/^        run: \|\n((?:(?:          [^\n]*|)\n)+)/gmu)]
+  .map((match) => match[1].split('\n').map((line) => line.slice(10)).join('\n'));
+assert.ok(shellBlocks.length >= 4, 'Extract every multiline release shell block.');
+function checkBashSyntax(script) {
+  const result = spawnSync(process.env.BASH || 'bash', ['--noprofile', '--norc', '-n'], {
+    input: script, encoding: 'utf8', timeout: 10_000,
+    env: { ...process.env, BASH_ENV: '' },
+  });
+  assert.ifError(result.error);
+  return result;
+}
+for (const script of shellBlocks) {
+  const result = checkBashSyntax(script);
+  assert.equal(result.status, 0, `Release shell syntax must pass: ${result.stderr}`);
+  assert.equal(result.stderr, '', 'Heredoc warnings must not pass silently.');
+}
+const profileShell = shellBlocks.find((script) => script.includes('scripts/verify-owner-recognition-build.mjs'));
+assert.ok(profileShell?.includes('\nNODE\n'), 'The profile heredoc terminator must be at shell column zero.');
+const brokenProfileShell = profileShell.replace('\nNODE\n', '\n  NODE\n');
+assert.notEqual(checkBashSyntax(brokenProfileShell).status, 0, 'Reintroduced indented terminator must fail Bash parsing.');
 
 assert.match(workflow, /build_profile:\s*\n[\s\S]*?default: production-owner[\s\S]*?type: choice[\s\S]*?options:[\s\S]*?- production-owner[\s\S]*?- production/m);
 assert.match(workflow, /github\.ref == 'refs\/heads\/main' && github\.actor == github\.repository_owner/);
