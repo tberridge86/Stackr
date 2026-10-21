@@ -1,6 +1,6 @@
 name: Submit verified Stackr Build 60
 on:
-  workflow_dispatch:
+  workflow_dispatch: {}
 jobs:
   submit_build_60:
     name: Submit existing 1.0.6 (60) to TestFlight
