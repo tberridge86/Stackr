@@ -4,6 +4,7 @@ export const BENCHMARK_IDENTITIES = Object.freeze({
   search: Object.freeze({
     cardId: 'ba65f365-abcb-40dd-9486-ba24014f33d5',
     languageCode: 'ja',
+    setId: 'e42556b8-3e82-44bb-8c52-c06b893ee4a3',
     setCode: 'SV2a',
     collectorNumber: '157',
   }),
@@ -49,14 +50,30 @@ export function validatePublicApiBenchmarkResponse(scenario, body) {
     const results = body.data.results;
     assert(Array.isArray(results) && results.length > 0, 'search_unexpectedly_empty');
     assert(results.every((result) => result?.languageCode === BENCHMARK_IDENTITIES.search.languageCode), 'search_wrong_language');
-    const expected = results.find((result) => (
-      result?.type === 'card'
-      && result.reason === 'exact_set_code_collector_number'
-      && result.cardId === BENCHMARK_IDENTITIES.search.cardId
-      && String(result.setCode ?? '').toLowerCase() === BENCHMARK_IDENTITIES.search.setCode.toLowerCase()
-      && String(result.collectorNumber ?? '').split('/')[0] === BENCHMARK_IDENTITIES.search.collectorNumber
-    ));
-    assert(expected, 'search_expected_identity_missing');
+    // Exact set/number searches must put the expected printing first. The app
+    // renders result.card, so validate that payload as well as the index fields.
+    const expected = results[0];
+    assert((
+      expected?.type === 'card'
+      && expected.reason === 'exact_set_code_collector_number'
+      && expected.cardId === BENCHMARK_IDENTITIES.search.cardId
+      && String(expected.setCode ?? '').toLowerCase() === BENCHMARK_IDENTITIES.search.setCode.toLowerCase()
+      && String(expected.collectorNumber ?? '').split('/')[0] === BENCHMARK_IDENTITIES.search.collectorNumber
+    ), 'search_expected_identity_missing');
+    const card = expected.card;
+    assert(card?.cardId === expected.cardId, 'search_rendered_card_identity_mismatch');
+    assert(card.languageCode === BENCHMARK_IDENTITIES.search.languageCode, 'search_rendered_card_language_mismatch');
+    assert(expected.setId === BENCHMARK_IDENTITIES.search.setId
+      && card.set?.setId === expected.setId
+      && String(card.set?.setCode ?? '').toLowerCase() === BENCHMARK_IDENTITIES.search.setCode.toLowerCase(),
+    'search_rendered_card_set_mismatch');
+    assert(String(card.collectorNumber?.value ?? '').split('/')[0] === BENCHMARK_IDENTITIES.search.collectorNumber,
+      'search_rendered_card_number_mismatch');
+    assert(typeof expected.variantId === 'string' && expected.variantId.length > 0
+      && card.defaultVariantId === expected.variantId
+      && Array.isArray(card.variants)
+      && card.variants.some((variant) => variant?.variantId === expected.variantId),
+    'search_rendered_card_variant_missing');
     return {
       usefulCount: results.length,
       expectedIdentityFound: true,
@@ -81,3 +98,4 @@ export function validatePublicApiBenchmarkResponse(scenario, body) {
 
   throw new Error(`unknown_benchmark_scenario:${scenario}`);
 }
+
