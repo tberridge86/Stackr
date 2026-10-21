@@ -27,11 +27,15 @@ async function timedRequest(url, timeoutMs) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   const startedAt = performance.now();
+  let status = null;
+  let cacheStatus = null;
   try {
     const response = await fetch(url, {
       headers: { 'X-Request-Id': randomUUID() },
       signal: controller.signal,
     });
+    status = response.status;
+    cacheStatus = response.headers.get('x-stackr-cache') ?? response.headers.get('cf-cache-status');
     const contentType = response.headers.get('content-type') ?? '';
     let body = null;
     if (contentType.includes('application/json')) body = await response.json();
@@ -42,7 +46,13 @@ async function timedRequest(url, timeoutMs) {
       status: response.status,
       durationMs,
       body,
+      cacheStatus,
+      failureType: !response.ok ? 'http' : body?.error != null ? 'api' : null,
     };
+  } catch {
+    return { ok: false, status, body: null, cacheStatus,
+      durationMs: performance.now() - startedAt,
+      failureType: controller.signal.aborted ? 'timeout' : status === null ? 'transport' : 'decode' };
   } finally {
     clearTimeout(timer);
   }
@@ -82,49 +92,63 @@ for (const scenario of scenarios) {
   const durations = [];
   const statuses = new Set();
   const usefulCounts = [];
+  const requests = [];
+  let failure = null;
+  async function observe(phase, index) {
+    const sample = await timedRequest(`${gateway}${scenario.path}`, timeoutMs);
+    if (sample.status !== null) statuses.add(sample.status);
+    const record = { phase, index, status: sample.status,
+      durationMs: Number(sample.durationMs.toFixed(2)), cacheStatus: sample.cacheStatus,
+      ok: false, failureType: sample.failureType };
+    requests.push(record);
+    if (!sample.ok) {
+      throw new Error(`${scenario.id}_${phase}_failed_with_${sample.status ?? sample.failureType}`);
+    }
+    try {
+      const validation = validatePublicApiBenchmarkResponse(scenario.id, sample.body);
+      record.ok = true;
+      record.usefulCount = validation.usefulCount;
+      if (phase === 'sample') {
+        usefulCounts.push(validation.usefulCount);
+        durations.push(sample.durationMs);
+      }
+    } catch (error) {
+      record.failureType = 'validation';
+      throw error;
+    }
+  }
   try {
-  const url = `${gateway}${scenario.path}`;
-  for (let index = 0; index < warmups; index += 1) {
-    const warmup = await timedRequest(url, timeoutMs);
-    if (!warmup.ok) throw new Error(`${scenario.id}_warmup_failed_with_${warmup.status}`);
-    validatePublicApiBenchmarkResponse(scenario.id, warmup.body);
-  }
-
-  for (let index = 0; index < samples; index += 1) {
-    const sample = await timedRequest(url, timeoutMs);
-    statuses.add(sample.status);
-    if (!sample.ok) throw new Error(`${scenario.id}_sample_failed_with_${sample.status}`);
-    const validation = validatePublicApiBenchmarkResponse(scenario.id, sample.body);
-    usefulCounts.push(validation.usefulCount);
-    durations.push(sample.durationMs);
-  }
-
-  const p50Ms = percentile(durations, 0.5);
-  const p95Ms = percentile(durations, 0.95);
-  results.push({
-    id: scenario.id,
-    path: scenario.path,
-    samples,
-    statuses: [...statuses].sort(),
-    expectedIdentityVerified: true,
-    usefulCountMinimum: Math.min(...usefulCounts),
-    usefulCountMaximum: Math.max(...usefulCounts),
-    thresholdP95Ms: scenario.thresholdMs,
-    p50Ms: Number(p50Ms.toFixed(2)),
-    p95Ms: Number(p95Ms.toFixed(2)),
-    maxMs: Number(Math.max(...durations).toFixed(2)),
-    passed: p95Ms <= scenario.thresholdMs,
-  });
+    for (let index = 0; index < warmups; index += 1) await observe('warmup', index);
+    for (let index = 0; index < samples; index += 1) await observe('sample', index);
   } catch (error) {
-    // Keep completed scenarios and partial measurements when one route fails.
-    // A failed identity check or timeout is never counted as a fast success.
-    results.push({
-      id: scenario.id, path: scenario.path, samples: durations.length,
-      requestedSamples: samples, statuses: [...statuses].sort(),
-      thresholdP95Ms: scenario.thresholdMs, passed: false,
-      error: error instanceof Error ? error.message : String(error),
-    });
+    // Stop this scenario at its first failure without discarding its attempts.
+    // Do not serialize response bodies or arbitrary transport exception text.
+    const message = error instanceof Error ? error.message.split('\n')[0] : '';
+    failure = /^[a-z][a-z0-9_:-]+$/.test(message) ? message : 'benchmark_validation_failed';
   }
+  const attemptedSamples = requests.filter((request) => request.phase === 'sample').length;
+  const attemptedWarmups = requests.length - attemptedSamples;
+  const p95Ms = durations.length ? percentile(durations, 0.95) : null;
+  results.push({
+    id: scenario.id, path: scenario.path, samples: durations.length,
+    requestedSamples: samples, requestedWarmups: warmups,
+    attemptedSamples, attemptedWarmups,
+    skippedSamples: samples - attemptedSamples, skippedWarmups: warmups - attemptedWarmups,
+    successfulRequests: requests.filter((request) => request.ok).length,
+    failedRequests: requests.filter((request) => !request.ok).length,
+    statuses: [...statuses].sort(), requests,
+    // First request is retained, but no shared cache was reset or proven cold.
+    firstRequest: requests[0] ?? null,
+    expectedIdentityVerified: failure === null && durations.length === samples,
+    usefulCountMinimum: usefulCounts.length ? Math.min(...usefulCounts) : null,
+    usefulCountMaximum: usefulCounts.length ? Math.max(...usefulCounts) : null,
+    thresholdP95Ms: scenario.thresholdMs,
+    p50Ms: durations.length ? Number(percentile(durations, 0.5).toFixed(2)) : null,
+    p95Ms: p95Ms === null ? null : Number(p95Ms.toFixed(2)),
+    maxMs: durations.length ? Number(Math.max(...durations).toFixed(2)) : null,
+    passed: failure === null && durations.length === samples && p95Ms <= scenario.thresholdMs,
+    ...(failure ? { error: failure } : {}),
+  });
 }
 
 const report = {
@@ -133,7 +157,11 @@ const report = {
   measuredAt: new Date().toISOString(),
   warmups,
   samples,
+  timingScope: 'request-through-full-body-decode; successful validated samples only',
+  cacheScope: 'first request and repeats; shared cache coldness unverified',
+  requestCount: results.reduce((sum, result) => sum + result.requests.length, 0),
   results,
 };
 console.log(JSON.stringify(report, null, 2));
 if (!report.ok) process.exitCode = 1;
+
