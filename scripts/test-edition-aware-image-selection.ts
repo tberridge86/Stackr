@@ -79,7 +79,7 @@ assert.equal(verifiedRemoteEditionImage({ ok: true, imageUri: storedStackrUri, s
 const editionImageComponent = readFileSync('components/EditionAwareCardImage.tsx', 'utf8');
 assert.doesNotMatch(editionImageComponent, /api\/card-image\/edition/, 'the contained legacy edition route is never requested');
 assert.match(editionImageComponent, /language\?: string \| null/, 'language is part of artwork identity');
-assert.match(editionImageComponent, /!foreign && !hasSourceVariant/, 'foreign cards do not borrow shared artwork fallbacks');
+assert.match(editionImageComponent, /getApprovedArtworkFallbackUris\(\{ cardId, language: resolvedLanguage, rawData \}\)/, 'foreign recovery revalidates the exact approved canonical variant');
 assert.match(editionImageComponent, /!foreign && Boolean\(editionHint/, 'foreign card images never receive English visual overlays');
 const binderScreen = readFileSync('features/binder/BinderDetailScreen.tsx', 'utf8');
 assert.match(binderScreen, /sourceSize="small"(?:\s+onDiagnostic=\{[^\r\n]*\})?\s+resolveRemoteEdition=\{false\}/, 'ordinary binder grid cards do not amplify optional edition resolver reads');
