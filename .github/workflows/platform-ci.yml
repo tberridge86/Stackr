@@ -94,7 +94,7 @@ jobs:
       - run: npm run test:stackr-preview-proxy
       - run: npm run test:asset-pipeline
       - run: npm run test:asset-repair
-      - run: npm run test:master-set-artwork
+      - run: npm run test:foreign-artwork-delivery
       - run: node scripts/test-simplified-chinese-set-logo-pack.mjs
       - run: node --import tsx scripts/test-japanese-set-logo-runtime-lookup.ts
       - run: npm run test:recognition-orchestrator
