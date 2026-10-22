@@ -683,8 +683,17 @@ export function summariseTcgdexNormalPricing(card, language = 'en') {
     ? getTcgplayerVariants(card?.pricing).find((entry) => ['normal', 'standard'].includes(String(entry.variant).toLowerCase()))
     : null;
   const cardmarketNormal = getCardmarketVariants(card?.pricing).find((entry) => entry.variant === 'standard');
-  const preferred = lang === 'en' ? tcgplayerNormal ?? cardmarketNormal : cardmarketNormal;
-  return summariseTcgdexPriceEntry(card, lang, preferred);
+  // Both entries describe this normal printing, but their source clocks can
+  // differ by days. Select the newest usable source observation, preserving
+  // TCGplayer on ties. Fetch time must never replace the provider timestamp.
+  const quotes = [tcgplayerNormal, cardmarketNormal]
+    .map((entry) => summariseTcgdexPriceEntry(card, lang, entry))
+    .filter((quote) => {
+      const updatedAt = Date.parse(String(quote?.pricingUpdatedAt ?? ''));
+      return quote && Number.isFinite(updatedAt) && updatedAt <= Date.now() + 5 * 60_000;
+    });
+  return quotes.reduce((newest, quote) => !newest
+    || Date.parse(quote.pricingUpdatedAt) > Date.parse(newest.pricingUpdatedAt) ? quote : newest, null);
 }
 
 function summariseTcgdexPriceEntry(card, lang, preferred) {
@@ -852,3 +861,4 @@ export async function fetchTcgdexCardPrice({
     matchScore: best.score,
   };
 }
+

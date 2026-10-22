@@ -1793,7 +1793,7 @@ async function assertNormalProviderFetchAbortsAndClearsInflight() {
     calls = 0;
     globalThis.fetch = async () => {
       calls += 1;
-      return { ok: true, text: async () => JSON.stringify({ id: 'fresh-test-001', localId: '001', pricing: { tcgplayer: { unit: 'GBP', normal: { marketPrice: calls } } } }) };
+      return { ok: true, text: async () => JSON.stringify({ id: 'fresh-test-001', localId: '001', pricing: { tcgplayer: { unit: 'GBP', updated: new Date().toISOString(), normal: { marketPrice: calls } } } }) };
     };
     assert.equal((await fetchTcgdexNormalCardPrice({ cardId: 'fresh-test-001', language: 'en' })).price, 1);
     assert.equal((await fetchTcgdexNormalCardPrice({ cardId: 'fresh-test-001', language: 'en' })).price, 2,
