@@ -26,6 +26,18 @@ export type CatalogueQualityRow = {
   reported_at: string;
 };
 
+// This is a reporting guard, not an authoritative catalogue size. No supported
+// Stackr set is expected to contain ten thousand distinct cards; values above
+// this ceiling have historically been language-wide totals copied onto sets.
+export const MAX_EXPECTED_CARDS_PER_SET = 10_000;
+
+function acceptedExpectedCardTotal(value: number | null) {
+  return value !== null
+    && Number.isSafeInteger(value)
+    && value >= 0
+    && value <= MAX_EXPECTED_CARDS_PER_SET;
+}
+
 export function summariseQualityRows(rows: CatalogueQualityRow[]) {
   const groups = new Map<string, CatalogueQualityRow[]>();
   for (const row of rows) {
@@ -40,9 +52,12 @@ export function summariseQualityRows(rows: CatalogueQualityRow[]) {
       expectedSetTotal: Math.max(summary.expectedSetTotal, Number(row.expected_set_total ?? 0)),
       importedSetTotal: Math.max(summary.importedSetTotal, Number(row.imported_set_total ?? 0)),
       expectedVsImportedSetDelta: Math.max(summary.expectedVsImportedSetDelta, Number(row.expected_vs_imported_set_delta ?? 0)),
-      expectedCardTotal: summary.expectedCardTotal + Number(row.expected_card_total ?? 0),
+      knownExpectedCardTotal: summary.knownExpectedCardTotal
+        + (acceptedExpectedCardTotal(row.expected_card_total) ? Number(row.expected_card_total) : 0),
       importedCardTotal: summary.importedCardTotal + Number(row.imported_card_total ?? 0),
-      expectedVsImportedCardDelta: summary.expectedVsImportedCardDelta + Number(row.expected_vs_imported_card_delta ?? 0),
+      knownExpectedVsImportedCardDelta: summary.knownExpectedVsImportedCardDelta
+        + (acceptedExpectedCardTotal(row.expected_card_total)
+          ? Math.max(Number(row.expected_card_total) - Number(row.imported_card_total ?? 0), 0) : 0),
       cardsMissingImages: summary.cardsMissingImages + Number(row.cards_missing_images ?? 0),
       setsMissingLogos: summary.setsMissingLogos + (row.set_missing_logo ? 1 : 0),
       duplicateCanonicalKeys: summary.duplicateCanonicalKeys + Number(row.duplicate_canonical_keys ?? 0),
@@ -56,9 +71,9 @@ export function summariseQualityRows(rows: CatalogueQualityRow[]) {
       expectedSetTotal: 0,
       importedSetTotal: 0,
       expectedVsImportedSetDelta: 0,
-      expectedCardTotal: 0,
+      knownExpectedCardTotal: 0,
       importedCardTotal: 0,
-      expectedVsImportedCardDelta: 0,
+      knownExpectedVsImportedCardDelta: 0,
       cardsMissingImages: 0,
       setsMissingLogos: 0,
       duplicateCanonicalKeys: 0,
@@ -75,7 +90,27 @@ export function summariseQualityRows(rows: CatalogueQualityRow[]) {
     summary.importedSetTotal += Math.max(...group.map(row => Number(row.imported_set_total ?? 0)));
     summary.expectedVsImportedSetDelta += Math.max(...group.map(row => Number(row.expected_vs_imported_set_delta ?? 0)));
   }
-  return { ...summary, unknownExpectedCardTotalSets: rows.filter(row => row.expected_card_total == null).length };
+  const unknownExpectedCardTotalSets = rows.filter(row => row.expected_card_total == null).length;
+  const rejectedExpectedCardTotalRows = rows.filter(row => row.expected_card_total !== null
+    && !acceptedExpectedCardTotal(row.expected_card_total));
+  const expectedCardTotalStatus = rows.length === 0
+    ? 'empty_population'
+    : rejectedExpectedCardTotalRows.length > 0
+      ? 'rejected_invalid_values'
+      : unknownExpectedCardTotalSets > 0 ? 'incomplete' : 'complete';
+  const expectedCardTotal = expectedCardTotalStatus === 'complete' ? summary.knownExpectedCardTotal : null;
+  const expectedVsImportedCardDelta = expectedCardTotalStatus === 'complete'
+    ? summary.knownExpectedVsImportedCardDelta : null;
+  return {
+    ...summary,
+    expectedCardTotal,
+    expectedVsImportedCardDelta,
+    expectedCardTotalStatus,
+    unknownExpectedCardTotalSets,
+    rejectedExpectedCardTotalSets: rejectedExpectedCardTotalRows.length,
+    rejectedExpectedCardTotalSetIds: rejectedExpectedCardTotalRows.map(row => row.set_id),
+    maxExpectedCardsPerSet: MAX_EXPECTED_CARDS_PER_SET,
+  };
 }
 
 export async function fetchCatalogueQualityReport(

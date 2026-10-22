@@ -51,6 +51,10 @@ for (const cap of [Infinity, 200]) {
   assert.equal(result.summary.importedSetTotal, 626);
   assert.equal(result.summary.cardsMissingImages, 7);
   assert.equal(result.summary.unknownExpectedCardTotalSets, 1);
+  assert.equal(result.summary.knownExpectedCardTotal, 625);
+  assert.equal(result.summary.expectedCardTotal, null);
+  assert.equal(result.summary.expectedVsImportedCardDelta, null);
+  assert.equal(result.summary.expectedCardTotalStatus, 'incomplete');
   assert.deepEqual(result.byGameAndLanguage.map(g => [g.language, g.summary.sets]), [['ja',600],['ko',26]]);
   assert.ok(db.calls.every(c => c.limit <= 250));
   cases++;
@@ -71,6 +75,8 @@ cases++;
 const empty = await fetchCatalogueQualityReport(fakeDb([]));
 assert.equal(empty.pagination.complete, true);
 assert.equal(empty.summary.sets, 0);
+assert.equal(empty.summary.expectedCardTotal, null);
+assert.equal(empty.summary.expectedCardTotalStatus, 'empty_population');
 cases++;
 const bounded = await fetchCatalogueQualityReport(fakeDb(source, { cap: 1 }));
 assert.equal(bounded.pagination.complete, false);
@@ -99,4 +105,23 @@ const games = [row(1),{...row(2),game_code:'other',imported_set_total:2,expected
 assert.equal(summariseQualityRows(games).importedSetTotal,602);
 assert.equal(summariseQualityRows(games).expectedSetTotal,603);
 cases++;
-console.log(JSON.stringify({ cases, recoveredRows:626, recoveredTailGaps:7, networkCalls:0 }));
+const complete = summariseQualityRows([row(1), { ...row(2), expected_card_total: 2 }]);
+assert.equal(complete.expectedCardTotalStatus, 'complete');
+assert.equal(complete.expectedCardTotal, 3);
+assert.equal(complete.expectedVsImportedCardDelta, 1);
+cases++;
+const contaminated = summariseQualityRows([
+  row(1),
+  { ...row(2), expected_card_total: 23_198, imported_card_total: 17 },
+  { ...row(3), expected_card_total: -1 },
+  { ...row(4), expected_card_total: 2.5 },
+]);
+assert.equal(contaminated.expectedCardTotalStatus, 'rejected_invalid_values');
+assert.equal(contaminated.expectedCardTotal, null);
+assert.equal(contaminated.knownExpectedCardTotal, 1);
+assert.equal(contaminated.expectedVsImportedCardDelta, null);
+assert.equal(contaminated.rejectedExpectedCardTotalSets, 3);
+assert.deepEqual(contaminated.rejectedExpectedCardTotalSetIds, [row(2).set_id, row(3).set_id, row(4).set_id]);
+cases++;
+console.log(JSON.stringify({ cases, recoveredRows:626, recoveredTailGaps:7,
+  rejectedContaminatedDenominators:3, networkCalls:0 }));
