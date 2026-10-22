@@ -93,9 +93,11 @@ export function summariseQualityRows(rows: CatalogueQualityRow[]) {
   const unknownExpectedCardTotalSets = rows.filter(row => row.expected_card_total == null).length;
   const rejectedExpectedCardTotalRows = rows.filter(row => row.expected_card_total !== null
     && !acceptedExpectedCardTotal(row.expected_card_total));
-  const expectedCardTotalStatus = rejectedExpectedCardTotalRows.length > 0
-    ? 'rejected_invalid_values'
-    : unknownExpectedCardTotalSets > 0 ? 'incomplete' : 'complete';
+  const expectedCardTotalStatus = rows.length === 0
+    ? 'empty_population'
+    : rejectedExpectedCardTotalRows.length > 0
+      ? 'rejected_invalid_values'
+      : unknownExpectedCardTotalSets > 0 ? 'incomplete' : 'complete';
   const expectedCardTotal = expectedCardTotalStatus === 'complete' ? summary.knownExpectedCardTotal : null;
   const expectedVsImportedCardDelta = expectedCardTotalStatus === 'complete'
     ? summary.knownExpectedVsImportedCardDelta : null;
