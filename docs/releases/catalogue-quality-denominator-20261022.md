@@ -9,7 +9,7 @@
 
 ## Measured population
 
-`Accepted expected cards` below is the sum of non-null, non-negative, safe-integer set totals no greater than the report's conservative 10,000-card sanity ceiling. A missing or rejected set total makes the aggregate expected-card denominator unavailable; it is never reported as complete.
+`Accepted expected cards` below is the sum of non-null, non-negative, safe-integer set totals no greater than the report's conservative 10,000-card sanity ceiling. An empty population, or any missing or rejected set total, makes the aggregate expected-card denominator unavailable; it is never reported as complete.
 
 | Environment | Language | Sets | Unknown expected totals | Rejected expected totals | Accepted expected cards | Imported cards | Cards missing images | Sets missing logos |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
