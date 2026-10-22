@@ -1,6 +1,6 @@
 import React from 'react';
 import { type ImageProps, type ImageStyle, StyleSheet, type StyleProp, View, type ViewStyle } from 'react-native';
-import { getCardArtworkPresentation } from '../lib/cardArtworkPresentation';
+import { getApprovedArtworkFallbackUris, getCardArtworkPresentation } from '../lib/cardArtworkPresentation';
 import { getEditionAwareImageUrl, getEditionVariantImageUrl, type EditionImageSize } from '../lib/editionImages';
 import type { ScanEditionHint } from '../types/scan';
 import { Text } from './Text';
@@ -38,8 +38,11 @@ function isForeignLanguage(language: unknown) {
 }
 
 function EditionAwareCardImageBase({ uri, fullUri, fallbackUri, cardId, language, rawData, editionHint, sourceSize = 'large', style, imageStyle, resizeMode = 'contain', onReferenceImageChange, onDiagnostic, cropToCard = false, fallback, finishMetadata, isSlabbed }: Props) {
-  const rawVariantUri = React.useMemo(() => getEditionVariantImageUrl(rawData, editionHint, sourceSize), [editionHint, rawData, sourceSize]);
-  const foreign = isForeignLanguage(language ?? rawData?.language);
+  const imageRawData = rawData?.raw_data ?? rawData;
+  const resolvedLanguage = language ?? rawData?.language ?? imageRawData?.language;
+  const recordLanguage = imageRawData?.language ?? resolvedLanguage;
+  const rawVariantUri = React.useMemo(() => getEditionVariantImageUrl(imageRawData, editionHint, sourceSize), [editionHint, imageRawData, sourceSize]);
+  const foreign = isForeignLanguage(recordLanguage) || isForeignLanguage(resolvedLanguage);
   // Only exact supplied catalogue artwork and an explicitly tagged local variant
   // are admissible. The old edition route is contained, and constructed/provider
   // fallbacks do not establish a foreign printing's language or identity.
@@ -48,18 +51,21 @@ function EditionAwareCardImageBase({ uri, fullUri, fallbackUri, cardId, language
   const needsVisualPatch = !foreign && Boolean(editionHint && !hasSourceVariant && editionHint !== 'unlimited');
   const contentFit = resizeMode === 'cover' ? 'cover' : resizeMode === 'stretch' ? 'fill' : 'contain';
   const artwork = getCardArtworkPresentation(rawData);
+  const artworkFallbackUris = hasSourceVariant ? undefined : foreign
+    ? getApprovedArtworkFallbackUris({ cardId, language: resolvedLanguage, rawData })
+    : artwork?.candidates.flatMap((candidate) => typeof candidate?.uri === 'string' ? [candidate.uri] : []);
   const handleSourceChange = React.useCallback((source: string | null) => {
-    onReferenceImageChange?.(artwork?.candidates.some((candidate) => candidate.uri === source && candidate.kind === 'shared') ?? false);
+    onReferenceImageChange?.(artwork?.candidates.some((candidate) => candidate?.uri === source && candidate.kind === 'shared') ?? false);
   }, [artwork, onReferenceImageChange]);
 
   const face = <View style={[styles.container, finishMetadata ? { width: '100%', height: '100%' } : style]}>
-    {resolvedDisplayUri || fullUri || fallbackUri ? <StackrImage
+    {resolvedDisplayUri || fullUri || fallbackUri || artworkFallbackUris?.length ? <StackrImage
       uri={resolvedDisplayUri}
       thumbnailUri={sourceSize !== 'small' && !hasSourceVariant && uri !== resolvedDisplayUri ? uri : undefined}
       fullUri={!hasSourceVariant ? fullUri : undefined}
       fallbackSource={!hasSourceVariant && fallbackUri ? { uri: fallbackUri } : undefined}
-      fallbackUris={!foreign && !hasSourceVariant ? artwork?.candidates.map((candidate) => candidate.uri) : undefined}
-      cacheKey={[String(language ?? rawData?.language ?? 'en').toLowerCase(), cardId ?? 'unknown', sourceSize].join(':')}
+      fallbackUris={artworkFallbackUris}
+      cacheKey={[String(recordLanguage ?? 'en').toLowerCase(), cardId ?? 'unknown', sourceSize].join(':')}
       onSourceChange={handleSourceChange}
       onDiagnostic={onDiagnostic}
       style={styles.image}

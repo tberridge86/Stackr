@@ -12,6 +12,14 @@ export type CardArtworkPresentation = {
   candidates: CardArtworkCandidate[];
 };
 const ordinaryFinishes = new Set(['normal', 'holo', 'reverse_holo']);
+/** Only explicit canonical ordinary classifications may use a printing face.
+ * An ordinary variant may lack a separate finish, but default/unknown labels
+ * do not establish a physical variant or finish.
+ */
+export function isOrdinaryPrintingFaceVariant(variant: { variantCode?: unknown; finishCode?: unknown }): boolean {
+  return typeof variant.variantCode === 'string' && ordinaryFinishes.has(variant.variantCode)
+    && (variant.finishCode == null || typeof variant.finishCode === 'string' && ordinaryFinishes.has(variant.finishCode));
+}
 const publicUrl = (value: unknown) => typeof value === 'string' && /^https?:\/\//i.test(value)
   ? enforceTcgdexRuntimeImagePolicy(value) ?? undefined : undefined;
 
@@ -32,14 +40,12 @@ function rendition(asset: StackrCatalogueAsset, roles: string[], minimumLongEdge
  * their own artwork; equal numbers, names or image filenames are never evidence.
  */
 function canShareFace(selected: StackrCardVariant, source: StackrCardVariant) {
-  return ordinaryFinishes.has(selected.variantCode) && ordinaryFinishes.has(source.variantCode)
-    && (!selected.finishCode || ordinaryFinishes.has(selected.finishCode))
-    && (!source.finishCode || ordinaryFinishes.has(source.finishCode))
+  return isOrdinaryPrintingFaceVariant(selected) && isOrdinaryPrintingFaceVariant(source)
     && (!selected.artworkKey || !source.artworkKey || selected.artworkKey === source.artworkKey);
 }
 
 /** Read-time presentation only: never edits a variant, default ID or asset record. */
-export function resolveCardArtwork(card: StackrCard, assets: StackrCatalogueAsset[] = [], selectedVariantId = card.defaultVariantId): CardArtworkPresentation {
+export function resolveCardArtwork(card: Pick<StackrCard, 'cardId' | 'game' | 'set' | 'defaultVariantId' | 'variants'> & Partial<StackrCard>, assets: StackrCatalogueAsset[] = [], selectedVariantId = card.defaultVariantId): CardArtworkPresentation {
   const selected = card.variants.find((v) => v.variantId === selectedVariantId);
   const result: CardArtworkPresentation = { kind: 'missing', selectedVariantId, sourceVariantId: null, assetId: null, candidates: [] };
   if (!selected) return result;
@@ -91,4 +97,51 @@ export function resolveCardArtwork(card: StackrCard, assets: StackrCatalogueAsse
 export function getCardArtworkPresentation(card: any): CardArtworkPresentation | undefined {
   const artwork = card?.raw_data?.presentation?.artwork ?? card?.presentation?.artwork;
   return artwork && Array.isArray(artwork.candidates) ? artwork : undefined;
+}
+
+function artworkLanguage(value: unknown) {
+  const language = String(value ?? '').trim().toLowerCase().replace(/_/g, '-');
+  if (['ja', 'jp', 'japanese'].includes(language)) return 'ja';
+  if (['ko', 'kr', 'korean'].includes(language)) return 'ko';
+  if (['zh-cn', 'zh-hans', 'zhcn', 'cn', 'simplified-chinese', 'chinese-simplified'].includes(language)) return 'zh-cn';
+  if (['zh', 'zh-tw', 'zh-hant', 'zhtw', 'tw', 'traditional-chinese', 'chinese'].includes(language)) return 'zh-tw';
+  if (language === 'en' || language === 'english' || language.startsWith('en-')) return 'en';
+  return null;
+}
+
+/** Revalidate cached rendition candidates against the canonical snapshot using
+ * the shared artwork resolver. Presentation alone does not establish identity.
+ * This performs no provider lookup and never constructs an image address.
+ */
+export function getApprovedArtworkFallbackUris({ cardId, language, rawData }: {
+  cardId?: string | null;
+  language?: string | null;
+  rawData?: any;
+}): string[] {
+  const raw = rawData?.raw_data ?? rawData;
+  const identity = raw?.stackr;
+  const artwork = getCardArtworkPresentation(raw);
+  const recordLanguage = artworkLanguage(raw?.language);
+  const requestedLanguage = artworkLanguage(language ?? rawData?.language ?? raw?.language);
+  if (!cardId || identity?.canonical !== true || raw?.id !== cardId || identity.cardId !== cardId
+    || !recordLanguage || requestedLanguage !== recordLanguage || !raw?.set?.id
+    || !artwork || artwork.selectedVariantId !== identity.defaultVariantId || !Array.isArray(identity.variants)) return [];
+  const variants: StackrCardVariant[] = identity.variants
+    .filter((variant: StackrCardVariant | null) => typeof variant?.variantId === 'string')
+    .map((variant: StackrCardVariant) => {
+      const asset = variant.image;
+      const bound = asset?.cardId === cardId && asset.setId === raw.set.id && (!asset.game || asset.game === 'pokemon');
+      return { ...variant, image: bound ? { ...asset,
+        derivatives: Array.isArray(asset.derivatives) ? asset.derivatives.filter((item) => item && typeof item === 'object') : [],
+      } : null };
+    });
+  if (new Set(variants.map((variant) => variant.variantId)).size !== variants.length
+    || !variants.some((variant) => variant.variantId === identity.defaultVariantId)) return [];
+  const approved = resolveCardArtwork({ cardId, game: 'pokemon', defaultVariantId: identity.defaultVariantId, variants,
+    set: { setId: raw.set.id, setCode: null, nativeName: null, englishDisplayName: null } });
+  const binding = (candidate: CardArtworkCandidate) => JSON.stringify([candidate.uri, candidate.kind, candidate.assetId, candidate.sourceVariantId]);
+  const approvedBindings = new Set(approved.candidates.map(binding));
+  return [...new Set(artwork.candidates.flatMap((candidate) => {
+    return candidate && approvedBindings.has(binding(candidate)) ? [candidate.uri] : [];
+  }))];
 }
