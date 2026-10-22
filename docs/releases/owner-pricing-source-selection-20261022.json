@@ -1,0 +1,242 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "2172db553ef8cc717ac4a65872a7be163243ffdf",
+  "environment": "production read-only database and public TCGdex; candidate locally executed only",
+  "supabaseProject": "oakdbbzdqwurpjnoqhmu",
+  "cohortDefinition": "Same 339 canonical variant IDs frozen in owner-pricing-cohort-20261021.json, including general base identities. Not all owned cards, all catalogue cards, or an authenticated API coverage denominator.",
+  "cohortReference": "docs/releases/owner-pricing-cohort-20261021.json",
+  "stored": {
+    "observed_at": "2026-10-22 08:19:39.987324+00",
+    "cohort": 339,
+    "positive_stored": 327,
+    "unexpired": 0,
+    "expired": 327,
+    "unknown_expiry": 0,
+    "oldest_snapshot": "2026-10-15 06:11:19.054+00",
+    "newest_snapshot": "2026-10-21 06:13:19.54+00",
+    "missingPositive": 12
+  },
+  "controls": [
+    {
+      "card_id": "0202587e-40c5-4543-b435-4b3eeb57c317",
+      "tcgdex_card_id": "svp-051",
+      "language": "en",
+      "price_source": "tcgdex_cardmarket",
+      "tcgdex_price": "17.96",
+      "tcgdex_price_updated_at": "2026-10-20 22:54:32.859+00",
+      "snapshot_at": "2026-10-21 06:03:16.948+00",
+      "stale_after": "2026-10-21 04:54:32.859+00",
+      "variant": "holo"
+    },
+    {
+      "card_id": "039c5a96-5071-4998-b7c1-53b0cc6454c2",
+      "tcgdex_card_id": "S12a-113",
+      "language": "ja",
+      "price_source": "tcgdex_cardmarket",
+      "tcgdex_price": "0.07",
+      "tcgdex_price_updated_at": "2026-10-20 22:54:32.831+00",
+      "snapshot_at": "2026-10-21 06:03:21.534+00",
+      "stale_after": "2026-10-21 04:54:32.831+00",
+      "variant": "normal"
+    },
+    {
+      "card_id": "0c9ac0ed-7491-436b-a461-febc4a45b2a5",
+      "tcgdex_card_id": "me04-025",
+      "language": "en",
+      "price_source": "tcgdex_tcgplayer",
+      "tcgdex_price": "0.07",
+      "tcgdex_price_updated_at": "2026-10-14 22:55:13.91+00",
+      "snapshot_at": "2026-10-15 06:11:38.497+00",
+      "stale_after": "2026-10-15 04:55:13.91+00",
+      "variant": "normal"
+    }
+  ],
+  "missingControl": "0ea904d5-a4d7-50e5-888e-f1ffe42e28be",
+  "railway": {
+    "status": "unmeasured",
+    "reason": "Connector returned UNAUTHORIZED: connection requires reauthentication. No logs/deployed SHA/schedule or worker outcome verified today."
+  },
+  "github": [
+    {
+      "id": 39741612834,
+      "name": "Stackr Price Refresh",
+      "status": "pending",
+      "conclusion": null,
+      "sha": "2172db553ef8cc717ac4a65872a7be163243ffdf",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/39741612834",
+      "createdAt": "2026-10-22T07:36:01Z"
+    },
+    {
+      "id": 39740843755,
+      "name": "Stackr Price Refresh",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "sha": "2172db553ef8cc717ac4a65872a7be163243ffdf",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/39740843755",
+      "createdAt": "2026-10-22T07:29:30Z"
+    },
+    {
+      "id": 39735184917,
+      "name": "Stackr Price Refresh",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "sha": "2172db553ef8cc717ac4a65872a7be163243ffdf",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/39735184917",
+      "createdAt": "2026-10-22T06:38:15Z"
+    },
+    {
+      "id": 39728571209,
+      "name": "Owner Provider Price Refresh",
+      "status": "completed",
+      "conclusion": "skipped",
+      "sha": "2172db553ef8cc717ac4a65872a7be163243ffdf",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/39728571209",
+      "createdAt": "2026-10-22T05:32:04Z"
+    }
+  ],
+  "authenticatedApi": "not measured: no authorized owner session available",
+  "device": "not measured",
+  "deployment": "not performed",
+  "migration": "none",
+  "providers": "Existing TCGdex normal TCGplayer and Cardmarket estimates only; no sold observations or source activation",
+  "validation": {
+    "before": {
+      "tests": 7,
+      "passed": 4,
+      "failed": 3
+    },
+    "after": {
+      "tests": 7,
+      "passed": 7,
+      "failed": 0
+    },
+    "independentReview": "Approved: no blocking findings in normal-source selection; adapter scope only.",
+    "workerSuite": "Not executed successfully: partial fixture lacks dotenv dependency. No pass claimed."
+  },
+  "providerObservations": [
+    {
+      "url": "https://api.tcgdex.net/v2/en/cards/me04-025",
+      "capturedAt": "2026-10-22T08:15:29.060833+00:00",
+      "payloadSha256": "545af6ed2e8525c86b89b4048d052baa77ad05682fe80bc2865c01df65ddfd51",
+      "id": "me04-025",
+      "setId": "me04",
+      "number": "025",
+      "variants": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": true,
+        "wPromo": false
+      },
+      "pricing": {
+        "cardmarket": {
+          "updated": "2026-10-21T22:54:33.026Z",
+          "unit": "EUR",
+          "idProduct": 886417,
+          "avg": 0.02,
+          "low": 0.02,
+          "trend": 0.03,
+          "avg1": 0.02,
+          "avg7": 0.02,
+          "avg30": 0.02,
+          "avg-holo": 0.06,
+          "low-holo": 0.02,
+          "trend-holo": 0.06,
+          "avg1-holo": 0.04,
+          "avg7-holo": 0.06,
+          "avg30-holo": 0.06
+        },
+        "tcgplayer": {
+          "unit": "USD",
+          "updated": "2026-10-14T22:55:13.910Z",
+          "normal": {
+            "productId": 693562,
+            "lowPrice": 0.01,
+            "midPrice": 0.15,
+            "highPrice": 14.07,
+            "marketPrice": 0.09,
+            "directLowPrice": 0.01
+          },
+          "reverse-holofoil": {
+            "productId": 693562,
+            "lowPrice": 0.01,
+            "midPrice": 0.2,
+            "highPrice": 6.99,
+            "marketPrice": 0.2,
+            "directLowPrice": 0.12
+          }
+        }
+      }
+    },
+    {
+      "url": "https://api.tcgdex.net/v2/en/cards/svp-051",
+      "capturedAt": "2026-10-22T08:15:35.719892+00:00",
+      "payloadSha256": "18f7a0190a56ca849e19374c1879c5d202418c8f5e0666152b5c20e0aad30622",
+      "id": "svp-051",
+      "setId": "svp",
+      "number": "051",
+      "variants": {
+        "firstEdition": false,
+        "holo": true,
+        "normal": false,
+        "reverse": false,
+        "wPromo": false
+      },
+      "pricing": {
+        "cardmarket": {
+          "updated": "2026-10-21T22:54:32.988Z",
+          "unit": "EUR",
+          "idProduct": 720390,
+          "avg": 21.26,
+          "low": 6.99,
+          "trend": 20.72,
+          "avg1": 20.07,
+          "avg7": 20.3,
+          "avg30": 21.25,
+          "avg-holo": null,
+          "low-holo": null,
+          "trend-holo": 0,
+          "avg1-holo": null,
+          "avg7-holo": null,
+          "avg30-holo": null
+        },
+        "tcgplayer": null
+      }
+    },
+    {
+      "url": "https://api.tcgdex.net/v2/ja/cards/S12a-113",
+      "capturedAt": "2026-10-22T08:15:32.550611+00:00",
+      "payloadSha256": "e38e2eb5115f44c741897fd6ce3f3f12e52d4972f6ae75087453f06c0fd292d2",
+      "id": "S12a-113",
+      "setId": "S12a",
+      "number": "113",
+      "variants": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": true,
+        "wPromo": false
+      },
+      "pricing": {
+        "cardmarket": {
+          "updated": "2026-10-21T22:54:32.988Z",
+          "unit": "EUR",
+          "idProduct": 687675,
+          "avg": 0.07,
+          "low": 0.02,
+          "trend": 0.08,
+          "avg1": 0.02,
+          "avg7": 0.07,
+          "avg30": 0.06,
+          "avg-holo": 1.2,
+          "low-holo": 0.1,
+          "trend-holo": 0.93,
+          "avg1-holo": 0.49,
+          "avg7-holo": 0.95,
+          "avg30-holo": 0.69
+        },
+        "tcgplayer": null
+      }
+    }
+  ]
+}
