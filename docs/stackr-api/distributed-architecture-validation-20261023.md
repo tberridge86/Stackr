@@ -58,8 +58,8 @@ custom-domain binding, CORS, actual app image delivery, device rendering and
 latency remain unverified.
 
 The architecture is a staged implementation. Remaining work includes legacy
-ownership/index query redesign, stable search continuation, web renderer lazy
-loading, private binary storage migration, Railway scheduler/replica coordination,
+ownership/index query redesign, stable search continuation,
+private binary storage migration, Railway scheduler/replica coordination,
 Pages provisioning and any query-plan-backed index changes. Existing canonical
 schema and RLS are preserved. The live changes require the concrete sign-off
 evidence in `distributed-architecture-20261023.md`; they are not implied approval
@@ -123,3 +123,62 @@ Railway, gateway, R2, Supabase, EAS native or OTA operation was dispatched.
 Installed build/channel/runtime and actual image/card/price/device journeys
 are unmeasured for this candidate. Existing storage/enforcement/scheduler/Pages
 sign-off and rollback requirements above remain pending.
+
+## Rebuild and automatic validation, 23 October 2026
+
+This stage continues from PR head `416c235d062643cf3ac08e2eaf1edd5ec492bf01`.
+It preserves both earlier commits and their source/evidence changes.
+
+The binder and Platform CI failures at that head share one stale artwork-recovery
+test. The repaired fixture checks four continuous 50-row pages for 200 identities,
+complete results and distinct asset identity for every card. It no longer reuses
+one synthetic asset ID across different cards. Full feedback-recovery and binder
+retrieval suites pass locally, including 54 binder reopen/isolation checks.
+
+The historical scanner finding is resolved through the narrow scanner repair
+requested above. Only the exact, case-sensitive audited mock value is exempt
+from the assigned-secret rule. Other values, prefixes/suffixes, neighboring
+assignments and independent token rules still fail. Actual CLI/temporary Git
+tests also prove detection after a secret is removed and across multiline patch
+runs without joining separate files, hunks or opposite patch sides. The raw
+history scan remains active; no branch history was rewritten. On this Windows
+sandbox, temporary Git fixtures use an explicitly writable workspace directory
+because Git cannot write its config in the default application temporary path.
+
+The implementation now separates owned-name facts from optional artwork. Seven
+adapter fixture groups prove zero ownership manifest requests, unchanged exact
+identity selection, six concurrent fact reads, cancellation and rejection of an
+incomplete required projection. Display callers retain artwork enrichment.
+Ownership, English identity, Home startup, artwork reassignment and uncached-card
+runtime regression suites pass. The remaining 500/1,000-row ownership reads are
+still outstanding; no universal payload-limit or measured latency claim follows.
+
+Plain anonymous CDN artwork uses real web lazy/eager image attributes while
+retaining the stable frame and vetted retry/fallback candidates. Signed/header
+sources, memory-only references, placeholders, transitions and tint keep the
+existing Expo renderer. Native behavior is unchanged. DOM markup, component
+events, image recovery and 25 preload/window checks pass. Browser cache source is
+reported as unknown, not incorrectly labelled as a cache miss.
+
+Architecture validation now runs in a separate Platform CI job against the exact
+PR source commit. Each suite is attempted after dependencies install, even when
+a preceding suite fails. Its artifact records every outcome and explicitly
+keeps live R2/CDN/app/device/latency checks unverified. Missing or skipped checks
+cannot make that report pass. The report contract tests and workflow YAML parse
+pass locally. Root typecheck and lint pass; lint retains eight existing warnings.
+
+Hosted locked-install CI remains the acceptance source for this revision. The
+workflow artifact and PR checks carry its current results. No live migration,
+deployment, catalogue publication or scheduler activation is performed by this
+stage or its automatic validation job.
+
+The prepared Railway catalogue worker uses the existing Docker image and runner.
+Its wrapper and config are inactive by default, retain existing durable leases
+and deadlines, and introduce no schedule. Activation and timeout tests pass;
+configuration fields were checked against Railway's current public JSON schema.
+Live service acceptance remains unverified. The combined eight-suite
+`test:distributed-architecture` command passes, as does independent review of all
+stage changes. Owner-teaching tests also pass. The local integration-repair chain
+passes its five ownership/search groups, then stops at a named Storm logo evidence
+file intentionally omitted from this isolated source snapshot; hosted CI uses
+the complete committed source and remains the authority for that full chain.

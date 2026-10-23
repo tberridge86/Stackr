@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { Buffer } from 'node:buffer';
 import { existsSync, lstatSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 
@@ -16,7 +17,7 @@ const rules = [
   ['shippo_api_token', /shippo_(?:live|test)_[A-Za-z0-9_-]{20,}/g],
   [
     'assigned_server_secret',
-    /(?:SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SECRET_KEY|RAILWAY_TOKEN|RAILWAY_API_TOKEN|CLOUDFLARE_API_TOKEN|EBAY_CLIENT_SECRET|XIMILAR_API_TOKEN|CARDSIGHT_API_KEY|POKEMON_TCG_API_KEY|STRIPE_SECRET_KEY|STRIPE_WEBHOOK_SECRET|SHIPPO_API_TOKEN|SHIPPO_API_KEY|SCRYDEX_API_KEY|POKEMON_PRICE_TRACKER_API_KEY|POKETRACE_API_KEY|CARDMATRIX_API_KEY|POKEWALLET_API_KEY)\s*[:=]\s*["'](?!\$|<|\{\{|REPLACE_|example|placeholder)[^"'\r\n]{12,}["']/gi,
+    /(?:SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SECRET_KEY|RAILWAY_TOKEN|RAILWAY_API_TOKEN|CLOUDFLARE_API_TOKEN|EBAY_CLIENT_SECRET|XIMILAR_API_TOKEN|CARDSIGHT_API_KEY|POKEMON_TCG_API_KEY|STRIPE_SECRET_KEY|STRIPE_WEBHOOK_SECRET|SHIPPO_API_TOKEN|SHIPPO_API_KEY|SCRYDEX_API_KEY|POKEMON_PRICE_TRACKER_API_KEY|POKETRACE_API_KEY|CARDMATRIX_API_KEY|POKEWALLET_API_KEY)\s*[:=]\s*["'](?!\$|<|\{\{|REPLACE_|example|placeholder)([^"'\r\n]{12,})["']/gi,
   ],
 ];
 
@@ -28,7 +29,13 @@ function inspectSource(source, location, findings) {
   if (source.includes('\0')) return;
   for (const [rule, expression] of rules) {
     expression.lastIndex = 0;
-    if (expression.test(source)) findings.push({ path: location.replace(/\\/g, '/'), rule });
+    for (const match of source.matchAll(expression)) {
+      // One audited historical mock value only; no prefix, suffix or case variants.
+      // Keep every other rule active and continue to inspect neighboring matches.
+      if (rule === 'assigned_server_secret' && match[1] === 'fixture-service-key') continue;
+      findings.push({ path: location.replace(/\\/g, '/'), rule });
+      break;
+    }
   }
   const jwtExpression = /eyJ[A-Za-z0-9_-]+\.([A-Za-z0-9_-]+)\.[A-Za-z0-9_-]+/g;
   for (const match of source.matchAll(jwtExpression)) {
@@ -41,6 +48,32 @@ function inspectSource(source, location, findings) {
     } catch {
       // Ignore strings that merely resemble JWTs.
     }
+  }
+}
+
+function inspectHistoryPatchRuns(history, location, findings) {
+  // Raw patch markers interrupt multiline assignments. Also inspect each
+  // contiguous added/deleted run, never joining opposite sides, hunks or files.
+  let side = null;
+  let lines = [];
+  const patchFindings = [];
+  const flush = () => {
+    if (lines.length) inspectSource(lines.join('\n'), location, patchFindings);
+    lines = [];
+  };
+  for (const line of history.split(/\r?\n/)) {
+    const nextSide = line.startsWith('+') && !line.startsWith('+++ ') ? '+'
+      : line.startsWith('-') && !line.startsWith('--- ') ? '-' : null;
+    if (nextSide !== side || nextSide === null) flush();
+    side = nextSide;
+    if (side !== null) lines.push(line.slice(1));
+  }
+  flush();
+  const seen = new Set(findings.map((finding) => `${finding.path}\0${finding.rule}`));
+  for (const finding of patchFindings) {
+    const key = `${finding.path}\0${finding.rule}`;
+    if (!seen.has(key)) findings.push(finding);
+    seen.add(key);
   }
 }
 
@@ -106,6 +139,7 @@ if (historyRange) {
     process.exit(1);
   }
   inspectSource(history.stdout, `git-history:${historyRange}`, findings);
+  inspectHistoryPatchRuns(history.stdout, `git-history:${historyRange}`, findings);
 }
 
 if (findings.length) {

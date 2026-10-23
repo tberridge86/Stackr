@@ -713,7 +713,10 @@ export async function fetchOwnedPokemonNameSet(
     for (let start = 0; start < cardIds.length; start += 6) {
       context.assertCurrent();
       const ids = cardIds.slice(start, start + 6);
-      const rows = await fetchStackrCardRows(ids);
+      // Ownership needs complete identity/name facts, never optional artwork.
+      const rows = await fetchStackrCardRows(ids, {
+        includeAssets: false, requireComplete: true, signal: context.signal,
+      });
       context.assertCurrent();
       for (const cardId of ids) {
         const card = rows.get(cardId);

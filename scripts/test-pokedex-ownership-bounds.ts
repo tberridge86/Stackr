@@ -98,7 +98,10 @@ function fixture(options: FixtureOptions = {}) {
       getPreferredCardDisplayName: (value: any) => value.fallbackName,
       getEnglishCardDisplayName: (value: any) => value.englishDisplayName,
     },
-    './stackrDomainAdapter': { fetchStackrCardRows: async (ids: string[]) => {
+    './stackrDomainAdapter': { fetchStackrCardRows: async (ids: string[], controls: { includeAssets?: boolean; requireComplete?: boolean; signal?: AbortSignal }) => {
+      assert.equal(controls.includeAssets, false, 'Name lookup must not request artwork.');
+      assert.equal(controls.requireComplete, true, 'Incomplete facts cannot become successful ownership.');
+      assert.ok(controls.signal && !controls.signal.aborted, 'Name lookup uses the live logical read signal.');
       nameBatches.push([...ids]);
       return options.cardRows?.(ids) ?? new Map(ids.map((id) => [id, { id, name: 'Pikachu', supertype: 'Pokémon' }]));
     } },
@@ -265,6 +268,15 @@ async function run() {
     const late = deferred<Map<string, any>>(); const timed = fixture({ rows, timeoutMs: 20, cardRows: () => late.promise });
     await assert.rejects(timed.names(), /taking longer than expected/);
     late.resolve(new Map()); await tick(); await tick(); assert.equal(timed.nameBatches.length, 1);
+  });
+
+  await test('required name facts fail the ownership refresh without scheduling later name batches', async () => {
+    const failure = new Error('required name facts failed');
+    const f = fixture({ rows: { user_card_variants: Array.from({ length: 13 }, (_, index) => variantRow(index)) },
+      cardRows: async () => { throw failure; } });
+    await assert.rejects(f.names(), (error) => error === failure);
+    assert.equal(f.nameBatches.length, 1);
+    assert.ok(f.requests.every((row) => row.signal.aborted));
   });
 
   console.log(JSON.stringify({ fixtureAccountsOnly: true, actualOwnershipService: true, passedGroups: groups.length, groups,

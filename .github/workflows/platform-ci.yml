@@ -94,7 +94,6 @@ jobs:
       - run: npm run test:stackr-preview-proxy
       - run: npm run test:asset-pipeline
       - run: npm run test:asset-repair
-      - run: npm run test:distributed-architecture
       - run: npm run test:foreign-artwork-delivery
       - run: node scripts/test-simplified-chinese-set-logo-pack.mjs
       - run: node --import tsx scripts/test-japanese-set-logo-runtime-lookup.ts
@@ -139,6 +138,69 @@ jobs:
       - run: npm run test:four-language-catalogue-backfill
       - run: npm run test:four-language-progress
       - run: npx tsx scripts/test-stackr-quality-evaluation.ts
+
+  distributed-architecture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install locked dependencies
+        id: dependencies
+        run: |
+          npm ci
+          npm ci --prefix backend
+      - name: Validate R2 immutability and delivery
+        id: r2_storage
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: node scripts/test-r2-asset-delivery.mjs
+      - name: Validate actual v1 image responses
+        id: api_delivery
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: node scripts/test-r2-api-delivery.mjs
+      - name: Validate complete bounded client pages
+        id: pagination
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: node --import tsx scripts/test-ui-pagination.ts
+      - name: Validate owned-card facts without artwork dependencies
+        id: owned_facts
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: node --import tsx scripts/test-owned-card-facts-only.ts
+      - name: Validate legacy original preservation
+        id: legacy_repair
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: node scripts/test-stored-catalogue-asset-repair.mjs
+      - name: Validate web image loading
+        id: web_images
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: node scripts/test-stackr-image-web.cjs
+      - name: Validate Railway worker activation boundaries
+        id: worker_boundary
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: node scripts/test-railway-catalogue-price-worker.mjs
+      - name: Validate evidence reporting
+        id: report_contract
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: node scripts/test-architecture-validation-report.mjs
+      - name: Record tested source and all check outcomes
+        if: ${{ always() }}
+        env:
+          ARCHITECTURE_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          ARCHITECTURE_STEPS_JSON: ${{ toJSON(steps) }}
+          ARCHITECTURE_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: node scripts/architecture-validation-report.mjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: ${{ always() }}
+        with:
+          name: distributed-architecture-validation
+          path: reports/distributed-architecture-validation.json
+          if-no-files-found: error
+          retention-days: 14
 
   database-migration-tests:
     runs-on: ubuntu-latest
@@ -252,6 +314,7 @@ jobs:
       - run: npm ci
       - run: npm ci --prefix backend
       - run: npm ci --prefix gateway
+      - run: node scripts/test-secret-scan-fixtures.mjs
       - run: npm run ci:secret-scan
       - name: Scan commits introduced by this change
         shell: bash

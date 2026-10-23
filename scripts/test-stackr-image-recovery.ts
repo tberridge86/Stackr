@@ -24,6 +24,7 @@ const modules: Record<string, any> = {
   react: { ...React, default: React, __esModule: true },
   'react-native': { View: 'View', Text: 'Text', StyleSheet: { create: (v: any) => v, absoluteFillObject: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 } }, InteractionManager: { runAfterInteractions: () => ({ cancel() {} }) } },
   'expo-image': { Image: 'ExpoImage' }, '@expo/vector-icons': { Ionicons: 'Icon' },
+  './StackrImageElement': { StackrImageElement: 'ExpoImage' },
   './theme-context': { useTheme: () => ({ theme: { colors: { surface: 'white', textSoft: 'gray' } } }) },
   '../lib/stackrImageCandidates': candidates, '../lib/tcgdexControlledCardReference': policy,
   '../lib/stackrSizing': sizing,

@@ -1244,20 +1244,30 @@ export async function resolveCachedStackrCard(
 
 export async function fetchStackrCard(
   reference: string,
-  options: { language?: string | null; setId?: string | null; onCanonicalCard?: (card: StackrLegacyCard) => void } = {},
+  options: {
+    language?: string | null;
+    setId?: string | null;
+    onCanonicalCard?: (card: StackrLegacyCard) => void;
+    includeAssets?: boolean;
+    signal?: AbortSignal;
+  } = {},
   client: StackrApiClient = stackrApiClient,
 ) {
+  throwIfOptionalCatalogueReadAborted(options.signal);
   if (!shouldUseStackrApi(client)) {
     const exact = await legacyCardMap([reference]);
+    throwIfOptionalCatalogueReadAborted(options.signal);
     const card = exact.get(reference);
     if (card) return card;
     const candidates = await legacySearchCards(reference, options.language, 10);
+    throwIfOptionalCatalogueReadAborted(options.signal);
     const constrained = options.setId
       ? candidates.filter((candidate) => candidate.set.id === options.setId)
       : candidates;
     return constrained.length === 1 ? constrained[0] : null;
   }
   const resolved = await resolveCachedStackrCard(reference, options, client);
+  throwIfOptionalCatalogueReadAborted(options.signal);
   if (!resolved) return null;
   if (!resolved.card.variants.some(variant => variant.variantId === resolved.variantId)) return null;
   // Exact variant lookup must not reopen the printing's default finish. Clone
@@ -1267,13 +1277,13 @@ export async function fetchStackrCard(
   copyPreferredSetArtworkReassignments(resolved.card, selectedCard);
   const embeddedAssets = embeddedCardImageAssets(selectedCard);
   // Only verified printing/variant facts can end a caller's essential loading
-  // phase; the returned promise still includes the existing optional artwork.
+  // phase. Display callers also await optional artwork unless they opt out.
   const facts = stackrCardToLegacyCard(selectedCard, embeddedAssets);
   options.onCanonicalCard?.(facts);
-  if (primaryCardImageAsset(selectedCard, embeddedAssets)) {
+  if (options.includeAssets === false || primaryCardImageAsset(selectedCard, embeddedAssets)) {
     return facts;
   }
-  const assets = await readOptionalCatalogueEnrichment(signal => fetchStackrAssetsForPrinting(client, selectedCard.cardId, signal));
+  const assets = await readOptionalCatalogueEnrichment(signal => fetchStackrAssetsForPrinting(client, selectedCard.cardId, signal), options.signal);
   return stackrCardToLegacyCard(selectedCard, assets ?? []);
 }
 
@@ -1300,6 +1310,10 @@ export async function fetchStackrCardRows(
     language?: string | null;
     concurrency?: number;
     signal?: AbortSignal;
+    /** Name/identity consumers can skip optional image-manifest requests. */
+    includeAssets?: boolean;
+    /** Ownership projections must not publish a partial set after a missing fact. */
+    requireComplete?: boolean;
     onCanonicalRows?: (rows: Map<string, ReturnType<typeof stackrLegacyCardToRow>>) => void;
   } = {},
   client: StackrApiClient = stackrApiClient,
@@ -1309,6 +1323,9 @@ export async function fetchStackrCardRows(
   if (!shouldUseStackrApi(client)) {
     const cards = await legacyCardMap(unique);
     throwIfOptionalCatalogueReadAborted(options.signal);
+    if (options.requireComplete && unique.some((reference) => !cards.has(reference))) {
+      throw new Error('Card facts could not be completely resolved. Please retry.');
+    }
     return new Map([...cards.entries()].map(([reference, card]) => [reference, stackrLegacyCardToRow(card)]));
   }
   const byReference = new Map<string, ReturnType<typeof stackrLegacyCardToRow>>();
@@ -1320,6 +1337,8 @@ export async function fetchStackrCardRows(
     const rows = await Promise.all(batch.map(async (reference) => {
       const card = await fetchStackrCard(reference, {
         language: options.language,
+        includeAssets: options.includeAssets,
+        signal: options.signal,
         onCanonicalCard: options.onCanonicalRows || options.signal ? (facts) => {
           throwIfOptionalCatalogueReadAborted(options.signal);
           if (!options.onCanonicalRows) return;
@@ -1330,7 +1349,13 @@ export async function fetchStackrCardRows(
           // caller has projected it for display. Keep both exact lookup aliases.
           options.onCanonicalRows?.(new Map(canonicalRows));
         } : undefined,
-      }, client).catch(() => null);
+      }, client).catch((error) => {
+        if (options.requireComplete) throw error;
+        return null;
+      });
+      if (!card && options.requireComplete) {
+        throw new Error('Card facts could not be completely resolved. Please retry.');
+      }
       return card ? { reference, row: stackrLegacyCardToRow(card) } : null;
     }));
     // In-flight cached facts may ignore cancellation. They must not dispatch

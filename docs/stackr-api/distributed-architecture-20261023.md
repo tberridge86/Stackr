@@ -43,8 +43,17 @@ Continue using `StackrImage` and its existing thumbnail-first selection, stable
 frame, rendition cache keys, bounded prefetch, full-resolution inspection and
 honest unavailable states. Use the actual uploaded WebP derivatives. Do not invent
 AVIF URLs or `/cdn-cgi/image` variants without a configured transform service.
-Browser lazy loading belongs on web image elements; it is not a React Native prop.
-Below-fold web lazy-loading changes still need a dedicated renderer test.
+Plain anonymous CDN artwork now uses a web image element with native lazy
+loading. High-priority, detail and explicitly prefetched images stay eager;
+signed/header sources and special Expo features retain the existing renderer.
+The native renderer is unchanged. DOM and retry regressions cover this boundary;
+browser network timing and actual device behavior remain separate checks.
+
+Owned-name projections request complete card facts without optional artwork.
+They share account cancellation across batches and reject an incomplete refresh
+rather than publish an incomplete owned-name set. Display callers continue to
+request artwork by default. This removes unnecessary manifests; it does not
+replace the remaining bulk ownership reads with an aggregate endpoint.
 
 The supplied example `cards` table is illustrative, not a replacement for
 Stackr's canonical printing/variant schema. Preserve language, set, collector
@@ -90,6 +99,13 @@ a protected GitHub environment, with Pages-edit scope and explicit owner approva
 Existing GitHub price/ingestion schedules remain active under their existing gates
 until the Railway worker cutover has been rehearsed; do not run both schedulers.
 
+`deploy/catalogue-price-worker/railway.json` prepares the existing dedicated
+worker image with a guarded entry point and restart policy `NEVER`. No schedule
+is added. The wrapper exits without work unless separate activation, scheduler,
+bulk-write and exact database-target checks pass. Existing Docker CMD behavior
+is preserved for services that have not adopted this config. Follow that
+directory's cutover instructions; configuring a file is not activating a service.
+
 Railway worker cutover must name the current command, queue/lease key, maximum
 concurrency, retry/deadline policy and a controlled stop/drain/start sequence.
 WebSocket replicas also need shared presence/pub-sub or explicit routing; multiple
@@ -118,6 +134,13 @@ bounded. This change contains no live performance measurement or deployment.
 
 Local verification and remaining rollout limits are recorded in
 `distributed-architecture-validation-20261023.md`.
+
+Platform CI runs the architecture checks in a dedicated job, independent of the
+large legacy unit-test sequence. It checks the exact PR source commit, attempts
+each suite after dependency installation even if another suite fails, and
+uploads `distributed-architecture-validation.json`. Missing, skipped, cancelled
+and failed checks block the report. Passing offline fixtures never grants
+deployment approval or labels live delivery/latency as verified.
 
 Official references: [R2 public buckets](https://developers.cloudflare.com/r2/buckets/public-buckets/),
 [R2 pricing](https://developers.cloudflare.com/r2/pricing/),

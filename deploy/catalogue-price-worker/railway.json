@@ -1,0 +1,20 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "deploy/catalogue-price-worker/Dockerfile",
+    "watchPatterns": [
+      "deploy/catalogue-price-worker/**",
+      "scripts/run-railway-catalogue-price-worker.mjs",
+      "scripts/run-catalogue-price-cron.mjs",
+      "scripts/refresh-catalogue-bulk-prices.mjs",
+      "scripts/catalogue-bulk-coverage-report.mjs",
+      "scripts/catalogue-price-*.mjs",
+      "scripts/pricing-v2-supabase-target.mjs"
+    ]
+  },
+  "deploy": {
+    "startCommand": "node scripts/run-railway-catalogue-price-worker.mjs",
+    "restartPolicyType": "NEVER"
+  }
+}

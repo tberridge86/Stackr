@@ -12,6 +12,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { useTheme } from './theme-context';
+import { StackrImageElement } from './StackrImageElement';
 import { stackrCardImageSizes } from '../lib/stackrSizing';
 import { nextStackrImageCandidate, stackrImageCandidates } from '../lib/stackrImageCandidates';
 import type { RetrievalImageEvent } from '../lib/performance';
@@ -228,7 +229,7 @@ function StackrImageBase({
       ]}
     >
       {resolvedSource ? (
-        <ExpoImage
+        <StackrImageElement
           key={candidate ? `${candidate.key}:retry-${retryAttempt}` : undefined}
           source={imageSource}
           style={[styles.image, shape && cardFrame ? {
@@ -244,6 +245,7 @@ function StackrImageBase({
           placeholderContentFit={contentFit}
           cachePolicy={isTcgdexControlledCardReferenceUrl(remoteUri) ? 'memory' : 'memory-disk'}
           priority={priority}
+          loading={priority === 'high' || prefetch || preserveDetail ? 'eager' : 'lazy'}
           allowDownscaling={!preserveDetail}
           decodeFormat={preserveDetail ? 'argb' : undefined}
           transition={transition}

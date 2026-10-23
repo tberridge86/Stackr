@@ -135,7 +135,7 @@
     "asset:repair-stored-catalogue": "node scripts/repair-stored-catalogue-assets.mjs",
     "test:asset-pipeline": "node scripts/test-asset-pipeline.mjs",
     "test:asset-repair": "node scripts/test-stored-catalogue-asset-repair.mjs",
-    "test:distributed-architecture": "node scripts/test-r2-asset-delivery.mjs && node scripts/test-r2-api-delivery.mjs && node --import tsx scripts/test-ui-pagination.ts && node scripts/test-stored-catalogue-asset-repair.mjs",
+    "test:distributed-architecture": "node scripts/test-r2-asset-delivery.mjs && node scripts/test-r2-api-delivery.mjs && node --import tsx scripts/test-ui-pagination.ts && node scripts/test-stored-catalogue-asset-repair.mjs && node --import tsx scripts/test-owned-card-facts-only.ts && node scripts/test-stackr-image-web.cjs && node scripts/test-railway-catalogue-price-worker.mjs && node scripts/test-architecture-validation-report.mjs",
     "test:asset-manifest-query-equivalence": "node scripts/test-asset-manifest-card-image-equivalence.mjs",
     "test:japanese-catalogue-completion": "node scripts/test-japanese-catalogue-completion.mjs",
     "test:japanese-api-storage": "node scripts/test-japanese-catalogue-api-storage.mjs && node scripts/test-japanese-staging-gateway.mjs",
