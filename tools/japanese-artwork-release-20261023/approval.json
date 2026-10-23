@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "decision_type": "owner_attested_finite_artwork_publication",
+  "approved_at": "2026-10-23",
+  "cohort_sha256": "6bc2f65a7826ba623c8e0e1f8a6d0ea46e4db3e24a4e7c582543b14d6c313dc7",
+  "source_evidence_sha256": "964e632a7daa5e914692d1bb64d17347ce10c0743816ef44d3a4b2958c1b7fec",
+  "fronts": 71,
+  "language_code": "ja",
+  "source_codes": [
+    "tcgcollector"
+  ],
+  "store_resize_display": true,
+  "owner_statement": "Source and identity checks. I need you to release them now.",
+  "standing_authority": "Owner previously authorised scraping, sourcing and displaying the remaining artwork and stated everything is approved.",
+  "source_wide_approval": false,
+  "source_activation": false,
+  "vendor_licence_verified": false,
+  "physical_finish_verified": false,
+  "physical_edition_verified": false,
+  "animation": false,
+  "additional_provider_spend": 0
+}
