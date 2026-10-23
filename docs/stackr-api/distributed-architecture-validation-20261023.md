@@ -64,3 +64,62 @@ Pages provisioning and any query-plan-backed index changes. Existing canonical
 schema and RLS are preserved. The live changes require the concrete sign-off
 evidence in `distributed-architecture-20261023.md`; they are not implied approval
 to migrate data or alter infrastructure.
+# Release-owner CI repair, 23 October 2026 16:54 UTC
+
+Reviewed draft PR #437 at `12fbc463cb47b4577f66b25704c1883a662f5f5f`, based on
+main `7e22cee8d94f2904c3c2cfcf2c0e28da74eabdcc`. This follow-up changes tests and
+historical evidence only; it does not activate R2, change runtime code or deploy.
+
+Hosted Platform CI [39989509377](https://github.com/tberridge86/Stackr/actions/runs/39989509377)
+failed five jobs: benchmark evidence, API contract, integration, lint/type/unit
+at server-delivery, and the secret scan. Database tests and the recognition
+container passed; the release-candidate gate was skipped. The new distributed
+architecture suite, backend tests and later lint/type/unit steps were skipped
+after server-delivery failed. Gateway API-contract checks and binder source
+checks also failed; pricing identity checks passed. These are not release passes.
+
+The focused repair:
+
+- Replaces an empty public index response mock with 1,350 synthetic identities.
+  The real client must return exactly the requested 1,199 identities through
+  exactly 24 requests (23 x 50, then 49), without reading a login token.
+- Updates static manifest and OpenAPI assertions to the implemented 50-row limit;
+  exact printing selectors, cursor and cancellation assertions remain.
+- Uses an explicitly example service key in the mocked R2 test. Scanner rules
+  remain unchanged.
+- Preserves the historical importer as non-executable `.mjs.txt` evidence from
+  commit `0944d528dea01056fb22c76c83c3fa6540779524`. Its original SHA256
+  `ead106e80c9fc78be5fc957646a84572a2430c213d31916d9fc623d5aa201a02`
+  and all six session checks remain unchanged; the plan now records its original
+  path/revision rather than hashing the evolving runtime importer.
+
+Local Linux/Node 24 checks: all four `test:distributed-architecture` commands,
+API transport policy, API v1 integration, cache recovery, full `test:server-delivery`,
+recognition tomorrow-prep, typecheck and lint passed (lint: 0 errors, 8 warnings).
+Working-tree secret scan passed over 3,805 tracked files before adding the
+historical snapshot. Independent review verified snapshot bytes, unchanged
+capture restrictions and pagination assertions. Dependencies were reused from
+the earlier isolated checkout; hosted locked installs remain authoritative.
+These are mocked/local outcomes, not live CDN or device measurements.
+
+**Exact remaining action:** the unchanged history scanner reproducibly rejects
+`7e22cee8..12fbc463` because the original commit contains the synthetic
+`fixture-service-key` assignment. Changing the current fixture does not erase
+that finding. Resolve this verified false positive with a separately reviewed,
+narrow scanner repair and positive/negative secret fixtures; do not disable the
+gate, broadly exclude tests or rewrite history. Then inspect the new exact-head
+CI run, including previously skipped steps. Keep this PR draft for owner review.
+
+PR #436 is a separate draft at `65a671771f6bdfca3eb3723f136e27fe427736cf` with
+overlapping client/API/gateway/CI changes. Its latest Platform run
+[39986216811](https://github.com/tberridge86/Stackr/actions/runs/39986216811)
+passed API/integration/benchmark/security jobs but failed lint/type/unit at
+mobile-recovery; it is not a green integration prerequisite. Reconcile both
+heads in an isolated integration checkout before promotion.
+
+Release layers remain separate: no migration added here; production/staging
+migration compatibility was not remeasured in this source-only repair. No
+Railway, gateway, R2, Supabase, EAS native or OTA operation was dispatched.
+Installed build/channel/runtime and actual image/card/price/device journeys
+are unmeasured for this candidate. Existing storage/enforcement/scheduler/Pages
+sign-off and rollback requirements above remain pending.

@@ -7,8 +7,10 @@
     "pilotReportSha256": "cb4f67f079c96cfc3bda5502fd3608aa32677049a0dc91eb1bed02501c5b92d6",
     "cataloguePath": "catalogue/zh-cn/151c/reviewed-owned-captures.json",
     "catalogueSha256": "184424346e601be3468a09eb3fbcdb89735a3b840bc289007d2b0c516082debd",
-    "originalSessionPath": "scripts/import-approved-capture-catalogue-assets.mjs",
-    "originalSessionSha256": "ead106e80c9fc78be5fc957646a84572a2430c213d31916d9fc623d5aa201a02"
+    "originalSessionPath": "deploy/evidence/approved-capture-importer-20260831.mjs.txt",
+    "originalSessionSha256": "ead106e80c9fc78be5fc957646a84572a2430c213d31916d9fc623d5aa201a02",
+    "originalSourcePath": "scripts/import-approved-capture-catalogue-assets.mjs",
+    "originalSourceRevision": "0944d528dea01056fb22c76c83c3fa6540779524"
   },
   "modelContext": {
     "candidateModelId": "dinov2_vits14",

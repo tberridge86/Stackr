@@ -1362,7 +1362,7 @@ const artworkPresentation = await readFile(new URL('../lib/cardArtworkPresentati
 assert.match(artworkPresentation, /!asset\.variantId && asset\.cardId === card\.cardId/);
 assert.match(domainAdapter, /const needsManifestFallback = cards\.some/);
 assert.match(domainAdapter,
-  /client\.assetManifest\(\s*\{\s*printingIds:\s*\w+,\s*assetType:\s*'card_image',\s*cursor,\s*limit:\s*250,?\s*\},\s*\{ signal \}\)/,
+  /client\.assetManifest\(\s*\{\s*printingIds:\s*\w+,\s*assetType:\s*'card_image',\s*cursor,\s*limit:\s*50,?\s*\},\s*\{ signal \}\)/,
   'optional search manifests retain exact printing batches, pagination and bounded child cancellation');
 assert.doesNotMatch(domainAdapter, /const hasEmbeddedImages = cards\.some/);
 for (const method of [
@@ -1413,6 +1413,6 @@ assert.match(
 );
 assert.doesNotMatch(domainAdapter, /client\.assetManifest\(\{[^}]*limit:\s*1000/);
 assert.match(openApi, /\/assets\/manifest:[\s\S]+#\/components\/parameters\/Cursor[\s\S]+#\/components\/parameters\/Limit/);
-assert.match(openApi, /Limit:\s+[\s\S]*?name: limit[\s\S]*?maximum: 500/);
+assert.match(openApi, /Limit:\s+[\s\S]*?name: limit[\s\S]*?maximum: 50\b/);
 
 console.log('Stackr API v1 integration tests passed.');

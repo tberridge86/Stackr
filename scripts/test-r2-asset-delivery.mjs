@@ -241,7 +241,7 @@ async function assertConnectedManifestRoute() {
   const handler = assetRoutes.stack.find((layer) => layer.route?.path === '/manifest')?.route.stack[0].handle;
   assert.equal(typeof handler, 'function');
   const calls = [];
-  await withEnvironment({ ...config, SUPABASE_URL: 'https://metadata.example.invalid', SUPABASE_SECRET_KEY: 'fixture-service-key' }, async () => {
+  await withEnvironment({ ...config, SUPABASE_URL: 'https://metadata.example.invalid', SUPABASE_SECRET_KEY: 'example-service-key' }, async () => {
     await withFetch(async (rawUrl) => {
       const url = new URL(rawUrl);
       assert.equal(url.hostname, 'metadata.example.invalid', 'the manifest may only query metadata');
