@@ -71,7 +71,6 @@ import { useCardImagePreload } from '../../hooks/useCardImagePreload';
 import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../components/RaritySymbol';
 import { ScrollToEndButton } from '../../components/ScrollToEndButton';
 import {
-  CardDetailInspectSurface,
 } from '../../components/InteractiveCardInspectPressable';
 import {
   BinderRecord,
@@ -1200,6 +1199,17 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         };
         void attachBinderCatalogueArtwork(saved.cards, artworkRequest.signal, applyPreviewArtwork)
           .then(applyPreviewArtwork).catch(() => undefined);
+        // Public set branding is independent of private ownership confirmation.
+        void attachBinderSetArtwork(saved.binder).then((enriched) => {
+          if (!previewAllowed || previewState.snapshot !== saved || !isCurrentRequest() || artworkRequest.signal.aborted) return;
+          setBinder((current) => current?.id === enriched.id && previewAllowed && previewState.snapshot === saved
+            && isCurrentRequest() && !artworkRequest.signal.aborted ? {
+              ...current,
+              source_set_logo_url: enriched.source_set_logo_url ?? current.source_set_logo_url,
+              source_set_symbol_url: enriched.source_set_symbol_url ?? current.source_set_symbol_url,
+              source_set_cover_url: enriched.source_set_cover_url ?? current.source_set_cover_url,
+            } : current);
+        }).catch(() => undefined);
       }).catch(() => undefined);
       setShowcaseRows([]);
       setOwnedVariants(new Map());
@@ -5017,7 +5027,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                               size="modal"
                             />
                           ) : (
-                            <CardDetailInspectSurface title={getBinderCardDisplayName(selectedCard, selectedCard.card_id)} cardMetadata={getLibraryFinish(selectedCard)} active={detailVisible} style={{ flex: 1 }}>
+                            <View style={{ flex: 1 }}>
                             <EditionAwareCardImage
                               uri={modalImageUri}
                               fullUri={modalImageUri}
@@ -5032,7 +5042,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                               imageStyle={{ borderRadius: 15 }}
                               resizeMode="contain"
                             />
-                            </CardDetailInspectSurface>
+                            </View>
                           )}
 
                           {/* Variant slices in Modal */}

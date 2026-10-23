@@ -481,7 +481,7 @@ export function createV1Router(options = {}) {
 
   router.get('/market/movers', asyncRoute(async (req, res) => {
     const movers = await getPricingService().marketMovers(req.query);
-    sendEnvelope(req, res, { movers: movers.movers }, {
+    sendEnvelope(req, res, { movers: movers.movers, ...(movers.coverage ? { coverage: movers.coverage } : {}) }, {
       cacheControl: MARKET_CACHE_CONTROL,
       pagination: movers.pagination,
     });

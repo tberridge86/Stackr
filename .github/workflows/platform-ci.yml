@@ -84,7 +84,7 @@ jobs:
       - run: npm run test:commerce-release-lock
       - run: npm run test:ux-service-release
       - run: npm run test:personal-loading
-      - run: npm run test:feedback-recovery
+      - run: npm run test:build60-feedback
       - run: npm run test:storm-logo-publication
       - run: npm run test:binder-retrieval
       - run: npm run test:startup-loading
@@ -100,7 +100,6 @@ jobs:
       - run: npm run test:recognition-orchestrator
       - run: npm run test:owner-recognition
       - run: npm run test:owner-teaching
-      - run: npm run test:card-inspection
       - run: npm run test:scanner-calibration
       - run: npm run test:scanner-pipeline
       - run: npm run test:scanner-analytics

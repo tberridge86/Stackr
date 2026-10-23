@@ -12,5 +12,5 @@ export function parseCardSearchIntent(input: string) {
     grading.push({ grader: (company.toLowerCase() === 'beckett' ? 'BGS' : company.toUpperCase()) as CardSearchGradingModifier['grader'], grade: String(Number(grade)) });
     return ' ';
   }).replace(/\s+/g, ' ').trim();
-  return { originalQuery, catalogueQuery: grading.length ? catalogueQuery : originalQuery, grading };
+  return { originalQuery, catalogueQuery, grading };
 }

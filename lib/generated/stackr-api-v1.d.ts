@@ -1374,7 +1374,52 @@ export interface components {
                 };
             };
         };
-        MarketMoversResponse: components["schemas"]["Envelope"];
+        MarketMoversResponse: components["schemas"]["Envelope"] & {
+            data?: {
+                movers: {
+                    /** Format: uuid */
+                    variantId?: string | null;
+                    /** @enum {string} */
+                    productType?: "raw_card" | "graded_card" | "sealed_product";
+                    currency?: string;
+                    currentEstimate?: number | null;
+                    previousEstimate?: number | null;
+                    percentageChange?: number | null;
+                    /** Format: date-time */
+                    calculatedAt?: string | null;
+                    /** Format: date-time */
+                    previousCalculatedAt?: string | null;
+                    /** @constant */
+                    comparisonDays?: 1;
+                    /** @enum {string} */
+                    priceBasis?: "catalogue_market_guide";
+                    /** @enum {string} */
+                    sourceProvider?: "tcgcsv";
+                }[];
+                coverage?: components["schemas"]["DailyMarketCoverage"];
+            };
+        };
+        /** @description Counts describe the complete currently published physical catalogue before ranking and output limits. Only supported TCGCSV English/Japanese finishes participate. Unquoted, stale, unsupported and insufficient-history identities are never represented as zero or copied from a collection. History becomes available after approved guide writes retain two actual consecutive source dates; this contract does not establish deployment or worker activation. */
+        DailyMarketCoverage: {
+            /** @enum {string} */
+            scope: "catalogue_daily";
+            /** @enum {string} */
+            source: "tcgcsv";
+            /** @enum {string} */
+            state: "ready" | "insufficient_history";
+            publishedVariants: number;
+            supportedVariants: number;
+            quotedVariants: number;
+            comparableVariants: number;
+            unsupportedVariants: number;
+            unquotedVariants: number;
+            staleVariants: number;
+            insufficientHistoryVariants: number;
+            /** Format: date-time */
+            latestSourceAt: string | null;
+            /** Format: date-time */
+            asOf: string;
+        };
         MarketOpportunitiesResponse: components["schemas"]["Envelope"];
         SearchResponse: components["schemas"]["Envelope"] & {
             data?: {
@@ -2170,6 +2215,10 @@ export interface operations {
                 productType?: components["parameters"]["ProductType"];
                 currency?: components["parameters"]["Currency"];
                 limit?: components["parameters"]["Limit"];
+                /** @description Opt in to globally ranked daily catalogue guides. Omission retains the legacy stored-estimate sample. Daily mode requires raw_card and GBP; absent history is explicit and never falls back to the legacy sample. */
+                scope?: "catalogue_daily";
+                /** @description Global ranking within each direction in catalogue_daily scope. Daily comparisons use actual consecutive UTC provider dates and current guides no older than 48 hours. Guide evidence is condition-unspecified and is not a completed sale. */
+                sortBy?: "money" | "percent";
             };
             header?: never;
             path?: never;

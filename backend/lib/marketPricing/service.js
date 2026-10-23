@@ -1563,6 +1563,53 @@ export function createMarketPricingService(options) {
       const limit = parseLimit(input.limit, 25, 100);
       const currency = normalizeCurrency(input.currency);
       const productType = clean(input.productType) ? normalizeProductType(input.productType) : null;
+      if (input.scope != null && input.scope !== 'catalogue_daily') {
+        throw new ApiError(400, 'invalid_mover_scope', 'scope must be catalogue_daily when supplied.');
+      }
+      if (input.scope === 'catalogue_daily') {
+        const sortBy = input.sortBy ?? 'percent';
+        if (!['money', 'percent'].includes(sortBy) || currency !== 'GBP' || (productType && productType !== 'raw_card')) {
+          throw new ApiError(400, 'invalid_daily_mover_query', 'Daily catalogue movers support raw cards in GBP, ranked by money or percent.');
+        }
+        // The RPC ranks the complete supported published catalogue before its
+        // output cap. Missing history/schema must never fall back to the old
+        // percentage sample or to a user's collection.
+        const { data, error } = await supabase.schema('api').rpc('catalogue_daily_market_movers', { p_limit: limit, p_sort: sortBy });
+        if (error) throw new ApiError(503, 'catalogue_daily_movers_unavailable', 'Daily catalogue price history is not available yet. Retry stored data.');
+        const coverage = data?.coverage;
+        const counts = ['publishedVariants', 'supportedVariants', 'quotedVariants', 'comparableVariants',
+          'unsupportedVariants', 'unquotedVariants', 'staleVariants', 'insufficientHistoryVariants'];
+        const invalid = !data || !Array.isArray(data.movers) || data.movers.length > limit
+          || coverage?.scope !== 'catalogue_daily' || coverage.source !== 'tcgcsv'
+          || !['ready', 'insufficient_history'].includes(coverage.state)
+          || counts.some((key) => !Number.isSafeInteger(coverage[key]) || coverage[key] < 0)
+          || coverage.publishedVariants !== coverage.supportedVariants + coverage.unsupportedVariants
+          || coverage.supportedVariants !== coverage.quotedVariants + coverage.unquotedVariants
+          || coverage.quotedVariants !== coverage.comparableVariants + coverage.staleVariants + coverage.insufficientHistoryVariants
+          || (coverage.state === 'ready') !== (coverage.comparableVariants > 0)
+          || !dateOrNull(coverage.asOf)
+          || (coverage.latestSourceAt != null && !dateOrNull(coverage.latestSourceAt));
+        if (invalid) throw new ApiError(503, 'catalogue_daily_movers_invalid', 'Daily catalogue price coverage could not be verified.');
+        const variants = new Set();
+        for (const row of data.movers) {
+          const currentAt = dateOrNull(row.calculatedAt);
+          const previousAt = dateOrNull(row.previousCalculatedAt);
+          const current = numeric(row.currentEstimate);
+          const previous = numeric(row.previousEstimate);
+          const sourceDay = (at) => Math.floor(Date.parse(at) / 86_400_000);
+          if (!isUuid(row.variantId) || variants.has(row.variantId) || row.productType !== 'raw_card' || row.currency !== 'GBP'
+            || row.priceBasis !== 'catalogue_market_guide' || row.sourceProvider !== 'tcgcsv' || row.comparisonDays !== 1
+            || !currentAt || !previousAt || sourceDay(currentAt) - sourceDay(previousAt) !== 1
+            || Date.parse(currentAt) > Date.parse(coverage.asOf) || Date.parse(currentAt) < Date.parse(coverage.asOf) - 48 * 3_600_000
+            || current == null || current <= 0 || previous == null || previous <= 0
+            || numeric(row.percentageChange) == null
+            || Math.abs(row.percentageChange - (current - previous) / previous * 100) > 0.011) {
+            throw new ApiError(503, 'catalogue_daily_movers_invalid', 'Daily catalogue price comparisons could not be verified.');
+          }
+          variants.add(row.variantId);
+        }
+        return { movers: data.movers, coverage, pagination: { limit, nextCursor: null } };
+      }
       // This is a bounded percentage-movement sample, not a complete market or
       // global cash ranking. One descending page can exclude every real faller.
       const readExtreme = (ascending) => {

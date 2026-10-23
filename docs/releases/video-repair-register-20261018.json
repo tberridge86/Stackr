@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-20",
+  "updatedAt": "2026-10-23",
   "sourceVideo": {
     "fileName": "WhatsApp Video 2026-10-18 at 09.12.30.mp4",
     "sha256": "a29ad89ce8cec90b3dfa299c5a951ff4b60d686187f5a27c03a4e6175d1e859c",
@@ -2445,5 +2445,36 @@
     "phoneOnlyReadyClaimed": false,
     "nonPhoneGaps": "Source identity/artwork, authenticated price coverage, primary API and native delivery remain as disclosed in the linked receipt",
     "historicalMergeApprovalHold": "The owner20October merge instruction supersedes the earlier PR413 source-merge hold; database scripts and native delivery remain separate"
+  },
+  "build60FollowUp": {
+    "evidence": "docs/releases/build60-feedback-repairs-20261022.md",
+    "retrievalReadback": "docs/releases/build60-retrieval-readback-20261022.json",
+    "sourceVideo": "WhatsApp Video 2026-10-21 at 18.57.00.mp4",
+    "nativeBuild": 60,
+    "nativeSourceCommit": "311fc84a95de4c730b61473f891079547d1a9b6f",
+    "nativeBuildReceipt": "https://expo.dev/accounts/tommo86/projects/Stackr/builds/23565784-9fa5-4f9c-ae48-2376756891fb",
+    "repairBranch": "repair/build60-feedback-20261022",
+    "status": "local_source_repaired_device_and_operational_delivery_pending",
+    "originalIssuesClosed": 0,
+    "liveOperationsPerformed": false
+  },
+  "resume20261023": {
+    "report": "docs/releases/retrieval-integration-20261023.md",
+    "baseRevision": "7e22cee8d94f2904c3c2cfcf2c0e28da74eabdcc",
+    "branch": "agent/release/retrieval-integration-20261023",
+    "retrievalIntegratedLocally": true,
+    "independentReview": "no_actionable_findings",
+    "latestShowcasePreserved": true,
+    "backendDeployed": false,
+    "gatewayDeployed": false,
+    "dailyMigrationApplied": false,
+    "nativePublished": false,
+    "deviceVerified": false,
+    "japanese71Publication": {
+      "workflowRun": "39911999260",
+      "verifiedObjects": 284,
+      "receipt": "https://github.com/tberridge86/Stackr/pull/433#issuecomment-6358813152",
+      "deviceVerified": false
+    }
   }
 }

@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 import { attachLiveTcgdexCardReferences, fetchCardsForSet, normalizePokemonCardLanguage, type PokemonCardLanguage } from './pokemonTcg';
-import { enrichStackrCardArtworkFromFacts } from './stackrDomainAdapter';
+import { enrichSavedStackrCardArtwork, enrichStackrCardArtworkFromFacts } from './stackrDomainAdapter';
 import { readOptionalCatalogueEnrichment } from './optionalCatalogueEnrichment';
 import { withPersonalDataReadTimeout } from './personalDataRead';
 import { createActivityPost } from './activity';
@@ -1618,8 +1618,13 @@ export async function attachBinderCatalogueArtwork(
     // advance together while current facts, ownership and quantities stay put.
     return mergeBinderArtwork(rows, enriched);
   };
-  const enriched = await enrichStackrCardArtworkFromFacts(eligible.map((row) => row.card), signal, undefined,
+  const direct = await enrichSavedStackrCardArtwork(eligible.map((row) => row.card), signal, undefined,
     (progress) => onProgress?.(merge(progress)));
+  const recovered = new Set(direct.map(artworkIdentity).filter(Boolean));
+  const remaining = eligible.filter(row => !recovered.has(artworkIdentity(row.card)));
+  const canonical = await enrichStackrCardArtworkFromFacts(remaining.map((row) => row.card), signal, undefined,
+    (progress) => onProgress?.(merge([...direct, ...progress])));
+  const enriched = [...direct, ...canonical];
   onProgress?.(merge(enriched));
   // Preserve the already-established foreign-source fallback, but never await it for first paint.
   const references = await readOptionalCatalogueEnrichment(() => attachLiveTcgdexCardReferences(enriched, 1), signal);

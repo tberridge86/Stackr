@@ -1,0 +1,111 @@
+{
+  "observedDate": "2026-10-22",
+  "mode": "read_only_browser_GETs_of_configured_production_API",
+  "apiBaseUrl": "https://api.stackrtcg.com",
+  "mutationsPerformed": false,
+  "installedPhoneVerified": false,
+  "limits": [
+    "Representative EN/JA pages only; not whole-catalogue coverage.",
+    "Browser outcomes do not measure native app latency.",
+    "Production receipts describe existing production, not deployment of this repair."
+  ],
+  "observations": [
+    {
+      "path": "/v1/health",
+      "requestId": "288c542c-6900-4990-9fc5-f110726f01a9",
+      "generatedAt": "2026-10-22T07:09:10.029Z",
+      "result": "ok; stackr-api-gateway"
+    },
+    {
+      "path": "/v1/search?q=Fusion%20Strike&language=en&limit=3",
+      "requestId": "f14d2dfa-a0a4-4213-95ba-2d5464d403eb",
+      "generatedAt": "2026-10-22T07:09:30.571Z",
+      "result": "2 Fusion Strike Energy #244 variants with approved images"
+    },
+    {
+      "path": "/v1/sets/6032d5e3-a6c5-41a5-a2f2-0edb343e092b/cards?language=en&limit=96&includeAssets=false",
+      "requestId": "7f51e686-0f59-4a1a-8006-d6953bebffd9",
+      "generatedAt": "2026-10-22T07:09:45.520Z",
+      "cards": 89,
+      "images": 0,
+      "nextCursorPresent": true,
+      "note": "Images intentionally omitted for facts-only request; variant page budget 96."
+    },
+    {
+      "path": "/v1/sets/6032d5e3-a6c5-41a5-a2f2-0edb343e092b/cards?language=en&limit=96&includeAssets=true",
+      "requestId": "cd9c3387-09de-4981-807e-06836cb251f3",
+      "generatedAt": "2026-10-22T07:09:54.322Z",
+      "cards": 89,
+      "cardsWithApprovedImages": 89,
+      "nextCursorPresent": true
+    },
+    {
+      "path": "/v1/search?q=swsh8%2013&language=en&limit=3",
+      "requestId": "8cc84013-6bad-45b2-afa6-5e7148027421",
+      "generatedAt": "2026-10-22T07:10:10.303Z",
+      "result": "Shelmet #13 exact_set_code_collector_number; 2 variants with approved images",
+      "cardId": "6b7046fc-6731-4d62-a336-b97f0824f247"
+    },
+    {
+      "path": "/v1/sets/6032d5e3-a6c5-41a5-a2f2-0edb343e092b",
+      "requestId": "b1c4ed9e-aa4f-49d8-a80a-72d14e83292b",
+      "generatedAt": "2026-10-22T07:10:50.179Z",
+      "result": "Fusion Strike; printed264,total284"
+    },
+    {
+      "path": "/v1/assets/manifest?assetType=set_logo&setId=6032d5e3-a6c5-41a5-a2f2-0edb343e092b&limit=5",
+      "requestId": "08a1deb6-8bb7-4c7d-ba3b-185058a5c07c",
+      "generatedAt": "2026-10-22T07:11:16.253Z",
+      "result": "One approved reviewed logo; Supabase immutable delivery"
+    },
+    {
+      "path": "/v1/sets?language=ja&setCode=M6&limit=5",
+      "requestId": "3642d692-6f8e-4f87-815a-cb4922902523",
+      "generatedAt": "2026-10-22T07:11:29.413Z",
+      "result": "Storm Emeralda; native ストームエメラルダ; printed76,total113",
+      "setId": "903d5baa-27c7-5690-b1d7-2395c770204a"
+    },
+    {
+      "path": "/v1/sets/903d5baa-27c7-5690-b1d7-2395c770204a/cards?language=ja&limit=96&includeAssets=true",
+      "requestId": "bfbd297d-2ff5-47e4-b939-9d489f75902b",
+      "generatedAt": "2026-10-22T07:11:39.560Z",
+      "cards": 96,
+      "cardsWithApprovedImages": 96,
+      "nextCursorPresent": true,
+      "note": "Approved metadata does not establish origin availability; first card image failed below."
+    },
+    {
+      "path": "/v1/assets/manifest?assetType=set_logo&setId=903d5baa-27c7-5690-b1d7-2395c770204a&limit=5",
+      "requestId": "5254ed9c-891d-43f2-a12f-c732ca066135",
+      "generatedAt": "2026-10-22T07:11:49.793Z",
+      "result": "One approved reviewed owner-supplied logo; Supabase immutable delivery;1280x544"
+    },
+    {
+      "path": "/v1/assets/manifest?assetType=card_image&cardId=2a295d0a-cec3-56d4-a1ce-91f51c389801&limit=10",
+      "requestId": "3d2495ec-99dd-40cd-85d7-586d89c58508",
+      "generatedAt": "2026-10-22T07:14:56.588Z",
+      "result": "unsupported_query_parameter; diagnostic used cardId instead of documented printingId; corrected below"
+    },
+    {
+      "path": "/v1/assets/manifest?assetType=card_image&printingId=2a295d0a-cec3-56d4-a1ce-91f51c389801&limit=10",
+      "requestId": "6b7eb975-5b7d-4265-a6c1-3d1d33c35ace",
+      "generatedAt": "2026-10-22T07:15:23.730Z",
+      "assetCount": 1,
+      "nextCursorPresent": false,
+      "result": "Only approved external official Heracross front; no derivatives, no owned fallback; variantId null, printing scoped"
+    }
+  ],
+  "imageDelivery": [
+    {
+      "card": "English Caterpie, Fusion Strike001/264",
+      "url": "https://oakdbbzdqwurpjnoqhmu.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/11/61/116122988c145ab3881cd3fb6ffb53e808557dadf2d21c67381e7663289ac733/original.jpg",
+      "result": "Browser image completed; natural600x825; screenshot visually confirms identity"
+    },
+    {
+      "card": "Japanese Heracross, Storm Emeralda001",
+      "url": "https://www.pokemon-card.com/assets/images/card_images/large/M6/050339_P_HERAKUROSU.jpg",
+      "result": "Rendered official maintenance page; browser title503 Service Unavailable; intended card image not delivered",
+      "blocker": "Origin unavailable with no published approved alternate. Client repair cannot restore absent origin bytes."
+    }
+  ]
+}

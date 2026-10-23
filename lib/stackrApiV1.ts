@@ -421,7 +421,26 @@ export type StackrPriceRefreshStatus = {
   quoteScope: 'exact_variant' | 'printing_level';
 };
 
+export type StackrDailyMarketCoverage = {
+  scope: 'catalogue_daily';
+  state: 'ready' | 'insufficient_history';
+  source: 'tcgcsv';
+  publishedVariants: number;
+  supportedVariants: number;
+  quotedVariants: number;
+  comparableVariants: number;
+  unsupportedVariants: number;
+  unquotedVariants: number;
+  staleVariants: number;
+  insufficientHistoryVariants: number;
+  latestSourceAt: string | null;
+  asOf: string;
+};
+
 export type StackrMarketMover = {
+  comparisonDays?: number;
+  priceBasis?: 'catalogue_market_guide';
+  sourceProvider?: 'tcgcsv';
   variantId: string | null;
   sealedProductVariantId: string | null;
   productType: StackrMarketProductType;
@@ -675,7 +694,60 @@ export type StackrApiV1ClientOptions = {
 };
 
 const STACKR_DEVICE_ID_STORAGE_KEY = 'stackr.gateway.device-id.v1';
+const OPTIONAL_DEVICE_ID_WAIT_MS = 25;
+const REQUIRED_DEVICE_ID_WAIT_MS = 10_000;
 let defaultDeviceIdPromise: Promise<string> | null = null;
+
+function throwIfRequestAborted(signal?: AbortSignal | null) {
+  if (!signal?.aborted) return;
+  const error = new Error('Stackr API request was cancelled.');
+  error.name = 'AbortError';
+  throw error;
+}
+
+function isPublicCatalogueRequest(path: string, method: string) {
+  if (method.toUpperCase() === 'POST') return path === '/cards/display-artwork-references';
+  if (method.toUpperCase() !== 'GET') return false;
+  if (['/health', '/ready', '/catalog/manifest', '/catalog/delta', '/languages', '/series', '/sets',
+    '/pokemon', '/search', '/assets/manifest'].includes(path)) return true;
+  const parts = path.split('/');
+  if (parts[1] === 'pokemon') return parts.length === 4 && Boolean(parts[2]) && parts[3] === 'cards';
+  if (!STACKR_CANONICAL_UUID_PATTERN.test(parts[2] ?? '')) return false;
+  return parts[1] === 'sets' && (parts.length === 3 || parts.length === 4 && parts[3] === 'cards')
+    || parts[1] === 'cards' && (parts.length === 3 || parts.length === 4 && parts[3] === 'variants');
+}
+
+/** Public catalogue routes accept no device ID; private requests must retain it. */
+function awaitRequestDeviceId(
+  read: () => Promise<string | null>,
+  optional: boolean,
+  signal?: AbortSignal | null,
+): Promise<string | null> {
+  throwIfRequestAborted(signal);
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const finish = (work: () => void) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      signal?.removeEventListener('abort', abort);
+      work();
+    };
+    const abort = () => finish(() => {
+      try { throwIfRequestAborted(signal); } catch (error) { reject(error); }
+    });
+    const timer = setTimeout(() => finish(() => {
+      if (optional) resolve(null);
+      else reject(new Error('Device storage is taking longer than expected. Please try again.'));
+    }), optional ? OPTIONAL_DEVICE_ID_WAIT_MS : REQUIRED_DEVICE_ID_WAIT_MS);
+    signal?.addEventListener('abort', abort, { once: true });
+    // Observe late storage failures after an optional timeout or cancellation.
+    Promise.resolve().then(read).then(
+      (deviceId) => finish(() => resolve(deviceId)),
+      (error: unknown) => finish(() => optional ? resolve(null) : reject(error)),
+    );
+  });
+}
 
 function randomRequestKey(prefix: string) {
   const randomUuid = globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function'
@@ -779,6 +851,7 @@ export class StackrApiClient {
     query?: Record<string, string | number | boolean | null | undefined>,
     init: RequestInit = {},
   ): Promise<StackrApiEnvelope<T>> {
+    throwIfRequestAborted(init.signal);
     const remoteUrl = buildUrl(this.baseUrl, path, query);
     const requestMethod = init.method ?? 'GET';
     const initialHeaders: Record<string, string> = {
@@ -795,7 +868,12 @@ export class StackrApiClient {
     // The same-origin development proxy forwards anonymous public reads only.
     // Avoid touching device storage for a value that is deliberately not sent
     // upstream; browser storage can be unavailable in embedded previews.
-    const deviceId = await resolveStackrApiDeviceIdForRequest(remoteUrl, requestUrl, this.getDeviceId);
+    const deviceId = await awaitRequestDeviceId(
+      () => resolveStackrApiDeviceIdForRequest(remoteUrl, requestUrl, this.getDeviceId),
+      !hasAuthorization && isPublicCatalogueRequest(path, requestMethod),
+      init.signal,
+    );
+    throwIfRequestAborted(init.signal);
     let requestHeaders: Record<string, string> = {
       ...initialHeaders,
       ...(deviceId ? { 'X-Stackr-Device-Id': deviceId } : {}),
@@ -809,6 +887,7 @@ export class StackrApiClient {
       ...init,
       headers: requestHeaders,
     });
+    throwIfRequestAborted(init.signal);
 
     // Some native HTTP caches expose the revalidation response without its
     // cached body. A 304 is not an empty catalogue: repeat this read once with
@@ -816,6 +895,7 @@ export class StackrApiClient {
     const explicitlyConditional = Object.entries(initialHeaders).some(([name, value]) =>
       ['if-none-match', 'if-modified-since'].includes(name.toLowerCase()) && Boolean(value));
     if (response.status === 304 && requestMethod.toUpperCase() === 'GET' && !explicitlyConditional) {
+      throwIfRequestAborted(init.signal);
       const unconditionalHeaders = Object.fromEntries(Object.entries(requestHeaders)
         .filter(([name]) => !['if-none-match', 'if-modified-since'].includes(name.toLowerCase())));
       response = await this.fetchImpl(requestUrl, {
@@ -844,7 +924,9 @@ export class StackrApiClient {
       throw new StackrApiV1Error(response.status, await parseError(response));
     }
 
-    return await response.json() as StackrApiEnvelope<T>;
+    const envelope = await response.json() as StackrApiEnvelope<T>;
+    throwIfRequestAborted(init.signal);
+    return envelope;
   }
 
   private post<T>(path: string, body: Record<string, unknown>, init: RequestInit = {}) {
@@ -1007,8 +1089,8 @@ export class StackrApiClient {
     }>('/pokemon', query);
   }
 
-  card(cardId: string) {
-    return this.request<{ card: StackrCard }>(`/cards/${encodeURIComponent(cardId)}`);
+  card(cardId: string, init: RequestInit = {}) {
+    return this.request<{ card: StackrCard }>(`/cards/${encodeURIComponent(cardId)}`, undefined, init);
   }
 
   cardVariants(cardId: string) {
@@ -1096,16 +1178,17 @@ export class StackrApiClient {
     );
   }
 
-  marketMovers(query: { productType?: StackrMarketProductType; currency?: string; limit?: number } = {}) {
-    return this.authenticatedGet<{ movers: StackrMarketMover[] }>('/market/movers', query);
+  marketMovers(query: { productType?: StackrMarketProductType; currency?: string; limit?: number;
+    scope?: 'catalogue_daily'; sortBy?: 'money' | 'percent' } = {}) {
+    return this.authenticatedGet<{ movers: StackrMarketMover[]; coverage?: StackrDailyMarketCoverage }>('/market/movers', query);
   }
 
   marketOpportunities(query: { productType?: StackrMarketProductType; currency?: string; limit?: number } = {}) {
     return this.authenticatedGet<{ opportunities: StackrMarketOpportunity[] }>('/market/opportunities', query);
   }
 
-  search(query: { q: string; language?: StackrApiLanguageCode; setId?: string; limit?: number }) {
-    return this.request<{ query: string; normalizedQuery: string; results: StackrSearchResult[] }>('/search', query);
+  search(query: { q: string; language?: StackrApiLanguageCode; setId?: string; limit?: number }, init: RequestInit = {}) {
+    return this.request<{ query: string; normalizedQuery: string; results: StackrSearchResult[] }>('/search', query, init);
   }
 
   marketPriceSnapshots(query: { variantIds?: string[]; printingIds?: string[]; legacyIds?: string[];
