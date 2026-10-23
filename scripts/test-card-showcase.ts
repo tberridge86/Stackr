@@ -108,6 +108,7 @@ async function main() {
   assert.equal(params.cardId, 'printing-ja'); assert.equal(params.language, 'ja'); assert.equal(params.variantId, 'foil-ja'); cases++;
   await act(async () => root.update(render({ ...request, selectedVariantId: 'stale-variant' })));
   assert.equal(preview.foilHaptics, false, 'a stale variant selection cannot gain a foil cue'); cases++;
+  assert.doesNotMatch(JSON.stringify(root.toJSON()), /non-foil card/, 'unknown identity cannot be labelled non-foil'); cases++;
   await act(async () => root.update(render({ ...request, source: 'condition-photo' })));
   assert.equal(root.toJSON(), null, 'owned-condition photos cannot enter the decorative viewer'); cases++;
   await act(async () => root.unmount());

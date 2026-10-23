@@ -1,4 +1,4 @@
-import type { StackrMarketMover } from './stackrApiV1';
+import type { StackrDailyMarketCoverage, StackrMarketMover } from './stackrApiV1';
 import { getCollectionPriceCoverageLabel, type CollectionPricingSummary, type CollectionValueRead } from './collectionPricingState';
 import { preparedPricingSummary, type PreparedValuationResponse } from './preparedCollectionValuation';
 
@@ -35,10 +35,38 @@ export async function withValueHistoryDeadline<T>(work: () => Promise<T>, millis
   }
 }
 
-/** Keep the server's exact paired observations together, including same-day pairs. */
-export function marketValueHistory(rows: StackrMarketMover[], now = Date.now()): {
-  movers: ValueHistoryMover[]; trackedCards: number; calculatedAt: string | null;
+/** Validate daily catalogue coverage and actual UTC source days. Legacy callers
+ * without daily coverage retain their existing paired-estimate contract. */
+export function marketValueHistory(rows: StackrMarketMover[], coverageOrNow?: StackrDailyMarketCoverage | number, at = Date.now()): {
+  movers: ValueHistoryMover[]; trackedCards: number; calculatedAt: string | null; coverage: StackrDailyMarketCoverage | null;
 } {
+  const coverage = typeof coverageOrNow === 'object' && coverageOrNow ? coverageOrNow : null;
+  const now = typeof coverageOrNow === 'number' ? coverageOrNow : at;
+  if (coverage) {
+    const counts = [coverage.publishedVariants, coverage.supportedVariants, coverage.quotedVariants, coverage.comparableVariants,
+      coverage.unsupportedVariants, coverage.unquotedVariants, coverage.staleVariants, coverage.insufficientHistoryVariants];
+    if (coverage.scope !== 'catalogue_daily' || coverage.source !== 'tcgcsv'
+      || !['ready', 'insufficient_history'].includes(coverage.state)
+      || counts.some((count) => !Number.isSafeInteger(count) || count < 0)
+      || coverage.publishedVariants !== coverage.supportedVariants + coverage.unsupportedVariants
+      || coverage.supportedVariants !== coverage.quotedVariants + coverage.unquotedVariants
+      || coverage.quotedVariants !== coverage.comparableVariants + coverage.staleVariants + coverage.insufficientHistoryVariants
+      || (coverage.state === 'ready') !== (coverage.comparableVariants > 0)
+      || !Number.isFinite(Date.parse(coverage.asOf)) || Date.parse(coverage.asOf) > now + 300_000
+      || (coverage.latestSourceAt != null && (!Number.isFinite(Date.parse(coverage.latestSourceAt)) || Date.parse(coverage.latestSourceAt) > now))
+      || rows.length > coverage.comparableVariants) throw new Error('Daily catalogue price coverage could not be verified.');
+    const sourceDay = (value: string) => Math.floor(Date.parse(value) / 86_400_000);
+    if (rows.some((row) => row.priceBasis !== 'catalogue_market_guide' || row.sourceProvider !== 'tcgcsv' || row.comparisonDays !== 1
+      || !row.calculatedAt || !row.previousCalculatedAt || sourceDay(row.calculatedAt) - sourceDay(row.previousCalculatedAt) !== 1
+      || Date.parse(row.calculatedAt) < now - 48 * 3_600_000 || Date.parse(row.calculatedAt) > now
+      || row.productType !== 'raw_card' || row.currency !== 'GBP' || !row.variantId
+      || row.currentEstimate == null || !Number.isFinite(row.currentEstimate) || row.currentEstimate <= 0
+      || row.previousEstimate == null || !Number.isFinite(row.previousEstimate) || row.previousEstimate <= 0
+      || row.percentageChange == null || !Number.isFinite(row.percentageChange)
+      || Math.abs(row.percentageChange - (row.currentEstimate - row.previousEstimate) / row.previousEstimate * 100) > 0.011)) {
+      throw new Error('Daily catalogue price comparisons could not be verified.');
+    }
+  }
   const candidates = rows.filter((row) => row.productType === 'raw_card' && row.currency === 'GBP' && row.variantId
     && row.currentEstimate != null && Number.isFinite(row.currentEstimate) && row.currentEstimate >= 0
     && row.previousEstimate != null && Number.isFinite(row.previousEstimate) && row.previousEstimate > 0
@@ -52,18 +80,19 @@ export function marketValueHistory(rows: StackrMarketMover[], now = Date.now()):
   for (const row of candidates) groups.set(row.variantId!, [...(groups.get(row.variantId!) ?? []), row]);
   const pairs = [...groups.values()].filter((group) => group.every((row) => JSON.stringify(row) === JSON.stringify(group[0])))
     .map((group) => group[0]);
+  if (coverage && pairs.length !== rows.length) throw new Error('Daily catalogue price identities conflict.');
   const movers: ValueHistoryMover[] = pairs.flatMap((row) => {
     const latestPrice = row.currentEstimate!;
     const previousPrice = row.previousEstimate!;
     const change = latestPrice - previousPrice;
     const percentChange = change / previousPrice * 100;
-    if (Math.abs(change) < 0.1 && Math.abs(percentChange) < 0.5) return [];
+    if (coverage ? change === 0 : Math.abs(change) < 0.1 && Math.abs(percentChange) < 0.5) return [];
     return [{ cardId: row.variantId!, name: row.variantId!, setId: null, setName: null, imageUrl: null,
       latestPrice, previousPrice, change, percentChange, snapshotAt: row.calculatedAt!,
       previousSnapshotAt: row.previousCalculatedAt!, confidence: row.confidence }];
   });
-  return { movers, trackedCards: pairs.length,
-    calculatedAt: pairs.map((row) => row.calculatedAt!).sort((a, b) => Date.parse(b) - Date.parse(a))[0] ?? null };
+  return { movers, trackedCards: coverage?.comparableVariants ?? pairs.length, coverage,
+    calculatedAt: coverage?.latestSourceAt ?? pairs.map((row) => row.calculatedAt!).sort((a, b) => Date.parse(b) - Date.parse(a))[0] ?? null };
 }
 
 export function collectionValueHistory(response: PreparedValuationResponse, now = Date.now()): {

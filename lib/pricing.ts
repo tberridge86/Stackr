@@ -446,6 +446,7 @@ export async function fetchPokeTraceCardPrice(
       grader: input.gradingCompany,
       grade: input.grade ?? input.gradeLabel,
       condition: input.gradingCompany || input.grade ? undefined : input.condition ?? 'NEAR_MINT',
+      force: input.forceRefresh === true,
     });
     const activeSession = await supabase.auth.getSession();
     if (activeSession.data.session?.user?.id !== session.user.id) return null;

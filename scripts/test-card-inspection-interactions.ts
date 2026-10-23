@@ -116,7 +116,7 @@ afterOptionsClose?.();
 assert.deepEqual(showcaseEvents, ['inspect'], 'inspection opens after the previous native sheet has closed');
 
 const detail = jsxElements('app/card/[id].tsx', 'StackrButton');
-assert.ok(detail.found.some((element) => element.attributes.properties.some((property) => ts.isJsxAttribute(property) && property.name.getText() === 'label' && property.initializer?.getText(detail.source).includes('Inspect card'))), 'card details retain a visible Inspect card action');
+assert.ok(detail.found.some((element) => element.attributes.properties.some((property) => ts.isJsxAttribute(property) && property.name.getText() === 'label' && property.initializer?.getText(detail.source).includes('Open Showcase'))), 'card details open the shared Showcase');
 
 const providerSource = ts.createSourceFile('components/CardInspectionProvider.tsx', readFileSync('components/CardInspectionProvider.tsx', 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
 const providerText = providerSource.getFullText();

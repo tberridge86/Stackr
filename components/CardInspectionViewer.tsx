@@ -144,7 +144,7 @@ export default function CardInspectionViewer({ request, onClose, onDiagnostic }:
                 onError={() => { if (imageIsCurrent()) { feedback.current.generation++; setImageLoaded(false); } }} />
               {imageLoaded && request.fullImageUri && request.fullImageUri !== request.imageUri ?
                 <View pointerEvents="none" accessible={false} style={[StyleSheet.absoluteFill, { opacity: fullLoaded ? 1 : 0 }]}>
-                  <StackrImage cardShape uri={request.fullImageUri} contentFit="contain" rounded={14} priority="high" transition={0}
+                  <StackrImage cardShape preserveDetail uri={request.fullImageUri} contentFit="contain" rounded={14} priority="high" transition={0}
                     onDiagnostic={event => onDiagnostic?.({ ...event, rendition: 'detail' })}
                     placeholderColor="transparent" style={StyleSheet.absoluteFill} showFallbackIcon={false}
                     onLoad={() => { if (imageIsCurrent()) setLoadedFullUri(request.fullImageUri ?? null); }} />

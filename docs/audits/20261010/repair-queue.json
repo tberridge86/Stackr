@@ -1,5 +1,94 @@
 {
   "schemaVersion": 1,
+  "build60FeedbackSweep": {
+    "observedDate": "2026-10-22",
+    "workingDirectory": "D:/Stackr-1/.tmp-build60-20261022/repair",
+    "branch": "repair/build60-feedback-20261022",
+    "sourceRevision": "2172db553ef8cc717ac4a65872a7be163243ffdf",
+    "localSnapshotBase": "bdad4ea26e4f8f7bf83fe3e108ca2e6cbd01c4e5",
+    "report": "docs/releases/build60-feedback-repairs-20261022.md",
+    "readback": "docs/releases/build60-retrieval-readback-20261022.json",
+    "specialistEvidence": "docs/audits/20261022",
+    "status": "local_repairs_tested_and_reviewed_delivery_pending",
+    "fullFeedbackSuite": "passed",
+    "installedPhoneVerified": false,
+    "liveMutationPerformed": false,
+    "previousQueueEntriesPreserved": true,
+    "entries": [
+      {
+        "id": "BUILD60-RETRIEVAL-001",
+        "owner": "stackr_coding",
+        "severity": "P1",
+        "cause": "Public catalogue requests blocked on pending device storage.",
+        "affectedFiles": [
+          "lib/stackrApiV1.ts"
+        ],
+        "status": "implemented_locally_reviewed",
+        "validation": "Full client runtime public/private/storage/abort tests pass.",
+        "delivery": "not_deployed"
+      },
+      {
+        "id": "BUILD60-RETRIEVAL-002",
+        "owner": "stackr_coding",
+        "severity": "P1",
+        "cause": "Pending card promise never expired; Retry reused stalled request.",
+        "affectedFiles": [
+          "lib/stackrDomainAdapter.ts",
+          "lib/stackrApiV1.ts"
+        ],
+        "status": "implemented_locally_reviewed",
+        "validation": "Deadline, transport abort, retry, dedup and late-result runtime checks pass.",
+        "delivery": "not_deployed"
+      },
+      {
+        "id": "BUILD60-RETRIEVAL-003",
+        "owner": "stackr_coding",
+        "severity": "P1",
+        "cause": "Every canonical-card error triggered fallback search, hiding retrieval failure.",
+        "affectedFiles": [
+          "lib/stackrDomainAdapter.ts"
+        ],
+        "status": "implemented_locally_reviewed",
+        "validation": "Only404 falls back;401/403/429/500/503 propagate in actual module tests.",
+        "delivery": "not_deployed"
+      },
+      {
+        "id": "BUILD60-RETRIEVAL-004",
+        "owner": "stackr_backend",
+        "severity": "P1",
+        "cause": "Fallback set facts waited on optional artwork and ignored includeAssets=false.",
+        "affectedFiles": [
+          "backend/lib/stackrApiV1.js"
+        ],
+        "status": "implemented_locally_reviewed",
+        "validation": "Actual Supabase SDK fallback/version8/8 including cancellation and stalled bodies.",
+        "delivery": "not_deployed"
+      },
+      {
+        "id": "BUILD60-RETRIEVAL-005",
+        "owner": "stackr_coding",
+        "severity": "P1",
+        "cause": "Gateway rejected the new daily movers scope/ranking query.",
+        "affectedFiles": [
+          "gateway/src/routes.js",
+          "gateway/src/validation.js"
+        ],
+        "status": "implemented_locally_reviewed",
+        "validation": "Gateway56/56; independent daily handleRequest test passed.",
+        "delivery": "not_deployed; history migration also remains unapplied"
+      },
+      {
+        "id": "BUILD60-IMAGE-ORIGIN-001",
+        "owner": "stackr_artwork",
+        "severity": "P1",
+        "cause": "Exact Japanese M6-001 approved external image currently renders official503 maintenance page; manifest has no alternate.",
+        "affectedFiles": [],
+        "status": "external_origin_unavailable_no_approved_alternate",
+        "validation": "Read-only actual image and exact printing manifest; request6b7eb975-5b7d-4265-a6c1-3d1d33c35ace.",
+        "delivery": "not_restored; no publication, mirror or invented identity"
+      }
+    ]
+  },
   "updatedAt": "2026-10-18T19:33:01.184Z",
   "coordinator": "Tif / root",
   "workingDirectory": "D:/Stackr",

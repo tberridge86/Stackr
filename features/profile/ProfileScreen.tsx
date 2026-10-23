@@ -3,7 +3,6 @@ import { StackrImage } from '../../components/StackrImage';
 import { StackrCardArtworkFallback } from '../../components/StackrArtworkFallback';
 import { stackrCardImageSizes } from '../../lib/stackrSizing';
 import { StackrLoadingIndicator } from '../../components/StackrLoadingIndicator';
-import { CardDetailInspectSurface } from '../../components/InteractiveCardInspectPressable';
 import { mergeShowcaseFinishMetadata } from '../../lib/cardFinishProfiles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -571,12 +570,7 @@ function ShowcaseCabinet({
         }}
       >
         {card ? (
-          <CardDetailInspectSurface
-            title={identity.name}
-            cardMetadata={card}
-            isSlabbed={card.showcaseKind === 'graded'}
-            style={{ width: '100%', height: '100%' }}
-          >
+          <View style={{ width: '100%', height: '100%' }}>
           <StackrImage
             uriCandidates={imageUris}
             contentFit="contain"
@@ -593,7 +587,7 @@ function ShowcaseCabinet({
               />
             )}
           />
-          </CardDetailInspectSurface>
+          </View>
         ) : (
           <View style={{ alignItems: 'center', gap: 8, paddingHorizontal: 14 }}>
             <View

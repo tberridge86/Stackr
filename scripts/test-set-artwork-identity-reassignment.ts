@@ -56,7 +56,7 @@ function loadAdapter(preferred: StackrCard = after, failArtwork = false) {
   const source = sourceAtRevision('lib/stackrDomainAdapter.ts');
   const tree = ts.createSourceFile('adapter.ts', source, ts.ScriptTarget.Latest, true);
   const names = new Set(['clean', 'toLegacyLanguage', 'embeddedCardImageAssets', 'primaryCardImageAsset',
-    'stackrCardToLegacyCard', 'fetchStackrCard', 'fetchStackrAssetsForPrinting', 'allPages',
+    'stackrCardToLegacyCard', 'fetchStackrCard', 'fetchStackrAssetsForPrinting', 'allPages', 'readOptionalAssetPages',
     'fetchCanonicalSetCardFacts', 'enrichCanonicalSetCards', 'enrichStackrCardArtworkFromFacts']);
   const functions = tree.statements.filter(node => ts.isFunctionDeclaration(node) && names.has(node.name?.text ?? ''));
   assert.equal(functions.length, names.size);

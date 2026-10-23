@@ -20,10 +20,15 @@ const React = {
   useRef: (initial: any) => { const index = cursor++; return hooks[index] ?? (hooks[index] = { current: initial }); },
   useEffect: (effect: () => void) => { effects.push(effect); },
 };
+const cachedUris = new Set<string>();
+const ExpoImage = Object.assign(() => null, {
+  displayName: 'ExpoImage',
+  prefetch: async (urls: string | string[]) => { for (const url of typeof urls === 'string' ? [urls] : urls) cachedUris.add(url); return true; },
+});
 const modules: Record<string, any> = {
   react: { ...React, default: React, __esModule: true },
   'react-native': { View: 'View', Text: 'Text', StyleSheet: { create: (v: any) => v, absoluteFillObject: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 } }, InteractionManager: { runAfterInteractions: () => ({ cancel() {} }) } },
-  'expo-image': { Image: 'ExpoImage' }, '@expo/vector-icons': { Ionicons: 'Icon' },
+  'expo-image': { Image: ExpoImage }, '@expo/vector-icons': { Ionicons: 'Icon' },
   './theme-context': { useTheme: () => ({ theme: { colors: { surface: 'white', textSoft: 'gray' } } }) },
   '../lib/stackrImageCandidates': candidates, '../lib/tcgdexControlledCardReference': policy,
   '../lib/stackrSizing': sizing,
@@ -34,7 +39,7 @@ const compiled = ts.transpileModule(fs.readFileSync('components/StackrImage.tsx'
 const exports: any = {}; vm.runInNewContext(compiled, { exports, require: (id: string) => modules[id], Set, JSON });
 function find(node: any, type: string): any {
   if (!node || typeof node !== 'object') return null;
-  if (node.type === type) return node;
+  if (node.type === type || node.type?.displayName === type) return node;
   for (const child of node.props?.children?.flat(Infinity) ?? []) { const found = find(child, type); if (found) return found; }
   return null;
 }
@@ -53,11 +58,13 @@ assert.equal(diagnostics[1].phase, 'displayed');
 assert.doesNotMatch(JSON.stringify(diagnostics), /PRIVATE_SIGNED_URL|https:|printing/);
 for (const expected of [props.uri, props.fullUri, props.fallbackUris[0]]) {
   let image = find(tree, 'ExpoImage'); assert.equal(image.props.source.uri, expected);
-  assert.equal(image.props.source.cacheKey, `printing:${expected}:retry-0`, 'each rendition has a distinct first-attempt cache entry');
+  assert.equal(image.props.source.cacheKey, expected, 'display uses the URL cache identity populated by Expo prefetch');
+  const initialKey = image.props.key;
   image.props.onError(); tree = render(props);
   image = find(tree, 'ExpoImage');
   assert.equal(image.props.source.uri, expected, 'a transient failure retries the same exact rendition before fallback');
-  assert.equal(image.props.source.cacheKey, `printing:${expected}:retry-1`);
+  assert.equal(image.props.source.cacheKey, expected, 'retry reuses the URI cache identity');
+  assert.notEqual(image.props.key, initialKey, 'retry remounts the failed native image');
   image.props.onError(); tree = render(props);
 }
 assert.equal(find(tree, 'ExpoImage'), null); assert(find(tree, 'Icon'), 'exhaustion has an honest image placeholder');
@@ -93,4 +100,32 @@ let deliveredLoads = 0;
 tree = render({ ...props, uri: 'https://approved.example/diagnostic.webp', onDiagnostic: () => { throw new Error('diagnostic'); }, onLoad: () => { deliveredLoads++; } });
 assert.doesNotThrow(() => find(tree, 'ExpoImage').props.onLoad());
 assert.equal(deliveredLoads, 1, 'failed diagnostics cannot block the existing load callback');
-console.log('Actual StackrImage retries each exact rendition once, advances only through vetted same-printing candidates, stops honestly, and recovers on corrected props.');
+const callbackProps = { ...props, uri: 'https://approved.example/current.webp',
+  onLoad: () => { deliveredLoads++; }, onError: () => { throw new Error('Stale consumer error'); } };
+tree = render(callbackProps);
+const oldCandidate = find(tree, 'ExpoImage');
+oldCandidate.props.onError(); tree = render(callbackProps);
+oldCandidate.props.onLoad();
+assert.equal(deliveredLoads, 1, 'load from the replaced retry attempt cannot mark the current image loaded');
+assert.doesNotThrow(() => oldCandidate.props.onError(), 'old retry-attempt errors do not reach consumers');
+tree = render({ ...callbackProps, uri: 'https://approved.example/other.webp' });
+tree = render(callbackProps);
+oldCandidate.props.onLoad();
+assert.equal(deliveredLoads, 1, 'A -> B -> A rejects callbacks from the first A');
+find(tree, 'ExpoImage').props.onLoad();
+assert.equal(deliveredLoads, 2, 'current rendition load reaches its consumer');
+tree = render({ ...callbackProps, cacheKey: 'another-surface' });
+assert.equal(find(tree, 'ExpoImage').props.source.cacheKey, callbackProps.uri, 'the same URL shares its prefetched cache across card surfaces');
+tree = render({ ...props, preserveDetail: true });
+assert.equal(find(tree, 'ExpoImage').props.source.cacheKey, props.fullUri, 'the original full URI remains its own cache key');
+assert.equal(find(tree, 'ExpoImage').props.allowDownscaling, false, 'inspection retains original decoded detail');
+assert.equal(find(tree, 'ExpoImage').props.decodeFormat, 'argb');
+const prefetchProps = { ...props, uri: 'https://approved.example/prefetch-grid.webp', fullUri: 'https://approved.example/prefetch-detail.webp' };
+tree = render({ ...prefetchProps, preserveDetail: true });
+void exports.prefetchStackrImages([prefetchProps.uri, prefetchProps.fullUri]).then((loaded: boolean) => {
+  assert.equal(loaded, true);
+  assert.equal(cachedUris.has(find(tree, 'ExpoImage').props.source.cacheKey), true, 'actual prefetch and displayed full image address the same cache entry');
+  tree = render(prefetchProps);
+  assert.equal(cachedUris.has(find(tree, 'ExpoImage').props.source.cacheKey), true, 'actual prefetch also addresses the displayed thumbnail');
+  console.log('Actual StackrImage shares prefetched URI caches, retries exact renditions, rejects stale callbacks and preserves inspection detail.');
+}).catch((error: unknown) => { console.error(error); process.exitCode = 1; });
