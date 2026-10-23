@@ -16,7 +16,7 @@ function load<T>(file: string, mocks: Record<string, unknown>): T {
   const code = ts.transpileModule(readFileSync(file, 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
   }).outputText;
-  vm.runInNewContext(code, { module, exports: module.exports, process, console, Date, Buffer, URL,
+  vm.runInNewContext(code, { module, exports: module.exports, process, console, Date, Buffer, URL, setTimeout, clearTimeout,
     require: (id: string) => { assert.ok(id in mocks, `Unexpected dependency ${id}`); return mocks[id]; } });
   return module.exports as T;
 }

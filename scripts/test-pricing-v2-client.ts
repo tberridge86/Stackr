@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
 import * as priceIdentity from '../lib/stackrPriceIdentity';
+import * as optionalCatalogueEnrichment from '../lib/optionalCatalogueEnrichment';
 import type { StackrCard, StackrCardPrice } from '../lib/stackrApiV1';
 
 function load<T>(file: string, mocks: Record<string, unknown>): T {
@@ -169,7 +170,7 @@ async function main() {
     './foreignCardPresentation': {},
     './englishSetIdentity': {},
     './pokemonSetSeries': {},
-    './optionalCatalogueEnrichment': {},
+    './optionalCatalogueEnrichment': optionalCatalogueEnrichment,
     './stackrApiV1': { stackrApiClient: {} }, './supabase': {},
     './stackrDomainMappings': { toStackrApiLanguage: (language: string) => language === 'tw' ? 'zh-tw' : language },
     './tcgdexControlledCardReference': {}, './providerSetMarkRuntimePolicy': {}, './homePriceRefreshCore': {},

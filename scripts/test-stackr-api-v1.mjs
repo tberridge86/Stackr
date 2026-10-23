@@ -1374,7 +1374,7 @@ const artworkPresentation = await readFile(new URL('../lib/cardArtworkPresentati
 assert.match(artworkPresentation, /!asset\.variantId && asset\.cardId === card\.cardId/);
 assert.match(domainAdapter, /const needsManifestFallback = cards\.some/);
 assert.match(domainAdapter,
-  /client\.assetManifest\(\s*\{\s*printingIds:\s*\w+,\s*assetType:\s*'card_image',\s*cursor,\s*limit:\s*250,?\s*\},\s*\{ signal \}\)/,
+  /client\.assetManifest\(\s*\{\s*printingIds:\s*\w+,\s*assetType:\s*'card_image',\s*cursor,\s*limit:\s*250,?\s*\},\s*\{ signal: pageSignal \}\)/,
   'optional search manifests retain exact printing batches, pagination and bounded child cancellation');
 assert.doesNotMatch(domainAdapter, /const hasEmbeddedImages = cards\.some/);
 for (const method of [
