@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { sanitizeTcgdexAssetPointersForPublicDisplay } from './cataloguePublicAssetPolicy.js';
 
 const READY_DERIVATIVE_ROLES = new Set(['card-grid', 'search-result', 'detail-page']);
 
@@ -8,7 +9,24 @@ function clean(value) {
 }
 
 function limit(input, fallback = 250, max = 1000) {
-  return Math.max(1, Math.min(Number(input?.limit ?? fallback), max));
+  const requested = Number(input?.limit ?? fallback);
+  return Number.isFinite(requested) ? Math.max(1, Math.min(Math.floor(requested), max)) : fallback;
+}
+
+export function publicAssetManifestPage(input = {}) {
+  const requestedOffset = Number(input.offset ?? 0);
+  return {
+    limit: limit(input, 50, 50),
+    offset: Number.isSafeInteger(requestedOffset) && requestedOffset >= 0
+      ? Math.min(requestedOffset, Number.MAX_SAFE_INTEGER - 50) : 0,
+  };
+}
+
+function storedAssetUrl(storage, provider, bucket, key) {
+  if (!provider || !bucket || !key) return null;
+  const adapter = storage?.id ? (storage.id === provider ? storage : null) : storage?.[provider];
+  return adapter?.id === provider && typeof adapter.publicUrl === 'function'
+    ? adapter.publicUrl(bucket, key) : null;
 }
 
 function hasRequiredDerivatives(asset) {
@@ -112,12 +130,16 @@ async function enqueueWorkItem(supabase, asset, input = {}) {
 }
 
 export async function listPublicAssetManifest(supabase, input = {}, storage = null) {
+  const page = publicAssetManifestPage(input);
   let query = supabase
     .schema('api')
     .from('asset_manifest')
     .select('*')
     .order('updated_at', { ascending: false })
-    .limit(limit(input, 250, 1000));
+    .order('asset_id', { ascending: false })
+    .order('catalogue_version_id', { ascending: false })
+    .order('asset_row_id', { ascending: false })
+    .range(page.offset, page.offset + page.limit - 1);
 
   if (clean(input.assetType)) query = query.eq('asset_type', clean(input.assetType));
   if (clean(input.setId)) query = query.eq('set_id', clean(input.setId));
@@ -129,20 +151,21 @@ export async function listPublicAssetManifest(supabase, input = {}, storage = nu
   if (error) throw error;
 
   return (data ?? []).map((asset) => {
-    const publicUrl = storage && asset.storage_bucket && asset.storage_key
-      ? storage.publicUrl(asset.storage_bucket, asset.storage_key)
-      : null;
+    const publicUrl = storedAssetUrl(storage, asset.storage_provider, asset.storage_bucket, asset.storage_key);
     const derivatives = Array.isArray(asset.derivative_list) ? asset.derivative_list : [];
-    return {
+    return sanitizeTcgdexAssetPointersForPublicDisplay({
       ...asset,
-      delivery_url: publicUrl ?? asset.external_url ?? null,
+      delivery_url: publicUrl ?? (asset.storage_provider === 'external_reference' ? asset.external_url ?? null : null),
       derivative_list: derivatives.map((derivative) => ({
         ...derivative,
-        deliveryUrl: storage && derivative.storageBucket && derivative.storageKey
-          ? storage.publicUrl(derivative.storageBucket, derivative.storageKey)
-          : null,
+        deliveryUrl: storedAssetUrl(
+          storage,
+          derivative.storageProvider ?? derivative.storage_provider ?? asset.storage_provider,
+          derivative.storageBucket ?? derivative.storage_bucket,
+          derivative.storageKey ?? derivative.storage_key,
+        ),
       })),
-    };
+    });
   });
 }
 

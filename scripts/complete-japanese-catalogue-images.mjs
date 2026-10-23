@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import 'dotenv/config';
+import { Buffer } from 'node:buffer';
 import { writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { createClient } from '@supabase/supabase-js';
@@ -283,18 +284,25 @@ export function buildJapaneseAliasPlan(variants, readyVariantIds, readyPrintingI
 }
 
 async function repairDerivative(asset, supabase, storage, buildApprovedCatalogueAsset, dryRun) {
-  if (asset.storage_provider !== 'supabase_storage' || !asset.storage_bucket || !asset.storage_key) {
+  if (!['supabase_storage', 's3_compatible'].includes(asset.storage_provider)
+    || !asset.storage_bucket || !asset.storage_key) {
     return { id: asset.id, status: 'unsupported_storage_provider', provider: asset.storage_provider };
   }
   if (dryRun) return { id: asset.id, status: 'would_repair' };
-  const { data, error } = await supabase.storage.from(asset.storage_bucket).download(asset.storage_key);
-  if (error) throw error;
-  const buffer = Buffer.from(await data.arrayBuffer());
+  let buffer;
+  if (asset.storage_provider === 'supabase_storage') {
+    const { data, error } = await supabase.storage.from(asset.storage_bucket).download(asset.storage_key);
+    if (error) throw error;
+    if (data.size > 12 * 1024 * 1024) throw new Error('Stored catalogue original exceeds 12 MiB.');
+    buffer = Buffer.from(await data.arrayBuffer());
+  } else {
+    buffer = await storage.getObject(asset.storage_bucket, asset.storage_key, { maxBytes: 12 * 1024 * 1024 });
+  }
   const rebuilt = await buildApprovedCatalogueAsset({
     assetId: asset.asset_id || asset.id,
     assetType: asset.asset_type,
     buffer,
-    mimeType: asset.mime_type || data.type,
+    mimeType: asset.mime_type,
     permissionStatus: 'approved',
     sourceUrl: asset.original_source_url || asset.url,
     sourceIdentifier: asset.original_source_identifier || asset.asset_id || asset.id,
@@ -327,11 +335,11 @@ async function repairDerivative(asset, supabase, storage, buildApprovedCatalogue
 }
 
 async function repairJapaneseDerivatives(supabase, options) {
-  const [{ buildApprovedCatalogueAsset }, { SupabaseObjectStorageAdapter }] = await Promise.all([
+  const [{ buildApprovedCatalogueAsset }, { createCatalogueObjectStorageAdapter }] = await Promise.all([
     import('../backend/lib/assetPipeline.js'),
     import('../backend/lib/objectStorage.js'),
   ]);
-  const storage = new SupabaseObjectStorageAdapter(supabase);
+  const storage = options.dryRun ? null : createCatalogueObjectStorageAdapter();
   const assets = [...await japaneseVariantAssets(supabase), ...await japanesePrintingAssets(supabase)];
   const candidates = assets
     .filter((asset) => {

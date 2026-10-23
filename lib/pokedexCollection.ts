@@ -218,7 +218,9 @@ type ArtworkHydrationEntry = { promise: Promise<PokedexCard>; expiresAt: number;
 const artworkHydrationByCardId = new Map<string, ArtworkHydrationEntry>();
 const ARTWORK_CACHE_LIMIT = 512;
 const ARTWORK_MANIFEST_BATCH_SIZE = 100;
-const ARTWORK_MANIFEST_MAX_PAGES = 3;
+// Preserve the existing 300-asset allowance per visible identity chunk while
+// the shared client sends at most 50 asset rows per HTTP request.
+const ARTWORK_MANIFEST_MAX_PAGES = 6;
 
 const pruneArtworkHydrationCache = () => {
   const now = Date.now();

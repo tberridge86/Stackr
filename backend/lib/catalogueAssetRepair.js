@@ -1,4 +1,5 @@
 import { CATALOGUE_DERIVATIVE_SPECS, STACKR_ASSET_BUCKETS, buildCatalogueAssetRepairFromStoredOriginal } from './assetPipeline.js';
+import { assertCatalogueWriteStorage } from './objectStorage.js';
 
 export const STAGING_SUPABASE_PROJECT_REF = 'lmwfhvexfcoyeuoyrlco';
 export const PRODUCTION_SUPABASE_PROJECT_REF = 'oakdbbzdqwurpjnoqhmu';
@@ -46,8 +47,9 @@ function positiveInteger(value) {
 
 function derivativeIsReady(derivative, role) {
   return derivative?.role === role
-    && derivative?.storageProvider === 'supabase_storage'
-    && derivative?.storageBucket === STACKR_ASSET_BUCKETS.publicCatalogue
+    && ((derivative?.storageProvider === 'supabase_storage'
+      && derivative?.storageBucket === STACKR_ASSET_BUCKETS.publicCatalogue)
+      || (derivative?.storageProvider === 's3_compatible' && clean(derivative?.storageBucket)))
     && clean(derivative?.storageKey)
     && derivative?.mimeType === 'image/webp'
     && SHA256_PATTERN.test(String(derivative?.contentSha256 ?? ''))
@@ -246,6 +248,9 @@ export async function repairStoredCatalogueAsset(supabase, storage, asset, input
   if (storage?.id !== 'supabase_storage' || typeof storage.getObject !== 'function') {
     throw new Error('Stored catalogue asset repair requires the Supabase Storage adapter.');
   }
+  // Legacy originals stay immutable in their recorded provider. New derivatives
+  // use the separately configured catalogue writer, never the legacy reader.
+  const writeStorage = assertCatalogueWriteStorage(input.writeStorage);
 
   const derivativeRoles = missingRequiredCatalogueDerivativeRoles(asset);
   const original = await storage.getObject(asset.storage_bucket, asset.storage_key, { maxBytes: input.maxBytes });
@@ -255,10 +260,9 @@ export async function repairStoredCatalogueAsset(supabase, storage, asset, input
     mimeType: asset.mime_type,
     permissionStatus: asset.permission_status,
     rightsStatus: asset.rights_status,
-    bucket: asset.storage_bucket,
     derivativeRoles,
     maxBytes: input.maxBytes,
-    storage,
+    storage: writeStorage,
   });
   const patch = {
     sha256: repaired.sha256,

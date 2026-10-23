@@ -1,10 +1,10 @@
 import 'dotenv/config';
+import { Buffer } from 'node:buffer';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { createClient } from '@supabase/supabase-js';
 import { Client } from 'pg';
 import { buildApprovedCatalogueAsset } from '../backend/lib/assetPipeline.js';
-import { SupabaseObjectStorageAdapter } from '../backend/lib/objectStorage.js';
+import { createCatalogueObjectStorageAdapter } from '../backend/lib/objectStorage.js';
 
 const REF='oakdbbzdqwurpjnoqhmu', VERSION='d560cd01-de2a-4713-9518-b967fb4c5ac9', SOURCE_ID='aeb43aa5-a6ec-4b99-93da-beeab7f92710';
 const m=JSON.parse(readFileSync(process.env.STACKR_POKEDATA_GAP_MANIFEST??'deploy/manifests/pokedata-gap-art-20260910.json','utf8'));
@@ -14,12 +14,48 @@ const ready=a=>a?.permission_status==='approved'&&a?.rights_status==='approved'&
 function save(v){mkdirSync(path.dirname(out),{recursive:true});writeFileSync(out,JSON.stringify(v,null,2)+'\n',{mode:0o600});}
 async function bytes(url){const u=new URL(url);if(u.protocol!=='https:'||u.hostname!=='pokemoncardimages.pokedata.io')throw Error('source_url_guard');const r=await fetch(u,{signal:AbortSignal.timeout(30000),redirect:'follow'});const finalUrl=new URL(r.url);if(finalUrl.protocol!=='https:'||finalUrl.hostname!=='pokemoncardimages.pokedata.io')throw Error('source_redirect_guard');if(!r.ok)throw Error(`source_fetch_${r.status}`);const body=Buffer.from(await r.arrayBuffer());if(body.length<12)throw Error('source_image_truncated');const declaredMime=clean(r.headers.get('content-type'))?.split(';')[0].toLowerCase()??null;const detectedMime=body.subarray(0,3).equals(Buffer.from([0xff,0xd8,0xff]))?'image/jpeg':body.subarray(0,8).equals(Buffer.from([0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a]))?'image/png':body.subarray(0,4).equals(Buffer.from('RIFF'))&&body.subarray(8,12).equals(Buffer.from('WEBP'))?'image/webp':null;if(!detectedMime)throw Error('source_image_signature_invalid');return {body,mime:detectedMime,declaredMime,detectedMime};}
 class MemoryStorage { constructor(){this.id='memory_dry_run';this.objects=new Map()} async putObject(i){this.objects.set(`${i.bucket}/${i.key}`,Buffer.from(i.body));return {provider:this.id,bucket:i.bucket,key:i.key,path:i.key}} }
-class ReceiptStorage { constructor(inner,receipt){this.id=inner.id;this.inner=inner;this.receipt=receipt} async putObject(i){try{const current=await this.inner.getObject(i.bucket,i.key,{maxBytes:25*1024*1024});if(!Buffer.from(current).equals(Buffer.from(i.body)))throw Error(`storage_key_content_conflict:${i.key}`);return {provider:this.id,bucket:i.bucket,key:i.key,path:i.key,duplicate:true}}catch(e){if(!/not found|object.*not|404/i.test(String(e?.message??e)))throw e;this.receipt.rollback.pendingObjectKey=i.key;save({...this.receipt,phase:'object_upload_pending'});const v=await this.inner.putObject(i);this.receipt.rollback.insertedObjectKeys.push(i.key);delete this.receipt.rollback.pendingObjectKey;save({...this.receipt,phase:'object_uploaded'});return v}} }
+class ReceiptStorage {
+  constructor(inner, receipt) {
+    this.id = inner.id;
+    this.catalogueStorage = inner.catalogueStorage;
+    this.catalogueBucket = inner.catalogueBucket;
+    this.inner = inner;
+    this.receipt = receipt;
+    receipt.rollback.objectStorageProvider = inner.id;
+    receipt.rollback.objectStorageBucket = inner.catalogueBucket;
+  }
+  async putObject(input) {
+    try {
+      const current = await this.inner.getObject(input.bucket, input.key, { maxBytes: 25 * 1024 * 1024 });
+      if (!Buffer.from(current).equals(Buffer.from(input.body))) throw Error(`storage_key_content_conflict:${input.key}`);
+      return { provider: this.id, bucket: input.bucket, key: input.key, path: input.key, duplicate: true };
+    } catch (error) {
+      if (error?.status !== 404) throw error;
+    }
+    this.receipt.rollback.pendingObjectKey = input.key;
+    save({ ...this.receipt, phase: 'object_upload_pending' });
+    try {
+      const result = await this.inner.putObject(input);
+      this.receipt.rollback.insertedObjectKeys.push(input.key);
+      delete this.receipt.rollback.pendingObjectKey;
+      save({ ...this.receipt, phase: 'object_uploaded' });
+      return result;
+    } catch (error) {
+      // A competing immutable upload is safe only after its exact bytes agree.
+      if (error?.status !== 412) throw error;
+      const current = await this.inner.getObject(input.bucket, input.key, { maxBytes: 25 * 1024 * 1024 });
+      if (!Buffer.from(current).equals(Buffer.from(input.body))) throw Error(`storage_key_content_conflict:${input.key}`);
+      delete this.receipt.rollback.pendingObjectKey;
+      save({ ...this.receipt, phase: 'object_reused' });
+      return { provider: this.id, bucket: input.bucket, key: input.key, path: input.key, duplicate: true };
+    }
+  }
+}
 if(m.contract!=='pokedata-gap-art-20260910'||m.candidates?.length!==82||new Set(m.candidates.map(x=>x.variantId)).size!==82)throw Error('frozen82_manifest_invalid');
 if(new URL(process.env.SUPABASE_URL??'').hostname!==`${REF}.supabase.co`||!clean(process.env.SUPABASE_SECRET_KEY)||!out)throw Error('production_credentials_required');
 if(apply&&process.env.STACKR_POKEDATA_GAP_CONFIRMATION!=='MATERIALIZE 82 VERIFIED POKEDATA ART')throw Error('apply_confirmation_required');
 if(!clean(process.env.SUPABASE_DB_URL))throw Error('production_database_url_required');
-const db=createClient(process.env.SUPABASE_URL,process.env.SUPABASE_SECRET_KEY,{auth:{persistSession:false}}), storage=new SupabaseObjectStorageAdapter(db);
+const storage=apply?createCatalogueObjectStorageAdapter():null;
 const pg=new Client({connectionString:process.env.SUPABASE_DB_URL,ssl:{rejectUnauthorized:false}}); await pg.connect();
 const qid=x=>'"'+String(x).replaceAll('"','""')+'"';
 const writeRow=async (table,patch,where)=>{const e=Object.entries(patch), p=e.map(([,v])=>v);const sets=e.map(([k],i)=>qid(k)+'=$'+(i+1)).join(',');const w=where.map(([k],i)=>qid(k)+'=$'+(e.length+i+1)).join(' and ');return pg.query('update '+table+' set '+sets+' where '+w+' returning id',[...p,...where.map(([,v])=>v)]);};

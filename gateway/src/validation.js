@@ -14,6 +14,19 @@ const FEEDBACK_ACTIONS = new Set([
   'bad_scan',
 ]);
 const SHADOW_REVIEW_STATUSES = new Set(['pending_review', 'reviewed', 'ignored']);
+export const MAX_UI_PAGE_SIZE = 50;
+
+/** Normalize once before cache lookup and origin signing, preserving legacy callers. */
+export function withBoundedPageSize(request, route, env = {}) {
+  // Old installed builds must retain their offset windows until the updated
+  // client is published and the release owner explicitly activates this gate.
+  if (env.STACKR_ENFORCE_UI_PAGE_LIMIT !== 'true' || request.method !== 'GET' || !route.query?.has('limit')) return request;
+  const url = new URL(request.url);
+  const supplied = url.searchParams.get('limit');
+  if (supplied != null && Number(supplied) <= MAX_UI_PAGE_SIZE) return request;
+  url.searchParams.set('limit', String(MAX_UI_PAGE_SIZE));
+  return new Request(url, request);
+}
 
 function bad(code, message, details) {
   throw new GatewayError(400, code, message, details);

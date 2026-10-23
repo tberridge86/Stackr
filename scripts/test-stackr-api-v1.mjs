@@ -1394,11 +1394,11 @@ assert.match(client, /assetManifest\([\s\S]+cursor\?: string \| null/);
 assert.doesNotMatch(client, /SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SECRET_KEY|RECOGNITION_SERVICE_SECRET|BACKEND_ORIGIN_KEY/);
 assert.match(
   domainAdapter,
-  /client\.assetManifest\(\s*\{ assetType, cursor, limit: 500 \},\s*\{ signal: pageSignal \},\s*\)/,
+  /client\.assetManifest\(\s*\{ assetType, cursor, limit: 50 \},\s*\{ signal: pageSignal \},\s*\)/,
 );
 assert.match(
   domainAdapter,
-  /client\.assetManifest\(\s*\{ setId, cursor, limit: 500 \},\s*\{ signal: pageSignal \},\s*\)/,
+  /client\.assetManifest\(\s*\{ setId, cursor, limit: 50 \},\s*\{ signal: pageSignal \},\s*\)/,
 );
 assert.match(domainAdapter, /client\.sets\([\s\S]*?\{ signal: pageSignal \},\s*\)/);
 assert.match(

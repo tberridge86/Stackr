@@ -1,5 +1,10 @@
 # Stackr API Target Architecture
 
+The current platform allocation and rollout contract are defined in
+[Distributed architecture, 23 October 2026](distributed-architecture-20261023.md).
+The July assessment below is historical; it does not describe today's deployment
+or override the current R2/Pages/Railway responsibilities.
+
 Audit date: 2026-07-27
 Stage scope: target design only. No API route, database schema, Edge Function or deployment was implemented in Stage 1.
 

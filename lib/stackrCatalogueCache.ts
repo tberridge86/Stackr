@@ -596,8 +596,10 @@ export async function syncStackrCatalogueInBackground(input: {
     let cursor: string | null = null;
     let latestChangeSequence = current.latestChangeSequence;
     const seenCursors = new Set<string>();
+    // Keep at most 100 HTTP requests per run. Every applied page advances the
+    // durable sequence; a larger backlog resumes from that checkpoint next run.
     for (let page = 0; page < 100; page += 1) {
-      const deltaEnvelope = await input.client.catalogDelta({ since: current.latestChangeSequence, cursor, limit: 500 });
+      const deltaEnvelope = await input.client.catalogDelta({ since: current.latestChangeSequence, cursor, limit: 50 });
       await cache.applyDelta(deltaEnvelope.data.changes);
       latestChangeSequence = (await cache.getManifest())?.latestChangeSequence ?? latestChangeSequence;
       cursor = deltaEnvelope.meta.pagination?.nextCursor ?? null;

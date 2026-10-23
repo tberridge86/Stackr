@@ -16,6 +16,7 @@ import { Buffer } from 'buffer';
 import { sha256Text } from './cataloguePriceHash';
 
 const STACKR_CANONICAL_UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+export const STACKR_UI_PAGE_SIZE = 50;
 
 export type StackrApiLanguageCode = 'en' | 'ja' | 'zh-cn' | 'zh-tw' | 'zh-Hans' | 'zh-Hant' | 'ko';
 
@@ -709,9 +710,15 @@ async function defaultDeviceId() {
 
 function buildUrl(baseUrl: string, path: string, query?: Record<string, string | number | boolean | null | undefined>) {
   const url = new URL(`${baseUrl.replace(/\/$/, '')}${path}`);
+  if (['/catalog/delta', '/series', '/sets', '/pokemon', '/assets/manifest', '/search', '/market/movers', '/market/opportunities'].includes(path)
+    || /^\/(?:sets|pokemon)\/[^/]+\/cards$/.test(path) || /^\/cards\/[^/]+\/price-history$/.test(path)) {
+    url.searchParams.set('limit', String(STACKR_UI_PAGE_SIZE));
+  }
   for (const [key, value] of Object.entries(query ?? {})) {
     if (value === null || value === undefined || value === '') continue;
-    url.searchParams.set(key, String(value));
+    const bounded = key === 'limit' && typeof value === 'number' && Number.isSafeInteger(value) && value > 0
+      ? Math.min(value, STACKR_UI_PAGE_SIZE) : value;
+    url.searchParams.set(key, String(bounded));
   }
   return url.toString();
 }
@@ -989,8 +996,8 @@ export class StackrApiClient {
     return this.request<{ cards: StackrCard[] }>(`/pokemon/${encodeURIComponent(species)}/cards`, query);
   }
 
-  pokemonIndex(query: { offset?: number; limit?: number } = {}) {
-    return this.request<{
+  async pokemonIndex(query: { offset?: number; limit?: number } = {}) {
+    type Index = {
       count: number;
       indexVersion: string;
       // Existing builds retain the route URL and provider name. Species identity
@@ -1004,7 +1011,41 @@ export class StackrApiClient {
         routeId: number;
         routeName: string;
       }[];
-    }>('/pokemon', query);
+    };
+    const offset = query.offset ?? 0;
+    const requested = query.limit ?? 151;
+    if (!Number.isSafeInteger(offset) || offset < 0 || !Number.isSafeInteger(requested) || requested < 1) {
+      throw new Error('pokemonIndex requires a non-negative offset and a positive integer limit.');
+    }
+    // Retain the existing 151/1199 caller windows without sending oversized HTTP
+    // pages or silently truncating the National Dex after the transport cap.
+    const limit = Math.min(requested, 1350);
+    const results: Index['results'] = [];
+    const species = new Set<number>();
+    let first: StackrApiEnvelope<Index> | undefined;
+    do {
+      const pageLimit = Math.min(STACKR_UI_PAGE_SIZE, limit - results.length);
+      const page = await this.request<Index>('/pokemon', { offset: offset + results.length, limit: pageLimit });
+      first ??= page;
+      if (!Number.isSafeInteger(page.data.count) || page.data.count < 0 || page.data.count > 1350
+        || typeof page.data.indexVersion !== 'string' || !page.data.indexVersion || page.data.count !== first.data.count
+        || page.data.indexVersion !== first.data.indexVersion || !Array.isArray(page.data.results)
+        || page.data.results.length > pageLimit) throw new Error('Inconsistent Pokemon index page.');
+      if (page.data.results.length !== Math.min(pageLimit, Math.max(0, page.data.count - offset - results.length))) {
+        throw new Error('Incomplete Pokemon index page.');
+      }
+      for (const entry of page.data.results) {
+        if (!Number.isSafeInteger(entry.speciesId) || entry.speciesId < 1 || species.has(entry.speciesId)) {
+          throw new Error('Invalid or duplicate Pokemon index species.');
+        }
+        species.add(entry.speciesId);
+        results.push(entry);
+      }
+      const expected = Math.min(limit, Math.max(0, first.data.count - offset));
+      if (results.length >= expected) return { ...first, data: { ...first.data, results } };
+      if (!page.data.results.length) throw new Error('Incomplete Pokemon index page.');
+    } while (results.length < limit);
+    throw new Error('Pokemon index exceeded its bounded retrieval budget.');
   }
 
   card(cardId: string) {

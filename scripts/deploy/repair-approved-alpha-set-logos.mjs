@@ -6,12 +6,12 @@
  * row after storing immutable replacements from its existing approved source.
  */
 import 'dotenv/config';
+import { Buffer } from 'node:buffer';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { createRequire } from 'node:module';
-import { createClient } from '@supabase/supabase-js';
 import { buildApprovedCatalogueAsset, STACKR_ASSET_BUCKETS } from '../../backend/lib/assetPipeline.js';
-import { SupabaseObjectStorageAdapter } from '../../backend/lib/objectStorage.js';
+import { createCatalogueObjectStorageAdapter } from '../../backend/lib/objectStorage.js';
 import { createVerifiedSupabasePostgresClient } from './verified-supabase-postgres.mjs';
 
 const requireBackend = createRequire(new URL('../../backend/package.json', import.meta.url));
@@ -64,13 +64,6 @@ function assertScope() {
   if (!process.env.SUPABASE_PRODUCTION_SECRET_KEY && !process.env.SUPABASE_SERVICE_ROLE_KEY) throw new Error('A production-only Supabase secret is required.');
   productionDatabaseUrl();
   if (flag('execute') && arg('confirmation') !== 'REPAIR APPROVED ALPHA SET LOGOS') throw new Error('Writes require --confirmation=REPAIR APPROVED ALPHA SET LOGOS.');
-}
-function client() {
-  const key = process.env.SUPABASE_PRODUCTION_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
-  return createClient(process.env.SUPABASE_URL, key, {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: { fetch: (input, init = {}) => fetch(input, { ...init, signal: init.signal ?? AbortSignal.timeout(60_000) }) },
-  });
 }
 function isCandidate(asset) {
   return asset.asset_type === 'set_logo'
@@ -138,15 +131,14 @@ async function repairOne(db, storage, asset, execute) {
       assetId: asset.asset_id || asset.id, assetType: 'set_logo', sourceUrl: asset.original_source_url,
       sourceIdentifier: asset.original_source_identifier, sourceAttribution: asset.source_attribution,
       permissionStatus: 'approved', buffer: source.buffer, mimeType: 'image/webp', storage,
-      bucket: STACKR_ASSET_BUCKETS.publicCatalogue,
     });
     const payload = {
       ...rebuilt,
       storage_provider: storage.id,
-      storage_bucket: STACKR_ASSET_BUCKETS.publicCatalogue,
+      storage_bucket: rebuilt.storage_bucket,
       storage_key: rebuilt.storage_key,
       storage_path: rebuilt.storage_path,
-      url: storage.publicUrl(STACKR_ASSET_BUCKETS.publicCatalogue, rebuilt.storage_key),
+      url: storage.publicUrl(rebuilt.storage_bucket, rebuilt.storage_key),
       original_source_url: asset.original_source_url,
       original_source_identifier: asset.original_source_identifier,
       source_attribution: asset.source_attribution,
@@ -181,13 +173,12 @@ async function main() {
   const execute = flag('execute');
   const expected = integer('expected-scanned', 141, 1, MAX_CANDIDATES);
   const receipt = arg('receipt', 'outputs/releases/catalogue-alpha-logo-repair-receipt.json');
-  const supabase = client();
+  const storage = execute ? createCatalogueObjectStorageAdapter() : null;
   const db = createVerifiedSupabasePostgresClient(productionDatabaseUrl(), 'stackr-approved-alpha-logo-repair', { connectionTimeoutMillis: 15_000, statement_timeout: 60_000 });
   try {
     await db.connect();
     const candidates = await publishedCandidates(db);
     if (candidates.length !== expected) throw new Error(`Expected ${expected} currently published JPEG/WebP candidates, found ${candidates.length}; refusing to continue.`);
-    const storage = new SupabaseObjectStorageAdapter(supabase);
     const results = [];
     const report = { schemaVersion: 1, ok: true, command: 'repair-approved-alpha-set-logos', target: 'production', dryRun: !execute, scope: { published: true, language: 'en', assetType: 'set_logo', source: 'approved TCGdex English WebP only', maxCandidates: MAX_CANDIDATES }, candidates: candidates.length, summary: {}, results };
     report.rollbackPlan = candidates.map((asset) => ({ assetId: asset.id, before: before(asset) }));

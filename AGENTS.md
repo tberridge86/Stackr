@@ -1,5 +1,23 @@
 # Stackr agent ownership
 
+## Platform architecture (23 October 2026)
+
+Apply `docs/stackr-api/distributed-architecture-20261023.md` to new code and
+infrastructure changes. GitHub owns source/configuration/migrations; Supabase
+owns metadata, relationships, Auth and RLS; Cloudflare R2/CDN owns approved
+public artwork and Pages hosts the web export; Railway owns backend compute
+and workers. Keep binaries out of database rows and secrets out of clients.
+New UI requests must use pages of at most 50 rows. Preserve existing identities,
+rights and provider-correct URLs during migration. Never fabricate a CDN URL
+for an object that has not been uploaded there.
+
+Do not download or synchronize the catalogue asset library for local UI work;
+use at most 50 explicitly selected mock assets. Keep large changes reviewable:
+before a storage migration, scheduler cutover, schema restructuring, paid
+provisioning or enforcement affecting installed clients, provide the exact
+scope, evidence, costs and rollback for owner sign-off. Local implementation
+and tests may proceed. Sub-100ms retrieval is a measured target, not a guarantee.
+
 ## Current repair and consolidation workspace (18 October 2026)
 
 Use the independent repository `D:/Stackr` and the single integration branch

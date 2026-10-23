@@ -314,6 +314,11 @@ async function assertRepairMutationIsBounded() {
       downloads.push({ bucket, key, options });
       return tinyPng;
     },
+  };
+  const writeStorage = {
+    id: 's3_compatible',
+    catalogueStorage: true,
+    catalogueBucket: 'configured-r2-catalogue',
     async putObject(input) {
       uploads.push(input);
       return { provider: this.id, bucket: input.bucket, key: input.key };
@@ -323,6 +328,7 @@ async function assertRepairMutationIsBounded() {
   const result = await repairStoredCatalogueAsset(supabase, storage, asset, {
     execute: true,
     maxBytes: tinyPng.length,
+    writeStorage,
   });
 
   assert.equal(result.status, 'repaired');
@@ -333,11 +339,14 @@ async function assertRepairMutationIsBounded() {
     options: { maxBytes: tinyPng.length },
   }]);
   assert.equal(uploads.length, 2, 'only missing required derivative roles should be generated');
-  assert.deepEqual(uploads.map((upload) => upload.bucket), [asset.storage_bucket, asset.storage_bucket]);
+  assert.deepEqual(uploads.map((upload) => upload.bucket), [writeStorage.catalogueBucket, writeStorage.catalogueBucket]);
   assert.deepEqual(uploads.map((upload) => upload.upsert), [false, false]);
   const expectedHash = createHash('sha256').update(tinyPng).digest('hex');
   assert.equal(captured.patch.content_sha256, expectedHash);
   assert.equal(captured.patch.sha256, expectedHash);
+  assert.equal(captured.patch.derivative_list[0].storageProvider, 'supabase_storage');
+  assert.deepEqual(captured.patch.derivative_list.slice(1).map((item) => item.storageProvider), ['s3_compatible', 's3_compatible']);
+  assert.deepEqual(missingRequiredCatalogueDerivativeRoles({ ...asset, ...captured.patch }), []);
   assert.match(captured.patch.perceptual_hash, /^[a-f0-9]{16}$/);
   assert.deepEqual(Object.keys(captured.patch).sort(), [
     'byte_size',
