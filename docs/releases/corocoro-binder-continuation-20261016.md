@@ -1,5 +1,7 @@
 # CoroCoro magazine reveal continuation — 16 October 2026
 
+**Latest owner continuation:** [Actual inside pages for all five current studies](corocoro-real-interiors-20261016.md) replace the blank spreads. Cover opening pauses on the photographed insert before a separate close-up and card-specific release. [Current source/validation receipt](corocoro-real-interiors-20261016.json) retains partial-photo quality, unseen fastening/seal operations and private-image boundaries. The original Mew benchmark remains unchanged.
+
 The original Shining Mew paper pull, printed sleeve and card reference remain the visual benchmark. This candidate adds eleven verified issue-to-printing navigation links, ten documented insert distributions and named source references for all eighteen missing preview covers. New cover images and physical-variant ownership bindings remain held.
 
 ## Result and delivery state
@@ -45,6 +47,8 @@ Browser proof is local preview evidence only. Source tests do not establish the 
 No deployment, main merge, remote database/catalogue mutation, price refresh, native build, OTA publication or TestFlight submission occurred. The separate ordinary-artwork workstream and its production ledger were preserved. Before TestFlight, retain this feature's cover-rights, identity/finish, original-sleeve and installed-device gaps in shared release evidence.
 
 ## Unpacking follow-up
+
+**Magazine-first correction:** [Current cover/open/insert/release journey](corocoro-magazine-first-20261016.md) addresses the owner's standalone-peel feedback. All five scenes begin with matched covers; Cetitan's original pouch turns across the gutter and lifts free before the documented edit and rightward extraction. The right front-cover hinge is source-derived for that physical book. Three new private cover originals remain outside Git; public/native cover imports stay zero. Exact printed interior art and hidden fastening/seal operations remain held, with blank page context explicitly reconstructed. Original Mew and native sources are unchanged. [Latest evidence](corocoro-magazine-first-20261016.json) supersedes earlier prototype-only stages while retaining their receipts.
 
 **Latest continuation:** [Five separate insert scenes](corocoro-next-unpacking-cases-20261016.md) now include Cleffa's own pink carrier, additional January 2000 Wooper's blue carrier and Cetitan's own illustrated pouch. The new sheets slowly peel from their printed lower-left guide, pause back-up and flip separately; Cetitan starts after the watched edit, already partly exposed/front-up, and slides right. [New evidence](corocoro-next-unpacking-cases-20261016.json) retains source/rights/identity gates, the acquisition-required Cetitan app scan, expanded Farfetch’d/Togepi footage and current independent checks. Twelve private originals total 5,160,849 bytes outside Git. Actual 320/355 DOM bounds and a valid 355 viewport capture supplement desktop checks; installed-phone proof remains held. No ownership, catalogue/public asset, cover or native changes follow. The paragraphs below preserve the earlier two-scene stage.
 

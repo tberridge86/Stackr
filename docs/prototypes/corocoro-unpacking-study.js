@@ -5,12 +5,27 @@
   const local = ['127.0.0.1', 'localhost', '[::1]', '::1'].includes(location.hostname);
   let references = null;
   let activeCase = null;
+  let journey = null;
   let cards = [];
   let animation = null;
   let moving = null;
   let epoch = 0;
   let loadEpoch = 0;
   let ready = false;
+  const coverReferences = {
+    '1996-sheet': ['1996-11.png', 'e84ec33681ff263d5226e7b14c6b7f78db64b322207d3a967ad3d94d573267a5', 449, 647, 'supplied-cover', null],
+    '2000-cleffa': ['2000-02.png', '0ef889c1eb9d8b4ad467cfcdf50d0b03a52f81a28184901e6b3f4de8ab853785', 446, 649, 'supplied-cover', null],
+    '2000-wooper': ['2000-01-monthly-cover-comicvine.jpg', '8ab051a8c62cbf54a918947424a496dd7517b26f67b6238072f755c38893dfd1', 847, 1280, 'private-reference', 'https://comicvine.gamespot.com/corocoro-comic-261-no-1-2000/4000-617775/'],
+    '2022-packet': ['2022-02-monthly-cover-publisher.jpg', 'b08bb1b42d8eeefc8fa792145db884995af7aa8685db18bde3525563f7695909', 450, 652, 'private-reference', 'https://corocoro-news.jp/news/320097/'],
+    '2023-cetitan': ['2023-06-ichiban-cover-publisher.jpg', '09cc99afb544d66f90d20d6b3ca3c513d5c6a098f6807d8a0e1f431f5956c43d', 450, 565, 'private-reference', 'https://corocoro-news.jp/news/362389/'],
+  };
+  const interiorReferences = {
+    '1996-sheet': ['1996-11-bound-insert-bulbagarden-original.jpeg', 'abbdb8ab8b8b6882308b78925d2c2df725ecc5d86b5bddb9d2e715173b2591e5', 778, 831, 0, 'https://bulbapedia.bulbagarden.net/wiki/File:Nov_1996_corocoro_insert.jpeg', 'The two-card carrier is still inside the magazine, beside the model page.'],
+    '2000-cleffa': ['2000-02-cleffa-bound-spread-mercari-original.jpg', '5201353df8fdc62b9c083e2e21e0a81b993dd2ac7407fc1f2beef33d4d50be14', 1080, 1080, 0, 'https://jp.mercari.com/item/m18118128540', 'Cleffa’s pink carrier lies over the other inserts, opposite the Doraemon advertisement.'],
+    '2000-wooper': ['2000-01-wooper-bound-spread-ebay-original.webp', '723cb6d3fa7e8256a737d8b028461c776545da289df0f6389bc249b6879b8b1d', 687, 932, 0, 'https://www.ebay.com/itm/377179937389', 'Wooper’s blue carrier is beside the gutter, opposite the game advertisement. This photograph is soft.'],
+    '2022-packet': ['2022-pikachu-bound-interior-fril-original.jpg', '1144e8adedc5510e965bf568de51f5cb10b64b5fa5eaf03e05adfd348bb5aa59', 1080, 1080, 0, 'https://item.fril.jp/f52f0158bba71551ef760a5eff22fbbc', 'The regular printed sleeve is inside the magazine, beside the Start Deck 100 page.'],
+    '2023-cetitan': ['2023-cetitan-bound-interior-fril-original.jpg', 'f5c44620eafea95889d0171eb834d4255c0fca1280f41fd78d0b4e642d6e4940', 1080, 1080, 90, 'https://item.fril.jp/71c47f00b93e0aee209ae10a6e8333c2', 'Cetitan’s pouch lies over the Kirby birthday stickers. The facing page is only partly visible.'],
+  };
   get('reduce').checked = systemMotion.matches;
 
   function element(tag, cls, text) {
@@ -58,6 +73,7 @@
   function paintPeel(card, progress) {
     const release = smooth((progress - .7) / .3);
     const lift = Math.sin(Math.PI * progress);
+    card.mount.style.setProperty('--backing-pull', String(lift));
     const stage = progress < .18 ? 'edge' : progress < .7 ? 'backing' : 'lifting';
     if (card.button.classList.contains('is-peeling') && card.button.dataset.peelStage !== stage) {
       card.button.dataset.peelStage = stage;
@@ -74,17 +90,17 @@
     card.button.style.setProperty('--card-angle', (card.side * card.freePose[2] * release) + 'deg');
     card.button.style.setProperty('--card-lift', (3 * lift) + 'deg');
     const front = 100 - 96 * progress;
-    const bottom = 100 + 18 * lift;
-    const lip = bottom - (3 + 4 * lift);
+    const bottom = 100 + 32 * lift;
+    const lip = bottom - (3 + 9 * lift);
     const n = value => value.toFixed(2);
     if (card.peelDirection === 'bottom-left') {
       const left = 100 - 96 * Math.min(1, progress * 1.35);
       const right = 100 - 96 * Math.max(0, (progress - .2) / .8);
-      const leftBottom = 100 + 17 * lift;
-      const rightBottom = 100 + 5 * lift;
+      const leftBottom = 100 + 31 * lift;
+      const rightBottom = 100 + 13 * lift;
       card.vacancy.style.clipPath = `polygon(0 ${n(left)}%,100% ${n(right)}%,100% 100%,0 100%)`;
       card.underside.setAttribute('d', `M 0 ${n(left)} Q 42 ${n((left + right) / 2 - 6 * lift)} 100 ${n(right)} L 100 ${n(rightBottom)} Q 40 ${n(leftBottom + 2 * lift)} 0 ${n(leftBottom)} Z`);
-      card.fold.setAttribute('d', `M 0 ${n(leftBottom - 8 * lift - 2)} Q 45 ${n(leftBottom - 5 * lift)} 100 ${n(rightBottom - 2)} L 100 ${n(rightBottom)} Q 40 ${n(leftBottom + 2 * lift)} 0 ${n(leftBottom)} Z`);
+      card.fold.setAttribute('d', `M 0 ${n(leftBottom - 10 * lift - 2)} Q 45 ${n(leftBottom - 7 * lift)} 100 ${n(rightBottom - 3 * lift - 2)} L 100 ${n(rightBottom)} Q 40 ${n(leftBottom + 2 * lift)} 0 ${n(leftBottom)} Z`);
       card.edge.setAttribute('d', `M 0 ${n(leftBottom)} Q 40 ${n(leftBottom + 2 * lift)} 100 ${n(rightBottom)}`);
     } else {
       card.underside.setAttribute('d', `M 0 ${n(front)} C 25 ${n(front - 5 * lift)} 75 ${n(front + 5 * lift)} 100 ${n(front)} L 100 ${n(bottom)} C 76 ${n(bottom + 2 * lift)} 24 ${n(bottom + 2 * lift)} 0 ${n(bottom)} Z`);
@@ -98,6 +114,8 @@
     if (!card.paper) return;
     card.button.classList.remove('is-peeling');
     card.paper.classList.remove('is-peeling');
+    card.mount.classList.remove('is-peeling');
+    card.mount.style.setProperty('--backing-pull', '0');
     delete card.button.dataset.peelStage;
     card.paper.style.opacity = '0';
     card.shadow.style.opacity = '0';
@@ -121,6 +139,8 @@
     });
     card.button.classList.add('is-peeling');
     card.paper.classList.add('is-peeling');
+    card.mount.classList.add('is-peeling');
+    card.mount.dataset.peelDirection = card.peelDirection;
     paintPeel(card, 0);
     return {
       finished,
@@ -137,13 +157,17 @@
   }
   function controls() {
     const next = chooseNext();
-    get('play').disabled = !ready || Boolean(animation) || !next;
-    get('play').textContent = !ready ? 'References unavailable' : !next ? 'Cards revealed'
+    const closed = journey && journey.phase !== 'insert';
+    get('play').disabled = !ready || Boolean(animation) || (!closed && !next);
+    get('play').textContent = !ready ? 'References unavailable' : closed
+      ? ['inside', 'inspecting'].includes(journey.phase) ? activeCase.kind === 'sheet' ? 'Inspect the card sheet' : journey.delivery ? 'Inspect the pouch' : 'Inspect the printed sleeve'
+        : journey.phase === 'delivery-front' ? 'Turn the printed pouch' : journey.phase === 'delivery-reverse' ? 'Lift the pouch free'
+        : journey.coverAvailable ? 'Open magazine' : 'View insert reference' : !next ? 'Cards revealed'
       : next.phase === 'loose' ? 'Flip ' + next.name : activeCase.kind === 'packet' ? 'Slide out the card' : 'Peel ' + next.name;
-    get('skip').disabled = !ready || !next;
+    get('skip').disabled = !ready || (!closed && !next);
     get('case').disabled = !references;
     for (const card of cards) {
-      card.button.disabled = !ready || Boolean(animation) || card.phase === 'revealed';
+      card.button.disabled = !ready || Boolean(animation) || Boolean(closed) || card.phase === 'revealed';
       card.button.dataset.phase = card.phase;
       card.button.setAttribute('aria-label', card.phase === 'revealed' ? card.name + ' revealed'
         : card.phase === 'loose' ? 'Flip ' + card.name + ' over'
@@ -151,7 +175,33 @@
     }
   }
   function settle(card, action) {
-    if (action === 'peel') {
+    if (action === 'open') {
+      journey.shell.hidden = true;
+      journey.interior.hidden = false;
+      journey.phase = 'inside';
+      get('stage').dataset.journey = 'inside';
+      get('hint').textContent = journey.interiorAvailable ? 'Inside the magazine · actual photograph' : 'Inside-page photograph unavailable';
+      get('phase').textContent = journey.interiorAvailable ? interiorReferences[get('case').value][6]
+        : 'The interior reference is unavailable. Inspect the separately verified insert.';
+    } else if (action === 'inspect') {
+      journey.interior.hidden = true;
+      if (journey.delivery) {
+        journey.phase = 'delivery-front';
+        journey.delivery.hidden = false;
+        journey.pouch.disabled = false;
+        get('stage').dataset.journey = 'delivery';
+        get('hint').textContent = 'Pouch close-up · turn · supported lift';
+        get('phase').textContent = 'Inspect the pouch close-up. Turn it as shown in the footage.';
+      } else showInsert();
+    } else if (action === 'turn-pouch') {
+      journey.phase = 'delivery-reverse';
+      journey.pouch.style.transform = 'rotateY(180deg)';
+      journey.pouch.setAttribute('aria-label', 'Lift Cetitan’s pouch free');
+      journey.pouch.disabled = false;
+      get('phase').textContent = 'The other side faces up. Gently lift the pouch free.';
+    } else if (action === 'lift-pouch') {
+      showInsert();
+    } else if (action === 'peel') {
       card.phase = 'loose';
       paintPeel(card, 1);
       card.vacancy.style.removeProperty('clip-path');
@@ -165,8 +215,34 @@
     }
     controls();
   }
+  function showInsert() {
+    journey.phase = 'insert';
+    journey.shell.hidden = true;
+    journey.interior.hidden = true;
+    if (journey.delivery) { journey.delivery.hidden = true; journey.pouch.disabled = true; }
+    journey.insert.hidden = false;
+    get('stage').dataset.journey = 'insert';
+    get('hint').textContent = activeCase.hint;
+    get('phase').textContent = activeCase.start;
+  }
   function reset() {
     cancel();
+    if (journey) {
+      journey.phase = 'closed';
+      journey.shell.hidden = false;
+      journey.insert.hidden = true;
+      journey.interior.hidden = true;
+      if (journey.delivery) {
+        journey.delivery.hidden = true;
+        journey.pouch.disabled = true;
+        journey.pouch.style.removeProperty('transform');
+        journey.pouch.setAttribute('aria-label', 'Turn Cetitan’s printed pouch across the gutter');
+      }
+      journey.cover.style.removeProperty('transform');
+      journey.shell.style.removeProperty('opacity');
+      get('stage').dataset.journey = 'closed';
+      get('hint').textContent = journey.coverAvailable ? 'Cover · open magazine · inspect insert' : 'Cover unavailable · inspect insert reference';
+    }
     cards.forEach(card => {
       card.phase = 'attached';
       card.button.dataset.phase = 'attached';
@@ -174,10 +250,93 @@
       if (card.paper) { paintPeel(card, 0); clearPeel(card); }
       if (card.sleeve) delete card.sleeve.dataset.open;
     });
-    get('phase').textContent = ready ? activeCase.start : 'Reference images are unavailable. Reload to try again.';
+    get('phase').textContent = !ready ? 'Reference images are unavailable. Reload to try again.'
+      : journey?.coverAvailable ? 'Start with the cover. Open the magazine to inspect its insert.'
+        : 'The exact cover is unavailable. View the insert reference separately.';
     controls();
   }
+  async function openMagazine() {
+    if (!ready || !journey || journey.phase === 'insert' || animation) return;
+    if (!journey.coverAvailable || get('reduce').checked || systemMotion.matches) { settle(null, 'open'); return; }
+    const run = ++epoch;
+    moving = { action: 'open' };
+    journey.phase = 'opening';
+    get('stage').dataset.journey = 'opening';
+    get('hint').textContent = 'Opening the cover · then inspect the insert';
+    get('phase').textContent = 'Opening the magazine…';
+    const turn = journey.cover.animate([{ transform: 'rotateY(0deg)' }, { transform: 'rotateY(160deg)' }],
+      { duration: 1500, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' });
+    animation = turn;
+    controls();
+    try { await turn.finished; } catch { return; }
+    if (run !== epoch) return;
+    journey.cover.style.transform = 'rotateY(160deg)';
+    turn.cancel();
+    const target = journey.interior;
+    target.hidden = false;
+    get('phase').textContent = 'Inspect the original insert reference before releasing the card.';
+    const presentation = [
+      journey.shell.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 400, fill: 'forwards' }),
+      target.animate([{ opacity: 0, transform: 'scale(.82)' }, { opacity: 1, transform: 'scale(1)' }],
+        { duration: 400, easing: 'ease-out', fill: 'forwards' }),
+    ];
+    const current = { finished: Promise.all(presentation.map(item => item.finished)), cancel: () => presentation.forEach(item => item.cancel()) };
+    animation = current;
+    try { await current.finished; } catch { return; }
+    if (run !== epoch) return;
+    animation = null;
+    moving = null;
+    settle(null, 'open');
+    current.cancel();
+  }
+  async function inspectInsert() {
+    if (!ready || journey?.phase !== 'inside' || animation) return;
+    if (get('reduce').checked || systemMotion.matches) { settle(null, 'inspect'); return; }
+    const run = ++epoch;
+    moving = { action: 'inspect' };
+    journey.phase = 'inspecting';
+    get('stage').dataset.journey = 'inspecting';
+    get('phase').textContent = 'Moving closer to inspect the insert…';
+    const target = journey.delivery ?? journey.insert;
+    target.hidden = false;
+    const motions = [
+      journey.interior.animate([{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(1.12)' }], { duration: 650, fill: 'forwards' }),
+      target.animate([{ opacity: 0, transform: 'scale(.9)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 650, easing: 'ease-out', fill: 'forwards' }),
+    ];
+    const current = { finished: Promise.all(motions.map(item => item.finished)), cancel: () => motions.forEach(item => item.cancel()) };
+    animation = current;
+    controls();
+    try { await current.finished; } catch { return; }
+    if (run !== epoch) return;
+    animation = null;
+    moving = null;
+    settle(null, 'inspect');
+    current.cancel();
+  }
+  async function handlePouch() {
+    if (!ready || !journey?.delivery || animation || !['delivery-front','delivery-reverse'].includes(journey.phase)) return;
+    const action = journey.phase === 'delivery-front' ? 'turn-pouch' : 'lift-pouch';
+    if (get('reduce').checked || systemMotion.matches) { settle(null, action); return; }
+    const run = ++epoch;
+    moving = { action };
+    journey.pouch.disabled = true;
+    get('phase').textContent = action === 'turn-pouch' ? 'Turning the printed pouch across the gutter…' : 'Supporting the pouch and lifting it free…';
+    const frames = action === 'turn-pouch' ? [{ transform: 'rotateY(0deg)' }, { transform: 'rotateY(180deg)' }]
+      : [{ transform: 'rotateY(180deg)' }, { transform: 'translate(14%,-10%) scale(1.08) rotateY(180deg)' }];
+    const current = journey.pouch.animate(frames, { duration: action === 'turn-pouch' ? 1100 : 1300, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' });
+    animation = current;
+    controls();
+    try { await current.finished; } catch { return; }
+    if (run !== epoch) return;
+    animation = null;
+    moving = null;
+    settle(null, action);
+    current.cancel();
+  }
   async function perform(card) {
+    if (journey?.phase === 'inside') { await inspectInsert(); return; }
+    if (journey?.phase === 'delivery-front' || journey?.phase === 'delivery-reverse') { await handlePouch(); return; }
+    if (journey && journey.phase !== 'insert') { await openMagazine(); return; }
     if (!ready || !card || animation || card.phase === 'revealed') return;
     const action = activeCase.kind === 'packet' ? 'slide' : card.phase === 'loose' ? 'flip' : 'peel';
     if (get('reduce').checked || systemMotion.matches) { settle(card, action); return; }
@@ -208,6 +367,7 @@
   }
   function skip() {
     cancel();
+    if (journey) showInsert();
     for (const card of cards) {
       if (card.vacancy) card.vacancy.dataset.open = 'true';
       if (card.paper) { paintPeel(card, 1); clearPeel(card); }
@@ -234,6 +394,100 @@
   function slotStyle(node, slot, canvas) {
     const values = [slot[0] / canvas[0], slot[1] / canvas[1], slot[2] / canvas[0], slot[3] / canvas[1]];
     ['--slot-x', '--slot-y', '--slot-w', '--slot-h'].forEach((key, i) => node.style.setProperty(key, (values[i] * 100) + '%'));
+  }
+  function holdCover() {
+    journey.coverAvailable = false;
+    journey.cover.replaceChildren(element('span', 'magazine-cover-held', activeCase.issue + ' · exact cover reference unavailable'));
+    get('cover').hidden = true;
+  }
+  function holdInterior() {
+    journey.interiorAvailable = false;
+    journey.interior.replaceChildren(element('p', 'interior-held', 'Actual inside-page photograph unavailable. Continue to the verified insert reference.'));
+  }
+  function renderInterior(id) {
+    const interior = element('div', 'interior-view');
+    interior.hidden = true;
+    get('stage').append(interior);
+    Object.assign(journey, { interior, interiorAvailable: false, interiorUrl: null });
+    const expected = interiorReferences[id];
+    const receipt = references.magazineInteriors?.[id];
+    const valid = expected && receipt?.file === expected[0] && receipt.sha256 === expected[1]
+      && receipt.width === expected[2] && receipt.height === expected[3] && receipt.displayRotation === expected[4]
+      && receipt.sourcePage === expected[5] && receipt.location === 'private-reference' && receipt.scope === 'private_reference'
+      && receipt.referenceOnly === true && receipt.publicDisplayApproved === false && receipt.sourceLicenceEstablished === false
+      && receipt.kind === 'perspective_bound_interior';
+    if (!valid) { holdInterior(); return; }
+    const frame = element('div', 'interior-photo');
+    const image = element('img');
+    image.src = localImage(receipt.file);
+    image.alt = activeCase.issue + ' · photographed bound insert and visible neighbouring pages';
+    if (receipt.displayRotation === 90) image.classList.add('rotate-clockwise');
+    frame.append(image);
+    interior.append(frame, element('span', 'interior-caption', 'Actual interior photograph · partial view'));
+    journey.interiorAvailable = true;
+    journey.interiorUrl = image.src;
+    get('sources').append(sourceLink('Inspect the actual inside pages ↗', receipt.sourcePage));
+    get('evidence').append(element('p', '', interiorReferences[id][6] + ' The photograph is a perspective, partial view; it is not a complete flat spread. The close-up uses a separate reference of the same insert. The transition does not recreate removal from the binding.'));
+  }
+  function renderMagazine(id) {
+    const stage = get('stage');
+    const insert = element('div', 'insert-view');
+    insert.hidden = true;
+    insert.append(...stage.childNodes);
+    const shell = element('div', 'magazine-shell');
+    const pages = element('div', 'magazine-pages');
+    pages.setAttribute('aria-hidden', 'true');
+    const cover = element('div', 'magazine-cover');
+    shell.append(pages, cover);
+    stage.replaceChildren(insert, shell);
+    stage.dataset.journey = 'closed';
+    journey = { phase: 'closed', shell, cover, insert, coverAvailable: false, coverUrl: null };
+    renderInterior(id);
+    if (id === '2023-cetitan') renderPouchDelivery();
+    const expected = coverReferences[id];
+    const receipt = references.magazineCovers?.[id];
+    const valid = expected && receipt?.file === expected[0] && receipt.sha256 === expected[1]
+      && receipt.width === expected[2] && receipt.height === expected[3] && receipt.location === expected[4]
+      && receipt.sourcePage === expected[5] && receipt.scope === 'private_reference' && receipt.referenceOnly === true
+      && receipt.publicDisplayApproved === false;
+    if (!valid) { holdCover(); return; }
+    shell.style.aspectRatio = receipt.width + ' / ' + receipt.height;
+    const url = receipt.location === 'supplied-cover' ? '/covers/' + receipt.file : localImage(receipt.file);
+    const image = element('img');
+    image.src = url;
+    image.alt = activeCase.issue + ' cover reference';
+    cover.append(image);
+    journey.coverAvailable = true;
+    journey.coverUrl = url;
+    get('cover').src = url;
+    get('cover').alt = image.alt;
+    get('cover').hidden = false;
+    if (receipt.sourcePage) get('sources').append(sourceLink('Magazine cover reference ↗', receipt.sourcePage));
+  }
+  function renderPouchDelivery() {
+    const config = references.packetCetitan2023;
+    const face = config.boundPouchFace;
+    if (!face || face.file !== '2023-cetitan-pouch-front-original.jpg'
+      || face.sha256 !== 'ac6c89f0c01b495e8cd828d06804cdff281c5d5a3433e8518436ff9354717c6c'
+      || face.width !== 1080 || face.height !== 1080 || JSON.stringify(face.crop) !== '[130,59,833,979]') throw Error('Exact Cetitan delivery face missing');
+    const delivery = element('div', 'delivery-view');
+    delivery.hidden = true;
+    const spread = element('div', 'delivery-book');
+    spread.setAttribute('aria-label', 'Close-up of Cetitan’s original printed pouch faces');
+    const pouch = element('button', 'delivery-pouch');
+    pouch.type = 'button';
+    pouch.disabled = true;
+    pouch.setAttribute('aria-label', 'Turn Cetitan’s printed pouch across the gutter');
+    const front = element('div', 'delivery-face delivery-front');
+    front.append(photoSprite(face, face.crop));
+    const reverse = element('div', 'delivery-face delivery-reverse');
+    reverse.append(photoSprite(config.pouch, config.pouch.crop));
+    pouch.append(front, reverse);
+    pouch.addEventListener('click', () => { void handlePouch(); });
+    spread.append(pouch);
+    delivery.append(spread);
+    get('stage').append(delivery);
+    Object.assign(journey, { delivery, pouch });
   }
   function renderSheet(id) {
     const original = id === '1996-sheet';
@@ -318,7 +572,7 @@
       button.append(turn);
       const card = { name: info.name, phase: 'attached', side: index === 0 ? -1 : 1,
         freePose: original ? [8,-28,4] : [5,-18,2], peelDuration: original ? 4200 : 4800,
-        peelDirection: original ? 'bottom' : 'bottom-left', button, turn, vacancy, paper, shadow, underside, fold, edge };
+        peelDirection: original ? 'bottom' : 'bottom-left', button, turn, vacancy, paper, shadow, underside, fold, edge, mount };
       paintPeel(card, 0);
       clearPeel(card);
       button.addEventListener('click', () => { void perform(card); });
@@ -378,16 +632,20 @@
     cards = [card];
   }
   async function waitImages(run) {
-    const assets = [...get('stage').querySelectorAll('image, img')];
+    const assets = [...journey.insert.querySelectorAll('image, img'), ...(journey.delivery?.querySelectorAll('image, img') ?? [])];
     const urls = [...new Set(assets.map(image => image.localName === 'image' ? image.getAttribute('href') : image.src))];
-    const checks = await Promise.all(urls.map(url => new Promise(resolve => {
+    const check = url => new Promise(resolve => {
       const image = new Image();
       const timer = setTimeout(() => resolve(false), 8000);
       image.onload = () => { clearTimeout(timer); resolve(image.naturalWidth > 0); };
       image.onerror = () => { clearTimeout(timer); resolve(false); };
       image.src = url;
-    })));
+    });
+    const [checks, coverReady, interiorReady] = await Promise.all([Promise.all(urls.map(check)), journey.coverUrl ? check(journey.coverUrl) : false,
+      journey.interiorUrl ? check(journey.interiorUrl) : false]);
     if (run !== loadEpoch) return;
+    if (journey.coverUrl && !coverReady) holdCover();
+    if (journey.interiorUrl && !interiorReady) holdInterior();
     ready = checks.every(Boolean);
     reset();
   }
@@ -396,11 +654,12 @@
     const loadRun = ++loadEpoch;
     ready = false;
     cards = [];
+    journey = null;
     const id = get('case').value;
     const scenes = {
       '1996-sheet': {
-        kind: 'sheet', title: 'Peel the paper. Then turn the card.',
-        intro: 'The old Pocket Monsters backs stay facing up. Release the backing first, then flip each card to reveal its front.',
+        kind: 'sheet', title: 'Open CoroCoro. Find the two-card sheet.',
+        intro: 'Open the November 1996 cover to its photographed two-card insert. Inspect the sheet, keep the old Pocket Monsters backs facing up while releasing the paper, then turn each loose card over.',
         hint: 'Backs facing up · peel the paper · flip', issue: 'Monthly CoroCoro Comic · November 1996', label: 'Ivy Pikachu & Jigglypuff',
         note: 'Ivy Pikachu shows the original Ken Sugimori credit. Jigglypuff uses a small reference image; its pictured copy cannot distinguish the 1996 original from the identical 1998 reprint.',
         start: 'Both backs match the sheet. Choose a card.',
@@ -408,8 +667,8 @@
         evidence: 'The original scan has two landscape backs stacked relative to its instruction panel. The whole sheet is turned here to show those same backs side by side. The watched film supports a supported card, peeling backing and a later front reveal. Exact curl, speed and flip axis remain design choices.',
       },
       '2000-cleffa': {
-        kind: 'sheet', title: 'Start at the little arrow.',
-        intro: 'Support Cleffa while the backing curls away from the lower-left corner. Once it is free, turn it over.',
+        kind: 'sheet', title: 'Find Cleffa inside CoroCoro.',
+        intro: 'Open the February 2000 cover to the photographed insert layers. Inspect Cleffa’s pink carrier, support the card while the backing curls from its lower-left arrow, then turn it over.',
         hint: 'Lower-left corner · careful peel · flip', issue: 'Monthly CoroCoro Comic · February 2000', label: 'Cleffa · ピィ',
         note: 'Cleffa uses its own pink carrier, right-hand instruction strip and original Japanese February front. The printed No.173 is its species number.',
         start: 'Back facing up. Begin at the lower-left arrow.',
@@ -417,8 +676,8 @@
         evidence: 'The carrier says “Carefully peel from here” at the bottom-left. The watched film shows support behind the old back, paper folding away and the Cleffa front. The source front directly identifies the February issue; 2000 is corroborated by the listing and PokeBoon. Curl, timing and the separate flip presentation are design choices; removal from the magazine binding is not established.',
       },
       '2000-wooper': {
-        kind: 'sheet', title: 'Let the backing curl away.',
-        intro: 'Start at Wooper’s lower-left arrow, keep the card supported and gently release the paper before turning it over.',
+        kind: 'sheet', title: 'Open CoroCoro for Wooper.',
+        intro: 'Open the January 2000 cover to its photographed blue-wave insert. Inspect the carrier, use its lower-left arrow and keep Wooper supported while releasing the paper before turning it over.',
         hint: 'Lower-left corner · supported peel · flip', issue: 'Monthly CoroCoro Comic · January 2000', label: 'Wooper · ウパー · additional issue',
         note: 'Wooper has its own blue-wave carrier and red instruction strip. Its front is a small 300 × 419 reference. This issue is additional to the current magazine list.',
         start: 'Back facing up. Begin at the lower-left arrow.',
@@ -426,8 +685,8 @@
         evidence: 'The collector identifies the bottom-left starting corner and the footage shows the carrier curling away. The segment is sped up, so it does not establish real hand speed. This preview keeps a slow peel and a separate turn for inspection; its curl and flip axis are design choices. The carrier is a slightly skewed photograph, and the front remains a small reference.',
       },
       '2022-packet': {
-        kind: 'packet', title: 'One sleeve. A different opening.',
-        intro: 'This regular-magazine insert slides out through the right side, with Pikachu VMAX already facing up.',
+        kind: 'packet', title: 'From magazine to Pikachu VMAX.',
+        intro: 'Open the February 2022 physical-magazine cover to its photographed bound sleeve. Inspect the sleeve, then follow the filmed rightward extraction from its already-open side, front facing up.',
         hint: 'Right-side extraction · front facing up', issue: 'Monthly CoroCoro Comic · February 2022', label: 'Pikachu VMAX · 265/S-P',
         note: 'The pictured sleeve is the regular physical-magazine insert. The card image matches Japanese 265/S-P; physical finish remains unverified.',
         start: 'The side is already open. Slide the card out.',
@@ -435,28 +694,33 @@
         evidence: 'The filmed wrapper matches the regular physical magazine. The visible action is a right-side slide with the card front facing the camera. The first seal-opening step is off-camera, so the preview begins from the already-opened side. The digital insert set uses different packaging.',
       },
       '2023-cetitan': {
-        kind: 'packet', title: 'Continue from the filmed opening.',
-        intro: 'Cetitan is already partly out when the film resumes. Draw it farther to the right, with its front facing up.',
+        kind: 'packet', title: 'Find Cetitan’s printed pouch.',
+        intro: 'Open the June 2023 Ichiban cover to the photographed pouch over Kirby stickers. Inspect its close-up, turn and support it as it lifts. Continue from the filmed edit, drawing Cetitan right, front facing up.',
         hint: 'Already partly out · draw right · front up', issue: 'CoroCoro Ichiban · June 2023', label: 'Cetitan · 058/SV-P',
         note: 'This is Cetitan’s own two-sided printed pouch. The Japanese 058/SV-P front is a private reference; its app scan remains pending.',
         start: 'After the film edit: the card is partly out, front facing up.',
-        sources: [['Watch the post-edit extraction · 1:12 ↗','https://www.youtube.com/watch?v=bHNdXPlKO2U&t=72s'],['Inspect both June pouch faces ↗','https://jp.mercari.com/item/m88749424307'],['Inspect the exact Japanese printing ↗','https://www.pokemon-card.com/card-search/details.php/card/43690']],
-        evidence: 'The pouch is drawn from the magazine at 1:05–1:09, but its fastening is obscured. An edit at about 1:12 skips the seal opening and switches pouch faces. The resumed shot shows the illustrated characters face and an already protruding card sliding right, front up. The printed perforation guide does not prove how the collector opened the seal. This preview begins after that edit; pouch perspective and the original photo remain intact.',
+        sources: [['Watch the open spread and pouch turn · 0:50 ↗','https://www.youtube.com/watch?v=bHNdXPlKO2U&t=50s'],['Watch the post-edit extraction · 1:12 ↗','https://www.youtube.com/watch?v=bHNdXPlKO2U&t=72s'],['Inspect both June pouch faces ↗','https://jp.mercari.com/item/m88749424307'],['Inspect the exact Japanese printing ↗','https://www.pokemon-card.com/card-search/details.php/card/43690']],
+        evidence: 'At 0:55 the pouch front lies left of the gutter over a Kirby sticker page. By 1:05 it has turned reverse-up onto the right; supported lifting follows, with fastening obscured by fingers. The actual interior photograph shows the same Kirby birthday insert. It is rotated clockwise for display. A separate close-up uses the original pouch faces for the turn and lift; page art hidden under the pouch is not reconstructed. The film’s back cover shows its green spine on the left at 0:43, establishing a right front-cover hinge. At about 1:12 an edit skips the seal opening and first emergence. The resumed shot shows an already protruding card sliding right, front up. The printed perforation guide does not establish that omitted operation.',
       },
     };
     activeCase = scenes[id];
     if (!activeCase) throw Error('Unknown opening case');
     for (const [node, key] of [['title','title'],['intro','intro'],['hint','hint'],['issue-label','issue'],['card-label','label'],['reference-note','note']]) get(node).textContent = activeCase[key];
-    get('cover').hidden = id !== '1996-sheet';
+    get('hint').textContent = 'Cover · open magazine · inspect insert';
+    get('cover').hidden = true;
     get('sources').replaceChildren(...activeCase.sources.map(([label,url]) => sourceLink(label,url)));
-    get('evidence').replaceChildren(element('p', '', activeCase.evidence), element('p', '', 'This preview does not change your collection. The original 2001 Mew reveal remains the benchmark.'));
+    get('evidence').replaceChildren(element('p', '', activeCase.evidence),
+      element('p', '', 'The cover opens to an actual attached-insert photograph when the local source is available. Cover motion and the transition to a separate insert close-up are presentation choices. Hidden fastening and seal-opening steps remain unresolved.'),
+      element('p', '', 'This preview does not change your collection. The original 2001 Mew reveal remains the benchmark.'));
     get('phase').textContent = 'Loading the local reference images…';
     try {
       if (activeCase.kind === 'sheet') renderSheet(id); else if (id === '2023-cetitan') renderCetitan(); else renderPacket();
+      renderMagazine(id);
       controls();
       await waitImages(loadRun);
     } catch {
       cards = [];
+      journey = null;
       get('stage').replaceChildren(element('p', 'loading-note', 'Exact reference images are unavailable. The opening footage links remain available below.'));
       get('phase').textContent = 'Reference images unavailable.';
       controls();
