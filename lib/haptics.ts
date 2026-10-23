@@ -19,6 +19,8 @@ export type StackrHapticEvent =
   | 'card_preview'
   | 'card_inspection'
   | 'card_foil_crossing'
+  | 'card_light_crossing'
+  | 'card_showcase_control'
   | 'scanner_frame_ready'
   | 'scanner_capture_locked'
   | 'scanner_exact_match'
@@ -39,6 +41,8 @@ const cooldowns: Partial<Record<StackrHapticEvent, number>> = {
   card_preview: 120,
   card_inspection: 250,
   card_foil_crossing: 800,
+  card_light_crossing: 800,
+  card_showcase_control: 80,
   scanner_frame_ready: 650,
   scanner_capture_locked: 450,
   scanner_exact_match: 650,
@@ -85,9 +89,11 @@ function shouldPlay(event: StackrHapticEvent) {
   if (!getStackrHapticsEnabled() || Platform.OS === 'web') return false;
   const now = Date.now();
   const cooldown = cooldowns[event] ?? 0;
-  const last = lastPlayedAt.get(event) ?? 0;
+  // A change between studio and verified foil cannot produce a second sweep cue.
+  const cooldownKey = event === 'card_light_crossing' ? 'card_foil_crossing' : event;
+  const last = lastPlayedAt.get(cooldownKey) ?? 0;
   if (now - last < cooldown) return false;
-  lastPlayedAt.set(event, now);
+  lastPlayedAt.set(cooldownKey, now);
   return true;
 }
 
@@ -136,6 +142,7 @@ export async function haptic(event: StackrHapticEvent, isCurrent: () => boolean 
   await safe(async () => {
     switch (event) {
       case 'selection':
+      case 'card_showcase_control':
         await Haptics.selectionAsync();
         return;
       case 'card_preview':
@@ -146,6 +153,7 @@ export async function haptic(event: StackrHapticEvent, isCurrent: () => boolean 
         await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid);
         return;
       case 'card_foil_crossing':
+      case 'card_light_crossing':
         // A rare, soft cue for a deliberate tilt through the simulated foil.
         // The motion engine adds hysteresis, so this facade is never called per frame.
         await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
@@ -190,6 +198,8 @@ export const stackrHaptics = {
   cardPreview: () => haptic('card_preview'),
   cardInspection: (isCurrent?: () => boolean) => haptic('card_inspection', isCurrent),
   cardFoilCrossing: (isCurrent?: () => boolean) => haptic('card_foil_crossing', isCurrent),
+  cardLightCrossing: (isCurrent?: () => boolean) => haptic('card_light_crossing', isCurrent),
+  cardShowcaseControl: (isCurrent?: () => boolean) => haptic('card_showcase_control', isCurrent),
   scannerFrameReady: () => haptic('scanner_frame_ready'),
   scannerCaptureLocked: () => haptic('scanner_capture_locked'),
   scannerExactMatch: () => haptic('scanner_exact_match'),

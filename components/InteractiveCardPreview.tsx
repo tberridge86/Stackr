@@ -24,7 +24,7 @@ function NativeCardTilt({ x, y, resetKey }: CardPreviewLight & { resetKey: numbe
 }
 
 /** Runs on the UI thread and crosses to JS only for a bounded, deliberate sweep. */
-function FoilCrossingHaptics({ x, y, enabled, resetKey }: CardPreviewLight & { enabled: boolean; resetKey: number }) {
+function LightCrossingHaptics({ x, y, enabled, resetKey, foil }: CardPreviewLight & { enabled: boolean; resetKey: number; foil: boolean }) {
   const allowed = useSharedValue(false);
   const generation = useSharedValue(0);
   const currentGeneration = useRef(0);
@@ -34,8 +34,8 @@ function FoilCrossingHaptics({ x, y, enabled, resetKey }: CardPreviewLight & { e
     // background effect by a frame, but it must never vibrate in that gap.
     const isCurrent = () => token === currentGeneration.current && AppState.currentState === 'active';
     if (!isCurrent()) return;
-    void stackrHaptics.cardFoilCrossing(isCurrent);
-  }, []);
+    void (foil ? stackrHaptics.cardFoilCrossing(isCurrent) : stackrHaptics.cardLightCrossing(isCurrent));
+  }, [foil]);
   useEffect(() => {
     const token = currentGeneration.current + 1;
     currentGeneration.current = token;
@@ -43,7 +43,7 @@ function FoilCrossingHaptics({ x, y, enabled, resetKey }: CardPreviewLight & { e
     allowed.value = enabled;
     state.value = { armed: false, above: false, lastTriggeredAt: -Infinity };
     return () => { currentGeneration.current += 1; allowed.value = false; };
-  }, [allowed, enabled, generation, resetKey, state]);
+  }, [allowed, enabled, foil, generation, resetKey, state]);
   useAnimatedReaction(() => ({ x: x.value, y: y.value, allowed: allowed.value, generation: generation.value }), (sample) => {
     if (!sample.allowed) return;
     const next = nextCardFoilHapticState(state.value, sample.x, sample.y, Date.now());
@@ -54,7 +54,7 @@ function FoilCrossingHaptics({ x, y, enabled, resetKey }: CardPreviewLight & { e
 }
 
 /** One motion engine, mounted only by the enlarged catalogue inspector. */
-export function InteractiveCardPreview({ children, active = true, resetKey = 0, renderMaterial, onMotionPreference, foilHaptics = false, motionPaused = false }: {
+export function InteractiveCardPreview({ children, active = true, resetKey = 0, renderMaterial, onMotionPreference, foilHaptics = false, lightHaptics = false, motionPaused = false }: {
   children: React.ReactNode;
   active?: boolean;
   resetKey?: number;
@@ -62,6 +62,8 @@ export function InteractiveCardPreview({ children, active = true, resetKey = 0, 
   onMotionPreference?: (reduced: boolean) => void;
   /** Enable the bounded foil-sweep cue only for a loaded, verified foil card. */
   foilHaptics?: boolean;
+  /** A neutral studio-light cue is independent of physical foil eligibility. */
+  lightHaptics?: boolean;
   /** Suspends sensor, animation, material and haptic work while preserving the setting readout. */
   motionPaused?: boolean;
 }) {
@@ -113,7 +115,7 @@ export function InteractiveCardPreview({ children, active = true, resetKey = 0, 
   });
   return <View style={styles.frame}>
     {enabled && Platform.OS !== 'web' ? <NativeCardTilt x={sensorX} y={sensorY} resetKey={resetKey} /> : null}
-    {Platform.OS !== 'web' ? <FoilCrossingHaptics x={sensorX} y={sensorY} enabled={enabled && foilHaptics} resetKey={resetKey} /> : null}
+    {Platform.OS !== 'web' ? <LightCrossingHaptics x={x} y={y} enabled={enabled && (foilHaptics || lightHaptics)} resetKey={resetKey} foil={foilHaptics} /> : null}
     <Animated.View style={[styles.card, motionStyle]} {...responder.panHandlers}>
       <View style={styles.surface}>{children}
         {enabled && renderMaterial ? renderMaterial({ x, y }) : null}
