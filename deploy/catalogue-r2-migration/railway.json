@@ -1,0 +1,20 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "deploy/catalogue-r2-migration/Dockerfile",
+    "watchPatterns": [
+      "deploy/catalogue-r2-migration/**",
+      "backend/lib/objectStorage.js",
+      "scripts/migrate-catalogue-to-r2.mjs",
+      "scripts/lib/r2-catalogue-migration.mjs",
+      "scripts/deploy/verified-supabase-postgres.mjs",
+      "scripts/deploy/postgres-url-guard.mjs",
+      "deploy/certificates/supabase-prod-ca-2021.crt"
+    ]
+  },
+  "deploy": {
+    "startCommand": "node -e \"console.log('Catalogue R2 migration worker is disabled; configure an explicitly reviewed start command.')\"",
+    "restartPolicyType": "NEVER"
+  }
+}

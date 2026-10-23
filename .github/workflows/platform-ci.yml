@@ -158,11 +158,11 @@ jobs:
       - name: Validate R2 immutability and delivery
         id: r2_storage
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
-        run: node scripts/test-r2-asset-delivery.mjs
+        run: node scripts/test-r2-asset-delivery.mjs && node scripts/test-r2-catalogue-migration.mjs && node scripts/test-r2-catalogue-migration-cli.mjs
       - name: Validate actual v1 image responses
         id: api_delivery
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
-        run: node scripts/test-r2-api-delivery.mjs
+        run: node scripts/test-r2-api-delivery.mjs && node scripts/test-r2-fast-set-delivery.mjs
       - name: Validate complete bounded client pages
         id: pagination
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
@@ -187,6 +187,13 @@ jobs:
         id: report_contract
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         run: node scripts/test-architecture-validation-report.mjs
+      - name: Build and inspect the isolated R2 migration worker
+        id: migration_image
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: |
+          docker build --tag stackr-r2-migration:test --file deploy/catalogue-r2-migration/Dockerfile .
+          docker run --rm stackr-r2-migration:test
+          docker run --rm stackr-r2-migration:test node --input-type=module -e "import './scripts/migrate-catalogue-to-r2.mjs'; import { loadPinnedSupabaseRootCertificate } from './scripts/deploy/verified-supabase-postgres.mjs'; loadPinnedSupabaseRootCertificate(); console.log('Migration imports and pinned certificate verified.');"
       - name: Record tested source and all check outcomes
         if: ${{ always() }}
         env:

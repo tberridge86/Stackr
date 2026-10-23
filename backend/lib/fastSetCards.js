@@ -10,6 +10,7 @@ import {
 } from './stackrApiV1.js';
 import { correctedCatalogueSetId, CORRECTION_LANGUAGE } from './catalogueLanguageCorrections.js';
 import { readCatalogueQuery } from './traceContext.js';
+import { createPublicAssetStorageReaders } from './objectStorage.js';
 
 function clean(value) {
   const text = String(value ?? '').trim();
@@ -26,10 +27,13 @@ function sortCardsForDisplay(rows) {
   });
 }
 
-function assetOptions() {
+function assetOptions(supabase) {
+  const r2Configured = Boolean(clean(process.env.STACKR_R2_BUCKET) || clean(process.env.STACKR_R2_PUBLIC_BASE_URL));
   return {
     assetBaseUrl: String(process.env.STACKR_ASSET_BASE_URL ?? '').replace(/\/$/, ''),
     supabaseUrl: String(process.env.SUPABASE_URL ?? '').replace(/\/$/, ''),
+    r2Configured,
+    assetStorageReaders: r2Configured ? createPublicAssetStorageReaders(supabase) : null,
   };
 }
 
@@ -133,6 +137,9 @@ export async function fetchFastSetCards(supabase, setId, input = {}, options = {
     return result;
   }
 
+  // Resolve the same provider/bucket routing as card-detail and manifest reads.
+  // Facts-only requests above do not depend on optional image configuration.
+  const assetUrlOptions = assetOptions(supabase);
   const { data, error } = await readCatalogueQuery(supabase.schema('api').rpc('catalogue_set_card_rows', {
     p_set_id: setId,
     p_language_code: language,
@@ -156,7 +163,7 @@ export async function fetchFastSetCards(supabase, setId, input = {}, options = {
       const imageRow = imageByVariant.get(variant.variantId);
       return {
         ...variant,
-        image: imageRow ? toCatalogueAsset(imageRow, assetOptions()) : null,
+        image: imageRow ? toCatalogueAsset(imageRow, assetUrlOptions) : null,
       };
     }),
   }));

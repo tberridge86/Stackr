@@ -1,0 +1,182 @@
+{
+  "schemaVersion": 1,
+  "observedDate": "2026-10-23",
+  "source": "Read-only Supabase SQL and authenticated Cloudflare/Railway dashboard observations",
+  "supabaseProjectRef": "oakdbbzdqwurpjnoqhmu",
+  "environment": "production",
+  "catalogueAssets": [
+    {
+      "count": 62098,
+      "inactive": 0,
+      "rights_status": "approved",
+      "storage_bucket": "stackr-catalogue-public",
+      "asset_visibility": "public_catalogue",
+      "retention_status": "active",
+      "storage_provider": "supabase_storage",
+      "permission_status": "approved",
+      "publicly_servable": true
+    },
+    {
+      "count": 10364,
+      "inactive": 137,
+      "rights_status": "approved",
+      "storage_bucket": null,
+      "asset_visibility": "public_catalogue",
+      "retention_status": "unavailable",
+      "storage_provider": "unavailable",
+      "permission_status": "approved",
+      "publicly_servable": false
+    },
+    {
+      "count": 4355,
+      "inactive": 0,
+      "rights_status": "approved",
+      "storage_bucket": null,
+      "asset_visibility": "public_catalogue",
+      "retention_status": "active",
+      "storage_provider": "external_reference",
+      "permission_status": "approved",
+      "publicly_servable": true
+    },
+    {
+      "count": 1,
+      "inactive": 0,
+      "rights_status": "approved",
+      "storage_bucket": "stackr-catalogue-public",
+      "asset_visibility": "public_catalogue",
+      "retention_status": "active",
+      "storage_provider": "supabase_storage",
+      "permission_status": "approved",
+      "publicly_servable": false
+    }
+  ],
+  "storageBuckets": [
+    {
+      "id": "card-scans",
+      "bytes": 0,
+      "public": false,
+      "object_count": 10
+    },
+    {
+      "id": "profile-backgrounds",
+      "bytes": 7428708,
+      "public": true,
+      "object_count": 9
+    },
+    {
+      "id": "recognition-feedback",
+      "bytes": 0,
+      "public": false,
+      "object_count": 0
+    },
+    {
+      "id": "scan-lab-training",
+      "bytes": 0,
+      "public": false,
+      "object_count": 0
+    },
+    {
+      "id": "stackr-catalogue-public",
+      "bytes": 24383280799,
+      "public": true,
+      "object_count": 241602
+    },
+    {
+      "id": "stackr-model-private",
+      "bytes": 0,
+      "public": false,
+      "object_count": 0
+    },
+    {
+      "id": "stackr-scan-temp",
+      "bytes": 0,
+      "public": false,
+      "object_count": 0
+    },
+    {
+      "id": "stackr-set-logo-index",
+      "bytes": 13269086,
+      "public": true,
+      "object_count": 14
+    },
+    {
+      "id": "stackr-training-feedback",
+      "bytes": 0,
+      "public": false,
+      "object_count": 0
+    },
+    {
+      "id": "trade-listings",
+      "bytes": 38658959,
+      "public": true,
+      "object_count": 76
+    }
+  ],
+  "storedPublicCatalogue": {
+    "assetTypes": [
+      {
+        "count": 61097,
+        "asset_type": "card_image"
+      },
+      {
+        "count": 796,
+        "asset_type": "set_logo"
+      },
+      {
+        "count": 162,
+        "asset_type": "set_symbol"
+      },
+      {
+        "count": 43,
+        "asset_type": "sealed_product_image"
+      }
+    ],
+    "derivatives": [
+      {
+        "role": "original",
+        "count": 62098
+      },
+      {
+        "role": "card-grid",
+        "count": 59402
+      },
+      {
+        "role": "search-result",
+        "count": 59402
+      },
+      {
+        "role": "detail-page",
+        "count": 59402
+      }
+    ],
+    "eligibleAssets": 62098,
+    "referencedBytes": 23309871368,
+    "objectReferences": 240304,
+    "referencesWithoutKey": 0,
+    "missingStorageMetadata": 0,
+    "uniqueReferencedObjects": 239873,
+    "originalsWithoutRecordedHash": 0
+  },
+  "destination": {
+    "accountId": "b4c23b0834cc5a113aa4a98fd904b281",
+    "r2Status": "not_activated_subscription_required",
+    "bucketVerified": false,
+    "publicCdnVerified": false
+  },
+  "migration": {
+    "objectsCopied": 0,
+    "assetRowsUpdated": 0,
+    "sourceObjectsDeleted": 0,
+    "appDeliveryVerified": false,
+    "localBinaryDownloads": 0
+  },
+  "limitations": [
+    "Storage metadata counts do not verify actual bytes or HTTP delivery.",
+    "4,355 approved external references require separate upstream ingestion; unavailable records are not copyable source files.",
+    "Public catalogue migration excludes user media and private evidence.",
+    "Bundled static imagery and saved URL snapshots need separate exact-reference migration.",
+    "Active production backend was 7d62e821cb5d57adf0973fb3e96c50accbeb443a; a different GitHub-triggered deployment was building, owned by another workflow. No deployment was changed here.",
+    "Railway connector requires reauthentication; browser session was read-only.",
+    "One additional MIME aggregate query hit its 15-second statement deadline; no MIME inventory conclusion is recorded."
+  ]
+}
