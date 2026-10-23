@@ -11,12 +11,17 @@ import * as profiles from '../lib/cardHoloProfile';
 let reduced = false;
 let preview: any;
 let selections = 0;
+const controlGuards: (() => boolean)[] = [];
+const appListeners = new Set<(state: string) => void>();
+const appState = { currentState: 'active', addEventListener: (_: string, listener: (state: string) => void) => {
+  appListeners.add(listener); return { remove: () => appListeners.delete(listener) };
+} };
 const routes: unknown[] = [];
 const closed: (((() => void) | undefined))[] = [];
 const dependencies: Record<string, unknown> = {
   react: React,
   'react-native': {
-    Modal: 'Modal', Pressable: 'Pressable', ScrollView: 'ScrollView', View: 'View', Platform: { OS: 'ios' },
+    Modal: 'Modal', Image: 'BrandImage', AppState: appState, Pressable: 'Pressable', ScrollView: 'ScrollView', View: 'View', Platform: { OS: 'ios' },
     StyleSheet: { create: (styles: unknown) => styles, absoluteFill: {} },
     useWindowDimensions: () => ({ width: 390, height: 844, fontScale: 1 }),
   },
@@ -31,9 +36,12 @@ const dependencies: Record<string, unknown> = {
   '../lib/cardPrintingMaterial': { resolvePrintingMaterial: () => null },
   '../lib/cardPrintingMaterialRegistry': { REVIEWED_PRINTING_MATERIALS: [] },
   '../lib/stackrSizing': { stackrCardImageSizes: { cardAspectRatio: 630 / 880 } },
-  '../lib/haptics': { stackrHaptics: { selection: () => { selections++; } } },
+  '../lib/haptics': { stackrHaptics: { cardShowcaseControl: (isCurrent: () => boolean) => { controlGuards.push(isCurrent); if (isCurrent()) selections++; } } },
+  '../lib/stackrBrand': { stackrBrand: { wordmark: 'real-brand-wordmark' } },
+  './CardStudioLight': { CardStudioLight: 'StudioLight' },
   './StackrImage': { StackrImage: 'Image' },
-  './CardInspectionStage': { CardInspectionStage: 'Stage', CARD_INSPECTION_STAGE_INSETS: { horizontal: 24, top: 24, bottom: 36 } },
+  './CardInspectionStage': { CardInspectionStage: 'Stage', CARD_INSPECTION_STAGE_INSETS: { horizontal: 24, top: 24, bottom: 36 },
+    CARD_SHOWCASE_COLORS: { background: '#070C18', stage: '#0C1427', text: '#FAF9FC', muted: '#A7B3CA', accent: '#6938F5', accentText: '#D1C2FF', border: 'rgba(167,179,202,0.16)' } },
   './Text': { Text: 'Text' },
   './InteractiveCardPreview': { InteractiveCardPreview: (props: any) => {
     preview = props;
@@ -68,12 +76,15 @@ async function main() {
   assert.equal(preview.foilHaptics, false); cases++;
   await act(async () => root.root.findByType('Image' as React.ElementType).props.onLoad());
   assert.equal(preview.motionPaused, false); assert.equal(preview.foilHaptics, false, 'known finish without a reviewed pack must not gain foil haptics'); cases++;
-  assert.equal(control('Simulated lighting').props.disabled, true, 'material control is unavailable without an exact reviewed pack'); cases++;
-  assert.equal(preview.renderMaterial({}), null, 'unverified finish leaves original artwork only'); cases++;
+  assert.equal(control('Studio lighting').props.disabled, false, 'neutral presentation lighting is independent of reviewed foil packs'); cases++;
+  assert.equal(preview.lightHaptics, true); cases++;
+  const lightLayers = React.Children.toArray(preview.renderMaterial({}).props.children);
+  assert.equal((lightLayers[0] as React.ReactElement).type, 'StudioLight');
+  assert.equal(lightLayers.length, 1, 'an unverified finish receives no material/foil renderer'); cases++;
   await click('Card motion');
   assert.equal(preview.motionPaused, true);
   assert.equal(control('Recenter card and light').props.disabled, true);
-  assert.equal(control('Simulated lighting').props.disabled, true); cases++;
+  assert.equal(control('Studio lighting').props.disabled, true); cases++;
   await click('Card motion');
   await click('Recenter card and light');
   assert.equal(preview.resetKey, 1); assert.equal(selections, 3); cases++;
@@ -84,9 +95,11 @@ async function main() {
   await act(async () => root.update(render()));
   assert.equal(control('Card motion').props.disabled, true);
   assert.equal(control('Card motion').props.accessibilityState.checked, false);
-  assert.equal(control('Simulated lighting').props.disabled, true); cases++;
+  assert.equal(control('Studio lighting').props.disabled, true); cases++;
+  assert.equal(preview.lightHaptics, false, 'Reduce Motion suppresses movement-driven light cues'); cases++;
   const details = root.root.findAllByType('Pressable' as React.ElementType).find(button => button.findAllByType('Text' as React.ElementType).some(text => text.props.children === 'Card details'))!;
   await act(async () => details.props.onPress());
+  assert.equal(controlGuards.at(-1)?.(), false, 'dismissal invalidates pending control feedback'); cases++;
   assert.equal(closed.at(-1), request.onDetails, 'navigation remains deferred until viewer dismissal'); cases++;
   await click('Card quick actions'); assert.equal(closed.at(-1), request.onQuickActions); cases++;
   await click('Report a card issue');
@@ -98,6 +111,7 @@ async function main() {
   await act(async () => root.update(render({ ...request, source: 'condition-photo' })));
   assert.equal(root.toJSON(), null, 'owned-condition photos cannot enter the decorative viewer'); cases++;
   await act(async () => root.unmount());
+  assert.equal(appListeners.size, 0, 'viewer releases its foreground subscription'); cases++;
   console.log(`Card showcase: ${cases} behavior cases passed (mocked native boundaries).`);
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });

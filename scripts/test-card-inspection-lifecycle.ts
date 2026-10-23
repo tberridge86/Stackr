@@ -67,11 +67,13 @@ async function main() {
     '../lib/cardMotionPreference': { useCardMotionPreference: () => ({ reduced: userReduced, loaded: true }) },
     '../lib/haptics': { stackrHaptics: { cardFoilCrossing: (isCurrent?: () => boolean) => {
       if (isCurrent?.() ?? true) foilHapticCalls++;
+    }, cardLightCrossing: (isCurrent?: () => boolean) => {
+      if (isCurrent?.() ?? true) foilHapticCalls++;
     } } },
   });
   function Material() { React.useEffect(() => { gpuSurfaces++; return () => { gpuSurfaces--; }; }, []); return null; }
   let root!: ReactTestRenderer;
-  const preview = (active: boolean, motionPaused = false, foilHaptics = false, resetKey = 0) => React.createElement(InteractiveCardPreview, { active, motionPaused, foilHaptics, resetKey,
+  const preview = (active: boolean, motionPaused = false, foilHaptics = false, resetKey = 0, lightHaptics = false) => React.createElement(InteractiveCardPreview, { active, motionPaused, foilHaptics, lightHaptics, resetKey,
     renderMaterial: () => React.createElement(Material),
   }, React.createElement('Artwork'));
   await act(async () => { root = create(preview(false)); });
@@ -104,6 +106,16 @@ async function main() {
   await act(async () => { root.update(preview(false, false, true)); });
   queuedUiToJs.shift()!();
   assert.equal(foilHapticCalls, 0, 'a delayed foil callback expires after viewer close'); cases++;
+  await act(async () => { root.update(preview(true, false, false, 2, true)); });
+  const dragReaction = foilReaction().reaction;
+  dragReaction.react(dragReaction.prepare()); // Settle at the actual neutral rendered position.
+  gesture.onPanResponderMove(null, { dx: 140, dy: 0 });
+  const dragged = dragReaction.prepare();
+  assert.equal(dragged.x, 1, 'the light cue follows the same combined drag/sensor value as the rendered card');
+  dragReaction.react(dragged);
+  assert.equal(queuedUiToJs.length, 1, 'an actual drag queues one studio-light cue without sensor movement');
+  queuedUiToJs.shift()!();
+  assert.equal(foilHapticCalls, 1, 'the current studio-light cue reaches the native facade'); cases++;
   await act(async () => { root.update(preview(true)); });
   assert.equal(gesture.onMoveShouldSetPanResponder(null, { numberActiveTouches: 1, dx: 8, dy: 0 }), true); cases++;
   assert.equal(gesture.onMoveShouldSetPanResponder(null, { numberActiveTouches: 2, dx: 80, dy: 0 }), false); cases++;

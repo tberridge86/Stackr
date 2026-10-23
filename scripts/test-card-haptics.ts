@@ -50,7 +50,7 @@ function loadHaptics(options: { os?: string; rejectImpact?: boolean; beforeHydra
   }, module, module.exports);
   return {
     api: module.exports as {
-      stackrHaptics: { cardPreview: () => Promise<void>; cardInspection: (isCurrent?: () => boolean) => Promise<void>; cardFoilCrossing: (isCurrent?: () => boolean) => Promise<void>; selection: () => Promise<void> };
+      stackrHaptics: { cardPreview: () => Promise<void>; cardInspection: (isCurrent?: () => boolean) => Promise<void>; cardFoilCrossing: (isCurrent?: () => boolean) => Promise<void>; cardLightCrossing: (isCurrent?: () => boolean) => Promise<void>; cardShowcaseControl: (isCurrent?: () => boolean) => Promise<void>; selection: () => Promise<void> };
       setStackrHapticsEnabled: (next: boolean) => void;
       preferenceAwareHaptics: { impactAsync: () => Promise<void>; selectionAsync: () => Promise<void>; notificationAsync: () => Promise<void> };
     },
@@ -180,6 +180,25 @@ async function main() {
   const expiredFoil = loadHaptics({ beforeHydrateComplete: () => { foilViewerLive = false; } });
   await expiredFoil.api.stackrHaptics.cardFoilCrossing(() => foilViewerLive);
   assert.equal(expiredFoil.calls.length, 0, 'a queued foil crossing expires if its viewer closes while preferences hydrate');
+
+  const studio = loadHaptics();
+  await studio.api.stackrHaptics.cardLightCrossing();
+  assert.deepEqual(studio.calls, [{ kind: 'impact', style: 'soft' }], 'studio light has its own restrained cue without asserting foil');
+  studio.advance(400);
+  await studio.api.stackrHaptics.cardFoilCrossing();
+  assert.equal(studio.calls.length, 1, 'foil and studio share a sweep cooldown');
+  studio.advance(400);
+  await studio.api.stackrHaptics.cardFoilCrossing();
+  assert.equal(studio.calls.length, 2);
+  await studio.api.stackrHaptics.cardShowcaseControl(() => true);
+  assert.equal(studio.calls.at(-1)?.kind, 'selection', 'showcase controls use a light selection cue');
+  studio.advance(100);
+  await studio.api.stackrHaptics.cardShowcaseControl(() => false);
+  assert.equal(studio.calls.length, 3, 'dismissed controls cannot play delayed feedback');
+  let controlLive = true;
+  const expiredControl = loadHaptics({ beforeHydrateComplete: () => { controlLive = false; } });
+  await expiredControl.api.stackrHaptics.cardShowcaseControl(() => controlLive);
+  assert.equal(expiredControl.calls.length, 0, 'a control cue expires during preference hydration');
 
   const disabled = loadHaptics();
   disabled.api.setStackrHapticsEnabled(false);
