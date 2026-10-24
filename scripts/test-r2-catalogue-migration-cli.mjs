@@ -229,7 +229,7 @@ try {
     writeFile: async line => { cappedWrites.push(Buffer.byteLength(line)); },
     sync: async () => {}, close: async () => {},
   }));
-  const chunk = { data: '�'.repeat((16 * 1024 * 1024 - 12) / 2) };
+  const chunk = { data: '\u00e9'.repeat((16 * 1024 * 1024 - 12) / 2) };
   await capped.append(chunk);
   await capped.append(chunk);
   assert.deepEqual(cappedWrites, [16 * 1024 * 1024, 16 * 1024 * 1024]);
