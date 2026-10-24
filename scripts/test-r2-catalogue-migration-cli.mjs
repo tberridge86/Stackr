@@ -122,6 +122,9 @@ function fetchFor(storage, calls) {
 try {
   assert.equal(config.mode, 'inventory');
   assert.equal(config.limit, 25);
+  assert.equal(config.concurrency, 1);
+  assert.equal(migrationConfiguration([...inventoryArgs, '--concurrency=8'], env).concurrency, 8);
+  for (const value of ['0', '9', '1.5', 'NaN']) assert.throws(() => migrationConfiguration([...inventoryArgs, '--concurrency=' + value], env), /invalid_concurrency/);
   assert.equal(migrationConfiguration([...inventoryArgs, '--mode=rollback'], env).mode, 'rollback');
   await assert.rejects(() => runCatalogueR2Migration({ argv: [...inventoryArgs, '--mode=rollback'], env,
     createDb: () => { throw new Error('rollback must validate its journal before DB'); },
@@ -238,6 +241,19 @@ try {
   await assert.rejects(() => capped.close(), /journal_too_large/);
   assert.equal(cappedWrites.length, 2, 'journal cap rejects before disk write and cannot continue');
 
+  await assert.rejects(() => runCatalogueR2Migration({ argv: [...executeArgs, '--concurrency=8'], env,
+    createDb: () => { throw new Error('mismatched concurrency must fail before DB'); },
+  }), /inventory_target_or_bounds_mismatch/);
+  const parallelInventory = path.join(root, 'parallel-inventory.json');
+  const parallelArgs = [`--expected-ref=${ref}`, `--inventory=${parallelInventory}`, '--concurrency=8'];
+  const parallelMeta = await runCatalogueR2Migration({ argv: parallelArgs, env, createDb: () => fakeDb() });
+  assert.equal(JSON.parse(await readFile(parallelInventory, 'utf8')).options.concurrency, 8);
+  const parallelStorage = fakeStorage();
+  const parallelExecution = await runCatalogueR2Migration({ argv: [...parallelArgs, '--mode=execute',
+    `--approved-inventory-sha256=${parallelMeta.inventorySha256}`, `--journal=${path.join(volume, 'parallel.jsonl')}`],
+    env, createDb: () => fakeDb(), createStorage: () => parallelStorage, fetchImpl: fetchFor(parallelStorage, []) });
+  assert.equal(parallelExecution.status, 'complete');
+  assert.equal(parallelExecution.results[0].status, 'published');
   const storage = fakeStorage();
   const fetchCalls = [];
   const executeDb = fakeDb();
