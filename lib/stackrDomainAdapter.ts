@@ -560,7 +560,7 @@ async function fetchStackrAssetsForPrinting(
   signal?: AbortSignal,
 ) {
   return allPages<StackrCatalogueAsset>(async (cursor, pageSignal) => {
-    const response = await client.assetManifest({ printingId, assetType: 'card_image', cursor, limit: 250 }, { signal: pageSignal });
+    const response = await client.assetManifest({ printingId, assetType: 'card_image', cursor, limit: 50 }, { signal: pageSignal });
     return { rows: response.data.assets, nextCursor: response.meta.pagination?.nextCursor ?? null };
   }, signal);
 }
@@ -765,7 +765,7 @@ async function fetchCanonicalStackrSets(
   const apiLanguage = toStackrApiLanguage(language);
   const sets = await allPages<StackrSet>(async (cursor, pageSignal) => {
     const response = await client.sets(
-      { language: apiLanguage ?? undefined, cursor, limit: 250 },
+      { language: apiLanguage ?? undefined, cursor, limit: 50 },
       { signal: pageSignal },
     );
     return { rows: response.data.sets, nextCursor: response.meta.pagination?.nextCursor ?? null };
@@ -783,7 +783,7 @@ async function fetchCanonicalSetAssetRows(
   const assetResults = await Promise.all(setAssetTypes.map((assetType) => (
     readOptionalCatalogueEnrichment((enrichmentSignal) => allPages<StackrCatalogueAsset>(async (cursor, pageSignal) => {
       const response = await client.assetManifest(
-        { assetType, cursor, limit: 500 },
+        { assetType, cursor, limit: 50 },
         { signal: pageSignal },
       );
       return { rows: response.data.assets, nextCursor: response.meta.pagination?.nextCursor ?? null };
@@ -849,7 +849,7 @@ export async function fetchStackrSet(
   if (!options.includeAssets) return facts;
   const results = await Promise.all(['set_logo', 'set_symbol', 'set_cover', 'set_artwork'].map((assetType) =>
     readOptionalCatalogueEnrichment((signal) => allPages<StackrCatalogueAsset>(async (cursor, pageSignal) => {
-      const page = await client.assetManifest({ setId, assetType, cursor, limit: 250 }, { signal: pageSignal });
+      const page = await client.assetManifest({ setId, assetType, cursor, limit: 50 }, { signal: pageSignal });
       return { rows: page.data.assets, nextCursor: page.meta.pagination?.nextCursor ?? null };
     }, signal)),
   ));
@@ -1020,7 +1020,7 @@ async function fetchCanonicalSetCardFacts(
     }
     const key = { namespace: client.catalogueCacheNamespace ?? 'ephemeral-client', setId, language: apiLanguage!, expectedCount };
     return setFactsReader(client).read(key, (requestSignal) => loadCompleteSetPages(key, async (cursor, pageSignal) => {
-      const response = await client.setCards(setId, { language: apiLanguage!, cursor, limit: 500, includeAssets: false }, { signal: pageSignal });
+      const response = await client.setCards(setId, { language: apiLanguage!, cursor, limit: 50, includeAssets: false }, { signal: pageSignal });
       return { cards: response.data.cards, nextCursor: response.meta.pagination?.nextCursor ?? null };
     }, normalizeCanonicalSetCards, requestSignal), signal);
   }
@@ -1030,7 +1030,7 @@ async function fetchCanonicalSetCardFacts(
       {
         language: toStackrApiLanguage(language) ?? undefined,
         cursor,
-        limit: 250,
+        limit: 50,
       },
       { signal: pageSignal },
     );
@@ -1053,7 +1053,7 @@ async function enrichCanonicalSetCards(
     readOptionalCatalogueEnrichment((enrichmentSignal) => needsManifestFallback
       ? allPages<StackrCatalogueAsset>(async (cursor, pageSignal) => {
           const response = await client.assetManifest(
-            { setId, cursor, limit: 500 },
+            { setId, cursor, limit: 50 },
             { signal: pageSignal },
           );
           return { rows: response.data.assets, nextCursor: response.meta.pagination?.nextCursor ?? null };
@@ -1244,20 +1244,30 @@ export async function resolveCachedStackrCard(
 
 export async function fetchStackrCard(
   reference: string,
-  options: { language?: string | null; setId?: string | null; onCanonicalCard?: (card: StackrLegacyCard) => void } = {},
+  options: {
+    language?: string | null;
+    setId?: string | null;
+    onCanonicalCard?: (card: StackrLegacyCard) => void;
+    includeAssets?: boolean;
+    signal?: AbortSignal;
+  } = {},
   client: StackrApiClient = stackrApiClient,
 ) {
+  throwIfOptionalCatalogueReadAborted(options.signal);
   if (!shouldUseStackrApi(client)) {
     const exact = await legacyCardMap([reference]);
+    throwIfOptionalCatalogueReadAborted(options.signal);
     const card = exact.get(reference);
     if (card) return card;
     const candidates = await legacySearchCards(reference, options.language, 10);
+    throwIfOptionalCatalogueReadAborted(options.signal);
     const constrained = options.setId
       ? candidates.filter((candidate) => candidate.set.id === options.setId)
       : candidates;
     return constrained.length === 1 ? constrained[0] : null;
   }
   const resolved = await resolveCachedStackrCard(reference, options, client);
+  throwIfOptionalCatalogueReadAborted(options.signal);
   if (!resolved) return null;
   if (!resolved.card.variants.some(variant => variant.variantId === resolved.variantId)) return null;
   // Exact variant lookup must not reopen the printing's default finish. Clone
@@ -1267,13 +1277,13 @@ export async function fetchStackrCard(
   copyPreferredSetArtworkReassignments(resolved.card, selectedCard);
   const embeddedAssets = embeddedCardImageAssets(selectedCard);
   // Only verified printing/variant facts can end a caller's essential loading
-  // phase; the returned promise still includes the existing optional artwork.
+  // phase. Display callers also await optional artwork unless they opt out.
   const facts = stackrCardToLegacyCard(selectedCard, embeddedAssets);
   options.onCanonicalCard?.(facts);
-  if (primaryCardImageAsset(selectedCard, embeddedAssets)) {
+  if (options.includeAssets === false || primaryCardImageAsset(selectedCard, embeddedAssets)) {
     return facts;
   }
-  const assets = await readOptionalCatalogueEnrichment(signal => fetchStackrAssetsForPrinting(client, selectedCard.cardId, signal));
+  const assets = await readOptionalCatalogueEnrichment(signal => fetchStackrAssetsForPrinting(client, selectedCard.cardId, signal), options.signal);
   return stackrCardToLegacyCard(selectedCard, assets ?? []);
 }
 
@@ -1300,6 +1310,10 @@ export async function fetchStackrCardRows(
     language?: string | null;
     concurrency?: number;
     signal?: AbortSignal;
+    /** Name/identity consumers can skip optional image-manifest requests. */
+    includeAssets?: boolean;
+    /** Ownership projections must not publish a partial set after a missing fact. */
+    requireComplete?: boolean;
     onCanonicalRows?: (rows: Map<string, ReturnType<typeof stackrLegacyCardToRow>>) => void;
   } = {},
   client: StackrApiClient = stackrApiClient,
@@ -1309,6 +1323,9 @@ export async function fetchStackrCardRows(
   if (!shouldUseStackrApi(client)) {
     const cards = await legacyCardMap(unique);
     throwIfOptionalCatalogueReadAborted(options.signal);
+    if (options.requireComplete && unique.some((reference) => !cards.has(reference))) {
+      throw new Error('Card facts could not be completely resolved. Please retry.');
+    }
     return new Map([...cards.entries()].map(([reference, card]) => [reference, stackrLegacyCardToRow(card)]));
   }
   const byReference = new Map<string, ReturnType<typeof stackrLegacyCardToRow>>();
@@ -1320,6 +1337,8 @@ export async function fetchStackrCardRows(
     const rows = await Promise.all(batch.map(async (reference) => {
       const card = await fetchStackrCard(reference, {
         language: options.language,
+        includeAssets: options.includeAssets,
+        signal: options.signal,
         onCanonicalCard: options.onCanonicalRows || options.signal ? (facts) => {
           throwIfOptionalCatalogueReadAborted(options.signal);
           if (!options.onCanonicalRows) return;
@@ -1330,7 +1349,13 @@ export async function fetchStackrCardRows(
           // caller has projected it for display. Keep both exact lookup aliases.
           options.onCanonicalRows?.(new Map(canonicalRows));
         } : undefined,
-      }, client).catch(() => null);
+      }, client).catch((error) => {
+        if (options.requireComplete) throw error;
+        return null;
+      });
+      if (!card && options.requireComplete) {
+        throw new Error('Card facts could not be completely resolved. Please retry.');
+      }
       return card ? { reference, row: stackrLegacyCardToRow(card) } : null;
     }));
     // In-flight cached facts may ignore cancellation. They must not dispatch
@@ -1509,7 +1534,7 @@ export async function searchStackrCards(
     q: value,
     language: toStackrApiLanguage(options.language) ?? undefined,
     setId: options.setId && UUID_PATTERN.test(options.setId) ? options.setId : undefined,
-    limit: Math.max(1, Math.min(100, options.limit ?? 40)),
+    limit: Math.max(1, Math.min(50, options.limit ?? 40)),
   });
   const cards = response.data.results.filter((result) => result.type === 'card' && result.card);
   // Canonical matches are usable immediately; optional image manifests must
@@ -1521,17 +1546,17 @@ export async function searchStackrCards(
     .map((card) => card.cardId))];
   const assets: StackrCatalogueAsset[] = [];
   if (printingIds.length) await readOptionalCatalogueEnrichment(async (signal) => {
-    // The existing API accepts up to 100 exact printing identities. A search
+    // The existing API reads at most 50 exact printing identities. A search
     // page shares one paginated read instead of spending its optional deadline
     // on serial waves of per-card requests. Keep completed pages on failure.
-    for (let index = 0; index < printingIds.length; index += 100) {
-      const printingBatch = printingIds.slice(index, index + 100);
+    for (let index = 0; index < printingIds.length; index += 50) {
+      const printingBatch = printingIds.slice(index, index + 50);
       const seenCursors = new Set<string>();
       let cursor: string | null = null;
       do {
         throwIfOptionalCatalogueReadAborted(signal);
         const page = await client.assetManifest({
-          printingIds: printingBatch, assetType: 'card_image', cursor, limit: 250,
+          printingIds: printingBatch, assetType: 'card_image', cursor, limit: 50,
         }, { signal });
         // Some transports ignore abort. A late page must never enrich a
         // completed search or dispatch more work after the shared deadline.

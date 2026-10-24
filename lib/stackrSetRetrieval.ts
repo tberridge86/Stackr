@@ -16,6 +16,8 @@ const TTL_MS = 5 * 60 * 1000;
 const MAX_ENTRY_BYTES = 2 * 1024 * 1024;
 const MAX_CACHE_BYTES = 8 * 1024 * 1024;
 const MAX_ENTRIES = 24;
+const MAX_SET_ROWS = 16000;
+const MAX_SET_PAGES = Math.ceil(MAX_SET_ROWS / 50);
 
 function cancelled(): Error { return new Error('Catalogue request cancelled'); }
 function check(signal?: AbortSignal) { if (signal?.aborted) throw signal.reason ?? cancelled(); }
@@ -69,7 +71,7 @@ export function validateCompleteSet(cards: StackrCard[], key: SetFactsKey): void
   if (versions.size > 1) throw new Error('Catalogue changed during pagination; retry a consistent version');
 }
 
-/** Pagination remains terminal-cursor driven. A 500 limit is not a completeness guarantee. */
+/** HTTP pages are bounded to 50; only a validated terminal cursor proves completion. */
 export async function loadCompleteSetPages(
   key: SetFactsKey,
   load: (cursor: string | null, signal?: AbortSignal) => Promise<SetFactsPage>,
@@ -80,7 +82,7 @@ export async function loadCompleteSetPages(
   const cursors = new Set<string>();
   const versions = new Set<string>();
   let cursor: string | null = null;
-  for (let page = 0; page < 32; page += 1) {
+  for (let page = 0; page < MAX_SET_PAGES; page += 1) {
     check(signal);
     const result = await load(cursor, signal);
     check(signal);
@@ -92,7 +94,7 @@ export async function loadCompleteSetPages(
     }
     if (versions.size > 1) throw new Error('Catalogue version changed during pagination');
     rows.push(...result.cards);
-    if (rows.length > 16000) throw new Error('Catalogue response exceeded bounded retrieval budget');
+    if (rows.length > MAX_SET_ROWS) throw new Error('Catalogue response exceeded bounded retrieval budget');
     cursor = result.nextCursor;
     if (!cursor) {
       const cards = normalize(rows);

@@ -4,7 +4,7 @@ import { runInNewContext } from 'node:vm';
 import React from 'react';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import ts from 'typescript';
-import { readOptionalCatalogueEnrichment } from '../lib/optionalCatalogueEnrichment';
+import { readOptionalCatalogueEnrichment, throwIfOptionalCatalogueReadAborted } from '../lib/optionalCatalogueEnrichment';
 import { copyPreferredSetArtworkReassignments } from '../lib/stackrPreferredSetArtwork';
 import {
   defineTcgdexRuntimeImageOverlay, enforceTcgdexRuntimeImagePolicy,
@@ -78,7 +78,7 @@ function pipeline(reference: string, missing = false, invalidVariant = false, de
       return missing ? null : ({ card: canonical, variantId: invalidVariant ? 'absent' : selected });
     },
     embeddedCardImageAssets: () => [], primaryCardImageAsset: () => null,
-    stackrCardToLegacyCard: map, readOptionalCatalogueEnrichment,
+    stackrCardToLegacyCard: map, readOptionalCatalogueEnrichment, throwIfOptionalCatalogueReadAborted,
     fetchStackrAssetsForPrinting: () => manifest.promise,
   });
   const attachLiveTcgdexCardReferences = extract<any>('lib/pokemonTcg.ts', 'attachLiveTcgdexCardReferences', {

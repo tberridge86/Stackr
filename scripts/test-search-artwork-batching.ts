@@ -60,9 +60,10 @@ async function main() {
   const full = harness(hundred, async (query) => page((query.printingIds ?? [query.printingId]).map((id: string) => image(byId.get(id)))));
   let early: any[] = [];
   const hydrated = await full.search({ limit: 100, onCanonicalResults: (rows: any[]) => { full.events.push('callback'); early = rows; } });
-  assert.equal(full.calls.length, 1, `100 factual cards must use one identity-batch manifest, observed ${full.calls.length} calls`);
-  assert.equal(full.calls[0].query.printingIds.length, 100); assert.equal(full.calls[0].query.printingId, undefined);
-  assert.equal(full.calls[0].query.assetType, 'card_image'); assert.ok(full.calls[0].query.limit <= 250);
+  assert.equal(full.calls.length, 2, `A defensive 100-card response uses two bounded manifest batches, observed ${full.calls.length} calls`);
+  assert.ok(full.calls.every((call) => call.query.printingIds.length <= 50 && call.query.limit <= 50));
+  assert.equal(full.calls[0].query.printingIds.length, 50); assert.equal(full.calls[0].query.printingId, undefined);
+  assert.equal(full.calls[0].query.assetType, 'card_image');
   assert.equal(early.length, 100); assert.equal(hydrated.length, 100); assert.ok(early.every((row) => !row.images.small));
   assert.ok(hydrated.every((row) => row.images.small)); assert.equal(full.events.indexOf('callback') < full.events.indexOf('manifest'), true);
   assert.deepEqual(hydrated.map((row) => row.id), early.map((row) => row.id));
@@ -75,15 +76,15 @@ async function main() {
   assert.equal(pagination.calls[0].signal, pagination.calls[1].signal);
 
   // A defensive over-limit server response must still respect the manifest's
-  // 100-identity input contract and retain a completed batch if the next fails.
+  // 50-identity HTTP budget and retain completed batches if the next fails.
   const oversized = [...hundred, fixture(101)], separate = harness(oversized, async (query) => {
-    assert.ok(query.printingIds.length <= 100);
+    assert.ok(query.printingIds.length <= 50);
     if (query.printingIds.includes(uuid(101))) throw new Error('Second batch unavailable');
     return page(query.printingIds.map((id: string) => image(byId.get(id))));
   });
-  const separateRows = await separate.search({ limit: 100 }); assert.equal(separate.calls.length, 2);
+  const separateRows = await separate.search({ limit: 100 }); assert.equal(separate.calls.length, 3);
   assert.equal(separateRows.length, 101); assert.equal(separateRows.filter((row) => row.images.small).length, 100);
-  assert.equal(separate.calls[1].query.printingIds.length, 1);
+  assert.equal(separate.calls[2].query.printingIds.length, 1);
 
   const partial = harness(four, async (query) => { if (query.cursor) throw new Error('Later image page unavailable');
     return page([image(four[0])], 'failed-later-page'); });
@@ -125,6 +126,6 @@ async function main() {
   const embedded = fixture(301); embedded.variants[0].image = image(embedded);
   const already = harness([embedded], async () => assert.fail('Usable embedded artwork needs no manifest'));
   assert.ok((await already.search())[0].images.small); assert.equal(already.calls.length, 0);
-  console.log('Search artwork batches100 identities, preserves facts and partial pages, bounds late work, and retains exact printing/edition rejection.');
+  console.log('Search artwork batches at most50 identities, preserves facts and partial pages, bounds late work, and retains exact printing/edition rejection.');
 }
 void main().catch((error) => { console.error(error); process.exitCode = 1; });

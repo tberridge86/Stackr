@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 import 'dotenv/config';
+import { Buffer } from 'node:buffer';
 import { createClient } from '@supabase/supabase-js';
 import { pathToFileURL } from 'node:url';
 import { buildApprovedCatalogueAsset } from '../backend/lib/assetPipeline.js';
-import { SupabaseObjectStorageAdapter } from '../backend/lib/objectStorage.js';
+import { createCatalogueObjectStorageAdapter } from '../backend/lib/objectStorage.js';
 
 const STAGING_SUPABASE_REF = 'lmwfhvexfcoyeuoyrlco';
 const ALLOWED_PROVIDERS = new Set(['tcgdex', 'pikaqian', 'pokemon_card_jp_official', 'pokedata_japanese']);
@@ -738,7 +739,7 @@ async function main() {
   }
   const dryRun = hasFlag('dry-run') || hasFlag('dryRun');
   const supabase = adminSupabase();
-  const storage = new SupabaseObjectStorageAdapter(supabase);
+  const storage = dryRun ? null : createCatalogueObjectStorageAdapter();
   const sourceId = await providerSourceId(supabase, provider);
   const candidates = await languageScopedCandidates(supabase, {
     sourceId,

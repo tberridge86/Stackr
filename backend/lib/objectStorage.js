@@ -174,13 +174,13 @@ export class S3CompatibleObjectStorageAdapter {
     this.secretAccessKey = options.secretAccessKey;
     this.region = options.region ?? 'auto';
     this.publicBaseUrl = options.publicBaseUrl?.replace(/\/$/, '') ?? null;
+    this.uploadTimeoutMs = options.uploadTimeoutMs ?? 60_000;
     if (!this.endpoint || !this.accessKeyId || !this.secretAccessKey) {
       throw new Error('S3-compatible storage requires endpoint, access key and secret key.');
     }
   }
 
-  createPresignedUpload(input) {
-    const method = 'PUT';
+  createPresignedRequest(input, method = 'PUT') {
     const expiresInSeconds = Math.max(60, Math.min(Number(input.expiresInSeconds ?? 900), 86_400));
     const date = new Date();
     const dateStamp = yyyymmdd(date);
@@ -190,7 +190,8 @@ export class S3CompatibleObjectStorageAdapter {
     const host = new URL(this.endpoint).host;
     const credentialScope = `${dateStamp}/${this.region}/s3/aws4_request`;
     const credential = `${this.accessKeyId}/${credentialScope}`;
-    const signedHeaders = 'host';
+    const createOnly = method === 'PUT' && input.upsert !== true;
+    const signedHeaders = createOnly ? 'host;if-none-match' : 'host';
     const canonicalUri = `/${encodeURIComponent(bucket)}/${key}`;
     const canonicalQuery = [
       ['X-Amz-Algorithm', 'AWS4-HMAC-SHA256'],
@@ -206,7 +207,7 @@ export class S3CompatibleObjectStorageAdapter {
       method,
       canonicalUri,
       canonicalQuery,
-      `host:${host}\n`,
+      `host:${host}\n${createOnly ? 'if-none-match:*\n' : ''}`,
       signedHeaders,
       'UNSIGNED-PAYLOAD',
     ].join('\n');
@@ -226,8 +227,13 @@ export class S3CompatibleObjectStorageAdapter {
       headers: {
         'content-type': input.contentType,
         'cache-control': input.cacheControl,
+        ...(createOnly ? { 'if-none-match': '*' } : {}),
       },
     };
+  }
+
+  createPresignedUpload(input) {
+    return this.createPresignedRequest(input, 'PUT');
   }
 
   async createSignedUpload(input) {
@@ -241,19 +247,24 @@ export class S3CompatibleObjectStorageAdapter {
       contentType: input.contentType,
       cacheControl: input.cacheControl,
       expiresInSeconds: 900,
+      upsert: input.upsert,
     });
     const headers = {
       'content-type': input.contentType,
     };
     if (input.cacheControl) headers['cache-control'] = input.cacheControl;
+    if (input.upsert !== true) headers['if-none-match'] = '*';
     const response = await fetch(signed.signedUrl, {
       method: 'PUT',
       headers,
       body: input.body,
+      signal: AbortSignal.timeout(this.uploadTimeoutMs),
     });
     if (!response.ok) {
       const detail = await response.text().catch(() => '');
-      throw new Error(`S3-compatible upload failed: ${response.status} ${detail}`.trim());
+      const error = new Error(`S3-compatible upload failed: ${response.status} ${detail}`.trim());
+      error.status = response.status;
+      throw error;
     }
     return {
       provider: this.id,
@@ -264,10 +275,142 @@ export class S3CompatibleObjectStorageAdapter {
     };
   }
 
+  async getObject(bucket, key, options = {}) {
+    const maxBytes = Number(options.maxBytes ?? 25 * 1024 * 1024);
+    if (!Number.isSafeInteger(maxBytes) || maxBytes < 1) throw new Error('Invalid object read byte limit.');
+    const signed = this.createPresignedRequest({ bucket, key, expiresInSeconds: 900 }, 'GET');
+    const response = await fetch(signed.signedUrl, { signal: AbortSignal.timeout(this.uploadTimeoutMs) });
+    if (!response.ok) {
+      await response.body?.cancel();
+      const error = new Error(`S3-compatible object read failed: ${response.status}`);
+      error.status = response.status;
+      throw error;
+    }
+    if (Number(response.headers.get('content-length')) > maxBytes) {
+      await response.body?.cancel();
+      throw new Error(`Stored object exceeds ${maxBytes} bytes.`);
+    }
+    const chunks = [];
+    let byteLength = 0;
+    for await (const chunk of response.body ?? []) {
+      byteLength += chunk.byteLength;
+      if (byteLength > maxBytes) throw new Error(`Stored object exceeds ${maxBytes} bytes.`);
+      chunks.push(Buffer.from(chunk));
+    }
+    return Buffer.concat(chunks, byteLength);
+  }
+
   publicUrl(bucket, key) {
     const base = this.publicBaseUrl ?? `${this.endpoint}/${encodeURIComponent(bucket)}`;
     return `${base}/${encodePathPart(key)}`;
   }
+}
+
+function configuredValue(value) {
+  return String(value ?? '').trim();
+}
+
+function publicCatalogueBaseUrl(value) {
+  const raw = configuredValue(value);
+  if (!raw) throw new Error('STACKR_R2_PUBLIC_BASE_URL is required for catalogue delivery.');
+  const url = new URL(raw);
+  if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash
+    || url.hostname.endsWith('.r2.cloudflarestorage.com')) {
+    throw new Error('STACKR_R2_PUBLIC_BASE_URL must be a public HTTPS CDN URL, separate from the R2 API endpoint.');
+  }
+  return url.toString().replace(/\/+$/, '');
+}
+
+function r2CatalogueLocation(env) {
+  const bucket = configuredValue(env.STACKR_R2_BUCKET);
+  if (!/^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/.test(bucket)) {
+    throw new Error('STACKR_R2_BUCKET must name the public catalogue bucket.');
+  }
+  return { bucket, publicBaseUrl: publicCatalogueBaseUrl(env.STACKR_R2_PUBLIC_BASE_URL) };
+}
+
+/** R2 retains the existing s3_compatible metadata value; no schema rewrite is needed. */
+export class CloudflareR2ObjectStorageAdapter extends S3CompatibleObjectStorageAdapter {
+  constructor(options) {
+    const endpoint = new URL(options.endpoint);
+    if (endpoint.protocol !== 'https:' || endpoint.username || endpoint.password || endpoint.port
+      || endpoint.search || endpoint.hash || endpoint.pathname !== '/'
+      || !/^[a-z0-9]+(?:\.(?:eu|fedramp))?\.r2\.cloudflarestorage\.com$/.test(endpoint.hostname)) {
+      throw new Error('STACKR_R2_ENDPOINT must be an HTTPS Cloudflare R2 S3 API endpoint.');
+    }
+    super({ ...options, endpoint: endpoint.origin, region: 'auto' });
+    this.catalogueBucket = options.bucket;
+    this.publicBaseUrl = publicCatalogueBaseUrl(options.publicBaseUrl);
+    this.catalogueStorage = true;
+  }
+
+  createPresignedUpload(input) {
+    if (input.bucket !== this.catalogueBucket) {
+      throw new Error('Public catalogue writes must use the configured R2 bucket.');
+    }
+    if (input.upsert === true) throw new Error('Public catalogue objects are immutable.');
+    return super.createPresignedUpload({ ...input, upsert: false });
+  }
+
+  publicUrl(bucket, key) {
+    return bucket === this.catalogueBucket ? `${this.publicBaseUrl}/${encodePathPart(key)}` : null;
+  }
+
+  async getObject(bucket, key, options = {}) {
+    if (bucket !== this.catalogueBucket) throw new Error('Catalogue reads must use the configured R2 bucket.');
+    return super.getObject(bucket, key, options);
+  }
+}
+
+/** New public binaries never fall back to Supabase when R2 is absent or incomplete. */
+export function createCatalogueObjectStorageAdapter(options = {}) {
+  const env = options.env ?? process.env;
+  const provider = configuredValue(env.STACKR_CATALOGUE_STORAGE_PROVIDER) || 'r2';
+  if (provider === 'local_dev' && env.NODE_ENV !== 'production') {
+    return new LocalObjectStorageAdapter(options);
+  }
+  if (provider !== 'r2' && provider !== 's3_compatible') {
+    throw new Error('Public catalogue storage must use R2 (or explicit local_dev outside production).');
+  }
+  const location = r2CatalogueLocation(env);
+  const accountId = configuredValue(env.STACKR_R2_ACCOUNT_ID);
+  const endpoint = configuredValue(env.STACKR_R2_ENDPOINT)
+    || (accountId ? `https://${accountId}.r2.cloudflarestorage.com` : '');
+  if (!endpoint) throw new Error('STACKR_R2_ENDPOINT or STACKR_R2_ACCOUNT_ID is required.');
+  return new CloudflareR2ObjectStorageAdapter({
+    ...location,
+    endpoint,
+    accessKeyId: configuredValue(env.STACKR_R2_ACCESS_KEY_ID),
+    secretAccessKey: configuredValue(env.STACKR_R2_SECRET_ACCESS_KEY),
+  });
+}
+
+export function assertCatalogueWriteStorage(storage) {
+  if (!storage || typeof storage.putObject !== 'function'
+    || storage.id === 'supabase_storage'
+    || (process.env.NODE_ENV === 'production' && storage.catalogueStorage !== true
+      && storage.id !== 'memory_dry_run')) {
+    throw new Error('Public catalogue writes require configured R2 storage; Supabase is metadata-only.');
+  }
+  return storage;
+}
+
+/** Legacy reads retain their recorded provider while independently migrated R2 rows use the CDN. */
+export function createPublicAssetStorageReaders(supabase, env = process.env) {
+  const readers = { supabase_storage: new SupabaseObjectStorageAdapter(supabase) };
+  if (env.STACKR_CATALOGUE_STORAGE_PROVIDER === 'local_dev' && env.NODE_ENV !== 'production') {
+    readers.local_dev = new LocalObjectStorageAdapter();
+  }
+  if (configuredValue(env.STACKR_R2_BUCKET) || configuredValue(env.STACKR_R2_PUBLIC_BASE_URL)) {
+    const { bucket: catalogueBucket, publicBaseUrl } = r2CatalogueLocation(env);
+    readers.s3_compatible = {
+      id: 's3_compatible',
+      publicUrl(bucket, key) {
+        return bucket === catalogueBucket ? `${publicBaseUrl}/${encodePathPart(key)}` : null;
+      },
+    };
+  }
+  return readers;
 }
 
 export function createObjectStorageAdapter(kind, options = {}) {

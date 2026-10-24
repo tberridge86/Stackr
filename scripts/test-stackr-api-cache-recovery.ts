@@ -16,18 +16,36 @@ loader._load = (name, parent, main) => {
 async function main() {
   const { StackrApiClient, StackrApiV1Error } = await import('../lib/stackrApiV1');
   loader._load = original;
-  let indexUrl = '';
+  const indexUrls: string[] = [];
+  const indexRows = Array.from({ length: 1350 }, (_, index) => ({
+    name: `species-${index + 1}`, url: `https://provider.example.invalid/pokemon/${index + 1}`,
+    speciesId: index + 1, speciesName: `species-${index + 1}`,
+    routeId: index + 1, routeName: `species-${index + 1}`,
+  }));
   const publicIndexClient = new StackrApiClient({
     baseUrl: 'https://api.stackr.test/v1', getDeviceId: async () => 'device:test:000001',
     getAccessToken: async () => { throw new Error('Public index must not read a login token'); },
     fetchImpl: async (url, init) => {
-      indexUrl = String(url);
+      indexUrls.push(String(url));
+      const requestUrl = new URL(String(url));
+      const offset = Number(requestUrl.searchParams.get('offset'));
+      const limit = Number(requestUrl.searchParams.get('limit'));
+      assert.ok(limit > 0 && limit <= 50, 'each public index request is bounded');
       assert.equal((init?.headers as Record<string, string>).Authorization, undefined);
-      return Response.json({ data: { count: 1350, indexVersion: 'reviewed-v1', results: [] }, meta: {} });
+      return Response.json({ data: {
+        count: indexRows.length, indexVersion: 'reviewed-v1', results: indexRows.slice(offset, offset + limit),
+      }, meta: {} });
     },
   });
-  assert.equal((await publicIndexClient.pokemonIndex({ offset: 151, limit: 1199 })).data.indexVersion, 'reviewed-v1');
-  assert.equal(indexUrl, 'https://api.stackr.test/v1/pokemon?offset=151&limit=1199');
+  const indexResponse = await publicIndexClient.pokemonIndex({ offset: 151, limit: 1199 });
+  assert.equal(indexResponse.data.indexVersion, 'reviewed-v1');
+  assert.deepEqual(indexResponse.data.results, indexRows.slice(151), 'all 1199 requested identities survive transport pagination');
+  assert.deepEqual(indexUrls.map((value) => {
+    const url = new URL(value);
+    return { endpoint: `${url.origin}${url.pathname}`, offset: url.searchParams.get('offset'), limit: url.searchParams.get('limit') };
+  }), Array.from({ length: 24 }, (_, page) => ({
+    endpoint: 'https://api.stackr.test/v1/pokemon', offset: String(151 + page * 50), limit: String(Math.min(50, 1199 - page * 50)),
+  })));
   const calls: RequestInit[] = [];
   let always304 = false;
   const client = new StackrApiClient({

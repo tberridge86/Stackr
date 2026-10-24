@@ -1,4 +1,4 @@
-/* eslint-env node */
+import { Buffer } from 'node:buffer';
 import express from 'express';
 import { createClient } from '@supabase/supabase-js';
 import {
@@ -11,8 +11,9 @@ import {
 import {
   enqueueExistingAssetMigration,
   listPublicAssetManifest,
+  publicAssetManifestPage,
 } from '../lib/assetRepository.js';
-import { SupabaseObjectStorageAdapter } from '../lib/objectStorage.js';
+import { createPublicAssetStorageReaders, SupabaseObjectStorageAdapter } from '../lib/objectStorage.js';
 
 export const adminAssetsRouter = express.Router();
 const router = express.Router();
@@ -95,13 +96,19 @@ function bodyAndQuery(req) {
 router.get('/manifest', async (req, res) => {
   try {
     const supabase = getSupabaseAdmin();
-    const storage = new SupabaseObjectStorageAdapter(supabase);
-    const assets = await listPublicAssetManifest(supabase, bodyAndQuery(req), storage);
+    const request = bodyAndQuery(req);
+    const storage = createPublicAssetStorageReaders(supabase);
+    const page = publicAssetManifestPage(request);
+    const assets = await listPublicAssetManifest(supabase, request, storage);
     res.json({
       ok: true,
       routeVersion: ROUTE_VERSION,
       generatedAt: new Date().toISOString(),
       count: assets.length,
+      pagination: {
+        ...page,
+        nextOffset: assets.length === page.limit ? page.offset + assets.length : null,
+      },
       assets,
     });
   } catch (error) {

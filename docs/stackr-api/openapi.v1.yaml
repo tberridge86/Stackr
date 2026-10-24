@@ -204,7 +204,8 @@ paths:
           schema: { type: integer, minimum: 0, default: 0 }
         - name: limit
           in: query
-          schema: { type: integer, minimum: 1, maximum: 1025, default: 151 }
+          description: Current clients request at most 50 species per HTTP page and continue by offset. Server clamping of legacy larger positive limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication.
+          schema: { type: integer, minimum: 1, maximum: 50, default: 50 }
         - $ref: "#/components/parameters/IfNoneMatch"
       responses:
         "200":
@@ -255,7 +256,7 @@ paths:
         - name: limit
           in: query
           description: Published name source rows per page; deduplicated card count may be smaller.
-          schema: { type: integer, minimum: 1, maximum: 250, default: 120 }
+          schema: { type: integer, minimum: 1, maximum: 50, default: 50 }
       responses:
         "200":
           description: Cursor-paginated canonical cards, with factual metadata available before optional artwork.
@@ -1188,10 +1189,11 @@ components:
       name: limit
       in: query
       required: false
+      description: Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue.
       schema:
         type: integer
         minimum: 1
-        maximum: 500
+        maximum: 50
     Language:
       name: language
       in: query

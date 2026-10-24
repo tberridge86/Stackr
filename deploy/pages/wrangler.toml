@@ -1,0 +1,5 @@
+# Static Expo web export. This file does not provision or deploy a project.
+# Confirm the Pages project/domain and rollout before deployment.
+name = "stackr-web"
+pages_build_output_dir = "../../dist"
+compatibility_date = "2026-10-23"

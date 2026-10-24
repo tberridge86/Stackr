@@ -25,6 +25,7 @@ import {
   validateImageBody,
   validatePath,
   validateQuery,
+  withBoundedPageSize,
 } from './validation.js';
 import { createTraceContext } from './trace.js';
 
@@ -240,6 +241,7 @@ async function processRequest(request, env, ctx, deps) {
     if (!route) throw new GatewayError(404, 'route_not_found', 'Stackr API route was not found.');
     route = pricingRouteForAccess(route, env);
     validateQuery(route, url);
+    request = withBoundedPageSize(request, route, env);
     origin = validateOrigin(request, env);
     if (request.method === 'OPTIONS') {
       if (!origin) throw new GatewayError(400, 'cors_origin_required', 'CORS preflight requires an allowed Origin.');

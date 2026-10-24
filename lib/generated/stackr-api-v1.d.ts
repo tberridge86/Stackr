@@ -1444,6 +1444,7 @@ export interface components {
         IdempotencyKey: string;
         /** @description Opaque cursor returned by the previous page. */
         Cursor: string;
+        /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
         Limit: number;
         Language: components["schemas"]["LanguageCode"];
         SetId: string;
@@ -1549,6 +1550,7 @@ export interface operations {
                 since?: number;
                 /** @description Opaque cursor returned by the previous page. */
                 cursor?: components["parameters"]["Cursor"];
+                /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
                 limit?: components["parameters"]["Limit"];
             };
             header?: {
@@ -1607,6 +1609,7 @@ export interface operations {
                 game?: string;
                 /** @description Opaque cursor returned by the previous page. */
                 cursor?: components["parameters"]["Cursor"];
+                /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
                 limit?: components["parameters"]["Limit"];
             };
             header?: never;
@@ -1636,6 +1639,7 @@ export interface operations {
                 region?: string;
                 /** @description Opaque cursor returned by the previous page. */
                 cursor?: components["parameters"]["Cursor"];
+                /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
                 limit?: components["parameters"]["Limit"];
             };
             header?: never;
@@ -1684,6 +1688,7 @@ export interface operations {
                 language?: components["parameters"]["Language"];
                 /** @description Opaque cursor returned by the previous page. */
                 cursor?: components["parameters"]["Cursor"];
+                /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
                 limit?: components["parameters"]["Limit"];
                 /** @description Set false to return card identities before optional artwork enrichment. Omitted or true retains artwork delivery. */
                 includeAssets?: boolean;
@@ -1711,6 +1716,7 @@ export interface operations {
         parameters: {
             query?: {
                 offset?: number;
+                /** @description Current clients request at most 50 species per HTTP page and continue by offset. Server clamping of legacy larger positive limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication. */
                 limit?: number;
             };
             header?: {
@@ -1912,6 +1918,7 @@ export interface operations {
                 soldSince?: string;
                 /** @description Opaque cursor returned by the previous page. */
                 cursor?: components["parameters"]["Cursor"];
+                /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
                 limit?: components["parameters"]["Limit"];
             };
             header?: never;
@@ -2169,6 +2176,7 @@ export interface operations {
             query?: {
                 productType?: components["parameters"]["ProductType"];
                 currency?: components["parameters"]["Currency"];
+                /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
                 limit?: components["parameters"]["Limit"];
             };
             header?: never;
@@ -2196,6 +2204,7 @@ export interface operations {
             query?: {
                 productType?: components["parameters"]["ProductType"];
                 currency?: components["parameters"]["Currency"];
+                /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
                 limit?: components["parameters"]["Limit"];
             };
             header?: never;
@@ -2225,6 +2234,7 @@ export interface operations {
                 q: string;
                 language?: components["parameters"]["Language"];
                 setId?: string;
+                /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
                 limit?: components["parameters"]["Limit"];
             };
             header?: never;
@@ -2256,6 +2266,7 @@ export interface operations {
                 variantId?: string;
                 /** @description Opaque cursor returned by the previous page. */
                 cursor?: components["parameters"]["Cursor"];
+                /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
                 limit?: components["parameters"]["Limit"];
             };
             header?: never;
@@ -2466,6 +2477,7 @@ export interface operations {
             query?: {
                 status?: "pending_review" | "reviewed" | "ignored" | "all";
                 category?: string;
+                /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
                 limit?: components["parameters"]["Limit"];
             };
             header: {
@@ -2583,6 +2595,7 @@ export interface operations {
             query?: {
                 sourceId?: string;
                 conflictType?: string;
+                /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
                 limit?: components["parameters"]["Limit"];
             };
             header: {
@@ -2608,6 +2621,7 @@ export interface operations {
         parameters: {
             query?: {
                 language?: components["schemas"]["LanguageCode"];
+                /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
                 limit?: components["parameters"]["Limit"];
             };
             header: {

@@ -9,7 +9,7 @@ import {
   repairStoredCatalogueAsset,
   resolveCatalogueAssetRepairSource,
 } from '../backend/lib/catalogueAssetRepair.js';
-import { SupabaseObjectStorageAdapter } from '../backend/lib/objectStorage.js';
+import { createCatalogueObjectStorageAdapter, SupabaseObjectStorageAdapter } from '../backend/lib/objectStorage.js';
 
 function arg(name, fallback = '') {
   const prefix = `--${name}=`;
@@ -87,7 +87,7 @@ function printHelp() {
 Repairs metadata and required derivatives for the audited Japanese official-source
 card images already held in the staging stackr-catalogue-public Supabase Storage
 bucket with an empty derivative list. The default mode is read-only. Pass --execute
-to download controlled objects and write repairs.
+to read controlled legacy originals and write new derivatives to configured R2.
 
 Examples:
   node scripts/repair-stored-catalogue-assets.mjs --target=staging --source=pokemon_card_jp_official --language=ja --count
@@ -156,6 +156,7 @@ async function main() {
     return;
   }
   const storage = new SupabaseObjectStorageAdapter(supabase);
+  const writeStorage = execute ? createCatalogueObjectStorageAdapter() : null;
   const results = [];
   let scanned = 0;
   let candidates = 0;
@@ -174,7 +175,7 @@ async function main() {
     pages += 1;
     const pageResults = await mapWithConcurrency(batch.candidates, concurrency, async (asset) => {
       try {
-        return await repairStoredCatalogueAsset(supabase, storage, asset, { execute, maxBytes });
+        return await repairStoredCatalogueAsset(supabase, storage, asset, { execute, maxBytes, writeStorage });
       } catch (error) {
         return { id: asset.id, status: 'failed', repairReasons: asset.repairReasons, error: errorMessage(error) };
       }
