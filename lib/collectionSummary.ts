@@ -33,9 +33,9 @@ const ownedQuantity = (card: BinderCardRecord) => card.owned ? toQuantity(card.o
 const cardKey = (setId?: string | null, cardId?: string | null) => `${setId ?? ''}:${cardId ?? ''}`;
 const POKEMON_CARD_COLUMNS = 'id, name, number, rarity, image_small, image_large, set_id, raw_data';
 const SAVED_BINDER_CARD_COLUMNS = 'id, binder_id, card_id, set_id, language, api_card_id, card_name, api_set_id, card_number, image_url, set_name, set_total, slot_order, owned, owned_quantity, condition, grade_company, grade, notes, ebay_price, tcg_price, cardmarket_price, last_price_update, created_at';
-const METADATA_CHUNK_SIZE = 100;
+const METADATA_CHUNK_SIZE = 50;
 const METADATA_CONCURRENCY = 3;
-const SAVED_BINDER_CARD_PAGE_SIZE = 1000;
+const SUMMARY_PAGE_SIZE = 50;
 
 const TCG_PRICE_VARIANT_PRIORITY = [
   'holofoil',
@@ -156,18 +156,40 @@ async function mapWithConcurrency<T, R>(items: T[], concurrency: number, mapper:
   return results;
 }
 
+// Offset pages advance by the rows actually received. A smaller server cap is
+// not an end marker; only an empty page proves that this filtered read is complete.
+async function readSummaryPages<T extends { id: string }>(
+  buildQuery: () => any,
+  accepts: (row: T) => boolean,
+): Promise<T[]> {
+  const rows: T[] = [];
+  const seen = new Set<string>();
+  for (;;) {
+    const from = rows.length;
+    const { data, error } = await buildQuery().range(from, from + SUMMARY_PAGE_SIZE - 1);
+    if (error) throw error;
+    if (!Array.isArray(data) || data.length > SUMMARY_PAGE_SIZE) {
+      throw new Error('Collection summary received an incomplete page.');
+    }
+    if (!data.length) return rows;
+    for (const row of data as T[]) {
+      if (typeof row?.id !== 'string' || !row.id || seen.has(row.id) || !accepts(row)) {
+        throw new Error('Collection summary received inconsistent page identities.');
+      }
+      seen.add(row.id);
+      rows.push(row);
+    }
+  }
+}
+
 async function fetchPokemonCardsById(cardIds: string[]) {
   const uniqueIds = [...new Set(cardIds.filter(Boolean))];
   const cardMap = new Map<string, any>();
 
-  const rowsByChunk = await mapWithConcurrency(chunk(uniqueIds, METADATA_CHUNK_SIZE), METADATA_CONCURRENCY, async (idChunk) => {
-    const { data, error } = await supabase
-      .from('pokemon_cards')
-      .select(POKEMON_CARD_COLUMNS)
-      .in('id', idChunk);
-    if (error) throw error;
-    return data ?? [];
-  });
+  const rowsByChunk = await mapWithConcurrency(chunk(uniqueIds, METADATA_CHUNK_SIZE), METADATA_CONCURRENCY, (idChunk) =>
+    readSummaryPages<any>(() => supabase.from('pokemon_cards')
+      .select(POKEMON_CARD_COLUMNS).in('id', idChunk).order('id', { ascending: true }),
+    (row) => idChunk.includes(row.id)));
 
   for (const rows of rowsByChunk) {
     for (const card of rows) if (card.id) cardMap.set(card.id, card);
@@ -178,21 +200,11 @@ async function fetchPokemonCardsById(cardIds: string[]) {
 
 async function fetchSavedOwnedBinderCards(binderIds: string[]) {
   const uniqueBinderIds = [...new Set(binderIds.filter(Boolean))];
-  const rowsByChunk = await mapWithConcurrency(chunk(uniqueBinderIds, METADATA_CHUNK_SIZE), METADATA_CONCURRENCY, async (binderIdChunk) => {
-    const rows: BinderCardRecord[] = [];
-    for (let from = 0; ; from += SAVED_BINDER_CARD_PAGE_SIZE) {
-      const { data, error } = await supabase
-        .from('binder_cards')
-        .select(SAVED_BINDER_CARD_COLUMNS)
-        .in('binder_id', binderIdChunk)
-        .eq('owned', true)
-        .order('slot_order', { ascending: true })
-        .range(from, from + SAVED_BINDER_CARD_PAGE_SIZE - 1);
-      if (error) throw error;
-      rows.push(...((data ?? []) as BinderCardRecord[]));
-      if (!data || data.length < SAVED_BINDER_CARD_PAGE_SIZE) return rows;
-    }
-  });
+  const rowsByChunk = await mapWithConcurrency(chunk(uniqueBinderIds, METADATA_CHUNK_SIZE), METADATA_CONCURRENCY, (binderIdChunk) =>
+    readSummaryPages<BinderCardRecord>(() => supabase.from('binder_cards')
+      .select(SAVED_BINDER_CARD_COLUMNS).in('binder_id', binderIdChunk).eq('owned', true)
+      .order('slot_order', { ascending: true }).order('id', { ascending: true }),
+    (row) => row.owned === true && binderIdChunk.includes(row.binder_id)));
   return rowsByChunk.flat();
 }
 
@@ -269,16 +281,21 @@ async function getCompletedSetCount(
   const setIds = [...new Set(officialBinders.map((binder) => binder.source_set_id).filter(Boolean))] as string[];
   const masterSetIds = [...new Set(officialBinders.filter((binder) => masterByBinderId.get(binder.id)).map((binder) => binder.source_set_id).filter(Boolean))] as string[];
 
-  const [setRowsResult, officialCardsResult] = await Promise.all([
-    supabase.from('pokemon_sets').select('id, printed_total, total').in('id', setIds),
-    masterSetIds.length
-      ? supabase.from('pokemon_cards').select('id, set_id, rarity, raw_data').in('set_id', masterSetIds)
-      : Promise.resolve({ data: [], error: null }),
-  ]);
-
-  if (setRowsResult.error) throw setRowsResult.error;
-  if (officialCardsResult.error) throw officialCardsResult.error;
-  const setTotals = new Map((setRowsResult.data ?? []).map((set: any) => [set.id, Number(set.printed_total ?? set.total ?? 0)]));
+  // Both metadata sources share the existing three-read concurrency bound.
+  const metadataTasks = [
+    ...chunk(setIds, METADATA_CHUNK_SIZE).map((ids) => ({ kind: 'sets' as const, ids })),
+    ...chunk(masterSetIds, METADATA_CHUNK_SIZE).map((ids) => ({ kind: 'cards' as const, ids })),
+  ];
+  const metadataResults = await mapWithConcurrency(metadataTasks, METADATA_CONCURRENCY, async ({ kind, ids }) => ({
+    kind,
+    rows: await readSummaryPages<any>(() => kind === 'sets'
+      ? supabase.from('pokemon_sets').select('id, printed_total, total').in('id', ids).order('id', { ascending: true })
+      : supabase.from('pokemon_cards').select('id, set_id, rarity, raw_data').in('set_id', ids).order('id', { ascending: true }),
+    (row) => ids.includes(kind === 'sets' ? row.id : row.set_id)),
+  }));
+  const setRows = metadataResults.filter((result) => result.kind === 'sets').flatMap((result) => result.rows);
+  const officialCards = metadataResults.filter((result) => result.kind === 'cards').flatMap((result) => result.rows);
+  const setTotals = new Map<string, number>(setRows.map((set: any) => [set.id, Number(set.printed_total ?? set.total ?? 0)]));
   const savedOwnedKeysBySet = new Map<string, Set<string>>();
   const ownedVariantKeysBySet = new Map<string, Set<string>>();
   const cardsBySet = new Map<string, any[]>();
@@ -298,7 +315,7 @@ async function getCompletedSetCount(
     ownedVariantKeysBySet.set(row.set_id, keys);
   }
 
-  for (const card of officialCardsResult.data ?? []) {
+  for (const card of officialCards) {
     if (!card.set_id) continue;
     const current = cardsBySet.get(card.set_id) ?? [];
     current.push(card);

@@ -167,8 +167,6 @@ function StackrImageBase({
     sanitizeImageSource(fallbackSource),
   ]);
   const candidateSetKey = JSON.stringify(candidates.map((candidate) => candidate.key));
-  const activeCandidateSetRef = React.useRef(candidateSetKey);
-  activeCandidateSetRef.current = candidateSetKey;
   const [failures, setFailures] = React.useState<{ setKey: string; keys: string[] }>({ setKey: '', keys: [] });
   const [retryState, setRetryState] = React.useState<{ setKey: string; attempts: Record<string, number> }>({ setKey: '', attempts: {} });
   const candidate = nextStackrImageCandidate(candidates,
@@ -176,21 +174,23 @@ function StackrImageBase({
   const remoteUri = candidate?.uri ?? null;
   const isRemoteImage = Boolean(remoteUri);
   const resolvedSource = candidate?.source ?? null;
-  // Renditions need distinct cache entries. A failed thumbnail must not poison
-  // a supplied full-size fallback that uses the same card-level cache key.
+  // URL-prefetch and display must use the same cache identity. The URI already
+  // separates thumbnail/full renditions; a retry remounts without duplicating it.
   const retryAttempt = candidate && retryState.setKey === candidateSetKey ? retryState.attempts[candidate.key] ?? 0 : 0;
   const diagnosticKey = `${candidateSetKey}:${candidate?.key ?? ''}:${retryAttempt}`;
-  const activeDiagnosticRef = React.useRef(diagnosticKey);
-  activeDiagnosticRef.current = diagnosticKey;
+  const activeDiagnosticRef = React.useRef({ key: diagnosticKey });
+  if (activeDiagnosticRef.current.key !== diagnosticKey) activeDiagnosticRef.current = { key: diagnosticKey };
+  // Object identity also rejects an old A callback after an A -> B -> A change.
+  const diagnosticToken = activeDiagnosticRef.current;
   const diagnostic = (phase: RetrievalImageEvent['phase'], details: Partial<RetrievalImageEvent> = {}) => {
-    if (activeDiagnosticRef.current !== diagnosticKey) return;
+    if (activeDiagnosticRef.current !== diagnosticToken) return;
     try {
       onDiagnostic?.({ phase, rendition: preserveDetail || Boolean(fullUri && fullUri !== uri && remoteUri === fullUri) ? 'detail' : 'thumbnail',
         attempt: retryAttempt + 1, ...details });
     } catch { /* Optional diagnostics cannot interrupt image delivery. */ }
   };
   const imageSource = remoteUri && resolvedSource && typeof resolvedSource === 'object'
-    ? { ...resolvedSource, cacheKey: cacheKey ? `${cacheKey}:${remoteUri}:retry-${retryAttempt}` : `${remoteUri}:retry-${retryAttempt}` }
+    ? { ...resolvedSource, cacheKey: remoteUri }
     : resolvedSource;
   const backgroundColor = placeholderColor ?? theme.colors.surface;
   const thumbnailPlaceholder = preserveDetail && thumbnailUri && thumbnailUri !== remoteUri
@@ -252,12 +252,13 @@ function StackrImageBase({
           recyclingKey={remoteUri ?? cacheKey ?? undefined}
           accessibilityLabel={accessibilityLabel}
           onLoad={event => {
+            if (activeDiagnosticRef.current !== diagnosticToken) return;
             diagnostic('loaded', { cache: event?.cacheType ?? 'unknown', width: event?.source?.width, height: event?.source?.height });
             onLoad?.();
           }}
           onDisplay={() => diagnostic('displayed')}
           onError={() => {
-            if (!candidate || activeCandidateSetRef.current !== candidateSetKey) return;
+            if (!candidate || activeDiagnosticRef.current !== diagnosticToken) return;
             const attempts = retryState.setKey === candidateSetKey ? retryState.attempts[candidate.key] ?? 0 : 0;
             // One same-identity retry distinguishes a transient render/network miss
             // from a genuinely unavailable rendition. We never jump to artwork from

@@ -56,7 +56,7 @@ function fixture(options: FixtureOptions = {}) {
       order: (column: string, order: { ascending: boolean }) => {
         assert.equal(column, 'id'); assert.equal(order.ascending, true); return chain;
       },
-      limit: (value: number) => { assert.equal(value, 500); limit = value; return chain; },
+      limit: (value: number) => { assert.equal(value, 50); limit = value; return chain; },
       gt: (column: string, value: string) => { assert.equal(column, 'id'); after = value; return chain; },
       abortSignal: (value: AbortSignal) => { signal = value; return chain; },
       upsert: () => { throw new Error('The ownership reader must never write.'); },
@@ -213,15 +213,15 @@ async function run() {
     assert.equal(f.requests.filter((row) => row.table === 'binder_cards' && !row.after).length, 2);
   });
 
-  await test('one shared 256-page budget spans the directory, all sources and later binder chunks', async () => {
-    const f = fixture({ cap: (table) => table === 'binder_cards' ? 1 : 100, rows: {
-      binders: Array.from({ length: 300 }, (_, index) => binderRow(index)),
-      binder_cards: Array.from({ length: 300 }, (_, index) => savedRow(index)),
+  await test('one shared 2560-page budget preserves the previous logical capacity', async () => {
+    const f = fixture({ cap: (table) => table === 'binder_cards' ? 1 : 50, rows: {
+      binders: Array.from({ length: 2600 }, (_, index) => binderRow(index)),
+      binder_cards: Array.from({ length: 2600 }, (_, index) => savedRow(index)),
     } });
     await assert.rejects(f.read(), /safe request limit/);
-    assert.equal(f.requests.length, 256);
-    assert.equal(f.requests.filter((row) => row.table === 'binders').length, 4);
-    assert.equal(new Set(f.requests.filter((row) => row.table === 'binder_cards').map((row) => JSON.stringify(row.binderIds))).size, 3);
+    assert.equal(f.requests.length, 2560);
+    assert.equal(f.requests.filter((row) => row.table === 'binders').length, 53);
+    assert.ok(new Set(f.requests.filter((row) => row.table === 'binder_cards').map((row) => JSON.stringify(row.binderIds))).size > 3);
     assert.ok(f.requests.every((row) => row.signal.aborted));
   });
 
@@ -280,7 +280,7 @@ async function run() {
   });
 
   console.log(JSON.stringify({ fixtureAccountsOnly: true, actualOwnershipService: true, passedGroups: groups.length, groups,
-    limits: { tablePageSize: 500, sharedTablePageBudget: 256, productionLogicalDeadlineMs: 10_000,
+    limits: { tablePageSize: 50, sharedTablePageBudget: 2560, productionLogicalDeadlineMs: 10_000,
       adapterNameBatch: 6, adapterNetworkInternalsCountedAsTablePages: false },
     liveServerCapAndPhoneCause: 'unverified' }, null, 2));
 }

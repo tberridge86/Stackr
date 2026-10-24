@@ -8,7 +8,8 @@ import { readOptionalCatalogueEnrichment, throwIfOptionalCatalogueReadAborted } 
 // or making network requests. The catalogue transport/projection are fixtures.
 const source = readFileSync('lib/stackrDomainAdapter.ts', 'utf8');
 const tree = ts.createSourceFile('adapter.ts', source, ts.ScriptTarget.Latest, true);
-const names = ['fetchStackrCard', 'fetchStackrCardRows', 'stackrLegacyCardToRow'];
+const names = ['fetchStackrCard', 'fetchStackrCardRows', 'stackrLegacyCardToRow',
+  'allPages', 'readOptionalAssetPages', 'fetchStackrAssetsForPrinting'];
 const functions = tree.statements.filter((node) => ts.isFunctionDeclaration(node) && names.includes(node.name?.text ?? ''));
 assert.equal(functions.length, names.length);
 const compiled = ts.transpileModule(functions.map((node) => node.getText(tree)).join('\n'), {
@@ -43,8 +44,16 @@ function harness(options: {
   const reads: string[] = []; let assetReads = 0; let active = 0; let maxActive = 0;
   const observedSignals: (AbortSignal | undefined)[] = [];
   const exports: any = {};
+  const client = { assetManifest: async (query: { limit: number; assetType: string }, init: { signal?: AbortSignal }) => {
+    assert.equal(query.limit, 50, 'Display enrichment retains bounded requests.');
+    assert.equal(query.assetType, 'card_image');
+    assert.ok(init.signal && !init.signal.aborted);
+    assetReads++;
+    const assets = await (options.assets?.() ?? Promise.resolve([{ deliveryUrl: 'https://fixture.invalid/art.webp' }]));
+    return { data: { assets }, meta: { pagination: { nextCursor: null } } };
+  } };
   runInNewContext(compiled, { exports, Map, Set, Error,
-    stackrApiClient: {}, shouldUseStackrApi: () => !options.legacy,
+    stackrApiClient: client, shouldUseStackrApi: () => !options.legacy,
     resolveCachedStackrCard: async (reference: string, controls: Controls) => {
       reads.push(reference); observedSignals.push(controls.signal); active++; maxActive = Math.max(maxActive, active);
       try {
@@ -56,10 +65,6 @@ function harness(options: {
     embeddedCardImageAssets: (card: Fact) => card.embedded,
     primaryCardImageAsset: (_card: Fact, assets: Asset[]) => assets[0] ?? null,
     stackrCardToLegacyCard: project,
-    fetchStackrAssetsForPrinting: async (_client: unknown, _cardId: string, signal?: AbortSignal) => {
-      assert.ok(signal && !signal.aborted); assetReads++;
-      return options.assets?.() ?? [{ deliveryUrl: 'https://fixture.invalid/art.webp' }];
-    },
     readOptionalCatalogueEnrichment, throwIfOptionalCatalogueReadAborted,
     legacyCardMap: async () => options.legacyCards ?? new Map(), legacySearchCards: async () => [],
   });

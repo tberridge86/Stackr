@@ -92,7 +92,9 @@ function canonicalRowsAdapter(reads: CanonicalReads, clock: {
   vm.runInNewContext(adapterCompiled, { module, exports: module.exports, Map, Set, WeakMap,
     shouldUseStackrApi: () => !reads.legacy, stackrApiClient: {}, legacyCardMap: reads.legacy,
     resolveCachedStackrCard: (reference: string, options: RowReadOptions) => reads.resolve(reference, options.language),
-    fetchStackrAssetsForPrinting: (_client: unknown, printing: string, signal?: AbortSignal) => reads.manifest(printing, signal),
+    // The real manifest helper owns its optional deadline and partial-page recovery.
+    fetchStackrAssetsForPrinting: (_client: unknown, printing: string, signal?: AbortSignal) =>
+      optional.exports.readOptionalCatalogueEnrichment((child?: AbortSignal) => reads.manifest(printing, child), signal),
     resolveCardArtwork, buildForeignCardPresentation, copyPreferredSetArtworkReassignments,
     getPreferredSetArtworkReassignments, canonicalArtworkFacts: new WeakMap(),
     readOptionalCatalogueEnrichment: optional.exports.readOptionalCatalogueEnrichment,

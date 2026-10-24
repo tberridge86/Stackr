@@ -6,13 +6,14 @@ export const ARCHITECTURE_CHECKS = Object.freeze([
   ['dependencies', 'Locked dependencies'],
   ['r2_storage', 'Immutable R2 uploads, migration safeguards and legacy delivery'],
   ['api_delivery', 'Actual v1 card, manifest and fast set projection'],
-  ['pagination', 'Bounded client pages and complete catalogue windows'],
+  ['pagination', 'Bounded client/ownership pages and complete catalogue windows'],
   ['owned_facts', 'Ownership facts independent of optional artwork'],
   ['legacy_repair', 'Legacy original preservation and R2 derivative repair'],
   ['web_images', 'Web image loading and fallback'],
   ['worker_boundary', 'Railway worker activation and scheduler boundary'],
   ['report_contract', 'Validation evidence failure handling'],
   ['migration_image', 'Isolated migration image and pinned database certificate'],
+  ['pages_release', 'Exact-source Pages build and publication boundaries'],
 ]);
 
 export function architectureValidationReport({ sourceSha, steps = {}, runUrl = null }) {

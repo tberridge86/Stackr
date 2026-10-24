@@ -2,8 +2,8 @@ import { StackrFunctionalIcon } from '../../components/StackrFunctionalIcon';
 import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import { getCorocoroIssuesForCard, formatCorocoroIssueGroup } from '../../lib/corocoroIssueArchive';
 import { useCardInspection } from '../../components/CardInspectionProvider';
+import { showcaseVariantId } from '../../lib/cardInspection';
 import { getEditionVariantImageUrl } from '../../lib/editionImages';
-import { CardDetailInspectSurface } from '../../components/InteractiveCardInspectPressable';
 import { useTheme } from '../../components/theme-context';
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import {
@@ -11,6 +11,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Pressable,
   Alert,
   Image,
   useWindowDimensions,
@@ -171,6 +172,9 @@ export default function CardDetailScreen() {
     card.language ?? card.raw_data?.language, card.raw_data?.stackr?.defaultVariantId,
   ]) : null;
   const [referenceImage, setReferenceImage] = useState(false);
+  const [showPriceEvidence, setShowPriceEvidence] = useState(false);
+  const [showCardDetails, setShowCardDetails] = useState(false);
+  useEffect(() => { setShowPriceEvidence(false); setShowCardDetails(false); }, [cardContext, editionHint]);
   const [artworkLoading, setArtworkLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [listingBusy, setListingBusy] = useState(false);
@@ -553,7 +557,19 @@ export default function CardDetailScreen() {
   const presentation = cardPresentation ?? buildForeignCardPresentation(card);
   const inspectionCardId = card.raw_data?.stackr?.cardId ?? card.id;
   const inspectionImageUri = getEditionVariantImageUrl(card.raw_data, editionHint, 'large') ?? card.images?.large ?? card.images?.small ?? '';
+  const openShowcase = () => inspectCard({
+    source: 'catalogue',
+    card: { id: inspectionCardId, name: presentation.name, setId: card.set?.id, language: card.language, raw_data: card.raw_data },
+    imageUri: getEditionVariantImageUrl(card.raw_data, editionHint, 'small') ?? card.images?.small ?? inspectionImageUri,
+    fullImageUri: inspectionImageUri,
+    selectedVariantId: showcaseVariantId(card.raw_data, { variant: params.variant, finish: params.finish, edition: editionHint }),
+    subtitle: [presentation.setName, card.number ? `#${card.number}` : null, editionLabel,
+      editionHint && !getEditionVariantImageUrl(card.raw_data, editionHint, 'large') ? 'Reference artwork' : null].filter(Boolean).join(' · '),
+  });
   const presentedDetails = presentation.details;
+  const hasCardDetails = Boolean(card.artist || presentedDetails.evolvesFrom || presentedDetails.flavorText
+    || [presentedDetails.types, presentedDetails.subtypes, presentedDetails.rules, presentedDetails.attacks,
+      presentedDetails.weaknesses, presentedDetails.resistances, presentedDetails.retreatCost].some(values => values?.length));
   const hasEbayValues = ebayPrice?.low != null || ebayPrice?.average != null || ebayPrice?.high != null;
   const hasTcgValues = resolvedTcgPrices?.low != null || resolvedTcgPrices?.mid != null || resolvedTcgPrices?.market != null;
 
@@ -584,13 +600,12 @@ export default function CardDetailScreen() {
 
       {/* Card Image */}
       <CardInspectionStage style={{ alignSelf: 'center', marginBottom: 24, width: heroImageWidth + 48 }}>
-      <CardDetailInspectSurface
-        title={presentation.name}
-        rarity={card.rarity ?? undefined}
-        cardMetadata={card}
-        variant={typeof params.variant === 'string' ? params.variant : undefined}
-        finish={typeof params.finish === 'string' ? params.finish : undefined}
-        isSlabbed={params.slabbed === '1'}
+      <Pressable
+        onPress={openShowcase}
+        onLongPress={openShowcase}
+        disabled={!inspectionImageUri}
+        accessibilityRole="button"
+        accessibilityHint="Opens the card in Showcase"
         style={[styles.heroCard, { width: heroImageWidth, height: heroImageWidth / stackrCardImageSizes.cardAspectRatio }]}
         accessibilityLabel={`Inspect ${presentation.name} artwork`}
       >
@@ -619,7 +634,7 @@ export default function CardDetailScreen() {
             style={RARITY_SYMBOL_CARD_OVERLAY}
           />
         </View>
-      </CardDetailInspectSurface>
+      </Pressable>
       </CardInspectionStage>
       {referenceImage && (card.images?.large || card.images?.small) && <Text style={{ color: theme.colors.textSoft, marginBottom: 8 }}>Reference image; finish may differ.</Text>}
 
@@ -632,18 +647,12 @@ export default function CardDetailScreen() {
       />
 
       <StackrButton
-        label="Inspect card"
+        label="Open Showcase"
         stackrIcon="scan"
         icon="scan-outline"
         variant="secondary"
-        onPress={() => inspectCard({
-          source: 'catalogue',
-          card: { id: inspectionCardId, name: card.name, language: card.language, raw_data: card.raw_data },
-          imageUri: inspectionImageUri,
-          fullImageUri: inspectionImageUri,
-          selectedVariantId: card.raw_data?.stackr?.defaultVariantId ?? null,
-          subtitle: [presentation.setName, card.number ? `#${card.number}` : null].filter(Boolean).join(' · '),
-        })}
+        onPress={openShowcase}
+        disabled={!inspectionImageUri}
         accessibilityLabel={`Inspect ${presentation.name}`}
         style={{ marginBottom: 12 }}
       />
@@ -746,6 +755,13 @@ export default function CardDetailScreen() {
               </Text>
             </View>
           ) : null}
+          {!catalogueGuidePricing ? <Text style={styles.marketHint}>{ebayPrice?.average != null
+            ? `Stored estimate · £${ebayPrice.average.toFixed(2)}`
+            : ebayLoading ? 'Checking stored prices…' : 'Price unavailable for this card version.'}</Text> : null}
+          <StackrButton label={showPriceEvidence ? 'Hide price evidence' : 'Price evidence'}
+            variant="ghost" onPress={() => setShowPriceEvidence(value => !value)}
+            accessibilityLabel={showPriceEvidence ? 'Hide price evidence' : 'Show price evidence'} />
+          {showPriceEvidence ? <>
           <PricingV2Summary
             cardId={card.id}
             language={card.language ?? (card as any).raw_data?.language ?? null}
@@ -889,15 +905,16 @@ export default function CardDetailScreen() {
           <Text style={styles.marketHint}>
             Verified sold comps are the strongest signal. Cached sources and active listings are fallback guide prices.
           </Text>
+          </> : null}
         </View>
       </View>
 
-      <PokeTraceMarketInsights
+      {showPriceEvidence ? <PokeTraceMarketInsights
         cardName={card.name ?? card.id}
         setName={card.set?.name ?? null}
         number={card.number ?? null}
         language={card.language ?? (card as any).raw_data?.language ?? null}
-      />
+      /> : null}
 
       <View style={styles.section}>
         <View style={styles.sectionTitleRow}>
@@ -995,6 +1012,10 @@ export default function CardDetailScreen() {
         </TouchableOpacity>
       ) : null}
 
+      {hasCardDetails ? <StackrButton label={showCardDetails ? 'Hide card details' : 'Card details'}
+        variant="secondary" onPress={() => setShowCardDetails(value => !value)}
+        accessibilityLabel={showCardDetails ? 'Hide card details' : 'Show card details'} /> : null}
+      {showCardDetails ? <>
       {/* Card Details */}
       {!!presentedDetails.types?.length && (
         <View style={styles.section}>
@@ -1108,6 +1129,7 @@ export default function CardDetailScreen() {
           </View>
         </View>
       )}
+      </> : null}
       </ScrollView>
 
     </View>

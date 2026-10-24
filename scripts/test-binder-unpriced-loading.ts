@@ -14,10 +14,10 @@ async function main() {
   const saved = { id: 'saved', binder_id: 'binder', card_id: 'base1-1', language: 'en', owned: true,
     owned_quantity: 2, card_name: 'Charizard', image_url: 'https://images.example/card.webp' };
   const supabase = { auth: { onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }) }, from: (table: string) => {
-    let pageFrom = 0, pageTo = 999;
+    let pageFrom = 0, pageTo = 49;
     const query: any = {
       select: () => query, eq: () => query, order: () => query, abortSignal: () => query,
-      range: (from: number, to: number) => { pageFrom = from; pageTo = to; return query; },
+      range: (from: number, to: number) => { assert.equal(to - from, 49); pageFrom = from; pageTo = to; return query; },
       maybeSingle: async () => ({ data: { id: 'binder', type: 'custom', language: 'en' }, error: null }),
       then: (resolve: (value: unknown) => unknown) => {
         assert.equal(table, 'binder_cards');
@@ -58,7 +58,7 @@ async function main() {
   const completeCustom = await exports.fetchBinderCards('binder', { includePrices: false });
   assert.equal(completeCustom.length, 1702, 'a fresh custom binder must not truncate a complete saved view at 1000 rows');
   assert.equal(new Set(completeCustom.map((row: { id: string }) => row.id)).size, 1702);
-  assert.equal(cardPageReads - beforePages, 3, 'two populated pages plus a definitive empty page establish completion');
+  assert.equal(cardPageReads - beforePages, 36, '35 populated 50-row pages plus a definitive empty page establish completion');
   assert.equal(priceReads, 1, 'complete custom loading remains unpriced');
   console.log('Home bypasses redundant binder pricing while preserving ownership, images and existing callers.');
 }

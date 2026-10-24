@@ -92,6 +92,12 @@ function validateQueryValue(name, value, allowShortSetCollector = false, allowAs
   if (name === 'productType' && !PRODUCT_TYPES.has(value)) {
     bad('invalid_product_type', 'productType is not supported.');
   }
+  if (name === 'scope' && value !== 'catalogue_daily') {
+    bad('invalid_mover_scope', 'scope must be catalogue_daily when supplied.');
+  }
+  if (name === 'sortBy' && !['money', 'percent'].includes(value)) {
+    bad('invalid_daily_mover_query', 'Daily catalogue movers must be ranked by money or percent.');
+  }
   if (name === 'estimateMode' && !['exact', 'general'].includes(value)) {
     bad('invalid_estimate_mode', 'estimateMode must be exact or general.');
   }
@@ -137,7 +143,19 @@ export function validateQuery(route, url) {
     }
     if (seen.has(name)) bad('duplicate_query_parameter', `Query parameter ${name} may only be supplied once.`);
     seen.add(name);
-    validateQueryValue(name, value, allowShortSetCollector, route.id === 'asset_manifest', route.id === 'pokemon_index' ? 1350 : 500);
+    const maxLimit = route.id === 'pokemon_index' ? 1350
+      : route.id === 'market_movers' && url.searchParams.get('scope') === 'catalogue_daily' ? 100 : 500;
+    validateQueryValue(name, value, allowShortSetCollector, route.id === 'asset_manifest', maxLimit);
+  }
+  if (route.id === 'market_movers') {
+    const daily = url.searchParams.get('scope') === 'catalogue_daily';
+    if (seen.has('sortBy') && !daily) {
+      bad('invalid_daily_mover_query', 'sortBy requires the catalogue_daily scope.');
+    }
+    if (daily && (seen.has('currency') && url.searchParams.get('currency') !== 'GBP'
+      || seen.has('productType') && url.searchParams.get('productType') !== 'raw_card')) {
+      bad('invalid_daily_mover_query', 'Daily catalogue movers support raw cards in GBP.');
+    }
   }
   if (route.id === 'asset_manifest' && seen.has('printingId') && seen.has('printingIds')) {
     bad('ambiguous_printing_filter', 'printingId and printingIds cannot be used together.');

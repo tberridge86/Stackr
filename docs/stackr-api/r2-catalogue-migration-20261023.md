@@ -51,7 +51,7 @@ deployment building. This work did not alter, cancel or deploy either release.
 
 ## Migration command and safeguards
 
-`npm run asset:migrate-r2 -- ...` runs the dedicated stored-object copier.
+`node scripts/migrate-catalogue-to-r2.mjs ...` runs the dedicated stored-object copier.
 Inventory is the default mode. It reads at most 25 asset records by default,
 never more than 50, and writes a metadata-only inventory with a SHA-256 digest.
 It downloads no artwork. Each source bucket must still be public.
@@ -75,8 +75,8 @@ production configuration does not replace the running API or pricing services.
 Example on the migration service, with real values configured in its environment:
 
 ```sh
-npm run asset:migrate-r2 -- --mode=inventory --expected-ref=oakdbbzdqwurpjnoqhmu --inventory=/data/r2/batch-0001.json --limit=25
-npm run asset:migrate-r2 -- --mode=execute --expected-ref=oakdbbzdqwurpjnoqhmu --inventory=/data/r2/batch-0001.json --limit=25 --approved-inventory-sha256=EXACT_REPORTED_SHA256 --journal=/data/r2/batch-0001.events.jsonl
+node scripts/migrate-catalogue-to-r2.mjs --mode=inventory --expected-ref=oakdbbzdqwurpjnoqhmu --inventory=/data/r2/batch-0001.json --limit=25
+node scripts/migrate-catalogue-to-r2.mjs --mode=execute --expected-ref=oakdbbzdqwurpjnoqhmu --inventory=/data/r2/batch-0001.json --limit=25 --approved-inventory-sha256=EXACT_REPORTED_SHA256 --journal=/data/r2/batch-0001.events.jsonl
 ```
 
 Use the inventory's `nextAfterId` as `--after-id` for later batches, with a new
