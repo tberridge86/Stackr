@@ -31,7 +31,7 @@ function number(value, fallback, maximum, code) {
 
 export function migrationConfiguration(argv, env) {
   const allowed = new Set(['mode', 'expected-ref', 'source-bucket', 'inventory', 'approved-inventory-sha256', 'journal',
-    'limit', 'after-id', 'max-object-bytes', 'max-batch-bytes', 'object-timeout-ms', 'rollback-journal', 'approved-journal-sha256']);
+    'limit', 'after-id', 'max-object-bytes', 'max-batch-bytes', 'object-timeout-ms', 'rollback-journal', 'approved-journal-sha256', 'concurrency']);
   const args = {};
   for (const raw of argv) {
     const match = /^--([a-z][a-z0-9-]*)=(.+)$/.exec(raw);
@@ -65,15 +65,16 @@ export function migrationConfiguration(argv, env) {
     approvedDigest: args['approved-inventory-sha256'],
     rollbackJournal: args['rollback-journal'] ? path.resolve(args['rollback-journal']) : null,
     approvedJournalDigest: args['approved-journal-sha256'],
-    maxAssets: limit,
+    maxAssets: limit, concurrency: number(args.concurrency, 1, 8, 'invalid_concurrency'),
     maxObjectBytes: number(args['max-object-bytes'], 12 * 1024 * 1024, 12 * 1024 * 1024, 'invalid_object_limit'),
     maxBatchBytes: number(args['max-batch-bytes'], 250 * 1024 * 1024, 1024 * 1024 * 1024, 'invalid_batch_limit'),
     objectTimeoutMs: number(args['object-timeout-ms'], 30_000, 120_000, 'invalid_object_timeout') };
 }
 
 function migrationOptions(config) {
-  return Object.fromEntries(['sourceBucket', 'destinationBucket', 'publicBaseUrl', 'maxAssets', 'maxObjectBytes',
-    'maxBatchBytes', 'objectTimeoutMs'].map((key) => [key, config[key]]));
+  return { ...Object.fromEntries(['sourceBucket', 'destinationBucket', 'publicBaseUrl', 'maxAssets', 'maxObjectBytes',
+    'maxBatchBytes', 'objectTimeoutMs'].map((key) => [key, config[key]])),
+    ...(config.concurrency > 1 ? { concurrency: config.concurrency } : {}) };
 }
 
 async function syncDirectory(directory) {
