@@ -183,6 +183,10 @@ jobs:
         id: worker_boundary
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         run: node scripts/test-railway-catalogue-price-worker.mjs
+      - name: Validate retrieval acceptance probe
+        id: retrieval_probe
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: node --test scripts/test-retrieval-acceptance.mjs
       - name: Validate evidence reporting
         id: report_contract
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}

@@ -11,6 +11,7 @@ export const ARCHITECTURE_CHECKS = Object.freeze([
   ['legacy_repair', 'Legacy original preservation and R2 derivative repair'],
   ['web_images', 'Web image loading and fallback'],
   ['worker_boundary', 'Railway worker activation and scheduler boundary'],
+  ['retrieval_probe', 'Bounded identity and CDN acceptance probe fixtures'],
   ['report_contract', 'Validation evidence failure handling'],
   ['migration_image', 'Isolated migration image and pinned database certificate'],
 ]);

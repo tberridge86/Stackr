@@ -16,9 +16,11 @@ for (const outcome of ['failure', 'cancelled', 'skipped', 'neutral']) {
   assert.equal(report.checks.find((check) => check.id === 'api_delivery').passed, true);
   assert.equal(report.checks.find((check) => check.id === 'r2_storage').outcome, outcome);
 }
-const missing = { ...steps };
-delete missing.pagination;
-assert.equal(architectureValidationReport({ sourceSha, steps: missing }).status, 'blocked');
+for (const [id] of ARCHITECTURE_CHECKS) {
+  const missing = { ...steps };
+  delete missing[id];
+  assert.equal(architectureValidationReport({ sourceSha, steps: missing }).status, 'blocked', `${id} must run`);
+}
 assert.equal(architectureValidationReport({ sourceSha }).status, 'blocked');
 // A continue-on-error conclusion cannot hide the actual failed outcome.
 assert.equal(architectureValidationReport({
