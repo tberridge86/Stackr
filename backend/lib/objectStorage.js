@@ -258,7 +258,8 @@ export class S3CompatibleObjectStorageAdapter {
       method: 'PUT',
       headers,
       body: input.body,
-      signal: AbortSignal.timeout(this.uploadTimeoutMs),
+      signal: input.signal ? AbortSignal.any([input.signal, AbortSignal.timeout(this.uploadTimeoutMs)])
+        : AbortSignal.timeout(this.uploadTimeoutMs),
     });
     if (!response.ok) {
       const detail = await response.text().catch(() => '');
@@ -279,7 +280,9 @@ export class S3CompatibleObjectStorageAdapter {
     const maxBytes = Number(options.maxBytes ?? 25 * 1024 * 1024);
     if (!Number.isSafeInteger(maxBytes) || maxBytes < 1) throw new Error('Invalid object read byte limit.');
     const signed = this.createPresignedRequest({ bucket, key, expiresInSeconds: 900 }, 'GET');
-    const response = await fetch(signed.signedUrl, { signal: AbortSignal.timeout(this.uploadTimeoutMs) });
+    const signal = options.signal ? AbortSignal.any([options.signal, AbortSignal.timeout(this.uploadTimeoutMs)])
+      : AbortSignal.timeout(this.uploadTimeoutMs);
+    const response = await fetch(signed.signedUrl, { signal });
     if (!response.ok) {
       await response.body?.cancel();
       const error = new Error(`S3-compatible object read failed: ${response.status}`);
