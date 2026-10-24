@@ -52,6 +52,7 @@ async function fixture(t, pages, fault = null) {
     assert.equal(active, false, 'only one child invocation may run at a time'); active = true;
     try {
       const args = parseArgs(argv); calls.push(args);
+      const childOptions = { ...options, ...(Number(args.concurrency) > 1 ? { concurrency: Number(args.concurrency) } : {}) };
       assert.equal(args['expected-ref'], PRODUCTION_REF);
       assert.equal(args.limit, '25');
       assert.equal(args['max-object-bytes'], String(options.maxObjectBytes));
@@ -66,7 +67,7 @@ async function fixture(t, pages, fault = null) {
         const assets = Array.from({ length: pages[page++] }, () => asset(next++));
         const afterId = args['after-id'] ?? null;
         const inventory = { schemaVersion: 1, kind: 'stackr-r2-catalogue-inventory', createdAt: timestamp,
-          expectedRef: PRODUCTION_REF, sourceOrigin: env.SUPABASE_URL, options, limit: 25, afterId,
+          expectedRef: PRODUCTION_REF, sourceOrigin: env.SUPABASE_URL, options: childOptions, limit: 25, afterId,
           nextAfterId: assets.at(-1)?.id ?? afterId, exhausted: assets.length < 25, assets };
         if (fault === 'cursor') inventory.nextAfterId = id(9999);
         await save(args.inventory, inventory);
@@ -82,7 +83,7 @@ async function fixture(t, pages, fault = null) {
       assert.equal(args['approved-inventory-sha256'], sha(await readFile(args.inventory)), 'execute receives the exact local bytes digest');
       const records = [{ event: 'migration_preflight', inventorySha256: args['approved-inventory-sha256'], inventory }];
       const objects = new Map();
-      const result = await migrateCatalogueAssets({ ...options, assets: inventory.assets, execute: true,
+      const result = await migrateCatalogueAssets({ ...childOptions, assets: inventory.assets, execute: true,
         readSource: async () => body,
         destinationStorage: { id: 's3_compatible', catalogueStorage: true, catalogueBucket: options.destinationBucket,
           publicUrl: (bucket, key) => `${options.publicBaseUrl}/${key}`,
@@ -116,8 +117,8 @@ async function fixture(t, pages, fault = null) {
     } finally { active = false; }
   };
   return { volumeRoot, calls, runCli, directory: (runId) => path.join(volumeRoot, 'r2-catalogue-migration', runId),
-    run: (runId = 'test', maxBatches = 3, resume = false, overrideEnv = env, readCapacity = async () => ({ admitted: true })) => runR2MigrationRunner({
-      argv: executeArgs(runId, maxBatches, resume), env: overrideEnv, volumeRoot, assertHost: async () => {}, runCli, readCapacity }) };
+    run: (runId = 'test', maxBatches = 3, resume = false, overrideEnv = env, readCapacity = async () => ({ admitted: true }), concurrency = 1) => runR2MigrationRunner({
+      argv: [...executeArgs(runId, maxBatches, resume), `--concurrency=${concurrency}`], env: overrideEnv, volumeRoot, assertHost: async () => {}, runCli, readCapacity }) };
 }
 
 test('default invocation is a no-op without credentials, filesystem or child access', async () => {
@@ -129,6 +130,7 @@ test('default invocation is a no-op without credentials, filesystem or child acc
 test('execute requires production pin, explicit bounded batches and fixed page size', () => {
   for (const argv of [ ['--mode=execute'], ['--mode=execute', `--expected-ref=${PRODUCTION_REF}`],
     ['--expected-ref=anotherprojectref1234'], ['--max-batches=0'], ['--max-batches=10001'], ['--max-batches=1.5'],
+    ['--concurrency=0'], ['--concurrency=9'], ['--concurrency=1.5'], ['--concurrency=no'],
     ['--limit=50'], ['--run-id=../escape'], ['--resume=guess'], ['--mode=execute', '--mode=execute'] ]) {
     assert.throws(() => runnerConfiguration(argv));
   }
@@ -296,4 +298,26 @@ test('legacy 30-second manifest refuses resume without rewriting old evidence', 
   assert.deepEqual(await readFile(manifestPath), oldBytes);
   assert.deepEqual(await readFile(checkpointPath), checkpointBytes);
   assert((await readdir(f.directory('legacy-deadline'))).includes('runner.lock'));
+});
+
+test('parallel concurrency is pinned through inventory, execution, checkpoint and resume', async (t) => {
+  const f = await fixture(t, [25, 1]);
+  const first = await f.run('parallel', 1, false, env, undefined, 8);
+  assert.equal(first.publishedAssets, 25);
+  assert(f.calls.every(args => args.concurrency === '8'));
+  const manifest = await json(path.join(f.directory('parallel'), 'run.json'));
+  assert.equal(manifest.options.concurrency, 8);
+  const second = await f.run('parallel', 1, true, env, undefined, 8);
+  assert.equal(second.publishedAssets, 26);
+  assert.equal(second.status, 'traversal_complete');
+});
+
+test('changing concurrency cannot resume an existing run', async (t) => {
+  const f = await fixture(t, [25]);
+  await f.run('pinned', 1, false, env, undefined, 4);
+  const before = await readFile(path.join(f.directory('pinned'), 'run.json'));
+  const calls = f.calls.length;
+  await assert.rejects(() => f.run('pinned', 1, true, env, undefined, 8), /resume_target_mismatch/);
+  assert.equal(f.calls.length, calls);
+  assert.deepEqual(await readFile(path.join(f.directory('pinned'), 'run.json')), before);
 });
