@@ -3,6 +3,9 @@
 Owner direction: 23 October 2026. Source baseline: `7e22cee8d94f2904c3c2cfcf2c0e28da74eabdcc`.
 This is the implementation and rollout contract; it is not evidence of a live migration.
 
+The [24 October delivery map](architecture-delivery-map-20261024.md) organises the
+remaining implementation stages, source-backed gaps, owners and acceptance gates.
+
 ## Responsibilities
 
 | Platform | Owns | Boundary |
