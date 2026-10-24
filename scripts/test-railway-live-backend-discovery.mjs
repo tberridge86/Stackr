@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -7,7 +7,7 @@ import { pathToFileURL } from 'node:url';
 
 const fetchMock = `--import=${pathToFileURL(path.resolve('scripts/test-fixtures/mock-railway-live-backend-discovery-fetch.mjs')).href}`;
 const adapter = path.resolve('scripts/test-fixtures/mock-railway-live-backend-discovery.mjs');
-function run(extra = {}) {
+function run(extra = {}, mock = fetchMock) {
   const temp = mkdtempSync(path.join(tmpdir(), 'stackr-live-discovery-'));
   const envPath = path.join(temp, 'github-env');
   const outputPath = path.join(temp, 'github-output');
@@ -18,7 +18,7 @@ function run(extra = {}) {
   ], {
     cwd: process.cwd(), encoding: 'utf8',
     env: {
-      ...process.env, ...extra, NODE_OPTIONS: [process.env.NODE_OPTIONS, fetchMock].filter(Boolean).join(' '),
+      ...process.env, ...extra, NODE_OPTIONS: [process.env.NODE_OPTIONS, mock].filter(Boolean).join(' '),
       RAILWAY_API_TOKEN: 'test', RAILWAY_LOGS_ADAPTER: adapter,
     },
   });
@@ -72,6 +72,37 @@ for (const [name, env, pattern] of [
   assert.equal(existsSync(execution.outputPath), false, `${name}: must not write step output`);
   rmSync(execution.temp, { recursive: true, force: true });
 }
+
+
+const errorFixtureDirectory = mkdtempSync(path.join(tmpdir(), 'stackr-discovery-errors-'));
+try {
+  const preload = path.join(errorFixtureDirectory, 'fetch.mjs');
+  writeFileSync(preload, `globalThis.fetch = async () => ({
+    ok: Number(process.env.MOCK_ERROR_STATUS) === 200,
+    status: Number(process.env.MOCK_ERROR_STATUS),
+    async json() {
+      if (process.env.MOCK_BAD_JSON === 'true') throw new Error('RAW_SECRET_FIXTURE');
+      return { errors: [{ message: 'RAW_SECRET_FIXTURE query token response',
+        extensions: { code: process.env.MOCK_ERROR_CODE } }] };
+    },
+  });`);
+  for (const [status, code, category, badJson] of [
+    [401, '', 'UNAUTHENTICATED'], [403, '', 'FORBIDDEN'], [429, '', 'RATE_LIMITED'],
+    [200, 'UNAUTHENTICATED', 'UNAUTHENTICATED'], [200, 'FORBIDDEN', 'FORBIDDEN'],
+    [200, 'GRAPHQL_VALIDATION_FAILED', 'SCHEMA_VALIDATION'],
+    [200, 'RATE_LIMITED', 'RATE_LIMITED'], [200, 'RAW_SECRET_FIXTURE', 'UNKNOWN'],
+    [500, '', 'UNKNOWN'], [200, '', 'UNKNOWN', true],
+  ]) {
+    const execution = run({ MOCK_ERROR_STATUS: String(status), MOCK_ERROR_CODE: code,
+      MOCK_BAD_JSON: String(Boolean(badJson)) }, '--import=' + pathToFileURL(preload).href);
+    assert.notEqual(execution.result.status, 0);
+    assert.match(execution.result.stderr, new RegExp('Railway API request failed: ' + category));
+    assert.doesNotMatch(execution.result.stderr + execution.result.stdout, /RAW_SECRET_FIXTURE/);
+    assert.equal(existsSync(execution.envPath), false);
+    assert.equal(existsSync(execution.outputPath), false);
+    rmSync(execution.temp, { recursive: true, force: true });
+  }
+} finally { rmSync(errorFixtureDirectory, { recursive: true, force: true }); }
 
 const helper = readFileSync('scripts/deploy/discover-live-railway-backend.mjs', 'utf8');
 assert.match(helper, /serviceInstance\(serviceId: \$serviceId, environmentId: \$environmentId\)/);

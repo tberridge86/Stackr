@@ -1,0 +1,237 @@
+name: Provision Stackr R2 Migration Worker
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type PROVISION R2 MIGRATION WORKER (deploys a disabled worker only)
+        required: true
+        type: string
+      expected_main_sha:
+        description: Exact lowercase 40-character main SHA reviewed for this worker
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+# Serialize with other protected production releases; never cancel a running release.
+concurrency:
+  group: stackr-production-deployment
+  cancel-in-progress: false
+
+jobs:
+  provision:
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'PROVISION R2 MIGRATION WORKER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: production
+    defaults:
+      run:
+        shell: bash
+    env:
+      EXPECTED_MAIN_SHA: ${{ inputs.expected_main_sha }}
+      RAILWAY_PROJECT_ID: d205637b-5376-41aa-9169-1015ba88fec3
+      RAILWAY_ENVIRONMENT_ID: b4304736-cac8-4ca9-92a7-93f7f6499c2f
+      RAILWAY_MIGRATION_SERVICE_ID: b5410607-a591-420e-a506-fe184ce7455b
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+
+      - name: Require the exact current main revision
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = 'refs/heads/main'
+          [[ "$EXPECTED_MAIN_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$EXPECTED_MAIN_SHA" = "$GITHUB_SHA"
+          test "$(git rev-parse HEAD)" = "$EXPECTED_MAIN_SHA"
+          test "$(git ls-remote origin refs/heads/main | cut -f1)" = "$EXPECTED_MAIN_SHA"
+          git diff --exit-code
+          git diff --cached --exit-code
+
+      - name: Install only the locked worker test dependency
+        run: |
+          set -euo pipefail
+          npm ci --prefix deploy/catalogue-r2-migration --omit=dev --ignore-scripts --no-audit --no-fund
+          # ESM imports resolve from scripts/, so expose the worker's locked pg package there.
+          test ! -e node_modules
+          ln -s "$GITHUB_WORKSPACE/deploy/catalogue-r2-migration/node_modules" node_modules
+
+      - name: Verify migration, journal rollback and bounded runner
+        run: |
+          set -euo pipefail
+          node scripts/test-r2-catalogue-migration.mjs
+          node scripts/test-r2-catalogue-migration-cli.mjs
+          node scripts/test-r2-catalogue-rollback.mjs
+          node scripts/test-r2-migration-runner.mjs
+          node scripts/test-r2-migration-provision.mjs
+          node scripts/run-r2-catalogue-migration.mjs
+
+      - name: Stage only the exact reviewed worker source
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/stackr-r2-source"
+          git archive "$EXPECTED_MAIN_SHA" -- \
+            deploy/catalogue-r2-migration/Dockerfile \
+            deploy/catalogue-r2-migration/package.json \
+            deploy/catalogue-r2-migration/package-lock.json \
+            backend/lib/objectStorage.js \
+            scripts/migrate-catalogue-to-r2.mjs \
+            scripts/run-r2-catalogue-migration.mjs \
+            scripts/lib/r2-catalogue-migration.mjs \
+            scripts/deploy/verified-supabase-postgres.mjs \
+            scripts/deploy/postgres-url-guard.mjs \
+            deploy/certificates/supabase-prod-ca-2021.crt \
+            | tar -x -C "$RUNNER_TEMP/stackr-r2-source"
+          test "$(find "$RUNNER_TEMP/stackr-r2-source" -type f | wc -l)" -eq 10
+          # No railway.json, media, root dependencies or credential files enter this upload.
+
+      - name: Require disabled one-shot service settings and the attached volume
+        env:
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          try {
+            const env = process.env;
+            assert.ok(env.RAILWAY_API_TOKEN);
+            const query = `
+              query migrationProvisioning($projectId: String!, $serviceId: String!, $environmentId: String!) {
+                migrationVariables: variables(projectId: $projectId, serviceId: $serviceId, environmentId: $environmentId)
+                service(id: $serviceId) {
+                  id projectId repoTriggers(first: 1) { edges { node { id } } }
+                }
+                serviceInstance(serviceId: $serviceId, environmentId: $environmentId) {
+                  serviceId environmentId startCommand restartPolicyType rootDirectory
+                  buildCommand healthcheckPath numReplicas cronSchedule preDeployCommand
+                  railwayConfigFile dockerfilePath source { repo image } activeDeployments { id }
+                }
+                environment(id: $environmentId) {
+                  id projectId
+                  volumeInstances(first: 100) {
+                    pageInfo { hasNextPage }
+                    edges { node { serviceId environmentId mountPath deletedAt isPendingDeletion } }
+                  }
+                }
+              }`;
+            const response = await fetch('https://backboard.railway.com/graphql/v2', {
+              method: 'POST',
+              headers: { authorization: `Bearer ${env.RAILWAY_API_TOKEN}`, 'content-type': 'application/json' },
+              body: JSON.stringify({ query, variables: {
+                projectId: env.RAILWAY_PROJECT_ID,
+                serviceId: env.RAILWAY_MIGRATION_SERVICE_ID, environmentId: env.RAILWAY_ENVIRONMENT_ID,
+              } }),
+              signal: AbortSignal.timeout(30_000),
+            });
+            assert.ok(response.ok);
+            const result = await response.json();
+            assert.ok(!result.errors?.length);
+            const { service, serviceInstance: instance, environment, migrationVariables } = result.data;
+            assert.ok(migrationVariables && typeof migrationVariables === 'object' && !Array.isArray(migrationVariables));
+            assert.ok(!Object.hasOwn(migrationVariables, 'RAILWAY_RUN_UID')
+              || ['', '1000'].includes(migrationVariables.RAILWAY_RUN_UID));
+            assert.equal(service.id, env.RAILWAY_MIGRATION_SERVICE_ID);
+            assert.equal(service.projectId, env.RAILWAY_PROJECT_ID);
+            assert.equal(service.repoTriggers.edges.length, 0);
+            assert.equal(instance.serviceId, env.RAILWAY_MIGRATION_SERVICE_ID);
+            assert.equal(instance.environmentId, env.RAILWAY_ENVIRONMENT_ID);
+            assert.ok(Array.isArray(instance.activeDeployments) && instance.activeDeployments.length === 0);
+            const empty = (value) => value === null || value === '';
+            const disabledCommand = `node -e "console.log('R2 migration disabled; explicit reviewed command required')"`;
+            assert.ok(empty(instance.startCommand) || instance.startCommand === disabledCommand);
+            assert.equal(instance.restartPolicyType, 'NEVER');
+            assert.ok(empty(instance.rootDirectory) || instance.rootDirectory === '/');
+            assert.ok(empty(instance.buildCommand) && empty(instance.healthcheckPath));
+            assert.ok(empty(instance.cronSchedule) && empty(instance.railwayConfigFile));
+            assert.ok(instance.preDeployCommand === null || instance.preDeployCommand === ''
+              || (Array.isArray(instance.preDeployCommand) && instance.preDeployCommand.length === 0));
+            assert.ok(empty(instance.dockerfilePath)
+              || instance.dockerfilePath === 'deploy/catalogue-r2-migration/Dockerfile');
+            assert.equal(instance.numReplicas, 1);
+            assert.ok(instance.source === null
+              || (empty(instance.source.repo) && empty(instance.source.image)));
+            assert.equal(environment.id, env.RAILWAY_ENVIRONMENT_ID);
+            assert.equal(environment.projectId, env.RAILWAY_PROJECT_ID);
+            assert.equal(environment.volumeInstances.pageInfo.hasNextPage, false);
+            const volumes = environment.volumeInstances.edges.map(({ node }) => node)
+              .filter((volume) => volume.serviceId === env.RAILWAY_MIGRATION_SERVICE_ID);
+            assert.equal(volumes.length, 1);
+            assert.equal(volumes[0].environmentId, env.RAILWAY_ENVIRONMENT_ID);
+            assert.equal(volumes[0].mountPath, '/data');
+            assert.equal(volumes[0].deletedAt, null);
+            assert.equal(volumes[0].isPendingDeletion, false);
+            console.log('Dedicated service is disabled, unscheduled, single-replica, and attached to /data.');
+          } catch {
+            // Never print provider responses, settings or raw authentication errors.
+            console.error('Railway provisioning preflight failed; inspect the dedicated service settings.');
+            process.exitCode = 1;
+          }
+          NODE
+
+      - name: Configure protected server credentials without triggering a deployment
+        env:
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SUPABASE_URL: ${{ vars.STACKR_SUPABASE_URL }}
+          STACKR_R2_ACCESS_KEY_ID: ${{ secrets.STACKR_R2_ACCESS_KEY_ID }}
+          STACKR_R2_SECRET_ACCESS_KEY: ${{ secrets.STACKR_R2_SECRET_ACCESS_KEY }}
+          STACKR_R2_ENDPOINT: ${{ vars.STACKR_R2_ENDPOINT }}
+          STACKR_R2_BUCKET: ${{ vars.STACKR_R2_BUCKET }}
+          STACKR_R2_PUBLIC_BASE_URL: ${{ vars.STACKR_R2_PUBLIC_BASE_URL }}
+          RAILWAY_DOCKERFILE_PATH: deploy/catalogue-r2-migration/Dockerfile
+        run: |
+          set -euo pipefail
+          test "$(git ls-remote origin refs/heads/main | cut -f1)" = "$EXPECTED_MAIN_SHA"
+          for variable in RAILWAY_API_TOKEN SUPABASE_DB_URL SUPABASE_URL STACKR_R2_ACCESS_KEY_ID STACKR_R2_SECRET_ACCESS_KEY STACKR_R2_ENDPOINT STACKR_R2_BUCKET STACKR_R2_PUBLIC_BASE_URL; do
+            if [ -z "${!variable:-}" ]; then
+              echo "Missing protected production configuration: $variable" >&2
+              exit 1
+            fi
+          done
+          test "$SUPABASE_URL" = 'https://oakdbbzdqwurpjnoqhmu.supabase.co'
+          node --input-type=module <<'NODE'
+          import { migrationConfiguration } from './scripts/migrate-catalogue-to-r2.mjs';
+          try {
+            migrationConfiguration(['--mode=inventory', '--expected-ref=oakdbbzdqwurpjnoqhmu',
+              '--inventory=/data/r2-provisioning-unused.json', '--limit=25'], process.env);
+          } catch {
+            console.error('Protected migration configuration failed the production identity guard.');
+            process.exitCode = 1;
+          }
+          NODE
+          for variable in SUPABASE_DB_URL SUPABASE_URL STACKR_R2_ACCESS_KEY_ID STACKR_R2_SECRET_ACCESS_KEY STACKR_R2_ENDPOINT STACKR_R2_BUCKET STACKR_R2_PUBLIC_BASE_URL RAILWAY_DOCKERFILE_PATH; do
+            printf '%s' "${!variable}" | \
+              npx --yes @railway/cli@5.30.1 variable set "$variable" --stdin --skip-deploys \
+                --project "$RAILWAY_PROJECT_ID" \
+                --environment "$RAILWAY_ENVIRONMENT_ID" \
+                --service "$RAILWAY_MIGRATION_SERVICE_ID" > /dev/null 2>&1 || {
+                  echo "Failed to configure $variable; worker deployment has not started." >&2
+                  exit 1
+                }
+          done
+
+      - name: Deploy the disabled worker to the dedicated service
+        env:
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          test "$(git ls-remote origin refs/heads/main | cut -f1)" = "$EXPECTED_MAIN_SHA"
+          npx --yes @railway/cli@5.30.1 up "$RUNNER_TEMP/stackr-r2-source" --path-as-root --ci \
+            --project "$RAILWAY_PROJECT_ID" \
+            --environment "$RAILWAY_ENVIRONMENT_ID" \
+            --service "$RAILWAY_MIGRATION_SERVICE_ID" \
+            --message "Disabled R2 migration worker $EXPECTED_MAIN_SHA"
+          {
+            echo '### Disabled R2 migration worker build submitted'
+            echo "Reviewed source: $EXPECTED_MAIN_SHA"
+            echo "Dedicated service: $RAILWAY_MIGRATION_SERVICE_ID"
+            echo 'Railway --ci verifies the build only. Inspect the deployment and no-op logs separately.'
+            echo 'No inventory, object copy, database publication, rollback, API deployment or app release was requested by this workflow.'
+          } >> "$GITHUB_STEP_SUMMARY"

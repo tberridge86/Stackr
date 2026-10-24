@@ -296,3 +296,64 @@ export function createCatalogueMigrationRollback(receipt) {
     before: structuredClone(receipt.patch), patch: structuredClone(receipt.before),
   };
 }
+
+
+/** Reconstruct rollback authority only from a complete, digest-verified forward journal. */
+export function validateCatalogueMigrationJournal(records, inventory, inventorySha256) {
+  check(Array.isArray(records) && records.length > 0 && records.length <= 5000, 'invalid_journal_records');
+  const first = records[0];
+  check(first.event === 'migration_preflight' && first.inventorySha256 === inventorySha256
+    && fingerprint(first.inventory) === fingerprint(inventory), 'journal_inventory_mismatch');
+  check(Array.isArray(inventory.assets) && inventory.assets.length > 0 && inventory.assets.length <= 50,
+    'invalid_journal_inventory');
+  const beforeById = new Map(inventory.assets.map(asset => [asset.id, asset]));
+  check(beforeById.size === inventory.assets.length, 'duplicate_journal_inventory_row');
+  const completed = [];
+  const seen = new Set();
+  let pending = null;
+  let committed = null;
+  for (const record of records.slice(1)) {
+    if (record.event === 'object_pending' || record.event === 'object_verified') {
+      check(!pending && beforeById.has(record.rowId) && !seen.has(record.rowId), 'journal_object_order_invalid');
+      continue;
+    }
+    if (record.event === 'publication_pending') {
+      check(!pending && beforeById.has(record.plan?.rowId) && !seen.has(record.plan.rowId), 'journal_publication_order_invalid');
+      const originalPlan = planCatalogueAssetMigration(beforeById.get(record.plan.rowId), inventory.options);
+      check(record.plan.assetId === originalPlan.assetId && record.plan.snapshotHash === originalPlan.snapshotHash
+        && fingerprint(record.plan.guard) === fingerprint(originalPlan.guard)
+        && fingerprint(record.plan.before) === fingerprint(originalPlan.before), 'journal_plan_inventory_mismatch');
+      pending = record.plan;
+      continue;
+    }
+    if (record.event === 'database_cas_committed') {
+      check(pending && !committed && record.operationId === pending.operationId
+        && record.rowId === pending.rowId, 'journal_commit_order_invalid');
+      const original = beforeById.get(record.rowId);
+      check(fingerprint(record.before) === fingerprint(original)
+        && pending.snapshotHash === fingerprint(original), 'journal_before_image_mismatch');
+      check(record.after && typeof record.after.updated_at === 'string'
+        && Number.isFinite(Date.parse(record.after.updated_at)), 'journal_after_image_invalid');
+      const expectedAfter = { ...original, ...pending.patch, updated_at: record.after.updated_at };
+      check(fingerprint(record.after) === fingerprint(expectedAfter), 'journal_after_image_mismatch');
+      committed = record;
+      continue;
+    }
+    if (record.event === 'publication_complete') {
+      check(pending && committed && record.receipt?.status === 'published'
+        && fingerprint(record.receipt) === fingerprint({ ...pending, updatedAt: committed.after.updated_at, status: 'published' }),
+      'journal_receipt_mismatch');
+      const plan = createCatalogueMigrationRollback(record.receipt);
+      check(Object.entries(plan.guard).every(([key, value]) => fingerprint(committed.after[key]) === fingerprint(value)),
+        'journal_rollback_guard_mismatch');
+      completed.push({ receipt: record.receipt, before: committed.before, after: committed.after, plan });
+      seen.add(pending.rowId);
+      pending = null;
+      committed = null;
+      continue;
+    }
+    fail('unknown_journal_event');
+  }
+  check(!pending && !committed && completed.length === inventory.assets.length, 'journal_requires_reconciliation');
+  return completed.reverse();
+}
