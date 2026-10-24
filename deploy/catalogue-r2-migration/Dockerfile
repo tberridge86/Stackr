@@ -6,7 +6,7 @@ COPY deploy/catalogue-r2-migration/package.json deploy/catalogue-r2-migration/pa
 RUN npm ci --omit=dev --ignore-scripts --no-audit --no-fund && npm cache clean --force
 
 COPY backend/lib/objectStorage.js ./backend/lib/
-COPY scripts/migrate-catalogue-to-r2.mjs scripts/run-r2-catalogue-migration.mjs scripts/inspect-r2-stopped-run.mjs ./scripts/
+COPY scripts/migrate-catalogue-to-r2.mjs scripts/run-r2-catalogue-migration.mjs scripts/inspect-r2-stopped-run.mjs scripts/inspect-r2-bulk-run.mjs ./scripts/
 COPY scripts/lib/r2-catalogue-migration.mjs scripts/lib/r2-stopped-migration-reconciliation.mjs ./scripts/lib/
 COPY scripts/deploy/verified-supabase-postgres.mjs scripts/deploy/postgres-url-guard.mjs ./scripts/deploy/
 COPY deploy/certificates/supabase-prod-ca-2021.crt ./deploy/certificates/

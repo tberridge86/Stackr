@@ -50,7 +50,7 @@ function same(left, right) { return JSON.stringify(canonical(left)) === JSON.str
 function errorCode(error) { return /^[a-z][a-z0-9_]{0,127}$/.test(error?.code ?? '') ? error.code : 'runner_operation_failed'; }
 
 export function runnerConfiguration(argv = []) {
-  const allowed = new Set(['mode', 'expected-ref', 'run-id', 'max-batches', 'limit', 'resume']);
+  const allowed = new Set(['mode', 'expected-ref', 'run-id', 'max-batches', 'limit', 'resume', 'concurrency']);
   const args = {};
   for (const arg of argv) {
     const match = /^--([a-z][a-z0-9-]*)=(.+)$/.exec(arg);
@@ -63,6 +63,8 @@ export function runnerConfiguration(argv = []) {
   check(!args.limit || args.limit === String(BATCH_SIZE), 'runner_batch_size_must_be_25');
   check(!args['run-id'] || /^[a-z0-9][a-z0-9-]{0,63}$/.test(args['run-id']), 'invalid_runner_run_id');
   check(!args.resume || ['true', 'false'].includes(args.resume), 'invalid_runner_resume');
+  const concurrency = Number(args.concurrency ?? 1);
+  check(Number.isSafeInteger(concurrency) && concurrency >= 1 && concurrency <= 8, 'invalid_runner_concurrency');
   const maxBatches = args['max-batches'] === undefined ? null : Number(args['max-batches']);
   check(maxBatches === null || (Number.isSafeInteger(maxBatches) && maxBatches >= 1 && maxBatches <= MAX_BATCHES), 'invalid_runner_batch_bound');
   if (mode === 'execute') {
@@ -70,7 +72,7 @@ export function runnerConfiguration(argv = []) {
     check(args['run-id'] && maxBatches !== null, 'explicit_runner_run_id_and_batch_bound_required');
   }
   return { mode, expectedRef: PRODUCTION_REF, batchSize: BATCH_SIZE, runId: args['run-id'] ?? null,
-    maxBatches, resume: args.resume === 'true' };
+    maxBatches, resume: args.resume === 'true', concurrency };
 }
 
 export function assertRunnerProject(env) {
@@ -164,10 +166,11 @@ function batchFiles(directory, sequence) {
     checkpoint: `${prefix}.checkpoint.json`, error: `${prefix}.error.json` };
 }
 
-function cliArguments(mode, files, afterId, inventorySha256) {
+function cliArguments(mode, files, afterId, inventorySha256, concurrency = 1) {
   return [`--mode=${mode}`, `--expected-ref=${PRODUCTION_REF}`, `--inventory=${files.inventory}`, '--limit=25',
     `--max-object-bytes=${BOUNDS.maxObjectBytes}`, `--max-batch-bytes=${BOUNDS.maxBatchBytes}`,
-    `--object-timeout-ms=${BOUNDS.objectTimeoutMs}`, ...(afterId ? [`--after-id=${afterId}`] : []),
+    `--object-timeout-ms=${BOUNDS.objectTimeoutMs}`, ...(concurrency > 1 ? [`--concurrency=${concurrency}`] : []),
+    ...(afterId ? [`--after-id=${afterId}`] : []),
     ...(mode === 'execute' ? [`--approved-inventory-sha256=${inventorySha256}`, `--journal=${files.journal}`] : [])];
 }
 
@@ -178,7 +181,8 @@ function expectedManifest(config, env) {
   return { schemaVersion: 1, kind: 'stackr-r2-sequential-run', runId: config.runId, expectedRef: PRODUCTION_REF,
     railwayServiceId: env.RAILWAY_SERVICE_ID, railwayEnvironmentId: env.RAILWAY_ENVIRONMENT_ID,
     options: { sourceBucket: 'stackr-catalogue-public', destinationBucket: env.STACKR_R2_BUCKET,
-      publicBaseUrl, maxAssets: BATCH_SIZE, ...BOUNDS }, limit: BATCH_SIZE };
+      publicBaseUrl, maxAssets: BATCH_SIZE, ...BOUNDS,
+      ...(config.concurrency > 1 ? { concurrency: config.concurrency } : {}) }, limit: BATCH_SIZE };
 }
 
 async function validateBatch(files, afterId, manifest, executeRequired) {
@@ -297,12 +301,12 @@ export async function runR2MigrationRunner({ argv = process.argv.slice(2), env =
       previousCheckpointSha256: state.checkpointSha256 };
     const intentSha256 = await saveExclusive(files.intent, intent, MAX_CONTROL_BYTES);
     try {
-      const advertised = await runCli(cliArguments('inventory', files, state.nextAfterId), { env });
+      const advertised = await runCli(cliArguments('inventory', files, state.nextAfterId, undefined, config.concurrency), { env });
       await saveExclusive(files.inventoryResult, advertised);
       const inventory = await validateBatch(files, state.nextAfterId, manifest, false);
       let evidence = inventory.evidence;
       if (evidence.assetCount > 0) {
-        const result = await runCli(cliArguments('execute', files, state.nextAfterId, evidence.inventorySha256), { env });
+        const result = await runCli(cliArguments('execute', files, state.nextAfterId, evidence.inventorySha256, config.concurrency), { env });
         await saveExclusive(files.result, result);
         evidence = (await validateBatch(files, state.nextAfterId, manifest, true)).evidence;
       }
