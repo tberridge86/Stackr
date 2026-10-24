@@ -99,6 +99,7 @@ jobs:
           set -euo pipefail
           node --input-type=module <<'NODE'
           import assert from 'node:assert/strict';
+          let category = 'TOKEN_MISSING';
           try {
             const env = process.env;
             assert.ok(env.RAILWAY_API_TOKEN);
@@ -121,6 +122,7 @@ jobs:
                   }
                 }
               }`;
+            category = 'REQUEST_NETWORK';
             const response = await fetch('https://backboard.railway.com/graphql/v2', {
               method: 'POST',
               headers: { authorization: `Bearer ${env.RAILWAY_API_TOKEN}`, 'content-type': 'application/json' },
@@ -130,36 +132,58 @@ jobs:
               } }),
               signal: AbortSignal.timeout(30_000),
             });
+            category = 'HTTP';
             assert.ok(response.ok);
+            category = 'JSON';
             const result = await response.json();
+            category = 'GRAPHQL';
             assert.ok(!result.errors?.length);
+            category = 'RESPONSE_SHAPE';
             const { service, serviceInstance: instance, environment, migrationVariables } = result.data;
+            category = 'VARIABLES';
             assert.ok(migrationVariables && typeof migrationVariables === 'object' && !Array.isArray(migrationVariables));
+            category = 'RUN_UID';
             assert.ok(!Object.hasOwn(migrationVariables, 'RAILWAY_RUN_UID')
               || ['', '1000'].includes(migrationVariables.RAILWAY_RUN_UID));
+            category = 'SERVICE_TARGET';
             assert.equal(service.id, env.RAILWAY_MIGRATION_SERVICE_ID);
             assert.equal(service.projectId, env.RAILWAY_PROJECT_ID);
+            category = 'REPO_TRIGGERS';
             assert.equal(service.repoTriggers.edges.length, 0);
+            category = 'INSTANCE_TARGET';
             assert.equal(instance.serviceId, env.RAILWAY_MIGRATION_SERVICE_ID);
             assert.equal(instance.environmentId, env.RAILWAY_ENVIRONMENT_ID);
+            category = 'ACTIVE_DEPLOYMENTS';
             assert.ok(Array.isArray(instance.activeDeployments) && instance.activeDeployments.length === 0);
             const empty = (value) => value === null || value === '';
             const disabledCommand = `node -e "console.log('R2 migration disabled; explicit reviewed command required')"`;
+            category = 'START_COMMAND';
             assert.ok(empty(instance.startCommand) || instance.startCommand === disabledCommand);
+            category = 'RESTART_POLICY';
             assert.equal(instance.restartPolicyType, 'NEVER');
+            category = 'ROOT_DIRECTORY';
             assert.ok(empty(instance.rootDirectory) || instance.rootDirectory === '/');
+            category = 'BUILD_HEALTH';
             assert.ok(empty(instance.buildCommand) && empty(instance.healthcheckPath));
+            category = 'SCHEDULE_CONFIG';
             assert.ok(empty(instance.cronSchedule) && empty(instance.railwayConfigFile));
+            category = 'PREDEPLOY_COMMAND';
             assert.ok(instance.preDeployCommand === null || instance.preDeployCommand === ''
               || (Array.isArray(instance.preDeployCommand) && instance.preDeployCommand.length === 0));
+            category = 'DOCKERFILE';
             assert.ok(empty(instance.dockerfilePath)
               || instance.dockerfilePath === 'deploy/catalogue-r2-migration/Dockerfile');
+            category = 'NUM_REPLICAS';
             assert.equal(instance.numReplicas, 1);
+            category = 'SOURCE';
             assert.ok(instance.source === null
               || (empty(instance.source.repo) && empty(instance.source.image)));
+            category = 'ENVIRONMENT_TARGET';
             assert.equal(environment.id, env.RAILWAY_ENVIRONMENT_ID);
             assert.equal(environment.projectId, env.RAILWAY_PROJECT_ID);
+            category = 'VOLUME_PAGINATION';
             assert.equal(environment.volumeInstances.pageInfo.hasNextPage, false);
+            category = 'VOLUME';
             const volumes = environment.volumeInstances.edges.map(({ node }) => node)
               .filter((volume) => volume.serviceId === env.RAILWAY_MIGRATION_SERVICE_ID);
             assert.equal(volumes.length, 1);
@@ -170,7 +194,7 @@ jobs:
             console.log('Dedicated service is disabled, unscheduled, single-replica, and attached to /data.');
           } catch {
             // Never print provider responses, settings or raw authentication errors.
-            console.error('Railway provisioning preflight failed; inspect the dedicated service settings.');
+            console.error('Railway provisioning preflight failed: ' + category + '.');
             process.exitCode = 1;
           }
           NODE
