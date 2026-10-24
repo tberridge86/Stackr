@@ -78,23 +78,28 @@ const base = {
     } }] } },
 };
 let checked = 0;
-async function guardCase(mutate, expected = false) {
+async function guardCase(mutate, expected = false, category = null) {
   const data = structuredClone(base);
   const outcome = { ok: true, errors: null };
   mutate(data, outcome);
-  const processMock = { env: { ...target, RAILWAY_API_TOKEN: 'test' } };
+  const processMock = { env: { ...target, RAILWAY_API_TOKEN: outcome.missingToken ? undefined : 'test' } };
   const messages = [];
   await preflight(assert, processMock, async (url, options) => {
+    if (outcome.networkError) throw new Error('provider-sensitive-error');
     assert.equal(url, 'https://backboard.railway.com/graphql/v2');
     assert.equal(options.headers.authorization, 'Bearer test');
     const request = JSON.parse(options.body);
     assert.match(request.query, /^\s*query migrationProvisioning/);
     assert.deepEqual(request.variables, { projectId: target.RAILWAY_PROJECT_ID,
       serviceId: target.RAILWAY_MIGRATION_SERVICE_ID, environmentId: target.RAILWAY_ENVIRONMENT_ID });
-    return { ok: outcome.ok, json: async () => ({ data, ...(outcome.errors ? { errors: outcome.errors } : {}) }) };
+    return { ok: outcome.ok, json: async () => {
+      if (outcome.jsonError) throw new Error('provider-sensitive-error');
+      return outcome.malformed ? {} : { data, ...(outcome.errors ? { errors: outcome.errors } : {}) };
+    } };
   }, { log: (value) => messages.push(value), error: (value) => messages.push(value) }, AbortSignal);
   assert.equal(processMock.exitCode === 1, !expected);
   assert.doesNotMatch(messages.join('\n'), /test|provider-sensitive-error|fixture-database-password/);
+  if (category) assert.deepEqual(messages, ['Railway provisioning preflight failed: ' + category + '.']);
   checked += 1;
 }
 await guardCase(() => {}, true);
@@ -130,6 +135,19 @@ for (const mutate of [
   (data, outcome) => { outcome.errors = [{ message: 'provider-sensitive-error' }]; },
   (data, outcome) => { outcome.ok = false; },
 ]) await guardCase(mutate);
+
+await guardCase((data, outcome) => { outcome.missingToken = true; }, false, 'TOKEN_MISSING');
+await guardCase((data, outcome) => { outcome.networkError = true; }, false, 'REQUEST_NETWORK');
+await guardCase((data, outcome) => { outcome.ok = false; }, false, 'HTTP');
+await guardCase((data, outcome) => { outcome.jsonError = true; }, false, 'JSON');
+await guardCase((data, outcome) => { outcome.errors = [{ message: 'provider-sensitive-error', extensions: { code: 'provider-sensitive-error' } }]; }, false, 'GRAPHQL');
+await guardCase((data, outcome) => { outcome.malformed = true; }, false, 'RESPONSE_SHAPE');
+await guardCase(data => { data.migrationVariables.RAILWAY_RUN_UID = 'provider-sensitive-error'; }, false, 'RUN_UID');
+await guardCase(data => { data.serviceInstance.source = { repo: 'provider-sensitive-error', image: null }; }, false, 'SOURCE');
+await guardCase(data => { data.environment.volumeInstances.edges[0].node.mountPath = 'provider-sensitive-error'; }, false, 'VOLUME');
+await guardCase(data => { data.serviceInstance.numReplicas = null; }, false, 'NUM_REPLICAS');
+await guardCase(data => { data.serviceInstance.numReplicas = 2; }, false, 'NUM_REPLICAS');
+await guardCase(data => { data.serviceInstance.dockerfilePath = 'provider-sensitive-error'; }, false, 'DOCKERFILE');
 
 const configureGuard = new AsyncFunction('migrationConfiguration', 'process', 'console', inlineNode(configure.run));
 const validEnvironment = {
