@@ -469,6 +469,12 @@ jobs:
           npm ci --prefix backend
       - name: Drain bounded resumable Japanese mirror ranges
         shell: bash
+        env:
+          STACKR_R2_ENDPOINT: ${{ vars.STACKR_R2_ENDPOINT }}
+          STACKR_R2_BUCKET: ${{ vars.STACKR_R2_BUCKET }}
+          STACKR_R2_PUBLIC_BASE_URL: ${{ vars.STACKR_R2_PUBLIC_BASE_URL }}
+          STACKR_R2_ACCESS_KEY_ID: ${{ secrets.STACKR_R2_ACCESS_KEY_ID }}
+          STACKR_R2_SECRET_ACCESS_KEY: ${{ secrets.STACKR_R2_SECRET_ACCESS_KEY }}
         run: |
           set -euo pipefail
           mkdir -p reports/catalogue/japanese
@@ -648,6 +654,12 @@ jobs:
         id: completion
         continue-on-error: true
         shell: bash
+        env:
+          STACKR_R2_ENDPOINT: ${{ vars.STACKR_R2_ENDPOINT }}
+          STACKR_R2_BUCKET: ${{ vars.STACKR_R2_BUCKET }}
+          STACKR_R2_PUBLIC_BASE_URL: ${{ vars.STACKR_R2_PUBLIC_BASE_URL }}
+          STACKR_R2_ACCESS_KEY_ID: ${{ secrets.STACKR_R2_ACCESS_KEY_ID }}
+          STACKR_R2_SECRET_ACCESS_KEY: ${{ secrets.STACKR_R2_SECRET_ACCESS_KEY }}
         run: |
           set -euo pipefail
           mkdir -p reports/catalogue/japanese
