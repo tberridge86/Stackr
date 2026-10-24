@@ -1,7 +1,8 @@
 import { stackrApiClient, type StackrApiLanguageCode, type StackrCard, type StackrCardVariant, type StackrSet } from './stackrApiV1';
 import { ownerTeachingCardChoice, ownerTeachingCollectorMatches, ownerTeachingSearchChoices, type OwnerTeachingCardChoice } from './ownerTeachingCore';
 
-const MAX_OWNER_TEACHING_PAGES = 10;
+// Preserve the previous 1,000-row lookup budget with smaller HTTP pages.
+const MAX_OWNER_TEACHING_PAGES = 20;
 
 
 export async function listOwnerTeachingSets(language: StackrApiLanguageCode, query = ''): Promise<StackrSet[]> {
@@ -9,7 +10,7 @@ export async function listOwnerTeachingSets(language: StackrApiLanguageCode, que
   const cursors = new Set<string>();
   let cursor: string | null = null;
   for (let page = 0; page < MAX_OWNER_TEACHING_PAGES; page += 1) {
-    const response = await stackrApiClient.sets({ language, limit: 100, cursor });
+    const response = await stackrApiClient.sets({ language, limit: 50, cursor });
     for (const set of response.data.sets) sets.set(set.setId, set);
     const next = response.meta.pagination?.nextCursor ?? null;
     if (!next || cursors.has(next)) break;
@@ -37,7 +38,7 @@ export async function searchOwnerTeachingCards(input: {
     const cursors = new Set<string>();
     let cursor: string | null = null;
     for (let page = 0; page < MAX_OWNER_TEACHING_PAGES; page += 1) {
-      const response = await stackrApiClient.setCards(input.setId, { language: input.language, limit: 100, cursor });
+      const response = await stackrApiClient.setCards(input.setId, { language: input.language, limit: 50, cursor });
       for (const card of response.data.cards) cards.set(card.cardId, card);
       const next = response.meta.pagination?.nextCursor ?? null;
       if (!next || cursors.has(next)) break;

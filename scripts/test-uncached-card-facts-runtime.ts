@@ -4,7 +4,8 @@ import { runInNewContext } from 'node:vm';
 import React from 'react';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import ts from 'typescript';
-import { readOptionalCatalogueEnrichment } from '../lib/optionalCatalogueEnrichment';
+import * as inspection from '../lib/cardInspection';
+import { readOptionalCatalogueEnrichment, throwIfOptionalCatalogueReadAborted } from '../lib/optionalCatalogueEnrichment';
 import { copyPreferredSetArtworkReassignments } from '../lib/stackrPreferredSetArtwork';
 import {
   defineTcgdexRuntimeImageOverlay, enforceTcgdexRuntimeImagePolicy,
@@ -78,8 +79,9 @@ function pipeline(reference: string, missing = false, invalidVariant = false, de
       return missing ? null : ({ card: canonical, variantId: invalidVariant ? 'absent' : selected });
     },
     embeddedCardImageAssets: () => [], primaryCardImageAsset: () => null,
-    stackrCardToLegacyCard: map, readOptionalCatalogueEnrichment,
-    fetchStackrAssetsForPrinting: () => manifest.promise,
+    stackrCardToLegacyCard: map, readOptionalCatalogueEnrichment, throwIfOptionalCatalogueReadAborted,
+    // Preserve the real helper's bounded optional-read contract at this fixture boundary.
+    fetchStackrAssetsForPrinting: (_client: unknown, _cardId: unknown, signal?: AbortSignal) => readOptionalCatalogueEnrichment(() => manifest.promise, signal),
   });
   const attachLiveTcgdexCardReferences = extract<any>('lib/pokemonTcg.ts', 'attachLiveTcgdexCardReferences', {
     isTcgdexControlledCardReferenceSourceEnabled, defineTcgdexRuntimeImageOverlay,
@@ -128,7 +130,7 @@ async function screenContract() {
     return flow.fetchCardById(id, options);
   };
   const native = {
-    View: 'View', ScrollView: 'ScrollView', TouchableOpacity: 'TouchableOpacity', Image: 'Image',
+    View: 'View', ScrollView: 'ScrollView', TouchableOpacity: 'TouchableOpacity', Pressable: 'Pressable', Image: 'Image',
     StyleSheet: { create: <T,>(value: T) => value }, Alert: { alert() {} },
     useWindowDimensions: () => ({ width: 390, height: 844 }),
   };
@@ -142,6 +144,7 @@ async function screenContract() {
     '../../components/Text': { Text: 'Text' }, '../../components/StackrCardIdentity': { StackrCardIdentity: 'Identity' },
     '../../components/StackrControls': { StackrButton: 'Button' },
     '../../components/CardInspectionProvider': { useCardInspection: () => ({ inspectCard() {} }) },
+    '../../lib/cardInspection': inspection,
     '../../components/InteractiveCardInspectPressable': { CardDetailInspectSurface: 'InspectSurface' },
     '../../components/theme-context': { useTheme: () => ({ theme }) },
     '../../components/EditionAwareCardImage': 'EditionImage', '../../components/CardInspectionStage': { CardInspectionStage: 'Stage' },
@@ -201,6 +204,14 @@ async function screenContract() {
     assert.equal(Object.getOwnPropertyDescriptor(observedCard, 'images')?.enumerable, false,
       'Final publication preserves the memory-only provider image overlay');
     assert.equal(JSON.stringify(observedCard).includes(lowReference), false);
+    assert.equal(renderer.root.findAllByType('Pricing' as any).length, 0, 'Initial details do not mount extra price evidence reads');
+    assert.equal(renderer.root.findAllByType('MarketInsights' as any).length, 0);
+    const evidenceToggle = () => renderer.root.findAllByType('Button' as any).find(node => /price evidence/i.test(node.props.accessibilityLabel ?? ''))!;
+    await act(async () => evidenceToggle().props.onPress());
+    assert.equal(renderer.root.findAllByType('Pricing' as any).length, 1, 'Evidence control reveals working pricing panel');
+    assert.equal(renderer.root.findAllByType('MarketInsights' as any).length, 1);
+    await act(async () => evidenceToggle().props.onPress());
+    assert.equal(renderer.root.findAllByType('Pricing' as any).length, 0);
     assert.equal(priceReads.length, 1, 'An image-only update cannot reset pricing and read it again');
     assert.match(screenText(), /£12\.00/, 'An image-only update retains the useful quote');
 

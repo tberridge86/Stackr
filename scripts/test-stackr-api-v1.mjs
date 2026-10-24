@@ -607,6 +607,7 @@ async function assertSiblingVariantIsNotAnImageFallback() {
             in(column, value) { filters.push(['in', column, value]); return this; },
             order() { return this; },
             range() { return this; },
+            abortSignal(signal) { assert.ok(signal instanceof AbortSignal); return this; },
             then(resolve, reject) {
               const printingQuery = filters.some(([name, column]) => name === 'in' && column === 'printing_id');
               const data = printingQuery
@@ -698,6 +699,7 @@ async function assertHydrationPaginatesAssetRows() {
             in(column, value) { filters.push(['in', column, value]); return this; },
             order() { return this; },
             range(from, to) { selectedRange = [from, to]; return this; },
+            abortSignal(signal) { assert.ok(signal instanceof AbortSignal); return this; },
             then(resolve, reject) {
               const variantQuery = filters.some(([name, column]) => name === 'in' && column === 'variant_id');
               reads.push({ variantQuery, selectedRange });
@@ -794,6 +796,10 @@ async function assertOptInIdentityRpcHydration() {
     })),
   };
   const rpcCalls = [];
+  const rpcResult = (data, error = null) => ({
+    abortSignal(signal) { assert.ok(signal instanceof AbortSignal); return this; },
+    then(resolve, reject) { return Promise.resolve({ data, error }).then(resolve, reject); },
+  });
   const assetSupabase = {
     schema(schema) {
       assert.equal(schema, 'api');
@@ -808,7 +814,7 @@ async function assertOptInIdentityRpcHydration() {
             : firstChunk
               ? [readyRow]
               : [];
-          return Promise.resolve({ data, error: null });
+          return rpcResult(data);
         },
       };
     },
@@ -837,23 +843,27 @@ async function assertOptInIdentityRpcHydration() {
     schema() {
       return {
         from() { assert.fail('a failed RPC must not fall back to slow manifest queries'); },
-        rpc() { return Promise.resolve({ data: null, error: new Error('candidate RPC unavailable') }); },
+        rpc() { return rpcResult(null, new Error('candidate RPC unavailable')); },
       };
     },
   };
   const failedCatalogue = createCatalogueV1Service({ supabase, assetSupabase: failedAssetSupabase, assetIdentityRpc: true });
-  await assert.rejects(() => failedCatalogue.setCards(setId, { limit: 120 }), /candidate RPC unavailable/);
+  const failedArtwork = await failedCatalogue.setCards(setId, { limit: 120 });
+  assert.ok(failedArtwork.cards.length > 0, 'optional RPC failure must preserve the facts page');
+  assert.ok(failedArtwork.cards.every((card) => card.variants.every((variant) => variant.image === null)));
 
   const malformedCursorAssetSupabase = {
     schema() {
       return {
         from() { assert.fail('malformed RPC cursors must fail before fallback reads'); },
-        rpc() { return Promise.resolve({ data: [...pageOne.slice(0, -1), { ...pageOne.at(-1), asset_row_id: 'not-a-uuid' }], error: null }); },
+        rpc() { return rpcResult([...pageOne.slice(0, -1), { ...pageOne.at(-1), asset_row_id: 'not-a-uuid' }]); },
       };
     },
   };
   const malformedCursorCatalogue = createCatalogueV1Service({ supabase, assetSupabase: malformedCursorAssetSupabase, assetIdentityRpc: true });
-  await assert.rejects(() => malformedCursorCatalogue.setCards(setId, { limit: 120 }), /invalid keyset cursor/);
+  const malformedArtwork = await malformedCursorCatalogue.setCards(setId, { limit: 120 });
+  assert.ok(malformedArtwork.cards.length > 0, 'malformed optional artwork must preserve the facts page');
+  assert.ok(malformedArtwork.cards.every((card) => card.variants.every((variant) => variant.image === null)));
 
   let nonAdvancingCall = 0;
   const nonAdvancingAssetSupabase = {
@@ -862,13 +872,15 @@ async function assertOptInIdentityRpcHydration() {
         from() { assert.fail('a non-advancing RPC cursor must fail before fallback reads'); },
         rpc() {
           nonAdvancingCall += 1;
-          return Promise.resolve({ data: pageOne, error: null });
+          return rpcResult(pageOne);
         },
       };
     },
   };
   const nonAdvancingCatalogue = createCatalogueV1Service({ supabase, assetSupabase: nonAdvancingAssetSupabase, assetIdentityRpc: true });
-  await assert.rejects(() => nonAdvancingCatalogue.setCards(setId, { limit: 120 }), /non-advancing keyset cursor/);
+  const nonAdvancingArtwork = await nonAdvancingCatalogue.setCards(setId, { limit: 120 });
+  assert.ok(nonAdvancingArtwork.cards.length > 0, 'repeated optional cursor must preserve the facts page');
+  assert.ok(nonAdvancingArtwork.cards.every((card) => card.variants.every((variant) => variant.image === null)));
   assert.equal(nonAdvancingCall, 2);
 }
 
@@ -1362,7 +1374,7 @@ const artworkPresentation = await readFile(new URL('../lib/cardArtworkPresentati
 assert.match(artworkPresentation, /!asset\.variantId && asset\.cardId === card\.cardId/);
 assert.match(domainAdapter, /const needsManifestFallback = cards\.some/);
 assert.match(domainAdapter,
-  /client\.assetManifest\(\s*\{\s*printingIds:\s*\w+,\s*assetType:\s*'card_image',\s*cursor,\s*limit:\s*250,?\s*\},\s*\{ signal \}\)/,
+  /client\.assetManifest\(\s*\{\s*printingIds:\s*\w+,\s*assetType:\s*'card_image',\s*cursor,\s*limit:\s*50,?\s*\},\s*\{ signal: pageSignal \}\)/,
   'optional search manifests retain exact printing batches, pagination and bounded child cancellation');
 assert.doesNotMatch(domainAdapter, /const hasEmbeddedImages = cards\.some/);
 for (const method of [
@@ -1394,11 +1406,11 @@ assert.match(client, /assetManifest\([\s\S]+cursor\?: string \| null/);
 assert.doesNotMatch(client, /SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SECRET_KEY|RECOGNITION_SERVICE_SECRET|BACKEND_ORIGIN_KEY/);
 assert.match(
   domainAdapter,
-  /client\.assetManifest\(\s*\{ assetType, cursor, limit: 500 \},\s*\{ signal: pageSignal \},\s*\)/,
+  /client\.assetManifest\(\s*\{ assetType, cursor, limit: 50 \},\s*\{ signal: pageSignal \},\s*\)/,
 );
 assert.match(
   domainAdapter,
-  /client\.assetManifest\(\s*\{ setId, cursor, limit: 500 \},\s*\{ signal: pageSignal \},\s*\)/,
+  /client\.assetManifest\(\s*\{ setId, cursor, limit: 50 \},\s*\{ signal: pageSignal \},\s*\)/,
 );
 assert.match(domainAdapter, /client\.sets\([\s\S]*?\{ signal: pageSignal \},\s*\)/);
 assert.match(
@@ -1413,6 +1425,6 @@ assert.match(
 );
 assert.doesNotMatch(domainAdapter, /client\.assetManifest\(\{[^}]*limit:\s*1000/);
 assert.match(openApi, /\/assets\/manifest:[\s\S]+#\/components\/parameters\/Cursor[\s\S]+#\/components\/parameters\/Limit/);
-assert.match(openApi, /Limit:\s+[\s\S]*?name: limit[\s\S]*?maximum: 500/);
+assert.match(openApi, /Limit:\s+[\s\S]*?name: limit[\s\S]*?maximum: 50\b/);
 
 console.log('Stackr API v1 integration tests passed.');

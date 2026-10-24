@@ -44,7 +44,7 @@ function approvedImage(card: StackrCard, image: StackrCard['variants'][number]['
 
 // Stream a modest page instead of waiting for a whole set's image manifest.
 // Pagination counts variants, and incoming pages may split one printing.
-export const PREFERRED_ARTWORK_PAGE_SIZE = 96;
+export const PREFERRED_ARTWORK_PAGE_SIZE = 50;
 
 /** Copy images only: a refresh must never change the facts/edition already on screen. */
 export function mergePreferredSetArtwork(facts: StackrCard[], incoming: StackrCard[]): StackrCard[] {

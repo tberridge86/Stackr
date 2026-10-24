@@ -1374,7 +1374,52 @@ export interface components {
                 };
             };
         };
-        MarketMoversResponse: components["schemas"]["Envelope"];
+        MarketMoversResponse: components["schemas"]["Envelope"] & {
+            data?: {
+                movers: {
+                    /** Format: uuid */
+                    variantId?: string | null;
+                    /** @enum {string} */
+                    productType?: "raw_card" | "graded_card" | "sealed_product";
+                    currency?: string;
+                    currentEstimate?: number | null;
+                    previousEstimate?: number | null;
+                    percentageChange?: number | null;
+                    /** Format: date-time */
+                    calculatedAt?: string | null;
+                    /** Format: date-time */
+                    previousCalculatedAt?: string | null;
+                    /** @constant */
+                    comparisonDays?: 1;
+                    /** @enum {string} */
+                    priceBasis?: "catalogue_market_guide";
+                    /** @enum {string} */
+                    sourceProvider?: "tcgcsv";
+                }[];
+                coverage?: components["schemas"]["DailyMarketCoverage"];
+            };
+        };
+        /** @description Counts describe the complete currently published physical catalogue before ranking and output limits. Only supported TCGCSV English/Japanese finishes participate. Unquoted, stale, unsupported and insufficient-history identities are never represented as zero or copied from a collection. History becomes available after approved guide writes retain two actual consecutive source dates; this contract does not establish deployment or worker activation. */
+        DailyMarketCoverage: {
+            /** @enum {string} */
+            scope: "catalogue_daily";
+            /** @enum {string} */
+            source: "tcgcsv";
+            /** @enum {string} */
+            state: "ready" | "insufficient_history";
+            publishedVariants: number;
+            supportedVariants: number;
+            quotedVariants: number;
+            comparableVariants: number;
+            unsupportedVariants: number;
+            unquotedVariants: number;
+            staleVariants: number;
+            insufficientHistoryVariants: number;
+            /** Format: date-time */
+            latestSourceAt: string | null;
+            /** Format: date-time */
+            asOf: string;
+        };
         MarketOpportunitiesResponse: components["schemas"]["Envelope"];
         SearchResponse: components["schemas"]["Envelope"] & {
             data?: {
@@ -1444,6 +1489,7 @@ export interface components {
         IdempotencyKey: string;
         /** @description Opaque cursor returned by the previous page. */
         Cursor: string;
+        /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
         Limit: number;
         Language: components["schemas"]["LanguageCode"];
         SetId: string;
@@ -1549,6 +1595,7 @@ export interface operations {
                 since?: number;
                 /** @description Opaque cursor returned by the previous page. */
                 cursor?: components["parameters"]["Cursor"];
+                /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
                 limit?: components["parameters"]["Limit"];
             };
             header?: {
@@ -1607,6 +1654,7 @@ export interface operations {
                 game?: string;
                 /** @description Opaque cursor returned by the previous page. */
                 cursor?: components["parameters"]["Cursor"];
+                /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
                 limit?: components["parameters"]["Limit"];
             };
             header?: never;
@@ -1636,6 +1684,7 @@ export interface operations {
                 region?: string;
                 /** @description Opaque cursor returned by the previous page. */
                 cursor?: components["parameters"]["Cursor"];
+                /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
                 limit?: components["parameters"]["Limit"];
             };
             header?: never;
@@ -1684,6 +1733,7 @@ export interface operations {
                 language?: components["parameters"]["Language"];
                 /** @description Opaque cursor returned by the previous page. */
                 cursor?: components["parameters"]["Cursor"];
+                /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
                 limit?: components["parameters"]["Limit"];
                 /** @description Set false to return card identities before optional artwork enrichment. Omitted or true retains artwork delivery. */
                 includeAssets?: boolean;
@@ -1711,6 +1761,7 @@ export interface operations {
         parameters: {
             query?: {
                 offset?: number;
+                /** @description Current clients request at most 50 species per HTTP page and continue by offset. Server clamping of legacy larger positive limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication. */
                 limit?: number;
             };
             header?: {
@@ -1912,6 +1963,7 @@ export interface operations {
                 soldSince?: string;
                 /** @description Opaque cursor returned by the previous page. */
                 cursor?: components["parameters"]["Cursor"];
+                /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
                 limit?: components["parameters"]["Limit"];
             };
             header?: never;
@@ -2169,7 +2221,12 @@ export interface operations {
             query?: {
                 productType?: components["parameters"]["ProductType"];
                 currency?: components["parameters"]["Currency"];
+                /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
                 limit?: components["parameters"]["Limit"];
+                /** @description Opt in to globally ranked daily catalogue guides. Omission retains the legacy stored-estimate sample. Daily mode requires raw_card and GBP; absent history is explicit and never falls back to the legacy sample. */
+                scope?: "catalogue_daily";
+                /** @description Global ranking within each direction in catalogue_daily scope. Daily comparisons use actual consecutive UTC provider dates and current guides no older than 48 hours. Guide evidence is condition-unspecified and is not a completed sale. */
+                sortBy?: "money" | "percent";
             };
             header?: never;
             path?: never;
@@ -2196,6 +2253,7 @@ export interface operations {
             query?: {
                 productType?: components["parameters"]["ProductType"];
                 currency?: components["parameters"]["Currency"];
+                /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
                 limit?: components["parameters"]["Limit"];
             };
             header?: never;
@@ -2225,6 +2283,7 @@ export interface operations {
                 q: string;
                 language?: components["parameters"]["Language"];
                 setId?: string;
+                /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
                 limit?: components["parameters"]["Limit"];
             };
             header?: never;
@@ -2256,6 +2315,7 @@ export interface operations {
                 variantId?: string;
                 /** @description Opaque cursor returned by the previous page. */
                 cursor?: components["parameters"]["Cursor"];
+                /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
                 limit?: components["parameters"]["Limit"];
             };
             header?: never;
@@ -2466,6 +2526,7 @@ export interface operations {
             query?: {
                 status?: "pending_review" | "reviewed" | "ignored" | "all";
                 category?: string;
+                /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
                 limit?: components["parameters"]["Limit"];
             };
             header: {
@@ -2583,6 +2644,7 @@ export interface operations {
             query?: {
                 sourceId?: string;
                 conflictType?: string;
+                /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
                 limit?: components["parameters"]["Limit"];
             };
             header: {
@@ -2608,6 +2670,7 @@ export interface operations {
         parameters: {
             query?: {
                 language?: components["schemas"]["LanguageCode"];
+                /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
                 limit?: components["parameters"]["Limit"];
             };
             header: {

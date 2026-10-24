@@ -27,10 +27,10 @@ function binderHarness(options = {}) {
   const supabase = { auth: { onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }) }, from(table) {
     let offset = 0;
     const query = { select: () => query, eq: () => query, order: () => query,
-      range: (from, to) => { assert.equal(to - from, 999); offset = from; return query; },
+      range: (from, to) => { assert.equal(to - from, 49); offset = from; return query; },
       abortSignal: (signal) => { assert(signal instanceof AbortSignal); return query; },
       maybeSingle: async () => { calls.record++; return options.gateRecord ? record.promise : { data: selectedBinder, error: null }; },
-      then: (resolve, reject) => { assert.equal(table, 'binder_cards'); calls.ownership++; return ownership.promise.then((result) => result.error ? result : { ...result, data: (result.data ?? []).slice(offset, offset + 1000) }).then(resolve, reject); },
+      then: (resolve, reject) => { assert.equal(table, 'binder_cards'); calls.ownership++; return ownership.promise.then((result) => result.error ? result : { ...result, data: (result.data ?? []).slice(offset, offset + 50) }).then(resolve, reject); },
     };
     return query;
   } };

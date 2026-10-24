@@ -2,54 +2,66 @@ import { fetchBinders, type BinderCardRecord, type BinderRecord } from './binder
 import { fetchOwnedCardRows } from './ownership';
 import { supabase } from './supabase';
 import { withPersonalDataReadTimeout } from './personalDataRead';
+import { readUiCollectionChunks } from './uiCollectionPages';
 
 /** Read saved collection records before requesting optional catalogue artwork or prices. */
 export async function fetchHomeSavedCollection(userId: string, options: {
   onBindersReady?: (binders: BinderRecord[]) => void;
+  isCurrent?: () => boolean;
+  signal?: AbortSignal;
 } = {}) {
-  const [binders, ownedRows] = await Promise.all([
-    withPersonalDataReadTimeout(() => fetchBinders({ enrich: false })).then((savedBinders) => {
-      if (savedBinders.some((binder) => binder.user_id !== userId)) {
+  return withPersonalDataReadTimeout(async (signal) => {
+    let accountChanged = false, finished = false;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user?.id !== userId) accountChanged = true;
+    });
+    const unsubscribe = () => subscription.unsubscribe();
+    signal.addEventListener('abort', unsubscribe, { once: true });
+    const assertCurrent = async () => {
+      if (signal.aborted || finished || accountChanged || options.isCurrent?.() === false) {
+        throw Object.assign(new Error('The collection request was cancelled.'), { name: 'AbortError' });
+      }
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      if (session?.user?.id !== userId) throw new Error('The collection account changed. Please retry.');
+      if (signal.aborted || finished || accountChanged || options.isCurrent?.() === false) {
+        throw Object.assign(new Error('The collection request was cancelled.'), { name: 'AbortError' });
+      }
+    };
+    try {
+      await assertCurrent();
+      const [binders, ownedRows] = await Promise.all([
+        fetchBinders({ enrich: false }).then(async (savedBinders) => {
+          await assertCurrent();
+          if (savedBinders.some((binder) => binder.user_id !== userId)) {
+            throw new Error('The collection account changed. Please retry.');
+          }
+          options.onBindersReady?.(savedBinders);
+          return savedBinders;
+        }),
+        fetchOwnedCardRows({ isCurrent: () => !signal.aborted && !finished && !accountChanged && options.isCurrent?.() !== false }),
+      ]);
+      await assertCurrent();
+      if (binders.some((binder) => binder.user_id !== userId) || ownedRows.some((row) => row.user_id !== userId)) {
         throw new Error('The collection account changed. Please retry.');
       }
-      options.onBindersReady?.(savedBinders);
-      return savedBinders;
-    }),
-    withPersonalDataReadTimeout(() => fetchOwnedCardRows()),
-  ]);
-  if (binders.some((binder) => binder.user_id !== userId)
-    || ownedRows.some((row) => row.user_id && row.user_id !== userId)) {
-    throw new Error('The collection account changed. Please retry.');
-  }
-  const rows: BinderCardRecord[] = [];
-  const knownBinders = new Set(binders.map((binder) => binder.id));
-  // Bound URL size and paginate; Supabase's default row limit is not a collection limit.
-  for (let offset = 0; offset < binders.length; offset += 100) {
-    const ids = binders.slice(offset, offset + 100).map((binder) => binder.id);
-    for (let from = 0; ; from += 1000) {
-      const { data, error } = await withPersonalDataReadTimeout((signal) => supabase.from('binder_cards').select('*')
-        .in('binder_id', ids)
-        .order('id', { ascending: true }).range(from, from + 999).abortSignal(signal));
-      if (error) throw error;
-      const page = (data ?? []) as BinderCardRecord[];
-      if (page.some((row) => !knownBinders.has(row.binder_id))) {
-        throw new Error('Collection cards did not match the requested binders.');
-      }
-      rows.push(...page);
-      if (page.length < 1000) break;
+      const rows = await readUiCollectionChunks<BinderCardRecord>(
+        binders.map((binder) => binder.id),
+        (ids) => supabase.from('binder_cards').select('*').in('binder_id', ids),
+        (row, ids) => ids.includes(row.binder_id), { signal, assertCurrent },
+      );
+      await assertCurrent();
+      // A complete read also proves empty binders. Errors never produce a partial map.
+      const byBinder = new Map<string, BinderCardRecord[]>(binders.map((binder) => [binder.id, []]));
+      for (const row of rows) byBinder.get(row.binder_id)!.push(row);
+      return { binders, ownedRows, cardsByBinder: byBinder };
+    } finally {
+      finished = true;
+      signal.removeEventListener('abort', unsubscribe);
+      unsubscribe();
     }
-  }
-  // A successful paginated read also proves an empty binder; absence from a
-  // partial map must never be mistaken for a complete zero-card download.
-  const byBinder = new Map<string, BinderCardRecord[]>(binders.map((binder) => [binder.id, []]));
-  for (const row of rows) {
-    const cards = byBinder.get(row.binder_id) ?? [];
-    cards.push(row);
-    byBinder.set(row.binder_id, cards);
-  }
-  return { binders, ownedRows, cardsByBinder: byBinder };
+  }, { signal: options.signal });
 }
-
 /** Saved rows cannot prove the full size or completion of an official set. */
 export function savedBinderCatalogueTotal(binder: BinderRecord, cards: BinderCardRecord[]) {
   if (binder.type !== 'official') return cards.length;

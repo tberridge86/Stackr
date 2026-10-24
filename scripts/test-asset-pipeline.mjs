@@ -1,10 +1,9 @@
 import assert from 'node:assert/strict';
+import { Buffer } from 'node:buffer';
 import { createRequire } from 'node:module';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-const requireBackend = createRequire(new URL('../backend/package.json', import.meta.url));
-const sharp = requireBackend('sharp');
 import {
   buildApprovedCatalogueAsset,
   createPrivateScanSignedUpload,
@@ -20,6 +19,9 @@ import {
   supabaseCacheControlSeconds,
 } from '../backend/lib/objectStorage.js';
 import { validateImageBuffer } from '../backend/lib/assetValidation.js';
+
+const requireBackend = createRequire(new URL('../backend/package.json', import.meta.url));
+const sharp = requireBackend('sharp');
 
 const migration = readFileSync('supabase/migrations/20260728060617_stackr_asset_repository_delivery_pipeline.sql', 'utf8');
 const assetRoute = readFileSync('backend/routes/assets.js', 'utf8');
@@ -91,6 +93,11 @@ async function assertApprovedAssetProcessing() {
     assert.match(asset.content_sha256, /^[a-f0-9]{64}$/);
     assert.match(asset.perceptual_hash, /^[a-f0-9]{16}$/);
     assert.ok(asset.storage_key.includes(asset.content_sha256), 'original path must include content hash');
+    assert.deepEqual(
+      readFileSync(join(rootDir, STACKR_ASSET_BUCKETS.publicCatalogue, asset.storage_key)),
+      tinyPng,
+      'catalogue originals must preserve exact source bytes',
+    );
     assert.deepEqual(asset.derivative_list.map((item) => item.role).sort(), [
       'card-grid',
       'detail-page',
@@ -113,6 +120,11 @@ async function assertApprovedAssetProcessing() {
     });
     assert.equal(transparentAsset.mime_type, 'image/webp', 'alpha-bearing WebP originals must not be flattened to JPEG');
     assert.match(transparentAsset.storage_key, /\/original\.webp$/, 'alpha-bearing WebP originals must retain a WebP storage key');
+    assert.deepEqual(
+      readFileSync(join(rootDir, STACKR_ASSET_BUCKETS.publicCatalogue, transparentAsset.storage_key)),
+      transparentWebp,
+      'transparent originals must retain exact source bytes',
+    );
     assert.equal((await sharp(readFileSync(join(rootDir, STACKR_ASSET_BUCKETS.publicCatalogue, transparentAsset.storage_key))).metadata()).hasAlpha, true, 'stored original must retain alpha');
 
     const duplicate = await buildApprovedCatalogueAsset({

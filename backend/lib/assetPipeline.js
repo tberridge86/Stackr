@@ -1,5 +1,6 @@
 import sharp from 'sharp';
 import { createHash, randomUUID } from 'node:crypto';
+import { Buffer } from 'node:buffer';
 import {
   contentExtension,
   IMAGE_MIME_TYPES,
@@ -7,7 +8,11 @@ import {
   sha256,
   validateImageBuffer,
 } from './assetValidation.js';
-import { IMMUTABLE_CACHE_CONTROL } from './objectStorage.js';
+import {
+  assertCatalogueWriteStorage,
+  createCatalogueObjectStorageAdapter,
+  IMMUTABLE_CACHE_CONTROL,
+} from './objectStorage.js';
 
 export const STACKR_ASSET_BUCKETS = {
   publicCatalogue: 'stackr-catalogue-public',
@@ -56,38 +61,6 @@ export async function perceptualHashForImage(buffer) {
   return imageHash(buffer);
 }
 
-async function normalisedImage(buffer, mimeType) {
-  // JPEG cannot retain alpha. Set marks are often supplied as transparent WebP
-  // files, so keeping the source WebP avoids baking its transparent canvas into
-  // an opaque black rectangle during ingestion.
-  const sourceMetadata = await sharp(buffer).metadata();
-  const format = mimeType === 'image/png'
-    ? 'png'
-    : sourceMetadata.hasAlpha
-      ? 'webp'
-      : 'jpeg';
-  const image = sharp(buffer).rotate();
-  if (format === 'png') {
-    return {
-      mimeType: 'image/png',
-      extension: 'png',
-      buffer: await image.png({ compressionLevel: 9 }).toBuffer(),
-    };
-  }
-  if (format === 'webp') {
-    return {
-      mimeType: 'image/webp',
-      extension: 'webp',
-      buffer: await image.webp({ quality: 92 }).toBuffer(),
-    };
-  }
-  return {
-    mimeType: 'image/jpeg',
-    extension: 'jpg',
-    buffer: await image.jpeg({ quality: 92, mozjpeg: true }).toBuffer(),
-  };
-}
-
 async function derivativeImage(buffer, spec) {
   const output = await sharp(buffer)
     .rotate()
@@ -113,7 +86,15 @@ async function putContentAddressedObject(storage, input) {
   } catch (error) {
     const message = String(error?.message ?? error);
     const status = Number(error?.status ?? error?.statusCode ?? 0);
-    if (status === 409 || /already exists|duplicate/i.test(message)) {
+    if (status === 409 || status === 412 || /already exists|duplicate/i.test(message)) {
+      if (typeof storage.getObject !== 'function') {
+        throw new Error('Cannot verify an existing immutable object without a bounded storage reader.');
+      }
+      const expected = Buffer.from(input.body);
+      const existing = await storage.getObject(input.bucket, input.key, { maxBytes: expected.length });
+      if (!Buffer.from(existing).equals(expected)) {
+        throw new Error('Existing immutable object contains different bytes.');
+      }
       return {
         provider: storage.id,
         bucket: input.bucket,
@@ -132,6 +113,7 @@ export async function buildCatalogueAssetRepairFromStoredOriginal(input) {
   if (input.permissionStatus !== 'approved' || input.rightsStatus !== 'approved') {
     throw new Error('Stored catalogue asset repair requires approved permission and rights status.');
   }
+  const storage = assertCatalogueWriteStorage(input.storage ?? createCatalogueObjectStorageAdapter());
 
   const validation = validateImageBuffer(input.buffer, {
     declaredMimeType: input.mimeType,
@@ -152,7 +134,7 @@ export async function buildCatalogueAssetRepairFromStoredOriginal(input) {
 
   const metadata = await sharp(input.buffer).metadata();
   const displayMetadata = metadata.autoOrient ?? metadata;
-  const bucket = input.bucket ?? STACKR_ASSET_BUCKETS.publicCatalogue;
+  const bucket = input.bucket ?? storage.catalogueBucket ?? STACKR_ASSET_BUCKETS.publicCatalogue;
   const derivativeList = [];
   for (const spec of CATALOGUE_DERIVATIVE_SPECS) {
     if (!requestedRoles.has(spec.role)) continue;
@@ -164,7 +146,7 @@ export async function buildCatalogueAssetRepairFromStoredOriginal(input) {
       role: spec.role,
       extension: derivative.extension,
     });
-    await putContentAddressedObject(input.storage, {
+    await putContentAddressedObject(storage, {
       bucket,
       key,
       body: derivative.buffer,
@@ -174,7 +156,7 @@ export async function buildCatalogueAssetRepairFromStoredOriginal(input) {
     });
     derivativeList.push({
       role: spec.role,
-      storageProvider: input.storage.id,
+      storageProvider: storage.id,
       storageBucket: bucket,
       storageKey: key,
       mimeType: derivative.mimeType,
@@ -203,28 +185,31 @@ export async function buildCatalogueAssetRepairFromStoredOriginal(input) {
 export async function buildApprovedCatalogueAsset(input) {
   assertAssetType(input.assetType);
 
-  if (input.permissionStatus !== 'approved') {
+  const permissionStatus = input.permissionStatus ?? 'unknown';
+  const rightsStatus = input.rightsStatus ?? permissionStatus;
+  if (permissionStatus !== 'approved' || rightsStatus !== 'approved') {
+    const blocked = ['denied', 'restricted'].includes(permissionStatus)
+      || ['denied', 'restricted'].includes(rightsStatus);
     return {
       asset_id: input.assetId ?? randomUUID(),
       asset_type: input.assetType,
-      storage_provider: input.permissionStatus === 'denied' || input.permissionStatus === 'restricted'
-        ? 'unavailable'
-        : 'external_reference',
+      storage_provider: blocked ? 'unavailable' : 'external_reference',
       asset_visibility: 'public_catalogue',
       url: input.sourceUrl ?? null,
       original_source_url: input.sourceUrl ?? null,
       original_source_identifier: input.sourceIdentifier ?? null,
       source_attribution: input.sourceAttribution ?? null,
-      permission_status: input.permissionStatus ?? 'unknown',
-      rights_status: input.permissionStatus ?? 'unknown',
+      permission_status: permissionStatus,
+      rights_status: rightsStatus,
       publicly_servable: false,
-      externally_referenced: input.permissionStatus !== 'denied' && input.permissionStatus !== 'restricted',
-      unavailable_reason: input.permissionStatus === 'approved' ? null : 'mirroring_not_authorised',
+      externally_referenced: !blocked,
+      unavailable_reason: 'mirroring_not_authorised',
       derivative_list: [],
       retention_status: 'unavailable',
       last_verified_at: new Date().toISOString(),
     };
   }
+  const storage = assertCatalogueWriteStorage(input.storage ?? createCatalogueObjectStorageAdapter());
 
   const validation = validateImageBuffer(input.buffer, {
     declaredMimeType: input.mimeType,
@@ -237,11 +222,18 @@ export async function buildApprovedCatalogueAsset(input) {
     throw error;
   }
 
-  const original = await normalisedImage(input.buffer, validation.mimeType);
+  // The immutable original is evidence as well as the full-detail rendition.
+  // Retain its exact bytes; rotation, resizing and compression belong only to derivatives.
+  const original = {
+    buffer: input.buffer,
+    mimeType: validation.mimeType,
+    extension: contentExtension(validation.mimeType),
+  };
   const originalSha = sha256(original.buffer);
-  const originalMetadata = await sharp(original.buffer).metadata();
+  const sourceMetadata = await sharp(original.buffer).metadata();
+  const originalMetadata = sourceMetadata.autoOrient ?? sourceMetadata;
   const perceptualHash = await imageHash(original.buffer);
-  const bucket = input.bucket ?? STACKR_ASSET_BUCKETS.publicCatalogue;
+  const bucket = input.bucket ?? storage.catalogueBucket ?? STACKR_ASSET_BUCKETS.publicCatalogue;
   const originalKey = contentHashStorageKey({
     visibility: 'public',
     assetType: input.assetType,
@@ -250,7 +242,7 @@ export async function buildApprovedCatalogueAsset(input) {
     extension: original.extension,
   });
 
-  await putContentAddressedObject(input.storage, {
+  await putContentAddressedObject(storage, {
     bucket,
     key: originalKey,
     body: original.buffer,
@@ -269,7 +261,7 @@ export async function buildApprovedCatalogueAsset(input) {
       role: spec.role,
       extension: derivative.extension,
     });
-    await putContentAddressedObject(input.storage, {
+    await putContentAddressedObject(storage, {
       bucket,
       key,
       body: derivative.buffer,
@@ -279,7 +271,7 @@ export async function buildApprovedCatalogueAsset(input) {
     });
     derivativeList.push({
       role: spec.role,
-      storageProvider: input.storage.id,
+      storageProvider: storage.id,
       storageBucket: bucket,
       storageKey: key,
       mimeType: derivative.mimeType,
@@ -295,7 +287,7 @@ export async function buildApprovedCatalogueAsset(input) {
     asset_id: input.assetId ?? randomUUID(),
     asset_type: input.assetType,
     asset_visibility: 'public_catalogue',
-    storage_provider: input.storage.id,
+    storage_provider: storage.id,
     storage_bucket: bucket,
     storage_key: originalKey,
     storage_path: originalKey,

@@ -16,6 +16,7 @@ import { Buffer } from 'buffer';
 import { sha256Text } from './cataloguePriceHash';
 
 const STACKR_CANONICAL_UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+export const STACKR_UI_PAGE_SIZE = 50;
 
 export type StackrApiLanguageCode = 'en' | 'ja' | 'zh-cn' | 'zh-tw' | 'zh-Hans' | 'zh-Hant' | 'ko';
 
@@ -421,7 +422,26 @@ export type StackrPriceRefreshStatus = {
   quoteScope: 'exact_variant' | 'printing_level';
 };
 
+export type StackrDailyMarketCoverage = {
+  scope: 'catalogue_daily';
+  state: 'ready' | 'insufficient_history';
+  source: 'tcgcsv';
+  publishedVariants: number;
+  supportedVariants: number;
+  quotedVariants: number;
+  comparableVariants: number;
+  unsupportedVariants: number;
+  unquotedVariants: number;
+  staleVariants: number;
+  insufficientHistoryVariants: number;
+  latestSourceAt: string | null;
+  asOf: string;
+};
+
 export type StackrMarketMover = {
+  comparisonDays?: number;
+  priceBasis?: 'catalogue_market_guide';
+  sourceProvider?: 'tcgcsv';
   variantId: string | null;
   sealedProductVariantId: string | null;
   productType: StackrMarketProductType;
@@ -675,7 +695,60 @@ export type StackrApiV1ClientOptions = {
 };
 
 const STACKR_DEVICE_ID_STORAGE_KEY = 'stackr.gateway.device-id.v1';
+const OPTIONAL_DEVICE_ID_WAIT_MS = 25;
+const REQUIRED_DEVICE_ID_WAIT_MS = 10_000;
 let defaultDeviceIdPromise: Promise<string> | null = null;
+
+function throwIfRequestAborted(signal?: AbortSignal | null) {
+  if (!signal?.aborted) return;
+  const error = new Error('Stackr API request was cancelled.');
+  error.name = 'AbortError';
+  throw error;
+}
+
+function isPublicCatalogueRequest(path: string, method: string) {
+  if (method.toUpperCase() === 'POST') return path === '/cards/display-artwork-references';
+  if (method.toUpperCase() !== 'GET') return false;
+  if (['/health', '/ready', '/catalog/manifest', '/catalog/delta', '/languages', '/series', '/sets',
+    '/pokemon', '/search', '/assets/manifest'].includes(path)) return true;
+  const parts = path.split('/');
+  if (parts[1] === 'pokemon') return parts.length === 4 && Boolean(parts[2]) && parts[3] === 'cards';
+  if (!STACKR_CANONICAL_UUID_PATTERN.test(parts[2] ?? '')) return false;
+  return parts[1] === 'sets' && (parts.length === 3 || parts.length === 4 && parts[3] === 'cards')
+    || parts[1] === 'cards' && (parts.length === 3 || parts.length === 4 && parts[3] === 'variants');
+}
+
+/** Public catalogue routes accept no device ID; private requests must retain it. */
+function awaitRequestDeviceId(
+  read: () => Promise<string | null>,
+  optional: boolean,
+  signal?: AbortSignal | null,
+): Promise<string | null> {
+  throwIfRequestAborted(signal);
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const finish = (work: () => void) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      signal?.removeEventListener('abort', abort);
+      work();
+    };
+    const abort = () => finish(() => {
+      try { throwIfRequestAborted(signal); } catch (error) { reject(error); }
+    });
+    const timer = setTimeout(() => finish(() => {
+      if (optional) resolve(null);
+      else reject(new Error('Device storage is taking longer than expected. Please try again.'));
+    }), optional ? OPTIONAL_DEVICE_ID_WAIT_MS : REQUIRED_DEVICE_ID_WAIT_MS);
+    signal?.addEventListener('abort', abort, { once: true });
+    // Observe late storage failures after an optional timeout or cancellation.
+    Promise.resolve().then(read).then(
+      (deviceId) => finish(() => resolve(deviceId)),
+      (error: unknown) => finish(() => optional ? resolve(null) : reject(error)),
+    );
+  });
+}
 
 function randomRequestKey(prefix: string) {
   const randomUuid = globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function'
@@ -709,9 +782,15 @@ async function defaultDeviceId() {
 
 function buildUrl(baseUrl: string, path: string, query?: Record<string, string | number | boolean | null | undefined>) {
   const url = new URL(`${baseUrl.replace(/\/$/, '')}${path}`);
+  if (['/catalog/delta', '/series', '/sets', '/pokemon', '/assets/manifest', '/search', '/market/movers', '/market/opportunities'].includes(path)
+    || /^\/(?:sets|pokemon)\/[^/]+\/cards$/.test(path) || /^\/cards\/[^/]+\/price-history$/.test(path)) {
+    url.searchParams.set('limit', String(STACKR_UI_PAGE_SIZE));
+  }
   for (const [key, value] of Object.entries(query ?? {})) {
     if (value === null || value === undefined || value === '') continue;
-    url.searchParams.set(key, String(value));
+    const bounded = key === 'limit' && typeof value === 'number' && Number.isSafeInteger(value) && value > 0
+      ? Math.min(value, STACKR_UI_PAGE_SIZE) : value;
+    url.searchParams.set(key, String(bounded));
   }
   return url.toString();
 }
@@ -779,6 +858,7 @@ export class StackrApiClient {
     query?: Record<string, string | number | boolean | null | undefined>,
     init: RequestInit = {},
   ): Promise<StackrApiEnvelope<T>> {
+    throwIfRequestAborted(init.signal);
     const remoteUrl = buildUrl(this.baseUrl, path, query);
     const requestMethod = init.method ?? 'GET';
     const initialHeaders: Record<string, string> = {
@@ -795,7 +875,12 @@ export class StackrApiClient {
     // The same-origin development proxy forwards anonymous public reads only.
     // Avoid touching device storage for a value that is deliberately not sent
     // upstream; browser storage can be unavailable in embedded previews.
-    const deviceId = await resolveStackrApiDeviceIdForRequest(remoteUrl, requestUrl, this.getDeviceId);
+    const deviceId = await awaitRequestDeviceId(
+      () => resolveStackrApiDeviceIdForRequest(remoteUrl, requestUrl, this.getDeviceId),
+      !hasAuthorization && isPublicCatalogueRequest(path, requestMethod),
+      init.signal,
+    );
+    throwIfRequestAborted(init.signal);
     let requestHeaders: Record<string, string> = {
       ...initialHeaders,
       ...(deviceId ? { 'X-Stackr-Device-Id': deviceId } : {}),
@@ -809,6 +894,7 @@ export class StackrApiClient {
       ...init,
       headers: requestHeaders,
     });
+    throwIfRequestAborted(init.signal);
 
     // Some native HTTP caches expose the revalidation response without its
     // cached body. A 304 is not an empty catalogue: repeat this read once with
@@ -816,6 +902,7 @@ export class StackrApiClient {
     const explicitlyConditional = Object.entries(initialHeaders).some(([name, value]) =>
       ['if-none-match', 'if-modified-since'].includes(name.toLowerCase()) && Boolean(value));
     if (response.status === 304 && requestMethod.toUpperCase() === 'GET' && !explicitlyConditional) {
+      throwIfRequestAborted(init.signal);
       const unconditionalHeaders = Object.fromEntries(Object.entries(requestHeaders)
         .filter(([name]) => !['if-none-match', 'if-modified-since'].includes(name.toLowerCase())));
       response = await this.fetchImpl(requestUrl, {
@@ -844,7 +931,9 @@ export class StackrApiClient {
       throw new StackrApiV1Error(response.status, await parseError(response));
     }
 
-    return await response.json() as StackrApiEnvelope<T>;
+    const envelope = await response.json() as StackrApiEnvelope<T>;
+    throwIfRequestAborted(init.signal);
+    return envelope;
   }
 
   private post<T>(path: string, body: Record<string, unknown>, init: RequestInit = {}) {
@@ -989,8 +1078,8 @@ export class StackrApiClient {
     return this.request<{ cards: StackrCard[] }>(`/pokemon/${encodeURIComponent(species)}/cards`, query);
   }
 
-  pokemonIndex(query: { offset?: number; limit?: number } = {}) {
-    return this.request<{
+  async pokemonIndex(query: { offset?: number; limit?: number } = {}) {
+    type Index = {
       count: number;
       indexVersion: string;
       // Existing builds retain the route URL and provider name. Species identity
@@ -1004,11 +1093,45 @@ export class StackrApiClient {
         routeId: number;
         routeName: string;
       }[];
-    }>('/pokemon', query);
+    };
+    const offset = query.offset ?? 0;
+    const requested = query.limit ?? 151;
+    if (!Number.isSafeInteger(offset) || offset < 0 || !Number.isSafeInteger(requested) || requested < 1) {
+      throw new Error('pokemonIndex requires a non-negative offset and a positive integer limit.');
+    }
+    // Retain the existing 151/1199 caller windows without sending oversized HTTP
+    // pages or silently truncating the National Dex after the transport cap.
+    const limit = Math.min(requested, 1350);
+    const results: Index['results'] = [];
+    const species = new Set<number>();
+    let first: StackrApiEnvelope<Index> | undefined;
+    do {
+      const pageLimit = Math.min(STACKR_UI_PAGE_SIZE, limit - results.length);
+      const page = await this.request<Index>('/pokemon', { offset: offset + results.length, limit: pageLimit });
+      first ??= page;
+      if (!Number.isSafeInteger(page.data.count) || page.data.count < 0 || page.data.count > 1350
+        || typeof page.data.indexVersion !== 'string' || !page.data.indexVersion || page.data.count !== first.data.count
+        || page.data.indexVersion !== first.data.indexVersion || !Array.isArray(page.data.results)
+        || page.data.results.length > pageLimit) throw new Error('Inconsistent Pokemon index page.');
+      if (page.data.results.length !== Math.min(pageLimit, Math.max(0, page.data.count - offset - results.length))) {
+        throw new Error('Incomplete Pokemon index page.');
+      }
+      for (const entry of page.data.results) {
+        if (!Number.isSafeInteger(entry.speciesId) || entry.speciesId < 1 || species.has(entry.speciesId)) {
+          throw new Error('Invalid or duplicate Pokemon index species.');
+        }
+        species.add(entry.speciesId);
+        results.push(entry);
+      }
+      const expected = Math.min(limit, Math.max(0, first.data.count - offset));
+      if (results.length >= expected) return { ...first, data: { ...first.data, results } };
+      if (!page.data.results.length) throw new Error('Incomplete Pokemon index page.');
+    } while (results.length < limit);
+    throw new Error('Pokemon index exceeded its bounded retrieval budget.');
   }
 
-  card(cardId: string) {
-    return this.request<{ card: StackrCard }>(`/cards/${encodeURIComponent(cardId)}`);
+  card(cardId: string, init: RequestInit = {}) {
+    return this.request<{ card: StackrCard }>(`/cards/${encodeURIComponent(cardId)}`, undefined, init);
   }
 
   cardVariants(cardId: string) {
@@ -1096,16 +1219,17 @@ export class StackrApiClient {
     );
   }
 
-  marketMovers(query: { productType?: StackrMarketProductType; currency?: string; limit?: number } = {}) {
-    return this.authenticatedGet<{ movers: StackrMarketMover[] }>('/market/movers', query);
+  marketMovers(query: { productType?: StackrMarketProductType; currency?: string; limit?: number;
+    scope?: 'catalogue_daily'; sortBy?: 'money' | 'percent' } = {}) {
+    return this.authenticatedGet<{ movers: StackrMarketMover[]; coverage?: StackrDailyMarketCoverage }>('/market/movers', query);
   }
 
   marketOpportunities(query: { productType?: StackrMarketProductType; currency?: string; limit?: number } = {}) {
     return this.authenticatedGet<{ opportunities: StackrMarketOpportunity[] }>('/market/opportunities', query);
   }
 
-  search(query: { q: string; language?: StackrApiLanguageCode; setId?: string; limit?: number }) {
-    return this.request<{ query: string; normalizedQuery: string; results: StackrSearchResult[] }>('/search', query);
+  search(query: { q: string; language?: StackrApiLanguageCode; setId?: string; limit?: number }, init: RequestInit = {}) {
+    return this.request<{ query: string; normalizedQuery: string; results: StackrSearchResult[] }>('/search', query, init);
   }
 
   marketPriceSnapshots(query: { variantIds?: string[]; printingIds?: string[]; legacyIds?: string[];

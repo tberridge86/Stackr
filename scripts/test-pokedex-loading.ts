@@ -264,9 +264,10 @@ async function run() {
   assert.equal(owned.size, 3003, 'All physical, binder and manual ownership pages are retained');
   for (const [table, firstId] of [['binders', 10_000], ['user_card_variants', 20_000], ['user_pokedex_cards', 40_000]] as const) {
     assert.deepEqual(pages.filter(([name]) => name === table).map(([, after, size]) => [after, size]),
-      [[null, 500], [ownershipId(firstId + 499), 500], [ownershipId(firstId + 999), 500], [ownershipId(firstId + 1000), 500]], `${table} uses bounded stable cursors and a definitive empty page`);
+      [[null, 50], ...Array.from({ length: 20 }, (_, page) => [ownershipId(firstId + page * 50 + 49), 50]), [ownershipId(firstId + 1000), 50]], `${table} uses bounded stable cursors and a definitive empty page`);
   }
-  assert.equal(pages.filter(([name]) => name === 'binder_cards').length, 22, 'Each bounded binder chunk finishes with its own definitive empty page');
+  assert.equal(pages.filter(([name]) => name === 'binder_cards').length, 32, 'Each bounded binder chunk finishes with its own definitive empty page');
+  assert.ok(pages.every(([, , size]) => size === 50), 'Every ownership source requests at most 50 rows');
   assert.ok(filters.some(([key, value]) => key === 'owned' && value === true));
   failOwnershipPage = true;
   await assert.rejects(exports.fetchOwnedPokedexCards(), /Ownership page unavailable/,
@@ -326,6 +327,7 @@ async function run() {
   assert.equal(assetRequests.length, 1, 'Visible cards from distinct sets use one printing batch, not per-set manifests');
   assert.deepEqual(Array.from(assetRequests[0].printingIds ?? []), visible.map((card) => card.canonical_card.cardId), 'The manifest request carries exactly the visible canonical printing IDs');
   assert.equal(assetRequests[0].assetType, 'card_image');
+  // This harness replaces the shared client; its HTTP page clamp is tested separately.
   assert.equal(assetRequests[0].limit, 100);
   assert.ok(visibleHydrated.every((card: any) => card.image_small), 'Variant-only assets hydrate their matching canonical facts');
   const pageOne = Array.from({ length: 24 }, (_, index) => ({ cardId: `page-one-${index}`, defaultVariantId: `variant-one-${index}` }));

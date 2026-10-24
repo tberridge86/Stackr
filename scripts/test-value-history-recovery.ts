@@ -15,7 +15,8 @@ const deferred = <T,>() => { let resolve!: (value: T) => void; let reject!: (err
 const at = (hoursAgo: number) => new Date(Date.now() - hoursAgo * 3_600_000).toISOString();
 const marketRow = () => ({ variantId: 'exact-ja-variant', sealedProductVariantId: null, productType: 'raw_card' as const,
   currency: 'GBP', currentEstimate: 1234.567, previousEstimate: 1200.123, percentageChange: 2.87,
-  confidence: { score: 0.6, label: 'medium' }, calculatedAt: at(1), previousCalculatedAt: at(2) });
+  confidence: { score: 0.6, label: 'medium' }, calculatedAt: at(1), previousCalculatedAt: at(25), comparisonDays: 1, priceBasis: 'catalogue_market_guide' as const, sourceProvider: 'tcgcsv' as const });
+const marketCoverage = () => ({ scope: 'catalogue_daily', state: 'ready', source: 'tcgcsv', publishedVariants: 3, supportedVariants: 2, quotedVariants: 1, comparableVariants: 1, unsupportedVariants: 1, unquotedVariants: 1, staleVariants: 0, insufficientHistoryVariants: 0, latestSourceAt: at(1), asOf: at(0) });
 const prepared = (total = 12) => ({ state: 'ready' as const, requestedCollectionRevision: 'holdings-1', refreshRequest: null,
   summary: { total, currency: 'GBP' as const, totalUnits: 3, distinctPriceIdentities: 2, pricedUnits: 2, freshUnits: 1,
     olderPriceUnits: 1, unpricedUnits: 1, pending: 0, retrying: 0, unsupported: 1, unresolved: 0, noProviderQuote: 0,
@@ -38,7 +39,7 @@ function harness(options: {
 } = {}) {
   let auth: any = { user: { id: 'A' }, loading: false, error: null, cachedReadSession: { epoch: 1 } };
   const slots: any[] = []; let cursor = 0; let tree: any; let effects: (() => void)[] = [];
-  const calls = { market: 0, collection: 0, binders: 0, prices: 0, previews: 0 };
+  const calls = { market: 0, collection: 0, binders: 0, prices: 0, previews: 0, marketQueries: [] as any[] };
   const same = (a: any[], b: any[]) => a?.length === b?.length && a.every((v, index) => v === b[index]);
   const memo = (factory: () => any, deps: any[]) => { const i = cursor++;
     if (!slots[i] || !same(slots[i].deps, deps)) slots[i] = { value: factory(), deps }; return slots[i].value; };
@@ -55,7 +56,7 @@ function harness(options: {
   const theme = { colors: new Proxy({}, { get: () => '#123456' }) };
   const refreshAuth = async () => {};
   const api = {
-    marketMovers: async () => { calls.market++; return { data: { movers: await (options.market?.() ?? Promise.resolve([marketRow()])) } }; },
+    marketMovers: async (query: any) => { calls.market++; calls.marketQueries.push(query); return { data: { coverage: marketCoverage(), movers: await (options.market?.() ?? Promise.resolve([marketRow()])) } }; },
     collectionValuation: async () => { calls.collection++; return { data: await (options.collection?.() ?? Promise.resolve(prepared())) }; },
     requestMarketPriceRefresh: () => { throw new Error('Forbidden provider refresh in stored history read.'); },
     requestCollectionValuationRefresh: () => { throw new Error('Forbidden explicit valuation refresh.'); },
@@ -113,7 +114,7 @@ function harness(options: {
 async function run() {
   const pictures = deferred<Map<string, any>>(); const first = harness({ previews: () => pictures.promise });
   first.render(); await first.flush();
-  assert.equal(nodes(first.section('General market')).filter((node) => node.type === 'Spinner').length, 0,
+  assert.equal(nodes(first.section('Daily movers')).filter((node) => node.type === 'Spinner').length, 0,
     'Stored market facts settle before optional card previews.');
   assert.equal(first.calls.market, 1, 'A market load makes one bounded paired-estimate request.');
   assert.equal(first.calls.previews, 1, 'The pending optional preview path was exercised.');
@@ -123,7 +124,23 @@ async function run() {
   assert.deepEqual(Array.from(chart.props.points, (point: any) => point.value), [10, 12], 'The actual screen displays genuine scoped stored history.');
   assert.doesNotMatch(text(first.renderChild(chart)), /invalid date/i, 'The chart tracker renders full observation timestamps as real dates.');
   assert.match(first.text(), /1 unpriced cards excluded/); assert.match(first.text(), /1 cards use older stored estimates/);
+  assert.equal(first.calls.marketQueries[0].scope, 'catalogue_daily');
+  assert.equal(first.calls.marketQueries[0].sortBy, 'money');
+  assert.equal(first.calls.marketQueries[0].limit, 50, 'Actual screen requests a bounded global ranked result.');
   first.unmount(); pictures.resolve(new Map()); await tick();
+
+  let rankingReads = 0;
+  const rankSwitch = harness({ market: () => ++rankingReads === 1 ? Promise.resolve([marketRow()]) : Promise.reject(new Error('ranking unavailable')) });
+  rankSwitch.render(); await rankSwitch.flush();
+  assert.ok(rankSwitch.nodes().some(node => node.type?.name === 'MoverColumn'));
+  rankSwitch.nodes().find(node => node.type?.name === 'MoverDisplayToggle').props.onChange('percent');
+  rankSwitch.render();
+  assert.equal(rankSwitch.nodes().some(node => node.type?.name === 'MoverColumn'), false, 'Old cash-ranked results are masked immediately after percentage selection.');
+  await rankSwitch.flush();
+  assert.equal(rankSwitch.calls.marketQueries.at(-1).sortBy, 'percent');
+  assert.equal(rankSwitch.nodes().some(node => node.type?.name === 'MoverColumn'), false, 'A failed percentage read cannot mislabel a cash-ranked subset.');
+  assert.match(rankSwitch.text(), /Daily catalogue prices are not available/);
+  rankSwitch.unmount();
 
   const hanging = deferred<any>(); let reads = 0;
   const recover = harness({ collection: () => ++reads === 1 ? hanging.promise : Promise.resolve(prepared(22)) });
@@ -139,7 +156,7 @@ async function run() {
   const independent = harness({ market: () => marketHang.promise }); independent.render(); await independent.flush();
   assert.match(independent.text(), /£12\.00/, 'A hung market read cannot hold the private collection result.');
   await new Promise((resolve) => setTimeout(resolve, 40)); independent.render();
-  assert.equal(nodes(independent.section('General market')).some((node) => node.type === 'Spinner'), false);
+  assert.equal(nodes(independent.section('Daily movers')).some((node) => node.type === 'Spinner'), false);
   assert.ok(independent.retry('Retry stored market value history')); independent.unmount();
   marketHang.resolve([]); await tick();
 

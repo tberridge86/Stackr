@@ -351,6 +351,13 @@ jobs:
           --limit=500
 
       - name: Mirror approved provider images into Stackr storage
+        env:
+          STACKR_CATALOGUE_STORAGE_PROVIDER: r2
+          STACKR_R2_ENDPOINT: ${{ vars.STACKR_R2_ENDPOINT }}
+          STACKR_R2_BUCKET: ${{ vars.STACKR_R2_BUCKET }}
+          STACKR_R2_PUBLIC_BASE_URL: ${{ vars.STACKR_R2_PUBLIC_BASE_URL }}
+          STACKR_R2_ACCESS_KEY_ID: ${{ secrets.STACKR_R2_ACCESS_KEY_ID }}
+          STACKR_R2_SECRET_ACCESS_KEY: ${{ secrets.STACKR_R2_SECRET_ACCESS_KEY }}
         if: inputs.operation == 'mirror'
         shell: bash
         run: |

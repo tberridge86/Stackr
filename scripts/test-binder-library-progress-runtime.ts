@@ -7,6 +7,7 @@ import { QueryClient } from '@tanstack/react-query';
 import ts from 'typescript';
 import * as pricingState from '../lib/collectionPricingState';
 import * as collectionRequestHash from '../lib/collectionRequestHash';
+import * as uiCollectionPages from '../lib/uiCollectionPages';
 
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 const deferred = <T,>() => {
@@ -27,7 +28,7 @@ const screenCode = compile(`${source.slice(0, renderStart)}
 const deadlineCode = compile(readFileSync('lib/personalDataRead.ts', 'utf8'));
 const enrichmentCode = compile(readFileSync('lib/optionalCatalogueEnrichment.ts', 'utf8'));
 
-async function harness(options: { delayedMetadata?: boolean; delayedCards?: boolean; masterSet?: boolean } = {}) {
+async function harness(options: { delayedMetadata?: boolean; delayedCards?: boolean; masterSet?: boolean; serverCap?: number } = {}) {
   let owner = 'owner-a', now = 0, nextTimer = 0, quantity = 3;
   const timers = new Map<number, { due: number; action: () => void }>();
   const setTimer = (action: () => void, delay = 0) => {
@@ -49,22 +50,28 @@ async function harness(options: { delayedMetadata?: boolean; delayedCards?: bool
   const savedCards = (account: string) => Array.from({ length: 1702 }, (_, index) => ({
     id: `card-${index}`, binder_id: index === 0 ? `${account}-official` : `${account}-custom`,
     card_id: `base1-${index + 1}`, set_id: 'base1', language: 'en', owned: true, owned_quantity: index === 0 ? quantity : 1,
+    // Legacy snapshots must not replace the exact price service or a failed read.
+    ebay_price: 999, tcg_price: 888, cardmarket_price: 777,
   }));
   let brandingReads = 0, priceReads = 0;
   const pages: [number, number][] = [];
-  const supabase = { auth: { getSession: async () => ({ data: { session: { user: { id: owner } } }, error: null }) },
+  const authListeners = new Set<(...args: any[]) => void>();
+  const supabase = { auth: { onAuthStateChange: (listener: (...args: any[]) => void) => {
+    authListeners.add(listener); return { data: { subscription: { unsubscribe: () => authListeners.delete(listener) } } };
+  }, getSession: async () => ({ data: { session: { user: { id: owner } } }, error: null }) },
     from(table: string) {
-      let ids: string[] = [], from = 0, to = 999;
+      let ids: string[] = [], from = 0, to = 49, filterField = '';
+      const serverCap = options.serverCap ?? 50;
       const requestOwner = owner;
       const query: any = {
         select: () => query, eq: () => query, order: () => query, abortSignal: () => query,
-        in: (_field: string, values: string[]) => { ids = values; return query; },
-        range: (start: number, end: number) => { from = start; to = end; return query; },
+        in: (field: string, values: string[]) => { assert.ok(values.length <= 50); filterField = field; ids = values; return query; },
+        range: (start: number, end: number) => { assert.equal(end - start, 49); from = start; to = end; return query; },
         then(resolve: (value: unknown) => unknown) {
           if (table === 'binder_cards') {
             pages.push([from, to]);
             return (options.delayedCards ? pendingCards.promise : Promise.resolve()).then(() => ({
-              data: savedCards(requestOwner).filter(row => ids.includes(row.binder_id)).slice(from, to + 1), error: null,
+              data: savedCards(requestOwner).filter(row => ids.includes(row.binder_id)).slice(from, Math.min(to + 1, from + serverCap)), error: null,
             })).then(resolve);
           }
           if (options.delayedMetadata) return never.then(resolve);
@@ -74,10 +81,11 @@ async function harness(options: { delayedMetadata?: boolean; delayedCards?: bool
               raw_payload: { tcgplayer: { prices: { normal: {}, holofoil: {} } } },
             }))
             : options.masterSet && table === 'user_card_variants' ? [
-              { card_id: 'base1-1', set_id: 'base1', variant: 'normal' },
-              { card_id: 'base1-1', set_id: 'base1', variant: 'holofoil' },
+              { id: 'variant-normal', user_id: requestOwner, card_id: 'base1-1', set_id: 'base1', variant: 'normal' },
+              { id: 'variant-holofoil', user_id: requestOwner, card_id: 'base1-1', set_id: 'base1', variant: 'holofoil' },
             ] : [];
-          return Promise.resolve({ data, error: null }).then(resolve);
+          const page = data.filter((row: any) => ids.includes(row[filterField])).slice(from, Math.min(to + 1, from + serverCap));
+          return Promise.resolve({ data: page, error: null }).then(resolve);
         },
       };
       return query;
@@ -86,7 +94,7 @@ async function harness(options: { delayedMetadata?: boolean; delayedCards?: bool
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
   const generic: any = new Proxy(function () {}, { get: () => generic, apply: () => generic });
   const deps: Record<string, any> = {
-    ...services, react: React,
+    ...services, react: React, '../../lib/uiCollectionPages': uiCollectionPages,
     'expo-router': { router: {}, useLocalSearchParams: () => ({}), useFocusEffect: (effect: () => void) => React.useEffect(effect, [effect]) },
     'react-native': { useWindowDimensions: () => ({ width: 390 }) },
     '@react-native-async-storage/async-storage': { getItem: async () => options.masterSet ? 'true' : null },
@@ -121,7 +129,7 @@ async function harness(options: { delayedMetadata?: boolean; delayedCards?: bool
     console: { log() {} }, require: (name: string) => deps[name] ?? generic });
   const Screen = module.exports.default;
   let root!: ReactTestRenderer;
-  const settle = async () => { await act(async () => { for (let i = 0; i < 80; i++) await Promise.resolve(); }); };
+  const settle = async () => { await act(async () => { for (let i = 0; i < 2500; i++) await Promise.resolve(); }); };
   await act(async () => { root = create(React.createElement(Screen)); }); await settle();
   return { pages, settle, prices: pendingPrices, cards: pendingCards,
     state: () => root.root.findByType('BinderState' as any).props,
@@ -135,7 +143,7 @@ async function harness(options: { delayedMetadata?: boolean; delayedCards?: bool
     async advance(ms: number) { now += ms; await act(async () => {
       for (const [id, timer] of [...timers]) if (timer.due <= now) { timers.delete(id); timer.action(); }
     }); await settle(); },
-    async account(id: string) { owner = id; await act(async () => root.update(React.createElement(Screen))); await settle(); },
+    async account(id: string) { owner = id; for (const listener of authListeners) listener('SIGNED_IN', { user: { id } }); await act(async () => root.update(React.createElement(Screen))); await settle(); },
     async close() { await act(async () => root.unmount()); queryClient.clear(); },
   };
 }
@@ -149,7 +157,9 @@ async function main() {
   assert.equal(h.state().counts['owner-a-official'].owned, 1);
   assert.equal(h.state().counts['owner-a-official'].total, 102);
   assert.equal(h.state().counts['owner-a-custom'].owned, 1701, 'counts include the second database page');
-  assert.deepEqual(h.pages, [[0, 999], [1000, 1999]]);
+  assert.equal(h.pages.length, 36, '1702 rows require 35 nonempty 50-row pages plus an empty terminal page');
+  assert.ok(h.pages.every(([from, to]) => to - from === 49));
+  assert.deepEqual(h.pages.at(-1), [1702, 1751]);
   assert.equal(h.state().values['owner-a-official'], undefined, 'a pending price never becomes zero');
   await h.advance(10_000);
   assert.match(h.state().libraryError, /try again/i, 'a hung price lookup ends with a visible retry');
@@ -165,6 +175,13 @@ async function main() {
   assert.equal(h.priceReads, beforePriceRefresh + 1, 'new ownership facts cannot reuse a newer price aggregate based on the old units');
   assert.equal(h.state().values['owner-a-official'].total, 28, 'the value follows the refreshed quantity while the previous aggregate cache is still fresh');
   await h.close();
+
+  const smallerCap = await harness({ serverCap: 17 });
+  assert.equal(smallerCap.state().counts['owner-a-custom'].owned, 1701);
+  assert.equal(smallerCap.pages.length, 102, 'A 17-row API cap preserves all 1702 saved cards');
+  smallerCap.prices.resolve(); await smallerCap.settle();
+  assert.equal(smallerCap.state().values['owner-a-official'].total, 21);
+  await smallerCap.close();
 
   const metadata = await harness({ delayedMetadata: true });
   assert.equal(metadata.state().counts['owner-a-official'], undefined);

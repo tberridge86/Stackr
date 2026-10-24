@@ -199,6 +199,13 @@ jobs:
           ' reports/catalogue/tcgdex-zh-cn-import.json >/dev/null
 
       - name: Mirror every queued TCGdex Chinese image
+        env:
+          STACKR_CATALOGUE_STORAGE_PROVIDER: r2
+          STACKR_R2_ENDPOINT: ${{ vars.STACKR_R2_ENDPOINT }}
+          STACKR_R2_BUCKET: ${{ vars.STACKR_R2_BUCKET }}
+          STACKR_R2_PUBLIC_BASE_URL: ${{ vars.STACKR_R2_PUBLIC_BASE_URL }}
+          STACKR_R2_ACCESS_KEY_ID: ${{ secrets.STACKR_R2_ACCESS_KEY_ID }}
+          STACKR_R2_SECRET_ACCESS_KEY: ${{ secrets.STACKR_R2_SECRET_ACCESS_KEY }}
         shell: bash
         run: |
           set -euo pipefail

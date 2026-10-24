@@ -1,0 +1,107 @@
+name: Deploy Stackr Pages
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type DEPLOY STACKR PAGES
+        required: true
+        type: string
+      expected_main_sha:
+        description: Exact reviewed and CI-passed main commit
+        required: true
+        type: string
+      expected_project_id:
+        description: Verified Cloudflare Pages project ID for stackr-web
+        required: true
+        type: string
+      previous_deployment_id:
+        description: Current production deployment ID, or NONE for its first deployment
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: stackr-pages-production
+  cancel-in-progress: false
+
+env:
+  EXPECTED_MAIN_SHA: ${{ inputs.expected_main_sha }}
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'DEPLOY STACKR PAGES'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - name: Require the exact main commit and successful Platform CI
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$EXPECTED_MAIN_SHA" = "$GITHUB_SHA"
+          test "$(git rev-parse HEAD)" = "$EXPECTED_MAIN_SHA"
+          [[ "$EXPECTED_MAIN_SHA" =~ ^[0-9a-f]{40}$ ]]
+          gh run list --repo "$GITHUB_REPOSITORY" --workflow 'Stackr Platform CI' --commit "$GITHUB_SHA" --limit 20 --json conclusion,status |
+            node -e 'let input=""; process.stdin.on("data", c => input += c); process.stdin.on("end", () => { if (!JSON.parse(input).some(r => r.status === "completed" && r.conclusion === "success")) throw new Error("exact_main_platform_ci_not_successful"); });'
+      - name: Install locked build dependencies and test release guards
+        run: |
+          npm ci --no-audit --no-fund
+          node scripts/test-pages-release.mjs
+      - name: Build production web output without server credentials
+        run: node scripts/deploy/pages-release.mjs build
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pages-export-${{ github.sha }}
+          path: |
+            dist/
+            reports/pages/build.json
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    # Required reviewers on production must be configured in repository settings.
+    # The export and manifest are ready to inspect before this job is approved.
+    environment: production
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: gateway/package-lock.json
+      - name: Download this run's validated export
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name "pages-export-$GITHUB_SHA" --dir .
+      - name: Install the locked Wrangler version
+        run: npm ci --prefix gateway --no-audit --no-fund
+      - name: Publish the exact export and verify public delivery
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: b4c23b0834cc5a113aa4a98fd904b281
+          EXPECTED_PAGES_PROJECT_ID: ${{ inputs.expected_project_id }}
+          PREVIOUS_PAGES_DEPLOYMENT_ID: ${{ inputs.previous_deployment_id }}
+        run: node scripts/deploy/pages-release.mjs publish
+      - name: Scan sanitized release receipts
+        id: receipt_scan
+        if: always()
+        run: node scripts/deploy/secret-scan.mjs --directory=reports/pages
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always() && steps.receipt_scan.outcome == 'success'
+        with:
+          name: pages-release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports/pages/
+          if-no-files-found: error
+          retention-days: 30

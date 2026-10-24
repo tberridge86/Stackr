@@ -5,6 +5,7 @@ import { findNativeCardNamesForEnglishQuery, normalizeCardEnglishSearchText } fr
 import { matchesPokedexSpeciesName, normalisePokedexName, pokedexCardLookupName } from './pokedexCards.js';
 import { correctedCatalogueCardId, correctedCatalogueSetId, CORRECTION_LANGUAGE } from './catalogueLanguageCorrections.js';
 import { catalogueReadSignal, observeCatalogueManifestRead, readCatalogueQuery } from './traceContext.js';
+import { createPublicAssetStorageReaders } from './objectStorage.js';
 
 export const STACKR_API_V1 = '1';
 export const DEFAULT_CATALOGUE_CACHE_CONTROL = 'public, max-age=60, stale-while-revalidate=300';
@@ -85,13 +86,21 @@ export function clean(value) {
   return trimmed.length ? trimmed : null;
 }
 
-export function parseLimit(value, fallback = 50, max = 250) {
-  if (value == null || value === '') return fallback;
+export const MAX_UI_PAGE_SIZE = 50;
+
+export function parseLimit(value, fallback = 50, max = 250,
+  enforceUiPageLimit = process.env.STACKR_ENFORCE_UI_PAGE_LIMIT === 'true') {
+  // Activate the origin boundary only after clients with bounded pagination are
+  // published. Older native Pokédex builds use fixed 151/1199 offset windows.
+  const ceiling = enforceUiPageLimit ? Math.min(max, MAX_UI_PAGE_SIZE) : max;
+  if (value == null || value === '') return Math.min(fallback, ceiling);
   const numeric = Number(value);
-  if (!Number.isInteger(numeric) || numeric < 1) {
+  if (!Number.isSafeInteger(numeric) || numeric < 1) {
     throw new ApiError(400, 'invalid_limit', 'limit must be a positive integer.');
   }
-  return Math.min(numeric, max);
+  // Older callers can request larger pages; the returned cursor still describes
+  // the actual bounded page, so following it never skips the remaining rows.
+  return Math.min(numeric, ceiling);
 }
 
 export function parseCursor(value) {
@@ -260,7 +269,14 @@ function publicStorageUrl(storageProvider, storageBucket, storageKey, options = 
   const key = encodeStorageKey(storageKey);
   if (!provider || !PUBLIC_PATH_STORAGE_PROVIDERS.has(provider) || !key) return null;
   const assetBaseUrl = safeHttpUrl(options.assetBaseUrl)?.replace(/\/$/, '');
-  if (assetBaseUrl) return `${assetBaseUrl}/${key}`;
+  // Retain explicitly configured legacy proxies for their existing providers.
+  // Configured R2 readers always keep provider and bucket routing authoritative.
+  if (assetBaseUrl && !options.r2Configured && !options.assetStorageReaders?.s3_compatible) return `${assetBaseUrl}/${key}`;
+  if (provider === 's3_compatible') {
+    const reader = options.assetStorageReaders?.[provider];
+    return reader?.id === provider && typeof reader.publicUrl === 'function'
+      ? safeHttpUrl(reader.publicUrl(clean(storageBucket), safeStorageKey(storageKey))) : null;
+  }
   if (provider !== 'supabase_storage') return null;
   const supabaseUrl = safeHttpUrl(options.supabaseUrl)?.replace(/\/$/, '');
   const bucket = clean(storageBucket);
@@ -605,6 +621,10 @@ async function enrichCardImagesOptionally(assetSupabase, cards, options) {
     clearTimeout(timeout);
     controller.abort();
   }
+}
+
+function shouldIncludeCardAssets(value) {
+  return !['false', '0', 'no', 'off'].includes(String(value ?? '').trim().toLowerCase());
 }
 
 export function toLanguage(row) {
@@ -1087,10 +1107,18 @@ async function searchNameWithSetCode(supabase, parsed, limit, language) {
 async function searchFuzzyName(supabase, parsed, limit, language) {
   if (!parsed.normalized || parsed.normalized.length < 2) return [];
   const safe = parsed.normalized.replace(/[%_]/g, ' ').replace(/\s+/g, '%');
+  const tokens = parsed.normalized.split(/\s+/).filter(Boolean);
+  const reorderNames = !parsed.collectorNumber && tokens.length >= 2 && tokens.length <= 6
+    && /^[\p{L}\p{M}\s-]+$/u.test(parsed.raw) && new Set(tokens).size === tokens.length
+    && tokens.some((token) => token.length >= 3) && tokens.every((token) => /^[\p{L}-]+$/u.test(token));
   let namesQuery = table(supabase, 'api', 'catalogue_card_names')
-    .select('name_type,name,normalized_name,printing_id,variant_id')
-    .ilike('normalized_name', `%${safe}%`)
-    .limit(Math.max(limit * 6, 120));
+    .select('name_type,name,normalized_name,printing_id,variant_id');
+  // Ordinary name words may arrive in either order, but every term must occur
+  // on the same published name. Structured identifiers keep their existing path.
+  if (reorderNames) {
+    for (const token of tokens) namesQuery = namesQuery.ilike('normalized_name', `%${escapeLikePattern(token)}%`);
+  } else namesQuery = namesQuery.ilike('normalized_name', `%${safe}%`);
+  namesQuery = namesQuery.limit(Math.max(limit * 6, 120));
   namesQuery = applyNamePrintingLanguageFilter(namesQuery, language);
   const names = await queryRows(namesQuery);
   if (!names.length) return [];
@@ -1256,13 +1284,22 @@ function parsePrintingIds(value) {
 }
 
 export function createCatalogueV1Service(options) {
+  const env = options.env ?? process.env;
   const supabase = options.supabase;
   const searchSupabase = options.searchSupabase ?? supabase;
   const assetSupabase = options.assetSupabase ?? supabase;
-  const assetBaseUrl = String(options.assetBaseUrl ?? process.env.STACKR_ASSET_BASE_URL ?? '').replace(/\/$/, '');
+  const assetBaseUrl = String(options.assetBaseUrl ?? env.STACKR_ASSET_BASE_URL ?? '').replace(/\/$/, '');
+  const r2Bucket = clean(options.r2Bucket ?? env.STACKR_R2_BUCKET);
+  const r2PublicBaseUrl = clean(options.r2PublicBaseUrl ?? env.STACKR_R2_PUBLIC_BASE_URL);
+  const r2Configured = Boolean(r2Bucket || r2PublicBaseUrl);
+  const assetStorageReaders = r2Configured ? createPublicAssetStorageReaders(supabase, {
+    ...env, STACKR_R2_BUCKET: r2Bucket, STACKR_R2_PUBLIC_BASE_URL: r2PublicBaseUrl,
+  }) : null;
   const assetUrlOptions = {
     assetBaseUrl,
-    supabaseUrl: options.supabaseUrl ?? process.env.SUPABASE_URL ?? '',
+    assetStorageReaders,
+    r2Configured,
+    supabaseUrl: options.supabaseUrl ?? env.SUPABASE_URL ?? '',
     assetIdentityRpc: options.assetIdentityRpc === true,
   };
   const modelIndexVersion = clean(options.modelIndexVersion)
@@ -1457,7 +1494,13 @@ export function createCatalogueV1Service(options) {
       query = query.eq('catalogue_version_id', publishedSet.catalogue_version_id);
       const { rows, pagination } = pageFromRows(await queryRows(query), limit, 'variant_id');
       const cards = groupCardRows(sortCardsForDisplay(rows));
-      return { cards: await fetchCardImageAssets(assetSupabase, cards, assetUrlOptions), pagination };
+      // The fallback must preserve the fast route's facts-only contract. When
+      // artwork is requested, its failure cannot erase a usable facts page.
+      return {
+        cards: shouldIncludeCardAssets(input.includeAssets)
+          ? await enrichCardImagesOptionally(assetSupabase, cards, assetUrlOptions) : cards,
+        pagination,
+      };
     },
 
     async pokemonCards(pokemonName, input = {}) {

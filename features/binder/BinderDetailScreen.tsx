@@ -71,7 +71,6 @@ import { useCardImagePreload } from '../../hooks/useCardImagePreload';
 import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../components/RaritySymbol';
 import { ScrollToEndButton } from '../../components/ScrollToEndButton';
 import {
-  CardDetailInspectSurface,
 } from '../../components/InteractiveCardInspectPressable';
 import {
   BinderRecord,
@@ -1200,6 +1199,17 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         };
         void attachBinderCatalogueArtwork(saved.cards, artworkRequest.signal, applyPreviewArtwork)
           .then(applyPreviewArtwork).catch(() => undefined);
+        // Public set branding is independent of private ownership confirmation.
+        void attachBinderSetArtwork(saved.binder).then((enriched) => {
+          if (!previewAllowed || previewState.snapshot !== saved || !isCurrentRequest() || artworkRequest.signal.aborted) return;
+          setBinder((current) => current?.id === enriched.id && previewAllowed && previewState.snapshot === saved
+            && isCurrentRequest() && !artworkRequest.signal.aborted ? {
+              ...current,
+              source_set_logo_url: enriched.source_set_logo_url ?? current.source_set_logo_url,
+              source_set_symbol_url: enriched.source_set_symbol_url ?? current.source_set_symbol_url,
+              source_set_cover_url: enriched.source_set_cover_url ?? current.source_set_cover_url,
+            } : current);
+        }).catch(() => undefined);
       }).catch(() => undefined);
       setShowcaseRows([]);
       setOwnedVariants(new Map());
@@ -1385,6 +1395,9 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           // Reuse the existing id-ordered ownership keyset pattern. A short page
           // may be a server cap, so only a definitive empty page completes a chunk.
           const { ownedRows, variantRows } = await withPersonalDataReadTimeout(async () => {
+            const ownershipPageSize = 50;
+            // Preserve the previous 51,200-row budget, with the same deadline.
+            const ownershipMaxRequests = Math.ceil((256 * 200) / ownershipPageSize);
             let requests = 0;
             const assertCurrent = () => {
               if (!isCurrentRequest() || ownershipRequest.signal.aborted || artworkRequest.signal.aborted
@@ -1414,11 +1427,11 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
               let after: string | null = null;
               for (;;) {
                 assertCurrent();
-                if (++requests > 256) throw new Error('Binder ownership exceeded its safe request limit. Please retry.');
+                if (++requests > ownershipMaxRequests) throw new Error('Binder ownership exceeded its safe request limit. Please retry.');
                 const result = await page(after);
                 assertCurrent();
                 if (result.error) return { rows: [], error: result.error };
-                if (!Array.isArray(result.data) || result.data.length > 200) throw new Error('Binder ownership response was incomplete. Please retry.');
+                if (!Array.isArray(result.data) || result.data.length > ownershipPageSize) throw new Error('Binder ownership response was incomplete. Please retry.');
                 if (!result.data.length) return { rows, error: null };
                 for (const row of result.data) {
                   const id = typeof row?.id === 'string' ? row.id.toLowerCase() : '';
@@ -1433,7 +1446,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
               }
             };
             const scopeQuery = (query: any, after: string | null) => {
-              const ordered = query.order('id', { ascending: true }).limit(200).abortSignal(ownershipRequest.signal);
+              const ordered = query.order('id', { ascending: true }).limit(ownershipPageSize).abortSignal(ownershipRequest.signal);
               return after ? ordered.gt('id', after) : ordered;
             };
             const savedOwnership = async () => {
@@ -5017,7 +5030,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                               size="modal"
                             />
                           ) : (
-                            <CardDetailInspectSurface title={getBinderCardDisplayName(selectedCard, selectedCard.card_id)} cardMetadata={getLibraryFinish(selectedCard)} active={detailVisible} style={{ flex: 1 }}>
+                            <View style={{ flex: 1 }}>
                             <EditionAwareCardImage
                               uri={modalImageUri}
                               fullUri={modalImageUri}
@@ -5032,7 +5045,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                               imageStyle={{ borderRadius: 15 }}
                               resizeMode="contain"
                             />
-                            </CardDetailInspectSurface>
+                            </View>
                           )}
 
                           {/* Variant slices in Modal */}

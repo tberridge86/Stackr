@@ -3,7 +3,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { createClient } from '@supabase/supabase-js';
 import { buildApprovedCatalogueAsset } from '../backend/lib/assetPipeline.js';
-import { SupabaseObjectStorageAdapter } from '../backend/lib/objectStorage.js';
+import { createCatalogueObjectStorageAdapter } from '../backend/lib/objectStorage.js';
 
 const STAGING_SUPABASE_REF = 'lmwfhvexfcoyeuoyrlco';
 const PRODUCTION_SUPABASE_REF = 'oakdbbzdqwurpjnoqhmu';
@@ -150,7 +150,7 @@ async function loadCanonicalTargets(supabase) {
 }
 
 async function importAssets(supabase, approved, targets) {
-  const storage = new SupabaseObjectStorageAdapter(supabase);
+  const storage = createCatalogueObjectStorageAdapter();
   const { data: source, error: sourceError } = await supabase.schema('ingest').from('sources')
     .select('id,code')
     .eq('code', 'stackr_manual')

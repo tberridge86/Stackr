@@ -17,29 +17,58 @@ import { readPublishedPokedexIndex } from '../../backend/lib/pokedexIndex.js';
 const USER_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const DEVICE_ID = 'device:test:00000001';
 
-test('server-owned Pokédex index accepts both app pages and rejects invalid or oversized queries', async () => {
+test('server-owned Pokédex index caps legacy pages and retains offset continuation', async () => {
   const forwarded = [];
   const deps = { cache: new MemoryCache(), fetchImpl: async (url) => {
     const parsed = new URL(url);
     forwarded.push(parsed);
     return Response.json({ data: readPublishedPokedexIndex(Object.fromEntries(parsed.searchParams)), meta: { apiVersion: '1' } });
   } };
-  const env = environment();
+  const env = environment({ STACKR_ENFORCE_UI_PAGE_LIMIT: 'true' });
   const first = await handleRequest(request('/v1/pokemon?offset=0&limit=151'), env, context(), deps);
-  const continuation = await handleRequest(request('/v1/pokemon?offset=151&limit=1199'), env, context(), deps);
+  const continuation = await handleRequest(request('/v1/pokemon?offset=50&limit=1199'), env, context(), deps);
   assert.equal(first.status, 200);
   assert.equal(continuation.status, 200);
   const a = (await first.json()).data;
   const b = (await continuation.json()).data;
   assert.equal(a.indexVersion, b.indexVersion);
-  assert.equal(a.results.length + b.results.length, a.count);
-  assert.equal(forwarded[1].searchParams.get('limit'), '1199');
+  assert.equal(a.results.length, 50);
+  assert.equal(b.results.length, 50);
+  assert.equal(b.results[0].speciesId, a.results.at(-1).speciesId + 1);
+  assert.equal(forwarded[0].searchParams.get('limit'), '50');
+  assert.equal(forwarded[1].searchParams.get('limit'), '50');
+  const legacyDeps = { ...deps, cache: new MemoryCache() };
+  const legacy = await handleRequest(request('/v1/pokemon?offset=0&limit=151'), environment(), context(), legacyDeps);
+  assert.equal(legacy.status, 200);
+  assert.equal((await legacy.json()).data.results.length, 151, 'Enforcement stays staged until bounded clients are published.');
+  assert.equal(forwarded.at(-1).searchParams.get('limit'), '151');
   for (const query of ['offset=-1', 'offset=1.5', 'offset=NaN', 'offset=9007199254740992',
     'limit=1351', 'limit=0', 'offset=0&offset=1', 'provider=all']) {
     assert.equal((await handleRequest(request(`/v1/pokemon?${query}`), env, context(), deps)).status, 400, query);
   }
   assert.equal((await handleRequest(request('/v1/sets?limit=1199'), env, context(), deps)).status, 400,
     'The expanded index bound never changes other route limits.');
+});
+
+test('activated page limits normalize origin URLs and cache keys together', async () => {
+  const forwarded = [], cache = new MemoryCache();
+  const env = environment({ STACKR_ENFORCE_UI_PAGE_LIMIT: 'true' });
+  const deps = { cache, fetchImpl: async (url) => {
+    forwarded.push(String(url));
+    return Response.json({ data: { sets: [] }, meta: { apiVersion: '1' } });
+  } };
+  for (const suffix of ['&limit=500', '&limit=50', '']) {
+    const ctx = context();
+    const response = await handleRequest(request(`/v1/sets?language=en${suffix}`), env, ctx, deps);
+    assert.equal(response.status, 200);
+    await Promise.all(ctx.promises);
+  }
+  assert.equal(forwarded.length, 1, 'Oversized, explicit and default pages share the bounded cache key.');
+  assert.equal(new URL(forwarded[0]).searchParams.get('limit'), '50');
+  assert.ok([...cache.values.keys()].every((key) => new URL(key).searchParams.get('limit') === '50'));
+  for (const suffix of ['limit=0', 'limit=1.5', 'limit=50&limit=500']) {
+    assert.equal((await handleRequest(request(`/v1/sets?${suffix}`), env, context(), deps)).status, 400);
+  }
 });
 
 test('selected-set collector searches reach the backend while unscoped and ambiguous queries stay rejected', async () => {
@@ -149,6 +178,60 @@ test('price history forwards bounded sale-evidence filters privately and rejects
   assert.equal((await handleRequest(request(`${path}?provenOnly=true`, { headers }), env, context(), otherOwner)).status, 403);
   assert.equal(forwarded.length, 2, 'invalid filters and non-owners never reach the backend');
   assert.deepEqual(cacheCalls, { match: 0, put: 0 }, 'sale history does not use a shared pricing cache');
+});
+
+test('daily catalogue movers pass bounded ranking options without weakening owner access', async () => {
+  const env = environment({ STACKR_PRICING_OWNER_USER_ID: USER_ID });
+  const forwarded = [];
+  const cacheCalls = { match: 0, put: 0 };
+  const headers = { Authorization: 'Bearer owner-token', 'X-Stackr-Device-Id': DEVICE_ID };
+  const deps = {
+    cache: { async match() { cacheCalls.match++; }, async put() { cacheCalls.put++; } },
+    verifyAuth: async (req) => {
+      if (!req.headers.get('authorization')) throw new GatewayError(401, 'authentication_required', 'Sign in.');
+      return { ...authenticated(), token: 'owner-token' };
+    },
+    fetchImpl: async (url, init) => {
+      forwarded.push(new URL(url));
+      assert.equal(init.headers.get('authorization'), 'Bearer owner-token');
+      return Response.json({ data: { movers: [], coverage: { scope: 'catalogue_daily' } } });
+    },
+  };
+  const path = '/v1/market/movers';
+  for (const sortBy of ['money', 'percent']) {
+    const response = await handleRequest(request(`${path}?scope=catalogue_daily&sortBy=${sortBy}&currency=GBP&productType=raw_card&limit=100`, { headers }), env, context(), deps);
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get('cache-control'), 'private, no-store');
+    assert.match(response.headers.get('vary'), /Authorization/);
+    assert.equal(forwarded.at(-1).searchParams.get('scope'), 'catalogue_daily');
+    assert.equal(forwarded.at(-1).searchParams.get('sortBy'), sortBy);
+    assert.equal(forwarded.at(-1).searchParams.get('limit'), '100');
+  }
+  assert.equal((await handleRequest(request(`${path}?scope=catalogue_daily`, { headers }), env, context(), deps)).status, 200,
+    'The backend keeps its percent ranking default when sortBy is absent');
+  for (const query of ['scope=', 'scope=collection', 'scope=CATALOGUE_DAILY',
+    'scope=catalogue_daily&scope=catalogue_daily', 'scope=catalogue_daily&sortBy=',
+    'scope=catalogue_daily&sortBy=MONEY', 'scope=catalogue_daily&sortBy=unknown',
+    'scope=catalogue_daily&sortBy=money&sortBy=percent', 'sortBy=money',
+    'scope=catalogue_daily&limit=101', 'scope=catalogue_daily&limit=0',
+    'scope=catalogue_daily&currency=USD', 'scope=catalogue_daily&productType=graded_card']) {
+    assert.equal((await handleRequest(request(`${path}?${query}`, { headers }), env, context(), deps)).status, 400, query);
+  }
+  for (const unrelated of ['/v1/sets', '/v1/market/opportunities']) {
+    const response = await handleRequest(request(`${unrelated}?scope=catalogue_daily&sortBy=money`, { headers }), env, context(), deps);
+    assert.equal(response.status, 400);
+    assert.equal((await response.json()).error.code, 'unsupported_query_parameter');
+  }
+  const dailyPath = `${path}?scope=catalogue_daily&sortBy=money`;
+  assert.equal((await handleRequest(request(dailyPath), env, context(), deps)).status, 401);
+  assert.equal((await handleRequest(request(dailyPath, { headers }), env, context(), {
+    ...deps, verifyAuth: async () => authenticated({ sub: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb' }),
+  })).status, 403);
+  assert.equal((await handleRequest(request(dailyPath, { headers }), environment({
+    STACKR_PRICING_ACCESS_MODE: 'team', STACKR_PRICING_OWNER_USER_ID: USER_ID,
+  }), context(), deps)).status, 503);
+  assert.equal(forwarded.length, 3, 'Invalid queries and unauthorized requests never reach the private origin');
+  assert.deepEqual(cacheCalls, { match: 0, put: 0 }, 'New ranking options never enter a shared personal-pricing cache');
 });
 
 test('set-card facts flag reaches the origin and cannot collide with artwork cache entries', async () => {
