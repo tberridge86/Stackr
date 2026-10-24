@@ -118,6 +118,41 @@ jobs:
       STACKR_TRIGGER_ACTOR_ID: ${{ github.actor_id }}
       STACKR_REPOSITORY_OWNER_ID: ${{ github.repository_owner_id }}
     steps:
+      - name: Require isolated staging R2 configuration before ingestion
+        shell: bash
+        env:
+          STACKR_R2_ENDPOINT: ${{ vars.STACKR_R2_ENDPOINT }}
+          STACKR_R2_BUCKET: ${{ vars.STACKR_R2_BUCKET }}
+          STACKR_R2_PUBLIC_BASE_URL: ${{ vars.STACKR_R2_PUBLIC_BASE_URL }}
+          STACKR_R2_ACCESS_KEY_ID: ${{ secrets.STACKR_R2_ACCESS_KEY_ID }}
+          STACKR_R2_SECRET_ACCESS_KEY: ${{ secrets.STACKR_R2_SECRET_ACCESS_KEY }}
+        run: |
+          node <<'NODE'
+          const required = [
+            'STACKR_R2_ENDPOINT',
+            'STACKR_R2_BUCKET',
+            'STACKR_R2_PUBLIC_BASE_URL',
+            'STACKR_R2_ACCESS_KEY_ID',
+            'STACKR_R2_SECRET_ACCESS_KEY',
+          ];
+          const invalid = new Set(required.filter(name => !process.env[name]?.trim()));
+          if (process.env.STACKR_R2_BUCKET?.trim() === 'stackr-catalogue-public') {
+            invalid.add('STACKR_R2_BUCKET');
+          }
+          try {
+            const base = new URL(process.env.STACKR_R2_PUBLIC_BASE_URL);
+            if (base.protocol !== 'https:' || base.hostname.replace(/\.+$/, '') === 'assets.stackrtcg.com') {
+              invalid.add('STACKR_R2_PUBLIC_BASE_URL');
+            }
+          } catch {
+            invalid.add('STACKR_R2_PUBLIC_BASE_URL');
+          }
+          if (invalid.size) {
+            console.error('Missing or unsafe staging R2 settings: ' + [...invalid].join(', '));
+            process.exitCode = 1;
+          }
+          NODE
+
       - name: Verify staging-only bounds and owner permission attestation
         shell: bash
         run: |

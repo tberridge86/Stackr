@@ -1,53 +1,54 @@
-# R2 activation and deployment preparation — 24 October 2026
+# R2 activation and production connection - 24 October 2026
 
-Baseline: PR #437 at `9dd1724ff645598bb83c36240c3226a60a77d0b5`.
+Source baseline: PR #437 at `7eaf21165e6e23a1c4a192f300247d3121f053b2`.
 
-## Verified live state
+## Verified live configuration
 
-- Owner activated R2. Cloudflare now displays the bucket dashboard and active billing period.
-- Created `stackr-catalogue-public`, Standard storage, Western Europe (WEUR).
-- Bucket is empty (0 B); public access remains disabled.
-- Prepared `assets.stackrtcg.com` custom-domain binding. Cloudflare's preview proposes a CNAME named `assets` targeting this bucket. Final Connect domain action has NOT been submitted.
-- Prepared account token `stackr-catalogue-production-20261024`: Object Read & Write, ONLY `stackr-catalogue-public`, default lifetime Forever/until revoked. Final creation has NOT been submitted. No token or secret exists from this preparation.
-- Browser action-time confirmation is required before creating security-sensitive credentials/public access. Proposed secret destinations are the existing Railway pocketvault production project (approved public writers and separate migration service) and this repository's protected production GitHub environment for retained public writer jobs. No production credentials will be copied into staging.
-- Railway API `pocketvault` is shown Online. Current active deployment link identifies `2f62ce18-9bf7-4608-b126-4bc8957ef280`, labelled “Record exact transport diagnostic merge without deployed claims”. This observation is not verification of its served source revision or a new deployment.
-- No database references changed, no objects copied or deleted, no runtime deployment made by this preparation.
+- Owner activated R2 and authorized the exact public-domain binding and restricted production credential.
+- Bucket `stackr-catalogue-public`: Standard storage, Western Europe (WEUR).
+- Custom domain `assets.stackrtcg.com`: Cloudflare reports **Active / Enabled**. The development r2.dev endpoint remains disabled.
+- Created `stackr-catalogue-production-20261024`: Object Read & Write, restricted to this bucket, until revoked. No credential material is recorded in this repository.
+- Saved both R2 credential fields as secrets in the existing protected GitHub `production` environment. Saved bucket, endpoint and public base URL as production environment variables. Existing required-reviewer protection is preserved; no production credential was copied to staging.
+- Applied only `STACKR_R2_BUCKET` and `STACKR_R2_PUBLIC_BASE_URL` to Railway production API service `pocketvault` (`299d7ad4-5ed8-4301-b609-ef99274078d0`). Railway accepted the two-variable change and started its configuration redeployment. Completion and served source revision have not yet been verified at this checkpoint.
+- The API's R2 adapter is URL-only. Private scan routes retain Supabase storage; administrative catalogue routes enqueue work. R2 write credentials belong on publishing/migration services, not this API reader.
+- No artwork objects have been copied, database pointers changed or source objects deleted. The architecture PR has not yet been merged.
 
-## Release separation
+## Validation and staging isolation
 
-All four PR #437 workflows passed on the named baseline, including Platform CI
-`40084113990`. PR #436 remains a separate draft; its Platform run
-`39986216811` failed the mobile-recovery suite at an outdated Card Detail
-import assertion. It is not part of this R2-only release. Its daily-history
-migration and new app requests require separate coordinated delivery.
+All four hosted PR workflows passed for baseline `7eaf211`: Platform
+`40085203225`, Gateway `40085203222`, binder `40085203238`, owner pricing
+`40085203235`. New changes require their own hosted checks.
 
-## Configuration readiness
+The Japanese completion workflow can start on qualifying main pushes. Its
+first preparation step now requires all five staging R2 settings before any
+discovery or ingestion. It rejects the production bucket and production CDN
+hostname, including case and trailing-DNS-dot variants. Missing or unsafe
+configuration fails preparation; dependent mutating jobs cannot run. Diagnostics
+name configuration fields without exposing values.
 
-Public API readers require `STACKR_R2_BUCKET` and
-`STACKR_R2_PUBLIC_BASE_URL` together. Retained writers also require
-`STACKR_R2_ENDPOINT`, `STACKR_R2_ACCESS_KEY_ID` and
-`STACKR_R2_SECRET_ACCESS_KEY`.
+Local YAML parsing, 13 offline guard fixtures and independent review pass.
+Removing the inserted guard reproduces the exact baseline workflow; triggers
+and other commands are unchanged. This is not a live staging connectivity test.
+Staging requires separately authorized storage/credentials before its writers
+can resume.
 
-The four retained GitHub writer workflows now include explicit step-scoped
-environment mappings in this continuation; adding secret values alone was
-insufficient. Local unique-key YAML parsing, mapping/scope checks and baseline
-preservation checks pass. Independent review found no blocking change regression.
-Hosted CI for this new continuation remains pending.
+## Release and migration boundaries
 
-The existing Japanese-completion workflow triggers on relevant main pushes,
-including edits to its own workflow. Updating the draft PR does not run its
-catalogue job, but an owner merge/push can start staging ingestion. Populate and
-verify separate staging R2 settings before that merge, or explicitly review a
-hold on the automatic job; do not describe merging as operationally inert. Their staging and production
-environments must remain separate. Staging must use a separately approved
-destination and credentials, not the production public catalogue token.
+PR #436 remains separate and is not included in this R2 release. Its failing
+mobile-recovery assertion and daily-history schema/app coordination remain
+separate work.
 
-The one-shot migration service additionally requires pinned Supabase connection
-configuration and a persistent Railway journal volume. Its default command
-remains disabled. Deploy and verify compatible readers before publishing any
-new pointers; start with an inventoried 25-asset batch using the existing
-[migration runbook](r2-catalogue-migration-20261023.md).
+Public readers require the bucket and public base URL together. Retained
+GitHub public writers have explicit environment mappings and additionally use
+the endpoint and restricted credential. The one-shot migration service needs
+those five R2 settings, pinned production Supabase configuration and a persistent
+Railway journal volume. Its default command remains disabled.
 
-This checkpoint supersedes the earlier runbook's activation-blocked observation
-only. It does not establish CDN delivery, populated runtime secrets, successful
-migration, app performance or installed-device acceptance.
+Deploy and verify compatible readers before publishing any new pointers.
+Begin with an inventoried 25-asset batch using the
+[migration runbook](r2-catalogue-migration-20261023.md), verify authenticated and
+public CDN bytes, and preserve original objects plus rollback receipts.
+
+This checkpoint establishes active CDN configuration and saved production
+configuration only. It does not establish successful object delivery, completed
+migration, architecture deployment, app performance or device acceptance.
