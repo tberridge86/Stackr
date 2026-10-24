@@ -6,7 +6,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createCatalogueObjectStorageAdapter } from '../backend/lib/objectStorage.js';
 import { createVerifiedSupabasePostgresClient, stripPostgresTlsParameters } from './deploy/verified-supabase-postgres.mjs';
-import { migrateCatalogueAssets, planCatalogueAssetMigration } from './lib/r2-catalogue-migration.mjs';
+import { migrateCatalogueAssets, planCatalogueAssetMigration, validateCatalogueMigrationJournal } from './lib/r2-catalogue-migration.mjs';
 
 const SOURCE_BUCKET = 'stackr-catalogue-public';
 const UUID = /^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
@@ -30,7 +30,7 @@ function number(value, fallback, maximum, code) {
 
 export function migrationConfiguration(argv, env) {
   const allowed = new Set(['mode', 'expected-ref', 'source-bucket', 'inventory', 'approved-inventory-sha256', 'journal',
-    'limit', 'after-id', 'max-object-bytes', 'max-batch-bytes', 'object-timeout-ms']);
+    'limit', 'after-id', 'max-object-bytes', 'max-batch-bytes', 'object-timeout-ms', 'rollback-journal', 'approved-journal-sha256']);
   const args = {};
   for (const raw of argv) {
     const match = /^--([a-z][a-z0-9-]*)=(.+)$/.exec(raw);
@@ -38,7 +38,7 @@ export function migrationConfiguration(argv, env) {
     args[match[1]] = match[2];
   }
   const mode = args.mode ?? 'inventory';
-  check(['inventory', 'execute'].includes(mode), 'unsupported_mode');
+  check(['inventory', 'execute', 'rollback'].includes(mode), 'unsupported_mode');
   const expectedRef = args['expected-ref'];
   check(/^[a-z0-9]{20}$/.test(expectedRef ?? ''), 'explicit_expected_ref_required');
   const origin = `https://${expectedRef}.supabase.co`;
@@ -62,6 +62,8 @@ export function migrationConfiguration(argv, env) {
   return { mode, expectedRef, origin, databaseUrl, sourceBucket: SOURCE_BUCKET, destinationBucket, publicBaseUrl,
     limit, afterId, inventoryPath: path.resolve(args.inventory), journalPath: args.journal ? path.resolve(args.journal) : null,
     approvedDigest: args['approved-inventory-sha256'],
+    rollbackJournal: args['rollback-journal'] ? path.resolve(args['rollback-journal']) : null,
+    approvedJournalDigest: args['approved-journal-sha256'],
     maxAssets: limit,
     maxObjectBytes: number(args['max-object-bytes'], 12 * 1024 * 1024, 12 * 1024 * 1024, 'invalid_object_limit'),
     maxBatchBytes: number(args['max-batch-bytes'], 250 * 1024 * 1024, 1024 * 1024 * 1024, 'invalid_batch_limit'),
@@ -185,9 +187,8 @@ export async function inventoryCatalogueRows(db, config) {
   return assets;
 }
 
-export function createPgMigrationPublisher(db, assets, journal, config, verifiedObjects = new Map()) {
+export function createPgMigrationPublisher(db, assets, journal, config, verifiedObjects = new Map(), committedOperations = new Map()) {
   const expected = new Map(assets.map((asset) => [asset.id, structuredClone(asset)]));
-  const committedOperations = new Map();
   return async (plan) => {
     const before = expected.get(plan.rowId);
     check(before && plan.guard?.id === plan.rowId && plan.assetId === before.asset_id, 'publication_identity_mismatch');
@@ -247,6 +248,60 @@ export function createPgMigrationPublisher(db, assets, journal, config, verified
   };
 }
 
+
+export async function readRollbackJournal(filename, approvedDigest) {
+  check(filename && /^[a-f0-9]{64}$/.test(approvedDigest ?? ''), 'approved_journal_digest_required');
+  const maximum = 32 * 1024 * 1024;
+  check((await stat(filename)).size <= maximum, 'journal_too_large');
+  const bytes = await readFile(filename);
+  check(bytes.length <= maximum && sha256(bytes) === approvedDigest, 'approved_journal_digest_mismatch');
+  const text = bytes.toString('utf8');
+  check(text.endsWith('\n'), 'journal_requires_reconciliation');
+  return text.trimEnd().split('\n').map(line => JSON.parse(line));
+}
+
+export async function rollbackCatalogueR2Migration(config, { env, createDb, openJournal, loadInventory }) {
+  check(UUID.test(env.RAILWAY_SERVICE_ID ?? '') && UUID.test(env.RAILWAY_ENVIRONMENT_ID ?? ''), 'railway_execution_required');
+  check(config.journalPath && config.journalPath !== config.rollbackJournal, 'new_rollback_journal_required');
+  const inventory = await loadInventory(config.inventoryPath, config.approvedDigest);
+  check(inventory.schemaVersion === 1 && inventory.kind === 'stackr-r2-catalogue-inventory'
+    && inventory.expectedRef === config.expectedRef && inventory.sourceOrigin === config.origin
+    && same(inventory.options, migrationOptions(config)) && inventory.limit === config.limit
+    && inventory.afterId === config.afterId, 'inventory_target_or_bounds_mismatch');
+  check(Array.isArray(inventory.assets) && inventory.assets.length > 0 && inventory.assets.length <= config.limit
+    && new Set(inventory.assets.map(asset => asset.id)).size === inventory.assets.length
+    && inventory.assets.every(asset => UUID.test(asset.id)), 'invalid_inventory_rows');
+  const records = await readRollbackJournal(config.rollbackJournal, config.approvedJournalDigest);
+  const operations = validateCatalogueMigrationJournal(records, inventory, config.approvedDigest);
+  const journal = await openJournal(config.journalPath, env);
+  let db;
+  try {
+    await journal.append({ event: 'rollback_preflight', sourceJournalSha256: config.approvedJournalDigest,
+      inventorySha256: config.approvedDigest, operations: operations.map(item => item.receipt.operationId) });
+    db = createDb(config.databaseUrl);
+    await db.connect();
+    await assertPublicMigrationBucket(db);
+    const current = await db.query('select to_jsonb(a) as asset from catalog.assets a where a.id = any($1::uuid[]) order by a.id',
+      [operations.map(item => item.after.id)]);
+    const currentById = new Map(current.rows.map(row => [row.asset.id, row.asset]));
+    check(current.rows.length === operations.length
+      && operations.every(item => same(currentById.get(item.after.id), item.after)), 'rollback_database_snapshot_changed');
+    const committed = new Map(operations.map(item => [item.receipt.operationId,
+      { after: item.after, restore: item.receipt.before }]));
+    const publish = createPgMigrationPublisher(db, operations.map(item => item.after),
+      record => journal.append(record), config, new Map(), committed);
+    for (const item of operations) {
+      await journal.append({ event: 'rollback_pending', plan: item.plan });
+      const result = await publish(item.plan);
+      check(result.applied === true, 'rollback_conflict_requires_reconciliation');
+      await journal.append({ event: 'rollback_complete', operationId: item.plan.operationId, updatedAt: result.updatedAt });
+    }
+    return { status: 'rolled_back', assetCount: operations.length, sourceObjectsDeleted: 0 };
+  } finally {
+    try { if (db) await db.end(); } finally { await journal.close(); }
+  }
+}
+
 export async function runCatalogueR2Migration({ argv = process.argv.slice(2), env = process.env,
   createDb = (url) => createVerifiedSupabasePostgresClient(url, 'stackr-r2-catalogue-migration', {
     connectionTimeoutMillis: 15_000, statement_timeout: 30_000, query_timeout: 45_000,
@@ -255,6 +310,9 @@ export async function runCatalogueR2Migration({ argv = process.argv.slice(2), en
   loadInventory = readMigrationInventory, migrate = migrateCatalogueAssets } = {}) {
   const config = migrationConfiguration(argv, env);
   const options = migrationOptions(config);
+  if (config.mode === 'rollback') {
+    return rollbackCatalogueR2Migration(config, { env, createDb, openJournal, loadInventory });
+  }
   // Validate destination and byte limits before opening a database or creating any object reader.
   await migrateCatalogueAssets({ ...options, assets: [], execute: false });
   let inventory;
@@ -318,7 +376,7 @@ export async function runCatalogueR2Migration({ argv = process.argv.slice(2), en
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   runCatalogueR2Migration().then((result) => {
     console.log(JSON.stringify(result, null, 2));
-    if (!['inventory', 'complete'].includes(result.status)) process.exitCode = 1;
+    if (!['inventory', 'complete', 'rolled_back'].includes(result.status)) process.exitCode = 1;
   }).catch((error) => {
     // Codes only: database errors may contain connection information or source URLs.
     console.error(JSON.stringify({ ok: false, code: error.code ?? 'migration_preflight_or_operation_failed' }));

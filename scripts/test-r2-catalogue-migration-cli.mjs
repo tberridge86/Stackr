@@ -122,9 +122,13 @@ function fetchFor(storage, calls) {
 try {
   assert.equal(config.mode, 'inventory');
   assert.equal(config.limit, 25);
+  assert.equal(migrationConfiguration([...inventoryArgs, '--mode=rollback'], env).mode, 'rollback');
+  await assert.rejects(() => runCatalogueR2Migration({ argv: [...inventoryArgs, '--mode=rollback'], env,
+    createDb: () => { throw new Error('rollback must validate its journal before DB'); },
+  }), /new_rollback_journal_required/);
   assert.equal(migrationConfiguration([...inventoryArgs, '--limit=50'], env).limit, 50);
   for (const argv of [
-    [...inventoryArgs, '--limit=51'], [...inventoryArgs, '--limit=0'], [...inventoryArgs, '--mode=rollback'],
+    [...inventoryArgs, '--limit=51'], [...inventoryArgs, '--limit=0'], [...inventoryArgs, '--mode=unsupported'],
     [...inventoryArgs, '--source-bucket=card-scans'], [...inventoryArgs, '--after-id=not-an-id'],
     [...inventoryArgs, '--mode=execute', '--mode=inventory'],
   ]) assert.throws(() => migrationConfiguration(argv, env));

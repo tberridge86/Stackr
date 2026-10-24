@@ -55,19 +55,38 @@ const headers = {
     : { 'project-access-token': token }),
 };
 
-async function graphql(query, variables) {
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({ query, variables }),
-    signal: AbortSignal.timeout(15_000),
-    redirect: 'error',
-  });
-  const payload = await response.json();
-  if (!response.ok || payload.errors?.length) {
-    throw new Error(`Railway API request failed with status ${response.status}.`);
+function railwayErrorCategory(status, errors) {
+  if (status === 401) return 'UNAUTHENTICATED';
+  if (status === 403) return 'FORBIDDEN';
+  if (status === 429) return 'RATE_LIMITED';
+  const categories = new Set();
+  for (const error of Array.isArray(errors) ? errors.slice(0, 20) : []) {
+    const code = String(error?.extensions?.code ?? '').toUpperCase();
+    if (['UNAUTHENTICATED', 'UNAUTHORIZED'].includes(code)) categories.add('UNAUTHENTICATED');
+    else if (code === 'FORBIDDEN') categories.add('FORBIDDEN');
+    else if (['GRAPHQL_VALIDATION_FAILED', 'GRAPHQL_PARSE_FAILED'].includes(code)) categories.add('SCHEMA_VALIDATION');
+    else if (['RATE_LIMITED', 'TOO_MANY_REQUESTS'].includes(code)) categories.add('RATE_LIMITED');
+    else categories.add('UNKNOWN');
   }
-  return payload.data;
+  return categories.size === 1 ? [...categories][0] : 'UNKNOWN';
+}
+
+async function graphql(query, variables) {
+  let response;
+  let payload;
+  try {
+    response = await fetch(endpoint, {
+      method: 'POST', headers, body: JSON.stringify({ query, variables }),
+      signal: AbortSignal.timeout(15_000), redirect: 'error',
+    });
+    payload = await response.json();
+  } catch {
+    throw new Error('Railway API request failed: UNKNOWN.');
+  }
+  if (!response.ok || payload?.errors?.length) {
+    throw new Error(`Railway API request failed: ${railwayErrorCategory(response.status, payload?.errors)}.`);
+  }
+  return payload?.data;
 }
 
 function ids(connection) {
