@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, mkdtemp, readFile, readdir, rm, truncate, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { test } from 'node:test';
-import { assertHostedRunner, assertRunnerProject, PRODUCTION_REF, runR2MigrationRunner, runnerConfiguration } from './run-r2-catalogue-migration.mjs';
+import { assertHostedRunner, assertRunnerProject, migrationDiskCapacity, PRODUCTION_REF, runR2MigrationRunner, runnerConfiguration } from './run-r2-catalogue-migration.mjs';
 import { migrateCatalogueAssets } from './lib/r2-catalogue-migration.mjs';
 
 const sha = (value) => createHash('sha256').update(value).digest('hex');
@@ -21,7 +21,7 @@ const env = {
 };
 const options = { sourceBucket: 'stackr-catalogue-public', destinationBucket: env.STACKR_R2_BUCKET,
   publicBaseUrl: env.STACKR_R2_PUBLIC_BASE_URL, maxAssets: 25, maxObjectBytes: 12582912,
-  maxBatchBytes: 262144000, objectTimeoutMs: 30000 };
+  maxBatchBytes: 262144000, objectTimeoutMs: 120000 };
 const asset = (index) => ({ id: id(index), asset_id: `stable:card-${index}`, asset_type: 'card_image',
   source_id: 'approved-source', variant_id: `variant-${index}`, original_source_url: 'https://source.example.com/card.png',
   rights_status: 'approved', permission_status: 'approved', asset_visibility: 'public_catalogue',
@@ -116,8 +116,8 @@ async function fixture(t, pages, fault = null) {
     } finally { active = false; }
   };
   return { volumeRoot, calls, runCli, directory: (runId) => path.join(volumeRoot, 'r2-catalogue-migration', runId),
-    run: (runId = 'test', maxBatches = 3, resume = false, overrideEnv = env) => runR2MigrationRunner({
-      argv: executeArgs(runId, maxBatches, resume), env: overrideEnv, volumeRoot, assertHost: async () => {}, runCli }) };
+    run: (runId = 'test', maxBatches = 3, resume = false, overrideEnv = env, readCapacity = async () => ({ admitted: true })) => runR2MigrationRunner({
+      argv: executeArgs(runId, maxBatches, resume), env: overrideEnv, volumeRoot, assertHost: async () => {}, runCli, readCapacity }) };
 }
 
 test('default invocation is a no-op without credentials, filesystem or child access', async () => {
@@ -235,4 +235,65 @@ test('rollback-sized journal boundary is accepted and coverage remains explicitl
   const result = await f.run();
   assert.equal(result.status, 'traversal_complete');
   assert.equal(result.verificationRequired, 'global_remaining_source_inventory');
+});
+test('disk admission uses exact available BigInt bytes and free inodes with fixed reserve', async () => {
+  const required = 640n * 1024n * 1024n;
+  const probe = async (bavail, ffree = 72n) => migrationDiskCapacity('/fixture', async (directory, options) => {
+    assert.equal(directory, '/fixture'); assert.deepEqual(options, { bigint: true });
+    return { bavail, bsize: 1n, ffree, bfree: required * 100n };
+  });
+  assert.equal((await probe(required)).admitted, true);
+  assert.equal((await probe(required - 1n)).admitted, false);
+  assert.equal((await probe(required, 71n)).admitted, false);
+  assert.equal((await probe(2n ** 60n)).availableBytes, (2n ** 60n).toString());
+  await assert.rejects(() => migrationDiskCapacity('/fixture', async () => { throw new Error('private'); }), /capacity_probe_failed/);
+  for (const info of [{ bavail: 1, bsize: 1n, ffree: 100n }, { bavail: 1n, bsize: 0n, ffree: 100n },
+    { bavail: 1n, bsize: 1n }, { bavail: -1n, bsize: 1n, ffree: 100n }]) {
+    await assert.rejects(() => migrationDiskCapacity('/fixture', async () => info), /capacity_probe_failed/);
+  }
+});
+test('capacity pause before first intent starts no child and leaves a clean resumable run', async t => {
+  const f = await fixture(t, [2]);
+  const pause = await f.run('capacity', 3, false, env, async () => ({ admitted: false }));
+  assert.equal(pause.status, 'capacity_paused'); assert.equal(pause.nextAfterId, null);
+  assert.equal(pause.publishedAssets, 0); assert.equal(pause.checkpointSha256, null);
+  assert.equal(f.calls.length, 0);
+  assert.deepEqual(await readdir(f.directory('capacity')), ['run.json']);
+  assert.equal((await f.run('capacity', 3, true)).publishedAssets, 2);
+});
+test('capacity loss after a checkpoint pauses without advancing or creating next intent', async t => {
+  const f = await fixture(t, [25, 2]); let admission = 0;
+  const result = await f.run('between', 3, false, env, async () => ({ admitted: admission++ === 0 }));
+  assert.equal(result.status, 'capacity_paused'); assert.equal(result.nextAfterId, id(25));
+  assert.equal(result.publishedAssets, 25); assert.equal(f.calls.length, 2);
+  const checkpointPath = path.join(f.directory('between'), 'batch-000001.checkpoint.json');
+  const checkpoint = await readFile(checkpointPath);
+  assert.equal(sha(checkpoint), result.checkpointSha256);
+  assert(!(await readdir(f.directory('between'))).some(name => name.includes('000002') || name === 'runner.lock'));
+  const resumed = await f.run('between', 3, true);
+  assert.equal(resumed.publishedAssets, 27); assert.equal(f.calls[2]['after-id'], id(25));
+  assert.deepEqual(await readFile(checkpointPath), checkpoint);
+});
+test('unknown capacity fails closed and retains reconciliation lock without child calls', async t => {
+  const f = await fixture(t, [2]);
+  await assert.rejects(() => f.run('probe-error', 3, false, env, async () => { throw new Error('probe'); }), /probe/);
+  assert.equal(f.calls.length, 0);
+  assert((await readdir(f.directory('probe-error'))).includes('runner.lock'));
+});
+
+test('legacy 30-second manifest refuses resume without rewriting old evidence', async t => {
+  const f = await fixture(t, [25, 2]);
+  await f.run('legacy-deadline', 1);
+  const manifestPath = path.join(f.directory('legacy-deadline'), 'run.json');
+  const oldManifest = await json(manifestPath);
+  oldManifest.options.objectTimeoutMs = 30000;
+  const oldBytes = Buffer.from(JSON.stringify(oldManifest) + '\n');
+  await writeFile(manifestPath, oldBytes);
+  const checkpointPath = path.join(f.directory('legacy-deadline'), 'batch-000001.checkpoint.json');
+  const checkpointBytes = await readFile(checkpointPath);
+  await assert.rejects(() => f.run('legacy-deadline', 1, true), /runner_resume_target_mismatch/);
+  assert.equal(f.calls.length, 2, 'no new inventory or execute under a mismatched deadline');
+  assert.deepEqual(await readFile(manifestPath), oldBytes);
+  assert.deepEqual(await readFile(checkpointPath), checkpointBytes);
+  assert((await readdir(f.directory('legacy-deadline'))).includes('runner.lock'));
 });

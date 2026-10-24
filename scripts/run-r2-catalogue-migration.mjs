@@ -2,7 +2,7 @@
 import { Buffer } from 'node:buffer';
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdir, open, readFile, readdir, realpath, stat, unlink } from 'node:fs/promises';
+import { mkdir, open, readFile, readdir, realpath, stat, statfs, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { validateCatalogueMigrationJournal } from './lib/r2-catalogue-migration.mjs';
@@ -16,8 +16,28 @@ const MAX_BATCHES = 10_000;
 const MAX_JSON_BYTES = 32 * 1024 * 1024;
 // Match the restart-capable rollback CLI evidence limit.
 const MAX_JOURNAL_BYTES = 32 * 1024 * 1024;
+const MAX_CONTROL_BYTES = 64 * 1024;
+// Three 32 MiB evidence files (journal, two child results), 4 MiB inventory,
+// four <=64 KiB control files, plus filesystem allocation slack fit in 128 MiB.
+const BATCH_DISK_BYTES = 128n * 1024n * 1024n;
+const DISK_RESERVE_BYTES = 512n * 1024n * 1024n;
+const REQUIRED_FREE_INODES = 72n; // Eight possible batch files plus 64 spare inodes.
+
+export async function migrationDiskCapacity(directory, readFs = statfs) {
+  let info;
+  try { info = await readFs(directory, { bigint: true }); }
+  catch { check(false, 'runner_capacity_probe_failed'); }
+  check(typeof info?.bavail === 'bigint' && info.bavail >= 0n
+    && typeof info.bsize === 'bigint' && info.bsize > 0n
+    && typeof info.ffree === 'bigint' && info.ffree >= 0n, 'runner_capacity_probe_failed');
+  const available = info.bavail * info.bsize;
+  const required = BATCH_DISK_BYTES + DISK_RESERVE_BYTES;
+  return { admitted: available >= required && info.ffree >= REQUIRED_FREE_INODES,
+    availableBytes: available.toString(), requiredBytes: required.toString(),
+    freeInodes: info.ffree.toString(), requiredInodes: REQUIRED_FREE_INODES.toString() };
+}
 const CLI_PATH = fileURLToPath(new URL('./migrate-catalogue-to-r2.mjs', import.meta.url));
-const BOUNDS = { maxObjectBytes: 12 * 1024 * 1024, maxBatchBytes: 250 * 1024 * 1024, objectTimeoutMs: 30_000 };
+const BOUNDS = { maxObjectBytes: 12 * 1024 * 1024, maxBatchBytes: 250 * 1024 * 1024, objectTimeoutMs: 120_000 };
 
 function check(value, code) { if (!value) throw Object.assign(new Error(code), { code }); }
 function hash(bytes) { return createHash('sha256').update(bytes).digest('hex'); }
@@ -86,9 +106,9 @@ async function syncDirectory(directory) {
   try { await handle.sync(); } finally { await handle.close(); }
 }
 
-async function saveExclusive(filename, value) {
+async function saveExclusive(filename, value, maximum = MAX_JSON_BYTES) {
   const bytes = Buffer.from(`${JSON.stringify(value, null, 2)}\n`);
-  check(bytes.length <= MAX_JSON_BYTES, 'runner_result_too_large');
+  check(bytes.length <= maximum, 'runner_result_too_large');
   const handle = await open(filename, 'wx', 0o600);
   try { await handle.writeFile(bytes); await handle.sync(); } finally { await handle.close(); }
   await syncDirectory(path.dirname(filename));
@@ -238,7 +258,7 @@ async function recoverCleanCheckpoints(directory, manifest, manifestSha256) {
 
 /** Test seams are module arguments, never CLI switches or environment bypasses. */
 export async function runR2MigrationRunner({ argv = process.argv.slice(2), env = process.env,
-  assertHost = assertHostedRunner, volumeRoot = '/data', runCli = spawnMigrationCli } = {}) {
+  assertHost = assertHostedRunner, volumeRoot = '/data', runCli = spawnMigrationCli, readCapacity = migrationDiskCapacity } = {}) {
   const config = runnerConfiguration(argv);
   if (config.mode === 'plan') return { status: 'plan', writes: false, ...config,
     command: 'Use --mode=execute with --expected-ref, --run-id and --max-batches on Railway mounted /data.' };
@@ -258,20 +278,24 @@ export async function runR2MigrationRunner({ argv = process.argv.slice(2), env =
   check(await realpath(directory) === directory && await realpath(parent) === parent, 'runner_state_directory_is_symlink');
   // A crash deliberately leaves the lock. Reconciliation, not a restart policy, owns its removal.
   const lock = path.join(directory, 'runner.lock');
-  try { await saveExclusive(lock, { schemaVersion: 1, processId: process.pid, startedAt: new Date().toISOString() }); }
+  try { await saveExclusive(lock, { schemaVersion: 1, processId: process.pid, startedAt: new Date().toISOString() }, MAX_CONTROL_BYTES); }
   catch (error) { if (error.code === 'EEXIST') check(false, 'runner_lock_requires_reconciliation'); throw error; }
   const manifestPath = path.join(directory, 'run.json');
-  const manifestSha256 = config.resume ? (await loadBounded(manifestPath, 64 * 1024)).sha256 : await saveExclusive(manifestPath, manifest);
+  const manifestSha256 = config.resume ? (await loadBounded(manifestPath, 64 * 1024)).sha256 : await saveExclusive(manifestPath, manifest, MAX_CONTROL_BYTES);
   if (config.resume) check(same((await loadBounded(manifestPath, 64 * 1024)).value, manifest), 'runner_resume_target_mismatch');
   let state = await recoverCleanCheckpoints(directory, manifest, manifestSha256);
   let batches = 0;
+  let capacityPause = null;
   while (!state.exhausted && batches < config.maxBatches) {
     check(state.sequence < MAX_BATCHES, 'runner_total_batch_bound_reached');
+    const capacity = await readCapacity(directory);
+    check(typeof capacity?.admitted === 'boolean', 'runner_capacity_probe_failed');
+    if (!capacity.admitted) { capacityPause = capacity; break; }
     const sequence = state.sequence + 1;
     const files = batchFiles(directory, sequence);
     const intent = { schemaVersion: 1, manifestSha256, sequence, afterId: state.nextAfterId,
       previousCheckpointSha256: state.checkpointSha256 };
-    const intentSha256 = await saveExclusive(files.intent, intent);
+    const intentSha256 = await saveExclusive(files.intent, intent, MAX_CONTROL_BYTES);
     try {
       const advertised = await runCli(cliArguments('inventory', files, state.nextAfterId), { env });
       await saveExclusive(files.inventoryResult, advertised);
@@ -285,19 +309,20 @@ export async function runR2MigrationRunner({ argv = process.argv.slice(2), env =
       const checkpoint = { schemaVersion: 1, manifestSha256, sequence, afterId: state.nextAfterId,
         previousCheckpointSha256: state.checkpointSha256, intentSha256, ...evidence,
         totalPublished: state.totalPublished + evidence.assetCount };
-      const checkpointSha256 = await saveExclusive(files.checkpoint, checkpoint);
+      const checkpointSha256 = await saveExclusive(files.checkpoint, checkpoint, MAX_CONTROL_BYTES);
       state = { sequence, nextAfterId: evidence.nextAfterId, exhausted: evidence.exhausted,
         totalPublished: checkpoint.totalPublished, checkpointSha256 };
       batches += 1;
     } catch (error) {
       await saveExclusive(files.error, { status: 'blocked', code: errorCode(error), sequence,
-        afterId: state.nextAfterId, requiresReconciliation: true }).catch(() => {});
+        afterId: state.nextAfterId, requiresReconciliation: true }, MAX_CONTROL_BYTES).catch(() => {});
       throw error;
     }
   }
   await unlink(lock);
   await syncDirectory(directory);
-  return { status: state.exhausted ? 'traversal_complete' : 'bounded',
+  return { status: capacityPause ? 'capacity_paused' : state.exhausted ? 'traversal_complete' : 'bounded',
+    ...(capacityPause ? { capacity: capacityPause } : {}),
     verificationRequired: 'global_remaining_source_inventory', runId: config.runId, batchesThisInvocation: batches,
     completedBatches: state.sequence, publishedAssets: state.totalPublished, nextAfterId: state.nextAfterId,
     exhausted: state.exhausted, checkpointSha256: state.checkpointSha256 };

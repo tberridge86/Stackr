@@ -71,6 +71,8 @@ jobs:
           node scripts/test-r2-catalogue-rollback.mjs
           node scripts/test-r2-migration-runner.mjs
           node scripts/test-r2-migration-provision.mjs
+          node scripts/test-r2-stopped-migration-reconciliation.mjs
+          node scripts/test-r2-stopped-run-inspection.mjs
           node scripts/run-r2-catalogue-migration.mjs
 
       - name: Stage only the exact reviewed worker source
@@ -84,12 +86,14 @@ jobs:
             backend/lib/objectStorage.js \
             scripts/migrate-catalogue-to-r2.mjs \
             scripts/run-r2-catalogue-migration.mjs \
+            scripts/inspect-r2-stopped-run.mjs \
             scripts/lib/r2-catalogue-migration.mjs \
+            scripts/lib/r2-stopped-migration-reconciliation.mjs \
             scripts/deploy/verified-supabase-postgres.mjs \
             scripts/deploy/postgres-url-guard.mjs \
             deploy/certificates/supabase-prod-ca-2021.crt \
             | tar -x -C "$RUNNER_TEMP/stackr-r2-source"
-          test "$(find "$RUNNER_TEMP/stackr-r2-source" -type f | wc -l)" -eq 10
+          test "$(find "$RUNNER_TEMP/stackr-r2-source" -type f | wc -l)" -eq 12
           # No railway.json, media, root dependencies or credential files enter this upload.
 
       - name: Require disabled one-shot service settings and the attached volume

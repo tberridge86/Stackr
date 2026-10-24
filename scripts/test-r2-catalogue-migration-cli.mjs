@@ -223,6 +223,21 @@ try {
     assert.deepEqual(calls, failure === 'write' ? ['write', 'close'] : ['write', 'sync', 'close']);
   }
 
+
+  const cappedWrites = [];
+  const capped = await openDurableMigrationJournal(path.join(volume, 'capped.jsonl'), env, async () => ({
+    writeFile: async line => { cappedWrites.push(Buffer.byteLength(line)); },
+    sync: async () => {}, close: async () => {},
+  }));
+  const chunk = { data: '\u00e9'.repeat((16 * 1024 * 1024 - 12) / 2) };
+  await capped.append(chunk);
+  await capped.append(chunk);
+  assert.deepEqual(cappedWrites, [16 * 1024 * 1024, 16 * 1024 * 1024]);
+  await assert.rejects(() => capped.append({}), /journal_too_large/);
+  await assert.rejects(() => capped.append({}), /journal_too_large/);
+  await assert.rejects(() => capped.close(), /journal_too_large/);
+  assert.equal(cappedWrites.length, 2, 'journal cap rejects before disk write and cannot continue');
+
   const storage = fakeStorage();
   const fetchCalls = [];
   const executeDb = fakeDb();

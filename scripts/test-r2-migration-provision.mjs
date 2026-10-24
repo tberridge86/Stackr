@@ -51,12 +51,21 @@ for (const selector of ['--project "$RAILWAY_PROJECT_ID"', '--environment "$RAIL
 assert.doesNotMatch(deploy, /--new|deployment redeploy|migrate-catalogue-to-r2/);
 const tests = step('Verify migration, journal rollback and bounded runner').run;
 for (const filename of ['test-r2-catalogue-migration.mjs', 'test-r2-catalogue-migration-cli.mjs',
-  'test-r2-catalogue-rollback.mjs', 'test-r2-migration-runner.mjs', 'test-r2-migration-provision.mjs']) {
+  'test-r2-catalogue-rollback.mjs', 'test-r2-migration-runner.mjs', 'test-r2-migration-provision.mjs',
+  'test-r2-stopped-migration-reconciliation.mjs', 'test-r2-stopped-run-inspection.mjs']) {
   assert.ok(tests.includes('node scripts/' + filename), 'release-critical guard suites are required');
 }
 const stage = step('Stage only the exact reviewed worker source').run;
 assert.ok(stage.includes('git archive "$EXPECTED_MAIN_SHA" --'));
 assert.ok(stage.includes('scripts/run-r2-catalogue-migration.mjs'));
+for (const file of ['scripts/inspect-r2-stopped-run.mjs', 'scripts/lib/r2-stopped-migration-reconciliation.mjs']) {
+  assert.ok(stage.includes(file), 'read-only reconciliation dependency must be staged');
+}
+assert.ok(stage.includes('-eq 12'), 'worker source archive must have exactly twelve files');
+const dockerfile = await readFile(new URL('../deploy/catalogue-r2-migration/Dockerfile', import.meta.url), 'utf8');
+for (const file of ['scripts/inspect-r2-stopped-run.mjs', 'scripts/lib/r2-stopped-migration-reconciliation.mjs']) {
+  assert.ok(dockerfile.includes(file), 'reconciliation dependency must be copied into worker');
+}
 assert.doesNotMatch(stage.split('git archive')[1].split('| tar')[0], /railway\.json|node_modules|\.env/);
 
 const preflight = new AsyncFunction('assert', 'process', 'fetch', 'console', 'AbortSignal',
