@@ -13,6 +13,7 @@ const UUID = /^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-
 const POINTER_FIELDS = new Set(['storage_provider', 'storage_bucket', 'storage_key', 'storage_path', 'url',
   'content_sha256', 'sha256', 'byte_size', 'derivative_list', 'cache_control', 'archival_storage_key']);
 const MAX_INVENTORY_BYTES = 4 * 1024 * 1024;
+const MAX_JOURNAL_BYTES = 32 * 1024 * 1024;
 
 function check(value, code) { if (!value) throw Object.assign(new Error(code), { code }); }
 function canonical(value) {
@@ -117,10 +118,15 @@ export async function openDurableMigrationJournal(filename, env, openHandle = op
   const handle = await openHandle(path.join(directory, path.basename(filename)), 'ax', 0o600);
   try { await syncDirectory(directory); } catch (error) { await handle.close(); throw error; }
   let pending = Promise.resolve();
+  let writtenBytes = 0;
   return {
     append(record) {
       pending = pending.then(async () => {
-        await handle.writeFile(`${JSON.stringify(record)}\n`);
+        const line = `${JSON.stringify(record)}\n`;
+        const byteLength = Buffer.byteLength(line);
+        check(writtenBytes + byteLength <= MAX_JOURNAL_BYTES, 'journal_too_large');
+        writtenBytes += byteLength;
+        await handle.writeFile(line);
         await handle.sync();
       });
       return pending;
@@ -251,7 +257,7 @@ export function createPgMigrationPublisher(db, assets, journal, config, verified
 
 export async function readRollbackJournal(filename, approvedDigest) {
   check(filename && /^[a-f0-9]{64}$/.test(approvedDigest ?? ''), 'approved_journal_digest_required');
-  const maximum = 32 * 1024 * 1024;
+  const maximum = MAX_JOURNAL_BYTES;
   check((await stat(filename)).size <= maximum, 'journal_too_large');
   const bytes = await readFile(filename);
   check(bytes.length <= maximum && sha256(bytes) === approvedDigest, 'approved_journal_digest_mismatch');
