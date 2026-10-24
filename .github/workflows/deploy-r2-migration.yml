@@ -115,7 +115,7 @@ jobs:
                   railwayConfigFile dockerfilePath source { repo image } activeDeployments { id }
                 }
                 environment(id: $environmentId) {
-                  id projectId
+                  id projectId config(decryptVariables: false)
                   volumeInstances(first: 100) {
                     pageInfo { hasNextPage }
                     edges { node { serviceId environmentId mountPath deletedAt isPendingDeletion } }
@@ -174,7 +174,25 @@ jobs:
             assert.ok(empty(instance.dockerfilePath)
               || instance.dockerfilePath === 'deploy/catalogue-r2-migration/Dockerfile');
             category = 'NUM_REPLICAS';
-            assert.equal(instance.numReplicas, 1);
+            // Railway CLI 5.30.1 defaults the nullable legacy count to one only
+            // without a regional manifest; that legacy field alone misses multi-region replicas.
+            assert.ok(instance.numReplicas === null || instance.numReplicas === 1);
+            const object = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
+            assert.ok(object(environment.config) && object(environment.config.services));
+            assert.ok(Object.hasOwn(environment.config.services, env.RAILWAY_MIGRATION_SERVICE_ID));
+            const desired = environment.config.services[env.RAILWAY_MIGRATION_SERVICE_ID];
+            assert.ok(object(desired));
+            assert.ok(desired.deploy == null || object(desired.deploy));
+            assert.ok(desired.deploy?.numReplicas == null || desired.deploy.numReplicas === 1);
+            const regions = desired.deploy?.multiRegionConfig;
+            assert.ok(regions == null || object(regions));
+            if (regions != null) {
+              const entries = Object.entries(regions);
+              assert.ok(entries.length <= 1);
+              for (const [region, settings] of entries) {
+                assert.ok(region.length > 0 && object(settings) && settings.numReplicas === 1);
+              }
+            }
             category = 'SOURCE';
             assert.ok(instance.source === null
               || (empty(instance.source.repo) && empty(instance.source.image)));

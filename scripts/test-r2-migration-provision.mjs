@@ -72,6 +72,7 @@ const base = {
     railwayConfigFile: null, dockerfilePath: null, source: null,
   },
   environment: { id: target.RAILWAY_ENVIRONMENT_ID, projectId: target.RAILWAY_PROJECT_ID,
+    config: { services: { [target.RAILWAY_MIGRATION_SERVICE_ID]: { deploy: null } } },
     volumeInstances: { pageInfo: { hasNextPage: false }, edges: [{ node: {
       serviceId: target.RAILWAY_MIGRATION_SERVICE_ID, environmentId: target.RAILWAY_ENVIRONMENT_ID,
       mountPath: '/data', deletedAt: null, isPendingDeletion: false,
@@ -145,9 +146,40 @@ await guardCase((data, outcome) => { outcome.malformed = true; }, false, 'RESPON
 await guardCase(data => { data.migrationVariables.RAILWAY_RUN_UID = 'provider-sensitive-error'; }, false, 'RUN_UID');
 await guardCase(data => { data.serviceInstance.source = { repo: 'provider-sensitive-error', image: null }; }, false, 'SOURCE');
 await guardCase(data => { data.environment.volumeInstances.edges[0].node.mountPath = 'provider-sensitive-error'; }, false, 'VOLUME');
-await guardCase(data => { data.serviceInstance.numReplicas = null; }, false, 'NUM_REPLICAS');
+await guardCase(data => { data.serviceInstance.numReplicas = null; }, true);
 await guardCase(data => { data.serviceInstance.numReplicas = 2; }, false, 'NUM_REPLICAS');
 await guardCase(data => { data.serviceInstance.dockerfilePath = 'provider-sensitive-error'; }, false, 'DOCKERFILE');
+
+
+assert.match(step('Require disabled one-shot service settings and the attached volume').run,
+  /config\(decryptVariables: false\)/);
+const desired = data => data.environment.config.services[target.RAILWAY_MIGRATION_SERVICE_ID];
+await guardCase(data => { data.serviceInstance.numReplicas = null; desired(data).deploy = {}; }, true);
+await guardCase(data => { data.serviceInstance.numReplicas = null; desired(data).deploy = { multiRegionConfig: {} }; }, true);
+await guardCase(data => { data.serviceInstance.numReplicas = null; desired(data).deploy = { multiRegionConfig: { 'europe-west4': { numReplicas: 1 } } }; }, true);
+for (const mutate of [
+  data => { delete data.serviceInstance.numReplicas; },
+  data => { data.serviceInstance.numReplicas = '1'; },
+  data => { data.serviceInstance.numReplicas = 0; },
+  data => { delete data.environment.config; },
+  data => { data.environment.config = 'provider-sensitive-error'; },
+  data => { data.environment.config.services = []; },
+  data => { delete data.environment.config.services[target.RAILWAY_MIGRATION_SERVICE_ID]; },
+  data => { data.environment.config.services[target.RAILWAY_MIGRATION_SERVICE_ID] = null; },
+  data => { desired(data).deploy = 'provider-sensitive-error'; },
+  data => { desired(data).deploy = { numReplicas: 2 }; },
+  data => { desired(data).deploy = { numReplicas: '1' }; },
+  data => { desired(data).deploy = { numReplicas: 0 }; },
+  data => { desired(data).deploy = { numReplicas: 2, multiRegionConfig: { region: { numReplicas: 1 } } }; },
+  data => { desired(data).deploy = { multiRegionConfig: [] }; },
+  data => { desired(data).deploy = { multiRegionConfig: 'provider-sensitive-error' }; },
+  data => { desired(data).deploy = { multiRegionConfig: { region: null } }; },
+  data => { desired(data).deploy = { multiRegionConfig: { region: {} } }; },
+  data => { desired(data).deploy = { multiRegionConfig: { region: { numReplicas: '1' } } }; },
+  data => { desired(data).deploy = { multiRegionConfig: { region: { numReplicas: 0 } } }; },
+  data => { desired(data).deploy = { multiRegionConfig: { region: { numReplicas: 2 } } }; },
+  data => { desired(data).deploy = { multiRegionConfig: { one: { numReplicas: 1 }, two: { numReplicas: 1 } } }; },
+]) await guardCase(mutate, false, 'NUM_REPLICAS');
 
 const configureGuard = new AsyncFunction('migrationConfiguration', 'process', 'console', inlineNode(configure.run));
 const validEnvironment = {
