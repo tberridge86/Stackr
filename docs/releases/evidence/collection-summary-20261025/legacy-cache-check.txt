@@ -1,0 +1,2 @@
+Collection summary background refresh failed: simulated binder read failure
+Collection summary performance checks passed: saved-only paged reads, raw/graded counts, conservative price coverage, persisted stale-while-refresh, account isolation, and joined stale-result rejection.

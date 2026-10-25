@@ -1,17 +1,34 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchBinders, type BinderCardRecord, type BinderRecord } from './binders';
-import { USD_TO_GBP } from './config';
 import { fetchOwnedCardRows, type OwnedCardRow } from './ownership';
-import { getPriceFromPokemonCard } from './pricing';
 import { supabase } from './supabase';
+import { parseCollectionSummary, readCompactCollectionSummary } from './collectionSummaryRead';
+import { storedRawSummaryPrice, COLLECTION_SUMMARY_USD_TO_GBP } from './collectionSummaryValue';
+import { withPersonalDataReadTimeout } from './personalDataRead';
 import { bumpCollectionSummaryVersion, getCollectionSummaryVersion } from './collectionSummaryInvalidation';
 
 const SUMMARY_CACHE_TTL_MS = 60 * 1000;
 const SUMMARY_PERSISTED_MAX_AGE_MS = 6 * 60 * 60 * 1000;
-const SUMMARY_CACHE_STORAGE_PREFIX = 'stackr:collection-summary:v2:';
+const SUMMARY_CACHE_STORAGE_PREFIX = 'stackr:collection-summary:v3:';
 const MASTER_SET_STORAGE_PREFIX = 'stackr:binder-master-set:';
 
+export type CollectionSummaryValuation = {
+  basis: 'stored_tcg_raw_estimate';
+  currency: 'GBP';
+  usdToGbp: number;
+  totalUnits: number;
+  pricedUnits: number;
+  unpricedUnits: number;
+  unsupportedUnits: number;
+  missingPriceUnits: number;
+  freshness: 'unknown';
+  state: 'empty' | 'unavailable' | 'partial' | 'available';
+};
+
 export type CollectionSummary = {
+  schemaVersion: 'collection-summary-v1';
+  subjectUserId: string | null;
+  valuation: CollectionSummaryValuation;
   totalOwnedItems: number;
   totalCardsOwned: number;
   uniqueCards: number;
@@ -19,7 +36,7 @@ export type CollectionSummary = {
   gradedSlabsOwned: number;
   sealedProductsOwned: number;
   duplicateCopies: number;
-  collectionValue: number;
+  collectionValue: number | null;
   binderCount: number;
   completedSets: number;
   updatedAt: string;
@@ -30,90 +47,12 @@ let inflightSummary: { userId: string; version: number; promise: Promise<Collect
 
 const toQuantity = (value: unknown) => Math.max(1, Math.floor(Number(value ?? 1) || 1));
 const ownedQuantity = (card: BinderCardRecord) => card.owned ? toQuantity(card.owned_quantity) : 0;
-const cardKey = (setId?: string | null, cardId?: string | null) => `${setId ?? ''}:${cardId ?? ''}`;
-const POKEMON_CARD_COLUMNS = 'id, name, number, rarity, image_small, image_large, set_id, raw_data';
-const SAVED_BINDER_CARD_COLUMNS = 'id, binder_id, card_id, set_id, language, api_card_id, card_name, api_set_id, card_number, image_url, set_name, set_total, slot_order, owned, owned_quantity, condition, grade_company, grade, notes, ebay_price, tcg_price, cardmarket_price, last_price_update, created_at';
+const cardKey = (setId?: string | null, cardId?: string | null) => JSON.stringify([setId ?? '', cardId ?? '']);
+const POKEMON_CARD_COLUMNS = 'id, language, set_id, raw_data';
+const SAVED_BINDER_CARD_COLUMNS = 'id, binder_id, card_id, set_id, language, slot_order, owned, owned_quantity, condition, grade_company, grade';
 const METADATA_CHUNK_SIZE = 50;
 const METADATA_CONCURRENCY = 3;
 const SUMMARY_PAGE_SIZE = 50;
-
-const TCG_PRICE_VARIANT_PRIORITY = [
-  'holofoil',
-  'reverseHolofoil',
-  'reverseHoloEnergy',
-  'reverseHoloPokeball',
-  'normal',
-  'unlimitedHolofoil',
-  'unlimited',
-  '1stEditionHolofoil',
-  '1stEditionNormal',
-];
-
-const TCG_PRICE_VARIANT_FALLBACKS: Record<string, string[]> = {
-  card: TCG_PRICE_VARIANT_PRIORITY,
-  normal: ['normal', 'unlimited'],
-  unlimited: ['unlimited', 'normal'],
-  holofoil: ['holofoil', 'unlimitedHolofoil'],
-  unlimitedHolofoil: ['unlimitedHolofoil', 'holofoil'],
-  reverseHolofoil: ['reverseHolofoil', 'reverseHoloEnergy', 'reverseHoloPokeball', 'holofoil', 'normal'],
-  reverseHoloEnergy: ['reverseHoloEnergy', 'reverseHolofoil', 'normal'],
-  reverseHoloPokeball: ['reverseHoloPokeball', 'reverseHolofoil', 'normal'],
-  '1stEditionNormal': ['1stEditionNormal'],
-  '1stEditionHolofoil': ['1stEditionHolofoil'],
-};
-
-const TCG_PRICE_EDITION_FALLBACKS: Record<string, string[]> = {
-  '1st_edition': ['1stEditionHolofoil', '1stEditionNormal'],
-  unlimited: ['unlimitedHolofoil', 'unlimited', 'holofoil', 'normal', 'reverseHolofoil', 'reverseHoloEnergy', 'reverseHoloPokeball'],
-};
-
-function toGbpFromUsd(value: number) {
-  return Math.round(value * USD_TO_GBP * 100) / 100;
-}
-
-function getTcgEntryUsd(entry: any): number | null {
-  const value = entry?.market ?? entry?.mid ?? entry?.low;
-  return typeof value === 'number' && Number.isFinite(value) ? value : null;
-}
-
-function getTcgPriceFromPricesGbp(prices: any, variant?: string | null, edition?: string | null): number | null {
-  if (!prices) return null;
-  const preferred = variant
-    ? TCG_PRICE_VARIANT_FALLBACKS[variant] ?? [variant, ...TCG_PRICE_VARIANT_PRIORITY]
-    : edition
-      ? TCG_PRICE_EDITION_FALLBACKS[edition] ?? TCG_PRICE_VARIANT_PRIORITY
-      : TCG_PRICE_VARIANT_PRIORITY;
-
-  for (const key of preferred) {
-    const usd = getTcgEntryUsd(prices[key]);
-    if (usd != null) return toGbpFromUsd(usd);
-  }
-
-  if (variant || edition) return null;
-  for (const entry of Object.values(prices) as any[]) {
-    const usd = getTcgEntryUsd(entry);
-    if (usd != null) return toGbpFromUsd(usd);
-  }
-  return null;
-}
-
-function getOwnedCardCurrentTcgGbp(card: any, variant?: string | null, edition?: string | null): number | null {
-  const prices =
-    card?.card?.tcgplayer?.prices ??
-    card?.card?.raw_data?.tcgplayer?.prices ??
-    card?.raw_data?.tcgplayer?.prices ??
-    card?.tcgplayer?.prices ??
-    null;
-  const variantPrice = getTcgPriceFromPricesGbp(prices, variant, edition);
-  const direct = card?.tcg_price;
-  const directPrice = typeof direct === 'number' && Number.isFinite(direct) && direct > 0
-    ? Math.round(direct * 100) / 100
-    : null;
-
-  if ((variant || edition) && variantPrice != null) return variantPrice;
-  const rawFallback = getPriceFromPokemonCard(card?.raw_data ?? card?.card?.raw_data ?? card);
-  return directPrice ?? variantPrice ?? (typeof rawFallback === 'number' ? toGbpFromUsd(rawFallback) : null);
-}
 
 async function isMasterSetEnabled(binder: BinderRecord) {
   try {
@@ -161,12 +100,15 @@ async function mapWithConcurrency<T, R>(items: T[], concurrency: number, mapper:
 async function readSummaryPages<T extends { id: string }>(
   buildQuery: () => any,
   accepts: (row: T) => boolean,
+  signal: AbortSignal,
 ): Promise<T[]> {
   const rows: T[] = [];
   const seen = new Set<string>();
   for (;;) {
     const from = rows.length;
-    const { data, error } = await buildQuery().range(from, from + SUMMARY_PAGE_SIZE - 1);
+    if (signal.aborted) throw new Error('The collection summary was cancelled.');
+    const { data, error } = await buildQuery().range(from, from + SUMMARY_PAGE_SIZE - 1).abortSignal(signal);
+    if (signal.aborted) throw new Error('The collection summary was cancelled.');
     if (error) throw error;
     if (!Array.isArray(data) || data.length > SUMMARY_PAGE_SIZE) {
       throw new Error('Collection summary received an incomplete page.');
@@ -182,14 +124,14 @@ async function readSummaryPages<T extends { id: string }>(
   }
 }
 
-async function fetchPokemonCardsById(cardIds: string[]) {
+async function fetchPokemonCardsById(cardIds: string[], signal: AbortSignal) {
   const uniqueIds = [...new Set(cardIds.filter(Boolean))];
   const cardMap = new Map<string, any>();
 
   const rowsByChunk = await mapWithConcurrency(chunk(uniqueIds, METADATA_CHUNK_SIZE), METADATA_CONCURRENCY, (idChunk) =>
     readSummaryPages<any>(() => supabase.from('pokemon_cards')
       .select(POKEMON_CARD_COLUMNS).in('id', idChunk).order('id', { ascending: true }),
-    (row) => idChunk.includes(row.id)));
+    (row) => idChunk.includes(row.id), signal));
 
   for (const rows of rowsByChunk) {
     for (const card of rows) if (card.id) cardMap.set(card.id, card);
@@ -198,75 +140,14 @@ async function fetchPokemonCardsById(cardIds: string[]) {
   return cardMap;
 }
 
-async function fetchSavedOwnedBinderCards(binderIds: string[]) {
+async function fetchSavedOwnedBinderCards(binderIds: string[], signal: AbortSignal) {
   const uniqueBinderIds = [...new Set(binderIds.filter(Boolean))];
   const rowsByChunk = await mapWithConcurrency(chunk(uniqueBinderIds, METADATA_CHUNK_SIZE), METADATA_CONCURRENCY, (binderIdChunk) =>
     readSummaryPages<BinderCardRecord>(() => supabase.from('binder_cards')
       .select(SAVED_BINDER_CARD_COLUMNS).in('binder_id', binderIdChunk).eq('owned', true)
       .order('slot_order', { ascending: true }).order('id', { ascending: true }),
-    (row) => row.owned === true && binderIdChunk.includes(row.binder_id)));
+    (row) => row.owned === true && binderIdChunk.includes(row.binder_id), signal));
   return rowsByChunk.flat();
-}
-
-function buildCardLikeFromOwnedRow(row: OwnedCardRow, card?: any | null) {
-  const raw = card?.raw_data ?? {};
-  const images = raw.images ?? {};
-  const set = raw.set ?? null;
-
-  return {
-    card_id: row.card_id,
-    set_id: row.set_id,
-    card_name: card?.name ?? raw.name ?? row.card_id,
-    card_number: card?.number ?? raw.number ?? null,
-    image_url: card?.image_small ?? card?.image_large ?? images.small ?? images.large ?? null,
-    card: {
-      id: card?.id ?? row.card_id,
-      name: card?.name ?? raw.name ?? row.card_id,
-      number: card?.number ?? raw.number ?? null,
-      rarity: card?.rarity ?? raw.rarity ?? null,
-      images: {
-        small: card?.image_small ?? images.small ?? null,
-        large: card?.image_large ?? images.large ?? null,
-      },
-      set,
-      tcgplayer: raw.tcgplayer ?? null,
-      cardmarket: raw.cardmarket ?? null,
-      raw_data: raw,
-    },
-    raw_data: raw,
-    tcgplayer: raw.tcgplayer ?? null,
-    tcg_price: null,
-  };
-}
-
-function buildCardLikeFromSavedBinderRow(row: BinderCardRecord, card?: any | null) {
-  const raw = card?.raw_data ?? row.card?.raw_data ?? {};
-  const images = raw.images ?? {};
-  return {
-    ...row,
-    card_id: row.card_id,
-    set_id: row.set_id,
-    card_name: row.card_name ?? card?.name ?? raw.name ?? row.card_id,
-    card_number: row.card_number ?? card?.number ?? raw.number ?? null,
-    image_url: row.image_url ?? card?.image_small ?? card?.image_large ?? images.small ?? images.large ?? null,
-    card: {
-      id: card?.id ?? row.card_id,
-      name: row.card_name ?? card?.name ?? raw.name ?? row.card_id,
-      number: row.card_number ?? card?.number ?? raw.number ?? null,
-      rarity: card?.rarity ?? raw.rarity ?? null,
-      images: {
-        small: row.image_url ?? card?.image_small ?? images.small ?? null,
-        large: card?.image_large ?? images.large ?? null,
-      },
-      set: raw.set ?? null,
-      tcgplayer: raw.tcgplayer ?? null,
-      cardmarket: raw.cardmarket ?? null,
-      raw_data: raw,
-    },
-    raw_data: raw,
-    tcgplayer: raw.tcgplayer ?? null,
-    tcg_price: row.tcg_price,
-  };
 }
 
 async function getCompletedSetCount(
@@ -274,6 +155,7 @@ async function getCompletedSetCount(
   savedOwnedRows: BinderCardRecord[],
   variantRows: OwnedCardRow[],
   masterByBinderId: Map<string, boolean>,
+  signal: AbortSignal,
 ) {
   const officialBinders = binders.filter((binder) => binder.type === 'official' && binder.source_set_id);
   if (!officialBinders.length) return 0;
@@ -291,7 +173,7 @@ async function getCompletedSetCount(
     rows: await readSummaryPages<any>(() => kind === 'sets'
       ? supabase.from('pokemon_sets').select('id, printed_total, total').in('id', ids).order('id', { ascending: true })
       : supabase.from('pokemon_cards').select('id, set_id, rarity, raw_data').in('set_id', ids).order('id', { ascending: true }),
-    (row) => ids.includes(kind === 'sets' ? row.id : row.set_id)),
+    (row) => ids.includes(kind === 'sets' ? row.id : row.set_id), signal),
   }));
   const setRows = metadataResults.filter((result) => result.kind === 'sets').flatMap((result) => result.rows);
   const officialCards = metadataResults.filter((result) => result.kind === 'cards').flatMap((result) => result.rows);
@@ -361,12 +243,15 @@ async function getCompletedSetCount(
   return completed.size;
 }
 
-async function buildCollectionSummary(userId: string): Promise<CollectionSummary> {
+async function buildCollectionSummary(userId: string, signal: AbortSignal): Promise<CollectionSummary> {
+  const compact = await readCompactCollectionSummary(userId, signal);
+  if (compact) return compact;
+  if (signal.aborted) throw new Error('The collection summary was cancelled.');
   // The summary only needs binders the user saved and owns. Avoid fetchBinderCards here:
   // official binders otherwise expand an entire catalogue and attach live price snapshots.
   const [binders, variantRows] = await Promise.all([
     fetchBinders({ enrich: false }),
-    fetchOwnedCardRows(),
+    fetchOwnedCardRows({ isCurrent: () => !signal.aborted }),
   ]);
   if (binders.some((binder) => binder.user_id !== userId)) {
     throw new Error('Collection summary received binders for a different account.');
@@ -375,8 +260,8 @@ async function buildCollectionSummary(userId: string): Promise<CollectionSummary
     throw new Error('Collection summary received ownership rows for a different account.');
   }
   const [savedOwnedRows, masterSetEnabled] = await Promise.all([
-    fetchSavedOwnedBinderCards(binders.map((binder) => binder.id)),
-    Promise.all(binders.map(async (binder) => [binder.id, await isMasterSetEnabled(binder)] as const)),
+    fetchSavedOwnedBinderCards(binders.map((binder) => binder.id), signal),
+    mapWithConcurrency(binders, METADATA_CONCURRENCY, async (binder) => [binder.id, await isMasterSetEnabled(binder)] as const),
   ]);
   const knownBinderIds = new Set(binders.map((binder) => binder.id));
   if (savedOwnedRows.some((row) => !knownBinderIds.has(row.binder_id))) {
@@ -388,13 +273,16 @@ async function buildCollectionSummary(userId: string): Promise<CollectionSummary
   const ownedCardMap = await fetchPokemonCardsById([
     ...variantRows.map((row) => row.card_id),
     ...savedOwnedRows.map((row) => row.card_id),
-  ]);
+  ], signal);
 
   let totalOwnedItems = 0;
   let rawCardsOwned = 0;
   let gradedSlabsOwned = 0;
   let duplicateCopies = 0;
   let collectionValue = 0;
+  let pricedUnits = 0;
+  let unsupportedUnits = 0;
+  let missingPriceUnits = 0;
   const uniqueCardKeys = new Set<string>();
   const countedUnitKeys = new Set<string>();
 
@@ -414,13 +302,22 @@ async function buildCollectionSummary(userId: string): Promise<CollectionSummary
     duplicateCopies += Math.max(0, safeQuantity - 1);
     if (mode === 'graded') gradedSlabsOwned += safeQuantity;
     else rawCardsOwned += safeQuantity;
-    const unitValue = getOwnedCardCurrentTcgGbp(card, variant, card.__binderEdition) ?? 0;
-    collectionValue += unitValue * safeQuantity;
+    const price = storedRawSummaryPrice({
+      card: ownedCardMap.get(card.card_id), cardId: card.card_id, setId: card.set_id, variant,
+      edition: card.__binderEdition, condition: card.__condition,
+      gradeCompany: card.grade_company, grade: card.grade, mode, languages: card.__languages,
+    });
+    if (price.amount !== null) {
+      pricedUnits += safeQuantity;
+      collectionValue += price.amount * safeQuantity;
+    } else if (price.unsupported) unsupportedUnits += safeQuantity;
+    else missingPriceUnits += safeQuantity;
   };
 
   for (const row of variantRows) {
     if (!row.card_id || !row.set_id) continue;
-    const card = buildCardLikeFromOwnedRow(row, ownedCardMap.get(row.card_id));
+    const card = { card_id: row.card_id, set_id: row.set_id,
+      __condition: row.condition, grade_company: row.grade_company, grade: row.grade };
     const mode = row.grade_company || row.grade ? 'graded' : 'raw';
     const unitKey = `owned:${row.id ?? `${row.set_id}:${row.card_id}:${row.variant ?? ''}:${row.condition ?? ''}:${row.grade_company ?? ''}:${row.grade ?? ''}`}`;
     addUnit(card, row.variant || 'normal', row.quantity, mode, unitKey);
@@ -429,8 +326,10 @@ async function buildCollectionSummary(userId: string): Promise<CollectionSummary
   for (const savedRow of savedOwnedRows) {
     const binder = binderById.get(savedRow.binder_id);
     const card = {
-      ...buildCardLikeFromSavedBinderRow(savedRow, ownedCardMap.get(savedRow.card_id)),
+      ...savedRow,
       __binderEdition: binder?.edition ?? null,
+      __condition: savedRow.condition || binder?.default_condition || 'Near Mint',
+      __languages: [savedRow.language, binder?.language],
     };
     const key = cardKey(card.set_id, card.card_id);
     if (variantRowsByCard.has(key)) continue;
@@ -438,9 +337,15 @@ async function buildCollectionSummary(userId: string): Promise<CollectionSummary
     addUnit(card, null, ownedQuantity(savedRow), mode);
   }
 
-  const completedSets = await getCompletedSetCount(binders, savedOwnedRows, variantRows, masterEntries);
+  const completedSets = await getCompletedSetCount(binders, savedOwnedRows, variantRows, masterEntries, signal);
 
+  const unpricedUnits = unsupportedUnits + missingPriceUnits;
   return {
+    schemaVersion: 'collection-summary-v1',
+    subjectUserId: userId,
+    valuation: { basis: 'stored_tcg_raw_estimate', currency: 'GBP', usdToGbp: COLLECTION_SUMMARY_USD_TO_GBP,
+      totalUnits: totalOwnedItems, pricedUnits, unpricedUnits, unsupportedUnits, missingPriceUnits, freshness: 'unknown',
+      state: !totalOwnedItems ? 'empty' : !pricedUnits ? 'unavailable' : unpricedUnits ? 'partial' : 'available' },
     totalOwnedItems,
     totalCardsOwned: rawCardsOwned + gradedSlabsOwned,
     uniqueCards: uniqueCardKeys.size,
@@ -448,7 +353,7 @@ async function buildCollectionSummary(userId: string): Promise<CollectionSummary
     gradedSlabsOwned,
     sealedProductsOwned: 0,
     duplicateCopies,
-    collectionValue: Math.round(collectionValue * 100) / 100,
+    collectionValue: pricedUnits || !totalOwnedItems ? Math.round(collectionValue * 100) / 100 : null,
     binderCount: binders.length,
     completedSets,
     updatedAt: new Date().toISOString(),
@@ -457,6 +362,10 @@ async function buildCollectionSummary(userId: string): Promise<CollectionSummary
 
 function getEmptySummary(): CollectionSummary {
   return {
+    schemaVersion: 'collection-summary-v1',
+    subjectUserId: null,
+    valuation: { basis: 'stored_tcg_raw_estimate', currency: 'GBP', usdToGbp: COLLECTION_SUMMARY_USD_TO_GBP,
+      totalUnits: 0, pricedUnits: 0, unpricedUnits: 0, unsupportedUnits: 0, missingPriceUnits: 0, freshness: 'unknown', state: 'empty' },
     totalOwnedItems: 0,
     totalCardsOwned: 0,
     uniqueCards: 0,
@@ -475,14 +384,13 @@ function getSummaryCacheKey(userId: string) {
   return `${SUMMARY_CACHE_STORAGE_PREFIX}${userId}`;
 }
 
-function isUsableSummary(value: any): value is CollectionSummary {
-  return Boolean(
-    value
-    && typeof value === 'object'
-    && typeof value.totalCardsOwned === 'number'
-    && typeof value.collectionValue === 'number'
-    && typeof value.binderCount === 'number'
-  );
+function isUsableSummary(value: unknown, userId: string): value is CollectionSummary {
+  try {
+    parseCollectionSummary(value, userId);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function readPersistedSummary(userId: string, maxAgeMs = SUMMARY_PERSISTED_MAX_AGE_MS) {
@@ -492,7 +400,7 @@ async function readPersistedSummary(userId: string, maxAgeMs = SUMMARY_PERSISTED
 
     const parsed = JSON.parse(raw);
     const cachedAt = Number(parsed?.cachedAt ?? 0);
-    if (!cachedAt || Date.now() - cachedAt > maxAgeMs || !isUsableSummary(parsed?.value)) {
+    if (!cachedAt || Date.now() - cachedAt > maxAgeMs || !isUsableSummary(parsed?.value, userId)) {
       return null;
     }
 
@@ -524,20 +432,35 @@ function getSessionUserId() {
 async function refreshCollectionSummary(userId: string, version: number) {
   let entry!: { userId: string; version: number; promise: Promise<CollectionSummary> };
   const promise = (async () => {
-    const value = await buildCollectionSummary(userId);
-    // A refresh may finish after logout, account switch, or an ownership mutation.
-    // Reject for every joined caller rather than allowing a raw build result through.
-    if (inflightSummary !== entry || version !== getCollectionSummaryVersion() || await getSessionUserId() !== userId) {
-      throw new Error('Collection summary changed account or version before completion.');
+    const controller = new AbortController();
+    let changedAccount = false;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || session?.user?.id !== userId) {
+        changedAccount = true;
+        controller.abort();
+      }
+    });
+    try {
+      return await withPersonalDataReadTimeout(async (signal) => {
+        const value = parseCollectionSummary(await buildCollectionSummary(userId, signal), userId);
+        // A refresh may finish after logout, account switch, or an ownership mutation.
+        // Reject for every joined caller rather than allowing a raw build result through.
+        const beforeWriteUserId = await getSessionUserId();
+        if (changedAccount || signal.aborted || inflightSummary !== entry || version !== getCollectionSummaryVersion() || beforeWriteUserId !== userId) {
+          throw new Error('Collection summary changed account or version before completion.');
+        }
+        await writePersistedSummary(userId, value);
+        const afterWriteUserId = await getSessionUserId();
+        if (changedAccount || signal.aborted || inflightSummary !== entry || version !== getCollectionSummaryVersion()
+          || afterWriteUserId !== userId) {
+          throw new Error('Collection summary changed account or version before completion.');
+        }
+        cachedSummary = { userId, version, expiresAt: Date.now() + SUMMARY_CACHE_TTL_MS, value };
+        return value;
+      }, { signal: controller.signal });
+    } finally {
+      subscription.unsubscribe();
     }
-    cachedSummary = {
-      userId,
-      version,
-      expiresAt: Date.now() + SUMMARY_CACHE_TTL_MS,
-      value,
-    };
-    await writePersistedSummary(userId, value);
-    return value;
   })();
   entry = { userId, version, promise };
   inflightSummary = entry;
@@ -563,7 +486,8 @@ function refreshOrJoinCollectionSummary(userId: string, version: number) {
 }
 
 async function ensureCurrentSummaryIdentity(userId: string, version: number) {
-  if (version !== getCollectionSummaryVersion() || await getSessionUserId() !== userId) {
+  const currentUserId = await getSessionUserId();
+  if (version !== getCollectionSummaryVersion() || currentUserId !== userId) {
     throw new Error('Collection summary changed account or version before completion.');
   }
 }

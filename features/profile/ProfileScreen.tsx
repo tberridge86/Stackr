@@ -33,6 +33,7 @@ import { useTheme } from '../../components/theme-context';
 import { ACHIEVEMENTS, type AchievementDefinition, type AchievementUnlock } from '../../lib/achievements';
 import { isCurrentAccountRequest } from '../../lib/accountRequestGuard';
 import { getCollectionSummary } from '../../lib/collectionSummary';
+import { collectionSummaryCoverageText } from '../../lib/collectionSummaryRead';
 import { sanitizeGate0Notification } from '../../lib/gate0CommerceCopy';
 import { readCreateListingDraftSummary } from '../../lib/listingDrafts';
 import { getPriceFromPokemonCard } from '../../lib/pricing';
@@ -86,7 +87,8 @@ type ProfileStats = {
   binderCount: number;
   ownedCount: number;
   completedSets: number;
-  collectionValue: number;
+  collectionValue: number | null;
+  collectionValueCoverage: string;
   tradeCount: number;
   sellerListings: number | null;
   sellerDrafts: number;
@@ -107,7 +109,8 @@ const initialStats: ProfileStats = {
   binderCount: 0,
   ownedCount: 0,
   completedSets: 0,
-  collectionValue: 0,
+  collectionValue: null,
+  collectionValueCoverage: 'Stored prices unavailable',
   tradeCount: 0,
   sellerListings: null,
   sellerDrafts: 0,
@@ -430,10 +433,12 @@ function StatChip({
   icon,
   label,
   value,
+  detail,
 }: {
   icon: HeroIconKey;
   label: string;
   value: string | number;
+  detail?: string;
 }) {
   return (
     <View
@@ -461,6 +466,9 @@ function StatChip({
       <Text style={{ color: '#615B94', fontSize: 10.5, lineHeight: 13, fontWeight: '800', textAlign: 'center' }} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.8}>
         {label}
       </Text>
+      {detail ? (
+        <Text style={{ color: '#615B94', fontSize: 9, lineHeight: 12, textAlign: 'center' }}>{detail}</Text>
+      ) : null}
     </View>
   );
 }
@@ -1461,6 +1469,7 @@ export default function ProfileScreen() {
         ownedCount: collectionSummary.totalCardsOwned,
         completedSets: collectionSummary.completedSets,
         collectionValue: collectionSummary.collectionValue,
+        collectionValueCoverage: collectionSummaryCoverageText(collectionSummary),
         tradeCount: completedTrades,
         sellerListings: activeListings,
         sellerDrafts: draftSummary ? 1 : 0,
@@ -1797,7 +1806,7 @@ export default function ProfileScreen() {
           </View>
 
           <View style={{ flexDirection: 'row', gap: 8, marginTop: 13 }}>
-            <StatChip icon="valuePounds" label="Collection Value" value={money(stats.collectionValue)} />
+            <StatChip icon="valuePounds" label="Stored raw estimate" value={money(stats.collectionValue)} detail={stats.collectionValueCoverage} />
             <StatChip icon="rawCard" label="Cards" value={stats.ownedCount} />
             <StatChip icon="achievements" label="Completed Sets" value={stats.completedSets} />
           </View>
