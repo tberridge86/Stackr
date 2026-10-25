@@ -507,8 +507,9 @@ export async function fetchCardsForPokemon(
   return result;
 }
 
-const OWNERSHIP_PAGE_SIZE = 500;
-const OWNERSHIP_MAX_REQUESTS = 256;
+const OWNERSHIP_PAGE_SIZE = 50;
+// Keep the previous 128,000-row logical capacity when network pages shrink.
+const OWNERSHIP_MAX_REQUESTS = Math.ceil((256 * 500) / OWNERSHIP_PAGE_SIZE);
 const OWNERSHIP_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 export type PokedexOwnershipReadOptions = {

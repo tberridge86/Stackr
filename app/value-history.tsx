@@ -572,14 +572,14 @@ function EmptyMovers({ message }: { message: string }) {
 
 type ValueHistoryState = {
   scope: string;
-  market: ReturnType<typeof marketValueHistory> & { loaded: boolean; loading: boolean; error: string | null; previewError: string | null };
+  market: ReturnType<typeof marketValueHistory> & { sortBy: MoverDisplayMode | null; loaded: boolean; loading: boolean; error: string | null; previewError: string | null };
   collection: ReturnType<typeof collectionValueHistory> & {
     loaded: boolean; loading: boolean; error: string | null; fromSavedCache: boolean; preparationPending: boolean;
   };
 };
 function emptyValueHistoryState(scope: string): ValueHistoryState {
   return { scope,
-    market: { movers: [], trackedCards: 0, calculatedAt: null, loaded: false, loading: true, error: null, previewError: null },
+    market: { movers: [], trackedCards: 0, calculatedAt: null, coverage: null, sortBy: null, loaded: false, loading: true, error: null, previewError: null },
     collection: { total: null, pointsByRange: { '7D': [], '30D': [], '6M': [], '12M': [] }, coverage: '',
       calculatedAt: null, historyAvailable: false, loaded: false, loading: true, error: null,
       fromSavedCache: false, preparationPending: false },
@@ -601,7 +601,10 @@ export default function ValueHistoryScreen() {
   const [refreshingScope, setRefreshingScope] = useState<string | null>(null);
   // Mask the old account in the transition render, before effect cleanup runs.
   const visible = state.scope === scope ? state : emptyValueHistoryState(scope);
-  const { market, collection } = visible;
+  const { collection } = visible;
+  // A globally ranked cash sample cannot stand in for a percentage result.
+  const market = visible.market.sortBy === moverDisplayMode || visible.market.sortBy === null
+    ? visible.market : { ...emptyValueHistoryState(scope).market, sortBy: moverDisplayMode };
   const generalMovers = market.movers;
   const trackedMarketCount = market.loaded ? market.trackedCards : null;
   const generalLoading = market.loading;
@@ -661,7 +664,8 @@ export default function ValueHistoryScreen() {
     setRefreshingScope(isRefresh ? scope : null);
     setState((previous) => {
       const next = previous.scope === scope ? previous : emptyValueHistoryState(scope);
-      return { ...next, market: { ...next.market, loading: true, error: null, previewError: null },
+      const nextMarket = next.market.sortBy === moverDisplayMode ? next.market : emptyValueHistoryState(scope).market;
+      return { ...next, market: { ...nextMarket, sortBy: moverDisplayMode, loading: true, error: null, previewError: null },
         collection: { ...next.collection, loading: true, error: null } };
     });
     const publish = (update: (previous: ValueHistoryState) => ValueHistoryState) => {
@@ -695,10 +699,13 @@ export default function ValueHistoryScreen() {
     const loadGeneralMarket = async () => {
       try {
         const response = await withValueHistoryDeadline(
-          () => stackrApiClient.marketMovers({ productType: 'raw_card', currency: 'GBP', limit: 100 }), VALUE_HISTORY_READ_TIMEOUT_MS);
+          () => stackrApiClient.marketMovers({ scope: 'catalogue_daily', sortBy: moverDisplayMode,
+            productType: 'raw_card', currency: 'GBP', limit: 50 }), VALUE_HISTORY_READ_TIMEOUT_MS);
         if (!isCurrent()) return;
-        const result = marketValueHistory(response.data.movers);
-        publish((previous) => ({ ...previous, market: { ...result, loaded: true, loading: false, error: null, previewError: null } }));
+        if (response.data.coverage?.scope !== 'catalogue_daily') throw new Error('Daily catalogue history is unavailable.');
+        const result = marketValueHistory(response.data.movers, response.data.coverage);
+        if (!result.coverage) throw new Error('Daily catalogue coverage is invalid.');
+        publish((previous) => ({ ...previous, market: { ...result, sortBy: moverDisplayMode, loaded: true, loading: false, error: null, previewError: null } }));
         // Optional names/artwork must never hold the paired factual estimates.
         const candidates = [
           ...getTopMovers(result.movers, 'up', 'money'), ...getTopMovers(result.movers, 'down', 'money'),
@@ -714,7 +721,7 @@ export default function ValueHistoryScreen() {
       } catch (error) {
         if (handleDenial(error)) return;
         publish((previous) => ({ ...previous, market: { ...previous.market,
-          loading: false, error: 'Stored market data is temporarily unavailable. Any earlier results remain visible.' } }));
+          loading: false, error: 'Daily catalogue prices are not available yet. Retry to check for comparable daily observations.' } }));
       }
     };
     const loadCollection = async () => {
@@ -746,7 +753,7 @@ export default function ValueHistoryScreen() {
     };
     await Promise.all([loadGeneralMarket(), loadCollection()]);
     if (isCurrent()) setRefreshingScope(null);
-  }, [scope, authLoading, authError, userId, refreshAuth]);
+  }, [scope, authLoading, authError, userId, refreshAuth, moverDisplayMode]);
 
   useEffect(() => {
     void loadMarketScreen();
@@ -778,7 +785,7 @@ export default function ValueHistoryScreen() {
           </View>
           <View style={styles.heroMiniRow}>
             <View style={[styles.heroMiniPill, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-              <Text style={[styles.heroMiniLabel, { color: theme.colors.textSoft }]}>Stored market sample</Text>
+              <Text style={[styles.heroMiniLabel, { color: theme.colors.textSoft }]}>Comparable catalogue prices</Text>
               <Text numeric style={[styles.heroMiniValue, { color: theme.colors.text }]}>{trackedMarketCount ?? '--'}</Text>
             </View>
             <View style={[styles.heroMiniPill, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
@@ -792,7 +799,7 @@ export default function ValueHistoryScreen() {
           <View style={styles.heroTopRow}>
             <StackrAssetIcon source={stackrIcons.marketMovers} label="Market pulse" size={42} />
             <View style={{ flex: 1, minWidth: 0 }}>
-              <Text style={[styles.heroLabel, { color: theme.colors.textSoft }]}>Market Pulse</Text>
+              <Text style={[styles.heroLabel, { color: theme.colors.textSoft }]}>Daily market movers</Text>
               <Text style={[styles.heroValue, { color: theme.colors.text }]}>
                 {generalRisers.length || generalLosers.length
                   ? moverDisplayMode === 'money' ? 'Top value movers' : 'Top percentage movers'
@@ -814,7 +821,7 @@ export default function ValueHistoryScreen() {
               </Text>
               {market.calculatedAt ? (
                 <Text style={[styles.historyStateCopy, { color: theme.colors.textSoft }]}>
-                  Latest estimate calculated {formatSnapshotDate(market.calculatedAt)}. This reads stored data; provider freshness is unavailable here.
+                  Latest source observation {formatSnapshotDate(market.calculatedAt)}. Market guide estimates compared across consecutive source dates.
                 </Text>
               ) : null}
               <TouchableOpacity
@@ -833,12 +840,19 @@ export default function ValueHistoryScreen() {
 
         <>
             <SectionCard
-              eyebrow="GENERAL MARKET"
-              title="General market"
+              eyebrow="CATALOGUE MARKET"
+              title="Daily movers"
               subtitle={`Swipe through risers and fallers by ${moverDisplayMode === 'money' ? 'cash movement' : 'percentage movement'}.`}
               variant="open"
             >
               <MoverDisplayToggle value={moverDisplayMode} onChange={setMoverDisplayMode} />
+              {market.coverage ? <Text style={[styles.historyStateCopy, { color: theme.colors.textSoft }]}>
+                {market.coverage.comparableVariants.toLocaleString()} of {market.coverage.publishedVariants.toLocaleString()} published card versions have comparable daily prices.
+                {' '}{market.coverage.unsupportedVariants.toLocaleString()} are outside this source’s coverage;
+                {' '}{market.coverage.staleVariants.toLocaleString()} have stale prices;
+                {' '}{market.coverage.unquotedVariants.toLocaleString()} have no quote;
+                {' '}{market.coverage.insufficientHistoryVariants.toLocaleString()} need another comparable date.
+              </Text> : null}
               {generalMarketStatus === 'loading' ? (
                 <View style={styles.inlineLoading}><ActivityIndicator color={theme.colors.primary} /></View>
               ) : generalMarketStatus === 'ready' ? (

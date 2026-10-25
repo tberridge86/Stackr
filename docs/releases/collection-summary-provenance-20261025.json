@@ -1,0 +1,529 @@
+{
+  "task": "collection-summary-infrastructure-20261025",
+  "observedDate": "2026-10-25",
+  "scope": "Profile collection summary; Home prepared valuation is separate",
+  "source": {
+    "repository": "tberridge86/Stackr",
+    "main": "6dfe188166df76b41d44801ab66970b0a3881ae5",
+    "integrationPR": 439,
+    "integrationBranch": "codex/architecture-integration-20261024",
+    "integrationHead": "985e62290a208b5b3f5d8699d9171e8b14cca59a",
+    "integrationStatus": "open draft; mergeable false at observation",
+    "candidateBranch": "agent/performance/collection-summary-20261025",
+    "localBaseline": "1061469237f6fbced31a031383c266e44ac2d10a",
+    "localPath": "D:/Stackr-1/work/collection-summary-20261025",
+    "sourceVerification": "Named task files and dependencies match integration-head Git blob hashes after CRLF-to-LF normalization; isolated source snapshot is not a full asset/native checkout."
+  },
+  "production": {
+    "freshDirectAttestation": "Unavailable: local DNS resolution failed; web fetch could not access health routes. This is a runtime access limitation, not a declared production outage.",
+    "monitor": {
+      "run": 40199279708,
+      "job": 121186786540,
+      "completedAt": "2026-10-25T13:48:47Z",
+      "result": "success",
+      "coverage": "existing public catalogue/CDN/runtime binding/commerce-lock smoke; does not prove collection summary or served source revision"
+    },
+    "backendLastSuccessfulRelease": {
+      "run": 40090685441,
+      "source": "7c1acd409680b38d5913d8cae76df560b5d91daa",
+      "deployment": "dfc23b30-9675-4ba0-ad2b-9f1875302747",
+      "date": "2026-10-24"
+    },
+    "gatewayLastSuccessfulRelease": {
+      "run": 39147311549,
+      "source": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
+      "workerVersion": "56f04b7f-0692-4d8f-a9ae-0963442e57b8",
+      "date": "2026-10-18",
+      "trafficAtRelease": "100%; not freshly reattested"
+    },
+    "database": {
+      "project": "oakdbbzdqwurpjnoqhmu",
+      "migrationCount": 191,
+      "lastRecordedVersion": "20261005205507",
+      "collectionSummaryMigrationRecorded": false,
+      "dailyMoversMigrationRecorded": false,
+      "operation": "list_migrations read-only tool",
+      "schemaCheck": {
+        "operation": "list_tables verbose metadata, no user rows",
+        "observedAt": "2026-10-25T15:46:59.695Z",
+        "tables": [
+          {
+            "name": "public.binders",
+            "rlsEnabled": true,
+            "columns": [
+              {
+                "name": "id",
+                "type": "uuid"
+              },
+              {
+                "name": "user_id",
+                "type": "uuid"
+              },
+              {
+                "name": "name",
+                "type": "text"
+              },
+              {
+                "name": "color",
+                "type": "text"
+              },
+              {
+                "name": "type",
+                "type": "text"
+              },
+              {
+                "name": "source_set_id",
+                "type": "text"
+              },
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone"
+              },
+              {
+                "name": "is_public",
+                "type": "boolean"
+              },
+              {
+                "name": "ebay_value",
+                "type": "numeric"
+              },
+              {
+                "name": "tcg_value",
+                "type": "numeric"
+              },
+              {
+                "name": "cardmarket_value",
+                "type": "numeric"
+              },
+              {
+                "name": "last_value_update",
+                "type": "timestamp with time zone"
+              },
+              {
+                "name": "sort_order",
+                "type": "integer"
+              },
+              {
+                "name": "gradient",
+                "type": "ARRAY"
+              },
+              {
+                "name": "cover_key",
+                "type": "text"
+              },
+              {
+                "name": "edition",
+                "type": "text"
+              },
+              {
+                "name": "default_condition",
+                "type": "text"
+              },
+              {
+                "name": "card_mode",
+                "type": "text"
+              },
+              {
+                "name": "default_grade_company",
+                "type": "text"
+              },
+              {
+                "name": "default_grade",
+                "type": "text"
+              },
+              {
+                "name": "language",
+                "type": "text"
+              },
+              {
+                "name": "master_set_enabled",
+                "type": "boolean"
+              },
+              {
+                "name": "source_set_logo_url",
+                "type": "text"
+              },
+              {
+                "name": "source_set_symbol_url",
+                "type": "text"
+              },
+              {
+                "name": "source_set_cover_url",
+                "type": "text"
+              },
+              {
+                "name": "source_set_display_name",
+                "type": "text"
+              },
+              {
+                "name": "source_set_local_name",
+                "type": "text"
+              },
+              {
+                "name": "source_set_english_display_name",
+                "type": "text"
+              },
+              {
+                "name": "lifecycle_version",
+                "type": "bigint"
+              }
+            ]
+          },
+          {
+            "name": "public.binder_cards",
+            "rlsEnabled": true,
+            "columns": [
+              {
+                "name": "id",
+                "type": "uuid"
+              },
+              {
+                "name": "binder_id",
+                "type": "uuid"
+              },
+              {
+                "name": "card_id",
+                "type": "text"
+              },
+              {
+                "name": "set_id",
+                "type": "text"
+              },
+              {
+                "name": "slot_order",
+                "type": "integer"
+              },
+              {
+                "name": "owned",
+                "type": "boolean"
+              },
+              {
+                "name": "notes",
+                "type": "text"
+              },
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone"
+              },
+              {
+                "name": "api_card_id",
+                "type": "text"
+              },
+              {
+                "name": "card_name",
+                "type": "text"
+              },
+              {
+                "name": "api_set_id",
+                "type": "text"
+              },
+              {
+                "name": "card_number",
+                "type": "text"
+              },
+              {
+                "name": "image_url",
+                "type": "text"
+              },
+              {
+                "name": "set_name",
+                "type": "text"
+              },
+              {
+                "name": "set_total",
+                "type": "integer"
+              },
+              {
+                "name": "ebay_price",
+                "type": "numeric"
+              },
+              {
+                "name": "tcg_price",
+                "type": "numeric"
+              },
+              {
+                "name": "cardmarket_price",
+                "type": "numeric"
+              },
+              {
+                "name": "last_price_update",
+                "type": "timestamp with time zone"
+              },
+              {
+                "name": "condition",
+                "type": "text"
+              },
+              {
+                "name": "grade_company",
+                "type": "text"
+              },
+              {
+                "name": "grade",
+                "type": "text"
+              },
+              {
+                "name": "owned_quantity",
+                "type": "integer"
+              },
+              {
+                "name": "language",
+                "type": "text"
+              },
+              {
+                "name": "cert_number",
+                "type": "text"
+              },
+              {
+                "name": "slab_image_url",
+                "type": "text"
+              },
+              {
+                "name": "graded_value",
+                "type": "numeric"
+              },
+              {
+                "name": "graded_at",
+                "type": "timestamp with time zone"
+              },
+              {
+                "name": "owned_card_variant_id",
+                "type": "uuid"
+              },
+              {
+                "name": "lifecycle_version",
+                "type": "bigint"
+              }
+            ]
+          },
+          {
+            "name": "public.pokemon_sets",
+            "rlsEnabled": true,
+            "columns": [
+              {
+                "name": "id",
+                "type": "text"
+              },
+              {
+                "name": "name",
+                "type": "text"
+              },
+              {
+                "name": "series",
+                "type": "text"
+              },
+              {
+                "name": "printed_total",
+                "type": "integer"
+              },
+              {
+                "name": "total",
+                "type": "integer"
+              },
+              {
+                "name": "release_date",
+                "type": "date"
+              },
+              {
+                "name": "symbol_url",
+                "type": "text"
+              },
+              {
+                "name": "logo_url",
+                "type": "text"
+              },
+              {
+                "name": "updated_at",
+                "type": "timestamp with time zone"
+              },
+              {
+                "name": "language",
+                "type": "text"
+              },
+              {
+                "name": "region",
+                "type": "text"
+              },
+              {
+                "name": "external_ids",
+                "type": "jsonb"
+              },
+              {
+                "name": "raw_data",
+                "type": "jsonb"
+              }
+            ]
+          },
+          {
+            "name": "public.pokemon_cards",
+            "rlsEnabled": true,
+            "columns": [
+              {
+                "name": "id",
+                "type": "text"
+              },
+              {
+                "name": "set_id",
+                "type": "text"
+              },
+              {
+                "name": "name",
+                "type": "text"
+              },
+              {
+                "name": "number",
+                "type": "text"
+              },
+              {
+                "name": "rarity",
+                "type": "text"
+              },
+              {
+                "name": "image_small",
+                "type": "text"
+              },
+              {
+                "name": "image_large",
+                "type": "text"
+              },
+              {
+                "name": "raw_data",
+                "type": "jsonb"
+              },
+              {
+                "name": "updated_at",
+                "type": "timestamp with time zone"
+              },
+              {
+                "name": "language",
+                "type": "text"
+              },
+              {
+                "name": "region",
+                "type": "text"
+              },
+              {
+                "name": "external_ids",
+                "type": "jsonb"
+              },
+              {
+                "name": "image_status",
+                "type": "text"
+              },
+              {
+                "name": "pricing_status",
+                "type": "text"
+              },
+              {
+                "name": "last_image_checked_at",
+                "type": "timestamp with time zone"
+              },
+              {
+                "name": "last_price_checked_at",
+                "type": "timestamp with time zone"
+              }
+            ]
+          },
+          {
+            "name": "public.user_card_variants",
+            "rlsEnabled": true,
+            "columns": [
+              {
+                "name": "id",
+                "type": "uuid"
+              },
+              {
+                "name": "user_id",
+                "type": "uuid"
+              },
+              {
+                "name": "card_id",
+                "type": "text"
+              },
+              {
+                "name": "set_id",
+                "type": "text"
+              },
+              {
+                "name": "variant",
+                "type": "text"
+              },
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone"
+              },
+              {
+                "name": "quantity",
+                "type": "integer"
+              },
+              {
+                "name": "condition",
+                "type": "text"
+              },
+              {
+                "name": "grade_company",
+                "type": "text"
+              },
+              {
+                "name": "grade",
+                "type": "text"
+              },
+              {
+                "name": "updated_at",
+                "type": "timestamp with time zone"
+              },
+              {
+                "name": "lifecycle_version",
+                "type": "bigint"
+              }
+            ]
+          }
+        ],
+        "limitation": "Column types and RLS enablement verified; existing policy logic/role grants and hosted query plans not freshly exercised."
+      }
+    },
+    "nativeLastSuccessfulBuildSource": "311fc84a95de4c730b61473f891079547d1a9b6f",
+    "deviceAcceptance": "not measured"
+  },
+  "r2": {
+    "status": "Existing activity untouched; no migration job, object, pointer, credentials, schedule or deployment changed by this task"
+  },
+  "baseline": {
+    "check": "node --import tsx scripts/test-collection-summary-performance.ts",
+    "checkout": "D:/Stackr-1/.worktrees/architecture-integration-20261024",
+    "result": "passed",
+    "fixtureRows": 1003,
+    "savedRowRequests": 22,
+    "caveat": "Saved-row requests only; binders, ownership and metadata add more. Fixture contains duplicate placements, not 1003 distinct holdings."
+  },
+  "release": {
+    "migration": "supabase/migrations/20261025154000_collection_summary_v1.sql",
+    "generatedBy": "Supabase CLI 2.115.0 migration new collection_summary_v1",
+    "remoteApplied": false,
+    "clientDeployed": false,
+    "independentReview": {
+      "status": "passed after corrections",
+      "baseline": "1061469237f6fbced31a031383c266e44ac2d10a",
+      "checks": "Reviewer independently reran npm run test:collection-summary against final corrected runtime",
+      "fixedFindings": [
+        "Asynchronous session check ordering could return a result after invalidation",
+        "Empty legacy variant differed between RPC and client master-set completion"
+      ],
+      "remainingFindings": 0
+    },
+    "validation": {
+      "typecheck": "passed",
+      "rootLint": "passed; 0 errors, 8 pre-existing warnings",
+      "targetedLint": "passed; 0 errors, 5 pre-existing Profile warnings",
+      "summarySql": "passed real in-memory PostgreSQL/RLS/grants",
+      "summaryClient": "passed exact prior-source comparison and current SQL/fallback parity",
+      "profileAndOwnership": "passed",
+      "hostedCI": "pending",
+      "device": "unverified"
+    }
+  },
+  "limits": [
+    "In-process fixtures are not mobile-network performance",
+    "No production data reads for user-specific summaries",
+    "Existing integration PR requires reconciliation with current main before promotion"
+  ]
+}

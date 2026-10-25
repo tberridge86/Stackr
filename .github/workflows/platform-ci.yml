@@ -84,7 +84,7 @@ jobs:
       - run: npm run test:commerce-release-lock
       - run: npm run test:ux-service-release
       - run: npm run test:personal-loading
-      - run: npm run test:feedback-recovery
+      - run: npm run test:build60-feedback
       - run: npm run test:storm-logo-publication
       - run: npm run test:binder-retrieval
       - run: npm run test:startup-loading
@@ -100,7 +100,6 @@ jobs:
       - run: npm run test:recognition-orchestrator
       - run: npm run test:owner-recognition
       - run: npm run test:owner-teaching
-      - run: npm run test:card-inspection
       - run: npm run test:scanner-calibration
       - run: npm run test:scanner-pipeline
       - run: npm run test:scanner-analytics
@@ -158,15 +157,15 @@ jobs:
       - name: Validate R2 immutability and delivery
         id: r2_storage
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
-        run: node scripts/test-r2-asset-delivery.mjs && node scripts/test-r2-catalogue-migration.mjs && node scripts/test-r2-catalogue-migration-cli.mjs && node scripts/test-r2-catalogue-rollback.mjs && node scripts/test-r2-migration-runner.mjs && node scripts/test-r2-migration-provision.mjs && node scripts/test-r2-stopped-migration-reconciliation.mjs && node scripts/test-r2-stopped-run-inspection.mjs && node scripts/test-r2-parallel-migration.mjs && node scripts/test-r2-bulk-run-inspection.mjs
+        run: node scripts/test-r2-asset-delivery.mjs && node scripts/test-r2-writer-workflows.mjs && node scripts/test-r2-catalogue-migration.mjs && node scripts/test-r2-catalogue-migration-cli.mjs && node scripts/test-r2-catalogue-rollback.mjs && node scripts/test-r2-migration-runner.mjs && node scripts/test-r2-migration-provision.mjs && node scripts/test-r2-stopped-migration-reconciliation.mjs && node scripts/test-r2-stopped-run-inspection.mjs && node scripts/test-r2-parallel-migration.mjs && node scripts/test-r2-bulk-run-inspection.mjs
       - name: Validate actual v1 image responses
         id: api_delivery
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
-        run: node scripts/test-r2-api-delivery.mjs && node scripts/test-r2-fast-set-delivery.mjs
+        run: node scripts/test-r2-api-delivery.mjs && node scripts/test-r2-fast-set-delivery.mjs && node scripts/test-r2-set-fallback-integration.mjs
       - name: Validate complete bounded client pages
         id: pagination
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
-        run: node --import tsx scripts/test-ui-pagination.ts
+        run: node --import tsx scripts/test-ui-pagination.ts && node --import tsx scripts/test-integrated-artwork-pagination.ts && node --import tsx scripts/test-ownership-ui-pages.ts && node --import tsx scripts/test-ui-collection-pages.ts
       - name: Validate owned-card facts without artwork dependencies
         id: owned_facts
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
@@ -183,6 +182,10 @@ jobs:
         id: worker_boundary
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         run: node scripts/test-railway-catalogue-price-worker.mjs
+      - name: Validate Pages publication boundaries
+        id: pages_release
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: node scripts/test-pages-release.mjs
       - name: Validate retrieval acceptance probe
         id: retrieval_probe
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}

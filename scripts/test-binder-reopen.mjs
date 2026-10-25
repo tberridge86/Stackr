@@ -186,7 +186,7 @@ function screenHarness(options = {}) {
     getCustomBinderNameArtKeyForBinder: async () => null,
     setCards: v => { state.cards = typeof v === 'function' ? v(state.cards) : v; }, setLoading: v => state.loading = v,
     setLoadError: v => state.error = v,
-    setBinder: v => state.binder = v, setOwnershipReady: v => state.ownershipReady = v, setReopenStatus: v => state.status = v,
+    setBinder: v => state.binder = typeof v === 'function' ? v(state.binder) : v, setOwnershipReady: v => state.ownershipReady = v, setReopenStatus: v => state.status = v,
     setUserId: value => { state.userId = value; }, setIsPublic: () => {}, setCustomNameArtKey: () => {}, setSelectedCard: () => {}, setDetailVisible: () => {},
     setShowcaseRows: value => { state.showcases = typeof value === 'function' ? value(state.showcases) : value; },
     setShowcaseStatus: value => { state.showcaseStatus = typeof value === 'function' ? value(state.showcaseStatus) : value; },
@@ -212,6 +212,32 @@ function screenHarness(options = {}) {
     get saves() { return saves; }, get invalidations() { return invalidations; } };
 }
 const snapshot = () => snapshotBinderView(scope, binder, cards(), Date.now());
+await test('saved-preview public branding recovers while auth waits and keeps edits disabled', async () => {
+  const h = screenHarness(), branding = deferred(); let calls = 0;
+  h.runtime.attachBinderSetArtwork = (saved) => { calls++; assert.equal(saved.id, binder.id); return branding.promise; };
+  h.load(); h.disk.resolve(snapshot()); await tick();
+  assert.equal(calls, 1);
+  branding.resolve({ ...binder, source_set_logo_url: 'https://approved.invalid/set-logo.png', name: 'Cannot replace saved name', user_id: 'other-account' });
+  await tick();
+  assert.equal(h.state.binder.source_set_logo_url, 'https://approved.invalid/set-logo.png');
+  assert.equal(h.state.binder.name, binder.name); assert.equal(h.state.binder.user_id, scope.accountId);
+  assert.equal(h.state.ownershipReady, false); assert.equal(h.state.status.state, 'refreshing');
+});
+await test('late saved-preview branding cannot restore an invalidated account or replace a fresh binder', async () => {
+  for (const reason of ['account', 'fresh-model']) {
+    const h = screenHarness(), branding = deferred(); let calls = 0;
+    h.runtime.attachBinderSetArtwork = () => ++calls === 1 ? branding.promise : new Promise(() => {});
+    const pending = h.load(); h.disk.resolve(snapshot()); await tick();
+    if (reason === 'account') h.runtime.accountGenerationRef.current++;
+    else {
+      h.auth.resolve({ data: { user: { id: scope.accountId } } }); h.record.resolve({ ...binder, source_set_logo_url: 'https://approved.invalid/fresh.png' });
+      await tick(); h.network.resolve(cards()); await pending;
+    }
+    branding.resolve({ ...binder, source_set_logo_url: 'https://approved.invalid/old-preview.png' }); await tick();
+    assert.notEqual(h.state.binder.source_set_logo_url, 'https://approved.invalid/old-preview.png');
+    assert.equal(h.state.ownershipReady, false);
+  }
+});
 await test('saved-preview artwork recovers before live auth and never changes ownership or prices', async () => {
   const h = screenHarness(); let artworkCalls = 0;
   const art = deferred();
@@ -567,7 +593,7 @@ function ownershipPages(options = {}) {
   };
   const h = screenHarness({ rawPages: true, read: (table, request) => {
     if (table === 'binder_card_showcases') return { data: [], error: null };
-    assert.equal(request.operation, 'select'); assert.equal(request.limit, 200);
+    assert.equal(request.operation, 'select'); assert.equal(request.limit, 50);
     assert.equal(request.order.length, 1); assert.equal(request.order[0][0], 'id'); assert.equal(request.order[0][1].ascending, true);
     assert(request.signal);
     for (const [, value] of request.filters) if (Array.isArray(value)) assert(value.length <= 100);
@@ -720,12 +746,12 @@ await test('malformed, overlapping, foreign and oversized ownership pages fail w
   await openOwnership(foreign); assertOwnershipFailure(foreign);
   assert.equal(foreign.queries.filter(query => query.table === 'user_card_variants' && !query.columns.includes('quantity')).length, 0);
 });
-await test('the shared ownership request budget fails explicitly at256 dispatched pages', async () => {
+await test('the shared ownership request budget preserves capacity and fails at1024 dispatched pages', async () => {
   let directoryPages = 0;
   const fixture = ownershipPages({ override: table => table === 'binders'
     ? { data: [{ id: uuid(600000 + directoryPages++), user_id: scope.accountId }], error: null } : undefined });
   await openOwnership(fixture); assertOwnershipFailure(fixture);
-  assert.equal(fixture.queries.length, 256); assert.match(fixture.h.state.alerts[0][0], /Ownership details unavailable/);
+  assert.equal(fixture.queries.length, 1024); assert.match(fixture.h.state.alerts[0][0], /Ownership details unavailable/);
   assert.equal(fixture.active, 0);
 });
 await test('whole-read timeout aborts the other lane and ignored abort cannot dispatch another page', async () => {

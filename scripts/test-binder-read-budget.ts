@@ -38,7 +38,7 @@ function harness(load: (from: number, signal?: AbortSignal) => Promise<Page>, in
       let from = 0; let signal: AbortSignal | undefined;
       const query = {
         select: () => query, eq: () => query, order: () => query,
-        range: (start: number, end: number) => { assert.equal(end - start, 999); from = start; return query; },
+        range: (start: number, end: number) => { assert.equal(end - start, 49); from = start; return query; },
         abortSignal: (value: AbortSignal) => { signal = value; return query; },
         maybeSingle: async () => ({ data: { id: 'binder', user_id: 'owner', type: 'custom', language: 'en' }, error: null }),
         then(resolve: (page: Page) => unknown, reject: (error: unknown) => unknown) {
@@ -77,6 +77,14 @@ await test('short server pages continue to empty and preserve quantities and sta
   assert.deepEqual(h.calls.map((call) => call.from), [0, 1, 2, 3]);
   assert(rows.every((item) => item.owned_quantity === 4 && item.condition === 'Mint' && item.notes === `note-${item.id}`));
   assert.equal(h.listeners.size, 0);
+});
+
+await test('all 137 saved cards are retained across 50-row responses', async () => {
+  const expected = Array.from({ length: 137 }, (_, index) => row(String(index)));
+  const h = harness(async (from) => ({ data: expected.slice(from, from + 50), error: null }));
+  const rows = await h.read();
+  assert.deepEqual(Array.from(rows, (item) => item.id), expected.map((item) => item.id));
+  assert.deepEqual(h.calls.map((call) => call.from), [0, 50, 100, 137]);
 });
 
 await test('one operation deadline aborts a stalled body, releases coalesced callers and permits retry', async () => {
@@ -151,7 +159,7 @@ for (const problem of ['duplicate', 'foreign', 'error']) await test(`${problem} 
 
 await test('bounded page count rejects an endless distinct response', async () => {
   const h = harness(async (from) => ({ data: [row(String(from))], error: null }));
-  await assert.rejects(h.read(), /page|budget/i); assert.equal(h.calls.length, 256);
+  await assert.rejects(h.read(), /page|budget/i); assert.equal(h.calls.length, 5120);
 });
 
 if (failures) process.exitCode = 1;

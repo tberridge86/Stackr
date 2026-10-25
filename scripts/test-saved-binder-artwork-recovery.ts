@@ -23,7 +23,8 @@ function functions(text: string, names: string[]) {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   }).outputText;
 }
-const adapter = functions(source, ['embeddedCardImageAssets', 'primaryCardImageAsset', 'fetchCanonicalSetCardFacts', 'enrichStackrCardArtworkFromFacts']);
+const adapter = functions(source, ['embeddedCardImageAssets', 'primaryCardImageAsset', 'fetchCanonicalSetCardFacts',
+  'allPages', 'enrichSavedStackrCardArtwork', 'enrichStackrCardArtworkFromFacts']);
 const binderSource = process.env.SAVED_ARTWORK_BASELINE === '1'
   ? execFileSync('git', ['show', 'HEAD:lib/binders.ts'], { encoding: 'utf8' })
   : readFileSync('lib/binders.ts', 'utf8');
@@ -99,6 +100,7 @@ function harness(population = facts) {
   };
   runInNewContext(adapter, context);
   context.enrichStackrCardArtworkFromFacts = exports.enrichStackrCardArtworkFromFacts;
+  context.enrichSavedStackrCardArtwork = exports.enrichSavedStackrCardArtwork;
   runInNewContext(attacher, context);
   return { attach: exports.attachBinderCatalogueArtwork, factReads: () => factReads, imageReads: () => imageReads,
     pages: () => pages,
@@ -159,7 +161,7 @@ async function main() {
   const result = await live.attach(saved);
   assert.equal(result[0].card.images.small, `https://approved.invalid/${facts[0].cardId}.webp`,
     'A real serialized saved preview must recover artwork without an in-memory WeakMap handle.');
-  assert.equal(live.factReads(), 1, 'Saved cards in the same set share one complete public facts read.');
+  assert.equal(live.factReads(), 0, 'Saved cards recover through preferred pages without waiting for complete metadata/facts.');
   assert.equal(live.imageReads(), 1);
   assert.equal(JSON.stringify(saved), before, 'Artwork enrichment must not mutate the saved source.');
   const stale = savedRows();
@@ -167,8 +169,8 @@ async function main() {
   const refreshed = await harness().attach(stale);
   assert.equal(getBinderCatalogueInspectionImages(refreshed[0])?.fullImageUri, refreshed[0].card.images.large,
     'Inspection must open the same recovered full-resolution catalogue artwork displayed by the binder, not stale raw images.');
-  assert.equal(getCardArtworkPresentation(refreshed[0].card)?.candidates[0].kind, 'shared',
-    'Recovered printing-face artwork retains its shared-reference provenance for the actual image surface.');
+  assert.equal(getCardArtworkPresentation(refreshed[0].card)?.candidates[0].kind, 'exact',
+    'The real resolver retains the exact approved variant provenance supplied by this fixture.');
   assert.equal(stale[0].card.raw_data.images.large, 'https://approved.invalid/old-large.webp', 'Recovery cannot mutate the previous saved image.');
   for (let i = 0; i < result.length; i++) {
     assert.equal(result[i].owned_quantity, saved[i].owned_quantity); assert.equal(result[i].notes, saved[i].notes);
@@ -176,17 +178,26 @@ async function main() {
     assert.deepEqual(result[i].card.raw_data.stackr, saved[i].card.raw_data.stackr);
   }
   for (const change of [
-    (card: any) => { card.raw_data.stackr.catalogueVersionId = uuid(999); },
     (card: any) => { card.language = 'en'; },
     (card: any) => { card.number = '999'; },
     (card: any) => { card.raw_data.stackr.variants[0].canonicalId = 'other-printing'; },
+    (card: any) => { card.raw_data.stackr.variants[0].variantCode = 'first_edition'; },
+    (card: any) => { card.raw_data.stackr.variants[0].artworkKey = 'other-artwork'; },
+    (card: any) => { card.raw_data.stackr.variants[0].sameArtworkAsVariantId = uuid(999); },
     (card: any) => { card.raw_data.stackr.variants[0].imageVariantId = uuid(999); },
     (card: any) => { card.raw_data.stackr.variants[0].finishCode = 'reverse'; },
   ]) {
     const mismatched = savedRows(); mismatched.forEach((row: any) => change(row.card));
     const check = harness(); const output = await check.attach(mismatched);
-    assert.equal(output[0].card.images.small, null); assert.equal(check.imageReads(), 0, 'Mismatched saved identities cannot acquire another printing image.');
+    assert.equal(output[0].card.images.small, null, 'Mismatched saved identities cannot acquire another printing image.');
+    assert.ok(check.imageReads() <= 1, 'Rejected preferred artwork does not fan out into more image pages.');
   }
+  const oldVersion = savedRows(); oldVersion.forEach(row => { row.card.raw_data.stackr.catalogueVersionId = uuid(999); });
+  const currentArtwork = await harness().attach(oldVersion);
+  assert.equal(currentArtwork[0].card.images.small, imageFor(facts[0]).deliveryUrl,
+    'A new catalogue version may supply approved artwork after full saved/current printing and finish revalidation.');
+  assert.equal(currentArtwork[0].card.raw_data.stackr.catalogueVersionId, uuid(999), 'Saved fact version is not rewritten by presentation recovery.');
+  assert.equal(currentArtwork[0].card.raw_data.presentation.artwork.catalogueVersionId, version, 'Current artwork source version remains explicit.');
   const aborted = new AbortController(); aborted.abort(new Error('left saved binder'));
   const stopped = harness(); await assert.rejects(stopped.attach(savedRows(), aborted.signal), /left saved binder/);
   assert.equal(stopped.factReads(), 0); assert.equal(stopped.imageReads(), 0);
@@ -200,7 +211,7 @@ async function main() {
   const late = harness(fullSet); const lateResult = await late.attach(subset.cards);
   assert.equal(lateResult[0].card.images.small, `https://approved.invalid/${fullSet[199].cardId}.webp`,
     'Saved custom subsets must reach images on later whole-set pages.');
-  assertPageCoverage(late, false, fullSet);
+  assert.equal(late.factReads(), 0, 'Serialized saved artwork does not wait for full-set facts.');
   assertPageCoverage(late, true, fullSet);
   assert.equal(lateResult.length, 1, 'Only identity-matched saved rows are returned.');
   const liveSubset = rowsFor([fullSet[199]]);

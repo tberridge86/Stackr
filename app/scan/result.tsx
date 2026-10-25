@@ -1,5 +1,7 @@
 import { StackrFunctionalIcon } from '../../components/StackrFunctionalIcon';
-import { CardDetailInspectSurface } from '../../components/InteractiveCardInspectPressable';
+import { useCardInspection } from '../../components/CardInspectionProvider';
+import { showcaseVariantId } from '../../lib/cardInspection';
+import { getEditionVariantImageUrl } from '../../lib/editionImages';
 import { StackrCardArtworkFallback } from '../../components/StackrArtworkFallback';
 import { stackrCardImageSizes } from '../../lib/stackrSizing';
 import { useTheme } from '../../components/theme-context';
@@ -291,6 +293,7 @@ export default function ScanResultRoute() {
 }
 
 function ScanResultScreen() {
+  const { inspectCard } = useCardInspection();
   const { theme } = useTheme();
   const { profile } = useProfile();
   const { isWanted, toggleWishlistCard } = useTrade();
@@ -1319,13 +1322,22 @@ function ScanResultScreen() {
           <>
             {/* Card image */}
             <PremiumCard style={{ alignItems: 'center', marginTop: 16, marginBottom: 16, paddingVertical: 18 }}>
-              <CardDetailInspectSurface
-                  title={selectedCard.name}
-                  rarity={selectedCard.rarity ?? undefined}
-                  cardMetadata={selectedCard}
-                  variant={selectedTcgVariant?.key}
+              <TouchableOpacity
+                  activeOpacity={0.9}
+                  disabled={!selectedCard.image_large && !selectedCard.image_small}
+                  onPress={() => inspectCard({
+                    source: 'catalogue',
+                    card: { id: selectedCard.raw_data?.stackr?.cardId ?? selectedCard.id,
+                      name: selectedCard.name, setId: selectedCard.set_id,
+                      language: selectedCard.language, raw_data: selectedCard.raw_data },
+                    imageUri: getEditionVariantImageUrl(selectedCard.raw_data, selectedTcgVariant?.editionHint ?? selectedCard.editionHint, 'small') ?? selectedCard.image_small ?? selectedCard.image_large ?? '',
+                    fullImageUri: getEditionVariantImageUrl(selectedCard.raw_data, selectedTcgVariant?.editionHint ?? selectedCard.editionHint, 'large') ?? selectedCard.image_large ?? selectedCard.image_small ?? '',
+                    selectedVariantId: showcaseVariantId(selectedCard.raw_data, { variant: selectedVariantKey, edition: selectedTcgVariant?.editionHint ?? selectedCard.editionHint }),
+                    subtitle: [selectedCard.set_name, selectedTcgVariant?.label,
+                      (selectedTcgVariant?.editionHint ?? selectedCard.editionHint) && !getEditionVariantImageUrl(selectedCard.raw_data, selectedTcgVariant?.editionHint ?? selectedCard.editionHint, 'large') ? 'Reference artwork' : null].filter(Boolean).join(' · '),
+                  })}
                   style={{ width: 220, height: 220 / stackrCardImageSizes.cardAspectRatio }}
-                  accessibilityLabel={`Inspect ${selectedCard.name} card finish`}
+                  accessibilityLabel={`Open ${selectedCard.name} in Showcase`}
                 >
                   <View style={{ width: '100%', height: '100%' }}>
                     <EditionAwareCardImage
@@ -1353,9 +1365,9 @@ function ScanResultScreen() {
                       style={RARITY_SYMBOL_CARD_OVERLAY}
                     />
                   </View>
-                </CardDetailInspectSurface>
+                </TouchableOpacity>
               <Text variant="support" style={{ color: theme.colors.textSoft, marginTop: 13, fontSize: 12, lineHeight: 16, fontWeight: '700' }}>
-                Hold, then move the card to inspect its finish.
+                Tap the card to open Showcase.
               </Text>
               <View style={{ marginTop: 14, width: '100%' }}>
                 {selectedLocalQuickScanStatus ? (

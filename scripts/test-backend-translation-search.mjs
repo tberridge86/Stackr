@@ -147,6 +147,44 @@ assert.equal(nameResults[0].variantId, englishCard.variant_id, 'Stored exact nam
 assert.ok(nameResults.some((result) => result.reason === 'exact_translated_name'));
 assert.equal(new Set(nameResults.map((result) => result.variantId)).size, 3);
 assert.equal(merged.calls.filter((call) => call.filters.some(([kind, column]) => kind === 'in' && column === 'card_native_name')).length, 4);
+
+// Execute the actual strategy chain, not a local copy of token matching.
+const namedCard = (n, name, language = 'en', set = setId) => ({ ...englishCard, printing_id: id(n), variant_id: id(n + 100),
+  language_code: language, set_id: set, card_native_name: name, card_english_display_name: name });
+const wordCards = [namedCard(4000, 'Brute Bonnet'), namedCard(4001, 'Brute Bonnet', 'ja'),
+  namedCard(4002, 'Brute Bonnet', 'en', otherSetId), namedCard(4003, 'Charizard ex'),
+  namedCard(4004, 'Alpha Beta Gamma Delta Epsilon Zeta'), namedCard(4005, 'Alpha Beta Gamma Delta Epsilon Zeta Eta')];
+const wordTables = { catalogue_cards: wordCards, catalogue_card_names: wordCards.map(card => ({
+  name_type: 'english_display', name: card.card_native_name, normalized_name: normalizeSearchText(card.card_native_name),
+  printing_id: card.printing_id, variant_id: card.variant_id, printing_language_code: card.language_code,
+})) };
+for (const [query, expected] of [['Bonnet Brute', wordCards[0]], ['Bon Brute', wordCards[0]], ['ex Charizard', wordCards[3]]]) {
+  const words = service(wordTables);
+  const result = await words.api.search({ q: query, language: 'en', setId, limit: 20 });
+  assert.equal(result.results.length, 1, 'Reordering cannot escape the requested language or set');
+  assert.equal(result.results[0].variantId, expected.variant_id);
+  assert.equal(result.results[0].reason, 'fuzzy_name');
+  const reads = words.calls.filter(call => call.table === 'catalogue_card_names' && call.filters.some(([kind]) => kind === 'ilike'));
+  assert.equal(reads.length, 1, 'All name terms share one bounded published-name query');
+  assert.equal(reads[0].filters.filter(([kind]) => kind === 'ilike').length, 2);
+  assert.ok(reads[0].filters.some(([kind, column, value]) => kind === 'eq' && column === 'printing_language_code' && value === 'en'));
+  assert.deepEqual(reads[0].filters.find(([kind]) => kind === 'limit'), ['limit', 120]);
+}
+const sixWords = service(wordTables);
+assert.ok((await sixWords.api.search({ q: 'Zeta Epsilon Delta Gamma Beta Alpha', language: 'en' })).results.length > 0,
+  'Six distinct ordinary terms may reorder');
+for (const query of ['Bonnet missing', 'Bonnet Bonnet Brute', 'Eta Zeta Epsilon Delta Gamma Beta Alpha', '999 Bonnet Brute', 'Bonnet/Brute']) {
+  const words = service(wordTables);
+  assert.equal((await words.api.search({ q: query, language: 'en', setId })).results.length, 0,
+    'Missing words and structured/duplicate/over-budget phrases cannot broaden into reordered matches');
+  const reads = words.calls.filter(call => call.table === 'catalogue_card_names' && call.filters.some(([kind]) => kind === 'ilike'));
+  if (query !== 'Bonnet missing') assert.ok(reads.every(call => call.filters.filter(([kind]) => kind === 'ilike').length === 1));
+}
+const exactWords = service(wordTables);
+const exactResult = await exactWords.api.search({ q: 'Charizard ex', language: 'en', setId });
+assert.equal(exactResult.results[0].reason, 'exact_name');
+assert.equal(exactWords.calls.some(call => call.table === 'catalogue_card_names' && call.filters.some(([kind]) => kind === 'ilike')), false,
+  'Existing exact-name matches retain priority over forgiving word order');
 const warnings = [];
 const originalWarn = console.warn;
 try {

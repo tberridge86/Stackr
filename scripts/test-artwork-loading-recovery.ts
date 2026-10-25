@@ -6,6 +6,7 @@ import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import ts from 'typescript';
 import { copyPreferredSetArtworkReassignments, getPreferredSetArtworkReassignments, mergePreferredSetArtwork } from '../lib/stackrPreferredSetArtwork';
 import { resolveCardArtwork } from '../lib/cardArtworkPresentation';
+import * as cardInspection from '../lib/cardInspection';
 
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -69,8 +70,9 @@ runInNewContext(ts.transpileModule(mergeFunctions.map(node => node.getText(pokem
 let owner: string | null = null;
 const artworkRequests: { signal?: AbortSignal; response: ReturnType<typeof deferred<any[]>> }[] = [];
 const theme = { colors: new Proxy({}, { get: () => '#123456' }) };
-const native = { View: 'View', ScrollView: 'ScrollView', TouchableOpacity: 'TouchableOpacity', Image: 'Image', StyleSheet: { create: <T,>(value: T) => value }, Alert: { alert() {} }, useWindowDimensions: () => ({ width: 390, height: 844 }) };
+const native = { Pressable: 'Pressable', View: 'View', ScrollView: 'ScrollView', TouchableOpacity: 'TouchableOpacity', Image: 'Image', StyleSheet: { create: <T,>(value: T) => value }, Alert: { alert() {} }, useWindowDimensions: () => ({ width: 390, height: 844 }) };
 const dependencies: Record<string, any> = {
+  '../../lib/cardInspection': cardInspection,
   '../../components/StackrFunctionalIcon': { StackrFunctionalIcon: 'Image' },
   react: React, 'react-native': native, 'react-native-safe-area-context': { useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) },
   'expo-router': { Stack: { Screen: 'StackScreen' }, router: { canGoBack: () => true, back() {}, replace() {}, push() {} }, useLocalSearchParams: () => params },

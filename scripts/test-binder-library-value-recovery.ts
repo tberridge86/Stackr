@@ -6,6 +6,8 @@ import ts from 'typescript';
 import { QueryClient } from '@tanstack/query-core';
 import { summariseCollectionPricing } from '../lib/collectionPricingState';
 import { withPersonalDataReadTimeout } from '../lib/personalDataRead';
+import { readUiCollectionChunks } from '../lib/uiCollectionPages';
+import { readOptionalCatalogueEnrichment } from '../lib/optionalCatalogueEnrichment';
 
 const source = process.env.BINDER_VALUE_BASELINE === '1'
   ? execFileSync('git', ['show', 'HEAD:app/(tabs)/binder.tsx'], { encoding: 'utf8' })
@@ -106,27 +108,56 @@ async function run() {
   // Execute the actual facts reader against canonical IDs and language-scoped
   // source IDs. No live Supabase/API/provider calls are made.
   const canonical = [
+    { id: '44444444-4444-4444-8444-444444444444', source_id: 'base1', language: 'en', actual_total: 113, printed_total: 83 },
     { id: '11111111-1111-4111-8111-111111111111', source_id: 'M6', language: 'ja', actual_total: 113, printed_total: 83 },
     { id: '22222222-2222-4222-8222-222222222222', source_id: 'same-code', language: 'zh-cn', actual_total: 40, printed_total: 30 },
     { id: '33333333-3333-4333-8333-333333333333', source_id: 'same-code', language: 'zh-tw', actual_total: 60, printed_total: 50 },
   ];
   const queries: { field: string; language: string | null; values: string[] }[] = [];
-  const supabase = { from: (table: string) => { let field = '', language: string | null = null; let values: string[] = [];
-    const q: any = { select: () => q, order: () => q, range: () => q, abortSignal: () => q,
-      eq: (column: string, value: string) => { if (column === 'language') language = value; return q; },
-      in: (column: string, ids: string[]) => { field = column; values = ids; return q; },
-      then: (resolve: (value: any) => unknown) => { if (table === 'tcg_sets') queries.push({ field, language, values });
-        return Promise.resolve({ data: table === 'tcg_sets' ? canonical.filter((row: any) => values.includes(row[field]) && (!language || row.language === language)) : [], error: null }).then(resolve); },
-    }; return q; } };
-  const exports: any = {};
+  let savedRows: any[] = [], catalogueRows: any[] = [], variantRows: any[] = [];
+  let pageCap = 50, savedReads = 0, failSavedPage = -1, failCataloguePage = -1;
+  let repeatSaved = false, foreignSaved = false;
+  let afterSavedPage: (() => void) | null = null;
+  const accountIdRef = { current: 'owner' };
+  const authListeners = new Set<(...args: any[]) => void>();
+  const supabase = { auth: { onAuthStateChange: (listener: (...args: any[]) => void) => {
+    authListeners.add(listener); return { data: { subscription: { unsubscribe: () => authListeners.delete(listener) } } };
+  } }, from: (table: string) => {
+    let field = '', language: string | null = null, owner: string | null = null;
+    let values: string[] = [], from = 0, to = 49;
+    const q: any = {
+      select: () => q,
+      order: (column: string, options: any) => { assert.equal(column, 'id'); assert.equal(options.ascending, true); return q; },
+      range: (start: number, end: number) => { assert.equal(end - start, 49); from = start; to = end; return q; },
+      abortSignal: (signal: AbortSignal) => { assert.equal(signal.aborted, false); return q; },
+      eq: (column: string, value: string) => { if (column === 'language') language = value; if (column === 'user_id') owner = value; return q; },
+      in: (column: string, ids: string[]) => { assert.ok(ids.length <= 50); field = column; values = ids; return q; },
+      then: (resolve: (value: any) => unknown) => {
+        if (table === 'tcg_sets') queries.push({ field, language, values });
+        const fixture = table === 'tcg_sets' ? canonical : table === 'binder_cards' ? savedRows
+          : table === 'pokemon_cards' ? catalogueRows : table === 'user_card_variants' ? variantRows : [];
+        let page = fixture.filter((row: any) => values.includes(row[field]) && (!language || row.language === language) && (!owner || row.user_id === owner))
+          .slice(from, Math.min(to + 1, from + pageCap));
+        if (table === 'binder_cards') {
+          savedReads++;
+          if (repeatSaved && from) page = [savedRows[0]];
+          if (foreignSaved) page = [{ ...savedRows[0], binder_id: 'foreign-binder' }];
+          afterSavedPage?.();
+        }
+        const failed = (table === 'binder_cards' && savedReads === failSavedPage)
+          || (table === 'pokemon_cards' && from >= failCataloguePage && failCataloguePage >= 0);
+        return Promise.resolve({ data: page, error: failed ? new Error('later page failed') : null }).then(resolve);
+      },
+    }; return q;
+  } };  const exports: any = {};
   const strip = (id?: string | null) => String(id ?? '').replace(/^(ja|en|zh-cn|zh-tw):/i, '');
-  runInNewContext(compile(callback('fetchBinderFactsSnapshot', 'fetchBinderValues')), { exports, Map, Set, console, supabase,
+  runInNewContext(compile(callback('fetchBinderFactsSnapshot', 'fetchBinderValues')), { exports, Map, Set, console, supabase, accountIdRef, readUiCollectionChunks,
     AsyncStorage: { getItem: async () => null }, getMasterSetStorageKey: (id: string) => id,
     getSetLookupCandidates: (id: string) => [id, strip(id)],
-    readOptionalCatalogueEnrichment: (work: any) => work(new AbortController().signal),
+    readOptionalCatalogueEnrichment,
     withPersonalDataReadTimeout: (work: any) => work(new AbortController().signal), fetchOwnedCardRows: async () => [],
     normalizePokemonCardLanguage: (language: string) => language, inferBinderLanguage: (language: string) => language,
-    getLanguageSetKey: (id: string, language: string) => `${language}:${strip(id)}`,
+    getLanguageSetKey: (id: string, language: string) => `${language ?? 'en'}:${strip(id)}`,
     getKnownPokemonSetTotal: () => null,
     readStoredSetTotal: (set: any) => Math.max(set.printed_total ?? 0, set.total ?? 0) || null,
     normalizePokemonSetId: strip, stripSetLanguagePrefix: strip, getVariants: () => ['normal'],
@@ -139,12 +170,45 @@ async function run() {
       catalogue_identity_status: 'resolved', catalogue_set_id: 'proven-exact-set', catalogue_set_total: 128 },
     { id: 'unresolved', type: 'official', source_set_id: 'unknown', language: 'ja', catalogue_set_total: 999 },
   ];
-  const results = await exports.fetchBinderFactsSnapshot(data, 'owner');
+  const results = await exports.fetchBinderFactsSnapshot(data.map(binder => ({ ...binder, user_id: 'owner' })), 'owner');
   assert.equal(results.counts.ja.total, 113, 'Canonical source_id resolves the requested exact-language total.');
   assert.equal(results.counts.cn.total, 40); assert.equal(results.counts.tw.total, 60, 'Simplified and Traditional totals remain isolated.');
   assert.equal(results.counts.resolved.total, 128, 'Verified enriched metadata survives missing legacy rows.');
   assert.equal(results.counts.unresolved.total, null, 'An unverified total cannot establish completeness.');
   assert.ok(queries.filter((query) => query.field === 'source_id').every((query) => Boolean(query.language)), 'Every source-code lookup has an exact language filter.');
+  const bulkBinder = [{ id: 'bulk', user_id: 'owner', type: 'custom' }];
+  savedRows = Array.from({ length: 1702 }, (_, index) => ({ id: `saved-${index}`, binder_id: 'bulk', card_id: `card-${index}`, set_id: null, owned: true }));
+  for (const cap of [50, 17]) {
+    pageCap = cap; savedReads = 0;
+    const bulk = await exports.fetchBinderFactsSnapshot(bulkBinder, 'owner');
+    assert.equal(bulk.counts.bulk.total, 1702); assert.equal(bulk.counts.bulk.owned, 1702);
+    assert.equal(bulk.priceInputs.length, 1702, 'Valuation retains all saved cards beyond 50 rows');
+    assert.equal(savedReads, Math.ceil(1702 / cap) + 1);
+    assert.equal(authListeners.size, 0);
+  }
+  savedReads = 0; failSavedPage = 3;
+  await assert.rejects(exports.fetchBinderFactsSnapshot(bulkBinder, 'owner'), /later page failed/); failSavedPage = -1;
+  repeatSaved = true; await assert.rejects(exports.fetchBinderFactsSnapshot(bulkBinder, 'owner'), /identities/); repeatSaved = false;
+  foreignSaved = true; await assert.rejects(exports.fetchBinderFactsSnapshot(bulkBinder, 'owner'), /identities/); foreignSaved = false;
+  afterSavedPage = () => { accountIdRef.current = 'other-owner'; }; savedReads = 0;
+  await assert.rejects(exports.fetchBinderFactsSnapshot(bulkBinder, 'owner'), /cancelled/); assert.equal(savedReads, 1); accountIdRef.current = 'owner';
+  afterSavedPage = () => { for (const listener of authListeners) { listener('SIGNED_IN', { user: { id: 'other-owner' } }); listener('SIGNED_IN', { user: { id: 'owner' } }); } };
+  savedReads = 0; await assert.rejects(exports.fetchBinderFactsSnapshot(bulkBinder, 'owner'), /cancelled/); assert.equal(savedReads, 1);
+  const factsAbort = new AbortController(); afterSavedPage = () => factsAbort.abort(); savedReads = 0;
+  await assert.rejects(exports.fetchBinderFactsSnapshot(bulkBinder, 'owner', factsAbort.signal), /cancelled/); assert.equal(savedReads, 1); afterSavedPage = null;
+  assert.equal(authListeners.size, 0);
+  await assert.rejects(exports.fetchBinderFactsSnapshot([{ ...bulkBinder[0], user_id: 'foreign' }], 'owner'), /account changed/);
+  pageCap = 17; savedRows = [];
+  catalogueRows = Array.from({ length: 113 }, (_, index) => ({ id: `official-${index}`, set_id: 'base1', language: 'en', name: `Card ${index}` }));
+  variantRows = catalogueRows.map(row => ({ id: `variant-${row.id}`, user_id: 'owner', card_id: row.id, set_id: 'base1', variant: 'normal' }));
+  const masterBinder = [{ id: 'master', user_id: 'owner', type: 'official', source_set_id: 'base1', language: 'en', master_set_enabled: true }];
+  const master = await exports.fetchBinderFactsSnapshot(masterBinder, 'owner');
+  assert.equal(master.counts.master.total, 113, 'Every master-set card is read under smaller API caps');
+  assert.equal(master.counts.master.owned, 113, 'Every owned variant remains available beyond 50 rows');
+  failCataloguePage = 17;
+  const incompleteMaster = await exports.fetchBinderFactsSnapshot(masterBinder, 'owner');
+  assert.equal(incompleteMaster.counts.master.total, null, 'A later optional catalogue failure cannot claim a complete master-set total');
+  assert.equal(incompleteMaster.counts.master.totalKnown, false);
   console.log('Binder library actual-function regressions passed: failure/denial/no-quote distinction, retained values, cancellation/deadline guards and canonical language-scoped totals.');
 }
 run().catch((error) => { console.error(error); process.exitCode = 1; });

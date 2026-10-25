@@ -66,6 +66,7 @@ jobs:
           node scripts/test-approved-alpha-logo-repair.mjs
       - name: Repair only alpha-bearing approved English logo sources
         env:
+          STACKR_CATALOGUE_STORAGE_PROVIDER: r2
           STACKR_R2_ENDPOINT: ${{ vars.STACKR_R2_ENDPOINT }}
           STACKR_R2_BUCKET: ${{ vars.STACKR_R2_BUCKET }}
           STACKR_R2_PUBLIC_BASE_URL: ${{ vars.STACKR_R2_PUBLIC_BASE_URL }}

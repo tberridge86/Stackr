@@ -623,6 +623,10 @@ async function enrichCardImagesOptionally(assetSupabase, cards, options) {
   }
 }
 
+function shouldIncludeCardAssets(value) {
+  return !['false', '0', 'no', 'off'].includes(String(value ?? '').trim().toLowerCase());
+}
+
 export function toLanguage(row) {
   return {
     code: row.code,
@@ -1103,10 +1107,18 @@ async function searchNameWithSetCode(supabase, parsed, limit, language) {
 async function searchFuzzyName(supabase, parsed, limit, language) {
   if (!parsed.normalized || parsed.normalized.length < 2) return [];
   const safe = parsed.normalized.replace(/[%_]/g, ' ').replace(/\s+/g, '%');
+  const tokens = parsed.normalized.split(/\s+/).filter(Boolean);
+  const reorderNames = !parsed.collectorNumber && tokens.length >= 2 && tokens.length <= 6
+    && /^[\p{L}\p{M}\s-]+$/u.test(parsed.raw) && new Set(tokens).size === tokens.length
+    && tokens.some((token) => token.length >= 3) && tokens.every((token) => /^[\p{L}-]+$/u.test(token));
   let namesQuery = table(supabase, 'api', 'catalogue_card_names')
-    .select('name_type,name,normalized_name,printing_id,variant_id')
-    .ilike('normalized_name', `%${safe}%`)
-    .limit(Math.max(limit * 6, 120));
+    .select('name_type,name,normalized_name,printing_id,variant_id');
+  // Ordinary name words may arrive in either order, but every term must occur
+  // on the same published name. Structured identifiers keep their existing path.
+  if (reorderNames) {
+    for (const token of tokens) namesQuery = namesQuery.ilike('normalized_name', `%${escapeLikePattern(token)}%`);
+  } else namesQuery = namesQuery.ilike('normalized_name', `%${safe}%`);
+  namesQuery = namesQuery.limit(Math.max(limit * 6, 120));
   namesQuery = applyNamePrintingLanguageFilter(namesQuery, language);
   const names = await queryRows(namesQuery);
   if (!names.length) return [];
@@ -1482,7 +1494,13 @@ export function createCatalogueV1Service(options) {
       query = query.eq('catalogue_version_id', publishedSet.catalogue_version_id);
       const { rows, pagination } = pageFromRows(await queryRows(query), limit, 'variant_id');
       const cards = groupCardRows(sortCardsForDisplay(rows));
-      return { cards: await fetchCardImageAssets(assetSupabase, cards, assetUrlOptions), pagination };
+      // The fallback must preserve the fast route's facts-only contract. When
+      // artwork is requested, its failure cannot erase a usable facts page.
+      return {
+        cards: shouldIncludeCardAssets(input.includeAssets)
+          ? await enrichCardImagesOptionally(assetSupabase, cards, assetUrlOptions) : cards,
+        pagination,
+      };
     },
 
     async pokemonCards(pokemonName, input = {}) {

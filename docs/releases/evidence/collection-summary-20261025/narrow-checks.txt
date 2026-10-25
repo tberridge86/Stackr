@@ -1,0 +1,2 @@
+Profile state checks passed: missing/error, retry, retained details, stale responses, account isolation, sign-out.
+Owned ledger and trade selector preserve complete identities with <=50-row responses, lower caps, schema fallback, failure and account cancellation.
