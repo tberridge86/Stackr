@@ -10,7 +10,7 @@ const binder = { id: 'binder-a', user_id: 'owner-a', type: 'official', source_se
 const saved = Array.from({ length: 1702 }, (_, index) => ({
   id: `card-${index}`, binder_id: binder.id, card_id: `card-${index}`, owned: index < 1323,
 }));
-let failAt = -1, serverCap = 50;
+let failAt = -1, serverCap = 500;
 let wrongAccount = false, duplicate = false, foreign = false, malformed = false;
 let currentAccount = 'owner-a';
 let afterPage: (() => void) | null = null;
@@ -25,7 +25,10 @@ const dependencies: Record<string, unknown> = {
     assert.equal(options.enrich, false);
     return [{ ...binder, user_id: wrongAccount ? 'owner-b' : binder.user_id }, { ...binder, id: 'empty-binder' }];
   } },
-  './ownership': { fetchOwnedCardRows: async () => pendingOwnership ?? [{ user_id: 'owner-a', card_id: 'owned-outside-binder', quantity: 2 }] },
+  './ownership': { fetchOwnedCardRows: async (options: { pageSize: number }) => {
+    assert.equal(options.pageSize, 500, 'Home opts into the larger ownership page budget');
+    return pendingOwnership ?? [{ user_id: 'owner-a', card_id: 'owned-outside-binder', quantity: 2 }];
+  } },
   './supabase': { supabase: { auth: {
     getSession: async () => ({ data: { session: { user: { id: currentAccount } } }, error: null }),
     onAuthStateChange: (listener: (...args: any[]) => void) => {
@@ -38,7 +41,7 @@ const dependencies: Record<string, unknown> = {
       select: () => query,
       in: (column: string, ids: string[]) => { assert.equal(column, 'binder_id'); assert.ok(ids.length <= 50); return query; },
       order: (column: string, options: any) => { assert.equal(column, 'id'); assert.equal(options.ascending, true); return query; },
-      range: (start: number, end: number) => { from = start; to = end; assert.equal(end - start, 49); return query; },
+      range: (start: number, end: number) => { from = start; to = end; assert.equal(end - start, 499); return query; },
       abortSignal: (signal: AbortSignal) => { assert.equal(signal.aborted, false); return query; },
       then: (resolve: (value: unknown) => unknown) => {
         reads.push([from, to]);
@@ -76,7 +79,7 @@ async function main() {
   assert.ok(reads.length > 0, 'saved paging overlaps stalled required ownership');
   releaseOwnership([{ user_id: 'owner-a', card_id: 'owned-outside-binder', quantity: 2 }]);
   await loading; pendingOwnership = null;
-  for (const cap of [50, 17]) {
+  for (const cap of [500, 100, 50, 17]) {
     serverCap = cap; reads.length = 0;
     const collection = await exported.fetchHomeSavedCollection('owner-a', { forceRefresh: true });
     assert.equal(collection.cardsByBinder.get('binder-a').length, 1702);
@@ -87,6 +90,7 @@ async function main() {
   }
   assert.equal(exported.savedBinderCatalogueTotal(binder, saved), 0);
   assert.equal(exported.savedBinderCatalogueTotal(binder, [{ set_total: 102 }]), 102);
+  serverCap = 500;
   reads.length = 0; failAt = 3;
   await assert.rejects(exported.fetchHomeSavedCollection('owner-a', { forceRefresh: true }), /later page failed/); failAt = -1;
   duplicate = true; await assert.rejects(exported.fetchHomeSavedCollection('owner-a', { forceRefresh: true }), /identities/); duplicate = false;

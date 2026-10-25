@@ -11,7 +11,9 @@
     "entries": [
       {
         "id": "HOME-RETRIEVAL-001",
-        "reportAliases": ["HOME-FACTS-001"],
+        "reportAliases": [
+          "HOME-FACTS-001"
+        ],
         "severity": "P2",
         "cause": "Home repeats complete saved and ownership scans during immediate reloads and serializes saved paging behind ownership.",
         "affectedFiles": [
@@ -3401,5 +3403,47 @@
     "resourceReadings": "Owner supplied Primary Database memory/CPU/IO charts,13/60 global database connections,1/200 dedicated pooler connections,3.26GB disk usage and8GB provisioned. Shared pooler has no data. These snapshots weaken disk-full/global-connection-cap explanations; smaller PostgREST internal pool occupancy, latency and workload cause remain unknown.",
     "releaseVerification": "23/23 smoke CLI regression cases pass and independently retested; successful full gate retained; no new deployment."
   },
-  "previousCandidateRemoteBranchBefore20261018": "agent/release/tif-build55-device-repairs-20261012"
+  "previousCandidateRemoteBranchBefore20261018": "agent/release/tif-build55-device-repairs-20261012",
+  "homeColdRetrieval20261025": {
+    "observedDate": "2026-10-25",
+    "owner": "stackr_coding",
+    "status": "implemented_locally_independently_reviewed",
+    "sourceBaseline": "1134846c535a687e1afdc2e7f898ef6fd2d1606d",
+    "report": "docs/releases/home-cold-retrieval-infrastructure-20261025.md",
+    "entries": [
+      {
+        "id": "HOME-COLD-001",
+        "severity": "P2",
+        "cause": "Complete Home facts use50-row pages and require66DataAPIreads for1702saved/1323owned.",
+        "affectedFiles": [
+          "lib/homeSavedCollection.ts",
+          "lib/uiCollectionPages.ts",
+          "lib/ownership.ts"
+        ],
+        "repair": "Home-only500-row page budget; defaults/INchunks50 and total bounds unchanged; empty-page exhaustion preserves lower-cap completeness.",
+        "validation": "Actual-module full-field parity, complete counts,5languages,servercaps500/100/50/17,account/edit/manual/cancellation/failure guards; representative local query plans.",
+        "delivery": "draft_candidate_not_deployed"
+      },
+      {
+        "id": "HOME-COLD-EVIDENCE-001",
+        "severity": "P2",
+        "cause": "Initial timing benchmark compared unequal collection sizes.",
+        "affectedFiles": [
+          "scripts/test-home-saved-cache.mjs"
+        ],
+        "repair": "Shared identical timed cohorts with per-sample full-row and request-count assertions; withdraw invalid timings and regenerate receipts.",
+        "validation": "Resolved; independent all-cohort rerun and raw-log/JSON/table/hash verification pass.",
+        "delivery": "evidence_correction"
+      }
+    ],
+    "deployed": false,
+    "phoneAccepted": false,
+    "remaining": [
+      "New exact-head hostedCI",
+      "Scope-specific Profile migration and client delivery approval",
+      "Direct serving-version attestation and hosted cap/privateAPI measurement",
+      "Device acceptance",
+      "Job reliability,monitoring,recovery queued"
+    ]
+  }
 }

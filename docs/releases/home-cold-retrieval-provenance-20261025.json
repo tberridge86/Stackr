@@ -1,0 +1,177 @@
+{
+  "task": "home-cold-retrieval-20261025",
+  "observedAt": "2026-10-25T20:40:04.083Z",
+  "repository": "tberridge86/Stackr",
+  "source": {
+    "pr": 439,
+    "branch": "codex/architecture-integration-20261024",
+    "canonicalBaseline": "1134846c535a687e1afdc2e7f898ef6fd2d1606d",
+    "localBaseline": "53ab596156037c560c2776eb55ab02c66d90c40e",
+    "main": "6dfe188166df76b41d44801ab66970b0a3881ae5",
+    "candidateDirectory": "D:/Stackr-1/work/collection-summary-20261025",
+    "finalRevisionReceipt": "PR439 and original checkout docs/releases/home-cold-retrieval-handoff-20261025.md; source is this containing commit",
+    "preservedOriginalWork": true,
+    "localOnlyFixturePngs": 12,
+    "runtimeBlobs": [
+      {
+        "path": "lib/homeSavedCollection.ts",
+        "sha": "a96e916b03b222d4e23b7794f1eb5385e2ab9a6c"
+      },
+      {
+        "path": "lib/uiCollectionPages.ts",
+        "sha": "be8a7d485daee66016a82f1a1e368b5642751215"
+      },
+      {
+        "path": "lib/ownership.ts",
+        "sha": "773df47496b4db3f137c6040603a0618f9a4e025"
+      }
+    ]
+  },
+  "change": {
+    "homePageBudget": 500,
+    "otherCallerDefault": 50,
+    "inFilterBudget": 50,
+    "totalRowBudgetUnchanged": true,
+    "requiresEmptyPageToProveExhaustion": true,
+    "newIndexes": [],
+    "newMigrations": [],
+    "newServices": [],
+    "newCacheMechanisms": [],
+    "priceAndImageLogicChanged": false
+  },
+  "live": {
+    "database": {
+      "project": "oakdbbzdqwurpjnoqhmu",
+      "ledgerEntries": 191,
+      "latestVersion": "20261005205507",
+      "profileVersion": "20261025154000",
+      "profileRecorded": false,
+      "dailyMoversVersion": "20261022064554",
+      "dailyMoversRecorded": false,
+      "caveat": "Ledger absence is not proof that a manually created function is absent."
+    },
+    "backend": {
+      "releaseRun": 40090685441,
+      "job": 120862880841,
+      "source": "7c1acd409680b38d5913d8cae76df560b5d91daa",
+      "deployment": "dfc23b30-9675-4ba0-ad2b-9f1875302747",
+      "evidence": "Fresh successful-release listing and reread job log; not freshly served-source attestation"
+    },
+    "gateway": {
+      "releaseRun": 39147311549,
+      "job": 117733665589,
+      "source": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
+      "workerVersion": "56f04b7f-0692-4d8f-a9ae-0963442e57b8",
+      "evidence": "Fresh successful-release listing and reread job log; not fresh traffic attestation"
+    },
+    "app": {
+      "lastSuccessfulVerificationWorkflow": 39558210992,
+      "verifyOnly": true,
+      "source": "311fc84a95de4c730b61473f891079547d1a9b6f",
+      "deviceAcceptance": false,
+      "correction": "Fresh job119082933097 logs establish VERIFY_ONLY:true; this workflow did not request a native build. The prior lastSuccessfulBuild label was incorrect.",
+      "historicalNativeReceipt": {
+        "version": "1.0.6",
+        "build": "60",
+        "easBuildId": "23565784-9fa5-4f9c-ae48-2376756891fb",
+        "source": "311fc84a95de4c730b61473f891079547d1a9b6f",
+        "fingerprint": "2c0656f260a23d3858078b1b058a8440b3301ba6",
+        "evidence": "docs/releases/build60-feedback-repairs-20261022.md",
+        "freshInstallationVerified": false
+      }
+    },
+    "publicMonitor": {
+      "run": 40215560295,
+      "completedAt": "2026-10-25T17:16:07Z",
+      "conclusion": "success",
+      "privateHomeVerified": false,
+      "deviceVerified": false
+    },
+    "directAttestation": "Health and EAS readback inaccessible from execution environment; shell DNS failed. Not evidence of production outage.",
+    "hostedRowCap": "unmeasured",
+    "hostedPrivateLatency": "unmeasured"
+  },
+  "measurements": {
+    "client": "evidence/home-cold-retrieval-20261025/measurements.json",
+    "queryPlans": "evidence/home-cold-retrieval-20261025/query-plan-comparison.json",
+    "timingCorrection": "Independent reviewer identified unequal baseline/candidate timing cohort. Original timing claim withdrawn; shared cohort and per-sample complete-row assertions added. Only regenerated equal-cohort receipts are authoritative.",
+    "jsonBytes": "Uncompressed response-array UTF-8; framing-only difference; no meaningful payload reduction.",
+    "fullHomeScreenMeasured": false,
+    "cohortTimings": [
+      {
+        "cohort": "empty",
+        "samples": 5,
+        "coldBeforeMs": 63.815599999999904,
+        "coldAfterMs": 54.7778000000003,
+        "warmBeforeMs": 0.18420000000014625,
+        "warmAfterMs": 0.22369999999955326
+      },
+      {
+        "cohort": "small",
+        "samples": 5,
+        "coldBeforeMs": 222.3113999999996,
+        "coldAfterMs": 226.34870000000046,
+        "warmBeforeMs": 0.21720000000004802,
+        "warmAfterMs": 0.23719999999957508
+      },
+      {
+        "cohort": "large-1702-saved-1323-owned",
+        "samples": 5,
+        "coldBeforeMs": 2192.3862,
+        "coldAfterMs": 424.07970000000023,
+        "warmBeforeMs": 3.624099999999089,
+        "warmAfterMs": 3.564199999997072
+      },
+      {
+        "cohort": "five-languages-same-collector",
+        "samples": 5,
+        "coldBeforeMs": 217.66470000000118,
+        "coldAfterMs": 222.08850000000166,
+        "warmBeforeMs": 0.2062999999980093,
+        "warmAfterMs": 0.21420000000216532
+      }
+    ],
+    "baselineModuleBlobs": {
+      "homeSavedCollection": "b34988d6a426ce26389f4a563f1b58d64b100695",
+      "uiCollectionPages": "cadd868e95aab0a93d9021cef0c7954c493985b6",
+      "ownership": "b2edefaec67db8ae6804013805877d12f11a442b"
+    }
+  },
+  "validation": {
+    "typecheck": "PASS",
+    "lint": "PASS:0 errors,8 existing warnings",
+    "scopedLint": "PASS:0 errors,0 warnings after final timing-harness correction",
+    "focusedTests": "PASS: shared pager, ownership, Home saved, actual Home runtime",
+    "baselineHostedCI": "All five workflows passed at1134846c; new exact-head results are recorded in final publication receipt",
+    "independentReview": "PASS: no remaining actionable finding; timing P2 fixed and independent all-cohort comparison/readers/query-plan500 rerun passed",
+    "syntheticComparison": "PASS:5 matched samples per empty/small/large/five-language cohort; complete fields and request/returned-row assertions",
+    "independentLargeSyntheticMedianMs": {
+      "before": 2218.87,
+      "after": 430.15,
+      "authoritativeReceipt": false
+    }
+  },
+  "profileRollout": {
+    "path": "supabase/migrations/20261025154000_collection_summary_v1.sql",
+    "normalizedLfSha256": "01945a9e2bd98f7884662bef002f5a8fa50d22e5998709af7193f57566ace09c",
+    "normalizedBytes": 10720,
+    "changed": false,
+    "approvalPackage": "home-cold-release-approval-20261025.md",
+    "deviceChecklist": "home-cold-device-acceptance-20261025.md"
+  },
+  "delivery": {
+    "merged": false,
+    "deployed": false,
+    "profileMigrationApplied": false,
+    "phoneAccepted": false,
+    "r2OperationsChanged": false,
+    "schedulesChanged": false,
+    "paidServicesActivated": false,
+    "remaining": [
+      "Exact-head CI for new source",
+      "Scoped release approval and served-version attestation",
+      "Profile-only migration and two-account API verification",
+      "Signed app delivery and physical device acceptance"
+    ]
+  }
+}

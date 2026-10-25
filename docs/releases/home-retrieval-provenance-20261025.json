@@ -248,9 +248,20 @@
       "status": "latest successful gateway release in fresh run listing; version ID from previous release logs, not fresh traffic attestation"
     },
     "app": {
-      "lastSuccessfulBuild": 39558210992,
+      "lastSuccessfulVerificationWorkflow": 39558210992,
+      "verifyOnly": true,
       "source": "311fc84a95de4c730b61473f891079547d1a9b6f",
-      "deviceAcceptance": false
+      "deviceAcceptance": false,
+      "correction": "Fresh job119082933097 logs establish VERIFY_ONLY:true; this workflow did not request a native build. The prior lastSuccessfulBuild label was incorrect.",
+      "historicalNativeReceipt": {
+        "version": "1.0.6",
+        "build": "60",
+        "easBuildId": "23565784-9fa5-4f9c-ae48-2376756891fb",
+        "source": "311fc84a95de4c730b61473f891079547d1a9b6f",
+        "fingerprint": "2c0656f260a23d3858078b1b058a8440b3301ba6",
+        "evidence": "docs/releases/build60-feedback-repairs-20261022.md",
+        "freshInstallationVerified": false
+      }
     },
     "freshDirectAttestation": "Unavailable from execution environment: Git DNS getaddrinfo thread failure and public health web fetch inaccessible. Not evidence of production outage."
   },

@@ -9,6 +9,9 @@ import {
   readCachedHomeSavedFacts, type HomeSavedCollectionFacts,
 } from './homeSavedCollectionCache';
 
+// Home needs the complete snapshot; larger bounded pages reduce cold round trips.
+const HOME_SAVED_FACTS_PAGE_SIZE = 500;
+
 type HomeSavedCollectionOptions = {
   onBindersReady?: (binders: BinderRecord[]) => void;
   isCurrent?: () => boolean;
@@ -45,7 +48,7 @@ async function readHomeSavedCollection(userId: string, options: HomeSavedCollect
         const rows = await readUiCollectionChunks<BinderCardRecord>(
           binders.map((binder) => binder.id),
           (ids) => supabase.from('binder_cards').select('*').in('binder_id', ids),
-          (row, ids) => ids.includes(row.binder_id), { signal, assertCurrent },
+          (row, ids) => ids.includes(row.binder_id), { signal, assertCurrent, pageSize: HOME_SAVED_FACTS_PAGE_SIZE },
         );
         const cardsByBinder = new Map<string, BinderCardRecord[]>(binders.map((binder) => [binder.id, []]));
         for (const row of rows) cardsByBinder.get(row.binder_id)!.push(row);
@@ -53,7 +56,10 @@ async function readHomeSavedCollection(userId: string, options: HomeSavedCollect
       });
       const [saved, ownedRows] = await Promise.all([
         savedRead,
-        fetchOwnedCardRows({ isCurrent: () => !signal.aborted && !finished && !accountChanged && options.isCurrent?.() !== false }),
+        fetchOwnedCardRows({
+          pageSize: HOME_SAVED_FACTS_PAGE_SIZE,
+          isCurrent: () => !signal.aborted && !finished && !accountChanged && options.isCurrent?.() !== false,
+        }),
       ]);
       await assertCurrent();
       if (ownedRows.some((row) => row.user_id !== userId)) throw new Error('The collection account changed. Please retry.');

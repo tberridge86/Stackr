@@ -100,3 +100,18 @@ This is local/offline correctness evidence. It does not establish hosted private
 ### Home hosted qualification follow-up
 
 The reviewer independently checked the test-only `test-gate0-dynamic-copy.ts` correction after hosted CI exposed its old account-only pattern. Both owner and current-request guards remain required. Independent `npm run test:commerce-release-lock` passed all three scripts after the coordinator restored twelve canonical, hash-verified PNG inputs omitted by the isolated text snapshot. No runtime change or remaining actionable finding; no hosted/device claim from this local rerun.
+
+
+## Home cold retrieval qualification - 25 October 2026
+
+Read-only independent review compared the bounded cold retrieval diff against local baseline 53ab596156037c560c2776eb55ab02c66d90c40e, canonical baseline 1134846c535a687e1afdc2e7f898ef6fd2d1606d. Root records this report; reviewer edited no source and performed no remote operation. Runtime scope: homeSavedCollection, ownership and uiCollectionPages; focused tests, local query-plan harness and current release/device/provenance evidence were also inspected.
+
+**HOME-COLD-EVIDENCE-001 (P2), resolved:** the initial timing loop compared unequal baseline/candidate collection sizes. The corrected runner shares matched cohort definitions, asserts complete returned and transport populations and cold/warm read counts for every sample, and retains raw samples for all four cohorts. Initial timing claims were withdrawn. Request-count/full-field comparisons were unaffected.
+
+Independent final paired run passed: large cold 66 to11 reads and 2218.87 to430.15 ms synthetic median; empty/small/five-language read counts unchanged; warm reads zero before and after. Server caps500/100/50/17 retain all1702saved/1323owned at11/36/66/183 reads. Independent medians are a corroborating rerun, not replacements for the coordinator's authoritative2192.39/424.08 ms receipt. No hosted/phone latency follows from these fixtures.
+
+The reviewer independently passed three focused reader scripts and the local page500 query-plan script. Verified final measurementsJSON exactly equals the raw log, all four cohort medians recompute, timed populations match, three runtime blob hashes match provenance, and query summary equals raw50/500 plans. Typecheck, root lint and scoped lint evidence was reviewed as passing; root lint retains eight existing warnings.
+
+Runtime defaults, bounds, empty-page exhaustion, exact identities and account/cancellation guards remain intact. Prepared-summary limitations, nearly unchanged payload, unknown hosted row cap, full-screen/auth exclusions and estimated-versus-actual local plans are accurately stated. Profile migration hash/10720bytes was independently verified. Release instructions now explicitly pass optional workflow inputs; verification-only, native build and installed-device states are separate. Device matrix remains NOT RUN.
+
+**Conclusion:** no remaining actionable finding in this scoped change. Hosted exact-source CI, scoped rollout, served-version attestation, private API measurements and actual phone acceptance remain distinct release gates. See [cold Home evidence](../../releases/home-cold-retrieval-infrastructure-20261025.md).

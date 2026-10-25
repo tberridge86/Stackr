@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
 import { performance } from 'node:perf_hooks';
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
@@ -9,7 +10,23 @@ import { runInNewContext } from 'node:vm';
 // Offline only: full shipped modules, fixture Supabase transport and unused native boundaries.
 const root = process.cwd();
 const baselinePath = process.argv.find(arg=>arg.startsWith('--baseline-home-saved='))?.slice('--baseline-home-saved='.length);
-const baselineSource = baselinePath ? readFileSync(baselinePath,'utf8') : null;
+const baselineRevision = process.argv.find(arg => arg.startsWith('--baseline-facts-revision='))?.slice('--baseline-facts-revision='.length);
+if (baselinePath && baselineRevision) throw new Error('Choose one baseline source option.');
+const baselineModules = new Map();
+if (baselineRevision) {
+  if (!/^[a-f0-9]{7,40}$/i.test(baselineRevision)) throw new Error('The baseline revision must be a Git commit hash.');
+  for (const name of ['homeSavedCollection', 'uiCollectionPages', 'ownership']) {
+    baselineModules.set(name, execFileSync('git', ['show', baselineRevision + ':lib/' + name + '.ts'], {
+      cwd: root, encoding: 'utf8', maxBuffer: 1_000_000,
+    }));
+  }
+}
+const baselineSource = baselineModules.get('homeSavedCollection') ?? (baselinePath ? readFileSync(baselinePath, 'utf8') : null);
+function gitBlob(source) {
+  const normalized = source.replaceAll('\r\n', '\n');
+  return createHash('sha1').update('blob ' + Buffer.byteLength(normalized) + '\0').update(normalized).digest('hex');
+}
+const baselineModuleBlobs = Object.fromEntries([...baselineModules].map(([name, source]) => [name, gitBlob(source)]));
 const normalizedBaseline=baselineSource?.replaceAll('\r\n','\n');
 const baselineGitBlob=normalizedBaseline?createHash('sha1').update('blob '+Buffer.byteLength(normalizedBaseline)+'\0').update(normalizedBaseline).digest('hex'):null;
 const ts = createRequire(resolve(root, 'package.json'))('typescript');
@@ -25,14 +42,14 @@ function dataSet(binderCount=2, savedCount=8, ownedCount=6, multilingual=false) 
 }
 function harness(tables,options={}) {
  let account=owner,clock=Date.now();
- const controls={holdOwnership:false,holdSaved:null,afterPage:null,failTable:null,delayMs:0,sessionHold:null,holdSessionAt:-1,...options};
+ const controls={holdOwnership:false,holdSaved:null,afterPage:null,failTable:null,delayMs:0,sessionHold:null,holdSessionAt:-1,serverCap:500,...options};
  class ClockDate extends Date { static now(){return clock;} }
  const requests=[],listeners=new Set(),modules=new Map(),held=deferred(),authCalls={getSession:0,getUser:0};
  const session=()=>account?({user:{id:account}}):null;
  const supabase={auth:{getSession:async()=>{authCalls.getSession++;const value=session();if(authCalls.getSession===controls.holdSessionAt)await controls.sessionHold.promise;return {data:{session:value},error:null};},getUser:async()=>{authCalls.getUser++;return {data:{user:session()?.user??null},error:null};},onAuthStateChange:cb=>{listeners.add(cb);return {data:{subscription:{unsubscribe:()=>listeners.delete(cb)}}};}},from(table){
   assert.ok(Object.hasOwn(tables,table),`Unexpected data source ${table}`);
   let columns='*',from=0,to=49,signal;const filters=[],orders=[];
-  const query={select(value){columns=value;return query;},eq(key,value){filters.push(row=>row[key]===value);return query;},in(key,values){assert.ok(values.length<=50);filters.push(row=>values.includes(row[key]));return query;},order(key,{ascending=true}={}){orders.push([key,ascending]);return query;},range(start,end){assert.equal(end-start,49);from=start;to=end;return query;},abortSignal(value){signal=value;return query;},then(done,fail){return Promise.resolve().then(async()=>{
+  const query={select(value){columns=value;return query;},eq(key,value){filters.push(row=>row[key]===value);return query;},in(key,values){assert.ok(values.length<=50);filters.push(row=>values.includes(row[key]));return query;},order(key,{ascending=true}={}){orders.push([key,ascending]);return query;},range(start,end){assert.equal(end-start+1,table==='binders'?50:controls.baseline?50:500);from=start;to=end;return query;},abortSignal(value){signal=value;return query;},then(done,fail){return Promise.resolve().then(async()=>{
    const request={table,from,to,rows:null,bytes:null};requests.push(request);
    if(controls.holdOwnership&&table==='user_card_variants')await held.promise;
    if(controls.holdSaved&&table==='binder_cards')await controls.holdSaved.promise;
@@ -44,14 +61,14 @@ function harness(tables,options={}) {
    if(table==='binder_cards')rows=rows.filter(row=>tables.binders.some(b=>b.id===row.binder_id&&(b.user_id===account||b.is_public)));
    rows=rows.filter(row=>filters.every(filter=>filter(row)));
    rows.sort((a,b)=>{for(const[key,ascending]of orders){if(a[key]===b[key])continue;if(a[key]==null)return ascending?1:-1;if(b[key]==null)return ascending?-1:1;return(a[key]<b[key]?-1:1)*(ascending?1:-1);}return 0;});
-   const data=rows.slice(from,to+1).map(row=>columns==='*'?{...row}:Object.fromEntries(columns.split(',').map(k=>k.trim()).map(k=>[k,row[k]??null])));
+   const data=rows.slice(from,Math.min(to+1,from+controls.serverCap)).map(row=>columns==='*'?{...row}:Object.fromEntries(columns.split(',').map(k=>k.trim()).map(k=>[k,row[k]??null])));
    request.rows=data.length;request.bytes=Buffer.byteLength(JSON.stringify(data));controls.afterPage?.(table,request);return {data,error:controls.failTable===table?new Error('fixture transport failure'):null};
   }).then(done,fail);}};return query;
  }};
  const real=new Set(['homeSavedCollection','binders','ownership','uiCollectionPages','requestCache','personalDataRead','homeSavedCollectionCache','collectionSummaryInvalidation']);
  const unused=new Proxy({},{get(_target,name){return()=>{throw new Error(`Unexpected optional/native call ${String(name)}`);};}});
  function load(name){if(modules.has(name))return modules.get(name);const module={exports:{}};modules.set(name,module.exports);
-  const source=name==='homeSavedCollection'&&controls.baseline?baselineSource:readFileSync(resolve(root,'lib',`${name}.ts`),'utf8');const compiled=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
+  const source=controls.baseline?(baselineModules.get(name)??(name==='homeSavedCollection'?baselineSource:null)??readFileSync(resolve(root,'lib',`${name}.ts`),'utf8')):readFileSync(resolve(root,'lib',`${name}.ts`),'utf8');const compiled=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
   runInNewContext(compiled,{module,exports:module.exports,require(path){const dependency=path.replace(/^\.\//,'');if(real.has(dependency))return load(dependency);if(dependency==='supabase')return{supabase};if(dependency==='config')return{PRICE_API_URL:'https://example.invalid',USD_TO_GBP:0.79};if(dependency==='stackrQuery')return{invalidateStackrCollectionQueries(){}};return unused;},console,setTimeout,clearTimeout,AbortController,Date:ClockDate});return module.exports;
  }
  const module=load('homeSavedCollection');return{
@@ -66,13 +83,36 @@ const reports=[];
 const datasets=[['small',dataSet()],['large-1702-saved-1323-owned',dataSet(2,1702,1323)],['empty',dataSet(0,0,0)],['five-languages-same-collector',dataSet(5,5,5,true)]];
 for(const[cohort,tables]of datasets){
  const before=baselineSource?harness(tables,{baseline:true}):null;
- let baseline=null;
- if(before){await before.read();const split=before.requests.length;await before.read();baseline={first:report(before.requests.slice(0,split)),immediateRepeat:report(before.requests.slice(split))};}
+ let baseline=null, baselineFacts=null;
+ if (before) {
+   baselineFacts = await before.read();
+   const split = before.requests.length;
+   const firstAuthCalls = { ...before.authCalls };
+   await before.read();
+   baseline = {
+     first: report(before.requests.slice(0, split)),
+     immediateRepeat: report(before.requests.slice(split)),
+     firstAuthCalls,
+     warmAuthCalls: Object.fromEntries(Object.entries(before.authCalls).map(([key, count]) => [key, count - firstAuthCalls[key]])),
+   };
+   before.cleanup();
+ }
  const f=harness(tables),first=await f.read();
+ const firstAuthCalls = { ...f.authCalls };
+ if (baselineRevision) {
+   const snapshot = value => JSON.stringify({
+     binders: value.binders,
+     ownedRows: value.ownedRows,
+     cardsByBinder: [...value.cardsByBinder],
+   });
+   assert.equal(snapshot(first), snapshot(baselineFacts), 'Before and after preserve every field, placement, identity and quantity');
+ }
  assert.equal(first.binders.length,tables.binders.length);assert.equal(first.ownedRows.length,tables.user_card_variants.length);
  assert.equal([...first.cardsByBinder.values()].flat().length,tables.binder_cards.length);
  assert.ok([...first.cardsByBinder.values()].flat().every(row=>row.tcg_price===null&&row.ebay_price===null&&row.cardmarket_price===null&&row.last_price_update===null));
- const split=f.requests.length,repeat=await f.read();assert.equal(repeat.ownedRows.length,first.ownedRows.length);
+ const split=f.requests.length,repeat=await f.read();
+ const warmAuthCalls = Object.fromEntries(Object.entries(f.authCalls).map(([key, count]) => [key, count - firstAuthCalls[key]]));
+ assert.equal(repeat.ownedRows.length,first.ownedRows.length);
  assert.equal([...repeat.cardsByBinder.values()].flat().length,tables.binder_cards.length);
  assert.equal(f.requests.length,split,'fresh complete facts add zero data reads');
  first.ownedRows.length=0;first.cardsByBinder.clear();first.binders.length=0;
@@ -82,9 +122,24 @@ for(const[cohort,tables]of datasets){
  f.advance(31_000);const expiredStart=f.requests.length;await f.read();assert.ok(f.requests.length>expiredStart,'expired facts refresh, without truncation');
  const forcedStart=f.requests.length;await f.read({forceRefresh:true});assert.ok(f.requests.length>forcedStart,'explicit refresh bypasses both facts and binder cache');
  reports.push({cohort,binders:tables.binders.length,saved:tables.binder_cards.length,ownedRows:tables.user_card_variants.length,unownedSaved:tables.binder_cards.filter(row=>!row.owned).length,
- ...(baseline?{baseline}:{}),after:{first:report(f.requests.slice(0,split)),immediateRepeat:warm,expired:report(f.requests.slice(expiredStart,forcedStart)),forced:report(f.requests.slice(forcedStart))},authCalls:f.authCalls});
+ ...(baseline?{baseline}:{}),after:{first:report(f.requests.slice(0,split)),immediateRepeat:warm,expired:report(f.requests.slice(expiredStart,forcedStart)),forced:report(f.requests.slice(forcedStart))},authCalls:f.authCalls,firstAuthCalls,warmAuthCalls});
  f.cleanup();assert.equal(f.listeners.size,0);
 }
+// A requested range is a budget, never proof that the server returned all rows.
+const serverCapReports = [];
+for (const cap of [500, 100, 50, 17]) {
+  const tables = dataSet(2, 1702, 1323);
+  const f = harness(tables, { serverCap: cap });
+  const value = await f.read();
+  assert.equal(value.ownedRows.length, 1323);
+  assert.equal([...value.cardsByBinder.values()].flat().length, 1702);
+  const expected = 2 + Math.ceil(1702 / cap) + 1 + Math.ceil(1323 / cap) + 1;
+  assert.equal(f.requests.length, expected, 'A lower cap changes request count, never completeness');
+  assert.equal([...value.cardsByBinder.values()].flat().filter(row => !row.owned).length, 379);
+  serverCapReports.push({ serverCap: cap, ...report(f.requests) });
+  f.cleanup();
+}
+
 const stalled=harness(dataSet(),{holdOwnership:true});let settled=false;const pending=stalled.read().then(value=>{settled=true;return value;});
 for(let n=0;n<12;n++)await tick();
 const savedDispatchesWhileOwnershipHeld=stalled.requests.filter(row=>row.table==='binder_cards').length;
@@ -138,16 +193,84 @@ const huge=harness(hugeTables);await huge.read();const hugeStart=huge.requests.l
 assert.equal([...(await huge.read()).cardsByBinder.values()].flat().length,8,'oversized facts remain complete');
 assert.ok(huge.requests.length>hugeStart,'oversized complete facts bypass retained caching');huge.cleanup();
 
-const samples=[],baselineTimings=[];
-for(let n=0;n<5;n++){
- if(baselineSource){const before=harness(dataSet(2,102,63),{delayMs:50,baseline:true});let start=performance.now();await before.read();const firstMs=performance.now()-start;start=performance.now();await before.read();baselineTimings.push({firstMs,warmMs:performance.now()-start});before.cleanup();}
- const f=harness(dataSet(2,102,63),{delayMs:50});let start=performance.now();await f.read();const firstMs=performance.now()-start;
- start=performance.now();await f.read();const warmMs=performance.now()-start;samples.push({firstMs,warmMs});f.cleanup();
+// Each pair uses one cohort definition; assertions prevent population drift.
+const timingCohorts = [
+  { cohort: 'empty', binders: 0, saved: 0, owned: 0, baselineRequests: 2, candidateRequests: 2 },
+  { cohort: 'small', binders: 2, saved: 8, owned: 6, baselineRequests: 6, candidateRequests: 6 },
+  { cohort: 'large-1702-saved-1323-owned', binders: 2, saved: 1702, owned: 1323, baselineRequests: 66, candidateRequests: 11 },
+  { cohort: 'five-languages-same-collector', binders: 5, saved: 5, owned: 5, multilingual: true, baselineRequests: 6, candidateRequests: 6 },
+];
+const perDataApiReadDelayMs = 50;
+const timingServerCap = 500;
+async function timedSample(cohort, baseline = false) {
+  const tables = dataSet(cohort.binders, cohort.saved, cohort.owned, cohort.multilingual);
+  const f = harness(tables, { delayMs: perDataApiReadDelayMs, serverCap: timingServerCap, baseline });
+  let start = performance.now();
+  const first = await f.read();
+  const firstMs = performance.now() - start;
+  const firstRead = report(f.requests);
+  assert.equal(first.binders.length, cohort.binders);
+  assert.equal(first.ownedRows.length, cohort.owned);
+  assert.equal([...first.cardsByBinder.values()].flat().length, cohort.saved);
+  assert.equal(firstRead.tableRows.binders ?? 0, cohort.binders);
+  assert.equal(firstRead.tableRows.user_card_variants ?? 0, cohort.owned);
+  assert.equal(firstRead.tableRows.binder_cards ?? 0, cohort.saved);
+  assert.equal(firstRead.requests, baseline ? cohort.baselineRequests : cohort.candidateRequests,
+    'Timed paths must read the same complete collection');
+  const split = f.requests.length;
+  start = performance.now();
+  const warm = await f.read();
+  const warmMs = performance.now() - start;
+  assert.equal(warm.ownedRows.length, cohort.owned);
+  assert.equal([...warm.cardsByBinder.values()].flat().length, cohort.saved);
+  const warmRead = report(f.requests.slice(split));
+  // The older single-file comparison may predate complete-facts caching.
+  if (!baseline || baselineRevision) assert.equal(warmRead.requests, 0);
+  f.cleanup();
+  return { firstMs, warmMs, firstRead, warmRead };
 }
-const median=values=>[...values].sort((a,b)=>a-b)[Math.floor(values.length/2)];
-console.log(JSON.stringify({sourceRoot:root,baselineSourcePath:baselinePath??null,baselineGitBlob,environment:{node:process.version,platform:process.platform,arch:process.arch},transport:'offline actual modules; response-array JSON bytes; excludes headers, TLS, hosted DB and device rendering',reports,
- dependency:{savedDispatchesWhileOwnershipHeld},syntheticHostTiming:{samples:5,cohort:'102 saved /63 owned',perDataApiReadDelayMs:50,
- firstCompleteFactsMedianMs:median(samples.map(row=>row.firstMs)),warmCompleteFactsMedianMs:median(samples.map(row=>row.warmMs)),
- baselineFirstMedianMs:baselineTimings.length?median(baselineTimings.map(row=>row.firstMs)):null,baselineWarmMedianMs:baselineTimings.length?median(baselineTimings.map(row=>row.warmMs)):null,
- includesJavaScriptWork:true,hostedLatency:'unmeasured',budgetBypass:'complete oversized snapshot is returned but not retained'}},null,2));
+const median = values => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
+const cohortTimings = [];
+for (const cohort of timingCohorts) {
+  const candidateSamples = [], baselineSamples = [];
+  for (let sample = 0; sample < 5; sample++) {
+    if (baselineSource) baselineSamples.push(await timedSample(cohort, true));
+    candidateSamples.push(await timedSample(cohort));
+  }
+  cohortTimings.push({
+    cohort: cohort.cohort,
+    samples: 5,
+    timingCohort: { binders: cohort.binders, saved: cohort.saved, owned: cohort.owned,
+      multilingual: Boolean(cohort.multilingual), serverCap: timingServerCap, delayMs: perDataApiReadDelayMs },
+    perDataApiReadDelayMs,
+    firstCompleteFactsMedianMs: median(candidateSamples.map(row => row.firstMs)),
+    warmCompleteFactsMedianMs: median(candidateSamples.map(row => row.warmMs)),
+    baselineFirstMedianMs: baselineSamples.length ? median(baselineSamples.map(row => row.firstMs)) : null,
+    baselineWarmMedianMs: baselineSamples.length ? median(baselineSamples.map(row => row.warmMs)) : null,
+    baselineSamples,
+    candidateSamples,
+  });
+}
+const largeTiming = cohortTimings.find(row => row.cohort === 'large-1702-saved-1323-owned');
+console.log(JSON.stringify({
+  sourceRoot: root,
+  baselineSourcePath: baselinePath ?? null,
+  baselineRevision: baselineRevision ?? null,
+  baselineGitBlob,
+  baselineModuleBlobs,
+  environment: { node: process.version, platform: process.platform, arch: process.arch },
+  transport: 'offline actual modules; response-array JSON bytes; excludes headers, TLS, hosted DB and device rendering',
+  reports,
+  serverCapReports,
+  dependency: { savedDispatchesWhileOwnershipHeld },
+  cohortTimings,
+  syntheticHostTiming: {
+    ...largeTiming,
+    cohort: '1702 saved /1323 owned; server cap500',
+    includesJavaScriptWork: true,
+    hostedLatency: 'unmeasured',
+    budgetBypass: 'complete oversized snapshot is returned but not retained',
+    originCap: 'hosted PostgREST cap is unmeasured; local config declares1000; fixture cap50 retains66 cold reads',
+  },
+}, null, 2));
 console.log('Home saved facts: complete bounded cache, independent source paging, owner/edit/manual/TTL/cancellation/failure isolation passed.');

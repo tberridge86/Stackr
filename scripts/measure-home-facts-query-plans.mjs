@@ -4,9 +4,13 @@ import { createCollectionSummaryDatabase } from './test-fixtures/collection-summ
 // Local synthetic PostgreSQL only. This script never reads credentials or opens a hosted connection.
 // The shared fixture models relevant columns, existing index shapes and owner/public RLS.
 // Production row widths, policy definitions, distribution and execution costs are not attested.
+const args = process.argv.slice(2);
+if (args.length > 1 || (args.length === 1 && !/^--page-size=(50|100|500)$/.test(args[0]))) {
+  throw new Error('Use --page-size=50, --page-size=100 or --page-size=500 for the local comparison.');
+}
+const pageSize = args.length ? Number(args[0].split('=')[1]) : 50;
 const fixture = await createCollectionSummaryDatabase();
 const { db, add, clear, asUser, binder, owned, saved, userA, userB } = fixture;
-const pageSize = 50;
 const cohorts = [
   { name: 'empty', count: 0, languages: ['en'] },
   { name: 'small', count: 24, languages: ['en'] },
@@ -14,7 +18,8 @@ const cohorts = [
   { name: 'multilingual', count: 250, languages: ['en', 'ja', 'zh-cn', 'zh-tw', 'ko'] },
 ];
 const output = { environment: 'PGlite, in-memory synthetic schema/RLS fixture', pageSize,
-  productionPlanVerified: false, newIndexes: [], queryChanges: [],
+  productionPlanVerified: false, newIndexes: [],
+  queryChanges: pageSize === 50 ? [] : ['Requested page limit only; filters, ordering and projections remain unchanged.'],
   limitation: 'No network or device time. Fixture columns/indexes/policies approximate the relevant source, not the entire live schema.',
   cohorts: [] };
 try {
@@ -34,8 +39,8 @@ try {
     ]);
     await db.exec('analyze public.binders; analyze public.binder_cards; analyze public.user_card_variants');
     await asUser();
-    const savedQuery = 'select * from public.binder_cards where binder_id = any($1::uuid[]) order by id limit 50 offset $2';
-    const ownedQuery = 'select id,user_id,card_id,set_id,variant,quantity,condition,grade_company,grade from public.user_card_variants where user_id=$1::uuid order by id limit 50 offset $2';
+    const savedQuery = `select * from public.binder_cards where binder_id = any($1::uuid[]) order by id limit ${pageSize} offset $2`;
+    const ownedQuery = `select id,user_id,card_id,set_id,variant,quantity,condition,grade_company,grade from public.user_card_variants where user_id=$1::uuid order by id limit ${pageSize} offset $2`;
     const result = { name: cohort.name, rowsPerSource: cohort.count, foreignRowsPerSource: 10000, sources: [] };
     for (const [name, query, scope, enabled] of [
       ['saved', savedQuery, binders.map(b => b.id), binders.length > 0],

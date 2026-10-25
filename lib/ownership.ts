@@ -30,6 +30,7 @@ const LEGACY_OWNED_COLUMNS = 'id, user_id, card_id, set_id, variant, quantity';
 const FULL_OWNED_CONFLICT = 'user_id,card_id,set_id,variant,condition,grade_company,grade';
 const LEGACY_OWNED_CONFLICT = 'user_id,card_id,set_id,variant';
 const OWNED_ROWS_PAGE_SIZE = 50;
+const OWNED_ROWS_MAX_PAGE_SIZE = 500;
 
 function isSchemaCacheError(error: any) {
   const message = String(error?.message ?? '').toLowerCase();
@@ -77,7 +78,13 @@ export async function fetchOwnedCardRows(options?: {
   cardIds?: string[];
   setIds?: string[];
   isCurrent?: () => boolean;
+  /** Existing consumers retain 50-row pages; Home may opt into at most 500. */
+  pageSize?: number;
 }): Promise<OwnedCardRow[]> {
+  const pageSize = options?.pageSize ?? OWNED_ROWS_PAGE_SIZE;
+  if (!Number.isSafeInteger(pageSize) || pageSize <= 0 || pageSize > OWNED_ROWS_MAX_PAGE_SIZE) {
+    throw new RangeError('Ownership page size must be a positive integer no greater than 500.');
+  }
   const assertCurrent = () => {
     if (options?.isCurrent?.() === false) {
       const error = new Error('The ownership request was cancelled.');
@@ -108,14 +115,14 @@ export async function fetchOwnedCardRows(options?: {
     const seen = new Set<string>();
     for (let from = 0; ;) {
       assertCurrent();
-      const to = from + OWNED_ROWS_PAGE_SIZE - 1;
+      const to = from + pageSize - 1;
       const { data, error } = await buildQuery(columns).order('id', { ascending: true }).range(from, to);
       assertCurrent();
       if (error) return { data: rows, error };
       // The projection is chosen at runtime for legacy-schema compatibility.
       // Validate the transport value before assigning a row shape.
       const page: unknown = data;
-      if (!Array.isArray(page) || page.length > OWNED_ROWS_PAGE_SIZE) throw new Error('Ownership pagination was incomplete. Please retry.');
+      if (!Array.isArray(page) || page.length > pageSize) throw new Error('Ownership pagination was incomplete. Please retry.');
       if (!page.length) return { data: rows, error: null };
       for (const candidate of page as unknown[]) {
         if (typeof candidate !== 'object' || candidate === null || Array.isArray(candidate)) {

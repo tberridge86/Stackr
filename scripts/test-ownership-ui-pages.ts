@@ -12,7 +12,7 @@ const rows = Array.from({ length: 137 }, (_, index) => ({
   set_id: 'fixture-set', variant: 'normal', quantity: 1,
 }));
 
-function ownershipFixture(options: { cap?: number; legacy?: boolean; response?: (from: number, selected: any[]) => any } = {}) {
+function ownershipFixture(options: { cap?: number; pageSize?: number; legacy?: boolean; response?: (from: number, selected: any[]) => any } = {}) {
   const reads: { from: number; to: number; columns: string }[] = [];
   let current = true;
   const supabase = {
@@ -25,12 +25,12 @@ function ownershipFixture(options: { cap?: number; legacy?: boolean; response?: 
         eq: (column: string, value: string) => { assert.equal(column, 'user_id'); account = value; return query; },
         in: () => query,
         order: (column: string, options: any) => { assert.equal(column, 'id'); assert.equal(options.ascending, true); return query; },
-        range: (start: number, end: number) => { from = start; to = end; assert.ok(end - start + 1 <= 50); return query; },
+        range: (start: number, end: number) => { from = start; to = end; assert.equal(end - start + 1, options.pageSize ?? 50); return query; },
         then: (resolve: any, reject: any) => Promise.resolve().then(() => {
           assert.equal(account, owner);
           reads.push({ from, to, columns });
           if (options.legacy && columns.includes('condition')) return { data: null, error: { code: '42703', message: 'column condition missing' } };
-          const selected = rows.slice(from, from + Math.min(to - from + 1, options.cap ?? 50));
+          const selected = rows.slice(from, from + Math.min(to - from + 1, options.cap ?? options.pageSize ?? 50));
           return options.response?.(from, selected) ?? { data: selected, error: null };
         }).then(resolve, reject),
       };
@@ -44,7 +44,7 @@ function ownershipFixture(options: { cap?: number; legacy?: boolean; response?: 
   };
   runInNewContext(ts.transpileModule(ownedSource, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText,
     { exports, require: (name: string) => { assert.ok(name in dependencies); return dependencies[name]; }, console });
-  return { reads, cancel: () => { current = false; }, read: () => exports.fetchOwnedCardRows({ isCurrent: () => current }) };
+  return { reads, cancel: () => { current = false; }, read: () => exports.fetchOwnedCardRows({ isCurrent: () => current, pageSize: options.pageSize }) };
 }
 
 for (const legacy of [false, true]) {
@@ -57,6 +57,21 @@ for (const legacy of [false, true]) {
   assert.equal(validReads.length, 10, 'lower server caps continue through a definitive empty page');
   assert.deepEqual(validReads.map((read) => read.from), [0, 17, 34, 51, 68, 85, 102, 119, 136, 137]);
 }
+for (const pageSize of [0, -1, 1.5, Infinity, 501]) {
+  const invalid = ownershipFixture({ pageSize });
+  await assert.rejects(invalid.read(), /page size/);
+  assert.equal(invalid.reads.length, 0, 'Invalid page budgets fail before a data read');
+}
+for (const legacy of [false, true]) {
+  for (const cap of [500, 100, 50, 17]) {
+    const larger = ownershipFixture({ pageSize: 500, cap, legacy });
+    const result = await larger.read();
+    assert.equal(result.length, 137);
+    const validReads = larger.reads.filter(read => !legacy || !read.columns.includes('condition'));
+    assert.equal(validReads.length, Math.ceil(137 / cap) + 1);
+    assert.ok(validReads.every(read => read.to - read.from + 1 === 500));
+  }
+}
 const laterFailure = ownershipFixture({ response: (from) => from ? { data: null, error: new Error('second page failed') } : undefined });
 await assert.rejects(laterFailure.read(), /second page failed/);
 assert.equal(laterFailure.reads.length, 2);
@@ -65,6 +80,20 @@ for (const invalid of [null, [null], [false], [17], [[]], rows.slice(0, 51), [{ 
   await assert.rejects(f.read(), /pagination/);
   assert.equal(f.reads.length, 1);
 }
+const oversizedPage = Array.from({ length: 501 }, (_, index) => ({ ...rows[0], id: 'large-' + index }));
+for (const invalid of [null, [null], oversizedPage, [{ ...rows[0], user_id: 'another-owner' }]]) {
+  const f = ownershipFixture({ pageSize: 500, response: () => ({ data: invalid, error: null }) });
+  await assert.rejects(f.read(), /pagination/);
+  assert.equal(f.reads.length, 1, 'Larger pages retain response and account validation');
+}
+const repeatedLarge = ownershipFixture({ pageSize: 500, cap: 100,
+  response: (from) => from ? { data: rows.slice(0, 100), error: null } : undefined });
+await assert.rejects(repeatedLarge.read(), /pagination/);
+assert.equal(repeatedLarge.reads.length, 2);
+const failedLarge = ownershipFixture({ pageSize: 500,
+  response: (from) => from ? { data: null, error: new Error('larger later page failed') } : undefined });
+await assert.rejects(failedLarge.read(), /larger later page failed/);
+assert.equal(failedLarge.reads.length, 2);
 const repeated = ownershipFixture({ cap: 17, response: (from) => from ? { data: rows.slice(0, 17), error: null } : undefined });
 await assert.rejects(repeated.read(), /pagination/);
 assert.equal(repeated.reads.length, 2);
@@ -138,7 +167,7 @@ const failedBinder = tradeRuntime({
 });
 await assert.rejects(failedBinder.readOwned(owner, 1), /binder unavailable/);
 
-console.log('Owned ledger and trade selector preserve complete identities with <=50-row responses, lower caps, schema fallback, failure and account cancellation.');
+console.log('Owned ledger and trade selector preserve default 50-row and opt-in 500-row budgets, lower caps, schema fallback, failure and account cancellation.');
 
 }
 main().catch((error) => { console.error(error); process.exitCode = 1; });

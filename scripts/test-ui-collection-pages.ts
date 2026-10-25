@@ -8,11 +8,12 @@ const all = groups.flatMap((group) => Array.from({ length: 3 }, (_, index) => ({
 const requests: { from: number; to: number; groups: string[] }[] = [];
 let fail = false, duplicate = false, foreign = false, malformed = false;
 let afterPage: (() => void) | undefined;
+let expectedPageSize = 50;
 function query(ids: string[]) {
   let from = 0, to = 49;
   const q: any = {
     order: (name: string, options: any) => { assert.equal(name, 'id'); assert.equal(options.ascending, true); return q; },
-    range: (start: number, end: number) => { from = start; to = end; assert.equal(end - start, 49); return q; },
+    range: (start: number, end: number) => { from = start; to = end; assert.equal(end - start + 1, expectedPageSize); return q; },
     abortSignal: (signal: AbortSignal) => { assert.equal(signal.aborted, false); return q; },
     then: (resolve: (value: any) => unknown) => {
       assert.ok(ids.length <= 50); requests.push({ from, to, groups: [...ids] });
@@ -39,6 +40,18 @@ async function main() {
     await assert.rejects(readUiCollectionPages(() => query(groups.slice(0, 50)), () => true, { maxRows }), /row budget/);
     assert.equal(requests.length, countBefore, 'Invalid or enlarged budgets fail before scheduling HTTP work');
   }
+  for (const pageSize of [0, -1, 1.5, Infinity, 501]) {
+    const countBefore = requests.length;
+    await assert.rejects(readUiCollectionPages(() => query(groups.slice(0, 50)), () => true, { pageSize }), /page size/);
+    assert.equal(requests.length, countBefore, 'Invalid page sizes fail before HTTP work');
+  }
+  expectedPageSize = 500;
+  requests.length = 0;
+  const largerPages = await readUiCollectionChunks<Row>(groups, query, accepts, { pageSize: 500 });
+  assert.equal(largerPages.length, 411, 'Opt-in larger pages still exhaust a lower server cap');
+  assert.ok(requests.every(request => request.to - request.from + 1 === 500 && request.groups.length <= 50));
+  assert.equal(requests.filter(request => request.from === 0).length, 3, 'The IN-filter budget remains 50');
+  expectedPageSize = 50;
   fail = true; await assert.rejects(readUiCollectionChunks(groups, query, accepts), /later failed/); fail = false;
   duplicate = true; await assert.rejects(readUiCollectionChunks(groups, query, accepts), /identities/); duplicate = false;
   foreign = true; await assert.rejects(readUiCollectionChunks(groups, query, accepts), /identities/); foreign = false;
@@ -59,7 +72,7 @@ async function main() {
     global: { fetch: async (input) => {
       const url = new URL(typeof input === 'string' ? input : input instanceof URL ? input.href : input.url);
       httpRequests.push(url);
-      assert.equal(url.searchParams.get('limit'), '50');
+      assert.equal(url.searchParams.get('limit'), String(expectedPageSize));
       assert.equal(url.searchParams.get('order'), 'id.asc');
       const offset = Number(url.searchParams.get('offset'));
       return new Response(JSON.stringify(httpRows.slice(offset, offset + 17)), { status: 200, headers: { 'content-type': 'application/json' } });
@@ -70,6 +83,14 @@ async function main() {
     (row, ids) => ids.includes(row.group));
   assert.equal(actualRows.length, 137);
   assert.equal(httpRequests.length, 10, 'Nine nonempty HTTP pages plus an empty final page prove complete retrieval');
+  assert.equal(httpRequests.at(-1)!.searchParams.get('offset'), '137');
+  expectedPageSize = 500;
+  httpRequests.length = 0;
+  const largerHttpRows = await readUiCollectionChunks<Row>(['http-group'],
+    ids => client.from('fixture_rows').select('id,group').in('group', ids),
+    (row, ids) => ids.includes(row.group), { pageSize: 500 });
+  assert.equal(largerHttpRows.length, 137);
+  assert.equal(httpRequests.length, 10, 'The actual SDK preserves empty-only exhaustion under a 17-row server cap');
   assert.equal(httpRequests.at(-1)!.searchParams.get('offset'), '137');
   console.log('UI collection pagination: all rows and filter chunks, lower server cap, later failure, identity rejection and account/cancellation boundaries passed.');
 }
