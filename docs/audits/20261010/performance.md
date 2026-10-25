@@ -190,3 +190,13 @@ deduplication with search/Pokédex findings and exclusive runtime assignment.
 Before calling performance delivered, obtain the matching signed mobile runtime
 and real-device cold/warm receipts for startup, a known multilingual search,
 set card first content and species card/image inspection.
+
+## Home retrieval scoped follow-through - 25 October 2026
+
+The performance specialist independently inspected the unchanged Home saved loader, request cache, persisted display cache and existing runtime fixtures in `D:/Stackr-1/work/collection-summary-20261025`. Both unchanged narrow Home suites passed. Its actual-module baseline harness reproduced full saved/owned rereads on immediate repeat and the ownership-before-saved-paging dependency. The harness was preserved and extended as `scripts/test-home-saved-cache.mjs`; the coding owner performed implementation and final integration checks.
+
+The bounded candidate changes complete-facts reuse and dependency ordering, with explicit owner/edit/session/manual-refresh generations and bounded retention. It preserves unowned placements, exact language/set/card references, saved artwork URLs and private account scope. Price calls, optional enrichment and authentication are outside the saved-facts request reduction. Cold read counts remain unchanged in the compared cohorts; expired three-minute polling rebuilds facts. Oversized complete results are returned without retention.
+
+Actual-module comparisons and the real Home hook/runtime fixture verify useful holdings before stalled prepared prices, independent price/history reads on range/poll/refresh, failed-read recovery, source invalidation, idle account transitions, sole/shared cancellation and remount-safe persistence. A previous complete `updating` valuation retains its own coverage denominator and an explicit previous-generation warning, including when a refresh report is present.
+
+See the [final release evidence](../../releases/evidence/home-retrieval-20261025/) for canonical baseline provenance, invocation/environment, request and serialized-response measurements, controlled host timing conditions and validation logs. Root typecheck, lint and the focused Home group pass; independent review's two concrete timer/persistence findings were repaired and retested. No comparable production/device latency was measured, no universal speed claim is made, and no R2 workflow or asset publication was altered.

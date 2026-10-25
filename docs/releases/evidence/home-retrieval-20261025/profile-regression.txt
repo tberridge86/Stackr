@@ -1,0 +1,81 @@
+npm notice run Stackr-native@1.0.6 test:collection-summary
+npm notice run node scripts/test-collection-summary-sql.mjs && node scripts/test-collection-summary-client.mjs && node --import tsx scripts/test-collection-summary-performance.ts
+{"check":"collection-summary-sql","engine":"PGlite PostgreSQL","cohorts":{"duplicateSavedRows":{"rows":1003,"priorSavedPageResponses":22,"aggregateResponses":1,"responseBytes":550},"distinctOwnedRows":{"rows":1003,"aggregateResponses":1,"responseBytes":571}},"syntheticExplain":{"format":"ANALYZE, BUFFERS, JSON","resultRows":1,"localExecutionMs":85.112},"verified":["real SQL/RLS/privileges","owner-only despite public binder visibility","complete deduplicated counts","raw exact edition/variant/language estimates","graded and condition coverage","known zero versus unavailable","master completion and local override"],"liveLatency":"unmeasured"}
+{
+  "scope": "In-process PostgreSQL WASM and actual client modules; no network/device latency measurement",
+  "cohorts": [
+    {
+      "cohort": "small raw/graded/first edition",
+      "pagedCompatibilityRequests": 11,
+      "missingRpcProbes": 1,
+      "pagedSavedReads": 2,
+      "pagedTablePayloadBytes": 2229,
+      "compactRequests": 1,
+      "compactPayloadBytes": 550,
+      "seededDatabaseFirstQueryMs": 24.63,
+      "warmMedianMs": 5.42,
+      "warmMaxMs": 5.71,
+      "warmSampleCount": 5,
+      "originalDatabaseExecutionMs": "unmeasured"
+    },
+    {
+      "cohort": "1003 saved placements",
+      "pagedCompatibilityRequests": 31,
+      "missingRpcProbes": 1,
+      "pagedSavedReads": 22,
+      "pagedTablePayloadBytes": 257150,
+      "compactRequests": 1,
+      "compactPayloadBytes": 550,
+      "seededDatabaseFirstQueryMs": 21.45,
+      "warmMedianMs": 16.14,
+      "warmMaxMs": 20.32,
+      "warmSampleCount": 5,
+      "originalDatabaseExecutionMs": "unmeasured"
+    },
+    {
+      "cohort": "1003 distinct raw holdings",
+      "pagedCompatibilityRequests": 70,
+      "missingRpcProbes": 1,
+      "pagedSavedReads": 1,
+      "pagedTablePayloadBytes": 332236,
+      "compactRequests": 1,
+      "compactPayloadBytes": 571,
+      "seededDatabaseFirstQueryMs": 54.75,
+      "warmMedianMs": 43.69,
+      "warmMaxMs": 51.12,
+      "warmSampleCount": 5,
+      "originalDatabaseExecutionMs": "unmeasured"
+    },
+    {
+      "cohort": "five languages plus wrong set",
+      "pagedCompatibilityRequests": 8,
+      "missingRpcProbes": 1,
+      "pagedSavedReads": 1,
+      "pagedTablePayloadBytes": 2213,
+      "compactRequests": 1,
+      "compactPayloadBytes": 549,
+      "seededDatabaseFirstQueryMs": 6.08,
+      "warmMedianMs": 1.23,
+      "warmMaxMs": 1.51,
+      "warmSampleCount": 5,
+      "originalDatabaseExecutionMs": "unmeasured"
+    },
+    {
+      "cohort": "legacy empty variant master",
+      "pagedCompatibilityRequests": 12,
+      "missingRpcProbes": 1,
+      "pagedSavedReads": 1,
+      "pagedTablePayloadBytes": 1083,
+      "compactRequests": 1,
+      "compactPayloadBytes": 551,
+      "seededDatabaseFirstQueryMs": 6.62,
+      "warmMedianMs": 1.19,
+      "warmMaxMs": 1.26,
+      "warmSampleCount": 5,
+      "originalDatabaseExecutionMs": "unmeasured"
+    }
+  ]
+}
+Collection summary client: compact/paged parity, bounded payload, memory cache, exact coverage, errors, account generation, invalidation and deadline checks passed.
+Collection summary background refresh failed: simulated binder read failure
+Collection summary performance checks passed: saved-only paged reads, raw/graded counts, conservative price coverage, persisted stale-while-refresh, account isolation, and joined stale-result rejection.

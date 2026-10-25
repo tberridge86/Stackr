@@ -82,3 +82,16 @@ No new API, private inventory/RLS, provider, signed-build or phone observation w
 The protocol/backend definition preserves bounded ownership and existing live-operation authority. ACTIVE two-hour local continuation is coordinator-supplied evidence and requires the computer and Codex app to be running; configuration alone does not prove a completed background repair.
 
 **Conclusion:** all seven prepared repairs are independently reviewed and ready for local integration gates. The unresolved queue, Marnie publication proposal and matching API/signed-app/device delivery requirements remain explicit. The coordinator records this read-only report and completes the nine-report inventory.
+
+
+## Home retrieval follow-through — 25 October 2026
+
+Read-only independent review compared the nine Home runtime/test/package files against local reconciled baseline `6ab9f7b7a9da759fbd84130f3ee0ba8e916de4c0` (canonical integration baseline `17b5d075136ddc28e4c12134993c290719f3c595`). Root recorded this report; the reviewer did not edit source or operate remote systems.
+
+- **HOME-CACHE-FOCUS-001 (P2), resolved:** a deferred edit reload could start private reads after blur, or duplicate the next load after rapid refocus. The callback now verifies the captured focus, account, session and source generations. Both transitions have actual Home runtime regressions.
+- **HOME-CACHE-WRITE-002 (P2), resolved:** an unmounted screen could delete a newer screen’s persisted snapshot after its old write completed. A bounded owner-wide writer now serializes the write and obsolete cleanup across mounts. The held-old-write/new-snapshot regression retains the new value.
+- Complete-cache bounds, defensive copies, price exclusion, owner/session leases, edit/manual/expiry invalidation, cancelled-consumer behaviour and explicit previous-valuation states were reviewed. No remaining actionable finding in this scope.
+
+Independent `npm run test:home-retrieval` and `node --import tsx scripts/test-english-set-identity.ts` both passed. The English-set repair only synchronizes the transport-start gate before invalidation; its late-result cache assertion remains intact. The corrected local query-plan harness was independently rerun after fixing terminal offsets to advance by actual row counts. Integration reconciliation separately verified all 35 current-main inputs and offline R2/architecture/retrieval guards.
+
+This is local/offline correctness evidence. It does not establish hosted private Home latency, live schema execution plans or installed-phone acceptance. Full source, measurements, validation and release gates: [Home release evidence](../../releases/home-retrieval-infrastructure-20261025.md).

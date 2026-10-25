@@ -1,5 +1,64 @@
 {
   "schemaVersion": 1,
+  "homeRetrieval20261025": {
+    "observedDate": "2026-10-25",
+    "owner": "stackr_coding",
+    "report": "docs/releases/home-retrieval-infrastructure-20261025.md",
+    "status": "implemented_locally_independently_reviewed",
+    "deployed": false,
+    "phoneAccepted": false,
+    "sourceBaseline": "17b5d075136ddc28e4c12134993c290719f3c595",
+    "entries": [
+      {
+        "id": "HOME-RETRIEVAL-001",
+        "reportAliases": ["HOME-FACTS-001"],
+        "severity": "P2",
+        "cause": "Home repeats complete saved and ownership scans during immediate reloads and serializes saved paging behind ownership.",
+        "affectedFiles": [
+          "lib/homeSavedCollection.ts",
+          "lib/homeSavedCollectionCache.ts",
+          "features/home/HubScreen.tsx"
+        ],
+        "repair": "Complete owner/revision facts reuse for30seconds; parallel saved/ownership paging; no truncation or price reuse.",
+        "validation": "Actual-module empty/small/large/five-language fixtures and Home runtime tests; large repeat64DataAPIreads to0; local query plans.",
+        "delivery": "draft_candidate_not_deployed"
+      },
+      {
+        "id": "HOME-CACHE-FOCUS-001",
+        "reportGroup": "HOME-FACTS-002",
+        "severity": "P2",
+        "cause": "Deferred edit reload survives blur/refocus.",
+        "affectedFiles": [
+          "features/home/HubScreen.tsx",
+          "scripts/test-home-startup-runtime.ts"
+        ],
+        "repair": "Capture and verify focus/account/session/source generations.",
+        "validation": "Independent actual Home blur and rapidrefocus regressions pass.",
+        "delivery": "draft_candidate_not_deployed"
+      },
+      {
+        "id": "HOME-CACHE-WRITE-002",
+        "reportGroup": "HOME-FACTS-002",
+        "severity": "P2",
+        "cause": "An obsolete unmounted screen cache cleanup can delete a newer saved snapshot.",
+        "affectedFiles": [
+          "features/home/HubScreen.tsx",
+          "lib/homeCollectionCache.ts",
+          "scripts/test-home-startup-runtime.ts"
+        ],
+        "repair": "Bounded owner-wide write/cleanup queue across mounts.",
+        "validation": "Independent heldoldwrite→unmount→new40→oldcompletion keepsnew40 regression passes.",
+        "delivery": "draft_candidate_not_deployed"
+      }
+    ],
+    "remaining": [
+      "Exact-source hosted CI and release acceptance",
+      "Separate earlier Profile migration rollout with approval",
+      "Phone cold/warm/auth/price measurements",
+      "Public catalogue cache and hosted query-plan investigation",
+      "Job reliability, monitoring and recovery queued"
+    ]
+  },
   "build60FeedbackSweep": {
     "observedDate": "2026-10-22",
     "workingDirectory": "D:/Stackr-1/.tmp-build60-20261022/repair",

@@ -15,7 +15,7 @@
     "test:settings-help": "node --import tsx scripts/test-settings-help.ts && node --import tsx scripts/test-collection-export.ts && node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-minty-preferences.ts",
     "test:master-set-artwork": "node --import tsx scripts/test-master-set-artwork.ts && node --import tsx scripts/test-master-set-ownership.ts && node --import tsx scripts/test-preferred-set-artwork.ts && node --import tsx scripts/test-set-artwork-identity-reassignment.ts && node --import tsx scripts/test-artwork-loading-recovery.ts && node --import tsx scripts/test-stackr-image-recovery.ts && node --import tsx scripts/test-stackr-image-candidates.ts && node --import tsx scripts/test-edition-aware-image-selection.ts && node --import tsx scripts/test-issue304-artwork-delivery.ts",
     "test:startup-loading": "node --import tsx scripts/test-startup-loading.ts && node --import tsx scripts/test-profile-load-state.ts && node --import tsx scripts/test-startup-phases.ts && node --import tsx scripts/test-home-startup-runtime.ts && npm run test:mobile-cache && npm run test:achievement-account-boundary",
-    "test:collection-loading": "node --import tsx scripts/test-personal-data-read.ts && node --import tsx scripts/test-supabase-read-fetch.ts && node --import tsx scripts/test-catalogue-facts-deadline.ts && node --import tsx scripts/test-binder-library-progress-runtime.ts && node --import tsx scripts/test-home-saved-collection.ts",
+    "test:collection-loading": "node --import tsx scripts/test-personal-data-read.ts && node --import tsx scripts/test-supabase-read-fetch.ts && node --import tsx scripts/test-catalogue-facts-deadline.ts && node --import tsx scripts/test-binder-library-progress-runtime.ts && npm run test:home-facts",
     "test:mobile-cache": "npm run test:collection-loading && node --import tsx scripts/test-startup-saved-binders-runtime.ts && node --import tsx scripts/test-binder-library-cache.ts && node --import tsx scripts/test-binder-library-saved-runtime.ts && node --import tsx scripts/test-binder-preload-runtime.ts && node --import tsx scripts/test-started-binder-preload.ts",
     "test:achievement-account-boundary": "node --import tsx scripts/test-achievement-account-boundary-runtime.ts",
     "test:card-haptics": "node --import tsx scripts/test-card-haptics.ts && node --import tsx scripts/test-haptic-preference.ts && node --import tsx scripts/test-haptics.ts && node --import tsx scripts/test-streamlined-haptics.ts && node --import tsx scripts/test-card-preview-motion.ts",
@@ -239,7 +239,9 @@
     "test:catalogue-quality-report": "node --import tsx scripts/test-catalogue-quality-report.mjs",
     "test:foreign-artwork-delivery": "node --import tsx scripts/test-foreign-artwork-fallbacks.ts && node --import tsx scripts/test-edition-aware-image-selection.ts && node --import tsx scripts/test-master-set-artwork.ts",
     "asset:migrate-r2": "node scripts/migrate-catalogue-to-r2.mjs",
-    "test:collection-summary": "node scripts/test-collection-summary-sql.mjs && node scripts/test-collection-summary-client.mjs && node --import tsx scripts/test-collection-summary-performance.ts"
+    "test:collection-summary": "node scripts/test-collection-summary-sql.mjs && node scripts/test-collection-summary-client.mjs && node --import tsx scripts/test-collection-summary-performance.ts",
+    "test:home-facts": "node --import tsx scripts/test-home-saved-collection.ts && node scripts/test-home-saved-cache.mjs",
+    "test:home-retrieval": "npm run test:home-facts && node --import tsx scripts/test-home-startup-runtime.ts"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",

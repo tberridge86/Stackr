@@ -1,0 +1,60 @@
+{
+  "commit": "17b5d075136ddc28e4c12134993c290719f3c595",
+  "scope": "Reconciled integration baseline before Home change",
+  "runs": [
+    {
+      "id": 40219593545,
+      "name": "Stackr Gateway CI",
+      "conclusion": "success",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/40219593545"
+    },
+    {
+      "id": 40219593585,
+      "name": "Owner Pricing Identity Tests",
+      "conclusion": "success",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/40219593585"
+    },
+    {
+      "id": 40219593543,
+      "name": "Card-first UI validation",
+      "conclusion": "success",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/40219593543"
+    },
+    {
+      "id": 40219593562,
+      "name": "Validate binder local-first retrieval",
+      "conclusion": "success",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/40219593562"
+    },
+    {
+      "id": 40219593553,
+      "name": "Stackr Platform CI",
+      "conclusion": "failure",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/40219593553"
+    }
+  ],
+  "failedStep": [
+    {
+      "id": 121248053975,
+      "name": "lint-type-unit",
+      "steps": [
+        {
+          "name": "Run npm run test:english-set-visibility",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 75,
+          "started_at": "2026-10-25T18:11:23Z",
+          "completed_at": "2026-10-25T18:11:24Z"
+        }
+      ]
+    }
+  ],
+  "diagnosis": {
+    "file": "scripts/test-english-set-identity.ts",
+    "assertion": "assert.ok(slowGate.release)",
+    "cause": "Test assumed transport starts synchronously; existing deadline wrapper dispatches asynchronously.",
+    "fix": "Await explicit transport-start signal before invalidation; retain late-response no-cache assertion.",
+    "local": "npm run test:english-set-visibility PASS; independent direct English identity test PASS",
+    "runtimeChange": false
+  }
+}

@@ -295,11 +295,16 @@ async function main() {
   assert.equal(retryCalls, 3, 'failures and empty responses retry');
 
   const slowGate: { release: (() => void) | null } = { release: null };
+  let markSlowSearchStarted!: () => void;
+  const slowSearchStarted = new Promise<void>((resolve) => { markSlowSearchStarted = resolve; });
   const slowClient: any = {
-    search: () => new Promise((resolve) => { slowGate.release = () => resolve({ data: { results: [{ type: 'card', reason: 'exact_name', card: cardRows[0], cardId: cardRows[0].cardId, variantId: cardRows[0].defaultVariantId }] } }); }),
+    search: () => new Promise((resolve) => { markSlowSearchStarted(); slowGate.release = () => resolve({ data: { results: [{ type: 'card', reason: 'exact_name', card: cardRows[0], cardId: cardRows[0].cardId, variantId: cardRows[0].defaultVariantId }] } }); }),
     assetManifest: async () => ({ data: { assets: [] }, meta: { pagination: { nextCursor: null } } }),
   };
   const slow = exports.fetchStackrCard('Slow', { language: 'en' }, slowClient);
+  // The deadline wrapper dispatches asynchronously. Invalidate only after the
+  // transport starts so this exercises late completion of an in-flight read.
+  await Promise.race([slowSearchStarted, slow.then(() => assert.fail('Slow read completed before the transport gate'))]);
   exports.clearStackrCatalogueCaches(slowClient);
   assert.ok(slowGate.release);
   slowGate.release();

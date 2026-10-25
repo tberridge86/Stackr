@@ -3,13 +3,21 @@ import { fetchOwnedCardRows } from './ownership';
 import { supabase } from './supabase';
 import { withPersonalDataReadTimeout } from './personalDataRead';
 import { readUiCollectionChunks } from './uiCollectionPages';
+import { getCollectionSummaryVersion } from './collectionSummaryInvalidation';
+import {
+  homeBinderFacts, homeSavedFactsLease, invalidateHomeSavedFacts, isHomeSavedFactsLeaseCurrent,
+  readCachedHomeSavedFacts, type HomeSavedCollectionFacts,
+} from './homeSavedCollectionCache';
 
-/** Read saved collection records before requesting optional catalogue artwork or prices. */
-export async function fetchHomeSavedCollection(userId: string, options: {
+type HomeSavedCollectionOptions = {
   onBindersReady?: (binders: BinderRecord[]) => void;
   isCurrent?: () => boolean;
   signal?: AbortSignal;
-} = {}) {
+  forceRefresh?: boolean;
+};
+
+/** Essential independent saved/owned reads share a deadline, not a dependency. */
+async function readHomeSavedCollection(userId: string, options: HomeSavedCollectionOptions): Promise<HomeSavedCollectionFacts> {
   return withPersonalDataReadTimeout(async (signal) => {
     let accountChanged = false, finished = false;
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -30,31 +38,26 @@ export async function fetchHomeSavedCollection(userId: string, options: {
     };
     try {
       await assertCurrent();
-      const [binders, ownedRows] = await Promise.all([
-        fetchBinders({ enrich: false }).then(async (savedBinders) => {
-          await assertCurrent();
-          if (savedBinders.some((binder) => binder.user_id !== userId)) {
-            throw new Error('The collection account changed. Please retry.');
-          }
-          options.onBindersReady?.(savedBinders);
-          return savedBinders;
-        }),
+      const savedRead = fetchBinders({ enrich: false }).then(async (binders) => {
+        await assertCurrent();
+        if (binders.some((binder) => binder.user_id !== userId)) throw new Error('The collection account changed. Please retry.');
+        options.onBindersReady?.(binders);
+        const rows = await readUiCollectionChunks<BinderCardRecord>(
+          binders.map((binder) => binder.id),
+          (ids) => supabase.from('binder_cards').select('*').in('binder_id', ids),
+          (row, ids) => ids.includes(row.binder_id), { signal, assertCurrent },
+        );
+        const cardsByBinder = new Map<string, BinderCardRecord[]>(binders.map((binder) => [binder.id, []]));
+        for (const row of rows) cardsByBinder.get(row.binder_id)!.push(row);
+        return { binders, cardsByBinder };
+      });
+      const [saved, ownedRows] = await Promise.all([
+        savedRead,
         fetchOwnedCardRows({ isCurrent: () => !signal.aborted && !finished && !accountChanged && options.isCurrent?.() !== false }),
       ]);
       await assertCurrent();
-      if (binders.some((binder) => binder.user_id !== userId) || ownedRows.some((row) => row.user_id !== userId)) {
-        throw new Error('The collection account changed. Please retry.');
-      }
-      const rows = await readUiCollectionChunks<BinderCardRecord>(
-        binders.map((binder) => binder.id),
-        (ids) => supabase.from('binder_cards').select('*').in('binder_id', ids),
-        (row, ids) => ids.includes(row.binder_id), { signal, assertCurrent },
-      );
-      await assertCurrent();
-      // A complete read also proves empty binders. Errors never produce a partial map.
-      const byBinder = new Map<string, BinderCardRecord[]>(binders.map((binder) => [binder.id, []]));
-      for (const row of rows) byBinder.get(row.binder_id)!.push(row);
-      return { binders, ownedRows, cardsByBinder: byBinder };
+      if (ownedRows.some((row) => row.user_id !== userId)) throw new Error('The collection account changed. Please retry.');
+      return { ...saved, ownedRows };
     } finally {
       finished = true;
       signal.removeEventListener('abort', unsubscribe);
@@ -62,6 +65,58 @@ export async function fetchHomeSavedCollection(userId: string, options: {
     }
   }, { signal: options.signal });
 }
+
+/** Only complete facts are reused; prices and authenticated valuation reads stay independent. */
+export async function fetchHomeSavedCollection(userId: string, options: HomeSavedCollectionOptions = {}): Promise<HomeSavedCollectionFacts> {
+  const revision = getCollectionSummaryVersion();
+  const controller = new AbortController();
+  const cancel = () => controller.abort();
+  if (options.signal?.aborted) cancel();
+  options.signal?.addEventListener('abort', cancel, { once: true });
+  let accountChanged = false, finished = false, callbackSent = false;
+  let lease: ReturnType<typeof homeSavedFactsLease> | undefined;
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    if (session?.user?.id !== userId && !accountChanged) {
+      accountChanged = true;
+      invalidateHomeSavedFacts();
+      cancel();
+    }
+  });
+  const cancelled = () => finished || accountChanged || controller.signal.aborted || options.isCurrent?.() === false
+    || revision !== getCollectionSummaryVersion() || (lease !== undefined && !isHomeSavedFactsLeaseCurrent(lease));
+  const notify = (binders: BinderRecord[]) => {
+    if (cancelled() || callbackSent) return;
+    callbackSent = true;
+    try { options.onBindersReady?.(binders.map(homeBinderFacts)); } catch { /* Optional warming cannot fail complete facts. */ }
+  };
+  try {
+    return await withPersonalDataReadTimeout(async (signal) => {
+      const assertCurrent = async () => {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        if (session?.user?.id !== userId) throw new Error('The collection account changed. Please retry.');
+        if (cancelled()) throw Object.assign(new Error('The collection request was cancelled.'), { name: 'AbortError' });
+      };
+      await assertCurrent();
+      lease = homeSavedFactsLease(userId, revision, options.forceRefresh);
+      const capturedLease = lease;
+      const value = await readCachedHomeSavedFacts(capturedLease, (sharedSignal) => readHomeSavedCollection(userId, {
+        signal: sharedSignal,
+        isCurrent: () => isHomeSavedFactsLeaseCurrent(capturedLease),
+        onBindersReady: (binders) => { if (!cancelled()) notify(binders); },
+      }), signal);
+      await assertCurrent();
+      notify(value.binders);
+      if (cancelled()) throw Object.assign(new Error('The collection request was cancelled.'), { name: 'AbortError' });
+      return value;
+    }, { signal: controller.signal });
+  } finally {
+    finished = true;
+    options.signal?.removeEventListener('abort', cancel);
+    subscription.unsubscribe();
+  }
+}
+
 /** Saved rows cannot prove the full size or completion of an official set. */
 export function savedBinderCatalogueTotal(binder: BinderRecord, cards: BinderCardRecord[]) {
   if (binder.type !== 'official') return cards.length;

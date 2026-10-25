@@ -1,0 +1,529 @@
+{
+  "recordedAt": "2026-10-25T18:19:02.716Z",
+  "baselineCommit": "17b5d075136ddc28e4c12134993c290719f3c595",
+  "baselineFile": "lib/homeSavedCollection.ts",
+  "baselineBlob": "135f1f7222498264ae69ef67db084c58628f41b4",
+  "command": "node scripts/test-home-saved-cache.mjs --baseline-home-saved=<git-show-17b5d075-lib-homeSavedCollection.ts>",
+  "conditions": {
+    "os": "Windows",
+    "node": "24.15.0",
+    "cohort": "Actual production modules with deterministic transport/native fixtures;50ms artificial delay per Data API read for timing samples; no hosted services or device rendering",
+    "coldDefinition": "New isolated module/cache instance",
+    "warmDefinition": "Immediate second read within30secondfacts-retentionTTL",
+    "bytes": "JSON response arrays only; auth, pricing, image/catalogue enrichment, headers and TLS excluded",
+    "originAge": "Home facts retention TTL is not maximum origin-row age; ordinary binder reads can reuse the existing binder-list cache; explicit refresh evicts it"
+  },
+  "sourceBlobs": [
+    {
+      "path": "features/home/HubScreen.tsx",
+      "sha": "79230bf6ff34a03368c6256c7831fd9a9f0a6631"
+    },
+    {
+      "path": "lib/homeSavedCollection.ts",
+      "sha": "b34988d6a426ce26389f4a563f1b58d64b100695"
+    },
+    {
+      "path": "lib/homeSavedCollectionCache.ts",
+      "sha": "4f7ff8044f1311e4ee503f845488ad102f59dcc0"
+    },
+    {
+      "path": "lib/homeCollectionCache.ts",
+      "sha": "db83efeb1c08497fec4b4adfd903d3e9a43122ab"
+    },
+    {
+      "path": "lib/collectionSummaryInvalidation.ts",
+      "sha": "05f9f58075c81203ed8aaf106410ea8abcb9ff92"
+    },
+    {
+      "path": "package.json",
+      "sha": "600b357c9fa633449ed0c0b54cf5292e941d7eb5"
+    },
+    {
+      "path": "scripts/test-home-saved-collection.ts",
+      "sha": "5b38c59cc848ad1f071d5c08e79abd16c41e28c5"
+    },
+    {
+      "path": "scripts/test-home-saved-cache.mjs",
+      "sha": "3bf9c9dc5fd0a65c5106f9688ffdcb51080f3427"
+    },
+    {
+      "path": "scripts/test-home-startup-runtime.ts",
+      "sha": "6093184314f3e13702bee5df39ce3b22cef0ec41"
+    },
+    {
+      "path": "scripts/test-english-set-identity.ts",
+      "sha": "53b41eb49ea4b20ad51fe2f2babc1e43447c8fa1"
+    },
+    {
+      "path": "scripts/measure-home-facts-query-plans.mjs",
+      "sha": "86ac1306a970d85d1419acacbb50f8f97164feae"
+    }
+  ],
+  "sourceRoot": "D:\\Stackr-1\\work\\collection-summary-20261025",
+  "baselineSourcePath": "D:/Stackr-1/work/home-saved-baseline-17b5d075.ts",
+  "baselineGitBlob": "135f1f7222498264ae69ef67db084c58628f41b4",
+  "environment": {
+    "node": "v24.15.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "transport": "offline actual modules; response-array JSON bytes; excludes headers, TLS, hosted DB and device rendering",
+  "reports": [
+    {
+      "cohort": "small",
+      "binders": 2,
+      "saved": 8,
+      "ownedRows": 6,
+      "unownedSaved": 2,
+      "baseline": {
+        "first": {
+          "requests": 6,
+          "bodyBytes": 6341,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 6,
+            "binder_cards": 8
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 1275,
+            "binder_cards": 4463
+          }
+        },
+        "immediateRepeat": {
+          "requests": 4,
+          "bodyBytes": 5738,
+          "tableCounts": {
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "user_card_variants": 6,
+            "binder_cards": 8
+          },
+          "tableBytes": {
+            "user_card_variants": 1275,
+            "binder_cards": 4463
+          }
+        }
+      },
+      "after": {
+        "first": {
+          "requests": 6,
+          "bodyBytes": 6341,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 6,
+            "binder_cards": 8
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 1275,
+            "binder_cards": 4463
+          }
+        },
+        "immediateRepeat": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        },
+        "expired": {
+          "requests": 6,
+          "bodyBytes": 6341,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 6,
+            "binder_cards": 8
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 1275,
+            "binder_cards": 4463
+          }
+        },
+        "forced": {
+          "requests": 6,
+          "bodyBytes": 6341,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 6,
+            "binder_cards": 8
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 1275,
+            "binder_cards": 4463
+          }
+        }
+      },
+      "authCalls": {
+        "getSession": 40,
+        "getUser": 3
+      }
+    },
+    {
+      "cohort": "large-1702-saved-1323-owned",
+      "binders": 2,
+      "saved": 1702,
+      "ownedRows": 1323,
+      "unownedSaved": 379,
+      "baseline": {
+        "first": {
+          "requests": 66,
+          "bodyBytes": 1256977,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 28,
+            "binder_cards": 36
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283364,
+            "binder_cards": 973010
+          }
+        },
+        "immediateRepeat": {
+          "requests": 64,
+          "bodyBytes": 1256374,
+          "tableCounts": {
+            "user_card_variants": 28,
+            "binder_cards": 36
+          },
+          "tableRows": {
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "user_card_variants": 283364,
+            "binder_cards": 973010
+          }
+        }
+      },
+      "after": {
+        "first": {
+          "requests": 66,
+          "bodyBytes": 1256977,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 28,
+            "binder_cards": 36
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283364,
+            "binder_cards": 973010
+          }
+        },
+        "immediateRepeat": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        },
+        "expired": {
+          "requests": 66,
+          "bodyBytes": 1256977,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 28,
+            "binder_cards": 36
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283364,
+            "binder_cards": 973010
+          }
+        },
+        "forced": {
+          "requests": 66,
+          "bodyBytes": 1256977,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 28,
+            "binder_cards": 36
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283364,
+            "binder_cards": 973010
+          }
+        }
+      },
+      "authCalls": {
+        "getSession": 244,
+        "getUser": 3
+      }
+    },
+    {
+      "cohort": "empty",
+      "binders": 0,
+      "saved": 0,
+      "ownedRows": 0,
+      "unownedSaved": 0,
+      "baseline": {
+        "first": {
+          "requests": 2,
+          "bodyBytes": 4,
+          "tableCounts": {
+            "binders": 1,
+            "user_card_variants": 1
+          },
+          "tableRows": {
+            "binders": 0,
+            "user_card_variants": 0
+          },
+          "tableBytes": {
+            "binders": 2,
+            "user_card_variants": 2
+          }
+        },
+        "immediateRepeat": {
+          "requests": 1,
+          "bodyBytes": 2,
+          "tableCounts": {
+            "user_card_variants": 1
+          },
+          "tableRows": {
+            "user_card_variants": 0
+          },
+          "tableBytes": {
+            "user_card_variants": 2
+          }
+        }
+      },
+      "after": {
+        "first": {
+          "requests": 2,
+          "bodyBytes": 4,
+          "tableCounts": {
+            "binders": 1,
+            "user_card_variants": 1
+          },
+          "tableRows": {
+            "binders": 0,
+            "user_card_variants": 0
+          },
+          "tableBytes": {
+            "binders": 2,
+            "user_card_variants": 2
+          }
+        },
+        "immediateRepeat": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        },
+        "expired": {
+          "requests": 2,
+          "bodyBytes": 4,
+          "tableCounts": {
+            "binders": 1,
+            "user_card_variants": 1
+          },
+          "tableRows": {
+            "binders": 0,
+            "user_card_variants": 0
+          },
+          "tableBytes": {
+            "binders": 2,
+            "user_card_variants": 2
+          }
+        },
+        "forced": {
+          "requests": 2,
+          "bodyBytes": 4,
+          "tableCounts": {
+            "binders": 1,
+            "user_card_variants": 1
+          },
+          "tableRows": {
+            "binders": 0,
+            "user_card_variants": 0
+          },
+          "tableBytes": {
+            "binders": 2,
+            "user_card_variants": 2
+          }
+        }
+      },
+      "authCalls": {
+        "getSession": 25,
+        "getUser": 3
+      }
+    },
+    {
+      "cohort": "five-languages-same-collector",
+      "binders": 5,
+      "saved": 5,
+      "ownedRows": 5,
+      "unownedSaved": 0,
+      "baseline": {
+        "first": {
+          "requests": 6,
+          "bodyBytes": 5451,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 5,
+            "user_card_variants": 5,
+            "binder_cards": 5
+          },
+          "tableBytes": {
+            "binders": 1515,
+            "user_card_variants": 1085,
+            "binder_cards": 2851
+          }
+        },
+        "immediateRepeat": {
+          "requests": 4,
+          "bodyBytes": 3936,
+          "tableCounts": {
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "user_card_variants": 5,
+            "binder_cards": 5
+          },
+          "tableBytes": {
+            "user_card_variants": 1085,
+            "binder_cards": 2851
+          }
+        }
+      },
+      "after": {
+        "first": {
+          "requests": 6,
+          "bodyBytes": 5451,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 5,
+            "user_card_variants": 5,
+            "binder_cards": 5
+          },
+          "tableBytes": {
+            "binders": 1515,
+            "user_card_variants": 1085,
+            "binder_cards": 2851
+          }
+        },
+        "immediateRepeat": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        },
+        "expired": {
+          "requests": 6,
+          "bodyBytes": 5451,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 5,
+            "user_card_variants": 5,
+            "binder_cards": 5
+          },
+          "tableBytes": {
+            "binders": 1515,
+            "user_card_variants": 1085,
+            "binder_cards": 2851
+          }
+        },
+        "forced": {
+          "requests": 6,
+          "bodyBytes": 5451,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 5,
+            "user_card_variants": 5,
+            "binder_cards": 5
+          },
+          "tableBytes": {
+            "binders": 1515,
+            "user_card_variants": 1085,
+            "binder_cards": 2851
+          }
+        }
+      },
+      "authCalls": {
+        "getSession": 40,
+        "getUser": 3
+      }
+    }
+  ],
+  "dependency": {
+    "savedDispatchesWhileOwnershipHeld": 2
+  },
+  "syntheticHostTiming": {
+    "samples": 5,
+    "cohort": "102 saved /63 owned",
+    "perDataApiReadDelayMs": 50,
+    "firstCompleteFactsMedianMs": 341.1389999999992,
+    "warmCompleteFactsMedianMs": 0.799199999999928,
+    "baselineFirstMedianMs": 395.10090000000037,
+    "baselineWarmMedianMs": 400.3363999999997,
+    "includesJavaScriptWork": true,
+    "hostedLatency": "unmeasured",
+    "budgetBypass": "complete oversized snapshot is returned but not retained"
+  }
+}
