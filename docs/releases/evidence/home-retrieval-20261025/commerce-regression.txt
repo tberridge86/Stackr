@@ -1,0 +1,5 @@
+npm notice run Stackr-native@1.0.6 test:commerce-release-lock
+npm notice run node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-commerce-release-lock.ts && node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-gate0-dynamic-copy.ts && node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-minty-gate0-copy.ts
+Commerce release lock checks passed.
+Gate 0 dynamic copy tests passed (138 hostile fixtures, 18 safe listing fixtures).
+Minty Gate 0 copy checks passed (35 hostile fixtures)

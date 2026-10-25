@@ -819,8 +819,8 @@ assert.match(
 );
 assert.match(
   homeScreenSource,
-  /const saveHomeCollectionCache = useCallback\(async \([\s\S]*?supabase\.auth\.getUser\(\)[\s\S]*?user\?\.id !== trustedUserId\) return[\s\S]*?serializeHomeCollectionCache\(trustedUserId/,
-  'Home cache persistence must verify and bind the current account',
+  /const saveHomeCollectionCache = useCallback\(async \([\s\S]*?supabase\.auth\.getUser\(\)[\s\S]*?user\?\.id !== trustedUserId \|\| !isCurrent\(\)\) return[\s\S]*?serializeHomeCollectionCache\(trustedUserId/,
+  'Home cache persistence must verify the current account and request before writing its owner-bound envelope',
 );
 assert.doesNotMatch(
   homeScreenSource,

@@ -1,0 +1,83 @@
+{
+  "observedAt": "2026-10-25T18:27:08.132Z",
+  "testedHead": "4832633d76da4fa159c9621a4880747cddb0ab8c",
+  "failedRun": 40220770496,
+  "failedJob": 121251659603,
+  "failedStep": "npm run test:commerce-release-lock",
+  "cause": "Existing source-pattern assertion required the prior account-only guard and did not accept the added current-request check.",
+  "change": {
+    "path": "scripts/test-gate0-dynamic-copy.ts",
+    "blob": "97d404f2f7a56a2ef52220c262cda7a0f191eefe",
+    "scope": "Test assertion and message only",
+    "requires": [
+      "verified auth.getUser",
+      "owner ID inequality rejection",
+      "current request rejection",
+      "owner-bound serialization"
+    ],
+    "runtimeChanged": false
+  },
+  "validation": {
+    "commerce": "PASS all3 scripts; independently rerun PASS",
+    "fixtures": "138 hostile,18 safe listing,35 hostile Minty fixtures",
+    "typecheck": "PASS after correction",
+    "lint": "PASS after correction;0 errors,8 existing warnings",
+    "review": "No actionable finding"
+  },
+  "localFixtureRecovery": {
+    "cause": "Isolated text snapshot omitted existing PNG assets required to execute the commerce suite.",
+    "source": "Original working checkout; each blob verified against canonical17b tree; no overwrite",
+    "files": [
+      {
+        "path": "assets/rev2/04-listing-categories/clean/Raw Card.png",
+        "sha": "d27590312e56fb6feb3f4382bac00685a116185f"
+      },
+      {
+        "path": "assets/rev2/04-listing-categories/clean/Graded Slab.png",
+        "sha": "49ac346fc4143f47254ce47a023f574f47c2d4dc"
+      },
+      {
+        "path": "assets/rev2/04-listing-categories/clean/Booster Pack.png",
+        "sha": "d19ccdaf3bce4ef0ddb9c5c364cfa0dba2149899"
+      },
+      {
+        "path": "assets/rev2/04-listing-categories/clean/Blister Pack.png",
+        "sha": "836be07d1deca55d41403c6b371ce6131265337a"
+      },
+      {
+        "path": "assets/rev2/04-listing-categories/clean/Booster Bundle.png",
+        "sha": "1382c72cbd442dcd0f62ff72e2bbc64cec68325f"
+      },
+      {
+        "path": "assets/rev2/04-listing-categories/clean/Booster Box.png",
+        "sha": "6b81e3d74f60c4fcb30f8bbe22a57fba38f45c47"
+      },
+      {
+        "path": "assets/rev2/04-listing-categories/clean/Elite Trainer Box.png",
+        "sha": "1b96730f22d043c0ddc623d468ba1dca6c56eefa"
+      },
+      {
+        "path": "assets/rev2/04-listing-categories/clean/Collection Bundle.png",
+        "sha": "c95774731d0ecd9d6a8986450b042355cda082c6"
+      },
+      {
+        "path": "assets/rev2/04-listing-categories/clean/Collector tins.png",
+        "sha": "82e3cf5388c5d92e339e2949fc6048fbe7ca8d51"
+      },
+      {
+        "path": "assets/rev2/04-listing-categories/clean/Sealed Product.png",
+        "sha": "fa975d931cfa942f1ce489b86effd7cdd1f34d21"
+      },
+      {
+        "path": "assets/rev2/04-listing-categories/clean/Accessories.png",
+        "sha": "bfc0e62f80f6d47f22c20b292e60e44929b63fd1"
+      },
+      {
+        "path": "assets/rev2/04-listing-categories/clean/Miscellaneous.png",
+        "sha": "a8b6d921b0b20c350edfecd4c5b8ca5a71b6d000"
+      }
+    ],
+    "assetChangesPublished": false
+  },
+  "remaining": "Exact containing-commit hosted CI and separate approved deployment/device acceptance"
+}

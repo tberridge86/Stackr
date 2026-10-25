@@ -211,6 +211,10 @@
       {
         "path": "scripts/measure-home-facts-query-plans.mjs",
         "sha": "86ac1306a970d85d1419acacbb50f8f97164feae"
+      },
+      {
+        "path": "scripts/test-gate0-dynamic-copy.ts",
+        "sha": "97d404f2f7a56a2ef52220c262cda7a0f191eefe"
       }
     ]
   },
@@ -327,6 +331,8 @@
     "reviewFile": "docs/audits/20261010/reviewer.md",
     "baselineHostedChecks": "evidence/home-retrieval-20261025/integration-ci-baseline.json",
     "exactContainingCommitChecks": "https://github.com/tberridge86/Stackr/pull/439/checks",
-    "dependencyInstallation": "Local dependency reuse; hosted CI uses locked installation"
+    "dependencyInstallation": "Local dependency reuse; hosted CI uses locked installation",
+    "commerceReleaseLock": "PASS; independently rerun after test-only assertion correction",
+    "qualificationFollowup": "evidence/home-retrieval-20261025/hosted-qualification-followup.json"
   }
 }

@@ -95,3 +95,8 @@ Read-only independent review compared the nine Home runtime/test/package files a
 Independent `npm run test:home-retrieval` and `node --import tsx scripts/test-english-set-identity.ts` both passed. The English-set repair only synchronizes the transport-start gate before invalidation; its late-result cache assertion remains intact. The corrected local query-plan harness was independently rerun after fixing terminal offsets to advance by actual row counts. Integration reconciliation separately verified all 35 current-main inputs and offline R2/architecture/retrieval guards.
 
 This is local/offline correctness evidence. It does not establish hosted private Home latency, live schema execution plans or installed-phone acceptance. Full source, measurements, validation and release gates: [Home release evidence](../../releases/home-retrieval-infrastructure-20261025.md).
+
+
+### Home hosted qualification follow-up
+
+The reviewer independently checked the test-only `test-gate0-dynamic-copy.ts` correction after hosted CI exposed its old account-only pattern. Both owner and current-request guards remain required. Independent `npm run test:commerce-release-lock` passed all three scripts after the coordinator restored twelve canonical, hash-verified PNG inputs omitted by the isolated text snapshot. No runtime change or remaining actionable finding; no hosted/device claim from this local rerun.

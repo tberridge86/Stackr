@@ -88,6 +88,10 @@ The read-only migration ledger still contains 191 entries, latest `2026100520550
 
 A fresh successful Production API Monitor at 17:16 UTC covers public endpoints and a public R2 image, not private Home behaviour or the currently served source revision. Fresh workflow listings still identify the latest successful backend source as `7c1acd409...`, gateway source as `4e405d7b...` and iOS build source as `311fc84a...`. Exact IDs and limitations are in provenance. Direct runtime attestation was unavailable from this environment.
 
+## Hosted qualification follow-up
+
+The first Home-head Platform run (`40220770496`, source `4832633d`) exposed a source-pattern assertion expecting the old account-only cache guard. The corrected test now requires both account identity and current-request rejection before owner-bound serialization. No runtime change or measurement change was made. The complete commerce suite passed locally and independently after restoring twelve required canonical binary fixtures into the isolated text snapshot; every fixture blob matched GitHub. Root typecheck and lint passed again. See [qualification receipt](evidence/home-retrieval-20261025/hosted-qualification-followup.json). The final follow-up commit and CI result are recorded on PR #439 and in the release handoff.
+
 ## Rollout and rollback
 
 1. Completed: previous integration head preserved, source reconciled onto verified current main, existing PR retained as the review surface. Recheck main/head before promotion.
