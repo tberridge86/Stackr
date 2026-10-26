@@ -3554,7 +3554,7 @@
     "owner": "stackr_coding",
     "baseline": "b50547de15a49712d99c67829c38a0bb1d9428b6",
     "pullRequest": 446,
-    "status": "local_measurement_tooling_and_unapplied_sql_proposal",
+    "status": "reviewed_tested_tooling_and_unapplied_sql_proposal",
     "report": "docs/releases/prepared-valuation-measurement-handoff-20261026.md",
     "appRuntimeChanged": false,
     "deployed": false,
@@ -3588,6 +3588,11 @@
       "PG17 realistic I/O/concurrency qualification for selected SQL",
       "CLI migration registration blocked by protected profile telemetry write; scoped new migration approval required",
       "No new merge/deployment/native distribution approval applied"
-    ]
+    ],
+    "sourceCommit": "df45ef50420cab9dae7e2fefb6e929cd1110363c",
+    "sourceTree": "053a5475c9f5136c85629717eace0e1b52fb0ed9",
+    "evidenceBranch": "codex/prepared-valuation-measurement-evidence-20261026",
+    "hostedCi": "three workflows passed; candidate-identical merge tree verified; separate release gate skipped",
+    "mockedHttpRoute": "hosted fixture pass; no authenticated production calls"
   }
 }

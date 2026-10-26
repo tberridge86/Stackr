@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "df45ef50420cab9dae7e2fefb6e929cd1110363c",
+  "sourceTree": "053a5475c9f5136c85629717eace0e1b52fb0ed9",
+  "sourceBranch": "codex/home-cold-payload-20261026",
+  "evidenceBranch": "codex/prepared-valuation-measurement-evidence-20261026",
+  "evidenceIsAppSource": false,
+  "previousAppCandidate": "b50547de15a49712d99c67829c38a0bb1d9428b6",
+  "previousFinalEvidence": "f0e3c333eafaf4dd6e32e634a5689e96affa2d92",
+  "main": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+  "pullRequest": 446,
+  "draft": true,
+  "merged": false,
+  "deployed": false,
+  "implementation": {
+    "appRuntimeChangedThisUnit": false,
+    "measurementTooling": true,
+    "localSqlProposal": true,
+    "newMigrationRegistered": false,
+    "sqlApplied": false
+  },
+  "deployedApp": {
+    "version": "1.0.6",
+    "buildNumber": 61,
+    "source": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+    "teamAvailable": true,
+    "installedPhoneAcceptance": false,
+    "receipt": "docs/releases/evidence/prepared-valuation-measurement-20261026/build61-recheck.json",
+    "easBuildId": "c0acb3f0-8366-48cf-b55c-99b30a2b7469",
+    "fingerprint": "dfe1bddd9007cd2ad0a40e660d01da3f7663c9d0",
+    "sourceEvidence": "https://github.com/tberridge86/Stackr/blob/178894a3ab0a617e9e7fe62000cd256613e19e76/docs/releases/controlled-rollout-handoff-20261025.md"
+  },
+  "backend": {
+    "source": "7c1acd409680b38d5913d8cae76df560b5d91daa",
+    "observedHealthSourcePrefix": "7c1acd409680",
+    "deployment": "dfc23b30-9675-4ba0-ad2b-9f1875302747"
+  },
+  "gateway": {
+    "health": "ok",
+    "revision": "unattested"
+  },
+  "database": {
+    "project": "oakdbbzdqwurpjnoqhmu",
+    "version": "17.6",
+    "workMem": "2184kB",
+    "profileCanonicalVersion": "20261025154000",
+    "profileLedgerVersion": "20261026072532",
+    "newMigrationApplied": false,
+    "productionExecutionAnalysis": false
+  },
+  "authenticatedApi": {
+    "performed": false,
+    "reason": "designated QA email/password empty",
+    "actualPageCap": null,
+    "pricingCoverage": null,
+    "homeLatency": null
+  },
+  "installedPhone": {
+    "performed": false
+  },
+  "independentReview": {
+    "result": "GO for source/evidence publication; no live rollout",
+    "record": "docs/releases/evidence/prepared-valuation-measurement-20261026/independent-review.md"
+  },
+  "localValidation": {
+    "sqlInvariants": "pass, independently rerun",
+    "offlineMeasurementSuite": "pass, independently rerun",
+    "scopedLint": "pass",
+    "yaml": "pass",
+    "mockedRoute": "blocked by local EACCES; hosted result recorded in CI receipt",
+    "hostedMockedRoute": "passed; isolated fixture, not production API"
+  },
+  "localMeasuredResult": {
+    "engine": "PGlite 0.5.8 / PostgreSQL18.3",
+    "samplesPerVariantPerCohort": 6,
+    "warm": true,
+    "largeMedianMs": {
+      "before": 155.5781,
+      "proposal": 96.9211
+    },
+    "largeInternalJsonBytes": 2041682,
+    "aggregateNodes": {
+      "before": 6,
+      "proposal": 3
+    },
+    "notHostedOrPhoneLatency": true,
+    "noNewHttpPayloadOrRequestReductionClaimed": true
+  },
+  "remainingGates": [
+    "Designated QA sign-in and authenticated matched service/Home measurement",
+    "Installed-phone Home/Binders/Search/Pokedex acceptance",
+    "Authorised PostgreSQL17 execution/I/O/concurrency qualification",
+    "Repair existing CLI migration-registration access and register exact reviewed proposal",
+    "Scoped new merge/deployment/migration approvals after release preparation"
+  ],
+  "queued": [
+    "Conditional prepared-worker short-page completion risk; production effective cap not measured",
+    "Background job reliability",
+    "Monitoring",
+    "Recovery drills"
+  ],
+  "r2Changed": false,
+  "recordedAt": "2026-10-26T14:08:37.184Z",
+  "mergeable": true,
+  "ciReceipt": "docs/releases/prepared-valuation-measurement-ci-20261026.json",
+  "hostedCi": "three successful workflows; source-tree equivalence verified",
+  "releaseCandidateGate": "skipped"
+}

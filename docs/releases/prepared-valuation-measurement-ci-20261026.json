@@ -1,0 +1,1423 @@
+{
+  "recordedAt": "2026-10-26T14:08:37.184Z",
+  "sourceCommit": "df45ef50420cab9dae7e2fefb6e929cd1110363c",
+  "sourceTree": "053a5475c9f5136c85629717eace0e1b52fb0ed9",
+  "runs": [
+    {
+      "id": 40335681180,
+      "name": "Stackr Platform CI",
+      "headSha": "df45ef50420cab9dae7e2fefb6e929cd1110363c",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/40335681180",
+      "createdAt": "2026-10-26T14:00:44Z",
+      "updatedAt": "2026-10-26T14:07:26Z",
+      "jobs": [
+        {
+          "id": 121616472624,
+          "name": "distributed-architecture",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install locked dependencies",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate R2 immutability and delivery",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate actual v1 image responses",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate complete bounded client pages",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate owned-card facts without artwork dependencies",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate legacy original preservation",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate web image loading",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate Railway worker activation boundaries",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate Pages publication boundaries",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate retrieval acceptance probe",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate evidence reporting",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Build and inspect the isolated R2 migration worker",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Record tested source and all check outcomes",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 121616472734,
+          "name": "benchmark-smoke-tests",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm ci",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:benchmark-smoke",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:pilot-dataset",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:embedding-v0-guard",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:reference-pack",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run verify-model-compatibility",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:card-identity-search",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:local-on-device-inference",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:local-quick-scan",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:recognition-feedback",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:reviewed-capture-manifest",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:recognition-tomorrow-prep",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:evidence-fusion",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:deployment",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run build:web",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Scan exported mobile/web bundle for secrets",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 121616472878,
+          "name": "database-migration-tests",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Initialize containers",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm ci",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:database-migrations",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:asset-manifest-query-equivalence",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node scripts/test-prepare-binder-artwork-read.mjs",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node scripts/test-owned-card-membership-migration.mjs --db-url=***127.0.0.1:5432/postgres",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node scripts/test-seller-inventory-batch-migration.mjs --db-url=***127.0.0.1:5432/postgres",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node tools/newsets480-publish-20260927/migration.test.mjs --db-url=***127.0.0.1:5432/postgres",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node tools/printing-front-api-20260927/migration.test.mjs --db-url=***127.0.0.1:5432/postgres",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Start and reset local Supabase",
+              "status": "completed",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Rehearse live pricing on isolated PostgreSQL 17",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Record local baseline blocker",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Stop containers",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 121616472997,
+          "name": "dependency-and-secret-scan",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm ci",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm ci --prefix backend",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm ci --prefix gateway",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node scripts/test-secret-scan-fixtures.mjs",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run ci:secret-scan",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Scan commits introduced by this change",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Audit Node dependency trees",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Audit Python dependencies",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 121616473061,
+          "name": "lint-type-unit",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm ci",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm ci --prefix backend",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node scripts/test-chinese-membership-repair.mjs",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node scripts/test-staging-binder-ownership.mjs",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node tools/release-api-acceptance-20260929/migration.test.mjs",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node tools/card-detail-front-20260927/migration.test.mjs",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node --test tools/artwork3303-publish-20260928/publish.test.mjs tools/tw200-publish-20260930/publish.test.mjs tools/tw200-publish-20260930/workflow.test.mjs tools/english45-publish-20260930/publish.test.mjs tools/sh33-publish-20260930/publish.test.mjs tools/sh33-publish-20260930/repair.test.mjs tools/residual146-publish-20260930/publish.test.mjs tools/native96-publish-20260930/publish.test.mjs tools/korean232-publish-20260930/publish.test.mjs tools/artwork3303-publish-20260928/native-name-corrections.test.mjs tools/native65-publish-20261001/publish.test.mjs tools/native72-publish-20261001/publish.test.mjs tools/native70-publish-20261001/publish.test.mjs tools/native78-publish-20261001/publish.test.mjs tools/native73-publish-20261001/publish.test.mjs tools/native84-publish-20261001/publish.test.mjs tools/native99-publish-20261001/publish.test.mjs tools/native97-publish-20261001/publish.test.mjs tools/artwork3303-publish-20260928/journal.integration.test.mjs",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node --test tools/queue1-publish-20260927/publish.test.mjs tools/queue1-pbl-relink-20260927/relink.test.mjs tools/mep89-publish-20260927/publish.test.mjs tools/pocket131-publish-20260927/publish.test.mjs tools/newsets480-publish-20260927/publish.test.mjs tools/anniversary201-publish-20260927/publish.test.mjs tools/printing-front-api-20260927/publish.test.mjs tools/card-detail-front-20260927/publish.test.mjs",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node tools/pbl-price-identities-20260927/repair.test.mjs",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node scripts/test-price-guard-rehearsal-workflow.mjs",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node scripts/test-staging-pricing-backup-list.mjs",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:price-database-deadline",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:daily-pricing",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node scripts/test-cardmarket-db-reviewed-ledger.mjs",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node scripts/test-bounded-provider-identity-guards.mjs",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node scripts/test-cardmarket-ledger-ordered-candidate.mjs",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:next-beta-fixes",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run lint",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run typecheck",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:traditional-chinese-hires-logos",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run typecheck:backend",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:pokedex-release",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:catalogue-price-baseline",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:mobile-recovery",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:server-delivery",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm test --prefix backend",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:live-pricing",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:personal-pricing",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node scripts/test-prepare-personal-pricing.mjs",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node scripts/test-gateway-privacy-smoke.mjs",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node scripts/test-gateway-privacy-deployment.mjs",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:collection-pricing-ui",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:home-release",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Verify Home measurement safety and prepared query invariants",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:home-activity",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:settings-help",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:ux-p1",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:ux-p2",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:ux-p3",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:ux-audit-fixes",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:poketrace-benchmark",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:seller-stock-out-routing",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:premium-seller-access",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:commerce-release-lock",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:ux-service-release",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:personal-loading",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:build60-feedback",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:storm-logo-publication",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:binder-retrieval",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:startup-loading",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:integration-repair",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:mobile-runtime-config",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:iphone-preview",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:stackr-preview-proxy",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:asset-pipeline",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:asset-repair",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:foreign-artwork-delivery",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node scripts/test-simplified-chinese-set-logo-pack.mjs",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node --import tsx scripts/test-japanese-set-logo-runtime-lookup.ts",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:recognition-orchestrator",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:owner-recognition",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:owner-teaching",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:scanner-calibration",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:scanner-pipeline",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:scanner-analytics",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:mobile-scanner-routing",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:scan-auto-capture",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:scan-quality",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:local-ocr-card-matcher",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:binder-page-scan",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node --import tsx scripts/test-binder-page-save-confirmation.ts",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:binder-catalogue",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:english-set-visibility",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-tcgdex-boundary-compatibility.ts",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:tcgdex-controlled-card-reference",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:tcgdex-reference-persistence",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-edition-aware-image-selection.ts",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:binder-foreign-set-picker",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:pokemon-language-flags",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:magazine-set-covers",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:corocoro-binder",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-binder-add-cards-metadata-persistence.ts",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:card-vision-native-config",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:card-localisation",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:capture-geometry",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:card-centering",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:card-frame-analyser",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:live-card-guidance",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:card-rectification",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:ocr-evidence",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:variant-resolver",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:catalogue-schema",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:catalogue-ingestion",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:pokedata-japanese-images",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:master-catalogue-importer",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:catalogue-gap-report",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:four-language-catalogue-backfill",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:four-language-progress",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npx tsx scripts/test-stackr-quality-evaluation.ts",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 121616473069,
+          "name": "integration-tests",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm ci",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm ci --prefix gateway",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run python -m pip install --requirement recognition-service/requirements-dev.txt",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:stackr-api-v1",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node scripts/test-quality-observability.mjs",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm test --prefix gateway",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run python -m pytest recognition-service/tests -q",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 121616473765,
+          "name": "recognition-container",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Build pinned non-root image",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Inspect production image guards",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Exercise container health",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 121616473927,
+          "name": "openapi-and-generated-client",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm ci",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm ci --prefix gateway",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node scripts/deploy/patch-wrangler-do-optional-binding.mjs",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run check:api-contract",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:stackr-api-v1",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm test --prefix gateway",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 121616474860,
+          "name": "release-candidate-gate",
+          "status": "completed",
+          "conclusion": "skipped",
+          "steps": null
+        }
+      ]
+    },
+    {
+      "id": 40335681214,
+      "name": "Card-first UI validation",
+      "headSha": "df45ef50420cab9dae7e2fefb6e929cd1110363c",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/40335681214",
+      "createdAt": "2026-10-26T14:00:44Z",
+      "updatedAt": "2026-10-26T14:02:48Z",
+      "jobs": [
+        {
+          "id": 121616473272,
+          "name": "validate",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Package exact source for review",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm ci",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run typecheck",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node scripts/test-card-first-ui.cjs",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run node scripts/test-card-first-followup.cjs",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:home-release",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:binder-catalogue",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm run test:personal-loading",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Scoped lint",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 40335681211,
+      "name": "Owner Pricing Identity Tests",
+      "headSha": "df45ef50420cab9dae7e2fefb6e929cd1110363c",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/40335681211",
+      "createdAt": "2026-10-26T14:00:44Z",
+      "updatedAt": "2026-10-26T14:02:01Z",
+      "jobs": [
+        {
+          "id": 121616472370,
+          "name": "owner-pricing-identity-regression",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install locked application dependencies",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install locked backend dependencies",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Existing owner worker regression",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Printing identity and rejection regressions",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Language-scoped saved reference regressions",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Actual worker scoped-identity integration",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Labelled general price identity regressions",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Catalogue cycle and stable collection regressions",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+              "status": "completed",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "checkout": {
+    "headAssociatedRuns": true,
+    "prMergeCommit": "bf7cca4c77f8c2159b06e60d82a87b2d43227414",
+    "prMergeTree": "053a5475c9f5136c85629717eace0e1b52fb0ed9",
+    "mergeTreeEqualsCandidate": true,
+    "directHeadJob": "distributed-architecture",
+    "observedMergeCheckoutJobs": [
+      "lint-type-unit",
+      "Card-first validate",
+      "owner-pricing-identity-regression"
+    ],
+    "mergeCommitIsNotAMergeToMain": true
+  },
+  "newVerificationStep": "pass: offline authenticated probe, mocked prepared HTTP route, local PGlite plan/invariance harness",
+  "releaseCandidateGate": "skipped",
+  "nativeBuildPerformed": false,
+  "hostedApiAuthenticatedMeasurement": false,
+  "phoneAcceptance": false,
+  "excerpts": {
+    "lint": [
+      "2026-10-26T14:00:49.9239456Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +bf7cca4c77f8c2159b06e60d82a87b2d43227414:refs/remotes/pull/446/merge",
+      "2026-10-26T14:01:01.1626516Z  * [new ref]         bf7cca4c77f8c2159b06e60d82a87b2d43227414 -> pull/446/merge",
+      "2026-10-26T14:01:04.8495874Z HEAD is now at bf7cca4 Merge df45ef50420cab9dae7e2fefb6e929cd1110363c into b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+      "2026-10-26T14:01:04.8672697Z [command]/usr/bin/git log -1 --format=%H",
+      "2026-10-26T14:01:04.8703562Z bf7cca4c77f8c2159b06e60d82a87b2d43227414",
+      "2026-10-26T14:04:08.7409858Z Authenticated Home tooling passed: blank/preflight no IO, explicit QA/prepared opt-ins, privilege/target/method guards, actual SDK/readers/cache, lower caps17/50/100/500, complete exhaustion, private-data redaction, and prepared403 stop.",
+      "2026-10-26T14:04:09.1202927Z Prepared valuation HTTP: owner authorization, private caches, complete body, queued collection refresh and no provider path passed.",
+      "2026-10-26T14:05:51.2223116Z Home independent prepared summary passed: complete/current early publication, coverage/history coherence, separate facts loading/error, single request/auth budget, legacy/deferred states, edit/account/blur/unmount/auth/deadline guards."
+    ],
+    "architecture": [
+      "2026-10-26T14:00:48.9251802Z   ref: df45ef50420cab9dae7e2fefb6e929cd1110363c",
+      "2026-10-26T14:00:49.1902758Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin df45ef50420cab9dae7e2fefb6e929cd1110363c",
+      "2026-10-26T14:01:00.1863133Z  * branch            df45ef50420cab9dae7e2fefb6e929cd1110363c -> FETCH_HEAD",
+      "2026-10-26T14:01:00.1996610Z [command]/usr/bin/git checkout --progress --force df45ef50420cab9dae7e2fefb6e929cd1110363c",
+      "2026-10-26T14:01:03.8461782Z Note: switching to 'df45ef50420cab9dae7e2fefb6e929cd1110363c'.",
+      "2026-10-26T14:01:03.8633405Z [command]/usr/bin/git log -1 --format=%H",
+      "2026-10-26T14:01:03.8669354Z df45ef50420cab9dae7e2fefb6e929cd1110363c",
+      "2026-10-26T14:02:00.1996418Z   ARCHITECTURE_SOURCE_SHA: df45ef50420cab9dae7e2fefb6e929cd1110363c",
+      "2026-10-26T14:02:00.2418680Z Tested source: `df45ef50420cab9dae7e2fefb6e929cd1110363c`"
+    ],
+    "cardFirst": [
+      "2026-10-26T14:00:50.2099972Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +bf7cca4c77f8c2159b06e60d82a87b2d43227414:refs/remotes/pull/446/merge",
+      "2026-10-26T14:01:05.8446653Z  * [new ref]         bf7cca4c77f8c2159b06e60d82a87b2d43227414 -> pull/446/merge",
+      "2026-10-26T14:01:05.8545219Z ##[group]Checking out the ref",
+      "2026-10-26T14:01:09.5305760Z HEAD is now at bf7cca4 Merge df45ef50420cab9dae7e2fefb6e929cd1110363c into b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+      "2026-10-26T14:01:09.5489038Z [command]/usr/bin/git log -1 --format=%H",
+      "2026-10-26T14:01:09.5516158Z bf7cca4c77f8c2159b06e60d82a87b2d43227414",
+      "2026-10-26T14:01:10.2091583Z   name: card-first-source-bf7cca4c77f8c2159b06e60d82a87b2d43227414",
+      "2026-10-26T14:01:12.2126859Z Artifact card-first-source-bf7cca4c77f8c2159b06e60d82a87b2d43227414.zip successfully finalized. Artifact ID 12656577811",
+      "2026-10-26T14:01:12.2128793Z Artifact card-first-source-bf7cca4c77f8c2159b06e60d82a87b2d43227414 has been successfully uploaded! Final size is 3306052 bytes. Artifact ID is 12656577811"
+    ],
+    "pricingIdentity": [
+      "2026-10-26T14:00:49.0649347Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +bf7cca4c77f8c2159b06e60d82a87b2d43227414:refs/remotes/pull/446/merge",
+      "2026-10-26T14:01:00.9276682Z  * [new ref]         bf7cca4c77f8c2159b06e60d82a87b2d43227414 -> pull/446/merge",
+      "2026-10-26T14:01:00.9364164Z ##[group]Checking out the ref",
+      "2026-10-26T14:01:03.6633217Z HEAD is now at bf7cca4 Merge df45ef50420cab9dae7e2fefb6e929cd1110363c into b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+      "2026-10-26T14:01:03.6798844Z [command]/usr/bin/git log -1 --format=%H",
+      "2026-10-26T14:01:03.6826966Z bf7cca4c77f8c2159b06e60d82a87b2d43227414"
+    ]
+  }
+}
