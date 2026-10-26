@@ -572,6 +572,19 @@ paths:
         - $ref: "#/components/parameters/ProductType"
         - $ref: "#/components/parameters/Currency"
         - $ref: "#/components/parameters/Limit"
+        - name: scope
+          in: query
+          description: Opt in to globally ranked daily catalogue guides. Omission retains the legacy stored-estimate sample. Daily mode requires raw_card and GBP; absent history is explicit and never falls back to the legacy sample.
+          schema:
+            type: string
+            enum: [catalogue_daily]
+        - name: sortBy
+          in: query
+          description: Global ranking within each direction in catalogue_daily scope. Daily comparisons use actual consecutive UTC provider dates and current guides no older than 48 hours. Guide evidence is condition-unspecified and is not a completed sale.
+          schema:
+            type: string
+            enum: [money, percent]
+            default: percent
       responses:
         "200":
           description: Market identities with recent estimate movement. Private and no-store in default personal owner-only mode.
@@ -2356,6 +2369,49 @@ components:
     MarketMoversResponse:
       allOf:
         - $ref: "#/components/schemas/Envelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [movers]
+              properties:
+                movers:
+                  type: array
+                  maxItems: 100
+                  items:
+                    type: object
+                    properties:
+                      variantId: { type: [string, "null"], format: uuid }
+                      productType: { type: string, enum: [raw_card, graded_card, sealed_product] }
+                      currency: { type: string }
+                      currentEstimate: { type: [number, "null"] }
+                      previousEstimate: { type: [number, "null"] }
+                      percentageChange: { type: [number, "null"] }
+                      calculatedAt: { type: [string, "null"], format: date-time }
+                      previousCalculatedAt: { type: [string, "null"], format: date-time }
+                      comparisonDays: { type: integer, const: 1 }
+                      priceBasis: { type: string, enum: [catalogue_market_guide] }
+                      sourceProvider: { type: string, enum: [tcgcsv] }
+                coverage:
+                  $ref: "#/components/schemas/DailyMarketCoverage"
+    DailyMarketCoverage:
+      type: object
+      description: Counts describe the complete currently published physical catalogue before ranking and output limits. Only supported TCGCSV English/Japanese finishes participate. Unquoted, stale, unsupported and insufficient-history identities are never represented as zero or copied from a collection. History becomes available after approved guide writes retain two actual consecutive source dates; this contract does not establish deployment or worker activation.
+      required: [scope, source, state, publishedVariants, supportedVariants, quotedVariants, comparableVariants, unsupportedVariants, unquotedVariants, staleVariants, insufficientHistoryVariants, latestSourceAt, asOf]
+      properties:
+        scope: { type: string, enum: [catalogue_daily] }
+        source: { type: string, enum: [tcgcsv] }
+        state: { type: string, enum: [ready, insufficient_history] }
+        publishedVariants: { type: integer, minimum: 0 }
+        supportedVariants: { type: integer, minimum: 0 }
+        quotedVariants: { type: integer, minimum: 0 }
+        comparableVariants: { type: integer, minimum: 0 }
+        unsupportedVariants: { type: integer, minimum: 0 }
+        unquotedVariants: { type: integer, minimum: 0 }
+        staleVariants: { type: integer, minimum: 0 }
+        insufficientHistoryVariants: { type: integer, minimum: 0 }
+        latestSourceAt: { type: [string, "null"], format: date-time }
+        asOf: { type: string, format: date-time }
     MarketOpportunitiesResponse:
       allOf:
         - $ref: "#/components/schemas/Envelope"

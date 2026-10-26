@@ -37,7 +37,8 @@ import { fetchBinders, fetchBinderCards, type BinderCardRecord, type BinderRecor
 import type { OwnedCardRow } from '../../lib/ownership';
 import { fetchHomeSavedCollection, savedBinderCatalogueTotal } from '../../lib/homeSavedCollection';
 import { writePersistedBinderOverview } from '../../lib/binderLibraryCache';
-import { getCollectionSummaryVersion } from '../../lib/collectionSummaryInvalidation';
+import { getCollectionSummaryVersion, subscribeCollectionSummaryInvalidation } from '../../lib/collectionSummaryInvalidation';
+import { invalidateHomeSavedFacts } from '../../lib/homeSavedCollectionCache';
 import { readRecentHomeActivityRows } from '../../lib/homeActivity';
 import { supabase } from '../../lib/supabase';
 import { withPersonalDataReadTimeout } from '../../lib/personalDataRead';
@@ -115,6 +116,7 @@ import {
 import {
   LEGACY_HOME_COLLECTION_CACHE_KEY,
   getHomeCollectionCacheKey,
+  enqueueHomeCollectionCacheWrite,
   parseHomeCollectionCache,
   serializeHomeCollectionCache,
 } from '../../lib/homeCollectionCache';
@@ -201,6 +203,8 @@ type HomeBinderCardGroup = {
 
 type HomeCollectionCacheSnapshot = {
   pricingContractVersion: 4;
+  sourceRevision?: number;
+  preparedState?: 'ready' | 'pending' | 'updating';
   priceEvidence?: StoredCollectionPrice[];
   cachedAt: number;
   mintyDataRefreshedAt?: string | null;
@@ -1050,7 +1054,6 @@ export default function HubScreen() {
   const preparedValuationAvailableRef = useRef(false);
   const legacyManualRefreshCursorRef = useRef(0);
   const collectionPriceEvidenceRef = useRef<StoredCollectionPrice[]>([]);
-  const homeCacheWriteRef = useRef<Promise<void>>(Promise.resolve());
   const refreshableVariantIdsRef = useRef<string[]>([]);
   const manualProviderRefreshInFlightRef = useRef(false);
   const pendingManualPriceRefreshesRef = useRef<PendingHomePriceRefresh>(new Map());
@@ -1070,6 +1073,8 @@ export default function HubScreen() {
   const homeSecondaryCancelRef = useRef<(() => void) | null>(null);
   const homeBinderPreloadCancelRef = useRef<(() => void) | null>(null);
   const homeCollectionRequestRef = useRef(0);
+  const homeCollectionAbortRef = useRef<AbortController | null>(null);
+  const homeCollectionSourceChangedRef = useRef(false);
   const homeGeneralRequestRef = useRef(0);
   const homeChaseRequestRef = useRef(0);
   const homeChaseListingsRequestRef = useRef(0);
@@ -1405,10 +1410,12 @@ export default function HubScreen() {
   const restoreCachedHomeCollection = useCallback(async () => {
     const generation = homeSessionGenerationRef.current;
     const cachedOwnerId = homeSessionUserIdRef.current;
+    const sourceRevision = getCollectionSummaryVersion();
     const isCurrentRestore = () => generation === homeSessionGenerationRef.current
       && homeSessionUserIdRef.current === cachedOwnerId
       && homeSessionExpiresAtRef.current * 1000 > Date.now()
-      && homeLiveValuationGenerationRef.current !== generation;
+      && homeLiveValuationGenerationRef.current !== generation
+      && sourceRevision === getCollectionSummaryVersion();
     try {
       // A local session selects a saved display, not permission for a live read.
       // Server verification remains on the fresh collection and write paths.
@@ -1486,6 +1493,7 @@ export default function HubScreen() {
         || snapshot.pricingContractVersion !== 4
         || (snapshot.collectionTotal !== null && typeof snapshot.collectionTotal !== 'number')
         || !snapshot.collectionPricingSummary
+        || (sourceRevision > 0 && snapshot.sourceRevision !== sourceRevision)
       ) {
         hasSuccessfulCollectionPricingRef.current = false;
         collectionPriceEvidenceRef.current = [];
@@ -1501,7 +1509,10 @@ export default function HubScreen() {
 
       setCollectionTotal(snapshot.collectionTotal);
       setCollectionPricingSummary(snapshot.collectionPricingSummary as CollectionPricingSummary);
-      setCollectionPricingWarning((current) => current ?? 'Showing your last successful stored-price read while current prices refresh.');
+      if (snapshot.preparedState === 'updating') homeCollectionSourceChangedRef.current = true;
+      setCollectionPricingWarning((current) => current ?? (snapshot.preparedState === 'updating'
+        ? 'Showing the previous complete saved valuation and its quantities while updates are pending.'
+        : 'Showing your last successful stored-price read while current prices refresh.'));
       setCollectionValueError(null);
       setCollectionChangeAmount(Number(snapshot.collectionChangeAmount ?? 0));
       setCollectionChangePercent(Number(snapshot.collectionChangePercent ?? 0));
@@ -1548,11 +1559,19 @@ export default function HubScreen() {
     trustedUserId: string,
     snapshot: Omit<HomeCollectionCacheSnapshot, 'cachedAt'>,
   ) => {
+    const revision = getCollectionSummaryVersion();
+    const requestId = homeCollectionRequestRef.current;
+    const generation = homeSessionGenerationRef.current;
+    const isCurrent = () => revision === getCollectionSummaryVersion()
+      && requestId === homeCollectionRequestRef.current
+      && generation === homeSessionGenerationRef.current
+      && homeSessionUserIdRef.current === trustedUserId;
     const write = async () => {
     try {
+      if (!isCurrent()) return;
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
-      if (user?.id !== trustedUserId) return;
+      if (user?.id !== trustedUserId || !isCurrent()) return;
 
       await Promise.all([
         AsyncStorage.removeItem(LEGACY_HOME_COLLECTION_CACHE_KEY),
@@ -1560,30 +1579,42 @@ export default function HubScreen() {
           getHomeCollectionCacheKey(trustedUserId),
           serializeHomeCollectionCache(trustedUserId, {
             ...snapshot,
+            sourceRevision: revision,
             cachedAt: Date.now(),
           }),
         ),
       ]);
+      // Writes share this queue; discard an obsolete completed write before
+      // a newer queued generation can publish its own snapshot.
+      if (!isCurrent()) await AsyncStorage.removeItem(getHomeCollectionCacheKey(trustedUserId));
     } catch (error) {
       console.log('Home collection cache save failed', error);
     }
     };
-    homeCacheWriteRef.current = homeCacheWriteRef.current.then(write, write);
-    await homeCacheWriteRef.current;
+    await enqueueHomeCollectionCacheWrite(trustedUserId, write);
   }, []);
 
-  const loadCollectionValue = useCallback(async () => {
+  const loadCollectionValue = useCallback(async (options: { forceRefresh?: boolean } = {}) => {
     const requestId = ++homeCollectionRequestRef.current;
+    homeCollectionAbortRef.current?.abort();
+    const controller = new AbortController();
+    homeCollectionAbortRef.current = controller;
     const generation = homeSessionGenerationRef.current;
     const expectedUserId = homeSessionUserIdRef.current;
     const preloadVersion = getCollectionSummaryVersion();
     const preloadStartedAt = Date.now();
+    const isCurrentSource = () => homeCollectionRequestRef.current === requestId
+      && homeSessionGenerationRef.current === generation
+      && homeSessionUserIdRef.current === expectedUserId
+      && getCollectionSummaryVersion() === preloadVersion
+      && !controller.signal.aborted;
     let collectorDataLoaded = false;
     let accountDenied = false;
     let preloadCandidates: BinderRecord[] = [];
     let preloadSavedCards: Map<string, BinderCardRecord[]> | undefined;
     setCollectionValueError(null);
-    setCollectionPricingWarning(null);
+    setCollectionPricingWarning(homeCollectionSourceChangedRef.current
+      ? 'Your collection changed. Previous saved totals stay visible while current holdings refresh.' : null);
     setHomeDataError(null);
     try {
       const { data: { user }, error: userError } = await withPersonalDataReadTimeout(() => supabase.auth.getUser()).catch((error) => {
@@ -1594,9 +1625,7 @@ export default function HubScreen() {
         accountDenied = isKnownAuthDenial(userError);
         throw userError;
       }
-      if (requestId !== homeCollectionRequestRef.current
-        || generation !== homeSessionGenerationRef.current
-        || (user?.id ?? null) !== expectedUserId) return;
+      if (!isCurrentSource() || (user?.id ?? null) !== expectedUserId) return;
       if (!user) {
         pendingManualPriceRefreshesRef.current.clear();
         manualPriceRefreshUserIdRef.current = null;
@@ -1611,9 +1640,7 @@ export default function HubScreen() {
       }
       manualPriceRefreshUserIdRef.current = trustedUserId;
       const isCurrentRequest = () => (
-        homeCollectionRequestRef.current === requestId
-        && homeSessionGenerationRef.current === generation
-        && homeSessionUserIdRef.current === trustedUserId
+        isCurrentSource() && homeSessionUserIdRef.current === trustedUserId
       );
       const confirmCurrentRequest = async () => {
         if (!isCurrentRequest()) return false;
@@ -1638,6 +1665,7 @@ export default function HubScreen() {
       }
 
       const { binders, ownedRows, cardsByBinder } = await fetchHomeSavedCollection(trustedUserId, {
+        signal: controller.signal, isCurrent: isCurrentRequest, forceRefresh: options.forceRefresh,
         onBindersReady: (savedBinders) => {
           preloadCandidates = savedBinders;
           // Warm the same account's library before slower card/price retrieval.
@@ -1804,6 +1832,7 @@ export default function HubScreen() {
             ? preparedGeneralPricingSummary(coverage as import('../../lib/preparedCollectionValuation').GeneralPreparedCoverage) ?? preparedPricingSummary(coverage)
             : preparedPricingSummary(coverage)) } : nextActiveBinder;
         homeLiveValuationGenerationRef.current = generation;
+        homeCollectionSourceChangedRef.current = prepared.state === 'updating';
         setCollectionTotal(pricing.total);
         setCollectionPricingSummary(pricing);
         setOwnedCardCount(summary.totalUnits);
@@ -1845,15 +1874,15 @@ export default function HubScreen() {
         collectionValueReadsRef.current = nextPreparedReads;
         const refreshReport = exactSummary.refresh && prepared.refreshRequest
           ? `Refresh review: ${exactSummary.refresh.accepted} accepted, ${exactSummary.refresh.alreadyPending} already pending, ${exactSummary.refresh.unsupported} unsupported, ${exactSummary.refresh.unresolved} unresolved, ${exactSummary.refresh.blocked} blocked, ${exactSummary.refresh.remaining ?? 0} remaining.` : null;
-        setCollectionPricingWarning(refreshReport ?? (prepared.state === 'updating'
-          ? 'Updating your collection. Showing the previous complete valuation and its quantities.'
-          : exactSummary.cycle?.overdue ? 'The catalogue pricing cycle is overdue. Showing stored estimates and their recorded coverage.'
+        setCollectionPricingWarning(prepared.state === 'updating'
+          ? 'Updating your collection. Showing the previous complete valuation and its quantities.' + (refreshReport ? ' ' + refreshReport : '')
+          : refreshReport ?? (exactSummary.cycle?.overdue ? 'The catalogue pricing cycle is overdue. Showing stored estimates and their recorded coverage.'
           : pricing.state === 'partial' ? getCollectionPriceCoverageLabel(pricing) + '. Showing the known subtotal.'
           : pricing.staleUnits ? 'Older stored estimates retained with their original source dates.' : null));
         hasSuccessfulCollectionPricingRef.current = pricing.total != null;
         cachedHomeSnapshotUserIdRef.current = trustedUserId;
         setMintyDataRefreshedAt(pricing.latestCalculatedAt);
-        void saveHomeCollectionCache(trustedUserId, { pricingContractVersion: 4,
+        void saveHomeCollectionCache(trustedUserId, { pricingContractVersion: 4, preparedState: prepared.state,
           mintyDataRefreshedAt: pricing.latestCalculatedAt, chartRange, chartData: trendValues, collectionValueReads: nextPreparedReads,
           collectionTotal: pricing.total, collectionPricingSummary: pricing, collectionChangeAmount: trendChange,
           collectionChangePercent: trendPercent, ownedCardCount: summary.totalUnits, activeBinder: preparedBinder,
@@ -1989,6 +2018,7 @@ export default function HubScreen() {
       setDuplicateSummary(nextDuplicateSummary);
       setMissingCards(nextMissingCards);
       homeLiveValuationGenerationRef.current = generation;
+      homeCollectionSourceChangedRef.current = false;
       setCollectionTotal(nextPricingSummary.total);
       setCollectionPricingSummary(nextPricingSummary);
       setCollectionPricingWarning(refreshFollowUp.warning ?? pricingWarning);
@@ -2038,7 +2068,7 @@ export default function HubScreen() {
 
     } catch (error) {
       console.log('Failed to calculate collection value', error);
-      if (homeCollectionRequestRef.current !== requestId) return;
+      if (!isCurrentSource()) return;
       if (accountDenied) {
         // A known server denial revokes the local preview; a transport failure
         // only leaves an honestly labelled saved display.
@@ -2066,14 +2096,16 @@ export default function HubScreen() {
         }
       }
       if (hasSuccessfulCollectionPricingRef.current) {
-        setCollectionPricingWarning('Refresh failed. Showing your last successful stored-price read.');
+        setCollectionPricingWarning(homeCollectionSourceChangedRef.current
+          ? 'Your collection changed. Refresh failed; showing previous saved totals.'
+          : 'Refresh failed. Showing your last successful stored-price read.');
         setCollectionValueError(null);
       } else {
         setCollectionValueError('We could not load stored market prices. Pull to refresh or try again.');
         if (!collectorDataLoaded) setHomeDataError('Could not refresh collector data. Pull to refresh or try again.');
       }
     } finally {
-      if (homeCollectionRequestRef.current === requestId) {
+      if (isCurrentSource()) {
         hasLoadedCollectionValueRef.current = true;
         setCollectionValueLoading(false);
       }
@@ -2081,6 +2113,37 @@ export default function HubScreen() {
   }, [applyCachedHomeCollection, chartRange, refreshMintyForMarketSignature, saveHomeCollectionCache]);
 
   const loadCollectionValueRef = useRef(loadCollectionValue);
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const unsubscribe = subscribeCollectionSummaryInvalidation(() => {
+      invalidateHomeSavedFacts();
+      homeCollectionRequestRef.current += 1;
+      homeCollectionAbortRef.current?.abort();
+      homeBinderPreloadCancelRef.current?.();
+      homeCollectionSourceChangedRef.current = true;
+      homeLiveMetadataGenerationRef.current = homeSessionGenerationRef.current;
+      homeLiveValuationGenerationRef.current = homeSessionGenerationRef.current;
+      setCollectionPricingWarning('Your collection changed. Previous saved totals stay visible while current holdings refresh.');
+      if (timer) clearTimeout(timer);
+      if (homeFocusedRef.current && homeSessionUserIdRef.current) {
+        setCollectionValueLoading(true);
+        const userId = homeSessionUserIdRef.current;
+        const sessionGeneration = homeSessionGenerationRef.current;
+        const focusGeneration = homeFocusGenerationRef.current;
+        const sourceRevision = getCollectionSummaryVersion();
+        timer = setTimeout(() => {
+          timer = null;
+          if (!homeFocusedRef.current || homeSessionUserIdRef.current !== userId
+            || homeSessionGenerationRef.current !== sessionGeneration
+            || homeFocusGenerationRef.current !== focusGeneration
+            || getCollectionSummaryVersion() !== sourceRevision) return;
+          void loadCollectionValueRef.current();
+        }, 0);
+      }
+    });
+    return () => { if (timer) clearTimeout(timer); unsubscribe(); };
+  }, []);
 
   const handleChartRangeChange = useCallback((nextRange: ChartRange) => {
     if (nextRange === chartRange) return;
@@ -2113,11 +2176,13 @@ export default function HubScreen() {
       } catch {
         Alert.alert('Refresh unavailable', 'The request could not be confirmed. Your stored valuation remains visible.');
       } finally { manualProviderRefreshInFlightRef.current = false; }
+      await loadCollectionValueRef.current({ forceRefresh: true });
       return;
     }
     const rotating = takeRotatingStringBatch(refreshableVariantIdsRef.current, legacyManualRefreshCursorRef.current, HOME_MANUAL_PRICE_REFRESH_LIMIT);
     const variantIds = rotating.items;
     if (!variantIds.length) {
+      void loadCollectionValueRef.current({ forceRefresh: true });
       Alert.alert(
         'Live price refresh unavailable',
         'Add cards with an exact raw-card match first. Nothing was queued and the stored values have not changed.',
@@ -2145,7 +2210,7 @@ export default function HubScreen() {
         }
       }
       legacyManualRefreshCursorRef.current = rotating.nextCursor;
-      await loadCollectionValueRef.current();
+      await loadCollectionValueRef.current({ forceRefresh: true });
       const pendingCount = pendingManualPriceRefreshesRef.current.size;
       if (pendingCount) {
         setCollectionPricingWarning(`Checking ${pendingCount} queued ${pendingCount === 1 ? 'price' : 'prices'} against stored estimates while Home stays open.`);
@@ -2606,12 +2671,14 @@ export default function HubScreen() {
       }
       homeSessionInitializedRef.current = true;
       homeSessionUserIdRef.current = nextUserId;
+      homeCollectionSourceChangedRef.current = false;
       homeSessionGenerationRef.current += 1;
       homeSecondaryCancelRef.current?.();
       homeSecondaryCancelRef.current = null;
       homeBinderPreloadCancelRef.current?.();
       homeBinderPreloadCancelRef.current = null;
       homeCollectionRequestRef.current += 1;
+      homeCollectionAbortRef.current?.abort();
       homeGeneralRequestRef.current += 1;
       homeChaseRequestRef.current += 1;
       homeChaseListingsRequestRef.current += 1;
@@ -2714,6 +2781,8 @@ export default function HubScreen() {
 
     return () => {
       homeFocusedRef.current = false;
+      homeCollectionRequestRef.current += 1;
+      homeCollectionAbortRef.current?.abort();
       homeStartupKeyRef.current = null;
       homeSecondaryCancelRef.current?.();
       homeSecondaryCancelRef.current = null;

@@ -20,7 +20,7 @@ export { buildUrl, TestClient };`, { compilerOptions: { target: ts.ScriptTarget.
 const runtime: any = {};
 new Function('exports', 'STACKR_UI_PAGE_SIZE', compiled)(runtime, 50);
 
-for (const path of ['/sets', '/sets/set/cards', '/pokemon/Pikachu/cards', '/assets/manifest', '/search', '/catalog/delta', '/pokemon']) {
+for (const path of ['/sets', '/sets/set/cards', '/pokemon/Pikachu/cards', '/assets/manifest', '/search', '/catalog/delta', '/pokemon', '/market/movers', '/market/opportunities', '/cards/card/price-history']) {
   assert.equal(new URL(runtime.buildUrl('https://api.invalid/v1', path, {})).searchParams.get('limit'), '50');
   assert.equal(new URL(runtime.buildUrl('https://api.invalid/v1', path, { limit: 500, cursor: 'continue' })).searchParams.get('limit'), '50');
   assert.equal(new URL(runtime.buildUrl('https://api.invalid/v1', path, { limit: 7 })).searchParams.get('limit'), '7');

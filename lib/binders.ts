@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 import { attachLiveTcgdexCardReferences, fetchCardsForSet, normalizePokemonCardLanguage, type PokemonCardLanguage } from './pokemonTcg';
-import { enrichStackrCardArtworkFromFacts } from './stackrDomainAdapter';
+import { enrichSavedStackrCardArtwork, enrichStackrCardArtworkFromFacts } from './stackrDomainAdapter';
 import { readOptionalCatalogueEnrichment } from './optionalCatalogueEnrichment';
 import { withPersonalDataReadTimeout } from './personalDataRead';
 import { createActivityPost } from './activity';
@@ -491,35 +491,83 @@ async function attachSetBrandingToBinders(binders: BinderRecord[], includeAssets
 }
 
 export async function fetchBinders(options: { enrich?: boolean } = {}): Promise<BinderRecord[]> {
-  // Local identity chooses the private cache; database RLS still authorizes each read.
-  const { data: { session }, error: userError } = await supabase.auth.getSession();
-  const user = session?.user;
-
-  if (userError) throw userError;
-  if (!user) return [];
-
-  const saved = await getCachedOrFetch(`binders:${user.id}:saved`, BINDERS_CACHE_TTL_MS, async () => {
-    const savedBinders: BinderRecord[] = [];
-    for (let from = 0; ; from += 1000) {
-      const { data, error } = await supabase
-        .from('binders')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: false })
-        .order('id', { ascending: true })
-        .range(from, from + 999);
-
-      if (error) throw error;
-      const page = (data ?? []) as BinderRecord[];
-      savedBinders.push(...page.filter((binder) => binder.user_id === user.id));
-      if (page.length < 1000) break;
+  // Subscribe before reading identity so even an A -> B -> A switch cancels this read.
+  const request = new AbortController();
+  let accountId: string | null | undefined;
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const nextAccountId = session?.user.id ?? null;
+    if (event === 'SIGNED_OUT'
+      || (accountId !== undefined && accountId !== nextAccountId)
+      || (accountId === undefined && event !== 'INITIAL_SESSION' && event !== 'TOKEN_REFRESHED')) {
+      request.abort();
     }
-    return savedBinders;
+    accountId = nextAccountId;
   });
-  if (options.enrich === false) return saved;
-  return getCachedOrFetch(`binders:${user.id}:enriched`, BINDERS_CACHE_TTL_MS,
-    () => attachSetBrandingToBinders(saved));
+  const assertCurrent = () => {
+    if (request.signal.aborted) {
+      const error = new Error('The collection request was cancelled.');
+      error.name = 'AbortError';
+      throw error;
+    }
+  };
+  try {
+    // Local identity chooses the private cache; database RLS still authorizes each read.
+    const { data: { session }, error: userError } = await supabase.auth.getSession();
+    assertCurrent();
+    if (userError) throw userError;
+    const user = session?.user;
+    if (accountId !== undefined && accountId !== (user?.id ?? null)) request.abort();
+    assertCurrent();
+    accountId = user?.id ?? null;
+    if (!user) return [];
+
+    const saved = await getCachedOrFetch(`binders:${user.id}:saved`, BINDERS_CACHE_TTL_MS, () => withPersonalDataReadTimeout(async (signal) => {
+      const savedBinders: BinderRecord[] = [];
+      const seen = new Set<string>();
+      const maxRows = 256_000;
+      const assertPageCurrent = () => {
+        if (signal.aborted) request.abort();
+        assertCurrent();
+      };
+      for (let from = 0; ;) {
+        assertPageCurrent();
+        const { data, error } = await supabase
+          .from('binders')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('sort_order', { ascending: true })
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: true })
+          .range(from, from + 49)
+          .abortSignal(signal);
+
+        assertPageCurrent();
+        if (error) throw error;
+        if (!Array.isArray(data) || data.length > 50) throw new Error('Saved binder pagination was incomplete. Please retry.');
+        const page = data as BinderRecord[];
+        if (!page.length) break;
+        if (savedBinders.length + page.length > maxRows) throw new Error('Saved binders exceeded the row budget. Please retry.');
+        for (const binder of page) {
+          if (binder.user_id !== user.id) throw new Error('Saved binders did not match the requested account. Please retry.');
+          if (typeof binder.id !== 'string' || !binder.id || seen.has(binder.id)) throw new Error('Saved binder pagination repeated an identity. Please retry.');
+          seen.add(binder.id);
+        }
+        savedBinders.push(...page);
+        // A short page can be a lower server cap, so advance by received rows.
+        from += page.length;
+      }
+      return savedBinders;
+    }, { signal: request.signal }), { shouldCache: () => !request.signal.aborted });
+    assertCurrent();
+    if (options.enrich === false) return saved;
+    const enriched = await getCachedOrFetch(`binders:${user.id}:enriched`, BINDERS_CACHE_TTL_MS,
+      () => attachSetBrandingToBinders(saved), { shouldCache: () => !request.signal.aborted });
+    assertCurrent();
+    return enriched;
+  } finally {
+    subscription.unsubscribe();
+    request.abort();
+  }
 }
 
 export async function fetchBinderById(
@@ -588,7 +636,7 @@ async function readSavedBinderRows(binderId: string): Promise<BinderCardRecord[]
       const seen = new Set<string>();
       // A server row cap can return a short nonterminal page. Only an empty
       // page proves exhaustion; advance by received rows, not the asked limit.
-      for (let pageIndex = 0; pageIndex < 256; pageIndex += 1) {
+      for (let pageIndex = 0; pageIndex < Math.ceil((256 * 1000) / 50); pageIndex += 1) {
         assertCurrent();
         const from = rows.length;
         const { data, error } = await supabase
@@ -597,11 +645,12 @@ async function readSavedBinderRows(binderId: string): Promise<BinderCardRecord[]
           .eq('binder_id', binderId)
           .order('slot_order', { ascending: true })
           .order('id', { ascending: true })
-          .range(from, from + 999)
+          .range(from, from + 49)
           .abortSignal(signal);
         assertCurrent();
         if (error) throw error;
-        const page = (data ?? []) as BinderCardRecord[];
+        if (!Array.isArray(data) || data.length > 50) throw new Error('Saved binder cards returned an incomplete page. Please retry.');
+        const page = data as BinderCardRecord[];
         if (!page.length) return rows;
         for (const row of page) {
           if (row.binder_id !== binderId || typeof row.id !== 'string' || !row.id || seen.has(row.id)) {
@@ -1618,8 +1667,13 @@ export async function attachBinderCatalogueArtwork(
     // advance together while current facts, ownership and quantities stay put.
     return mergeBinderArtwork(rows, enriched);
   };
-  const enriched = await enrichStackrCardArtworkFromFacts(eligible.map((row) => row.card), signal, undefined,
+  const direct = await enrichSavedStackrCardArtwork(eligible.map((row) => row.card), signal, undefined,
     (progress) => onProgress?.(merge(progress)));
+  const recovered = new Set(direct.map(artworkIdentity).filter(Boolean));
+  const remaining = eligible.filter(row => !recovered.has(artworkIdentity(row.card)));
+  const canonical = await enrichStackrCardArtworkFromFacts(remaining.map((row) => row.card), signal, undefined,
+    (progress) => onProgress?.(merge([...direct, ...progress])));
+  const enriched = [...direct, ...canonical];
   onProgress?.(merge(enriched));
   // Preserve the already-established foreign-source fallback, but never await it for first paint.
   const references = await readOptionalCatalogueEnrichment(() => attachLiveTcgdexCardReferences(enriched, 1), signal);

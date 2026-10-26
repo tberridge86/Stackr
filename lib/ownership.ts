@@ -26,10 +26,11 @@ export type OwnedCardRow = {
 };
 
 const FULL_OWNED_COLUMNS = 'id, user_id, card_id, set_id, variant, quantity, condition, grade_company, grade';
-const LEGACY_OWNED_COLUMNS = 'card_id, set_id, variant, quantity';
+const LEGACY_OWNED_COLUMNS = 'id, user_id, card_id, set_id, variant, quantity';
 const FULL_OWNED_CONFLICT = 'user_id,card_id,set_id,variant,condition,grade_company,grade';
 const LEGACY_OWNED_CONFLICT = 'user_id,card_id,set_id,variant';
-const OWNED_ROWS_PAGE_SIZE = 1000;
+const OWNED_ROWS_PAGE_SIZE = 50;
+const OWNED_ROWS_MAX_PAGE_SIZE = 500;
 
 function isSchemaCacheError(error: any) {
   const message = String(error?.message ?? '').toLowerCase();
@@ -76,8 +77,24 @@ async function getCurrentUserId() {
 export async function fetchOwnedCardRows(options?: {
   cardIds?: string[];
   setIds?: string[];
+  isCurrent?: () => boolean;
+  /** Existing consumers retain 50-row pages; Home may opt into at most 500. */
+  pageSize?: number;
 }): Promise<OwnedCardRow[]> {
+  const pageSize = options?.pageSize ?? OWNED_ROWS_PAGE_SIZE;
+  if (!Number.isSafeInteger(pageSize) || pageSize <= 0 || pageSize > OWNED_ROWS_MAX_PAGE_SIZE) {
+    throw new RangeError('Ownership page size must be a positive integer no greater than 500.');
+  }
+  const assertCurrent = () => {
+    if (options?.isCurrent?.() === false) {
+      const error = new Error('The ownership request was cancelled.');
+      error.name = 'AbortError';
+      throw error;
+    }
+  };
+  assertCurrent();
   const userId = await getCurrentUserId();
+  assertCurrent();
   if (!userId) return [];
 
   const buildQuery = (columns: string) => {
@@ -94,15 +111,32 @@ export async function fetchOwnedCardRows(options?: {
   };
 
   const fetchAll = async (columns: string) => {
-    const rows: any[] = [];
-    for (let from = 0; ; from += OWNED_ROWS_PAGE_SIZE) {
-      const to = from + OWNED_ROWS_PAGE_SIZE - 1;
-      const { data, error } = await buildQuery(columns).range(from, to);
+    const rows: Record<string, unknown>[] = [];
+    const seen = new Set<string>();
+    for (let from = 0; ;) {
+      assertCurrent();
+      const to = from + pageSize - 1;
+      const { data, error } = await buildQuery(columns).order('id', { ascending: true }).range(from, to);
+      assertCurrent();
       if (error) return { data: rows, error };
-      rows.push(...(data ?? []));
-      if (!data || data.length < OWNED_ROWS_PAGE_SIZE) {
-        return { data: rows, error: null };
+      // The projection is chosen at runtime for legacy-schema compatibility.
+      // Validate the transport value before assigning a row shape.
+      const page: unknown = data;
+      if (!Array.isArray(page) || page.length > pageSize) throw new Error('Ownership pagination was incomplete. Please retry.');
+      if (!page.length) return { data: rows, error: null };
+      for (const candidate of page as unknown[]) {
+        if (typeof candidate !== 'object' || candidate === null || Array.isArray(candidate)) {
+          throw new Error('Ownership pagination returned an invalid row. Please retry.');
+        }
+        const row = candidate as Record<string, unknown>;
+        if (typeof row.id !== 'string' || !row.id || seen.has(row.id) || row.user_id !== userId) {
+          throw new Error('Ownership pagination did not match the active account. Please retry.');
+        }
+        seen.add(row.id);
+        rows.push(row);
       }
+      // Do not mistake a lower server cap for the end of the collection.
+      from += page.length;
     }
   };
 

@@ -1,0 +1,2158 @@
+{
+  "sourceRoot": "D:\\Stackr-1\\work\\collection-summary-20261025",
+  "baselineSourcePath": null,
+  "baselineRevision": "53ab596156037c560c2776eb55ab02c66d90c40e",
+  "baselineGitBlob": "b34988d6a426ce26389f4a563f1b58d64b100695",
+  "baselineModuleBlobs": {
+    "homeSavedCollection": "b34988d6a426ce26389f4a563f1b58d64b100695",
+    "uiCollectionPages": "cadd868e95aab0a93d9021cef0c7954c493985b6",
+    "ownership": "b2edefaec67db8ae6804013805877d12f11a442b"
+  },
+  "environment": {
+    "node": "v24.15.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "transport": "offline actual modules; response-array JSON bytes; excludes headers, TLS, hosted DB and device rendering",
+  "reports": [
+    {
+      "cohort": "small",
+      "binders": 2,
+      "saved": 8,
+      "ownedRows": 6,
+      "unownedSaved": 2,
+      "baseline": {
+        "first": {
+          "requests": 6,
+          "bodyBytes": 6341,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 6,
+            "binder_cards": 8
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 1275,
+            "binder_cards": 4463
+          }
+        },
+        "immediateRepeat": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        },
+        "firstAuthCalls": {
+          "getSession": 12,
+          "getUser": 1
+        },
+        "warmAuthCalls": {
+          "getSession": 2,
+          "getUser": 0
+        }
+      },
+      "after": {
+        "first": {
+          "requests": 6,
+          "bodyBytes": 6341,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 6,
+            "binder_cards": 8
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 1275,
+            "binder_cards": 4463
+          }
+        },
+        "immediateRepeat": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        },
+        "expired": {
+          "requests": 6,
+          "bodyBytes": 6341,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 6,
+            "binder_cards": 8
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 1275,
+            "binder_cards": 4463
+          }
+        },
+        "forced": {
+          "requests": 6,
+          "bodyBytes": 6341,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 6,
+            "binder_cards": 8
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 1275,
+            "binder_cards": 4463
+          }
+        }
+      },
+      "authCalls": {
+        "getSession": 40,
+        "getUser": 3
+      },
+      "firstAuthCalls": {
+        "getSession": 12,
+        "getUser": 1
+      },
+      "warmAuthCalls": {
+        "getSession": 2,
+        "getUser": 0
+      }
+    },
+    {
+      "cohort": "large-1702-saved-1323-owned",
+      "binders": 2,
+      "saved": 1702,
+      "ownedRows": 1323,
+      "unownedSaved": 379,
+      "baseline": {
+        "first": {
+          "requests": 66,
+          "bodyBytes": 1256977,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 28,
+            "binder_cards": 36
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283364,
+            "binder_cards": 973010
+          }
+        },
+        "immediateRepeat": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        },
+        "firstAuthCalls": {
+          "getSession": 80,
+          "getUser": 1
+        },
+        "warmAuthCalls": {
+          "getSession": 2,
+          "getUser": 0
+        }
+      },
+      "after": {
+        "first": {
+          "requests": 11,
+          "bodyBytes": 1256922,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 4,
+            "binder_cards": 5
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283340,
+            "binder_cards": 972979
+          }
+        },
+        "immediateRepeat": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        },
+        "expired": {
+          "requests": 11,
+          "bodyBytes": 1256922,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 4,
+            "binder_cards": 5
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283340,
+            "binder_cards": 972979
+          }
+        },
+        "forced": {
+          "requests": 11,
+          "bodyBytes": 1256922,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 4,
+            "binder_cards": 5
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283340,
+            "binder_cards": 972979
+          }
+        }
+      },
+      "authCalls": {
+        "getSession": 58,
+        "getUser": 3
+      },
+      "firstAuthCalls": {
+        "getSession": 18,
+        "getUser": 1
+      },
+      "warmAuthCalls": {
+        "getSession": 2,
+        "getUser": 0
+      }
+    },
+    {
+      "cohort": "empty",
+      "binders": 0,
+      "saved": 0,
+      "ownedRows": 0,
+      "unownedSaved": 0,
+      "baseline": {
+        "first": {
+          "requests": 2,
+          "bodyBytes": 4,
+          "tableCounts": {
+            "binders": 1,
+            "user_card_variants": 1
+          },
+          "tableRows": {
+            "binders": 0,
+            "user_card_variants": 0
+          },
+          "tableBytes": {
+            "binders": 2,
+            "user_card_variants": 2
+          }
+        },
+        "immediateRepeat": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        },
+        "firstAuthCalls": {
+          "getSession": 7,
+          "getUser": 1
+        },
+        "warmAuthCalls": {
+          "getSession": 2,
+          "getUser": 0
+        }
+      },
+      "after": {
+        "first": {
+          "requests": 2,
+          "bodyBytes": 4,
+          "tableCounts": {
+            "binders": 1,
+            "user_card_variants": 1
+          },
+          "tableRows": {
+            "binders": 0,
+            "user_card_variants": 0
+          },
+          "tableBytes": {
+            "binders": 2,
+            "user_card_variants": 2
+          }
+        },
+        "immediateRepeat": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        },
+        "expired": {
+          "requests": 2,
+          "bodyBytes": 4,
+          "tableCounts": {
+            "binders": 1,
+            "user_card_variants": 1
+          },
+          "tableRows": {
+            "binders": 0,
+            "user_card_variants": 0
+          },
+          "tableBytes": {
+            "binders": 2,
+            "user_card_variants": 2
+          }
+        },
+        "forced": {
+          "requests": 2,
+          "bodyBytes": 4,
+          "tableCounts": {
+            "binders": 1,
+            "user_card_variants": 1
+          },
+          "tableRows": {
+            "binders": 0,
+            "user_card_variants": 0
+          },
+          "tableBytes": {
+            "binders": 2,
+            "user_card_variants": 2
+          }
+        }
+      },
+      "authCalls": {
+        "getSession": 25,
+        "getUser": 3
+      },
+      "firstAuthCalls": {
+        "getSession": 7,
+        "getUser": 1
+      },
+      "warmAuthCalls": {
+        "getSession": 2,
+        "getUser": 0
+      }
+    },
+    {
+      "cohort": "five-languages-same-collector",
+      "binders": 5,
+      "saved": 5,
+      "ownedRows": 5,
+      "unownedSaved": 0,
+      "baseline": {
+        "first": {
+          "requests": 6,
+          "bodyBytes": 5451,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 5,
+            "user_card_variants": 5,
+            "binder_cards": 5
+          },
+          "tableBytes": {
+            "binders": 1515,
+            "user_card_variants": 1085,
+            "binder_cards": 2851
+          }
+        },
+        "immediateRepeat": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        },
+        "firstAuthCalls": {
+          "getSession": 12,
+          "getUser": 1
+        },
+        "warmAuthCalls": {
+          "getSession": 2,
+          "getUser": 0
+        }
+      },
+      "after": {
+        "first": {
+          "requests": 6,
+          "bodyBytes": 5451,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 5,
+            "user_card_variants": 5,
+            "binder_cards": 5
+          },
+          "tableBytes": {
+            "binders": 1515,
+            "user_card_variants": 1085,
+            "binder_cards": 2851
+          }
+        },
+        "immediateRepeat": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        },
+        "expired": {
+          "requests": 6,
+          "bodyBytes": 5451,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 5,
+            "user_card_variants": 5,
+            "binder_cards": 5
+          },
+          "tableBytes": {
+            "binders": 1515,
+            "user_card_variants": 1085,
+            "binder_cards": 2851
+          }
+        },
+        "forced": {
+          "requests": 6,
+          "bodyBytes": 5451,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 5,
+            "user_card_variants": 5,
+            "binder_cards": 5
+          },
+          "tableBytes": {
+            "binders": 1515,
+            "user_card_variants": 1085,
+            "binder_cards": 2851
+          }
+        }
+      },
+      "authCalls": {
+        "getSession": 40,
+        "getUser": 3
+      },
+      "firstAuthCalls": {
+        "getSession": 12,
+        "getUser": 1
+      },
+      "warmAuthCalls": {
+        "getSession": 2,
+        "getUser": 0
+      }
+    }
+  ],
+  "serverCapReports": [
+    {
+      "serverCap": 500,
+      "requests": 11,
+      "bodyBytes": 1256922,
+      "tableCounts": {
+        "binders": 2,
+        "user_card_variants": 4,
+        "binder_cards": 5
+      },
+      "tableRows": {
+        "binders": 2,
+        "user_card_variants": 1323,
+        "binder_cards": 1702
+      },
+      "tableBytes": {
+        "binders": 603,
+        "user_card_variants": 283340,
+        "binder_cards": 972979
+      }
+    },
+    {
+      "serverCap": 100,
+      "requests": 36,
+      "bodyBytes": 1256947,
+      "tableCounts": {
+        "binders": 2,
+        "user_card_variants": 15,
+        "binder_cards": 19
+      },
+      "tableRows": {
+        "binders": 2,
+        "user_card_variants": 1323,
+        "binder_cards": 1702
+      },
+      "tableBytes": {
+        "binders": 603,
+        "user_card_variants": 283351,
+        "binder_cards": 972993
+      }
+    },
+    {
+      "serverCap": 50,
+      "requests": 66,
+      "bodyBytes": 1256977,
+      "tableCounts": {
+        "binders": 2,
+        "user_card_variants": 28,
+        "binder_cards": 36
+      },
+      "tableRows": {
+        "binders": 2,
+        "user_card_variants": 1323,
+        "binder_cards": 1702
+      },
+      "tableBytes": {
+        "binders": 603,
+        "user_card_variants": 283364,
+        "binder_cards": 973010
+      }
+    },
+    {
+      "serverCap": 17,
+      "requests": 183,
+      "bodyBytes": 1257094,
+      "tableCounts": {
+        "binders": 2,
+        "user_card_variants": 79,
+        "binder_cards": 102
+      },
+      "tableRows": {
+        "binders": 2,
+        "user_card_variants": 1323,
+        "binder_cards": 1702
+      },
+      "tableBytes": {
+        "binders": 603,
+        "user_card_variants": 283415,
+        "binder_cards": 973076
+      }
+    }
+  ],
+  "dependency": {
+    "savedDispatchesWhileOwnershipHeld": 2
+  },
+  "cohortTimings": [
+    {
+      "cohort": "empty",
+      "samples": 5,
+      "timingCohort": {
+        "binders": 0,
+        "saved": 0,
+        "owned": 0,
+        "multilingual": false,
+        "serverCap": 500,
+        "delayMs": 50
+      },
+      "perDataApiReadDelayMs": 50,
+      "firstCompleteFactsMedianMs": 54.7778000000003,
+      "warmCompleteFactsMedianMs": 0.22369999999955326,
+      "baselineFirstMedianMs": 63.815599999999904,
+      "baselineWarmMedianMs": 0.18420000000014625,
+      "baselineSamples": [
+        {
+          "firstMs": 63.815599999999904,
+          "warmMs": 0.16460000000006403,
+          "firstRead": {
+            "requests": 2,
+            "bodyBytes": 4,
+            "tableCounts": {
+              "binders": 1,
+              "user_card_variants": 1
+            },
+            "tableRows": {
+              "binders": 0,
+              "user_card_variants": 0
+            },
+            "tableBytes": {
+              "binders": 2,
+              "user_card_variants": 2
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 65.14339999999993,
+          "warmMs": 0.17630000000008295,
+          "firstRead": {
+            "requests": 2,
+            "bodyBytes": 4,
+            "tableCounts": {
+              "binders": 1,
+              "user_card_variants": 1
+            },
+            "tableRows": {
+              "binders": 0,
+              "user_card_variants": 0
+            },
+            "tableBytes": {
+              "binders": 2,
+              "user_card_variants": 2
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 52.90570000000025,
+          "warmMs": 0.2371000000002823,
+          "firstRead": {
+            "requests": 2,
+            "bodyBytes": 4,
+            "tableCounts": {
+              "binders": 1,
+              "user_card_variants": 1
+            },
+            "tableRows": {
+              "binders": 0,
+              "user_card_variants": 0
+            },
+            "tableBytes": {
+              "binders": 2,
+              "user_card_variants": 2
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 63.43060000000014,
+          "warmMs": 0.18420000000014625,
+          "firstRead": {
+            "requests": 2,
+            "bodyBytes": 4,
+            "tableCounts": {
+              "binders": 1,
+              "user_card_variants": 1
+            },
+            "tableRows": {
+              "binders": 0,
+              "user_card_variants": 0
+            },
+            "tableBytes": {
+              "binders": 2,
+              "user_card_variants": 2
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 63.99299999999994,
+          "warmMs": 0.2885999999998603,
+          "firstRead": {
+            "requests": 2,
+            "bodyBytes": 4,
+            "tableCounts": {
+              "binders": 1,
+              "user_card_variants": 1
+            },
+            "tableRows": {
+              "binders": 0,
+              "user_card_variants": 0
+            },
+            "tableBytes": {
+              "binders": 2,
+              "user_card_variants": 2
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        }
+      ],
+      "candidateSamples": [
+        {
+          "firstMs": 57.167999999999665,
+          "warmMs": 0.1730000000002292,
+          "firstRead": {
+            "requests": 2,
+            "bodyBytes": 4,
+            "tableCounts": {
+              "binders": 1,
+              "user_card_variants": 1
+            },
+            "tableRows": {
+              "binders": 0,
+              "user_card_variants": 0
+            },
+            "tableBytes": {
+              "binders": 2,
+              "user_card_variants": 2
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 56.27419999999984,
+          "warmMs": 0.22369999999955326,
+          "firstRead": {
+            "requests": 2,
+            "bodyBytes": 4,
+            "tableCounts": {
+              "binders": 1,
+              "user_card_variants": 1
+            },
+            "tableRows": {
+              "binders": 0,
+              "user_card_variants": 0
+            },
+            "tableBytes": {
+              "binders": 2,
+              "user_card_variants": 2
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 54.7778000000003,
+          "warmMs": 0.29359999999996944,
+          "firstRead": {
+            "requests": 2,
+            "bodyBytes": 4,
+            "tableCounts": {
+              "binders": 1,
+              "user_card_variants": 1
+            },
+            "tableRows": {
+              "binders": 0,
+              "user_card_variants": 0
+            },
+            "tableBytes": {
+              "binders": 2,
+              "user_card_variants": 2
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 53.20119999999997,
+          "warmMs": 0.1993000000002212,
+          "firstRead": {
+            "requests": 2,
+            "bodyBytes": 4,
+            "tableCounts": {
+              "binders": 1,
+              "user_card_variants": 1
+            },
+            "tableRows": {
+              "binders": 0,
+              "user_card_variants": 0
+            },
+            "tableBytes": {
+              "binders": 2,
+              "user_card_variants": 2
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 54.136099999999715,
+          "warmMs": 0.33770000000004075,
+          "firstRead": {
+            "requests": 2,
+            "bodyBytes": 4,
+            "tableCounts": {
+              "binders": 1,
+              "user_card_variants": 1
+            },
+            "tableRows": {
+              "binders": 0,
+              "user_card_variants": 0
+            },
+            "tableBytes": {
+              "binders": 2,
+              "user_card_variants": 2
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        }
+      ]
+    },
+    {
+      "cohort": "small",
+      "samples": 5,
+      "timingCohort": {
+        "binders": 2,
+        "saved": 8,
+        "owned": 6,
+        "multilingual": false,
+        "serverCap": 500,
+        "delayMs": 50
+      },
+      "perDataApiReadDelayMs": 50,
+      "firstCompleteFactsMedianMs": 226.34870000000046,
+      "warmCompleteFactsMedianMs": 0.23719999999957508,
+      "baselineFirstMedianMs": 222.3113999999996,
+      "baselineWarmMedianMs": 0.21720000000004802,
+      "baselineSamples": [
+        {
+          "firstMs": 220.01420000000007,
+          "warmMs": 0.21720000000004802,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 6341,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 6,
+              "binder_cards": 8
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 1275,
+              "binder_cards": 4463
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 231.0050000000001,
+          "warmMs": 0.23850000000038563,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 6341,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 6,
+              "binder_cards": 8
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 1275,
+              "binder_cards": 4463
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 231.5617000000002,
+          "warmMs": 0.14980000000014115,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 6341,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 6,
+              "binder_cards": 8
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 1275,
+              "binder_cards": 4463
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 218.35220000000027,
+          "warmMs": 0.172099999999773,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 6341,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 6,
+              "binder_cards": 8
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 1275,
+              "binder_cards": 4463
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 222.3113999999996,
+          "warmMs": 0.2312000000001717,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 6341,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 6,
+              "binder_cards": 8
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 1275,
+              "binder_cards": 4463
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        }
+      ],
+      "candidateSamples": [
+        {
+          "firstMs": 234.66519999999946,
+          "warmMs": 0.23719999999957508,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 6341,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 6,
+              "binder_cards": 8
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 1275,
+              "binder_cards": 4463
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 215.83470000000034,
+          "warmMs": 0.18729999999959546,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 6341,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 6,
+              "binder_cards": 8
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 1275,
+              "binder_cards": 4463
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 231.92090000000007,
+          "warmMs": 0.15349999999943975,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 6341,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 6,
+              "binder_cards": 8
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 1275,
+              "binder_cards": 4463
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 210.89540000000034,
+          "warmMs": 0.2818999999999505,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 6341,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 6,
+              "binder_cards": 8
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 1275,
+              "binder_cards": 4463
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 226.34870000000046,
+          "warmMs": 0.34360000000015134,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 6341,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 6,
+              "binder_cards": 8
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 1275,
+              "binder_cards": 4463
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        }
+      ]
+    },
+    {
+      "cohort": "large-1702-saved-1323-owned",
+      "samples": 5,
+      "timingCohort": {
+        "binders": 2,
+        "saved": 1702,
+        "owned": 1323,
+        "multilingual": false,
+        "serverCap": 500,
+        "delayMs": 50
+      },
+      "perDataApiReadDelayMs": 50,
+      "firstCompleteFactsMedianMs": 424.07970000000023,
+      "warmCompleteFactsMedianMs": 3.564199999997072,
+      "baselineFirstMedianMs": 2192.3862,
+      "baselineWarmMedianMs": 3.624099999999089,
+      "baselineSamples": [
+        {
+          "firstMs": 2192.3862,
+          "warmMs": 5.022399999999834,
+          "firstRead": {
+            "requests": 66,
+            "bodyBytes": 1256977,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 28,
+              "binder_cards": 36
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 1323,
+              "binder_cards": 1702
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 283364,
+              "binder_cards": 973010
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 2205.7163,
+          "warmMs": 3.624099999999089,
+          "firstRead": {
+            "requests": 66,
+            "bodyBytes": 1256977,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 28,
+              "binder_cards": 36
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 1323,
+              "binder_cards": 1702
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 283364,
+              "binder_cards": 973010
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 2198.5774999999994,
+          "warmMs": 3.5524999999997817,
+          "firstRead": {
+            "requests": 66,
+            "bodyBytes": 1256977,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 28,
+              "binder_cards": 36
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 1323,
+              "binder_cards": 1702
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 283364,
+              "binder_cards": 973010
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 2185.7055999999993,
+          "warmMs": 3.715700000000652,
+          "firstRead": {
+            "requests": 66,
+            "bodyBytes": 1256977,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 28,
+              "binder_cards": 36
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 1323,
+              "binder_cards": 1702
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 283364,
+              "binder_cards": 973010
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 2168.964399999997,
+          "warmMs": 3.566100000000006,
+          "firstRead": {
+            "requests": 66,
+            "bodyBytes": 1256977,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 28,
+              "binder_cards": 36
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 1323,
+              "binder_cards": 1702
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 283364,
+              "binder_cards": 973010
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        }
+      ],
+      "candidateSamples": [
+        {
+          "firstMs": 425.59610000000066,
+          "warmMs": 3.5376000000014756,
+          "firstRead": {
+            "requests": 11,
+            "bodyBytes": 1256922,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 4,
+              "binder_cards": 5
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 1323,
+              "binder_cards": 1702
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 283340,
+              "binder_cards": 972979
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 413.84829999999965,
+          "warmMs": 3.549800000000687,
+          "firstRead": {
+            "requests": 11,
+            "bodyBytes": 1256922,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 4,
+              "binder_cards": 5
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 1323,
+              "binder_cards": 1702
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 283340,
+              "binder_cards": 972979
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 424.07970000000023,
+          "warmMs": 3.769899999999325,
+          "firstRead": {
+            "requests": 11,
+            "bodyBytes": 1256922,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 4,
+              "binder_cards": 5
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 1323,
+              "binder_cards": 1702
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 283340,
+              "binder_cards": 972979
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 414.6312999999973,
+          "warmMs": 3.564199999997072,
+          "firstRead": {
+            "requests": 11,
+            "bodyBytes": 1256922,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 4,
+              "binder_cards": 5
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 1323,
+              "binder_cards": 1702
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 283340,
+              "binder_cards": 972979
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 447.21749999999884,
+          "warmMs": 3.566000000002532,
+          "firstRead": {
+            "requests": 11,
+            "bodyBytes": 1256922,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 4,
+              "binder_cards": 5
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 1323,
+              "binder_cards": 1702
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 283340,
+              "binder_cards": 972979
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        }
+      ]
+    },
+    {
+      "cohort": "five-languages-same-collector",
+      "samples": 5,
+      "timingCohort": {
+        "binders": 5,
+        "saved": 5,
+        "owned": 5,
+        "multilingual": true,
+        "serverCap": 500,
+        "delayMs": 50
+      },
+      "perDataApiReadDelayMs": 50,
+      "firstCompleteFactsMedianMs": 222.08850000000166,
+      "warmCompleteFactsMedianMs": 0.21420000000216532,
+      "baselineFirstMedianMs": 217.66470000000118,
+      "baselineWarmMedianMs": 0.2062999999980093,
+      "baselineSamples": [
+        {
+          "firstMs": 222.8888999999981,
+          "warmMs": 0.2099000000016531,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 5451,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 5,
+              "user_card_variants": 5,
+              "binder_cards": 5
+            },
+            "tableBytes": {
+              "binders": 1515,
+              "user_card_variants": 1085,
+              "binder_cards": 2851
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 221.67990000000282,
+          "warmMs": 0.2062999999980093,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 5451,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 5,
+              "user_card_variants": 5,
+              "binder_cards": 5
+            },
+            "tableBytes": {
+              "binders": 1515,
+              "user_card_variants": 1085,
+              "binder_cards": 2851
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 217.66470000000118,
+          "warmMs": 0.17050000000017462,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 5451,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 5,
+              "user_card_variants": 5,
+              "binder_cards": 5
+            },
+            "tableBytes": {
+              "binders": 1515,
+              "user_card_variants": 1085,
+              "binder_cards": 2851
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 212.0612000000001,
+          "warmMs": 0.19830000000001746,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 5451,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 5,
+              "user_card_variants": 5,
+              "binder_cards": 5
+            },
+            "tableBytes": {
+              "binders": 1515,
+              "user_card_variants": 1085,
+              "binder_cards": 2851
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 211.35559999999896,
+          "warmMs": 0.21120000000155414,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 5451,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 5,
+              "user_card_variants": 5,
+              "binder_cards": 5
+            },
+            "tableBytes": {
+              "binders": 1515,
+              "user_card_variants": 1085,
+              "binder_cards": 2851
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        }
+      ],
+      "candidateSamples": [
+        {
+          "firstMs": 220.65539999999964,
+          "warmMs": 0.18109999999796855,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 5451,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 5,
+              "user_card_variants": 5,
+              "binder_cards": 5
+            },
+            "tableBytes": {
+              "binders": 1515,
+              "user_card_variants": 1085,
+              "binder_cards": 2851
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 222.08850000000166,
+          "warmMs": 0.29249999999956344,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 5451,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 5,
+              "user_card_variants": 5,
+              "binder_cards": 5
+            },
+            "tableBytes": {
+              "binders": 1515,
+              "user_card_variants": 1085,
+              "binder_cards": 2851
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 225.70089999999982,
+          "warmMs": 0.21420000000216532,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 5451,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 5,
+              "user_card_variants": 5,
+              "binder_cards": 5
+            },
+            "tableBytes": {
+              "binders": 1515,
+              "user_card_variants": 1085,
+              "binder_cards": 2851
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 212.16059999999925,
+          "warmMs": 0.17740000000048894,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 5451,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 5,
+              "user_card_variants": 5,
+              "binder_cards": 5
+            },
+            "tableBytes": {
+              "binders": 1515,
+              "user_card_variants": 1085,
+              "binder_cards": 2851
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 227.23389999999927,
+          "warmMs": 0.23480000000199652,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 5451,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 5,
+              "user_card_variants": 5,
+              "binder_cards": 5
+            },
+            "tableBytes": {
+              "binders": 1515,
+              "user_card_variants": 1085,
+              "binder_cards": 2851
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        }
+      ]
+    }
+  ],
+  "syntheticHostTiming": {
+    "cohort": "1702 saved /1323 owned; server cap500",
+    "samples": 5,
+    "timingCohort": {
+      "binders": 2,
+      "saved": 1702,
+      "owned": 1323,
+      "multilingual": false,
+      "serverCap": 500,
+      "delayMs": 50
+    },
+    "perDataApiReadDelayMs": 50,
+    "firstCompleteFactsMedianMs": 424.07970000000023,
+    "warmCompleteFactsMedianMs": 3.564199999997072,
+    "baselineFirstMedianMs": 2192.3862,
+    "baselineWarmMedianMs": 3.624099999999089,
+    "baselineSamples": [
+      {
+        "firstMs": 2192.3862,
+        "warmMs": 5.022399999999834,
+        "firstRead": {
+          "requests": 66,
+          "bodyBytes": 1256977,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 28,
+            "binder_cards": 36
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283364,
+            "binder_cards": 973010
+          }
+        },
+        "warmRead": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        }
+      },
+      {
+        "firstMs": 2205.7163,
+        "warmMs": 3.624099999999089,
+        "firstRead": {
+          "requests": 66,
+          "bodyBytes": 1256977,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 28,
+            "binder_cards": 36
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283364,
+            "binder_cards": 973010
+          }
+        },
+        "warmRead": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        }
+      },
+      {
+        "firstMs": 2198.5774999999994,
+        "warmMs": 3.5524999999997817,
+        "firstRead": {
+          "requests": 66,
+          "bodyBytes": 1256977,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 28,
+            "binder_cards": 36
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283364,
+            "binder_cards": 973010
+          }
+        },
+        "warmRead": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        }
+      },
+      {
+        "firstMs": 2185.7055999999993,
+        "warmMs": 3.715700000000652,
+        "firstRead": {
+          "requests": 66,
+          "bodyBytes": 1256977,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 28,
+            "binder_cards": 36
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283364,
+            "binder_cards": 973010
+          }
+        },
+        "warmRead": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        }
+      },
+      {
+        "firstMs": 2168.964399999997,
+        "warmMs": 3.566100000000006,
+        "firstRead": {
+          "requests": 66,
+          "bodyBytes": 1256977,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 28,
+            "binder_cards": 36
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283364,
+            "binder_cards": 973010
+          }
+        },
+        "warmRead": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        }
+      }
+    ],
+    "candidateSamples": [
+      {
+        "firstMs": 425.59610000000066,
+        "warmMs": 3.5376000000014756,
+        "firstRead": {
+          "requests": 11,
+          "bodyBytes": 1256922,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 4,
+            "binder_cards": 5
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283340,
+            "binder_cards": 972979
+          }
+        },
+        "warmRead": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        }
+      },
+      {
+        "firstMs": 413.84829999999965,
+        "warmMs": 3.549800000000687,
+        "firstRead": {
+          "requests": 11,
+          "bodyBytes": 1256922,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 4,
+            "binder_cards": 5
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283340,
+            "binder_cards": 972979
+          }
+        },
+        "warmRead": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        }
+      },
+      {
+        "firstMs": 424.07970000000023,
+        "warmMs": 3.769899999999325,
+        "firstRead": {
+          "requests": 11,
+          "bodyBytes": 1256922,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 4,
+            "binder_cards": 5
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283340,
+            "binder_cards": 972979
+          }
+        },
+        "warmRead": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        }
+      },
+      {
+        "firstMs": 414.6312999999973,
+        "warmMs": 3.564199999997072,
+        "firstRead": {
+          "requests": 11,
+          "bodyBytes": 1256922,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 4,
+            "binder_cards": 5
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283340,
+            "binder_cards": 972979
+          }
+        },
+        "warmRead": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        }
+      },
+      {
+        "firstMs": 447.21749999999884,
+        "warmMs": 3.566000000002532,
+        "firstRead": {
+          "requests": 11,
+          "bodyBytes": 1256922,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 4,
+            "binder_cards": 5
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283340,
+            "binder_cards": 972979
+          }
+        },
+        "warmRead": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        }
+      }
+    ],
+    "includesJavaScriptWork": true,
+    "hostedLatency": "unmeasured",
+    "budgetBypass": "complete oversized snapshot is returned but not retained",
+    "originCap": "hosted PostgREST cap is unmeasured; local config declares1000; fixture cap50 retains66 cold reads"
+  }
+}
+Home saved facts: complete bounded cache, independent source paging, owner/edit/manual/TTL/cancellation/failure isolation passed.

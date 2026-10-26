@@ -1,0 +1,425 @@
+npm notice run Stackr-native@1.0.6 test:home-retrieval
+npm notice run npm run test:home-facts && node --import tsx scripts/test-home-startup-runtime.ts
+npm notice run Stackr-native@1.0.6 test:home-facts
+npm notice run node --import tsx scripts/test-home-saved-collection.ts && node scripts/test-home-saved-cache.mjs
+Home saved collection: 1702 rows, lower caps, empty binders, early preload, later failures, foreign/duplicate/malformed rows, account switch, ABA and cancellation passed.
+{
+  "sourceRoot": "D:\\Stackr-1\\work\\collection-summary-20261025",
+  "baselineSourcePath": null,
+  "baselineGitBlob": null,
+  "environment": {
+    "node": "v24.15.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "transport": "offline actual modules; response-array JSON bytes; excludes headers, TLS, hosted DB and device rendering",
+  "reports": [
+    {
+      "cohort": "small",
+      "binders": 2,
+      "saved": 8,
+      "ownedRows": 6,
+      "unownedSaved": 2,
+      "after": {
+        "first": {
+          "requests": 6,
+          "bodyBytes": 6341,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 6,
+            "binder_cards": 8
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 1275,
+            "binder_cards": 4463
+          }
+        },
+        "immediateRepeat": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        },
+        "expired": {
+          "requests": 6,
+          "bodyBytes": 6341,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 6,
+            "binder_cards": 8
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 1275,
+            "binder_cards": 4463
+          }
+        },
+        "forced": {
+          "requests": 6,
+          "bodyBytes": 6341,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 6,
+            "binder_cards": 8
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 1275,
+            "binder_cards": 4463
+          }
+        }
+      },
+      "authCalls": {
+        "getSession": 40,
+        "getUser": 3
+      }
+    },
+    {
+      "cohort": "large-1702-saved-1323-owned",
+      "binders": 2,
+      "saved": 1702,
+      "ownedRows": 1323,
+      "unownedSaved": 379,
+      "after": {
+        "first": {
+          "requests": 66,
+          "bodyBytes": 1256977,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 28,
+            "binder_cards": 36
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283364,
+            "binder_cards": 973010
+          }
+        },
+        "immediateRepeat": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        },
+        "expired": {
+          "requests": 66,
+          "bodyBytes": 1256977,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 28,
+            "binder_cards": 36
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283364,
+            "binder_cards": 973010
+          }
+        },
+        "forced": {
+          "requests": 66,
+          "bodyBytes": 1256977,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 28,
+            "binder_cards": 36
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283364,
+            "binder_cards": 973010
+          }
+        }
+      },
+      "authCalls": {
+        "getSession": 244,
+        "getUser": 3
+      }
+    },
+    {
+      "cohort": "empty",
+      "binders": 0,
+      "saved": 0,
+      "ownedRows": 0,
+      "unownedSaved": 0,
+      "after": {
+        "first": {
+          "requests": 2,
+          "bodyBytes": 4,
+          "tableCounts": {
+            "binders": 1,
+            "user_card_variants": 1
+          },
+          "tableRows": {
+            "binders": 0,
+            "user_card_variants": 0
+          },
+          "tableBytes": {
+            "binders": 2,
+            "user_card_variants": 2
+          }
+        },
+        "immediateRepeat": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        },
+        "expired": {
+          "requests": 2,
+          "bodyBytes": 4,
+          "tableCounts": {
+            "binders": 1,
+            "user_card_variants": 1
+          },
+          "tableRows": {
+            "binders": 0,
+            "user_card_variants": 0
+          },
+          "tableBytes": {
+            "binders": 2,
+            "user_card_variants": 2
+          }
+        },
+        "forced": {
+          "requests": 2,
+          "bodyBytes": 4,
+          "tableCounts": {
+            "binders": 1,
+            "user_card_variants": 1
+          },
+          "tableRows": {
+            "binders": 0,
+            "user_card_variants": 0
+          },
+          "tableBytes": {
+            "binders": 2,
+            "user_card_variants": 2
+          }
+        }
+      },
+      "authCalls": {
+        "getSession": 25,
+        "getUser": 3
+      }
+    },
+    {
+      "cohort": "five-languages-same-collector",
+      "binders": 5,
+      "saved": 5,
+      "ownedRows": 5,
+      "unownedSaved": 0,
+      "after": {
+        "first": {
+          "requests": 6,
+          "bodyBytes": 5451,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 5,
+            "user_card_variants": 5,
+            "binder_cards": 5
+          },
+          "tableBytes": {
+            "binders": 1515,
+            "user_card_variants": 1085,
+            "binder_cards": 2851
+          }
+        },
+        "immediateRepeat": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        },
+        "expired": {
+          "requests": 6,
+          "bodyBytes": 5451,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 5,
+            "user_card_variants": 5,
+            "binder_cards": 5
+          },
+          "tableBytes": {
+            "binders": 1515,
+            "user_card_variants": 1085,
+            "binder_cards": 2851
+          }
+        },
+        "forced": {
+          "requests": 6,
+          "bodyBytes": 5451,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 5,
+            "user_card_variants": 5,
+            "binder_cards": 5
+          },
+          "tableBytes": {
+            "binders": 1515,
+            "user_card_variants": 1085,
+            "binder_cards": 2851
+          }
+        }
+      },
+      "authCalls": {
+        "getSession": 40,
+        "getUser": 3
+      }
+    }
+  ],
+  "dependency": {
+    "savedDispatchesWhileOwnershipHeld": 2
+  },
+  "syntheticHostTiming": {
+    "samples": 5,
+    "cohort": "102 saved /63 owned",
+    "perDataApiReadDelayMs": 50,
+    "firstCompleteFactsMedianMs": 339.7557999999999,
+    "warmCompleteFactsMedianMs": 0.5470000000000255,
+    "baselineFirstMedianMs": null,
+    "baselineWarmMedianMs": null,
+    "includesJavaScriptWork": true,
+    "hostedLatency": "unmeasured",
+    "budgetBypass": "complete oversized snapshot is returned but not retained"
+  }
+}
+Home saved facts: complete bounded cache, independent source paging, owner/edit/manual/TTL/cancellation/failure isolation passed.
+Home row adapter passed: real canonical/row/artwork conversion, detached aliases, embedded peers, success/failure/timeout, exact edition, abort and multibatch retry.
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+Home canonical streaming passed: real adapter ΓåÆ safe image projection ΓåÆ runtime publication, independent prices and late callback timeout/denial/retry/AΓåÆBΓåÆA/unmount guards.
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+Home pending display refresh passed: real two-card adapter/runtime retention, independent prices, completed absence, exact reference/set, denial, account, retry, timeout and unmount.
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+Home Chase denial recovery passed: real-shaped 401/403 table responses, rejections, thrown auth, post-facts denial, late callbacks and authorised retry.
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+Home progressive display passed: facts-first, controlled images, independent snapshots, optional failures/deadlines, retained estimate scope, supersession, A ΓåÆ B ΓåÆ A and unmount.
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+Home facts revision: pending prices do not block useful facts; independent price reads, one edit restart, stale-source rejection and queued/in-flight disk writes passed.
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+Home runtime startup passed: mobile local-cache preview without online confirmation, expiry/owner rejection, single bootstrap, deferred extras, cache/live precedence, account switching, late session, blur and cleanup.

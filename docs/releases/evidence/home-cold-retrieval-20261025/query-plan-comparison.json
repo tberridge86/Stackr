@@ -1,0 +1,195 @@
+{
+  "conditions": "Sequential local PGlite runs after client timing finished; one run per page budget; observed cumulative query times, not medians or production predictions.",
+  "plans": [
+    {
+      "pageSize": 50,
+      "cohorts": [
+        {
+          "name": "empty",
+          "rowsPerSource": 0,
+          "foreignRowsPerSource": 10000,
+          "sources": [
+            {
+              "name": "saved",
+              "rows": 0,
+              "pages": 0,
+              "executionMs": 0
+            },
+            {
+              "name": "owned",
+              "rows": 0,
+              "pages": 1,
+              "executionMs": 0.218,
+              "firstPageEstimatedRows": 1,
+              "firstPageActualRows": 0
+            }
+          ]
+        },
+        {
+          "name": "small",
+          "rowsPerSource": 24,
+          "foreignRowsPerSource": 10000,
+          "sources": [
+            {
+              "name": "saved",
+              "rows": 24,
+              "pages": 2,
+              "executionMs": 0.745,
+              "firstPageEstimatedRows": 12,
+              "firstPageActualRows": 24
+            },
+            {
+              "name": "owned",
+              "rows": 24,
+              "pages": 2,
+              "executionMs": 0.383,
+              "firstPageEstimatedRows": 24,
+              "firstPageActualRows": 24
+            }
+          ]
+        },
+        {
+          "name": "large",
+          "rowsPerSource": 1702,
+          "foreignRowsPerSource": 10000,
+          "sources": [
+            {
+              "name": "saved",
+              "rows": 1702,
+              "pages": 36,
+              "executionMs": 80.875,
+              "firstPageEstimatedRows": 50,
+              "firstPageActualRows": 50
+            },
+            {
+              "name": "owned",
+              "rows": 1702,
+              "pages": 36,
+              "executionMs": 58.686,
+              "firstPageEstimatedRows": 50,
+              "firstPageActualRows": 50
+            }
+          ]
+        },
+        {
+          "name": "multilingual",
+          "rowsPerSource": 250,
+          "foreignRowsPerSource": 10000,
+          "sources": [
+            {
+              "name": "saved",
+              "rows": 250,
+              "pages": 6,
+              "executionMs": 2.7860000000000005,
+              "firstPageEstimatedRows": 50,
+              "firstPageActualRows": 50
+            },
+            {
+              "name": "owned",
+              "rows": 250,
+              "pages": 6,
+              "executionMs": 2.605,
+              "firstPageEstimatedRows": 50,
+              "firstPageActualRows": 50
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pageSize": 500,
+      "cohorts": [
+        {
+          "name": "empty",
+          "rowsPerSource": 0,
+          "foreignRowsPerSource": 10000,
+          "sources": [
+            {
+              "name": "saved",
+              "rows": 0,
+              "pages": 0,
+              "executionMs": 0
+            },
+            {
+              "name": "owned",
+              "rows": 0,
+              "pages": 1,
+              "executionMs": 0.223,
+              "firstPageEstimatedRows": 1,
+              "firstPageActualRows": 0
+            }
+          ]
+        },
+        {
+          "name": "small",
+          "rowsPerSource": 24,
+          "foreignRowsPerSource": 10000,
+          "sources": [
+            {
+              "name": "saved",
+              "rows": 24,
+              "pages": 2,
+              "executionMs": 0.77,
+              "firstPageEstimatedRows": 12,
+              "firstPageActualRows": 24
+            },
+            {
+              "name": "owned",
+              "rows": 24,
+              "pages": 2,
+              "executionMs": 0.35,
+              "firstPageEstimatedRows": 24,
+              "firstPageActualRows": 24
+            }
+          ]
+        },
+        {
+          "name": "large",
+          "rowsPerSource": 1702,
+          "foreignRowsPerSource": 10000,
+          "sources": [
+            {
+              "name": "saved",
+              "rows": 1702,
+              "pages": 5,
+              "executionMs": 15.502,
+              "firstPageEstimatedRows": 500,
+              "firstPageActualRows": 500
+            },
+            {
+              "name": "owned",
+              "rows": 1702,
+              "pages": 5,
+              "executionMs": 13.978,
+              "firstPageEstimatedRows": 500,
+              "firstPageActualRows": 500
+            }
+          ]
+        },
+        {
+          "name": "multilingual",
+          "rowsPerSource": 250,
+          "foreignRowsPerSource": 10000,
+          "sources": [
+            {
+              "name": "saved",
+              "rows": 250,
+              "pages": 2,
+              "executionMs": 1.012,
+              "firstPageEstimatedRows": 125,
+              "firstPageActualRows": 250
+            },
+            {
+              "name": "owned",
+              "rows": 250,
+              "pages": 2,
+              "executionMs": 1.155,
+              "firstPageEstimatedRows": 250,
+              "firstPageActualRows": 250
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

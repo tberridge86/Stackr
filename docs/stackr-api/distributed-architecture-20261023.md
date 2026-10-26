@@ -32,12 +32,19 @@ The gateway must normalize a request before cache lookup and signed upstream
 forwarding. `STACKR_ENFORCE_UI_PAGE_LIMIT=true` enables the strict server boundary
 on both gateway and backend. Keep it off until the updated client is released:
 older installed binaries use fixed large windows and can otherwise skip records.
-New clients comply with the 50-row contract independently of that switch.
+Updated catalogue readers comply with the 50-row contract independently of that switch.
 
-This patch bounds the v1 catalogue client and legacy public asset manifest. It
-does not finish every historical direct Supabase read: ownership summaries and
-the local card index still have 500/1,000-row reads. Those require a separate
-aggregate/incremental API change with account-isolation and request-count tests.
+The combined candidate bounds the v1 catalogue client, public asset manifest,
+and the repaired ownership, Home and Binder readers to 50 rows per response.
+Complete collection totals still require multiple requests; a server aggregate
+and a scoped/incremental OCR index remain follow-up work. Local card-index storage
+chunks are not network page sizes. Other historical frontend query sites remain
+outside this patch; see `remaining-ui-query-boundaries-20261024.md` for the exact
+source audit, exclusions and required behavior-preserving follow-ups. The local
+OCR index still traverses catalogue metadata and stores image URL strings; it
+does not synchronize the binary image library. Bounded responses can increase
+request count, so representative collection benchmarks are required before
+promotion; a 50-row boundary alone does not establish a latency improvement.
 Search retains its existing first-results contract, capped at 50; a stable search
 continuation cursor is a separate change. Catalogue delta synchronization now
 reads 50 rows per page and retains its durable continuation checkpoint.
@@ -56,7 +63,7 @@ Owned-name projections request complete card facts without optional artwork.
 They share account cancellation across batches and reject an incomplete refresh
 rather than publish an incomplete owned-name set. Display callers continue to
 request artwork by default. This removes unnecessary manifests; it does not
-replace the remaining bulk ownership reads with an aggregate endpoint.
+replace complete ownership paging with an aggregate endpoint.
 
 The supplied example `cards` table is illustrative, not a replacement for
 Stackr's canonical printing/variant schema. Preserve language, set, collector
@@ -135,8 +142,10 @@ R2 egress is free, while storage and request charges still exist. No platform
 provides infinite scale: database connections, hot keys, workers and budgets are
 bounded. This change contains no live performance measurement or deployment.
 
-Local verification and remaining rollout limits are recorded in
-`distributed-architecture-validation-20261023.md`.
+The 23 October verification record remains historical evidence for its source
+in `distributed-architecture-validation-20261023.md`. Current integration targets,
+access observations and rollout limits are in `architecture-setup-20261024.md`;
+the combined PR's exact-source checks establish its current hosted CI status.
 
 Platform CI runs the architecture checks in a dedicated job, independent of the
 large legacy unit-test sequence. It checks the exact PR source commit, attempts

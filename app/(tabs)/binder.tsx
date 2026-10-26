@@ -72,6 +72,7 @@ import { isKnownAuthDenial, useAuth } from '../../components/auth-context';
 import { useStartedBinderPreload } from '../../hooks/useStartedBinderPreload';
 import { readOptionalCatalogueEnrichment } from '../../lib/optionalCatalogueEnrichment';
 import { withPersonalDataReadTimeout } from '../../lib/personalDataRead';
+import { readUiCollectionChunks } from '../../lib/uiCollectionPages';
 import { sha256Text } from '../../lib/collectionRequestHash';
 import { numericTextStyle, typeScale } from '../../lib/typography';
 import { stackrIcons } from '../../lib/stackrIcons';
@@ -811,9 +812,9 @@ type BinderSummaryRow = {
   set_id: string | null;
   language?: PokemonCardLanguage | null;
   owned: boolean | null;
-  ebay_price: number | null;
-  tcg_price: number | null;
-  cardmarket_price: number | null;
+  ebay_price?: number | null;
+  tcg_price?: number | null;
+  cardmarket_price?: number | null;
   condition?: string | null;
   owned_quantity?: number | null;
   grade_company?: string | null;
@@ -831,6 +832,8 @@ type BinderOfficialCardRow = {
 };
 
 type OwnedVariantRow = {
+  id: string;
+  user_id: string;
   card_id: string;
   set_id: string | null;
   language?: PokemonCardLanguage | null;
@@ -999,294 +1002,316 @@ export default function BinderLibraryScreen() {
 
   const fetchBinderFactsSnapshot = useCallback(async (
     data: BinderRecord[],
-    currentUserId?: string | null
+    currentUserId?: string | null,
+    signal?: AbortSignal,
   ): Promise<BinderLibraryFactsSnapshot> => {
-    const binderIds = data.map((binder) => binder.id);
+    let accountChanged = false, finished = false;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user?.id !== currentUserId) accountChanged = true;
+    });
+    const unsubscribe = () => subscription.unsubscribe();
+    signal?.addEventListener('abort', unsubscribe, { once: true });
+    try {
+      const assertCurrent = () => {
+        if (signal?.aborted || finished || accountChanged || accountIdRef.current !== currentUserId) {
+          throw Object.assign(new Error('The collection request was cancelled.'), { name: 'AbortError' });
+        }
+        if (data.some((binder) => !currentUserId || binder.user_id !== currentUserId)) {
+          throw new Error('The collection account changed. Please retry.');
+        }
+      };
+      assertCurrent();
+      const binderIds = data.map((binder) => binder.id);
 
-    if (!binderIds.length) {
-      return { counts: {}, masterSets: {}, priceInputs: [], priceKeysByBinder: {} };
-    }
+      if (!binderIds.length) {
+        return { counts: {}, masterSets: {}, priceInputs: [], priceKeysByBinder: {} };
+      }
 
-    const setIds = data.map((binder) => binder.source_set_id).filter(Boolean) as string[];
-    const setIdCandidates = [...new Set(setIds.flatMap(getSetLookupCandidates))];
-    const storedMasterEntries = await Promise.all(
-      data.map(async (binder) => {
-        const stored = await AsyncStorage.getItem(getMasterSetStorageKey(binder.id));
-        return [binder.id, stored === 'true' || binder.master_set_enabled === true] as const;
-      })
-    );
-    const nextMasterSets = Object.fromEntries(storedMasterEntries) as BinderMasterSetMap;
-    const masterSetIds = data
-      .filter((binder) => binder.source_set_id && nextMasterSets[binder.id])
-      .map((binder) => binder.source_set_id as string);
-    const masterSetIdCandidates = [...new Set(masterSetIds.flatMap(getSetLookupCandidates))];
-    const variantSetIds = [...new Set(masterSetIds)];
+      const setIds = data.map((binder) => binder.source_set_id).filter(Boolean) as string[];
+      const setIdCandidates = [...new Set(setIds.flatMap(getSetLookupCandidates))];
+      const storedMasterEntries = await Promise.all(
+        data.map(async (binder) => {
+          const stored = await AsyncStorage.getItem(getMasterSetStorageKey(binder.id));
+          return [binder.id, stored === 'true' || binder.master_set_enabled === true] as const;
+        })
+      );
+      const nextMasterSets = Object.fromEntries(storedMasterEntries) as BinderMasterSetMap;
+      const masterSetIds = data
+        .filter((binder) => binder.source_set_id && nextMasterSets[binder.id])
+        .map((binder) => binder.source_set_id as string);
+      const masterSetIdCandidates = [...new Set(masterSetIds.flatMap(getSetLookupCandidates))];
+      const variantSetIds = [...new Set(masterSetIds)];
 
-    const [
-      cardRowsResult,
-      setRowsResult,
-      canonicalSetRowsResult,
-      officialCardsResult,
-      ownedVariantsResult,
-      canonicalOfficialCardsResult,
-    ] = await Promise.all([
-      (async () => {
-        const rows: BinderSummaryRow[] = [];
-        for (let offset = 0; offset < binderIds.length; offset += 100) {
-          const ids = binderIds.slice(offset, offset + 100);
-          for (let from = 0; ; from += 1000) {
-            const result = await withPersonalDataReadTimeout((signal) => supabase.from('binder_cards')
-              .select('id, binder_id, card_id, api_card_id, card_name, set_id, language, owned, owned_quantity, condition, grade_company, grade')
-              .in('binder_id', ids).order('id', { ascending: true }).range(from, from + 999).abortSignal(signal));
-            if (result.error) throw result.error;
-            const page = (result.data ?? []) as BinderSummaryRow[];
-            if (page.some((row) => !ids.includes(row.binder_id))) throw new Error('Collection cards did not match the requested binders.');
-            rows.push(...page);
-            if (page.length < 1000) break;
+      const [
+        cardRowsResult,
+        setRowsResult,
+        canonicalSetRowsResult,
+        officialCardsResult,
+        ownedVariantsResult,
+        canonicalOfficialCardsResult,
+      ] = await Promise.all([
+        (async () => ({ data: await readUiCollectionChunks<BinderSummaryRow>(
+          binderIds,
+          (ids) => supabase.from('binder_cards')
+            .select('id, binder_id, card_id, api_card_id, card_name, set_id, language, owned, owned_quantity, condition, grade_company, grade')
+            .in('binder_id', ids),
+          (row, ids) => ids.includes(row.binder_id), { signal, assertCurrent },
+        ), error: null }))(),
+        setIdCandidates.length
+          ? readOptionalCatalogueEnrichment(async (childSignal) => ({ data: await readUiCollectionChunks<any>(
+            setIdCandidates, (ids) => supabase.from('pokemon_sets')
+              .select('id, language, printed_total, total').in('id', ids),
+            (row, ids) => ids.includes(row.id), { signal: childSignal, assertCurrent },
+          ), error: null }), signal)
+          : Promise.resolve({ data: [], error: null }),
+        (async () => {
+          const canonicalIds = [...new Set(data.flatMap((binder) => [
+            binder.catalogue_identity_status === 'resolved' ? binder.catalogue_set_id : null,
+            /^[0-9a-f-]{36}$/i.test(binder.source_set_id ?? '') ? binder.source_set_id : null,
+          ]).filter((id): id is string => Boolean(id)))];
+          const byLanguage = new Map<PokemonCardLanguage, string[]>();
+          for (const binder of data) {
+            if (!binder.source_set_id || binder.type !== 'official') continue;
+            const language = inferBinderLanguage(binder.language, binder.source_set_id);
+            byLanguage.set(language, [...new Set([...(byLanguage.get(language) ?? []), ...getSetLookupCandidates(binder.source_set_id)])]);
+          }
+          const results = await Promise.all([
+            ...(canonicalIds.length ? [readOptionalCatalogueEnrichment(async (childSignal) => ({ data: await readUiCollectionChunks<any>(
+              canonicalIds, (ids) => supabase.from('tcg_sets')
+                .select('id, source_id, language, printed_total, actual_total').in('id', ids),
+              (row, ids) => ids.includes(row.id), { signal: childSignal, assertCurrent },
+            ), error: null }), signal)] : []),
+            ...[...byLanguage].map(([language, references]) => readOptionalCatalogueEnrichment(async (childSignal) => ({ data: await readUiCollectionChunks<any>(
+              references, (ids) => supabase.from('tcg_sets')
+                .select('id, source_id, language, printed_total, actual_total').eq('language', language).in('source_id', ids),
+              (row, ids) => ids.includes(row.source_id) && row.language === language, { signal: childSignal, assertCurrent },
+            ), error: null }), signal)),
+          ]);
+          return { data: results.flatMap((result) => result?.data ?? []), error: results.find((result) => result?.error)?.error ?? null };
+        })(),
+        masterSetIdCandidates.length
+          ? readOptionalCatalogueEnrichment(async (childSignal) => ({ data: await readUiCollectionChunks<BinderOfficialCardRow>(
+            masterSetIdCandidates, (ids) => supabase.from('pokemon_cards')
+              .select('id, set_id, language, name, number, rarity, raw_data').in('set_id', ids),
+            (row, ids) => row.set_id != null && ids.includes(row.set_id), { signal: childSignal, assertCurrent },
+          ), error: null }), signal)
+          : Promise.resolve({ data: [], error: null }),
+        currentUserId && variantSetIds.length
+          ? readOptionalCatalogueEnrichment(async (childSignal) => ({ data: await readUiCollectionChunks<OwnedVariantRow>(
+            variantSetIds, (ids) => supabase.from('user_card_variants')
+              .select('id, user_id, card_id, set_id, variant').eq('user_id', currentUserId).in('set_id', ids),
+            (row, ids) => row.user_id === currentUserId && row.set_id != null && ids.includes(row.set_id),
+            { signal: childSignal, assertCurrent },
+          ), error: null }), signal)
+          : Promise.resolve({ data: [], error: null }),
+        masterSetIdCandidates.length
+          ? readOptionalCatalogueEnrichment(async (childSignal) => ({ data: await readUiCollectionChunks<any>(
+            masterSetIdCandidates, (ids) => supabase.from('tcg_cards')
+              .select('id, set_id, language, canonical_name, local_name, english_display_name, collector_number, rarity, raw_payload').in('set_id', ids),
+            (row, ids) => ids.includes(row.set_id), { signal: childSignal, assertCurrent },
+          ), error: null }), signal)
+          : Promise.resolve({ data: [], error: null }),
+      ]);
+      assertCurrent();
+
+
+      const rows = (cardRowsResult.data ?? []) as BinderSummaryRow[];
+      const canonicalOwnedRows: OwnedCardRow[] = currentUserId
+        ? await withPersonalDataReadTimeout((childSignal) => fetchOwnedCardRows({
+          isCurrent: () => !childSignal.aborted && !finished && !accountChanged && accountIdRef.current === currentUserId,
+        }), { signal })
+        : [];
+      assertCurrent();
+      if (canonicalOwnedRows.some((row) => row.user_id !== currentUserId)) throw new Error('The collection account changed. Please retry.');
+      const officialCards = [
+        ...((officialCardsResult?.data ?? []) as BinderOfficialCardRow[]),
+        ...((canonicalOfficialCardsResult?.data ?? []) as any[]).map((card): BinderOfficialCardRow => ({
+          id: card.id,
+          set_id: card.set_id ?? null,
+          language: normalizePokemonCardLanguage(card.language),
+          name: card.local_name ?? card.raw_payload?.local_name ?? card.canonical_name ?? card.english_display_name ?? null,
+          number: card.collector_number ?? card.raw_payload?.localId ?? null,
+          rarity: card.rarity ?? card.raw_payload?.rarity ?? null,
+          raw_data: card.raw_payload ?? null,
+        })),
+      ];
+      const canonicalSets = (canonicalSetRowsResult?.data ?? []) as any[];
+      const canonicalSourceIds = new Map<string, Set<string>>();
+      for (const set of canonicalSets) {
+        const key = getLanguageSetKey(set.source_id, set.language);
+        canonicalSourceIds.set(key, new Set([...(canonicalSourceIds.get(key) ?? []), set.id]));
+      }
+      const setTotals = new Map(
+        [
+          ...(setRowsResult?.data ?? []),
+          ...canonicalSets.flatMap((set) => [...new Set([set.id,
+            canonicalSourceIds.get(getLanguageSetKey(set.source_id, set.language))?.size === 1 ? set.source_id : null,
+          ].filter(Boolean))].map((id) => ({
+            id,
+            language: set.language,
+            printed_total: set.printed_total,
+            total: set.actual_total,
+          }))),
+        ].map((set) => [
+          getLanguageSetKey(set.id, set.language),
+          readStoredSetTotal(set),
+        ])
+      );
+
+      const rowsByBinder = new Map<string, BinderSummaryRow[]>();
+      const globalOwnedKeys = new Set(
+        [
+          ...rows
+            .filter((row) => row.owned)
+            .map((row) => `${getLanguageSetKey(row.set_id, row.language)}:${row.card_id}`),
+          ...canonicalOwnedRows.map((row) => `${getLanguageSetKey(row.set_id, null)}:${row.card_id}`),
+        ]
+      );
+      const cardsBySet = new Map<string, BinderOfficialCardRow[]>();
+      const officialCardKeys = new Set<string>();
+      for (const card of officialCards) {
+        if (!card.set_id) continue;
+        const key = getLanguageSetKey(card.set_id, card.language);
+        const cardKey = `${key}:${card.id}`;
+        if (officialCardKeys.has(cardKey)) continue;
+        officialCardKeys.add(cardKey);
+        const current = cardsBySet.get(key) ?? [];
+        current.push(card);
+        cardsBySet.set(key, current);
+      }
+
+      const masterVariantsAvailable = ownedVariantsResult != null && !ownedVariantsResult.error;
+      const ownedVariantRows = (masterVariantsAvailable ? ownedVariantsResult.data ?? [] : []) as OwnedVariantRow[];
+
+      const ownedVariantsByCard = new Map<string, Set<string>>();
+      for (const row of ownedVariantRows) {
+        if (!row.card_id || !row.set_id || !row.variant) continue;
+        const key = `${getLanguageSetKey(row.set_id, row.language)}:${row.card_id}`;
+        if (!ownedVariantsByCard.has(key)) ownedVariantsByCard.set(key, new Set());
+        ownedVariantsByCard.get(key)!.add(row.variant);
+      }
+
+      for (const row of rows) {
+        const current = rowsByBinder.get(row.binder_id) ?? [];
+        current.push(row);
+        rowsByBinder.set(row.binder_id, current);
+      }
+
+      const nextCounts: BinderCardCountMap = {};
+      const ownedRowsByBinder = new Map<string, BinderSummaryRow[]>();
+
+      for (const binder of data) {
+        const binderLanguage = inferBinderLanguage(binder.language, binder.source_set_id);
+        const binderSetKey = getLanguageSetKey(binder.source_set_id, binderLanguage);
+        const binderRows = rowsByBinder.get(binder.id) ?? [];
+        const ownedRows = binderRows.filter((row) =>
+          row.owned || globalOwnedKeys.has(`${getLanguageSetKey(row.set_id, row.language ?? binderLanguage)}:${row.card_id}`)
+        );
+        ownedRowsByBinder.set(binder.id, ownedRows);
+        const storedOfficialTotal = binder.source_set_id ? setTotals.get(binderSetKey) ?? null : null;
+        const knownOfficialTotal = getKnownPokemonSetTotal(binder.source_set_id, binderLanguage) ?? null;
+        const resolvedTotal = binder.catalogue_identity_status === 'resolved' && binder.catalogue_set_id
+          ? readStoredSetTotal({ total: binder.catalogue_set_total, printed_total: binder.catalogue_set_printed_total }) : null;
+        const officialTotal = resolvedTotal ?? (storedOfficialTotal && storedOfficialTotal > 0 ? storedOfficialTotal : knownOfficialTotal);
+        const isMasterSet = nextMasterSets[binder.id] === true;
+        const masterCards = binder.source_set_id ? cardsBySet.get(binderSetKey) ?? [] : [];
+        const catalogueLooksComplete = binder.type === 'official' && officialTotal != null && masterCards.length >= officialTotal;
+        let total: number | null = binder.type === 'official'
+          ? officialTotal ?? (catalogueLooksComplete ? masterCards.length : null)
+          : binderRows.length;
+        let owned = ownedRows.length;
+
+        if (isMasterSet && binder.type === 'official' && binder.source_set_id && catalogueLooksComplete && masterVariantsAvailable) {
+          const ownedRowsByCard = new Map(ownedRows.map((row) => [`${getLanguageSetKey(row.set_id, row.language ?? binderLanguage)}:${row.card_id}`, row]));
+          total = 0;
+          owned = 0;
+
+          for (const card of masterCards) {
+            const variants = getVariants(card, binder.source_set_id);
+            const cardKey = `${binderSetKey}:${card.id}`;
+            const ownedVariantCount = variants.filter((variant) => ownedVariantsByCard.get(cardKey)?.has(variant)).length;
+            total += variants.length > 1 ? variants.length : 1;
+            owned += ownedVariantCount > 0 ? ownedVariantCount : ownedRowsByCard.has(cardKey) ? 1 : 0;
           }
         }
-        return { data: rows, error: null };
-      })(),
-      setIdCandidates.length
-        ? readOptionalCatalogueEnrichment(async (signal) => await supabase
-            .from('pokemon_sets')
-            .select('id, language, printed_total, total')
-            .in('id', setIdCandidates).abortSignal(signal!))
-        : Promise.resolve({ data: [], error: null }),
-      (async () => {
-        const canonicalIds = [...new Set(data.flatMap((binder) => [
-          binder.catalogue_identity_status === 'resolved' ? binder.catalogue_set_id : null,
-          /^[0-9a-f-]{36}$/i.test(binder.source_set_id ?? '') ? binder.source_set_id : null,
-        ]).filter((id): id is string => Boolean(id)))];
-        const byLanguage = new Map<PokemonCardLanguage, string[]>();
-        for (const binder of data) {
-          if (!binder.source_set_id || binder.type !== 'official') continue;
-          const language = inferBinderLanguage(binder.language, binder.source_set_id);
-          byLanguage.set(language, [...new Set([...(byLanguage.get(language) ?? []), ...getSetLookupCandidates(binder.source_set_id)])]);
+
+        if (isMasterSet && binder.type === 'official' && (!catalogueLooksComplete || !masterVariantsAvailable)) {
+          // A partial optional catalogue cannot establish a master-finish total.
+          total = null;
         }
-        const results = await Promise.all([
-          ...(canonicalIds.length ? [readOptionalCatalogueEnrichment(async (signal) => await supabase.from('tcg_sets')
-            .select('id, source_id, language, printed_total, actual_total').in('id', canonicalIds).abortSignal(signal!))] : []),
-          ...[...byLanguage].map(([language, references]) => readOptionalCatalogueEnrichment(async (signal) => await supabase.from('tcg_sets')
-            .select('id, source_id, language, printed_total, actual_total').eq('language', language).in('source_id', references).abortSignal(signal!))),
-        ]);
-        return { data: results.flatMap((result) => result?.data ?? []), error: results.find((result) => result?.error)?.error ?? null };
-      })(),
-      masterSetIdCandidates.length
-        ? readOptionalCatalogueEnrichment(async (signal) => await supabase
-            .from('pokemon_cards')
-            .select('id, set_id, language, name, number, rarity, raw_data')
-            .in('set_id', masterSetIdCandidates).abortSignal(signal!))
-        : Promise.resolve({ data: [], error: null }),
-      currentUserId && variantSetIds.length
-        ? readOptionalCatalogueEnrichment(async (signal) => await supabase
-            .from('user_card_variants')
-            .select('card_id, set_id, variant')
-            .eq('user_id', currentUserId)
-            .in('set_id', variantSetIds).abortSignal(signal!))
-        : Promise.resolve({ data: [], error: null }),
-      masterSetIdCandidates.length
-        ? readOptionalCatalogueEnrichment(async (signal) => await supabase
-            .from('tcg_cards')
-            .select('id, set_id, language, canonical_name, local_name, english_display_name, collector_number, rarity, raw_payload')
-            .in('set_id', masterSetIdCandidates).abortSignal(signal!))
-        : Promise.resolve({ data: [], error: null }),
-    ]);
 
-    if (cardRowsResult.error) throw cardRowsResult.error;
-    if (setRowsResult?.error) console.log('Binder set totals failed:', setRowsResult.error.message);
-    if (canonicalSetRowsResult?.error) console.log('Canonical binder set totals failed:', canonicalSetRowsResult.error.message);
-    if (officialCardsResult?.error) console.log('Binder official catalogue metadata failed:', officialCardsResult.error.message);
-    if (canonicalOfficialCardsResult?.error) console.log('Canonical binder official cards failed:', canonicalOfficialCardsResult.error.message);
+        nextCounts[binder.id] = {
+          owned,
+          total,
+          totalKnown: typeof total === 'number' && total > 0,
+        };
+      }
 
-    const rows = (cardRowsResult.data ?? []) as BinderSummaryRow[];
-    const canonicalOwnedRows: OwnedCardRow[] = currentUserId
-      ? await withPersonalDataReadTimeout(() => fetchOwnedCardRows())
-      : [];
-    const officialCards = [
-      ...((officialCardsResult?.data ?? []) as BinderOfficialCardRow[]),
-      ...((canonicalOfficialCardsResult?.data ?? []) as any[]).map((card): BinderOfficialCardRow => ({
-        id: card.id,
-        set_id: card.set_id ?? null,
-        language: normalizePokemonCardLanguage(card.language),
-        name: card.local_name ?? card.raw_payload?.local_name ?? card.canonical_name ?? card.english_display_name ?? null,
-        number: card.collector_number ?? card.raw_payload?.localId ?? null,
-        rarity: card.rarity ?? card.raw_payload?.rarity ?? null,
-        raw_data: card.raw_payload ?? null,
-      })),
-    ];
-    const canonicalSets = (canonicalSetRowsResult?.data ?? []) as any[];
-    const canonicalSourceIds = new Map<string, Set<string>>();
-    for (const set of canonicalSets) {
-      const key = getLanguageSetKey(set.source_id, set.language);
-      canonicalSourceIds.set(key, new Set([...(canonicalSourceIds.get(key) ?? []), set.id]));
-    }
-    const setTotals = new Map(
-      [
-        ...(setRowsResult?.data ?? []),
-        ...canonicalSets.flatMap((set) => [...new Set([set.id,
-          canonicalSourceIds.get(getLanguageSetKey(set.source_id, set.language))?.size === 1 ? set.source_id : null,
-        ].filter(Boolean))].map((id) => ({
-          id,
-          language: set.language,
-          printed_total: set.printed_total,
-          total: set.actual_total,
-        }))),
-      ].map((set) => [
-        getLanguageSetKey(set.id, set.language),
-        readStoredSetTotal(set),
-      ])
-    );
+      const priceInputs: CollectionPriceInput[] = [];
+      const priceKeysByBinder = new Map<string, string[]>();
+      for (const binder of data) {
+        const keys: string[] = [];
+        const binderRows = rowsByBinder.get(binder.id) ?? [];
+        const normalizedBinderSetId = normalizePokemonSetId(stripSetLanguagePrefix(binder.source_set_id));
+        const rowForOwnedIdentity = (owned: OwnedCardRow) => binderRows.find((row) => (
+          row.card_id === owned.card_id
+          && normalizePokemonSetId(stripSetLanguagePrefix(row.set_id)) === normalizePokemonSetId(stripSetLanguagePrefix(owned.set_id))
+        )) ?? null;
+        const canonicalRowsForBinder = canonicalOwnedRows.filter((owned) => {
+          if (rowForOwnedIdentity(owned)) return true;
+          return binder.type === 'official'
+            && Boolean(normalizedBinderSetId)
+            && normalizePokemonSetId(stripSetLanguagePrefix(owned.set_id)) === normalizedBinderSetId;
+        });
+        const canonicalCardKeys = new Set(canonicalRowsForBinder.map((row) => (
+          `${normalizePokemonSetId(stripSetLanguagePrefix(row.set_id))}:${row.card_id}`
+        )));
 
-    const rowsByBinder = new Map<string, BinderSummaryRow[]>();
-    const globalOwnedKeys = new Set(
-      [
-        ...rows
-          .filter((row) => row.owned)
-          .map((row) => `${getLanguageSetKey(row.set_id, row.language)}:${row.card_id}`),
-        ...canonicalOwnedRows.map((row) => `${getLanguageSetKey(row.set_id, null)}:${row.card_id}`),
-      ]
-    );
-    const cardsBySet = new Map<string, BinderOfficialCardRow[]>();
-    const officialCardKeys = new Set<string>();
-    for (const card of officialCards) {
-      if (!card.set_id) continue;
-      const key = getLanguageSetKey(card.set_id, card.language);
-      const cardKey = `${key}:${card.id}`;
-      if (officialCardKeys.has(cardKey)) continue;
-      officialCardKeys.add(cardKey);
-      const current = cardsBySet.get(key) ?? [];
-      current.push(card);
-      cardsBySet.set(key, current);
-    }
-
-    const masterVariantsAvailable = ownedVariantsResult != null && !ownedVariantsResult.error;
-    if (ownedVariantsResult?.error) console.log('Failed to load binder master-set variants', ownedVariantsResult.error.message);
-    const ownedVariantRows = (masterVariantsAvailable ? ownedVariantsResult.data ?? [] : []) as OwnedVariantRow[];
-
-    const ownedVariantsByCard = new Map<string, Set<string>>();
-    for (const row of ownedVariantRows) {
-      if (!row.card_id || !row.set_id || !row.variant) continue;
-      const key = `${getLanguageSetKey(row.set_id, row.language)}:${row.card_id}`;
-      if (!ownedVariantsByCard.has(key)) ownedVariantsByCard.set(key, new Set());
-      ownedVariantsByCard.get(key)!.add(row.variant);
-    }
-
-    for (const row of rows) {
-      const current = rowsByBinder.get(row.binder_id) ?? [];
-      current.push(row);
-      rowsByBinder.set(row.binder_id, current);
-    }
-
-    const nextCounts: BinderCardCountMap = {};
-    const ownedRowsByBinder = new Map<string, BinderSummaryRow[]>();
-
-    for (const binder of data) {
-      const binderLanguage = inferBinderLanguage(binder.language, binder.source_set_id);
-      const binderSetKey = getLanguageSetKey(binder.source_set_id, binderLanguage);
-      const binderRows = rowsByBinder.get(binder.id) ?? [];
-      const ownedRows = binderRows.filter((row) =>
-        row.owned || globalOwnedKeys.has(`${getLanguageSetKey(row.set_id, row.language ?? binderLanguage)}:${row.card_id}`)
-      );
-      ownedRowsByBinder.set(binder.id, ownedRows);
-      const storedOfficialTotal = binder.source_set_id ? setTotals.get(binderSetKey) ?? null : null;
-      const knownOfficialTotal = getKnownPokemonSetTotal(binder.source_set_id, binderLanguage) ?? null;
-      const resolvedTotal = binder.catalogue_identity_status === 'resolved' && binder.catalogue_set_id
-        ? readStoredSetTotal({ total: binder.catalogue_set_total, printed_total: binder.catalogue_set_printed_total }) : null;
-      const officialTotal = resolvedTotal ?? (storedOfficialTotal && storedOfficialTotal > 0 ? storedOfficialTotal : knownOfficialTotal);
-      const isMasterSet = nextMasterSets[binder.id] === true;
-      const masterCards = binder.source_set_id ? cardsBySet.get(binderSetKey) ?? [] : [];
-      const catalogueLooksComplete = binder.type === 'official' && officialTotal != null && masterCards.length >= officialTotal;
-      let total: number | null = binder.type === 'official'
-        ? officialTotal ?? (catalogueLooksComplete ? masterCards.length : null)
-        : binderRows.length;
-      let owned = ownedRows.length;
-
-      if (isMasterSet && binder.type === 'official' && binder.source_set_id && catalogueLooksComplete && masterVariantsAvailable) {
-        const ownedRowsByCard = new Map(ownedRows.map((row) => [`${getLanguageSetKey(row.set_id, row.language ?? binderLanguage)}:${row.card_id}`, row]));
-        total = 0;
-        owned = 0;
-
-        for (const card of masterCards) {
-          const variants = getVariants(card, binder.source_set_id);
-          const cardKey = `${binderSetKey}:${card.id}`;
-          const ownedVariantCount = variants.filter((variant) => ownedVariantsByCard.get(cardKey)?.has(variant)).length;
-          total += variants.length > 1 ? variants.length : 1;
-          owned += ownedVariantCount > 0 ? ownedVariantCount : ownedRowsByCard.has(cardKey) ? 1 : 0;
+        for (const row of canonicalRowsForBinder) {
+          const metadata = rowForOwnedIdentity(row);
+          const key = `${binder.id}:owned:${row.id ?? [row.set_id, row.card_id, row.variant, row.condition, row.grade_company, row.grade].join(':')}`;
+          keys.push(key);
+          priceInputs.push({
+            key,
+            references: [metadata?.api_card_id, row.card_id, metadata?.card_name].filter((value): value is string => Boolean(value)),
+            quantity: Math.max(1, Number(row.quantity ?? 1) || 1),
+            language: metadata?.language ?? binder.language,
+            setId: metadata?.set_id ?? row.set_id ?? binder.source_set_id,
+            variantCode: row.variant,
+            productType: row.grade_company || row.grade || binder.card_mode === 'graded' ? 'graded_card' : 'raw_card',
+            condition: row.condition ?? metadata?.condition ?? binder.default_condition,
+            grader: row.grade_company ?? metadata?.grade_company ?? binder.default_grade_company,
+            grade: row.grade ?? metadata?.grade ?? binder.default_grade,
+          });
         }
+
+        for (const row of ownedRowsByBinder.get(binder.id) ?? []) {
+          const canonicalCardKey = `${normalizePokemonSetId(stripSetLanguagePrefix(row.set_id))}:${row.card_id}`;
+          if (canonicalCardKeys.has(canonicalCardKey)) continue;
+          const key = `${binder.id}:legacy:${row.id}`;
+          keys.push(key);
+          priceInputs.push({
+            key,
+            references: [row.api_card_id, row.card_id, row.card_name].filter((value): value is string => Boolean(value)),
+            quantity: Math.max(1, Number(row.owned_quantity ?? 1) || 1),
+            language: row.language ?? binder.language,
+            setId: row.set_id ?? binder.source_set_id,
+            productType: row.grade_company || row.grade || binder.card_mode === 'graded' ? 'graded_card' : 'raw_card',
+            condition: row.condition ?? binder.default_condition,
+            grader: row.grade_company ?? binder.default_grade_company,
+            grade: row.grade ?? binder.default_grade,
+          });
+        }
+        priceKeysByBinder.set(binder.id, keys);
       }
 
-      if (isMasterSet && binder.type === 'official' && (!catalogueLooksComplete || !masterVariantsAvailable)) {
-        // A partial optional catalogue cannot establish a master-finish total.
-        total = null;
-      }
-
-      nextCounts[binder.id] = {
-        owned,
-        total,
-        totalKnown: typeof total === 'number' && total > 0,
-      };
+      assertCurrent();
+      return { counts: nextCounts, masterSets: nextMasterSets, priceInputs, priceKeysByBinder: Object.fromEntries(priceKeysByBinder) };
+    } finally {
+      finished = true;
+      signal?.removeEventListener('abort', unsubscribe);
+      unsubscribe();
     }
-
-    const priceInputs: CollectionPriceInput[] = [];
-    const priceKeysByBinder = new Map<string, string[]>();
-    for (const binder of data) {
-      const keys: string[] = [];
-      const binderRows = rowsByBinder.get(binder.id) ?? [];
-      const normalizedBinderSetId = normalizePokemonSetId(stripSetLanguagePrefix(binder.source_set_id));
-      const rowForOwnedIdentity = (owned: OwnedCardRow) => binderRows.find((row) => (
-        row.card_id === owned.card_id
-        && normalizePokemonSetId(stripSetLanguagePrefix(row.set_id)) === normalizePokemonSetId(stripSetLanguagePrefix(owned.set_id))
-      )) ?? null;
-      const canonicalRowsForBinder = canonicalOwnedRows.filter((owned) => {
-        if (rowForOwnedIdentity(owned)) return true;
-        return binder.type === 'official'
-          && Boolean(normalizedBinderSetId)
-          && normalizePokemonSetId(stripSetLanguagePrefix(owned.set_id)) === normalizedBinderSetId;
-      });
-      const canonicalCardKeys = new Set(canonicalRowsForBinder.map((row) => (
-        `${normalizePokemonSetId(stripSetLanguagePrefix(row.set_id))}:${row.card_id}`
-      )));
-
-      for (const row of canonicalRowsForBinder) {
-        const metadata = rowForOwnedIdentity(row);
-        const key = `${binder.id}:owned:${row.id ?? [row.set_id, row.card_id, row.variant, row.condition, row.grade_company, row.grade].join(':')}`;
-        keys.push(key);
-        priceInputs.push({
-          key,
-          references: [metadata?.api_card_id, row.card_id, metadata?.card_name].filter((value): value is string => Boolean(value)),
-          quantity: Math.max(1, Number(row.quantity ?? 1) || 1),
-          language: metadata?.language ?? binder.language,
-          setId: metadata?.set_id ?? row.set_id ?? binder.source_set_id,
-          variantCode: row.variant,
-          productType: row.grade_company || row.grade || binder.card_mode === 'graded' ? 'graded_card' : 'raw_card',
-          condition: row.condition ?? metadata?.condition ?? binder.default_condition,
-          grader: row.grade_company ?? metadata?.grade_company ?? binder.default_grade_company,
-          grade: row.grade ?? metadata?.grade ?? binder.default_grade,
-        });
-      }
-
-      for (const row of ownedRowsByBinder.get(binder.id) ?? []) {
-        const canonicalCardKey = `${normalizePokemonSetId(stripSetLanguagePrefix(row.set_id))}:${row.card_id}`;
-        if (canonicalCardKeys.has(canonicalCardKey)) continue;
-        const key = `${binder.id}:legacy:${row.id}`;
-        keys.push(key);
-        priceInputs.push({
-          key,
-          references: [row.api_card_id, row.card_id, row.card_name].filter((value): value is string => Boolean(value)),
-          quantity: Math.max(1, Number(row.owned_quantity ?? 1) || 1),
-          language: row.language ?? binder.language,
-          setId: row.set_id ?? binder.source_set_id,
-          productType: row.grade_company || row.grade || binder.card_mode === 'graded' ? 'graded_card' : 'raw_card',
-          condition: row.condition ?? binder.default_condition,
-          grader: row.grade_company ?? binder.default_grade_company,
-          grade: row.grade ?? binder.default_grade,
-        });
-      }
-      priceKeysByBinder.set(binder.id, keys);
-    }
-
-    return { counts: nextCounts, masterSets: nextMasterSets, priceInputs, priceKeysByBinder: Object.fromEntries(priceKeysByBinder) };
   }, []);
 
   const fetchBinderValues = useCallback(async (
@@ -1348,7 +1373,9 @@ export default function BinderLibraryScreen() {
     try {
       const facts = await stackrQueryClient.fetchQuery({
         queryKey: [...queryKey, 'facts'],
-        queryFn: () => fetchBinderFactsSnapshot(data, currentUserId),
+        queryFn: ({ signal: querySignal }) => withPersonalDataReadTimeout(
+          (signal) => fetchBinderFactsSnapshot(data, currentUserId, signal), { signal: querySignal },
+        ),
         staleTime: forceRefresh ? 0 : stackrQueryTiming.hotPathStaleMs,
       });
       if (!isCurrentSummary()) return;

@@ -36,7 +36,7 @@ import {
 // ===============================
 
 const MAX_OFFER_CARDS = 6;
-const TRADE_SELECTOR_PAGE_SIZE = 1000;
+const TRADE_SELECTOR_PAGE_SIZE = 50;
 
 // ===============================
 // TYPES
@@ -174,14 +174,23 @@ const formatOwnershipLabel = (
     .join(' - ');
 };
 
-async function fetchPagedRows<T>(buildQuery: () => any): Promise<T[]> {
+async function fetchPagedRows<T>(buildQuery: () => any, assertCurrent: () => void): Promise<T[]> {
   const rows: T[] = [];
-  for (let from = 0; ; from += TRADE_SELECTOR_PAGE_SIZE) {
+  const seen = new Set<string>();
+  for (let from = 0; ;) {
+    assertCurrent();
     const to = from + TRADE_SELECTOR_PAGE_SIZE - 1;
-    const { data, error } = await buildQuery().range(from, to);
+    const { data, error } = await buildQuery().order('id', { ascending: true }).range(from, to);
+    assertCurrent();
     if (error) throw error;
-    rows.push(...((data ?? []) as T[]));
-    if (!data || data.length < TRADE_SELECTOR_PAGE_SIZE) return rows;
+    if (!Array.isArray(data) || data.length > TRADE_SELECTOR_PAGE_SIZE) throw new Error('Trade collection pagination was incomplete. Please retry.');
+    if (!data.length) return rows;
+    for (const row of data) {
+      if (typeof row.id !== 'string' || !row.id || seen.has(row.id)) throw new Error('Trade collection pagination repeated an identity. Please retry.');
+      seen.add(row.id);
+    }
+    rows.push(...(data as T[]));
+    from += data.length;
   }
 }
 
@@ -407,7 +416,7 @@ export default function NewOfferScreen() {
       const [target, receiverProfile, ownCards] = await Promise.all([
         buildTargetCard(listing.card_id, listing.set_id ?? null, listing),
         supabase.from('profile_public_directory').select('collector_name').eq('id', listing.user_id).maybeSingle(),
-        fetchMyTradeCards(userId),
+        fetchMyTradeCards(userId, generation),
       ]);
 
       if (!isCurrentIdentity(userId, generation)) return;
@@ -531,18 +540,18 @@ export default function NewOfferScreen() {
   // FETCH MY TRADE CARDS
   // ===============================
 
-  async function fetchBinderOwnedTradeSources(userId: string): Promise<OwnedTradeSource[]> {
+  async function fetchBinderOwnedTradeSources(userId: string, assertCurrent: () => void): Promise<OwnedTradeSource[]> {
     let binders: any[] = [];
     try {
       binders = await fetchPagedRows<any>(() =>
         supabase
           .from('binders')
           .select('id')
-          .eq('user_id', userId)
+          .eq('user_id', userId), assertCurrent
       );
     } catch (error: any) {
       console.log('Owned binder lookup failed:', error?.message ?? error);
-      return [];
+      throw error;
     }
 
     const binderIds = (binders ?? []).map((binder: any) => binder.id).filter(Boolean);
@@ -550,19 +559,22 @@ export default function NewOfferScreen() {
 
     let data: any[] = [];
     try {
-      data = await fetchPagedRows<any>(() =>
+      for (let start = 0; start < binderIds.length; start += TRADE_SELECTOR_PAGE_SIZE) {
+        const ids = binderIds.slice(start, start + TRADE_SELECTOR_PAGE_SIZE);
+        data.push(...await fetchPagedRows<any>(() =>
         supabase
           .from('binder_cards')
           .select(`
             id, card_id, set_id, card_name, set_name, card_number, image_url,
             owned_quantity, ebay_price, tcg_price, cardmarket_price, owned
           `)
-          .in('binder_id', binderIds)
-          .eq('owned', true)
-      );
+          .in('binder_id', ids)
+          .eq('owned', true), assertCurrent
+        ));
+      }
     } catch (error: any) {
       console.log('Owned binder card lookup failed:', error?.message ?? error);
-      return [];
+      throw error;
     }
 
     return (data ?? [])
@@ -585,11 +597,16 @@ export default function NewOfferScreen() {
       }));
   }
 
-  async function fetchMyTradeCards(userId: string): Promise<TradeCardOption[]> {
+  async function fetchMyTradeCards(userId: string, generation: number): Promise<TradeCardOption[]> {
     const ownedSources: OwnedTradeSource[] = [];
+    const assertCurrent = () => {
+      if (!isCurrentIdentity(userId, generation)) throw new Error('Your account changed. Retry the offer.');
+    };
+    assertCurrent();
 
     try {
-      const ownedRows = await fetchOwnedCardRows();
+      const ownedRows = await fetchOwnedCardRows({ isCurrent: () => isCurrentIdentity(userId, generation) });
+      assertCurrent();
       ownedSources.push(...ownedRows.map((row) => ({
         id: row.id ?? null,
         card_id: row.card_id,
@@ -603,9 +620,11 @@ export default function NewOfferScreen() {
       })));
     } catch (error: any) {
       console.log('Owned variant lookup failed:', error?.message ?? error);
+      throw error;
     }
 
-    ownedSources.push(...await fetchBinderOwnedTradeSources(userId));
+    ownedSources.push(...await fetchBinderOwnedTradeSources(userId, assertCurrent));
+    assertCurrent();
 
     const grouped = new Map<string, GroupedOwnedTradeSource>();
     const canonicalBaseKeys = new Set(

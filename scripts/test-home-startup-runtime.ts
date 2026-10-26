@@ -51,7 +51,7 @@ const source = homeSource.slice(0, renderStart) + `
     ownedCardCount, activeBinder, chartData, collectionPricingWarning, collectionValueError,
     collectionValueLoading, homeDataError, chaseLoading, chaseError, activityLoading, activityError,
     recentActivity, chaseCards, reloadChase: loadChaseCards, reloadActivity: loadRecentActivity,
-    restore: applyCachedHomeCollection, refresh: loadCollectionValue });
+    restore: applyCachedHomeCollection, refresh: loadCollectionValue, manualRefresh: refreshLivePrices, poll: pollLivePrices, changeRange: handleChartRangeChange });
 }
 `;
 const compiled = ts.transpileModule(source, { compilerOptions: {
@@ -92,7 +92,9 @@ function canonicalRowsAdapter(reads: CanonicalReads, clock: {
   vm.runInNewContext(adapterCompiled, { module, exports: module.exports, Map, Set, WeakMap,
     shouldUseStackrApi: () => !reads.legacy, stackrApiClient: {}, legacyCardMap: reads.legacy,
     resolveCachedStackrCard: (reference: string, options: RowReadOptions) => reads.resolve(reference, options.language),
-    fetchStackrAssetsForPrinting: (_client: unknown, printing: string, signal?: AbortSignal) => reads.manifest(printing, signal),
+    // The real manifest helper owns its optional deadline and partial-page recovery.
+    fetchStackrAssetsForPrinting: (_client: unknown, printing: string, signal?: AbortSignal) =>
+      optional.exports.readOptionalCatalogueEnrichment((child?: AbortSignal) => reads.manifest(printing, child), signal),
     resolveCardArtwork, buildForeignCardPresentation, copyPreferredSetArtworkReassignments,
     getPreferredSetArtworkReassignments, canonicalArtworkFacts: new WeakMap(),
     readOptionalCatalogueEnrichment: optional.exports.readOptionalCatalogueEnrichment,
@@ -106,6 +108,14 @@ vm.runInNewContext(ts.transpileModule(authSource.slice(
   authSource.indexOf('function isStaleAuthError('), authSource.indexOf('export function getCachedReadSession('),
 ), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText,
 { module: authDenialModule, exports: authDenialModule.exports });
+
+const pricingModule = { exports: {} as Record<string, any> };
+const pricingTree = ts.createSourceFile('pricing.ts', readFileSync('lib/collectionPricingApi.ts', 'utf8'), ts.ScriptTarget.Latest, true);
+const unavailableDeclaration = pricingTree.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === 'unavailableCollectionPrice');
+assert.ok(unavailableDeclaration);
+vm.runInNewContext(ts.transpileModule(unavailableDeclaration.getText(pricingTree), {
+  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+}).outputText, { exports: pricingModule.exports });
 
 async function harness(options: {
   owner?: string;
@@ -125,9 +135,15 @@ async function harness(options: {
   canonical?: CanonicalReads;
   prices?: (ids: string[], call: number, owner: string) => Promise<Map<string, any>>;
   references?: (cards: any[], budget: number) => Promise<any[]>;
+  storageWrite?: (key: string, value: string) => Promise<void>;
+  storageRemove?: (key: string) => Promise<void>;
 } = {}) {
   let owner = options.owner ?? 'owner-a', focused = true, authCalls = 0, now = 0, nextTimer = 0;
-  let cardCalls = 0, priceCalls = 0, stateWrites = 0;
+  let cardCalls = 0, priceCalls = 0, stateWrites = 0, collectionVersion = 0, valuationReads = 0, manualQueueRequests = 0;
+  const collectionListeners = new Set<() => void>();
+  const writes: { key: string; value: string }[] = [];
+  const removals: string[] = [];
+  const savedOptions: { forceRefresh?: boolean; signal?: AbortSignal; isCurrent?: () => boolean }[] = [];
   let listener: ((event: string, session: any) => void) | null = null;
   const timers = new Map<number, { due: number; action: () => void }>();
   const interactions: { action: () => void; cancelled: boolean }[] = [];
@@ -179,7 +195,7 @@ async function harness(options: {
       const [value, setValue] = React.useState(initial);
       return [value, (next: React.SetStateAction<T>) => { stateWrites++; setValue(next); }];
     } },
-    'react-native': { useWindowDimensions: () => ({ width: 390 }), InteractionManager: {
+    'react-native': { Alert: { alert() {} }, useWindowDimensions: () => ({ width: 390 }), InteractionManager: {
       runAfterInteractions(action: () => void) { const task = { action, cancelled: false }; interactions.push(task); return { cancel() { task.cancelled = true; } }; },
     } },
     'expo-router': { router: {}, useFocusEffect(callback: () => void | (() => void)) {
@@ -190,7 +206,7 @@ async function harness(options: {
       if (!key.startsWith('stackr:home-collection-cache:v2:')) return options.localSetting?.(key) ?? null;
       const id = decodeURIComponent(key.split(':').at(-1)!); reads.push(id);
       return options.cache ? options.cache(id) : snapshot(id, id === 'owner-a' ? 111 : 222);
-    }, removeItem: async () => {}, setItem: async () => {} },
+    }, removeItem: async (key: string) => { removals.push(key); await options.storageRemove?.(key); }, setItem: async (key: string, value: string) => { writes.push({ key, value }); await options.storageWrite?.(key, value); } },
     '../../components/theme-context': { useTheme: () => ({ theme: { colors: {} }, isDark: false }) },
     '../../components/app-mode-context': { useAppMode: () => ({ hydrated: false, hasChosenMode: true, premiumSellerAccess: { allowed: false } }) },
     '../../components/auth-context': { useAuth: () => ({ user: owner ? { id: owner } : null }),
@@ -204,16 +220,19 @@ async function harness(options: {
     '../../lib/binderLibraryCache': { writePersistedBinderOverview: async (id: string, value: unknown, guard: { isCurrent: () => boolean }) => {
       if (guard.isCurrent()) preloads.push({ owner: id, snapshot: value, isCurrent: guard.isCurrent });
     } },
-    '../../lib/collectionSummaryInvalidation': { getCollectionSummaryVersion: () => 0 },
+    '../../lib/collectionSummaryInvalidation': { getCollectionSummaryVersion: () => collectionVersion,
+      subscribeCollectionSummaryInvalidation: (listener: () => void) => { collectionListeners.add(listener); return () => collectionListeners.delete(listener); } },
+    '../../lib/homeSavedCollectionCache': { invalidateHomeSavedFacts() {} },
     '../../lib/binderReopenRuntime': { preloadBinderReopenViews: async (rows: unknown[], id: string, isCurrent: () => boolean, options?: { completeSavedCardsByBinder?: Map<string, unknown[]> }) => {
       if (isCurrent()) warmedViews.push({ owner: id, binders: rows, isCurrent, ...options });
     } },
     '../../lib/preparedCollectionValuation': prepared,
+    '../../lib/collectionPricingApi': pricingModule.exports,
     '../../lib/collectionPricingState': pricingState,
     '../../lib/stableCollectionPrices': stablePrices,
     '../../lib/homeSavedCollection': { savedBinderCatalogueTotal: (_binder: unknown, cards: unknown[]) => cards.length,
-      fetchHomeSavedCollection: async (id: string, callbacks?: { onBindersReady?: (rows: unknown[]) => void }) => {
-      savedReads.push(id);
+      fetchHomeSavedCollection: async (id: string, callbacks?: { onBindersReady?: (rows: unknown[]) => void; forceRefresh?: boolean; signal?: AbortSignal; isCurrent?: () => boolean }) => {
+      savedReads.push(id); savedOptions.push(callbacks ?? {});
       const result = options.saved ? await options.saved(id) : emptySaved();
       callbacks?.onBindersReady?.(result.binders);
       return result;
@@ -244,6 +263,10 @@ async function harness(options: {
       oldestSourceAt: '2026-10-12T12:00:00Z', latestSourceAt: '2026-10-12T12:00:00Z',
     } } })) } },
   };
+  const client = deps['../../lib/stackrApiV1'].stackrApiClient;
+  const readValuation = client.collectionValuation;
+  client.collectionValuation = () => { valuationReads += 1; return readValuation(); };
+  client.requestCollectionValuationRefresh = async () => { manualQueueRequests += 1; return { data: { refreshRequest: { pending: true } } }; };
   const module = { exports: {} as any };
   vm.runInNewContext(compiled, { module, exports: module.exports,
     require(name: string) {
@@ -254,7 +277,7 @@ async function harness(options: {
     },
     setTimeout: fakeSetTimeout, clearTimeout: (id: number) => timers.delete(id),
     setInterval: () => 999, clearInterval: () => {},
-    console: { log: (...args: unknown[]) => warnings.push(args) },
+    console: { log: (...args: unknown[]) => warnings.push(args) }, AbortController,
   });
   const Screen = module.exports.default;
   let root!: ReactTestRenderer;
@@ -270,7 +293,9 @@ async function harness(options: {
   await act(async () => { root = create(screen()); });
   await settle(); await tick();
   return {
-    reads, savedReads, tableReads, mintyReads, preloads, warmedViews, warnings, settle, tick,
+    reads, savedReads, tableReads, mintyReads, preloads, warmedViews, warnings, settle, tick, writes, removals, savedOptions,
+    async invalidateCollection(flush = true) { await act(async () => { collectionVersion += 1; for (const listener of collectionListeners) listener(); }); if (flush) await tick(); },
+    collectionListenerCount: () => collectionListeners.size, valuationReads: () => valuationReads, manualQueueRequests: () => manualQueueRequests,
     stateWrites: () => stateWrites,
     state: () => root.root.findByType('HomeState' as any).props,
     async auth(id: string, event = 'SIGNED_IN') { owner = id; await act(async () => { listener?.(event, id ? { user: { id }, expires_at: Date.now() / 1000 + 3600 } : null); }); await tick(); },
@@ -933,12 +958,155 @@ async function homeChaseDenialRecovery() {
   console.log('Home Chase denial recovery passed: real-shaped 401/403 table responses, rejections, thrown auth, post-facts denial, late callbacks and authorised retry.');
 }
 
+async function homeFactsRevisionAndPersistence() {
+  const facts = (): ReturnType<typeof emptySaved> => ({ ...emptySaved(), ownedRows: [{
+    id: 'owned-facts', user_id: 'owner-a', card_id: 'en:synthetic', set_id: 'en:synthetic-set',
+    variant: 'normal', quantity: 2, condition: 'Near Mint', grade_company: '', grade: '',
+  }] });
+  const valuation = (total: number) => ({ data: { state: 'ready', summary: {
+    total, currency: 'GBP', totalUnits: 2, pricedUnits: 2, freshUnits: 2, olderPriceUnits: 0, unpricedUnits: 0,
+    distinctPriceIdentities: 1, pending: 0, retrying: 0, unsupported: 0, unresolved: 0, noProviderQuote: 0,
+    binders: [], calculatedAt: '2026-10-25T12:00:00Z', oldestSourceAt: '2026-10-25T12:00:00Z', latestSourceAt: '2026-10-25T12:00:00Z',
+  } } });
+  const prices = deferred<any>();
+  const pending = await harness({ cache: async () => null, saved: async () => facts(), valuation: () => prices.promise });
+  assert.equal(pending.state().ownedCardCount, 2, 'usable current ownership paints while prepared prices/history remain pending');
+  assert.equal(pending.state().collectionValueLoading, false);
+  assert.equal(pending.state().collectionTotal, null, 'pending prices never become zero');
+  prices.resolve(valuation(20)); await pending.settle();
+  assert.equal(pending.state().collectionTotal, 20);
+  await pending.close();
+
+  let priceReads = 0;
+  const independent = await harness({ cache: async () => null, saved: async () => facts(),
+    valuation: async () => valuation(++priceReads * 20) });
+  assert.equal(independent.state().collectionTotal, 20);
+  await act(async () => { await independent.state().refresh(); });
+  assert.equal(independent.state().collectionTotal, 40, 'facts reuse never suppresses the independent current price read');
+  const beforeEdit = independent.savedReads.length;
+  await independent.invalidateCollection();
+  assert.equal(independent.savedReads.length, beforeEdit + 1, 'a local edit starts one replacement read');
+  assert.equal(independent.state().collectionTotal, 60);
+  await independent.tick(); await independent.settle();
+  assert.equal(independent.savedReads.length, beforeEdit + 1, 'edit restart does not loop');
+  await independent.close();
+  assert.equal(independent.collectionListenerCount(), 0, 'Home edit subscription cleans up on unmount');
+
+  const wiring = await harness();
+  const initialValuations = wiring.valuationReads();
+  await act(async () => { await wiring.state().manualRefresh(); }); await wiring.settle();
+  assert.equal(wiring.savedOptions.at(-1)?.forceRefresh, true, 'explicit user refresh bypasses facts and lower binder caches');
+  assert.equal(wiring.manualQueueRequests(), 1, 'only the existing explicit user action queues provider review');
+  const beforePoll = wiring.valuationReads();
+  await act(async () => { await wiring.state().poll(); });
+  assert.equal(wiring.savedOptions.at(-1)?.forceRefresh, undefined, 'stored polling uses normal bounded facts freshness');
+  assert.equal(wiring.valuationReads(), beforePoll + 1, 'poll still reads current stored valuation');
+  await act(async () => { wiring.state().changeRange('30D'); }); await wiring.settle();
+  assert.ok(wiring.valuationReads() > initialValuations + 1, 'range change reads its own price/history scope');
+  assert.equal(wiring.manualQueueRequests(), 1, 'poll and range changes do not queue provider jobs');
+  await wiring.close();
+
+  const blurredEdit = await harness({ cache: async () => null });
+  const savedBeforeBlur = blurredEdit.savedReads.length, priceBeforeBlur = blurredEdit.valuationReads();
+  await blurredEdit.invalidateCollection(false);
+  await blurredEdit.focus(false);
+  await blurredEdit.tick(); await blurredEdit.settle();
+  assert.equal(blurredEdit.savedReads.length, savedBeforeBlur, 'a queued edit cannot restart private facts after blur');
+  assert.equal(blurredEdit.valuationReads(), priceBeforeBlur, 'a queued edit cannot restart private prices after blur');
+  await blurredEdit.focus(true); await blurredEdit.tick(); await blurredEdit.settle();
+  assert.equal(blurredEdit.savedReads.length, savedBeforeBlur + 1, 'return focus makes one current read');
+  await blurredEdit.close();
+
+  const quickRefocus = await harness({ cache: async () => null });
+  const quickBefore = quickRefocus.savedReads.length;
+  await quickRefocus.invalidateCollection(false);
+  await quickRefocus.focus(false);
+  await quickRefocus.focus(true); await quickRefocus.settle();
+  assert.equal(quickRefocus.savedReads.length, quickBefore + 1);
+  await quickRefocus.tick(); await quickRefocus.settle();
+  assert.equal(quickRefocus.savedReads.length, quickBefore + 1, 'old focus edit timer cannot duplicate a refocused read');
+  await quickRefocus.close();
+
+  const oldFacts = deferred<ReturnType<typeof emptySaved>>();
+  let factReads = 0;
+  const edited = await harness({ cache: async () => null, saved: async () => ++factReads === 1 ? oldFacts.promise : facts(),
+    valuation: async () => valuation(30) });
+  await edited.invalidateCollection();
+  assert.equal(edited.state().ownedCardCount, 2);
+  oldFacts.resolve({ ...emptySaved(), ownedRows: [{ ...facts().ownedRows[0], quantity: 99 }] }); await edited.settle();
+  assert.equal(edited.state().ownedCardCount, 2, 'an obsolete saved read cannot overwrite the current edit generation');
+  assert.equal(edited.savedReads.length, 2);
+  await edited.close();
+
+  let latestQuantity = 2;
+  const updatingResponse = valuation(20);
+  (updatingResponse.data as any).state = 'updating';
+  (updatingResponse.data as any).refreshRequest = { requestedAt: '2026-10-25T12:00:00Z', completedAt: null, pending: true };
+  (updatingResponse.data.summary as any).refresh = { accepted: 1, alreadyPending: 0, unsupported: 0, unresolved: 0, blocked: 0 };
+  const updating = await harness({ cache: async () => null, saved: async () => {
+    const value = facts(); value.ownedRows[0].quantity = latestQuantity; return value;
+  }, valuation: async () => updatingResponse });
+  latestQuantity = 6;
+  await updating.invalidateCollection();
+  assert.equal(updating.state().ownedCardCount, 2, 'updating response retains its own previous complete quantities');
+  assert.equal(updating.state().collectionPricingSummary.totalUnits, 2, 'previous valuation and denominator remain coherent');
+  assert.match(updating.state().collectionPricingWarning, /previous complete valuation and its quantities/);
+  assert.match(updating.state().collectionPricingWarning, /Refresh review/, 'refresh report cannot conceal the previous-generation warning');
+  await updating.settle();
+  assert.equal(JSON.parse(updating.writes.at(-1)!.value).snapshot.preparedState, 'updating');
+  await updating.close();
+
+  const heldAuth = deferred<any>();
+  const queued = await harness({ cache: async () => null, authRead: async (call, owner) => call === 5 ? heldAuth.promise
+    : { data: { user: { id: owner } }, error: null } });
+  assert.equal(queued.writes.length, 0, 'old save is held at its post-queue auth check');
+  await queued.invalidateCollection();
+  heldAuth.resolve({ data: { user: { id: 'owner-a' } }, error: null }); await queued.settle();
+  const cacheWrites = queued.writes.filter(write => write.key.startsWith('stackr:home-collection-cache:'));
+  assert.equal(cacheWrites.length, 1);
+  assert.equal(JSON.parse(cacheWrites[0].value).snapshot.sourceRevision, 1, 'a save superseded during auth cannot persist revision zero');
+  await queued.close();
+
+  const heldWrite = deferred<void>();
+  let writeCalls = 0;
+  const late = await harness({ cache: async () => null, storageWrite: async key => {
+    if (key.startsWith('stackr:home-collection-cache:') && ++writeCalls === 1) await heldWrite.promise;
+  } });
+  await late.invalidateCollection();
+  heldWrite.resolve(); await late.settle();
+  assert.ok(late.removals.includes(homeCache.getHomeCollectionCacheKey('owner-a')), 'an in-progress obsolete write is removed before the next queued generation');
+  assert.equal(JSON.parse(late.writes.at(-1)!.value).snapshot.sourceRevision, 1);
+  await late.close();
+  const sharedStorage = new Map<string, string>(), oldMountWrite = deferred<void>();
+  const oldMount = await harness({ cache: async () => null, saved: async () => facts(), valuation: async () => valuation(20),
+    storageWrite: async (key, value) => { await oldMountWrite.promise; sharedStorage.set(key, value); },
+    storageRemove: async key => { sharedStorage.delete(key); },
+  });
+  assert.equal(oldMount.writes.length, 1);
+  await oldMount.close();
+  const newMount = await harness({ cache: async () => null, saved: async () => facts(), valuation: async () => valuation(40),
+    storageWrite: async (key, value) => { sharedStorage.set(key, value); },
+    storageRemove: async key => { sharedStorage.delete(key); },
+  });
+  assert.equal(newMount.state().collectionTotal, 40, 'queued persistence cannot delay a new mount UI');
+  assert.equal(newMount.writes.length, 0, 'owner queue serializes disk writes across mounts');
+  oldMountWrite.resolve(); await oldMount.settle(); await newMount.settle();
+  const latest = sharedStorage.get(homeCache.getHomeCollectionCacheKey('owner-a'));
+  assert.ok(latest);
+  assert.equal(JSON.parse(latest).snapshot.collectionTotal, 40, 'old cleanup cannot delete or overwrite the new mount snapshot');
+  await oldMount.settle(); assert.equal(sharedStorage.get(homeCache.getHomeCollectionCacheKey('owner-a')), latest);
+  await newMount.close();
+
+  console.log('Home facts revision: pending prices do not block useful facts; independent price reads, one edit restart, stale-source rejection and queued/in-flight disk writes passed.');
+}
+
 async function main() {
   await adapterFactsStreaming();
   await homeCanonicalFactsStreaming();
   await homePendingDisplayRefresh();
   await homeChaseDenialRecovery();
   await homeDisplayRecovery();
+  if (!baselineRef) await homeFactsRevisionAndPersistence();
   const savedCustom = async (): Promise<ReturnType<typeof emptySaved>> => ({ ...emptySaved(), binders: [{
     id: '00000000-0000-4000-8000-000000000001', user_id: 'owner-a', name: 'Saved custom binder',
     color: '#000', type: 'custom', is_public: false, source_set_id: null, created_at: '2026-10-12T12:00:00Z',

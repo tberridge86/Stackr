@@ -48,7 +48,6 @@ on:
   push:
     branches: [main]
     paths:
-      - '.github/workflows/complete-japanese-catalogue-images.yml'
       - 'scripts/catalogue-ingest.ts'
       - 'scripts/catalogue-ingestion/pokemonCardJpAdapter.ts'
       - 'scripts/catalogue-ingestion/pokedataJapaneseImageAdapter.ts'
@@ -503,13 +502,14 @@ jobs:
           npm ci
           npm ci --prefix backend
       - name: Drain bounded resumable Japanese mirror ranges
-        shell: bash
         env:
+          STACKR_CATALOGUE_STORAGE_PROVIDER: r2
           STACKR_R2_ENDPOINT: ${{ vars.STACKR_R2_ENDPOINT }}
           STACKR_R2_BUCKET: ${{ vars.STACKR_R2_BUCKET }}
           STACKR_R2_PUBLIC_BASE_URL: ${{ vars.STACKR_R2_PUBLIC_BASE_URL }}
           STACKR_R2_ACCESS_KEY_ID: ${{ secrets.STACKR_R2_ACCESS_KEY_ID }}
           STACKR_R2_SECRET_ACCESS_KEY: ${{ secrets.STACKR_R2_SECRET_ACCESS_KEY }}
+        shell: bash
         run: |
           set -euo pipefail
           mkdir -p reports/catalogue/japanese
@@ -686,15 +686,16 @@ jobs:
           jq -e '.ok == true' reports/catalogue/japanese/official-ingest-summary.json >/dev/null
 
       - name: Complete explicit Japanese image aliases and missing derivatives
-        id: completion
-        continue-on-error: true
-        shell: bash
         env:
+          STACKR_CATALOGUE_STORAGE_PROVIDER: r2
           STACKR_R2_ENDPOINT: ${{ vars.STACKR_R2_ENDPOINT }}
           STACKR_R2_BUCKET: ${{ vars.STACKR_R2_BUCKET }}
           STACKR_R2_PUBLIC_BASE_URL: ${{ vars.STACKR_R2_PUBLIC_BASE_URL }}
           STACKR_R2_ACCESS_KEY_ID: ${{ secrets.STACKR_R2_ACCESS_KEY_ID }}
           STACKR_R2_SECRET_ACCESS_KEY: ${{ secrets.STACKR_R2_SECRET_ACCESS_KEY }}
+        id: completion
+        continue-on-error: true
+        shell: bash
         run: |
           set -euo pipefail
           mkdir -p reports/catalogue/japanese

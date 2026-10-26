@@ -1,0 +1,349 @@
+{
+  "task": "home-retrieval-20261025",
+  "observedAt": "2026-10-25T18:19:26.996Z",
+  "repository": "tberridge86/Stackr",
+  "source": {
+    "integrationPR": 439,
+    "integrationBranch": "codex/architecture-integration-20261024",
+    "previousRemoteHead": "f1ffcb499c39fdd7642d8d80d67829691a6e94ba",
+    "currentMain": "6dfe188166df76b41d44801ab66970b0a3881ae5",
+    "mergeBase": "8445e60278fccdf0601e1c7cad68a7e038c8a603",
+    "reportedPrBaseSha": "7e22cee8d94f2904c3c2cfcf2c0e28da74eabdcc",
+    "baseShaCaveat": "PR payload base SHA is historical; branch/main and compare were checked independently.",
+    "localPath": "D:/Stackr-1/work/collection-summary-20261025",
+    "localProfileCandidate": "c202394707e2cdbefc66ea5888eed702c389a204",
+    "localReconciledBaseline": "6ab9f7b7a9da759fbd84130f3ee0ba8e916de4c0",
+    "preservedMainFiles": [
+      {
+        "path": ".github/workflows/catalogue-ingestion-ci.yml",
+        "sha": "077b0575eb061537d151d05015584793588741b3"
+      },
+      {
+        "path": ".github/workflows/complete-japanese-catalogue-images.yml",
+        "sha": "b31b7fe1314eebc966f50eb8dc3961212e0f4e82"
+      },
+      {
+        "path": ".github/workflows/deploy-r2-migration.yml",
+        "sha": "d47aafbd426bf61fe5c214f42f62d71fdd15514e"
+      },
+      {
+        "path": ".github/workflows/materialize-pokedata-gap-art-20260910.yml",
+        "sha": "46c1223e18b70a281551a0fb3512036a8372f653"
+      },
+      {
+        "path": ".github/workflows/platform-ci.yml",
+        "sha": "68e8ba02ac04a0e5650437de744cc0d80358a7ba"
+      },
+      {
+        "path": ".github/workflows/repair-approved-alpha-set-logos.yml",
+        "sha": "153120463c4bf63161cac448e2e33efd77aaec4f"
+      },
+      {
+        "path": "backend/lib/objectStorage.js",
+        "sha": "770ccab72ad2abea207b3bdcbff6814dcb83a229"
+      },
+      {
+        "path": "deploy/catalogue-r2-migration/Dockerfile",
+        "sha": "5cbe559789266c77e7b95c0214323ac135109871"
+      },
+      {
+        "path": "docs/stackr-api/architecture-delivery-map-20261024.md",
+        "sha": "a89a3965bd2dc39ed0fb5d6f863d96f1ceeca06b"
+      },
+      {
+        "path": "docs/stackr-api/distributed-architecture-20261023.md",
+        "sha": "9f8d51d71bf16c9ce8681a3f6a3417678a1cd6a5"
+      },
+      {
+        "path": "docs/stackr-api/r2-activation-20261024.md",
+        "sha": "c9c73a2e44dcf48c23b983ee32d53748eeeb16df"
+      },
+      {
+        "path": "docs/stackr-api/r2-catalogue-migration-20261023.md",
+        "sha": "a6bfd9a9196ce99f1ce906055079c54589a2269c"
+      },
+      {
+        "path": "docs/stackr-api/r2-release-20261024.md",
+        "sha": "4c0218c8d129ed751c9a7581318134ea34af0daf"
+      },
+      {
+        "path": "docs/stackr-api/retrieval-acceptance-20261024.md",
+        "sha": "73d66521a5f033afaaa0d3de7590cf34f0155239"
+      },
+      {
+        "path": "scripts/architecture-validation-report.mjs",
+        "sha": "037b2b030f7b3ed9c463b45037304f7e3ee12003"
+      },
+      {
+        "path": "scripts/deploy/discover-live-railway-backend.mjs",
+        "sha": "69c82f913b6dd6749ba4f1ae04f6bba071fe4116"
+      },
+      {
+        "path": "scripts/inspect-r2-bulk-run.mjs",
+        "sha": "639d74d5692553e45da0d344a030b57ab7b7702b"
+      },
+      {
+        "path": "scripts/inspect-r2-stopped-run.mjs",
+        "sha": "d506417beb88c4bfa9095743b2a38129b6446b7c"
+      },
+      {
+        "path": "scripts/lib/r2-catalogue-migration.mjs",
+        "sha": "c98e842b9d934743d9520d8ec589d325811ed724"
+      },
+      {
+        "path": "scripts/lib/r2-stopped-migration-reconciliation.mjs",
+        "sha": "a7dda29e9245b2651a025e849ab03c485e7c653e"
+      },
+      {
+        "path": "scripts/lib/retrieval-acceptance.mjs",
+        "sha": "015ac0bb529830ad78c831f63e46881db144fdc4"
+      },
+      {
+        "path": "scripts/migrate-catalogue-to-r2.mjs",
+        "sha": "4740a5d754296056e6ec99d132dde7ba8f4a804b"
+      },
+      {
+        "path": "scripts/probe-retrieval-acceptance.mjs",
+        "sha": "77758eb9778e92b4d6407e0da66a16bd474a57e8"
+      },
+      {
+        "path": "scripts/run-r2-catalogue-migration.mjs",
+        "sha": "fe291b6d0eb316a53ac7f5f7c50fabd4325cb8d7"
+      },
+      {
+        "path": "scripts/test-architecture-validation-report.mjs",
+        "sha": "c0d5fc846bfd677e6587845dc6b61e0715c1aece"
+      },
+      {
+        "path": "scripts/test-r2-bulk-run-inspection.mjs",
+        "sha": "c7cbccee8bf79be14874122274932181832b8e4e"
+      },
+      {
+        "path": "scripts/test-r2-catalogue-migration-cli.mjs",
+        "sha": "7410d8fe02199ef1986933f8ad7e87ea5ff6b493"
+      },
+      {
+        "path": "scripts/test-r2-catalogue-rollback.mjs",
+        "sha": "f6f7bf12839aeb2da6084ed6ba34faf27bdfebcc"
+      },
+      {
+        "path": "scripts/test-r2-migration-provision.mjs",
+        "sha": "1845f29e103f84cdc4fd018b471e92e6ee689584"
+      },
+      {
+        "path": "scripts/test-r2-migration-runner.mjs",
+        "sha": "2a4436230ae70c288529e34a3e647f5194a556c5"
+      },
+      {
+        "path": "scripts/test-r2-parallel-migration.mjs",
+        "sha": "1997503d028d6bd198371c3e83269f64a62e038b"
+      },
+      {
+        "path": "scripts/test-r2-stopped-migration-reconciliation.mjs",
+        "sha": "3d23b476cc39e031921e1a17b3d93bc07facd430"
+      },
+      {
+        "path": "scripts/test-r2-stopped-run-inspection.mjs",
+        "sha": "2d21cfe1d5a3572a8a1cd28d74d05dd7e932e284"
+      },
+      {
+        "path": "scripts/test-railway-live-backend-discovery.mjs",
+        "sha": "d495e66fb8a27b10b55e51e12646550ff8b98f88"
+      },
+      {
+        "path": "scripts/test-retrieval-acceptance.mjs",
+        "sha": "0edddb6cb0a94146c8d8ba213954d55032bfa6ae"
+      }
+    ],
+    "reconciliationReview": "Passed independently; all35 main inputs accounted for,28exact normalized matches and7 expected integration additions; writer test aligned with existing main staging preflight. Two duplicate environment maps in three steps resolved.",
+    "reconciliationChecks": [
+      "writer workflow guards",
+      "architecture evidence report",
+      "retrieval acceptance",
+      "R2 provision71offline guards",
+      "R2 migration core",
+      "R2 parallel migration and S3 cancellation"
+    ],
+    "reconciledRemoteBaseline": "17b5d075136ddc28e4c12134993c290719f3c595",
+    "preservedPriorHeadBranch": "codex/architecture-before-home-20261025",
+    "currentMainRechecked": "6dfe188166df76b41d44801ab66970b0a3881ae5",
+    "canonicalSourceBlobs": [
+      {
+        "path": "features/home/HubScreen.tsx",
+        "sha": "79230bf6ff34a03368c6256c7831fd9a9f0a6631"
+      },
+      {
+        "path": "lib/homeSavedCollection.ts",
+        "sha": "b34988d6a426ce26389f4a563f1b58d64b100695"
+      },
+      {
+        "path": "lib/homeSavedCollectionCache.ts",
+        "sha": "4f7ff8044f1311e4ee503f845488ad102f59dcc0"
+      },
+      {
+        "path": "lib/homeCollectionCache.ts",
+        "sha": "db83efeb1c08497fec4b4adfd903d3e9a43122ab"
+      },
+      {
+        "path": "lib/collectionSummaryInvalidation.ts",
+        "sha": "05f9f58075c81203ed8aaf106410ea8abcb9ff92"
+      },
+      {
+        "path": "package.json",
+        "sha": "600b357c9fa633449ed0c0b54cf5292e941d7eb5"
+      },
+      {
+        "path": "scripts/test-home-saved-collection.ts",
+        "sha": "5b38c59cc848ad1f071d5c08e79abd16c41e28c5"
+      },
+      {
+        "path": "scripts/test-home-saved-cache.mjs",
+        "sha": "3bf9c9dc5fd0a65c5106f9688ffdcb51080f3427"
+      },
+      {
+        "path": "scripts/test-home-startup-runtime.ts",
+        "sha": "6093184314f3e13702bee5df39ce3b22cef0ec41"
+      },
+      {
+        "path": "scripts/test-english-set-identity.ts",
+        "sha": "53b41eb49ea4b20ad51fe2f2babc1e43447c8fa1"
+      },
+      {
+        "path": "scripts/measure-home-facts-query-plans.mjs",
+        "sha": "86ac1306a970d85d1419acacbb50f8f97164feae"
+      },
+      {
+        "path": "scripts/test-gate0-dynamic-copy.ts",
+        "sha": "97d404f2f7a56a2ef52220c262cda7a0f191eefe"
+      }
+    ]
+  },
+  "live": {
+    "database": {
+      "count": 191,
+      "last": {
+        "version": "20261005205507",
+        "name": "select_latest_valid_retained_observation"
+      },
+      "profileApplied": false,
+      "dailyMoversApplied": false
+    },
+    "monitor": {
+      "run": 40215560295,
+      "job": 121235822898,
+      "completedAt": "2026-10-25T17:16:07Z",
+      "result": "success",
+      "scope": "public catalogue/runtime/gateway/CDN/commerce smoke; one publicR2image200,3414bytes; does not prove private Home or phone performance"
+    },
+    "backend": {
+      "lastSuccessfulRelease": 40090685441,
+      "source": "7c1acd409680b38d5913d8cae76df560b5d91daa",
+      "deployment": "dfc23b30-9675-4ba0-ad2b-9f1875302747",
+      "status": "latest successful workflow_dispatch backend release in fresh run listing; deployment ID from prior reviewed release logs, not freshly served-source attestation"
+    },
+    "gateway": {
+      "lastSuccessfulRelease": 39147311549,
+      "source": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
+      "workerVersion": "56f04b7f-0692-4d8f-a9ae-0963442e57b8",
+      "status": "latest successful gateway release in fresh run listing; version ID from previous release logs, not fresh traffic attestation"
+    },
+    "app": {
+      "lastSuccessfulVerificationWorkflow": 39558210992,
+      "verifyOnly": true,
+      "source": "311fc84a95de4c730b61473f891079547d1a9b6f",
+      "deviceAcceptance": false,
+      "correction": "Fresh job119082933097 logs establish VERIFY_ONLY:true; this workflow did not request a native build. The prior lastSuccessfulBuild label was incorrect.",
+      "historicalNativeReceipt": {
+        "version": "1.0.6",
+        "build": "60",
+        "easBuildId": "23565784-9fa5-4f9c-ae48-2376756891fb",
+        "source": "311fc84a95de4c730b61473f891079547d1a9b6f",
+        "fingerprint": "2c0656f260a23d3858078b1b058a8440b3301ba6",
+        "evidence": "docs/releases/build60-feedback-repairs-20261022.md",
+        "freshInstallationVerified": false
+      }
+    },
+    "freshDirectAttestation": "Unavailable from execution environment: Git DNS getaddrinfo thread failure and public health web fetch inaccessible. Not evidence of production outage."
+  },
+  "r2": {
+    "activeOperationsChanged": false,
+    "objectsPointersReceiptsChanged": false,
+    "schedulerChanged": false,
+    "mainSourcePreserved": true
+  },
+  "queryPlan": {
+    "script": "scripts/measure-home-facts-query-plans.mjs",
+    "output": "docs/releases/evidence/home-retrieval-20261025/query-plans.json",
+    "environment": "PGlite local synthetic schema/RLS with existing index shapes;10000foreign rows per source",
+    "cohorts": [
+      0,
+      24,
+      1702,
+      250
+    ],
+    "plan": "EXPLAIN ANALYZE BUFFERS FORMAT JSON, allpagesincludingemptyproof",
+    "newIndexes": [],
+    "productionPlan": false,
+    "review": "Passed after correcting offset increment to actual returned rows. Independent rerun passed."
+  },
+  "release": {
+    "clientDeployed": false,
+    "newDatabaseMigration": false,
+    "priorProfileMigrationApplied": false,
+    "priorDailyMoversMigrationApplied": false,
+    "deviceVerified": false,
+    "publicationReceipt": "PR439 body and docs/releases/home-retrieval-handoff-20261025.md in the original working checkout record exact published commit and final CI runs"
+  },
+  "measurements": {
+    "file": "docs/releases/evidence/home-retrieval-20261025/measurements.json",
+    "baselineCommit": "17b5d075136ddc28e4c12134993c290719f3c595",
+    "largeImmediateRepeat": {
+      "before": {
+        "dataApiReads": 64,
+        "jsonBodyBytes": 1256374
+      },
+      "after": {
+        "dataApiReads": 0,
+        "jsonBodyBytes": 0
+      }
+    },
+    "firstLoad": {
+      "reads": 66,
+      "jsonBodyBytes": 1256977,
+      "changed": false
+    },
+    "syntheticTiming": {
+      "samples": 5,
+      "perReadDelayMs": 50,
+      "saved": 102,
+      "owned": 63,
+      "coldMedianMs": {
+        "before": 395.1009,
+        "after": 341.139
+      },
+      "immediateWarmMedianMs": {
+        "before": 400.3364,
+        "after": 0.7992
+      },
+      "hosted": false,
+      "device": false
+    },
+    "retention": "30 second facts TTL, not maximum origin-row age; price/auth/enrichment excluded"
+  },
+  "validation": {
+    "typecheck": "PASS",
+    "lint": "PASS:0 errors,8 existing warnings",
+    "targetedLint": "PASS:0 errors,2 existing warnings",
+    "homeRetrieval": "PASS; independently rerun",
+    "profileSummary": "PASS after reconciliation/invalidation subscription",
+    "englishSetVisibility": "PASS; identity test independently rerun",
+    "queryPlans": "PASS; local PGlite only",
+    "independentReview": "Two P2 races resolved; no remaining actionable findings in Home scope",
+    "reviewFile": "docs/audits/20261010/reviewer.md",
+    "baselineHostedChecks": "evidence/home-retrieval-20261025/integration-ci-baseline.json",
+    "exactContainingCommitChecks": "https://github.com/tberridge86/Stackr/pull/439/checks",
+    "dependencyInstallation": "Local dependency reuse; hosted CI uses locked installation",
+    "commerceReleaseLock": "PASS; independently rerun after test-only assertion correction",
+    "qualificationFollowup": "evidence/home-retrieval-20261025/hosted-qualification-followup.json"
+  }
+}

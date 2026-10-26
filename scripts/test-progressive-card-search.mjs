@@ -29,11 +29,12 @@ function extract(file, name, scope) {
 }
 
 // Execute the actual adapter's control flow with a stalled image manifest.
+const allPages = extract('lib/stackrDomainAdapter.ts', 'allPages', optionalExports);
 const manifest = deferred(); let early, calls = 0, settled = false;
 const client = { search: async () => ({ data: { results: [{ type: 'card', card: { cardId: 'ja-printing', language: 'ja' } }] } }),
   assetManifest: (query) => { calls++; assert.deepEqual(query.printingIds, ['ja-printing']); return manifest.promise; } };
 const search = extract('lib/stackrDomainAdapter.ts', 'searchStackrCards', {
-  ...optionalExports,
+  ...optionalExports, allPages,
   stackrApiClient: client, shouldUseStackrApi: () => true, toStackrApiLanguage: x => x,
   UUID_PATTERN: /^[0-9a-f-]{36}$/,
   stackrCardToLegacyCard: (card, assets = []) => ({ ...card, assets }),
@@ -49,7 +50,7 @@ let activeManifests = 0;
 const stalledClient = { search: async () => ({ data: { results: Array.from({ length: 20 }, (_, i) => ({ type: 'card', card: { cardId: `card-${i}` } })) } }),
   assetManifest: (query) => { activeManifests++; assert.equal(query.printingIds.length, 20); return new Promise(() => {}); } };
 const stalledSearch = extract('lib/stackrDomainAdapter.ts', 'searchStackrCards', {
-  ...optionalExports, stackrApiClient: stalledClient, shouldUseStackrApi: () => true, toStackrApiLanguage: x => x,
+  ...optionalExports, allPages, stackrApiClient: stalledClient, shouldUseStackrApi: () => true, toStackrApiLanguage: x => x,
   UUID_PATTERN: /^[0-9a-f-]{36}$/, stackrCardToLegacyCard: card => card,
   primaryCardImageAsset: () => null, embeddedCardImageAssets: () => [],
 });

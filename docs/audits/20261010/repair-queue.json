@@ -1,5 +1,155 @@
 {
   "schemaVersion": 1,
+  "homeRetrieval20261025": {
+    "observedDate": "2026-10-25",
+    "owner": "stackr_coding",
+    "report": "docs/releases/home-retrieval-infrastructure-20261025.md",
+    "status": "implemented_locally_independently_reviewed",
+    "deployed": false,
+    "phoneAccepted": false,
+    "sourceBaseline": "17b5d075136ddc28e4c12134993c290719f3c595",
+    "entries": [
+      {
+        "id": "HOME-RETRIEVAL-001",
+        "reportAliases": [
+          "HOME-FACTS-001"
+        ],
+        "severity": "P2",
+        "cause": "Home repeats complete saved and ownership scans during immediate reloads and serializes saved paging behind ownership.",
+        "affectedFiles": [
+          "lib/homeSavedCollection.ts",
+          "lib/homeSavedCollectionCache.ts",
+          "features/home/HubScreen.tsx"
+        ],
+        "repair": "Complete owner/revision facts reuse for30seconds; parallel saved/ownership paging; no truncation or price reuse.",
+        "validation": "Actual-module empty/small/large/five-language fixtures and Home runtime tests; large repeat64DataAPIreads to0; local query plans.",
+        "delivery": "draft_candidate_not_deployed"
+      },
+      {
+        "id": "HOME-CACHE-FOCUS-001",
+        "reportGroup": "HOME-FACTS-002",
+        "severity": "P2",
+        "cause": "Deferred edit reload survives blur/refocus.",
+        "affectedFiles": [
+          "features/home/HubScreen.tsx",
+          "scripts/test-home-startup-runtime.ts"
+        ],
+        "repair": "Capture and verify focus/account/session/source generations.",
+        "validation": "Independent actual Home blur and rapidrefocus regressions pass.",
+        "delivery": "draft_candidate_not_deployed"
+      },
+      {
+        "id": "HOME-CACHE-WRITE-002",
+        "reportGroup": "HOME-FACTS-002",
+        "severity": "P2",
+        "cause": "An obsolete unmounted screen cache cleanup can delete a newer saved snapshot.",
+        "affectedFiles": [
+          "features/home/HubScreen.tsx",
+          "lib/homeCollectionCache.ts",
+          "scripts/test-home-startup-runtime.ts"
+        ],
+        "repair": "Bounded owner-wide write/cleanup queue across mounts.",
+        "validation": "Independent heldoldwrite→unmount→new40→oldcompletion keepsnew40 regression passes.",
+        "delivery": "draft_candidate_not_deployed"
+      }
+    ],
+    "remaining": [
+      "Exact-source hosted CI and release acceptance",
+      "Separate earlier Profile migration rollout with approval",
+      "Phone cold/warm/auth/price measurements",
+      "Public catalogue cache and hosted query-plan investigation",
+      "Job reliability, monitoring and recovery queued"
+    ]
+  },
+  "build60FeedbackSweep": {
+    "observedDate": "2026-10-22",
+    "workingDirectory": "D:/Stackr-1/.tmp-build60-20261022/repair",
+    "branch": "repair/build60-feedback-20261022",
+    "sourceRevision": "2172db553ef8cc717ac4a65872a7be163243ffdf",
+    "localSnapshotBase": "bdad4ea26e4f8f7bf83fe3e108ca2e6cbd01c4e5",
+    "report": "docs/releases/build60-feedback-repairs-20261022.md",
+    "readback": "docs/releases/build60-retrieval-readback-20261022.json",
+    "specialistEvidence": "docs/audits/20261022",
+    "status": "local_repairs_tested_and_reviewed_delivery_pending",
+    "fullFeedbackSuite": "passed",
+    "installedPhoneVerified": false,
+    "liveMutationPerformed": false,
+    "previousQueueEntriesPreserved": true,
+    "entries": [
+      {
+        "id": "BUILD60-RETRIEVAL-001",
+        "owner": "stackr_coding",
+        "severity": "P1",
+        "cause": "Public catalogue requests blocked on pending device storage.",
+        "affectedFiles": [
+          "lib/stackrApiV1.ts"
+        ],
+        "status": "implemented_locally_reviewed",
+        "validation": "Full client runtime public/private/storage/abort tests pass.",
+        "delivery": "not_deployed"
+      },
+      {
+        "id": "BUILD60-RETRIEVAL-002",
+        "owner": "stackr_coding",
+        "severity": "P1",
+        "cause": "Pending card promise never expired; Retry reused stalled request.",
+        "affectedFiles": [
+          "lib/stackrDomainAdapter.ts",
+          "lib/stackrApiV1.ts"
+        ],
+        "status": "implemented_locally_reviewed",
+        "validation": "Deadline, transport abort, retry, dedup and late-result runtime checks pass.",
+        "delivery": "not_deployed"
+      },
+      {
+        "id": "BUILD60-RETRIEVAL-003",
+        "owner": "stackr_coding",
+        "severity": "P1",
+        "cause": "Every canonical-card error triggered fallback search, hiding retrieval failure.",
+        "affectedFiles": [
+          "lib/stackrDomainAdapter.ts"
+        ],
+        "status": "implemented_locally_reviewed",
+        "validation": "Only404 falls back;401/403/429/500/503 propagate in actual module tests.",
+        "delivery": "not_deployed"
+      },
+      {
+        "id": "BUILD60-RETRIEVAL-004",
+        "owner": "stackr_backend",
+        "severity": "P1",
+        "cause": "Fallback set facts waited on optional artwork and ignored includeAssets=false.",
+        "affectedFiles": [
+          "backend/lib/stackrApiV1.js"
+        ],
+        "status": "implemented_locally_reviewed",
+        "validation": "Actual Supabase SDK fallback/version8/8 including cancellation and stalled bodies.",
+        "delivery": "not_deployed"
+      },
+      {
+        "id": "BUILD60-RETRIEVAL-005",
+        "owner": "stackr_coding",
+        "severity": "P1",
+        "cause": "Gateway rejected the new daily movers scope/ranking query.",
+        "affectedFiles": [
+          "gateway/src/routes.js",
+          "gateway/src/validation.js"
+        ],
+        "status": "implemented_locally_reviewed",
+        "validation": "Gateway56/56; independent daily handleRequest test passed.",
+        "delivery": "not_deployed; history migration also remains unapplied"
+      },
+      {
+        "id": "BUILD60-IMAGE-ORIGIN-001",
+        "owner": "stackr_artwork",
+        "severity": "P1",
+        "cause": "Exact Japanese M6-001 approved external image currently renders official503 maintenance page; manifest has no alternate.",
+        "affectedFiles": [],
+        "status": "external_origin_unavailable_no_approved_alternate",
+        "validation": "Read-only actual image and exact printing manifest; request6b7eb975-5b7d-4265-a6c1-3d1d33c35ace.",
+        "delivery": "not_restored; no publication, mirror or invented identity"
+      }
+    ]
+  },
   "updatedAt": "2026-10-18T19:33:01.184Z",
   "coordinator": "Tif / root",
   "workingDirectory": "D:/Stackr",
@@ -3253,5 +3403,47 @@
     "resourceReadings": "Owner supplied Primary Database memory/CPU/IO charts,13/60 global database connections,1/200 dedicated pooler connections,3.26GB disk usage and8GB provisioned. Shared pooler has no data. These snapshots weaken disk-full/global-connection-cap explanations; smaller PostgREST internal pool occupancy, latency and workload cause remain unknown.",
     "releaseVerification": "23/23 smoke CLI regression cases pass and independently retested; successful full gate retained; no new deployment."
   },
-  "previousCandidateRemoteBranchBefore20261018": "agent/release/tif-build55-device-repairs-20261012"
+  "previousCandidateRemoteBranchBefore20261018": "agent/release/tif-build55-device-repairs-20261012",
+  "homeColdRetrieval20261025": {
+    "observedDate": "2026-10-25",
+    "owner": "stackr_coding",
+    "status": "implemented_locally_independently_reviewed",
+    "sourceBaseline": "1134846c535a687e1afdc2e7f898ef6fd2d1606d",
+    "report": "docs/releases/home-cold-retrieval-infrastructure-20261025.md",
+    "entries": [
+      {
+        "id": "HOME-COLD-001",
+        "severity": "P2",
+        "cause": "Complete Home facts use50-row pages and require66DataAPIreads for1702saved/1323owned.",
+        "affectedFiles": [
+          "lib/homeSavedCollection.ts",
+          "lib/uiCollectionPages.ts",
+          "lib/ownership.ts"
+        ],
+        "repair": "Home-only500-row page budget; defaults/INchunks50 and total bounds unchanged; empty-page exhaustion preserves lower-cap completeness.",
+        "validation": "Actual-module full-field parity, complete counts,5languages,servercaps500/100/50/17,account/edit/manual/cancellation/failure guards; representative local query plans.",
+        "delivery": "draft_candidate_not_deployed"
+      },
+      {
+        "id": "HOME-COLD-EVIDENCE-001",
+        "severity": "P2",
+        "cause": "Initial timing benchmark compared unequal collection sizes.",
+        "affectedFiles": [
+          "scripts/test-home-saved-cache.mjs"
+        ],
+        "repair": "Shared identical timed cohorts with per-sample full-row and request-count assertions; withdraw invalid timings and regenerate receipts.",
+        "validation": "Resolved; independent all-cohort rerun and raw-log/JSON/table/hash verification pass.",
+        "delivery": "evidence_correction"
+      }
+    ],
+    "deployed": false,
+    "phoneAccepted": false,
+    "remaining": [
+      "New exact-head hostedCI",
+      "Scope-specific Profile migration and client delivery approval",
+      "Direct serving-version attestation and hosted cap/privateAPI measurement",
+      "Device acceptance",
+      "Job reliability,monitoring,recovery queued"
+    ]
+  }
 }
