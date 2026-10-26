@@ -4,7 +4,7 @@
   "implemented": true,
   "independentlyReviewed": true,
   "localTests": "passed except documented local dependency/loopback limits",
-  "hostedCi": "in_progress",
+  "hostedCi": "five_applicable_workflows_passed",
   "merged": false,
   "deployed": false,
   "sqlApplied": false,
@@ -13,12 +13,13 @@
   "authenticatedApiVerified": false,
   "installedPhoneVerified": false,
   "publicApiSpotChecks": "12/12 read-only samples passed on existing live release; not candidate acceptance",
-  "releaseGate": "held",
+  "releaseGate": "held_authenticated_acceptance_rollout_approval_phone",
   "blockingInputs": [
     "Designated QA sign-in file remains empty",
     "No exact-candidate native build or installed-phone acceptance",
     "Current gateway deployment/version and rollback prestate unattested",
     "Local exported public delivery gate blocked by DNS",
     "New scoped rollout approval required"
-  ]
+  ],
+  "reviewedCandidateReadyForScopedAcceptance": true
 }

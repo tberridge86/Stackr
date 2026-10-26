@@ -89,7 +89,8 @@
     "authenticatedHomeMeasured": false,
     "installedPhoneAccepted": false,
     "restoreDrillExecuted": false,
-    "fullLocalSupabaseReset": "skipped; pre-repository production schema not fully baselined into migrations"
+    "fullLocalSupabaseReset": "skipped; pre-repository production schema not fully baselined into migrations",
+    "localAdapterDependencyBlock": "Final hosted lint-type-unit passed test:pokedata-japanese-images with backend dependencies installed"
   },
   "authorization": {
     "earlier439Build61DoesNotAuthorizeThisRollout": true,
@@ -124,6 +125,37 @@
     "tree": "97ef784111ff97e16189359821dac55a68706096",
     "sourceTreeIdentical": true
   },
-  "hostedCi": "in_progress",
-  "releaseCandidateGate": "not_passed"
+  "hostedCi": {
+    "status": "five_applicable_workflows_passed",
+    "runs": [
+      {
+        "id": 40366614232,
+        "name": "Validate binder local-first retrieval",
+        "conclusion": "success"
+      },
+      {
+        "id": 40366614737,
+        "name": "Stackr Gateway CI",
+        "conclusion": "success"
+      },
+      {
+        "id": 40366614168,
+        "name": "Owner Pricing Identity Tests",
+        "conclusion": "success"
+      },
+      {
+        "id": 40366614245,
+        "name": "Card-first UI validation",
+        "conclusion": "success"
+      },
+      {
+        "id": 40366614116,
+        "name": "Stackr Platform CI",
+        "conclusion": "success"
+      }
+    ],
+    "platformJobsPassed": 9
+  },
+  "releaseCandidateGate": "skipped",
+  "evidenceCheckpoint": "4af0a95cd8b70df1705a006c9b45da2c94cb8a07"
 }

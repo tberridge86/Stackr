@@ -7,3 +7,5 @@ Final CI/queue facts are recorded after completed run readback in infrastructure
 ## Final d76 source and device matrix
 
 Independent review verified d76/source/tree versus8f native measurements and7b app-equivalent export, exact SQL checksums, approval holds and the entirely UNVERIFIED device matrix. One wording finding was corrected: independent mobile sections do not gate canonical publication, but backend optional enrichment can still add deadline-bounded response time. Cursor scope now explicitly distinguishes language/set/limit from loaded-row UI filters. No source issue was found. Full local Supabase bootstrap remains gated by the historical migration baseline and is now disclosed.
+
+Final hosted readback: all five workflows passed at d76f509; nine active Platform jobs passed and the separate release gate was skipped. Test-only corrections were independently reviewed. Full local Supabase reset, authenticated and phone acceptance are not claimed.

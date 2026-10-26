@@ -2,7 +2,7 @@
 
 Release source: d76f5099f1cb1811df01b3eace6532d8eaf83a59, tree 97ef784111ff97e16189359821dac55a68706096, PR #446 on codex/home-cold-payload-20261026. The PR test merge 6205020583deb6e19a8b1d76e9b0e1bfb2af80a3 has the identical tree. This documentation-only evidence branch is not an app build source or deployment authorization. Existing dirty checkout changes and active R2 work were preserved.
 
-Final hosted CI: IN PROGRESS. See infrastructure-priorities-ci-20261026.json for completed readback when available. Independent substantive implementation, account-boundary, SQL and fixture reviews passed. The candidate is unmerged and undeployed; authenticated and installed-phone acceptance are blocked.
+Final hosted CI: all five applicable workflows passed on d76f509. All nine active Platform jobs passed; the separate release-candidate gate and binder API canary were skipped. Full local Supabase reset remains gated by the historical schema baseline. Exact runs, steps and artifacts are in infrastructure-priorities-ci-20261026.json. Independent substantive implementation, account-boundary, SQL and fixture reviews passed. The candidate is unmerged and undeployed; authenticated and installed-phone acceptance are blocked.
 
 ## Completed work
 
@@ -75,7 +75,7 @@ Production dependency audit reports contain19 high package rows in the app tree 
 
 ## Next steps
 
-1. Complete final CI, establish designated QA baseline, obtain scope-specific rollout approval, then verify the exact installed app. Existing PR439/Build61 approval does not authorize this release.
+1. Establish designated QA baseline, obtain scope-specific rollout approval, then verify the exact installed app. Existing PR439/Build61 approval does not authorize this release. Final CI, including the adapter test blocked locally by missing sharp, has passed.
 2. Measure Home's actual critical path and prepared valuation under matching authenticated conditions.
 3. Rehearse a full isolated database/object restore, sign-in and account/private-media boundaries; qualify the concrete Auth setting and backend dependency patches.
 4. Confirm one live scheduler owner, durable claims, retry exhaustion and failed-job handling; repair monitor cadence and prove alert delivery.
