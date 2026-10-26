@@ -1,0 +1,160 @@
+PASS complete snapshots reopen from memory and persisted storage without any network loader
+PASS expired network TTL does not erase a last-complete snapshot; hard retention limit still applies
+PASS unversioned or mixed-version refreshes retain the complete saved owner view
+PASS partial, corrupt, wrong-owner, wrong-language and wrong-set refreshes never replace complete data
+PASS account, environment, binder and schema isolation is enforced on disk and memory
+PASS saved snapshot excludes credentials, arbitrary raw data, prices and controlled provider references
+PASS sign-out/invalidation prevents pending reads and old writers from restoring private data
+PASS a late disk read cannot overwrite a newer in-memory snapshot
+PASS request-cache invalidation notifies subscribers without allowing them to break normal invalidation
+PASS visible content and edit readiness are different measurements; stale rows and cancellations do not finish them
+PASS saved-preview public branding recovers while auth waits and keeps edits disabled
+PASS late saved-preview branding cannot restore an invalidated account or replace a fresh binder
+PASS saved-preview artwork recovers before live auth and never changes ownership or prices
+PASS late saved-preview artwork cannot restore an account-invalidated view
+PASS a queued saved-preview image update cannot overwrite a completed fresh model
+PASS read-only copy distinguishes saved, pending, confirmed foreign and explicit own-binder views
+PASS optional custom binder name artwork cannot hold usable card facts
+Failed to load binder showcases { status: 503, message: 'optional showcase unavailable' }
+PASS optional showcase cannot delay successful essential ownership or disable it on failure
+Failed to load binder showcases PersonalDataReadTimeoutError: Your collection is taking longer than expected to load. Please try again.
+    at evalmachine.<anonymous>:43:28
+    at Object.deadline (D:\workspace\Stackr-home-payload-20261026\scripts\test-binder-reopen.mjs:211:85)
+    at <anonymous> (D:\workspace\Stackr-home-payload-20261026\scripts\test-binder-reopen.mjs:336:43)
+    at async test (D:\workspace\Stackr-home-payload-20261026\scripts\test-binder-reopen.mjs:26:35)
+    at async <anonymous> (D:\workspace\Stackr-home-payload-20261026\scripts\test-binder-reopen.mjs:333:1)
+PASS optional showcase deadline settles independently and rejects late ignored-cancellation data
+PASS late optional showcase cannot repaint a newer retry or invalidated account
+Failed to load binder ownership { message: 'mandatory ownership unavailable' }
+Failed to load binder ownership { message: 'mandatory ownership unavailable' }
+Failed to load binder ownership { message: 'mandatory ownership unavailable' }
+PASS successful optional showcase never authorises failed mandatory ownership
+Failed to load binder showcases { status: 503 }
+PASS a failed Chase read exposes retry and successful retry permits a write without older-read erasure
+PASS a same-account full Retry overlapping placement insertion reconciles only after the write settles
+PASS actual sign-out callback rejects late placement read and mutation results
+PASS custom-card removal during pending placement invalidates the old read and reconciles after deletion
+PASS same-account Retry during custom deletion completes placement cleanup and reloads post-delete facts
+PASS confirmed custom Remove explains a concurrent placement save and works when that save settles
+PASS account invalidation during custom deletion prevents a later placement write or view restoration
+PASS confirmed placement enforces its existing limit and permits removal of a known row
+PASS new binder route loads placement independently of an old-scope pending insert
+Failed to reorder showcase Error: first update transport rejected
+    at Object.read (D:\workspace\Stackr-home-payload-20261026\scripts\test-binder-reopen.mjs:573:80)
+    at <anonymous> (D:\workspace\Stackr-home-payload-20261026\scripts\test-binder-reopen.mjs:176:89)
+    at async Promise.allSettled (index 0)
+    at async Object.reorderShowcase (evalmachine.<anonymous>:597:25)
+PASS reorder waits for every dispatched write after one hard rejection before unlocking and reconciling
+PASS owned cards and owner directory both recover beyond1000 rows with cross-binder ownership preserved
+PASS positive variant quantities beyond1000 matching ledger rows survive lower-cap pages
+PASS a one-row server cap continues until definitive empty while genuine zero remains valid
+PASS an exact full page requires its next empty page and readiness waits for the last source
+PASS quantity compatibility discards every partial primary row before paginating its fallback
+Failed to load binder ownership { code: 'PGRST003', message: 'Timed out acquiring a connection' }
+Failed to load binder ownership { code: '42501', message: 'permission denied' }
+Failed to load binder ownership { code: 'PGRST301', message: 'JWT expired' }
+Failed to load binder ownership { status: 403, message: 'access denied' }
+Failed to load binder ownership { code: 'XX000', message: 'unknown backend error' }
+Failed to load binder ownership {
+  code: '42703',
+  message: 'column user_card_variants.set_id does not exist'
+}
+Failed to load binder ownership {
+  code: 'PGRST204',
+  message: "Could not find the 'variant' column in the schema cache"
+}
+Failed to load binder ownership { code: 'PGRST204', message: 'quantity column query timed out' }
+PASS general, authentication and timeout variant failures cannot become compatibility quantity one
+PASS recognised PostgREST missing quantity-column evidence permits the compatibility projection
+Failed to load binder ownership { message: 'second directory page failed' }
+PASS a second-page ownership failure cannot publish partial maps or enable editing
+Failed to load binder ownership Error: Binder ownership response was incomplete. Please retry.
+    at readPages (evalmachine.<anonymous>:350:39)
+    at async savedOwnership (evalmachine.<anonymous>:372:43)
+    at async Promise.all (index 0)
+    at async withPersonalDataReadTimeout.signal (evalmachine.<anonymous>:416:47)
+    at async withPersonalDataReadTimeout (evalmachine.<anonymous>:46:16)
+    at async evalmachine.<anonymous>:312:52
+Failed to load binder ownership Error: Binder ownership pagination could not be verified. Please retry.
+    at readPages (evalmachine.<anonymous>:357:43)
+    at async savedOwnership (evalmachine.<anonymous>:372:43)
+    at async Promise.all (index 0)
+    at async withPersonalDataReadTimeout.signal (evalmachine.<anonymous>:416:47)
+    at async withPersonalDataReadTimeout (evalmachine.<anonymous>:46:16)
+    at async evalmachine.<anonymous>:312:52
+Failed to load binder ownership Error: Binder ownership pagination could not be verified. Please retry.
+    at readPages (evalmachine.<anonymous>:357:43)
+    at async savedOwnership (evalmachine.<anonymous>:372:43)
+    at async Promise.all (index 0)
+    at async withPersonalDataReadTimeout.signal (evalmachine.<anonymous>:416:47)
+    at async withPersonalDataReadTimeout (evalmachine.<anonymous>:46:16)
+    at async evalmachine.<anonymous>:312:52
+Failed to load binder ownership Error: Binder ownership pagination could not be verified. Please retry.
+    at readPages (evalmachine.<anonymous>:357:43)
+    at async savedOwnership (evalmachine.<anonymous>:372:43)
+    at async Promise.all (index 0)
+    at async withPersonalDataReadTimeout.signal (evalmachine.<anonymous>:416:47)
+    at async withPersonalDataReadTimeout (evalmachine.<anonymous>:46:16)
+    at async evalmachine.<anonymous>:312:52
+Failed to load binder ownership Error: Binder ownership pagination could not be verified. Please retry.
+    at readPages (evalmachine.<anonymous>:357:43)
+    at async savedOwnership (evalmachine.<anonymous>:372:43)
+    at async Promise.all (index 0)
+    at async withPersonalDataReadTimeout.signal (evalmachine.<anonymous>:416:47)
+    at async withPersonalDataReadTimeout (evalmachine.<anonymous>:46:16)
+    at async evalmachine.<anonymous>:312:52
+Failed to load binder ownership Error: Binder ownership pagination could not be verified. Please retry.
+    at readPages (evalmachine.<anonymous>:357:43)
+    at async savedOwnership (evalmachine.<anonymous>:372:43)
+    at async Promise.all (index 0)
+    at async withPersonalDataReadTimeout.signal (evalmachine.<anonymous>:416:47)
+    at async withPersonalDataReadTimeout (evalmachine.<anonymous>:46:16)
+    at async evalmachine.<anonymous>:312:52
+Failed to load binder ownership Error: Binder ownership response was incomplete. Please retry.
+    at readPages (evalmachine.<anonymous>:350:39)
+    at async savedOwnership (evalmachine.<anonymous>:372:43)
+    at async Promise.all (index 0)
+    at async withPersonalDataReadTimeout.signal (evalmachine.<anonymous>:416:47)
+    at async withPersonalDataReadTimeout (evalmachine.<anonymous>:46:16)
+    at async evalmachine.<anonymous>:312:52
+Failed to load binder ownership Error: Binder ownership pagination could not be verified. Please retry.
+    at readPages (evalmachine.<anonymous>:357:43)
+    at async projection (evalmachine.<anonymous>:396:48)
+    at async variantOwnership (evalmachine.<anonymous>:405:38)
+    at async Promise.all (index 1)
+    at async withPersonalDataReadTimeout.signal (evalmachine.<anonymous>:416:47)
+    at async withPersonalDataReadTimeout (evalmachine.<anonymous>:46:16)
+    at async evalmachine.<anonymous>:312:52
+PASS malformed, overlapping, foreign and oversized ownership pages fail without compatibility substitution
+Failed to load binder ownership Error: Binder ownership exceeded its safe request limit. Please retry.
+    at readPages (evalmachine.<anonymous>:344:39)
+    at async savedOwnership (evalmachine.<anonymous>:372:43)
+    at async Promise.all (index 0)
+    at async withPersonalDataReadTimeout.signal (evalmachine.<anonymous>:416:47)
+    at async withPersonalDataReadTimeout (evalmachine.<anonymous>:46:16)
+    at async evalmachine.<anonymous>:312:52
+PASS the shared ownership request budget preserves capacity and fails at1024 dispatched pages
+Failed to load binder ownership PersonalDataReadTimeoutError: Your collection is taking longer than expected to load. Please try again.
+    at evalmachine.<anonymous>:43:28
+    at Object.deadline (D:\workspace\Stackr-home-payload-20261026\scripts\test-binder-reopen.mjs:211:85)
+    at <anonymous> (D:\workspace\Stackr-home-payload-20261026\scripts\test-binder-reopen.mjs:760:49)
+    at async test (D:\workspace\Stackr-home-payload-20261026\scripts\test-binder-reopen.mjs:26:35)
+    at async <anonymous> (D:\workspace\Stackr-home-payload-20261026\scripts\test-binder-reopen.mjs:757:1)
+PASS whole-read timeout aborts the other lane and ignored abort cannot dispatch another page
+Failed to load binder ownership { message: 'directory failed' }
+PASS source failure aborts an in-flight sibling and prevents its late success from paging
+PASS actual navigation and account cancellation between ownership pages reject late ignored-abort data
+PASS actual screen renders a complete read-only saved view before auth or ownership network replies
+PASS actual screen retains saved view on refresh failure, but removes it on explicit access denial
+PASS actual screen keeps last complete catalogue rather than replacing it with 117 cards
+PASS actual screen retains the saved view when a full-count refresh has a wrong-language identity
+PASS actual screen replaces saved data only after a complete refresh and never lets late disk results win
+PASS actual screen rejects cached content after navigation or account change
+PASS actual screen stops an uncached hanging auth read, offers retry and ignores the late result
+PASS actual screen retains a read-only saved view when fresh card rows never settle
+PASS actual binder auth listener defers reload and discards a superseded account event
+PASS opening a custom binder saves its complete private rows for the next app launch
+PASS native viewability callback and committed ownership hook are wired separately
+55 reopen, failed-refresh, isolation and measurement tests passed. Not physical-device latency proof.
+PASS SQLite adapter survives a real file reopen, isolates owners, bounds retention and rolls back failed writes
+56 tests total, including file-backed SQLite reopen/rollback. Expo/iPhone execution is still unverified.

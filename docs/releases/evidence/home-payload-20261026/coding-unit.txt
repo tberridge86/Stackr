@@ -1,0 +1,1 @@
+Home saved collection: 1702 rows, lower caps, empty binders, early preload, later failures, foreign/duplicate/malformed rows, account switch, ABA and cancellation passed.

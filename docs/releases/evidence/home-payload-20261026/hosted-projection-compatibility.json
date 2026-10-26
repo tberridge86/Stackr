@@ -1,0 +1,12 @@
+{
+  "observedAt": "2026-10-26T08:59:39.915Z",
+  "project": "oakdbbzdqwurpjnoqhmu",
+  "test": "Anonymous zero-row column compatibility probe; no account row access or cap measurement",
+  "status": 200,
+  "bodyBytes": 2,
+  "emptyArray": true,
+  "elapsedMs": 810,
+  "authenticated": false,
+  "privateCapVerified": false,
+  "projection": "id,binder_id,card_id,set_id,language,api_card_id,api_set_id,card_name,card_number,image_url,set_name,set_total,slot_order,owned,owned_quantity,condition,grade_company,grade,notes,created_at"
+}

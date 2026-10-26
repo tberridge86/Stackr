@@ -3445,5 +3445,42 @@
       "Device acceptance",
       "Job reliability,monitoring,recovery queued"
     ]
+  },
+  "homePayload20261026": {
+    "observedDate": "2026-10-26",
+    "owner": "stackr_coding",
+    "sourceBaseline": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+    "report": "docs/releases/home-payload-handoff-20261026.md",
+    "status": "implemented_tested_independently_reviewed",
+    "deployed": false,
+    "phoneAccepted": false,
+    "priorRelease": {
+      "source": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+      "build": "1.0.6 (61)",
+      "internalTestFlightVerified": true,
+      "evidenceCommit": "178894a3ab0a617e9e7fe62000cd256613e19e76",
+      "note": "Earlier queue sections are historical snapshots; prior release merged and distributed, but phone acceptance remains open."
+    },
+    "entries": [
+      {
+        "id": "HOME-PAYLOAD-001",
+        "severity": "P2",
+        "cause": "Home downloads wildcard saved-card columns including prices immediately discarded and metadata unused by Home/reopen.",
+        "affectedFiles": [
+          "lib/homeSavedCollection.ts"
+        ],
+        "repair": "Explicit complete 20-field nonprice projection with bounded exact optional-column compatibility; preserve owner/paging/cache/preload contracts.",
+        "validation": "Original matched1702saved/1323owned fixture1256922→1080420bytes,11readsunchanged; original24 and populated30 columns separately measured; full field/snapshot/account/cancellation/recovery regressions pass.",
+        "delivery": "candidate_not_merged_or_deployed"
+      }
+    ],
+    "remaining": [
+      "Exact-head hosted CI",
+      "Designated-account session for private Home cap/bytes/latency",
+      "Installed-phone acceptance and real priced-printing hosted coverage",
+      "New candidate merge/mobile rollout approval after qualification",
+      "Profile generated-ledger mapping reconciliation before broad migration tooling",
+      "Background jobs,monitoring,recovery remain queued"
+    ]
   }
 }

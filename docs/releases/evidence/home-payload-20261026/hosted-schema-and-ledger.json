@@ -1,0 +1,44 @@
+{
+  "observedAt": "2026-10-26T08:56:41.764Z",
+  "project": "oakdbbzdqwurpjnoqhmu",
+  "operation": "read-only schema, ledger and designated-account count; no row data",
+  "profile_versions": [
+    {
+      "name": "collection_summary_v1",
+      "version": "20261026072532"
+    }
+  ],
+  "qa_account_count": 1,
+  "binder_card_columns": [
+    "id",
+    "binder_id",
+    "card_id",
+    "set_id",
+    "slot_order",
+    "owned",
+    "notes",
+    "created_at",
+    "api_card_id",
+    "card_name",
+    "api_set_id",
+    "card_number",
+    "image_url",
+    "set_name",
+    "set_total",
+    "ebay_price",
+    "tcg_price",
+    "cardmarket_price",
+    "last_price_update",
+    "condition",
+    "grade_company",
+    "grade",
+    "owned_quantity",
+    "language",
+    "cert_number",
+    "slab_image_url",
+    "graded_value",
+    "graded_at",
+    "owned_card_variant_id",
+    "lifecycle_version"
+  ]
+}

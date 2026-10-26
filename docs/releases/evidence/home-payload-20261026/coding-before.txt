@@ -1,0 +1,1273 @@
+{
+  "sourceRoot": "D:\\workspace\\Stackr-home-payload-20261026",
+  "baselineSourcePath": null,
+  "baselineRevision": null,
+  "baselineGitBlob": null,
+  "baselineModuleBlobs": {},
+  "environment": {
+    "node": "v24.15.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "transport": "offline actual modules; response-array JSON bytes; excludes headers, TLS, hosted DB and device rendering",
+  "reports": [
+    {
+      "cohort": "small",
+      "binders": 2,
+      "saved": 8,
+      "ownedRows": 6,
+      "unownedSaved": 2,
+      "after": {
+        "first": {
+          "requests": 6,
+          "bodyBytes": 6341,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 6,
+            "binder_cards": 8
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 1275,
+            "binder_cards": 4463
+          }
+        },
+        "immediateRepeat": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        },
+        "expired": {
+          "requests": 6,
+          "bodyBytes": 6341,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 6,
+            "binder_cards": 8
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 1275,
+            "binder_cards": 4463
+          }
+        },
+        "forced": {
+          "requests": 6,
+          "bodyBytes": 6341,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 6,
+            "binder_cards": 8
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 1275,
+            "binder_cards": 4463
+          }
+        }
+      },
+      "authCalls": {
+        "getSession": 40,
+        "getUser": 3
+      },
+      "firstAuthCalls": {
+        "getSession": 12,
+        "getUser": 1
+      },
+      "warmAuthCalls": {
+        "getSession": 2,
+        "getUser": 0
+      }
+    },
+    {
+      "cohort": "large-1702-saved-1323-owned",
+      "binders": 2,
+      "saved": 1702,
+      "ownedRows": 1323,
+      "unownedSaved": 379,
+      "after": {
+        "first": {
+          "requests": 11,
+          "bodyBytes": 1256922,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 4,
+            "binder_cards": 5
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283340,
+            "binder_cards": 972979
+          }
+        },
+        "immediateRepeat": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        },
+        "expired": {
+          "requests": 11,
+          "bodyBytes": 1256922,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 4,
+            "binder_cards": 5
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283340,
+            "binder_cards": 972979
+          }
+        },
+        "forced": {
+          "requests": 11,
+          "bodyBytes": 1256922,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 4,
+            "binder_cards": 5
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283340,
+            "binder_cards": 972979
+          }
+        }
+      },
+      "authCalls": {
+        "getSession": 58,
+        "getUser": 3
+      },
+      "firstAuthCalls": {
+        "getSession": 18,
+        "getUser": 1
+      },
+      "warmAuthCalls": {
+        "getSession": 2,
+        "getUser": 0
+      }
+    },
+    {
+      "cohort": "empty",
+      "binders": 0,
+      "saved": 0,
+      "ownedRows": 0,
+      "unownedSaved": 0,
+      "after": {
+        "first": {
+          "requests": 2,
+          "bodyBytes": 4,
+          "tableCounts": {
+            "binders": 1,
+            "user_card_variants": 1
+          },
+          "tableRows": {
+            "binders": 0,
+            "user_card_variants": 0
+          },
+          "tableBytes": {
+            "binders": 2,
+            "user_card_variants": 2
+          }
+        },
+        "immediateRepeat": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        },
+        "expired": {
+          "requests": 2,
+          "bodyBytes": 4,
+          "tableCounts": {
+            "binders": 1,
+            "user_card_variants": 1
+          },
+          "tableRows": {
+            "binders": 0,
+            "user_card_variants": 0
+          },
+          "tableBytes": {
+            "binders": 2,
+            "user_card_variants": 2
+          }
+        },
+        "forced": {
+          "requests": 2,
+          "bodyBytes": 4,
+          "tableCounts": {
+            "binders": 1,
+            "user_card_variants": 1
+          },
+          "tableRows": {
+            "binders": 0,
+            "user_card_variants": 0
+          },
+          "tableBytes": {
+            "binders": 2,
+            "user_card_variants": 2
+          }
+        }
+      },
+      "authCalls": {
+        "getSession": 25,
+        "getUser": 3
+      },
+      "firstAuthCalls": {
+        "getSession": 7,
+        "getUser": 1
+      },
+      "warmAuthCalls": {
+        "getSession": 2,
+        "getUser": 0
+      }
+    },
+    {
+      "cohort": "five-languages-same-collector",
+      "binders": 5,
+      "saved": 5,
+      "ownedRows": 5,
+      "unownedSaved": 0,
+      "after": {
+        "first": {
+          "requests": 6,
+          "bodyBytes": 5451,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 5,
+            "user_card_variants": 5,
+            "binder_cards": 5
+          },
+          "tableBytes": {
+            "binders": 1515,
+            "user_card_variants": 1085,
+            "binder_cards": 2851
+          }
+        },
+        "immediateRepeat": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        },
+        "expired": {
+          "requests": 6,
+          "bodyBytes": 5451,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 5,
+            "user_card_variants": 5,
+            "binder_cards": 5
+          },
+          "tableBytes": {
+            "binders": 1515,
+            "user_card_variants": 1085,
+            "binder_cards": 2851
+          }
+        },
+        "forced": {
+          "requests": 6,
+          "bodyBytes": 5451,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 2,
+            "binder_cards": 2
+          },
+          "tableRows": {
+            "binders": 5,
+            "user_card_variants": 5,
+            "binder_cards": 5
+          },
+          "tableBytes": {
+            "binders": 1515,
+            "user_card_variants": 1085,
+            "binder_cards": 2851
+          }
+        }
+      },
+      "authCalls": {
+        "getSession": 40,
+        "getUser": 3
+      },
+      "firstAuthCalls": {
+        "getSession": 12,
+        "getUser": 1
+      },
+      "warmAuthCalls": {
+        "getSession": 2,
+        "getUser": 0
+      }
+    }
+  ],
+  "serverCapReports": [
+    {
+      "serverCap": 500,
+      "requests": 11,
+      "bodyBytes": 1256922,
+      "tableCounts": {
+        "binders": 2,
+        "user_card_variants": 4,
+        "binder_cards": 5
+      },
+      "tableRows": {
+        "binders": 2,
+        "user_card_variants": 1323,
+        "binder_cards": 1702
+      },
+      "tableBytes": {
+        "binders": 603,
+        "user_card_variants": 283340,
+        "binder_cards": 972979
+      }
+    },
+    {
+      "serverCap": 100,
+      "requests": 36,
+      "bodyBytes": 1256947,
+      "tableCounts": {
+        "binders": 2,
+        "user_card_variants": 15,
+        "binder_cards": 19
+      },
+      "tableRows": {
+        "binders": 2,
+        "user_card_variants": 1323,
+        "binder_cards": 1702
+      },
+      "tableBytes": {
+        "binders": 603,
+        "user_card_variants": 283351,
+        "binder_cards": 972993
+      }
+    },
+    {
+      "serverCap": 50,
+      "requests": 66,
+      "bodyBytes": 1256977,
+      "tableCounts": {
+        "binders": 2,
+        "user_card_variants": 28,
+        "binder_cards": 36
+      },
+      "tableRows": {
+        "binders": 2,
+        "user_card_variants": 1323,
+        "binder_cards": 1702
+      },
+      "tableBytes": {
+        "binders": 603,
+        "user_card_variants": 283364,
+        "binder_cards": 973010
+      }
+    },
+    {
+      "serverCap": 17,
+      "requests": 183,
+      "bodyBytes": 1257094,
+      "tableCounts": {
+        "binders": 2,
+        "user_card_variants": 79,
+        "binder_cards": 102
+      },
+      "tableRows": {
+        "binders": 2,
+        "user_card_variants": 1323,
+        "binder_cards": 1702
+      },
+      "tableBytes": {
+        "binders": 603,
+        "user_card_variants": 283415,
+        "binder_cards": 973076
+      }
+    }
+  ],
+  "dependency": {
+    "savedDispatchesWhileOwnershipHeld": 2
+  },
+  "cohortTimings": [
+    {
+      "cohort": "empty",
+      "samples": 5,
+      "timingCohort": {
+        "binders": 0,
+        "saved": 0,
+        "owned": 0,
+        "multilingual": false,
+        "serverCap": 500,
+        "delayMs": 50
+      },
+      "perDataApiReadDelayMs": 50,
+      "firstCompleteFactsMedianMs": 61.14980000000014,
+      "warmCompleteFactsMedianMs": 0.19569999999976062,
+      "baselineFirstMedianMs": null,
+      "baselineWarmMedianMs": null,
+      "baselineSamples": [],
+      "candidateSamples": [
+        {
+          "firstMs": 63.44340000000011,
+          "warmMs": 0.18719999999984793,
+          "firstRead": {
+            "requests": 2,
+            "bodyBytes": 4,
+            "tableCounts": {
+              "binders": 1,
+              "user_card_variants": 1
+            },
+            "tableRows": {
+              "binders": 0,
+              "user_card_variants": 0
+            },
+            "tableBytes": {
+              "binders": 2,
+              "user_card_variants": 2
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 55.45229999999992,
+          "warmMs": 0.13720000000012078,
+          "firstRead": {
+            "requests": 2,
+            "bodyBytes": 4,
+            "tableCounts": {
+              "binders": 1,
+              "user_card_variants": 1
+            },
+            "tableRows": {
+              "binders": 0,
+              "user_card_variants": 0
+            },
+            "tableBytes": {
+              "binders": 2,
+              "user_card_variants": 2
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 61.803300000000036,
+          "warmMs": 0.19569999999976062,
+          "firstRead": {
+            "requests": 2,
+            "bodyBytes": 4,
+            "tableCounts": {
+              "binders": 1,
+              "user_card_variants": 1
+            },
+            "tableRows": {
+              "binders": 0,
+              "user_card_variants": 0
+            },
+            "tableBytes": {
+              "binders": 2,
+              "user_card_variants": 2
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 57.123999999999796,
+          "warmMs": 0.20149999999966894,
+          "firstRead": {
+            "requests": 2,
+            "bodyBytes": 4,
+            "tableCounts": {
+              "binders": 1,
+              "user_card_variants": 1
+            },
+            "tableRows": {
+              "binders": 0,
+              "user_card_variants": 0
+            },
+            "tableBytes": {
+              "binders": 2,
+              "user_card_variants": 2
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 61.14980000000014,
+          "warmMs": 0.2037000000000262,
+          "firstRead": {
+            "requests": 2,
+            "bodyBytes": 4,
+            "tableCounts": {
+              "binders": 1,
+              "user_card_variants": 1
+            },
+            "tableRows": {
+              "binders": 0,
+              "user_card_variants": 0
+            },
+            "tableBytes": {
+              "binders": 2,
+              "user_card_variants": 2
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        }
+      ]
+    },
+    {
+      "cohort": "small",
+      "samples": 5,
+      "timingCohort": {
+        "binders": 2,
+        "saved": 8,
+        "owned": 6,
+        "multilingual": false,
+        "serverCap": 500,
+        "delayMs": 50
+      },
+      "perDataApiReadDelayMs": 50,
+      "firstCompleteFactsMedianMs": 220.36540000000014,
+      "warmCompleteFactsMedianMs": 0.24290000000019063,
+      "baselineFirstMedianMs": null,
+      "baselineWarmMedianMs": null,
+      "baselineSamples": [],
+      "candidateSamples": [
+        {
+          "firstMs": 220.36540000000014,
+          "warmMs": 0.19399999999995998,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 6341,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 6,
+              "binder_cards": 8
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 1275,
+              "binder_cards": 4463
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 217.26620000000003,
+          "warmMs": 0.23959999999988213,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 6341,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 6,
+              "binder_cards": 8
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 1275,
+              "binder_cards": 4463
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 228.33429999999953,
+          "warmMs": 0.24290000000019063,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 6341,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 6,
+              "binder_cards": 8
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 1275,
+              "binder_cards": 4463
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 231.70400000000063,
+          "warmMs": 0.4499999999998181,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 6341,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 6,
+              "binder_cards": 8
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 1275,
+              "binder_cards": 4463
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 218.8097000000007,
+          "warmMs": 0.29399999999986903,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 6341,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 6,
+              "binder_cards": 8
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 1275,
+              "binder_cards": 4463
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        }
+      ]
+    },
+    {
+      "cohort": "large-1702-saved-1323-owned",
+      "samples": 5,
+      "timingCohort": {
+        "binders": 2,
+        "saved": 1702,
+        "owned": 1323,
+        "multilingual": false,
+        "serverCap": 500,
+        "delayMs": 50
+      },
+      "perDataApiReadDelayMs": 50,
+      "firstCompleteFactsMedianMs": 442.97950000000037,
+      "warmCompleteFactsMedianMs": 5.570999999999913,
+      "baselineFirstMedianMs": null,
+      "baselineWarmMedianMs": null,
+      "baselineSamples": [],
+      "candidateSamples": [
+        {
+          "firstMs": 442.97950000000037,
+          "warmMs": 5.570999999999913,
+          "firstRead": {
+            "requests": 11,
+            "bodyBytes": 1256922,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 4,
+              "binder_cards": 5
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 1323,
+              "binder_cards": 1702
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 283340,
+              "binder_cards": 972979
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 442.54649999999947,
+          "warmMs": 3.6742999999996755,
+          "firstRead": {
+            "requests": 11,
+            "bodyBytes": 1256922,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 4,
+              "binder_cards": 5
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 1323,
+              "binder_cards": 1702
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 283340,
+              "binder_cards": 972979
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 424.77660000000014,
+          "warmMs": 3.6830999999992855,
+          "firstRead": {
+            "requests": 11,
+            "bodyBytes": 1256922,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 4,
+              "binder_cards": 5
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 1323,
+              "binder_cards": 1702
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 283340,
+              "binder_cards": 972979
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 456.02430000000004,
+          "warmMs": 12.558799999999792,
+          "firstRead": {
+            "requests": 11,
+            "bodyBytes": 1256922,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 4,
+              "binder_cards": 5
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 1323,
+              "binder_cards": 1702
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 283340,
+              "binder_cards": 972979
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 454.59619999999995,
+          "warmMs": 11.41779999999926,
+          "firstRead": {
+            "requests": 11,
+            "bodyBytes": 1256922,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 4,
+              "binder_cards": 5
+            },
+            "tableRows": {
+              "binders": 2,
+              "user_card_variants": 1323,
+              "binder_cards": 1702
+            },
+            "tableBytes": {
+              "binders": 603,
+              "user_card_variants": 283340,
+              "binder_cards": 972979
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        }
+      ]
+    },
+    {
+      "cohort": "five-languages-same-collector",
+      "samples": 5,
+      "timingCohort": {
+        "binders": 5,
+        "saved": 5,
+        "owned": 5,
+        "multilingual": true,
+        "serverCap": 500,
+        "delayMs": 50
+      },
+      "perDataApiReadDelayMs": 50,
+      "firstCompleteFactsMedianMs": 220.29039999999986,
+      "warmCompleteFactsMedianMs": 0.24699999999938882,
+      "baselineFirstMedianMs": null,
+      "baselineWarmMedianMs": null,
+      "baselineSamples": [],
+      "candidateSamples": [
+        {
+          "firstMs": 220.29039999999986,
+          "warmMs": 0.24699999999938882,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 5451,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 5,
+              "user_card_variants": 5,
+              "binder_cards": 5
+            },
+            "tableBytes": {
+              "binders": 1515,
+              "user_card_variants": 1085,
+              "binder_cards": 2851
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 230.51969999999892,
+          "warmMs": 0.2639999999992142,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 5451,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 5,
+              "user_card_variants": 5,
+              "binder_cards": 5
+            },
+            "tableBytes": {
+              "binders": 1515,
+              "user_card_variants": 1085,
+              "binder_cards": 2851
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 217.82220000000052,
+          "warmMs": 0.1647000000011758,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 5451,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 5,
+              "user_card_variants": 5,
+              "binder_cards": 5
+            },
+            "tableBytes": {
+              "binders": 1515,
+              "user_card_variants": 1085,
+              "binder_cards": 2851
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 214.5666999999994,
+          "warmMs": 0.15860000000066066,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 5451,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 5,
+              "user_card_variants": 5,
+              "binder_cards": 5
+            },
+            "tableBytes": {
+              "binders": 1515,
+              "user_card_variants": 1085,
+              "binder_cards": 2851
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        },
+        {
+          "firstMs": 228.4423999999999,
+          "warmMs": 0.2857000000003609,
+          "firstRead": {
+            "requests": 6,
+            "bodyBytes": 5451,
+            "tableCounts": {
+              "binders": 2,
+              "user_card_variants": 2,
+              "binder_cards": 2
+            },
+            "tableRows": {
+              "binders": 5,
+              "user_card_variants": 5,
+              "binder_cards": 5
+            },
+            "tableBytes": {
+              "binders": 1515,
+              "user_card_variants": 1085,
+              "binder_cards": 2851
+            }
+          },
+          "warmRead": {
+            "requests": 0,
+            "bodyBytes": 0,
+            "tableCounts": {},
+            "tableRows": {},
+            "tableBytes": {}
+          }
+        }
+      ]
+    }
+  ],
+  "syntheticHostTiming": {
+    "cohort": "1702 saved /1323 owned; server cap500",
+    "samples": 5,
+    "timingCohort": {
+      "binders": 2,
+      "saved": 1702,
+      "owned": 1323,
+      "multilingual": false,
+      "serverCap": 500,
+      "delayMs": 50
+    },
+    "perDataApiReadDelayMs": 50,
+    "firstCompleteFactsMedianMs": 442.97950000000037,
+    "warmCompleteFactsMedianMs": 5.570999999999913,
+    "baselineFirstMedianMs": null,
+    "baselineWarmMedianMs": null,
+    "baselineSamples": [],
+    "candidateSamples": [
+      {
+        "firstMs": 442.97950000000037,
+        "warmMs": 5.570999999999913,
+        "firstRead": {
+          "requests": 11,
+          "bodyBytes": 1256922,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 4,
+            "binder_cards": 5
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283340,
+            "binder_cards": 972979
+          }
+        },
+        "warmRead": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        }
+      },
+      {
+        "firstMs": 442.54649999999947,
+        "warmMs": 3.6742999999996755,
+        "firstRead": {
+          "requests": 11,
+          "bodyBytes": 1256922,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 4,
+            "binder_cards": 5
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283340,
+            "binder_cards": 972979
+          }
+        },
+        "warmRead": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        }
+      },
+      {
+        "firstMs": 424.77660000000014,
+        "warmMs": 3.6830999999992855,
+        "firstRead": {
+          "requests": 11,
+          "bodyBytes": 1256922,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 4,
+            "binder_cards": 5
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283340,
+            "binder_cards": 972979
+          }
+        },
+        "warmRead": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        }
+      },
+      {
+        "firstMs": 456.02430000000004,
+        "warmMs": 12.558799999999792,
+        "firstRead": {
+          "requests": 11,
+          "bodyBytes": 1256922,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 4,
+            "binder_cards": 5
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283340,
+            "binder_cards": 972979
+          }
+        },
+        "warmRead": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        }
+      },
+      {
+        "firstMs": 454.59619999999995,
+        "warmMs": 11.41779999999926,
+        "firstRead": {
+          "requests": 11,
+          "bodyBytes": 1256922,
+          "tableCounts": {
+            "binders": 2,
+            "user_card_variants": 4,
+            "binder_cards": 5
+          },
+          "tableRows": {
+            "binders": 2,
+            "user_card_variants": 1323,
+            "binder_cards": 1702
+          },
+          "tableBytes": {
+            "binders": 603,
+            "user_card_variants": 283340,
+            "binder_cards": 972979
+          }
+        },
+        "warmRead": {
+          "requests": 0,
+          "bodyBytes": 0,
+          "tableCounts": {},
+          "tableRows": {},
+          "tableBytes": {}
+        }
+      }
+    ],
+    "includesJavaScriptWork": true,
+    "hostedLatency": "unmeasured",
+    "budgetBypass": "complete oversized snapshot is returned but not retained",
+    "originCap": "hosted PostgREST cap is unmeasured; local config declares1000; fixture cap50 retains66 cold reads"
+  }
+}
+Home saved facts: complete bounded cache, independent source paging, owner/edit/manual/TTL/cancellation/failure isolation passed.

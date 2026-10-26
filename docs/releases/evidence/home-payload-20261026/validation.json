@@ -1,0 +1,68 @@
+{
+  "observedAt": "2026-10-26T09:09:15.656Z",
+  "baseline": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+  "checks": [
+    {
+      "name": "home-runtime",
+      "command": "node --import tsx scripts/test-home-startup-runtime.ts",
+      "exitCode": 0,
+      "receipt": "validation-home-runtime.txt"
+    },
+    {
+      "name": "owned-pricing",
+      "command": "node --import tsx scripts/test-home-owned-pricing-units.ts",
+      "exitCode": 0,
+      "receipt": "validation-owned-pricing.txt"
+    },
+    {
+      "name": "binder-preload",
+      "command": "node --import tsx scripts/test-binder-preload-runtime.ts",
+      "exitCode": 0,
+      "receipt": "validation-binder-preload.txt"
+    },
+    {
+      "name": "binder-reopen",
+      "command": "node --import tsx scripts/test-binder-reopen.mjs",
+      "exitCode": 0,
+      "receipt": "validation-binder-reopen.txt"
+    },
+    {
+      "name": "lint",
+      "command": "npm run lint",
+      "exitCode": 0,
+      "receipt": "validation-lint.txt"
+    },
+    {
+      "name": "typecheck",
+      "command": "npm run typecheck",
+      "exitCode": 0,
+      "receipt": "coding-typecheck.txt",
+      "reportedBy": "stackr_coding",
+      "initialFailureReceipt": "validation-typecheck.txt",
+      "resolution": "Typed projected rows and explicit null price fields"
+    },
+    {
+      "name": "scoped-lint",
+      "command": "node node_modules/eslint/bin/eslint.js lib/homeSavedCollection.ts scripts/test-home-saved-cache.mjs scripts/test-home-saved-collection.ts scripts/measure-home-payload-query-plans.mjs --no-cache",
+      "exitCode": 0,
+      "receipt": "validation-scoped-lint.txt"
+    },
+    {
+      "name": "paired-facts",
+      "command": "node scripts/test-home-saved-cache.mjs --baseline-facts-revision=b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+      "exitCode": 0,
+      "receipt": "coding-after.txt",
+      "reportedBy": "stackr_coding"
+    },
+    {
+      "name": "saved-facts-unit",
+      "command": "node --import tsx scripts/test-home-saved-collection.ts",
+      "exitCode": 0,
+      "receipt": "coding-unit.txt",
+      "reportedBy": "stackr_coding"
+    }
+  ],
+  "rootLintWarnings": 8,
+  "backendTypecheck": "not applicable; no backend changes",
+  "gatewayTests": "not applicable; no gateway changes"
+}
