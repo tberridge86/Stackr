@@ -1,0 +1,64 @@
+{
+  "observedAt": "2026-10-26T09:24:02.256Z",
+  "head": "4dadab24a0152bf971fb38b104dc43be966d8aed",
+  "tree": "c61c767f79bf078e324e296a8dfab92d7ae813fd",
+  "workflows": [
+    {
+      "id": 40298273806,
+      "name": "Stackr Platform CI",
+      "head": "4dadab24a0152bf971fb38b104dc43be966d8aed",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/40298273806"
+    },
+    {
+      "id": 40298273902,
+      "name": "Owner Pricing Identity Tests",
+      "head": "4dadab24a0152bf971fb38b104dc43be966d8aed",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/40298273902"
+    }
+  ],
+  "platformJobs": [
+    {
+      "name": "database-migration-tests",
+      "conclusion": "success"
+    },
+    {
+      "name": "integration-tests",
+      "conclusion": "success"
+    },
+    {
+      "name": "recognition-container",
+      "conclusion": "success"
+    },
+    {
+      "name": "benchmark-smoke-tests",
+      "conclusion": "success"
+    },
+    {
+      "name": "openapi-and-generated-client",
+      "conclusion": "success"
+    },
+    {
+      "name": "lint-type-unit",
+      "conclusion": "success"
+    },
+    {
+      "name": "distributed-architecture",
+      "conclusion": "success"
+    },
+    {
+      "name": "dependency-and-secret-scan",
+      "conclusion": "success"
+    },
+    {
+      "name": "release-candidate-gate",
+      "conclusion": "skipped"
+    }
+  ],
+  "releaseCandidateGate": "skipped; not claimed passed",
+  "merged": false,
+  "deployed": false
+}

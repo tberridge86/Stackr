@@ -1,0 +1,89 @@
+{
+  "recordedAt": "2026-10-26T09:28:17.763Z",
+  "candidate": {
+    "pullRequest": 446,
+    "source": "4dadab24a0152bf971fb38b104dc43be966d8aed",
+    "tree": "c61c767f79bf078e324e296a8dfab92d7ae813fd",
+    "base": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+    "merged": false,
+    "deployed": false
+  },
+  "validation": {
+    "independentReview": "GO for draft publication and exact-head CI; no remaining source blocker",
+    "hostedWorkflows": "both applicable workflows succeeded",
+    "releaseCandidateGate": "skipped",
+    "localMobilePreflight": "all six steps passed; production iOS JS/assets export, not a native build or submission",
+    "iosBundleSha256": "c3009fd090ef03b7e675bc2e3fe5cbadc3cb6d1789c2e0d50d55f7e62724b777",
+    "recoveryAssetsVerified": 74
+  },
+  "observedDeployment": {
+    "app": "1.0.6 (61)",
+    "appSource": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+    "backendSource": "7c1acd409680b38d5913d8cae76df560b5d91daa",
+    "gateway": "https://api.stackrtcg.com",
+    "gatewayRevision": "not independently attested",
+    "supabaseProject": "oakdbbzdqwurpjnoqhmu",
+    "profileMigrationCanonical": "20261025154000",
+    "profileMigrationLedger": "20261026072532"
+  },
+  "measurement": {
+    "basis": "matched deterministic original 24-column large fixture, 1702 saved and 1323 owned rows",
+    "beforeBytes": 1256922,
+    "afterBytes": 1080420,
+    "reductionPercent": 14.04,
+    "coldReadsBefore": 11,
+    "coldReadsAfter": 11,
+    "immediateWarmReads": 0,
+    "latencyImprovement": "not demonstrated; synthetic latency is not hosted or device evidence"
+  },
+  "hostedVerification": {
+    "publicDelivery": "passed; timings/cache misses in frozen receipt are single observations, not private Home timings",
+    "activitySnapshots": "optional snapshot contract unavailable; existing legacy-compatible path used",
+    "homeProjection": "anonymous zero-row select accepted; schema compatibility only",
+    "privateHomeCap": "unverified",
+    "authenticatedHomeTimings": "unverified",
+    "realPricedPrintingCoverage": "unverified",
+    "installedPhoneAcceptance": "unverified"
+  },
+  "scope": {
+    "newMigration": false,
+    "backendChange": false,
+    "gatewayChange": false,
+    "R2Change": false,
+    "productionJobOrScheduleChange": false,
+    "newBuildOrSubmission": false
+  },
+  "remainingGates": [
+    "Obtain designated QA account access for authenticated cold/warm Home cap, bytes and timing measurements; never substitute anonymous limit-zero schema checks.",
+    "Complete Build 61 installed-phone acceptance where still outstanding, without rebuilding it merely for acceptance.",
+    "New candidate merge and TestFlight rollout need applicable approval; previous pinned approval covered PR439 and Build61.",
+    "Recheck current integration, exact final source and independent release review before any merge; changed source requires matching validation.",
+    "After authorised new build/distribution, record actual EAS build, version/build number, fingerprint and distribution receipt, then complete installed-phone matrix."
+  ],
+  "rollout": {
+    "source": "4dadab24a0152bf971fb38b104dc43be966d8aed",
+    "profile": "production",
+    "lane": "existing TestFlight lane",
+    "backend": "7c1acd409680b38d5913d8cae76df560b5d91daa",
+    "database": "no migration; retain existing Profile ledger",
+    "nativeVersionAndFingerprint": "not assigned or generated"
+  },
+  "rollback": {
+    "beforeDistribution": "leave Build61 available and do not distribute candidate",
+    "afterDistribution": "retain Build61 for designated acceptance where available; revert only the Home projection commit in integration and issue a corrective app via existing approved lane if needed",
+    "database": "none; no schema changes"
+  },
+  "queued": [
+    "background job reliability",
+    "monitoring",
+    "recovery drills",
+    "release-lane credential repair unless it blocks authorised delivery"
+  ],
+  "integrationRecheck": {
+    "observedAt": "2026-10-26T09:28:44.390Z",
+    "main": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+    "candidateHead": "4dadab24a0152bf971fb38b104dc43be966d8aed",
+    "draft": true,
+    "mergeable": true
+  }
+}

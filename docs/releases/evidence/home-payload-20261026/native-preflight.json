@@ -1,0 +1,69 @@
+{
+  "source": "4dadab24a0152bf971fb38b104dc43be966d8aed",
+  "tree": "c61c767f79bf078e324e296a8dfab92d7ae813fd",
+  "profile": "production",
+  "results": [
+    {
+      "args": [
+        "scripts/deploy/verify-mobile-runtime-config.mjs",
+        "--expected-environment=production",
+        "--expected-app-variant=production",
+        "--require-explicit",
+        "--require-safe-release-flags"
+      ],
+      "startedAt": "2026-10-26T09:22:03.654Z",
+      "finishedAt": "2026-10-26T09:22:13.764Z",
+      "exitCode": 0
+    },
+    {
+      "args": [
+        "C:/Program Files/nodejs/node_modules/npm/bin/npm-cli.js",
+        "run",
+        "test:traditional-chinese-hires-logos"
+      ],
+      "startedAt": "2026-10-26T09:22:13.765Z",
+      "finishedAt": "2026-10-26T09:22:15.572Z",
+      "exitCode": 0
+    },
+    {
+      "args": [
+        "C:/Program Files/nodejs/node_modules/npm/bin/npm-cli.js",
+        "run",
+        "test:mobile-recovery"
+      ],
+      "startedAt": "2026-10-26T09:22:15.572Z",
+      "finishedAt": "2026-10-26T09:22:30.524Z",
+      "exitCode": 0
+    },
+    {
+      "args": [
+        "C:/Program Files/nodejs/node_modules/npm/bin/npm-cli.js",
+        "run",
+        "test:server-delivery"
+      ],
+      "startedAt": "2026-10-26T09:22:30.525Z",
+      "finishedAt": "2026-10-26T09:23:02.845Z",
+      "exitCode": 0
+    },
+    {
+      "args": [
+        "C:/Program Files/nodejs/node_modules/npm/bin/npm-cli.js",
+        "run",
+        "test:home-activity"
+      ],
+      "startedAt": "2026-10-26T09:23:02.845Z",
+      "finishedAt": "2026-10-26T09:23:10.137Z",
+      "exitCode": 0
+    },
+    {
+      "args": [
+        "--import",
+        "tsx",
+        "scripts/verify-ios-release-delivery.mjs"
+      ],
+      "startedAt": "2026-10-26T09:23:10.137Z",
+      "finishedAt": "2026-10-26T09:25:01.657Z",
+      "exitCode": 0
+    }
+  ]
+}
