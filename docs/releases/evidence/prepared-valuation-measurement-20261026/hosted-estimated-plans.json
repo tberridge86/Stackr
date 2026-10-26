@@ -1,0 +1,610 @@
+{
+  "environment": "Hosted production metadata and nonexecuting EXPLAIN only",
+  "analyze": false,
+  "owner": "synthetic UUID; no QA/customer rows retrieved; row/cost estimates are not representative-account execution timings",
+  "plans": [
+    [
+      {
+        "QUERY PLAN": [
+          {
+            "Plan": {
+              "Node Type": "Result",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Startup Cost": 49.89,
+              "Total Cost": 49.92,
+              "Plan Rows": 1,
+              "Plan Width": 32,
+              "Plans": [
+                {
+                  "Node Type": "Index Scan",
+                  "Parent Relationship": "InitPlan",
+                  "Subplan Name": "CTE b",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Scan Direction": "Forward",
+                  "Index Name": "binders_user_language_idx",
+                  "Relation Name": "binders",
+                  "Alias": "binders",
+                  "Startup Cost": 0.14,
+                  "Total Cost": 2.36,
+                  "Plan Rows": 1,
+                  "Plan Width": 520,
+                  "Index Cond": "(user_id = '00000000-0000-4000-8000-000000000001'::uuid)"
+                },
+                {
+                  "Node Type": "Index Scan",
+                  "Parent Relationship": "InitPlan",
+                  "Subplan Name": "CTE o",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Scan Direction": "Forward",
+                  "Index Name": "user_card_variants_user_quantity_idx",
+                  "Relation Name": "user_card_variants",
+                  "Alias": "user_card_variants",
+                  "Startup Cost": 0.28,
+                  "Total Cost": 2.5,
+                  "Plan Rows": 1,
+                  "Plan Width": 94,
+                  "Index Cond": "((user_id = '00000000-0000-4000-8000-000000000001'::uuid) AND (quantity > 0))"
+                },
+                {
+                  "Node Type": "Nested Loop",
+                  "Parent Relationship": "InitPlan",
+                  "Subplan Name": "CTE bc",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Join Type": "Inner",
+                  "Startup Cost": 1.71,
+                  "Total Cost": 40.11,
+                  "Plan Rows": 43,
+                  "Plan Width": 328,
+                  "Inner Unique": false,
+                  "Plans": [
+                    {
+                      "Node Type": "CTE Scan",
+                      "Parent Relationship": "Outer",
+                      "Parallel Aware": false,
+                      "Async Capable": false,
+                      "CTE Name": "b",
+                      "Alias": "b",
+                      "Startup Cost": 0,
+                      "Total Cost": 0.02,
+                      "Plan Rows": 1,
+                      "Plan Width": 16
+                    },
+                    {
+                      "Node Type": "Bitmap Heap Scan",
+                      "Parent Relationship": "Inner",
+                      "Parallel Aware": false,
+                      "Async Capable": false,
+                      "Relation Name": "binder_cards",
+                      "Alias": "c",
+                      "Startup Cost": 1.71,
+                      "Total Cost": 39.66,
+                      "Plan Rows": 43,
+                      "Plan Width": 328,
+                      "Recheck Cond": "(binder_id = b.id)",
+                      "Plans": [
+                        {
+                          "Node Type": "Bitmap Index Scan",
+                          "Parent Relationship": "Outer",
+                          "Parallel Aware": false,
+                          "Async Capable": false,
+                          "Index Name": "binder_cards_binder_owned_idx",
+                          "Startup Cost": 0,
+                          "Total Cost": 1.7,
+                          "Plan Rows": 43,
+                          "Plan Width": 0,
+                          "Index Cond": "(binder_id = b.id)"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Node Type": "Aggregate",
+                  "Strategy": "Plain",
+                  "Partial Mode": "Simple",
+                  "Parent Relationship": "InitPlan",
+                  "Subplan Name": "InitPlan 4",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Startup Cost": 0.04,
+                  "Total Cost": 0.05,
+                  "Plan Rows": 1,
+                  "Plan Width": 32,
+                  "Plans": [
+                    {
+                      "Node Type": "Sort",
+                      "Parent Relationship": "Outer",
+                      "Parallel Aware": false,
+                      "Async Capable": false,
+                      "Startup Cost": 0.03,
+                      "Total Cost": 0.04,
+                      "Plan Rows": 1,
+                      "Plan Width": 56,
+                      "Sort Key": [
+                        "o.id"
+                      ],
+                      "Plans": [
+                        {
+                          "Node Type": "CTE Scan",
+                          "Parent Relationship": "Outer",
+                          "Parallel Aware": false,
+                          "Async Capable": false,
+                          "CTE Name": "o",
+                          "Alias": "o",
+                          "Startup Cost": 0,
+                          "Total Cost": 0.02,
+                          "Plan Rows": 1,
+                          "Plan Width": 56
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Node Type": "Aggregate",
+                  "Strategy": "Plain",
+                  "Partial Mode": "Simple",
+                  "Parent Relationship": "InitPlan",
+                  "Subplan Name": "InitPlan 5",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Startup Cost": 0.04,
+                  "Total Cost": 0.05,
+                  "Plan Rows": 1,
+                  "Plan Width": 32,
+                  "Plans": [
+                    {
+                      "Node Type": "Sort",
+                      "Parent Relationship": "Outer",
+                      "Parallel Aware": false,
+                      "Async Capable": false,
+                      "Startup Cost": 0.03,
+                      "Total Cost": 0.04,
+                      "Plan Rows": 1,
+                      "Plan Width": 56,
+                      "Sort Key": [
+                        "b_1.id"
+                      ],
+                      "Plans": [
+                        {
+                          "Node Type": "CTE Scan",
+                          "Parent Relationship": "Outer",
+                          "Parallel Aware": false,
+                          "Async Capable": false,
+                          "CTE Name": "b",
+                          "Alias": "b_1",
+                          "Startup Cost": 0,
+                          "Total Cost": 0.02,
+                          "Plan Rows": 1,
+                          "Plan Width": 56
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Node Type": "Aggregate",
+                  "Strategy": "Plain",
+                  "Partial Mode": "Simple",
+                  "Parent Relationship": "InitPlan",
+                  "Subplan Name": "InitPlan 6",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Startup Cost": 2.35,
+                  "Total Cost": 2.36,
+                  "Plan Rows": 1,
+                  "Plan Width": 32,
+                  "Plans": [
+                    {
+                      "Node Type": "Sort",
+                      "Parent Relationship": "Outer",
+                      "Parallel Aware": false,
+                      "Async Capable": false,
+                      "Startup Cost": 2.03,
+                      "Total Cost": 2.13,
+                      "Plan Rows": 43,
+                      "Plan Width": 56,
+                      "Sort Key": [
+                        "bc.id"
+                      ],
+                      "Plans": [
+                        {
+                          "Node Type": "CTE Scan",
+                          "Parent Relationship": "Outer",
+                          "Parallel Aware": false,
+                          "Async Capable": false,
+                          "CTE Name": "bc",
+                          "Alias": "bc",
+                          "Startup Cost": 0,
+                          "Total Cost": 0.86,
+                          "Plan Rows": 43,
+                          "Plan Width": 56
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Node Type": "Aggregate",
+                  "Strategy": "Plain",
+                  "Partial Mode": "Simple",
+                  "Parent Relationship": "InitPlan",
+                  "Subplan Name": "InitPlan 7",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Startup Cost": 0.04,
+                  "Total Cost": 0.05,
+                  "Plan Rows": 1,
+                  "Plan Width": 32,
+                  "Plans": [
+                    {
+                      "Node Type": "Sort",
+                      "Parent Relationship": "Outer",
+                      "Parallel Aware": false,
+                      "Async Capable": false,
+                      "Startup Cost": 0.03,
+                      "Total Cost": 0.04,
+                      "Plan Rows": 1,
+                      "Plan Width": 56,
+                      "Sort Key": [
+                        "o_1.id"
+                      ],
+                      "Plans": [
+                        {
+                          "Node Type": "CTE Scan",
+                          "Parent Relationship": "Outer",
+                          "Parallel Aware": false,
+                          "Async Capable": false,
+                          "CTE Name": "o",
+                          "Alias": "o_1",
+                          "Startup Cost": 0,
+                          "Total Cost": 0.02,
+                          "Plan Rows": 1,
+                          "Plan Width": 56
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Node Type": "Aggregate",
+                  "Strategy": "Plain",
+                  "Partial Mode": "Simple",
+                  "Parent Relationship": "InitPlan",
+                  "Subplan Name": "InitPlan 8",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Startup Cost": 0.04,
+                  "Total Cost": 0.05,
+                  "Plan Rows": 1,
+                  "Plan Width": 32,
+                  "Plans": [
+                    {
+                      "Node Type": "Sort",
+                      "Parent Relationship": "Outer",
+                      "Parallel Aware": false,
+                      "Async Capable": false,
+                      "Startup Cost": 0.03,
+                      "Total Cost": 0.04,
+                      "Plan Rows": 1,
+                      "Plan Width": 56,
+                      "Sort Key": [
+                        "b_2.id"
+                      ],
+                      "Plans": [
+                        {
+                          "Node Type": "CTE Scan",
+                          "Parent Relationship": "Outer",
+                          "Parallel Aware": false,
+                          "Async Capable": false,
+                          "CTE Name": "b",
+                          "Alias": "b_2",
+                          "Startup Cost": 0,
+                          "Total Cost": 0.02,
+                          "Plan Rows": 1,
+                          "Plan Width": 56
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Node Type": "Aggregate",
+                  "Strategy": "Plain",
+                  "Partial Mode": "Simple",
+                  "Parent Relationship": "InitPlan",
+                  "Subplan Name": "InitPlan 9",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Startup Cost": 2.35,
+                  "Total Cost": 2.36,
+                  "Plan Rows": 1,
+                  "Plan Width": 32,
+                  "Plans": [
+                    {
+                      "Node Type": "Sort",
+                      "Parent Relationship": "Outer",
+                      "Parallel Aware": false,
+                      "Async Capable": false,
+                      "Startup Cost": 2.03,
+                      "Total Cost": 2.13,
+                      "Plan Rows": 43,
+                      "Plan Width": 56,
+                      "Sort Key": [
+                        "bc_1.id"
+                      ],
+                      "Plans": [
+                        {
+                          "Node Type": "CTE Scan",
+                          "Parent Relationship": "Outer",
+                          "Parallel Aware": false,
+                          "Async Capable": false,
+                          "CTE Name": "bc",
+                          "Alias": "bc_1",
+                          "Startup Cost": 0,
+                          "Total Cost": 0.86,
+                          "Plan Rows": 43,
+                          "Plan Width": 56
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    [
+      {
+        "QUERY PLAN": [
+          {
+            "Plan": {
+              "Node Type": "CTE Scan",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "CTE Name": "payload",
+              "Alias": "payload",
+              "Startup Cost": 47.44,
+              "Total Cost": 47.47,
+              "Plan Rows": 1,
+              "Plan Width": 32,
+              "Plans": [
+                {
+                  "Node Type": "Index Scan",
+                  "Parent Relationship": "InitPlan",
+                  "Subplan Name": "CTE b",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Scan Direction": "Forward",
+                  "Index Name": "binders_user_language_idx",
+                  "Relation Name": "binders",
+                  "Alias": "binders",
+                  "Startup Cost": 0.14,
+                  "Total Cost": 2.36,
+                  "Plan Rows": 1,
+                  "Plan Width": 520,
+                  "Index Cond": "(user_id = '00000000-0000-4000-8000-000000000001'::uuid)"
+                },
+                {
+                  "Node Type": "Index Scan",
+                  "Parent Relationship": "InitPlan",
+                  "Subplan Name": "CTE o",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Scan Direction": "Forward",
+                  "Index Name": "user_card_variants_user_quantity_idx",
+                  "Relation Name": "user_card_variants",
+                  "Alias": "user_card_variants",
+                  "Startup Cost": 0.28,
+                  "Total Cost": 2.5,
+                  "Plan Rows": 1,
+                  "Plan Width": 94,
+                  "Index Cond": "((user_id = '00000000-0000-4000-8000-000000000001'::uuid) AND (quantity > 0))"
+                },
+                {
+                  "Node Type": "Nested Loop",
+                  "Parent Relationship": "InitPlan",
+                  "Subplan Name": "CTE bc",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Join Type": "Inner",
+                  "Startup Cost": 1.71,
+                  "Total Cost": 40.11,
+                  "Plan Rows": 43,
+                  "Plan Width": 328,
+                  "Inner Unique": false,
+                  "Plans": [
+                    {
+                      "Node Type": "CTE Scan",
+                      "Parent Relationship": "Outer",
+                      "Parallel Aware": false,
+                      "Async Capable": false,
+                      "CTE Name": "b",
+                      "Alias": "b",
+                      "Startup Cost": 0,
+                      "Total Cost": 0.02,
+                      "Plan Rows": 1,
+                      "Plan Width": 16
+                    },
+                    {
+                      "Node Type": "Bitmap Heap Scan",
+                      "Parent Relationship": "Inner",
+                      "Parallel Aware": false,
+                      "Async Capable": false,
+                      "Relation Name": "binder_cards",
+                      "Alias": "c",
+                      "Startup Cost": 1.71,
+                      "Total Cost": 39.66,
+                      "Plan Rows": 43,
+                      "Plan Width": 328,
+                      "Recheck Cond": "(binder_id = b.id)",
+                      "Plans": [
+                        {
+                          "Node Type": "Bitmap Index Scan",
+                          "Parent Relationship": "Outer",
+                          "Parallel Aware": false,
+                          "Async Capable": false,
+                          "Index Name": "binder_cards_binder_owned_idx",
+                          "Startup Cost": 0,
+                          "Total Cost": 1.7,
+                          "Plan Rows": 43,
+                          "Plan Width": 0,
+                          "Index Cond": "(binder_id = b.id)"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Node Type": "Result",
+                  "Parent Relationship": "InitPlan",
+                  "Subplan Name": "CTE payload",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Startup Cost": 2.47,
+                  "Total Cost": 2.48,
+                  "Plan Rows": 1,
+                  "Plan Width": 32,
+                  "Plans": [
+                    {
+                      "Node Type": "Aggregate",
+                      "Strategy": "Plain",
+                      "Partial Mode": "Simple",
+                      "Parent Relationship": "InitPlan",
+                      "Subplan Name": "InitPlan 4",
+                      "Parallel Aware": false,
+                      "Async Capable": false,
+                      "Startup Cost": 0.04,
+                      "Total Cost": 0.05,
+                      "Plan Rows": 1,
+                      "Plan Width": 32,
+                      "Plans": [
+                        {
+                          "Node Type": "Sort",
+                          "Parent Relationship": "Outer",
+                          "Parallel Aware": false,
+                          "Async Capable": false,
+                          "Startup Cost": 0.03,
+                          "Total Cost": 0.04,
+                          "Plan Rows": 1,
+                          "Plan Width": 56,
+                          "Sort Key": [
+                            "o.id"
+                          ],
+                          "Plans": [
+                            {
+                              "Node Type": "CTE Scan",
+                              "Parent Relationship": "Outer",
+                              "Parallel Aware": false,
+                              "Async Capable": false,
+                              "CTE Name": "o",
+                              "Alias": "o",
+                              "Startup Cost": 0,
+                              "Total Cost": 0.02,
+                              "Plan Rows": 1,
+                              "Plan Width": 56
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "Node Type": "Aggregate",
+                      "Strategy": "Plain",
+                      "Partial Mode": "Simple",
+                      "Parent Relationship": "InitPlan",
+                      "Subplan Name": "InitPlan 5",
+                      "Parallel Aware": false,
+                      "Async Capable": false,
+                      "Startup Cost": 0.04,
+                      "Total Cost": 0.05,
+                      "Plan Rows": 1,
+                      "Plan Width": 32,
+                      "Plans": [
+                        {
+                          "Node Type": "Sort",
+                          "Parent Relationship": "Outer",
+                          "Parallel Aware": false,
+                          "Async Capable": false,
+                          "Startup Cost": 0.03,
+                          "Total Cost": 0.04,
+                          "Plan Rows": 1,
+                          "Plan Width": 56,
+                          "Sort Key": [
+                            "b_1.id"
+                          ],
+                          "Plans": [
+                            {
+                              "Node Type": "CTE Scan",
+                              "Parent Relationship": "Outer",
+                              "Parallel Aware": false,
+                              "Async Capable": false,
+                              "CTE Name": "b",
+                              "Alias": "b_1",
+                              "Startup Cost": 0,
+                              "Total Cost": 0.02,
+                              "Plan Rows": 1,
+                              "Plan Width": 56
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "Node Type": "Aggregate",
+                      "Strategy": "Plain",
+                      "Partial Mode": "Simple",
+                      "Parent Relationship": "InitPlan",
+                      "Subplan Name": "InitPlan 6",
+                      "Parallel Aware": false,
+                      "Async Capable": false,
+                      "Startup Cost": 2.35,
+                      "Total Cost": 2.36,
+                      "Plan Rows": 1,
+                      "Plan Width": 32,
+                      "Plans": [
+                        {
+                          "Node Type": "Sort",
+                          "Parent Relationship": "Outer",
+                          "Parallel Aware": false,
+                          "Async Capable": false,
+                          "Startup Cost": 2.03,
+                          "Total Cost": 2.13,
+                          "Plan Rows": 43,
+                          "Plan Width": 56,
+                          "Sort Key": [
+                            "bc.id"
+                          ],
+                          "Plans": [
+                            {
+                              "Node Type": "CTE Scan",
+                              "Parent Relationship": "Outer",
+                              "Parallel Aware": false,
+                              "Async Capable": false,
+                              "CTE Name": "bc",
+                              "Alias": "bc",
+                              "Startup Cost": 0,
+                              "Total Cost": 0.86,
+                              "Plan Rows": 43,
+                              "Plan Width": 56
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  ]
+}

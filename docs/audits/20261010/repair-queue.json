@@ -3488,7 +3488,7 @@
     "owner": "stackr_coding",
     "baseline": "4dadab24a0152bf971fb38b104dc43be966d8aed",
     "pullRequest": 446,
-    "status": "implemented_locally_tested_source_review_complete",
+    "status": "reviewed_exact_head_ci_passed_awaiting_authenticated_acceptance_and_rollout",
     "report": "docs/releases/home-independent-valuation-handoff-20261026.md",
     "deployed": false,
     "phoneAccepted": false,
@@ -3502,11 +3502,10 @@
           "features/home/HubScreen.tsx",
           "scripts/test-home-startup-runtime.ts"
         ],
-        "validation": "Four controlled cohorts retained all rows; complete-ready300to100 and partial300to200 simulatedms under stated delays, unchanged calls. Typecheck/lint/runtime/UI suites pass; independent final runtime run passed."
+        "validation": "Four controlled cohorts retained all rows; complete-ready 300 to 100 and partial 300 to 200 simulated ms under stated delays, unchanged calls. Required local checks, independent review and exact-head CI passed; no hosted/device speed claim."
       }
     ],
     "remaining": [
-      "Exact-head new-source CI and release preparation",
       "Designated QA credentials for private Home cap/timings and priced-printing coverage",
       "Installed-phone acceptance and new rollout approval",
       "Safe representative query plans for historical prepared-RPC cost; no speculative indexes"
@@ -3521,6 +3520,74 @@
       "Prepared HTTP is not caller-abortable; obsolete publication is rejected",
       "Early-cancelled loads can dispatch GET earlier than serial baseline",
       "Same-count remote identity change is not atomically detected"
+    ],
+    "candidateSource": "b50547de15a49712d99c67829c38a0bb1d9428b6",
+    "ciRuns": [
+      {
+        "id": 40329266168,
+        "name": "Stackr Platform CI",
+        "conclusion": "success"
+      },
+      {
+        "id": 40329266116,
+        "name": "Card-first UI validation",
+        "conclusion": "success"
+      },
+      {
+        "id": 40329266165,
+        "name": "Owner Pricing Identity Tests",
+        "conclusion": "success"
+      }
+    ],
+    "preflight": {
+      "exportSource": "086959bc9ea267b3a0d528890291286225c39b49",
+      "candidateSource": "b50547de15a49712d99c67829c38a0bb1d9428b6",
+      "candidateTree": "0abfa5b88a0d445b18e8ca4cb12a8217b96cdc8e",
+      "onlyChanges": "Documentation and scripts/test-gate0-dynamic-copy.ts",
+      "remainingTrackedTreeDiffExitCode": 0,
+      "appAndBuildInputsIdentical": true,
+      "exportRerunOnFinalHead": false
+    }
+  },
+  "preparedValuationMeasurement20261026": {
+    "observedDate": "2026-10-26",
+    "owner": "stackr_coding",
+    "baseline": "b50547de15a49712d99c67829c38a0bb1d9428b6",
+    "pullRequest": 446,
+    "status": "local_measurement_tooling_and_unapplied_sql_proposal",
+    "report": "docs/releases/prepared-valuation-measurement-handoff-20261026.md",
+    "appRuntimeChanged": false,
+    "deployed": false,
+    "hostedPrivateMeasured": false,
+    "phoneAccepted": false,
+    "entries": [
+      {
+        "id": "PREPARED-JSON-001",
+        "severity": "P2",
+        "cause": "Repeated JSON payload evaluation duplicates three aggregate subplans.",
+        "evidence": "Hosted nonexecuting PG17 plan and executed local PG18 three-way comparison: six to three aggregates, unchanged full payload and revision.",
+        "repair": "OFFSET 0 single-row payload subquery barrier; proposed SQL and rollback only, no registered/applied migration.",
+        "localLargeMedianMs": {
+          "before": 155.5781,
+          "after": 96.9211
+        },
+        "productionLatencyEffect": "unverified"
+      },
+      {
+        "id": "PREPARED-PAGING-002",
+        "severity": "P2",
+        "status": "conditional_risk_locally_reproduced_not_changed",
+        "cause": "scripts/lib/prepared-collection-valuation.mjs readPages treats a short page as completion; cap17 over1003 syntheticrows returns17.",
+        "productionOccurrence": "unverified; worker effective cap not measured",
+        "next": "Verify effective worker cap without running price jobs; preserve scope and add bounded pagination regression if repaired."
+      }
+    ],
+    "remaining": [
+      "QA file empty; authenticated cap/timings/coverage unverified",
+      "Actual Home optional sections, rendering, real edits, offline/account switching and phone acceptance",
+      "PG17 realistic I/O/concurrency qualification for selected SQL",
+      "CLI migration registration blocked by protected profile telemetry write; scoped new migration approval required",
+      "No new merge/deployment/native distribution approval applied"
     ]
   }
 }

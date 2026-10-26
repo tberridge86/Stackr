@@ -1,6 +1,6 @@
 # Home independent valuation acceptance — 26 October 2026
 
-Candidate source: 086959bc9ea267b3a0d528890291286225c39b49, PR #446. No candidate native build has been distributed. Build 1.0.6 (61) is available as the prior-release baseline; it cannot validate the new concurrent loading behavior.
+Candidate source: b50547de15a49712d99c67829c38a0bb1d9428b6 (runtime/build inputs identical to exported source 086959bc9ea267b3a0d528890291286225c39b49), PR #446. No candidate native build has been distributed. Build 1.0.6 (61) is available as the prior-release baseline; it cannot validate the new concurrent loading behavior.
 
 ## Authenticated measurement gate
 

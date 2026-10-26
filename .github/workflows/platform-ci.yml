@@ -72,6 +72,11 @@ jobs:
       - run: node scripts/test-gateway-privacy-deployment.mjs
       - run: npm run test:collection-pricing-ui
       - run: npm run test:home-release
+      - name: Verify Home measurement safety and prepared query invariants
+        run: |
+          node scripts/test-home-authenticated-measurement.mjs
+          node scripts/test-prepared-valuation-routes.mjs
+          node scripts/measure-prepared-valuation-query-plans.mjs > "$RUNNER_TEMP/prepared-valuation-local-plans.json"
       - run: npm run test:home-activity
       - run: npm run test:settings-help
       - run: npm run test:ux-p1
