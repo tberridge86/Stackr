@@ -812,10 +812,28 @@ assert.match(
   /parseHomeCollectionCache<Partial<HomeCollectionCacheSnapshot>>\([\s\S]*?raw,[\s\S]*?trustedUserId,[\s\S]*?\)[\s\S]*?if \(!isCurrentRestore\(\) \|\| homeSessionUserIdRef\.current !== trustedUserId\) return false;/,
   'Home cache hydration must bind its persisted envelope and recheck the local owner/generation before applying state',
 );
+// Both independent reads share the same denial reset. Keep its account/cache
+// revocation and both call sites covered without requiring an inline body.
+// test-home-startup-runtime.ts also executes the real 401/403 denial paths.
+const homeAccountRevocation = homeScreenSource.match(
+  /const revokeCollectionDisplay = \(\) => \{([\s\S]*?)\n    \};/,
+)?.[1];
+assert.ok(homeAccountRevocation, 'Home must retain a shared private-display revocation boundary');
+assert.match(homeAccountRevocation, /accountDenied = true;/);
+assert.match(homeAccountRevocation, /homeSessionExpiresAtRef\.current = 0;/);
+assert.match(homeAccountRevocation, /cachedHomeSnapshotUserIdRef\.current = null;/);
+assert.match(homeAccountRevocation, /collectionPriceEvidenceRef\.current = \[\];/);
+assert.match(homeAccountRevocation, /setCollectionTotal\(null\)/);
+assert.match(homeAccountRevocation, /setOwnedCardCount\(0\)/);
 assert.match(
   homeScreenSource,
-  /if \(accountDenied\) \{[\s\S]*?homeSessionExpiresAtRef\.current = 0;[\s\S]*?cachedHomeSnapshotUserIdRef\.current = null;/,
-  'a known live account denial must revoke a previously displayed local Home snapshot',
+  /if \(accountDenied\) revokeCollectionDisplay\(\);/,
+  'a known collection-read denial must invoke the shared private-display revocation',
+);
+assert.match(
+  homeScreenSource,
+  /if \(isCurrentSource\(\) && isKnownAuthDenial\(error\)\) revokeCollectionDisplay\(\);/,
+  'a current independent prepared-read denial must revoke the private display immediately',
 );
 assert.match(
   homeScreenSource,

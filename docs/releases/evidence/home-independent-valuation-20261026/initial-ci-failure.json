@@ -1,0 +1,18 @@
+{
+  "source": "086959bc9ea267b3a0d528890291286225c39b49",
+  "runId": 40328036239,
+  "jobId": 121589745305,
+  "failedStep": "npm run test:commerce-release-lock",
+  "reason": "Source-shape guard expects inline account-denial reset, now extracted to shared handler",
+  "status": "being corrected; not passed",
+  "url": "https://github.com/tberridge86/Stackr/actions/runs/40328036239",
+  "excerpt": [
+    "2026-10-26T13:12:13.3751777Z AssertionError [ERR_ASSERTION]: a known live account denial must revoke a previously displayed local Home snapshot",
+    "2026-10-26T13:12:13.3752888Z     at assert (/home/runner/work/Stackr/Stackr/scripts/test-gate0-dynamic-copy.ts:815:8)",
+    "2026-10-26T13:12:13.3753991Z     at Object.<anonymous> (/home/runner/work/Stackr/Stackr/scripts/test-gate0-dynamic-copy.ts:939:1)",
+    "2026-10-26T13:12:13.3754914Z     at Module._compile (node:internal/modules/cjs/loader:1781:14)",
+    "2026-10-26T13:12:13.3756044Z     at Object.transformer (/home/runner/work/Stackr/Stackr/node_modules/tsx/dist/register-BoI6-WNn.cjs:9:3252)",
+    "2026-10-26T13:12:13.3756985Z     at Module.load (node:internal/modules/cjs/loader:1505:32)",
+    "2026-10-26T13:12:13.3757744Z     at Function._load (node:internal/modules/cjs/loader:1309:12)"
+  ]
+}

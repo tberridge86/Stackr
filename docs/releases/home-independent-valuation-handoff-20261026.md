@@ -66,3 +66,9 @@ Rollback before distribution: leave Build 61 available. After authorised rollout
 Remaining gates: designated-account authenticated measurements; exact-head CI for new source; applicable release approval; actual installed-phone acceptance for Home/Binders/Search/Pokedex, pricing, edits, account boundaries, offline recovery and images. The earlier Build 60 visual/haptics/artwork holds are not closed by this change.
 
 Prioritised backlog: (1) authenticated Home acceptance and safe query-plan investigation of prepared RPC cost; (2) remaining cache/database bottlenecks supported by measurements; (3) job reliability, monitoring and recovery. R2 transfer work continues separately; no transfer, originals, public/private media or rollback receipt was changed here.
+
+## First publication and CI follow-up
+
+Published source 086959bc9ea267b3a0d528890291286225c39b49 passed Owner Pricing Identity and Card-first UI workflows. Platform run 40328036239 failed its commerce-release-lock step because test-gate0-dynamic-copy expected an inline account-denial reset now extracted into the shared revocation handler. The failure receipt is retained; it is not counted as a successful Platform run. A test-only correction checks the shared revocation body and both denial call sites; actual-Hub denial regressions remain required. Exact-head hosted CI must pass again after that correction.
+
+All six production-profile local preflight steps passed on 086959bc, including an iOS JS/assets export, 74 packaged assets and sampled public API checks. The iOS bundle SHA-256 is de28a0fa477326518994ba563e47cc67c1dbdc9d1366248cec4d24bf8dabc75b. This is not an EAS native build. Any later test/docs-only commit must explicitly establish unchanged runtime/build inputs rather than relabel this receipt as an export of that later SHA. Public reads are single samples and do not measure authenticated Home or establish sub-100 ms retrieval.
