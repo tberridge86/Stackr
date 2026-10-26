@@ -1,0 +1,18 @@
+{
+  "source": "7b04b1f20b215d859e8ae6a862e66b9439e6b4c4",
+  "sourceTree": "b2b6ee9a61429abe4a791dc994cb29f442081438",
+  "profile": "production",
+  "platform": "ios",
+  "export": "passed",
+  "bundleContentCheck": "passed",
+  "bundleSha256": "080760ce3c0b105417ac08f223dca1cc036e30fbdcd6e77c627959f40de79c36",
+  "bundleBytes": 11949790,
+  "expectedBackendSha": "7c1acd409680b38d5913d8cae76df560b5d91daa",
+  "publicDelivery": "blocked_before_first_live_response_by_ENOTFOUND_pocketvault-production.up.railway.app",
+  "initialAttempt": "Hermes output in default sandbox temp was not writable; retry used authorised writable workspace compiler temp",
+  "nativeBuild": false,
+  "distributed": false,
+  "installedPhone": false,
+  "recordedAt": "2026-10-26T16:24:00.294Z",
+  "verifiedAssets": 74
+}

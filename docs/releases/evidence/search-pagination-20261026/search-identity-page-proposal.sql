@@ -8,7 +8,9 @@ create or replace function api.catalogue_search_identity_page_v1(
   p_expected_revision text default null,
   p_exclude_selector jsonb default null
 ) returns jsonb
-language sql stable security invoker set search_path = ''
+language sql stable security invoker
+set search_path = ''
+set jit = off
 as $search$
 with
 selectors as (

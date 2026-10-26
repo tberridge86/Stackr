@@ -1,0 +1,26 @@
+{
+  "source": "7b04b1f20b215d859e8ae6a862e66b9439e6b4c4",
+  "platformRun": 40357474455,
+  "gatewayRun": 40357474409,
+  "result": "failed_API_contract_fixture",
+  "rootCause": "scripts/test-stackr-api-v1.mjs search-client mock lacked ordered keyset semantics; backend used .order/.gt for complete set-code retrieval",
+  "affected": [
+    "openapi-and-generated-client",
+    "integration-tests",
+    "lint-type-unit through server-delivery",
+    "gateway-and-app through API contracts"
+  ],
+  "passed": [
+    "binder retrieval workflow",
+    "pricing identity workflow",
+    "card-first UI workflow",
+    "native PostgreSQL17 query qualification",
+    "database migrations",
+    "dependency/secret scan under existing thresholds",
+    "distributed architecture",
+    "recognition container",
+    "benchmark smoke"
+  ],
+  "fix": "faithful sorted/keyset/missing-RPC fixture; original isolation/identity assertions retained; independent GO",
+  "requiredNext": "full hosted suites on final source; local loopback and Bash limits are separately disclosed"
+}

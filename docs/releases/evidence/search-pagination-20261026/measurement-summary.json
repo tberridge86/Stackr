@@ -1,187 +1,65 @@
 {
   "classification": "local in-memory PGlite synthetic fixture",
   "postgres": "PostgreSQL 18.3 (PGlite 0.5.8) on wasm32-unknown-emscripten, compiled by emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 3.1.74 (1092ec30a3fb1d46b1782ff1b4db5094d3d06ae5), 32-bit",
+  "proposalSha256": "d8f15108792dd828f4beb979245e66add90aba7b0bc1aaed7d0ce331eefd70b8",
   "samplesPerVariant": 4,
-  "proposalSha256": "a84c5dd7f6ee6e5fc1831b37b7ef5319554325e48efb40ed7d3be8baae5f1ed3",
   "conditions": [
     "No installed-device, HTTP, edge-cache or hosted latency measurement.",
     "Existing columns, views and indexes are copied; the fixture omits foreign-key/check/default contracts.",
     "Five thousand unrelated synthetic printings stress name selectivity; this is not production cardinality.",
     "Legacy search is deliberately bounded and incomplete; its latency is not an equivalent complete-search latency.",
-    "Result JSON bytes are internal SQL responses, not mobile API payload sizes."
+    "Result JSON bytes are internal SQL responses, not mobile API payload sizes.",
+    "PGlite validates GUC/identity parity only; JIT latency conclusions require the isolated PostgreSQL17 job.",
+    "candidateBody wall timings include scoped setting setup/restoration; plan Execution Time excludes that wrapper."
   ],
   "cohorts": [
     {
       "name": "empty",
-      "matchingPrintings": 0,
       "matchingVariants": 0,
-      "unrelatedPrintings": 5000,
-      "totalVariants": 10000,
-      "legacyMatchedNames": 0,
-      "legacyHydratedVariants": 0,
-      "candidateHydratedVariants": 0,
-      "candidateHasMore": false,
-      "indexedExactNameSelection": true,
-      "candidateInternalJsonBytes": 76,
-      "timing": {
-        "legacyBounded": {
-          "medianMs": 7.95995000000039,
-          "samplesMs": [
-            8.67910000000029,
-            8.223100000000159,
-            7.696800000000621,
-            7.3957000000000335
-          ]
-        },
-        "candidateBody": {
-          "medianMs": 26.718549999999595,
-          "samplesMs": [
-            28.237199999999575,
-            26.715299999999843,
-            26.721799999999348,
-            26.013599999999315
-          ]
-        },
-        "candidateFunction": {
-          "medianMs": 25.226200000000517,
-          "samplesMs": [
-            25.880300000000716,
-            26.55079999999998,
-            24.57210000000032,
-            24.566799999999603
-          ]
-        }
-      }
+      "oldHydrated": 0,
+      "newHydrated": 0,
+      "hasMore": false,
+      "exactParity": true,
+      "comparisonKeys": [
+        "jitComparison"
+      ]
     },
     {
       "name": "small",
-      "matchingPrintings": 24,
       "matchingVariants": 48,
-      "unrelatedPrintings": 5000,
-      "totalVariants": 10048,
-      "legacyMatchedNames": 24,
-      "legacyHydratedVariants": 48,
-      "candidateHydratedVariants": 48,
-      "candidateHasMore": false,
-      "indexedExactNameSelection": true,
-      "candidateInternalJsonBytes": 48055,
-      "timing": {
-        "legacyBounded": {
-          "medianMs": 10.43329999999969,
-          "samplesMs": [
-            11.640400000000227,
-            10.435199999999895,
-            10.431399999999485,
-            10.30080000000089
-          ]
-        },
-        "candidateBody": {
-          "medianMs": 30.457249999999476,
-          "samplesMs": [
-            31.048399999999674,
-            29.86609999999928,
-            29.60859999999957,
-            31.93029999999999
-          ]
-        },
-        "candidateFunction": {
-          "medianMs": 6.377350000000661,
-          "samplesMs": [
-            6.3849000000009255,
-            6.888299999998708,
-            6.369800000000396,
-            6.114999999999782
-          ]
-        }
-      }
+      "oldHydrated": 48,
+      "newHydrated": 48,
+      "hasMore": false,
+      "exactParity": true,
+      "comparisonKeys": [
+        "jitComparison"
+      ]
     },
     {
       "name": "large",
-      "matchingPrintings": 601,
       "matchingVariants": 1202,
-      "unrelatedPrintings": 5000,
-      "totalVariants": 11202,
-      "legacyMatchedNames": 200,
-      "legacyHydratedVariants": 400,
-      "candidateHydratedVariants": 50,
-      "candidateHasMore": true,
-      "indexedExactNameSelection": true,
-      "candidateInternalJsonBytes": 50054,
-      "timing": {
-        "legacyBounded": {
-          "medianMs": 32.85619999999835,
-          "samplesMs": [
-            37.586200000001554,
-            33.318599999998696,
-            32.39379999999801,
-            32.06079999999929
-          ]
-        },
-        "candidateBody": {
-          "medianMs": 55.21010000000024,
-          "samplesMs": [
-            56.30370000000039,
-            54.04880000000048,
-            54.11650000000009,
-            58.714899999999034
-          ]
-        },
-        "candidateFunction": {
-          "medianMs": 29.85844999999972,
-          "samplesMs": [
-            29.89099999999962,
-            29.82589999999982,
-            29.488900000000285,
-            30.72320000000036
-          ]
-        }
-      }
+      "oldHydrated": 400,
+      "newHydrated": 50,
+      "hasMore": true,
+      "exactParity": true,
+      "comparisonKeys": [
+        "jitComparison"
+      ]
     },
     {
       "name": "multilingual",
-      "matchingPrintings": 250,
       "matchingVariants": 500,
-      "unrelatedPrintings": 5000,
-      "totalVariants": 10500,
-      "legacyMatchedNames": 200,
-      "legacyHydratedVariants": 400,
-      "candidateHydratedVariants": 50,
-      "candidateHasMore": true,
-      "indexedExactNameSelection": true,
-      "candidateInternalJsonBytes": 48774,
-      "timing": {
-        "legacyBounded": {
-          "medianMs": 31.535949999999502,
-          "samplesMs": [
-            32.01170000000275,
-            31.671699999998964,
-            31.40020000000004,
-            30.43920000000071
-          ]
-        },
-        "candidateBody": {
-          "medianMs": 39.78055000000131,
-          "samplesMs": [
-            39.65359999999782,
-            42.53029999999853,
-            39.69590000000244,
-            39.865200000000186
-          ]
-        },
-        "candidateFunction": {
-          "medianMs": 15.340099999999438,
-          "samplesMs": [
-            15.25249999999869,
-            15.013100000000122,
-            15.427700000000186,
-            15.921299999998155
-          ]
-        }
-      }
+      "oldHydrated": 400,
+      "newHydrated": 50,
+      "hasMore": true,
+      "exactParity": true,
+      "comparisonKeys": [
+        "jitComparison"
+      ]
     }
   ],
   "newIndexes": [],
   "localRollbackVerified": true,
   "productionApplied": false,
-  "nativePg17": "pending_exact_source_CI"
+  "nativePg17": "pending_function_local_JIT_AB_exact_source_CI"
 }

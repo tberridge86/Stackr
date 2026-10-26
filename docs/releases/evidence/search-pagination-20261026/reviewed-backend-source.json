@@ -31,8 +31,8 @@
   },
   {
     "path": "scripts/test-backend-search-pagination.mjs",
-    "gitBlob": "001ff073dd0de5031ae91b275eabb92f25db9dd6",
-    "sha256": "b4c6eb03c369ab14f03e91ca011a5fc1c4e45bf4471f451bc80dcd474a131a7d"
+    "gitBlob": "337ac65eee0a91358cc78c7e63bdc1d28e8e0f29",
+    "sha256": "5730880ec001f34d94635c321445d706be0f63cd9cc74f6635e3af1193b3aa32"
   },
   {
     "path": "scripts/test-backend-translation-search.mjs",
@@ -46,8 +46,8 @@
   },
   {
     "path": "scripts/measure-search-pagination-query-plans.mjs",
-    "gitBlob": "8a4b688ed1505a30da4a7106a7f9cef4bac3ee5e",
-    "sha256": "7100317304b3847558fedb036404cf0d5bccf652290f30a2fc446e81c96266ee"
+    "gitBlob": "a6a2a44b2cca3ec54871c4f5a2b2756a9b9a2048",
+    "sha256": "e9b08ba82569c622e0a888c658bff02e0483b6470b830ac080372cb6d9234144"
   },
   {
     "path": "scripts/test-fixtures/search-pagination-db.mjs",
@@ -61,12 +61,17 @@
   },
   {
     "path": "docs/releases/evidence/search-pagination-20261026/search-identity-page-proposal.sql",
-    "gitBlob": "944ebd93c0a07407139758a8668233ef148dedf2",
-    "sha256": "a84c5dd7f6ee6e5fc1831b37b7ef5319554325e48efb40ed7d3be8baae5f1ed3"
+    "gitBlob": "1073187bd407f4c6106cbec79184d8dea609f95a",
+    "sha256": "d8f15108792dd828f4beb979245e66add90aba7b0bc1aaed7d0ce331eefd70b8"
   },
   {
     "path": "docs/releases/evidence/search-pagination-20261026/search-identity-page-rollback.sql",
     "gitBlob": "b24ccb89e5ce7f9c5bd7d451d4aca5ac9546d7c1",
     "sha256": "baaf257bdd376a29eb1cabb1fc9129c8c6ec3819fb9af9977f45650406cad7f4"
+  },
+  {
+    "path": "scripts/test-stackr-api-v1.mjs",
+    "gitBlob": "c7fba4bd66252a4426e7403de94037cb62bca8e4",
+    "sha256": "41f5353ab28afeadad1ee38c8ccadfbc3ff359b9c2cb7b27eed2978ac0661db1"
   }
 ]

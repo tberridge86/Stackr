@@ -1,6 +1,6 @@
 {
-  "recordedAt": "2026-10-26T16:15:00.128Z",
-  "sourceBase": "dc1d9dbac708c3a6b039c9a8fd15193eff9bef7f",
+  "recordedAt": "2026-10-26T16:34:02.550Z",
+  "sourceBase": "7b04b1f20b215d859e8ae6a862e66b9439e6b4c4",
   "classification": "local_working_candidate_before_final_source_commit",
   "commands": [
     {
@@ -82,13 +82,28 @@
     {
       "command": "backend enrichment/translation/printing-language/correction regressions",
       "result": "pass"
+    },
+    {
+      "command": "native-JIT A/B harness on PGlite",
+      "result": "correctness_pass_only",
+      "performance": "requires_native_PG17"
+    },
+    {
+      "command": "npm run test:stackr-api-v1",
+      "result": "blocked_at_local_loopback_fetch_EACCES",
+      "note": "original ordered-keyset fixture failure corrected; narrow actual isolation cases pass; hosted suite required"
+    },
+    {
+      "command": "npm run test:server-delivery",
+      "result": "blocked_at_Git_Bash_runtime_in_this_host",
+      "note": "other requested production preflight suites pass; hosted full suite required"
     }
   ],
   "localDependencyNote": "Gateway npm ci could not finish because registry DNS was unavailable. Full runtime suite then used existing local jose6.2.4 whose source and target lock version/integrity matched; lockfiles unchanged. Hosted CI must install the complete locked dependency tree.",
   "review": {
     "mobile": "GO",
     "gatewayRefresh": "GO",
-    "backendSql": "GO"
+    "backendSql": "GO_static_and_local_correctness_native_AB_pending"
   },
   "nativeBuild": false,
   "phoneVerified": false

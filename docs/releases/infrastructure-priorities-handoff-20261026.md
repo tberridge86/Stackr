@@ -24,9 +24,11 @@ Filters and sorting operate on loaded rows and say so while continuation remains
 
 The existing prepared-valuation proposal is unchanged and unapplied. The isolated PostgreSQL17.6 CI fixture reduced the large cohort median from73.724464 to48.741687ms, with six to three ordered aggregate evaluations and exact payload/revision preservation. That is synthetic database evidence, not a production RPC or screen speed claim. Raw plans and source/run/artifact provenance are saved under evidence/infrastructure-boundaries-20261026/.
 
-Search requires the separately prepared api.catalogue_search_identity_page_v1(jsonb,jsonb,integer,text,jsonb). The function was absent in the read-only hosted precheck; relevant existing service-role schema/table permissions were present. Installation must recheck both conditions and the reviewed checksum immediately before execution. This proposal is not registered among automatic pending migrations and has not been applied. No new index is proposed. The reviewed LF SHA-256 is a84c5dd7f6ee6e5fc1831b37b7ef5319554325e48efb40ed7d3be8baae5f1ed3; rollback SHA-256 is baaf257bdd376a29eb1cabb1fc9129c8c6ec3819fb9af9977f45650406cad7f4.
+Search requires the separately prepared api.catalogue_search_identity_page_v1(jsonb,jsonb,integer,text,jsonb). The function was absent in the read-only hosted precheck; relevant existing service-role schema/table permissions were present. Installation must recheck both conditions and the reviewed checksum immediately before execution. This proposal is not registered among automatic pending migrations and has not been applied. No new index is proposed. The reviewed LF SHA-256 is d8f15108792dd828f4beb979245e66add90aba7b0bc1aaed7d0ce331eefd70b8; rollback SHA-256 is baaf257bdd376a29eb1cabb1fc9129c8c6ec3819fb9af9977f45650406cad7f4.
 
 Keep Profile migration20261025154000 mapped to existing ledger20261026072532. Do not replay it, apply daily-movers or use a blanket migration push.
+
+The first native PostgreSQL17 search run identified 83-94ms of JIT compilation per first-page selector call. The narrow follow-up disables JIT only inside the new function. Local correctness, caller-setting restoration and revision rejection pass; independent review passed and native A/B performance qualification is pending. The original raw native artifact is retained as postgres17-jit-baseline.json.
 
 ## Acceptance and live state
 
@@ -35,7 +37,7 @@ Keep Profile migration20261025154000 mapped to existing ledger20261026072532. Do
 - Backend last attested:7c1acd409680b38d5913d8cae76df560b5d91daa, deployment dfc23b30-9675-4ba0-ad2b-9f1875302747, production Supabase oakdbbzdqwurpjnoqhmu.
 - Configured gateway is https://api.stackrtcg.com; active worker revision remains unattested.
 - Designated QA configuration remains empty. Actual authenticated Home page cap, priced-printing coverage and cold/warm timings are unverified.
-- No physical-device acceptance is available. An export/CI pass or TestFlight availability is not installation.
+- No physical-device acceptance is available. The production iOS export and 74-asset content check passed at app-equivalent source7b04b1f. The following live-delivery gate was blocked by local DNS before its first live response. An export/CI pass or TestFlight availability is not installation.
 - No new merge, deployment, native build, migration, scheduler activation, price job or R2 operation has occurred in this unit.
 
 ## Operational qualification
@@ -46,7 +48,7 @@ Twelve current public spot-check requests succeeded. Workspace Node search repea
 
 The recent scheduled price-refresh sample contains69 cancelled runs and one pending run with no jobs. Separate bulk ledgers show completed work, so these cancellations do not establish that pricing is inactive. Live Railway scheduler ownership and configuration remain unattested. The database connection snapshot is not a capacity test.
 
-Leaked-password protection was reported disabled; enabling it needs current Auth configuration/plan-entitlement verification and a scoped approved configuration change. The database security-patch upgrade requires provider preflight and approval. No paid plan or live setting was changed.
+Leaked-password protection was reported disabled; enabling it needs current Auth configuration/plan-entitlement verification and a scoped approved configuration change. The database security-patch upgrade requires provider preflight and approval. No paid plan or live setting was changed. The current dependency CI gate caps critical advisories only; its production dependency reports contain 19 high advisories in the app tree and 3 in the backend, with none in gateway. These totals do not establish exploitability. Reports are now retained for package-specific triage; no dependency or lockfile was changed.
 
 ## Controlled rollout preparation
 

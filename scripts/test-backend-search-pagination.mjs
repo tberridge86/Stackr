@@ -265,6 +265,25 @@ try {
   assert.ok(stalled.calls.some(c => c.name === SEARCH_IDENTITY_RPC && c.signal?.aborted));
   console.log('PASS malformed/foreign/duplicate identities fail closed; caller cancellation reaches actual SDK fetch.');
 
+  const contract = (await db.query("select provolatile,prosecdef,proconfig from pg_proc where oid='api.catalogue_search_identity_page_v1(jsonb,jsonb,integer,text,jsonb)'::regprocedure")).rows[0];
+  assert.equal(contract.provolatile, 's');
+  assert.equal(contract.prosecdef, false);
+  assert.deepEqual(contract.proconfig, ['search_path=""', 'jit=off']);
+  const originalJit = (await db.query("select current_setting('jit') jit")).rows[0].jit;
+  await db.exec("set jit='on'");
+  const jitBoundCursor = await pageClient.api.search(query);
+  assert.equal((await db.query("select current_setting('jit') jit")).rows[0].jit, 'on', 'function-local JIT override restores its caller');
+  await db.exec('reset role; ' + proposal.replace('\nset jit = off', '') + '; set role service_role;');
+  await assert.rejects(pageClient.api.search({ ...query, cursor: jitBoundCursor.pagination.nextCursor }),
+    e => e.status === 409 && e.code === 'search_catalogue_changed');
+  await db.exec('reset role; ' + proposal + '; set role service_role;');
+  await db.exec("set jit='off'");
+  await fixture.page({ kind: 'name', normalized: 'fixturemon', nameTypes: ['native'] });
+  assert.equal((await db.query("select current_setting('jit') jit")).rows[0].jit, 'off');
+  assert.ok(['on', 'off'].includes(originalJit));
+  await db.exec("set jit='" + originalJit + "'");
+  console.log('PASS function-local jit=off preserves invoker/stable/search_path, restores caller settings and invalidates old definition cursors.');
+
   for (const role of ['anon', 'authenticated']) {
     await db.exec('reset role; set role ' + role);
     await assert.rejects(fixture.page({ kind: 'name', normalized: 'fixturemon', nameTypes: ['native'] }), e => e.code === '42501');

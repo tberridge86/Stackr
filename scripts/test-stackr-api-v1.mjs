@@ -441,10 +441,15 @@ async function assertSearchServerClientIsolation(exactOriginalAvailable = false)
     same_artwork_as_variant_id: sharedArtworkVariantId,
     catalogue_version_id: '44444444-4444-4444-8444-444444444444',
   };
+  const searchRpcCalls = [];
   const searchSupabase = {
     schema(schema) {
       assert.equal(schema, 'api');
       return {
+        rpc(name) {
+          searchRpcCalls.push(name);
+          return Promise.resolve({ data: null, error: { code: 'PGRST202', message: 'Could not find api.' + name } });
+        },
         from(table) {
           const filters = [];
           const query = {
@@ -452,15 +457,35 @@ async function assertSearchServerClientIsolation(exactOriginalAvailable = false)
             eq(column, value) { filters.push(['eq', column, value]); return this; },
             in(column, value) { filters.push(['in', column, value]); return this; },
             ilike(column, value) { filters.push(['ilike', column, value]); return this; },
+            gt(column, value) { filters.push(['gt', column, value]); return this; },
+            order(column, options = {}) { filters.push(['order', column, options]); return this; },
             limit(value) { filters.push(['limit', value]); return this; },
             then(resolve, reject) {
-              operations.push({ table, filters });
-              const data = table === 'catalogue_sets'
+              const available = table === 'catalogue_sets'
                 ? [{ set_id: setId, set_code: 'SV2a', language_code: 'ja' }]
-                : table === 'catalogue_cards'
-                  ? [row]
-                  : [];
-              return Promise.resolve({ data, error: null }).then(resolve, reject);
+                : table === 'catalogue_cards' ? [row] : [];
+              const data = available.filter(candidate => filters.every(([operator, column, value]) => {
+                if (operator === 'eq') return candidate[column] === value;
+                if (operator === 'in') return value.includes(candidate[column]);
+                if (operator === 'gt') return candidate[column] > value;
+                if (operator === 'ilike') {
+                  const escaped = value.split('%').map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('.*');
+                  return new RegExp('^' + escaped + '$', 'i').test(String(candidate[column] ?? ''));
+                }
+                return true;
+              }));
+              data.sort((left, right) => {
+                for (const [operator, column, options] of filters) {
+                  if (operator !== 'order') continue;
+                  const compared = String(left[column] ?? '').localeCompare(String(right[column] ?? ''));
+                  if (compared) return options.ascending === false ? -compared : compared;
+                }
+                return 0;
+              });
+              const maximum = filters.find(([operator]) => operator === 'limit')?.[1] ?? Infinity;
+              const page = data.slice(0, maximum);
+              operations.push({ table, filters, returnedRows: page.length });
+              return Promise.resolve({ data: page, error: null }).then(resolve, reject);
             },
           };
           return query;
@@ -538,6 +563,14 @@ async function assertSearchServerClientIsolation(exactOriginalAvailable = false)
   });
   const result = await catalogue.search({ q: 'SV2a 157', language: 'ja', limit: 1 });
   assert.equal(catalogueClientUsed, false);
+  assert.deepEqual(searchRpcCalls, ['catalogue_search_identity_page_v1'],
+    'only the search client probes the unavailable pagination function');
+  const setPages = operations.filter(operation => operation.table === 'catalogue_sets');
+  assert.equal(setPages.length, 2, 'the scoped set lookup includes a definitive empty verification page');
+  assert.equal(setPages[0].returnedRows, 1);
+  assert.equal(setPages[1].returnedRows, 0);
+  assert.deepEqual(setPages[1].filters.find(([operator]) => operator === 'gt'), ['gt', 'set_id', setId]);
+
   assert.equal(result.results[0].reason, 'exact_set_code_collector_number');
   assert.equal(result.results[0].card.catalogueVersionId, '44444444-4444-4444-8444-444444444444');
   assert.equal(result.results[0].card.variants[0].image.variantId, exactOriginalAvailable ? variantId : sharedArtworkVariantId);
