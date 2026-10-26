@@ -1,0 +1,29 @@
+{
+  "backend": {
+    "observedAt": "2026-10-26T07:21:36.667Z",
+    "url": "https://pocketvault-production.up.railway.app/health",
+    "status": 200,
+    "runtime": {
+      "gitCommit": "7c1acd409680",
+      "gitCommitSource": "bundled_workflow_sha",
+      "deploymentId": "dfc23b30-9675-4ba0-ad2b-9f1875302747",
+      "railwayEnvironment": "production",
+      "supabaseProjectRef": "oakdbbzdqwurpjnoqhmu"
+    }
+  },
+  "gateway": {
+    "observedAt": "2026-10-26T07:23:37.047Z",
+    "url": "https://api.stackrtcg.com/v1/health",
+    "data": {
+      "status": "ok",
+      "service": "stackr-api-gateway",
+      "apiVersion": "1"
+    },
+    "requestId": "fd94607d-5650-4ced-a975-cf5986f5db63",
+    "revisionAttested": false
+  },
+  "limitations": [
+    "No authenticated Home JWT measurements",
+    "No installed-phone acceptance"
+  ]
+}

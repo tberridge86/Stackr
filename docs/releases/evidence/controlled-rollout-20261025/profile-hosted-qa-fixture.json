@@ -1,0 +1,79 @@
+{
+  "fixture": {
+    "test": "hosted DB-role controlled fixtures; no user JWT or phone",
+    "large": {
+      "rows": 1003,
+      "summary": {
+        "updatedAt": "2026-10-26T08:14:47.820271+00:00",
+        "valuation": {
+          "basis": "stored_tcg_raw_estimate",
+          "state": "unavailable",
+          "currency": "GBP",
+          "usdToGbp": 0.79,
+          "freshness": "unknown",
+          "totalUnits": 1337,
+          "pricedUnits": 0,
+          "unpricedUnits": 1337,
+          "unsupportedUnits": 2,
+          "missingPriceUnits": 1335
+        },
+        "binderCount": 0,
+        "uniqueCards": 1003,
+        "completedSets": 0,
+        "rawCardsOwned": 1336,
+        "schemaVersion": "collection-summary-v1",
+        "collectionValue": null,
+        "duplicateCopies": 334,
+        "totalCardsOwned": 1337,
+        "totalOwnedItems": 1337,
+        "gradedSlabsOwned": 1,
+        "sealedProductsOwned": 0
+      },
+      "functionElapsedMs": 38.71
+    },
+    "small": {
+      "rows": 10,
+      "summary": {
+        "updatedAt": "2026-10-26T08:14:47.820271+00:00",
+        "valuation": {
+          "basis": "stored_tcg_raw_estimate",
+          "state": "unavailable",
+          "currency": "GBP",
+          "usdToGbp": 0.79,
+          "freshness": "unknown",
+          "totalUnits": 13,
+          "pricedUnits": 0,
+          "unpricedUnits": 13,
+          "unsupportedUnits": 2,
+          "missingPriceUnits": 11
+        },
+        "binderCount": 0,
+        "uniqueCards": 10,
+        "completedSets": 0,
+        "rawCardsOwned": 12,
+        "schemaVersion": "collection-summary-v1",
+        "collectionValue": null,
+        "duplicateCopies": 3,
+        "totalCardsOwned": 13,
+        "totalOwnedItems": 13,
+        "gradedSlabsOwned": 1,
+        "sealedProductsOwned": 0
+      },
+      "functionElapsedMs": 242.121
+    },
+    "accountAlias": "existing-managed-qa",
+    "transactionDisposition": "ROLLBACK follows; verify empty baseline in a separate read",
+    "distinctLanguagePrefixes": 5,
+    "foreignPublicBindersVisible": 45
+  },
+  "rollback": {
+    "binders": 0,
+    "ownedRows": 0,
+    "managedQaAccounts": 1,
+    "syntheticRowsRemaining": 0
+  },
+  "limitations": [
+    "One hosted DB-role transaction with deliberately unavailable synthetic identities; not private Home retrieval or real printing price coverage",
+    "Single function execution samples, no network or device timing, small then large in the same transaction; not comparable cold/warm benchmarks"
+  ]
+}

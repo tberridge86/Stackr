@@ -1,0 +1,17 @@
+{
+  "observedAt": "2026-10-26T08:17:31.343Z",
+  "easBuildId": "c0acb3f0-8366-48cf-b55c-99b30a2b7469",
+  "ipaBytes": 390040377,
+  "ipaSha256": "b5d7d8d71b5d88a6e687342324b2a32c31f6201217d6270262bc8c7efd35fd45",
+  "bundleIdentifier": "com.tommo86.Stackr",
+  "appVersion": "1.0.6",
+  "buildNumber": "61",
+  "runtimeVersion": "1.0.6",
+  "channel": "production",
+  "updatesUrl": "https://u.expo.dev/22048198-a309-41d2-a2bf-aa354c76be3a",
+  "embeddedUpdateId": "7964f2aa-1ea6-4278-859e-e0b2fca618e4",
+  "embeddedCommitTime": 1793002127406,
+  "source": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+  "sourceEvidence": "Exact EAS build record; embedded legacy manifest does not expose Git source",
+  "signingValidation": "Apple subsequently reported VALID processing; see apple-build61-status.json. Local metadata inspection is not codesign verification."
+}

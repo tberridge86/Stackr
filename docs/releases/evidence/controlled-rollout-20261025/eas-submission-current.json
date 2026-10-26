@@ -1,0 +1,12 @@
+{
+  "observedAt": "2026-10-26T08:20:41.531Z",
+  "id": "3d8d7489-6c38-446a-bf24-37fd95f4d47f",
+  "status": "FINISHED",
+  "submittedBuild": {
+    "id": "c0acb3f0-8366-48cf-b55c-99b30a2b7469",
+    "source": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+    "version": "1.0.6",
+    "number": "61"
+  },
+  "error": null
+}

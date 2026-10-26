@@ -1,0 +1,36 @@
+{
+  "buildId": "c0acb3f0-8366-48cf-b55c-99b30a2b7469",
+  "checksPassed": 17,
+  "checksTotal": 18,
+  "failedCheck": "Check that packages match versions required by installed Expo SDK",
+  "mismatches": [
+    {
+      "name": "expo",
+      "found": "54.0.36",
+      "expected": "~54.0.37"
+    },
+    {
+      "name": "expo-asset",
+      "found": "12.0.13",
+      "expected": "~12.0.14"
+    },
+    {
+      "name": "expo-constants",
+      "found": "18.0.13",
+      "expected": "~18.0.14"
+    },
+    {
+      "name": "expo-file-system",
+      "found": "19.0.23",
+      "expected": "~19.0.24"
+    },
+    {
+      "name": "expo-updates",
+      "found": "29.0.19",
+      "expected": "~29.0.20"
+    }
+  ],
+  "nativeBuildResult": "FINISHED",
+  "sourceChangedToSuppressWarning": false,
+  "disposition": "Disclosed locked dependency patch-alignment warning; no unsolicited dependency upgrade"
+}

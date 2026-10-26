@@ -1,0 +1,17 @@
+{
+  "startedAt": "2026-10-26T08:12:56.855Z",
+  "source": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+  "buildId": "c0acb3f0-8366-48cf-b55c-99b30a2b7469",
+  "profile": "production",
+  "version": "1.0.6",
+  "buildNumber": "61",
+  "fingerprint": "dfe1bddd9007cd2ad0a40e660d01da3f7663c9d0",
+  "ascAppId": "6772118450",
+  "audience": [
+    "Team (Expo)"
+  ],
+  "autoTestFlightSetup": false,
+  "requestExitCode": 0,
+  "submissionId": "3d8d7489-6c38-446a-bf24-37fd95f4d47f",
+  "status": "accepted_pending_readback"
+}

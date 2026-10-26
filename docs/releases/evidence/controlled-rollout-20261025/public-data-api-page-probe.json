@@ -1,0 +1,38 @@
+{
+  "observedAt": "2026-10-26T07:22:41.800Z",
+  "table": "pokemon_cards",
+  "projection": "id",
+  "requestedPage": 500,
+  "authentication": "public publishable key; no private account JWT",
+  "samples": [
+    {
+      "sample": 1,
+      "status": 200,
+      "returnedRows": 500,
+      "responseBytes": 10493,
+      "elapsedMs": 519,
+      "contentRange": "0-499/*",
+      "cacheControl": null
+    },
+    {
+      "sample": 2,
+      "status": 200,
+      "returnedRows": 500,
+      "responseBytes": 10493,
+      "elapsedMs": 100,
+      "contentRange": "0-499/*",
+      "cacheControl": null
+    },
+    {
+      "sample": 3,
+      "status": 200,
+      "returnedRows": 500,
+      "responseBytes": 10493,
+      "elapsedMs": 101,
+      "contentRange": "0-499/*",
+      "cacheControl": null
+    }
+  ],
+  "privateHomeVerified": false,
+  "wholeCatalogueCompletenessClaim": false
+}

@@ -1,0 +1,79 @@
+{
+  "source": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+  "profile": "production",
+  "backendSource": "7c1acd409680b38d5913d8cae76df560b5d91daa",
+  "catalogueVersion": "en:tcgdex-796afd47e430-full-primary-2026-08-19|ja:magazine-promo-reconciliation-2026-09-27-v1|zh-cn:api-launch-2026-08-09-v1|zh-tw:tcgdex-796afd47e430-full-primary-2026-08-19|ko:api-launch-2026-08-09-v1",
+  "pokedexIndexVersion": "pokeapi-species-2026-10-11-a8e69cbfe2b9",
+  "translationRecordsSha256": "6de8551e043ced800b359a8fb952548649eb042922abf9cae7637c35933c636e",
+  "verifiedTranslationSamples": 4,
+  "reads": [
+    {
+      "path": "/health",
+      "milliseconds": 3171,
+      "cache": null
+    },
+    {
+      "path": "/v1/catalog/manifest",
+      "milliseconds": 1856,
+      "cache": "MISS"
+    },
+    {
+      "path": "/v1/pokemon",
+      "milliseconds": 1159,
+      "cache": "MISS"
+    },
+    {
+      "path": "/v1/pokemon",
+      "milliseconds": 3293,
+      "cache": "MISS"
+    },
+    {
+      "path": "/v1/cards/c8609bab-a76b-4ca3-a86a-958aa87d2275",
+      "milliseconds": 1687,
+      "cache": "MISS"
+    },
+    {
+      "path": "/v1/cards/36fefd44-8813-450b-9490-3814f952f175",
+      "milliseconds": 1160,
+      "cache": "MISS"
+    },
+    {
+      "path": "/v1/cards/6d5617ff-95fc-473e-be4b-725c66d7276c",
+      "milliseconds": 1271,
+      "cache": "MISS"
+    },
+    {
+      "path": "/v1/cards/08285a8f-000e-4d95-8e87-304708eb1f32",
+      "milliseconds": 3502,
+      "cache": "MISS"
+    }
+  ],
+  "activityHistory": {
+    "supabaseProjectRef": "oakdbbzdqwurpjnoqhmu",
+    "baseSchema": "verified",
+    "baseColumns": "id,user_id,type,title,subtitle,card_id,set_id,value_change,is_positive,created_at",
+    "snapshotSchema": "legacy_compatible",
+    "access": "anonymous_publishable_key",
+    "rowLimit": 0,
+    "reads": [
+      {
+        "path": "/rest/v1/activity_feed",
+        "contract": "base",
+        "limit": 0,
+        "status": 200,
+        "milliseconds": 357
+      },
+      {
+        "path": "/rest/v1/activity_feed",
+        "contract": "snapshots",
+        "limit": 0,
+        "status": 400,
+        "milliseconds": 152
+      }
+    ]
+  },
+  "iosBundleSha256": "0252075187dd01223c5ae044357b88955aa5cb41373883e7dd1c6daecca40a60",
+  "verifiedAt": "2026-10-26T07:52:06.408Z",
+  "physicalDeviceAcceptance": "pending",
+  "storedPriceCoverage": "not_verified_by_this_public_gate"
+}

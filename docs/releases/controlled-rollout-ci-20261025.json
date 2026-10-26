@@ -1,0 +1,80 @@
+{
+  "observedAt": "2026-10-26T08:31:27.638Z",
+  "reviewedHead": "f46c984a814bab6c0f30d03266ffa010a00b1c11",
+  "merge": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+  "workflow_runs": [
+    {
+      "id": 40286110245,
+      "name": "Stackr Platform CI",
+      "head": "f46c984a814bab6c0f30d03266ffa010a00b1c11",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/40286110245"
+    },
+    {
+      "id": 40286110114,
+      "name": "Stackr Gateway CI",
+      "head": "f46c984a814bab6c0f30d03266ffa010a00b1c11",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/40286110114"
+    },
+    {
+      "id": 40286110154,
+      "name": "Owner Pricing Identity Tests",
+      "head": "f46c984a814bab6c0f30d03266ffa010a00b1c11",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/40286110154"
+    },
+    {
+      "id": 40286110113,
+      "name": "Card-first UI validation",
+      "head": "f46c984a814bab6c0f30d03266ffa010a00b1c11",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/40286110113"
+    },
+    {
+      "id": 40286110117,
+      "name": "Validate binder local-first retrieval",
+      "head": "f46c984a814bab6c0f30d03266ffa010a00b1c11",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/40286110117"
+    },
+    {
+      "id": 40286904134,
+      "name": "Stackr Platform CI",
+      "head": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+      "event": "push",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/40286904134"
+    },
+    {
+      "id": 40286904106,
+      "name": "Stackr Gateway CI",
+      "head": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+      "event": "push",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/40286904106"
+    },
+    {
+      "id": 40286904122,
+      "name": "Owner Pricing Identity Tests",
+      "head": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+      "event": "push",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/40286904122"
+    }
+  ],
+  "fullPlatformReleaseCandidateGate": "skipped; not claimed passed"
+}

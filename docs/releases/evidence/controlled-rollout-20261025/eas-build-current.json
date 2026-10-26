@@ -1,0 +1,17 @@
+{
+  "observedAt": "2026-10-26T08:12:13.321Z",
+  "id": "c0acb3f0-8366-48cf-b55c-99b30a2b7469",
+  "status": "FINISHED",
+  "source": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+  "appVersion": "1.0.6",
+  "appBuildVersion": "61",
+  "profile": "production",
+  "channel": "production",
+  "runtime": "1.0.6",
+  "fingerprint": {
+    "id": "01a1773a-9efa-774b-89f9-9d5989ab182b",
+    "hash": "dfe1bddd9007cd2ad0a40e660d01da3f7663c9d0"
+  },
+  "completedAt": "2026-10-26T08:10:04.309Z",
+  "error": null
+}
