@@ -552,8 +552,8 @@ assert.match(scanHydrationSource, /defineTcgdexRuntimeImageOverlay\(displayRow, 
 
 const cardSearchSource = readFileSync('lib/cardSearch.ts', 'utf8');
 assert.match(cardSearchSource, /const cards = await searchStackrCards/);
-assert.match(cardSearchSource, /readOptionalCatalogueEnrichment\(\(\) => attachLiveTcgdexCardReferences\(cards\)\)/,
-  'optional search images must still use the existing controlled provider overlay and bounded read');
+assert.match(cardSearchSource, /readOptionalCatalogueEnrichment\(\s*\(\)\s*=>\s*attachLiveTcgdexCardReferences\(cards\),\s*options\.signal\s*\)/,
+  'optional search images must retain the controlled provider overlay, bounded read and caller cancellation signal');
 
 const listingSource = readFileSync('features/listing/CreateListingScreen.tsx', 'utf8');
 assert.match(
