@@ -1,0 +1,4 @@
+npm notice run Stackr-native@1.0.6 typecheck
+npm notice run tsc --noEmit
+scripts/test-home-startup-runtime.ts(1334,47): error TS2345: Argument of type '{ id: string; binder_id: string; card_id: string; set_id: string; language: PokemonCardLanguage; card_name: string; card_number: string; slot_order: number; owned: boolean; ... 7 more ...; last_price_update: null; }' is not assignable to parameter of type 'BinderCardRecord'.
+  Type '{ id: string; binder_id: string; card_id: string; set_id: string; language: PokemonCardLanguage; card_name: string; card_number: string; slot_order: number; owned: boolean; ... 7 more ...; last_price_update: null; }' is missing the following properties from type 'BinderCardRecord': api_card_id, api_set_id, set_name, set_total, condition

@@ -1,0 +1,9 @@
+npm notice run Stackr-native@1.0.6 npx
+npm notice run eslint features/home/HubScreen.tsx scripts/test-home-startup-runtime.ts
+
+D:\workspace\Stackr-home-payload-20261026\features\home\HubScreen.tsx
+    2:41  warning  'D:\workspace\Stackr-home-payload-20261026\lib\homePriceRefreshCore.ts' imported multiple times  import/no-duplicates
+  107:43  warning  'D:\workspace\Stackr-home-payload-20261026\lib\homePriceRefreshCore.ts' imported multiple times  import/no-duplicates
+
+Γ£û 2 problems (0 errors, 2 warnings)
+  0 errors and 1 warning potentially fixable with the `--fix` option.

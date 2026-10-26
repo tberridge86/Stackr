@@ -8,6 +8,9 @@ import ts from 'typescript';
 import * as homeCache from '../lib/homeCollectionCache';
 import * as prepared from '../lib/preparedCollectionValuation';
 import * as pricingState from '../lib/collectionPricingState';
+import * as pricingApi from '../lib/collectionPricingApi';
+import * as priceRefresh from '../lib/homePriceRefreshCore';
+import { binderTrustedResolution } from '../lib/binderPricing';
 import * as stablePrices from '../lib/stableCollectionPrices';
 import * as cardReferences from '../lib/scanCardReferenceHydration';
 import { getHomeCardDisplayMetadata } from '../lib/homeCardDisplayMetadata';
@@ -17,6 +20,7 @@ import { buildForeignCardPresentation } from '../lib/foreignCardPresentation';
 import { copyPreferredSetArtworkReassignments, getPreferredSetArtworkReassignments } from '../lib/stackrPreferredSetArtwork';
 import { throwIfOptionalCatalogueReadAborted } from '../lib/optionalCatalogueEnrichment';
 import type { fetchStackrCardRows } from '../lib/stackrDomainAdapter';
+import type { PokemonCardLanguage } from '../lib/pokemonTcg';
 import type { fetchHomeSavedCollection } from '../lib/homeSavedCollection';
 
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
@@ -46,12 +50,22 @@ const sourceAtRevision = (path: string) => baselineRef
 const homeSource = sourceAtRevision('features/home/HubScreen.tsx');
 const renderStart = homeSource.indexOf('  return (', homeSource.indexOf('// MAIN RENDER'));
 assert.ok(renderStart > 0);
+// Keep the actual independent status notice JSX in the otherwise reduced visual
+// tree, so its visibility is tested through React rather than a state-only check.
+const noticeStart = homeSource.indexOf('        {/* HOME STATUS NOTICES */}');
+const noticeEnd = homeSource.indexOf('        {/* VALUE TRACKER */}', noticeStart);
+const emptyValuationNotice = noticeStart >= 0 && noticeEnd > noticeStart
+  ? homeSource.slice(noticeStart, noticeEnd) : '';
 const source = homeSource.slice(0, renderStart) + `
   return React.createElement('HomeState', { collectionTotal, collectionPricingSummary,
     ownedCardCount, activeBinder, chartData, collectionPricingWarning, collectionValueError,
-    collectionValueLoading, homeDataError, chaseLoading, chaseError, activityLoading, activityError,
+    preparedSummaryAvailable: preparedValuationAvailableRef.current,
+    collectionValueLoading, collectionFactsLoading: typeof collectionFactsLoading === 'undefined' ? collectionValueLoading : collectionFactsLoading,
+    homeDataError, chaseLoading, chaseError, activityLoading, activityError,
     recentActivity, chaseCards, reloadChase: loadChaseCards, reloadActivity: loadRecentActivity,
-    restore: applyCachedHomeCollection, refresh: loadCollectionValue, manualRefresh: refreshLivePrices, poll: pollLivePrices, changeRange: handleChartRangeChange });
+    restore: applyCachedHomeCollection, refresh: loadCollectionValue, manualRefresh: refreshLivePrices, poll: pollLivePrices, changeRange: handleChartRangeChange }, <>
+    ${emptyValuationNotice}
+  </>);
 }
 `;
 const compiled = ts.transpileModule(source, { compilerOptions: {
@@ -109,14 +123,6 @@ vm.runInNewContext(ts.transpileModule(authSource.slice(
 ), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText,
 { module: authDenialModule, exports: authDenialModule.exports });
 
-const pricingModule = { exports: {} as Record<string, any> };
-const pricingTree = ts.createSourceFile('pricing.ts', readFileSync('lib/collectionPricingApi.ts', 'utf8'), ts.ScriptTarget.Latest, true);
-const unavailableDeclaration = pricingTree.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === 'unavailableCollectionPrice');
-assert.ok(unavailableDeclaration);
-vm.runInNewContext(ts.transpileModule(unavailableDeclaration.getText(pricingTree), {
-  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-}).outputText, { exports: pricingModule.exports });
-
 async function harness(options: {
   owner?: string;
   cache?: (userId: string) => Promise<string | null>;
@@ -126,6 +132,9 @@ async function harness(options: {
   authRead?: (call: number, owner: string) => Promise<any>;
   strictMode?: boolean;
   valuation?: () => Promise<any>;
+  savedDelayMs?: number;
+  valuationDelayMs?: number;
+  marketSnapshots?: (query: any) => Promise<any>;
   localSetting?: (key: string) => Promise<string | null>;
   customNameArt?: () => Promise<string | null>;
   chaseRows?: (owner: string) => Promise<any[]>;
@@ -147,6 +156,7 @@ async function harness(options: {
   let listener: ((event: string, session: any) => void) | null = null;
   const timers = new Map<number, { due: number; action: () => void }>();
   const interactions: { action: () => void; cancelled: boolean }[] = [];
+  const transportEvents: { source: string; at: number }[] = [];
   const reads: string[] = [], savedReads: string[] = [], tableReads: string[] = [], mintyReads: string[] = [];
   const preloads: { owner: string; snapshot: unknown; isCurrent: () => boolean }[] = [];
   const warmedViews: { owner: string; binders: unknown[]; isCurrent: () => boolean; completeSavedCardsByBinder?: Map<string, unknown[]> }[] = [];
@@ -195,7 +205,7 @@ async function harness(options: {
       const [value, setValue] = React.useState(initial);
       return [value, (next: React.SetStateAction<T>) => { stateWrites++; setValue(next); }];
     } },
-    'react-native': { Alert: { alert() {} }, useWindowDimensions: () => ({ width: 390 }), InteractionManager: {
+    'react-native': { Text: 'Text', View: 'View', Alert: { alert() {} }, useWindowDimensions: () => ({ width: 390 }), InteractionManager: {
       runAfterInteractions(action: () => void) { const task = { action, cancelled: false }; interactions.push(task); return { cancel() { task.cancelled = true; } }; },
     } },
     'expo-router': { router: {}, useFocusEffect(callback: () => void | (() => void)) {
@@ -207,6 +217,7 @@ async function harness(options: {
       const id = decodeURIComponent(key.split(':').at(-1)!); reads.push(id);
       return options.cache ? options.cache(id) : snapshot(id, id === 'owner-a' ? 111 : 222);
     }, removeItem: async (key: string) => { removals.push(key); await options.storageRemove?.(key); }, setItem: async (key: string, value: string) => { writes.push({ key, value }); await options.storageWrite?.(key, value); } },
+    '../../components/Text': { Text: 'Text' },
     '../../components/theme-context': { useTheme: () => ({ theme: { colors: {} }, isDark: false }) },
     '../../components/app-mode-context': { useAppMode: () => ({ hydrated: false, hasChosenMode: true, premiumSellerAccess: { allowed: false } }) },
     '../../components/auth-context': { useAuth: () => ({ user: owner ? { id: owner } : null }),
@@ -227,13 +238,18 @@ async function harness(options: {
       if (isCurrent()) warmedViews.push({ owner: id, binders: rows, isCurrent, ...options });
     } },
     '../../lib/preparedCollectionValuation': prepared,
-    '../../lib/collectionPricingApi': pricingModule.exports,
+    '../../lib/collectionPricingApi': pricingApi,
+    '../../lib/homePriceRefreshCore': priceRefresh,
+    '../../lib/binderPricing': { binderTrustedResolution },
     '../../lib/collectionPricingState': pricingState,
     '../../lib/stableCollectionPrices': stablePrices,
     '../../lib/homeSavedCollection': { savedBinderCatalogueTotal: (_binder: unknown, cards: unknown[]) => cards.length,
       fetchHomeSavedCollection: async (id: string, callbacks?: { onBindersReady?: (rows: unknown[]) => void; forceRefresh?: boolean; signal?: AbortSignal; isCurrent?: () => boolean }) => {
       savedReads.push(id); savedOptions.push(callbacks ?? {});
+      transportEvents.push({ source: 'facts:start', at: now });
+      if (options.savedDelayMs) await new Promise<void>(resolve => fakeSetTimeout(resolve, options.savedDelayMs));
       const result = options.saved ? await options.saved(id) : emptySaved();
+      transportEvents.push({ source: 'facts:complete', at: now });
       callbacks?.onBindersReady?.(result.binders);
       return result;
     } },
@@ -264,8 +280,16 @@ async function harness(options: {
     } } })) } },
   };
   const client = deps['../../lib/stackrApiV1'].stackrApiClient;
+  client.marketPriceSnapshots = options.marketSnapshots ?? (async () => ({ data: { legacySnapshots: [], snapshots: [] } }));
   const readValuation = client.collectionValuation;
-  client.collectionValuation = () => { valuationReads += 1; return readValuation(); };
+  client.collectionValuation = async () => {
+    valuationReads += 1;
+    transportEvents.push({ source: 'prepared:start', at: now });
+    if (options.valuationDelayMs) await new Promise<void>(resolve => fakeSetTimeout(resolve, options.valuationDelayMs));
+    const result = await readValuation();
+    transportEvents.push({ source: 'prepared:complete', at: now });
+    return result;
+  };
   client.requestCollectionValuationRefresh = async () => { manualQueueRequests += 1; return { data: { refreshRequest: { pending: true } } }; };
   const module = { exports: {} as any };
   vm.runInNewContext(compiled, { module, exports: module.exports,
@@ -296,8 +320,10 @@ async function harness(options: {
     reads, savedReads, tableReads, mintyReads, preloads, warmedViews, warnings, settle, tick, writes, removals, savedOptions,
     async invalidateCollection(flush = true) { await act(async () => { collectionVersion += 1; for (const listener of collectionListeners) listener(); }); if (flush) await tick(); },
     collectionListenerCount: () => collectionListeners.size, valuationReads: () => valuationReads, manualQueueRequests: () => manualQueueRequests,
-    stateWrites: () => stateWrites,
+    stateWrites: () => stateWrites, authCalls: () => authCalls, transportEvents,
     state: () => root.root.findByType('HomeState' as any).props,
+    visibleWarnings: () => root.root.findAll(node => String(node.type) === 'Text' && node.props.accessibilityRole === 'alert')
+      .map(node => node.children.join('')),
     async auth(id: string, event = 'SIGNED_IN') { owner = id; await act(async () => { listener?.(event, id ? { user: { id }, expires_at: Date.now() / 1000 + 3600 } : null); }); await tick(); },
     async focus(value: boolean) { focused = value; await act(async () => { root.update(screen()); }); },
     async interactions() { await act(async () => { for (const task of interactions.splice(0)) if (!task.cancelled) task.action(); }); },
@@ -1100,7 +1126,331 @@ async function homeFactsRevisionAndPersistence() {
   console.log('Home facts revision: pending prices do not block useful facts; independent price reads, one edit restart, stale-source rejection and queued/in-flight disk writes passed.');
 }
 
+
+
+function fixturePrepared(total = 20): { data: prepared.PreparedValuationResponse } {
+  return { data: { state: 'ready', requestedCollectionRevision: 'fixture-revision', summary: {
+    total, currency: 'GBP', totalUnits: 2, pricedUnits: 2, freshUnits: 2, olderPriceUnits: 0,
+    unpricedUnits: 0, distinctPriceIdentities: 1, pending: 0, retrying: 0, unsupported: 0,
+    unresolved: 0, noProviderQuote: 0, binders: [], collectionRevision: 'fixture-revision',
+    valuationRevision: 'fixture-prices', refresh: null,
+    calculatedAt: '2026-10-26T12:00:00Z', oldestSourceAt: '2026-10-26T12:00:00Z', latestSourceAt: '2026-10-26T12:00:00Z',
+  }, refreshRequest: null } };
+}
+
+async function homeIndependentPreparedSummary() {
+  const facts = (): ReturnType<typeof emptySaved> => ({ ...emptySaved(), ownedRows: [{
+    id: 'owned-summary', user_id: 'owner-a', card_id: 'en:synthetic', set_id: 'en:synthetic-set',
+    variant: 'normal', quantity: 2, condition: 'Near Mint', grade_company: '', grade: '',
+  }] });
+  const heldFacts = deferred<ReturnType<typeof emptySaved>>();
+  const heldCache = deferred<string | null>();
+  const response = fixturePrepared();
+  response.data.summary!.trend = { scope: 'fixture-scope', evidence: 'recorded', eligible: true,
+    points: [{ at: new Date(Date.now() - 60_000).toISOString(), total: 10, evidence: 'recorded' },
+      { at: new Date().toISOString(), total: 20, evidence: 'recorded' }] };
+  const independent = await harness({ cache: () => heldCache.promise, saved: () => heldFacts.promise,
+    valuation: async () => response });
+  assert.equal(independent.valuationReads(), 1, 'one prepared read starts before complete saved/owned facts');
+  assert.equal(independent.state().collectionTotal, 20);
+  assert.equal(independent.state().ownedCardCount, 2, 'summary quantity and valuation denominator publish together');
+  assert.equal(independent.state().collectionPricingSummary.totalUnits, 2);
+  assert.equal(independent.state().collectionValueLoading, false);
+  assert.equal(independent.state().collectionFactsLoading, true, 'binder/duplicate sections keep their independent loading state');
+  assert.deepEqual(Array.from(independent.state().chartData), [10, 20]);
+  assert.equal(independent.writes.length, 0, 'early valuation never persists invented complete collector metadata');
+  heldCache.resolve(snapshot('owner-a', 111)); await independent.settle();
+  assert.equal(independent.state().collectionTotal, 20, 'late scoped cache cannot replace a validated live summary');
+  heldFacts.resolve(facts()); await independent.settle();
+  assert.equal(independent.state().collectionFactsLoading, false);
+  assert.equal(independent.state().ownedCardCount, 2);
+  assert.equal(independent.valuationReads(), 1, 'detail reconciliation reuses the same response');
+  assert.equal(independent.authCalls(), 5, 'parallel publication preserves the original five auth SDK boundaries including persistence');
+  assert.equal(JSON.parse(independent.writes.at(-1)!.value).snapshot.collectionValueReads.length, 1,
+    'early publication and final persistence record this valuation once');
+  await independent.close();
+
+  const signedOutFacts = await harness({ owner: '' });
+  assert.equal(signedOutFacts.state().collectionFactsLoading, false, 'initial signed-out Home cannot retain a private facts spinner');
+  await signedOutFacts.close();
+  const logoutFacts = deferred<ReturnType<typeof emptySaved>>();
+  const logout = await harness({ cache: async () => null, saved: () => logoutFacts.promise,
+    valuation: async () => fixturePrepared() });
+  assert.equal(logout.state().collectionFactsLoading, true);
+  await logout.auth('', 'SIGNED_OUT');
+  assert.equal(logout.state().collectionFactsLoading, false, 'logout settles facts independently of an obsolete held read');
+  assert.equal(logout.state().collectionTotal, null);
+  logoutFacts.resolve(facts()); await logout.settle();
+  assert.equal(logout.state().collectionFactsLoading, false);
+  await logout.close();
+
+  const changedFacts = deferred<ReturnType<typeof emptySaved>>();
+  const crossDevice = await harness({ cache: async () => null, saved: () => changedFacts.promise,
+    valuation: async () => fixturePrepared() });
+  const newerFacts = facts(); newerFacts.ownedRows[0].quantity = 3;
+  changedFacts.resolve(newerFacts); await crossDevice.settle();
+  assert.equal(crossDevice.state().ownedCardCount, 2, 'known cross-device change retains the valuation generation denominator');
+  assert.equal(crossDevice.state().collectionPricingSummary.totalUnits, 2);
+  assert.match(crossDevice.state().collectionPricingWarning, /details changed.*previous complete valuation and its quantities/);
+  assert.equal(JSON.parse(crossDevice.writes.at(-1)!.value).snapshot.preparedState, 'updating');
+  assert.equal(crossDevice.valuationReads(), 1, 'known mismatch does not add hidden materialization requests');
+  await crossDevice.close();
+
+  const emptyResponse = fixturePrepared();
+  Object.assign(emptyResponse.data.summary!, { total: null, totalUnits: 0, pricedUnits: 0, freshUnits: 0, distinctPriceIdentities: 0 });
+  const addedFacts = deferred<ReturnType<typeof emptySaved>>();
+  const emptyThenAdded = await harness({ cache: async () => null, saved: () => addedFacts.promise,
+    valuation: async () => emptyResponse });
+  addedFacts.resolve(facts()); await emptyThenAdded.settle();
+  assert.equal(emptyThenAdded.state().ownedCardCount, 0, 'old empty valuation retains its own denominator');
+  assert.equal(emptyThenAdded.state().collectionPricingSummary.totalUnits, 0);
+  assert.match(emptyThenAdded.visibleWarnings().join(' '), /details changed.*previous complete valuation/,
+    'the actual Hub notice remains visible when the empty Value Tracker would be hidden');
+  assert.equal(JSON.parse(emptyThenAdded.writes.at(-1)!.value).snapshot.preparedState, 'updating');
+  await emptyThenAdded.close();
+
+  const slowSummary = deferred<any>();
+  const failedFacts = await harness({ cache: async () => null,
+    saved: async () => { throw new Error('Synthetic complete facts failure'); }, valuation: () => slowSummary.promise });
+  assert.match(failedFacts.state().homeDataError, /collector data/, 'collector failure is visible while valuation is still pending');
+  slowSummary.resolve(fixturePrepared()); await failedFacts.settle();
+  assert.equal(failedFacts.state().collectionTotal, 20, 'independent valid valuation survives a detail failure');
+  assert.equal(failedFacts.state().collectionValueError, null);
+  assert.match(failedFacts.state().homeDataError, /collector data/);
+  assert.equal(failedFacts.writes.length, 0, 'failed facts never become a complete persisted snapshot');
+  await failedFacts.close();
+
+  const cachedSummary = deferred<any>();
+  const cachedFactsFailure = await harness({ cache: async () => snapshot('owner-a', 111, {
+    activeBinder: { id: 'cached-binder', name: 'Previous binder' },
+  }), saved: async () => { throw new Error('Synthetic saved binder refresh failure'); }, valuation: () => cachedSummary.promise });
+  cachedSummary.resolve(fixturePrepared()); await cachedFactsFailure.settle();
+  assert.equal(cachedFactsFailure.state().collectionTotal, 20, 'successful independent value remains current');
+  assert.equal(cachedFactsFailure.state().activeBinder.id, 'cached-binder', 'useful same-owner cached binder remains visible');
+  assert.match(cachedFactsFailure.visibleWarnings().join(' '), /Could not refresh collector data.*previously saved binder details/,
+    'actual Hub renders the separate collector error even when Hero retains a cached binder');
+  assert.equal(cachedFactsFailure.writes.length, 0);
+  await cachedFactsFailure.close();
+
+  for (const kind of ['partial', 'updating', 'mismatch', 'missing-revisions', 'pending', 'invalid-counts'] as const) {
+    const held = deferred<ReturnType<typeof emptySaved>>();
+    const value = fixturePrepared();
+    if (kind === 'partial') Object.assign(value.data.summary!, { total: 5, pricedUnits: 1, freshUnits: 1, unpricedUnits: 1, noProviderQuote: 1 });
+    if (kind === 'updating') value.data.state = 'updating';
+    if (kind === 'mismatch') value.data.requestedCollectionRevision = 'newer-holdings';
+    if (kind === 'missing-revisions') { value.data.requestedCollectionRevision = ''; value.data.summary!.collectionRevision = ''; }
+    if (kind === 'pending') { value.data.state = 'pending'; value.data.summary = null; }
+    if (kind === 'invalid-counts') value.data.summary!.pricedUnits = 3;
+    const home = await harness({ cache: async () => null, saved: () => held.promise, valuation: async () => value });
+    assert.equal(home.valuationReads(), 1);
+    assert.equal(home.state().collectionTotal, null, kind + ' cannot bypass current-identity reconciliation');
+    assert.equal(home.state().collectionValueLoading, true);
+    held.resolve(facts()); await home.settle();
+    assert.equal(home.valuationReads(), 1);
+    if (kind === 'partial') {
+      assert.equal(home.state().collectionTotal, 5);
+      assert.equal(home.state().collectionPricingSummary.unpricedUnits, 1);
+      assert.match(home.state().collectionPricingWarning, /known subtotal/);
+    } else if (kind === 'updating' || kind === 'mismatch') {
+      assert.equal(home.state().ownedCardCount, 2);
+      assert.match(home.state().collectionPricingWarning, /previous complete valuation and its quantities/);
+    } else if (kind === 'pending') assert.match(home.state().collectionPricingWarning, /being prepared/);
+    else if (kind === 'invalid-counts') assert.match(home.state().collectionValueError, /try again/);
+    else assert.equal(home.state().collectionTotal, 20, 'legacy responses retain the full-facts compatibility path');
+    await home.close();
+  }
+
+  const officialFacts = (): ReturnType<typeof emptySaved> => ({ ...facts(), binders: [{
+    id: '00000000-0000-4000-8000-000000000001', user_id: 'owner-a', name: 'Exact retained binder', type: 'official',
+    language: 'en', color: '#000', is_public: false, source_set_id: 'en:synthetic-set', created_at: '2026-10-26T00:00:00Z',
+  }] });
+  const retainedInput: pricingApi.CollectionPriceInput = {
+    key: 'fixture', references: ['en:synthetic'], language: 'en', setId: 'en:synthetic-set', variantCode: 'normal',
+    quantity: 2, canonicalPrintingId: null, legacyReference: 'en:synthetic', legacySetId: 'en:synthetic-set',
+    trustedResolution: null, productType: 'raw_card', condition: 'Near Mint', grader: null, grade: null,
+  };
+  const retainedResult: pricingApi.CollectionPriceResult = { key: 'fixture', quantity: 2, reference: 'en:synthetic',
+    variantId: null, central: 10, status: 'market_estimate', freshness: 'fresh', calculatedAt: '2026-10-26T00:00:00Z',
+    staleAfter: null, unavailableReason: null, requestError: null };
+  const partial = fixturePrepared(5);
+  Object.assign(partial.data.summary!, { pricedUnits: 1, freshUnits: 1, unpricedUnits: 1, noProviderQuote: 1 });
+  const retainedFacts = deferred<ReturnType<typeof emptySaved>>(), retainedQuotes = deferred<any>();
+  let fallbackReads = 0;
+  const retained = await harness({ cache: async () => snapshot('owner-a', 20, {
+    ownedCardCount: 2, collectionPricingSummary: { ...summary(20), totalUnits: 2, pricedUnits: 2, exactPricedUnits: 2 },
+    priceEvidence: [{ identity: stablePrices.collectionPriceIdentity(retainedInput), result: retainedResult }],
+  }), saved: () => retainedFacts.promise, valuation: async () => partial,
+  marketSnapshots: async () => { fallbackReads++; return retainedQuotes.promise; } });
+  assert.equal(retained.state().collectionTotal, 20, 'partial response cannot reduce useful cached coverage before facts');
+  retainedFacts.resolve(officialFacts()); await retained.settle();
+  assert.equal(fallbackReads, 1, 'current exact identity reconciliation selects the existing stored-price fallback');
+  assert.equal(retained.state().collectionTotal, 20, 'lower prepared coverage stays hidden while fallback is pending');
+  retainedQuotes.resolve({ data: { legacySnapshots: [{ cardId: 'en:synthetic', legacySetId: 'en:synthetic-set',
+    languageCode: 'en', currency: 'GBP', marketCentral: 10, priceType: 'market_estimate', snapshotAt: '2026-10-26T00:00:00Z' }] } });
+  await retained.settle();
+  assert.equal(retained.state().collectionTotal, 20);
+  assert.equal(retained.state().collectionPricingSummary.pricedUnits, 2, 'all retained priced quantities survive fallback');
+  assert.equal(retained.valuationReads(), 1);
+  assert.deepEqual(retained.warnings, []);
+  await retained.close();
+
+  const old = deferred<any>(); let reads = 0;
+  const edited = await harness({ cache: async () => null, saved: async () => facts(),
+    valuation: () => ++reads === 1 ? old.promise : Promise.resolve(fixturePrepared(40)) });
+  await edited.invalidateCollection();
+  assert.equal(edited.state().collectionTotal, 40);
+  old.resolve(fixturePrepared(20)); await edited.settle();
+  assert.equal(edited.state().collectionTotal, 40, 'an edited source cannot publish its old prepared response');
+  assert.equal(edited.valuationReads(), 2, 'each edit generation gets exactly one prepared read');
+  await edited.close();
+
+  for (const boundary of ['blur', 'unmount', 'account-aba'] as const) {
+    const held = deferred<any>(); let calls = 0;
+    const home = await harness({ cache: async () => null, saved: async () => facts(),
+      valuation: () => ++calls === 1 ? held.promise : Promise.resolve(fixturePrepared(calls * 20)) });
+    if (boundary === 'blur') await home.focus(false);
+    if (boundary === 'unmount') await home.close();
+    if (boundary === 'account-aba') { await home.auth('owner-b'); await home.auth('owner-a'); }
+    const writes = home.stateWrites();
+    held.resolve(fixturePrepared(999)); await home.settle();
+    assert.equal(home.stateWrites(), writes, boundary + ' rejects a late private prepared response');
+    if (boundary === 'account-aba') assert.equal(home.state().collectionTotal, 60);
+    if (boundary !== 'unmount') await home.close();
+  }
+
+  const confirmation = deferred<any>();
+  const held = deferred<ReturnType<typeof emptySaved>>();
+  const guarded = await harness({ cache: async () => null, saved: () => held.promise,
+    valuation: async () => fixturePrepared(), authRead: async (call, owner) => call === 2 ? confirmation.promise
+      : { data: { user: { id: owner } }, error: null } });
+  await guarded.focus(false);
+  const before = guarded.stateWrites();
+  confirmation.resolve({ data: { user: { id: 'owner-a' } }, error: null }); await guarded.settle();
+  assert.equal(guarded.stateWrites(), before, 'source cancellation during final auth confirmation blocks early publication');
+  held.resolve(facts()); await guarded.settle(); await guarded.close();
+
+  for (const status of [401, 403]) {
+    const held = deferred<ReturnType<typeof emptySaved>>();
+    const denied = await harness({ saved: () => held.promise,
+      valuation: async () => { throw { status, code: status === 401 ? 'authentication_required' : 'access_denied' }; } });
+    assert.equal(denied.state().collectionTotal, null, 'known prepared denial immediately revokes the private preview');
+    assert.equal(denied.state().ownedCardCount, 0);
+    held.resolve(facts()); await denied.settle();
+    assert.equal(denied.state().collectionTotal, null, 'later facts cannot restore denied private value');
+    assert.equal(denied.writes.length, 0);
+    await denied.close();
+  }
+
+  const timedOut = deferred<any>();
+  const timeout = await harness({ valuation: () => timedOut.promise });
+  await timeout.tick(10_000);
+  assert.equal(timeout.state().collectionTotal, 111, 'prepared timeout preserves honest scoped offline content');
+  timedOut.resolve(fixturePrepared(999)); await timeout.settle();
+  assert.equal(timeout.state().collectionTotal, 111, 'late timed-out provider result cannot publish');
+  await timeout.close();
+  console.log('Home independent prepared summary passed: complete/current early publication, coverage/history coherence, separate facts loading/error, single request/auth budget, legacy/deferred states, edit/account/blur/unmount/auth/deadline guards.');
+}
+
+function dependencyFacts(savedCount: number, ownedCount: number, languages: PokemonCardLanguage[] = ['en']): ReturnType<typeof emptySaved> {
+  const result = emptySaved();
+  if (!savedCount && !ownedCount) return result;
+  for (let languageIndex = 0; languageIndex < languages.length; languageIndex++) {
+    const language = languages[languageIndex];
+    const binderId = '00000000-0000-4000-8000-' + String(languageIndex + 1).padStart(12, '0');
+    const setId = language + ':dependency-set';
+    result.binders.push({ id: binderId, user_id: 'owner-a', name: language + ' synthetic binder', language,
+      color: '#000', type: 'official', is_public: false, source_set_id: setId, created_at: '2026-10-26T00:00:00Z' });
+    result.cardsByBinder.set(binderId, []);
+  }
+  for (let index = 0; index < savedCount; index++) {
+    const languageIndex = index % languages.length, language = languages[languageIndex];
+    const binder = result.binders[languageIndex];
+    const cardId = languages.length > 1 ? '007' : 'card-' + index;
+    const owned = index < ownedCount;
+    result.cardsByBinder.get(binder.id)!.push({ id: 'saved-' + index, binder_id: binder.id,
+      card_id: cardId, set_id: binder.source_set_id!, language, card_name: language + ' fixture ' + index,
+      api_card_id: null, api_set_id: null, set_name: language + ' fixture set', set_total: savedCount, condition: 'Near Mint',
+      card_number: languages.length > 1 ? '007' : String(index), slot_order: index, owned, owned_quantity: owned ? 1 : 0,
+      image_url: index % 2 ? 'https://api.stackrtcg.com/legacy/fixture.webp' : 'https://cdn.stackrtcg.com/r2/fixture.webp',
+      notes: 'Synthetic placement ' + index, created_at: '2026-10-26T00:00:00Z',
+      ebay_price: null, tcg_price: null, cardmarket_price: null, last_price_update: null });
+    if (owned) result.ownedRows.push({ id: 'owned-' + index, user_id: 'owner-a', card_id: cardId,
+      set_id: binder.source_set_id!, variant: 'normal', quantity: 1, condition: 'Near Mint', grade_company: '', grade: '' });
+  }
+  return result;
+}
+
+async function homePreparedDependencyMeasurement() {
+  const measurements = [];
+  for (const cohort of [
+    { name: 'empty', saved: 0, owned: 0 },
+    { name: 'small', saved: 8, owned: 6 },
+    { name: 'large', saved: 1702, owned: 1323 },
+    { name: 'five-language same collector', saved: 5, owned: 5, languages: ['en', 'ja', 'ko', 'zh-cn', 'zh-tw'] },
+  ] satisfies { name: string; saved: number; owned: number; languages?: PokemonCardLanguage[] }[]) {
+    const facts = dependencyFacts(cohort.saved, cohort.owned, cohort.languages);
+    const response = fixturePrepared();
+    Object.assign(response.data.summary!, { total: cohort.owned ? cohort.owned * 10 : null,
+      totalUnits: cohort.owned, pricedUnits: cohort.owned, freshUnits: cohort.owned, distinctPriceIdentities: cohort.owned });
+    const held = deferred<ReturnType<typeof emptySaved>>();
+    const gated = await harness({ cache: async () => null, saved: () => held.promise, valuation: async () => response });
+    const preparedReadyFactsHeld = { savedBoundaryCalls: gated.savedReads.length, preparedHttpBoundaryCalls: gated.valuationReads(),
+      total: gated.state().collectionTotal, ownedCount: gated.state().ownedCardCount,
+      valueLoading: gated.state().collectionValueLoading, factsLoading: gated.state().collectionFactsLoading };
+    held.resolve(facts); await gated.settle(); await gated.interactions(); await gated.settle();
+    assert.equal(gated.valuationReads(), 1);
+    assert.equal(gated.state().collectionPricingSummary.totalUnits, cohort.owned);
+    assert.equal(gated.state().ownedCardCount, cohort.owned);
+    const completeSaved = gated.warmedViews[0]?.completeSavedCardsByBinder;
+    if (cohort.saved) {
+      assert.ok(completeSaved);
+      assert.equal([...completeSaved!.values()].reduce((total, rows) => total + rows.length, 0), cohort.saved,
+        'independent summary never reduces the full binder preload population');
+      assert.deepEqual([...completeSaved!.values()].flat().map((row: any) => [row.card_id, row.set_id, row.language, row.slot_order, row.notes]),
+        [...facts.cardsByBinder.values()].flat().map(row => [row.card_id, row.set_id, row.language, row.slot_order, row.notes]));
+    }
+    const complete = { savedBoundaryCalls: gated.savedReads.length, preparedHttpBoundaryCalls: gated.valuationReads(),
+      total: gated.state().collectionTotal, ownedCount: gated.state().ownedCardCount,
+      retainedSavedPlacements: completeSaved ? [...completeSaved.values()].reduce((total, rows) => total + rows.length, 0) : 0,
+      duplicateCount: gated.state().duplicateSummary?.count ?? 0, authSdkCallsIncludingPersistenceAndOptionalBinder: gated.authCalls() };
+    await gated.close();
+    const timings = [];
+    const scenarios = [{ name: 'complete-ready, slower facts', factsMs: 200, preparedMs: 100, partial: false }];
+    if (cohort.name === 'large') scenarios.push(
+      { name: 'partial-ready, slower facts', factsMs: 200, preparedMs: 100, partial: true },
+      { name: 'partial-ready, slower prepared', factsMs: 100, preparedMs: 200, partial: true });
+    for (const scenario of scenarios) {
+      const value = structuredClone(response);
+      if (scenario.partial) Object.assign(value.data.summary!, { total: 10, pricedUnits: 1, freshUnits: 1,
+        unpricedUnits: cohort.owned - 1, noProviderQuote: cohort.owned - 1 });
+      const home = await harness({ cache: async () => null, saved: async () => facts,
+        savedDelayMs: scenario.factsMs, valuationDelayMs: scenario.preparedMs, valuation: async () => value });
+      let firstValuationAt: number | null = null, factsSettledAt: number | null = null;
+      for (let elapsed = 50; elapsed <= 500; elapsed += 50) {
+        await home.tick(50); await home.settle();
+        if (firstValuationAt === null && home.state().preparedSummaryAvailable) firstValuationAt = elapsed;
+        if (factsSettledAt === null && !home.state().collectionFactsLoading) factsSettledAt = elapsed;
+      }
+      assert.equal(home.valuationReads(), 1);
+      assert.equal(home.savedReads.length, 1);
+      assert.equal(home.state().collectionTotal, scenario.partial ? 10 : response.data.summary!.total);
+      timings.push({ scenario: scenario.name, configuredFactsMs: scenario.factsMs, configuredPreparedMs: scenario.preparedMs,
+        firstValuationAt, factsSettledAt, authSdkCallsIncludingPersistenceAndOptionalBinder: home.authCalls(),
+        savedBoundaryCalls: home.savedReads.length, preparedHttpBoundaryCalls: home.valuationReads(), events: home.transportEvents });
+      await home.close();
+    }
+    measurements.push({ cohort: cohort.name, savedPlacements: cohort.saved, ownedRows: cohort.owned,
+      languageCount: cohort.languages?.length ?? 1, preparedReadyFactsHeld, complete, controlledTimings: timings });
+  }
+  console.log(JSON.stringify({ revision: baselineRef ?? 'working candidate', measurements,
+    conditions: 'Real Hub hooks/loaders; transport/native services mocked. Cold private cache. Fake clock advances in 50ms steps; configured facts/prepared delays, zero auth/network latency.',
+    limitations: 'Causal synthetic timing, not hosted or phone latency. Saved boundary aggregates complete facts; its underlying pages still run. SDK auth calls are not HTTP counts. No requests or bytes avoided.' }, null, 2));
+}
+
 async function main() {
+  if (process.env.HOME_PREPARED_DEPENDENCY_ONLY) { await homePreparedDependencyMeasurement(); return; }
+  if (process.env.HOME_PREPARED_ONLY) { await homeIndependentPreparedSummary(); return; }
+  if (!baselineRef) await homeIndependentPreparedSummary();
   await adapterFactsStreaming();
   await homeCanonicalFactsStreaming();
   await homePendingDisplayRefresh();

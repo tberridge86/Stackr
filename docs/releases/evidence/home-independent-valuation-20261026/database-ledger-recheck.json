@@ -1,0 +1,27 @@
+{
+  "observedAt": "2026-10-26T12:43:11.902Z",
+  "project": "oakdbbzdqwurpjnoqhmu",
+  "count": 192,
+  "profile": [
+    {
+      "version": "20261026072532",
+      "name": "collection_summary_v1"
+    }
+  ],
+  "excludedDailyMoversPresent": false,
+  "latest": [
+    {
+      "version": "20261005204527",
+      "name": "scope_retained_cheap_provider_languages"
+    },
+    {
+      "version": "20261005205507",
+      "name": "select_latest_valid_retained_observation"
+    },
+    {
+      "version": "20261026072532",
+      "name": "collection_summary_v1"
+    }
+  ],
+  "newMigrationsApplied": false
+}

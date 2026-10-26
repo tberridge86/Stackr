@@ -1,0 +1,24 @@
+npm notice run Stackr-native@1.0.6 lint
+npm notice run expo lint
+npm notice run Stackr-native@1.0.6 npx
+npm notice run eslint D:\workspace\Stackr-home-payload-20261026\app D:\workspace\Stackr-home-payload-20261026\components --fix=false --cache=true --cache-location=D:\workspace\Stackr-home-payload-20261026\.expo\cache\eslint\
+
+D:\workspace\Stackr-home-payload-20261026\app\(tabs)\search.tsx
+   14:3   warning  'Keyboard' is defined but never used   @typescript-eslint/no-unused-vars
+   18:3   warning  'TextInput' is defined but never used  @typescript-eslint/no-unused-vars
+  494:10  warning  'mapSetRow' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\workspace\Stackr-home-payload-20261026\app\admin\quality-observability.tsx
+  106:7  warning  Expected an assignment or function call and instead saw an expression  no-unused-expressions
+
+D:\workspace\Stackr-home-payload-20261026\app\price-builder\index.tsx
+  130:7  warning  'getTcgPrice' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  143:7  warning  'getCardmarketPrice' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\workspace\Stackr-home-payload-20261026\app\prices\index.tsx
+  726:7  warning  Unreachable code  no-unreachable
+
+D:\workspace\Stackr-home-payload-20261026\components\CardFoilSurface.tsx
+  1:8  warning  'React' is defined but never used  @typescript-eslint/no-unused-vars
+
+Γ£û 8 problems (0 errors, 8 warnings)

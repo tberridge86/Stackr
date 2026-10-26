@@ -1,0 +1,36 @@
+{
+  "recordedAt": "2026-10-26T13:05:04.470Z",
+  "baseline": "4dadab24a0152bf971fb38b104dc43be966d8aed",
+  "integration": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+  "pullRequest": 446,
+  "sourceFiles": [
+    {
+      "path": "features/home/HubScreen.tsx",
+      "gitBlob": "664cafc9e73627b85e55302a619a48b5c6cfef18",
+      "sha256": "e7a5c552c380dacd0a911941046cd09e1bb5f402db58c481fbddb580a7756baf"
+    },
+    {
+      "path": "scripts/test-home-startup-runtime.ts",
+      "gitBlob": "7e556c63439b4d1f96ef92e2a41091353ee10ee9",
+      "sha256": "c50694b58a2d072d8134b6f3e7f55cd0e5673c3ddcf93033766704a396b301d4"
+    }
+  ],
+  "sourceState": "Frozen and independently reviewed local source; exact published source/CI will be recorded after publication in PR and final release-state receipt",
+  "validation": {
+    "typecheck": "pass",
+    "lint": "pass; eight pre-existing warnings",
+    "scopedLint": "pass; two pre-existing duplicate-import warnings",
+    "actualHubRuntime": "pass; independently rerun by reviewer",
+    "pairedCohorts": "pass; four controlled fake-clock cohorts",
+    "homeRelease": "pass",
+    "collectionPricingUi": "pass",
+    "diffCheck": "pass"
+  },
+  "implemented": true,
+  "merged": false,
+  "deployed": false,
+  "installedPhoneVerified": false,
+  "newMigrations": [],
+  "hostedPrivateHomeMeasured": false,
+  "fixtureLimits": "No new traffic reduction or actual phone/hosted latency gain is claimed."
+}

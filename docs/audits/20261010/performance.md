@@ -212,3 +212,12 @@ Prepared valuation supplies headline and per-binder coverage plus genuine scoped
 See [cold retrieval evidence](../../releases/evidence/home-cold-retrieval-20261025/) for the exact historical-module invocation, normalized baseline hashes, response/request counts, per-read synthetic delay, repeated medians and local query-plan/check evidence. The synthetic host timings exclude phone rendering, actual auth transport, hosted database and network behavior. R2/image delivery is outside these Data API scans; no asset pointer, rendition or CDN behavior was changed.
 
 The reviewer identified unequal before/after populations in the first implementation timing loop. That comparison was withdrawn and regenerated for shared empty, small, large and five-language cohorts, with five cold/warm pairs per cohort plus per-sample completeness and request-count assertions. Only the corrected paired evidence should be used for latency statements; the specialist's separate exploratory measurements and actual-module request counts were unaffected.
+
+
+## Home independent valuation continuation - 26 October 2026
+
+Coordinated by stackr_coding; source baseline 4dadab24a0152bf971fb38b104dc43be966d8aed. Hub now starts one prepared request alongside complete collection facts and permits strictly validated complete-ready summaries to publish independently. Partial/updating coverage still reconciles complete identities. Separate loading/error notices preserve collector recovery. No new cache/schema/API/R2 changes.
+
+Four fake-clock cohorts preserve all rows and unchanged completed-load request/auth boundaries. Controlled readiness 300 to 100 ms (complete) and 300 to 200 ms (partial) is causal fixture evidence, not measured hosted or phone latency. Historical prepared-RPC statistics show448 calls averaging 1531.47 ms across mixed modes; no execution analysis or DB rewrite was performed.
+
+Typecheck, lint, scoped lint, actual-Hub runtime, Home release/pricing UI and matched measurements passed; independent reviewer found and resolved logout/stale-warning/cached-binder error visibility issues and independently reran the runtime suite. Unshipped; private QA credentials and device acceptance remain missing. See [full release evidence](../../releases/home-independent-valuation-handoff-20261026.md). Prior sections remain historical.

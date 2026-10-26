@@ -1,0 +1,6 @@
+npm notice run Stackr-native@1.0.6 test:home-release
+npm notice run tsx scripts/test-home-display-labels.ts && tsx scripts/test-home-collector-sections.ts && tsx scripts/test-home-value-release-layout.ts && tsx scripts/test-home-release-integration.ts
+Home English labels: supplied metadata, Unicode/missing fallbacks, draft qualifiers, language labels, exact activity replacement and immutable raw fields passed.
+Home collector section component regressions passed.
+Home pricing release compact layout and pricing states passed.
+Integrated Home ordering, English metadata, native route, original icons and pricing-interface guards passed.

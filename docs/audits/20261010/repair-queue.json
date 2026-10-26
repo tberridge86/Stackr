@@ -3482,5 +3482,45 @@
       "Profile generated-ledger mapping reconciliation before broad migration tooling",
       "Background jobs,monitoring,recovery remain queued"
     ]
+  },
+  "homeIndependentValuation20261026": {
+    "observedDate": "2026-10-26",
+    "owner": "stackr_coding",
+    "baseline": "4dadab24a0152bf971fb38b104dc43be966d8aed",
+    "pullRequest": 446,
+    "status": "implemented_locally_tested_source_review_complete",
+    "report": "docs/releases/home-independent-valuation-handoff-20261026.md",
+    "deployed": false,
+    "phoneAccepted": false,
+    "entries": [
+      {
+        "id": "HOME-PREPARED-001",
+        "severity": "P2",
+        "cause": "Prepared Home valuation waits for complete facts and local binder settings.",
+        "repair": "One independent prepared request; strict early ready/full publication; separate collector loading/errors; preserved complete facts and partial-price fallback.",
+        "files": [
+          "features/home/HubScreen.tsx",
+          "scripts/test-home-startup-runtime.ts"
+        ],
+        "validation": "Four controlled cohorts retained all rows; complete-ready300to100 and partial300to200 simulatedms under stated delays, unchanged calls. Typecheck/lint/runtime/UI suites pass; independent final runtime run passed."
+      }
+    ],
+    "remaining": [
+      "Exact-head new-source CI and release preparation",
+      "Designated QA credentials for private Home cap/timings and priced-printing coverage",
+      "Installed-phone acceptance and new rollout approval",
+      "Safe representative query plans for historical prepared-RPC cost; no speculative indexes"
+    ],
+    "sourceReviewFindingsResolved": [
+      "facts-loading logout reset",
+      "visible zero-to-positive previous valuation warning",
+      "visible collector failure with retained cached binder"
+    ],
+    "limits": [
+      "No new total payload/request reduction",
+      "Prepared HTTP is not caller-abortable; obsolete publication is rejected",
+      "Early-cancelled loads can dispatch GET earlier than serial baseline",
+      "Same-count remote identity change is not atomically detected"
+    ]
   }
 }
