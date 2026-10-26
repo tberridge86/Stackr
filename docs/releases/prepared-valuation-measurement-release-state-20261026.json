@@ -104,5 +104,13 @@
   "mergeable": true,
   "ciReceipt": "docs/releases/prepared-valuation-measurement-ci-20261026.json",
   "hostedCi": "three successful workflows; source-tree equivalence verified",
-  "releaseCandidateGate": "skipped"
+  "releaseCandidateGate": "skipped",
+  "infrastructureAssessment": {
+    "report": "docs/audits/20261026/infrastructure-assessment.md",
+    "recordedAt": "2026-10-26T14:25:04.994Z",
+    "additionalReleaseHold": "INFRA-ACCOUNT-CACHE-001: account-unscoped binder edit-record cache",
+    "repairImplemented": false,
+    "phoneReproduced": false,
+    "review": "Independent source and assessment-document review; same cache-mode trigger clarified"
+  }
 }

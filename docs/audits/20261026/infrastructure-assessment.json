@@ -1,0 +1,179 @@
+{
+  "recordedAt": "2026-10-26T14:25:04.994Z",
+  "sourceCommit": "df45ef50420cab9dae7e2fefb6e929cd1110363c",
+  "main": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+  "priorEvidence": "a205af1a8bbea7dfcf8a8bb98bc2451791f8020b",
+  "appCandidateUnmerged": true,
+  "publicSearch": {
+    "observedAt": "2026-10-26T14:18:28.247Z",
+    "path": "/v1/search?q=Pikachu&language=en&limit=50",
+    "conditions": "Three sequential unauthenticated desktop public GETs; caches and network uncontrolled; no phone; no collection/price requests",
+    "samples": [
+      {
+        "sample": 1,
+        "status": 200,
+        "elapsedMs": 6034.3,
+        "decodedBodyBytes": 299949,
+        "results": 50,
+        "pagination": {
+          "limit": 50,
+          "nextCursor": null
+        },
+        "cfCacheStatus": "DYNAMIC",
+        "cacheControl": "public, max-age=30, stale-while-revalidate=120, stale-if-error=120",
+        "age": null,
+        "cloudflarePop": "LHR",
+        "imageOrigins": {
+          "assets.stackrtcg.com": 217,
+          "oakdbbzdqwurpjnoqhmu.supabase.co": 72
+        },
+        "errorCode": null
+      },
+      {
+        "sample": 2,
+        "status": 200,
+        "elapsedMs": 195.58,
+        "decodedBodyBytes": 299949,
+        "results": 50,
+        "pagination": {
+          "limit": 50,
+          "nextCursor": null
+        },
+        "cfCacheStatus": "HIT",
+        "cacheControl": "public, max-age=30, stale-while-revalidate=120, stale-if-error=120",
+        "age": "0",
+        "cloudflarePop": "LHR",
+        "imageOrigins": {
+          "assets.stackrtcg.com": 217,
+          "oakdbbzdqwurpjnoqhmu.supabase.co": 72
+        },
+        "errorCode": null
+      },
+      {
+        "sample": 3,
+        "status": 200,
+        "elapsedMs": 122.96,
+        "decodedBodyBytes": 299949,
+        "results": 50,
+        "pagination": {
+          "limit": 50,
+          "nextCursor": null
+        },
+        "cfCacheStatus": "HIT",
+        "cacheControl": "public, max-age=30, stale-while-revalidate=120, stale-if-error=120",
+        "age": "0",
+        "cloudflarePop": "LHR",
+        "imageOrigins": {
+          "assets.stackrtcg.com": 217,
+          "oakdbbzdqwurpjnoqhmu.supabase.co": 72
+        },
+        "errorCode": null
+      }
+    ]
+  },
+  "database": {
+    "status": "ACTIVE_HEALTHY",
+    "version": "17.6.1.104",
+    "region": "eu-west-1",
+    "advisors": [
+      {
+        "category": "security",
+        "name": "rls_enabled_no_policy",
+        "level": "INFO",
+        "count": 33,
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+      },
+      {
+        "category": "security",
+        "name": "authenticated_security_definer_function_executable",
+        "level": "WARN",
+        "count": 11,
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+      },
+      {
+        "category": "security",
+        "name": "auth_leaked_password_protection",
+        "level": "WARN",
+        "count": 1,
+        "remediation": "https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection"
+      },
+      {
+        "category": "performance",
+        "name": "unindexed_foreign_keys",
+        "level": "INFO",
+        "count": 190,
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0001_unindexed_foreign_keys"
+      },
+      {
+        "category": "performance",
+        "name": "auth_rls_initplan",
+        "level": "WARN",
+        "count": 115,
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan"
+      },
+      {
+        "category": "performance",
+        "name": "unused_index",
+        "level": "INFO",
+        "count": 184,
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index"
+      },
+      {
+        "category": "performance",
+        "name": "multiple_permissive_policies",
+        "level": "WARN",
+        "count": 247,
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies"
+      },
+      {
+        "category": "performance",
+        "name": "duplicate_index",
+        "level": "WARN",
+        "count": 4,
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0009_duplicate_index"
+      },
+      {
+        "category": "performance",
+        "name": "auth_db_connections_absolute",
+        "level": "INFO",
+        "count": 1,
+        "remediation": "https://supabase.com/docs/guides/deployment/going-into-prod"
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "INFRA-ACCOUNT-CACHE-001",
+      "priority": "P1",
+      "evidence": "source-supported account-cache/edit-loader path; same key in main",
+      "installedPhoneReproduction": false,
+      "customerDataBreachObserved": false,
+      "writeBypassEstablished": false,
+      "releaseHold": true,
+      "trigger": "A opens a private binder edit form, then B signs in within the 30-second TTL in the same JS process and opens the same binder edit route"
+    },
+    {
+      "id": "INFRA-RECOVERY-PROOF-001",
+      "priority": "P1 assurance",
+      "evidence": "restore verifier excludes Auth/private/security-equivalence checks; existing prior restore drill preserved",
+      "insecureRestoreObserved": false
+    }
+  ],
+  "operations": {
+    "publicSearchGetCount": 3,
+    "authenticatedHomeCalls": 0,
+    "remoteSqlExecuted": false,
+    "jobsTriggered": false,
+    "migrationsApplied": false,
+    "codeChanged": false,
+    "r2Changed": false
+  },
+  "review": "Stackr coding lead and independent read-only reviewer; root independently traced the cache finding; final report review passed after clarifying that the same default/assets cache mode must be warmed",
+  "limitations": [
+    "No authenticated Home or installed-phone measurements",
+    "No end-to-end capacity or cost benchmark",
+    "No fresh R2 global inventory",
+    "No live exploit or restore test",
+    "No raw credentials or customer rows in receipt"
+  ]
+}
