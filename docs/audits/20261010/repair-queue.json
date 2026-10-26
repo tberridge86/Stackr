@@ -3698,16 +3698,38 @@
   "infrastructureBoundaries20261026": {
     "baseline": "df45ef50420cab9dae7e2fefb6e929cd1110363c",
     "report": "docs/releases/infrastructure-boundaries-handoff-20261026.md",
-    "status": "implemented_locally_independently_reviewed_ci_pending",
+    "status": "reviewed_checkpoint_published_all_applicable_hosted_CI_pass",
     "binderFinding": "INFRA-ACCOUNT-CACHE-001",
     "binderCandidateFixReviewed": true,
     "productionStillUnchanged": true,
     "restoreSecurityChecks": 44,
     "securityNegativeChecks": 17,
-    "nativePg17": "pending_ci",
+    "nativePg17": "isolated_CI_pass; synthetic_valuation_median_73.724464_to_48.741687_ms",
     "authenticatedAcceptance": "blocked_designated_credentials_empty",
     "phoneAcceptance": "not_run",
-    "searchContinuation": "next_scoped_implementation",
-    "migrationApplied": false
+    "searchContinuation": "implemented_local_backend_SQL_review_in_progress",
+    "migrationApplied": false,
+    "publishedCheckpoint": "dc1d9dbac708c3a6b039c9a8fd15193eff9bef7f"
+  },
+  "infrastructurePriorities20261026": {
+    "report": "docs/releases/infrastructure-priorities-handoff-20261026.md",
+    "base": "dc1d9dbac708c3a6b039c9a8fd15193eff9bef7f",
+    "mobileReview": "GO",
+    "gatewayRefreshReview": "GO",
+    "backendSqlReview": "GO",
+    "searchCompletenessFixture": {
+      "before": 50,
+      "after": 137,
+      "pages": 3
+    },
+    "largeFixtureVariants": 1202,
+    "searchIndexesAdded": 0,
+    "newSqlApplied": false,
+    "authenticatedAcceptance": "designated_QA_credentials_empty",
+    "phoneAcceptance": "not_available",
+    "monitorCadence": "14_sampled_runs_125.6_to_348.48_minute_intervals_for_declared10_minute_schedule",
+    "schedulerOwner": "not_attested",
+    "capacity": "snapshot_only_not_load_test",
+    "finalSource": "pending_source_commit_and_exact_head_CI"
   }
 }

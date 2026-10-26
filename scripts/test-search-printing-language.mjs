@@ -68,9 +68,13 @@ const db = { schema: () => ({ from: (table) => {
   assert.ok(table in sources, `Unexpected table ${table}`);
   const filters = [];
   const clauses = [];
+  const orders = [];
   let limit = Infinity;
   const query = {
-    select() { return this; }, order() { return this; }, range() { return this; },
+    select() { return this; },
+    order(key, options = {}) { orders.push({ key, ascending: options.ascending !== false }); return this; },
+    range() { return this; },
+    gt(key, value) { clauses.push({ operator: 'gt', key, value }); filters.push(row => row[key] > value); return this; },
     limit(n) { limit = n; return this; },
     eq(key, value) { clauses.push({ operator: 'eq', key, value }); filters.push((row) => row[key] === value); return this; },
     in(key, values) {
@@ -84,9 +88,18 @@ const db = { schema: () => ({ from: (table) => {
       filters.push((row) => expression.test(String(row[key] ?? ''))); return this;
     },
     then(resolve, reject) {
-      allQueryShapes.push({ table, clauses: [...clauses] });
+      const rows = sources[table].filter(row => filters.every(filter => filter(row)));
+      rows.sort((left, right) => {
+        for (const { key, ascending } of orders) {
+          const compared = String(left[key] ?? '').localeCompare(String(right[key] ?? ''));
+          if (compared) return ascending ? compared : -compared;
+        }
+        return 0;
+      });
+      const data = rows.slice(0, limit);
+      allQueryShapes.push({ table, clauses: [...clauses], returnedRows: data.length });
       if (table === 'catalogue_cards') cardQueryShapes.push({ clauses: [...clauses] });
-      return Promise.resolve({ data: sources[table].filter((row) => filters.every((filter) => filter(row))).slice(0, limit), error: null }).then(resolve, reject);
+      return Promise.resolve({ data, error: null }).then(resolve, reject);
     },
   };
   return query;
@@ -283,7 +296,10 @@ for (const q of ['M5 002', 'M5 2', 'm5 0002', 'Ｍ５　００２', 'M5-002']) {
 allQueryShapes.length = 0;
 assert.equal((await indexedService.search({ q: 'M5 003', language: 'ja' })).results.length, 0,
   'A known set with no matching number must not return that number from an unrelated set.');
-assert.deepEqual(allQueryShapes.map(x => x.table), ['catalogue_sets', 'catalogue_card_collectors']);
+assert.deepEqual(allQueryShapes.map(x => x.table), ['catalogue_sets', 'catalogue_sets', 'catalogue_card_collectors']);
+assert.equal(allQueryShapes[1].returnedRows, 0, 'the known set lookup proves exhaustion with an empty keyset page');
+assert.ok(allQueryShapes[1].clauses.some(clause => clause.operator === 'gt' && clause.key === 'set_id'),
+  'the verification page advances past the matching set rather than repeating a bounded prefix');
 assert.equal((await indexedService.search({ q: 'M5 002', language: 'ja', setId: cnSet })).results.length, 0);
 assert.deepEqual((await service.search({ q: 'M5 002', language: 'ja' })).results.map(r => r.variantId), [paddedJapanese.variant_id]);
 

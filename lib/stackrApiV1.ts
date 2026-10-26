@@ -29,6 +29,8 @@ export type StackrApiEnvelope<T> = {
     pagination?: {
       limit: number;
       nextCursor: string | null;
+      continuationAvailable?: boolean;
+      unavailableReason?: 'search_pagination_unavailable';
     };
   };
 };
@@ -1228,7 +1230,7 @@ export class StackrApiClient {
     return this.authenticatedGet<{ opportunities: StackrMarketOpportunity[] }>('/market/opportunities', query);
   }
 
-  search(query: { q: string; language?: StackrApiLanguageCode; setId?: string; limit?: number }, init: RequestInit = {}) {
+  search(query: { q: string; language?: StackrApiLanguageCode; setId?: string; limit?: number; cursor?: string }, init: RequestInit = {}) {
     return this.request<{ query: string; normalizedQuery: string; results: StackrSearchResult[] }>('/search', query, init);
   }
 

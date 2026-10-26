@@ -1,3 +1,5 @@
+import { catalogueVariantLabel } from '../../lib/catalogueVariantPresentation';
+import { SearchPagination, mergeSearchRows, searchCardLookupIds, searchOwnedQuantities, type SearchPageMetadata, type SearchPageState } from '../../lib/searchPagination';
 import { StackrBrowseToolbar } from '../../components/StackrBrowseControls';
 import { getSearchFacetScope, isSearchSortSupported } from '../../lib/searchFacetScope';
 import { getSearchFailureSummary, retainFailedSearchGroups } from '../../lib/searchRecovery';
@@ -484,7 +486,7 @@ function mapCardResults(
       imageFallbackUris: artwork?.candidates.map((candidate) => candidate.uri) ?? [],
       imageCacheKey: artwork?.assetId ?? raw.stackr?.defaultVariantId ?? card.id,
       estimatedValue: getBestCardValue(card),
-      listingCount: listingStats.get(card.id)?.count ?? 0,
+      listingCount: listingStats.get(raw.stackr?.cardId ?? card.id)?.count ?? 0,
       ownedQuantity: ownedMap.get(card.id) ?? 0,
       raw: card,
     };
@@ -732,9 +734,16 @@ export default function GlobalSearchScreen() {
     () => getIncrementalListWindow(1, { initialRows: 16, pageRows: 12, minInitial: 16, minPage: 12 }),
     []
   );
+  const [searchInputEpoch, setSearchInputEpoch] = useState(0);
   const [focusedResultLimit, setFocusedResultLimit] = useState(searchResultWindow.initialCount);
   const searchListRef = useRef<FlatList<number>>(null);
   const requestRef = useRef(0);
+  const continuationCardsRef = useRef<CardResult[]>([]);
+  const searchFocusVisitRef = useRef(false);
+  const searchFocusedRef = useRef(true);
+  const [cardPage, setCardPage] = useState<SearchPageState>(() => new SearchPagination().state);
+  const paginationRef = useRef<SearchPagination | null>(null);
+  if (!paginationRef.current) paginationRef.current = new SearchPagination(setCardPage);
   const searchTraceRef = useRef<ReturnType<typeof beginRetrieval> | null>(null);
   const pendingSearchTraceRef = useRef<{ input: string; trace: ReturnType<typeof beginRetrieval> } | null>(null);
   const searchCommitTraceRef = useRef<{ trace: ReturnType<typeof beginRetrieval>; cards: SearchResults['cards'] } | null>(null);
@@ -777,6 +786,7 @@ export default function GlobalSearchScreen() {
     // across a sign-in, sign-out, or account switch while the active query reloads.
     previousSearchRef.current = null;
     requestRef.current += 1;
+    paginationRef.current?.reset();
     setResults(EMPTY_RESULTS);
     setErrors({});
     setSuggestion(null);
@@ -794,6 +804,7 @@ export default function GlobalSearchScreen() {
     recentSearchIdentityRef.current = null;
     previousSearchRef.current = null;
     requestRef.current += 1;
+    paginationRef.current?.reset();
     setResults(EMPTY_RESULTS);
     setErrors({});
     setSuggestion(null);
@@ -904,6 +915,9 @@ export default function GlobalSearchScreen() {
   useFocusEffect(
     useCallback(() => {
       let active = true;
+      searchFocusedRef.current = true;
+      if (searchFocusVisitRef.current) setSearchIdentityEpoch(epoch => epoch + 1);
+      searchFocusVisitRef.current = true;
       const identity = recentSearchIdentityRef.current;
       if (identity) {
         loadRecentSearches(identity.userId).then((items) => {
@@ -914,13 +928,21 @@ export default function GlobalSearchScreen() {
       }
       return () => {
         active = false;
+        searchFocusedRef.current = false;
         requestRef.current += 1;
+        paginationRef.current?.reset();
       };
     }, [isCurrentRecentSearchIdentity])
   );
 
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedQuery(query.trim()), 240);
+    // Stop old page/ownership completions as soon as input changes, before debounce.
+    requestRef.current += 1;
+    paginationRef.current?.reset();
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query.trim());
+      setSearchInputEpoch(epoch => epoch + 1);
+    }, 240);
     return () => clearTimeout(timer);
   }, [query]);
 
@@ -971,8 +993,12 @@ export default function GlobalSearchScreen() {
   }, [getVerifiedRecentSearchWriteIdentity, isCurrentRecentSearchIdentity]);
 
   const runSearch = useCallback(async (searchText: string, force = false) => {
+    if (!searchFocusedRef.current) return;
     const trimmed = searchText.trim();
     const requestId = ++requestRef.current;
+    const pageLease = paginationRef.current!.reset();
+    continuationCardsRef.current = [];
+    let firstPageMetadata: SearchPageMetadata | undefined;
 
     if (trimmed.length < 2 && category !== 'sets') {
       searchTraceRef.current?.cancel();
@@ -1049,11 +1075,12 @@ export default function GlobalSearchScreen() {
       retrievalTrace.facts(cards.length, 'persisted');
       searchCommitTraceRef.current = { trace: retrievalTrace, cards };
       setResults((current) => acceptingEarlyCards && requestId === requestRef.current
-        ? { ...current, cards } : current);
+        ? { ...current, cards: mergeSearchRows(cards, continuationCardsRef.current) } : current);
     });
     const cardsPromise = searchLocalPokemonCards<any>(primary, {
       language: selectedLanguage,
-      limit: cardResultLimit,
+      limit: cardResultLimit, force, signal: pageLease.signal, preserveVariantIdentity: true,
+      onPagination: (metadata) => { firstPageMetadata = metadata; },
       select: 'id, name, set_id, language, number, rarity, image_small, image_large, raw_data',
       skipSetDetection: true,
       skipApiBackedSearch: true,
@@ -1065,6 +1092,7 @@ export default function GlobalSearchScreen() {
         retrievalTrace.phase('network-complete');
         const cards = mapCardResults(rows);
         canonicalCards = cards;
+        paginationRef.current!.acceptInitial(pageLease.generation, firstPageMetadata);
         retrievalTrace.facts(cards.length, 'network');
         searchCommitTraceRef.current = { trace: retrievalTrace, cards };
         setResults((current) => acceptingEarlyCards && requestId === requestRef.current
@@ -1179,7 +1207,9 @@ export default function GlobalSearchScreen() {
     if (productsFirst.status === 'pending') firstRetain.sealed = 'pending';
     if (profilesFirst.status === 'pending') firstRetain.collectors = 'pending';
     if (listingsFirst.status === 'pending') { firstRetain.listings = 'pending'; firstRetain.graded = 'pending'; }
-    setResults(retainFailedSearchGroups(firstResults, firstRetain, previous));
+    const firstRecovered = retainFailedSearchGroups(firstResults, firstRetain, previous);
+    firstRecovered.cards = mergeSearchRows(firstRecovered.cards, continuationCardsRef.current);
+    setResults(firstRecovered);
     setErrors(firstErrors);
     setLoading(firstPhaseStillLoading);
     setRefreshing(force && firstPhaseStillLoading);
@@ -1307,6 +1337,7 @@ export default function GlobalSearchScreen() {
     }
 
     const recovered = retainFailedSearchGroups(next, nextErrors, previous, { cards: canonicalCards !== null });
+    recovered.cards = mergeSearchRows(recovered.cards, continuationCardsRef.current);
     if (Object.keys(nextErrors).length) retrievalTrace.fail(nextErrors.cards ? 'facts' : 'source');
     searchCommitTraceRef.current = { trace: retrievalTrace, cards: recovered.cards };
     retrievalTrace.settle(Object.values(recovered).some(rows => rows.length > 0));
@@ -1315,23 +1346,21 @@ export default function GlobalSearchScreen() {
     setErrors(nextErrors);
     setLoading(false);
     setRefreshing(false);
+    if (cardsResult.status === 'fulfilled') paginationRef.current!.acceptInitial(pageLease.generation, firstPageMetadata);
 
     if (cardsForHydration.length) {
-      const cardIds = [...new Set(cardsForHydration.map((card: any) => card.id).filter(Boolean))];
+      const cardIds = searchCardLookupIds(cardsForHydration);
       Promise.all([
         fetchCardListingStats(cardIds),
-        fetchOwnedCardRows({ cardIds }).catch(() => []),
+        fetchOwnedCardRows({ cardIds, isCurrent: () => requestId === requestRef.current }).catch(() => []),
       ]).then(([listingStats, ownedRows]) => {
         if (requestId !== requestRef.current) return;
-        const ownedMap = new Map<string, number>();
-        ownedRows.forEach((row) => {
-          ownedMap.set(row.card_id, (ownedMap.get(row.card_id) ?? 0) + Math.max(1, Number(row.quantity ?? 1) || 1));
-        });
+        const ownedMap = searchOwnedQuantities(cardsForHydration, ownedRows);
         setResults((current) => {
           if (requestId !== requestRef.current) return current;
           const hydrated = {
             ...current,
-            cards: mapCardResults(cardsForHydration, listingStats, ownedMap),
+            cards: mergeSearchRows(current.cards, mapCardResults(cardsForHydration, listingStats, ownedMap)),
           };
           previousSearchRef.current = { key: searchKey, results: hydrated };
           return hydrated;
@@ -1360,6 +1389,45 @@ export default function GlobalSearchScreen() {
       }).catch(() => {});
     }
   }, [category, searchIdentityEpoch, selectedLanguage]);
+
+  const loadMoreCards = useCallback(async () => {
+    if (!searchFocusedRef.current || query.trim() !== debouncedQuery.trim()) return;
+    const requestId = requestRef.current;
+    const searchKey = JSON.stringify([debouncedQuery.trim(), category, selectedLanguage, searchIdentityEpoch]);
+    const primary = expandSearchQuery(debouncedQuery.trim())[0] ?? debouncedQuery.trim();
+    const limit = category === 'all' || isRawCardCategory(category) ? 120 : 48;
+    await paginationRef.current!.load(async (cursor, signal) => {
+      let metadata: SearchPageMetadata = { nextCursor: null, continuationAvailable: false };
+      const rows = await searchLocalPokemonCards<any>(primary, {
+        language: selectedLanguage, limit, cursor, signal, preserveVariantIdentity: true,
+        onPagination: (page) => { metadata = page; },
+      });
+      return { rows, metadata };
+    }, (rows) => {
+      if (requestId !== requestRef.current) return;
+      continuationCardsRef.current = mergeSearchRows(continuationCardsRef.current, mapCardResults(rows));
+      setResults((current) => {
+        if (requestId !== requestRef.current) return current;
+        const next = { ...current, cards: mergeSearchRows(current.cards, mapCardResults(rows)) };
+        previousSearchRef.current = { key: searchKey, results: next };
+        return next;
+      });
+      const cardIds = searchCardLookupIds(rows);
+      if (!cardIds.length) return;
+      void Promise.all([fetchCardListingStats(cardIds), fetchOwnedCardRows({ cardIds, isCurrent: () => requestId === requestRef.current }).catch(() => [])])
+        .then(([listingStats, ownedRows]) => {
+          if (requestId !== requestRef.current) return;
+          const ownedMap = searchOwnedQuantities(rows, ownedRows);
+          continuationCardsRef.current = mergeSearchRows(continuationCardsRef.current, mapCardResults(rows, listingStats, ownedMap));
+          setResults((current) => {
+            if (requestId !== requestRef.current) return current;
+            const next = { ...current, cards: mergeSearchRows(current.cards, mapCardResults(rows, listingStats, ownedMap)) };
+            previousSearchRef.current = { key: searchKey, results: next };
+            return next;
+          });
+        }).catch(() => {});
+    });
+  }, [query, debouncedQuery, category, selectedLanguage, searchIdentityEpoch]);
 
   const saveCardToShowcase = useCallback(async (
     slot: ProfileShowcaseSlot,
@@ -1411,7 +1479,7 @@ export default function GlobalSearchScreen() {
 
   useEffect(() => {
     void runSearch(debouncedQuery);
-  }, [debouncedQuery, runSearch]);
+  }, [debouncedQuery, searchInputEpoch, runSearch]);
 
   const toggleRarityFilter = useCallback((rarity: string) => {
     setSelectedRarities((current) => (
@@ -1570,7 +1638,8 @@ export default function GlobalSearchScreen() {
   const visibleResultCount = filteredGroups.reduce((total, group) => total + visibleResults[group].length, 0);
   const failureSummary = getSearchFailureSummary(errors, filteredGroups);
   const currentSearchSortLabel = SEARCH_SORT_OPTIONS.find((option) => option.key === searchSort)?.label ?? 'Recommended';
-  const searchResultSummary = loading
+  const cardResultsIncomplete = filteredGroups.some(group => group === 'cards') && (!cardPage.ready || !cardPage.continuationAvailable || Boolean(cardPage.nextCursor));
+  const searchResultSummary = loading || (cardResultsIncomplete && visibleResultCount > 0)
     ? (visibleResultCount > 0
         ? `${visibleResultCount} result${visibleResultCount === 1 ? '' : 's'} so far`
         : 'Searching...')
@@ -1661,8 +1730,8 @@ export default function GlobalSearchScreen() {
         <SearchEmpty
           icon={searchIcons.search}
           imageIcon={stackrIcons.searchCard}
-          title="No matches found"
-          body={resultCount > 0 ? 'Try clearing filters or widening your sort options.' : 'Check the spelling, try fewer words, or remove category filters.'}
+          title={cardResultsIncomplete ? "No matches in loaded results" : "No matches found"}
+          body={cardResultsIncomplete ? 'Load more cards below or refine your search.' : resultCount > 0 ? 'Try clearing filters or widening your sort options.' : 'Check the spelling, try fewer words, or remove category filters.'}
           actionLabel={activeSearchFilterCount > 0 ? 'Clear filters' : 'Clear search'}
           onAction={activeSearchFilterCount > 0 ? clearSearchFilters : () => setQuery('')}
         />
@@ -1726,6 +1795,11 @@ export default function GlobalSearchScreen() {
                 return [guide.sourceLabel, guide.unavailableReason, guide.updatedAt ? `Updated ${new Date(guide.updatedAt).toLocaleDateString('en-GB')}` : null].filter(Boolean).join(' - ');
               })()}
               listingCount={card.listingCount}
+              listingScope={card.raw?.raw_data?.stackr?.canonical ? 'printing' : undefined}
+              variantLabel={(() => {
+                const variant = card.raw?.raw_data?.stackr?.variants?.find((entry: any) => entry.variantId === card.id);
+                return variant ? variant.variantLabel || catalogueVariantLabel(variant.variantCode || 'unclassified') : null;
+              })()}
               ownedQuantity={card.ownedQuantity}
               inspectionRequest={card.imageUri ? {
                 source: 'catalogue',
@@ -1919,7 +1993,26 @@ export default function GlobalSearchScreen() {
         onEndReached={hasMoreFocusedResults ? renderMoreFocusedResults : undefined}
         onEndReachedThreshold={0.8}
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 2, paddingBottom: insets.bottom + stackrTabContentPadding.standard }}
-        ListFooterComponent={hasMoreFocusedResults ? (
+        ListFooterComponent={hasQuery && filteredGroups.some(group => group === 'cards') && cardPage.ready && cardResultsIncomplete ? (
+          <View style={{ gap: 8, paddingVertical: 16 }}>
+            <Text style={{ color: theme.colors.textSoft }}>
+              {cardPage.error === 'changed'
+                ? 'The catalogue changed. Refresh to load current results.'
+                : cardPage.error === 'retry'
+                  ? 'More cards could not be loaded. Your loaded results are still available.'
+                  : !cardPage.continuationAvailable
+                    ? 'Only the first page is available. Refresh to retry.'
+                    : 'More cards are available. Filters and sorting apply to loaded results.'}
+            </Text>
+            <StackrButton
+              label={cardPage.error === 'changed' || !cardPage.continuationAvailable ? 'Refresh search'
+                : cardPage.error === 'retry' ? 'Retry more cards' : 'Load more cards'}
+              loading={cardPage.loading}
+              onPress={() => cardPage.error === 'changed' || !cardPage.continuationAvailable
+                ? void runSearch(debouncedQuery, true) : void loadMoreCards()}
+            />
+          </View>
+        ) : hasMoreFocusedResults ? (
           <View style={{ height: 34, alignItems: 'center', justifyContent: 'center' }}>
             <ActivityIndicator color={theme.colors.primary} size="small" />
           </View>

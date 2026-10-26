@@ -914,6 +914,10 @@ export interface components {
         Pagination: {
             limit: number;
             nextCursor: string | null;
+            /** @description Search only. False or absent does not establish completeness even when nextCursor is null. */
+            continuationAvailable?: boolean;
+            /** @enum {string} */
+            unavailableReason?: "search_pagination_unavailable";
         };
         HealthResponse: components["schemas"]["Envelope"] & {
             data?: {
@@ -2283,6 +2287,8 @@ export interface operations {
                 q: string;
                 language?: components["parameters"]["Language"];
                 setId?: string;
+                /** @description Opaque cursor returned by the previous page. */
+                cursor?: components["parameters"]["Cursor"];
                 /** @description Current clients request at most 50 rows per HTTP page. Server clamping of legacy larger limits requires STACKR_ENFORCE_UI_PAGE_LIMIT=true after client publication; use the returned cursor to continue. */
                 limit?: components["parameters"]["Limit"];
             };
@@ -2292,7 +2298,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Search results with explicit match reasons. */
+            /** @description Search results with explicit match reasons. Continue only when meta.pagination.continuationAvailable is true; a null nextCursor then means complete. Cursors bind query, language, set, limit and catalogue/algorithm revision. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2302,6 +2308,10 @@ export interface operations {
                 };
             };
             400: components["responses"]["Error"];
+            /** @description Catalogue revision changed; restart the query instead of mixing pages. */
+            409: components["responses"]["Error"];
+            /** @description Search continuation is temporarily unavailable; retain loaded results and retry. */
+            503: components["responses"]["Error"];
         };
     };
     getAssetManifest: {

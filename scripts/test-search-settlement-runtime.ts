@@ -1,3 +1,6 @@
+import React from 'react';
+import { act, create, type ReactTestRenderer } from 'react-test-renderer';
+import { SearchPagination, mergeSearchRows, searchCardLookupIds, searchOwnedQuantities } from '../lib/searchPagination';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { execFileSync } from 'node:child_process';
@@ -65,6 +68,10 @@ class FakeTimers {
 
 type Harness = {
   run: (query: string) => Promise<void>;
+  loadMore: () => Promise<void>;
+  pagination: SearchPagination;
+  scope: Record<string, unknown>;
+  refs: { requestRef: { current: number }; paginationRef: { current: SearchPagination }; searchFocusedRef: { current: boolean } };
   requestRef: { current: number };
   cards: Deferred<any[]>;
   sets: Deferred<any[]>;
@@ -89,9 +96,13 @@ function createHarness(timers: FakeTimers, options: {
   ownedRows?: { card_id: string; quantity: number }[];
   productListingStats?: Map<string, { count: number; lowest: number | null }>;
   clock?: () => number;
+  paged?: boolean;
+  pageTransport?: (cursor: string, signal: AbortSignal) => Promise<any[]>;
 } = {}): Harness {
   const EMPTY_RESULTS = { cards: [], sets: [], sealed: [], collectors: [], listings: [], graded: [] };
   const requestRef = { current: 0 };
+  const searchFocusedRef = { current: true };
+  const paginationRef = { current: new SearchPagination() };
   const category = options.category ?? 'all';
   const selectedLanguage = options.language ?? 'en';
   const prior = { ...EMPTY_RESULTS, cards: [{ id: 'prior-card' }], sets: [{ id: 'prior-set' }] };
@@ -124,7 +135,7 @@ function createHarness(timers: FakeTimers, options: {
   const beginRecentSearchAuthBoundary = extract<(userId: string | null) => void>('beginRecentSearchAuthBoundary', {
     observedRecentSearchUserIdRef: { current: 'previous-account' },
     recentSearchGenerationRef: { current: 0 }, recentSearchIdentityRef: { current: null },
-    previousSearchRef, requestRef, EMPTY_RESULTS, setResults, setErrors, setLoading,
+    previousSearchRef, requestRef, paginationRef, EMPTY_RESULTS, setResults, setErrors, setLoading,
     setSuggestion: noop, setRefreshing: noop, setSearchIdentityEpoch: noop, setRecentSearches: noop,
     clearLegacyRecentSearches: async () => {},
   });
@@ -132,11 +143,11 @@ function createHarness(timers: FakeTimers, options: {
     'settleSearchSource',
     { SEARCH_FINAL_SETTLEMENT_TIMEOUT_MS: 5, setTimeout: timers.setTimeout, clearTimeout: timers.clearTimeout },
   );
-  const run = extract<(query: string, force?: boolean) => Promise<void>>('runSearch', {
+  const scope = {
     beginRetrieval: (journey: Parameters<typeof beginRetrieval>[0], origin: Parameters<typeof beginRetrieval>[1]) => beginRetrieval(journey, origin, options.clock),
     searchTraceRef: { current: null }, pendingSearchTraceRef: { current: null }, searchCommitTraceRef: { current: null },
     fetchListingSearchWithMedia,
-    requestRef,
+    continuationCardsRef: { current: [] }, searchFocusedRef, requestRef, paginationRef, mergeSearchRows, searchCardLookupIds, searchOwnedQuantities,
     previousSearchRef,
     category,
     selectedLanguage,
@@ -154,6 +165,8 @@ function createHarness(timers: FakeTimers, options: {
     readCachedCanonicalSearch: () => options.deferCache ? cachedCards.promise : Promise.resolve(null),
     writeCachedCanonicalSearch: async () => { cacheWriteCount += 1; },
     searchLocalPokemonCards: (_query: string, callbacks: any) => {
+      if (callbacks.cursor) { callbacks.onPagination?.({ nextCursor: null, continuationAvailable: true }); return options.pageTransport?.(callbacks.cursor, callbacks.signal) ?? Promise.resolve([{ id: 'page-two' }]); }
+      if (options.paged) callbacks.onPagination?.({ nextCursor: 'page-two-cursor', continuationAvailable: true });
       publishCanonical = callbacks.onCanonicalResults;
       if (!options.deferCanonical) publishCanonical(options.canonicalRows ?? [{ id: 'good-card', name: 'Good card' }]);
       return cards.promise;
@@ -172,8 +185,10 @@ function createHarness(timers: FakeTimers, options: {
     fetchCardListingStats: async () => new Map(), fetchOwnedCardRows: async () => options.ownedRows ?? [],
     fetchProductListingStats: async () => options.productListingStats ?? new Map(),
     console: { log: noop },
-  });
-  return { run, requestRef, cards, sets, products, profiles, listings, cachedCards,
+  };
+  const run = extract<(query: string, force?: boolean) => Promise<void>>('runSearch', scope);
+  const loadMore = extract<() => Promise<void>>('loadMoreCards', { ...scope, query: 'Pikachu', debouncedQuery: 'Pikachu' });
+  return { run, loadMore, scope, refs: { requestRef, paginationRef, searchFocusedRef }, pagination: paginationRef.current, requestRef, cards, sets, products, profiles, listings, cachedCards,
     publishCanonical: (rows) => publishCanonical(rows),
     getState: () => state, getErrors: () => errors, getLoading: () => loading,
     writes: () => writeCount, cacheWrites: () => cacheWriteCount,
@@ -401,7 +416,114 @@ async function testStaleBoundaries() {
   }
 }
 
+async function testContinuationIndependentOfOptionalSections() {
+  const timers = new FakeTimers();
+  const harness = createHarness(timers, { deferGroups: true, paged: true });
+  const pending = harness.run('Pikachu');
+  await flush();
+  assert.equal(harness.pagination.state.ready, true, 'ready canonical cards enable continuation before optional sources settle');
+  await harness.loadMore();
+  assert.deepEqual(harness.getState().cards.map((row: any) => row.id), ['good-card', 'page-two']);
+  harness.cards.resolve([{ id: 'good-card', name: 'Enriched' }]);
+  harness.sets.resolve([]); harness.products.resolve([]);
+  harness.profiles.resolve({ data: [], error: null }); harness.listings.resolve({ data: [], error: null });
+  await pending; await flush();
+  assert.deepEqual(harness.getState().cards.map((row: any) => row.id), ['good-card', 'page-two'],
+    'late initial enrichment/reconciliation must retain continuation pages');
+  assert.equal(harness.pagination.state.nextCursor, null, 'late initial metadata cannot rewind continuation');
+}
+
+async function testMountedContinuationRecoveryAndAccountBoundary() {
+  for (const outcome of ['offline', 'revision', 'account'] as const) {
+    const timers = new FakeTimers(); const held = deferred<any[]>();
+    let calls = 0; let signal: AbortSignal | undefined;
+    const harness = createHarness(timers, { deferGroups: true, paged: true,
+      pageTransport: (cursor, requestSignal) => {
+        assert.equal(cursor, 'page-two-cursor');
+        calls++; signal = requestSignal;
+        return calls === 1 ? held.promise : Promise.resolve([{ id: 'recovered-page' }]);
+      } });
+    const initial = harness.run('Pikachu'); await flush();
+    const more = harness.loadMore(); await harness.loadMore();
+    assert.equal(calls, 1);
+    if (outcome === 'account') {
+      harness.invalidateAccount();
+      assert.equal(signal?.aborted, true);
+      held.resolve([{ id: 'late-other-account' }]);
+    } else held.reject(Object.assign(new Error(outcome), { code: outcome === 'revision' ? 'search_catalogue_changed' : 'network' }));
+    await more; await flush();
+    if (outcome === 'account') assert.equal(harness.getState().cards.length, 0);
+    else {
+      assert.equal(harness.getState().cards[0].id, 'good-card', 'failed next page retains useful first page');
+      assert.equal(harness.pagination.state.error, outcome === 'revision' ? 'changed' : 'retry');
+      await harness.loadMore();
+      if (outcome === 'offline') {
+        assert.equal(calls, 2); assert.equal(harness.getState().cards[1].id, 'recovered-page');
+      } else assert.equal(calls, 1, 'changed catalogue cannot retry obsolete cursor');
+    }
+    timers.advance(5); await initial;
+    if (outcome === 'account') assert.equal(harness.getState().cards.length, 0, 'late original lanes cannot restore previous account');
+  }
+}
+
+async function testMountedFocusAndDebounceLifecycle() {
+  (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+  const timers = new FakeTimers();
+  const harness = createHarness(timers, { paged: true });
+  const file = 'app/(tabs)/search.tsx';
+  const source = fs.readFileSync(file, 'utf8');
+  const ast = ts.createSourceFile(file, source, ts.ScriptTarget.ESNext, true, ts.ScriptKind.TSX);
+  const screen = ast.statements.find((node): node is ts.FunctionDeclaration =>
+    ts.isFunctionDeclaration(node) && node.name?.text === 'GlobalSearchScreen');
+  assert.ok(screen?.body);
+  const names = new Set(['[query, setQuery]', '[debouncedQuery, setDebouncedQuery]',
+    '[searchInputEpoch, setSearchInputEpoch]', '[searchIdentityEpoch, setSearchIdentityEpoch]', 'searchFocusVisitRef', 'runSearch']);
+  const statements = screen.body.statements.filter(node => {
+    if (ts.isVariableStatement(node)) return node.declarationList.declarations.some(declaration => names.has(declaration.name.getText(ast)));
+    if (!ts.isExpressionStatement(node) || !ts.isCallExpression(node.expression)) return false;
+    const text = node.getText(ast);
+    return text.startsWith('useFocusEffect(') || text.includes('setDebouncedQuery(query.trim())')
+      || text.includes('void runSearch(debouncedQuery)');
+  }).map(node => node.getText(ast));
+  assert.equal(statements.length, 9);
+  const compiled = ts.transpileModule('function Lifecycle() { const paramQuery = ""; ' + statements.join('\n') +
+    '; return React.createElement("SearchLifecycle", { query, setQuery, debouncedQuery, searchInputEpoch }); }; return Lifecycle;', {
+    compilerOptions: { target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+  let focused = true;
+  const noop = () => {};
+  const scope = {
+    React, useState: React.useState, useRef: React.useRef, useCallback: React.useCallback, useEffect: React.useEffect,
+    ...harness.scope, ...harness.refs,
+    useFocusEffect: (callback: () => void | (() => void)) => React.useEffect(() => focused ? callback() : undefined, [callback, focused]),
+    recentSearchIdentityRef: { current: null }, isCurrentRecentSearchIdentity: () => true,
+    loadRecentSearches: async () => [], setRecentSearches: noop,
+    setTimeout: timers.setTimeout, clearTimeout: timers.clearTimeout,
+  };
+  const Lifecycle = new Function(...Object.keys(scope), compiled)(...Object.values(scope));
+  let renderer!: ReactTestRenderer;
+  await act(async () => { renderer = create(React.createElement(Lifecycle)); });
+  const state = () => renderer.root.findByType('SearchLifecycle' as any).props;
+  await act(async () => { state().setQuery('Pikachu'); });
+  await act(async () => { focused = false; renderer.update(React.createElement(Lifecycle)); });
+  await act(async () => { timers.advance(240); await flush(); });
+  assert.equal(harness.refs.searchFocusedRef.current, false);
+  assert.equal(harness.cacheWrites(), 0, 'blur before debounce must not start a new offscreen catalogue read');
+  await act(async () => { focused = true; renderer.update(React.createElement(Lifecycle)); await flush(); });
+  assert.equal(harness.cacheWrites(), 1, 'refocus restarts the current query');
+  assert.equal(harness.pagination.state.ready, true);
+  await act(async () => { state().setQuery('PikachuB'); });
+  await act(async () => { state().setQuery('Pikachu'); });
+  await act(async () => { timers.advance(240); await flush(); });
+  assert.equal(harness.cacheWrites(), 2, 'A-to-B-to-A restarts despite unchanged debounced text');
+  assert.equal(harness.pagination.state.ready, true);
+  await act(async () => { renderer.unmount(); timers.advance(10); await flush(); });
+}
+
 async function main() {
+  await testMountedFocusAndDebounceLifecycle();
+  await testContinuationIndependentOfOptionalSections();
+  await testMountedContinuationRecoveryAndAccountBoundary();
   resetRetrievalObservations();
   let now = 0;
   const measured = createHarness(new FakeTimers(), { deferCanonical: true, deferGroups: true, clock: () => now });
@@ -433,7 +555,7 @@ async function main() {
   await testCachedFactsBeforeSettlement();
   await testQueuedHydrationBoundaries();
   await testStaleBoundaries();
-  console.log('Actual Search coordinator passes independent ready groups, explicit empty/failure recovery, timeout and simulated stale/late guards; this harness does not prove native device latency.');
+  console.log('Production Search callbacks pass independent ready groups, explicit empty/failure recovery, timeout and simulated stale/late guards; this harness does not prove native device latency.');
 }
 
 void main();

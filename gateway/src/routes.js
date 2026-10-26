@@ -92,7 +92,7 @@ export const ROUTES = [
     idempotent: true, forwardUserJwt: true, query: query(),
   },
   { id: 'market_opportunities', pattern: /^\/v1\/market\/opportunities$/, ...publicGet, pricing: true, cache: 'market', rate: 'pricing', query: query('productType', 'currency', 'limit') },
-  { id: 'search', pattern: /^\/v1\/search$/, ...publicGet, cache: 'search', rate: 'search', query: query('q', 'language', 'setId', 'limit') },
+  { id: 'search', pattern: /^\/v1\/search$/, ...publicGet, cache: 'search', rate: 'search', query: query('q', 'language', 'setId', 'limit', 'cursor') },
   {
     id: 'asset_manifest',
     pattern: /^\/v1\/assets\/manifest$/,

@@ -67,6 +67,7 @@ export function preflightResponse(route, origin, requestId, apiVersion) {
     'Access-Control-Allow-Headers': [
       'Authorization',
       'Content-Type',
+      ...(route.id === 'search' ? ['Cache-Control'] : []),
       'Idempotency-Key',
       'If-None-Match',
       'Traceparent',

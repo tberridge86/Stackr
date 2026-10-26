@@ -199,6 +199,8 @@ export function SearchCardRailItem({
   priceContext,
   priceUnavailable,
   listingCount,
+  listingScope,
+  variantLabel,
   ownedQuantity,
   onPress,
   inspectionRequest,
@@ -219,6 +221,8 @@ export function SearchCardRailItem({
   priceContext?: string | null;
   priceUnavailable?: boolean;
   listingCount?: number;
+  listingScope?: 'printing';
+  variantLabel?: string | null;
   ownedQuantity?: number;
   onPress: () => void;
   inspectionRequest?: CardInspectionRequest;
@@ -278,13 +282,14 @@ export function SearchCardRailItem({
           {setName ?? 'Unknown set'}
         </Text>
       </View>
-      <RailMetaLine primary={priceUnavailable ? 'General price unavailable' : estimate ?? (listingCount ? `${listingCount} listing${listingCount === 1 ? '' : 's'}` : number ? `#${number}` : 'Card')} />
+      <RailMetaLine primary={priceUnavailable ? 'General price unavailable' : estimate ?? (listingCount ? `${listingCount} ${listingScope === 'printing' ? 'printing ' : ''}listing${listingCount === 1 ? '' : 's'}` : number ? `#${number}` : 'Card')} />
       <RailMetaLine
         muted
         primary={[
           priceContext,
           number ? `#${number}` : null,
           rarity,
+          variantLabel,
           ownedQuantity ? `Owned x${ownedQuantity}` : null,
         ].filter(Boolean).join(' - ')}
       />

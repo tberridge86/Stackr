@@ -91,6 +91,7 @@ jobs:
       - run: npm run test:personal-loading
       - run: npm run test:build60-feedback
       - run: npm run test:storm-logo-publication
+      - run: npm run test:search-pagination
       - run: npm run test:binder-account-cache
       - run: npm run test:restore-security
       - run: npm run test:security-boundary-runtime
@@ -258,6 +259,16 @@ jobs:
         with:
           name: prepared-valuation-postgres17
           path: ${{ runner.temp }}/prepared-valuation-postgres17.json
+          retention-days: 14
+      - name: Execute search pagination plans on isolated PostgreSQL 17
+        env:
+          STACKR_NATIVE_POSTGRES_FIXTURE: '1'
+        run: node scripts/measure-search-pagination-query-plans.mjs > "$RUNNER_TEMP/search-pagination-postgres17.json"
+      - name: Upload isolated search query evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: search-pagination-postgres17
+          path: ${{ runner.temp }}/search-pagination-postgres17.json
           retention-days: 14
 
   database-migration-tests:

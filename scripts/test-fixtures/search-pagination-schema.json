@@ -1,0 +1,1943 @@
+{
+  "views": [
+    {
+      "name": "catalogue_card_names",
+      "schema": "api",
+      "definition": " SELECT n.id,\n    n.card_concept_id,\n    n.printing_id,\n    n.variant_id,\n    n.language_code,\n    n.name_type,\n    n.name,\n    n.normalized_name,\n    n.source_confidence,\n    n.updated_at,\n    COALESCE(v.language_code, p.language_code) AS printing_language_code\n   FROM catalog.card_names n\n     LEFT JOIN catalog.card_variants v ON v.id = n.variant_id\n     LEFT JOIN catalog.card_printings p ON p.id = n.printing_id\n  WHERE n.deprecated_at IS NULL AND ((EXISTS ( SELECT 1\n           FROM catalog.catalogue_version_variants cvv\n             JOIN catalog.catalogue_versions cv ON cv.id = cvv.catalogue_version_id\n          WHERE cv.status = 'published'::text AND cv.deprecated_at IS NULL AND cvv.variant_id = n.variant_id\n         OFFSET 0)) OR (EXISTS ( SELECT 1\n           FROM catalog.catalogue_version_printings cvp\n             JOIN catalog.catalogue_versions cv ON cv.id = cvp.catalogue_version_id\n          WHERE cv.status = 'published'::text AND cv.deprecated_at IS NULL AND cvp.printing_id = n.printing_id\n         OFFSET 0)));"
+    },
+    {
+      "name": "catalogue_cards",
+      "schema": "api",
+      "definition": " SELECT v.id AS variant_id,\n    cv.id AS catalogue_version_id,\n    cv.version_key AS catalogue_version,\n    v.canonical_key,\n    v.game_code,\n    v.language_code,\n    l.english_name AS language_english_name,\n    l.native_name AS language_native_name,\n    p.set_id,\n    s.set_code,\n    s.native_name AS set_native_name,\n    s.english_display_name AS set_english_display_name,\n    p.id AS printing_id,\n    p.collector_number,\n    p.collector_number_prefix,\n    p.collector_number_sort,\n    p.collector_number_suffix,\n    p.collector_number_sort_key,\n    p.native_name AS card_native_name,\n    p.english_display_name AS card_english_display_name,\n    r.code AS rarity_code,\n    r.english_label AS rarity_label,\n    v.variant_code,\n    vt.english_label AS variant_label,\n    v.finish_code,\n    f.english_label AS finish_label,\n    v.artwork_key,\n    p.updated_at,\n    GREATEST(p.updated_at, v.updated_at, s.updated_at) AS changed_at,\n    v.native_image_status,\n    v.same_artwork_as_variant_id,\n    p.card_concept_id,\n    cc.default_english_name AS concept_english_display_name,\n    p.supertype,\n    p.subtypes,\n    p.artist\n   FROM catalog.catalogue_version_variants cvv\n     JOIN catalog.catalogue_versions cv ON cv.id = cvv.catalogue_version_id\n     JOIN catalog.card_variants v ON v.id = cvv.variant_id\n     JOIN catalog.card_printings p ON p.id = v.printing_id\n     JOIN catalog.sets s ON s.id = p.set_id\n     JOIN catalog.languages l ON l.code = v.language_code\n     LEFT JOIN catalog.card_concepts cc ON cc.id = p.card_concept_id AND cc.deprecated_at IS NULL\n     LEFT JOIN catalog.rarities r ON r.id = p.rarity_id\n     LEFT JOIN catalog.variant_taxonomy vt ON vt.code = v.variant_code\n     LEFT JOIN catalog.finishes f ON f.code = v.finish_code\n  WHERE cv.status = 'published'::text AND cv.deprecated_at IS NULL AND v.deprecated_at IS NULL AND p.deprecated_at IS NULL AND s.deprecated_at IS NULL;"
+    },
+    {
+      "name": "catalogue_delta_changes",
+      "schema": "api",
+      "definition": " SELECT ccl.change_sequence,\n    ccl.catalogue_version_id,\n    ccl.entity_schema,\n    ccl.entity_table,\n    ccl.entity_id,\n    ccl.entity_key,\n    ccl.change_type,\n    ccl.public_change_summary,\n    ccl.changed_at\n   FROM catalog.catalogue_change_log ccl\n     JOIN catalog.catalogue_versions cv ON cv.id = ccl.catalogue_version_id\n  WHERE ccl.mobile_syncable = true AND cv.status = 'published'::text AND cv.deprecated_at IS NULL;"
+    },
+    {
+      "name": "catalogue_external_identifiers",
+      "schema": "api",
+      "definition": " SELECT cvei.source_entity_type,\n    cvei.external_id,\n    cvei.external_uri,\n    cvei.language_code,\n    cvei.set_id,\n    cvei.printing_id,\n    cvei.variant_id,\n    cvei.confidence\n   FROM catalog.catalogue_version_external_identifiers cvei\n     JOIN catalog.catalogue_versions cv ON cv.id = cvei.catalogue_version_id\n  WHERE cv.status = 'published'::text AND cv.deprecated_at IS NULL;"
+    },
+    {
+      "name": "published_catalogue_versions",
+      "schema": "api",
+      "definition": " SELECT cv.id,\n    cv.version_key,\n    cv.version_label,\n    cv.language_code,\n    l.bcp47_code,\n    l.english_name AS language_english_name,\n    l.native_name AS language_native_name,\n    l.script_code,\n    l.sort_order AS language_sort_order,\n    cv.min_change_sequence,\n    cv.max_change_sequence,\n    cv.coverage_summary,\n    cv.published_at,\n    cv.updated_at\n   FROM catalog.catalogue_versions cv\n     JOIN catalog.languages l ON l.code = cv.language_code\n  WHERE cv.status = 'published'::text AND cv.deprecated_at IS NULL AND cv.language_code IS NOT NULL;"
+    },
+    {
+      "name": "catalogue_sets",
+      "schema": "api",
+      "definition": " SELECT s.id AS set_id,\n    cv.id AS catalogue_version_id,\n    cv.version_key AS catalogue_version,\n    s.game_code,\n    s.language_code,\n    l.english_name AS language_english_name,\n    l.native_name AS language_native_name,\n    s.series_id,\n    sr.native_name AS series_native_name,\n    sr.english_display_name AS series_english_display_name,\n    s.set_code,\n    s.native_name,\n    s.english_display_name,\n    s.release_date,\n    s.printed_total,\n    s.total,\n    s.region_code,\n    s.updated_at,\n    s.source_updated_at\n   FROM catalog.catalogue_version_sets cvs\n     JOIN catalog.catalogue_versions cv ON cv.id = cvs.catalogue_version_id\n     JOIN catalog.sets s ON s.id = cvs.set_id\n     JOIN catalog.languages l ON l.code = s.language_code\n     LEFT JOIN catalog.series sr ON sr.id = s.series_id\n  WHERE cv.status = 'published'::text AND cv.deprecated_at IS NULL AND s.deprecated_at IS NULL;"
+    },
+    {
+      "name": "catalogue_card_collectors",
+      "schema": "api",
+      "definition": " SELECT v.language_code,\n    p.set_id,\n    p.id AS printing_id,\n    v.id AS variant_id,\n    api.normalized_price_collector(p.collector_number) AS normalized_collector_number,\n    split_part(api.normalized_price_collector(p.collector_number), '/'::text, 1) AS normalized_collector_base\n   FROM catalog.catalogue_version_variants cvv\n     JOIN catalog.catalogue_versions cv ON cv.id = cvv.catalogue_version_id AND cv.status = 'published'::text AND cv.deprecated_at IS NULL\n     JOIN catalog.card_variants v ON v.id = cvv.variant_id AND v.deprecated_at IS NULL\n     JOIN catalog.card_printings p ON p.id = v.printing_id AND p.deprecated_at IS NULL\n     JOIN catalog.sets s ON s.id = p.set_id AND s.deprecated_at IS NULL\n     JOIN catalog.languages language ON language.code = v.language_code;"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "card_names_pkey",
+      "table": "card_names",
+      "schema": "catalog",
+      "definition": "CREATE UNIQUE INDEX card_names_pkey ON catalog.card_names USING btree (id)"
+    },
+    {
+      "name": "card_names_lookup_idx",
+      "table": "card_names",
+      "schema": "catalog",
+      "definition": "CREATE INDEX card_names_lookup_idx ON catalog.card_names USING btree (language_code, name_type, normalized_name)"
+    },
+    {
+      "name": "card_names_fts_idx",
+      "table": "card_names",
+      "schema": "catalog",
+      "definition": "CREATE INDEX card_names_fts_idx ON catalog.card_names USING gin (to_tsvector('simple'::regconfig, ((COALESCE(name, ''::text) || ' '::text) || COALESCE(normalized_name, ''::text))))"
+    },
+    {
+      "name": "card_names_name_trgm_idx",
+      "table": "card_names",
+      "schema": "catalog",
+      "definition": "CREATE INDEX card_names_name_trgm_idx ON catalog.card_names USING gin (name gin_trgm_ops)"
+    },
+    {
+      "name": "card_names_normalized_trgm_idx",
+      "table": "card_names",
+      "schema": "catalog",
+      "definition": "CREATE INDEX card_names_normalized_trgm_idx ON catalog.card_names USING gin (normalized_name gin_trgm_ops)"
+    },
+    {
+      "name": "card_names_active_normalized_lookup_idx",
+      "table": "card_names",
+      "schema": "catalog",
+      "definition": "CREATE INDEX card_names_active_normalized_lookup_idx ON catalog.card_names USING btree (normalized_name, name_type) INCLUDE (name, printing_id, variant_id) WHERE (deprecated_at IS NULL)"
+    },
+    {
+      "name": "card_printings_pkey",
+      "table": "card_printings",
+      "schema": "catalog",
+      "definition": "CREATE UNIQUE INDEX card_printings_pkey ON catalog.card_printings USING btree (id)"
+    },
+    {
+      "name": "card_printings_id_game_code_language_code_set_id_collector__key",
+      "table": "card_printings",
+      "schema": "catalog",
+      "definition": "CREATE UNIQUE INDEX card_printings_id_game_code_language_code_set_id_collector__key ON catalog.card_printings USING btree (id, game_code, language_code, set_id, collector_number)"
+    },
+    {
+      "name": "card_printings_identity_idx",
+      "table": "card_printings",
+      "schema": "catalog",
+      "definition": "CREATE INDEX card_printings_identity_idx ON catalog.card_printings USING btree (game_code, language_code, set_id, collector_number, collector_number_sort_key)"
+    },
+    {
+      "name": "card_printings_name_fts_idx",
+      "table": "card_printings",
+      "schema": "catalog",
+      "definition": "CREATE INDEX card_printings_name_fts_idx ON catalog.card_printings USING gin (to_tsvector('simple'::regconfig, ((((COALESCE(native_name, ''::text) || ' '::text) || COALESCE(english_display_name, ''::text)) || ' '::text) || collector_number)))"
+    },
+    {
+      "name": "card_printings_native_name_trgm_idx",
+      "table": "card_printings",
+      "schema": "catalog",
+      "definition": "CREATE INDEX card_printings_native_name_trgm_idx ON catalog.card_printings USING gin (native_name gin_trgm_ops)"
+    },
+    {
+      "name": "card_printings_english_name_trgm_idx",
+      "table": "card_printings",
+      "schema": "catalog",
+      "definition": "CREATE INDEX card_printings_english_name_trgm_idx ON catalog.card_printings USING gin (english_display_name gin_trgm_ops)"
+    },
+    {
+      "name": "card_printings_set_sort_idx",
+      "table": "card_printings",
+      "schema": "catalog",
+      "definition": "CREATE INDEX card_printings_set_sort_idx ON catalog.card_printings USING btree (set_id, collector_number_sort_key, id) WHERE (deprecated_at IS NULL)"
+    },
+    {
+      "name": "card_printings_collector_lookup_idx",
+      "table": "card_printings",
+      "schema": "catalog",
+      "definition": "CREATE INDEX card_printings_collector_lookup_idx ON catalog.card_printings USING btree (collector_number, language_code, set_id, id) WHERE (deprecated_at IS NULL)"
+    },
+    {
+      "name": "card_printings_collector_normalized_full_lookup_idx",
+      "table": "card_printings",
+      "schema": "catalog",
+      "definition": "CREATE INDEX card_printings_collector_normalized_full_lookup_idx ON catalog.card_printings USING btree (catalog.normalise_stackr_collector_number(collector_number), language_code, set_id, id) WHERE (deprecated_at IS NULL)"
+    },
+    {
+      "name": "card_printings_collector_normalized_base_lookup_idx",
+      "table": "card_printings",
+      "schema": "catalog",
+      "definition": "CREATE INDEX card_printings_collector_normalized_base_lookup_idx ON catalog.card_printings USING btree (split_part(catalog.normalise_stackr_collector_number(collector_number), '/'::text, 1), language_code, set_id, id) WHERE (deprecated_at IS NULL)"
+    },
+    {
+      "name": "card_printings_discriminated_identity_uidx",
+      "table": "card_printings",
+      "schema": "catalog",
+      "definition": "CREATE UNIQUE INDEX card_printings_discriminated_identity_uidx ON catalog.card_printings USING btree (game_code, language_code, set_id, collector_number, printing_discriminator) WHERE ((deprecated_at IS NULL) AND (printing_discriminator <> ''::text))"
+    },
+    {
+      "name": "catalogue_collector_normalized_lookup_idx",
+      "table": "card_printings",
+      "schema": "catalog",
+      "definition": "CREATE INDEX catalogue_collector_normalized_lookup_idx ON catalog.card_printings USING btree (api.normalized_price_collector(collector_number), language_code, set_id) WHERE (deprecated_at IS NULL)"
+    },
+    {
+      "name": "catalogue_collector_prefix_lookup_idx",
+      "table": "card_printings",
+      "schema": "catalog",
+      "definition": "CREATE INDEX catalogue_collector_prefix_lookup_idx ON catalog.card_printings USING btree (split_part(api.normalized_price_collector(collector_number), '/'::text, 1), language_code, set_id) WHERE (deprecated_at IS NULL)"
+    },
+    {
+      "name": "card_variants_pkey",
+      "table": "card_variants",
+      "schema": "catalog",
+      "definition": "CREATE UNIQUE INDEX card_variants_pkey ON catalog.card_variants USING btree (id)"
+    },
+    {
+      "name": "card_variants_canonical_key_key",
+      "table": "card_variants",
+      "schema": "catalog",
+      "definition": "CREATE UNIQUE INDEX card_variants_canonical_key_key ON catalog.card_variants USING btree (canonical_key)"
+    },
+    {
+      "name": "card_variants_printing_id_variant_code_key",
+      "table": "card_variants",
+      "schema": "catalog",
+      "definition": "CREATE UNIQUE INDEX card_variants_printing_id_variant_code_key ON catalog.card_variants USING btree (printing_id, variant_code)"
+    },
+    {
+      "name": "card_variants_printing_idx",
+      "table": "card_variants",
+      "schema": "catalog",
+      "definition": "CREATE INDEX card_variants_printing_idx ON catalog.card_variants USING btree (printing_id, variant_code)"
+    },
+    {
+      "name": "card_variants_set_number_variant_idx",
+      "table": "card_variants",
+      "schema": "catalog",
+      "definition": "CREATE INDEX card_variants_set_number_variant_idx ON catalog.card_variants USING btree (game_code, language_code, set_id, collector_number, variant_code)"
+    },
+    {
+      "name": "card_variants_artwork_idx",
+      "table": "card_variants",
+      "schema": "catalog",
+      "definition": "CREATE INDEX card_variants_artwork_idx ON catalog.card_variants USING btree (artwork_key) WHERE (artwork_key IS NOT NULL)"
+    },
+    {
+      "name": "card_variants_native_image_status_idx",
+      "table": "card_variants",
+      "schema": "catalog",
+      "definition": "CREATE INDEX card_variants_native_image_status_idx ON catalog.card_variants USING btree (native_image_status, language_code, set_id) WHERE (deprecated_at IS NULL)"
+    },
+    {
+      "name": "card_variants_same_artwork_as_idx",
+      "table": "card_variants",
+      "schema": "catalog",
+      "definition": "CREATE INDEX card_variants_same_artwork_as_idx ON catalog.card_variants USING btree (same_artwork_as_variant_id) WHERE (same_artwork_as_variant_id IS NOT NULL)"
+    },
+    {
+      "name": "catalogue_version_printings_pkey",
+      "table": "catalogue_version_printings",
+      "schema": "catalog",
+      "definition": "CREATE UNIQUE INDEX catalogue_version_printings_pkey ON catalog.catalogue_version_printings USING btree (catalogue_version_id, printing_id)"
+    },
+    {
+      "name": "catalogue_version_printings_lookup_idx",
+      "table": "catalogue_version_printings",
+      "schema": "catalog",
+      "definition": "CREATE INDEX catalogue_version_printings_lookup_idx ON catalog.catalogue_version_printings USING btree (language_code, set_id, printing_id)"
+    },
+    {
+      "name": "catalogue_version_printings_printing_lookup_idx",
+      "table": "catalogue_version_printings",
+      "schema": "catalog",
+      "definition": "CREATE INDEX catalogue_version_printings_printing_lookup_idx ON catalog.catalogue_version_printings USING btree (printing_id, catalogue_version_id) INCLUDE (language_code, set_id)"
+    },
+    {
+      "name": "catalogue_version_variants_pkey",
+      "table": "catalogue_version_variants",
+      "schema": "catalog",
+      "definition": "CREATE UNIQUE INDEX catalogue_version_variants_pkey ON catalog.catalogue_version_variants USING btree (catalogue_version_id, variant_id)"
+    },
+    {
+      "name": "catalogue_version_variants_lookup_idx",
+      "table": "catalogue_version_variants",
+      "schema": "catalog",
+      "definition": "CREATE INDEX catalogue_version_variants_lookup_idx ON catalog.catalogue_version_variants USING btree (language_code, set_id, printing_id, variant_id)"
+    },
+    {
+      "name": "catalogue_version_variants_variant_lookup_idx",
+      "table": "catalogue_version_variants",
+      "schema": "catalog",
+      "definition": "CREATE INDEX catalogue_version_variants_variant_lookup_idx ON catalog.catalogue_version_variants USING btree (variant_id, catalogue_version_id) INCLUDE (language_code, set_id, printing_id)"
+    },
+    {
+      "name": "catalogue_price_version_variant_lookup_idx",
+      "table": "catalogue_version_variants",
+      "schema": "catalog",
+      "definition": "CREATE INDEX catalogue_price_version_variant_lookup_idx ON catalog.catalogue_version_variants USING btree (variant_id, catalogue_version_id)"
+    },
+    {
+      "name": "catalogue_version_variants_price_identity_idx",
+      "table": "catalogue_version_variants",
+      "schema": "catalog",
+      "definition": "CREATE INDEX catalogue_version_variants_price_identity_idx ON catalog.catalogue_version_variants USING btree (catalogue_version_id, language_code, set_id, variant_id) INCLUDE (printing_id)"
+    },
+    {
+      "name": "catalogue_versions_pkey",
+      "table": "catalogue_versions",
+      "schema": "catalog",
+      "definition": "CREATE UNIQUE INDEX catalogue_versions_pkey ON catalog.catalogue_versions USING btree (id)"
+    },
+    {
+      "name": "catalogue_versions_version_key_key",
+      "table": "catalogue_versions",
+      "schema": "catalog",
+      "definition": "CREATE UNIQUE INDEX catalogue_versions_version_key_key ON catalog.catalogue_versions USING btree (version_key)"
+    },
+    {
+      "name": "catalogue_versions_one_published_per_language_uidx",
+      "table": "catalogue_versions",
+      "schema": "catalog",
+      "definition": "CREATE UNIQUE INDEX catalogue_versions_one_published_per_language_uidx ON catalog.catalogue_versions USING btree (language_code) WHERE ((status = 'published'::text) AND (deprecated_at IS NULL) AND (language_code IS NOT NULL))"
+    },
+    {
+      "schema": "catalog",
+      "table": "card_concepts",
+      "name": "card_concepts_game_code_concept_key_key",
+      "definition": "CREATE UNIQUE INDEX card_concepts_game_code_concept_key_key ON catalog.card_concepts USING btree (game_code, concept_key)"
+    },
+    {
+      "schema": "catalog",
+      "table": "card_concepts",
+      "name": "card_concepts_pkey",
+      "definition": "CREATE UNIQUE INDEX card_concepts_pkey ON catalog.card_concepts USING btree (id)"
+    },
+    {
+      "schema": "catalog",
+      "table": "catalogue_change_log",
+      "name": "catalogue_change_log_pkey",
+      "definition": "CREATE UNIQUE INDEX catalogue_change_log_pkey ON catalog.catalogue_change_log USING btree (change_sequence)"
+    },
+    {
+      "schema": "catalog",
+      "table": "catalogue_change_log",
+      "name": "catalogue_changes_delta_idx",
+      "definition": "CREATE INDEX catalogue_changes_delta_idx ON catalog.catalogue_change_log USING btree (change_sequence, mobile_syncable, changed_at)"
+    },
+    {
+      "schema": "catalog",
+      "table": "catalogue_version_external_identifiers",
+      "name": "catalogue_price_published_alias_lookup_idx",
+      "definition": "CREATE INDEX catalogue_price_published_alias_lookup_idx ON catalog.catalogue_version_external_identifiers USING btree (external_id, language_code) INCLUDE (catalogue_version_id, printing_id, variant_id)"
+    },
+    {
+      "schema": "catalog",
+      "table": "catalogue_version_external_identifiers",
+      "name": "catalogue_version_external_identifiers_external_lookup_idx",
+      "definition": "CREATE INDEX catalogue_version_external_identifiers_external_lookup_idx ON catalog.catalogue_version_external_identifiers USING btree (external_id, language_code, catalogue_version_id) INCLUDE (source_entity_type, set_id, printing_id, variant_id, confidence)"
+    },
+    {
+      "schema": "catalog",
+      "table": "catalogue_version_external_identifiers",
+      "name": "catalogue_version_external_identifiers_lookup_idx",
+      "definition": "CREATE INDEX catalogue_version_external_identifiers_lookup_idx ON catalog.catalogue_version_external_identifiers USING btree (language_code, external_id, set_id, printing_id, variant_id)"
+    },
+    {
+      "schema": "catalog",
+      "table": "catalogue_version_external_identifiers",
+      "name": "catalogue_version_external_identifiers_pkey",
+      "definition": "CREATE UNIQUE INDEX catalogue_version_external_identifiers_pkey ON catalog.catalogue_version_external_identifiers USING btree (catalogue_version_id, source_id, source_entity_type, external_id, language_code)"
+    },
+    {
+      "schema": "catalog",
+      "table": "catalogue_version_sets",
+      "name": "catalogue_version_sets_pkey",
+      "definition": "CREATE UNIQUE INDEX catalogue_version_sets_pkey ON catalog.catalogue_version_sets USING btree (catalogue_version_id, set_id)"
+    },
+    {
+      "schema": "catalog",
+      "table": "catalogue_version_sets",
+      "name": "catalogue_version_sets_published_lookup_idx",
+      "definition": "CREATE INDEX catalogue_version_sets_published_lookup_idx ON catalog.catalogue_version_sets USING btree (language_code, set_id)"
+    },
+    {
+      "schema": "catalog",
+      "table": "finishes",
+      "name": "finishes_code_key",
+      "definition": "CREATE UNIQUE INDEX finishes_code_key ON catalog.finishes USING btree (code)"
+    },
+    {
+      "schema": "catalog",
+      "table": "finishes",
+      "name": "finishes_pkey",
+      "definition": "CREATE UNIQUE INDEX finishes_pkey ON catalog.finishes USING btree (id)"
+    },
+    {
+      "schema": "catalog",
+      "table": "languages",
+      "name": "languages_bcp47_code_key",
+      "definition": "CREATE UNIQUE INDEX languages_bcp47_code_key ON catalog.languages USING btree (bcp47_code)"
+    },
+    {
+      "schema": "catalog",
+      "table": "languages",
+      "name": "languages_pkey",
+      "definition": "CREATE UNIQUE INDEX languages_pkey ON catalog.languages USING btree (code)"
+    },
+    {
+      "schema": "catalog",
+      "table": "rarities",
+      "name": "rarities_game_code_code_key",
+      "definition": "CREATE UNIQUE INDEX rarities_game_code_code_key ON catalog.rarities USING btree (game_code, code)"
+    },
+    {
+      "schema": "catalog",
+      "table": "rarities",
+      "name": "rarities_pkey",
+      "definition": "CREATE UNIQUE INDEX rarities_pkey ON catalog.rarities USING btree (id)"
+    },
+    {
+      "schema": "catalog",
+      "table": "series",
+      "name": "series_names_fts_idx",
+      "definition": "CREATE INDEX series_names_fts_idx ON catalog.series USING gin (to_tsvector('simple'::regconfig, ((((COALESCE(native_name, ''::text) || ' '::text) || COALESCE(english_display_name, ''::text)) || ' '::text) || COALESCE(series_code, ''::text))))"
+    },
+    {
+      "schema": "catalog",
+      "table": "series",
+      "name": "series_pkey",
+      "definition": "CREATE UNIQUE INDEX series_pkey ON catalog.series USING btree (id)"
+    },
+    {
+      "schema": "catalog",
+      "table": "sets",
+      "name": "sets_english_display_name_trgm_idx",
+      "definition": "CREATE INDEX sets_english_display_name_trgm_idx ON catalog.sets USING gin (english_display_name gin_trgm_ops)"
+    },
+    {
+      "schema": "catalog",
+      "table": "sets",
+      "name": "sets_lookup_idx",
+      "definition": "CREATE INDEX sets_lookup_idx ON catalog.sets USING btree (game_code, language_code, set_code, release_date DESC)"
+    },
+    {
+      "schema": "catalog",
+      "table": "sets",
+      "name": "sets_names_fts_idx",
+      "definition": "CREATE INDEX sets_names_fts_idx ON catalog.sets USING gin (to_tsvector('simple'::regconfig, ((((COALESCE(native_name, ''::text) || ' '::text) || COALESCE(english_display_name, ''::text)) || ' '::text) || COALESCE(set_code, ''::text))))"
+    },
+    {
+      "schema": "catalog",
+      "table": "sets",
+      "name": "sets_native_name_trgm_idx",
+      "definition": "CREATE INDEX sets_native_name_trgm_idx ON catalog.sets USING gin (native_name gin_trgm_ops)"
+    },
+    {
+      "schema": "catalog",
+      "table": "sets",
+      "name": "sets_pkey",
+      "definition": "CREATE UNIQUE INDEX sets_pkey ON catalog.sets USING btree (id)"
+    },
+    {
+      "schema": "catalog",
+      "table": "sets",
+      "name": "sets_source_scoped_code_idx",
+      "definition": "CREATE INDEX sets_source_scoped_code_idx ON catalog.sets USING btree (game_code, language_code, COALESCE(set_code, ''::text), id)"
+    },
+    {
+      "schema": "catalog",
+      "table": "variant_taxonomy",
+      "name": "variant_taxonomy_pkey",
+      "definition": "CREATE UNIQUE INDEX variant_taxonomy_pkey ON catalog.variant_taxonomy USING btree (code)"
+    }
+  ],
+  "observedAt": "2026-10-26T15:16:06.612066+00:00",
+  "columns": [
+    {
+      "type": "uuid",
+      "table": "card_concepts",
+      "column": "id",
+      "notNull": true,
+      "ordinal": 1
+    },
+    {
+      "type": "text",
+      "table": "card_concepts",
+      "column": "game_code",
+      "notNull": true,
+      "ordinal": 2
+    },
+    {
+      "type": "text",
+      "table": "card_concepts",
+      "column": "concept_key",
+      "notNull": true,
+      "ordinal": 3
+    },
+    {
+      "type": "text",
+      "table": "card_concepts",
+      "column": "default_english_name",
+      "notNull": false,
+      "ordinal": 4
+    },
+    {
+      "type": "integer[]",
+      "table": "card_concepts",
+      "column": "pokemon_dex_ids",
+      "notNull": true,
+      "ordinal": 5
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "card_concepts",
+      "column": "source_updated_at",
+      "notNull": false,
+      "ordinal": 6
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "card_concepts",
+      "column": "discontinued_at",
+      "notNull": false,
+      "ordinal": 7
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "card_concepts",
+      "column": "deprecated_at",
+      "notNull": false,
+      "ordinal": 8
+    },
+    {
+      "type": "text",
+      "table": "card_concepts",
+      "column": "deprecated_reason",
+      "notNull": false,
+      "ordinal": 9
+    },
+    {
+      "type": "uuid",
+      "table": "card_concepts",
+      "column": "corrected_by_concept_id",
+      "notNull": false,
+      "ordinal": 10
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "card_concepts",
+      "column": "created_at",
+      "notNull": true,
+      "ordinal": 11
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "card_concepts",
+      "column": "updated_at",
+      "notNull": true,
+      "ordinal": 12
+    },
+    {
+      "type": "uuid",
+      "table": "card_names",
+      "column": "id",
+      "notNull": true,
+      "ordinal": 1
+    },
+    {
+      "type": "uuid",
+      "table": "card_names",
+      "column": "card_concept_id",
+      "notNull": false,
+      "ordinal": 2
+    },
+    {
+      "type": "uuid",
+      "table": "card_names",
+      "column": "printing_id",
+      "notNull": false,
+      "ordinal": 3
+    },
+    {
+      "type": "uuid",
+      "table": "card_names",
+      "column": "variant_id",
+      "notNull": false,
+      "ordinal": 4
+    },
+    {
+      "type": "text",
+      "table": "card_names",
+      "column": "language_code",
+      "notNull": true,
+      "ordinal": 5
+    },
+    {
+      "type": "text",
+      "table": "card_names",
+      "column": "name_type",
+      "notNull": true,
+      "ordinal": 6
+    },
+    {
+      "type": "text",
+      "table": "card_names",
+      "column": "name",
+      "notNull": true,
+      "ordinal": 7
+    },
+    {
+      "type": "text",
+      "table": "card_names",
+      "column": "normalized_name",
+      "notNull": true,
+      "ordinal": 8
+    },
+    {
+      "type": "numeric",
+      "table": "card_names",
+      "column": "source_confidence",
+      "notNull": true,
+      "ordinal": 9
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "card_names",
+      "column": "source_updated_at",
+      "notNull": false,
+      "ordinal": 10
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "card_names",
+      "column": "deprecated_at",
+      "notNull": false,
+      "ordinal": 11
+    },
+    {
+      "type": "text",
+      "table": "card_names",
+      "column": "deprecated_reason",
+      "notNull": false,
+      "ordinal": 12
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "card_names",
+      "column": "created_at",
+      "notNull": true,
+      "ordinal": 13
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "card_names",
+      "column": "updated_at",
+      "notNull": true,
+      "ordinal": 14
+    },
+    {
+      "type": "uuid",
+      "table": "card_printings",
+      "column": "id",
+      "notNull": true,
+      "ordinal": 1
+    },
+    {
+      "type": "text",
+      "table": "card_printings",
+      "column": "game_code",
+      "notNull": true,
+      "ordinal": 2
+    },
+    {
+      "type": "uuid",
+      "table": "card_printings",
+      "column": "set_id",
+      "notNull": true,
+      "ordinal": 3
+    },
+    {
+      "type": "text",
+      "table": "card_printings",
+      "column": "language_code",
+      "notNull": true,
+      "ordinal": 4
+    },
+    {
+      "type": "uuid",
+      "table": "card_printings",
+      "column": "card_concept_id",
+      "notNull": false,
+      "ordinal": 5
+    },
+    {
+      "type": "text",
+      "table": "card_printings",
+      "column": "collector_number",
+      "notNull": true,
+      "ordinal": 6
+    },
+    {
+      "type": "text",
+      "table": "card_printings",
+      "column": "collector_number_prefix",
+      "notNull": false,
+      "ordinal": 7
+    },
+    {
+      "type": "integer",
+      "table": "card_printings",
+      "column": "collector_number_sort",
+      "notNull": false,
+      "ordinal": 8
+    },
+    {
+      "type": "text",
+      "table": "card_printings",
+      "column": "collector_number_suffix",
+      "notNull": false,
+      "ordinal": 9
+    },
+    {
+      "type": "text",
+      "table": "card_printings",
+      "column": "collector_number_sort_key",
+      "notNull": true,
+      "ordinal": 10
+    },
+    {
+      "type": "text",
+      "table": "card_printings",
+      "column": "native_name",
+      "notNull": true,
+      "ordinal": 11
+    },
+    {
+      "type": "text",
+      "table": "card_printings",
+      "column": "english_display_name",
+      "notNull": false,
+      "ordinal": 12
+    },
+    {
+      "type": "uuid",
+      "table": "card_printings",
+      "column": "rarity_id",
+      "notNull": false,
+      "ordinal": 13
+    },
+    {
+      "type": "text",
+      "table": "card_printings",
+      "column": "supertype",
+      "notNull": false,
+      "ordinal": 14
+    },
+    {
+      "type": "text[]",
+      "table": "card_printings",
+      "column": "subtypes",
+      "notNull": true,
+      "ordinal": 15
+    },
+    {
+      "type": "text",
+      "table": "card_printings",
+      "column": "artist",
+      "notNull": false,
+      "ordinal": 16
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "card_printings",
+      "column": "source_updated_at",
+      "notNull": false,
+      "ordinal": 17
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "card_printings",
+      "column": "discontinued_at",
+      "notNull": false,
+      "ordinal": 18
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "card_printings",
+      "column": "deprecated_at",
+      "notNull": false,
+      "ordinal": 19
+    },
+    {
+      "type": "text",
+      "table": "card_printings",
+      "column": "deprecated_reason",
+      "notNull": false,
+      "ordinal": 20
+    },
+    {
+      "type": "uuid",
+      "table": "card_printings",
+      "column": "corrected_by_printing_id",
+      "notNull": false,
+      "ordinal": 21
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "card_printings",
+      "column": "created_at",
+      "notNull": true,
+      "ordinal": 22
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "card_printings",
+      "column": "updated_at",
+      "notNull": true,
+      "ordinal": 23
+    },
+    {
+      "type": "text",
+      "table": "card_printings",
+      "column": "printing_discriminator",
+      "notNull": true,
+      "ordinal": 24
+    },
+    {
+      "type": "uuid",
+      "table": "card_variants",
+      "column": "id",
+      "notNull": true,
+      "ordinal": 1
+    },
+    {
+      "type": "uuid",
+      "table": "card_variants",
+      "column": "printing_id",
+      "notNull": true,
+      "ordinal": 2
+    },
+    {
+      "type": "text",
+      "table": "card_variants",
+      "column": "game_code",
+      "notNull": true,
+      "ordinal": 3
+    },
+    {
+      "type": "uuid",
+      "table": "card_variants",
+      "column": "set_id",
+      "notNull": true,
+      "ordinal": 4
+    },
+    {
+      "type": "text",
+      "table": "card_variants",
+      "column": "language_code",
+      "notNull": true,
+      "ordinal": 5
+    },
+    {
+      "type": "text",
+      "table": "card_variants",
+      "column": "collector_number",
+      "notNull": true,
+      "ordinal": 6
+    },
+    {
+      "type": "text",
+      "table": "card_variants",
+      "column": "variant_code",
+      "notNull": true,
+      "ordinal": 7
+    },
+    {
+      "type": "text",
+      "table": "card_variants",
+      "column": "finish_code",
+      "notNull": false,
+      "ordinal": 8
+    },
+    {
+      "type": "text",
+      "table": "card_variants",
+      "column": "canonical_key",
+      "notNull": true,
+      "ordinal": 9
+    },
+    {
+      "type": "text",
+      "table": "card_variants",
+      "column": "artwork_key",
+      "notNull": false,
+      "ordinal": 10
+    },
+    {
+      "type": "text",
+      "table": "card_variants",
+      "column": "image_signature",
+      "notNull": false,
+      "ordinal": 11
+    },
+    {
+      "type": "boolean",
+      "table": "card_variants",
+      "column": "is_default",
+      "notNull": true,
+      "ordinal": 12
+    },
+    {
+      "type": "text",
+      "table": "card_variants",
+      "column": "variant_display_name",
+      "notNull": false,
+      "ordinal": 13
+    },
+    {
+      "type": "numeric",
+      "table": "card_variants",
+      "column": "source_confidence",
+      "notNull": true,
+      "ordinal": 14
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "card_variants",
+      "column": "source_updated_at",
+      "notNull": false,
+      "ordinal": 15
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "card_variants",
+      "column": "discontinued_at",
+      "notNull": false,
+      "ordinal": 16
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "card_variants",
+      "column": "deprecated_at",
+      "notNull": false,
+      "ordinal": 17
+    },
+    {
+      "type": "text",
+      "table": "card_variants",
+      "column": "deprecated_reason",
+      "notNull": false,
+      "ordinal": 18
+    },
+    {
+      "type": "uuid",
+      "table": "card_variants",
+      "column": "corrected_by_variant_id",
+      "notNull": false,
+      "ordinal": 19
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "card_variants",
+      "column": "created_at",
+      "notNull": true,
+      "ordinal": 20
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "card_variants",
+      "column": "updated_at",
+      "notNull": true,
+      "ordinal": 21
+    },
+    {
+      "type": "text",
+      "table": "card_variants",
+      "column": "native_image_status",
+      "notNull": true,
+      "ordinal": 22
+    },
+    {
+      "type": "uuid",
+      "table": "card_variants",
+      "column": "same_artwork_as_variant_id",
+      "notNull": false,
+      "ordinal": 23
+    },
+    {
+      "type": "bigint",
+      "table": "catalogue_change_log",
+      "column": "change_sequence",
+      "notNull": true,
+      "ordinal": 1
+    },
+    {
+      "type": "uuid",
+      "table": "catalogue_change_log",
+      "column": "catalogue_version_id",
+      "notNull": false,
+      "ordinal": 2
+    },
+    {
+      "type": "text",
+      "table": "catalogue_change_log",
+      "column": "entity_schema",
+      "notNull": true,
+      "ordinal": 3
+    },
+    {
+      "type": "text",
+      "table": "catalogue_change_log",
+      "column": "entity_table",
+      "notNull": true,
+      "ordinal": 4
+    },
+    {
+      "type": "uuid",
+      "table": "catalogue_change_log",
+      "column": "entity_id",
+      "notNull": false,
+      "ordinal": 5
+    },
+    {
+      "type": "text",
+      "table": "catalogue_change_log",
+      "column": "entity_key",
+      "notNull": false,
+      "ordinal": 6
+    },
+    {
+      "type": "text",
+      "table": "catalogue_change_log",
+      "column": "change_type",
+      "notNull": true,
+      "ordinal": 7
+    },
+    {
+      "type": "boolean",
+      "table": "catalogue_change_log",
+      "column": "mobile_syncable",
+      "notNull": true,
+      "ordinal": 8
+    },
+    {
+      "type": "jsonb",
+      "table": "catalogue_change_log",
+      "column": "public_change_summary",
+      "notNull": true,
+      "ordinal": 9
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "catalogue_change_log",
+      "column": "changed_at",
+      "notNull": true,
+      "ordinal": 10
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "catalogue_change_log",
+      "column": "created_at",
+      "notNull": true,
+      "ordinal": 11
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "catalogue_change_log",
+      "column": "updated_at",
+      "notNull": true,
+      "ordinal": 12
+    },
+    {
+      "type": "uuid",
+      "table": "catalogue_version_external_identifiers",
+      "column": "catalogue_version_id",
+      "notNull": true,
+      "ordinal": 1
+    },
+    {
+      "type": "text",
+      "table": "catalogue_version_external_identifiers",
+      "column": "language_code",
+      "notNull": true,
+      "ordinal": 2
+    },
+    {
+      "type": "uuid",
+      "table": "catalogue_version_external_identifiers",
+      "column": "source_id",
+      "notNull": true,
+      "ordinal": 3
+    },
+    {
+      "type": "text",
+      "table": "catalogue_version_external_identifiers",
+      "column": "source_entity_type",
+      "notNull": true,
+      "ordinal": 4
+    },
+    {
+      "type": "text",
+      "table": "catalogue_version_external_identifiers",
+      "column": "external_id",
+      "notNull": true,
+      "ordinal": 5
+    },
+    {
+      "type": "text",
+      "table": "catalogue_version_external_identifiers",
+      "column": "external_uri",
+      "notNull": false,
+      "ordinal": 6
+    },
+    {
+      "type": "uuid",
+      "table": "catalogue_version_external_identifiers",
+      "column": "set_id",
+      "notNull": false,
+      "ordinal": 7
+    },
+    {
+      "type": "uuid",
+      "table": "catalogue_version_external_identifiers",
+      "column": "printing_id",
+      "notNull": false,
+      "ordinal": 8
+    },
+    {
+      "type": "uuid",
+      "table": "catalogue_version_external_identifiers",
+      "column": "variant_id",
+      "notNull": false,
+      "ordinal": 9
+    },
+    {
+      "type": "numeric",
+      "table": "catalogue_version_external_identifiers",
+      "column": "confidence",
+      "notNull": true,
+      "ordinal": 10
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "catalogue_version_external_identifiers",
+      "column": "created_at",
+      "notNull": true,
+      "ordinal": 11
+    },
+    {
+      "type": "uuid",
+      "table": "catalogue_version_printings",
+      "column": "catalogue_version_id",
+      "notNull": true,
+      "ordinal": 1
+    },
+    {
+      "type": "text",
+      "table": "catalogue_version_printings",
+      "column": "language_code",
+      "notNull": true,
+      "ordinal": 2
+    },
+    {
+      "type": "uuid",
+      "table": "catalogue_version_printings",
+      "column": "set_id",
+      "notNull": true,
+      "ordinal": 3
+    },
+    {
+      "type": "uuid",
+      "table": "catalogue_version_printings",
+      "column": "printing_id",
+      "notNull": true,
+      "ordinal": 4
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "catalogue_version_printings",
+      "column": "created_at",
+      "notNull": true,
+      "ordinal": 5
+    },
+    {
+      "type": "uuid",
+      "table": "catalogue_version_variants",
+      "column": "catalogue_version_id",
+      "notNull": true,
+      "ordinal": 1
+    },
+    {
+      "type": "text",
+      "table": "catalogue_version_variants",
+      "column": "language_code",
+      "notNull": true,
+      "ordinal": 2
+    },
+    {
+      "type": "uuid",
+      "table": "catalogue_version_variants",
+      "column": "set_id",
+      "notNull": true,
+      "ordinal": 3
+    },
+    {
+      "type": "uuid",
+      "table": "catalogue_version_variants",
+      "column": "printing_id",
+      "notNull": true,
+      "ordinal": 4
+    },
+    {
+      "type": "uuid",
+      "table": "catalogue_version_variants",
+      "column": "variant_id",
+      "notNull": true,
+      "ordinal": 5
+    },
+    {
+      "type": "text",
+      "table": "catalogue_version_variants",
+      "column": "canonical_key",
+      "notNull": true,
+      "ordinal": 6
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "catalogue_version_variants",
+      "column": "created_at",
+      "notNull": true,
+      "ordinal": 7
+    },
+    {
+      "type": "uuid",
+      "table": "catalogue_versions",
+      "column": "id",
+      "notNull": true,
+      "ordinal": 1
+    },
+    {
+      "type": "text",
+      "table": "catalogue_versions",
+      "column": "version_key",
+      "notNull": true,
+      "ordinal": 2
+    },
+    {
+      "type": "text",
+      "table": "catalogue_versions",
+      "column": "status",
+      "notNull": true,
+      "ordinal": 3
+    },
+    {
+      "type": "text",
+      "table": "catalogue_versions",
+      "column": "description",
+      "notNull": false,
+      "ordinal": 4
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "catalogue_versions",
+      "column": "published_at",
+      "notNull": false,
+      "ordinal": 5
+    },
+    {
+      "type": "uuid",
+      "table": "catalogue_versions",
+      "column": "superseded_by_version_id",
+      "notNull": false,
+      "ordinal": 6
+    },
+    {
+      "type": "bigint",
+      "table": "catalogue_versions",
+      "column": "min_change_sequence",
+      "notNull": false,
+      "ordinal": 7
+    },
+    {
+      "type": "bigint",
+      "table": "catalogue_versions",
+      "column": "max_change_sequence",
+      "notNull": false,
+      "ordinal": 8
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "catalogue_versions",
+      "column": "source_updated_at",
+      "notNull": false,
+      "ordinal": 9
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "catalogue_versions",
+      "column": "deprecated_at",
+      "notNull": false,
+      "ordinal": 10
+    },
+    {
+      "type": "text",
+      "table": "catalogue_versions",
+      "column": "deprecated_reason",
+      "notNull": false,
+      "ordinal": 11
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "catalogue_versions",
+      "column": "created_at",
+      "notNull": true,
+      "ordinal": 12
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "catalogue_versions",
+      "column": "updated_at",
+      "notNull": true,
+      "ordinal": 13
+    },
+    {
+      "type": "text",
+      "table": "catalogue_versions",
+      "column": "language_code",
+      "notNull": false,
+      "ordinal": 14
+    },
+    {
+      "type": "text",
+      "table": "catalogue_versions",
+      "column": "version_label",
+      "notNull": false,
+      "ordinal": 15
+    },
+    {
+      "type": "jsonb",
+      "table": "catalogue_versions",
+      "column": "coverage_summary",
+      "notNull": true,
+      "ordinal": 16
+    },
+    {
+      "type": "uuid",
+      "table": "finishes",
+      "column": "id",
+      "notNull": true,
+      "ordinal": 1
+    },
+    {
+      "type": "text",
+      "table": "finishes",
+      "column": "code",
+      "notNull": true,
+      "ordinal": 2
+    },
+    {
+      "type": "text",
+      "table": "finishes",
+      "column": "english_label",
+      "notNull": true,
+      "ordinal": 3
+    },
+    {
+      "type": "text",
+      "table": "finishes",
+      "column": "finish_group",
+      "notNull": true,
+      "ordinal": 4
+    },
+    {
+      "type": "text",
+      "table": "finishes",
+      "column": "description",
+      "notNull": false,
+      "ordinal": 5
+    },
+    {
+      "type": "integer",
+      "table": "finishes",
+      "column": "sort_order",
+      "notNull": true,
+      "ordinal": 6
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "finishes",
+      "column": "source_updated_at",
+      "notNull": false,
+      "ordinal": 7
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "finishes",
+      "column": "deprecated_at",
+      "notNull": false,
+      "ordinal": 8
+    },
+    {
+      "type": "text",
+      "table": "finishes",
+      "column": "deprecated_reason",
+      "notNull": false,
+      "ordinal": 9
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "finishes",
+      "column": "created_at",
+      "notNull": true,
+      "ordinal": 10
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "finishes",
+      "column": "updated_at",
+      "notNull": true,
+      "ordinal": 11
+    },
+    {
+      "type": "text",
+      "table": "languages",
+      "column": "code",
+      "notNull": true,
+      "ordinal": 1
+    },
+    {
+      "type": "text",
+      "table": "languages",
+      "column": "bcp47_code",
+      "notNull": true,
+      "ordinal": 2
+    },
+    {
+      "type": "text",
+      "table": "languages",
+      "column": "english_name",
+      "notNull": true,
+      "ordinal": 3
+    },
+    {
+      "type": "text",
+      "table": "languages",
+      "column": "native_name",
+      "notNull": true,
+      "ordinal": 4
+    },
+    {
+      "type": "text",
+      "table": "languages",
+      "column": "script_code",
+      "notNull": false,
+      "ordinal": 5
+    },
+    {
+      "type": "integer",
+      "table": "languages",
+      "column": "sort_order",
+      "notNull": true,
+      "ordinal": 6
+    },
+    {
+      "type": "boolean",
+      "table": "languages",
+      "column": "active",
+      "notNull": true,
+      "ordinal": 7
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "languages",
+      "column": "source_updated_at",
+      "notNull": false,
+      "ordinal": 8
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "languages",
+      "column": "deprecated_at",
+      "notNull": false,
+      "ordinal": 9
+    },
+    {
+      "type": "text",
+      "table": "languages",
+      "column": "deprecated_reason",
+      "notNull": false,
+      "ordinal": 10
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "languages",
+      "column": "created_at",
+      "notNull": true,
+      "ordinal": 11
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "languages",
+      "column": "updated_at",
+      "notNull": true,
+      "ordinal": 12
+    },
+    {
+      "type": "uuid",
+      "table": "rarities",
+      "column": "id",
+      "notNull": true,
+      "ordinal": 1
+    },
+    {
+      "type": "text",
+      "table": "rarities",
+      "column": "game_code",
+      "notNull": true,
+      "ordinal": 2
+    },
+    {
+      "type": "text",
+      "table": "rarities",
+      "column": "code",
+      "notNull": true,
+      "ordinal": 3
+    },
+    {
+      "type": "text",
+      "table": "rarities",
+      "column": "english_label",
+      "notNull": true,
+      "ordinal": 4
+    },
+    {
+      "type": "text",
+      "table": "rarities",
+      "column": "native_label",
+      "notNull": false,
+      "ordinal": 5
+    },
+    {
+      "type": "text",
+      "table": "rarities",
+      "column": "rarity_group",
+      "notNull": false,
+      "ordinal": 6
+    },
+    {
+      "type": "integer",
+      "table": "rarities",
+      "column": "sort_order",
+      "notNull": true,
+      "ordinal": 7
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "rarities",
+      "column": "source_updated_at",
+      "notNull": false,
+      "ordinal": 8
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "rarities",
+      "column": "deprecated_at",
+      "notNull": false,
+      "ordinal": 9
+    },
+    {
+      "type": "text",
+      "table": "rarities",
+      "column": "deprecated_reason",
+      "notNull": false,
+      "ordinal": 10
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "rarities",
+      "column": "created_at",
+      "notNull": true,
+      "ordinal": 11
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "rarities",
+      "column": "updated_at",
+      "notNull": true,
+      "ordinal": 12
+    },
+    {
+      "type": "uuid",
+      "table": "sets",
+      "column": "id",
+      "notNull": true,
+      "ordinal": 1
+    },
+    {
+      "type": "text",
+      "table": "sets",
+      "column": "game_code",
+      "notNull": true,
+      "ordinal": 2
+    },
+    {
+      "type": "text",
+      "table": "sets",
+      "column": "language_code",
+      "notNull": true,
+      "ordinal": 3
+    },
+    {
+      "type": "uuid",
+      "table": "sets",
+      "column": "series_id",
+      "notNull": false,
+      "ordinal": 4
+    },
+    {
+      "type": "text",
+      "table": "sets",
+      "column": "set_code",
+      "notNull": false,
+      "ordinal": 5
+    },
+    {
+      "type": "text",
+      "table": "sets",
+      "column": "provider_set_code",
+      "notNull": false,
+      "ordinal": 6
+    },
+    {
+      "type": "text",
+      "table": "sets",
+      "column": "native_name",
+      "notNull": true,
+      "ordinal": 7
+    },
+    {
+      "type": "text",
+      "table": "sets",
+      "column": "english_display_name",
+      "notNull": false,
+      "ordinal": 8
+    },
+    {
+      "type": "date",
+      "table": "sets",
+      "column": "release_date",
+      "notNull": false,
+      "ordinal": 9
+    },
+    {
+      "type": "integer",
+      "table": "sets",
+      "column": "printed_total",
+      "notNull": false,
+      "ordinal": 10
+    },
+    {
+      "type": "integer",
+      "table": "sets",
+      "column": "total",
+      "notNull": false,
+      "ordinal": 11
+    },
+    {
+      "type": "text",
+      "table": "sets",
+      "column": "region_code",
+      "notNull": false,
+      "ordinal": 12
+    },
+    {
+      "type": "integer",
+      "table": "sets",
+      "column": "display_order",
+      "notNull": false,
+      "ordinal": 13
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "sets",
+      "column": "source_updated_at",
+      "notNull": false,
+      "ordinal": 14
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "sets",
+      "column": "discontinued_at",
+      "notNull": false,
+      "ordinal": 15
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "sets",
+      "column": "deprecated_at",
+      "notNull": false,
+      "ordinal": 16
+    },
+    {
+      "type": "text",
+      "table": "sets",
+      "column": "deprecated_reason",
+      "notNull": false,
+      "ordinal": 17
+    },
+    {
+      "type": "uuid",
+      "table": "sets",
+      "column": "corrected_by_set_id",
+      "notNull": false,
+      "ordinal": 18
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "sets",
+      "column": "created_at",
+      "notNull": true,
+      "ordinal": 19
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "sets",
+      "column": "updated_at",
+      "notNull": true,
+      "ordinal": 20
+    },
+    {
+      "type": "text",
+      "table": "variant_taxonomy",
+      "column": "code",
+      "notNull": true,
+      "ordinal": 1
+    },
+    {
+      "type": "text",
+      "table": "variant_taxonomy",
+      "column": "english_label",
+      "notNull": true,
+      "ordinal": 2
+    },
+    {
+      "type": "text",
+      "table": "variant_taxonomy",
+      "column": "variant_group",
+      "notNull": true,
+      "ordinal": 3
+    },
+    {
+      "type": "text",
+      "table": "variant_taxonomy",
+      "column": "finish_code",
+      "notNull": false,
+      "ordinal": 4
+    },
+    {
+      "type": "text",
+      "table": "variant_taxonomy",
+      "column": "description",
+      "notNull": false,
+      "ordinal": 5
+    },
+    {
+      "type": "integer",
+      "table": "variant_taxonomy",
+      "column": "sort_order",
+      "notNull": true,
+      "ordinal": 6
+    },
+    {
+      "type": "boolean",
+      "table": "variant_taxonomy",
+      "column": "active",
+      "notNull": true,
+      "ordinal": 7
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "variant_taxonomy",
+      "column": "source_updated_at",
+      "notNull": false,
+      "ordinal": 8
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "variant_taxonomy",
+      "column": "deprecated_at",
+      "notNull": false,
+      "ordinal": 9
+    },
+    {
+      "type": "text",
+      "table": "variant_taxonomy",
+      "column": "deprecated_reason",
+      "notNull": false,
+      "ordinal": 10
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "variant_taxonomy",
+      "column": "created_at",
+      "notNull": true,
+      "ordinal": 11
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "variant_taxonomy",
+      "column": "updated_at",
+      "notNull": true,
+      "ordinal": 12
+    },
+    {
+      "table": "catalogue_version_sets",
+      "column": "catalogue_version_id",
+      "type": "uuid",
+      "notNull": true,
+      "ordinal": 192
+    },
+    {
+      "table": "catalogue_version_sets",
+      "column": "language_code",
+      "type": "text",
+      "notNull": true,
+      "ordinal": 193
+    },
+    {
+      "table": "catalogue_version_sets",
+      "column": "set_id",
+      "type": "uuid",
+      "notNull": true,
+      "ordinal": 194
+    },
+    {
+      "table": "catalogue_version_sets",
+      "column": "set_code",
+      "type": "text",
+      "notNull": false,
+      "ordinal": 195
+    },
+    {
+      "table": "catalogue_version_sets",
+      "column": "set_status",
+      "type": "text",
+      "notNull": true,
+      "ordinal": 196
+    },
+    {
+      "table": "catalogue_version_sets",
+      "column": "checklist_completion_percentage",
+      "type": "numeric",
+      "notNull": true,
+      "ordinal": 197
+    },
+    {
+      "table": "catalogue_version_sets",
+      "column": "image_completion_percentage",
+      "type": "numeric",
+      "notNull": true,
+      "ordinal": 198
+    },
+    {
+      "table": "catalogue_version_sets",
+      "column": "set_art_completion_percentage",
+      "type": "numeric",
+      "notNull": true,
+      "ordinal": 199
+    },
+    {
+      "table": "catalogue_version_sets",
+      "column": "snapshot_summary",
+      "type": "jsonb",
+      "notNull": true,
+      "ordinal": 200
+    },
+    {
+      "table": "catalogue_version_sets",
+      "column": "created_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "ordinal": 201
+    },
+    {
+      "table": "series",
+      "column": "id",
+      "type": "uuid",
+      "notNull": true,
+      "ordinal": 202
+    },
+    {
+      "table": "series",
+      "column": "game_code",
+      "type": "text",
+      "notNull": true,
+      "ordinal": 203
+    },
+    {
+      "table": "series",
+      "column": "language_code",
+      "type": "text",
+      "notNull": true,
+      "ordinal": 204
+    },
+    {
+      "table": "series",
+      "column": "native_name",
+      "type": "text",
+      "notNull": true,
+      "ordinal": 205
+    },
+    {
+      "table": "series",
+      "column": "english_display_name",
+      "type": "text",
+      "notNull": false,
+      "ordinal": 206
+    },
+    {
+      "table": "series",
+      "column": "series_code",
+      "type": "text",
+      "notNull": false,
+      "ordinal": 207
+    },
+    {
+      "table": "series",
+      "column": "release_date",
+      "type": "date",
+      "notNull": false,
+      "ordinal": 208
+    },
+    {
+      "table": "series",
+      "column": "end_date",
+      "type": "date",
+      "notNull": false,
+      "ordinal": 209
+    },
+    {
+      "table": "series",
+      "column": "display_order",
+      "type": "integer",
+      "notNull": false,
+      "ordinal": 210
+    },
+    {
+      "table": "series",
+      "column": "source_updated_at",
+      "type": "timestamp with time zone",
+      "notNull": false,
+      "ordinal": 211
+    },
+    {
+      "table": "series",
+      "column": "discontinued_at",
+      "type": "timestamp with time zone",
+      "notNull": false,
+      "ordinal": 212
+    },
+    {
+      "table": "series",
+      "column": "deprecated_at",
+      "type": "timestamp with time zone",
+      "notNull": false,
+      "ordinal": 213
+    },
+    {
+      "table": "series",
+      "column": "deprecated_reason",
+      "type": "text",
+      "notNull": false,
+      "ordinal": 214
+    },
+    {
+      "table": "series",
+      "column": "corrected_by_series_id",
+      "type": "uuid",
+      "notNull": false,
+      "ordinal": 215
+    },
+    {
+      "table": "series",
+      "column": "created_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "ordinal": 216
+    },
+    {
+      "table": "series",
+      "column": "updated_at",
+      "type": "timestamp with time zone",
+      "notNull": true,
+      "ordinal": 217
+    }
+  ],
+  "observedAtExtra": "2026-10-26T15:20:03.279301+00:00",
+  "collectorFunction": "CREATE OR REPLACE FUNCTION api.normalized_price_collector(p_value text)\n RETURNS text\n LANGUAGE sql\n IMMUTABLE STRICT\n SET search_path TO ''\nAS $function$\n  select regexp_replace(lower(regexp_replace(normalize(p_value,NFKC),'\\s+','','g')), '(^|[^0-9])0+(?=[0-9])','\\1','g');\n$function$\n"
+}

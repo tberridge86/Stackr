@@ -1,3 +1,4 @@
+import type { SearchPageMetadata } from './searchPagination';
 import { searchStackrCards } from './stackrDomainAdapter';
 import { readOptionalCatalogueEnrichment } from './optionalCatalogueEnrichment';
 import { parseCardSearchIntent } from './cardSearchIntent';
@@ -7,6 +8,11 @@ type SearchRow = Record<string, any>;
 
 type SearchOptions = {
   limit?: number;
+  cursor?: string;
+  force?: boolean;
+  signal?: AbortSignal;
+  preserveVariantIdentity?: boolean;
+  onPagination?: (metadata: SearchPageMetadata) => void;
   select?: string;
   language?: PokemonCardLanguage | 'all' | string | null;
   skipSetDetection?: boolean;
@@ -46,11 +52,12 @@ export async function searchLocalPokemonCards<T extends SearchRow = SearchRow>(
   }));
   const cards = await searchStackrCards(catalogueQuery, {
     language: isAllLanguageSearch(options.language) ? null : options.language,
-    limit,
+    limit, cursor: options.cursor, signal: options.signal, force: options.force,
+    preserveVariantIdentity: options.preserveVariantIdentity, onPagination: options.onPagination,
     onCanonicalResults: options.onCanonicalResults
       ? (matches) => options.onCanonicalResults?.(toRows(matches)) : undefined,
   });
   const enriched = cards.some(card => !card.images.small && !card.images.large)
-    ? await readOptionalCatalogueEnrichment(() => attachLiveTcgdexCardReferences(cards)) : cards;
+    ? await readOptionalCatalogueEnrichment(() => attachLiveTcgdexCardReferences(cards), options.signal) : cards;
   return toRows(enriched ?? cards) as unknown as T[];
 }

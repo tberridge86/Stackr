@@ -1,0 +1,173 @@
+{
+  "recordedAt": "2026-10-26T15:44:54.986Z",
+  "source": "GitHub repository scheduled workflow runs, most recent100 records; read-only",
+  "sampleCount": 100,
+  "monitor": {
+    "samples": [
+      {
+        "id": 40104248189,
+        "createdAt": "2026-10-24T14:49:57Z",
+        "updatedAt": "2026-10-24T14:50:40Z",
+        "headSha": "12d2d1ab48383ee9ab2c5260071493827f5e987c",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 40117140590,
+        "createdAt": "2026-10-24T17:39:54Z",
+        "updatedAt": "2026-10-24T17:40:55Z",
+        "headSha": "6dfe188166df76b41d44801ab66970b0a3881ae5",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 40126900412,
+        "createdAt": "2026-10-24T19:47:39Z",
+        "updatedAt": "2026-10-24T19:48:19Z",
+        "headSha": "6dfe188166df76b41d44801ab66970b0a3881ae5",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 40136510251,
+        "createdAt": "2026-10-24T21:58:05Z",
+        "updatedAt": "2026-10-24T21:58:48Z",
+        "headSha": "6dfe188166df76b41d44801ab66970b0a3881ae5",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 40145205933,
+        "createdAt": "2026-10-25T00:03:41Z",
+        "updatedAt": "2026-10-25T00:04:19Z",
+        "headSha": "6dfe188166df76b41d44801ab66970b0a3881ae5",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 40162163567,
+        "createdAt": "2026-10-25T04:30:58Z",
+        "updatedAt": "2026-10-25T04:31:31Z",
+        "headSha": "6dfe188166df76b41d44801ab66970b0a3881ae5",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 40180306224,
+        "createdAt": "2026-10-25T09:21:29Z",
+        "updatedAt": "2026-10-25T09:22:15Z",
+        "headSha": "6dfe188166df76b41d44801ab66970b0a3881ae5",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 40199279708,
+        "createdAt": "2026-10-25T13:48:10Z",
+        "updatedAt": "2026-10-25T13:48:50Z",
+        "headSha": "6dfe188166df76b41d44801ab66970b0a3881ae5",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 40215560295,
+        "createdAt": "2026-10-25T17:15:13Z",
+        "updatedAt": "2026-10-25T17:16:08Z",
+        "headSha": "6dfe188166df76b41d44801ab66970b0a3881ae5",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 40227217915,
+        "createdAt": "2026-10-25T19:41:25Z",
+        "updatedAt": "2026-10-25T19:42:11Z",
+        "headSha": "6dfe188166df76b41d44801ab66970b0a3881ae5",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 40238510976,
+        "createdAt": "2026-10-25T22:05:06Z",
+        "updatedAt": "2026-10-25T22:05:44Z",
+        "headSha": "6dfe188166df76b41d44801ab66970b0a3881ae5",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 40248231077,
+        "createdAt": "2026-10-26T00:12:35Z",
+        "updatedAt": "2026-10-26T00:13:22Z",
+        "headSha": "6dfe188166df76b41d44801ab66970b0a3881ae5",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 40271318986,
+        "createdAt": "2026-10-26T04:52:57Z",
+        "updatedAt": "2026-10-26T04:54:27Z",
+        "headSha": "6dfe188166df76b41d44801ab66970b0a3881ae5",
+        "status": "completed",
+        "conclusion": "failure"
+      },
+      {
+        "id": 40309362033,
+        "createdAt": "2026-10-26T10:41:26Z",
+        "updatedAt": "2026-10-26T10:42:09Z",
+        "headSha": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "declaredIntervalMinutes": 10,
+    "observedGapMinutes": [
+      169.95,
+      127.75,
+      130.43333333333334,
+      125.6,
+      267.28333333333336,
+      290.51666666666665,
+      266.68333333333334,
+      207.05,
+      146.2,
+      143.68333333333334,
+      127.48333333333333,
+      280.3666666666667,
+      348.48333333333335
+    ],
+    "minGapMinutes": 125.6,
+    "maxGapMinutes": 348.48333333333335,
+    "cadenceQualified": false,
+    "incident": {
+      "number": 445,
+      "opened": "2026-10-26T04:54:24Z",
+      "closed": "2026-10-26T10:42:05Z",
+      "failureRun": 40271318986,
+      "incidentAction": "success",
+      "notificationDelivery": "not_verified",
+      "sampledFailure": {
+        "catalogueManifest": 504,
+        "languages": 504,
+        "sets": 504,
+        "search": 504,
+        "assetManifest": 504,
+        "pokemonCardChecks": "no HTTP status returned"
+      },
+      "outageDuration": "not established by sparse samples"
+    },
+    "currentPublicCheck": "public-api-spot-check.json:12/12 successful public requests; no authenticated Home or phone inference"
+  },
+  "priceRefresh": {
+    "sampledCounts": {
+      "pending": 1,
+      "cancelled": 69
+    },
+    "latestPendingRun": 40338142157,
+    "jobsCreated": 0,
+    "railwaySchedulerOwner": "not_verified",
+    "note": "GitHub cancellations do not establish writer absence; separate provider ledger has successful bulk work."
+  },
+  "accessGaps": [
+    "GitHub connector does not expose repository variables endpoint",
+    "Railway CLI not installed; production worker configuration not attested"
+  ],
+  "mutationsPerformed": []
+}

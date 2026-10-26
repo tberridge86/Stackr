@@ -1,3 +1,4 @@
+import type { SearchPageMetadata } from './searchPagination';
 import { createSetFactsReader, loadCompleteSetPages } from './stackrSetRetrieval';
 import { correctedChineseSetContext } from './chineseCatalogueCorrection';
 import { copyPreferredSetArtworkReassignments, getPreferredSetArtworkReassignments, readPreferredSetArtwork, rememberPreferredSetArtworkObservation } from './stackrPreferredSetArtwork';
@@ -1551,13 +1552,17 @@ export async function fetchStackrPriceSnapshots(
 
 export async function searchStackrCards(
   query: string,
-  options: { language?: string | null; setId?: string | null; limit?: number;
+  options: { language?: string | null; setId?: string | null; limit?: number; cursor?: string; signal?: AbortSignal; force?: boolean;
+    preserveVariantIdentity?: boolean; onPagination?: (metadata: SearchPageMetadata) => void;
     onCanonicalResults?: (cards: StackrLegacyCard[]) => void } = {},
   client: StackrApiClient = stackrApiClient,
 ) {
+  throwIfOptionalCatalogueReadAborted(options.signal);
   const value = String(query ?? '').trim();
   if (value.length < 2 && !(options.setId && UUID_PATTERN.test(options.setId) && /^[A-Za-z0-9]$/.test(value))) return [];
   if (!shouldUseStackrApi(client)) {
+    if (options.cursor) throw new Error('Search continuation is unavailable.');
+    options.onPagination?.({ nextCursor: null, continuationAvailable: false });
     const cards = await legacySearchCards(value, options.language, options.limit ?? 40);
     return options.setId ? cards.filter((card) => card.set.id === options.setId) : cards;
   }
@@ -1566,11 +1571,24 @@ export async function searchStackrCards(
     language: toStackrApiLanguage(options.language) ?? undefined,
     setId: options.setId && UUID_PATTERN.test(options.setId) ? options.setId : undefined,
     limit: Math.max(1, Math.min(50, options.limit ?? 40)),
-  });
+    ...(options.cursor ? { cursor: options.cursor } : {}),
+  }, { signal: options.signal, ...(options.force ? { cache: 'no-store', headers: { 'Cache-Control': 'no-cache' } } : {}) });
+  throwIfOptionalCatalogueReadAborted(options.signal);
+  options.onPagination?.({ nextCursor: response.meta?.pagination?.nextCursor ?? null,
+    continuationAvailable: response.meta?.pagination?.continuationAvailable === true });
   const cards = response.data.results.filter((result) => result.type === 'card' && result.card);
+  const mapMatch = (result: typeof cards[number], assets: StackrCatalogueAsset[] = []) => {
+    const card = result.card!;
+    const mapped = stackrCardToLegacyCard(card, assets);
+    if (!options.preserveVariantIdentity || !result.variantId) return mapped;
+    if (card.defaultVariantId !== result.variantId || !card.variants.some(variant => variant.variantId === result.variantId)) {
+      throw new Error('Search returned an inconsistent printing variant.');
+    }
+    return { ...mapped, id: result.variantId };
+  };
   // Canonical matches are usable immediately; optional image manifests must
   // not hold the first card rows behind a separate network round trip.
-  options.onCanonicalResults?.(cards.map((result) => stackrCardToLegacyCard(result.card!)));
+  options.onCanonicalResults?.(cards.map((result) => mapMatch(result)));
   const printingIds = [...new Set(cards
     .map((result) => result.card!)
     .filter((card) => !primaryCardImageAsset(card, embeddedCardImageAssets(card)))
@@ -1589,10 +1607,11 @@ export async function searchStackrCards(
         return { rows: page.data.assets, nextCursor: page.meta.pagination?.nextCursor ?? null };
       }, signal, (rows) => assets.push(...rows));
     }
-  });
+  }, options.signal);
+  throwIfOptionalCatalogueReadAborted(options.signal);
   // The existing mapper still restricts assets to each printing and its
   // verified variants; batching does not change language/edition face rules.
-  return cards.map((result) => stackrCardToLegacyCard(result.card!, assets));
+  return cards.map((result) => mapMatch(result, assets));
 }
 
 export async function fetchStackrPrice(

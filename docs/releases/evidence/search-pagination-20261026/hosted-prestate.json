@@ -1,0 +1,75 @@
+{
+  "observedAt": "2026-10-26T15:52:47.998Z",
+  "project": "oakdbbzdqwurpjnoqhmu",
+  "mode": "read-only metadata; no function executed",
+  "signature": [
+    {
+      "existing_search_page_signature": null
+    }
+  ],
+  "serviceTablePrivileges": [
+    {
+      "catalog_usage": true,
+      "relname": "card_names",
+      "can_select": true,
+      "relrowsecurity": true,
+      "relforcerowsecurity": false
+    },
+    {
+      "catalog_usage": true,
+      "relname": "card_printings",
+      "can_select": true,
+      "relrowsecurity": true,
+      "relforcerowsecurity": false
+    },
+    {
+      "catalog_usage": true,
+      "relname": "card_variants",
+      "can_select": true,
+      "relrowsecurity": true,
+      "relforcerowsecurity": false
+    },
+    {
+      "catalog_usage": true,
+      "relname": "catalogue_change_log",
+      "can_select": true,
+      "relrowsecurity": true,
+      "relforcerowsecurity": false
+    },
+    {
+      "catalog_usage": true,
+      "relname": "catalogue_version_external_identifiers",
+      "can_select": true,
+      "relrowsecurity": true,
+      "relforcerowsecurity": false
+    },
+    {
+      "catalog_usage": true,
+      "relname": "catalogue_version_printings",
+      "can_select": true,
+      "relrowsecurity": true,
+      "relforcerowsecurity": false
+    },
+    {
+      "catalog_usage": true,
+      "relname": "catalogue_version_sets",
+      "can_select": true,
+      "relrowsecurity": true,
+      "relforcerowsecurity": false
+    },
+    {
+      "catalog_usage": true,
+      "relname": "catalogue_version_variants",
+      "can_select": true,
+      "relrowsecurity": true,
+      "relforcerowsecurity": false
+    },
+    {
+      "catalog_usage": true,
+      "relname": "catalogue_versions",
+      "can_select": true,
+      "relrowsecurity": true,
+      "relforcerowsecurity": false
+    }
+  ]
+}

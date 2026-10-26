@@ -245,7 +245,8 @@
     "test:binder-account-cache": "node --import tsx scripts/test-binder-account-cache-runtime.ts",
     "test:restore-security": "node scripts/test-postgres-restore-security.mjs",
     "test:security-boundary-runtime": "node scripts/test-inspected-security-boundaries.mjs",
-    "test:database-fixture-safety": "node scripts/test-native-postgres-fixture.mjs"
+    "test:database-fixture-safety": "node scripts/test-native-postgres-fixture.mjs",
+    "test:search-pagination": "node --import tsx scripts/test-search-pagination-runtime.ts && node --import tsx scripts/test-search-settlement-runtime.ts && node scripts/test-backend-search-pagination.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",

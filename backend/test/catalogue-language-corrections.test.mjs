@@ -31,10 +31,15 @@ test('old card, variant, set, set-card and UUID-search links return Traditional 
   const [sourceVariant, targetVariant] = Object.entries(aliases.variants)[0];
   const version = '11111111-1111-4111-8111-111111111111';
   const calls = [];
+  const rpcCalls = [];
   let targetLanguage = 'zh-tw';
   const client = { schema(schema) {
     assert.equal(schema, 'api');
-    return { rpc: async () => ({ data: [], error: null }), from(table) {
+    return { rpc: async (name) => {
+      rpcCalls.push(name);
+      return name === 'card_image_manifest_for_identities' ? { data: [], error: null }
+        : { data: null, error: { code: 'PGRST202', message: 'Could not find api.' + name } };
+    }, from(table) {
       const filters = [];
       const query = {
         select() { return this; }, eq(column, value) { filters.push([column, value]); return this; },
@@ -62,6 +67,7 @@ test('old card, variant, set, set-card and UUID-search links return Traditional 
   assert.equal((await service.search({ q: sourcePrinting, language: 'zh-cn' })).results[0].languageCode, 'zh-tw');
   assert.equal((await service.search({ q: sourceVariant, language: 'zh-cn' })).results[0].card.variants[0].variantId, targetVariant);
   assert.ok(calls.some(call => call.filters.some(([column, value]) => column === 'language_code' && value === 'zh-tw')));
+  assert.ok(rpcCalls.includes('catalogue_search_identity_page_v1'), 'unknown search RPC explicitly exercises the legacy rollout fallback');
   targetLanguage = 'zh-cn';
   await assert.rejects(() => service.card(sourcePrinting), error => error.code === 'invalid_language_correction');
   await assert.rejects(() => service.setCards(sourceSet), error => error.code === 'invalid_language_correction');

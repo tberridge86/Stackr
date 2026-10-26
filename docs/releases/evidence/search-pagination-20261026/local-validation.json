@@ -1,0 +1,95 @@
+{
+  "recordedAt": "2026-10-26T16:15:00.128Z",
+  "sourceBase": "dc1d9dbac708c3a6b039c9a8fd15193eff9bef7f",
+  "classification": "local_working_candidate_before_final_source_commit",
+  "commands": [
+    {
+      "command": "npm run typecheck",
+      "result": "pass"
+    },
+    {
+      "command": "npm run lint",
+      "result": "pass",
+      "errors": 0,
+      "preexistingWarnings": 8
+    },
+    {
+      "command": "eslint selected API/adapter/search library files",
+      "result": "pass",
+      "errors": 0,
+      "preexistingWarnings": 7
+    },
+    {
+      "command": "npm run check:api-contract",
+      "result": "pass",
+      "operations": 43
+    },
+    {
+      "command": "node --import tsx scripts/test-search-pagination-runtime.ts",
+      "result": "pass"
+    },
+    {
+      "command": "node --import tsx scripts/test-search-settlement-runtime.ts",
+      "result": "pass",
+      "scope": "actual callbacks plus React-mounted production focus/debounce/runSearch hook subset"
+    },
+    {
+      "command": "npm run test:search-artwork-batching",
+      "result": "pass"
+    },
+    {
+      "command": "node scripts/test-progressive-card-search.mjs",
+      "result": "pass"
+    },
+    {
+      "command": "node --import tsx scripts/test-global-search-language-fanout.ts",
+      "result": "pass"
+    },
+    {
+      "command": "node --import tsx scripts/test-streamlined-card-search.ts",
+      "result": "pass"
+    },
+    {
+      "command": "npm --prefix gateway test",
+      "result": "pass",
+      "tests": 62
+    },
+    {
+      "command": "git diff --check",
+      "result": "pass"
+    },
+    {
+      "command": "npm run typecheck:backend",
+      "result": "pass"
+    },
+    {
+      "command": "backend scoped ESLint (11 files)",
+      "result": "pass",
+      "errors": 0,
+      "warnings": 0
+    },
+    {
+      "command": "node scripts/test-backend-search-pagination.mjs",
+      "result": "pass",
+      "independentlyRepeated": true
+    },
+    {
+      "command": "node scripts/measure-search-pagination-query-plans.mjs",
+      "result": "pass",
+      "cohorts": 4,
+      "independentlyRepeated": true
+    },
+    {
+      "command": "backend enrichment/translation/printing-language/correction regressions",
+      "result": "pass"
+    }
+  ],
+  "localDependencyNote": "Gateway npm ci could not finish because registry DNS was unavailable. Full runtime suite then used existing local jose6.2.4 whose source and target lock version/integrity matched; lockfiles unchanged. Hosted CI must install the complete locked dependency tree.",
+  "review": {
+    "mobile": "GO",
+    "gatewayRefresh": "GO",
+    "backendSql": "GO"
+  },
+  "nativeBuild": false,
+  "phoneVerified": false
+}
