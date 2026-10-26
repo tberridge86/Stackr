@@ -1,0 +1,97 @@
+{
+  "recordedAt": "2026-10-26T13:22:35.474Z",
+  "candidate": {
+    "pr": 446,
+    "branch": "codex/home-cold-payload-20261026",
+    "source": "b50547de15a49712d99c67829c38a0bb1d9428b6",
+    "tree": "0abfa5b88a0d445b18e8ca4cb12a8217b96cdc8e",
+    "integration": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+    "mergeable": true,
+    "draft": true
+  },
+  "implemented": true,
+  "localTests": "pass",
+  "independentReview": "GO; all findings resolved including test-only CI guard correction",
+  "hostedCi": "pass",
+  "releaseCandidateGate": "skipped",
+  "preflight": {
+    "exportSource": "086959bc9ea267b3a0d528890291286225c39b49",
+    "candidateSource": "b50547de15a49712d99c67829c38a0bb1d9428b6",
+    "candidateTree": "0abfa5b88a0d445b18e8ca4cb12a8217b96cdc8e",
+    "onlyChanges": "Documentation and scripts/test-gate0-dynamic-copy.ts",
+    "remainingTrackedTreeDiffExitCode": 0,
+    "appAndBuildInputsIdentical": true,
+    "exportRerunOnFinalHead": false
+  },
+  "deployed": {
+    "app": {
+      "version": "1.0.6",
+      "build": "61",
+      "source": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+      "easBuild": "c0acb3f0-8366-48cf-b55c-99b30a2b7469",
+      "appleBuild": "a0ddb40d-697b-4f6c-9f6d-b45fe05b6992",
+      "teamExpoAvailable": true,
+      "candidateIncluded": false,
+      "installedPhoneAcceptance": "unverified"
+    },
+    "backend": {
+      "establishedSource": "7c1acd409680b38d5913d8cae76df560b5d91daa",
+      "liveAttestedPrefix": "7c1acd409680",
+      "deployment": "dfc23b30-9675-4ba0-ad2b-9f1875302747"
+    },
+    "gateway": {
+      "host": "api.stackrtcg.com",
+      "healthPath": "/v1/health",
+      "health": "pass",
+      "workerRevision": "not independently attested"
+    },
+    "database": {
+      "project": "oakdbbzdqwurpjnoqhmu",
+      "profileCanonical": "20261025154000",
+      "profileLedger": "20261026072532",
+      "observedMigrationCount": 192,
+      "newMigrationsApplied": []
+    }
+  },
+  "merged": false,
+  "candidateDeployed": false,
+  "candidateNativeBuild": false,
+  "hostedPrivateHomeMeasured": false,
+  "phoneVerified": false,
+  "blockers": [
+    "Designated QA credential template remains empty; authenticated cap/requests/bytes/timings and real priced-printing coverage unverified",
+    "Additional PR446 merge/native rollout authorisation is required; prior PR439/Build61 approval does not cover this candidate",
+    "Installed-phone acceptance and earlier unresolved visual/artwork holds remain open"
+  ],
+  "rollout": "After measurement/release gates and applicable approval: recheck current integration and exact reviewed source, merge PR446, use existing compatible production-profile native TestFlight lane, attest build/source/backend/fingerprint/distribution, then execute the saved phone matrix. No migration or backend/gateway deployment is required by this patch.",
+  "rollback": "Before distribution leave Build61 available. After an authorised app rollout revert scoped PR446 changes through a corrective release if required; retain prior build where available. No database or asset rollback is needed.",
+  "backlog": [
+    "Authenticated Home acceptance and safe representative prepared-RPC query plans",
+    "Measured remaining cache/database bottlenecks",
+    "Job reliability, monitoring and recovery; R2 continues separately"
+  ],
+  "measurementLimits": "Controlled scheduling gain only; no new total traffic reduction or hosted/device speedup proved. Historical RPC statistics mix modes/accounts/cache/locks.",
+  "ci": [
+    {
+      "id": 40329266168,
+      "name": "Stackr Platform CI",
+      "headSha": "b50547de15a49712d99c67829c38a0bb1d9428b6",
+      "conclusion": "success",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/40329266168"
+    },
+    {
+      "id": 40329266116,
+      "name": "Card-first UI validation",
+      "headSha": "b50547de15a49712d99c67829c38a0bb1d9428b6",
+      "conclusion": "success",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/40329266116"
+    },
+    {
+      "id": 40329266165,
+      "name": "Owner Pricing Identity Tests",
+      "headSha": "b50547de15a49712d99c67829c38a0bb1d9428b6",
+      "conclusion": "success",
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/40329266165"
+    }
+  ]
+}

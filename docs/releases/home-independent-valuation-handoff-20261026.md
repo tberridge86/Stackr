@@ -1,6 +1,6 @@
 # Home independent valuation - 26 October 2026
 
-Implemented and locally tested continuation of draft PR #446. Source review found no remaining runtime blocker; source and evidence review are complete; exact-head CI follows publication. Not merged, deployed, distributed or accepted on a phone.
+Reviewed candidate b50547de15a49712d99c67829c38a0bb1d9428b6 is saved in draft PR #446. Required local checks, independent review and all three applicable exact-head hosted workflows passed. The separate release-candidate gate was skipped. Not merged, deployed, distributed or accepted on a phone.
 
 ## Source and behaviour
 
@@ -63,7 +63,7 @@ New merge/mobile rollout approval is required: prior authorisation covered PR #4
 
 Rollback before distribution: leave Build 61 available. After authorised rollout, retain Build 61 for designated comparison where available and revert the scoped PR #446 app changes through a corrective release if required. No database or asset rollback is needed.
 
-Remaining gates: designated-account authenticated measurements; exact-head CI for new source; applicable release approval; actual installed-phone acceptance for Home/Binders/Search/Pokedex, pricing, edits, account boundaries, offline recovery and images. The earlier Build 60 visual/haptics/artwork holds are not closed by this change.
+Remaining gates: designated-account authenticated measurements; applicable release approval; actual installed-phone acceptance for Home/Binders/Search/Pokedex, pricing, edits, account boundaries, offline recovery and images. The earlier Build 60 visual/haptics/artwork holds are not closed by this change.
 
 Prioritised backlog: (1) authenticated Home acceptance and safe query-plan investigation of prepared RPC cost; (2) remaining cache/database bottlenecks supported by measurements; (3) job reliability, monitoring and recovery. R2 transfer work continues separately; no transfer, originals, public/private media or rollback receipt was changed here.
 
@@ -72,3 +72,9 @@ Prioritised backlog: (1) authenticated Home acceptance and safe query-plan inves
 Published source 086959bc9ea267b3a0d528890291286225c39b49 passed Owner Pricing Identity and Card-first UI workflows. Platform run 40328036239 failed its commerce-release-lock step because test-gate0-dynamic-copy expected an inline account-denial reset now extracted into the shared revocation handler. The failure receipt is retained; it is not counted as a successful Platform run. A test-only correction checks the shared revocation body and both denial call sites; actual-Hub denial regressions remain required. Exact-head hosted CI must pass again after that correction.
 
 All six production-profile local preflight steps passed on 086959bc, including an iOS JS/assets export, 74 packaged assets and sampled public API checks. The iOS bundle SHA-256 is de28a0fa477326518994ba563e47cc67c1dbdc9d1366248cec4d24bf8dabc75b. This is not an EAS native build. Any later test/docs-only commit must explicitly establish unchanged runtime/build inputs rather than relabel this receipt as an export of that later SHA. Public reads are single samples and do not measure authenticated Home or establish sub-100 ms retrieval.
+
+## Final qualification receipt
+
+App candidate: b50547de15a49712d99c67829c38a0bb1d9428b6, tree 0abfa5b88a0d445b18e8ca4cb12a8217b96cdc8e. All three applicable hosted workflows passed on this exact head: Platform 40329266168, Card-first UI 40329266116 and Owner Pricing Identity 40329266165. All eight normal Platform jobs passed; release-candidate-gate was skipped and is not claimed as passed. The earlier failed Platform attempt remains in the evidence.
+
+The final source differs from the exported 086959bc source only in the guard test and documentation; all remaining tracked app/build inputs are identical (verified Git diff exit 0). The six-step local preflight and export receipt retain their original 086959bc source. No native build or deployment occurred. Read home-independent-valuation-release-state-20261026.json and home-independent-valuation-ci-20261026.json for current qualification, deployed baselines, rollout and remaining gates. This documentation-only evidence commit is not a replacement app source.

@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-10-26T13:05:04.470Z",
+  "recordedAt": "2026-10-26T13:22:35.474Z",
   "baseline": "4dadab24a0152bf971fb38b104dc43be966d8aed",
   "integration": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
   "pullRequest": 446,
@@ -15,7 +15,7 @@
       "sha256": "c50694b58a2d072d8134b6f3e7f55cd0e5673c3ddcf93033766704a396b301d4"
     }
   ],
-  "sourceState": "Frozen and independently reviewed local source; exact published source/CI will be recorded after publication in PR and final release-state receipt",
+  "sourceState": "Published reviewed candidate; all three applicable exact-head workflows passed; separate release-candidate gate skipped",
   "validation": {
     "typecheck": "pass",
     "lint": "pass; eight pre-existing warnings",
@@ -24,7 +24,9 @@
     "pairedCohorts": "pass; four controlled fake-clock cohorts",
     "homeRelease": "pass",
     "collectionPricingUi": "pass",
-    "diffCheck": "pass"
+    "diffCheck": "pass",
+    "hostedCi": "pass on b50547de15a49712d99c67829c38a0bb1d9428b6",
+    "ciGuardFollowup": "commerce/denial/pricing/startup/typecheck/scoped lint pass; independently reviewed"
   },
   "implemented": true,
   "merged": false,
@@ -32,5 +34,16 @@
   "installedPhoneVerified": false,
   "newMigrations": [],
   "hostedPrivateHomeMeasured": false,
-  "fixtureLimits": "No new traffic reduction or actual phone/hosted latency gain is claimed."
+  "fixtureLimits": "No new traffic reduction or actual phone/hosted latency gain is claimed.",
+  "candidateSource": "b50547de15a49712d99c67829c38a0bb1d9428b6",
+  "candidateTree": "0abfa5b88a0d445b18e8ca4cb12a8217b96cdc8e",
+  "preflight": {
+    "exportSource": "086959bc9ea267b3a0d528890291286225c39b49",
+    "candidateSource": "b50547de15a49712d99c67829c38a0bb1d9428b6",
+    "candidateTree": "0abfa5b88a0d445b18e8ca4cb12a8217b96cdc8e",
+    "onlyChanges": "Documentation and scripts/test-gate0-dynamic-copy.ts",
+    "remainingTrackedTreeDiffExitCode": 0,
+    "appAndBuildInputsIdentical": true,
+    "exportRerunOnFinalHead": false
+  }
 }

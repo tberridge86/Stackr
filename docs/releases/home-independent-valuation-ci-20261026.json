@@ -1,0 +1,101 @@
+{
+  "recordedAt": "2026-10-26T13:22:35.474Z",
+  "source": "b50547de15a49712d99c67829c38a0bb1d9428b6",
+  "workflows": [
+    {
+      "id": 40329266168,
+      "name": "Stackr Platform CI",
+      "head_sha": "b50547de15a49712d99c67829c38a0bb1d9428b6",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/tberridge86/Stackr/actions/runs/40329266168",
+      "run_attempt": 1,
+      "created_at": "2026-10-26T13:17:13Z",
+      "updated_at": "2026-10-26T13:21:48Z"
+    },
+    {
+      "id": 40329266116,
+      "name": "Card-first UI validation",
+      "head_sha": "b50547de15a49712d99c67829c38a0bb1d9428b6",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/tberridge86/Stackr/actions/runs/40329266116",
+      "run_attempt": 1,
+      "created_at": "2026-10-26T13:17:13Z",
+      "updated_at": "2026-10-26T13:18:51Z"
+    },
+    {
+      "id": 40329266165,
+      "name": "Owner Pricing Identity Tests",
+      "head_sha": "b50547de15a49712d99c67829c38a0bb1d9428b6",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/tberridge86/Stackr/actions/runs/40329266165",
+      "run_attempt": 1,
+      "created_at": "2026-10-26T13:17:13Z",
+      "updated_at": "2026-10-26T13:19:07Z"
+    }
+  ],
+  "platformJobs": [
+    {
+      "id": 121594014735,
+      "name": "benchmark-smoke-tests",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 121594014819,
+      "name": "dependency-and-secret-scan",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 121594014824,
+      "name": "recognition-container",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 121594014876,
+      "name": "distributed-architecture",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 121594014878,
+      "name": "openapi-and-generated-client",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 121594014982,
+      "name": "database-migration-tests",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 121594015077,
+      "name": "integration-tests",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 121594015182,
+      "name": "lint-type-unit",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 121594017348,
+      "name": "release-candidate-gate",
+      "status": "completed",
+      "conclusion": "skipped"
+    }
+  ],
+  "releaseCandidateGate": "skipped; not counted as a pass",
+  "firstAttempt": {
+    "source": "086959bc9ea267b3a0d528890291286225c39b49",
+    "runId": 40328036239,
+    "result": "failed stale source-shape account-denial guard; corrected test only; receipt retained"
+  }
+}
