@@ -91,6 +91,10 @@ jobs:
       - run: npm run test:personal-loading
       - run: npm run test:build60-feedback
       - run: npm run test:storm-logo-publication
+      - run: npm run test:binder-account-cache
+      - run: npm run test:restore-security
+      - run: npm run test:security-boundary-runtime
+      - run: npm run test:database-fixture-safety
       - run: npm run test:binder-retrieval
       - run: npm run test:startup-loading
       - run: npm run test:integration-repair
@@ -220,6 +224,40 @@ jobs:
           name: distributed-architecture-validation
           path: reports/distributed-architecture-validation.json
           if-no-files-found: error
+          retention-days: 14
+
+  prepared-valuation-postgres17:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17.6-bookworm@sha256:f3bd19c606e442c3d7bdfa8002e03fe260a1023351e0ea4598032022b68dd6e3
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:database-fixture-safety
+      - name: Execute valuation equivalence and plans on isolated PostgreSQL 17
+        env:
+          STACKR_NATIVE_POSTGRES_FIXTURE: '1'
+        run: node scripts/measure-prepared-valuation-query-plans.mjs > "$RUNNER_TEMP/prepared-valuation-postgres17.json"
+      - name: Upload isolated query evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: prepared-valuation-postgres17
+          path: ${{ runner.temp }}/prepared-valuation-postgres17.json
           retention-days: 14
 
   database-migration-tests:

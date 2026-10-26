@@ -74,7 +74,7 @@ Raw rows, UUIDs, revisions, credentials, query URLs and headers stay out of emit
 
 ## Release, rollback and remaining work
 
-No new app/runtime behavior is shipped by this unit. Existing reviewed Home behavior remains unmerged/unshipped; Build 61 remains the last verified distributed app. Earlier b505 exact-head app CI and runtime-equivalent 086959bc iOS export remain historical receipts; new tool/source CI is recorded separately after publication. No native rebuild is needed just to verify these measurement tools.
+No new app/runtime behavior is shipped by this unit. Existing reviewed Home behavior remains unmerged/unshipped; Build 61 remains the last verified distributed app. Earlier b505 exact-head app CI and runtime-equivalent 086959bc iOS export remain historical receipts; new tool/source CI is recorded in the final qualification below. No native rebuild is needed just to verify these measurement tools.
 
 Before any SQL rollout: obtain authenticated matched measurements, validate on an authorised PostgreSQL 17 environment with realistic I/O/concurrency, confirm live function signature/body/ACL against saved evidence, register exactly one migration through the existing lane, complete independent release review and obtain scoped approval. Never replay Profile canonical 20261025154000 / ledger 20261026072532 or include daily-movers/unrelated migrations. Rollback is the pinned original function body with unchanged privileges.
 
@@ -87,3 +87,13 @@ Next priorities:
 ## Final local qualification
 
 Authenticated tool offline safety/completeness suite and scoped lint passed; independent reviewer also ran the offline suite. New SQL fixture/harness scoped lint passed after adding the explicit Node Buffer import; the initial lint failure is retained. An optional existing mocked HTTP route test was blocked locally by EACCES on127.0.0.1; this is not a passing local result. The existing Platform CI job now explicitly runs the authenticated offline suite, mocked private-route fixture and SQL invariants. No workflow trigger, production job or schedule changed. Exact-head hosted outcomes follow publication in the separate final receipt.
+
+## Final source and hosted qualification
+
+Tested candidate: df45ef50420cab9dae7e2fefb6e929cd1110363c; tree 053a5475c9f5136c85629717eace0e1b52fb0ed9. PR #446 remains open, draft and conflict-free; main remains b5d643a997041db2a8c42b5b6cb0180e8ddf28e7. The source checkout is clean. This documentation-only evidence branch is not an app build source.
+
+All three source-associated workflows passed: [Platform](https://github.com/tberridge86/Stackr/actions/runs/40335681180), [Card-first UI](https://github.com/tberridge86/Stackr/actions/runs/40335681214), [Owner Pricing Identity](https://github.com/tberridge86/Stackr/actions/runs/40335681211). All eight normal Platform jobs passed; the separate release-candidate gate was skipped. Lint, typecheck, backend typecheck, Home and related regression suites passed. The new offline probe, mocked prepared HTTP route and PGlite plan/invariance step passed. The earlier local route test remains recorded as EACCES-blocked; its hosted fixture pass is not an authenticated production API test.
+
+Checkout provenance: the architecture job tested df45ef50420cab9dae7e2fefb6e929cd1110363c directly. Observed default checkouts used GitHub's temporary PR merge commit bf7cca4c77f8c2159b06e60d82a87b2d43227414. Its tree is exactly 053a5475c9f5136c85629717eace0e1b52fb0ed9, identical to the candidate; this is not a merge to main. Logs and run/job conclusions are saved in prepared-valuation-measurement-ci-20261026.json.
+
+Separate status: tooling and SQL proposal implemented/reviewed/tested; candidate unmerged; proposal unregistered/unapplied; no new app deployment or distribution; authenticated production Home measurements and installed-phone acceptance unverified. Build 61 availability was rechecked, with original native source/fingerprint linked in prepared-valuation-measurement-release-state-20261026.json. No new native build was made.

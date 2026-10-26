@@ -1,13 +1,14 @@
 import { createHash } from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { captureRestoreSecurity, compareRestoreSecurity, RESTORE_APPLICATION_SCHEMAS } from './postgres-restore-security.mjs';
 import { createVerifiedSupabasePostgresClient } from './verified-supabase-postgres.mjs';
 const SOURCE_PROJECT_REF = process.env.SUPABASE_PROJECT_REF;
 const TARGET_PROJECT_REF = process.env.SUPABASE_RESTORE_PROJECT_REF;
 const SOURCE_DB_URL = process.env.STACKR_SOURCE_DB_URL ?? process.env.SUPABASE_DB_URL;
 const TARGET_DB_URL = process.env.STACKR_RESTORE_DB_URL ?? process.env.SUPABASE_RESTORE_DB_URL;
 const EVIDENCE_DIR = process.env.STACKR_RECOVERY_EVIDENCE_DIR ?? process.cwd();
-const APPLICATION_SCHEMAS = ['public', 'catalog', 'ingest', 'market', 'ml', 'api', 'audit'];
+const APPLICATION_SCHEMAS = RESTORE_APPLICATION_SCHEMAS;
 const VOLATILE_TABLES = new Set([
   'audit.observability_events',
   'ml.embedding_activation_events',
@@ -109,6 +110,10 @@ async function connect(connectionString) {
   await client.connect();
   // Full-table recovery fingerprints intentionally exceed the normal API query limit.
   await client.query('set statement_timeout = 0');
+  // Refuse silently RLS-filtered fingerprints; each connection sees one snapshot.
+  await client.query('set row_security = off');
+  await client.query('set search_path = pg_catalog');
+  await client.query('begin isolation level repeatable read read only');
   return client;
 }
 
@@ -267,7 +272,12 @@ try {
       targetVolatileRows,
     ));
 
+  const [sourceSecurity, targetSecurity] = await Promise.all([
+    captureRestoreSecurity(source), captureRestoreSecurity(target),
+  ]);
+  const security = compareRestoreSecurity(sourceSecurity, targetSecurity);
   const checks = {
+    securityAndAuthIdentity: security.ok,
     schema: digest(sourceSchema) === digest(targetSchema),
     tableData: digest(sourceStrictTables) === digest(targetStrictTables),
     volatileTableSnapshotBounds: volatileTableChecks.every((check) => check.acceptable),
@@ -275,7 +285,7 @@ try {
     extensions: digest(sourceExtensions) === digest(targetExtensions),
   };
   const evidence = {
-    schemaVersion: 'stackr-postgres-restore-evidence-v1.2.0',
+    schemaVersion: 'stackr-postgres-restore-evidence-v1.3.0',
     verifiedAt: new Date().toISOString(),
     sourceProjectRef: SOURCE_PROJECT_REF,
     restoreProjectRef: TARGET_PROJECT_REF,
@@ -293,6 +303,7 @@ try {
     volatileTableCount: volatileTableChecks.length,
     volatileTableChecks,
     migrationCount: sourceMigrations.length,
+    security,
     checks,
     ok: Object.values(checks).every(Boolean),
   };

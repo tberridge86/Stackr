@@ -241,7 +241,11 @@
     "asset:migrate-r2": "node scripts/migrate-catalogue-to-r2.mjs",
     "test:collection-summary": "node scripts/test-collection-summary-sql.mjs && node scripts/test-collection-summary-client.mjs && node --import tsx scripts/test-collection-summary-performance.ts",
     "test:home-facts": "node --import tsx scripts/test-home-saved-collection.ts && node scripts/test-home-saved-cache.mjs",
-    "test:home-retrieval": "npm run test:home-facts && node --import tsx scripts/test-home-startup-runtime.ts"
+    "test:home-retrieval": "npm run test:home-facts && node --import tsx scripts/test-home-startup-runtime.ts",
+    "test:binder-account-cache": "node --import tsx scripts/test-binder-account-cache-runtime.ts",
+    "test:restore-security": "node scripts/test-postgres-restore-security.mjs",
+    "test:security-boundary-runtime": "node scripts/test-inspected-security-boundaries.mjs",
+    "test:database-fixture-safety": "node scripts/test-native-postgres-fixture.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",

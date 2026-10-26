@@ -1,0 +1,51 @@
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+{"scenario":"actual A default/assets binder edit -> logout -> B same edit route","leakedPrivateName":false,"readsForB":1}
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+Save binder failed Error: The binder account changed. Reload before saving.
+    at saveBinder (evalmachine.<anonymous>:482:27)
+    at async <anonymous> (D:\workspace\Stackr-home-payload-20261026\scripts\test-binder-account-cache-runtime.ts:279:40)
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+Save binder failed Error: The binder account changed. Reload before saving.
+    at saveBinder (evalmachine.<anonymous>:482:27)
+    at async <anonymous> (D:\workspace\Stackr-home-payload-20261026\scripts\test-binder-account-cache-runtime.ts:290:40)
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+An update to NewBinderScreen inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+Save binder failed Error [AbortError]: The binder account or collection changed. Please retry.
+    at cancelled (evalmachine.<anonymous>:19:26)
+    at Object.assertBinderAccountScope (evalmachine.<anonymous>:77:15)
+    at <anonymous> (D:\workspace\Stackr-home-payload-20261026\scripts\test-binder-account-cache-runtime.ts:126:142)
+    at Object.saveBinder [as save] (evalmachine.<anonymous>:506:77)
+    at async <anonymous> (D:\workspace\Stackr-home-payload-20261026\scripts\test-binder-account-cache-runtime.ts:315:42)
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+An update to NewBinderScreen inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+Save binder failed Error: The binder request changed.
+    at Object.saveBinder [as save] (evalmachine.<anonymous>:508:31)
+    at async <anonymous> (D:\workspace\Stackr-home-payload-20261026\scripts\test-binder-account-cache-runtime.ts:315:42)
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+Save binder failed Error: The binder is no longer editable by this account.
+    at Object.saveBinder [as save] (evalmachine.<anonymous>:528:27)
+    at async <anonymous> (D:\workspace\Stackr-home-payload-20261026\scripts\test-binder-account-cache-runtime.ts:323:40)
+Binder account cache runtime passed: actual default/assets edit reproduction, private cards, A/B/A and idle logout, held responses/art/routes, warm dedup/offline, full lower-cap pages, public-read/edit split, mode isolation and mutation invalidation.

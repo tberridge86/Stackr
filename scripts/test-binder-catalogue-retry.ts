@@ -8,16 +8,20 @@ import * as presentation from '../lib/binderCataloguePresentation';
 import * as optionalCatalogueEnrichment from '../lib/optionalCatalogueEnrichment';
 import { withPersonalDataReadTimeout } from '../lib/personalDataRead';
 
+const accountCacheSource = ts.transpileModule(fs.readFileSync('lib/binderAccountCache.ts', 'utf8'), {
+  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+
 async function main() {
   cache.invalidateRequestCache();
   const saved = [1, 2, 3].map(n => ({ id: `saved-${n}`, binder_id: 'binder', card_id: `swsh7-${n}`,
     set_id: 'swsh7', language: 'en', card_number: String(n), owned: n === 1, owned_quantity: 2 }));
-  const binder = { id: 'binder', type: 'official', source_set_id: 'swsh7', language: 'en', name: 'Evolving Skies' };
+  const binder = { id: 'binder', user_id: 'owner', type: 'official', source_set_id: 'swsh7', language: 'en', name: 'Evolving Skies' };
   const set = { id: 'canonical-set', language: 'en', name: 'Evolving Skies', total: 237, printedTotal: 203,
     externalIds: { setCode: 'swsh7' }, images: {} };
   let cardReads = 0;
   let setReads = 0;
-  const supabase = { auth: { onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }) }, from: (table: string) => {
+  const supabase = { auth: { getSession: async () => ({ data: { session: { user: { id: 'owner' }, access_token: 'fixture-owner' } }, error: null }), onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }) }, from: (table: string) => {
     let rangeStart = 0;
     let rangeEnd = 999;
     const q: any = { select: () => q, eq: () => q, order: () => q, abortSignal: () => q,
@@ -48,6 +52,13 @@ async function main() {
     './providerSetMarkRuntimePolicy': { enforceSetVisualRuntimePolicy: () => null },
     './pokemonDisplayNames': { getPreferredSetDisplayName: () => set.name },
   };
+  // Execute the production account/session wrapper; this fixture keeps its
+  // collection revision fixed because these tests exercise retrieval, not edits.
+  dependencies['./collectionSummaryInvalidation'] = { getCollectionSummaryVersion: () => 0 };
+  const accountCacheExports = {};
+  vm.runInNewContext(accountCacheSource, { exports: accountCacheExports,
+    require: (name: string) => dependencies[name] ?? {}, AbortController, console });
+  dependencies['./binderAccountCache'] = accountCacheExports;
   const source = fs.readFileSync('lib/binders.ts', 'utf8');
   const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const exports: any = {};

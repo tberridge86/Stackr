@@ -1,0 +1,75 @@
+{
+  "recordedAt": "2026-10-26T15:14:20.110Z",
+  "baseline": "df45ef50420cab9dae7e2fefb6e929cd1110363c",
+  "scope": "local candidate working tree; frozen runtime reviewed before publication",
+  "checks": [
+    {
+      "command": "npm run typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run lint",
+      "exitCode": 0,
+      "errors": 0,
+      "existingAppWarnings": 8
+    },
+    {
+      "command": "npm run test:binder-retrieval",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:home-release",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:home-retrieval",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/test-deployment-tooling.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/test-critical-security-containment.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/test-prompt2-security-p0.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/test-postgres-restore-security.mjs",
+      "exitCode": 0,
+      "checks": 44
+    },
+    {
+      "command": "node scripts/test-inspected-security-boundaries.mjs",
+      "exitCode": 0,
+      "checks": 17
+    },
+    {
+      "command": "node scripts/test-native-postgres-fixture.mjs",
+      "exitCode": 0,
+      "transport": "mocked"
+    },
+    {
+      "command": "node scripts/measure-prepared-valuation-query-plans.mjs",
+      "exitCode": 0,
+      "environment": "PGlite PostgreSQL18.3",
+      "nativePostgres17": false
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  ],
+  "resolvedFailures": [
+    "Initial binder integration VM loader omitted the new actual account-cache helper; three fixtures now load it and preserve their prior assertions.",
+    "Independent review found and closed stale legacy retry, initialization refresh cancellation, missing trigger/Storage metadata and empty default ACL comparison."
+  ],
+  "operatorCorrection": "test:home-saved-collection is not a package script; the correct test:home-retrieval suite was run and passed.",
+  "hostedApiAuthentication": false,
+  "installedPhone": false,
+  "nativePostgres17": "pending CI",
+  "migrationApplied": false
+}

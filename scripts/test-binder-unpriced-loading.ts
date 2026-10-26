@@ -6,6 +6,10 @@ import ts from 'typescript';
 import * as requestCache from '../lib/requestCache';
 import { withPersonalDataReadTimeout } from '../lib/personalDataRead';
 
+const accountCacheSource = ts.transpileModule(fs.readFileSync('lib/binderAccountCache.ts', 'utf8'), {
+  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+
 async function main() {
   requestCache.invalidateRequestCache();
   let priceReads = 0;
@@ -13,12 +17,12 @@ async function main() {
   let cardPageReads = 0;
   const saved = { id: 'saved', binder_id: 'binder', card_id: 'base1-1', language: 'en', owned: true,
     owned_quantity: 2, card_name: 'Charizard', image_url: 'https://images.example/card.webp' };
-  const supabase = { auth: { onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }) }, from: (table: string) => {
+  const supabase = { auth: { getSession: async () => ({ data: { session: { user: { id: 'owner' }, access_token: 'fixture-owner' } }, error: null }), onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }) }, from: (table: string) => {
     let pageFrom = 0, pageTo = 49;
     const query: any = {
       select: () => query, eq: () => query, order: () => query, abortSignal: () => query,
       range: (from: number, to: number) => { assert.equal(to - from, 49); pageFrom = from; pageTo = to; return query; },
-      maybeSingle: async () => ({ data: { id: 'binder', type: 'custom', language: 'en' }, error: null }),
+      maybeSingle: async () => ({ data: { id: 'binder', user_id: 'owner', type: 'custom', language: 'en' }, error: null }),
       then: (resolve: (value: unknown) => unknown) => {
         assert.equal(table, 'binder_cards');
         cardPageReads++;
@@ -37,6 +41,13 @@ async function main() {
       return new Map([['base1-1', { market_central: 20, snapshot_at: '2026-09-08' }]]);
     } },
   };
+  // Execute the production account/session wrapper; this fixture keeps its
+  // collection revision fixed because these tests exercise retrieval, not edits.
+  dependencies['./collectionSummaryInvalidation'] = { getCollectionSummaryVersion: () => 0 };
+  const accountCacheExports = {};
+  vm.runInNewContext(accountCacheSource, { exports: accountCacheExports,
+    require: (name: string) => dependencies[name] ?? {}, AbortController, console });
+  dependencies['./binderAccountCache'] = accountCacheExports;
   const source = fs.readFileSync(new URL('../lib/binders.ts', import.meta.url), 'utf8');
   const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS,
     target: ts.ScriptTarget.ES2022 } }).outputText;

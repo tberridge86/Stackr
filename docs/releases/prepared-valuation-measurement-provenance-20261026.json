@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-10-26T13:57:09.415Z",
+  "recordedAt": "2026-10-26T14:08:37.184Z",
   "baseline": "b50547de15a49712d99c67829c38a0bb1d9428b6",
   "priorEvidence": "f0e3c333eafaf4dd6e32e634a5689e96affa2d92",
   "main": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
@@ -57,7 +57,16 @@
   "hostedPrivateHomeMeasured": false,
   "installedPhoneVerified": false,
   "review": "Final publication GO including portable fixture and CI wiring; independent local SQL and offline tool suites passed",
-  "exactHeadCi": "pending publication",
+  "exactHeadCi": {
+    "result": "three workflows passed; verified PR merge tree equals candidate; architecture job checks out head",
+    "receipt": "docs/releases/prepared-valuation-measurement-ci-20261026.json",
+    "releaseCandidateGate": "skipped"
+  },
   "deployed": false,
-  "merged": false
+  "merged": false,
+  "candidateSource": "df45ef50420cab9dae7e2fefb6e929cd1110363c",
+  "candidateTree": "053a5475c9f5136c85629717eace0e1b52fb0ed9",
+  "evidenceBranch": "codex/prepared-valuation-measurement-evidence-20261026",
+  "evidenceIsAppSource": false,
+  "hostedMockedRoute": "pass; isolated HTTP fixture only, not hosted private API measurement"
 }

@@ -29,8 +29,12 @@ import {
   getPokemonSetLanguageFromPrefixedId,
   stripPokemonSetLanguagePrefix,
 } from '../../lib/pokemonSetIdentity';
-import { createBinder, fetchBinderById } from '../../lib/binders';
+import { createBinder, fetchBinderById, invalidateBinderCaches } from '../../lib/binders';
 import { supabase } from '../../lib/supabase';
+import {
+  assertBinderAccountScope, captureBinderAccountScope, isBinderAccountScopeCurrent,
+  subscribeBinderAccountChanges, type BinderAccountScope,
+} from '../../lib/binderAccountCache';
 import { BINDER_COVERS } from '../../lib/binderCovers';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { StackrPageHeader, StackrScreen } from '../../components/StackrScreen';
@@ -417,6 +421,27 @@ export default function NewBinderScreen() {
   const [saving, setSaving] = useState(false);
   const setsRequestIdRef = useRef(0);
   const saveInFlightRef = useRef(false);
+  const binderRequestRef = useRef(0);
+  const loadedBinderScopeRef = useRef<(BinderAccountScope & { binderId: string }) | null>(null);
+  const [binderAccountGeneration, setBinderAccountGeneration] = useState(0);
+  const clearEditFields = useCallback(() => {
+    loadedBinderScopeRef.current = null;
+    setName('');
+    setCoverKey(null);
+    setSourceSetId(null);
+    setSelectedSet(null);
+    setType('custom');
+    setCardMode('raw');
+    setEdition(null);
+    setDefaultCondition('Near Mint');
+    setSetLanguage('en');
+    setCustomNameArtKey(getRandomCustomBinderNameArtKey());
+  }, []);
+  useEffect(() => subscribeBinderAccountChanges(() => {
+    binderRequestRef.current += 1;
+    clearEditFields();
+    setBinderAccountGeneration(current => current + 1);
+  }), [clearEditFields]);
 
   const isBaseEra = selectedSet && setLanguage === 'en' ? BASE_ERA_SET_IDS.includes(selectedSet.id) : false;
   const selectedSetDisplayName = getBinderSetDisplayName(selectedSet, setLanguage);
@@ -443,7 +468,7 @@ export default function NewBinderScreen() {
         setSetsError(`No ${getSetLanguageLabel(requestedLanguage)} sets were returned. Please try again.`);
       }
 
-      if (paramSourceSetId) {
+      if (paramSourceSetId && !isEditMode) {
         const found = data.find((s) => s.id === paramSourceSetId || isSameSetId(s.id, paramSourceSetId)
           || (requestedLanguage === 'en' && matchesEnglishSetReference(s, paramSourceSetId)));
         if (found) {
@@ -462,7 +487,7 @@ export default function NewBinderScreen() {
     } finally {
       if (requestId === setsRequestIdRef.current) setLoadingSets(false);
     }
-  }, [paramSourceSetId, setLanguage]);
+  }, [isEditMode, paramSourceSetId, setLanguage]);
 
   useEffect(() => {
     loadSets();
@@ -473,44 +498,53 @@ export default function NewBinderScreen() {
   // ===============================
 
   const loadBinder = useCallback(async () => {
-    if (!binderId) return;
-
+    const requestId = ++binderRequestRef.current;
+    if (!binderId) {
+      setLoadingBinder(false);
+      return;
+    }
+    clearEditFields();
+    const isCurrent = () => binderRequestRef.current === requestId;
     try {
       setLoadingBinder(true);
+      const scope = await captureBinderAccountScope();
+      if (!isCurrent()) return;
+      if (!scope.userId) throw new Error('Sign in to edit your binder.');
       const binder = await fetchBinderById(binderId);
-
-      if (!binder) {
-        Alert.alert('Error', 'Binder not found.');
+      if (!isCurrent() || !isBinderAccountScopeCurrent(scope)) return;
+      // A public binder is readable but never editable by another account.
+      if (!binder || binder.user_id !== scope.userId) {
+        Alert.alert('Unavailable', 'This binder is not available to edit in this account.');
         router.back();
         return;
       }
-
+      const nameArt = (binder.type ?? 'custom') === 'custom'
+        ? await getCustomBinderNameArtKeyForBinder(binder.id, binder.name) : null;
+      await assertBinderAccountScope(scope);
+      if (!isCurrent()) return;
+      loadedBinderScopeRef.current = { ...scope, binderId };
       setName(binder.name ?? '');
       setCoverKey(binder.cover_key ?? null);
       setType(binder.type ?? 'custom');
       setSourceSetId(binder.source_set_id ?? null);
-      setSetLanguage(
-        binder.language
-          ? normalizePokemonCardLanguage(binder.language)
-          : inferSetLanguageFromId(binder.source_set_id)
-      );
-      if ((binder.type ?? 'custom') === 'custom') {
-        setCustomNameArtKey(await getCustomBinderNameArtKeyForBinder(binder.id, binder.name));
-      }
+      setSetLanguage(binder.language ? normalizePokemonCardLanguage(binder.language) : inferSetLanguageFromId(binder.source_set_id));
+      if (nameArt) setCustomNameArtKey(nameArt);
       setCardMode(binder.card_mode === 'graded' ? 'graded' : 'raw');
-      setEdition((binder.edition as "1st_edition" | "unlimited" | null) ?? null);
+      setEdition((binder.edition as '1st_edition' | 'unlimited' | null) ?? null);
       setDefaultCondition(binder.default_condition ?? 'Near Mint');
     } catch (err) {
+      if (!isCurrent()) return;
       console.log('Failed to load binder', err);
       Alert.alert('Error', 'Could not load binder details.');
     } finally {
-      setLoadingBinder(false);
+      if (isCurrent()) setLoadingBinder(false);
     }
-  }, [binderId]);
+  }, [binderId, clearEditFields]);
 
   useEffect(() => {
-    loadBinder();
-  }, [loadBinder]);
+    void loadBinder();
+    return () => { binderRequestRef.current += 1; };
+  }, [binderAccountGeneration, loadBinder]);
 
   // ===============================
   // FILTER SETS
@@ -555,6 +589,15 @@ export default function NewBinderScreen() {
       setSaving(true);
 
       if (isEditMode && binderId) {
+        const scope = await captureBinderAccountScope();
+        const loaded = loadedBinderScopeRef.current;
+        const requestId = binderRequestRef.current;
+        if (!scope.userId || !loaded || loaded.binderId !== binderId || scope.userId !== loaded.userId || scope.generation !== loaded.generation) {
+          throw new Error('The binder account changed. Reload before saving.');
+        }
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        await assertBinderAccountScope(scope);
+        if (userError || user?.id !== scope.userId || requestId !== binderRequestRef.current) throw new Error('The binder account changed.');
         const updatePayload = {
           name: name.trim(),
           color: theme.colors.primary,
@@ -566,12 +609,19 @@ export default function NewBinderScreen() {
           card_mode: cardMode,
         };
 
-        let { error } = await supabase
+        let { data: updated, error } = await supabase
           .from('binders')
           .update(updatePayload)
-          .eq('id', binderId);
+          .eq('id', binderId)
+          .eq('user_id', scope.userId)
+          .select('id')
+          .maybeSingle();
 
         if (error?.code === 'PGRST204') {
+          await assertBinderAccountScope(scope);
+          if (requestId !== binderRequestRef.current || loadedBinderScopeRef.current !== loaded) {
+            throw new Error('The binder request changed.');
+          }
           const { default_condition, card_mode, language, ...fallbackPayload } = updatePayload;
           void default_condition;
           void card_mode;
@@ -579,15 +629,26 @@ export default function NewBinderScreen() {
           const fallback = await supabase
             .from('binders')
             .update(fallbackPayload)
-            .eq('id', binderId);
+            .eq('id', binderId)
+            .eq('user_id', scope.userId)
+            .select('id')
+            .maybeSingle();
           error = fallback.error;
+          updated = fallback.data;
         }
 
         if (error) throw error;
-
-        if (type === 'custom') {
-          await setCustomBinderNameArtKeyForBinder(binderId, customNameArtKey);
+        if (!updated || updated.id !== binderId) {
+          invalidateBinderCaches(binderId);
+          throw new Error('The binder is no longer editable by this account.');
         }
+        try {
+          await assertBinderAccountScope(scope);
+          if (requestId !== binderRequestRef.current) throw new Error('The binder request changed.');
+          if (type === 'custom') await setCustomBinderNameArtKeyForBinder(binderId, customNameArtKey);
+          await assertBinderAccountScope(scope);
+          if (requestId !== binderRequestRef.current) throw new Error('The binder request changed.');
+        } finally { invalidateBinderCaches(binderId); }
 
         Alert.alert('Saved', 'Binder updated successfully.', [
           { text: 'OK', onPress: () => router.back() },

@@ -1,0 +1,12 @@
+PASS short server pages continue to empty and preserve quantities and stable slot ordering
+PASS all 137 saved cards are retained across 50-row responses
+PASS one operation deadline aborts a stalled body, releases coalesced callers and permits retry
+PASS deadline covers multiple individually fast pages instead of restarting per page
+PASS account change cancels shared work before another page and rejects late old-account rows
+PASS same-account token refresh does not cancel useful shared work
+PASS sign-out rejects a stalled read immediately without waiting for its transport
+PASS auth invalidation before pagination starts dispatches no private query
+PASS duplicate continuation fails instead of caching a complete prefix
+PASS foreign continuation fails instead of caching a complete prefix
+PASS error continuation fails instead of caching a complete prefix
+PASS bounded page count rejects an endless distinct response

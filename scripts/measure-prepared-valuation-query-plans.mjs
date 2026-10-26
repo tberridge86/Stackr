@@ -1,4 +1,6 @@
-// No network client, database URL or credentials: all executed analysis is local PGlite.
+import { createNativePostgresFixture, nativeFixtureEnabled } from './test-fixtures/native-postgres-fixture.mjs';
+// Default: local PGlite. Explicit CI mode uses only its isolated localhost PG17 service.
+// Neither mode accepts a remote database URL or production credentials.
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
 import { readFileSync } from 'node:fs';
@@ -10,9 +12,13 @@ const rollbackSql=readFileSync(new URL('../docs/releases/evidence/prepared-valua
 const stripComments=s=>s.split('\n').filter(l=>!l.trim().startsWith('--')).join('\n').trim();
 assert.equal(stripComments(proposedSql),stripComments('begin;\n'+candidateFunction+'\ncommit;'));
 assert.equal(stripComments(rollbackSql),stripComments('begin;\n'+baselineFunction.replace('create function','create or replace function')+'\ncommit;'));
-const {db,seed}=await createPreparedDatabase();
+const nativeFixture=await createNativePostgresFixture();
+let preparedFixture;
+try { preparedFixture=await createPreparedDatabase(nativeFixture); }
+catch(error) { await nativeFixture?.close(); throw error; }
+const {db,seed}=preparedFixture;
 const hash=s=>createHash('sha256').update(s).digest('hex');
-const output={environment:'Local in-memory PGlite; synthetic rows with observed full column/index shapes',executedAnalysis:true,hostedAnalysis:false,newIndexes:[],samplesPerVariant:6,workMem:'2184kB (observed hosted setting)',hostedPostgres:'17.6; local version reported separately',sourceFunctionSha256:hash(baselineFunction),candidateFunctionSha256:hash(candidateFunction),cohorts:[],limitations:['No authenticated client or installed-screen timing.','No network, disk-cold or concurrent-session simulation.','Foreign-row stress population is synthetic, not a copy of production.','Six measured warm rounds use all permutations of baseline/materialized/barrier order.','Wall samples include local result deserialization; plan execution timings are separate.','This changes duplicate JSON aggregation only: full rows and byte count remain unchanged.']};
+const output={environment:nativeFixtureEnabled()?'Isolated CI PostgreSQL 17; synthetic rows with observed full column/index shapes':'Local in-memory PGlite; synthetic rows with observed full column/index shapes',executedAnalysis:true,hostedAnalysis:false,newIndexes:[],samplesPerVariant:6,workMem:'2184kB (observed hosted setting)',hostedPostgres:'17.6; local version reported separately',sourceFunctionSha256:hash(baselineFunction),candidateFunctionSha256:hash(candidateFunction),cohorts:[],limitations:['No authenticated client or installed-screen timing.','No device network, disk-cold or concurrent-session simulation.','Foreign-row stress population is synthetic, not a copy of production.','Six measured warm rounds use all permutations of baseline/materialized/barrier order.','Wall samples include local result deserialization; plan execution timings are separate.','This changes duplicate JSON aggregation only: full rows and byte count remain unchanged.']};
 function nodes(plan,type){let total=plan['Node Type']===type?1:0;for(const p of plan.Plans??[])total+=nodes(p,type);return total}
 function tempBlocks(plan){return {read:plan['Temp Read Blocks']??0,written:plan['Temp Written Blocks']??0}}
 const run=async(q,owner=ownerA)=>(await db.query(q,[owner])).rows[0];

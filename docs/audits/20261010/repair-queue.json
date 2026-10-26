@@ -3554,7 +3554,7 @@
     "owner": "stackr_coding",
     "baseline": "b50547de15a49712d99c67829c38a0bb1d9428b6",
     "pullRequest": 446,
-    "status": "local_measurement_tooling_and_unapplied_sql_proposal",
+    "status": "reviewed_tested_tooling_and_unapplied_sql_proposal",
     "report": "docs/releases/prepared-valuation-measurement-handoff-20261026.md",
     "appRuntimeChanged": false,
     "deployed": false,
@@ -3588,6 +3588,126 @@
       "PG17 realistic I/O/concurrency qualification for selected SQL",
       "CLI migration registration blocked by protected profile telemetry write; scoped new migration approval required",
       "No new merge/deployment/native distribution approval applied"
-    ]
+    ],
+    "sourceCommit": "df45ef50420cab9dae7e2fefb6e929cd1110363c",
+    "sourceTree": "053a5475c9f5136c85629717eace0e1b52fb0ed9",
+    "evidenceBranch": "codex/prepared-valuation-measurement-evidence-20261026",
+    "hostedCi": "three workflows passed; candidate-identical merge tree verified; separate release gate skipped",
+    "mockedHttpRoute": "hosted fixture pass; no authenticated production calls"
+  },
+  "infrastructureAssessment20261026": {
+    "observedAt": "2026-10-26T14:25:04.994Z",
+    "source": "df45ef50420cab9dae7e2fefb6e929cd1110363c",
+    "report": "docs/audits/20261026/infrastructure-assessment.md",
+    "status": "assessment_complete_no_repairs_applied",
+    "releaseHold": "INFRA-ACCOUNT-CACHE-001",
+    "findings": [
+      {
+        "id": "INFRA-ACCOUNT-CACHE-001",
+        "priority": "P1",
+        "evidence": "source-supported account-cache/edit-loader path; same key in main",
+        "installedPhoneReproduction": false,
+        "customerDataBreachObserved": false,
+        "writeBypassEstablished": false,
+        "releaseHold": true,
+        "trigger": "A opens a private binder edit form, then B signs in within the 30-second TTL in the same JS process and opens the same binder edit route"
+      },
+      {
+        "id": "INFRA-RECOVERY-PROOF-001",
+        "priority": "P1 assurance",
+        "evidence": "restore verifier excludes Auth/private/security-equivalence checks; existing prior restore drill preserved",
+        "insecureRestoreObserved": false
+      }
+    ],
+    "priorityOrder": [
+      "Account/session-scoped binder record cache and edit ownership",
+      "Authenticated and installed-phone retrieval evidence",
+      "Complete search continuation and measured retrieval/database costs",
+      "Recovery security verification and targeted Auth/RPC/patch review",
+      "Existing scheduler/monitor/release-lane qualification"
+    ],
+    "publicSearchSample": {
+      "observedAt": "2026-10-26T14:18:28.247Z",
+      "path": "/v1/search?q=Pikachu&language=en&limit=50",
+      "conditions": "Three sequential unauthenticated desktop public GETs; caches and network uncontrolled; no phone; no collection/price requests",
+      "samples": [
+        {
+          "sample": 1,
+          "status": 200,
+          "elapsedMs": 6034.3,
+          "decodedBodyBytes": 299949,
+          "results": 50,
+          "pagination": {
+            "limit": 50,
+            "nextCursor": null
+          },
+          "cfCacheStatus": "DYNAMIC",
+          "cacheControl": "public, max-age=30, stale-while-revalidate=120, stale-if-error=120",
+          "age": null,
+          "cloudflarePop": "LHR",
+          "imageOrigins": {
+            "assets.stackrtcg.com": 217,
+            "oakdbbzdqwurpjnoqhmu.supabase.co": 72
+          },
+          "errorCode": null
+        },
+        {
+          "sample": 2,
+          "status": 200,
+          "elapsedMs": 195.58,
+          "decodedBodyBytes": 299949,
+          "results": 50,
+          "pagination": {
+            "limit": 50,
+            "nextCursor": null
+          },
+          "cfCacheStatus": "HIT",
+          "cacheControl": "public, max-age=30, stale-while-revalidate=120, stale-if-error=120",
+          "age": "0",
+          "cloudflarePop": "LHR",
+          "imageOrigins": {
+            "assets.stackrtcg.com": 217,
+            "oakdbbzdqwurpjnoqhmu.supabase.co": 72
+          },
+          "errorCode": null
+        },
+        {
+          "sample": 3,
+          "status": 200,
+          "elapsedMs": 122.96,
+          "decodedBodyBytes": 299949,
+          "results": 50,
+          "pagination": {
+            "limit": 50,
+            "nextCursor": null
+          },
+          "cfCacheStatus": "HIT",
+          "cacheControl": "public, max-age=30, stale-while-revalidate=120, stale-if-error=120",
+          "age": "0",
+          "cloudflarePop": "LHR",
+          "imageOrigins": {
+            "assets.stackrtcg.com": 217,
+            "oakdbbzdqwurpjnoqhmu.supabase.co": 72
+          },
+          "errorCode": null
+        }
+      ]
+    },
+    "liveExploitationEstablished": false
+  },
+  "infrastructureBoundaries20261026": {
+    "baseline": "df45ef50420cab9dae7e2fefb6e929cd1110363c",
+    "report": "docs/releases/infrastructure-boundaries-handoff-20261026.md",
+    "status": "implemented_locally_independently_reviewed_ci_pending",
+    "binderFinding": "INFRA-ACCOUNT-CACHE-001",
+    "binderCandidateFixReviewed": true,
+    "productionStillUnchanged": true,
+    "restoreSecurityChecks": 44,
+    "securityNegativeChecks": 17,
+    "nativePg17": "pending_ci",
+    "authenticatedAcceptance": "blocked_designated_credentials_empty",
+    "phoneAcceptance": "not_run",
+    "searchContinuation": "next_scoped_implementation",
+    "migrationApplied": false
   }
 }

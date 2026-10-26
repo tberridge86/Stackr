@@ -15,8 +15,7 @@ export const candidateFunction = baselineFunction.replace('create function','cre
   .replace(')) body)', ')) body offset 0)');
 export const candidateQuery = baselineQuery.replace(')) body)', ')) body offset 0)');
 const type = (c) => c.udt==='_text'?'text[]':c.udt;
-export async function createPreparedDatabase() {
-  const db = new PGlite();
+export async function createPreparedDatabase(db = new PGlite()) {
   await db.exec("create schema api; create role anon; create role authenticated; create role service_role bypassrls; grant usage on schema public,api to service_role,anon,authenticated; set timezone='UTC'; set work_mem='2184kB';");
   for (const table of ['binders','binder_cards','user_card_variants']) {
     const columns=schema.columns.filter(c=>c.table===table);
