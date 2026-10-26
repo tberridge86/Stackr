@@ -1,0 +1,30 @@
+npm notice run Stackr-native@1.0.6 test:pokedata-japanese-images
+npm notice run node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-pokedata-japanese-image-adapter.ts && node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-ingest-pokedata-japanese-images.ts
+node:internal/modules/cjs/loader:1476
+  const err = new Error(message);
+              ^
+
+Error: Cannot find module 'sharp'
+Require stack:
+- D:\workspace\Stackr-home-payload-20261026\backend\lib\assetPipeline.js
+- D:\workspace\Stackr-home-payload-20261026\scripts\mirror-approved-catalogue-assets.mjs
+- D:\workspace\Stackr-home-payload-20261026\scripts\test-pokedata-japanese-image-adapter.ts
+    at node:internal/modules/cjs/loader:1476:15
+    at T._resolveFilename (file:///D:/workspace/Stackr-home-payload-20261026/node_modules/tsx/dist/register-zZ7SWseA.mjs:2:15301)
+    at nextResolveSimple (D:\workspace\Stackr-home-payload-20261026\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1017)
+    at D:\workspace\Stackr-home-payload-20261026\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:4613
+    at D:\workspace\Stackr-home-payload-20261026\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:3894
+    at resolveTsPaths (D:\workspace\Stackr-home-payload-20261026\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:770)
+    at Module._resolveFilename (D:\workspace\Stackr-home-payload-20261026\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1171)
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1049:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1073:10)
+    at defaultResolve (node:internal/modules/cjs/loader:1124:20) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'D:\\workspace\\Stackr-home-payload-20261026\\backend\\lib\\assetPipeline.js',
+    'D:\\workspace\\Stackr-home-payload-20261026\\scripts\\mirror-approved-catalogue-assets.mjs',
+    'D:\\workspace\\Stackr-home-payload-20261026\\scripts\\test-pokedata-japanese-image-adapter.ts'
+  ]
+}
+
+Node.js v24.15.0

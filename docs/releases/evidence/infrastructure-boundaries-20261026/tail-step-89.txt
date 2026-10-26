@@ -1,0 +1,36 @@
+npm notice run Stackr-native@1.0.6 test:corocoro-binder
+npm notice run node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-corocoro-collection-runtime.ts && node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-corocoro-opening-runtime.ts && node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-corocoro-screen-runtime.ts && node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-corocoro-printing-bindings.ts
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+Failed to refresh Pok├⌐dex ownership Error: offline
+    at fetchCorocoroOwnedCardKeys (D:\workspace\Stackr-home-payload-20261026\scripts\test-corocoro-collection-runtime.ts:144:27)
+    at evalmachine.<anonymous>:54:34
+    at evalmachine.<anonymous>:84:14
+    at <anonymous> (D:\workspace\Stackr-home-payload-20261026\scripts\test-corocoro-collection-runtime.ts:121:97)
+    at react-stack-bottom-frame (D:\workspace\Stackr-home-payload-20261026\node_modules\react-test-renderer\cjs\react-test-renderer.development.js:14062:20)
+    at runWithFiberInDEV (D:\workspace\Stackr-home-payload-20261026\node_modules\react-test-renderer\cjs\react-test-renderer.development.js:1571:30)
+    at commitHookEffectListMount (D:\workspace\Stackr-home-payload-20261026\node_modules\react-test-renderer\cjs\react-test-renderer.development.js:8376:29)
+    at commitHookPassiveMountEffects (D:\workspace\Stackr-home-payload-20261026\node_modules\react-test-renderer\cjs\react-test-renderer.development.js:8465:11)
+    at commitPassiveMountOnFiber (D:\workspace\Stackr-home-payload-20261026\node_modules\react-test-renderer\cjs\react-test-renderer.development.js:9782:13)
+    at recursivelyTraversePassiveMountEffects (D:\workspace\Stackr-home-payload-20261026\node_modules\react-test-renderer\cjs\react-test-renderer.development.js:9756:11)
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+CoroCoro collection: bounded exact owner reads, partial progress, existing private review, account/focus invalidation and failures passed.
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+CoroCoro cover entrance: original cover, optional finite native motion, skip, replay, reduced-motion defaults, foreground/focus cancellation and missing images passed.
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+CoroCoro screen runtime: 34 monthly issues, original Mew, strict printing navigation/artwork, finish holds, retry and late-response isolation passed.
+CoroCoro printing bindings: 11 strict identities, approved bound artwork, preserved Mew/issue holds and 10 ownership holds passed.

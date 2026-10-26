@@ -1,0 +1,68 @@
+{
+  "status": "prepared_not_authorised_or_executed",
+  "reviewedAppSource": "d76f5099f1cb1811df01b3eace6532d8eaf83a59",
+  "previousMobileSource": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+  "targets": {
+    "database": {
+      "project": "oakdbbzdqwurpjnoqhmu",
+      "function": "api.catalogue_search_identity_page_v1(jsonb,jsonb,integer,text,jsonb)",
+      "file": "docs/releases/evidence/search-pagination-20261026/search-identity-page-proposal.sql",
+      "sha256": "d8f15108792dd828f4beb979245e66add90aba7b0bc1aaed7d0ce331eefd70b8",
+      "execution": "single reviewed SQL file in its own transaction; never pending-migration push",
+      "prestate": "signature absent at15:52UTC; must recheck definition/ACL/dependencies immediately before apply; stop on discrepancy",
+      "rollbackSha256": "baaf257bdd376a29eb1cabb1fc9129c8c6ec3819fb9af9977f45650406cad7f4"
+    },
+    "backend": {
+      "url": "https://pocketvault-production.up.railway.app",
+      "project": "d205637b-5376-41aa-9169-1015ba88fec3",
+      "environment": "b4304736-cac8-4ca9-92a7-93f7f6499c2f",
+      "service": "299d7ad4-5ed8-4301-b609-ef99274078d0",
+      "previousSource": "7c1acd409680b38d5913d8cae76df560b5d91daa",
+      "previousDeployment": "dfc23b30-9675-4ba0-ad2b-9f1875302747",
+      "lane": ".github/workflows/deploy-owner-testflight-backend.yml",
+      "preserve": "existing production bindings, commerce restrictions, scheduler flags and R2 work"
+    },
+    "gateway": {
+      "url": "https://api.stackrtcg.com",
+      "worker": "stackr-api-gateway",
+      "environment": "production",
+      "lane": ".github/workflows/deploy-gateway-privacy.yml",
+      "preDeployHold": "attest live version/deployment and Durable Object identity; capture rollback receipt before deployment"
+    },
+    "app": {
+      "lane": ".github/workflows/build-owner-ios-release.yml",
+      "profile": "production",
+      "distribution": "existing Team (Expo) TestFlight lane after new approval",
+      "lastDistributed": "1.0.6 (61)",
+      "newBuildNumber": "allocate and record through existing remote version lane; do not rebuild61"
+    }
+  },
+  "order": [
+    "Reconcile reviewed exact source/main/R2; preserve current-source CI and independent review",
+    "Establish designated authenticated baseline; verify safe test account identities",
+    "Obtain explicit approval for only this SQL signature plus compatible backend/gateway/new TestFlight release",
+    "Capture prestate and apply only pinned search function; verify invoker/stable/jit scope/service-only grants and exact identities",
+    "Deploy pinned backend then gateway with existing bindings; verify configured origins, legacy clients, page/revision recovery and private-media boundaries",
+    "Build and distribute exact approved app with real EAS/fingerprint/TestFlight receipts; execute device matrix"
+  ],
+  "rollback": [
+    "Restore prior attested backend/gateway deployment first; preserve hardened access controls",
+    "Use prior distributed app lane as appropriate; submission is not device installation",
+    "Drop only the new function signature with reviewed no-CASCADE rollback if absent prestate is reverified; otherwise restore captured definition and ACL"
+  ],
+  "excluded": [
+    "prepared-valuation proposal",
+    "Profile migration20261025154000/ledger20261026072532",
+    "daily-movers and unrelated migrations",
+    "price refresh jobs and schedule changes",
+    "paid services",
+    "R2 migration changes"
+  ],
+  "acceptanceBlocks": [
+    "D:/workspace/stackr-qa.local.json has no designated sign-in credentials",
+    "No installed phone interface/results",
+    "Local publicdelivery verification blocked by DNS despite successful production iOS export",
+    "Current production gateway version/deployment unattested"
+  ],
+  "reviewedSourceTree": "97ef784111ff97e16189359821dac55a68706096"
+}

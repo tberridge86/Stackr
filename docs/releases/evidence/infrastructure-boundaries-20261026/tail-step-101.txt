@@ -1,0 +1,6 @@
+npm notice run Stackr-native@1.0.6 test:catalogue-ingestion
+npm notice run npm run test:catalogue-quality-report && tsx scripts/test-catalogue-ingestion.ts
+npm notice run Stackr-native@1.0.6 test:catalogue-quality-report
+npm notice run node --import tsx scripts/test-catalogue-quality-report.mjs
+{"cases":15,"recoveredRows":626,"recoveredTailGaps":7,"rejectedContaminatedDenominators":3,"networkCalls":0}
+Catalogue ingestion framework tests passed.

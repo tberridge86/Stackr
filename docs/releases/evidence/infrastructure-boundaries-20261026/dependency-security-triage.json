@@ -1,0 +1,2055 @@
+{
+  "source": "6bff5300db49a7b55dc14f44346183ca0ac2e6a0",
+  "run": "40360629670",
+  "job": "121704767741",
+  "scope": "Read-only preliminary triage of preserved npm audit --omit=dev JSON plus source/lockfile inspection. No upgrades, new audits, network probes or exploit tests.",
+  "versionCaveat": "Boundary targets leave the reported affected ranges; registry availability and full upstream compatibility were not re-queried. fixAvailable:true does not identify a concrete version. They are investigation targets, not an approved upgrade plan.",
+  "runtimeCaveat": "CI lock/audit evidence for the candidate is not a live deployment SBOM or proof a package is shipped/exercised in the native bundle.",
+  "policy": {
+    "source": [
+      ".github/workflows/platform-ci.yml:398",
+      ".github/workflows/platform-ci.yml:401",
+      "scripts/deploy/check-dependency-audit.mjs:16"
+    ],
+    "finding": "The current gate enforces max-critical=0; max-high is not set, so a passing audit job can retain high findings."
+  },
+  "projects": {
+    "backend": {
+      "auditSha256": "e20d1ba47f9f232cccef78a2d8f1f36a3e076e38b1bf0301a423efa6636bd7a1",
+      "lockfile": "backend/package-lock.json",
+      "metadata": {
+        "vulnerabilities": {
+          "info": 0,
+          "low": 0,
+          "moderate": 4,
+          "high": 3,
+          "critical": 0,
+          "total": 7
+        },
+        "dependencies": {
+          "prod": 230,
+          "dev": 31,
+          "optional": 54,
+          "peer": 0,
+          "peerOptional": 0,
+          "total": 287
+        }
+      },
+      "highPackageRows": 3,
+      "inheritedHighPackageRows": 0,
+      "leafHighPackageGroups": 3,
+      "distinctHighAdvisories": 4,
+      "packages": [
+        {
+          "name": "body-parser",
+          "isDirect": false,
+          "inheritedOnly": false,
+          "viaPackages": [],
+          "highAdvisoryIds": [
+            "GHSA-27r3-jxmh-p828"
+          ],
+          "affectedRange": "<1.20.9",
+          "auditFixAvailable": true,
+          "rangeBoundaryTargets": [
+            "1.20.9"
+          ],
+          "instances": [
+            {
+              "node": "node_modules/body-parser",
+              "lockedVersion": "1.20.8",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "express",
+                "body-parser"
+              ],
+              "parents": [
+                {
+                  "parent": "node_modules/express",
+                  "dependency": "body-parser",
+                  "range": "~1.20.5",
+                  "kind": "dependency"
+                }
+              ]
+            }
+          ],
+          "reachability": {
+            "classification": "reachable middleware; advisory preconditions not reproduced",
+            "source": [
+              "backend/server.js:95",
+              "backend/server.js:100"
+            ],
+            "finding": "Express JSON middleware has an 8mb limit and precedes the v1 origin-auth middleware. Compressed-body trailing-byte behavior was not tested; the size limit is not proof of mitigation."
+          }
+        },
+        {
+          "name": "compression",
+          "isDirect": true,
+          "inheritedOnly": false,
+          "viaPackages": [],
+          "highAdvisoryIds": [
+            "GHSA-vc2v-76pw-4v95"
+          ],
+          "affectedRange": "<1.8.2",
+          "auditFixAvailable": true,
+          "rangeBoundaryTargets": [
+            "1.8.2"
+          ],
+          "instances": [
+            {
+              "node": "node_modules/compression",
+              "lockedVersion": "1.8.1",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "compression"
+              ],
+              "parents": [
+                {
+                  "parent": "(project root)",
+                  "dependency": "compression",
+                  "range": "^1.8.1",
+                  "kind": "dependency"
+                }
+              ]
+            }
+          ],
+          "reachability": {
+            "classification": "reachable middleware; leak not reproduced",
+            "source": [
+              "backend/server.js:6",
+              "backend/server.js:100"
+            ],
+            "finding": "Compression is attached to v1 after origin authentication with threshold1024. Public gateway-backed catalogue responses use this lane. Premature-close memory retention was not measured."
+          }
+        },
+        {
+          "name": "follow-redirects",
+          "isDirect": false,
+          "inheritedOnly": false,
+          "viaPackages": [],
+          "highAdvisoryIds": [
+            "GHSA-q3jh-wrc6-jgq8",
+            "GHSA-8r9p-f939-6h3c"
+          ],
+          "affectedRange": "1.16.0",
+          "auditFixAvailable": true,
+          "rangeBoundaryTargets": [
+            "1.16.1"
+          ],
+          "instances": [
+            {
+              "node": "node_modules/follow-redirects",
+              "lockedVersion": "1.16.0",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "jimp",
+                "@jimp/plugins",
+                "@jimp/plugin-print",
+                "load-bmfont",
+                "phin",
+                "centra",
+                "follow-redirects"
+              ],
+              "parents": [
+                {
+                  "parent": "node_modules/centra",
+                  "dependency": "follow-redirects",
+                  "range": "^1.15.6",
+                  "kind": "dependency"
+                }
+              ]
+            }
+          ],
+          "reachability": {
+            "classification": "dependency present; affected redirect/header path unproved",
+            "source": [
+              "backend/package.json:23",
+              "backend/server.js:12",
+              "backend/server.js:3642",
+              "backend/server.js:3724"
+            ],
+            "finding": "Locked path is jimp -> @jimp/plugins -> @jimp/plugin-print -> load-bmfont -> phin -> centra -> follow-redirects. Inspected project code calls Jimp.read(imageBuffer); no project loadFont/print call was found in the bounded backend scope. Neither array-form redirect headers nor custom sensitiveHeaders handling is established. This is not a CardSight/axios chain."
+          }
+        }
+      ],
+      "advisories": [
+        {
+          "id": "GHSA-27r3-jxmh-p828",
+          "url": "https://github.com/advisories/GHSA-27r3-jxmh-p828",
+          "title": "body-parser vulnerable to Denial of Service via trailing bytes after a compressed request body",
+          "package": "body-parser",
+          "affectedRanges": [
+            "<1.20.9"
+          ],
+          "sourceIds": [
+            1243073
+          ]
+        },
+        {
+          "id": "GHSA-vc2v-76pw-4v95",
+          "url": "https://github.com/advisories/GHSA-vc2v-76pw-4v95",
+          "title": "compression vulnerable to Denial of Service via memory leak on premature response close",
+          "package": "compression",
+          "affectedRanges": [
+            "<1.8.2"
+          ],
+          "sourceIds": [
+            1241221
+          ]
+        },
+        {
+          "id": "GHSA-q3jh-wrc6-jgq8",
+          "url": "https://github.com/advisories/GHSA-q3jh-wrc6-jgq8",
+          "title": "follow-redirects array-form headers bypass cross-origin credential stripping",
+          "package": "follow-redirects",
+          "affectedRanges": [
+            ">=1.16.0 <1.16.1"
+          ],
+          "sourceIds": [
+            1242604
+          ]
+        },
+        {
+          "id": "GHSA-8r9p-f939-6h3c",
+          "url": "https://github.com/advisories/GHSA-8r9p-f939-6h3c",
+          "title": "follow-redirects sensitiveHeaders regex escaping can expose credential headers",
+          "package": "follow-redirects",
+          "affectedRanges": [
+            ">=1.16.0 <1.16.1"
+          ],
+          "sourceIds": [
+            1242605
+          ]
+        }
+      ]
+    },
+    "root": {
+      "auditSha256": "08b6435fdd276c14628989c7eaae907372136b0d49f53aa8bb212847d31ccef0",
+      "lockfile": "package-lock.json",
+      "metadata": {
+        "vulnerabilities": {
+          "info": 0,
+          "low": 0,
+          "moderate": 10,
+          "high": 19,
+          "critical": 0,
+          "total": 29
+        },
+        "dependencies": {
+          "prod": 875,
+          "dev": 260,
+          "optional": 63,
+          "peer": 0,
+          "peerOptional": 0,
+          "total": 1146
+        }
+      },
+      "highPackageRows": 19,
+      "inheritedHighPackageRows": 5,
+      "leafHighPackageGroups": 14,
+      "distinctHighAdvisories": 41,
+      "packages": [
+        {
+          "name": "@expo/cli",
+          "isDirect": false,
+          "inheritedOnly": true,
+          "viaPackages": [
+            "@expo/code-signing-certificates",
+            "@expo/metro-config",
+            "node-forge"
+          ],
+          "highAdvisoryIds": [],
+          "affectedRange": "<=0.0.0-canary-20231123-1b19f96-4 || >=0.0.1-canary-20231125-d600e44",
+          "auditFixAvailable": {
+            "name": "expo",
+            "version": "44.0.6",
+            "isSemVerMajor": true
+          },
+          "rangeBoundaryTargets": [],
+          "instances": [
+            {
+              "node": "node_modules/@expo/cli",
+              "lockedVersion": "54.0.26",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "expo",
+                "@expo/cli"
+              ],
+              "parents": [
+                {
+                  "parent": "node_modules/expo",
+                  "dependency": "@expo/cli",
+                  "range": "54.0.26",
+                  "kind": "dependency"
+                }
+              ]
+            }
+          ],
+          "reachability": {
+            "classification": "inherited package label; not an independent advisory",
+            "source": [
+              "package-lock.json"
+            ],
+            "finding": "Count its leaf advisories once rather than treating this parent label as another vulnerability."
+          }
+        },
+        {
+          "name": "@expo/code-signing-certificates",
+          "isDirect": false,
+          "inheritedOnly": true,
+          "viaPackages": [
+            "node-forge"
+          ],
+          "highAdvisoryIds": [],
+          "affectedRange": "*",
+          "auditFixAvailable": {
+            "name": "expo-updates",
+            "version": "0.11.7",
+            "isSemVerMajor": true
+          },
+          "rangeBoundaryTargets": [],
+          "instances": [
+            {
+              "node": "node_modules/@expo/code-signing-certificates",
+              "lockedVersion": "0.0.6",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "expo-updates",
+                "@expo/code-signing-certificates"
+              ],
+              "parents": [
+                {
+                  "parent": "node_modules/@expo/cli",
+                  "dependency": "@expo/code-signing-certificates",
+                  "range": "^0.0.6",
+                  "kind": "dependency"
+                },
+                {
+                  "parent": "node_modules/expo-updates",
+                  "dependency": "@expo/code-signing-certificates",
+                  "range": "^0.0.6",
+                  "kind": "dependency"
+                }
+              ]
+            }
+          ],
+          "reachability": {
+            "classification": "inherited package label; not an independent advisory",
+            "source": [
+              "package-lock.json"
+            ],
+            "finding": "Count its leaf advisories once rather than treating this parent label as another vulnerability."
+          }
+        },
+        {
+          "name": "@stripe/stripe-react-native",
+          "isDirect": true,
+          "inheritedOnly": true,
+          "viaPackages": [
+            "expo"
+          ],
+          "highAdvisoryIds": [],
+          "affectedRange": ">=0.19.0-address-element-private-beta.0",
+          "auditFixAvailable": {
+            "name": "@stripe/stripe-react-native",
+            "version": "0.18.1",
+            "isSemVerMajor": true
+          },
+          "rangeBoundaryTargets": [],
+          "instances": [
+            {
+              "node": "node_modules/@stripe/stripe-react-native",
+              "lockedVersion": "0.50.3",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "@stripe/stripe-react-native"
+              ],
+              "parents": [
+                {
+                  "parent": "(project root)",
+                  "dependency": "@stripe/stripe-react-native",
+                  "range": "0.50.3",
+                  "kind": "dependency"
+                }
+              ]
+            }
+          ],
+          "reachability": {
+            "classification": "inherited meta-vulnerability, not a Stripe-specific advisory",
+            "source": [
+              "package.json:260",
+              "components/StackrAppShell.tsx:284",
+              "components/StripeAppProvider.native.tsx:2"
+            ],
+            "finding": "Audit via is expo, with no direct advisory object for Stripe. A provider wrapper exists in the app shell; no payment exploit is established."
+          }
+        },
+        {
+          "name": "@xmldom/xmldom",
+          "isDirect": false,
+          "inheritedOnly": false,
+          "viaPackages": [],
+          "highAdvisoryIds": [
+            "GHSA-6mj3-qw4j-hgrw",
+            "GHSA-g53g-w8rj-fmg7",
+            "GHSA-w2rr-34g9-rvrj",
+            "GHSA-4w3w-2rp5-g8jm",
+            "GHSA-c7q8-3ch8-vqpv",
+            "GHSA-27p8-2357-5qqv",
+            "GHSA-3px3-54cx-rmw9",
+            "GHSA-vr34-hp96-76pp",
+            "GHSA-8344-3jmq-59r6",
+            "GHSA-x4fp-j954-r2f4",
+            "GHSA-965w-775f-mr7g",
+            "GHSA-93r5-fhx6-vmg9"
+          ],
+          "affectedRange": "<=0.8.14 || 0.9.0-beta.1 - 0.9.11",
+          "auditFixAvailable": true,
+          "rangeBoundaryTargets": [
+            "0.8.15",
+            "0.9.12"
+          ],
+          "instances": [
+            {
+              "node": "node_modules/@xmldom/xmldom",
+              "lockedVersion": "0.8.13",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "expo-updates",
+                "@expo/plist",
+                "@xmldom/xmldom"
+              ],
+              "parents": [
+                {
+                  "parent": "node_modules/@expo/plist",
+                  "dependency": "@xmldom/xmldom",
+                  "range": "^0.8.8",
+                  "kind": "dependency"
+                }
+              ]
+            },
+            {
+              "node": "node_modules/plist/node_modules/@xmldom/xmldom",
+              "lockedVersion": "0.9.10",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "expo",
+                "@expo/config-plugins",
+                "xcode",
+                "simple-plist",
+                "plist",
+                "@xmldom/xmldom"
+              ],
+              "parents": [
+                {
+                  "parent": "node_modules/plist",
+                  "dependency": "@xmldom/xmldom",
+                  "range": "^0.9.10",
+                  "kind": "dependency"
+                }
+              ]
+            }
+          ],
+          "reachability": {
+            "classification": "toolchain-transitive; advisory preconditions unproved",
+            "source": [
+              "package-lock.json",
+              "metro.config.js:1",
+              "package.json"
+            ],
+            "finding": "Expo plist and xcode/simple-plist configuration paths; untrusted XML parsing/serialization by a shipped app endpoint is not established."
+          }
+        },
+        {
+          "name": "body-parser",
+          "isDirect": false,
+          "inheritedOnly": false,
+          "viaPackages": [],
+          "highAdvisoryIds": [
+            "GHSA-27r3-jxmh-p828"
+          ],
+          "affectedRange": "2.0.0 - 2.3.0",
+          "auditFixAvailable": true,
+          "rangeBoundaryTargets": [
+            "2.4.0"
+          ],
+          "instances": [
+            {
+              "node": "node_modules/body-parser",
+              "lockedVersion": "2.2.2",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "express",
+                "body-parser"
+              ],
+              "parents": [
+                {
+                  "parent": "node_modules/express",
+                  "dependency": "body-parser",
+                  "range": "^2.2.1",
+                  "kind": "dependency"
+                }
+              ]
+            }
+          ],
+          "reachability": {
+            "classification": "root Express test consumers observed; shipped exposure unproved",
+            "source": [
+              "package.json:295",
+              "scripts/test-stackr-api-v1.mjs:6",
+              "scripts/test-market-pricing-service.mjs:4"
+            ],
+            "finding": "Root Express5 differs from the dedicated backend Express4 installation. Inspected root imports occur in HTTP fixtures; a phone or deployed-server path to this root parser was not established."
+          }
+        },
+        {
+          "name": "brace-expansion",
+          "isDirect": false,
+          "inheritedOnly": false,
+          "viaPackages": [],
+          "highAdvisoryIds": [
+            "GHSA-3jxr-9vmj-r5cp",
+            "GHSA-mh99-v99m-4gvg",
+            "GHSA-rgw5-rvv9-x895",
+            "GHSA-qhr7-859c-m2p7",
+            "GHSA-6j4f-fj2g-mc7p"
+          ],
+          "affectedRange": "<=1.1.20 || 2.0.0 - 2.1.6 || 4.0.0 - 5.0.11",
+          "auditFixAvailable": true,
+          "rangeBoundaryTargets": [
+            "1.1.21",
+            "2.1.7",
+            "5.0.12"
+          ],
+          "instances": [
+            {
+              "node": "node_modules/@expo/cli/node_modules/brace-expansion",
+              "lockedVersion": "2.1.2",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "expo",
+                "@expo/cli",
+                "minimatch",
+                "brace-expansion"
+              ],
+              "parents": [
+                {
+                  "parent": "node_modules/@expo/cli/node_modules/minimatch",
+                  "dependency": "brace-expansion",
+                  "range": "^2.0.2",
+                  "kind": "dependency"
+                }
+              ]
+            },
+            {
+              "node": "node_modules/@expo/fingerprint/node_modules/brace-expansion",
+              "lockedVersion": "5.0.7",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "expo",
+                "@expo/fingerprint",
+                "minimatch",
+                "brace-expansion"
+              ],
+              "parents": [
+                {
+                  "parent": "node_modules/@expo/fingerprint/node_modules/minimatch",
+                  "dependency": "brace-expansion",
+                  "range": "^5.0.5",
+                  "kind": "dependency"
+                }
+              ]
+            },
+            {
+              "node": "node_modules/brace-expansion",
+              "lockedVersion": "1.1.14",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "react-native",
+                "glob",
+                "minimatch",
+                "brace-expansion"
+              ],
+              "parents": [
+                {
+                  "parent": "node_modules/minimatch",
+                  "dependency": "brace-expansion",
+                  "range": "^1.1.7",
+                  "kind": "dependency"
+                }
+              ]
+            },
+            {
+              "node": "node_modules/glob/node_modules/brace-expansion",
+              "lockedVersion": "5.0.7",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "expo-updates",
+                "glob",
+                "minimatch",
+                "brace-expansion"
+              ],
+              "parents": [
+                {
+                  "parent": "node_modules/glob/node_modules/minimatch",
+                  "dependency": "brace-expansion",
+                  "range": "^5.0.5",
+                  "kind": "dependency"
+                }
+              ]
+            }
+          ],
+          "reachability": {
+            "classification": "toolchain-transitive; advisory preconditions unproved",
+            "source": [
+              "package-lock.json",
+              "metro.config.js:1",
+              "package.json"
+            ],
+            "finding": "React Native/Expo glob/minimatch tooling paths; attacker-controlled brace expansion is not established."
+          }
+        },
+        {
+          "name": "browserslist",
+          "isDirect": false,
+          "inheritedOnly": false,
+          "viaPackages": [],
+          "highAdvisoryIds": [
+            "GHSA-c83g-rgw3-j3cx",
+            "GHSA-73wf-gq98-2v4g"
+          ],
+          "affectedRange": "<=4.28.6",
+          "auditFixAvailable": true,
+          "rangeBoundaryTargets": [
+            "4.28.7"
+          ],
+          "instances": [
+            {
+              "node": "node_modules/browserslist",
+              "lockedVersion": "4.28.2",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "expo",
+                "@expo/metro-config",
+                "browserslist"
+              ],
+              "parents": [
+                {
+                  "parent": "node_modules/@babel/helper-compilation-targets",
+                  "dependency": "browserslist",
+                  "range": "^4.24.0",
+                  "kind": "dependency"
+                },
+                {
+                  "parent": "node_modules/@expo/metro-config",
+                  "dependency": "browserslist",
+                  "range": "^4.25.0",
+                  "kind": "dependency"
+                },
+                {
+                  "parent": "node_modules/core-js-compat",
+                  "dependency": "browserslist",
+                  "range": "^4.28.1",
+                  "kind": "dependency"
+                },
+                {
+                  "parent": "node_modules/update-browserslist-db",
+                  "dependency": "browserslist",
+                  "range": ">= 4.21.0",
+                  "kind": "peer"
+                }
+              ]
+            }
+          ],
+          "reachability": {
+            "classification": "toolchain-transitive; advisory preconditions unproved",
+            "source": [
+              "package-lock.json",
+              "metro.config.js:1",
+              "package.json"
+            ],
+            "finding": "Expo Metro/Babel target selection; untrusted stats/query control is not established."
+          }
+        },
+        {
+          "name": "compression",
+          "isDirect": false,
+          "inheritedOnly": false,
+          "viaPackages": [],
+          "highAdvisoryIds": [
+            "GHSA-vc2v-76pw-4v95"
+          ],
+          "affectedRange": "<1.8.2",
+          "auditFixAvailable": true,
+          "rangeBoundaryTargets": [
+            "1.8.2"
+          ],
+          "instances": [
+            {
+              "node": "node_modules/compression",
+              "lockedVersion": "1.8.1",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "expo",
+                "@expo/cli",
+                "compression"
+              ],
+              "parents": [
+                {
+                  "parent": "node_modules/@expo/cli",
+                  "dependency": "compression",
+                  "range": "^1.7.4",
+                  "kind": "dependency"
+                }
+              ]
+            }
+          ],
+          "reachability": {
+            "classification": "Expo CLI toolchain path",
+            "source": [
+              "package.json:268",
+              "metro.config.js:1"
+            ],
+            "finding": "Root occurrence is introduced by Expo CLI; it is separate from the directly used backend occurrence."
+          }
+        },
+        {
+          "name": "expo",
+          "isDirect": true,
+          "inheritedOnly": true,
+          "viaPackages": [
+            "@expo/cli",
+            "@expo/metro-config"
+          ],
+          "highAdvisoryIds": [],
+          "affectedRange": ">=45.0.0-beta.1",
+          "auditFixAvailable": {
+            "name": "expo",
+            "version": "44.0.6",
+            "isSemVerMajor": true
+          },
+          "rangeBoundaryTargets": [],
+          "instances": [
+            {
+              "node": "node_modules/expo",
+              "lockedVersion": "54.0.36",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "expo"
+              ],
+              "parents": [
+                {
+                  "parent": "(project root)",
+                  "dependency": "expo",
+                  "range": "~54.0.36",
+                  "kind": "dependency"
+                },
+                {
+                  "parent": "node_modules/@expo/cli",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/@expo/metro-config",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/@expo/metro-runtime",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/@expo/prebuild-config",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/@stripe/stripe-react-native",
+                  "dependency": "expo",
+                  "range": ">=46.0.9",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-application",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-asset",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-blur",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-build-properties",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-camera",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-constants",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-dev-client",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-dev-launcher",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-dev-menu",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-dev-menu-interface",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-device",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-file-system",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-font",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-haptics",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-image",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-image-loader",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-image-manipulator",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-image-picker",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-keep-awake",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-linear-gradient",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-manifests",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-notifications",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-router",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-splash-screen",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-sqlite",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-symbols",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-system-ui",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-updates",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-updates-interface",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-video",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo-web-browser",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                },
+                {
+                  "parent": "node_modules/expo/node_modules/babel-preset-expo",
+                  "dependency": "expo",
+                  "range": "*",
+                  "kind": "peer"
+                }
+              ]
+            }
+          ],
+          "reachability": {
+            "classification": "inherited package label; not an independent advisory",
+            "source": [
+              "package-lock.json"
+            ],
+            "finding": "Count its leaf advisories once rather than treating this parent label as another vulnerability."
+          }
+        },
+        {
+          "name": "expo-updates",
+          "isDirect": true,
+          "inheritedOnly": true,
+          "viaPackages": [
+            "@expo/code-signing-certificates"
+          ],
+          "highAdvisoryIds": [],
+          "affectedRange": "<=0.0.1-canary-20240418-8d74597 || >=0.12.0",
+          "auditFixAvailable": {
+            "name": "expo-updates",
+            "version": "0.11.7",
+            "isSemVerMajor": true
+          },
+          "rangeBoundaryTargets": [],
+          "instances": [
+            {
+              "node": "node_modules/expo-updates",
+              "lockedVersion": "29.0.19",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "expo-updates"
+              ],
+              "parents": [
+                {
+                  "parent": "(project root)",
+                  "dependency": "expo-updates",
+                  "range": "~29.0.19",
+                  "kind": "dependency"
+                }
+              ]
+            }
+          ],
+          "reachability": {
+            "classification": "inherited package label; not an independent advisory",
+            "source": [
+              "package-lock.json"
+            ],
+            "finding": "Count its leaf advisories once rather than treating this parent label as another vulnerability."
+          }
+        },
+        {
+          "name": "fast-uri",
+          "isDirect": false,
+          "inheritedOnly": false,
+          "viaPackages": [],
+          "highAdvisoryIds": [
+            "GHSA-v2hh-gcrm-f6hx",
+            "GHSA-7p8r-x3mc-p8w7",
+            "GHSA-f65p-4m7j-42xc",
+            "GHSA-fph4-wmhf-6fwf",
+            "GHSA-jqff-g426-hqxp",
+            "GHSA-4c8g-83qw-93j6",
+            "GHSA-qw65-cvwx-89v3"
+          ],
+          "affectedRange": "3.0.0 - 3.1.8",
+          "auditFixAvailable": true,
+          "rangeBoundaryTargets": [
+            "3.1.9"
+          ],
+          "instances": [
+            {
+              "node": "node_modules/fast-uri",
+              "lockedVersion": "3.1.2",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "expo-build-properties",
+                "ajv",
+                "fast-uri"
+              ],
+              "parents": [
+                {
+                  "parent": "node_modules/expo-build-properties/node_modules/ajv",
+                  "dependency": "fast-uri",
+                  "range": "^3.0.1",
+                  "kind": "dependency"
+                },
+                {
+                  "parent": "node_modules/expo-dev-launcher/node_modules/ajv",
+                  "dependency": "fast-uri",
+                  "range": "^3.0.1",
+                  "kind": "dependency"
+                }
+              ]
+            }
+          ],
+          "reachability": {
+            "classification": "toolchain-transitive; advisory preconditions unproved",
+            "source": [
+              "package-lock.json",
+              "metro.config.js:1",
+              "package.json"
+            ],
+            "finding": "expo-build-properties -> ajv and expo-dev-launcher -> ajv; this does not establish an app-facing SSRF sink."
+          }
+        },
+        {
+          "name": "image-size",
+          "isDirect": false,
+          "inheritedOnly": false,
+          "viaPackages": [],
+          "highAdvisoryIds": [
+            "GHSA-5p2g-fcmc-qvqq",
+            "GHSA-w3rx-r6r6-pgpr"
+          ],
+          "affectedRange": "0.6.3 - 2.0.2",
+          "auditFixAvailable": true,
+          "rangeBoundaryTargets": [
+            "2.0.3"
+          ],
+          "instances": [
+            {
+              "node": "node_modules/image-size",
+              "lockedVersion": "1.2.1",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "expo",
+                "@expo/metro",
+                "metro",
+                "image-size"
+              ],
+              "parents": [
+                {
+                  "parent": "node_modules/metro",
+                  "dependency": "image-size",
+                  "range": "^1.0.2",
+                  "kind": "dependency"
+                }
+              ]
+            }
+          ],
+          "reachability": {
+            "classification": "toolchain-transitive; advisory preconditions unproved",
+            "source": [
+              "package-lock.json",
+              "metro.config.js:1",
+              "package.json"
+            ],
+            "finding": "Expo Metro image metadata processing; a hostile JXL/HEIF/ICNS input reaching the affected parser is not established."
+          }
+        },
+        {
+          "name": "js-yaml",
+          "isDirect": false,
+          "inheritedOnly": false,
+          "viaPackages": [],
+          "highAdvisoryIds": [
+            "GHSA-5p4m-2wfm-xmqj",
+            "GHSA-2883-xcg3-v3hh"
+          ],
+          "affectedRange": "3.0.0 - 3.15.1 || 4.0.0 - 4.3.1",
+          "auditFixAvailable": true,
+          "rangeBoundaryTargets": [
+            "3.15.2",
+            "4.3.2"
+          ],
+          "instances": [
+            {
+              "node": "node_modules/@istanbuljs/load-nyc-config/node_modules/js-yaml",
+              "lockedVersion": "3.15.0",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "react-native",
+                "babel-jest",
+                "babel-plugin-istanbul",
+                "@istanbuljs/load-nyc-config",
+                "js-yaml"
+              ],
+              "parents": [
+                {
+                  "parent": "node_modules/@istanbuljs/load-nyc-config",
+                  "dependency": "js-yaml",
+                  "range": "^3.13.1",
+                  "kind": "dependency"
+                }
+              ]
+            },
+            {
+              "node": "node_modules/js-yaml",
+              "lockedVersion": "4.3.0",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "expo",
+                "@expo/cli",
+                "@expo/xcpretty",
+                "js-yaml"
+              ],
+              "parents": [
+                {
+                  "parent": "node_modules/@eslint/eslintrc",
+                  "dependency": "js-yaml",
+                  "range": "^4.1.1",
+                  "kind": "dependency"
+                },
+                {
+                  "parent": "node_modules/@expo/xcpretty",
+                  "dependency": "js-yaml",
+                  "range": "^4.1.0",
+                  "kind": "dependency"
+                }
+              ]
+            }
+          ],
+          "reachability": {
+            "classification": "toolchain-transitive; advisory preconditions unproved",
+            "source": [
+              "package-lock.json",
+              "metro.config.js:1",
+              "package.json"
+            ],
+            "finding": "React Native babel-jest/Istanbul and Expo xcpretty configuration paths; hostile YAML ingestion is not established."
+          }
+        },
+        {
+          "name": "nanoid",
+          "isDirect": false,
+          "inheritedOnly": false,
+          "viaPackages": [],
+          "highAdvisoryIds": [
+            "GHSA-28wg-ghj8-5hjv",
+            "GHSA-2v37-7h3g-55p8"
+          ],
+          "affectedRange": "<=3.3.17",
+          "auditFixAvailable": true,
+          "rangeBoundaryTargets": [
+            "3.3.18"
+          ],
+          "instances": [
+            {
+              "node": "node_modules/nanoid",
+              "lockedVersion": "3.3.12",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "@react-navigation/native",
+                "nanoid"
+              ],
+              "parents": [
+                {
+                  "parent": "node_modules/@react-navigation/core",
+                  "dependency": "nanoid",
+                  "range": "^3.3.11",
+                  "kind": "dependency"
+                },
+                {
+                  "parent": "node_modules/@react-navigation/native",
+                  "dependency": "nanoid",
+                  "range": "^3.3.11",
+                  "kind": "dependency"
+                },
+                {
+                  "parent": "node_modules/@react-navigation/routers",
+                  "dependency": "nanoid",
+                  "range": "^3.3.11",
+                  "kind": "dependency"
+                },
+                {
+                  "parent": "node_modules/expo-router",
+                  "dependency": "nanoid",
+                  "range": "^3.3.8",
+                  "kind": "dependency"
+                },
+                {
+                  "parent": "node_modules/postcss",
+                  "dependency": "nanoid",
+                  "range": "^3.3.7",
+                  "kind": "dependency"
+                }
+              ]
+            }
+          ],
+          "reachability": {
+            "classification": "navigation-transitive; unsafe argument preconditions unproved",
+            "source": [
+              "package.json:258"
+            ],
+            "finding": "Production lock reaches nanoid via React Navigation. No tracked app import or attacker-controlled negative/zero generator size was found in the bounded app/components/features/lib search."
+          }
+        },
+        {
+          "name": "node-forge",
+          "isDirect": false,
+          "inheritedOnly": false,
+          "viaPackages": [],
+          "highAdvisoryIds": [
+            "GHSA-86w9-cpqp-85rv"
+          ],
+          "affectedRange": "*",
+          "auditFixAvailable": {
+            "name": "expo",
+            "version": "44.0.6",
+            "isSemVerMajor": true
+          },
+          "rangeBoundaryTargets": [],
+          "fixUnknown": "Advisory affects <=1.4.0; a concrete patched version is not established by these artifacts. The audit suggests an unrelated Expo downgrade.",
+          "instances": [
+            {
+              "node": "node_modules/node-forge",
+              "lockedVersion": "1.4.0",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "expo",
+                "@expo/cli",
+                "node-forge"
+              ],
+              "parents": [
+                {
+                  "parent": "node_modules/@expo/cli",
+                  "dependency": "node-forge",
+                  "range": "^1.3.3",
+                  "kind": "dependency"
+                },
+                {
+                  "parent": "node_modules/@expo/code-signing-certificates",
+                  "dependency": "node-forge",
+                  "range": "^1.3.3",
+                  "kind": "dependency"
+                }
+              ]
+            }
+          ],
+          "reachability": {
+            "classification": "CLI/signing dependency; phone verifier path unproved",
+            "source": [
+              "package.json:268",
+              "package.json:292",
+              "app/about.tsx:17",
+              "app/about.tsx:20"
+            ],
+            "finding": "Expo CLI and code-signing-certificates depend on node-forge. App update APIs are referenced conditionally; that does not show the affected JavaScript RSA verifier is used by the installed native update client."
+          }
+        },
+        {
+          "name": "postcss",
+          "isDirect": false,
+          "inheritedOnly": false,
+          "viaPackages": [],
+          "highAdvisoryIds": [
+            "GHSA-6g55-p6wh-862q",
+            "GHSA-r28c-9q8g-f849"
+          ],
+          "affectedRange": "<=8.5.22",
+          "auditFixAvailable": {
+            "name": "expo",
+            "version": "44.0.6",
+            "isSemVerMajor": true
+          },
+          "rangeBoundaryTargets": [
+            "8.5.23"
+          ],
+          "instances": [
+            {
+              "node": "node_modules/postcss",
+              "lockedVersion": "8.4.49",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "expo",
+                "@expo/metro-config",
+                "postcss"
+              ],
+              "parents": [
+                {
+                  "parent": "node_modules/@expo/metro-config",
+                  "dependency": "postcss",
+                  "range": "~8.4.32",
+                  "kind": "dependency"
+                }
+              ]
+            }
+          ],
+          "reachability": {
+            "classification": "toolchain-transitive; advisory preconditions unproved",
+            "source": [
+              "package-lock.json",
+              "metro.config.js:1",
+              "package.json"
+            ],
+            "finding": "Expo Metro CSS processing; attacker-controlled CSS/sourceMappingURL entering this toolchain is not established."
+          }
+        },
+        {
+          "name": "source-map-js",
+          "isDirect": false,
+          "inheritedOnly": false,
+          "viaPackages": [],
+          "highAdvisoryIds": [
+            "GHSA-68fv-2mgg-jv7q"
+          ],
+          "affectedRange": "1.0.0 - 1.2.1",
+          "auditFixAvailable": true,
+          "rangeBoundaryTargets": [
+            "1.2.2"
+          ],
+          "instances": [
+            {
+              "node": "node_modules/source-map-js",
+              "lockedVersion": "1.2.1",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "expo",
+                "@expo/metro-config",
+                "postcss",
+                "source-map-js"
+              ],
+              "parents": [
+                {
+                  "parent": "node_modules/postcss",
+                  "dependency": "source-map-js",
+                  "range": "^1.2.1",
+                  "kind": "dependency"
+                }
+              ]
+            }
+          ],
+          "reachability": {
+            "classification": "toolchain-transitive; advisory preconditions unproved",
+            "source": [
+              "package-lock.json",
+              "metro.config.js:1",
+              "package.json"
+            ],
+            "finding": "PostCSS source-map processing; hostile indexed source-map ingestion is not established."
+          }
+        },
+        {
+          "name": "tar",
+          "isDirect": false,
+          "inheritedOnly": false,
+          "viaPackages": [],
+          "highAdvisoryIds": [
+            "GHSA-r292-9mhp-454m"
+          ],
+          "affectedRange": "<=7.5.20",
+          "auditFixAvailable": true,
+          "rangeBoundaryTargets": [
+            "7.5.21"
+          ],
+          "instances": [
+            {
+              "node": "node_modules/tar",
+              "lockedVersion": "7.5.20",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "expo",
+                "@expo/cli",
+                "tar"
+              ],
+              "parents": [
+                {
+                  "parent": "node_modules/@expo/cli",
+                  "dependency": "tar",
+                  "range": "^7.5.2",
+                  "kind": "dependency"
+                }
+              ]
+            }
+          ],
+          "reachability": {
+            "classification": "toolchain-transitive; advisory preconditions unproved",
+            "source": [
+              "package-lock.json",
+              "metro.config.js:1",
+              "package.json"
+            ],
+            "finding": "Expo CLI archive tooling; hostile member-selected tar extraction is not established."
+          }
+        },
+        {
+          "name": "undici",
+          "isDirect": false,
+          "inheritedOnly": false,
+          "viaPackages": [],
+          "highAdvisoryIds": [
+            "GHSA-rfgv-xxqx-mfg5",
+            "GHSA-xjj6-f33q-929c"
+          ],
+          "affectedRange": "<=6.29.0",
+          "auditFixAvailable": true,
+          "rangeBoundaryTargets": [
+            "6.29.1"
+          ],
+          "instances": [
+            {
+              "node": "node_modules/undici",
+              "lockedVersion": "6.27.0",
+              "dev": false,
+              "shortestLockedProductionPath": [
+                "expo",
+                "@expo/cli",
+                "undici"
+              ],
+              "parents": [
+                {
+                  "parent": "node_modules/@expo/cli",
+                  "dependency": "undici",
+                  "range": "^6.18.2",
+                  "kind": "dependency"
+                }
+              ]
+            }
+          ],
+          "reachability": {
+            "classification": "toolchain-transitive; advisory preconditions unproved",
+            "source": [
+              "package-lock.json",
+              "metro.config.js:1",
+              "package.json"
+            ],
+            "finding": "Expo CLI HTTP client dependency; affected WebSocket/response-decoding modes in the phone app are not established."
+          }
+        }
+      ],
+      "advisories": [
+        {
+          "id": "GHSA-6mj3-qw4j-hgrw",
+          "url": "https://github.com/advisories/GHSA-6mj3-qw4j-hgrw",
+          "title": "xmldom: HTML raw-text closing-tag case mismatch causes output amplification",
+          "package": "@xmldom/xmldom",
+          "affectedRanges": [
+            ">=0.9.0-beta.1 <=0.9.11"
+          ],
+          "sourceIds": [
+            1193671
+          ]
+        },
+        {
+          "id": "GHSA-g53g-w8rj-fmg7",
+          "url": "https://github.com/advisories/GHSA-g53g-w8rj-fmg7",
+          "title": "xmldom PI grammar regex ReDoS: quadratic backtracking on unterminated processing instructions",
+          "package": "@xmldom/xmldom",
+          "affectedRanges": [
+            ">=0.9.0-beta.9 <=0.9.10"
+          ],
+          "sourceIds": [
+            1193687
+          ]
+        },
+        {
+          "id": "GHSA-w2rr-34g9-rvrj",
+          "url": "https://github.com/advisories/GHSA-w2rr-34g9-rvrj",
+          "title": "xmldom: Element name injection via createElement() bypasses requireWellFormed",
+          "package": "@xmldom/xmldom",
+          "affectedRanges": [
+            ">=0.7.0 <=0.8.13",
+            ">=0.9.0 <=0.9.10"
+          ],
+          "sourceIds": [
+            1193689,
+            1193690
+          ]
+        },
+        {
+          "id": "GHSA-4w3w-2rp5-g8jm",
+          "url": "https://github.com/advisories/GHSA-4w3w-2rp5-g8jm",
+          "title": "xmldom: Attribute name injection via setAttribute() bypasses requireWellFormed",
+          "package": "@xmldom/xmldom",
+          "affectedRanges": [
+            ">=0.7.0 <=0.8.13",
+            ">=0.9.0 <=0.9.10"
+          ],
+          "sourceIds": [
+            1193692,
+            1193693
+          ]
+        },
+        {
+          "id": "GHSA-c7q8-3ch8-vqpv",
+          "url": "https://github.com/advisories/GHSA-c7q8-3ch8-vqpv",
+          "title": "xmldom: Processing Instruction Target Injection Bypasses requireWellFormed",
+          "package": "@xmldom/xmldom",
+          "affectedRanges": [
+            ">=0.9.0 <=0.9.11",
+            ">=0.7.0 <=0.8.14"
+          ],
+          "sourceIds": [
+            1193695,
+            1193696
+          ]
+        },
+        {
+          "id": "GHSA-27p8-2357-5qqv",
+          "url": "https://github.com/advisories/GHSA-27p8-2357-5qqv",
+          "title": "xmldom: DocType `name` Injection Bypasses requireWellFormed",
+          "package": "@xmldom/xmldom",
+          "affectedRanges": [
+            ">=0.9.0 <=0.9.11",
+            ">=0.7.0 <=0.8.14"
+          ],
+          "sourceIds": [
+            1193699,
+            1193700
+          ]
+        },
+        {
+          "id": "GHSA-3px3-54cx-rmw9",
+          "url": "https://github.com/advisories/GHSA-3px3-54cx-rmw9",
+          "title": "xmldom: Creation-time XML Name/QName validation is bypassable via an embedded line terminator, allowing injection on the default serialization path",
+          "package": "@xmldom/xmldom",
+          "affectedRanges": [
+            ">=0.9.0 <=0.9.11"
+          ],
+          "sourceIds": [
+            1193701
+          ]
+        },
+        {
+          "id": "GHSA-vr34-hp96-76pp",
+          "url": "https://github.com/advisories/GHSA-vr34-hp96-76pp",
+          "title": "xmldom: requireWellFormed DocType publicId/systemId validation is bypassable via an embedded line terminator",
+          "package": "@xmldom/xmldom",
+          "affectedRanges": [
+            ">=0.9.10 <=0.9.11"
+          ],
+          "sourceIds": [
+            1193702
+          ]
+        },
+        {
+          "id": "GHSA-8344-3jmq-59r6",
+          "url": "https://github.com/advisories/GHSA-8344-3jmq-59r6",
+          "title": "xmldom: Quadratic-time attribute deduplication",
+          "package": "@xmldom/xmldom",
+          "affectedRanges": [
+            ">=0.9.0 <=0.9.11",
+            ">=0.7.0 <=0.8.14"
+          ],
+          "sourceIds": [
+            1193707,
+            1193708
+          ]
+        },
+        {
+          "id": "GHSA-x4fp-j954-r2f4",
+          "url": "https://github.com/advisories/GHSA-x4fp-j954-r2f4",
+          "title": "xmldom: End-tag Whitespace-Trim Regex ReDoS — quadratic backtracking in the 0.8.x end-tag parser",
+          "package": "@xmldom/xmldom",
+          "affectedRanges": [
+            ">=0.7.0 <=0.8.14"
+          ],
+          "sourceIds": [
+            1193709
+          ]
+        },
+        {
+          "id": "GHSA-965w-775f-mr7g",
+          "url": "https://github.com/advisories/GHSA-965w-775f-mr7g",
+          "title": "xmldom: Quadratic-memory consumption",
+          "package": "@xmldom/xmldom",
+          "affectedRanges": [
+            ">=0.9.0 <=0.9.11",
+            ">=0.7.0 <=0.8.14"
+          ],
+          "sourceIds": [
+            1193711,
+            1193712
+          ]
+        },
+        {
+          "id": "GHSA-93r5-fhx6-vmg9",
+          "url": "https://github.com/advisories/GHSA-93r5-fhx6-vmg9",
+          "title": "xmldom: Quadratic-time parsing via the malformed-input recovery path — `parseElementStartPart` re-scan and `normalize()` adjacent-text merge",
+          "package": "@xmldom/xmldom",
+          "affectedRanges": [
+            ">=0.9.0 <=0.9.11",
+            ">=0.7.0 <=0.8.14"
+          ],
+          "sourceIds": [
+            1193714,
+            1193715
+          ]
+        },
+        {
+          "id": "GHSA-27r3-jxmh-p828",
+          "url": "https://github.com/advisories/GHSA-27r3-jxmh-p828",
+          "title": "body-parser vulnerable to Denial of Service via trailing bytes after a compressed request body",
+          "package": "body-parser",
+          "affectedRanges": [
+            ">=2.0.0 <2.4.0"
+          ],
+          "sourceIds": [
+            1243074
+          ]
+        },
+        {
+          "id": "GHSA-3jxr-9vmj-r5cp",
+          "url": "https://github.com/advisories/GHSA-3jxr-9vmj-r5cp",
+          "title": "brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups",
+          "package": "brace-expansion",
+          "affectedRanges": [
+            "<1.1.16"
+          ],
+          "sourceIds": [
+            1123897
+          ]
+        },
+        {
+          "id": "GHSA-mh99-v99m-4gvg",
+          "url": "https://github.com/advisories/GHSA-mh99-v99m-4gvg",
+          "title": "brace-expansion: DoS via unbounded expansion length causing an out-of-memory process crash",
+          "package": "brace-expansion",
+          "affectedRanges": [
+            "<1.1.17",
+            ">=2.0.0 <2.1.3",
+            ">=4.0.0 <5.0.8"
+          ],
+          "sourceIds": [
+            1130588,
+            1130589,
+            1130591
+          ]
+        },
+        {
+          "id": "GHSA-rgw5-rvv9-x895",
+          "url": "https://github.com/advisories/GHSA-rgw5-rvv9-x895",
+          "title": "brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation",
+          "package": "brace-expansion",
+          "affectedRanges": [
+            ">=4.0.0 <5.0.9",
+            ">=2.0.0 <2.1.4",
+            "<1.1.18"
+          ],
+          "sourceIds": [
+            1130734,
+            1130736,
+            1130737
+          ]
+        },
+        {
+          "id": "GHSA-qhr7-859c-m2p7",
+          "url": "https://github.com/advisories/GHSA-qhr7-859c-m2p7",
+          "title": "brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion",
+          "package": "brace-expansion",
+          "affectedRanges": [
+            "<1.1.20",
+            ">=2.0.0 <2.1.6",
+            ">=4.0.0 <5.0.11"
+          ],
+          "sourceIds": [
+            1240104,
+            1240105,
+            1240107
+          ]
+        },
+        {
+          "id": "GHSA-6j4f-fj2g-mc7p",
+          "url": "https://github.com/advisories/GHSA-6j4f-fj2g-mc7p",
+          "title": "brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion",
+          "package": "brace-expansion",
+          "affectedRanges": [
+            "<1.1.19",
+            ">=2.0.0 <2.1.5",
+            ">=4.0.0 <5.0.10"
+          ],
+          "sourceIds": [
+            1240108,
+            1240109,
+            1240111
+          ]
+        },
+        {
+          "id": "GHSA-c83g-rgw3-j3cx",
+          "url": "https://github.com/advisories/GHSA-c83g-rgw3-j3cx",
+          "title": "Browserslist: Unbounded memory growth (no cache eviction) via distinct query results, leading to eventual OOM",
+          "package": "browserslist",
+          "affectedRanges": [
+            "<=4.28.6"
+          ],
+          "sourceIds": [
+            1153171
+          ]
+        },
+        {
+          "id": "GHSA-73wf-gq98-2v4g",
+          "url": "https://github.com/advisories/GHSA-73wf-gq98-2v4g",
+          "title": "Browserslist: Uncaught crash / prototype write via untrusted browserslist-stats.json custom stats (normalizeStats)",
+          "package": "browserslist",
+          "affectedRanges": [
+            "<=4.28.6"
+          ],
+          "sourceIds": [
+            1153172
+          ]
+        },
+        {
+          "id": "GHSA-vc2v-76pw-4v95",
+          "url": "https://github.com/advisories/GHSA-vc2v-76pw-4v95",
+          "title": "compression vulnerable to Denial of Service via memory leak on premature response close",
+          "package": "compression",
+          "affectedRanges": [
+            "<1.8.2"
+          ],
+          "sourceIds": [
+            1241221
+          ]
+        },
+        {
+          "id": "GHSA-v2hh-gcrm-f6hx",
+          "url": "https://github.com/advisories/GHSA-v2hh-gcrm-f6hx",
+          "title": "fast-uri vulnerable to host confusion via literal backslash authority delimiter",
+          "package": "fast-uri",
+          "affectedRanges": [
+            ">=3.0.0 <=3.1.3"
+          ],
+          "sourceIds": [
+            1124064
+          ]
+        },
+        {
+          "id": "GHSA-7p8r-x3mc-p8w7",
+          "url": "https://github.com/advisories/GHSA-7p8r-x3mc-p8w7",
+          "title": "fast-uri vulnerable to host confusion via backslash authority introducer",
+          "package": "fast-uri",
+          "affectedRanges": [
+            ">=3.0.0 <3.1.5"
+          ],
+          "sourceIds": [
+            1130720
+          ]
+        },
+        {
+          "id": "GHSA-f65p-4m7j-42xc",
+          "url": "https://github.com/advisories/GHSA-f65p-4m7j-42xc",
+          "title": "fast-uri vulnerable to server-side request forgery via malformed IPv6 normalization",
+          "package": "fast-uri",
+          "affectedRanges": [
+            ">=3.0.0 <3.1.6"
+          ],
+          "sourceIds": [
+            1158524
+          ]
+        },
+        {
+          "id": "GHSA-fph4-wmhf-6fwf",
+          "url": "https://github.com/advisories/GHSA-fph4-wmhf-6fwf",
+          "title": "fast-uri vulnerable to server-side request forgery via repeated hostname percent-decoding",
+          "package": "fast-uri",
+          "affectedRanges": [
+            ">=3.1.2 <3.1.6"
+          ],
+          "sourceIds": [
+            1158527
+          ]
+        },
+        {
+          "id": "GHSA-jqff-g426-hqxp",
+          "url": "https://github.com/advisories/GHSA-jqff-g426-hqxp",
+          "title": "fast-uri vulnerable to host confusion via percent-encoded scheme normalization",
+          "package": "fast-uri",
+          "affectedRanges": [
+            ">=3.0.0 <3.1.6"
+          ],
+          "sourceIds": [
+            1158530
+          ]
+        },
+        {
+          "id": "GHSA-4c8g-83qw-93j6",
+          "url": "https://github.com/advisories/GHSA-4c8g-83qw-93j6",
+          "title": "fast-uri vulnerable to host confusion via failed IDN canonicalization",
+          "package": "fast-uri",
+          "affectedRanges": [
+            ">=3.0.0 <3.1.3"
+          ],
+          "sourceIds": [
+            1204921
+          ]
+        },
+        {
+          "id": "GHSA-qw65-cvwx-89v3",
+          "url": "https://github.com/advisories/GHSA-qw65-cvwx-89v3",
+          "title": "fast-uri vulnerable to authority injection via an unvalidated port in serialize",
+          "package": "fast-uri",
+          "affectedRanges": [
+            ">=3.0.0 <3.1.7"
+          ],
+          "sourceIds": [
+            1239943
+          ]
+        },
+        {
+          "id": "GHSA-5p2g-fcmc-qvqq",
+          "url": "https://github.com/advisories/GHSA-5p2g-fcmc-qvqq",
+          "title": "image-size: JXL and HEIF parsers allow denial of service through infinite loops",
+          "package": "image-size",
+          "affectedRanges": [
+            ">=1.2.0 <=2.0.2"
+          ],
+          "sourceIds": [
+            1239765
+          ]
+        },
+        {
+          "id": "GHSA-w3rx-r6r6-pgpr",
+          "url": "https://github.com/advisories/GHSA-w3rx-r6r6-pgpr",
+          "title": "image-size: ICNS parser allows denial of service through an infinite loop",
+          "package": "image-size",
+          "affectedRanges": [
+            ">=0.6.3 <=2.0.2"
+          ],
+          "sourceIds": [
+            1239766
+          ]
+        },
+        {
+          "id": "GHSA-5p4m-2wfm-xmqj",
+          "url": "https://github.com/advisories/GHSA-5p4m-2wfm-xmqj",
+          "title": "JS-YAML: Quadratic CPU consumption in !!omap resolution (3.x and 4.x) — CVE-2026-59870 fix not backported",
+          "package": "js-yaml",
+          "affectedRanges": [
+            ">=3.0.0 <3.15.1",
+            ">=4.0.0 <4.3.1"
+          ],
+          "sourceIds": [
+            1138114,
+            1138115
+          ]
+        },
+        {
+          "id": "GHSA-2883-xcg3-v3hh",
+          "url": "https://github.com/advisories/GHSA-2883-xcg3-v3hh",
+          "title": "js-yaml: maxTotalMergeKeys does not limit CPU use for empty merge sources",
+          "package": "js-yaml",
+          "affectedRanges": [
+            ">=3.0.0 <3.15.2",
+            ">=4.0.0 <4.3.2"
+          ],
+          "sourceIds": [
+            1193726,
+            1193727
+          ]
+        },
+        {
+          "id": "GHSA-28wg-ghj8-5hjv",
+          "url": "https://github.com/advisories/GHSA-28wg-ghj8-5hjv",
+          "title": "nanoid: non-secure generators can loop indefinitely with negative size",
+          "package": "nanoid",
+          "affectedRanges": [
+            "<3.3.16"
+          ],
+          "sourceIds": [
+            1138811
+          ]
+        },
+        {
+          "id": "GHSA-2v37-7h3g-55p8",
+          "url": "https://github.com/advisories/GHSA-2v37-7h3g-55p8",
+          "title": "nanoid: custom generators can loop indefinitely when size is zero",
+          "package": "nanoid",
+          "affectedRanges": [
+            "<3.3.18"
+          ],
+          "sourceIds": [
+            1139427
+          ]
+        },
+        {
+          "id": "GHSA-86w9-cpqp-85rv",
+          "url": "https://github.com/advisories/GHSA-86w9-cpqp-85rv",
+          "title": "node-forge RSA PKCS#1 v1.5 signature verification accepts extra nested DigestAlgorithm elements",
+          "package": "node-forge",
+          "affectedRanges": [
+            "<=1.4.0"
+          ],
+          "sourceIds": [
+            1240912
+          ]
+        },
+        {
+          "id": "GHSA-6g55-p6wh-862q",
+          "url": "https://github.com/advisories/GHSA-6g55-p6wh-862q",
+          "title": "PostCSS: Arbitrary file read and information disclosure via attacker-controlled sourceMappingURL in CSS comments",
+          "package": "postcss",
+          "affectedRanges": [
+            "<=8.5.11"
+          ],
+          "sourceIds": [
+            1124252
+          ]
+        },
+        {
+          "id": "GHSA-r28c-9q8g-f849",
+          "url": "https://github.com/advisories/GHSA-r28c-9q8g-f849",
+          "title": "PostCSS: Path Traversal in Previous Source Map Auto-Loading (sourceMappingURL) leads to Arbitrary .map File Disclosure",
+          "package": "postcss",
+          "affectedRanges": [
+            "<=8.5.17"
+          ],
+          "sourceIds": [
+            1139510
+          ]
+        },
+        {
+          "id": "GHSA-68fv-2mgg-jv7q",
+          "url": "https://github.com/advisories/GHSA-68fv-2mgg-jv7q",
+          "title": "source-map-js allows event-loop denial of service through indexed source-map section offsets",
+          "package": "source-map-js",
+          "affectedRanges": [
+            ">=1.0.0 <1.2.2"
+          ],
+          "sourceIds": [
+            1241209
+          ]
+        },
+        {
+          "id": "GHSA-r292-9mhp-454m",
+          "url": "https://github.com/advisories/GHSA-r292-9mhp-454m",
+          "title": "node-tar: Uncontrolled recursion in mapHas/filesFilter allows uncatchable stack-overflow DoS via crafted long-path tar with member selection",
+          "package": "tar",
+          "affectedRanges": [
+            "<=7.5.20"
+          ],
+          "sourceIds": [
+            1145647
+          ]
+        },
+        {
+          "id": "GHSA-rfgv-xxqx-mfg5",
+          "url": "https://github.com/advisories/GHSA-rfgv-xxqx-mfg5",
+          "title": "undici vulnerable to Denial of Service via unrequested WebSocket subprotocol",
+          "package": "undici",
+          "affectedRanges": [
+            ">=6.7.0 <6.28.1"
+          ],
+          "sourceIds": [
+            1240042
+          ]
+        },
+        {
+          "id": "GHSA-xjj6-f33q-929c",
+          "url": "https://github.com/advisories/GHSA-xjj6-f33q-929c",
+          "title": "undici vulnerable to Denial of Service via unhandled error on excessive content-encodings",
+          "package": "undici",
+          "affectedRanges": [
+            ">=6.23.0 <6.29.1"
+          ],
+          "sourceIds": [
+            1243114
+          ]
+        }
+      ]
+    },
+    "gateway": {
+      "auditSha256": "a3848673fd757bdbc760af635202eeb8fe8726b5689562f4bccfc1469347917d",
+      "lockfile": "gateway/package-lock.json",
+      "metadata": {
+        "vulnerabilities": {
+          "info": 0,
+          "low": 0,
+          "moderate": 0,
+          "high": 0,
+          "critical": 0,
+          "total": 0
+        },
+        "dependencies": {
+          "prod": 2,
+          "dev": 91,
+          "optional": 60,
+          "peer": 0,
+          "peerOptional": 0,
+          "total": 92
+        }
+      },
+      "highPackageRows": 0,
+      "inheritedHighPackageRows": 0,
+      "leafHighPackageGroups": 0,
+      "distinctHighAdvisories": 0,
+      "packages": [],
+      "advisories": []
+    }
+  },
+  "distinctHighAdvisoriesAcrossProjects": 43,
+  "priority": [
+    "Controlled backend patch unit for reachable body-parser and compression first; preserve request limits, authentication order, streaming/cancellation and exact response behavior.",
+    "Check/patch the compatible follow-redirects lock branch separately while retaining the distinction between dependency presence and the unproved font/redirect/header path.",
+    "Plan a compatible Expo/React Native toolchain update against the 14 leaf groups. Do not apply npm audit --force downgrade suggestions automatically.",
+    "Confirm native bundle/runtime reachability and patched release metadata before assigning exploitability or changing release policy. Keep native JIT/rollout gates separate."
+  ]
+}

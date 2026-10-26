@@ -1,0 +1,5 @@
+npm notice run Stackr-native@1.0.6 test:magazine-set-covers
+npm notice run node scripts/test-magazine-set-cover-pack.mjs && node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-magazine-set-covers.ts && node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-magazine-set-cover-surfaces.ts
+All 81 supplied magazine-cover files and the bounded owner-directed review match.
+Magazine set-cover issue matching is exact, language-safe, and fail-closed.
+Magazine set-cover presentation surfaces use local set art without replacing card or seller imagery.

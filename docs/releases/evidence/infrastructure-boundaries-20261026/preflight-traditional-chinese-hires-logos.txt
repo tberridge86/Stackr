@@ -1,0 +1,4 @@
+npm notice run Stackr-native@1.0.6 test:traditional-chinese-hires-logos
+npm notice run node --import tsx scripts/test-traditional-chinese-hires-logos.ts && node --import tsx scripts/test-traditional-chinese-set-logo-review.ts
+PASS: 42 exact marks including the native SVP1 source crop, three exact pack-art fallbacks, immutable hashes, scoped owner receipts, rollback and language/logo-role boundaries.
+Traditional-Chinese review manifest binds six exact canonical set identities to the preserved candidate bytes.

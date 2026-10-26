@@ -1,0 +1,75 @@
+{
+  "environment": "isolated CI PostgreSQL17 synthetic fixture",
+  "postgres": "PostgreSQL 17.6 (Debian 17.6-2.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+  "proposalSha256": "d8f15108792dd828f4beb979245e66add90aba7b0bc1aaed7d0ce331eefd70b8",
+  "samples": 4,
+  "rollback": true,
+  "settings": {
+    "jit": "on",
+    "jit_above_cost": "100000",
+    "jit_inline_above_cost": "500000",
+    "jit_optimize_above_cost": "500000"
+  },
+  "cohorts": [
+    {
+      "name": "empty",
+      "matchingVariants": 0,
+      "hydrated": 0,
+      "parity": true,
+      "stableRevisions": true,
+      "obsoleteCursorRejected": true,
+      "callerRestored": true,
+      "onFirst": 208.1261099999997,
+      "offFirst": 16.48338949999993,
+      "onContinuation": null,
+      "offContinuation": null,
+      "onJit": 177.693,
+      "offJit": 0
+    },
+    {
+      "name": "small",
+      "matchingVariants": 48,
+      "hydrated": 48,
+      "parity": true,
+      "stableRevisions": true,
+      "obsoleteCursorRejected": true,
+      "callerRestored": true,
+      "onFirst": 211.10760750000009,
+      "offFirst": 19.883519500000148,
+      "onContinuation": null,
+      "offContinuation": null,
+      "onJit": 182.953,
+      "offJit": 0
+    },
+    {
+      "name": "large",
+      "matchingVariants": 1202,
+      "hydrated": 50,
+      "parity": true,
+      "stableRevisions": true,
+      "obsoleteCursorRejected": true,
+      "callerRestored": true,
+      "onFirst": 229.6114015000021,
+      "offFirst": 32.97737950000101,
+      "onContinuation": 224.62568199999987,
+      "offContinuation": 33.46609200000057,
+      "onJit": 188.08,
+      "offJit": 0
+    },
+    {
+      "name": "multilingual",
+      "matchingVariants": 500,
+      "hydrated": 50,
+      "parity": true,
+      "stableRevisions": true,
+      "obsoleteCursorRejected": true,
+      "callerRestored": true,
+      "onFirst": 223.15525650000018,
+      "offFirst": 26.28577249999762,
+      "onContinuation": 220.2546450000009,
+      "offContinuation": 26.260104000000865,
+      "onJit": 183.564,
+      "offJit": 0
+    }
+  ]
+}

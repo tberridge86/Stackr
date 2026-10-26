@@ -1,0 +1,3 @@
+npm notice run Stackr-native@1.0.6 test:card-frame-analyser
+npm notice run tsx scripts/test-card-frame-analyser-fixtures.ts
+Card frame analyser fixture tests passed (11 fixtures).

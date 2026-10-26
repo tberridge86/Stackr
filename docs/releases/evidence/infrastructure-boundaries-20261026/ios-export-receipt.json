@@ -14,5 +14,10 @@
   "distributed": false,
   "installedPhone": false,
   "recordedAt": "2026-10-26T16:24:00.294Z",
-  "verifiedAssets": 74
+  "verifiedAssets": 74,
+  "finalCandidate": "d76f5099f1cb1811df01b3eace6532d8eaf83a59",
+  "appRuntimeEquivalent": true,
+  "equivalenceEvidence": "git diff 7b04b1f..8f8d521 contains only workflow, evidence, SQL proposal and tests; no app/bundled runtime/config/lockfile changes",
+  "finalCandidateTree": "97ef784111ff97e16189359821dac55a68706096",
+  "equivalenceNote": "No app, native configuration, bundled assets or lockfile changes from7b04b1f to d76f509; later differences are CI, tests, proposed SQL and evidence. Export is not native distribution or phone acceptance."
 }

@@ -1,0 +1,3 @@
+npm notice run Stackr-native@1.0.6 test:capture-geometry
+npm notice run node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-capture-geometry.ts
+capture geometry tests passed

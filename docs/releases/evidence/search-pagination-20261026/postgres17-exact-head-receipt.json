@@ -1,0 +1,29 @@
+{
+  "source": "8f8d521b5fc6101515e2663206707b176eddac28",
+  "tree": "1a2b70ee953d1339b1183f16ce6bbccb57734b25",
+  "runId": 40364533602,
+  "jobId": 121718537569,
+  "artifactId": 12668713762,
+  "artifactZipSha256": "2895087407f24b81bc50442ed6f7133b6dfc648bf443e5e6a6d5292311013ecb",
+  "rawJsonSha256": "818abcc3f8448685a1c40c0191e2d95b037e36790a6503ac71ef44c3a679168a",
+  "preservedMinifiedJsonSha256": "6e06c398fbd280133852db66a8bd988f2462b9b5c5bd560c73118cb890b6a44e",
+  "file": "postgres17-exact-head.json",
+  "interpretation": "Exact-source rerun; independent prior native A/B remains separately preserved. Installed-phone and authenticated production API latency not measured.",
+  "independentReview": {
+    "reviewer": "stackr_reviewer",
+    "verdict": "GO",
+    "checked": [
+      "preserved JSON hash",
+      "source/tree/SQL checksum",
+      "four alternating native samples per cohort",
+      "parity",
+      "stable and distinct definition revision; old revision rejection",
+      "caller JIT settings restored",
+      "identical function body hash",
+      "service-only grants",
+      "rollback",
+      "sample and median arithmetic"
+    ],
+    "limits": "Isolated PostgreSQL17.6 function workload; no authenticated HTTP or phone acceptance"
+  }
+}

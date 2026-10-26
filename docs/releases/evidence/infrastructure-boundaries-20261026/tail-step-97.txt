@@ -1,0 +1,3 @@
+npm notice run Stackr-native@1.0.6 test:card-rectification
+npm notice run tsx scripts/test-card-rectification-geometry.ts
+card rectification geometry tests passed

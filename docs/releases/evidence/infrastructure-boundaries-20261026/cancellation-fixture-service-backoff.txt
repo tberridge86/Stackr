@@ -1,0 +1,4 @@
+{"level":"info","event":"stackr_trace_span","trace_id":"1c9758419fb147fd9de5f8f8b9fa8a6b","span_id":"332fb2620836fcbc","parent_span_id":"bc8ad6f06aa5a911","service":"stackr-api","operation":"supabase_rest","status":404,"duration_ms":2}
+{"level":"error","event":"stackr_trace_span","trace_id":"1c9758419fb147fd9de5f8f8b9fa8a6b","span_id":"b283ae0a25f621d0","parent_span_id":"bc8ad6f06aa5a911","service":"stackr-api","operation":"supabase_rest","status":503,"duration_ms":0}
+{"level":"error","event":"stackr_trace_span","trace_id":"1c9758419fb147fd9de5f8f8b9fa8a6b","span_id":"e854bcda4d3bce7c","parent_span_id":"bc8ad6f06aa5a911","service":"stackr-api","operation":"supabase_rest","status":0,"duration_ms":1}
+{"scope":"actual service/SDK with test normal() and native already-aborted fetch guard; no sockets/HTTP route assertion","probeCalls":1,"get503Calls":1,"abortSettleMs":1.2583999999999946,"pass":true}

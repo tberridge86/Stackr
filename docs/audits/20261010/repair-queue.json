@@ -3707,7 +3707,7 @@
     "nativePg17": "isolated_CI_pass; synthetic_valuation_median_73.724464_to_48.741687_ms",
     "authenticatedAcceptance": "blocked_designated_credentials_empty",
     "phoneAcceptance": "not_run",
-    "searchContinuation": "implemented_local_backend_SQL_review_in_progress",
+    "searchContinuation": "implemented_independently_reviewed_native_PG17_pass_final_hosted_CI_pending",
     "migrationApplied": false,
     "publishedCheckpoint": "dc1d9dbac708c3a6b039c9a8fd15193eff9bef7f"
   },
@@ -3730,6 +3730,21 @@
     "monitorCadence": "14_sampled_runs_125.6_to_348.48_minute_intervals_for_declared10_minute_schedule",
     "schedulerOwner": "not_attested",
     "capacity": "snapshot_only_not_load_test",
-    "finalSource": "pending_source_commit_and_exact_head_CI"
+    "finalSource": "reviewed_final_hosted_CI_in_progress",
+    "source": "d76f5099f1cb1811df01b3eace6532d8eaf83a59",
+    "sourceTree": "97ef784111ff97e16189359821dac55a68706096",
+    "evidenceBranch": "codex/infrastructure-priorities-evidence-20261026",
+    "newMigrationsApplied": false,
+    "merged": false,
+    "deployed": false,
+    "phoneVerified": false,
+    "nativePg17": "GO; isolated PostgreSQL17.6 large matched function median230.991_to33.670_ms; runtime identical to final test-only follow-up",
+    "cancellationFixtureReview": "GO",
+    "releaseCandidateGate": "skipped",
+    "dependencySecurity": "3 backend high package rows; parser/compression/redirect triaged; no upgrades or exploit claims",
+    "securityConfiguration": "leaked_password_protection_disabled; no current patch warning reconfirmed",
+    "restoreDrill": "security verifier extended; full isolated restore and login/media acceptance still required",
+    "controlledOverlayFixtureReview": "GO",
+    "localRegressionTail": "23 of24 steps passed; remaining adapter blocked by local missing sharp; its separate ingestion subtest passed"
   }
 }

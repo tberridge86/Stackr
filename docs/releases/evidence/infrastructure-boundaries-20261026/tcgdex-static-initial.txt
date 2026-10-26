@@ -1,0 +1,88 @@
+npm notice run Stackr-native@1.0.6 test:tcgdex-controlled-card-reference
+npm notice run node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-tcgdex-controlled-card-reference.ts
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: optional search images must still use the existing controlled provider overlay and bounded read
+    at assert (D:\workspace\Stackr-home-payload-20261026\scripts\test-tcgdex-controlled-card-reference.ts:555:8)
+    at Object.<anonymous> (D:\workspace\Stackr-home-payload-20261026\scripts\test-tcgdex-controlled-card-reference.ts:728:68)
+    at Module._compile (node:internal/modules/cjs/loader:1830:14)
+    at Object.transformer (D:\workspace\Stackr-home-payload-20261026\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:3252)
+    at Module.load (node:internal/modules/cjs/loader:1553:32)
+    at Module._load (node:internal/modules/cjs/loader:1355:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at loadCJSModuleWithModuleLoad (node:internal/modules/esm/translators:326:3)
+    at ModuleWrap.<anonymous> (node:internal/modules/esm/translators:231:7)
+    at ModuleJob.run (node:internal/modules/esm/module_job:437:25) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: "import type { SearchPageMetadata } from './searchPagination';\n" +
+    "import { searchStackrCards } from './stackrDomainAdapter';\n" +
+    "import { readOptionalCatalogueEnrichment } from './optionalCatalogueEnrichment';\n" +
+    "import { parseCardSearchIntent } from './cardSearchIntent';\n" +
+    "import { attachLiveTcgdexCardReferences, type PokemonCardLanguage } from './pokemonTcg';\n" +
+    '\n' +
+    'type SearchRow = Record<string, any>;\n' +
+    '\n' +
+    'type SearchOptions = {\n' +
+    '  limit?: number;\n' +
+    '  cursor?: string;\n' +
+    '  force?: boolean;\n' +
+    '  signal?: AbortSignal;\n' +
+    '  preserveVariantIdentity?: boolean;\n' +
+    '  onPagination?: (metadata: SearchPageMetadata) => void;\n' +
+    '  select?: string;\n' +
+    "  language?: PokemonCardLanguage | 'all' | string | null;\n" +
+    '  skipSetDetection?: boolean;\n' +
+    '  enableShortSetDetection?: boolean;\n' +
+    '  skipApiBackedSearch?: boolean;\n' +
+    '  skipIndexFallback?: boolean;\n' +
+    '  skipNameCorrection?: boolean;\n' +
+    '  onCanonicalResults?: (rows: SearchRow[]) => void;\n' +
+    '};\n' +
+    '\n' +
+    "function isAllLanguageSearch(value: SearchOptions['language']) {\n" +
+    "  return String(value ?? '').trim().toLowerCase() === 'all';\n" +
+    '}\n' +
+    '\n' +
+    'export async function searchLocalPokemonCards<T extends SearchRow = SearchRow>(\n' +
+    '  input: string,\n' +
+    '  options: SearchOptions = {}\n' +
+    '): Promise<T[]> {\n' +
+    '  const trimmed = input.trim();\n' +
+    '  if (trimmed.length < 2) return [];\n' +
+    '  const catalogueQuery = parseCardSearchIntent(trimmed).catalogueQuery;\n' +
+    '  if (catalogueQuery.length < 2) return [];\n' +
+    '  const limit = options.limit ?? 80;\n' +
+    '  const toRows = (cards: Awaited<ReturnType<typeof searchStackrCards>>) => cards.map((card) => ({\n' +
+    '    id: card.id,\n' +
+    '    name: card.name,\n' +
+    '    language: card.language,\n' +
+    '    region: card.region,\n' +
+    '    number: card.number,\n' +
+    '    rarity: card.rarity ?? null,\n' +
+    '    image_small: card.images.small ?? null,\n' +
+    '    image_large: card.images.large ?? null,\n' +
+    '    set_id: card.set.id,\n' +
+    '    set_name: card.set.name,\n' +
+    '    external_ids: card.externalIds,\n' +
+    '    raw_data: card.raw_data,\n' +
+    '  }));\n' +
+    '  const cards = await searchStackrCards(catalogueQuery, {\n' +
+    '    language: isAllLanguageSearch(options.language) ? null : options.language,\n' +
+    '    limit, cursor: options.cursor, signal: options.signal, force: options.force,\n' +
+    '    preserveVariantIdentity: options.preserveVariantIdentity, onPagination: options.onPagination,\n' +
+    '    onCanonicalResults: options.onCanonicalResults\n' +
+    '      ? (matches) => options.onCanonicalResults?.(toRows(matches)) : undefined,\n' +
+    '  });\n' +
+    '  const enriched = cards.some(card => !card.images.small && !card.images.large)\n' +
+    '    ? await readOptionalCatalogueEnrichment(() => attachLiveTcgdexCardReferences(cards), options.signal) : cards;\n' +
+    '  return toRows(enriched ?? cards) as unknown as T[];\n' +
+    '}\n',
+  expected: /readOptionalCatalogueEnrichment\(\(\) => attachLiveTcgdexCardReferences\(cards\)\)/,
+  operator: 'match',
+  diff: 'simple'
+}
+
+Node.js v24.15.0

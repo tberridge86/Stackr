@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "observedDate": "2026-10-26",
+  "purpose": "Candidate qualification; documentation evidence is not an app build source",
+  "pullRequest": "https://github.com/tberridge86/Stackr/pull/446",
+  "candidateBranch": "codex/home-cold-payload-20261026",
+  "evidenceBranch": "codex/infrastructure-priorities-evidence-20261026",
+  "integration": {
+    "main": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+    "originalDirtyCheckoutPreserved": true,
+    "r2MigrationChanged": false
+  },
+  "lastAttestedLive": {
+    "app": {
+      "version": "1.0.6",
+      "build": 61,
+      "source": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+      "easBuild": "c0acb3f0-8366-48cf-b55c-99b30a2b7469",
+      "fingerprint": "dfe1bddd9007cd2ad0a40e660d01da3f7663c9d0",
+      "appleBuild": "a0ddb40d-697b-4f6c-9f6d-b45fe05b6992",
+      "group": "Team (Expo)",
+      "candidateFixesIncluded": false,
+      "phoneAccepted": false
+    },
+    "backend": {
+      "source": "7c1acd409680b38d5913d8cae76df560b5d91daa",
+      "deployment": "dfc23b30-9675-4ba0-ad2b-9f1875302747",
+      "url": "https://pocketvault-production.up.railway.app",
+      "attestedAt": "2026-10-26T14:49:00Z"
+    },
+    "gateway": {
+      "url": "https://api.stackrtcg.com",
+      "worker": "stackr-api-gateway",
+      "activeRevision": null,
+      "status": "unattested"
+    },
+    "database": {
+      "project": "oakdbbzdqwurpjnoqhmu",
+      "providerVersion": "17.6.1.104",
+      "status": "ACTIVE_HEALTHY",
+      "region": "eu-west-1",
+      "metadataObservedAt": "2026-10-26T16:43:00Z",
+      "profileCanonicalVersion": "20261025154000",
+      "profileLedgerVersion": "20261026072532",
+      "newSqlApplied": false
+    }
+  },
+  "databaseProposal": {
+    "signature": "api.catalogue_search_identity_page_v1(jsonb,jsonb,integer,text,jsonb)",
+    "sha256": "d8f15108792dd828f4beb979245e66add90aba7b0bc1aaed7d0ce331eefd70b8",
+    "rollbackSha256": "baaf257bdd376a29eb1cabb1fc9129c8c6ec3819fb9af9977f45650406cad7f4",
+    "registeredPendingMigration": false,
+    "applied": false,
+    "newIndexes": 0,
+    "requiresNewApproval": true
+  },
+  "validation": {
+    "independentReview": "GO; substantive binder, restore/security, mobile/gateway/backend/SQL and final fixture reviews preserved",
+    "iosExport": {
+      "source": "7b04b1f20b215d859e8ae6a862e66b9439e6b4c4",
+      "status": "production export and74asset content check passed",
+      "appEquivalent": true,
+      "bundleSha256": "080760ce3c0b105417ac08f223dca1cc036e30fbdcd6e77c627959f40de79c36",
+      "bundleBytes": 11949790,
+      "publicDeliveryGate": "blocked_ENOTFOUND_before_first_live_response",
+      "nativeBuild": false
+    },
+    "nativePg17": {
+      "measuredSource": "8f8d521b5fc6101515e2663206707b176eddac28",
+      "runId": 40364533602,
+      "jobId": 121718537569,
+      "artifactId": 12668713762,
+      "proposalSha256": "d8f15108792dd828f4beb979245e66add90aba7b0bc1aaed7d0ce331eefd70b8",
+      "samplesPerVariant": 4,
+      "conditions": "isolated PostgreSQL17.6; synthetic cohorts,5000unrelated printings; alternating same function body; only local JIT setting differs",
+      "largeMatchingVariants": 1202,
+      "largeFirstMedianMs": {
+        "jitOn": 230.99147749999975,
+        "jitOff": 33.66988200000014
+      },
+      "largeContinuationMedianMs": {
+        "jitOn": 231.55467699999917,
+        "jitOff": 34.299387499999284
+      },
+      "independentReview": "GO",
+      "hostedApiTiming": false,
+      "phoneTiming": false
+    },
+    "authenticatedHomeMeasured": false,
+    "installedPhoneAccepted": false,
+    "restoreDrillExecuted": false,
+    "fullLocalSupabaseReset": "skipped; pre-repository production schema not fully baselined into migrations"
+  },
+  "authorization": {
+    "earlier439Build61DoesNotAuthorizeThisRollout": true,
+    "noNewMerge": true,
+    "noNewDeployment": true,
+    "noNewNativeBuild": true,
+    "noMigrationApplied": true,
+    "noPriceJobs": true,
+    "noScheduleChanges": true,
+    "noPaidServices": true
+  },
+  "blocks": [
+    "Designated QA sign-in file remains empty",
+    "No exact-candidate native build or installed-phone acceptance",
+    "Current gateway deployment/version and rollback prestate unattested",
+    "Local exported public delivery gate blocked by DNS",
+    "New scoped rollout approval required"
+  ],
+  "remaining": [
+    "Authenticated Home cold/warm cap/bytes/latency and real priced-printing coverage",
+    "Isolated full database/object restore with sign-in/RLS/private-media verification",
+    "Leaked-password protection config entitlement/prestate approval",
+    "Targeted backend dependency patches; compatible Expo advisory remediation",
+    "Single live scheduler owner, durable claims/retry exhaustion and alert delivery",
+    "Representative capacity and SLO tests; connection snapshot is not a capacity test",
+    "Baseline pre-repository database schema and prove clean local Supabase reset; isolated migration tests do not prove full bootstrap"
+  ],
+  "candidateSource": "d76f5099f1cb1811df01b3eace6532d8eaf83a59",
+  "candidateTree": "97ef784111ff97e16189359821dac55a68706096",
+  "testedMerge": {
+    "sha": "6205020583deb6e19a8b1d76e9b0e1bfb2af80a3",
+    "tree": "97ef784111ff97e16189359821dac55a68706096",
+    "sourceTreeIdentical": true
+  },
+  "hostedCi": "in_progress",
+  "releaseCandidateGate": "not_passed"
+}

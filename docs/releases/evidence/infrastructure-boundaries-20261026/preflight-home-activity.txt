@@ -1,0 +1,19 @@
+npm notice run Stackr-native@1.0.6 test:home-activity
+npm notice run node --import tsx scripts/test-home-activity.ts && node --import tsx scripts/test-home-activity-writes.ts && node --import tsx scripts/test-home-activity-ui.ts && node --import tsx scripts/test-binder-activity-owner.ts && node --import tsx scripts/test-direct-collection-history-recovery.ts && node --import tsx scripts/test-binder-direct-history-recovery.ts && node --import tsx scripts/test-collection-batch-activity.ts && node --import tsx scripts/test-scan-collection-save.ts && node --import tsx scripts/test-scan-composite-save.ts && node --import tsx scripts/test-binder-page-save-confirmation.ts
+Home activity: legacy/current schemas, scoped bounded reads, strict errors, additions/removals before artwork, stale-account guards and retained history passed.
+Home activity writes passed: legacy/current schema, exact snapshots, explicit failures and owner checks across lookup/retry.
+Home history UI: post-commit failures retain saved quantities, suppress old-owner completion and retry manual history with the original request.
+Binder activity actor checks passed: real/virtual add, removal and quantity edits preserve save success across history failure or account switch.
+Direct collection history recovery: stable history-only replay, restart, duplicate race, account switch and storage-failure checks passed.
+Binder direct history consumer: committed quantity, frozen original history payload and late-account alert suppression passed.
+Collection activity could not be recorded { code: '42501', message: 'simulated activity rejection' }
+Saved collection history needs recovery Error: activity_post_identity_changed
+    at assertActivityPostIdentity (D:\workspace\Stackr-home-payload-20261026\lib\activityIdentity.ts:6:11)
+    at createActivityPost (D:\workspace\Stackr-home-payload-20261026\lib\activity.ts:168:3)
+    at async recordOwnedCardBatchActivity (D:\workspace\Stackr-home-payload-20261026\lib\collectionBatch.ts:231:24)
+    at async Object.addOwnedCardBatchToBinder (D:\workspace\Stackr-home-payload-20261026\lib\collectionBatch.ts:839:28)
+    at async main (D:\workspace\Stackr-home-payload-20261026\scripts\test-collection-batch-activity.ts:168:23)
+Collection activity passed: mixed cards, legacy schema, history repair, stable replay IDs, no-op and account changes around card commit.
+Scan collection save: duplicate pockets, mixed cards, notes, quantities and replay checks passed
+Scan composite save restart: owner-bound persistence, replay, exact variant recovery, activity repair and concurrency passed
+Binder page confirmation/save race regression passed

@@ -1,0 +1,3 @@
+npm notice run Stackr-native@1.0.6 test:catalogue-schema
+npm notice run tsx scripts/test-canonical-catalogue-schema.ts
+Canonical catalogue schema migration tests passed.

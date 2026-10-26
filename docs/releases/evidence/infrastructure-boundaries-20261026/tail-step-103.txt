@@ -1,0 +1,3 @@
+npm notice run Stackr-native@1.0.6 test:master-catalogue-importer
+npm notice run tsx scripts/test-master-catalogue-importer.ts
+Master catalogue importer tests passed.

@@ -1,0 +1,474 @@
+{
+  "observedAt": "2026-10-26T16:43:00.847Z",
+  "project": "oakdbbzdqwurpjnoqhmu",
+  "mode": "read-only provider advisor; no configuration change",
+  "lints": [
+    {
+      "name": "rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy",
+      "level": "INFO",
+      "facing": "EXTERNAL",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "count": 33,
+      "findings": [
+        {
+          "detail": "Table \\`audit.magazine_release_batches\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "magazine_release_batches",
+            "type": "table",
+            "schema": "audit"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`audit.provider_data_rights_approvals\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "provider_data_rights_approvals",
+            "type": "table",
+            "schema": "audit"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`catalog.publication_card_links\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "publication_card_links",
+            "type": "table",
+            "schema": "catalog"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`catalog.publication_groups\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "publication_groups",
+            "type": "table",
+            "schema": "catalog"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`private.premium_seller_runtime_control\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "premium_seller_runtime_control",
+            "type": "table",
+            "schema": "private"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.achievement_coin_rewards\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "achievement_coin_rewards",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.card_clip_embeddings\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "card_clip_embeddings",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.card_fingerprints\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "card_fingerprints",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.cards\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "cards",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.catalogue_price_cycles\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "catalogue_price_cycles",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.catalogue_price_identity_leases\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "catalogue_price_identity_leases",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.catalogue_price_items\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "catalogue_price_items",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.catalogue_price_priority_markers\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "catalogue_price_priority_markers",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.catalogue_price_provider_budget\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "catalogue_price_provider_budget",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.catalogue_price_repair_signals\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "catalogue_price_repair_signals",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.catalogue_price_state\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "catalogue_price_state",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.catalogue_review_queue\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "catalogue_review_queue",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.catalogue_sync_errors\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "catalogue_sync_errors",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.collection_valuation_generations\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "collection_valuation_generations",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.collection_valuation_history\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "collection_valuation_history",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.cron_logs\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "cron_logs",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.marketplace_inventory_reservations\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "marketplace_inventory_reservations",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.marketplace_listing_publication_requests\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "marketplace_listing_publication_requests",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.marketplace_listing_review_events\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "marketplace_listing_review_events",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.marketplace_listing_transaction_events\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "marketplace_listing_transaction_events",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.poketrace_api_cache\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "poketrace_api_cache",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.price_refresh_queue\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "price_refresh_queue",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.price_refresh_runs\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "price_refresh_runs",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.provider_card_records\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "provider_card_records",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.provider_records\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "provider_records",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.scan_recognition_cache\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "scan_recognition_cache",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.scan_training_data\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "scan_training_data",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Table \\`public.trades\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "trades",
+            "type": "table",
+            "schema": "public"
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        }
+      ]
+    },
+    {
+      "name": "authenticated_security_definer_function_executable",
+      "title": "Signed-In Users Can Execute SECURITY DEFINER Function",
+      "level": "WARN",
+      "facing": "EXTERNAL",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects `SECURITY DEFINER` functions that are callable by signed-in users. Revoke `EXECUTE`, switch the function to `SECURITY INVOKER`, or move it out of your exposed API schema if signed-in users should not call it.",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable",
+      "count": 11,
+      "findings": [
+        {
+          "detail": "Function `public.admin_binder_directory()` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/admin_binder_directory`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "admin_binder_directory",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Function `public.apply_binder_ownership_mutation_v1(p_request_id uuid, p_request_key text, p_operation text, p_payload jsonb, p_payload_sha256 text)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/apply_binder_ownership_mutation_v1`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "apply_binder_ownership_mutation_v1",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_request_id uuid, p_request_key text, p_operation text, p_payload jsonb, p_payload_sha256 text",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Function `public.cancel_marketplace_listing_transaction_v1(p_request_id uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/cancel_marketplace_listing_transaction_v1`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "cancel_marketplace_listing_transaction_v1",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_request_id uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Function `public.commit_seller_inventory_batch(p_request_id text, p_expected_inventory jsonb, p_inventory jsonb, p_movements jsonb, p_sale jsonb, p_binder_deltas jsonb)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/commit_seller_inventory_batch`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "commit_seller_inventory_batch",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_request_id text, p_expected_inventory jsonb, p_inventory jsonb, p_movements jsonb, p_sale jsonb, p_binder_deltas jsonb",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Function `public.export_marketplace_listing_transaction_v1(p_request_id uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/export_marketplace_listing_transaction_v1`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "export_marketplace_listing_transaction_v1",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_request_id uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Function `public.get_active_scanner_threshold_set()` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/get_active_scanner_threshold_set`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "get_active_scanner_threshold_set",
+            "schema": "public",
+            "language": "sql",
+            "arguments": "",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Function `public.marketplace_review_listing(p_listing_id uuid, p_decision text, p_internal_notes text, p_seller_message text)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/marketplace_review_listing`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "marketplace_review_listing",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_listing_id uuid, p_decision text, p_internal_notes text, p_seller_message text",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Function `public.marketplace_review_queue(p_limit integer)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/marketplace_review_queue`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "marketplace_review_queue",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_limit integer",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Function `public.publish_marketplace_listing_transaction_v1(p_request_id uuid, p_request_key text, p_manifest_hash text, p_listing_payload jsonb, p_approval_snapshot jsonb, p_inventory_snapshot jsonb, p_pricing_snapshot jsonb)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/publish_marketplace_listing_transaction_v1`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "publish_marketplace_listing_transaction_v1",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_request_id uuid, p_request_key text, p_manifest_hash text, p_listing_payload jsonb, p_approval_snapshot jsonb, p_inventory_snapshot jsonb, p_pricing_snapshot jsonb",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Function `public.purchase_cosmetic(p_cosmetic_id text)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/purchase_cosmetic`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "purchase_cosmetic",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_cosmetic_id text",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        },
+        {
+          "detail": "Function `public.reconcile_marketplace_listing_transaction_v1(p_request_id uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/reconcile_marketplace_listing_transaction_v1`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "reconcile_marketplace_listing_transaction_v1",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_request_id uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-26T16:43:00.847Z"
+        }
+      ]
+    },
+    {
+      "name": "auth_leaked_password_protection",
+      "title": "Leaked Password Protection Disabled",
+      "level": "WARN",
+      "facing": "EXTERNAL",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Leaked password protection is currently disabled.",
+      "remediation": "https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection",
+      "count": 1,
+      "findings": [
+        {
+          "detail": "Supabase Auth prevents the use of compromised passwords by checking against HaveIBeenPwned.org. Enable this feature to enhance security.",
+          "metadata": {
+            "type": "auth",
+            "entity": "Auth"
+          }
+        }
+      ]
+    }
+  ]
+}

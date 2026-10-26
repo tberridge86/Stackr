@@ -1,0 +1,3 @@
+npm notice run Stackr-native@1.0.6 test:live-card-guidance
+npm notice run tsx scripts/test-live-card-guidance.ts
+live card guidance tests passed

@@ -1,0 +1,9 @@
+{
+  "source": "6bff5300db49a7b55dc14f44346183ca0ac2e6a0",
+  "workflow": 40360629670,
+  "job": 121704767741,
+  "artifact": 12666484357,
+  "zipSha256": "d11018bdd9abf5375ed8a04efd87640c58d981be3c0c061566d760c927f35266",
+  "scope": "npm audit --omit=dev existing dependency trees",
+  "productionChanges": false
+}

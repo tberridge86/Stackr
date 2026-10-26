@@ -1,0 +1,14 @@
+{
+  "ok": true,
+  "appVariant": "production",
+  "environment": "production",
+  "supabaseProjectRef": "oakdbbzdqwurpjnoqhmu",
+  "priceApiHost": "pocketvault-production.up.railway.app",
+  "stackrApiHost": "api.stackrtcg.com",
+  "scheme": "stackr",
+  "runtimeVersion": {
+    "policy": "appVersion"
+  },
+  "iosBundleIdentifier": "com.tommo86.Stackr",
+  "androidPackage": "com.tommo86.Stackr"
+}

@@ -1,10 +1,11 @@
 {
-  "checkedAt": "2026-10-26T16:27:47.523Z",
+  "checkedAt": "2026-10-26T17:09:32.157Z",
   "configPath": "D:/workspace/stackr-qa.local.json",
   "emailConfigured": false,
   "passwordConfigured": false,
   "credentialsExposed": false,
   "authenticatedHomeMeasurement": "blocked",
   "installedPhoneAcceptance": "unverified_no_device_interface",
-  "lastAttestedDistributedBuild": "1.0.6 (61); does not contain candidate fixes"
+  "lastAttestedDistributedBuild": "1.0.6 (61); does not contain candidate fixes",
+  "requiredAction": "Configure designated QA credentials locally through the approved file or interactive sign-in; never paste credentials into chat or commit them. Then run matched authenticated baseline/candidate measurements. A new exact candidate TestFlight build requires scope-specific rollout approval and installed-phone acceptance."
 }

@@ -1,0 +1,4 @@
+npm notice run Stackr-native@1.0.6 test:four-language-catalogue-backfill
+npm notice run node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-four-language-catalogue-backfill.ts && node scripts/test-catalogue-mirror-attempts.mjs
+Four-language catalogue metadata and image-reference planning tests passed.
+catalogue mirror attempt aggregation tests passed

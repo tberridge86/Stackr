@@ -1,71 +1,84 @@
-# Infrastructure priorities handoff - 26 October 2026
+# Infrastructure priorities handoff — 26 October 2026
 
-This continues PR #446 on codex/home-cold-payload-20261026. The original dirty checkout and active R2 work are preserved. This file is release evidence, not authorization to deploy.
+Release source: d76f5099f1cb1811df01b3eace6532d8eaf83a59, tree 97ef784111ff97e16189359821dac55a68706096, PR #446 on codex/home-cold-payload-20261026. The PR test merge 6205020583deb6e19a8b1d76e9b0e1bfb2af80a3 has the identical tree. This documentation-only evidence branch is not an app build source or deployment authorization. Existing dirty checkout changes and active R2 work were preserved.
 
-## Completed checkpoint
+Final hosted CI: IN PROGRESS. See infrastructure-priorities-ci-20261026.json for completed readback when available. Independent substantive implementation, account-boundary, SQL and fixture reviews passed. The candidate is unmerged and undeployed; authenticated and installed-phone acceptance are blocked.
 
-The binder account-cache and restore-security checkpoint is published at dc1d9dbac708c3a6b039c9a8fd15193eff9bef7f (tree 86f6093591e578fdadf88fed754e98c0775bc4bd). All four applicable hosted workflows passed; the separate release-candidate gate was skipped. The earlier c9d245b checkpoint's missing retrieval-parallel fixture dependency was fixed without weakening assertions.
+## Completed work
 
-The binder regression reproduces account B seeing A's private edit metadata without a database read before the fix. Scoped leases and account/session invalidation now require B's own read, reject delayed A responses and guard edits. No customer exploitation or installed-phone reproduction is claimed.
+| Priority | Implementation and evidence | Remaining gate |
+| --- | --- | --- |
+| Binder account boundary | Reproduced B receiving A's private edit metadata with zero database reads before the fix. Account/session/revision leases now require B's own read, reject late A responses, clear edit state and ownership-check writes. Warm/offline, A/B/A, logout, edits, paging and retry regressions pass. | Exact installed-build acceptance and rollout. No customer exploitation or installed-phone reproduction is claimed. |
+| Authenticated and phone acceptance | Prepared measurement tooling, source/deployment receipts, production iOS export and explicit device matrix. | Designated QA configuration is empty. No exact-candidate native build or installed-phone result. |
+| Search completeness and cost | Canonical identity pagination precedes bounded hydration. A fixture previously stopped at 50 of 137 matches; all 137 are now reachable over three pages. Larger fixtures cover 1,202 exact variants, five languages and server caps 17/50/100/500. | One new, reviewed SQL function plus compatible backend/gateway/app rollout; authenticated measurements. |
+| Restore/security | Verifier compares RLS, policies, function definitions/settings, role settings, enabled triggers, table/column/default grants including empty ACLs, private/Auth/Storage metadata and DB-side Auth identity digests. 44 verifier cases and 17 pinned-function authorization checks pass. | Full isolated restore, restored object bytes, login/MFA, private-media acceptance and approved live security configuration changes. |
+| Monitoring/scheduler/capacity | Examined existing scheduled runs, incident handling, public API samples and database connection limits. | Live scheduler ownership, reliable monitor cadence/human alert delivery and representative load tests remain unproved. |
 
-Restore verification now compares RLS, policies, grants including empty default ACLs, function settings, role settings, enabled triggers, private/Auth/Storage security metadata and Auth identity digests. Forty-four negative/equality fixture checks and seventeen pinned-function authorization checks passed independent review. This does not establish an actual restore, safe source policy, restored object bytes or working sign-in/MFA.
+Search keeps exact printing/variant identity; pagination cursors bind query, language/set/limit, translation mapping and revisions. Independent mobile sections do not gate canonical card publication; optional enrichment remains deadline-bounded and cannot erase appended pages. Refresh bypasses an obsolete public cached cursor; account-owned data stays outside public result caches. Cancellation, query/account generations and late-response guards preserve useful rows through retry. Filters, sorting and counts disclose loaded scope while continuation remains. Legacy backend capability is explicitly first-page-only rather than silently complete.
 
-## Search candidate
+Existing Home improvements remain: reduced fields, warm facts reuse and independent prepared valuation publication with honest partial coverage. This work does not establish faster real Home loading; the earlier large fixture still retrieved roughly 1.08 MB across 11 collection reads.
 
-The new candidate removes the one-page dead end through stable, revision-bound canonical identity pagination before hydration. Global Search keeps exact variant/printing identity, loads further pages on request, preserves completed rows during optional-source failure and rejects obsolete query/account work. Optional sources cannot hold the first usable cards or continuation behind their own deadline.
+## Matched database measurements
 
-Explicit refresh escapes a cached obsolete first-page cursor; normal warm public-cache hits remain. Search alone permits its Cache-Control refresh header on allowed-origin preflight. Private requests retain existing cache bypasses.
+The exact-source runtime at 8f8d521 was measured in isolated PostgreSQL 17.6 CI. The final d76f509 changes only a static test assertion; SQL and app runtime are identical. Four alternating samples per variant compare the same installed function body with caller JIT on and only the function-local JIT override changed. Each cohort includes 5,000 unrelated printings.
 
-Local completeness evidence includes 137 matches over three pages and a larger five-language fixture under server caps17/50/100/500. Independent mobile, gateway and backend/SQL review passed; exact-head hosted qualification remains pending. The complete fixture contains 1,202 exact variants across five languages. These are fixtures, not a measured improvement in Home or phone latency. The exact-name predicate uses existing indexes, while publication membership and matching-identity work can still exceed the page size; full-card hydration is bounded to the page. No claim is made that every membership scan is eliminated.
+| Cohort | Matching variants | JIT-on first page median | Function-local JIT-off median |
+| --- | ---: | ---: | ---: |
+| Empty | 0 | 210.539 ms | 17.147 ms |
+| Small | 48 | 216.040 ms | 20.481 ms |
+| Large | 1,202 | 230.991 ms | 33.670 ms |
+| Multilingual | 500 | 224.120 ms | 26.828 ms |
 
-Filters and sorting operate on loaded rows and say so while continuation remains. Missing legacy pagination capability is labelled first-page-only; null cursor alone is not treated as completeness. Cached canonical rows are a preview; account ownership is fetched separately and never written to that public result cache.
+Large continuation measured 231.555 → 34.299 ms. Exact entries/hasMore, stable per-definition revisions, old-revision rejection, caller-setting restoration, service-only grants and rollback passed independent review. Full raw plans, samples and digests are preserved under evidence/search-pagination-20261026/postgres17-exact-head*.json. The prior 6b and original JIT baseline remain separate.
 
-## Database evidence and approval boundary
+These are synthetic SQL function timings, not production API, cold-network or phone latency. The old incomplete search query is not an equivalent latency baseline. Hydration is bounded to the page, but matching and publication-membership work can still exceed page size. No new index is proposed.
 
-The existing prepared-valuation proposal is unchanged and unapplied. The isolated PostgreSQL17.6 CI fixture reduced the large cohort median from73.724464 to48.741687ms, with six to three ordered aggregate evaluations and exact payload/revision preservation. That is synthetic database evidence, not a production RPC or screen speed claim. Raw plans and source/run/artifact provenance are saved under evidence/infrastructure-boundaries-20261026/.
+The earlier prepared-valuation proposal remains separate and unapplied. Its isolated PG17 large median was 73.724 → 48.742 ms with six → three ordered aggregate evaluations and unchanged payload/revision. It is excluded from the proposed Search rollout.
 
-Search requires the separately prepared api.catalogue_search_identity_page_v1(jsonb,jsonb,integer,text,jsonb). The function was absent in the read-only hosted precheck; relevant existing service-role schema/table permissions were present. Installation must recheck both conditions and the reviewed checksum immediately before execution. This proposal is not registered among automatic pending migrations and has not been applied. No new index is proposed. The reviewed LF SHA-256 is d8f15108792dd828f4beb979245e66add90aba7b0bc1aaed7d0ce331eefd70b8; rollback SHA-256 is baaf257bdd376a29eb1cabb1fc9129c8c6ec3819fb9af9977f45650406cad7f4.
+## Exact SQL and rollout scope
 
-Keep Profile migration20261025154000 mapped to existing ledger20261026072532. Do not replay it, apply daily-movers or use a blanket migration push.
+Proposed signature: api.catalogue_search_identity_page_v1(jsonb,jsonb,integer,text,jsonb).
 
-The first native PostgreSQL17 search run identified 83-94ms of JIT compilation per first-page selector call. The narrow follow-up disables JIT only inside the new function. Local correctness, caller-setting restoration and revision rejection pass; independent review passed and native A/B performance qualification is pending. The original raw native artifact is retained as postgres17-jit-baseline.json.
+- Proposal: evidence/search-pagination-20261026/search-identity-page-proposal.sql.
+- Canonical LF SHA-256: d8f15108792dd828f4beb979245e66add90aba7b0bc1aaed7d0ce331eefd70b8.
+- Rollback SHA-256: baaf257bdd376a29eb1cabb1fc9129c8c6ec3819fb9af9977f45650406cad7f4.
+- Target: Supabase oakdbbzdqwurpjnoqhmu. The signature was absent at the hosted precheck; immediately recheck definition, grants and dependencies before any approved application. Ledger absence alone is insufficient.
+- The proposal is outside automatic pending migrations. Execute only the reviewed file in its own transaction after new approval; never a broad migration push.
+- Do not replay Profile canonical version20261025154000, already recorded as ledger20261026072532. Daily-movers, prepared valuation and unrelated migrations remain excluded.
 
-## Acceptance and live state
+Exact Railway service/environment, gateway worker and production EAS lane are recorded in evidence/infrastructure-boundaries-20261026/scoped-rollout-preparation.json. Capture current backend/gateway deployments and rollback receipts first. After scoped approval and QA baseline, apply only the function, deploy the compatible backend then gateway, verify old/new clients and legacy/R2 images, then distribute the exact new app.
 
-- Integration main last attested: b5d643a997041db2a8c42b5b6cb0180e8ddf28e7.
-- Last distributed app:1.0.6(61), Team(Expo), source b5d643a; EAS c0acb3f0-8366-48cf-b55c-99b30a2b7469. It does not contain these fixes.
-- Backend last attested:7c1acd409680b38d5913d8cae76df560b5d91daa, deployment dfc23b30-9675-4ba0-ad2b-9f1875302747, production Supabase oakdbbzdqwurpjnoqhmu.
-- Configured gateway is https://api.stackrtcg.com; active worker revision remains unattested.
-- Designated QA configuration remains empty. Actual authenticated Home page cap, priced-printing coverage and cold/warm timings are unverified.
-- No physical-device acceptance is available. The production iOS export and 74-asset content check passed at app-equivalent source7b04b1f. The following live-delivery gate was blocked by local DNS before its first live response. An export/CI pass or TestFlight availability is not installation.
-- No new merge, deployment, native build, migration, scheduler activation, price job or R2 operation has occurred in this unit.
+Rollback restores prior attested backend/gateway/app versions first. Drop only the new function signature with the reviewed no-CASCADE rollback if its captured prestate was absent; otherwise restore the captured definition and ACL. Preserve private-media boundaries, immutable originals and R2 receipts. No jobs, schedules or paid services are part of this rollout.
 
-## Operational qualification
+## Acceptance and deployment status
 
-The bounded scheduled-run sample contains14 Production API Monitor runs. Observed adjacent creation times were125.6–348.48minutes apart despite a ten-minute declared schedule. The04:54 incident included504s across public catalogue/search/asset endpoints; issue445 opened and later closed at10:42 after recovery. Sparse samples do not establish outage duration or human alert delivery.
+- Main last rechecked: b5d643a997041db2a8c42b5b6cb0180e8ddf28e7.
+- Last attested distributed app: 1.0.6 (61), Team (Expo), source b5d643a; EAS c0acb3f0-8366-48cf-b55c-99b30a2b7469. It does not contain these fixes.
+- Last attested backend: source7c1acd409680b38d5913d8cae76df560b5d91daa, deployment dfc23b30-9675-4ba0-ad2b-9f1875302747.
+- Gateway: https://api.stackrtcg.com; active worker deployment/version still unattested.
+- Database provider version17.6.1.104 was ACTIVE_HEALTHY. No new SQL was applied.
+- Production iOS export at app-equivalent source7b04b1f passed the 74-asset content check. The subsequent public-delivery gate failed local DNS before its first live response. An export is not a native build or installed-phone acceptance.
+- D:/workspace/stackr-qa.local.json still has no designated email/password. Configure access locally through this approved path or interactive sign-in; never commit or paste credentials. Privileged database access is not client authentication.
+- Authenticated Home cap, bytes, cold/warm times, actual price coverage and installed-phone behavior remain unverified. All cases in infrastructure-priorities-device-acceptance-20261026.md are explicitly NOT RUN.
 
-Twelve current public spot-check requests succeeded. Workspace Node search repeats hit edge cache at about106–108ms; other public repeated reads were slower. Sample count is three per endpoint, with no server-cache purge. These are public first-observed/repeat samples, not authenticated Home or phone measurements.
+## Operational and security findings
 
-The recent scheduled price-refresh sample contains69 cancelled runs and one pending run with no jobs. Separate bulk ledgers show completed work, so these cancellations do not establish that pricing is inactive. Live Railway scheduler ownership and configuration remain unattested. The database connection snapshot is not a capacity test.
+In the bounded scheduled-run sample, 14 Production API Monitor runs had adjacent creation gaps of 125.6–348.48 minutes despite a declared ten-minute schedule. Incident445 opened after 504s across catalogue/search/assets and later closed after recovery. This proves issue automation, not outage duration or human alert delivery.
 
-Leaked-password protection was reported disabled; enabling it needs current Auth configuration/plan-entitlement verification and a scoped approved configuration change. The database security-patch upgrade requires provider preflight and approval. No paid plan or live setting was changed. The current dependency CI gate caps critical advisories only; its production dependency reports contain 19 high advisories in the app tree and 3 in the backend, with none in gateway. These totals do not establish exploitability. Reports are now retained for package-specific triage; no dependency or lockfile was changed.
+Twelve public spot-check requests succeeded. Three samples per endpoint were collected without cache purge; Search repeats hit edge cache around106–108 ms. These are public desktop samples, not authenticated Home or phone measurements.
 
-## Controlled rollout preparation
+A recent price-workflow sample contained69 cancelled runs and one pending run with no jobs. Separate bulk ledgers showed completed work, so this does not establish that pricing is inactive. One actual Railway scheduler owner remains unattested. The database snapshot (32 sessions against max60, including background/idle sessions) is not a capacity test. Full local Supabase reset/tests are still gated because the pre-repository production schema has not been fully baselined into migrations; passing isolated migration jobs does not establish a reproducible empty-database bootstrap.
 
-1. Reconcile the exact reviewed source with main and active R2 changes; require current-head CI and separate release review.
-2. Establish designated QA access and record matching baseline/candidate conditions. Do not use privileged database access as client authentication.
-3. After explicit approval, apply only the reviewed search-function signature via a single-file path, verify service-only grants and representative results, then deploy compatible backend and gateway before distributing the new app. No other proposal is included implicitly.
-4. Verify old and new clients, cursor continuation/revision recovery, correct configured backend and legacy/R2 assets before native distribution through the existing production release lane.
-5. Distribute the exact new app source, record EAS/build/fingerprint/TestFlight receipts, and run installed-phone acceptance.
+The latest security advisor confirms leaked-password protection disabled. Its concrete configuration proposal requires current Auth configuration and plan-entitlement verification plus scoped approval; no setting or paid plan was changed. Eleven authenticated-callable SECURITY DEFINER advisories and33 informational RLS-without-policy entries need per-function/table interpretation; blanket revocation or permissive policies would be unsafe. The latest advisor did not repeat the earlier database patch warning, so a pending upgrade is not established.
 
-Rollback: restore the previously attested backend/gateway/app release first, then drop only the newly installed search-function signature with the reviewed rollback file if its captured prestate was absent. Do not CASCADE or remove Profile migration. Preserve all immutable assets and R2 rollback receipts.
+Production dependency audit reports contain19 high package rows in the app tree and3 in the backend, with none in gateway. The current CI threshold limits critical findings only. Reports and package-specific triage are preserved. Backend parser/compression patches take priority; redirect reachability is narrower than the advisory label suggests. Advisory boundaries are not compatibility-verified upgrade targets, and neither exploitation nor deployed dependency versions were established.
 
-Shortest remaining phone matrix on the new exact build: private binder A -> logout -> B; Home cold/warm/refresh/offline retry; collection/binder edit propagation; search beyond50 with multilingual finishes plus cancellation and refresh; Pokedex ownership/images; honest unavailable/stale prices. Record each result and build, not a blanket pass.
+## Next steps
 
-## Prioritised remaining work
+1. Complete final CI, establish designated QA baseline, obtain scope-specific rollout approval, then verify the exact installed app. Existing PR439/Build61 approval does not authorize this release.
+2. Measure Home's actual critical path and prepared valuation under matching authenticated conditions.
+3. Rehearse a full isolated database/object restore, sign-in and account/private-media boundaries; qualify the concrete Auth setting and backend dependency patches.
+4. Confirm one live scheduler owner, durable claims, retry exhaustion and failed-job handling; repair monitor cadence and prove alert delivery.
+5. Run bounded capacity/SLO tests against representative traffic. Add no service without measured need.
 
-1. Complete exact-source hosted qualification and authenticated/phone acceptance, then approved rollout.
-2. Measure Home's real critical path and prepared valuation under designated accounts; only then qualify applying its separately reviewed SQL proposal.
-3. Rehearse a full isolated database/asset restore with login, RLS and private-media verification; prepare the specific password/patch configuration changes.
-4. Confirm one live scheduler owner, retry exhaustion/dead-letter handling and monitor cadence/alert delivery.
-5. Define and run bounded capacity/SLO tests using measured traffic and database limits; add no services without evidence.
+Evidence is Git-backed so a handoff can resume from source, receipts and explicit gates rather than reconstructing claims from chat.

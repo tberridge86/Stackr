@@ -1,0 +1,9 @@
+# Security configuration follow-up - 26 October 2026
+
+The provider security advisor at16:43UTC reports leaked-password protection disabled,11 authenticated-callable SECURITY DEFINER functions, and33 informational RLS-without-policy entries. These are findings to interpret against intended access, not instructions to add policies or revoke all authenticated grants. Five pinned functions already have17 passing local authorization/anti-escalation checks; this is not a hosted sign-in test or proof for every function.
+
+The concrete configuration proposal is to enable leaked-password protection after reading the current Auth configuration and confirming that the existing plan supports it. The intended managed setting is password_hibp_enabled=true; verify the current management contract and capture the previous value before any approved change. No plan upgrade or paid service is authorised. Validate rejection of a known-compromised new password and successful permitted password/sign-in using designated accounts, then retain a rollback to the captured prior setting. This preparation changes no Auth setting.
+
+Provider version17.6.1.104 is ACTIVE_HEALTHY. The latest security-advisor response contains no database patch warning, so the earlier upgrade note is not treated as a confirmed current requirement. Recheck provider upgrade availability before proposing a version change.
+
+References: [password protection](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection), [authenticated SECURITY DEFINER review](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable), [RLS with no policy](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy).

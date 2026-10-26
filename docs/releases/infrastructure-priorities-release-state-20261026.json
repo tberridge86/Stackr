@@ -1,0 +1,24 @@
+{
+  "source": "d76f5099f1cb1811df01b3eace6532d8eaf83a59",
+  "tree": "97ef784111ff97e16189359821dac55a68706096",
+  "implemented": true,
+  "independentlyReviewed": true,
+  "localTests": "passed except documented local dependency/loopback limits",
+  "hostedCi": "in_progress",
+  "merged": false,
+  "deployed": false,
+  "sqlApplied": false,
+  "newNativeBuild": false,
+  "distributed": false,
+  "authenticatedApiVerified": false,
+  "installedPhoneVerified": false,
+  "publicApiSpotChecks": "12/12 read-only samples passed on existing live release; not candidate acceptance",
+  "releaseGate": "held",
+  "blockingInputs": [
+    "Designated QA sign-in file remains empty",
+    "No exact-candidate native build or installed-phone acceptance",
+    "Current gateway deployment/version and rollback prestate unattested",
+    "Local exported public delivery gate blocked by DNS",
+    "New scoped rollout approval required"
+  ]
+}

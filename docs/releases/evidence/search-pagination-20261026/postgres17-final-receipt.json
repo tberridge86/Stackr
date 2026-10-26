@@ -1,0 +1,20 @@
+{
+  "source": "6bff5300db49a7b55dc14f44346183ca0ac2e6a0",
+  "sourceTree": "84c7a5f120b4e7a6d2aae73185627fe5b828f955",
+  "testedMerge": "706a759753d8e249aebdec58928b2b625a50026f",
+  "treeEquivalent": true,
+  "workflow": 40360629670,
+  "job": 121704767965,
+  "jobConclusion": "success",
+  "artifact": 12669920389,
+  "zipSha256": "be78b86512a287a20e44e44029850921b5e4bf12441bae221b75e3e4840320d9",
+  "proposalSha256": "d8f15108792dd828f4beb979245e66add90aba7b0bc1aaed7d0ce331eefd70b8",
+  "classification": "isolated CI PostgreSQL 17.6 synthetic fixtures; not production API/device",
+  "independentNativeEvidenceReview": "GO",
+  "overallPlatformConclusion": "failure_in_separate_legacy_cancellation_fixture",
+  "migrationsApplied": false,
+  "reviewedJsonSha256": "3ad88614e251df20785f210554d97bb2a4fee3e7af745c04be7336c7ce2664af",
+  "committedMinifiedJsonSha256": "26ccc7a12841393524d500fd656688275d4bdbe962919c45ca5cc668139032b8",
+  "finalCandidate": "8f8d521b5fc6101515e2663206707b176eddac28",
+  "runtimeEquivalence": "Only cancellation-test fixture changed from measured source6bff530; SQL, backend, gateway and app code unchanged."
+}

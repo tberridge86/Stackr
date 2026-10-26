@@ -1,0 +1,289 @@
+{
+  "source": "8f8d521b5fc6101515e2663206707b176eddac28",
+  "tree": "1a2b70ee953d1339b1183f16ce6bbccb57734b25",
+  "runId": 40364533602,
+  "jobId": 121718537569,
+  "artifactId": 12668713762,
+  "environment": "isolated CI PostgreSQL17 synthetic fixture",
+  "postgres": "PostgreSQL 17.6 (Debian 17.6-2.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+  "proposalSha256": "d8f15108792dd828f4beb979245e66add90aba7b0bc1aaed7d0ce331eefd70b8",
+  "samplesPerVariant": 4,
+  "callerSettings": {
+    "jit": "on",
+    "jit_above_cost": "100000",
+    "jit_inline_above_cost": "500000",
+    "jit_optimize_above_cost": "500000"
+  },
+  "localRollbackVerified": true,
+  "limitations": [
+    "No installed-device, HTTP, edge-cache or hosted latency measurement.",
+    "Existing columns, views and indexes are copied; the fixture omits foreign-key/check/default contracts.",
+    "Five thousand unrelated synthetic printings stress name selectivity; this is not production cardinality.",
+    "Legacy search is deliberately bounded and incomplete; its latency is not an equivalent complete-search latency.",
+    "Result JSON bytes are internal SQL responses, not mobile API payload sizes.",
+    "PGlite validates GUC/identity parity only; JIT latency conclusions require the isolated PostgreSQL17 job.",
+    "candidateBody wall timings include scoped setting setup/restoration; plan Execution Time excludes that wrapper."
+  ],
+  "cohorts": [
+    {
+      "name": "empty",
+      "matchingVariants": 0,
+      "unrelatedPrintings": 5000,
+      "legacyHydratedVariants": 0,
+      "candidateHydratedVariants": 0,
+      "exactEntriesAndHasMoreEqual": true,
+      "revisionStablePerVariant": true,
+      "definitionSwitchInvalidatesOldRevision": true,
+      "outerSettingsRestored": true,
+      "variants": {
+        "jitOn": {
+          "firstMs": [
+            224.45555799999966,
+            209.37567199999967,
+            210.47068799999943,
+            210.60739299999932
+          ],
+          "continuationMs": [],
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "bodySha256": "2a47291cd1e331c1d0d55d412befcb4a8ea27c579c6ad0ec3c0b0d2b302747a5",
+          "privileges": {
+            "anon": false,
+            "authenticated": false,
+            "service": true
+          },
+          "revision": "dc0c50d7e9c93c1ecf2d3428cf89361a",
+          "firstMedianMs": 210.53904049999937,
+          "continuationMedianMs": null,
+          "jitFirstTotalMs": 189.72,
+          "jitContinuationTotalMs": 0
+        },
+        "jitOff": {
+          "firstMs": [
+            17.18099200000006,
+            17.74372799999992,
+            16.96353200000067,
+            17.11377200000061
+          ],
+          "continuationMs": [],
+          "proconfig": [
+            "search_path=\"\"",
+            "jit=off"
+          ],
+          "bodySha256": "2a47291cd1e331c1d0d55d412befcb4a8ea27c579c6ad0ec3c0b0d2b302747a5",
+          "privileges": {
+            "anon": false,
+            "authenticated": false,
+            "service": true
+          },
+          "revision": "fce04dd88765f1f91936e4b94760fbb1",
+          "firstMedianMs": 17.147382000000334,
+          "continuationMedianMs": null,
+          "jitFirstTotalMs": 0,
+          "jitContinuationTotalMs": 0
+        }
+      }
+    },
+    {
+      "name": "small",
+      "matchingVariants": 48,
+      "unrelatedPrintings": 5000,
+      "legacyHydratedVariants": 48,
+      "candidateHydratedVariants": 48,
+      "exactEntriesAndHasMoreEqual": true,
+      "revisionStablePerVariant": true,
+      "definitionSwitchInvalidatesOldRevision": true,
+      "outerSettingsRestored": true,
+      "variants": {
+        "jitOn": {
+          "firstMs": [
+            214.90473500000007,
+            214.26249199999984,
+            217.17568799999935,
+            217.60064800000146
+          ],
+          "continuationMs": [],
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "bodySha256": "2a47291cd1e331c1d0d55d412befcb4a8ea27c579c6ad0ec3c0b0d2b302747a5",
+          "privileges": {
+            "anon": false,
+            "authenticated": false,
+            "service": true
+          },
+          "revision": "dc0c50d7e9c93c1ecf2d3428cf89361a",
+          "firstMedianMs": 216.0402114999997,
+          "continuationMedianMs": null,
+          "jitFirstTotalMs": 185.441,
+          "jitContinuationTotalMs": 0
+        },
+        "jitOff": {
+          "firstMs": [
+            20.401444999999512,
+            20.17269800000031,
+            20.559652999998434,
+            20.974428000001353
+          ],
+          "continuationMs": [],
+          "proconfig": [
+            "search_path=\"\"",
+            "jit=off"
+          ],
+          "bodySha256": "2a47291cd1e331c1d0d55d412befcb4a8ea27c579c6ad0ec3c0b0d2b302747a5",
+          "privileges": {
+            "anon": false,
+            "authenticated": false,
+            "service": true
+          },
+          "revision": "fce04dd88765f1f91936e4b94760fbb1",
+          "firstMedianMs": 20.480548999998973,
+          "continuationMedianMs": null,
+          "jitFirstTotalMs": 0,
+          "jitContinuationTotalMs": 0
+        }
+      }
+    },
+    {
+      "name": "large",
+      "matchingVariants": 1202,
+      "unrelatedPrintings": 5000,
+      "legacyHydratedVariants": 400,
+      "candidateHydratedVariants": 50,
+      "exactEntriesAndHasMoreEqual": true,
+      "revisionStablePerVariant": true,
+      "definitionSwitchInvalidatesOldRevision": true,
+      "outerSettingsRestored": true,
+      "variants": {
+        "jitOn": {
+          "firstMs": [
+            232.93530800000008,
+            230.65746800000124,
+            231.32548699999825,
+            228.5789509999995
+          ],
+          "continuationMs": [
+            231.90065299999878,
+            234.25326099999984,
+            231.20870099999956,
+            229.18686900000102
+          ],
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "bodySha256": "2a47291cd1e331c1d0d55d412befcb4a8ea27c579c6ad0ec3c0b0d2b302747a5",
+          "privileges": {
+            "anon": false,
+            "authenticated": false,
+            "service": true
+          },
+          "revision": "dc0c50d7e9c93c1ecf2d3428cf89361a",
+          "firstMedianMs": 230.99147749999975,
+          "continuationMedianMs": 231.55467699999917,
+          "jitFirstTotalMs": 185.978,
+          "jitContinuationTotalMs": 191.187
+        },
+        "jitOff": {
+          "firstMs": [
+            33.62235700000019,
+            33.36490599999888,
+            33.84932100000151,
+            33.717407000000094
+          ],
+          "continuationMs": [
+            34.32858699999997,
+            34.00096400000075,
+            34.2701879999986,
+            34.447596999998495
+          ],
+          "proconfig": [
+            "search_path=\"\"",
+            "jit=off"
+          ],
+          "bodySha256": "2a47291cd1e331c1d0d55d412befcb4a8ea27c579c6ad0ec3c0b0d2b302747a5",
+          "privileges": {
+            "anon": false,
+            "authenticated": false,
+            "service": true
+          },
+          "revision": "fce04dd88765f1f91936e4b94760fbb1",
+          "firstMedianMs": 33.66988200000014,
+          "continuationMedianMs": 34.299387499999284,
+          "jitFirstTotalMs": 0,
+          "jitContinuationTotalMs": 0
+        }
+      }
+    },
+    {
+      "name": "multilingual",
+      "matchingVariants": 500,
+      "unrelatedPrintings": 5000,
+      "legacyHydratedVariants": 400,
+      "candidateHydratedVariants": 50,
+      "exactEntriesAndHasMoreEqual": true,
+      "revisionStablePerVariant": true,
+      "definitionSwitchInvalidatesOldRevision": true,
+      "outerSettingsRestored": true,
+      "variants": {
+        "jitOn": {
+          "firstMs": [
+            227.33253499999773,
+            224.25012799999968,
+            223.98705600000176,
+            223.98962500000198
+          ],
+          "continuationMs": [
+            225.64608899999803,
+            237.65245300000242,
+            225.923909000001,
+            223.54079099999944
+          ],
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "bodySha256": "2a47291cd1e331c1d0d55d412befcb4a8ea27c579c6ad0ec3c0b0d2b302747a5",
+          "privileges": {
+            "anon": false,
+            "authenticated": false,
+            "service": true
+          },
+          "revision": "dc0c50d7e9c93c1ecf2d3428cf89361a",
+          "firstMedianMs": 224.11987650000083,
+          "continuationMedianMs": 225.78499899999952,
+          "jitFirstTotalMs": 191.445,
+          "jitContinuationTotalMs": 191.101
+        },
+        "jitOff": {
+          "firstMs": [
+            26.694322999999713,
+            27.162641999999323,
+            26.730921999998827,
+            26.924685000001773
+          ],
+          "continuationMs": [
+            27.14017700000113,
+            27.41842800000086,
+            27.07086799999888,
+            26.525536999997712
+          ],
+          "proconfig": [
+            "search_path=\"\"",
+            "jit=off"
+          ],
+          "bodySha256": "2a47291cd1e331c1d0d55d412befcb4a8ea27c579c6ad0ec3c0b0d2b302747a5",
+          "privileges": {
+            "anon": false,
+            "authenticated": false,
+            "service": true
+          },
+          "revision": "fce04dd88765f1f91936e4b94760fbb1",
+          "firstMedianMs": 26.8278035000003,
+          "continuationMedianMs": 27.105522500000006,
+          "jitFirstTotalMs": 0,
+          "jitContinuationTotalMs": 0
+        }
+      }
+    }
+  ]
+}

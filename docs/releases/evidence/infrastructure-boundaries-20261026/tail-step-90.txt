@@ -1,0 +1,1 @@
+Binder add-card selections retain metadata while the existing image persistence policy remains enforced.

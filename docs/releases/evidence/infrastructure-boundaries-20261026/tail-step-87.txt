@@ -1,0 +1,4 @@
+npm notice run Stackr-native@1.0.6 test:pokemon-language-flags
+npm notice run node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-pokemon-language-flags.ts && node --import tsx scripts/test-issue304-discover-set-languages.ts
+Shared language flags and English binder labels passed
+Issue #304 Discover Sets language filters passed.

@@ -1,0 +1,224 @@
+{
+  "sourceHead": "d76f5099f1cb1811df01b3eace6532d8eaf83a59",
+  "baselineHead": "8f8d521b5fc6101515e2663206707b176eddac28",
+  "ownedFile": "scripts/test-tcgdex-controlled-card-reference.ts",
+  "ownedGitBlob": "831dfccb3a565a12d168599dcdd56e2d729cc21d",
+  "sourceChange": "Assertion now requires caller options.signal as well as controlled overlay and bounded read; runtime unchanged",
+  "focusedTest": {
+    "initialRedLog": "D:/workspace/Stackr-search-validation-20261026/tcgdex-static-initial.txt",
+    "exitCode": 0,
+    "log": "D:/workspace/Stackr-search-validation-20261026/tcgdex-static-final.txt"
+  },
+  "scopedLint": {
+    "log": "D:/workspace/Stackr-search-validation-20261026/tcgdex-static-lint.txt",
+    "exitCode": 0
+  },
+  "diffCheckExit": 0,
+  "tailSummary": {
+    "blocker": "Local missing backend sharp dependency; adapter stops before assertions",
+    "passedSteps": 23,
+    "secondStep102Subtest": {
+      "log": "D:/workspace/Stackr-search-validation-20261026/tail-step-102-ingest.txt",
+      "exitCode": 0
+    },
+    "blockedSteps": [
+      102
+    ]
+  },
+  "tailResults": [
+    {
+      "step": 84,
+      "command": "npm run test:tcgdex-reference-persistence",
+      "exitCode": 0,
+      "startedAt": "2026-10-26T17:14:02.2179807Z",
+      "elapsedMs": 1101.6,
+      "logPath": "D:/workspace/Stackr-search-validation-20261026/tail-step-84.txt"
+    },
+    {
+      "step": 85,
+      "command": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-edition-aware-image-selection.ts",
+      "exitCode": 0,
+      "startedAt": "2026-10-26T17:14:03.372621Z",
+      "elapsedMs": 348.4,
+      "logPath": "D:/workspace/Stackr-search-validation-20261026/tail-step-85.txt"
+    },
+    {
+      "step": 86,
+      "command": "npm run test:binder-foreign-set-picker",
+      "exitCode": 0,
+      "startedAt": "2026-10-26T17:14:03.7265214Z",
+      "elapsedMs": 1052.9,
+      "logPath": "D:/workspace/Stackr-search-validation-20261026/tail-step-86.txt"
+    },
+    {
+      "step": 87,
+      "command": "npm run test:pokemon-language-flags",
+      "exitCode": 0,
+      "startedAt": "2026-10-26T17:14:04.7828113Z",
+      "elapsedMs": 1985.9,
+      "logPath": "D:/workspace/Stackr-search-validation-20261026/tail-step-87.txt"
+    },
+    {
+      "step": 88,
+      "command": "npm run test:magazine-set-covers",
+      "exitCode": 0,
+      "startedAt": "2026-10-26T17:14:06.7728053Z",
+      "elapsedMs": 2692.0,
+      "logPath": "D:/workspace/Stackr-search-validation-20261026/tail-step-88.txt"
+    },
+    {
+      "step": 89,
+      "command": "npm run test:corocoro-binder",
+      "exitCode": 0,
+      "startedAt": "2026-10-26T17:14:09.4673937Z",
+      "elapsedMs": 5319.8,
+      "logPath": "D:/workspace/Stackr-search-validation-20261026/tail-step-89.txt"
+    },
+    {
+      "step": 90,
+      "command": "node --import ./scripts/enable-node-tooling-runtime.mjs --import tsx scripts/test-binder-add-cards-metadata-persistence.ts",
+      "exitCode": 0,
+      "startedAt": "2026-10-26T17:14:14.7897728Z",
+      "elapsedMs": 295.9,
+      "logPath": "D:/workspace/Stackr-search-validation-20261026/tail-step-90.txt"
+    },
+    {
+      "step": 91,
+      "command": "npm run test:card-vision-native-config",
+      "exitCode": 0,
+      "startedAt": "2026-10-26T17:14:15.0880444Z",
+      "elapsedMs": 1024.7,
+      "logPath": "D:/workspace/Stackr-search-validation-20261026/tail-step-91.txt"
+    },
+    {
+      "step": 92,
+      "command": "npm run test:card-localisation",
+      "exitCode": 0,
+      "startedAt": "2026-10-26T17:14:02.2180254Z",
+      "elapsedMs": 2015.4,
+      "logPath": "D:/workspace/Stackr-search-validation-20261026/tail-step-92.txt"
+    },
+    {
+      "step": 93,
+      "command": "npm run test:capture-geometry",
+      "exitCode": 0,
+      "startedAt": "2026-10-26T17:14:04.2809738Z",
+      "elapsedMs": 1066.5,
+      "logPath": "D:/workspace/Stackr-search-validation-20261026/tail-step-93.txt"
+    },
+    {
+      "step": 94,
+      "command": "npm run test:card-centering",
+      "exitCode": 0,
+      "startedAt": "2026-10-26T17:14:05.3520187Z",
+      "elapsedMs": 1548.0,
+      "logPath": "D:/workspace/Stackr-search-validation-20261026/tail-step-94.txt"
+    },
+    {
+      "step": 95,
+      "command": "npm run test:card-frame-analyser",
+      "exitCode": 0,
+      "startedAt": "2026-10-26T17:14:06.9032065Z",
+      "elapsedMs": 1225.2,
+      "logPath": "D:/workspace/Stackr-search-validation-20261026/tail-step-95.txt"
+    },
+    {
+      "step": 96,
+      "command": "npm run test:live-card-guidance",
+      "exitCode": 0,
+      "startedAt": "2026-10-26T17:14:08.1341103Z",
+      "elapsedMs": 1077.2,
+      "logPath": "D:/workspace/Stackr-search-validation-20261026/tail-step-96.txt"
+    },
+    {
+      "step": 97,
+      "command": "npm run test:card-rectification",
+      "exitCode": 0,
+      "startedAt": "2026-10-26T17:14:09.2143351Z",
+      "elapsedMs": 1137.9,
+      "logPath": "D:/workspace/Stackr-search-validation-20261026/tail-step-97.txt"
+    },
+    {
+      "step": 98,
+      "command": "npm run test:ocr-evidence",
+      "exitCode": 0,
+      "startedAt": "2026-10-26T17:14:10.3554504Z",
+      "elapsedMs": 1073.8,
+      "logPath": "D:/workspace/Stackr-search-validation-20261026/tail-step-98.txt"
+    },
+    {
+      "step": 99,
+      "command": "npm run test:variant-resolver",
+      "exitCode": 0,
+      "startedAt": "2026-10-26T17:14:11.4316528Z",
+      "elapsedMs": 1046.2,
+      "logPath": "D:/workspace/Stackr-search-validation-20261026/tail-step-99.txt"
+    },
+    {
+      "step": 100,
+      "command": "npm run test:catalogue-schema",
+      "exitCode": 0,
+      "startedAt": "2026-10-26T17:14:02.216779Z",
+      "elapsedMs": 1264.9,
+      "logPath": "D:/workspace/Stackr-search-validation-20261026/tail-step-100.txt"
+    },
+    {
+      "step": 101,
+      "command": "npm run test:catalogue-ingestion",
+      "exitCode": 0,
+      "startedAt": "2026-10-26T17:14:03.5354508Z",
+      "elapsedMs": 2545.8,
+      "logPath": "D:/workspace/Stackr-search-validation-20261026/tail-step-101.txt"
+    },
+    {
+      "step": 102,
+      "command": "npm run test:pokedata-japanese-images",
+      "exitCode": 1,
+      "startedAt": "2026-10-26T17:14:06.0867391Z",
+      "elapsedMs": 1466.0,
+      "logPath": "D:/workspace/Stackr-search-validation-20261026/tail-step-102.txt"
+    },
+    {
+      "step": 103,
+      "command": "npm run test:master-catalogue-importer",
+      "exitCode": 0,
+      "startedAt": "2026-10-26T17:14:07.5553578Z",
+      "elapsedMs": 1494.6,
+      "logPath": "D:/workspace/Stackr-search-validation-20261026/tail-step-103.txt"
+    },
+    {
+      "step": 104,
+      "command": "npm run test:catalogue-gap-report",
+      "exitCode": 0,
+      "startedAt": "2026-10-26T17:14:09.0528329Z",
+      "elapsedMs": 873.0,
+      "logPath": "D:/workspace/Stackr-search-validation-20261026/tail-step-104.txt"
+    },
+    {
+      "step": 105,
+      "command": "npm run test:four-language-catalogue-backfill",
+      "exitCode": 0,
+      "startedAt": "2026-10-26T17:14:09.9283877Z",
+      "elapsedMs": 1452.7,
+      "logPath": "D:/workspace/Stackr-search-validation-20261026/tail-step-105.txt"
+    },
+    {
+      "step": 106,
+      "command": "npm run test:four-language-progress",
+      "exitCode": 0,
+      "startedAt": "2026-10-26T17:14:11.3844661Z",
+      "elapsedMs": 1595.9,
+      "logPath": "D:/workspace/Stackr-search-validation-20261026/tail-step-106.txt"
+    },
+    {
+      "step": 107,
+      "command": "npx tsx scripts/test-stackr-quality-evaluation.ts",
+      "exitCode": 0,
+      "startedAt": "2026-10-26T17:14:12.9825756Z",
+      "elapsedMs": 2479.9,
+      "logPath": "D:/workspace/Stackr-search-validation-20261026/tail-step-107.txt"
+    }
+  ],
+  "additionalSourceEdits": false,
+  "providerMutations": false
+}

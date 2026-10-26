@@ -1,0 +1,12 @@
+{
+  "observedAt": "2026-10-26T16:43:49.699Z",
+  "project": "oakdbbzdqwurpjnoqhmu",
+  "region": "eu-west-1",
+  "status": "ACTIVE_HEALTHY",
+  "databaseVersion": "17.6.1.104",
+  "postgresEngine": "17",
+  "releaseChannel": "ga",
+  "latestSecurityAdvisorReportsPatchWarning": false,
+  "interpretation": "Earlier patch-upgrade note is not re-established by this security read; do not treat engine minor version alone as a confirmed pending provider security upgrade.",
+  "changes": false
+}
