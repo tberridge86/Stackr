@@ -50,6 +50,27 @@ const dependencies = [
   ['four-language-catalogue-images.yml', 'ingest', 'validate'],
   ['four-language-catalogue-images.yml', 'mirror', 'ingest'],
 ];
+// Workflow maintenance must not start ingestion or cancel an active staging writer.
+// Preserve the existing explicit code-change recovery triggers without self-triggers.
+const japanesePushPaths = [
+  'scripts/catalogue-ingest.ts',
+  'scripts/catalogue-ingestion/pokemonCardJpAdapter.ts',
+  'scripts/catalogue-ingestion/pokedataJapaneseImageAdapter.ts',
+  'scripts/ingest-pokedata-japanese-images.ts',
+  'scripts/catalogue-ingestion/adapters.ts',
+  'scripts/catalogue-ingestion/pipeline.ts',
+  'scripts/complete-japanese-catalogue-images.mjs',
+  'scripts/mirror-approved-catalogue-assets.mjs',
+  'scripts/verify-japanese-catalogue-api-storage.mjs',
+  'scripts/verify-japanese-staging-gateway.mjs',
+];
+const japaneseConcurrencyGroup =
+  "${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'push' || " +
+  "(github.event.issue.number == 74 && github.event.issue.pull_request == null && " +
+  "github.actor_id == github.repository_owner_id && github.actor == 'tberridge86' && " +
+  "github.event.comment.body == '/run-japanese-catalogue-images')) && " +
+  "'stackr-staging-database-maintenance' || " +
+  "format('stackr-japanese-catalogue-images-noop-{0}', github.run_id) }}";
 const r2Name = (name) => name === 'STACKR_CATALOGUE_STORAGE_PROVIDER' || name.startsWith('STACKR_R2_');
 
 function assertWriterWorkflow(file, workflow) {
@@ -76,6 +97,11 @@ function assertWriterWorkflow(file, workflow) {
   if (file === 'complete-japanese-catalogue-images.yml') {
     assert.deepEqual(workflow.on.push.branches, ['main'], 'Japanese push branch widened');
     assert.ok(Array.isArray(workflow.on.push.paths) && workflow.on.push.paths.length > 0, 'Japanese push path filter missing');
+    assert.deepEqual(workflow.on.push.paths, japanesePushPaths,
+      'Japanese push paths must target explicit ingestion/recovery code only');
+    assert.equal(normalize(workflow.concurrency.group), japaneseConcurrencyGroup, 'Japanese concurrency group changed');
+    assert.equal(workflow.concurrency['cancel-in-progress'], "${{ github.event_name == 'push' }}",
+      'Japanese cancellation gate changed');
   }
   if (file === 'materialize-pokedata-gap-art-20260910.yml') {
     assert.equal(workflow.on.workflow_dispatch.inputs.apply.default, false, 'Materialization no longer defaults to dry run');
@@ -137,6 +163,12 @@ rejectsMutation(simple, (w) => { w.jobs['ingest-staging'].env.STACKR_R2_SECRET_A
 rejectsMutation('complete-japanese-catalogue-images.yml', (w) => { w.jobs.prepare.if = 'true'; }, /writer job gate changed/);
 rejectsMutation('complete-japanese-catalogue-images.yml', (w) => { w.jobs.mirror.needs = []; }, /writer dependency gate changed/);
 rejectsMutation('complete-japanese-catalogue-images.yml', (w) => { w.on.push.branches = ['**']; }, /Japanese push branch widened/);
+const japanese = 'complete-japanese-catalogue-images.yml';
+rejectsMutation(japanese, (w) => { w.on.push.paths.push('.github/workflows/' + japanese); }, /push paths must target/);
+rejectsMutation(japanese, (w) => { w.on.push.paths.push('**'); }, /push paths must target/);
+rejectsMutation(japanese, (w) => { w.on.push.paths = []; }, /push path filter missing/);
+rejectsMutation(japanese, (w) => { w.concurrency['cancel-in-progress'] = true; }, /cancellation gate changed/);
+rejectsMutation(japanese, (w) => { w.concurrency.group = 'different-writer'; }, /concurrency group changed/);
 rejectsMutation('materialize-pokedata-gap-art-20260910.yml', (w) => { w.on.workflow_dispatch.inputs.apply.default = true; }, /defaults to dry run/);
 console.log('R2 writer workflow guards passed: eight scoped writer steps, separated environments and unchanged execution gates. No live requests.');
 

@@ -115,3 +115,14 @@ The reviewer independently passed three focused reader scripts and the local pag
 Runtime defaults, bounds, empty-page exhaustion, exact identities and account/cancellation guards remain intact. Prepared-summary limitations, nearly unchanged payload, unknown hosted row cap, full-screen/auth exclusions and estimated-versus-actual local plans are accurately stated. Profile migration hash/10720bytes was independently verified. Release instructions now explicitly pass optional workflow inputs; verification-only, native build and installed-device states are separate. Device matrix remains NOT RUN.
 
 **Conclusion:** no remaining actionable finding in this scoped change. Hosted exact-source CI, scoped rollout, served-version attestation, private API measurements and actual phone acceptance remain distinct release gates. See [cold Home evidence](../../releases/home-cold-retrieval-infrastructure-20261025.md).
+
+
+## Controlled release review and merge-trigger containment
+
+Independent read-only review covered the whole149-file PR439 candidate at9e8108fc against main6dfe188, including earlier Binder/artwork/Showcase/search/API scope, two migrations and nine workflows. All five exact-head checks passed; client retrieval and backend SDK regressions passed independently, as did the Profile SQL/RLS fixture.
+
+RELEASE-PUSH-001 (P1) blocked merge: the changed Japanese-image workflow listed itself in its main-push paths, which could start excluded catalogue/R2 work and cancel another staging writer. The corrected workflow removes exactly that self-path. Ten explicit ingestion/recovery paths, manual/comment triggers, credentials, job guards and concurrency remain unchanged. Independent writer guards and whitespace checks pass; all149 original PR paths miss the remaining operational push paths. No other source blocker was found. Corrected source is merge-review GO conditional on publication and fresh required checks.
+
+Pinned Profile SQL is source/security GO. Live root preflight confirms function absence, required columns, RLS and authenticated SELECT on all five sources. The approved single-file MCP apply assigned20261026072532; canonical filename20261025154000 and LF hash remain the source identity. Record both rather than relabelling history; blanket push/replay remains held pending supported reconciliation. Root post-apply probes are database-role tests, not actual JWT/two-account/phone acceptance.
+
+Native release is GO through the existing guarded lane after merge and serving-backend attestation. Daily movers remains explicitly unavailable because its separate migration is excluded. Artwork holds and all phone cases remain disclosed; no old verification-only workflow is native installation proof. Reviewer performed no live mutations.

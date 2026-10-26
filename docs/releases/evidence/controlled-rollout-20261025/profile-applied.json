@@ -1,0 +1,89 @@
+{
+  "observedAt": "2026-10-26T07:27:50.102Z",
+  "project": "oakdbbzdqwurpjnoqhmu",
+  "canonicalMigration": {
+    "path": "supabase/migrations/20261025154000_collection_summary_v1.sql",
+    "version": "20261025154000",
+    "sha256": "01945a9e2bd98f7884662bef002f5a8fa50d22e5998709af7193f57566ace09c",
+    "bytes": 10720
+  },
+  "appliedMigration": {
+    "version": "20261026072532",
+    "name": "collection_summary_v1",
+    "tool": "supabase.apply_migration",
+    "result": {
+      "observedAt": "2026-10-26T07:25:32.764Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"success\":true}"
+          }
+        ],
+        "structuredContent": null,
+        "isError": false
+      }
+    }
+  },
+  "verification": {
+    "functionBodyMatchesApprovedSql": true,
+    "function": {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "collection_summary_v1(uuid[])",
+      "volatility": "s",
+      "anon_execute": false,
+      "security_definer": false,
+      "service_role_execute": false,
+      "authenticated_execute": true
+    },
+    "ledgerCountBefore": 191,
+    "ledgerCountAfter": 192,
+    "otherLedgerEntriesUnchanged": true,
+    "qaDbRoleProbe": {
+      "summary": {
+        "updatedAt": "2026-10-26T07:27:00.654788+00:00",
+        "valuation": {
+          "basis": "stored_tcg_raw_estimate",
+          "state": "empty",
+          "currency": "GBP",
+          "usdToGbp": 0.79,
+          "freshness": "unknown",
+          "totalUnits": 0,
+          "pricedUnits": 0,
+          "unpricedUnits": 0,
+          "unsupportedUnits": 0,
+          "missingPriceUnits": 0
+        },
+        "binderCount": 0,
+        "uniqueCards": 0,
+        "completedSets": 0,
+        "rawCardsOwned": 0,
+        "schemaVersion": "collection-summary-v1",
+        "subjectUserId": "designated-managed-qa-account",
+        "collectionValue": 0,
+        "duplicateCopies": 0,
+        "totalCardsOwned": 0,
+        "totalOwnedItems": 0,
+        "gradedSlabsOwned": 0,
+        "sealedProductsOwned": 0
+      },
+      "own_binders": 0,
+      "own_owned_rows": 0,
+      "visible_foreign_public_binders": 45
+    },
+    "anonymousDenied": true,
+    "missingSubjectDenied": true,
+    "authenticatedHttpVerified": false,
+    "secondRealAccountVerified": false,
+    "populatedHostedCoverageVerified": false,
+    "phoneVerified": false
+  },
+  "historyPolicy": "Canonical version remains distinct from generated applied version. No manual ledger relabel. Hold blanket db push/replay until supported approved history reconciliation.",
+  "rollback": {
+    "preexistingFunction": false,
+    "action": "Restore compatible app if needed; remove only newly-created public.collection_summary_v1(uuid[]) after dependency checks WITHOUT CASCADE. Reconcile generated ledger entry through supported approved migration history lane; no data/assets restore."
+  }
+}

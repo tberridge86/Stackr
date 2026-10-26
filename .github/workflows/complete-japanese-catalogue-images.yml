@@ -48,7 +48,6 @@ on:
   push:
     branches: [main]
     paths:
-      - '.github/workflows/complete-japanese-catalogue-images.yml'
       - 'scripts/catalogue-ingest.ts'
       - 'scripts/catalogue-ingestion/pokemonCardJpAdapter.ts'
       - 'scripts/catalogue-ingestion/pokedataJapaneseImageAdapter.ts'
