@@ -1,8 +1,10 @@
 # Second R2 continuation — 27 October 2026
 
-Status: reviewed implementation saved; live read-only reconciliation is running.
-Uploads have not restarted. Latest verified scope is 58,734 / 62,098 pushed,
-with 3,364 eligible Supabase source rows remaining (13:23:54 UTC).
+Status: recovery B is deployed and uploads are advancing. At 14:07:28.207662 UTC,
+the live read-only database count was 58,759 / 62,098 pushed, with 3,339 eligible
+Supabase source rows remaining: 25 additional publications since reconciliation.
+The first 25-asset execution completed successfully; the next batch is running.
+This is verified resumption, not a final completion certificate.
 
 ## Interruption and evidence
 
@@ -53,7 +55,9 @@ cloud source objects are deleted.
 Read-only command SHA:
 `2fd3c365e5b2d507f887e7dcc9e9989e80761a849fbd1c636fb187fdf1716a51`.
 Read-only deployment: `e0cd0b39-a5cd-4f74-a1b2-3c6938c30aee`.
-Proposed uploader command SHA:
+Activated uploader deployment: `21e9065e-040e-407e-96f7-c3b88b859704`.
+Runtime started at 13:56:19 UTC; fresh reconciliation was accepted at 14:06:08 UTC.
+Activated uploader command SHA:
 `b8de5eeb1d9e4f81718c3746ea8dc13dc3fbb11fe47aeb9c04f730bfa7030ef9`.
 
 Independent reviews found no blockers. Focused suites passed: 13 inspector,
@@ -72,3 +76,21 @@ rollback. An interrupted b-run needs its own reconciliation.
 After traversal, verify eligible original/derivative pointer coherence, preserve
 the final run receipt and perform fresh public retrieval verification. Zero source
 rows alone do not certify completion. This scope does not cover every catalogue image.
+
+## Live resumption evidence
+
+The standalone read-only certificate `330ac01f1ccfb503fc334d2596d91021cb2355384e2fe7a139f9f50b9ab71199`
+passed independent review before activation. The deployed worker's source hashes
+matched the reviewed command. Its own fresh gate again compared all 5,750 rows
+twice, preserved parent evidence, and verified 32 public objects (2,691,669 bytes).
+
+Fresh startup certificate: `11a6eaf278ab4f45e99097a6e40a636a9016cffa1fc024a6a9b04a81eca0bfb2`.
+Durable acceptance receipt: `bd06069c8ee2670a0d9c763df80b40f6b42a11f6ce67e16ec3ad7e703a219327`.
+First completed execution result: `681580f428d26602f94aca85f22f9ef8a58a7f86d5d274d2b8505ecf92f1651f`.
+The first batch published 25 assets with concurrency eight and completed at
+2026-10-27T14:07:09.205843925Z. See `r2-recovery-b-resumption-receipt-20261027.json`
+for deployment, source hashes, review, runtime receipt and exact SQL count evidence.
+
+No source files or cloud source objects were deleted. The final coverage check,
+final run receipt and fresh public retrieval verification are still pending.
+The existing progress automation was found paused and was left unchanged.
