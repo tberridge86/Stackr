@@ -168,5 +168,16 @@
     "userRequestedScopedReleaseOn": "2026-10-27",
     "scope": "Close R2, test reviewed PR446, deploy its named search function and compatible backend/gateway, build and submit standard production TestFlight; technical gates remain required",
     "unrelatedMigrationsJobsPaidServicesExcluded": true
+  },
+  "r2Closeout": {
+    "status": "verified_eligible_scope_completion",
+    "checkedAt": "2026-10-27T16:44:39.110692Z",
+    "pushed": 62098,
+    "total": 62098,
+    "remaining": 0,
+    "evidenceCommit": "35c49c309637717fe968606f0e97adfbd17ff5cd",
+    "publicChecksPassed": 13,
+    "uniqueObjects": 11,
+    "allCatalogueImagesCovered": false
   }
 }

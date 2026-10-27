@@ -20,11 +20,13 @@ This clears the former local DNS blocker, not authenticated or installed-phone a
 Public samples were slow (manifest 9.1 seconds; card requests 1.1–1.8 seconds).
 No claim of improved actual Home speed is established.
 
-R2: 62,098 / 62,098 eligible uploaded, zero source rows at 16:21:36 UTC.
-Four exhaustive disjoint UUID ranges passed the unchanged original/derivative pointer
-predicates with zero malformed rows. These were separate read-only snapshots, not one
-cross-query snapshot. Public retrieval of nine sampled objects passed HTTP, MIME, byte
-length and SHA256. Durable completed-run receipt closeout is tracked in PR #448.
+R2 is verified complete for the eligible scope: 62,098 / 62,098, zero source rows at
+16:44:39 UTC. Original/derivative pointer checks passed across four exhaustive disjoint
+UUID ranges (separate read-only snapshots). The durable receipt chain passed for all
+135 B-run batches, and 13 public GET checks across 11 distinct objects passed status,
+MIME, length and SHA256. This is sampled public retrieval, not a full GET audit.
+[Final closeout evidence](https://github.com/tberridge86/Stackr/blob/35c49c309637717fe968606f0e97adfbd17ff5cd/docs/releases/r2-eligible-closeout-20261027.md)
+is recorded in PR #448. The completed transfer watcher is paused; no source files were deleted.
 
 ## Remaining execution gates
 
