@@ -1,0 +1,74 @@
+{
+  "observedAt": "2026-10-27T15:10:22.786475167Z",
+  "serviceId": "c4c52418-b307-4c9f-9ffd-e67be163c366",
+  "deploymentId": "92593bce-063c-4db6-bb4f-b39dcedb4401",
+  "valuationPublished": true,
+  "diagnostics": {
+    "elapsedMs": 58608,
+    "ownedPriceIdentities": 166,
+    "storedPriceIdentities": 3196,
+    "stages": {
+      "claim_collection_valuation": {
+        "calls": 1,
+        "elapsedMs": 978,
+        "maxMs": 978
+      },
+      "published_price_catalogue_revision": {
+        "calls": 2,
+        "elapsedMs": 773,
+        "maxMs": 388
+      },
+      "saved_card_languages": {
+        "calls": 1,
+        "elapsedMs": 586,
+        "maxMs": 586
+      },
+      "catalogue_identifiers": {
+        "calls": 10,
+        "elapsedMs": 3212,
+        "maxMs": 575
+      },
+      "catalogue_members": {
+        "calls": 50,
+        "elapsedMs": 23745,
+        "maxMs": 1788
+      },
+      "catalogue_printings": {
+        "calls": 1,
+        "elapsedMs": 1913,
+        "maxMs": 1913
+      },
+      "stored_exact_prices": {
+        "calls": 16,
+        "elapsedMs": 19263,
+        "maxMs": 8196
+      },
+      "catalogue_price_state": {
+        "calls": 16,
+        "elapsedMs": 5443,
+        "maxMs": 1150
+      },
+      "catalogue_price_cycle_status": {
+        "calls": 1,
+        "elapsedMs": 303,
+        "maxMs": 303
+      },
+      "collection_valuation_trend": {
+        "calls": 1,
+        "elapsedMs": 227,
+        "maxMs": 227
+      },
+      "publish_collection_valuation": {
+        "calls": 1,
+        "elapsedMs": 709,
+        "maxMs": 709
+      }
+    }
+  },
+  "previousError": {
+    "at": "2026-10-27T15:01:05.698093344Z",
+    "stage": "stored_exact_prices",
+    "sqlState": "57014"
+  },
+  "note": "Worker generation timing, not an interactive screen benchmark."
+}

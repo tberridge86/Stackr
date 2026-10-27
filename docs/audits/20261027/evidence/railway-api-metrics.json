@@ -1,0 +1,44 @@
+{
+  "service": {
+    "id": "299d7ad4-5ed8-4301-b609-ef99274078d0",
+    "name": "pocketvault"
+  },
+  "environment": {
+    "id": "b4304736-cac8-4ca9-92a7-93f7f6499c2f",
+    "name": "production"
+  },
+  "metrics": [
+    {
+      "measurement": "CPU_USAGE",
+      "current": 0.00000767,
+      "average": 0.000039917650462962976,
+      "min": 0.000005236666666666666,
+      "max": 0.00362311,
+      "sampleCount": 288
+    },
+    {
+      "measurement": "CPU_LIMIT",
+      "current": 8,
+      "average": 8,
+      "min": 8,
+      "max": 8,
+      "sampleCount": 288
+    },
+    {
+      "measurement": "MEMORY_USAGE_GB",
+      "current": 0.14618624,
+      "average": 0.18572869471604966,
+      "min": 0.13026827377777778,
+      "max": 0.214634496,
+      "sampleCount": 288
+    },
+    {
+      "measurement": "MEMORY_LIMIT_GB",
+      "current": 8,
+      "average": 8,
+      "min": 8,
+      "max": 8,
+      "sampleCount": 288
+    }
+  ]
+}

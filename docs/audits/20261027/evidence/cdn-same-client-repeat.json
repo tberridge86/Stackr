@@ -1,0 +1,18 @@
+{
+  "url": "https://assets.stackrtcg.com/public/card_image/0000693d-698d-4600-91d9-9b494e07f27a/e6a1fb29a980371ac11223d113db8de94cd531dea91ae9508a11b5d7ab4ae708/47d3c0dded1f7350dba40ca8f686a96c2278800a4c5fb8772cbdcefb90aecfe8/original.jpg",
+  "status": 200,
+  "bytes": 209753,
+  "cache_status": "HIT",
+  "age": "262",
+  "headers": {
+    "date": "Tue, 27 Oct 2026 15:17:06 GMT",
+    "content-type": "image/jpeg",
+    "content-length": "209753",
+    "cache-control": "public, max-age=31536000, immutable",
+    "etag": "\"271f4dcb993842b1dbd340c2e240e598\"",
+    "last-modified": "Sat, 24 Oct 2026 13:11:53 GMT",
+    "age": "262",
+    "cf-cache-status": "HIT"
+  },
+  "error_excerpt": null
+}

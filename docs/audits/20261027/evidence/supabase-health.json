@@ -1,0 +1,19 @@
+[
+  {
+    "health": {
+      "active": 1,
+      "extensions": [
+        {
+          "name": "pg_stat_statements",
+          "schema": "extensions",
+          "version": "1.11"
+        }
+      ],
+      "connections": 25,
+      "observed_at": "2026-10-27T15:10:51.490801+00:00",
+      "lock_waiters": 0,
+      "database_bytes": 3274624147,
+      "max_connections": "60"
+    }
+  }
+]

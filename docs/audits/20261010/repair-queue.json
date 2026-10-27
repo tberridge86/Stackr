@@ -1,5 +1,22 @@
 {
   "schemaVersion": 1,
+  "platformHealth20261027": {
+    "owner": "stackr_coding / release coordination",
+    "observedDate": "2026-10-27",
+    "sourceRevision": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+    "report": "docs/audits/20261027/platform-health.md",
+    "status": "bounded_live_audit_complete_concurrency_fix_tested_reviewed_not_merged",
+    "adjacentWorkPreserved": ["PR #448 R2 transfer", "PR #446 retrieval/account/search/restore", "PR #185 cleanup", "backend dependency security work"],
+    "productionMutations": false,
+    "entries": [
+      {"id": "PH-REL-001", "owner": "stackr_release", "severity": "P2", "status": "implemented_tested_independently_reviewed", "summary": "Alternate backend release lanes had a separate concurrency group and could overlap standard production deployment.", "repair": "Use existing stackr-production-deployment group with cancellation disabled; focused regression wired into deployment-tooling suite.", "nextAction": "Normal PR checks and merge; no production deployment required for workflow-source fix."},
+      {"id": "PH-VALUATION-001", "owner": "stackr_performance / stackr_pricing", "severity": "P2", "status": "live_measured", "summary": "Valuation generation took 58.6s, including 23.7s catalogue members and 19.3s stored exact prices; earlier stored-price SQL timeout.", "nextAction": "Reduce measured round trips/query cost in existing worker; preserve identity and last-good valuation. Reuse existing performance work."},
+      {"id": "PH-AUTH-001", "owner": "stackr_backend", "severity": "P2", "status": "configuration_finding", "summary": "Leaked-password protection is disabled.", "nextAction": "Enable through authenticated Supabase Auth configuration and verify; connector does not expose configuration mutation."},
+      {"id": "PH-WORKER-001", "owner": "stackr_pricing / stackr_release", "severity": "P2", "status": "ownership_followup", "summary": "Cardmarket production service has cron configured but no active deployment; last listed deployments removed. Catalogue worker reports needs_mapping.", "nextAction": "Reconcile intended pause/scheduler ownership before restarting; reuse existing pricing lanes and mapping queue."}
+    ],
+    "existingFollowups": ["Migration ledger reconciliation; preserve known renamed versions", "Cloudflare hosting/DNS/billing sign-in", "Isolated database restore and D: backup sample", "Installed-phone account-switch and pagination acceptance"],
+    "backgroundTaskCreated": false
+  },
   "homeRetrieval20261025": {
     "observedDate": "2026-10-25",
     "owner": "stackr_coding",

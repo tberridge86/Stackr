@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: stackr-production-backend-hardening
+  group: stackr-production-deployment
   cancel-in-progress: false
 
 jobs:

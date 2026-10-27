@@ -1,0 +1,108 @@
+{
+  "source_count": 191,
+  "live_count": 192,
+  "source_only": [
+    "supabase/migrations/20261003091500_issue304_pricing_coverage_history.sql",
+    "supabase/migrations/20260829170147_reconcile_active_catalogue_natural_identities.sql",
+    "supabase/migrations/20260829214000_retain_exact_raw_source_revisions_once.sql",
+    "supabase/migrations/20261003101500_issue304_activity_artwork_snapshots.sql",
+    "supabase/migrations/20261004174213_hashable_bounded_catalogue_bulk_price_coverage.sql",
+    "supabase/migrations/20261011100927_revoke_public_guard_function_execute.sql",
+    "supabase/migrations/20261005221812_bounded_provider_identity_guards.sql",
+    "supabase/migrations/20261004180037_compact_hashable_catalogue_bulk_price_coverage.sql",
+    "supabase/migrations/20261003102000_issue304_corocoro_artwork_binding.sql",
+    "supabase/migrations/20260827124944_gate0_financial_route_containment.sql",
+    "supabase/migrations/20260831123000_index_ingest_conflict_deduplication.sql",
+    "supabase/migrations/20261025154000_collection_summary_v1.sql",
+    "supabase/migrations/20261022064554_catalogue_daily_market_movers.sql",
+    "supabase/migrations/20260911075500_optimize_binder_rls_reads.sql",
+    "supabase/migrations/20260829221000_track_raw_source_record_observations.sql",
+    "supabase/migrations/20260831202805_repair_launch_catalogue_conflict_set_resolution.sql",
+    "supabase/migrations/20261011100654_reconcile_staging_binder_ownership.sql"
+  ],
+  "live_only": [
+    {
+      "version": "20260902204353",
+      "name": "restrict_binder_reservation_trigger_execution"
+    },
+    {
+      "version": "20260828093520",
+      "name": "prompt2_trusted_admin_claim_cutover"
+    },
+    {
+      "version": "20260927164229",
+      "name": "magazine_publication_groups"
+    },
+    {
+      "version": "20260902204351",
+      "name": "binder_ownership_lifecycle"
+    },
+    {
+      "version": "20260902205018",
+      "name": "prepare_marketplace_trust_utf8_data_repair"
+    },
+    {
+      "version": "20260828093213",
+      "name": "prompt2_emergency_profile_authority_containment"
+    },
+    {
+      "version": "20260902204348",
+      "name": "prepare_prompt2_trade_freeze_for_transaction_boundary"
+    },
+    {
+      "version": "20260902204352",
+      "name": "restrict_marketplace_transaction_trigger_execution"
+    },
+    {
+      "version": "20260902204554",
+      "name": "reconcile_prompt2_trade_freeze_with_marketplace_transactions"
+    },
+    {
+      "version": "20260902204550",
+      "name": "binder_conflict_preconditions"
+    },
+    {
+      "version": "20260902204354",
+      "name": "optimize_binder_marketplace_transaction_access"
+    },
+    {
+      "version": "20260902204552",
+      "name": "binder_readiness_policy_access"
+    },
+    {
+      "version": "20260828151836",
+      "name": "prompt2_trade_notification_write_containment"
+    },
+    {
+      "version": "20260902204349",
+      "name": "marketplace_trust_and_safety"
+    },
+    {
+      "version": "20260902205020",
+      "name": "repair_marketplace_trust_utf8_separator"
+    },
+    {
+      "version": "20261026072532",
+      "name": "collection_summary_v1"
+    },
+    {
+      "version": "20260902204350",
+      "name": "marketplace_listing_transactions"
+    },
+    {
+      "version": "20260927165307",
+      "name": "skip_unpublished_catalogue_alias_repair_scans"
+    }
+  ],
+  "note": "Version presence only; SQL content/replay not certified.",
+  "known_equivalent_version_mapping": [
+    {
+      "source": "20261025154000_collection_summary_v1",
+      "live": "20261026072532_collection_summary_v1",
+      "evidence": "docs/releases/controlled-rollout-20261025.md",
+      "verification": "Recorded deployment mapping; statement equivalence not rechecked in this pass."
+    }
+  ],
+  "existing_reconciliation": "docs/releases/backend-ledger-failure-report-20261021.json",
+  "interpretation": "17 source-only and 18 live-only VERSION labels; includes pending and renamed migrations. This does not mean all these changes are missing or broken. Do not replay wholesale."
+}
