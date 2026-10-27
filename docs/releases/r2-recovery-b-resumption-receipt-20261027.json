@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "kind": "stackr-r2-recovery-b-resumption-evidence",
+  "runId": "production-recovered-20261027b",
+  "projectRef": "oakdbbzdqwurpjnoqhmu",
+  "railwayProjectId": "d205637b-5376-41aa-9169-1015ba88fec3",
+  "serviceId": "b5410607-a591-420e-a506-fe184ce7455b",
+  "environmentId": "b4304736-cac8-4ca9-92a7-93f7f6499c2f",
+  "deploymentId": "21e9065e-040e-407e-96f7-c3b88b859704",
+  "commandSha256": "b8de5eeb1d9e4f81718c3746ea8dc13dc3fbb11fe47aeb9c04f730bfa7030ef9",
+  "sourceHashes": {
+    "parentInspector": "28245a96581910afa9c78f25d49e2d1baf19bf80886ba322d3764ce94a65e1cc",
+    "inspector": "399fa17d724724b3ed759d9c2d8d8335f337d53e262860b26092b8ea2e154bf6",
+    "reconciler": "2f2947ac2fa43d243f09954846fda8041de025767cc76e88a153ba496d6ed11c",
+    "launcher": "65ee178b06d8494090a16a5c5328e15d9c15e5de44be9a666e555e5242d6e3c6",
+    "receipt": "beb777aa84cfbb8086a5f80804de2301ce990e0bc178521eea16327b7b447d02",
+    "runtime": "2d615728ed248e99beae61e761ea310ee63ea5d6a60f4d119959c515f73cade8",
+    "coverage": "a5a8fd084e85a8fecc880ae0c0880f3630e72283f7fe7b41184e0c3f67c8f716"
+  },
+  "sourceHashesVerified": true,
+  "independentReview": {
+    "decision": "GO",
+    "reviewer": "/root/tail_reconciliation_review",
+    "certificateSha256": "330ac01f1ccfb503fc334d2596d91021cb2355384e2fe7a139f9f50b9ab71199",
+    "commandSha256": "b8de5eeb1d9e4f81718c3746ea8dc13dc3fbb11fe47aeb9c04f730bfa7030ef9"
+  },
+  "standaloneCertificateSha256": "330ac01f1ccfb503fc334d2596d91021cb2355384e2fe7a139f9f50b9ab71199",
+  "startupAcceptance": {
+    "at": "2026-10-27T14:06:08.433243136Z",
+    "message": "",
+    "event": "recovered_migration_reconciliation_accepted",
+    "runId": "production-recovered-20261027b",
+    "certificateSha256": "11a6eaf278ab4f45e99097a6e40a636a9016cffa1fc024a6a9b04a81eca0bfb2",
+    "receiptSha256": "bd06069c8ee2670a0d9c763df80b40f6b42a11f6ce67e16ec3ad7e703a219327",
+    "matchedRows": 5750,
+    "confirmedGlobalBaseline": 58734,
+    "remainingSource": 3364,
+    "eligibleTotal": 62098,
+    "parentEvidencePreserved": true
+  },
+  "firstCompletedBatch": {
+    "at": "2026-10-27T14:07:09.205843925Z",
+    "message": "",
+    "event": "migration_invocation_complete",
+    "mode": "execute",
+    "elapsedMs": 38924,
+    "resultBytes": 301691,
+    "resultSha256": "681580f428d26602f94aca85f22f9ef8a58a7f86d5d274d2b8505ecf92f1651f",
+    "exitCode": 0,
+    "status": "complete",
+    "assetCount": 25,
+    "phaseMetrics": {
+      "concurrency": 8,
+      "elapsedMs": 38393.919,
+      "source": {
+        "count": 100,
+        "elapsedMs": 8478.428
+      },
+      "put": {
+        "count": 100,
+        "elapsedMs": 79959.004
+      },
+      "r2Read": {
+        "count": 100,
+        "elapsedMs": 63224.014
+      },
+      "cdn": {
+        "count": 100,
+        "elapsedMs": 32228.447
+      },
+      "journal": {
+        "count": 250,
+        "elapsedMs": 3923.856
+      },
+      "publish": {
+        "count": 25,
+        "elapsedMs": 11878.366
+      }
+    }
+  },
+  "databaseProgress": {
+    "checked_at": "2026-10-27 14:07:28.207662+00",
+    "pushed": 58759,
+    "remaining": 3339,
+    "total_eligible": 62098
+  },
+  "baseline": {
+    "pushed": 58734,
+    "remaining": 3364,
+    "total_eligible": 62098
+  },
+  "additionalPublished": 25,
+  "focusedTestsPassed": 42,
+  "sourceDeletionPerformed": false,
+  "completionVerified": false,
+  "pendingCompletionEvidence": [
+    "eligible original/derivative pointer coherence after traversal",
+    "final run receipt",
+    "fresh public retrieval verification"
+  ],
+  "scope": "eligible approved public catalogue rows only; not all catalogue images"
+}
