@@ -198,6 +198,31 @@ test('committed-without-receipt remains uncertain and reports its independent re
   assert.equal(row.recordedCommitSnapshotSha256, fingerprint(batch.journal.filter(event => event.event === 'database_cas_committed').at(-1).after));
 });
 
+test('execution file and runtime result value hashes use distinct documented byte domains', async () => {
+  const f = fixture(); const batch = f.batch(1, { count: 3, receipts: 1, ambiguous: 'pending' });
+  const key = PREFIX(1) + 'execute-result.json';
+  const prettyEnvelope = Buffer.from(JSON.stringify(batch.execute, null, 2) + '\n');
+  f.files.set(key, prettyEnvelope);
+  const result = await f.inspect(); const tail = result.summary.tail;
+  const runtimeBytes = Buffer.from(JSON.stringify(batch.execute.result));
+  assert.equal(tail.executionResultSha256, hash(prettyEnvelope));
+  assert.equal(tail.executionResultValueSha256, hash(runtimeBytes));
+  assert.notEqual(tail.executionResultValueSha256, tail.executionResultSha256);
+  assert.notEqual(tail.executionResultValueSha256, fingerprint(batch.execute.result), 'runtime hash must not canonical-sort keys');
+  const fileRecord = result.events.find(event => event.event === 'r2_tail_diagnostic_files').files.find(file => file.name === key);
+  assert.equal(fileRecord.sha256, tail.executionResultSha256);
+  // Formatting changes the file identity, while preserving the runtime value identity.
+  f.files.set(key, encode(batch.execute));
+  const compact = await f.inspect();
+  assert.notEqual(compact.summary.tail.executionResultSha256, tail.executionResultSha256);
+  assert.equal(compact.summary.tail.executionResultValueSha256, tail.executionResultValueSha256);
+  // No hash is invented when no execution result was durably recorded.
+  f.files.delete(key); f.files.delete(PREFIX(1) + 'events.jsonl');
+  const inventoryOnly = await f.inspect();
+  assert.equal(inventoryOnly.summary.tail.executionResultSha256, null);
+  assert.equal(inventoryOnly.summary.tail.executionResultValueSha256, null);
+});
+
 test('both exact run IDs are accepted, arbitrary run/mode/host rejected before evidence reads', async () => {
   for (const runId of [CURRENT, OLD]) { const f = fixture(runId); assert.equal((await f.inspect()).summary.runId, runId); }
   const f = fixture(); const inspect = createOptimisedTailInspector(f.deps);

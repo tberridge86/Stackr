@@ -532,7 +532,10 @@ export async function inspectOptimisedTail20261027(options = {}) {
         tail.executionResultCount = execution?.result.results.length ?? null;
         tail.inventorySha256 = inventorySha256;
         tail.journalSha256 = known.get(name + 'events.jsonl')?.sha256 ?? null;
+        // File identity hashes the persisted envelope and formatting. Runtime
+        // migration_invocation_complete hashes only compact JSON.stringify(result).
         tail.executionResultSha256 = known.get(name + 'execute-result.json')?.sha256 ?? null;
+        tail.executionResultValueSha256 = execution ? hash(JSON.stringify(execution.result)) : null;
       }
     }
 
