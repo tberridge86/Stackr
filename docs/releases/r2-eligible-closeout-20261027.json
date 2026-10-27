@@ -1,0 +1,563 @@
+{
+  "schemaVersion": 1,
+  "kind": "stackr-r2-eligible-scope-closeout",
+  "status": "verified_eligible_scope_completion",
+  "verifiedAt": "2026-10-27T16:44:39.110692Z",
+  "projectId": "oakdbbzdqwurpjnoqhmu",
+  "runId": "production-recovered-20261027b",
+  "scope": {
+    "table": "catalog.assets",
+    "storage_bucket": "stackr-catalogue-public",
+    "storage_provider": [
+      "supabase_storage",
+      "s3_compatible"
+    ],
+    "rights_status": "approved",
+    "permission_status": "approved",
+    "asset_visibility": "public_catalogue",
+    "publicly_servable": true,
+    "retention_status": "active",
+    "deleted_at": null,
+    "deprecated_at": null,
+    "pushedUrlPrefix": "https://assets.stackrtcg.com/"
+  },
+  "database": {
+    "checked_at": "2026-10-27 16:44:39.110692+00",
+    "pushed": 62098,
+    "remaining": 0,
+    "total_eligible": 62098
+  },
+  "pointerCoherence": {
+    "method": "four disjoint exhaustive UUID ranges; identical predicate semantics with materialized inspected CTE; read-only transactions rolled back",
+    "singleSnapshot": false,
+    "parts": [
+      {
+        "lower": "00000000-0000-0000-0000-000000000000",
+        "upper": "40000000-0000-0000-0000-000000000000",
+        "checked_at": "2026-10-27 16:17:52.322695+00",
+        "eligible_total": "17349",
+        "remaining_source": "0",
+        "migrated_total": "17349",
+        "malformed_original_rows": "0",
+        "malformed_derivative_rows": "0",
+        "malformed_migrated_rows": "0"
+      },
+      {
+        "lower": "40000000-0000-0000-0000-000000000000",
+        "upper": "80000000-0000-0000-0000-000000000000",
+        "checked_at": "2026-10-27 16:18:02.118651+00",
+        "eligible_total": "16000",
+        "remaining_source": "0",
+        "migrated_total": "16000",
+        "malformed_original_rows": "0",
+        "malformed_derivative_rows": "0",
+        "malformed_migrated_rows": "0"
+      },
+      {
+        "lower": "80000000-0000-0000-0000-000000000000",
+        "upper": "c0000000-0000-0000-0000-000000000000",
+        "checked_at": "2026-10-27 16:18:24.452842+00",
+        "eligible_total": "15052",
+        "remaining_source": "0",
+        "migrated_total": "15052",
+        "malformed_original_rows": "0",
+        "malformed_derivative_rows": "0",
+        "malformed_migrated_rows": "0"
+      },
+      {
+        "lower": "c0000000-0000-0000-0000-000000000000",
+        "upper": null,
+        "checked_at": "2026-10-27 16:18:31.912545+00",
+        "eligible_total": "13697",
+        "remaining_source": "0",
+        "migrated_total": "13697",
+        "malformed_original_rows": "0",
+        "malformed_derivative_rows": "0",
+        "malformed_migrated_rows": "0"
+      }
+    ],
+    "counts": {
+      "eligible_total": 62098,
+      "remaining_source": 0,
+      "migrated_total": 62098,
+      "malformed_original_rows": 0,
+      "malformed_derivative_rows": 0,
+      "malformed_migrated_rows": 0
+    },
+    "allCatalogueImagesCovered": false
+  },
+  "durableReceipt": {
+    "derivation": "Derived from immutable completed-run journals and terminal checkpoint. Frozen runner does not create a standalone final receipt file.",
+    "collectorDeploymentId": "267b1f73-eadb-412d-9f3a-76ff4fcfbd8d",
+    "sourceSha256": "21504549c91fda39d75abaac6564aea37dfd28b25f845dd787b5545283a1b8d4",
+    "commandSha256": "f0ad3846f06e67ff79a50d0681a5ade9ccedc70d26bd60d9b4df8fc4b0bc6410",
+    "receipt": {
+      "event": "r2_completed_b_receipt",
+      "certificate": {
+        "schemaVersion": 1,
+        "kind": "stackr-r2-completed-run-receipt",
+        "status": "recorded_traversal_verified",
+        "runId": "production-recovered-20261027b",
+        "sourceCommit": "6dfe188166df76b41d44801ab66970b0a3881ae5",
+        "deploymentId": "21e9065e-040e-407e-96f7-c3b88b859704",
+        "acceptance": {
+          "receiptSha256": "bd06069c8ee2670a0d9c763df80b40f6b42a11f6ce67e16ec3ad7e703a219327",
+          "certificateSha256": "11a6eaf278ab4f45e99097a6e40a636a9016cffa1fc024a6a9b04a81eca0bfb2",
+          "bytes": 7796,
+          "parentRunIds": [
+            "production-recovered-20261027a"
+          ],
+          "confirmedGlobalBaseline": 58734,
+          "eligibleTotal": 62098,
+          "newRunStartsFromNull": true,
+          "parentEvidencePreserved": true
+        },
+        "evidenceSha256": "7f415a7a0a139b9b592b61db5a82bc411147e8b4501bbc38467124491dbe6457",
+        "fileCount": 946,
+        "totalBytes": 209985626,
+        "sourceFiles": [
+          {
+            "name": "run-r2-catalogue-migration.mjs",
+            "bytes": 21685,
+            "sha256": "015b6b36f19840c367be96a5a8a18605e4ad36fe2d813e7ff574f10e4a1adadc"
+          },
+          {
+            "name": "inspect-r2-bulk-run.mjs",
+            "bytes": 25936,
+            "sha256": "72b5c6765e03d74d98aef38b21f0148627f7ec437298f23661c83320e453e7d3"
+          },
+          {
+            "name": "migrate-catalogue-to-r2.mjs",
+            "bytes": 25839,
+            "sha256": "757abcbc4347d186ce481746f4d704c63228f3b7644df9890f56e73b0a8f13dd"
+          },
+          {
+            "name": "lib/r2-catalogue-migration.mjs",
+            "bytes": 32968,
+            "sha256": "d05fdae0f9d7280b70f03aad681eb2b01e6b31b7d4c11acab31745c4ed14b922"
+          },
+          {
+            "name": "deploy/verified-supabase-postgres.mjs",
+            "bytes": 2515,
+            "sha256": "8e2bf4f392a465fad9bd6669dba5b68fb081a6ca9489b5b4d3b75ac5e5327cb7"
+          }
+        ],
+        "completedBatches": 135,
+        "publishedAssets": 3364,
+        "objects": 12982,
+        "terminalCheckpoint": {
+          "sequence": 135,
+          "totalPublished": 3364,
+          "nextAfterId": "ffff8dda-19d2-4094-bc7c-ad7f9f12c148",
+          "sha256": "34e010982468bbdd98221b9d1b85ce5376be662d2e95c30acc890103ed13a5a5",
+          "exhausted": true
+        },
+        "terminalExecutionResultValueSha256": "6a18551d52189e8b29bac59162037cff42a9283b122a9d2bf4df738bf13d359a",
+        "publicationExpectationsSha256": "07aae4b690fd6bf955e5ffb0ccfb6422ec5a99f88423c0e1203a600da326eba2",
+        "inheritedBaseline": 58734,
+        "resultingEligibleTotal": 62098,
+        "freshBaselineRowsCompared": false,
+        "lockPresent": false,
+        "pendingPublication": null,
+        "journalAndCheckpointValidationPassed": true,
+        "recordedTraversalVerified": true,
+        "databaseQueried": false,
+        "networkRequested": false,
+        "evidenceModified": false,
+        "runnerStarted": false,
+        "resumeAuthorized": false,
+        "sourceObjectsDeleted": 0,
+        "eligibleCoverageVerified": false,
+        "publicRetrievalVerified": false,
+        "completionVerified": false,
+        "allCatalogueImagesCovered": false
+      },
+      "certificateSha256": "affcbbf4b9d3f6e921ed73deada3e3bfbf5d36e4ba68e91d4aae859d3136f2b3"
+    },
+    "collectorEvents": [
+      {
+        "event": "r2_completed_b_start",
+        "sourceSha256": "21504549c91fda39d75abaac6564aea37dfd28b25f845dd787b5545283a1b8d4",
+        "runId": "production-recovered-20261027b",
+        "databaseQueried": false,
+        "networkRequested": false,
+        "runnerStarted": false
+      },
+      {
+        "event": "r2_completed_b_receipt",
+        "certificate": {
+          "schemaVersion": 1,
+          "kind": "stackr-r2-completed-run-receipt",
+          "status": "recorded_traversal_verified",
+          "runId": "production-recovered-20261027b",
+          "sourceCommit": "6dfe188166df76b41d44801ab66970b0a3881ae5",
+          "deploymentId": "21e9065e-040e-407e-96f7-c3b88b859704",
+          "acceptance": {
+            "receiptSha256": "bd06069c8ee2670a0d9c763df80b40f6b42a11f6ce67e16ec3ad7e703a219327",
+            "certificateSha256": "11a6eaf278ab4f45e99097a6e40a636a9016cffa1fc024a6a9b04a81eca0bfb2",
+            "bytes": 7796,
+            "parentRunIds": [
+              "production-recovered-20261027a"
+            ],
+            "confirmedGlobalBaseline": 58734,
+            "eligibleTotal": 62098,
+            "newRunStartsFromNull": true,
+            "parentEvidencePreserved": true
+          },
+          "evidenceSha256": "7f415a7a0a139b9b592b61db5a82bc411147e8b4501bbc38467124491dbe6457",
+          "fileCount": 946,
+          "totalBytes": 209985626,
+          "sourceFiles": [
+            {
+              "name": "run-r2-catalogue-migration.mjs",
+              "bytes": 21685,
+              "sha256": "015b6b36f19840c367be96a5a8a18605e4ad36fe2d813e7ff574f10e4a1adadc"
+            },
+            {
+              "name": "inspect-r2-bulk-run.mjs",
+              "bytes": 25936,
+              "sha256": "72b5c6765e03d74d98aef38b21f0148627f7ec437298f23661c83320e453e7d3"
+            },
+            {
+              "name": "migrate-catalogue-to-r2.mjs",
+              "bytes": 25839,
+              "sha256": "757abcbc4347d186ce481746f4d704c63228f3b7644df9890f56e73b0a8f13dd"
+            },
+            {
+              "name": "lib/r2-catalogue-migration.mjs",
+              "bytes": 32968,
+              "sha256": "d05fdae0f9d7280b70f03aad681eb2b01e6b31b7d4c11acab31745c4ed14b922"
+            },
+            {
+              "name": "deploy/verified-supabase-postgres.mjs",
+              "bytes": 2515,
+              "sha256": "8e2bf4f392a465fad9bd6669dba5b68fb081a6ca9489b5b4d3b75ac5e5327cb7"
+            }
+          ],
+          "completedBatches": 135,
+          "publishedAssets": 3364,
+          "objects": 12982,
+          "terminalCheckpoint": {
+            "sequence": 135,
+            "totalPublished": 3364,
+            "nextAfterId": "ffff8dda-19d2-4094-bc7c-ad7f9f12c148",
+            "sha256": "34e010982468bbdd98221b9d1b85ce5376be662d2e95c30acc890103ed13a5a5",
+            "exhausted": true
+          },
+          "terminalExecutionResultValueSha256": "6a18551d52189e8b29bac59162037cff42a9283b122a9d2bf4df738bf13d359a",
+          "publicationExpectationsSha256": "07aae4b690fd6bf955e5ffb0ccfb6422ec5a99f88423c0e1203a600da326eba2",
+          "inheritedBaseline": 58734,
+          "resultingEligibleTotal": 62098,
+          "freshBaselineRowsCompared": false,
+          "lockPresent": false,
+          "pendingPublication": null,
+          "journalAndCheckpointValidationPassed": true,
+          "recordedTraversalVerified": true,
+          "databaseQueried": false,
+          "networkRequested": false,
+          "evidenceModified": false,
+          "runnerStarted": false,
+          "resumeAuthorized": false,
+          "sourceObjectsDeleted": 0,
+          "eligibleCoverageVerified": false,
+          "publicRetrievalVerified": false,
+          "completionVerified": false,
+          "allCatalogueImagesCovered": false
+        },
+        "certificateSha256": "affcbbf4b9d3f6e921ed73deada3e3bfbf5d36e4ba68e91d4aae859d3136f2b3"
+      },
+      {
+        "event": "r2_completed_b_public_samples",
+        "runId": "production-recovered-20261027b",
+        "certificateSha256": "affcbbf4b9d3f6e921ed73deada3e3bfbf5d36e4ba68e91d4aae859d3136f2b3",
+        "selection": "original and first derivative from first and last publications",
+        "objects": [
+          {
+            "runId": "production-recovered-20261027b",
+            "rowId": "efa0fa4e-f858-435a-9d9b-fd5155393b72",
+            "sequence": 1,
+            "receiptSha256": "6a6645bec79fe3fb2384d9b8b5ce4fafced502481609085ecbf20ff101560a3c",
+            "role": "original",
+            "index": -1,
+            "bucket": "stackr-catalogue-public",
+            "key": "public/card_image/efa0fa4e-f858-435a-9d9b-fd5155393b72/7bb2f9d468de2026d12f77dcb77ada5b683bba1c84ab6816a76349014b419a56/b5538c50037c760ef5dde062b04be37e956ccf28f5f9a985c9dda0455a830142/original.jpg",
+            "url": "https://assets.stackrtcg.com/public/card_image/efa0fa4e-f858-435a-9d9b-fd5155393b72/7bb2f9d468de2026d12f77dcb77ada5b683bba1c84ab6816a76349014b419a56/b5538c50037c760ef5dde062b04be37e956ccf28f5f9a985c9dda0455a830142/original.jpg",
+            "mimeType": "image/jpeg",
+            "byteSize": 143803,
+            "sha256": "b5538c50037c760ef5dde062b04be37e956ccf28f5f9a985c9dda0455a830142",
+            "verifiedRecorded": true,
+            "liveVerified": false
+          },
+          {
+            "runId": "production-recovered-20261027b",
+            "rowId": "efa0fa4e-f858-435a-9d9b-fd5155393b72",
+            "sequence": 1,
+            "receiptSha256": "6a6645bec79fe3fb2384d9b8b5ce4fafced502481609085ecbf20ff101560a3c",
+            "role": "card-grid",
+            "index": 0,
+            "bucket": "stackr-catalogue-public",
+            "key": "public/card_image/efa0fa4e-f858-435a-9d9b-fd5155393b72/7bb2f9d468de2026d12f77dcb77ada5b683bba1c84ab6816a76349014b419a56/33288e7f3451a062ed86749b92236c2839e9834911e72994b524431754c3e95c/card-grid.webp",
+            "url": "https://assets.stackrtcg.com/public/card_image/efa0fa4e-f858-435a-9d9b-fd5155393b72/7bb2f9d468de2026d12f77dcb77ada5b683bba1c84ab6816a76349014b419a56/33288e7f3451a062ed86749b92236c2839e9834911e72994b524431754c3e95c/card-grid.webp",
+            "mimeType": "image/webp",
+            "byteSize": 21652,
+            "sha256": "33288e7f3451a062ed86749b92236c2839e9834911e72994b524431754c3e95c",
+            "verifiedRecorded": true,
+            "liveVerified": false
+          },
+          {
+            "runId": "production-recovered-20261027b",
+            "rowId": "ffff8dda-19d2-4094-bc7c-ad7f9f12c148",
+            "sequence": 135,
+            "receiptSha256": "72b00cec569a47ad1ab57d7c145ffb47adf3ef5658ba2901aa005c151d27c35a",
+            "role": "original",
+            "index": -1,
+            "bucket": "stackr-catalogue-public",
+            "key": "public/card_image/ffff8dda-19d2-4094-bc7c-ad7f9f12c148/53bd437f6fe3f2f72f25b6e6392753907c2ec593723532fe6ee61beed58fbd2e/69b0ed457a5aec2b20e9ba35580ec1d8ae05058d70c39b824a93de8512152783/original.png",
+            "url": "https://assets.stackrtcg.com/public/card_image/ffff8dda-19d2-4094-bc7c-ad7f9f12c148/53bd437f6fe3f2f72f25b6e6392753907c2ec593723532fe6ee61beed58fbd2e/69b0ed457a5aec2b20e9ba35580ec1d8ae05058d70c39b824a93de8512152783/original.png",
+            "mimeType": "image/png",
+            "byteSize": 202460,
+            "sha256": "69b0ed457a5aec2b20e9ba35580ec1d8ae05058d70c39b824a93de8512152783",
+            "verifiedRecorded": true,
+            "liveVerified": false
+          },
+          {
+            "runId": "production-recovered-20261027b",
+            "rowId": "ffff8dda-19d2-4094-bc7c-ad7f9f12c148",
+            "sequence": 135,
+            "receiptSha256": "72b00cec569a47ad1ab57d7c145ffb47adf3ef5658ba2901aa005c151d27c35a",
+            "role": "card-grid",
+            "index": 0,
+            "bucket": "stackr-catalogue-public",
+            "key": "public/card_image/ffff8dda-19d2-4094-bc7c-ad7f9f12c148/53bd437f6fe3f2f72f25b6e6392753907c2ec593723532fe6ee61beed58fbd2e/0a1f7b83fbdb25a1e89c9c0ed41dc79f11f7fd255da508c3d76fdfd475153327/card-grid.webp",
+            "url": "https://assets.stackrtcg.com/public/card_image/ffff8dda-19d2-4094-bc7c-ad7f9f12c148/53bd437f6fe3f2f72f25b6e6392753907c2ec593723532fe6ee61beed58fbd2e/0a1f7b83fbdb25a1e89c9c0ed41dc79f11f7fd255da508c3d76fdfd475153327/card-grid.webp",
+            "mimeType": "image/webp",
+            "byteSize": 15554,
+            "sha256": "0a1f7b83fbdb25a1e89c9c0ed41dc79f11f7fd255da508c3d76fdfd475153327",
+            "verifiedRecorded": true,
+            "liveVerified": false
+          }
+        ]
+      },
+      {
+        "event": "r2_completed_b_receipt_complete",
+        "runId": "production-recovered-20261027b",
+        "certificateSha256": "affcbbf4b9d3f6e921ed73deada3e3bfbf5d36e4ba68e91d4aae859d3136f2b3",
+        "eventCount": 3,
+        "precedingEventsSha256": "07d7a29aae26bef1e42fe4aa1baf4b3329f37269a59cafe61ae0f264ef389f8e",
+        "evidenceModified": false,
+        "runnerStarted": false,
+        "completionVerified": false
+      },
+      {
+        "event": "r2_completed_b_finished",
+        "sourceSha256": "21504549c91fda39d75abaac6564aea37dfd28b25f845dd787b5545283a1b8d4",
+        "certificateSha256": "affcbbf4b9d3f6e921ed73deada3e3bfbf5d36e4ba68e91d4aae859d3136f2b3",
+        "evidenceModified": false,
+        "runnerStarted": false,
+        "completionVerified": false
+      }
+    ]
+  },
+  "publicRetrieval": {
+    "method": "Bounded public GET samples with redirects rejected and exact byte count, MIME and SHA256 equality",
+    "databaseSelected": {
+      "samples": [
+        {
+          "id": "ffff8dda-19d2-4094-bc7c-ad7f9f12c148",
+          "role": "original",
+          "url": "https://assets.stackrtcg.com/public/card_image/ffff8dda-19d2-4094-bc7c-ad7f9f12c148/53bd437f6fe3f2f72f25b6e6392753907c2ec593723532fe6ee61beed58fbd2e/69b0ed457a5aec2b20e9ba35580ec1d8ae05058d70c39b824a93de8512152783/original.png",
+          "sha256": "69b0ed457a5aec2b20e9ba35580ec1d8ae05058d70c39b824a93de8512152783",
+          "bytes": 202460,
+          "mime": "image/png",
+          "checkedAt": "2026-10-27T16:15:21.298Z",
+          "status": 200,
+          "actualBytes": 202460,
+          "actualSha256": "69b0ed457a5aec2b20e9ba35580ec1d8ae05058d70c39b824a93de8512152783",
+          "actualMime": "image/png",
+          "passed": true
+        },
+        {
+          "id": "ffff8dda-19d2-4094-bc7c-ad7f9f12c148",
+          "role": "card-grid",
+          "url": "https://assets.stackrtcg.com/public/card_image/ffff8dda-19d2-4094-bc7c-ad7f9f12c148/53bd437f6fe3f2f72f25b6e6392753907c2ec593723532fe6ee61beed58fbd2e/0a1f7b83fbdb25a1e89c9c0ed41dc79f11f7fd255da508c3d76fdfd475153327/card-grid.webp",
+          "sha256": "0a1f7b83fbdb25a1e89c9c0ed41dc79f11f7fd255da508c3d76fdfd475153327",
+          "bytes": 15554,
+          "mime": "image/webp",
+          "checkedAt": "2026-10-27T16:15:27.417Z",
+          "status": 200,
+          "actualBytes": 15554,
+          "actualSha256": "0a1f7b83fbdb25a1e89c9c0ed41dc79f11f7fd255da508c3d76fdfd475153327",
+          "actualMime": "image/webp",
+          "passed": true
+        },
+        {
+          "id": "ffff8dda-19d2-4094-bc7c-ad7f9f12c148",
+          "role": "search-result",
+          "url": "https://assets.stackrtcg.com/public/card_image/ffff8dda-19d2-4094-bc7c-ad7f9f12c148/53bd437f6fe3f2f72f25b6e6392753907c2ec593723532fe6ee61beed58fbd2e/a6215ed6ca0299f5a2504d527693a3545e416a3313de8fce84ad5ec15c4f90a4/search-result.webp",
+          "sha256": "a6215ed6ca0299f5a2504d527693a3545e416a3313de8fce84ad5ec15c4f90a4",
+          "bytes": 3104,
+          "mime": "image/webp",
+          "checkedAt": "2026-10-27T16:15:33.604Z",
+          "status": 200,
+          "actualBytes": 3104,
+          "actualSha256": "a6215ed6ca0299f5a2504d527693a3545e416a3313de8fce84ad5ec15c4f90a4",
+          "actualMime": "image/webp",
+          "passed": true
+        },
+        {
+          "id": "ffff8dda-19d2-4094-bc7c-ad7f9f12c148",
+          "role": "detail-page",
+          "url": "https://assets.stackrtcg.com/public/card_image/ffff8dda-19d2-4094-bc7c-ad7f9f12c148/53bd437f6fe3f2f72f25b6e6392753907c2ec593723532fe6ee61beed58fbd2e/6ab52f543292d3bfeab48bdc27b02c15a5de8899913d01063b571c39392442e7/detail-page.webp",
+          "sha256": "6ab52f543292d3bfeab48bdc27b02c15a5de8899913d01063b571c39392442e7",
+          "bytes": 23498,
+          "mime": "image/webp",
+          "checkedAt": "2026-10-27T16:15:39.331Z",
+          "status": 200,
+          "actualBytes": 23498,
+          "actualSha256": "6ab52f543292d3bfeab48bdc27b02c15a5de8899913d01063b571c39392442e7",
+          "actualMime": "image/webp",
+          "passed": true
+        },
+        {
+          "id": "ffff7830-615d-4004-b19f-be2aa21d513a",
+          "role": "original",
+          "url": "https://assets.stackrtcg.com/public/set_logo/ffff7830-615d-4004-b19f-be2aa21d513a/4d8f64de2cd426db9273fee285e03afbccb1f169f9b61443a016c79f52880ff2/9419f4174d3264b848a66e1518786289062bd158d4fbe2d61021edc2498d804b/original.png",
+          "sha256": "9419f4174d3264b848a66e1518786289062bd158d4fbe2d61021edc2498d804b",
+          "bytes": 278562,
+          "mime": "image/png",
+          "checkedAt": "2026-10-27T16:15:45.992Z",
+          "status": 200,
+          "actualBytes": 278562,
+          "actualSha256": "9419f4174d3264b848a66e1518786289062bd158d4fbe2d61021edc2498d804b",
+          "actualMime": "image/png",
+          "passed": true
+        },
+        {
+          "id": "ffff3950-45d7-4fa9-9fd5-aa67776c089f",
+          "role": "original",
+          "url": "https://assets.stackrtcg.com/public/card_image/ffff3950-45d7-4fa9-9fd5-aa67776c089f/c333d02711c34e459456b4f0c28256d84928b3b80f5ec1274840aa368a406ffe/e7479d1ebfa8983147cfd4b5cbd398c219d61ce02883bfa813ed7becec109c9f/original.png",
+          "sha256": "e7479d1ebfa8983147cfd4b5cbd398c219d61ce02883bfa813ed7becec109c9f",
+          "bytes": 226294,
+          "mime": "image/png",
+          "checkedAt": "2026-10-27T16:15:51.887Z",
+          "status": 200,
+          "actualBytes": 226294,
+          "actualSha256": "e7479d1ebfa8983147cfd4b5cbd398c219d61ce02883bfa813ed7becec109c9f",
+          "actualMime": "image/png",
+          "passed": true
+        },
+        {
+          "id": "ffff3950-45d7-4fa9-9fd5-aa67776c089f",
+          "role": "card-grid",
+          "url": "https://assets.stackrtcg.com/public/card_image/ffff3950-45d7-4fa9-9fd5-aa67776c089f/c333d02711c34e459456b4f0c28256d84928b3b80f5ec1274840aa368a406ffe/b5b67e7f82eb2b1654431cf1e205ae63fe567ec717ead6299cbd57505d60430e/card-grid.webp",
+          "sha256": "b5b67e7f82eb2b1654431cf1e205ae63fe567ec717ead6299cbd57505d60430e",
+          "bytes": 16406,
+          "mime": "image/webp",
+          "checkedAt": "2026-10-27T16:15:57.653Z",
+          "status": 200,
+          "actualBytes": 16406,
+          "actualSha256": "b5b67e7f82eb2b1654431cf1e205ae63fe567ec717ead6299cbd57505d60430e",
+          "actualMime": "image/webp",
+          "passed": true
+        },
+        {
+          "id": "ffff3950-45d7-4fa9-9fd5-aa67776c089f",
+          "role": "search-result",
+          "url": "https://assets.stackrtcg.com/public/card_image/ffff3950-45d7-4fa9-9fd5-aa67776c089f/c333d02711c34e459456b4f0c28256d84928b3b80f5ec1274840aa368a406ffe/742b5826b01cf139195b694e542bce27a3be56de8c77b7feedb14b9297e8f890/search-result.webp",
+          "sha256": "742b5826b01cf139195b694e542bce27a3be56de8c77b7feedb14b9297e8f890",
+          "bytes": 3298,
+          "mime": "image/webp",
+          "checkedAt": "2026-10-27T16:16:03.326Z",
+          "status": 200,
+          "actualBytes": 3298,
+          "actualSha256": "742b5826b01cf139195b694e542bce27a3be56de8c77b7feedb14b9297e8f890",
+          "actualMime": "image/webp",
+          "passed": true
+        },
+        {
+          "id": "ffff3950-45d7-4fa9-9fd5-aa67776c089f",
+          "role": "detail-page",
+          "url": "https://assets.stackrtcg.com/public/card_image/ffff3950-45d7-4fa9-9fd5-aa67776c089f/c333d02711c34e459456b4f0c28256d84928b3b80f5ec1274840aa368a406ffe/4a2b39f0d2107b6a4e32c4147ff8fb8b8d4a92a3e7120fe4df9fedefc5a898b2/detail-page.webp",
+          "sha256": "4a2b39f0d2107b6a4e32c4147ff8fb8b8d4a92a3e7120fe4df9fedefc5a898b2",
+          "bytes": 26060,
+          "mime": "image/webp",
+          "checkedAt": "2026-10-27T16:16:09.238Z",
+          "status": 200,
+          "actualBytes": 26060,
+          "actualSha256": "4a2b39f0d2107b6a4e32c4147ff8fb8b8d4a92a3e7120fe4df9fedefc5a898b2",
+          "actualMime": "image/webp",
+          "passed": true
+        }
+      ],
+      "passed": 9,
+      "total": 9
+    },
+    "journalSelected": {
+      "checkedAt": "2026-10-27T16:44:25.038Z",
+      "provenance": "Transcribed from successful live bounded GET verification stdout in this work thread; hashes, byte sizes and MIME matched every expected value.",
+      "checks": {
+        "certificateHash": true,
+        "eventStreamHash": true,
+        "eventCount": true,
+        "finished": true
+      },
+      "certificateSha256": "affcbbf4b9d3f6e921ed73deada3e3bfbf5d36e4ba68e91d4aae859d3136f2b3",
+      "results": [
+        {
+          "url": "https://assets.stackrtcg.com/public/card_image/efa0fa4e-f858-435a-9d9b-fd5155393b72/7bb2f9d468de2026d12f77dcb77ada5b683bba1c84ab6816a76349014b419a56/b5538c50037c760ef5dde062b04be37e956ccf28f5f9a985c9dda0455a830142/original.jpg",
+          "rowId": "efa0fa4e-f858-435a-9d9b-fd5155393b72",
+          "role": "original",
+          "status": 200,
+          "bytes": 143803,
+          "sha256": "b5538c50037c760ef5dde062b04be37e956ccf28f5f9a985c9dda0455a830142",
+          "mime": "image/jpeg",
+          "passed": true
+        },
+        {
+          "url": "https://assets.stackrtcg.com/public/card_image/efa0fa4e-f858-435a-9d9b-fd5155393b72/7bb2f9d468de2026d12f77dcb77ada5b683bba1c84ab6816a76349014b419a56/33288e7f3451a062ed86749b92236c2839e9834911e72994b524431754c3e95c/card-grid.webp",
+          "rowId": "efa0fa4e-f858-435a-9d9b-fd5155393b72",
+          "role": "card-grid",
+          "status": 200,
+          "bytes": 21652,
+          "sha256": "33288e7f3451a062ed86749b92236c2839e9834911e72994b524431754c3e95c",
+          "mime": "image/webp",
+          "passed": true
+        },
+        {
+          "url": "https://assets.stackrtcg.com/public/card_image/ffff8dda-19d2-4094-bc7c-ad7f9f12c148/53bd437f6fe3f2f72f25b6e6392753907c2ec593723532fe6ee61beed58fbd2e/69b0ed457a5aec2b20e9ba35580ec1d8ae05058d70c39b824a93de8512152783/original.png",
+          "rowId": "ffff8dda-19d2-4094-bc7c-ad7f9f12c148",
+          "role": "original",
+          "status": 200,
+          "bytes": 202460,
+          "sha256": "69b0ed457a5aec2b20e9ba35580ec1d8ae05058d70c39b824a93de8512152783",
+          "mime": "image/png",
+          "passed": true
+        },
+        {
+          "url": "https://assets.stackrtcg.com/public/card_image/ffff8dda-19d2-4094-bc7c-ad7f9f12c148/53bd437f6fe3f2f72f25b6e6392753907c2ec593723532fe6ee61beed58fbd2e/0a1f7b83fbdb25a1e89c9c0ed41dc79f11f7fd255da508c3d76fdfd475153327/card-grid.webp",
+          "rowId": "ffff8dda-19d2-4094-bc7c-ad7f9f12c148",
+          "role": "card-grid",
+          "status": 200,
+          "bytes": 15554,
+          "sha256": "0a1f7b83fbdb25a1e89c9c0ed41dc79f11f7fd255da508c3d76fdfd475153327",
+          "mime": "image/webp",
+          "passed": true
+        }
+      ],
+      "passed": 4,
+      "total": 4
+    },
+    "checksPassed": 13,
+    "uniqueObjects": 11,
+    "fullObjectAudit": false
+  },
+  "limitations": [
+    "Original runner aggregate query timed out; equivalent pointer predicates were independently checked across four exhaustive disjoint UUID partitions in separate read-only transactions.",
+    "Public retrieval is sampled, not a full GET audit of every eligible object.",
+    "Completion applies only to the stated eligible asset scope, not all catalogue images."
+  ],
+  "completionVerified": true,
+  "allCatalogueImagesCovered": false,
+  "sourceObjectsDeleted": 0,
+  "applicationReleaseComplete": false
+}
