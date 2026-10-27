@@ -66,6 +66,11 @@ was performed by this audit. Production benefit requires merging the fix.
 
 ## Evidence
 
+The [six-check acceptance follow-up](acceptance-followup.md) adds fresh account,
+image-repair and pricing evidence, including a sampled generation with zero
+fresh prices and the successful pricing-CI retry. It does not replace the
+original observation window below.
+
 Machine-readable snapshots are in [evidence](evidence/). SQL probes were read-only
 and bounded to 5–8 seconds; no image bytes were saved locally. The six sampled
 public images were streamed only for checksum verification.
