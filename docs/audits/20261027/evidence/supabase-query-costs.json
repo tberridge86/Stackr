@@ -1,0 +1,142 @@
+[
+  {
+    "performance": {
+      "observed_at": "2026-10-27T15:11:06.455092+00:00",
+      "stats_reset": "2026-09-09T01:02:41.421084+00:00",
+      "top_queries": [
+        {
+          "rows": 388834,
+          "calls": 388834,
+          "query": "WITH pgrst_source AS ( SELECT \"api\".\"catalogue_cards\".\"variant_id\", \"api\".\"catalogue_cards\".\"printing_id\", \"api\".\"catalogue_cards\".\"set_id\", \"api\".\"catalogue_cards\".\"set_code\", \"api\".\"catalogue_cards\".\"collector_number\", \"api\".\"catalogue_cards\".\"language_code\", \"api\".\"catalogue_cards\".\"variant_code\", \"api\".\"catalogue_cards\".\"finish_code\", \"api\".\"catalogue_cards\".\"catalogue_version_id\" FROM \"api\".\"catalogue_cards\" WHERE  \"api\".\"catalogue_cards\".\"set_id\" = $1  ORDER BY \"api\".\"catalogue_cards\".\"variant_id\" ASC  LIMIT $2 OFFSET $3 )  SELECT $4::bigint AS total_result_set, pg_catalog.count(_postgrest_t) AS page_total, coalesce(json_agg(_postgrest_t), $5) AS body, nullif(current_setting($6, $7), $8) AS response_headers, nullif(current_setting($9, $10), $11) AS response_status, $12 AS response_inserted FROM ( SELECT * FROM pgrst_source ) _postgrest_t",
+          "mean_ms": 177.4,
+          "queryid": "2554750147893907797",
+          "total_ms": 68983255.2,
+          "shared_blks_hit": 770855893,
+          "shared_blks_read": 512482,
+          "temp_blks_written": 0
+        },
+        {
+          "rows": 119329,
+          "calls": 119329,
+          "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_variants\" FROM json_to_record(pgrst_payload.json_data) AS _(\"p_variants\" uuid[]) LIMIT $4) pgrst_body , LATERAL (SELECT \"api\".\"latest_stored_exact_prices\"(\"p_variants\" := pgrst_body.\"p_variants\") pgrst_scalar) pgrst_call) SELECT $5::bigint AS total_result_set, pg_catalog.count(_postgrest_t) AS page_total, coalesce(json_agg(_postgrest_t.pgrst_scalar), $6) AS body, nullif(current_setting($7, $8), $9) AS response_headers, nullif(current_setting($10, $11), $12) AS response_status, $13 AS response_inserted FROM (SELECT \"latest_stored_exact_prices\".* FROM \"pgrst_source\" AS \"latest_stored_exact_prices\"   LIMIT $2 OFFSET $3) _postgrest_t",
+          "mean_ms": 542.6,
+          "queryid": "-4020699816706740039",
+          "total_ms": 64742605.8,
+          "shared_blks_hit": 979550800,
+          "shared_blks_read": 531012,
+          "temp_blks_written": 18127010
+        },
+        {
+          "rows": 16516,
+          "calls": 16516,
+          "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_category\", \"p_group\", \"p_language\", \"p_name\", \"p_abbreviation\" FROM json_to_record(pgrst_payload.json_data) AS _(\"p_category\" integer, \"p_group\" bigint, \"p_language\" text, \"p_name\" text, \"p_abbreviation\" text) LIMIT $4) pgrst_body , LATERAL (SELECT \"api\".\"resolve_catalogue_bulk_set\"(\"p_category\" := pgrst_body.\"p_category\", \"p_group\" := pgrst_body.\"p_group\", \"p_language\" := pgrst_body.\"p_language\", \"p_name\" := pgrst_body.\"p_name\", \"p_abbreviation\" := pgrst_body.\"p_abbreviation\") pgrst_scalar) pgrst_call) SELECT $5::bigint AS total_result_set, $6 AS page_total, coalesce(json_agg(_postgrest_t.pgrst_scalar)->$7, $8) AS body, nullif(current_setting($9, $10), $11) AS response_headers, nullif(current_setting($12, $13), $14) AS response_status, $15 AS response_inserted FROM (SELECT \"resolve_catalogue_bulk_set\".* FROM \"pgrst_source\" AS \"resolve_catalogue_bulk_set\"   LIMIT $2 OFFSET $3) _postgrest_t",
+          "mean_ms": 828.3,
+          "queryid": "-1140570931119106050",
+          "total_ms": 13680155.1,
+          "shared_blks_hit": 35870992,
+          "shared_blks_read": 14481480,
+          "temp_blks_written": 0
+        },
+        {
+          "rows": 6843,
+          "calls": 6843,
+          "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_results\" FROM json_to_record(pgrst_payload.json_data) AS _(\"p_results\" jsonb) LIMIT $4) pgrst_body , LATERAL (SELECT \"api\".\"store_catalogue_bulk_prices\"(\"p_results\" := pgrst_body.\"p_results\") pgrst_scalar) pgrst_call) SELECT $5::bigint AS total_result_set, $6 AS page_total, coalesce(json_agg(_postgrest_t.pgrst_scalar)->$7, $8) AS body, nullif(current_setting($9, $10), $11) AS response_headers, nullif(current_setting($12, $13), $14) AS response_status, $15 AS response_inserted FROM (SELECT \"store_catalogue_bulk_prices\".* FROM \"pgrst_source\" AS \"store_catalogue_bulk_prices\"   LIMIT $2 OFFSET $3) _postgrest_t",
+          "mean_ms": 1588.8,
+          "queryid": "-8367525613714533786",
+          "total_ms": 10872070.7,
+          "shared_blks_hit": 102017035,
+          "shared_blks_read": 852486,
+          "temp_blks_written": 21004
+        },
+        {
+          "rows": 11730,
+          "calls": 11730,
+          "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_run\", \"p_after\", \"p_limit\" FROM json_to_record(pgrst_payload.json_data) AS _(\"p_run\" uuid, \"p_after\" uuid, \"p_limit\" integer) LIMIT $4) pgrst_body , LATERAL (SELECT \"api\".\"catalogue_bulk_price_coverage_page\"(\"p_run\" := pgrst_body.\"p_run\", \"p_after\" := pgrst_body.\"p_after\", \"p_limit\" := pgrst_body.\"p_limit\") pgrst_scalar) pgrst_call) SELECT $5::bigint AS total_result_set, $6 AS page_total, coalesce(json_agg(_postgrest_t.pgrst_scalar)->$7, $8) AS body, nullif(current_setting($9, $10), $11) AS response_headers, nullif(current_setting($12, $13), $14) AS response_status, $15 AS response_inserted FROM (SELECT \"catalogue_bulk_price_coverage_page\".* FROM \"pgrst_source\" AS \"catalogue_bulk_price_coverage_page\"   LIMIT $2 OFFSET $3) _postgrest_t",
+          "mean_ms": 843.6,
+          "queryid": "-1669132499549010132",
+          "total_ms": 9895995.9,
+          "shared_blks_hit": 578441004,
+          "shared_blks_read": 508793,
+          "temp_blks_written": 8954119
+        },
+        {
+          "rows": 30813,
+          "calls": 30813,
+          "query": "WITH pgrst_source AS (SELECT \"pgrst_call\".* FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_after_product_id\", \"p_limit\" FROM json_to_record(pgrst_payload.json_data) AS _(\"p_after_product_id\" bigint, \"p_limit\" integer) LIMIT $4) pgrst_body , LATERAL \"api\".\"list_reviewed_cardmarket_printing_mappings\"(\"p_after_product_id\" := pgrst_body.\"p_after_product_id\", \"p_limit\" := pgrst_body.\"p_limit\") pgrst_call) SELECT $5::bigint AS total_result_set, pg_catalog.count(_postgrest_t) AS page_total, coalesce(json_agg(_postgrest_t), $6) AS body, nullif(current_setting($7, $8), $9) AS response_headers, nullif(current_setting($10, $11), $12) AS response_status, $13 AS response_inserted FROM (SELECT \"record\".* FROM \"pgrst_source\" AS \"record\"   LIMIT $2 OFFSET $3) _postgrest_t",
+          "mean_ms": 237.9,
+          "queryid": "5838242577529614117",
+          "total_ms": 7331107.3,
+          "shared_blks_hit": 98175622,
+          "shared_blks_read": 396967,
+          "temp_blks_written": 11412003
+        },
+        {
+          "rows": 8063,
+          "calls": 8063,
+          "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_category\", \"p_group\", \"p_after\", \"p_limit\" FROM json_to_record(pgrst_payload.json_data) AS _(\"p_category\" integer, \"p_group\" bigint, \"p_after\" uuid, \"p_limit\" integer) LIMIT $4) pgrst_body , LATERAL (SELECT \"api\".\"catalogue_bulk_group_candidates\"(\"p_category\" := pgrst_body.\"p_category\", \"p_group\" := pgrst_body.\"p_group\", \"p_after\" := pgrst_body.\"p_after\", \"p_limit\" := pgrst_body.\"p_limit\") pgrst_scalar) pgrst_call) SELECT $5::bigint AS total_result_set, pg_catalog.count(_postgrest_t) AS page_total, coalesce(json_agg(_postgrest_t.pgrst_scalar), $6) AS body, nullif(current_setting($7, $8), $9) AS response_headers, nullif(current_setting($10, $11), $12) AS response_status, $13 AS response_inserted FROM (SELECT \"catalogue_bulk_group_candidates\".* FROM \"pgrst_source\" AS \"catalogue_bulk_group_candidates\"   LIMIT $2 OFFSET $3) _postgrest_t",
+          "mean_ms": 833.1,
+          "queryid": "-4668064005735157444",
+          "total_ms": 6717604.7,
+          "shared_blks_hit": 25262397,
+          "shared_blks_read": 171010,
+          "temp_blks_written": 159160
+        },
+        {
+          "rows": 3953,
+          "calls": 3953,
+          "query": "WITH pgrst_source AS ( SELECT \"api\".\"catalogue_external_identifiers\".\"source_entity_type\", \"api\".\"catalogue_external_identifiers\".\"external_id\", \"api\".\"catalogue_external_identifiers\".\"variant_id\", \"api\".\"catalogue_external_identifiers\".\"printing_id\" FROM \"api\".\"catalogue_external_identifiers\" WHERE  ( \"api\".\"catalogue_external_identifiers\".\"variant_id\" = $1 OR  \"api\".\"catalogue_external_identifiers\".\"printing_id\" = $2) AND  \"api\".\"catalogue_external_identifiers\".\"language_code\" = $3   LIMIT $4 OFFSET $5 )  SELECT $6::bigint AS total_result_set, pg_catalog.count(_postgrest_t) AS page_total, coalesce(json_agg(_postgrest_t), $7) AS body, nullif(current_setting($8, $9), $10) AS response_headers, nullif(current_setting($11, $12), $13) AS response_status, $14 AS response_inserted FROM ( SELECT * FROM pgrst_source ) _postgrest_t",
+          "mean_ms": 1191.2,
+          "queryid": "-1388723966471790667",
+          "total_ms": 4708945.6,
+          "shared_blks_hit": 9156269,
+          "shared_blks_read": 160187,
+          "temp_blks_written": 0
+        },
+        {
+          "rows": 97405,
+          "calls": 97405,
+          "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_event\" FROM json_to_record(pgrst_payload.json_data) AS _(\"p_event\" jsonb) LIMIT $4) pgrst_body , LATERAL (SELECT \"api\".\"observability_record_event\"(\"p_event\" := pgrst_body.\"p_event\") pgrst_scalar) pgrst_call) SELECT $5::bigint AS total_result_set, $6 AS page_total, coalesce(json_agg(_postgrest_t.pgrst_scalar)->$7, $8) AS body, nullif(current_setting($9, $10), $11) AS response_headers, nullif(current_setting($12, $13), $14) AS response_status, $15 AS response_inserted FROM (SELECT \"observability_record_event\".* FROM \"pgrst_source\" AS \"observability_record_event\"   LIMIT $2 OFFSET $3) _postgrest_t",
+          "mean_ms": 46.9,
+          "queryid": "3704692595606381162",
+          "total_ms": 4568524.1,
+          "shared_blks_hit": 3922738,
+          "shared_blks_read": 118890,
+          "temp_blks_written": 0
+        },
+        {
+          "rows": 7905,
+          "calls": 7905,
+          "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_owner\" FROM json_to_record(pgrst_payload.json_data) AS _(\"p_owner\" uuid) LIMIT $4) pgrst_body , LATERAL (SELECT \"api\".\"claim_collection_valuation\"(\"p_owner\" := pgrst_body.\"p_owner\") pgrst_scalar) pgrst_call) SELECT $5::bigint AS total_result_set, $6 AS page_total, coalesce(json_agg(_postgrest_t.pgrst_scalar)->$7, $8) AS body, nullif(current_setting($9, $10), $11) AS response_headers, nullif(current_setting($12, $13), $14) AS response_status, $15 AS response_inserted FROM (SELECT \"claim_collection_valuation\".* FROM \"pgrst_source\" AS \"claim_collection_valuation\"   LIMIT $2 OFFSET $3) _postgrest_t",
+          "mean_ms": 448.4,
+          "queryid": "5934413364869422649",
+          "total_ms": 3544811.7,
+          "shared_blks_hit": 11457385,
+          "shared_blks_read": 37659,
+          "temp_blks_written": 0
+        },
+        {
+          "rows": 7141,
+          "calls": 7141,
+          "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_owner\", \"p_lease\", \"p_revision\", \"p_summary\", \"p_refresh_completed\" FROM json_to_record(pgrst_payload.json_data) AS _(\"p_owner\" uuid, \"p_lease\" uuid, \"p_revision\" text, \"p_summary\" jsonb, \"p_refresh_completed\" timestamp with time zone) LIMIT $4) pgrst_body , LATERAL (SELECT \"api\".\"publish_collection_valuation\"(\"p_owner\" := pgrst_body.\"p_owner\", \"p_lease\" := pgrst_body.\"p_lease\", \"p_revision\" := pgrst_body.\"p_revision\", \"p_summary\" := pgrst_body.\"p_summary\", \"p_refresh_completed\" := pgrst_body.\"p_refresh_completed\") pgrst_scalar) pgrst_call) SELECT $5::bigint AS total_result_set, $6 AS page_total, coalesce(json_agg(_postgrest_t.pgrst_scalar)->$7, $8) AS body, nullif(current_setting($9, $10), $11) AS response_headers, nullif(current_setting($12, $13), $14) AS response_status, $15 AS response_inserted FROM (SELECT \"publish_collection_valuation\".* FROM \"pgrst_source\" AS \"publish_collection_valuation\"   LIMIT $2 OFFSET $3) _postgrest_t",
+          "mean_ms": 475.2,
+          "queryid": "-6066878569812895557",
+          "total_ms": 3393711.1,
+          "shared_blks_hit": 7621664,
+          "shared_blks_read": 11652,
+          "temp_blks_written": 0
+        },
+        {
+          "rows": 17102,
+          "calls": 17102,
+          "query": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_run\", \"p_category\", \"p_group\", \"p_token\", \"p_status\", \"p_stats\", \"p_retry_seconds\" FROM json_to_record(pgrst_payload.json_data) AS _(\"p_run\" uuid, \"p_category\" integer, \"p_group\" bigint, \"p_token\" uuid, \"p_status\" text, \"p_stats\" jsonb, \"p_retry_seconds\" integer) LIMIT $4) pgrst_body , LATERAL (SELECT \"api\".\"finish_catalogue_bulk_sweep_group\"(\"p_run\" := pgrst_body.\"p_run\", \"p_category\" := pgrst_body.\"p_category\", \"p_group\" := pgrst_body.\"p_group\", \"p_token\" := pgrst_body.\"p_token\", \"p_status\" := pgrst_body.\"p_status\", \"p_stats\" := pgrst_body.\"p_stats\", \"p_retry_seconds\" := pgrst_body.\"p_retry_seconds\") pgrst_scalar) pgrst_call) SELECT $5::bigint AS total_result_set, $6 AS page_total, coalesce(json_agg(_postgrest_t.pgrst_scalar)->$7, $8) AS body, nullif(current_setting($9, $10), $11) AS response_headers, nullif(current_setting($12, $13), $14) AS response_status, $15 AS response_inserted FROM (SELECT \"finish_catalogue_bulk_sweep_group\".* FROM \"pgrst_source\" AS \"finish_catalogue_bulk_sweep_group\"   LIMIT $2 OFFSET $3) _postgrest_t",
+          "mean_ms": 175.2,
+          "queryid": "6542875249928291895",
+          "total_ms": 2995600.1,
+          "shared_blks_hit": 18106361,
+          "shared_blks_read": 198783,
+          "temp_blks_written": 26004
+        }
+      ]
+    }
+  }
+]

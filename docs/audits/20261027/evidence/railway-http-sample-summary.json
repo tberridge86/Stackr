@@ -1,0 +1,218 @@
+{
+  "sampleOnly": true,
+  "rows": 101,
+  "from": "2026-10-27T00:47:48.217582958Z",
+  "to": "2026-10-27T14:29:32.931912368Z",
+  "groups": [
+    {
+      "path": "/api/admin/observability/events",
+      "status": 202,
+      "count": 38,
+      "maxMs": 51
+    },
+    {
+      "path": "/health",
+      "status": 200,
+      "count": 6,
+      "maxMs": 28
+    },
+    {
+      "path": "/api/stripe/create-connect-account",
+      "status": 503,
+      "count": 2,
+      "maxMs": 12
+    },
+    {
+      "path": "/api/stripe/account-status",
+      "status": 503,
+      "count": 2,
+      "maxMs": 9
+    },
+    {
+      "path": "/api/stripe/create-account-link",
+      "status": 503,
+      "count": 2,
+      "maxMs": 77
+    },
+    {
+      "path": "/api/stripe/create-payment-intent",
+      "status": 503,
+      "count": 2,
+      "maxMs": 28
+    },
+    {
+      "path": "/api/stripe/create-trade-cash-payment-intent",
+      "status": 503,
+      "count": 2,
+      "maxMs": 13
+    },
+    {
+      "path": "/api/stripe/onboarding-complete",
+      "status": 503,
+      "count": 2,
+      "maxMs": 11
+    },
+    {
+      "path": "/api/stripe/onboarding-refresh",
+      "status": 503,
+      "count": 2,
+      "maxMs": 12
+    },
+    {
+      "path": "/api/shippo/status",
+      "status": 503,
+      "count": 2,
+      "maxMs": 32
+    },
+    {
+      "path": "/api/shippo/rates",
+      "status": 503,
+      "count": 2,
+      "maxMs": 71
+    },
+    {
+      "path": "/api/shippo/labels",
+      "status": 503,
+      "count": 2,
+      "maxMs": 3
+    },
+    {
+      "path": "/api/shippo/track/smoke/smoke-commerce-disabled",
+      "status": 503,
+      "count": 2,
+      "maxMs": 46
+    },
+    {
+      "path": "/api/trade/sent",
+      "status": 410,
+      "count": 2,
+      "maxMs": 2
+    },
+    {
+      "path": "/api/trade/received",
+      "status": 410,
+      "count": 2,
+      "maxMs": 9
+    },
+    {
+      "path": "/api/notify",
+      "status": 410,
+      "count": 2,
+      "maxMs": 8
+    },
+    {
+      "path": "/api/notify/trade-offer",
+      "status": 410,
+      "count": 2,
+      "maxMs": 9
+    },
+    {
+      "path": "/api/notify/trade-status",
+      "status": 410,
+      "count": 2,
+      "maxMs": 2
+    },
+    {
+      "path": "/api/notify/wishlist-match",
+      "status": 410,
+      "count": 2,
+      "maxMs": 11
+    },
+    {
+      "path": "/api/notify/price-alert",
+      "status": 410,
+      "count": 2,
+      "maxMs": 3
+    },
+    {
+      "path": "/api/discord/new-trade-listing",
+      "status": 410,
+      "count": 2,
+      "maxMs": 9
+    },
+    {
+      "path": "/api/discord/new-review",
+      "status": 410,
+      "count": 2,
+      "maxMs": 4
+    },
+    {
+      "path": "/v1/health",
+      "status": 401,
+      "count": 2,
+      "maxMs": 13
+    },
+    {
+      "path": "/v1/catalog/manifest",
+      "status": 499,
+      "count": 2,
+      "maxMs": 3998
+    },
+    {
+      "path": "/v1/assets/manifest",
+      "status": 499,
+      "count": 2,
+      "maxMs": 3997
+    },
+    {
+      "path": "/v1/catalog/manifest",
+      "status": 200,
+      "count": 1,
+      "maxMs": 323
+    },
+    {
+      "path": "/v1/languages",
+      "status": 200,
+      "count": 1,
+      "maxMs": 65
+    },
+    {
+      "path": "/v1/sets",
+      "status": 200,
+      "count": 1,
+      "maxMs": 249
+    },
+    {
+      "path": "/v1/sets/005e4850-7601-4765-b538-290882ded6d8/cards",
+      "status": 200,
+      "count": 1,
+      "maxMs": 690
+    },
+    {
+      "path": "/v1/cards/b32cd544-77f0-44fa-8eb5-b0a38fa314e5",
+      "status": 200,
+      "count": 1,
+      "maxMs": 233
+    },
+    {
+      "path": "/v1/cards/b32cd544-77f0-44fa-8eb5-b0a38fa314e5/variants",
+      "status": 200,
+      "count": 1,
+      "maxMs": 179
+    },
+    {
+      "path": "/v1/search",
+      "status": 200,
+      "count": 1,
+      "maxMs": 314
+    },
+    {
+      "path": "/v1/pokemon/pikachu/cards",
+      "status": 200,
+      "count": 1,
+      "maxMs": 211
+    },
+    {
+      "path": "/v1/pokemon/Mr. Mime/cards",
+      "status": 200,
+      "count": 1,
+      "maxMs": 680
+    },
+    {
+      "path": "/v1/assets/manifest",
+      "status": 200,
+      "count": 2,
+      "maxMs": 103
+    }
+  ]
+}

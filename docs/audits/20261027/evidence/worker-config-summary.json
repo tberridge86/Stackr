@@ -1,0 +1,215 @@
+[
+  {
+    "service": {
+      "id": "c4c52418-b307-4c9f-9ffd-e67be163c366",
+      "name": "marvelous-surprise Copy",
+      "state": "live"
+    },
+    "config": {
+      "source": {
+        "repo": "tberridge86/Stackr",
+        "branch": "main",
+        "rootDirectory": "/",
+        "checkSuites": false
+      },
+      "networking": {
+        "privateNetworkEndpoint": "marvelous-surprise-copy"
+      },
+      "build": {
+        "builder": "RAILPACK",
+        "watchPatterns": [
+          "/scripts/refresh-owner-provider-prices.mjs",
+          "/scripts/lib/owner-provider-price-refresh-core.mjs",
+          "/scripts/lib/owner-price-printing-identities.mjs",
+          "/scripts/lib/owner-price-saved-references.mjs",
+          "/scripts/pricing-v2-supabase-target.mjs",
+          "/backend/**",
+          "/package.json",
+          "/package-lock.json",
+          "/.npmrc"
+        ],
+        "buildCommand": "npm ci --include=dev",
+        "buildEnvironment": "V3"
+      },
+      "deploy": {
+        "startCommand": "node scripts/refresh-owner-provider-prices.mjs --limit=12 --apply --include-queue --queue-only",
+        "restartPolicyType": "NEVER",
+        "useLegacyStacker": false,
+        "ipv6EgressEnabled": false,
+        "cronSchedule": "*/5 * * * *",
+        "runtime": "V2",
+        "multiRegionConfig": {
+          "us-west2": {
+            "numReplicas": 1
+          }
+        }
+      }
+    },
+    "latestDeployment": {
+      "id": "92593bce-063c-4db6-bb4f-b39dcedb4401",
+      "status": "SUCCESS",
+      "createdAt": "2026-10-27T15:05:19.234Z",
+      "url": null
+    }
+  },
+  {
+    "service": {
+      "id": "ff1e8d30-4307-45be-855c-5f83f092d8a5",
+      "name": "marvelous-surprise",
+      "state": "live"
+    },
+    "config": {
+      "source": {
+        "repo": "tberridge86/Stackr",
+        "branch": "main",
+        "rootDirectory": "/",
+        "checkSuites": false
+      },
+      "build": {
+        "builder": "RAILPACK",
+        "watchPatterns": [
+          "/scripts/refresh-owner-provider-prices.mjs",
+          "/scripts/lib/owner-provider-price-refresh-core.mjs",
+          "/scripts/lib/owner-price-printing-identities.mjs",
+          "/scripts/lib/owner-price-saved-references.mjs",
+          "/scripts/lib/general-price-identities.mjs",
+          "/scripts/lib/prepared-collection-valuation.mjs",
+          "/scripts/pricing-v2-supabase-target.mjs",
+          "/backend/**",
+          "/package.json",
+          "/package-lock.json",
+          "/.npmrc"
+        ],
+        "buildCommand": "npm ci --include=dev",
+        "buildEnvironment": "V3"
+      },
+      "deploy": {
+        "startCommand": "node scripts/refresh-owner-provider-prices.mjs --complete-owned --general-estimates --apply",
+        "restartPolicyType": "NEVER",
+        "useLegacyStacker": false,
+        "ipv6EgressEnabled": false,
+        "cronSchedule": "0 6,18 * * *",
+        "runtime": "V2",
+        "multiRegionConfig": {
+          "us-west2": {
+            "numReplicas": 1
+          }
+        }
+      }
+    },
+    "latestDeployment": {
+      "id": "d8710255-6047-4db7-8ef1-27e3d30282c6",
+      "status": "SUCCESS",
+      "createdAt": "2026-10-26T07:37:14.432Z",
+      "url": null
+    }
+  },
+  {
+    "service": {
+      "id": "a2e61d08-1910-4762-bf82-e0473e86ad5f",
+      "name": "stackr-catalogue-prices-daily-production",
+      "state": "live"
+    },
+    "config": {
+      "source": {
+        "repo": "tberridge86/Stackr",
+        "branch": "main",
+        "commitSha": "ea8190f3a0bda642e266438b68f19d4f398f7845"
+      },
+      "networking": {
+        "privateNetworkEndpoint": "stackr-catalogue-prices-daily-pr"
+      },
+      "build": {
+        "builder": "DOCKERFILE",
+        "watchPatterns": [
+          "/scripts/refresh-catalogue-bulk-prices.mjs",
+          "/scripts/run-catalogue-price-cron.mjs",
+          "/scripts/catalogue-price-*.mjs",
+          "/scripts/pricing-v2-supabase-target.mjs",
+          "/deploy/catalogue-price-worker/**"
+        ],
+        "buildEnvironment": "V3",
+        "dockerfilePath": "deploy/catalogue-price-worker/Dockerfile"
+      },
+      "deploy": {
+        "startCommand": "node scripts/run-catalogue-price-cron.mjs",
+        "limitOverride": {
+          "containers": {
+            "cpu": 1,
+            "memoryBytes": 500000000
+          }
+        },
+        "restartPolicyType": "NEVER",
+        "useLegacyStacker": false,
+        "ipv6EgressEnabled": false,
+        "cronSchedule": "13 * * * *",
+        "runtime": "V2",
+        "multiRegionConfig": {
+          "us-west2": {
+            "numReplicas": 1
+          }
+        }
+      }
+    },
+    "latestDeployment": {
+      "id": "7044b01d-f774-42a2-8af2-8a9223fc582e",
+      "status": "SUCCESS",
+      "createdAt": "2026-10-27T09:14:34.393Z",
+      "url": null
+    }
+  },
+  {
+    "service": {
+      "id": "1c4cf45c-816d-46cc-a416-78d8c18bd779",
+      "name": "stackr-cardmarket-daily-production",
+      "state": "live"
+    },
+    "config": {
+      "source": {
+        "repo": "tberridge86/Stackr",
+        "branch": "main",
+        "commitSha": "ea8190f3a0bda642e266438b68f19d4f398f7845",
+        "rootDirectory": "/"
+      },
+      "networking": {
+        "privateNetworkEndpoint": "stackr-cardmarket-daily-producti"
+      },
+      "build": {
+        "builder": "DOCKERFILE",
+        "watchPatterns": [
+          "/scripts/cardmarket-*.mjs",
+          "/scripts/catalogue-price-fx.mjs",
+          "/scripts/catalogue-price-daily-status.mjs",
+          "/scripts/catalogue-price-database.mjs",
+          "/deploy/cardmarket-price-worker/**"
+        ],
+        "buildEnvironment": "V3",
+        "dockerfilePath": "deploy/cardmarket-price-worker/Dockerfile"
+      },
+      "deploy": {
+        "limitOverride": {
+          "containers": {
+            "cpu": 1,
+            "memoryBytes": 500000000
+          }
+        },
+        "restartPolicyType": "NEVER",
+        "useLegacyStacker": false,
+        "ipv6EgressEnabled": false,
+        "cronSchedule": "17 * * * *",
+        "runtime": "V2",
+        "multiRegionConfig": {
+          "us-west2": {
+            "numReplicas": 1
+          }
+        }
+      },
+      "volumeMounts": {
+        "86718ccd-b9a3-4570-ad10-c114a3be4eb6": {
+          "mountPath": "/var/lib/cardmarket"
+        }
+      }
+    },
+    "latestDeployment": null
+  }
+]

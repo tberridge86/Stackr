@@ -1,0 +1,343 @@
+[
+  {
+    "security": {
+      "asset_columns": [
+        "id",
+        "asset_type",
+        "game_code",
+        "set_id",
+        "printing_id",
+        "variant_id",
+        "source_id",
+        "url",
+        "storage_path",
+        "mime_type",
+        "width",
+        "height",
+        "sha256",
+        "rights_status",
+        "publicly_servable",
+        "attribution_text",
+        "licensing_review_notes",
+        "source_updated_at",
+        "deprecated_at",
+        "deprecated_reason",
+        "created_at",
+        "updated_at",
+        "asset_id",
+        "asset_visibility",
+        "storage_provider",
+        "storage_bucket",
+        "storage_key",
+        "original_source_url",
+        "original_source_identifier",
+        "source_attribution",
+        "permission_status",
+        "content_sha256",
+        "perceptual_hash",
+        "byte_size",
+        "derivative_list",
+        "cache_control",
+        "archival_storage_key",
+        "externally_referenced",
+        "unavailable_reason",
+        "last_verified_at",
+        "retention_status",
+        "retention_until",
+        "deleted_at",
+        "deletion_reason",
+        "acquisition_source",
+        "recognition_reference_eligible"
+      ],
+      "selected_policies": [
+        {
+          "cmd": "ALL",
+          "qual": "is_admin()",
+          "roles": [
+            "authenticated"
+          ],
+          "tablename": "binder_cards",
+          "policyname": "Admins can do anything to binder cards",
+          "schemaname": "public",
+          "with_check": "is_admin()"
+        },
+        {
+          "cmd": "SELECT",
+          "qual": "(EXISTS ( SELECT 1\n   FROM binders\n  WHERE ((binders.id = binder_cards.binder_id) AND (binders.is_public = true))))",
+          "roles": [
+            "public"
+          ],
+          "tablename": "binder_cards",
+          "policyname": "Public can view public binders",
+          "schemaname": "public",
+          "with_check": null
+        },
+        {
+          "cmd": "INSERT",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "tablename": "binder_cards",
+          "policyname": "Users can create cards in own binders",
+          "schemaname": "public",
+          "with_check": "(EXISTS ( SELECT 1\n   FROM binders\n  WHERE ((binders.id = binder_cards.binder_id) AND (binders.user_id = auth.uid()))))"
+        },
+        {
+          "cmd": "INSERT",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "tablename": "binder_cards",
+          "policyname": "Users can create own binder cards",
+          "schemaname": "public",
+          "with_check": "(EXISTS ( SELECT 1\n   FROM binders\n  WHERE ((binders.id = binder_cards.binder_id) AND (binders.user_id = auth.uid()))))"
+        },
+        {
+          "cmd": "DELETE",
+          "qual": "(EXISTS ( SELECT 1\n   FROM binders\n  WHERE ((binders.id = binder_cards.binder_id) AND (binders.user_id = auth.uid()))))",
+          "roles": [
+            "public"
+          ],
+          "tablename": "binder_cards",
+          "policyname": "Users can delete cards in own binders",
+          "schemaname": "public",
+          "with_check": null
+        },
+        {
+          "cmd": "DELETE",
+          "qual": "(EXISTS ( SELECT 1\n   FROM binders\n  WHERE ((binders.id = binder_cards.binder_id) AND (binders.user_id = auth.uid()))))",
+          "roles": [
+            "public"
+          ],
+          "tablename": "binder_cards",
+          "policyname": "Users can delete own binder cards",
+          "schemaname": "public",
+          "with_check": null
+        },
+        {
+          "cmd": "SELECT",
+          "qual": "(EXISTS ( SELECT 1\n   FROM binders\n  WHERE ((binders.id = binder_cards.binder_id) AND ((binders.user_id = auth.uid()) OR (binders.is_public = true)))))",
+          "roles": [
+            "public"
+          ],
+          "tablename": "binder_cards",
+          "policyname": "Users can read cards in own or public binders",
+          "schemaname": "public",
+          "with_check": null
+        },
+        {
+          "cmd": "SELECT",
+          "qual": "(EXISTS ( SELECT 1\n   FROM binders\n  WHERE ((binders.id = binder_cards.binder_id) AND (binders.user_id = auth.uid()))))",
+          "roles": [
+            "public"
+          ],
+          "tablename": "binder_cards",
+          "policyname": "Users can read own binder cards",
+          "schemaname": "public",
+          "with_check": null
+        },
+        {
+          "cmd": "UPDATE",
+          "qual": "(EXISTS ( SELECT 1\n   FROM binders\n  WHERE ((binders.id = binder_cards.binder_id) AND (binders.user_id = auth.uid()))))",
+          "roles": [
+            "public"
+          ],
+          "tablename": "binder_cards",
+          "policyname": "Users can update cards in own binders",
+          "schemaname": "public",
+          "with_check": "(EXISTS ( SELECT 1\n   FROM binders\n  WHERE ((binders.id = binder_cards.binder_id) AND (binders.user_id = auth.uid()))))"
+        },
+        {
+          "cmd": "UPDATE",
+          "qual": "(EXISTS ( SELECT 1\n   FROM binders\n  WHERE ((binders.id = binder_cards.binder_id) AND (binders.user_id = auth.uid()))))",
+          "roles": [
+            "public"
+          ],
+          "tablename": "binder_cards",
+          "policyname": "Users can update own binder cards",
+          "schemaname": "public",
+          "with_check": "(EXISTS ( SELECT 1\n   FROM binders\n  WHERE ((binders.id = binder_cards.binder_id) AND (binders.user_id = auth.uid()))))"
+        },
+        {
+          "cmd": "ALL",
+          "qual": "is_admin()",
+          "roles": [
+            "authenticated"
+          ],
+          "tablename": "binders",
+          "policyname": "Admins can do anything to binders",
+          "schemaname": "public",
+          "with_check": "is_admin()"
+        },
+        {
+          "cmd": "SELECT",
+          "qual": "(is_public = true)",
+          "roles": [
+            "public"
+          ],
+          "tablename": "binders",
+          "policyname": "Anyone can view public binders",
+          "schemaname": "public",
+          "with_check": null
+        },
+        {
+          "cmd": "INSERT",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "tablename": "binders",
+          "policyname": "Users can create own binders",
+          "schemaname": "public",
+          "with_check": "(auth.uid() = user_id)"
+        },
+        {
+          "cmd": "DELETE",
+          "qual": "(auth.uid() = user_id)",
+          "roles": [
+            "public"
+          ],
+          "tablename": "binders",
+          "policyname": "Users can delete own binders",
+          "schemaname": "public",
+          "with_check": null
+        },
+        {
+          "cmd": "SELECT",
+          "qual": "(auth.uid() = user_id)",
+          "roles": [
+            "public"
+          ],
+          "tablename": "binders",
+          "policyname": "Users can read own binders",
+          "schemaname": "public",
+          "with_check": null
+        },
+        {
+          "cmd": "SELECT",
+          "qual": "((auth.uid() = user_id) OR (is_public = true))",
+          "roles": [
+            "public"
+          ],
+          "tablename": "binders",
+          "policyname": "Users can read own or public binders",
+          "schemaname": "public",
+          "with_check": null
+        },
+        {
+          "cmd": "UPDATE",
+          "qual": "(auth.uid() = user_id)",
+          "roles": [
+            "public"
+          ],
+          "tablename": "binders",
+          "policyname": "Users can update own binders",
+          "schemaname": "public",
+          "with_check": "(auth.uid() = user_id)"
+        },
+        {
+          "cmd": "ALL",
+          "qual": "( SELECT is_admin() AS is_admin)",
+          "roles": [
+            "authenticated"
+          ],
+          "tablename": "profiles",
+          "policyname": "Admins can manage profiles",
+          "schemaname": "public",
+          "with_check": "( SELECT is_admin() AS is_admin)"
+        },
+        {
+          "cmd": "INSERT",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "tablename": "profiles",
+          "policyname": "Users can insert own private profile",
+          "schemaname": "public",
+          "with_check": "(( SELECT auth.uid() AS uid) = id)"
+        },
+        {
+          "cmd": "UPDATE",
+          "qual": "(( SELECT auth.uid() AS uid) = id)",
+          "roles": [
+            "authenticated"
+          ],
+          "tablename": "profiles",
+          "policyname": "Users can update own private profile",
+          "schemaname": "public",
+          "with_check": "(( SELECT auth.uid() AS uid) = id)"
+        },
+        {
+          "cmd": "SELECT",
+          "qual": "(( SELECT auth.uid() AS uid) = id)",
+          "roles": [
+            "authenticated"
+          ],
+          "tablename": "profiles",
+          "policyname": "Users can view own private profile",
+          "schemaname": "public",
+          "with_check": null
+        },
+        {
+          "cmd": "DELETE",
+          "qual": "(auth.uid() = user_id)",
+          "roles": [
+            "public"
+          ],
+          "tablename": "user_card_variants",
+          "policyname": "Users can delete own card variants",
+          "schemaname": "public",
+          "with_check": null
+        },
+        {
+          "cmd": "INSERT",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "tablename": "user_card_variants",
+          "policyname": "Users can insert own card variants",
+          "schemaname": "public",
+          "with_check": "(auth.uid() = user_id)"
+        },
+        {
+          "cmd": "SELECT",
+          "qual": "(auth.uid() = user_id)",
+          "roles": [
+            "public"
+          ],
+          "tablename": "user_card_variants",
+          "policyname": "Users can read own card variants",
+          "schemaname": "public",
+          "with_check": null
+        },
+        {
+          "cmd": "UPDATE",
+          "qual": "(auth.uid() = user_id)",
+          "roles": [
+            "public"
+          ],
+          "tablename": "user_card_variants",
+          "policyname": "Users can update own card variants",
+          "schemaname": "public",
+          "with_check": "(auth.uid() = user_id)"
+        },
+        {
+          "cmd": "ALL",
+          "qual": "(auth.uid() = user_id)",
+          "roles": [
+            "public"
+          ],
+          "tablename": "user_card_variants",
+          "policyname": "Users manage own variants",
+          "schemaname": "public",
+          "with_check": "(auth.uid() = user_id)"
+        }
+      ],
+      "tables_without_rls": null
+    }
+  }
+]

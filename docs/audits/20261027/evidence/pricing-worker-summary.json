@@ -1,0 +1,96 @@
+{
+  "observedAt": "2026-10-27T14:15:45.514165627Z",
+  "serviceId": "a2e61d08-1910-4762-bf82-e0473e86ad5f",
+  "timeoutEvents": [
+    {
+      "at": "2026-10-27T06:59:17.513850338Z",
+      "message": "canceling statement due to statement timeout"
+    },
+    {
+      "at": "2026-10-27T07:15:42.642402951Z",
+      "message": "canceling statement due to statement timeout"
+    },
+    {
+      "at": "2026-10-27T08:15:24.182656239Z",
+      "message": "canceling statement due to statement timeout"
+    },
+    {
+      "at": "2026-10-27T11:15:04.722224276Z",
+      "message": "Catalogue bulk coverage page request failed: canceling statement due to statement timeout"
+    }
+  ],
+  "lastCompleted": [
+    {
+      "status": "needs_mapping",
+      "health": {
+        "runId": "8bdb7827-d479-4c4e-b5eb-3f810028c559",
+        "groups": [
+          {
+            "total": 168,
+            "status": "complete",
+            "categoryId": 3
+          },
+          {
+            "total": 52,
+            "status": "unmapped",
+            "categoryId": 3
+          },
+          {
+            "total": 163,
+            "status": "complete",
+            "categoryId": 85
+          },
+          {
+            "total": 298,
+            "status": "unmapped",
+            "categoryId": 85
+          }
+        ],
+        "quotes": [
+          {
+            "stale": 34,
+            "total": 23133,
+            "provider": "tcgcsv",
+            "languageCode": "en"
+          },
+          {
+            "stale": 72,
+            "total": 7050,
+            "provider": "tcgcsv",
+            "languageCode": "ja"
+          }
+        ],
+        "outcomes": {
+          "total": 76272,
+          "no_provider_quote": 4819,
+          "unsupported_finish": 1240,
+          "unsupported_language": 28813
+        },
+        "datasetAt": "2026-10-26T20:05:56+00:00",
+        "runStatus": "needs_mapping",
+        "openRepairs": 36375
+      },
+      "coverageError": null,
+      "dailyReadiness": {
+        "provider": {
+          "sourceAt": "2026-10-26T20:05:56+0000",
+          "state": "fresh",
+          "ageHours": 18.16
+        },
+        "processingComplete": true,
+        "coverageVerified": true,
+        "publishedRows": 76317,
+        "classifiedRows": 75522,
+        "unclassifiedRows": 795,
+        "fullCatalogueCurrent": false
+      }
+    }
+  ],
+  "cardmarket": {
+    "latestActiveDeployment": null,
+    "lastDeploymentAt": "2026-10-19T13:17:28.744Z",
+    "lastDeploymentStatus": "REMOVED",
+    "scheduled": "17 * * * *",
+    "note": "Configuration presence does not prove active execution; inspect owner handoff before reactivating."
+  }
+}
