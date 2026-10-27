@@ -1,7 +1,9 @@
 # R2 interrupted-run diagnostic — 27 October 2026
 
-Status at 08:36 UTC: the first diagnostic deployment attempt ran the old launcher
-instead and stopped at its existing gate. The diagnostic has not yet executed.
+Status at 08:43 UTC: the staged configuration deployment successfully executed
+the diagnostic. Both run event streams passed checksum verification. The current
+tail's 25 full database rows match the recorded expectations. Full-run database
+reconciliation and public retrieval checks remain pending.
 No upload recovery, database mutation or source-object deletion has been performed.
 
 ## Observed failure
@@ -146,3 +148,27 @@ service settings. A staged configuration deployment is a bounded next attempt,
 not a guaranteed override. Require the actual diagnostic source-hash start marker.
 The existing volume, source snapshot, variables, replicas and NEVER restart
 policy remain unchanged. The saved start command currently holds the diagnostic.
+
+The reviewed hash-domain correction was preserved in commit `80359bd22b0d1dbebde46391ec0d379f471ab2fa`.
+Staging and committing only its diagnostic start command created deployment
+`0a4420ff-3df8-4a77-975e-953cbae0ea32`, which reused the same source snapshot
+`4498fee149a28b550b0116eed39da383df7d633b885164e11e3e64543a035a42` and image
+`83f34f43c7c634d09b2b9ee4fe3f0615daa529d526efe8bdda1a3ddc80d5f535`.
+The correct source-hash start marker appeared at 08:39:14 UTC and both-run
+completion at 08:42:10 UTC. Each run emitted 53 records, and both reconstructed
+event-stream SHA-256 values matched their completion footers.
+
+The current run's validated evidence manifest is
+`d06e9a223cd8a7985ec2cc641d03eceea32f4c6eb7cffc7275e41927f94c0e71`.
+Its 1,065 checkpoints record 26,625 publications; tail 001066 records 16 published
+and nine unpublished assets with no pending publication or unreceipted commit.
+The compact execution result hash exactly matches the original runtime log.
+The prior run's manifest remains
+`83755a507c55824e96f5dee71085399891e4a1b5bbc329794dcc6a3acfc7c661`.
+
+Read-only full-row Supabase checks at 08:42:52 UTC matched all 25 current tail
+rows and the prior tail's 24 published rows. The one prior untouched row,
+`62db634c-943e-4570-a606-d1039746a477`, is now on R2 and differs from its historical
+before snapshot. Its specific successor receipt must explain that change before
+the historical gate can be replaced. The linked JSON diagnostic receipt records
+these observations; it is not a resume or completion certificate.

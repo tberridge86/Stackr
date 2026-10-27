@@ -6,6 +6,7 @@ import { open, opendir, realpath } from 'node:fs/promises';
 import path from 'node:path';
 
 const RUN_IDS = Object.freeze(['production-optimised-20261026b', 'production-resumed-20261026a']);
+const HISTORICAL_TAIL_ROW = '62db634c-943e-4570-a606-d1039746a477';
 const ROOT = '/data/r2-catalogue-migration';
 const REF = 'oakdbbzdqwurpjnoqhmu';
 const SERVICE = 'b5410607-a591-420e-a506-fe184ce7455b';
@@ -394,12 +395,44 @@ export function createOptimisedTailInspector(dependencies) {
   checkDependencies(dependencies);
   return options => inspectOptimisedTail20261027({ ...options, dependencies });
 }
+
+function rowExpectation(asset, inventoryIndex, sequence, state) {
+  const operation = state.operations[inventoryIndex];
+  const publication = state.publication?.rowId === asset.id ? state.publication : null;
+  const commit = state.committed?.rowId === asset.id ? state.committed : null;
+  const expected = operation ? operation.after : !publication ? asset : null;
+  return { rowId: asset.id, sequence, inventoryIndex,
+    beforeSnapshotSha256: state.plans.get(asset.id).snapshotHash,
+    expectedSnapshotSha256: expected ? fingerprint(expected) : null,
+    published: Boolean(operation), journalState: operation ? 'published_receipt' : commit ? 'commit_without_receipt'
+      : publication ? 'publication_pending_outcome_unknown' : 'no_publication_record',
+    operationId: operation?.receipt.operationId ?? publication?.operationId ?? null,
+    receiptSha256: operation ? fingerprint(operation.receipt) : null,
+    recordedCommitSnapshotSha256: commit ? fingerprint(commit.after) : null };
+}
+function publicObjectEvidence(object) {
+  return { role: object.role, index: object.index, bucket: object.bucket, key: object.key,
+    url: object.url, mimeType: object.mimeType, byteSize: object.byteSize, sha256: object.sha256,
+    verifiedRecorded: true, liveVerified: false };
+}
 /**
  * Inspect immutable evidence for exactly one allowlisted run. No database,
  * network, process launch, lock removal, or evidence mutation path exists.
  * Output is not a reconciliation result and never authorizes a restart.
  */
 export async function inspectOptimisedTail20261027(options = {}) {
+  return inspectRunEvidence(options, false);
+}
+/**
+ * Return bounded, private in-memory expectations for a separately reviewed
+ * read-only reconciler. Never log this result wholesale. No raw row snapshots,
+ * arbitrary selector, callback, SQL, or network capability is added here.
+ * Hashes describe recorded evidence; they do not establish current DB state.
+ */
+export async function readOptimisedRunExpectations20261027(options = {}) {
+  return inspectRunEvidence(options, true);
+}
+async function inspectRunEvidence(options, collectExpectations) {
   shape(options, ['runId'], ['env', 'dependencies']);
   const { runId, env = process.env, dependencies } = options;
   check(RUN_IDS.includes(runId), 'cutover_run_not_allowed');
@@ -445,6 +478,8 @@ export async function inspectOptimisedTail20261027(options = {}) {
   const hasTail = batchSequences.includes(checkpoints.length + 1);
   let afterId = null; let previousCheckpointSha256 = null; let totalPublished = 0; let objects = 0;
   let exhausted = false; let latestCheckpoint = null; let tail = null; let tailRows = [];
+  const rowExpectations = []; let firstPublished = null; let lastPublished = null;
+  let historicalSuccessorReceipt = null;
 
     for (let sequence = 1; sequence <= checkpoints.length + (hasTail ? 1 : 0); sequence++) {
       check(!exhausted, 'cutover_after_exhaustion');
@@ -537,6 +572,27 @@ export async function inspectOptimisedTail20261027(options = {}) {
         tail.executionResultSha256 = known.get(name + 'execute-result.json')?.sha256 ?? null;
         tail.executionResultValueSha256 = execution ? hash(JSON.stringify(execution.result)) : null;
       }
+      if (collectExpectations) {
+        check(rowExpectations.length + inventory.assets.length <= 250000, 'cutover_expectation_row_bound');
+        for (const [index, asset] of inventory.assets.entries()) {
+          const expectation = rowExpectation(asset, index, sequence, state);
+          rowExpectations.push(expectation);
+          const operation = state.operations[index];
+          if (operation) {
+            const published = { rowId: asset.id, sequence, receiptSha256: expectation.receiptSha256,
+              objects: operation.receipt.objects };
+            firstPublished ??= published; lastPublished = published;
+            if (RUN_ID === 'production-optimised-20261026b' && asset.id === HISTORICAL_TAIL_ROW) {
+              check(!historicalSuccessorReceipt && operation.receipt.objects.length <= 17,
+                'cutover_historical_successor_bound');
+              historicalSuccessorReceipt = { runId: RUN_ID, rowId: asset.id, sequence, inventoryIndex: index,
+                operationId: expectation.operationId, beforeSnapshotSha256: expectation.beforeSnapshotSha256,
+                afterSnapshotSha256: expectation.expectedSnapshotSha256, receiptSha256: expectation.receiptSha256,
+                objects: operation.receipt.objects.map(publicObjectEvidence), databaseCompared: false };
+            }
+          }
+        }
+      }
     }
 
   const finalFiles = await snapshot(deps, DIRECTORY);
@@ -571,6 +627,17 @@ export async function inspectOptimisedTail20261027(options = {}) {
     eventCount: events.length + 1, precedingEventsSha256: eventsDigest.digest('hex'),
     databaseQueried: false, networkRequested: false, evidenceModified: false, runnerStarted: false,
     reconciled: false, resumeAuthorized: false });
-  return { summary, events };
+  if (!collectExpectations) return { summary, events };
+  const publicSamples = [];
+  for (const publication of [firstPublished, lastPublished]) {
+    if (!publication) continue;
+    for (const object of [publication.objects[0], publication.objects.find(value => value.role !== 'original')]) {
+      if (object && !publicSamples.some(sample => sample.key === object.key)) publicSamples.push({
+        runId: RUN_ID, rowId: publication.rowId, sequence: publication.sequence,
+        receiptSha256: publication.receiptSha256, ...publicObjectEvidence(object) });
+    }
+  }
+  check(publicSamples.length <= 4, 'cutover_public_sample_bound');
+  return { summary, events, rowExpectations, publicSamples, historicalSuccessorReceipt };
 }
 

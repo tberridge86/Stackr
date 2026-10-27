@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
-import { createOptimisedTailInspector, inspectOptimisedTail20261027 } from './inspect-r2-optimised-tail-20261027.mjs';
+import { createOptimisedTailInspector, inspectOptimisedTail20261027,
+  readOptimisedRunExpectations20261027 } from './inspect-r2-optimised-tail-20261027.mjs';
 
 const CORE_SHA = 'd05fdae0f9d7280b70f03aad681eb2b01e6b31b7d4c11acab31745c4ed14b922';
 const corePath = process.env.STACKR_DIAGNOSTIC_TEST_CORE ?? new URL('./lib/r2-catalogue-migration.mjs', import.meta.url);
@@ -75,8 +76,10 @@ function fixture(runId = CURRENT) {
   files.set('run.json', encode(manifest));
   files.set('runner.lock', encode({ schemaVersion: 1, processId: 25, startedAt: '2026-10-26T08:55:00.000Z' }));
   let lastId = null; let lastCheckpointSha = null; let publishedTotal = 0;
-  function batch(sequence, { count = 25, receipts = count, ambiguous = null, derivativeCount = 1, complete = false, sensitiveCode = false } = {}) {
+  function batch(sequence, { count = 25, receipts = count, ambiguous = null, derivativeCount = 1,
+    complete = false, sensitiveCode = false, historicalSuccessor = false } = {}) {
     const start = (sequence - 1) * 25 + 1; const rows = Array.from({ length: count }, (_, index) => asset(start + index, derivativeCount));
+    if (historicalSuccessor) { assert.equal(count, 1); rows[0].id = '62db634c-943e-4570-a606-d1039746a477'; }
     const inventory = { schemaVersion: 1, kind: 'stackr-r2-catalogue-inventory', expectedRef: REF,
       sourceOrigin: 'https://' + REF + '.supabase.co', options: OPTIONS, limit: 25, afterId: lastId,
       nextAfterId: rows.at(-1)?.id ?? lastId, exhausted: count < 25, assets: rows };
@@ -221,6 +224,70 @@ test('execution file and runtime result value hashes use distinct documented byt
   const inventoryOnly = await f.inspect();
   assert.equal(inventoryOnly.summary.tail.executionResultSha256, null);
   assert.equal(inventoryOnly.summary.tail.executionResultValueSha256, null);
+});
+
+test('private expectations cover every validated batch without changing diagnostic events or leaking snapshots', async () => {
+  const f = fixture(); const first = f.batch(1, { complete: true });
+  const last = f.batch(2, { count: 3, receipts: 1, ambiguous: 'pending' });
+  const diagnostic = await f.inspect();
+  assert.deepEqual(Object.keys(diagnostic).sort(), ['events', 'summary']);
+  const result = await readOptimisedRunExpectations20261027({ runId: CURRENT, env: ENV, dependencies: f.deps });
+  assert.deepEqual(result.events, diagnostic.events); assert.deepEqual(result.summary, diagnostic.summary);
+  assert.equal(result.rowExpectations.length, 28); assert.equal(result.rowExpectations.filter(row => row.published).length, 26);
+  assert.equal(result.rowExpectations[0].beforeSnapshotSha256, fingerprint(first.rows[0]));
+  const firstCommit = first.journal.find(record => record.event === 'database_cas_committed');
+  assert.equal(result.rowExpectations[0].expectedSnapshotSha256, fingerprint(firstCommit.after));
+  assert.equal(result.rowExpectations[0].receiptSha256,
+    fingerprint(first.journal.find(record => record.event === 'publication_complete').receipt));
+  const pending = result.rowExpectations[26];
+  assert.equal(pending.journalState, 'publication_pending_outcome_unknown');
+  assert.equal(pending.expectedSnapshotSha256, null); assert.equal(pending.recordedCommitSnapshotSha256, null);
+  assert.equal(result.rowExpectations[27].expectedSnapshotSha256, fingerprint(last.rows[2]));
+  assert.equal(result.rowExpectations[27].published, false);
+  assert.equal(result.publicSamples.length, 4); assert.equal(result.publicSamples[0].rowId, first.rows[0].id);
+  assert.equal(result.publicSamples.at(-1).rowId, last.rows[0].id);
+  assert.ok(result.publicSamples.every(sample => sample.verifiedRecorded === true && sample.liveVerified === false));
+  assert.equal(result.historicalSuccessorReceipt, null);
+  assert.ok(!JSON.stringify(result).includes(SECRET));
+  assert.ok(result.rowExpectations.every(row => !Object.hasOwn(row, 'before') && !Object.hasOwn(row, 'after')));
+  assert.ok(!JSON.stringify(result.events).includes('rowExpectations'));
+});
+
+test('private expectations preserve ambiguous commit evidence and still reject final snapshot drift', async () => {
+  const f = fixture(); const batch = f.batch(1, { count: 3, receipts: 1, ambiguous: 'commit' });
+  const result = await readOptimisedRunExpectations20261027({ runId: CURRENT, env: ENV, dependencies: f.deps });
+  const row = result.rowExpectations[1];
+  assert.equal(row.published, false); assert.equal(row.journalState, 'commit_without_receipt');
+  assert.equal(row.expectedSnapshotSha256, null); assert.equal(row.receiptSha256, null);
+  assert.equal(row.recordedCommitSnapshotSha256,
+    fingerprint(batch.journal.filter(record => record.event === 'database_cas_committed').at(-1).after));
+  const originalList = f.deps.list; f.activity.lists = 0;
+  f.deps.list = async path => {
+    if (f.activity.lists === 1) f.files.set('runner.lock', encode({ schemaVersion: 1, processId: 99, startedAt: '2026-10-26T08:55:00Z' }));
+    return originalList(path);
+  };
+  await assert.rejects(readOptimisedRunExpectations20261027({ runId: CURRENT, env: ENV, dependencies: f.deps }),
+    error => error.code === 'cutover_snapshot_changed');
+});
+
+test('only the pinned historical row in the optimized run yields bounded successor receipt evidence', async () => {
+  for (const runId of [CURRENT, OLD]) {
+    const f = fixture(runId); const batch = f.batch(1, { count: 1, receipts: 1, complete: true, historicalSuccessor: true, derivativeCount: 16 });
+    const result = await readOptimisedRunExpectations20261027({ runId, env: ENV, dependencies: f.deps });
+    if (runId === OLD) { assert.equal(result.historicalSuccessorReceipt, null); continue; }
+    const proof = result.historicalSuccessorReceipt;
+    assert.equal(proof.rowId, '62db634c-943e-4570-a606-d1039746a477'); assert.equal(proof.sequence, 1);
+    assert.equal(proof.beforeSnapshotSha256, fingerprint(batch.rows[0]));
+    assert.equal(proof.afterSnapshotSha256, fingerprint(batch.journal.find(record => record.event === 'database_cas_committed').after));
+    const receipt = batch.journal.find(record => record.event === 'publication_complete').receipt;
+    assert.equal(proof.operationId, receipt.operationId); assert.equal(proof.receiptSha256, fingerprint(receipt));
+    assert.equal(proof.objects.length, 17); assert.equal(proof.databaseCompared, false);
+    assert.ok(proof.objects.every(object => object.liveVerified === false && object.verifiedRecorded === true));
+    assert.ok(!JSON.stringify(result.events).includes('historicalSuccessorReceipt'));
+    assert.ok(!JSON.stringify(result).includes(SECRET));
+    await assert.rejects(readOptimisedRunExpectations20261027({ runId, env: ENV, dependencies: f.deps,
+      historicalRowId: batch.rows[0].id }), error => error.code === 'cutover_invalid_shape');
+  }
 });
 
 test('both exact run IDs are accepted, arbitrary run/mode/host rejected before evidence reads', async () => {
