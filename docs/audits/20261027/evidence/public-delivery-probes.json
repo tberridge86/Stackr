@@ -1,0 +1,151 @@
+{
+  "observed_at": "2026-10-27T15:12:55Z",
+  "probe_location": "hosted audit runner; not an installed phone",
+  "results": [
+    {
+      "url": "https://stackrtcg.com",
+      "status": 503,
+      "ms": 5869,
+      "bytes": 98,
+      "headers": {
+        "content-type": "text/plain",
+        "server": "envoy"
+      },
+      "body_excerpt": "upstream connect error or disconnect/reset before headers. reset reason: remote connection failure"
+    },
+    {
+      "url": "https://www.stackrtcg.com",
+      "status": 503,
+      "ms": 5092,
+      "bytes": 98,
+      "headers": {
+        "content-type": "text/plain",
+        "server": "envoy"
+      },
+      "body_excerpt": "upstream connect error or disconnect/reset before headers. reset reason: remote connection failure"
+    },
+    {
+      "url": "https://api.stackrtcg.com/v1/health",
+      "status": 200,
+      "ms": 5617,
+      "bytes": 190,
+      "headers": {
+        "content-type": "application/json; charset=utf-8",
+        "cache-control": "no-store",
+        "server": "envoy",
+        "cf-ray": "a512a3e07c7a2b78-LAX"
+      },
+      "body_excerpt": "{\"data\":{\"status\":\"ok\",\"service\":\"stackr-api-gateway\",\"apiVersion\":\"1\"},\"meta\":{\"requestId\":\"085fc4ff-a5cd-4bec-848d-e43a6b2cf7d4\",\"apiVersion\":\"1\",\"generatedAt\":\"2026-10-27T15:12:39.170Z\"}}"
+    },
+    {
+      "url": "https://api.stackrtcg.com/v1/search?q=pikachu&limit=2",
+      "status": 200,
+      "ms": 10714,
+      "bytes": 13563,
+      "headers": {
+        "content-type": "application/json; charset=utf-8",
+        "cf-ray": "a512a4098aa22b78-LAX",
+        "cf-cache-status": "DYNAMIC",
+        "cache-control": "public, max-age=30, stale-while-revalidate=120, stale-if-error=120",
+        "server": "envoy"
+      },
+      "body_excerpt": "{\"data\":{\"query\":\"pikachu\",\"normalizedQuery\":\"pikachu\",\"results\":[{\"type\":\"card\",\"reason\":\"exact_name\",\"cardId\":\"a8da5cc3-b99c-4e99-9c43-6ec675c2f084\",\"variantId\":\"0442aacc-93e4-40a5-8bac-3d226d10db08\",\"canonicalId\":\"pokemon:zh-cn:4aa930fc-35fa-4e68-a34b-624fc70fb2cb:037:reverse_holo\",\"setId\":\"4aa930fc-35fa-4e68-a34b-624fc70fb2cb\",\"setCode\":\"promo-sm-p\",\"collectorNumber\":\"037\",\"nativeName\":\"\u76ae\u5361\u4e18\",\"englishDisplayName\":\"Pikachu\",\"englishDisplaySource\":\"printing\",\"languageCode\":\"zh-cn\",\"varian"
+    },
+    {
+      "url": "https://assets.stackrtcg.com/public/card_image/0000693d-698d-4600-91d9-9b494e07f27a/e6a1fb29a980371ac11223d113db8de94cd531dea91ae9508a11b5d7ab4ae708/47d3c0dded1f7350dba40ca8f686a96c2278800a4c5fb8772cbdcefb90aecfe8/original.jpg",
+      "status": 200,
+      "ms": 5697,
+      "bytes": 209753,
+      "headers": {
+        "content-type": "image/jpeg",
+        "cache-control": "public, max-age=31536000, immutable",
+        "server": "envoy",
+        "cf-cache-status": "MISS",
+        "cf-ray": "a512a402ad092b78-LAX"
+      },
+      "hash_matches": true,
+      "size_matches": true,
+      "mime_matches": true
+    },
+    {
+      "url": "https://assets.stackrtcg.com/public/card_image/0000693d-698d-4600-91d9-9b494e07f27a/e6a1fb29a980371ac11223d113db8de94cd531dea91ae9508a11b5d7ab4ae708/7cc607008b4a186ab66774ffaf62a84085990940c681b85531d545ca734de7fc/card-grid.webp",
+      "status": 200,
+      "ms": 4876,
+      "bytes": 18064,
+      "headers": {
+        "content-type": "image/webp",
+        "cache-control": "public, max-age=31536000, immutable",
+        "server": "envoy",
+        "cf-cache-status": "MISS",
+        "cf-ray": "a512a4024cf2c9f5-LAX"
+      },
+      "hash_matches": true,
+      "size_matches": true,
+      "mime_matches": true
+    },
+    {
+      "url": "https://assets.stackrtcg.com/public/card_image/00036ee6-598f-487a-947c-876b9a0e9ba0/e02fcfaf61d675960706bf800bd5b03c9124056f2e16ea3608c2f77108d78e0b/b80ea93be1c7ca9bab5dd9bb5dfe6c11397bf92bec9d9633d5acdcc954fe6b66/original.jpg",
+      "status": 200,
+      "ms": 6211,
+      "bytes": 127755,
+      "headers": {
+        "content-type": "image/jpeg",
+        "cache-control": "public, max-age=31536000, immutable",
+        "server": "envoy",
+        "cf-cache-status": "MISS",
+        "cf-ray": "a512a4294fa52b78-LAX"
+      },
+      "hash_matches": true,
+      "size_matches": true,
+      "mime_matches": true
+    },
+    {
+      "url": "https://assets.stackrtcg.com/public/card_image/00036ee6-598f-487a-947c-876b9a0e9ba0/e02fcfaf61d675960706bf800bd5b03c9124056f2e16ea3608c2f77108d78e0b/1bcf70f1a9f045183c1e18a8f1270796620b9210c5d0232b262b21086c66b215/card-grid.webp",
+      "status": 200,
+      "ms": 5580,
+      "bytes": 18164,
+      "headers": {
+        "content-type": "image/webp",
+        "cache-control": "public, max-age=31536000, immutable",
+        "server": "envoy",
+        "cf-cache-status": "MISS",
+        "cf-ray": "a512a4298ff6c9f5-LAX"
+      },
+      "hash_matches": true,
+      "size_matches": true,
+      "mime_matches": true
+    },
+    {
+      "url": "https://assets.stackrtcg.com/public/card_image/000494eb-2155-4f9f-a57f-920f7c8d0b75/87192f06644cab18234405a95dacb8b2bf86215f8ff9c5ab73251209e713470a/45113409fb8410086ebd18b0a96c528883d920f6a3dc6fc3c64d105e43f20a14/original.jpg",
+      "status": 200,
+      "ms": 1117,
+      "bytes": 150271,
+      "headers": {
+        "content-type": "image/jpeg",
+        "cache-control": "public, max-age=31536000, immutable",
+        "server": "envoy",
+        "cf-cache-status": "MISS",
+        "cf-ray": "a512a4294fa72b78-LAX"
+      },
+      "hash_matches": true,
+      "size_matches": true,
+      "mime_matches": true
+    },
+    {
+      "url": "https://assets.stackrtcg.com/public/card_image/000494eb-2155-4f9f-a57f-920f7c8d0b75/87192f06644cab18234405a95dacb8b2bf86215f8ff9c5ab73251209e713470a/239dd1e3d729c10ae25a0948239cdc84db64197312d9b0a5ea89456616147da3/card-grid.webp",
+      "status": 200,
+      "ms": 5176,
+      "bytes": 20800,
+      "headers": {
+        "content-type": "image/webp",
+        "cache-control": "public, max-age=31536000, immutable",
+        "server": "envoy",
+        "cf-cache-status": "MISS",
+        "cf-ray": "a512a445bfb3c9f5-LAX"
+      },
+      "hash_matches": true,
+      "size_matches": true,
+      "mime_matches": true
+    }
+  ]
+}

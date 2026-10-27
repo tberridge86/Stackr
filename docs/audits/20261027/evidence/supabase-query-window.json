@@ -1,0 +1,1615 @@
+{
+  "startSnapshot": [
+    {
+      "queryid": "2554750147893907797",
+      "calls": 388834,
+      "total_exec_time": 68983255.1581517,
+      "mean_exec_time": 177.41055349623,
+      "rows": 388834,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-20 09:20:24.287483+00",
+      "category": "catalogue_cards"
+    },
+    {
+      "queryid": "-4020699816706740039",
+      "calls": 119329,
+      "total_exec_time": 64742605.8049503,
+      "mean_exec_time": 542.55550457098,
+      "rows": 119329,
+      "temp_blks_written": 18127010,
+      "stats_since": "2026-09-20 09:20:38.677624+00",
+      "category": "exact_prices"
+    },
+    {
+      "queryid": "-1140570931119106050",
+      "calls": 16516,
+      "total_exec_time": 13680155.139984,
+      "mean_exec_time": 828.297114312426,
+      "rows": 16516,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-04 09:17:42.948851+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-8367525613714533786",
+      "calls": 6843,
+      "total_exec_time": 10872070.718588,
+      "mean_exec_time": 1588.78718669998,
+      "rows": 6843,
+      "temp_blks_written": 21004,
+      "stats_since": "2026-10-04 09:17:50.741028+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-1669132499549010132",
+      "calls": 11730,
+      "total_exec_time": 9895995.87527998,
+      "mean_exec_time": 843.64841221483,
+      "rows": 11730,
+      "temp_blks_written": 8954119,
+      "stats_since": "2026-10-04 21:23:43.858401+00",
+      "category": "other"
+    },
+    {
+      "queryid": "5838242577529614117",
+      "calls": 30813,
+      "total_exec_time": 7331107.30570896,
+      "mean_exec_time": 237.922542618668,
+      "rows": 30813,
+      "temp_blks_written": 11412003,
+      "stats_since": "2026-10-04 10:20:26.358535+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-4668064005735157444",
+      "calls": 8063,
+      "total_exec_time": 6717604.67868398,
+      "mean_exec_time": 833.139610403569,
+      "rows": 8063,
+      "temp_blks_written": 159160,
+      "stats_since": "2026-10-04 09:17:43.166757+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-1388723966471790667",
+      "calls": 3953,
+      "total_exec_time": 4708945.649067,
+      "mean_exec_time": 1191.23340477283,
+      "rows": 3953,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-11 19:45:57.425599+00",
+      "category": "other"
+    },
+    {
+      "queryid": "3704692595606381162",
+      "calls": 97405,
+      "total_exec_time": 4568524.077629,
+      "mean_exec_time": 46.902356938853,
+      "rows": 97405,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-09 03:55:55.516172+00",
+      "category": "other"
+    },
+    {
+      "queryid": "5934413364869422649",
+      "calls": 7905,
+      "total_exec_time": 3544811.71931699,
+      "mean_exec_time": 448.426529957874,
+      "rows": 7905,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-20 09:20:13.720873+00",
+      "category": "valuation"
+    },
+    {
+      "queryid": "-6066878569812895557",
+      "calls": 7141,
+      "total_exec_time": 3393711.129374,
+      "mean_exec_time": 475.243121323904,
+      "rows": 7141,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-20 09:21:10.434521+00",
+      "category": "valuation"
+    },
+    {
+      "queryid": "6542875249928291895",
+      "calls": 17102,
+      "total_exec_time": 2995600.11616501,
+      "mean_exec_time": 175.160806698925,
+      "rows": 17102,
+      "temp_blks_written": 26004,
+      "stats_since": "2026-10-04 09:17:51.925863+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-2173659206161641850",
+      "calls": 3487,
+      "total_exec_time": 2861614.805839,
+      "mean_exec_time": 820.652367605104,
+      "rows": 3487,
+      "temp_blks_written": 6845,
+      "stats_since": "2026-09-11 08:49:47.79808+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-5443943831425419891",
+      "calls": 17363,
+      "total_exec_time": 2777849.66508201,
+      "mean_exec_time": 159.986734152049,
+      "rows": 17363,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-09 05:09:49.451541+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-7943520643538034228",
+      "calls": 14743,
+      "total_exec_time": 2335684.543166,
+      "mean_exec_time": 158.426679994981,
+      "rows": 14743,
+      "temp_blks_written": 24992,
+      "stats_since": "2026-09-20 09:20:14.704515+00",
+      "category": "other"
+    },
+    {
+      "queryid": "4761914255844435186",
+      "calls": 480,
+      "total_exec_time": 2331938.821371,
+      "mean_exec_time": 4858.20587785625,
+      "rows": 480,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-04 08:51:19.948789+00",
+      "category": "other"
+    },
+    {
+      "queryid": "2461728134308765263",
+      "calls": 37707,
+      "total_exec_time": 2027792.876279,
+      "mean_exec_time": 53.777624215106,
+      "rows": 37707,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-20 15:02:33.709924+00",
+      "category": "catalogue_cards"
+    },
+    {
+      "queryid": "-1011591884448457942",
+      "calls": 69471,
+      "total_exec_time": 1870179.53747401,
+      "mean_exec_time": 26.9202910203393,
+      "rows": 69471,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-20 09:20:20.92267+00",
+      "category": "other"
+    },
+    {
+      "queryid": "2498175840503222334",
+      "calls": 340,
+      "total_exec_time": 1429784.453226,
+      "mean_exec_time": 4205.24839184117,
+      "rows": 340,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-04 10:19:26.717967+00",
+      "category": "other"
+    },
+    {
+      "queryid": "8166588256939911629",
+      "calls": 33049,
+      "total_exec_time": 1311718.846892,
+      "mean_exec_time": 39.6901221486882,
+      "rows": 33049,
+      "temp_blks_written": 7128,
+      "stats_since": "2026-10-04 08:51:17.084538+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-8152361221397176368",
+      "calls": 308616,
+      "total_exec_time": 1235653.07180506,
+      "mean_exec_time": 4.00385291690971,
+      "rows": 308374,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-21 23:46:21.244605+00",
+      "category": "other"
+    },
+    {
+      "queryid": "8351381844763159738",
+      "calls": 1142,
+      "total_exec_time": 1165226.682874,
+      "mean_exec_time": 1020.33860146585,
+      "rows": 1142,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-09 06:17:44.240147+00",
+      "category": "other"
+    },
+    {
+      "queryid": "1203712012012440227",
+      "calls": 35764,
+      "total_exec_time": 1076924.520571,
+      "mean_exec_time": 30.1119707127559,
+      "rows": 35764,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-04 08:51:16.726981+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-7821780334453251234",
+      "calls": 1358120,
+      "total_exec_time": 969958.921509074,
+      "mean_exec_time": 0.714192355247706,
+      "rows": 1358120,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-09 03:55:55.516527+00",
+      "category": "other"
+    },
+    {
+      "queryid": "575944224754428376",
+      "calls": 27692,
+      "total_exec_time": 879613.716752996,
+      "mean_exec_time": 31.764181595876,
+      "rows": 27692,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-04 09:51:36.443231+00",
+      "category": "other"
+    },
+    {
+      "queryid": "5282841056958508581",
+      "calls": 18044,
+      "total_exec_time": 858073.517494001,
+      "mean_exec_time": 47.5545066223676,
+      "rows": 18044,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-09 18:45:17.060605+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-52797418693886265",
+      "calls": 47114,
+      "total_exec_time": 835418.004101996,
+      "mean_exec_time": 17.7318420024197,
+      "rows": 47114,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-24 13:12:15.82695+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-8153215946474039347",
+      "calls": 46300,
+      "total_exec_time": 754533.866521003,
+      "mean_exec_time": 16.2966277866305,
+      "rows": 46300,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-04 08:51:16.937568+00",
+      "category": "other"
+    },
+    {
+      "queryid": "4697520836593092781",
+      "calls": 10191,
+      "total_exec_time": 727006.219898001,
+      "mean_exec_time": 71.3380649492687,
+      "rows": 10191,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-27 18:42:25.869858+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-8289637769767745540",
+      "calls": 48488,
+      "total_exec_time": 709341.290301,
+      "mean_exec_time": 14.6292132135994,
+      "rows": 48488,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-09 18:43:00.334569+00",
+      "category": "other"
+    },
+    {
+      "queryid": "4518689398486247357",
+      "calls": 448,
+      "total_exec_time": 686100.734481999,
+      "mean_exec_time": 1531.47485375446,
+      "rows": 448,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-20 14:32:43.130396+00",
+      "category": "valuation"
+    },
+    {
+      "queryid": "615541790892761948",
+      "calls": 337,
+      "total_exec_time": 674449.902236,
+      "mean_exec_time": 2001.33502147181,
+      "rows": 337,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-04 10:03:18.714606+00",
+      "category": "other"
+    },
+    {
+      "queryid": "3135335920583328486",
+      "calls": 4236,
+      "total_exec_time": 550240.531299999,
+      "mean_exec_time": 129.89625384797,
+      "rows": 4236,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-09 06:17:43.762177+00",
+      "category": "other"
+    },
+    {
+      "queryid": "666425428936610272",
+      "calls": 17582,
+      "total_exec_time": 533921.083956003,
+      "mean_exec_time": 30.3674828777158,
+      "rows": 17582,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-04 09:17:40.686513+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-1949291092380970433",
+      "calls": 39,
+      "total_exec_time": 526744.120362,
+      "mean_exec_time": 13506.2594964615,
+      "rows": 39,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-24 14:40:26.557878+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-4412219218977576344",
+      "calls": 829,
+      "total_exec_time": 489203.974033,
+      "mean_exec_time": 590.113358302773,
+      "rows": 829,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-09 06:40:40.283079+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-2446392534343104252",
+      "calls": 694,
+      "total_exec_time": 472555.540068,
+      "mean_exec_time": 680.915763786744,
+      "rows": 694,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-09 06:17:44.187269+00",
+      "category": "catalogue_cards"
+    },
+    {
+      "queryid": "-9026646083476160334",
+      "calls": 148,
+      "total_exec_time": 469856.097549,
+      "mean_exec_time": 3174.70336181757,
+      "rows": 148,
+      "temp_blks_written": 131340,
+      "stats_since": "2026-10-05 16:27:25.826761+00",
+      "category": "other"
+    },
+    {
+      "queryid": "6176252465707463090",
+      "calls": 383,
+      "total_exec_time": 445542.643082,
+      "mean_exec_time": 1163.29671822976,
+      "rows": 383,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-05 23:19:38.366475+00",
+      "category": "other"
+    },
+    {
+      "queryid": "3393632725691790249",
+      "calls": 285421,
+      "total_exec_time": 434122.781429019,
+      "mean_exec_time": 1.52099103229614,
+      "rows": 285421,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-09 06:18:07.984008+00",
+      "category": "other"
+    },
+    {
+      "queryid": "3498858582649397375",
+      "calls": 1626,
+      "total_exec_time": 427222.874101,
+      "mean_exec_time": 262.744695019066,
+      "rows": 1626,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-20 13:49:06.063431+00",
+      "category": "catalogue_cards"
+    },
+    {
+      "queryid": "6495409515942776670",
+      "calls": 134,
+      "total_exec_time": 421542.03822,
+      "mean_exec_time": 3145.8361061194,
+      "rows": 9912,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-13 19:27:48.966411+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-4790634506840766807",
+      "calls": 7150,
+      "total_exec_time": 411162.88129,
+      "mean_exec_time": 57.5052980825174,
+      "rows": 7150,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-20 09:21:09.546991+00",
+      "category": "other"
+    },
+    {
+      "queryid": "5271785000904057822",
+      "calls": 8512,
+      "total_exec_time": 385554.413948,
+      "mean_exec_time": 45.29539637547,
+      "rows": 8512,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-09 06:17:43.453123+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-3615170120889415132",
+      "calls": 134,
+      "total_exec_time": 375925.26352,
+      "mean_exec_time": 2805.41241432836,
+      "rows": 2762,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-13 19:27:53.374103+00",
+      "category": "other"
+    },
+    {
+      "queryid": "6961929574520598440",
+      "calls": 238,
+      "total_exec_time": 375141.758544,
+      "mean_exec_time": 1576.2258762353,
+      "rows": 238,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-11 07:23:08.582169+00",
+      "category": "catalogue_cards"
+    },
+    {
+      "queryid": "-5359113785161874361",
+      "calls": 8745,
+      "total_exec_time": 369201.721183001,
+      "mean_exec_time": 42.2186073393939,
+      "rows": 8745,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-09 06:17:42.395698+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-2605671598544043881",
+      "calls": 20,
+      "total_exec_time": 352923.172157,
+      "mean_exec_time": 17646.15860785,
+      "rows": 572,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-16 16:36:26.55793+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-3791856557480423797",
+      "calls": 16,
+      "total_exec_time": 346426.491192,
+      "mean_exec_time": 21651.6556995,
+      "rows": 16,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-26 09:31:30.370025+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-7512219314967279839",
+      "calls": 15928,
+      "total_exec_time": 344289.632954001,
+      "mean_exec_time": 21.6153712301608,
+      "rows": 15928,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-04 09:52:34.007095+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-3324853431018517347",
+      "calls": 214,
+      "total_exec_time": 329879.999439,
+      "mean_exec_time": 1541.49532448131,
+      "rows": 214,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-11 06:16:32.509498+00",
+      "category": "catalogue_cards"
+    },
+    {
+      "queryid": "-8856799461280935852",
+      "calls": 185,
+      "total_exec_time": 305353.50697,
+      "mean_exec_time": 1650.55949713513,
+      "rows": 54071,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-09 01:02:43.62696+00",
+      "category": "other"
+    },
+    {
+      "queryid": "5025316789189798386",
+      "calls": 13846,
+      "total_exec_time": 265121.056998,
+      "mean_exec_time": 19.1478446481295,
+      "rows": 13846,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-24 13:12:03.435417+00",
+      "category": "other"
+    },
+    {
+      "queryid": "2565434728142615081",
+      "calls": 348,
+      "total_exec_time": 264968.32112,
+      "mean_exec_time": 761.403221609196,
+      "rows": 0,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-27 11:06:37.215137+00",
+      "category": "other"
+    },
+    {
+      "queryid": "8496692586382520045",
+      "calls": 3775,
+      "total_exec_time": 256798.584395,
+      "mean_exec_time": 68.0261150715235,
+      "rows": 3775,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-09 06:17:44.118409+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-3321881214120789049",
+      "calls": 9,
+      "total_exec_time": 254883.398347,
+      "mean_exec_time": 28320.3775941111,
+      "rows": 9,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-16 16:36:44.469633+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-6006055679507367960",
+      "calls": 479,
+      "total_exec_time": 253776.659675,
+      "mean_exec_time": 529.805135020877,
+      "rows": 479,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-04 09:18:44.013169+00",
+      "category": "other"
+    },
+    {
+      "queryid": "3896602221745672037",
+      "calls": 3953,
+      "total_exec_time": 250075.868028,
+      "mean_exec_time": 63.262299020491,
+      "rows": 3953,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-11 19:46:04.122966+00",
+      "category": "other"
+    },
+    {
+      "queryid": "5057122265306862055",
+      "calls": 24452,
+      "total_exec_time": 231279.010666998,
+      "mean_exec_time": 9.45849053930147,
+      "rows": 24452,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-09 18:45:16.800804+00",
+      "category": "catalogue_cards"
+    },
+    {
+      "queryid": "-350862749819457797",
+      "calls": 310,
+      "total_exec_time": 229916.284601,
+      "mean_exec_time": 741.665434196774,
+      "rows": 310,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-11 21:11:21.773366+00",
+      "category": "catalogue_cards"
+    },
+    {
+      "queryid": "957266140283063968",
+      "calls": 76,
+      "total_exec_time": 229207.197165,
+      "mean_exec_time": 3015.88417322368,
+      "rows": 1336,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-15 21:25:41.69301+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-4821528728022232452",
+      "calls": 1839,
+      "total_exec_time": 226181.739859,
+      "mean_exec_time": 122.991701935291,
+      "rows": 1839,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-29 08:05:53.353072+00",
+      "category": "catalogue_cards"
+    },
+    {
+      "queryid": "7681606325448210963",
+      "calls": 405,
+      "total_exec_time": 224031.775523,
+      "mean_exec_time": 553.164877834567,
+      "rows": 405,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-09 18:43:04.999485+00",
+      "category": "catalogue_cards"
+    },
+    {
+      "queryid": "5964795389877032434",
+      "calls": 9,
+      "total_exec_time": 220221.715429,
+      "mean_exec_time": 24469.0794921111,
+      "rows": 9,
+      "temp_blks_written": 6925,
+      "stats_since": "2026-10-05 16:47:47.293956+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-79448683501689060",
+      "calls": 463,
+      "total_exec_time": 207369.176897,
+      "mean_exec_time": 447.881591570194,
+      "rows": 463,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-09 06:17:41.92658+00",
+      "category": "other"
+    },
+    {
+      "queryid": "955445381683153085",
+      "calls": 2,
+      "total_exec_time": 203978.94801,
+      "mean_exec_time": 101989.474005,
+      "rows": 14,
+      "temp_blks_written": 30272,
+      "stats_since": "2026-09-26 12:48:08.446774+00",
+      "category": "catalogue_cards"
+    },
+    {
+      "queryid": "6210997391053278587",
+      "calls": 39,
+      "total_exec_time": 201228.016237,
+      "mean_exec_time": 5159.69272402564,
+      "rows": 3199,
+      "temp_blks_written": 1179,
+      "stats_since": "2026-09-09 06:27:42.530874+00",
+      "category": "other"
+    },
+    {
+      "queryid": "4627799608345499412",
+      "calls": 2431,
+      "total_exec_time": 201086.981572,
+      "mean_exec_time": 82.7178040197451,
+      "rows": 2431,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-09 06:17:42.726632+00",
+      "category": "catalogue_cards"
+    },
+    {
+      "queryid": "-2777470293248029914",
+      "calls": 76,
+      "total_exec_time": 194887.439547,
+      "mean_exec_time": 2564.3084150921,
+      "rows": 448,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-15 21:25:44.646638+00",
+      "category": "other"
+    },
+    {
+      "queryid": "4172255944955080483",
+      "calls": 9,
+      "total_exec_time": 167696.085504,
+      "mean_exec_time": 18632.8983893333,
+      "rows": 9,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-16 18:28:15.107535+00",
+      "category": "other"
+    },
+    {
+      "queryid": "9080341095279261117",
+      "calls": 12,
+      "total_exec_time": 167126.451373,
+      "mean_exec_time": 13927.2042810833,
+      "rows": 12000,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-28 06:22:15.506001+00",
+      "category": "other"
+    },
+    {
+      "queryid": "5092403133000351635",
+      "calls": 2,
+      "total_exec_time": 165686.704943,
+      "mean_exec_time": 82843.3524715,
+      "rows": 2,
+      "temp_blks_written": 2128,
+      "stats_since": "2026-09-26 12:52:41.576345+00",
+      "category": "catalogue_cards"
+    },
+    {
+      "queryid": "8403553523879522297",
+      "calls": 8676,
+      "total_exec_time": 164151.874832999,
+      "mean_exec_time": 18.9202253150069,
+      "rows": 8676,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-09 18:45:19.27091+00",
+      "category": "other"
+    },
+    {
+      "queryid": "1815039327728400219",
+      "calls": 561,
+      "total_exec_time": 163976.193873,
+      "mean_exec_time": 292.292680700535,
+      "rows": 46954,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-29 06:41:35.071505+00",
+      "category": "other"
+    },
+    {
+      "queryid": "8863898889737953558",
+      "calls": 3,
+      "total_exec_time": 162372.651557,
+      "mean_exec_time": 54124.2171856667,
+      "rows": 5,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-30 19:12:08.775243+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-1801539897955087385",
+      "calls": 7149,
+      "total_exec_time": 162201.60474,
+      "mean_exec_time": 22.688712370961,
+      "rows": 7149,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-20 09:21:10.223393+00",
+      "category": "valuation"
+    },
+    {
+      "queryid": "-5591856244679658793",
+      "calls": 6152,
+      "total_exec_time": 157271.990816,
+      "mean_exec_time": 25.5643678179454,
+      "rows": 6152,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-29 08:05:52.119+00",
+      "category": "catalogue_cards"
+    },
+    {
+      "queryid": "5299301975933694258",
+      "calls": 174,
+      "total_exec_time": 155094.567676,
+      "mean_exec_time": 891.348090091954,
+      "rows": 15843,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-09 01:02:44.297786+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-9160712448783217143",
+      "calls": 4908,
+      "total_exec_time": 154384.406433,
+      "mean_exec_time": 31.4556655323961,
+      "rows": 245496,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-24 13:11:50.145154+00",
+      "category": "other"
+    },
+    {
+      "queryid": "1614512640805674008",
+      "calls": 2445,
+      "total_exec_time": 152907.111479,
+      "mean_exec_time": 62.5386959014314,
+      "rows": 61125,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-24 13:10:12.557181+00",
+      "category": "other"
+    },
+    {
+      "queryid": "5492908069498193389",
+      "calls": 11,
+      "total_exec_time": 151528.160352,
+      "mean_exec_time": 13775.2873047273,
+      "rows": 11,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-09 14:57:19.927318+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-5450541783198011430",
+      "calls": 1394927,
+      "total_exec_time": 149700.008027968,
+      "mean_exec_time": 0.107317449607042,
+      "rows": 1394927,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-09 06:18:08.165434+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-418202894786015350",
+      "calls": 14,
+      "total_exec_time": 149061.788494,
+      "mean_exec_time": 10647.2706067143,
+      "rows": 186,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-15 21:36:13.095564+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-1545271101605872536",
+      "calls": 16,
+      "total_exec_time": 147578.323072,
+      "mean_exec_time": 9223.645192,
+      "rows": 1140,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-27 14:02:52.489566+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-6073924475683090777",
+      "calls": 412,
+      "total_exec_time": 146005.615763,
+      "mean_exec_time": 354.382562531553,
+      "rows": 412,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-10 07:15:38.748083+00",
+      "category": "other"
+    },
+    {
+      "queryid": "5613087877765071911",
+      "calls": 16061,
+      "total_exec_time": 145168.692964,
+      "mean_exec_time": 9.0385837098562,
+      "rows": 16061,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-20 12:01:51.646115+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-439942119180511121",
+      "calls": 125,
+      "total_exec_time": 142858.72224,
+      "mean_exec_time": 1142.86977792,
+      "rows": 125,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-09 06:17:45.301692+00",
+      "category": "catalogue_cards"
+    },
+    {
+      "queryid": "454447746872431811",
+      "calls": 709,
+      "total_exec_time": 141042.817409,
+      "mean_exec_time": 198.932041479549,
+      "rows": 709,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-09 06:17:43.451229+00",
+      "category": "catalogue_cards"
+    },
+    {
+      "queryid": "905037736800761369",
+      "calls": 4050,
+      "total_exec_time": 138018.213902,
+      "mean_exec_time": 34.0785713338272,
+      "rows": 4050,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-04 09:52:34.356867+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-5042451693867152203",
+      "calls": 19,
+      "total_exec_time": 135344.38068,
+      "mean_exec_time": 7123.38845684211,
+      "rows": 19,
+      "temp_blks_written": 163390,
+      "stats_since": "2026-10-16 16:36:37.361357+00",
+      "category": "catalogue_cards"
+    },
+    {
+      "queryid": "2572234018854513591",
+      "calls": 2,
+      "total_exec_time": 134638.121589,
+      "mean_exec_time": 67319.0607945,
+      "rows": 10,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-22 18:00:39.664187+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-5369556072189743069",
+      "calls": 14,
+      "total_exec_time": 134631.639494,
+      "mean_exec_time": 9616.54567814286,
+      "rows": 14,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-26 22:38:03.481676+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-7726440967385220442",
+      "calls": 114,
+      "total_exec_time": 126699.073457,
+      "mean_exec_time": 1111.39538120175,
+      "rows": 136344,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-09 01:02:45.880962+00",
+      "category": "other"
+    },
+    {
+      "queryid": "3298338783902626656",
+      "calls": 6,
+      "total_exec_time": 120239.087503,
+      "mean_exec_time": 20039.8479171667,
+      "rows": 121104,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-20 09:03:52.24443+00",
+      "category": "other"
+    },
+    {
+      "queryid": "380363013670213844",
+      "calls": 47608,
+      "total_exec_time": 117899.701918,
+      "mean_exec_time": 2.47646828091916,
+      "rows": 47608,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-27 11:20:10.792707+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-2432807110010745465",
+      "calls": 3,
+      "total_exec_time": 117857.895856,
+      "mean_exec_time": 39285.9652853333,
+      "rows": 3,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-23 06:39:57.149433+00",
+      "category": "other"
+    },
+    {
+      "queryid": "3337803606286705113",
+      "calls": 9,
+      "total_exec_time": 117344.455105,
+      "mean_exec_time": 13038.2727894444,
+      "rows": 9,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-28 20:58:24.609582+00",
+      "category": "catalogue_cards"
+    },
+    {
+      "queryid": "2560928289413370830",
+      "calls": 134,
+      "total_exec_time": 112469.205422,
+      "mean_exec_time": 839.322428522388,
+      "rows": 2900,
+      "temp_blks_written": 0,
+      "stats_since": "2026-10-13 19:27:53.89786+00",
+      "category": "other"
+    },
+    {
+      "queryid": "8273520365183753120",
+      "calls": 850,
+      "total_exec_time": 110008.681502,
+      "mean_exec_time": 129.421978237647,
+      "rows": 850,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-09 06:17:42.235207+00",
+      "category": "other"
+    },
+    {
+      "queryid": "-1901515181457900708",
+      "calls": 318,
+      "total_exec_time": 108813.502743,
+      "mean_exec_time": 342.180826235849,
+      "rows": 68507,
+      "temp_blks_written": 0,
+      "stats_since": "2026-09-29 06:41:19.003719+00",
+      "category": "catalogue_cards"
+    }
+  ],
+  "endSnapshot": [
+    {
+      "snapshot": {
+        "observed_at": "2026-10-27T15:16:18.376505+00:00",
+        "top_query_snapshot": [
+          {
+            "calls": 388864,
+            "queryid": "2554750147893907797",
+            "stats_since": "2026-09-20T09:20:24.287483+00:00",
+            "total_exec_time": 68990363.5883687
+          },
+          {
+            "calls": 119329,
+            "queryid": "-4020699816706740039",
+            "stats_since": "2026-09-20T09:20:38.677624+00:00",
+            "total_exec_time": 64742605.8049503
+          },
+          {
+            "calls": 16516,
+            "queryid": "-1140570931119106050",
+            "stats_since": "2026-10-04T09:17:42.948851+00:00",
+            "total_exec_time": 13680155.139984
+          },
+          {
+            "calls": 6843,
+            "queryid": "-8367525613714533786",
+            "stats_since": "2026-10-04T09:17:50.741028+00:00",
+            "total_exec_time": 10872070.718588
+          },
+          {
+            "calls": 11730,
+            "queryid": "-1669132499549010132",
+            "stats_since": "2026-10-04T21:23:43.858401+00:00",
+            "total_exec_time": 9895995.87527998
+          },
+          {
+            "calls": 30813,
+            "queryid": "5838242577529614117",
+            "stats_since": "2026-10-04T10:20:26.358535+00:00",
+            "total_exec_time": 7331107.30570896
+          },
+          {
+            "calls": 8063,
+            "queryid": "-4668064005735157444",
+            "stats_since": "2026-10-04T09:17:43.166757+00:00",
+            "total_exec_time": 6717604.67868398
+          },
+          {
+            "calls": 3953,
+            "queryid": "-1388723966471790667",
+            "stats_since": "2026-09-11T19:45:57.425599+00:00",
+            "total_exec_time": 4708945.649067
+          },
+          {
+            "calls": 97407,
+            "queryid": "3704692595606381162",
+            "stats_since": "2026-09-09T03:55:55.516172+00:00",
+            "total_exec_time": 4568628.599803
+          },
+          {
+            "calls": 7906,
+            "queryid": "5934413364869422649",
+            "stats_since": "2026-09-20T09:20:13.720873+00:00",
+            "total_exec_time": 3545230.83556999
+          },
+          {
+            "calls": 7141,
+            "queryid": "-6066878569812895557",
+            "stats_since": "2026-09-20T09:21:10.434521+00:00",
+            "total_exec_time": 3393711.129374
+          },
+          {
+            "calls": 17102,
+            "queryid": "6542875249928291895",
+            "stats_since": "2026-10-04T09:17:51.925863+00:00",
+            "total_exec_time": 2995600.11616501
+          },
+          {
+            "calls": 3487,
+            "queryid": "-2173659206161641850",
+            "stats_since": "2026-09-11T08:49:47.79808+00:00",
+            "total_exec_time": 2861614.805839
+          },
+          {
+            "calls": 17364,
+            "queryid": "-5443943831425419891",
+            "stats_since": "2026-09-09T05:09:49.451541+00:00",
+            "total_exec_time": 2777955.53568901
+          },
+          {
+            "calls": 14744,
+            "queryid": "-7943520643538034228",
+            "stats_since": "2026-09-20T09:20:14.704515+00:00",
+            "total_exec_time": 2335922.254705
+          },
+          {
+            "calls": 480,
+            "queryid": "4761914255844435186",
+            "stats_since": "2026-10-04T08:51:19.948789+00:00",
+            "total_exec_time": 2331938.821371
+          },
+          {
+            "calls": 37707,
+            "queryid": "2461728134308765263",
+            "stats_since": "2026-09-20T15:02:33.709924+00:00",
+            "total_exec_time": 2027792.876279
+          },
+          {
+            "calls": 69481,
+            "queryid": "-1011591884448457942",
+            "stats_since": "2026-09-20T09:20:20.92267+00:00",
+            "total_exec_time": 1870397.36516301
+          },
+          {
+            "calls": 340,
+            "queryid": "2498175840503222334",
+            "stats_since": "2026-10-04T10:19:26.717967+00:00",
+            "total_exec_time": 1429784.453226
+          },
+          {
+            "calls": 33049,
+            "queryid": "8166588256939911629",
+            "stats_since": "2026-10-04T08:51:17.084538+00:00",
+            "total_exec_time": 1311718.846892
+          },
+          {
+            "calls": 309173,
+            "queryid": "-8152361221397176368",
+            "stats_since": "2026-09-21T23:46:21.244605+00:00",
+            "total_exec_time": 1237857.81894507
+          },
+          {
+            "calls": 1142,
+            "queryid": "8351381844763159738",
+            "stats_since": "2026-09-09T06:17:44.240147+00:00",
+            "total_exec_time": 1165226.682874
+          },
+          {
+            "calls": 35764,
+            "queryid": "1203712012012440227",
+            "stats_since": "2026-10-04T08:51:16.726981+00:00",
+            "total_exec_time": 1076924.520571
+          },
+          {
+            "calls": 1358174,
+            "queryid": "-7821780334453251234",
+            "stats_since": "2026-09-09T03:55:55.516527+00:00",
+            "total_exec_time": 969966.771461074
+          },
+          {
+            "calls": 27692,
+            "queryid": "575944224754428376",
+            "stats_since": "2026-10-04T09:51:36.443231+00:00",
+            "total_exec_time": 879613.716752996
+          },
+          {
+            "calls": 18044,
+            "queryid": "5282841056958508581",
+            "stats_since": "2026-09-09T18:45:17.060605+00:00",
+            "total_exec_time": 858073.517494001
+          },
+          {
+            "calls": 47207,
+            "queryid": "-52797418693886265",
+            "stats_since": "2026-10-24T13:12:15.82695+00:00",
+            "total_exec_time": 836549.305770996
+          },
+          {
+            "calls": 46300,
+            "queryid": "-8153215946474039347",
+            "stats_since": "2026-10-04T08:51:16.937568+00:00",
+            "total_exec_time": 754533.866521003
+          },
+          {
+            "calls": 10193,
+            "queryid": "4697520836593092781",
+            "stats_since": "2026-09-27T18:42:25.869858+00:00",
+            "total_exec_time": 727097.216806001
+          },
+          {
+            "calls": 48488,
+            "queryid": "-8289637769767745540",
+            "stats_since": "2026-09-09T18:43:00.334569+00:00",
+            "total_exec_time": 709341.290301
+          },
+          {
+            "calls": 448,
+            "queryid": "4518689398486247357",
+            "stats_since": "2026-09-20T14:32:43.130396+00:00",
+            "total_exec_time": 686100.734481999
+          },
+          {
+            "calls": 337,
+            "queryid": "615541790892761948",
+            "stats_since": "2026-10-04T10:03:18.714606+00:00",
+            "total_exec_time": 674449.902236
+          },
+          {
+            "calls": 4236,
+            "queryid": "3135335920583328486",
+            "stats_since": "2026-09-09T06:17:43.762177+00:00",
+            "total_exec_time": 550240.531299999
+          },
+          {
+            "calls": 17582,
+            "queryid": "666425428936610272",
+            "stats_since": "2026-10-04T09:17:40.686513+00:00",
+            "total_exec_time": 533921.083956003
+          },
+          {
+            "calls": 39,
+            "queryid": "-1949291092380970433",
+            "stats_since": "2026-10-24T14:40:26.557878+00:00",
+            "total_exec_time": 526744.120362
+          },
+          {
+            "calls": 829,
+            "queryid": "-4412219218977576344",
+            "stats_since": "2026-09-09T06:40:40.283079+00:00",
+            "total_exec_time": 489203.974033
+          },
+          {
+            "calls": 694,
+            "queryid": "-2446392534343104252",
+            "stats_since": "2026-09-09T06:17:44.187269+00:00",
+            "total_exec_time": 472555.540068
+          },
+          {
+            "calls": 148,
+            "queryid": "-9026646083476160334",
+            "stats_since": "2026-10-05T16:27:25.826761+00:00",
+            "total_exec_time": 469856.097549
+          },
+          {
+            "calls": 383,
+            "queryid": "6176252465707463090",
+            "stats_since": "2026-10-05T23:19:38.366475+00:00",
+            "total_exec_time": 445542.643082
+          },
+          {
+            "calls": 285875,
+            "queryid": "3393632725691790249",
+            "stats_since": "2026-09-09T06:18:07.984008+00:00",
+            "total_exec_time": 434445.843717019
+          },
+          {
+            "calls": 1626,
+            "queryid": "3498858582649397375",
+            "stats_since": "2026-09-20T13:49:06.063431+00:00",
+            "total_exec_time": 427222.874101
+          },
+          {
+            "calls": 134,
+            "queryid": "6495409515942776670",
+            "stats_since": "2026-10-13T19:27:48.966411+00:00",
+            "total_exec_time": 421542.03822
+          },
+          {
+            "calls": 7150,
+            "queryid": "-4790634506840766807",
+            "stats_since": "2026-09-20T09:21:09.546991+00:00",
+            "total_exec_time": 411162.88129
+          },
+          {
+            "calls": 8512,
+            "queryid": "5271785000904057822",
+            "stats_since": "2026-09-09T06:17:43.453123+00:00",
+            "total_exec_time": 385554.413948
+          },
+          {
+            "calls": 134,
+            "queryid": "-3615170120889415132",
+            "stats_since": "2026-10-13T19:27:53.374103+00:00",
+            "total_exec_time": 375925.26352
+          },
+          {
+            "calls": 238,
+            "queryid": "6961929574520598440",
+            "stats_since": "2026-10-11T07:23:08.582169+00:00",
+            "total_exec_time": 375141.758544
+          },
+          {
+            "calls": 8746,
+            "queryid": "-5359113785161874361",
+            "stats_since": "2026-09-09T06:17:42.395698+00:00",
+            "total_exec_time": 369206.721385001
+          },
+          {
+            "calls": 20,
+            "queryid": "-2605671598544043881",
+            "stats_since": "2026-10-16T16:36:26.55793+00:00",
+            "total_exec_time": 352923.172157
+          },
+          {
+            "calls": 16,
+            "queryid": "-3791856557480423797",
+            "stats_since": "2026-10-26T09:31:30.370025+00:00",
+            "total_exec_time": 346426.491192
+          },
+          {
+            "calls": 15928,
+            "queryid": "-7512219314967279839",
+            "stats_since": "2026-10-04T09:52:34.007095+00:00",
+            "total_exec_time": 344289.632954001
+          },
+          {
+            "calls": 214,
+            "queryid": "-3324853431018517347",
+            "stats_since": "2026-09-11T06:16:32.509498+00:00",
+            "total_exec_time": 329879.999439
+          },
+          {
+            "calls": 185,
+            "queryid": "-8856799461280935852",
+            "stats_since": "2026-09-09T01:02:43.62696+00:00",
+            "total_exec_time": 305353.50697
+          },
+          {
+            "calls": 13894,
+            "queryid": "5025316789189798386",
+            "stats_since": "2026-10-24T13:12:03.435417+00:00",
+            "total_exec_time": 265876.122087999
+          },
+          {
+            "calls": 348,
+            "queryid": "2565434728142615081",
+            "stats_since": "2026-09-27T11:06:37.215137+00:00",
+            "total_exec_time": 264968.32112
+          },
+          {
+            "calls": 3775,
+            "queryid": "8496692586382520045",
+            "stats_since": "2026-09-09T06:17:44.118409+00:00",
+            "total_exec_time": 256798.584395
+          },
+          {
+            "calls": 9,
+            "queryid": "-3321881214120789049",
+            "stats_since": "2026-10-16T16:36:44.469633+00:00",
+            "total_exec_time": 254883.398347
+          },
+          {
+            "calls": 479,
+            "queryid": "-6006055679507367960",
+            "stats_since": "2026-10-04T09:18:44.013169+00:00",
+            "total_exec_time": 253776.659675
+          },
+          {
+            "calls": 3953,
+            "queryid": "3896602221745672037",
+            "stats_since": "2026-09-11T19:46:04.122966+00:00",
+            "total_exec_time": 250075.868028
+          },
+          {
+            "calls": 313,
+            "queryid": "-350862749819457797",
+            "stats_since": "2026-10-11T21:11:21.773366+00:00",
+            "total_exec_time": 231518.529763
+          },
+          {
+            "calls": 24452,
+            "queryid": "5057122265306862055",
+            "stats_since": "2026-09-09T18:45:16.800804+00:00",
+            "total_exec_time": 231279.010666998
+          },
+          {
+            "calls": 76,
+            "queryid": "957266140283063968",
+            "stats_since": "2026-10-15T21:25:41.69301+00:00",
+            "total_exec_time": 229207.197165
+          },
+          {
+            "calls": 1840,
+            "queryid": "-4821528728022232452",
+            "stats_since": "2026-09-29T08:05:53.353072+00:00",
+            "total_exec_time": 226569.403114
+          },
+          {
+            "calls": 405,
+            "queryid": "7681606325448210963",
+            "stats_since": "2026-09-09T18:43:04.999485+00:00",
+            "total_exec_time": 224031.775523
+          },
+          {
+            "calls": 9,
+            "queryid": "5964795389877032434",
+            "stats_since": "2026-10-05T16:47:47.293956+00:00",
+            "total_exec_time": 220221.715429
+          },
+          {
+            "calls": 463,
+            "queryid": "-79448683501689060",
+            "stats_since": "2026-09-09T06:17:41.92658+00:00",
+            "total_exec_time": 207369.176897
+          },
+          {
+            "calls": 2,
+            "queryid": "955445381683153085",
+            "stats_since": "2026-09-26T12:48:08.446774+00:00",
+            "total_exec_time": 203978.94801
+          },
+          {
+            "calls": 39,
+            "queryid": "6210997391053278587",
+            "stats_since": "2026-09-09T06:27:42.530874+00:00",
+            "total_exec_time": 201228.016237
+          },
+          {
+            "calls": 2431,
+            "queryid": "4627799608345499412",
+            "stats_since": "2026-09-09T06:17:42.726632+00:00",
+            "total_exec_time": 201086.981572
+          },
+          {
+            "calls": 76,
+            "queryid": "-2777470293248029914",
+            "stats_since": "2026-10-15T21:25:44.646638+00:00",
+            "total_exec_time": 194887.439547
+          },
+          {
+            "calls": 9,
+            "queryid": "4172255944955080483",
+            "stats_since": "2026-10-16T18:28:15.107535+00:00",
+            "total_exec_time": 167696.085504
+          },
+          {
+            "calls": 12,
+            "queryid": "9080341095279261117",
+            "stats_since": "2026-09-28T06:22:15.506001+00:00",
+            "total_exec_time": 167126.451373
+          },
+          {
+            "calls": 2,
+            "queryid": "5092403133000351635",
+            "stats_since": "2026-09-26T12:52:41.576345+00:00",
+            "total_exec_time": 165686.704943
+          },
+          {
+            "calls": 8676,
+            "queryid": "8403553523879522297",
+            "stats_since": "2026-09-09T18:45:19.27091+00:00",
+            "total_exec_time": 164151.874832999
+          },
+          {
+            "calls": 561,
+            "queryid": "1815039327728400219",
+            "stats_since": "2026-09-29T06:41:35.071505+00:00",
+            "total_exec_time": 163976.193873
+          },
+          {
+            "calls": 3,
+            "queryid": "8863898889737953558",
+            "stats_since": "2026-09-30T19:12:08.775243+00:00",
+            "total_exec_time": 162372.651557
+          },
+          {
+            "calls": 7149,
+            "queryid": "-1801539897955087385",
+            "stats_since": "2026-09-20T09:21:10.223393+00:00",
+            "total_exec_time": 162201.60474
+          },
+          {
+            "calls": 6152,
+            "queryid": "-5591856244679658793",
+            "stats_since": "2026-09-29T08:05:52.119+00:00",
+            "total_exec_time": 157271.990816
+          },
+          {
+            "calls": 174,
+            "queryid": "5299301975933694258",
+            "stats_since": "2026-09-09T01:02:44.297786+00:00",
+            "total_exec_time": 155094.567676
+          },
+          {
+            "calls": 4913,
+            "queryid": "-9160712448783217143",
+            "stats_since": "2026-10-24T13:11:50.145154+00:00",
+            "total_exec_time": 154394.753441
+          },
+          {
+            "calls": 2450,
+            "queryid": "1614512640805674008",
+            "stats_since": "2026-10-24T13:10:12.557181+00:00",
+            "total_exec_time": 153142.213076
+          },
+          {
+            "calls": 11,
+            "queryid": "5492908069498193389",
+            "stats_since": "2026-10-09T14:57:19.927318+00:00",
+            "total_exec_time": 151528.160352
+          },
+          {
+            "calls": 1397157,
+            "queryid": "-5450541783198011430",
+            "stats_since": "2026-09-09T06:18:08.165434+00:00",
+            "total_exec_time": 149787.217849968
+          },
+          {
+            "calls": 14,
+            "queryid": "-418202894786015350",
+            "stats_since": "2026-10-15T21:36:13.095564+00:00",
+            "total_exec_time": 149061.788494
+          },
+          {
+            "calls": 16,
+            "queryid": "-1545271101605872536",
+            "stats_since": "2026-09-27T14:02:52.489566+00:00",
+            "total_exec_time": 147578.323072
+          },
+          {
+            "calls": 412,
+            "queryid": "-6073924475683090777",
+            "stats_since": "2026-09-10T07:15:38.748083+00:00",
+            "total_exec_time": 146005.615763
+          },
+          {
+            "calls": 16061,
+            "queryid": "5613087877765071911",
+            "stats_since": "2026-09-20T12:01:51.646115+00:00",
+            "total_exec_time": 145168.692964
+          },
+          {
+            "calls": 125,
+            "queryid": "-439942119180511121",
+            "stats_since": "2026-09-09T06:17:45.301692+00:00",
+            "total_exec_time": 142858.72224
+          },
+          {
+            "calls": 709,
+            "queryid": "454447746872431811",
+            "stats_since": "2026-09-09T06:17:43.451229+00:00",
+            "total_exec_time": 141042.817409
+          },
+          {
+            "calls": 4050,
+            "queryid": "905037736800761369",
+            "stats_since": "2026-10-04T09:52:34.356867+00:00",
+            "total_exec_time": 138018.213902
+          },
+          {
+            "calls": 19,
+            "queryid": "-5042451693867152203",
+            "stats_since": "2026-10-16T16:36:37.361357+00:00",
+            "total_exec_time": 135344.38068
+          },
+          {
+            "calls": 2,
+            "queryid": "2572234018854513591",
+            "stats_since": "2026-10-22T18:00:39.664187+00:00",
+            "total_exec_time": 134638.121589
+          },
+          {
+            "calls": 14,
+            "queryid": "-5369556072189743069",
+            "stats_since": "2026-10-26T22:38:03.481676+00:00",
+            "total_exec_time": 134631.639494
+          },
+          {
+            "calls": 114,
+            "queryid": "-7726440967385220442",
+            "stats_since": "2026-09-09T01:02:45.880962+00:00",
+            "total_exec_time": 126699.073457
+          },
+          {
+            "calls": 6,
+            "queryid": "3298338783902626656",
+            "stats_since": "2026-09-20T09:03:52.24443+00:00",
+            "total_exec_time": 120239.087503
+          },
+          {
+            "calls": 47608,
+            "queryid": "380363013670213844",
+            "stats_since": "2026-09-27T11:20:10.792707+00:00",
+            "total_exec_time": 117899.701918
+          },
+          {
+            "calls": 3,
+            "queryid": "-2432807110010745465",
+            "stats_since": "2026-10-23T06:39:57.149433+00:00",
+            "total_exec_time": 117857.895856
+          },
+          {
+            "calls": 9,
+            "queryid": "3337803606286705113",
+            "stats_since": "2026-09-28T20:58:24.609582+00:00",
+            "total_exec_time": 117344.455105
+          },
+          {
+            "calls": 134,
+            "queryid": "2560928289413370830",
+            "stats_since": "2026-10-13T19:27:53.89786+00:00",
+            "total_exec_time": 112469.205422
+          },
+          {
+            "calls": 850,
+            "queryid": "8273520365183753120",
+            "stats_since": "2026-09-09T06:17:42.235207+00:00",
+            "total_exec_time": 110008.681502
+          },
+          {
+            "calls": 318,
+            "queryid": "-1901515181457900708",
+            "stats_since": "2026-09-29T06:41:19.003719+00:00",
+            "total_exec_time": 108813.502743
+          }
+        ],
+        "unvalidated_catalogue_constraints": null
+      }
+    }
+  ],
+  "note": "Two bounded top-100 cumulative query snapshots; only overlapping query IDs and unchanged stats_since support deltas. Not a benchmark."
+}

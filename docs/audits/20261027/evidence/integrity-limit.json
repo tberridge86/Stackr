@@ -1,0 +1,9 @@
+{
+  "fullAggregate": {
+    "error": {
+      "name": "HttpException",
+      "message": "Failed to run sql query: ERROR:  57014: canceling statement due to statement timeout\n"
+    }
+  },
+  "followup": "Catalogue constraints query succeeded and found no unvalidated catalogue constraints. Full asset relationship/metadata aggregate exceeded 8-second budget; do not infer failure or repeat during transfer."
+}

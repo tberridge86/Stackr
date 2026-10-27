@@ -5,6 +5,7 @@ import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'n
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import './test-production-release-concurrency.mjs';
 
 function run(script, args = [], env = {}) {
   return spawnSync(process.execPath, [script, ...args], {

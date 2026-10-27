@@ -1,0 +1,14 @@
+{
+  "observedAt": "2026-10-27T15:12:00Z",
+  "scope": "Read-only SQL transaction with authenticated role and synthetic non-owner subject; read tests only, not login or write acceptance.",
+  "result": [
+    {
+      "negative_read_check": {
+        "role": "authenticated",
+        "other_holdings_visible": 0,
+        "other_profiles_visible": 0,
+        "private_binders_visible": 0
+      }
+    }
+  ]
+}

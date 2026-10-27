@@ -1,0 +1,248 @@
+{
+  "project": {
+    "id": "d205637b-5376-41aa-9169-1015ba88fec3",
+    "name": "pocketvault",
+    "workspaceName": "tberridge86's Projects"
+  },
+  "environment": {
+    "id": "b4304736-cac8-4ca9-92a7-93f7f6499c2f",
+    "name": "production",
+    "isEphemeral": false
+  },
+  "staged": null,
+  "region": null,
+  "services": [
+    {
+      "id": "b5410607-a591-420e-a506-fe184ce7455b",
+      "name": "stackr-r2-migration",
+      "state": "live",
+      "source": null,
+      "regions": [
+        "us-west2"
+      ],
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "volumeMounts": [
+        {
+          "volumeId": "3b8283f4-0fa9-4c34-9ac7-4d6c1bfea271",
+          "volumeName": "stackr-r2-migration-volume",
+          "mountPath": "/data"
+        }
+      ],
+      "latestDeployment": {
+        "id": "21e9065e-040e-407e-96f7-c3b88b859704",
+        "status": "SUCCESS",
+        "createdAt": "2026-10-27T13:56:01.908Z",
+        "url": null
+      },
+      "stagedChangeCount": 0
+    },
+    {
+      "id": "c4c52418-b307-4c9f-9ffd-e67be163c366",
+      "name": "marvelous-surprise Copy",
+      "state": "live",
+      "source": {
+        "image": null,
+        "repo": "tberridge86/Stackr",
+        "branch": "main"
+      },
+      "regions": [
+        "us-west2"
+      ],
+      "numReplicas": 1,
+      "cronSchedule": "*/5 * * * *",
+      "volumeMounts": [],
+      "latestDeployment": {
+        "id": "92593bce-063c-4db6-bb4f-b39dcedb4401",
+        "status": "DEPLOYING",
+        "createdAt": "2026-10-27T15:05:19.234Z",
+        "url": null
+      },
+      "stagedChangeCount": 0
+    },
+    {
+      "id": "ff1e8d30-4307-45be-855c-5f83f092d8a5",
+      "name": "marvelous-surprise",
+      "state": "live",
+      "source": {
+        "image": null,
+        "repo": "tberridge86/Stackr",
+        "branch": "main"
+      },
+      "regions": [
+        "us-west2"
+      ],
+      "numReplicas": 1,
+      "cronSchedule": "0 6,18 * * *",
+      "volumeMounts": [],
+      "latestDeployment": {
+        "id": "d8710255-6047-4db7-8ef1-27e3d30282c6",
+        "status": "SUCCESS",
+        "createdAt": "2026-10-26T07:37:14.432Z",
+        "url": null
+      },
+      "stagedChangeCount": 0
+    },
+    {
+      "id": "ca7e7957-85ac-4597-ba20-4692e41c4c47",
+      "name": "stackr-owner-siglip",
+      "state": "live",
+      "source": null,
+      "regions": [
+        "us-west2"
+      ],
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "volumeMounts": [
+        {
+          "volumeId": "9b7cd214-505b-41fa-b572-c902aa6d75d1",
+          "volumeName": "stackr-owner-siglip-volume",
+          "mountPath": "/models"
+        }
+      ],
+      "latestDeployment": {
+        "id": "930b12b2-1a3e-4b0b-a01a-a79d95c6ad6f",
+        "status": "SUCCESS",
+        "createdAt": "2026-09-05T19:30:19.978Z",
+        "url": null
+      },
+      "stagedChangeCount": 0
+    },
+    {
+      "id": "a2e61d08-1910-4762-bf82-e0473e86ad5f",
+      "name": "stackr-catalogue-prices-daily-production",
+      "state": "live",
+      "source": {
+        "image": null,
+        "repo": "tberridge86/Stackr",
+        "branch": "main"
+      },
+      "regions": [
+        "us-west2"
+      ],
+      "numReplicas": 1,
+      "cronSchedule": "13 * * * *",
+      "volumeMounts": [],
+      "latestDeployment": {
+        "id": "7044b01d-f774-42a2-8af2-8a9223fc582e",
+        "status": "SUCCESS",
+        "createdAt": "2026-10-27T09:14:34.393Z",
+        "url": null
+      },
+      "stagedChangeCount": 0
+    },
+    {
+      "id": "8baf4d98-4605-4832-9d7e-65880e2a6b29",
+      "name": "stackr-api-perf-canary",
+      "state": "live",
+      "source": {
+        "image": null,
+        "repo": "tberridge86/Stackr",
+        "branch": "main"
+      },
+      "regions": [
+        "europe-west4-drams3a"
+      ],
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "volumeMounts": [],
+      "latestDeployment": {
+        "id": "22bf27d6-d64b-412c-9cd1-b692b7f583de",
+        "status": "SUCCESS",
+        "createdAt": "2026-10-26T07:37:14.431Z",
+        "url": null
+      },
+      "stagedChangeCount": 0
+    },
+    {
+      "id": "299d7ad4-5ed8-4301-b609-ef99274078d0",
+      "name": "pocketvault",
+      "state": "live",
+      "source": {
+        "image": null,
+        "repo": "tberridge86/Stackr",
+        "branch": "main"
+      },
+      "regions": [
+        "europe-west4-drams3a"
+      ],
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "volumeMounts": [],
+      "latestDeployment": {
+        "id": "dfc23b30-9675-4ba0-ad2b-9f1875302747",
+        "status": "SUCCESS",
+        "createdAt": "2026-10-24T11:42:28.703Z",
+        "url": null
+      },
+      "stagedChangeCount": 0
+    },
+    {
+      "id": "1c4cf45c-816d-46cc-a416-78d8c18bd779",
+      "name": "stackr-cardmarket-daily-production",
+      "state": "live",
+      "source": {
+        "image": null,
+        "repo": "tberridge86/Stackr",
+        "branch": "main"
+      },
+      "regions": [
+        "us-west2"
+      ],
+      "numReplicas": 1,
+      "cronSchedule": "17 * * * *",
+      "volumeMounts": [
+        {
+          "volumeId": "86718ccd-b9a3-4570-ad10-c114a3be4eb6",
+          "volumeName": "cardmarket-production-cache",
+          "mountPath": "/var/lib/cardmarket"
+        }
+      ],
+      "latestDeployment": null,
+      "stagedChangeCount": 0
+    }
+  ],
+  "volumes": [
+    {
+      "id": "3b8283f4-0fa9-4c34-9ac7-4d6c1bfea271",
+      "name": "stackr-r2-migration-volume",
+      "state": "live",
+      "region": "us-west2",
+      "sizeMB": 5000,
+      "mountedOn": {
+        "serviceId": "b5410607-a591-420e-a506-fe184ce7455b",
+        "serviceName": "stackr-r2-migration",
+        "mountPath": "/data"
+      },
+      "stagedChangeCount": 0
+    },
+    {
+      "id": "86718ccd-b9a3-4570-ad10-c114a3be4eb6",
+      "name": "cardmarket-production-cache",
+      "state": "live",
+      "region": "us-west2",
+      "sizeMB": 1024,
+      "mountedOn": {
+        "serviceId": "1c4cf45c-816d-46cc-a416-78d8c18bd779",
+        "serviceName": "stackr-cardmarket-daily-production",
+        "mountPath": "/var/lib/cardmarket"
+      },
+      "stagedChangeCount": 0
+    },
+    {
+      "id": "9b7cd214-505b-41fa-b572-c902aa6d75d1",
+      "name": "stackr-owner-siglip-volume",
+      "state": "live",
+      "region": "us-west2",
+      "sizeMB": 5000,
+      "mountedOn": {
+        "serviceId": "ca7e7957-85ac-4597-ba20-4692e41c4c47",
+        "serviceName": "stackr-owner-siglip",
+        "mountPath": "/models"
+      },
+      "stagedChangeCount": 0
+    }
+  ],
+  "buckets": [],
+  "sharedVariableNames": []
+}

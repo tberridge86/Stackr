@@ -1,0 +1,10 @@
+[
+  {
+    "url": "https://assets.stackrtcg.com/public/card_image/0000693d-698d-4600-91d9-9b494e07f27a/e6a1fb29a980371ac11223d113db8de94cd531dea91ae9508a11b5d7ab4ae708/47d3c0dded1f7350dba40ca8f686a96c2278800a4c5fb8772cbdcefb90aecfe8/original.jpg",
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "url": "https://assets.stackrtcg.com/public/card_image/0000693d-698d-4600-91d9-9b494e07f27a/e6a1fb29a980371ac11223d113db8de94cd531dea91ae9508a11b5d7ab4ae708/7cc607008b4a186ab66774ffaf62a84085990940c681b85531d545ca734de7fc/card-grid.webp",
+    "error": "HTTP Error 403: Forbidden"
+  }
+]
