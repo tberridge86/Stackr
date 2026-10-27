@@ -1,0 +1,94 @@
+{
+  "deploymentId": "c68c6414-4f2a-4c5a-969e-994d6d0e8b56",
+  "commandSha256": "319682942085f426636f200078da6fe9e79a0a3b4a16af2d09752ebc2ba4f496",
+  "at": "2026-10-27T09:15:50.909387865Z",
+  "message": "",
+  "event": "r2_reconciliation_complete",
+  "sourceHashes": {
+    "inspector": "28245a96581910afa9c78f25d49e2d1baf19bf80886ba322d3764ce94a65e1cc",
+    "reconciler": "461318e531b339af9349ac0ad836921634f46f0b5366c6427ee8be631b176563"
+  },
+  "certificate": {
+    "schemaVersion": 1,
+    "kind": "stackr-r2-interrupted-run-reconciliation",
+    "status": "reconciled",
+    "startedAt": "2026-10-27T09:08:43.969Z",
+    "finishedAt": "2026-10-27T09:15:44.485Z",
+    "sourceCommit": "6dfe188166df76b41d44801ab66970b0a3881ae5",
+    "projectRef": "oakdbbzdqwurpjnoqhmu",
+    "runs": [
+      {
+        "runId": "production-optimised-20261026b",
+        "evidenceSha256": "d06e9a223cd8a7985ec2cc641d03eceea32f4c6eb7cffc7275e41927f94c0e71",
+        "checkpointSha256": "d1728f7eec12c65b31a5fe442c1ecb63362ba7bcb54812f8a28106b60d1f077f",
+        "completedBatches": 1065,
+        "inventoryRows": 26650,
+        "journalPublishedAssets": 26641
+      },
+      {
+        "runId": "production-resumed-20261026a",
+        "evidenceSha256": "83755a507c55824e96f5dee71085399891e4a1b5bbc329794dcc6a3acfc7c661",
+        "checkpointSha256": "b59da552b04a09fe066eb5036de3f624b9c294f058bce6d214f0039cdd0401b8",
+        "completedBatches": 67,
+        "inventoryRows": 1700,
+        "journalPublishedAssets": 1699
+      }
+    ],
+    "rowCounts": {
+      "current": 26650,
+      "prior": 1700,
+      "unique": 28349,
+      "historicalOverlap": 1
+    },
+    "expectationSha256": "e4af878eb4b2096b424761b58ad5007c04f15f8ad678b78e372bc7be7142dbcd",
+    "databaseChecks": [
+      {
+        "checkedAt": "2026-10-27 09:12:33.113793+00",
+        "matchedRows": 28349,
+        "pushed": 53001,
+        "remaining": 9097,
+        "totalEligible": 62098
+      },
+      {
+        "checkedAt": "2026-10-27 09:15:44.058473+00",
+        "matchedRows": 28349,
+        "pushed": 53001,
+        "remaining": 9097,
+        "totalEligible": 62098
+      }
+    ],
+    "publicVerification": {
+      "objectsVerified": 73,
+      "bytesVerified": 7084649,
+      "proofSha256": "5e5b7efe9bf9f839d03b8421c08d39b482bcdcbac06e709fc25440487095d864",
+      "bytesRead": 7084649,
+      "retries": 0
+    },
+    "historicalLink": {
+      "rowId": "62db634c-943e-4570-a606-d1039746a477",
+      "beforeSnapshotSha256": "93e7cf97672dc35dfc5caedb45523442a7314b1b15190e962bb063fc89aee2e7",
+      "afterSnapshotSha256": "199a02febbd5251c344a6d193be9e61bd4790ee50f72953f2a1a9904aac6ab02",
+      "sequence": 1,
+      "operationId": "96bda4c2b0dba8408978cde5b9ab839a0bb101a12b3322a8fae04c1cb4067ca6",
+      "receiptSha256": "13924c55c12336f76489e4ffdef14ad14b894d506248906f8e1d4b8935a54422",
+      "objectsVerified": 4
+    },
+    "sourceFailureRecheck": {
+      "rowId": "d50b4c8c-d641-4ca4-9b5b-3dc20bc253c0",
+      "role": "detail-page",
+      "status": 200,
+      "sha256": "9408ea91152362549183668e0d2f600bcbdd9459bf52dc80f1cd340e5142e8c2",
+      "byteSize": 146338,
+      "verified": true
+    },
+    "databaseReadOnly": true,
+    "transactionRolledBack": true,
+    "postcheckPassed": true,
+    "evidenceModified": false,
+    "resumeAuthorized": false,
+    "reconciliationPassed": true
+  },
+  "certificateSha256": "f2d13c254b44132a78ca1fdf60e339cd56111c83c229c364fc3bbf1d05a4b9dc",
+  "runnerStarted": false,
+  "resumeAuthorized": false
+}
