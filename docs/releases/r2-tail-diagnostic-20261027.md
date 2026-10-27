@@ -172,3 +172,30 @@ rows and the prior tail's 24 published rows. The one prior untouched row,
 before snapshot. Its specific successor receipt must explain that change before
 the historical gate can be replaced. The linked JSON diagnostic receipt records
 these observations; it is not a resume or completion certificate.
+
+## Full reconciliation preparation
+
+The pinned CLI's `source_public_read_failed` string hashes exactly to the
+unrecognized code recorded in the interrupted execution. The transfer failure
+belongs to row `d50b4c8c-d641-4ca4-9b5b-3dc20bc253c0`, derivative `detail-page`.
+Its source Storage record still exists as of 08:54:42 UTC, with 146,338 bytes and
+`image/webp`; existence alone does not verify current public retrieval.
+
+The dedicated read-only reconciler checks all 28,349 distinct recorded rows,
+the exact historical successor receipt, all 64 published current-tail objects,
+bounded first/last public samples, and the exact failed source derivative. It
+then revalidates both full evidence manifests and repeats the database checks.
+Both database transactions require repeatable-read/read-only mode, rollback and
+connection close. GET requests are limited to reviewed public object URLs,
+four concurrent requests, a fixed 30-second object deadline and at most two
+retries for explicitly transient failures. Content mismatches never retry.
+
+Reviewed inspector SHA-256:
+`28245a96581910afa9c78f25d49e2d1baf19bf80886ba322d3764ce94a65e1cc`.
+Reconciler SHA-256:
+`461318e531b339af9349ac0ad836921634f46f0b5366c6427ee8be631b176563`.
+Proposed read-only command SHA-256:
+`319682942085f426636f200078da6fe9e79a0a3b4a16af2d09752ebc2ba4f496`.
+The 11 reconciler tests and three entry-command tests pass. The command emits
+only bounded phases and a small certificate; it cannot start a worker, write
+database rows, alter evidence or delete source objects. Runtime limit: 900 seconds.
