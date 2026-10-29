@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "stackr-production-native-build62-delivery",
-  "recordedAt": "2026-10-29T20:48:04.084Z",
+  "recordedAt": "2026-10-29T20:59:10.057Z",
   "repository": "tberridge86/Stackr",
   "pullRequest": 446,
   "acceptedSource": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
@@ -89,7 +89,7 @@
     "autoTestFlightSetup": false
   },
   "submission": {
-    "status": "IN_QUEUE",
+    "status": "FINISHED",
     "id": "8e8b78e7-12b9-4226-b271-e15a11054554",
     "buildId": "8f0c25f1-b287-4a3c-89f8-ae3569e7bb4c",
     "profile": "production",
@@ -111,7 +111,7 @@
     "productionEnvironmentExplicit": true,
     "ownerRecognitionFlagsExplicitlyFalse": true,
     "npxWrapper": "Timed out; direct pinned CLI invocation works.",
-    "acceptanceReadback": "CLI scheduled successfully with exit 0; submit:view confirms exact Build 62 and source. Apple processing not yet verified.",
+    "acceptanceReadback": "EAS submit:view FINISHED; Apple status VALID and IN_BETA_TESTING for exact version/build/EAS IDs.",
     "createdAt": "2026-10-29T20:46:22.727Z",
     "url": "https://expo.dev/accounts/tommo86/projects/Stackr/submissions/8e8b78e7-12b9-4226-b271-e15a11054554",
     "configResolution": "Submission-only minimal app identity derived from exact accepted app.json, unchanged exact eas.json, EAS_NO_VCS=1. Existing finished artifact only; no source upload or native rebuild.",
@@ -119,14 +119,28 @@
       "Full sparse checkout failed locally due to absent expo-splash-screen plugin; no remote submission.",
       "Changelog scheduling request rejected because Expo requires Enterprise for that option; retry omitted --what-to-test."
     ],
-    "notesStatus": "Not yet added; Apple browser controls currently unavailable."
+    "notesStatus": "Saved through authenticated Apple SDK and read back exactly in en-US and en-GB.",
+    "finishedObservedAt": "2026-10-29T20:55:17.881Z",
+    "notes": "Build 62 improves Home loading, binder account isolation and search pagination, and adds Coming soon notices for Gem Pack Vol.7 and Delta Reign.\n\nPlease check Home after a cold launch, returning to the app and refreshing; binder edits and switching accounts; multilingual search and loading more results; artwork, Showcase lighting and haptics; and recovery after going offline.\n\nKnown limitations: pricing can remain partial, estimated or stale. Some artwork and translations remain unavailable. Catalogue-wide daily movers and printing-specific foil materials are not activated in this release."
   },
   "apple": {
-    "buildId": null,
-    "processingState": "unverified",
-    "internalBetaState": "unverified",
-    "teamExpoGroupMembership": "unverified",
-    "testerAvailability": "unverified",
+    "buildId": "a691b84d-6fd0-416f-917e-a87e048c1fb6",
+    "processingState": "VALID",
+    "internalBetaState": "IN_BETA_TESTING",
+    "externalBetaState": "READY_FOR_BETA_SUBMISSION",
+    "uploadedDate": "2026-10-29T13:51:11-07:00",
+    "expired": false,
+    "teamExpoGroupMembership": "verified",
+    "testerAvailability": "available to existing Team (Expo) internal testers",
+    "groupId": "9ab9cbec-f5f1-4a9c-80bb-4afcce16960f",
+    "groupName": "Team (Expo)",
+    "groupContainsExactBuild": true,
+    "notesVerified": true,
+    "notesLocales": [
+      "en-US",
+      "en-GB"
+    ],
+    "verifiedAt": "2026-10-29T20:58:38.833Z",
     "installedPhoneAcceptance": "unverified"
   },
   "supportingServices": {
@@ -165,14 +179,14 @@
     ]
   },
   "limits": [
-    "A successful EAS native build does not establish TestFlight submission, Apple processing or availability to testers.",
+    "TestFlight availability is verified; no tester installation or installed-phone acceptance is claimed.",
     "No installed-phone acceptance, real two-account/edit/offline journey or phone-rendering timing is claimed.",
     "Pricing remains partial and stale with 20 unpriced units; no complete or fresh catalogue-wide valuation is claimed.",
     "API/service QA and native preflight do not establish faster Home rendering.",
     "Existing unresolved artwork/source-edition/license and device-only acceptance remain explicit in the shared release evidence."
   ],
   "evidenceWriter": {
-    "operations": "Release owner recorded verified build and scheduled submission; Apple completion remains pending.",
-    "submissionStatusMustBeUpdatedByFinalEvidence": true
+    "operations": "Release owner completed the exact native submission, independently verified Apple processing and Team (Expo) membership, saved/read back the beta test notes, and recorded sanitized final evidence.",
+    "submissionStatusMustBeUpdatedByFinalEvidence": false
   }
 }
