@@ -1,4 +1,5 @@
 import { readFileSync, statSync, writeFileSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -53,6 +54,7 @@ export async function run(argv = process.argv.slice(2), { root = process.cwd(), 
   const require = createRequire(resolve(root, 'package.json'));
   const { createClient } = require('@supabase/supabase-js');
   const pin = pinHomeReaderSource(root);
+  const measurementDeviceId = randomUUID();
   const transport = createMeasuredTransport({ fetchImpl });
   const allHttp = () => { const totals = summarizeHttp(transport.records);
     return { requests: totals.requests, decodedBodyBytes: totals.decodedBodyBytes, categories: totals.categories }; };
@@ -93,7 +95,7 @@ export async function run(argv = process.argv.slice(2), { root = process.cwd(), 
         try {
           const api = new (reader.load('stackrApiV1').StackrApiClient)({ baseUrl: TARGETS.api, fetchImpl: transport.fetch,
             getAccessToken: async () => (await sdk.auth.getSession()).data.session?.access_token ?? null,
-            getDeviceId: async () => '' });
+            getDeviceId: async () => measurementDeviceId });
           for (const scenario of scenarios) {
             const firstAuth = authenticatedCalls.length;
             const value = await measureDependencyLoad({ mode, scenario, reader, supabase: sdk, api, transport, userId: session.user.id });

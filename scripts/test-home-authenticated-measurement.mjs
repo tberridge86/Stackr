@@ -28,14 +28,21 @@ function fixtureFetch({ cap = 50, denied = false, duplicate = false } = {}) {
   const calls = [];
   const fetch = async (input, init = {}) => {
     assert.equal(init.redirect, 'error', 'provider redirects cannot forward credentials');
-    const url = new URL(input); calls.push({ path: url.pathname, method: init.method ?? 'GET' });
+    const url = new URL(input), call = { path: url.pathname, method: init.method ?? 'GET' };
+    calls.push(call);
     if (url.pathname === '/auth/v1/token') {
       assert.equal(JSON.parse(init.body).email, email); assert.equal(JSON.parse(init.body).password, password);
       return json(session);
     }
     if (url.pathname === '/auth/v1/user') return json(session.user);
-    if (url.pathname.endsWith('/collection-valuation')) return denied
-      ? json({ error: { code: 'access_denied', message: password + email + token }, meta: {} }, 403) : json(prepared);
+    if (url.pathname.endsWith('/collection-valuation')) {
+      call.deviceId = new Headers(init.headers).get('x-stackr-device-id');
+      if (!/^[A-Za-z0-9._:-]{8,128}$/.test(call.deviceId ?? '')) {
+        return json({ error: { code: 'invalid_device_id' }, meta: {} }, 400);
+      }
+      return denied
+        ? json({ error: { code: 'access_denied', message: password + email + token }, meta: {} }, 403) : json(prepared);
+    }
     const table = url.pathname.split('/').at(-1), offset = Number(url.searchParams.get('offset'));
     const size = Math.min(Number(url.searchParams.get('limit')), cap);
     if (table === 'binders') return json(offset ? [] : [{ id: binder, user_id: owner, name: 'Private binder', type: 'custom', created_at: '2026-10-26' }]);
@@ -88,6 +95,11 @@ try {
   assert.equal(raw.calls.length, 0, 'disallowed traffic never reaches transport');
   transport.close();
 
+  const missingDevice = await fixtureFetch().fetch(TARGETS.api + '/market/collection-valuation', {
+    redirect: 'error', headers: { Authorization: 'Bearer ' + token },
+  });
+  assert.equal(missingDevice.status, 400, 'private gateway reads require a valid device header');
+
   const { createClient } = await import('@supabase/supabase-js');
   for (const cap of [17, 50, 100, 500]) {
     const fixture = fixtureFetch({ cap });
@@ -99,7 +111,7 @@ try {
     const reader = loadHomeReader(process.cwd(), supabase, pinned);
     try {
       const api = new (reader.load('stackrApiV1').StackrApiClient)({ baseUrl: TARGETS.api,
-        fetchImpl: measured.fetch, getAccessToken: async () => token, getDeviceId: async () => '' });
+        fetchImpl: measured.fetch, getAccessToken: async () => token, getDeviceId: async () => 'fixture-device-id' });
       const cold = await measureDependencyLoad({ mode: 'concurrent', scenario: 'cold-client-memory', reader, supabase, api, transport: measured, userId: owner });
       assert.equal(cold.report.facts.savedPlacements, 102);
       assert.ok(cold.report.http.streams.every(stream => stream.completeByEmptyPage));
@@ -121,7 +133,12 @@ try {
   assert.equal(success.state, 'measured');
   assert.equal(success.samples.filter(sample => sample.mode).length, 8);
   assert.equal(success.samples.find(sample => sample.pairIntegrity).pairIntegrity.exactFactsEqual, true);
-  assert.equal(successFixture.calls.filter(call => call.path.endsWith('/collection-valuation')).length, 8);
+  const valuationCalls = successFixture.calls.filter(call => call.path.endsWith('/collection-valuation'));
+  assert.equal(valuationCalls.length, 8);
+  const measurementDeviceId = valuationCalls[0].deviceId;
+  assert.match(measurementDeviceId, /^[A-Za-z0-9._:-]{8,128}$/);
+  assert.equal(new Set(valuationCalls.map(call => call.deviceId)).size, 1, 'all scenarios reuse one transient run identity');
+  assert.equal(JSON.stringify(success).includes(measurementDeviceId), false, 'device identity is absent from receipts');
   const vendorLogs = [], originalError = console.error;
   console.error = (...args) => vendorLogs.push(args.map(String).join(' '));
   let networkFailure;
@@ -147,6 +164,8 @@ try {
   const receipt = await run(['--execute', '--designated-qa-account', '--allow-prepared-generation-get', '--credentials-file=' + credentials], { fetchImpl: deniedFixture.fetch });
   assert.equal(receipt.reason, 'qa_prepared_access_denied');
   assert.equal(deniedFixture.calls.filter(call => call.path.endsWith('/collection-valuation')).length, 1);
+  assert.notEqual(deniedFixture.calls.find(call => call.path.endsWith('/collection-valuation')).deviceId, measurementDeviceId,
+    'a new run receives a new transient device identity');
   for (const secret of [owner, binder, email, password, token]) assert.equal(JSON.stringify(receipt).includes(secret), false);
   assert.equal(safeFailure(new Error(password)).code, 'measurement_failed');
   assert.equal(summarizeHttp([]).requests, 0);
