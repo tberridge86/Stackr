@@ -1,0 +1,178 @@
+{
+  "schemaVersion": 1,
+  "kind": "stackr-production-native-build62-delivery",
+  "recordedAt": "2026-10-29T20:48:04.084Z",
+  "repository": "tberridge86/Stackr",
+  "pullRequest": 446,
+  "acceptedSource": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+  "reviewedHead": "8f007c6a845f1342cb7482b558665874c397f343",
+  "nativeBuild": {
+    "id": "8f0c25f1-b287-4a3c-89f8-ae3569e7bb4c",
+    "observedResult": "SUCCEEDED",
+    "source": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+    "platform": "iOS",
+    "profile": "production",
+    "environment": "Production",
+    "channel": "production",
+    "appVersion": "1.0.6",
+    "buildNumber": "62",
+    "runtimeVersion": "1.0.6",
+    "fingerprint": "b8c8804e12d9f50e1f8870b46623b58e1775f6b9",
+    "buildDurationSeconds": 577,
+    "totalDurationSeconds": 603,
+    "completedAt": "2026-10-29T20:10:47.946Z",
+    "provenance": "Release owner inspected the actual Expo build identity and successful completion. Confirmed independently by EAS submit:view JSON.",
+    "buildPath": "Existing Expo Build from GitHub UI with exact accepted SHA; iOS, production profile, Production environment, auto-submit unchecked."
+  },
+  "sourceAndConfiguration": {
+    "sourceCommitHashVerifiedLocally": true,
+    "githubSignedMergeVerified": true,
+    "pinnedHomeReaderModules": 14,
+    "appConfigurationFiles": [
+      {
+        "path": "app.json",
+        "gitBlob": "7c5c2ce778bd76e5db642187785f991ea27b705e"
+      },
+      {
+        "path": "app.config.js",
+        "gitBlob": "ca1589679fc34eb9b74e6ef9ddb12f8b4c225117"
+      },
+      {
+        "path": "config/mobile-runtime.cjs",
+        "gitBlob": "c7c5e7a517d042cb3b16aaa07b89d397a29e20d7"
+      },
+      {
+        "path": "config/mobile-runtime-targets.json",
+        "gitBlob": "ca144a22a4722fc91a66ce94ab59d2fc3deb5f12"
+      }
+    ],
+    "verification": "Exact accepted-commit Git blobs and git show matched the four config files; pure app.config.js resolution under explicit production environment passed.",
+    "resolved": {
+      "name": "Stackr",
+      "slug": "Stackr",
+      "projectId": "22048198-a309-41d2-a2bf-aa354c76be3a",
+      "bundleIdentifier": "com.tommo86.Stackr",
+      "appVersion": "1.0.6",
+      "runtimePolicy": "appVersion",
+      "environment": "production",
+      "appVariant": "production",
+      "channel": "production",
+      "ownerRecognitionBuild": false,
+      "ownerRecognitionPublicFlag": false
+    },
+    "noSourceConfigurationChange": true
+  },
+  "githubBuildAttempt": {
+    "runId": 40940476360,
+    "jobId": 123682246814,
+    "conclusion": "failure",
+    "cause": "EXPO_TOKEN was empty; the native-build credential guard stopped the existing GitHub workflow before any EAS build request.",
+    "nativeBuildCreatedByThatRun": false,
+    "continuation": "Used the existing authenticated Expo GitHub build path; no credential extraction, new workflow or build-config change."
+  },
+  "verificationOnly": {
+    "runId": 40944628483,
+    "jobId": 123696631341,
+    "source": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+    "profile": "production",
+    "conclusion": "success",
+    "checks": "Frozen source/profile, selected release configuration, iOS native content/export and published API delivery passed.",
+    "nativeBuildStep": "skipped by verify_only=true",
+    "artifactId": 12928417576,
+    "artifactDigest": "sha256:a8dc83a14a3fe3ba85d40ae0968b4c750cb755eb5fc8532135a7e2637c0d4780"
+  },
+  "betaApp": {
+    "ascAppId": "6772118450",
+    "bundleIdentifier": "com.tommo86.Stackr",
+    "intendedTesterGroup": "Team (Expo)",
+    "audienceExpansion": false,
+    "autoTestFlightSetup": false
+  },
+  "submission": {
+    "status": "IN_QUEUE",
+    "id": "8e8b78e7-12b9-4226-b271-e15a11054554",
+    "buildId": "8f0c25f1-b287-4a3c-89f8-ae3569e7bb4c",
+    "profile": "production",
+    "requestedBy": "Release owner through existing authenticated EAS CLI 23.2.0; direct Node invocation.",
+    "arguments": [
+      "submit",
+      "--platform",
+      "ios",
+      "--profile",
+      "production",
+      "--id",
+      "8f0c25f1-b287-4a3c-89f8-ae3569e7bb4c",
+      "--groups",
+      "Team (Expo)",
+      "--non-interactive",
+      "--no-wait",
+      "--no-auto-testflight-setup"
+    ],
+    "productionEnvironmentExplicit": true,
+    "ownerRecognitionFlagsExplicitlyFalse": true,
+    "npxWrapper": "Timed out; direct pinned CLI invocation works.",
+    "acceptanceReadback": "CLI scheduled successfully with exit 0; submit:view confirms exact Build 62 and source. Apple processing not yet verified.",
+    "createdAt": "2026-10-29T20:46:22.727Z",
+    "url": "https://expo.dev/accounts/tommo86/projects/Stackr/submissions/8e8b78e7-12b9-4226-b271-e15a11054554",
+    "configResolution": "Submission-only minimal app identity derived from exact accepted app.json, unchanged exact eas.json, EAS_NO_VCS=1. Existing finished artifact only; no source upload or native rebuild.",
+    "priorAttempts": [
+      "Full sparse checkout failed locally due to absent expo-splash-screen plugin; no remote submission.",
+      "Changelog scheduling request rejected because Expo requires Enterprise for that option; retry omitted --what-to-test."
+    ],
+    "notesStatus": "Not yet added; Apple browser controls currently unavailable."
+  },
+  "apple": {
+    "buildId": null,
+    "processingState": "unverified",
+    "internalBetaState": "unverified",
+    "teamExpoGroupMembership": "unverified",
+    "testerAvailability": "unverified",
+    "installedPhoneAcceptance": "unverified"
+  },
+  "supportingServices": {
+    "backendSource": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+    "backendDeploymentId": "c40b25c1-b1a3-49d1-aed2-df0fc0852228",
+    "gatewayVersionId": "007ee7e6-de9f-4e5c-b53d-a9f7180c7a3a",
+    "gatewayTrafficPercent": 100,
+    "evidence": [
+      "backend-deployment.json",
+      "gateway-deployment.json",
+      "search-function-installation.json"
+    ]
+  },
+  "authenticatedServiceQa": {
+    "source": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+    "startedAt": "2026-10-29T19:28:18.794Z",
+    "completedAt": "2026-10-29T19:28:28.752Z",
+    "all56HttpResponses200": true,
+    "all8ValuationGets200": true,
+    "allRecordedPagesComplete": true,
+    "coldFactsAndPreparedRevisionPairsMatch": true,
+    "preparedState": "updating",
+    "freshness": "partial",
+    "earlyEligible": false,
+    "preparedCoverage": {
+      "totalUnits": 391,
+      "pricedUnits": 371,
+      "unpricedUnits": 20,
+      "exactPricedUnits": 180,
+      "generalEstimateUnits": 191,
+      "staleUnits": 371
+    },
+    "evidence": [
+      "home-authenticated-deployed.json",
+      "deployed-qa-interpretation.json"
+    ]
+  },
+  "limits": [
+    "A successful EAS native build does not establish TestFlight submission, Apple processing or availability to testers.",
+    "No installed-phone acceptance, real two-account/edit/offline journey or phone-rendering timing is claimed.",
+    "Pricing remains partial and stale with 20 unpriced units; no complete or fresh catalogue-wide valuation is claimed.",
+    "API/service QA and native preflight do not establish faster Home rendering.",
+    "Existing unresolved artwork/source-edition/license and device-only acceptance remain explicit in the shared release evidence."
+  ],
+  "evidenceWriter": {
+    "operations": "Release owner recorded verified build and scheduled submission; Apple completion remains pending.",
+    "submissionStatusMustBeUpdatedByFinalEvidence": true
+  }
+}
