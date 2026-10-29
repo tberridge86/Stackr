@@ -1,0 +1,85 @@
+{
+  "kind": "stackr-production-testflight-release-checkpoint",
+  "source": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+  "reviewedHead": "8f007c6a845f1342cb7482b558665874c397f343",
+  "pullRequest": 446,
+  "prPlatformRun": 40937315049,
+  "mainPlatformRun": 40938689557,
+  "backend": {
+    "workflowRun": 40938719233,
+    "conclusion": "success",
+    "deploymentId": "c40b25c1-b1a3-49d1-aed2-df0fc0852228",
+    "rollbackDeploymentId": "dfc23b30-9675-4ba0-ad2b-9f1875302747",
+    "smokeOk": true,
+    "ownerPricingValidated": false
+  },
+  "gateway": {
+    "workflowRun": 40939980106,
+    "conclusion": "success",
+    "versionId": "007ee7e6-de9f-4e5c-b53d-a9f7180c7a3a",
+    "trafficPercent": 100,
+    "tag": "gateway-privacy-0bf2e60222644682d600deb7cc0e94862fd2a71a",
+    "durableObjectNamespace": "aa7d685ce0ee4139b5b70cf0b33db23c",
+    "rollbackVersionId": "56f04b7f-0692-4d8f-a9ae-0963442e57b8"
+  },
+  "authenticatedFinalQA": {
+    "source": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+    "startedAt": "2026-10-29T19:28:18.794Z",
+    "completedAt": "2026-10-29T19:28:28.752Z",
+    "requests": 56,
+    "http200": 56,
+    "preparedResponses200": 8,
+    "pairIntegrity": {
+      "bothFactsSucceeded": true,
+      "exactFactsEqual": true,
+      "samePreparedCollectionRevision": true
+    },
+    "facts": {
+      "binders": 18,
+      "savedPlacements": 472,
+      "ownedRows": 309,
+      "ownedQuantities": 342
+    },
+    "pricing": {
+      "state": "updating",
+      "matchingRevision": true,
+      "freshness": "partial",
+      "earlyEligible": false,
+      "totalUnits": 391,
+      "pricedUnits": 371,
+      "unpricedUnits": 20,
+      "exactPricedUnits": 180,
+      "generalEstimateUnits": 191,
+      "staleUnits": 371
+    }
+  },
+  "native": {
+    "workflowRun": 40940476360,
+    "status": "waiting",
+    "pendingEnvironment": "production",
+    "profile": "production",
+    "verifyOnly": false,
+    "expectedMainSha": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+    "expectedBackendSha": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+    "buildId": null,
+    "submissionId": null,
+    "group": "Team (Expo)",
+    "ascAppId": "6772118450",
+    "distributedBaseline": "1.0.6 (61)"
+  },
+  "blocker": {
+    "kind": "local-runtime-configuration",
+    "detail": "Browser and shell initialization fail after environment update because POSIX permission paths are invalid on Windows. No security setting was bypassed or changed. GitHub connectors remain available. Native workflow has not passed production review; no new EAS build has been verified."
+  },
+  "nextSteps": [
+    "Restore supported Windows workspace/browser runtime, then review the existing native workflow production deployment; do not create a duplicate run.",
+    "Verify native workflow public delivery gates and exact EAS build receipt.",
+    "Wait for that exact production EAS build to finish; submit it to the existing App Store Connect app and Team (Expo).",
+    "Verify Apple processing and actual internal TestFlight availability."
+  ],
+  "limitations": [
+    "Partial/stale pricing remains explicit; no price refresh authorized or run here.",
+    "Actual iPhone rendering, edits, account switching and offline acceptance remain unverified.",
+    "Previously documented artwork source-license/edition limitations remain explicit."
+  ]
+}
