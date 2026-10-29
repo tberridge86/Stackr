@@ -1,0 +1,1034 @@
+{
+  "kind": "authenticated_home_service_dependency_comparison",
+  "startedAt": "2026-10-29T19:28:18.794Z",
+  "renderedScreen": false,
+  "networkPerformed": true,
+  "limitations": [
+    "Desktop HTTPS service harness, not actual Home rendering or phone acceptance.",
+    "Client-memory cold/warm only; origin/CDN/database cache state is not reset.",
+    "Serial/concurrent schedules use the same shipped readers; they are not two installed application builds.",
+    "Hub confirmation/auth sequence, partial/update price fallback, optional sections, images, local settings and persisted display are not measured.",
+    "No real holding/binder edits, offline navigation or account switching are performed.",
+    "The existing prepared GET may update/queue valuation generation metadata; no refresh POST is permitted."
+  ],
+  "sourceRevision": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+  "samples": [
+    {
+      "sample": 1,
+      "mode": "serial",
+      "scenario": "cold-client-memory",
+      "factsReadyMs": 993.2350999999999,
+      "preparedResponseReadyMs": 2647.0220000000004,
+      "bothSourcesReadyMs": 2647.0220000000004,
+      "completeSummaryServiceEligibleMs": null,
+      "facts": {
+        "binders": 18,
+        "savedPlacements": 472,
+        "ownedRows": 309,
+        "ownedQuantities": 342,
+        "savedLanguages": {
+          "en": 429,
+          "ja": 42,
+          "zh-cn": 1
+        }
+      },
+      "prepared": {
+        "state": "updating",
+        "hasSummary": true,
+        "matchingRevision": true,
+        "earlyEligible": false,
+        "coverage": {
+          "totalUnits": 391,
+          "pricedUnits": 371,
+          "unpricedUnits": 20,
+          "exactPricedUnits": 180,
+          "generalEstimateUnits": 191,
+          "staleUnits": 371,
+          "subtotalPresent": true
+        },
+        "freshness": "partial"
+      },
+      "http": {
+        "requests": 9,
+        "decodedBodyBytes": 370543,
+        "categories": {
+          "auth_user": {
+            "requests": 2,
+            "decodedBodyBytes": 3350,
+            "sumDurationMs": 186.0690999999997,
+            "statuses": {
+              "200": 2
+            }
+          },
+          "binders": {
+            "requests": 2,
+            "decodedBodyBytes": 14600,
+            "sumDurationMs": 343.88729999999987,
+            "statuses": {
+              "200": 2
+            }
+          },
+          "user_card_variants": {
+            "requests": 2,
+            "decodedBodyBytes": 68928,
+            "sumDurationMs": 376.68070000000034,
+            "statuses": {
+              "200": 2
+            }
+          },
+          "binder_cards": {
+            "requests": 2,
+            "decodedBodyBytes": 245134,
+            "sumDurationMs": 429.6536000000001,
+            "statuses": {
+              "200": 2
+            }
+          },
+          "prepared_valuation": {
+            "requests": 1,
+            "decodedBodyBytes": 38531,
+            "sumDurationMs": 1651.1854000000003,
+            "statuses": {
+              "200": 1
+            }
+          }
+        },
+        "streams": [
+          {
+            "category": "binders",
+            "pages": [
+              {
+                "offset": 0,
+                "requestedLimit": 50,
+                "returnedRows": 18
+              },
+              {
+                "offset": 18,
+                "requestedLimit": 50,
+                "returnedRows": 0
+              }
+            ],
+            "completeByEmptyPage": true,
+            "observedMaxReturnedRows": 18,
+            "lowerThanRequestedContinuationObserved": false
+          },
+          {
+            "category": "user_card_variants",
+            "pages": [
+              {
+                "offset": 0,
+                "requestedLimit": 500,
+                "returnedRows": 309
+              },
+              {
+                "offset": 309,
+                "requestedLimit": 500,
+                "returnedRows": 0
+              }
+            ],
+            "completeByEmptyPage": true,
+            "observedMaxReturnedRows": 309,
+            "lowerThanRequestedContinuationObserved": false
+          },
+          {
+            "category": "binder_cards",
+            "pages": [
+              {
+                "offset": 0,
+                "requestedLimit": 500,
+                "returnedRows": 472
+              },
+              {
+                "offset": 472,
+                "requestedLimit": 500,
+                "returnedRows": 0
+              }
+            ],
+            "completeByEmptyPage": true,
+            "observedMaxReturnedRows": 472,
+            "lowerThanRequestedContinuationObserved": false
+          }
+        ]
+      },
+      "authSdkCalls": {
+        "getSession": 13,
+        "getUser": 2
+      }
+    },
+    {
+      "sample": 1,
+      "mode": "serial",
+      "scenario": "immediate-warm-return",
+      "factsReadyMs": 60.67540000000008,
+      "preparedResponseReadyMs": 515.4011,
+      "bothSourcesReadyMs": 515.4011,
+      "completeSummaryServiceEligibleMs": null,
+      "facts": {
+        "binders": 18,
+        "savedPlacements": 472,
+        "ownedRows": 309,
+        "ownedQuantities": 342,
+        "savedLanguages": {
+          "en": 429,
+          "ja": 42,
+          "zh-cn": 1
+        }
+      },
+      "prepared": {
+        "state": "updating",
+        "hasSummary": true,
+        "matchingRevision": true,
+        "earlyEligible": false,
+        "coverage": {
+          "totalUnits": 391,
+          "pricedUnits": 371,
+          "unpricedUnits": 20,
+          "exactPricedUnits": 180,
+          "generalEstimateUnits": 191,
+          "staleUnits": 371,
+          "subtotalPresent": true
+        },
+        "freshness": "partial"
+      },
+      "http": {
+        "requests": 2,
+        "decodedBodyBytes": 40206,
+        "categories": {
+          "auth_user": {
+            "requests": 1,
+            "decodedBodyBytes": 1675,
+            "sumDurationMs": 58.367199999999684,
+            "statuses": {
+              "200": 1
+            }
+          },
+          "prepared_valuation": {
+            "requests": 1,
+            "decodedBodyBytes": 38531,
+            "sumDurationMs": 453.9836000000005,
+            "statuses": {
+              "200": 1
+            }
+          }
+        },
+        "streams": []
+      },
+      "authSdkCalls": {
+        "getSession": 3,
+        "getUser": 1
+      }
+    },
+    {
+      "sample": 1,
+      "mode": "serial",
+      "scenario": "force-facts",
+      "factsReadyMs": 423.4289000000008,
+      "preparedResponseReadyMs": 924.1097,
+      "bothSourcesReadyMs": 924.1097,
+      "completeSummaryServiceEligibleMs": null,
+      "facts": {
+        "binders": 18,
+        "savedPlacements": 472,
+        "ownedRows": 309,
+        "ownedQuantities": 342,
+        "savedLanguages": {
+          "en": 429,
+          "ja": 42,
+          "zh-cn": 1
+        }
+      },
+      "prepared": {
+        "state": "updating",
+        "hasSummary": true,
+        "matchingRevision": true,
+        "earlyEligible": false,
+        "coverage": {
+          "totalUnits": 391,
+          "pricedUnits": 371,
+          "unpricedUnits": 20,
+          "exactPricedUnits": 180,
+          "generalEstimateUnits": 191,
+          "staleUnits": 371,
+          "subtotalPresent": true
+        },
+        "freshness": "partial"
+      },
+      "http": {
+        "requests": 9,
+        "decodedBodyBytes": 370543,
+        "categories": {
+          "auth_user": {
+            "requests": 2,
+            "decodedBodyBytes": 3350,
+            "sumDurationMs": 99.05349999999908,
+            "statuses": {
+              "200": 2
+            }
+          },
+          "binders": {
+            "requests": 2,
+            "decodedBodyBytes": 14600,
+            "sumDurationMs": 114.05749999999989,
+            "statuses": {
+              "200": 2
+            }
+          },
+          "user_card_variants": {
+            "requests": 2,
+            "decodedBodyBytes": 68928,
+            "sumDurationMs": 171.9996000000001,
+            "statuses": {
+              "200": 2
+            }
+          },
+          "binder_cards": {
+            "requests": 2,
+            "decodedBodyBytes": 245134,
+            "sumDurationMs": 189.86009999999987,
+            "statuses": {
+              "200": 2
+            }
+          },
+          "prepared_valuation": {
+            "requests": 1,
+            "decodedBodyBytes": 38531,
+            "sumDurationMs": 499.84630000000016,
+            "statuses": {
+              "200": 1
+            }
+          }
+        },
+        "streams": [
+          {
+            "category": "binders",
+            "pages": [
+              {
+                "offset": 0,
+                "requestedLimit": 50,
+                "returnedRows": 18
+              },
+              {
+                "offset": 18,
+                "requestedLimit": 50,
+                "returnedRows": 0
+              }
+            ],
+            "completeByEmptyPage": true,
+            "observedMaxReturnedRows": 18,
+            "lowerThanRequestedContinuationObserved": false
+          },
+          {
+            "category": "user_card_variants",
+            "pages": [
+              {
+                "offset": 0,
+                "requestedLimit": 500,
+                "returnedRows": 309
+              },
+              {
+                "offset": 309,
+                "requestedLimit": 500,
+                "returnedRows": 0
+              }
+            ],
+            "completeByEmptyPage": true,
+            "observedMaxReturnedRows": 309,
+            "lowerThanRequestedContinuationObserved": false
+          },
+          {
+            "category": "binder_cards",
+            "pages": [
+              {
+                "offset": 0,
+                "requestedLimit": 500,
+                "returnedRows": 472
+              },
+              {
+                "offset": 472,
+                "requestedLimit": 500,
+                "returnedRows": 0
+              }
+            ],
+            "completeByEmptyPage": true,
+            "observedMaxReturnedRows": 472,
+            "lowerThanRequestedContinuationObserved": false
+          }
+        ]
+      },
+      "authSdkCalls": {
+        "getSession": 13,
+        "getUser": 2
+      }
+    },
+    {
+      "sample": 1,
+      "mode": "serial",
+      "scenario": "local-invalidation",
+      "factsReadyMs": 455.1341000000002,
+      "preparedResponseReadyMs": 1010.3251,
+      "bothSourcesReadyMs": 1010.3251,
+      "completeSummaryServiceEligibleMs": null,
+      "facts": {
+        "binders": 18,
+        "savedPlacements": 472,
+        "ownedRows": 309,
+        "ownedQuantities": 342,
+        "savedLanguages": {
+          "en": 429,
+          "ja": 42,
+          "zh-cn": 1
+        }
+      },
+      "prepared": {
+        "state": "updating",
+        "hasSummary": true,
+        "matchingRevision": true,
+        "earlyEligible": false,
+        "coverage": {
+          "totalUnits": 391,
+          "pricedUnits": 371,
+          "unpricedUnits": 20,
+          "exactPricedUnits": 180,
+          "generalEstimateUnits": 191,
+          "staleUnits": 371,
+          "subtotalPresent": true
+        },
+        "freshness": "partial"
+      },
+      "http": {
+        "requests": 7,
+        "decodedBodyBytes": 355943,
+        "categories": {
+          "auth_user": {
+            "requests": 2,
+            "decodedBodyBytes": 3350,
+            "sumDurationMs": 79.23109999999997,
+            "statuses": {
+              "200": 2
+            }
+          },
+          "user_card_variants": {
+            "requests": 2,
+            "decodedBodyBytes": 68928,
+            "sumDurationMs": 135.31920000000082,
+            "statuses": {
+              "200": 2
+            }
+          },
+          "binder_cards": {
+            "requests": 2,
+            "decodedBodyBytes": 245134,
+            "sumDurationMs": 363.34429999999884,
+            "statuses": {
+              "200": 2
+            }
+          },
+          "prepared_valuation": {
+            "requests": 1,
+            "decodedBodyBytes": 38531,
+            "sumDurationMs": 554.5654000000004,
+            "statuses": {
+              "200": 1
+            }
+          }
+        },
+        "streams": [
+          {
+            "category": "user_card_variants",
+            "pages": [
+              {
+                "offset": 0,
+                "requestedLimit": 500,
+                "returnedRows": 309
+              },
+              {
+                "offset": 309,
+                "requestedLimit": 500,
+                "returnedRows": 0
+              }
+            ],
+            "completeByEmptyPage": true,
+            "observedMaxReturnedRows": 309,
+            "lowerThanRequestedContinuationObserved": false
+          },
+          {
+            "category": "binder_cards",
+            "pages": [
+              {
+                "offset": 0,
+                "requestedLimit": 500,
+                "returnedRows": 472
+              },
+              {
+                "offset": 472,
+                "requestedLimit": 500,
+                "returnedRows": 0
+              }
+            ],
+            "completeByEmptyPage": true,
+            "observedMaxReturnedRows": 472,
+            "lowerThanRequestedContinuationObserved": false
+          }
+        ]
+      },
+      "authSdkCalls": {
+        "getSession": 13,
+        "getUser": 2
+      }
+    },
+    {
+      "sample": 1,
+      "mode": "concurrent",
+      "scenario": "cold-client-memory",
+      "factsReadyMs": 496.3701999999994,
+      "preparedResponseReadyMs": 608.8822,
+      "bothSourcesReadyMs": 608.8822,
+      "completeSummaryServiceEligibleMs": null,
+      "facts": {
+        "binders": 18,
+        "savedPlacements": 472,
+        "ownedRows": 309,
+        "ownedQuantities": 342,
+        "savedLanguages": {
+          "en": 429,
+          "ja": 42,
+          "zh-cn": 1
+        }
+      },
+      "prepared": {
+        "state": "updating",
+        "hasSummary": true,
+        "matchingRevision": true,
+        "earlyEligible": false,
+        "coverage": {
+          "totalUnits": 391,
+          "pricedUnits": 371,
+          "unpricedUnits": 20,
+          "exactPricedUnits": 180,
+          "generalEstimateUnits": 191,
+          "staleUnits": 371,
+          "subtotalPresent": true
+        },
+        "freshness": "partial"
+      },
+      "http": {
+        "requests": 9,
+        "decodedBodyBytes": 370543,
+        "categories": {
+          "auth_user": {
+            "requests": 2,
+            "decodedBodyBytes": 3350,
+            "sumDurationMs": 153.23549999999977,
+            "statuses": {
+              "200": 2
+            }
+          },
+          "prepared_valuation": {
+            "requests": 1,
+            "decodedBodyBytes": 38531,
+            "sumDurationMs": 522.9857000000002,
+            "statuses": {
+              "200": 1
+            }
+          },
+          "binders": {
+            "requests": 2,
+            "decodedBodyBytes": 14600,
+            "sumDurationMs": 139.71150000000034,
+            "statuses": {
+              "200": 2
+            }
+          },
+          "user_card_variants": {
+            "requests": 2,
+            "decodedBodyBytes": 68928,
+            "sumDurationMs": 251.67140000000018,
+            "statuses": {
+              "200": 2
+            }
+          },
+          "binder_cards": {
+            "requests": 2,
+            "decodedBodyBytes": 245134,
+            "sumDurationMs": 184.92849999999999,
+            "statuses": {
+              "200": 2
+            }
+          }
+        },
+        "streams": [
+          {
+            "category": "binders",
+            "pages": [
+              {
+                "offset": 0,
+                "requestedLimit": 50,
+                "returnedRows": 18
+              },
+              {
+                "offset": 18,
+                "requestedLimit": 50,
+                "returnedRows": 0
+              }
+            ],
+            "completeByEmptyPage": true,
+            "observedMaxReturnedRows": 18,
+            "lowerThanRequestedContinuationObserved": false
+          },
+          {
+            "category": "user_card_variants",
+            "pages": [
+              {
+                "offset": 0,
+                "requestedLimit": 500,
+                "returnedRows": 309
+              },
+              {
+                "offset": 309,
+                "requestedLimit": 500,
+                "returnedRows": 0
+              }
+            ],
+            "completeByEmptyPage": true,
+            "observedMaxReturnedRows": 309,
+            "lowerThanRequestedContinuationObserved": false
+          },
+          {
+            "category": "binder_cards",
+            "pages": [
+              {
+                "offset": 0,
+                "requestedLimit": 500,
+                "returnedRows": 472
+              },
+              {
+                "offset": 472,
+                "requestedLimit": 500,
+                "returnedRows": 0
+              }
+            ],
+            "completeByEmptyPage": true,
+            "observedMaxReturnedRows": 472,
+            "lowerThanRequestedContinuationObserved": false
+          }
+        ]
+      },
+      "authSdkCalls": {
+        "getSession": 13,
+        "getUser": 2
+      }
+    },
+    {
+      "sample": 1,
+      "mode": "concurrent",
+      "scenario": "immediate-warm-return",
+      "factsReadyMs": 45.09319999999934,
+      "preparedResponseReadyMs": 461.59189999999944,
+      "bothSourcesReadyMs": 461.59189999999944,
+      "completeSummaryServiceEligibleMs": null,
+      "facts": {
+        "binders": 18,
+        "savedPlacements": 472,
+        "ownedRows": 309,
+        "ownedQuantities": 342,
+        "savedLanguages": {
+          "en": 429,
+          "ja": 42,
+          "zh-cn": 1
+        }
+      },
+      "prepared": {
+        "state": "updating",
+        "hasSummary": true,
+        "matchingRevision": true,
+        "earlyEligible": false,
+        "coverage": {
+          "totalUnits": 391,
+          "pricedUnits": 371,
+          "unpricedUnits": 20,
+          "exactPricedUnits": 180,
+          "generalEstimateUnits": 191,
+          "staleUnits": 371,
+          "subtotalPresent": true
+        },
+        "freshness": "partial"
+      },
+      "http": {
+        "requests": 2,
+        "decodedBodyBytes": 40206,
+        "categories": {
+          "auth_user": {
+            "requests": 1,
+            "decodedBodyBytes": 1675,
+            "sumDurationMs": 42.73919999999998,
+            "statuses": {
+              "200": 1
+            }
+          },
+          "prepared_valuation": {
+            "requests": 1,
+            "decodedBodyBytes": 38531,
+            "sumDurationMs": 416.15400000000045,
+            "statuses": {
+              "200": 1
+            }
+          }
+        },
+        "streams": []
+      },
+      "authSdkCalls": {
+        "getSession": 3,
+        "getUser": 1
+      }
+    },
+    {
+      "sample": 1,
+      "mode": "concurrent",
+      "scenario": "force-facts",
+      "factsReadyMs": 596.1890000000003,
+      "preparedResponseReadyMs": 406.1830000000009,
+      "bothSourcesReadyMs": 596.1890000000003,
+      "completeSummaryServiceEligibleMs": null,
+      "facts": {
+        "binders": 18,
+        "savedPlacements": 472,
+        "ownedRows": 309,
+        "ownedQuantities": 342,
+        "savedLanguages": {
+          "en": 429,
+          "ja": 42,
+          "zh-cn": 1
+        }
+      },
+      "prepared": {
+        "state": "updating",
+        "hasSummary": true,
+        "matchingRevision": true,
+        "earlyEligible": false,
+        "coverage": {
+          "totalUnits": 391,
+          "pricedUnits": 371,
+          "unpricedUnits": 20,
+          "exactPricedUnits": 180,
+          "generalEstimateUnits": 191,
+          "staleUnits": 371,
+          "subtotalPresent": true
+        },
+        "freshness": "partial"
+      },
+      "http": {
+        "requests": 9,
+        "decodedBodyBytes": 370543,
+        "categories": {
+          "auth_user": {
+            "requests": 2,
+            "decodedBodyBytes": 3350,
+            "sumDurationMs": 72.46730000000025,
+            "statuses": {
+              "200": 2
+            }
+          },
+          "prepared_valuation": {
+            "requests": 1,
+            "decodedBodyBytes": 38531,
+            "sumDurationMs": 368.9233000000004,
+            "statuses": {
+              "200": 1
+            }
+          },
+          "binders": {
+            "requests": 2,
+            "decodedBodyBytes": 14600,
+            "sumDurationMs": 92.1815000000006,
+            "statuses": {
+              "200": 2
+            }
+          },
+          "user_card_variants": {
+            "requests": 2,
+            "decodedBodyBytes": 68928,
+            "sumDurationMs": 146.1846000000005,
+            "statuses": {
+              "200": 2
+            }
+          },
+          "binder_cards": {
+            "requests": 2,
+            "decodedBodyBytes": 245134,
+            "sumDurationMs": 418.6921000000002,
+            "statuses": {
+              "200": 2
+            }
+          }
+        },
+        "streams": [
+          {
+            "category": "binders",
+            "pages": [
+              {
+                "offset": 0,
+                "requestedLimit": 50,
+                "returnedRows": 18
+              },
+              {
+                "offset": 18,
+                "requestedLimit": 50,
+                "returnedRows": 0
+              }
+            ],
+            "completeByEmptyPage": true,
+            "observedMaxReturnedRows": 18,
+            "lowerThanRequestedContinuationObserved": false
+          },
+          {
+            "category": "user_card_variants",
+            "pages": [
+              {
+                "offset": 0,
+                "requestedLimit": 500,
+                "returnedRows": 309
+              },
+              {
+                "offset": 309,
+                "requestedLimit": 500,
+                "returnedRows": 0
+              }
+            ],
+            "completeByEmptyPage": true,
+            "observedMaxReturnedRows": 309,
+            "lowerThanRequestedContinuationObserved": false
+          },
+          {
+            "category": "binder_cards",
+            "pages": [
+              {
+                "offset": 0,
+                "requestedLimit": 500,
+                "returnedRows": 472
+              },
+              {
+                "offset": 472,
+                "requestedLimit": 500,
+                "returnedRows": 0
+              }
+            ],
+            "completeByEmptyPage": true,
+            "observedMaxReturnedRows": 472,
+            "lowerThanRequestedContinuationObserved": false
+          }
+        ]
+      },
+      "authSdkCalls": {
+        "getSession": 13,
+        "getUser": 2
+      }
+    },
+    {
+      "sample": 1,
+      "mode": "concurrent",
+      "scenario": "local-invalidation",
+      "factsReadyMs": 252.50500000000102,
+      "preparedResponseReadyMs": 491.89990000000034,
+      "bothSourcesReadyMs": 491.89990000000034,
+      "completeSummaryServiceEligibleMs": null,
+      "facts": {
+        "binders": 18,
+        "savedPlacements": 472,
+        "ownedRows": 309,
+        "ownedQuantities": 342,
+        "savedLanguages": {
+          "en": 429,
+          "ja": 42,
+          "zh-cn": 1
+        }
+      },
+      "prepared": {
+        "state": "updating",
+        "hasSummary": true,
+        "matchingRevision": true,
+        "earlyEligible": false,
+        "coverage": {
+          "totalUnits": 391,
+          "pricedUnits": 371,
+          "unpricedUnits": 20,
+          "exactPricedUnits": 180,
+          "generalEstimateUnits": 191,
+          "staleUnits": 371,
+          "subtotalPresent": true
+        },
+        "freshness": "partial"
+      },
+      "http": {
+        "requests": 7,
+        "decodedBodyBytes": 355943,
+        "categories": {
+          "auth_user": {
+            "requests": 2,
+            "decodedBodyBytes": 3350,
+            "sumDurationMs": 91.98519999999917,
+            "statuses": {
+              "200": 2
+            }
+          },
+          "prepared_valuation": {
+            "requests": 1,
+            "decodedBodyBytes": 38531,
+            "sumDurationMs": 437.71529999999984,
+            "statuses": {
+              "200": 1
+            }
+          },
+          "user_card_variants": {
+            "requests": 2,
+            "decodedBodyBytes": 68928,
+            "sumDurationMs": 90.87620000000061,
+            "statuses": {
+              "200": 2
+            }
+          },
+          "binder_cards": {
+            "requests": 2,
+            "decodedBodyBytes": 245134,
+            "sumDurationMs": 145.6807000000008,
+            "statuses": {
+              "200": 2
+            }
+          }
+        },
+        "streams": [
+          {
+            "category": "user_card_variants",
+            "pages": [
+              {
+                "offset": 0,
+                "requestedLimit": 500,
+                "returnedRows": 309
+              },
+              {
+                "offset": 309,
+                "requestedLimit": 500,
+                "returnedRows": 0
+              }
+            ],
+            "completeByEmptyPage": true,
+            "observedMaxReturnedRows": 309,
+            "lowerThanRequestedContinuationObserved": false
+          },
+          {
+            "category": "binder_cards",
+            "pages": [
+              {
+                "offset": 0,
+                "requestedLimit": 500,
+                "returnedRows": 472
+              },
+              {
+                "offset": 472,
+                "requestedLimit": 500,
+                "returnedRows": 0
+              }
+            ],
+            "completeByEmptyPage": true,
+            "observedMaxReturnedRows": 472,
+            "lowerThanRequestedContinuationObserved": false
+          }
+        ]
+      },
+      "authSdkCalls": {
+        "getSession": 13,
+        "getUser": 2
+      }
+    },
+    {
+      "sample": 1,
+      "pairIntegrity": {
+        "bothFactsSucceeded": true,
+        "exactFactsEqual": true,
+        "samePreparedCollectionRevision": true
+      }
+    }
+  ],
+  "moduleBlobs": {
+    "homeSavedCollection": "2f4e58e034ccea7d0b01548c1b8bb4c53b8c303a",
+    "binders": "1511ca704d5c296af1c190cb8590d263f59fcd9f",
+    "personalDataRead": "cd21087dfc10d47c31998ff5a04043029d613535",
+    "requestCache": "79b8c35b5f2756caf453a8b863ceb6313ea7cd5d",
+    "collectionSummaryInvalidation": "05f9f58075c81203ed8aaf106410ea8abcb9ff92",
+    "ownership": "773df47496b4db3f137c6040603a0618f9a4e025",
+    "uiCollectionPages": "be8a7d485daee66016a82f1a1e368b5642751215",
+    "homeSavedCollectionCache": "4f7ff8044f1311e4ee503f845488ad102f59dcc0",
+    "stackrApiV1": "80ee4be97b44b7c5d4e08059050607c7326d910d",
+    "stackrApiTransportPolicy": "30b9140ad73c4c82221af3f29898c9ca66549b06",
+    "stackrPreviewApiProxy": "40ec0ec90e82cd42424754b76b077ad246ab8415",
+    "cataloguePriceHash": "b9edffa4bf7d4668a8991bef5551c57a7d3f4215",
+    "preparedCollectionValuation": "3664068cadc46a955bed3de38d8fb78a5df52f0d"
+  },
+  "environment": {
+    "node": "v24.15.0",
+    "platform": "win32",
+    "samplePairs": 1
+  },
+  "unmeasuredActions": [
+    "real-holding-edit",
+    "real-binder-edit",
+    "account-switch",
+    "offline-device",
+    "rendered-screen"
+  ],
+  "state": "measured",
+  "httpAllActions": {
+    "requests": 56,
+    "decodedBodyBytes": 2279640,
+    "categories": {
+      "auth_sign_in": {
+        "requests": 1,
+        "decodedBodyBytes": 3495,
+        "sumDurationMs": 843.7004,
+        "statuses": {
+          "200": 1
+        }
+      },
+      "auth_user": {
+        "requests": 15,
+        "decodedBodyBytes": 25125,
+        "sumDurationMs": 846.2083999999977,
+        "statuses": {
+          "200": 15
+        }
+      },
+      "binders": {
+        "requests": 8,
+        "decodedBodyBytes": 58400,
+        "sumDurationMs": 689.8378000000007,
+        "statuses": {
+          "200": 8
+        }
+      },
+      "user_card_variants": {
+        "requests": 12,
+        "decodedBodyBytes": 413568,
+        "sumDurationMs": 1172.7317000000025,
+        "statuses": {
+          "200": 12
+        }
+      },
+      "binder_cards": {
+        "requests": 12,
+        "decodedBodyBytes": 1470804,
+        "sumDurationMs": 1732.1592999999998,
+        "statuses": {
+          "200": 12
+        }
+      },
+      "prepared_valuation": {
+        "requests": 8,
+        "decodedBodyBytes": 308248,
+        "sumDurationMs": 4905.359000000002,
+        "statuses": {
+          "200": 8
+        }
+      }
+    }
+  },
+  "completedAt": "2026-10-29T19:28:28.752Z"
+}

@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "kind": "post-deployment-authenticated-service-qa",
+  "observedDate": "2026-10-29",
+  "source": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+  "receipt": "home-authenticated-deployed.json",
+  "startedAt": "2026-10-29T19:28:18.794Z",
+  "completedAt": "2026-10-29T19:28:28.752Z",
+  "environment": {
+    "supabaseProjectRef": "oakdbbzdqwurpjnoqhmu",
+    "api": "https://api.stackrtcg.com/v1",
+    "backendSource": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+    "backendDeploymentId": "c40b25c1-b1a3-49d1-aed2-df0fc0852228",
+    "gatewayVersionId": "007ee7e6-de9f-4e5c-b53d-a9f7180c7a3a",
+    "evidence": [
+      "backend-deployment.json",
+      "gateway-deployment.json"
+    ],
+    "readerIdentity": "Exact accepted merged-main Git commit and fourteen pinned reader module blobs verified before measurement."
+  },
+  "checks": {
+    "httpRequests": 56,
+    "allHttpStatus200": true,
+    "preparedValuationGets": 8,
+    "allPreparedValuationStatus200": true,
+    "scenarios": 8,
+    "allRecordedDataStreamsCompleteByEmptyPage": true,
+    "factsEqualAcrossAllScenarios": true,
+    "coldPairIntegrity": {
+      "bothFactsSucceeded": true,
+      "exactFactsEqual": true,
+      "samePreparedCollectionRevision": true
+    }
+  },
+  "facts": {
+    "binders": 18,
+    "savedPlacements": 472,
+    "ownedRows": 309,
+    "ownedQuantities": 342,
+    "savedLanguages": {
+      "en": 429,
+      "ja": 42,
+      "zh-cn": 1
+    }
+  },
+  "prepared": {
+    "state": "updating",
+    "hasSummary": true,
+    "matchingRequestedRevision": true,
+    "freshness": "partial",
+    "earlyEligible": false,
+    "coverage": {
+      "totalUnits": 391,
+      "pricedUnits": 371,
+      "unpricedUnits": 20,
+      "exactPricedUnits": 180,
+      "generalEstimateUnits": 191,
+      "staleUnits": 371,
+      "subtotalPresent": true
+    },
+    "interpretation": "An available summary remains updating and partial: 20 unpriced units and all 371 priced units stale. Exact prices and general estimates remain distinguished. No complete/fresh valuation is claimed."
+  },
+  "sanitization": {
+    "rawCredentialFieldsAbsent": true,
+    "rawTokensAbsent": true,
+    "privateRowIdentitiesAndNotesAbsent": true,
+    "rawDeviceIdentityAbsent": true,
+    "credentialTemplateReadByEvidenceWriter": false
+  },
+  "limits": [
+    "One designated account and one paired desktop service sample; no phone rendering, real account switching, holding/binder edits or offline navigation acceptance.",
+    "No Home speed improvement is claimed; service timings are not phone paint measurements.",
+    "The 342 owned quantities in facts and 391 prepared valuation units are separately reported populations; this experiment does not reconcile their denominators.",
+    "The acknowledged prepared GET may update existing generation metadata. No price-refresh POST or holding write is part of this harness.",
+    "This receipt does not establish a signed native build, submission, tester availability or installed-phone acceptance."
+  ],
+  "evidenceWriterOperations": "Read existing sanitized receipt and GitHub delivery evidence only; no QA re-run or live service change."
+}

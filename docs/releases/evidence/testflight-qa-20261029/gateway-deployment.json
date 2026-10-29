@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "kind": "scoped-production-gateway-deployment",
+  "observedDate": "2026-10-29",
+  "repository": "tberridge86/Stackr",
+  "source": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+  "workflow": {
+    "runId": 40939980106,
+    "jobId": 123680487902,
+    "job": "gateway_privacy",
+    "status": "completed",
+    "conclusion": "success",
+    "source": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+    "createdAt": "2026-10-29T19:25:37Z",
+    "updatedAt": "2026-10-29T19:27:34Z",
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/40939980106"
+  },
+  "worker": {
+    "name": "stackr-api-gateway",
+    "publicUrl": "https://api.stackrtcg.com",
+    "versionId": "007ee7e6-de9f-4e5c-b53d-a9f7180c7a3a",
+    "trafficPercent": 100,
+    "tag": "gateway-privacy-0bf2e60222644682d600deb7cc0e94862fd2a71a",
+    "versionPrintedAt": "2026-10-29T19:27:21.3956123Z",
+    "deploymentSuccessPrintedAt": "2026-10-29T19:27:24.4900311Z",
+    "deploymentId": null,
+    "deploymentIdStatus": "The deployment UUID is not printed in the inspected sanitized log blocks; do not substitute the version ID. Retained workflow artifact contains deployment receipts."
+  },
+  "attestation": {
+    "existingWorkerAndRollbackTarget": "success",
+    "resultingVersionAt100Percent": "success",
+    "durableObjectNamespace": "aa7d685ce0ee4139b5b70cf0b33db23c",
+    "durableObjectIdentityBeforeAndAfter": "Verified by the successful attestation steps using the expected namespace; individual attestation JSON was redirected to retained artifact files.",
+    "existingSecretPreservationStep": "success",
+    "steps": [
+      {
+        "name": "Attest existing production Worker, route, and rollback target",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Upload privacy runtime binding without replacing existing Worker secrets",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Attest 100 percent gateway privacy deployment",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Smoke gateway health, readiness, and anonymous pricing privacy",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Restore exact previous gateway version after a failed privacy release",
+        "status": "completed",
+        "conclusion": "skipped"
+      },
+      {
+        "name": "Scan gateway release evidence for secrets",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "rollback": {
+    "previousVersionId": "56f04b7f-0692-4d8f-a9ae-0963442e57b8",
+    "previousDeploymentId": "edc59e4a-b404-449d-a26a-e61784ceacfd",
+    "previousTag": "gateway-privacy-4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
+    "prestateAttestation": "success",
+    "rollbackExecuted": false
+  },
+  "smoke": {
+    "printedFrom": "2026-10-29T19:27:30.4701414Z",
+    "printedThrough": "2026-10-29T19:27:30.4715797Z",
+    "receipt": {
+      "ok": true,
+      "checks": [
+        {
+          "name": "gateway_health",
+          "status": 200,
+          "requestId": "676ec47f-3753-4a29-bbc6-de07d8ee559d"
+        },
+        {
+          "name": "gateway_ready",
+          "status": 200,
+          "requestId": "2803e05e-5c9e-4eb2-be4d-863c0cc683b7"
+        },
+        {
+          "name": "anonymous_exact_price",
+          "status": 401,
+          "requestId": "6e723e6a-0725-4b58-bc35-f529a72abb26"
+        },
+        {
+          "name": "anonymous_price_history",
+          "status": 401,
+          "requestId": "a5c70fad-893d-48f1-80ee-ad18708cec60"
+        },
+        {
+          "name": "anonymous_market_movers",
+          "status": 401,
+          "requestId": "faa628f0-1f46-47ac-9301-01353a0f575c"
+        },
+        {
+          "name": "anonymous_provider_refresh",
+          "status": 401,
+          "requestId": "c926d00b-f8fc-4dc2-b98c-2640c3a3fea5"
+        }
+      ]
+    }
+  },
+  "artifact": [
+    {
+      "id": 12926392199,
+      "name": "stackr-production-gateway-privacy-40939980106-1",
+      "sizeBytes": 5490,
+      "digest": "sha256:1a274938975d7ff618e46763bb39f3445e34695cef2d2ad88727e3c5a4a6c2da",
+      "createdAt": "2026-10-29T19:27:31Z",
+      "expiresAt": "2027-01-27T19:25:39Z",
+      "expired": false
+    }
+  ],
+  "provenance": "Fresh read-only GitHub workflow/job/artifact metadata and sanitized real deployment output. Mock/unit-test logs and full job logs are not persisted.",
+  "limits": [
+    "Gateway health/readiness and anonymous pricing denials do not establish native delivery or phone acceptance.",
+    "Post-deployment authenticated service acceptance is recorded separately in home-authenticated-deployed.json and deployed-qa-interpretation.json.",
+    "No new deployment, QA run or other live operation was performed by this evidence writer."
+  ]
+}
