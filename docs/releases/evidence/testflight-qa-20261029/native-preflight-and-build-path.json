@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "kind": "native-preflight-and-existing-expo-build-path",
+  "observedDate": "2026-10-29",
+  "repository": "tberridge86/Stackr",
+  "acceptedSource": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+  "intendedProfile": "production",
+  "intendedTesterGroup": "Team (Expo)",
+  "githubBuildAttempt": {
+    "runId": 40940476360,
+    "jobId": 123682246814,
+    "status": "completed",
+    "conclusion": "failure",
+    "source": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+    "createdAt": "2026-10-29T19:29:01Z",
+    "updatedAt": "2026-10-29T19:54:42Z",
+    "failedStep": "Attest frozen source and approved profile",
+    "cause": "EXPO_TOKEN was empty; the native-build credential guard stopped the job before dependencies, native export or EAS build creation.",
+    "sanitizedLogObservations": {
+      "emptyExpoTokenPrinted": true,
+      "expectedSourcePrinted": true,
+      "productionProfilePrinted": true,
+      "guardPresent": true,
+      "noTokenValuePersisted": true
+    },
+    "nativeBuildStep": "skipped",
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/40940476360"
+  },
+  "verificationOnly": {
+    "runId": 40944628483,
+    "jobId": 123696631341,
+    "status": "completed",
+    "conclusion": "success",
+    "source": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+    "createdAt": "2026-10-29T19:56:55Z",
+    "updatedAt": "2026-10-29T20:00:16Z",
+    "verifyOnly": true,
+    "buildProfile": "production",
+    "steps": [
+      {
+        "name": "Attest frozen source and approved profile",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify selected release configuration",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Prove native content and published API delivery",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Start iOS build without submission",
+        "status": "completed",
+        "conclusion": "skipped"
+      },
+      {
+        "name": "Upload verification-only receipt",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "artifact": [
+      {
+        "id": 12928417576,
+        "name": "ios-verification-only-receipt-40944628483-1",
+        "sizeBytes": 1110,
+        "digest": "sha256:a8dc83a14a3fe3ba85d40ae0968b4c750cb755eb5fc8532135a7e2637c0d4780",
+        "createdAt": "2026-10-29T20:00:12Z",
+        "expiresAt": "2026-11-12T20:00:11Z",
+        "expired": false
+      }
+    ],
+    "meaning": "Exact-source production configuration, iOS content/export and published API delivery checks passed. Native build creation and submission were intentionally skipped.",
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/40944628483"
+  },
+  "configurationReview": {
+    "result": "Conditional GO for the existing Expo GitHub build path",
+    "provenance": "Independent review and release-owner desktop observations supplied to this evidence writer.",
+    "observations": [
+      "Production project/global environments did not contain either owner-recognition flag.",
+      "The accepted application configuration defaults both owner-recognition flags to false.",
+      "No tracked dotenv file or build hook overriding those values was found by the scoped review."
+    ],
+    "limit": "Configuration review and verification-only success do not establish the eventual signed artifact identity."
+  },
+  "expoBuildRequest": {
+    "path": "Existing Expo Build from GitHub UI",
+    "buildId": "8f0c25f1-b287-4a3c-89f8-ae3569e7bb4c",
+    "source": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+    "platform": "iOS",
+    "buildProfile": "production",
+    "environment": "Production",
+    "reportedChannel": "production",
+    "autoSubmitChecked": false,
+    "observedStatus": "queued",
+    "accepted": true,
+    "finished": false,
+    "appVersion": null,
+    "buildNumber": null,
+    "runtimeVersion": null,
+    "missingIdentityExplanation": "Version/build number and runtime were not allocated/reported in the inspected queued state; None during preparation is not a verified runtime.",
+    "sourceProofImage": "D:/workspace/Stackr-release-qa-20261029/expo-production-build-inputs.jpg",
+    "observationProvenance": "Release owner inspected the actual Expo UI and reported the accepted build ID and queued state.",
+    "submittedToTestFlight": false
+  },
+  "limits": [
+    "The accepted queued build is not a finished signed native artifact.",
+    "Verification-only success does not prove native compilation, TestFlight submission, Apple processing or tester availability.",
+    "Installed-phone acceptance, complete/fresh pricing and faster Home rendering remain unverified.",
+    "Submission remains separate and must select the exact finished new EAS build for Team (Expo).",
+    "No build configuration, credential, workflow or other live service setting was changed by this evidence writer."
+  ]
+}
