@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "kind": "search-jit-ci-correction-review",
+  "observedDate": "2026-10-29",
+  "repository": "tberridge86/Stackr",
+  "pullRequest": 446,
+  "failure": {
+    "source": "0452c6c6cf9fc73834ea1d05212e4f61f9e42635",
+    "platformRunId": 40936311697,
+    "jobId": 123669521253,
+    "job": "prepared-valuation-postgres17",
+    "script": "scripts/measure-search-pagination-query-plans.mjs",
+    "assertion": "native baseline must actually exercise JIT",
+    "observed": "Flattened baseline EXPLAIN reported no positive JIT timing despite caller jit=on.",
+    "meaning": "jit=on permits JIT but does not force compilation below planner cost thresholds. The synthetic fixture installs its schema and pinned proposal directly, not the application migration glob; migration contamination was not supported."
+  },
+  "correction": {
+    "source": "8f007c6a845f1342cb7482b558665874c397f343",
+    "parent": "0452c6c6cf9fc73834ea1d05212e4f61f9e42635",
+    "files": [
+      {
+        "path": "scripts/measure-search-pagination-query-plans.mjs",
+        "additions": 13,
+        "deletions": 3
+      }
+    ],
+    "behavior": "Force jit_above_cost, jit_inline_above_cost and jit_optimize_above_cost to zero only for the A/B EXPLAIN evidence; restore all four caller JIT settings. Timed function samples retain caller defaults.",
+    "preserved": [
+      "Positive native JIT assertion",
+      "jitOff zero-JIT assertion",
+      "Identical A/B function bodies and ACLs",
+      "Exact entries, continuation, hasMore and revision checks",
+      "Applied search SQL remains unchanged"
+    ],
+    "proposalLfSha256": "d8f15108792dd828f4beb979245e66add90aba7b0bc1aaed7d0ce331eefd70b8",
+    "scope": "Measurement tooling only; concurrent correction preserved without additional source edits."
+  },
+  "localValidation": {
+    "syntax": "Exact corrected source passed node --check.",
+    "helperCheck": "Exact corrected JIT helper functions executed in in-memory PGlite.",
+    "forcedThresholds": {
+      "jit_above_cost": 0,
+      "jit_inline_above_cost": 0,
+      "jit_optimize_above_cost": 0
+    },
+    "allFourCallerSettingsRestoredAfterSuccess": true,
+    "allFourCallerSettingsRestoredAfterThrowingRead": true,
+    "ordinaryCallPreservesCallerThresholds": true,
+    "nativeJitMeasuredLocally": false
+  },
+  "review": {
+    "type": "Independent read-only source review",
+    "result": "GO; no actionable issue.",
+    "scope": "Forced EXPLAIN evidence remains distinct from ordinary timed samples; assertions and restoration retained.",
+    "fullSuiteRunByReviewer": false
+  },
+  "nativePostgres17": {
+    "source": "8f007c6a845f1342cb7482b558665874c397f343",
+    "platformRunId": 40937315049,
+    "jobId": 123671731987,
+    "job": "prepared-valuation-postgres17",
+    "status": "completed",
+    "conclusion": "success",
+    "searchPlanStep": "success",
+    "evidenceUploadStep": "success",
+    "jobUrl": "https://github.com/tberridge86/Stackr/actions/runs/40937315049/job/123671731987",
+    "wholePlatformConclusionClaimed": false
+  },
+  "limits": [
+    "Synthetic isolated PostgreSQL 17 proof, not production, API or phone performance.",
+    "Forced EXPLAIN JIT timings must not be presented as default-threshold function timings.",
+    "This receipt does not establish completion of the entire Platform workflow, a merge, deployment, native build, submission or phone acceptance."
+  ],
+  "liveMutationsByThisReceipt": false
+}
