@@ -3462,5 +3462,291 @@
       "Device acceptance",
       "Job reliability,monitoring,recovery queued"
     ]
+  },
+  "homePayload20261026": {
+    "observedDate": "2026-10-26",
+    "owner": "stackr_coding",
+    "sourceBaseline": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+    "report": "docs/releases/home-payload-handoff-20261026.md",
+    "status": "implemented_tested_independently_reviewed",
+    "deployed": false,
+    "phoneAccepted": false,
+    "priorRelease": {
+      "source": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+      "build": "1.0.6 (61)",
+      "internalTestFlightVerified": true,
+      "evidenceCommit": "178894a3ab0a617e9e7fe62000cd256613e19e76",
+      "note": "Earlier queue sections are historical snapshots; prior release merged and distributed, but phone acceptance remains open."
+    },
+    "entries": [
+      {
+        "id": "HOME-PAYLOAD-001",
+        "severity": "P2",
+        "cause": "Home downloads wildcard saved-card columns including prices immediately discarded and metadata unused by Home/reopen.",
+        "affectedFiles": [
+          "lib/homeSavedCollection.ts"
+        ],
+        "repair": "Explicit complete 20-field nonprice projection with bounded exact optional-column compatibility; preserve owner/paging/cache/preload contracts.",
+        "validation": "Original matched1702saved/1323owned fixture1256922→1080420bytes,11readsunchanged; original24 and populated30 columns separately measured; full field/snapshot/account/cancellation/recovery regressions pass.",
+        "delivery": "candidate_not_merged_or_deployed"
+      }
+    ],
+    "remaining": [
+      "Exact-head hosted CI",
+      "Designated-account session for private Home cap/bytes/latency",
+      "Installed-phone acceptance and real priced-printing hosted coverage",
+      "New candidate merge/mobile rollout approval after qualification",
+      "Profile generated-ledger mapping reconciliation before broad migration tooling",
+      "Background jobs,monitoring,recovery remain queued"
+    ]
+  },
+  "homeIndependentValuation20261026": {
+    "observedDate": "2026-10-26",
+    "owner": "stackr_coding",
+    "baseline": "4dadab24a0152bf971fb38b104dc43be966d8aed",
+    "pullRequest": 446,
+    "status": "reviewed_exact_head_ci_passed_awaiting_authenticated_acceptance_and_rollout",
+    "report": "docs/releases/home-independent-valuation-handoff-20261026.md",
+    "deployed": false,
+    "phoneAccepted": false,
+    "entries": [
+      {
+        "id": "HOME-PREPARED-001",
+        "severity": "P2",
+        "cause": "Prepared Home valuation waits for complete facts and local binder settings.",
+        "repair": "One independent prepared request; strict early ready/full publication; separate collector loading/errors; preserved complete facts and partial-price fallback.",
+        "files": [
+          "features/home/HubScreen.tsx",
+          "scripts/test-home-startup-runtime.ts"
+        ],
+        "validation": "Four controlled cohorts retained all rows; complete-ready 300 to 100 and partial 300 to 200 simulated ms under stated delays, unchanged calls. Required local checks, independent review and exact-head CI passed; no hosted/device speed claim."
+      }
+    ],
+    "remaining": [
+      "Designated QA credentials for private Home cap/timings and priced-printing coverage",
+      "Installed-phone acceptance and new rollout approval",
+      "Safe representative query plans for historical prepared-RPC cost; no speculative indexes"
+    ],
+    "sourceReviewFindingsResolved": [
+      "facts-loading logout reset",
+      "visible zero-to-positive previous valuation warning",
+      "visible collector failure with retained cached binder"
+    ],
+    "limits": [
+      "No new total payload/request reduction",
+      "Prepared HTTP is not caller-abortable; obsolete publication is rejected",
+      "Early-cancelled loads can dispatch GET earlier than serial baseline",
+      "Same-count remote identity change is not atomically detected"
+    ],
+    "candidateSource": "b50547de15a49712d99c67829c38a0bb1d9428b6",
+    "ciRuns": [
+      {
+        "id": 40329266168,
+        "name": "Stackr Platform CI",
+        "conclusion": "success"
+      },
+      {
+        "id": 40329266116,
+        "name": "Card-first UI validation",
+        "conclusion": "success"
+      },
+      {
+        "id": 40329266165,
+        "name": "Owner Pricing Identity Tests",
+        "conclusion": "success"
+      }
+    ],
+    "preflight": {
+      "exportSource": "086959bc9ea267b3a0d528890291286225c39b49",
+      "candidateSource": "b50547de15a49712d99c67829c38a0bb1d9428b6",
+      "candidateTree": "0abfa5b88a0d445b18e8ca4cb12a8217b96cdc8e",
+      "onlyChanges": "Documentation and scripts/test-gate0-dynamic-copy.ts",
+      "remainingTrackedTreeDiffExitCode": 0,
+      "appAndBuildInputsIdentical": true,
+      "exportRerunOnFinalHead": false
+    }
+  },
+  "preparedValuationMeasurement20261026": {
+    "observedDate": "2026-10-26",
+    "owner": "stackr_coding",
+    "baseline": "b50547de15a49712d99c67829c38a0bb1d9428b6",
+    "pullRequest": 446,
+    "status": "reviewed_tested_tooling_and_unapplied_sql_proposal",
+    "report": "docs/releases/prepared-valuation-measurement-handoff-20261026.md",
+    "appRuntimeChanged": false,
+    "deployed": false,
+    "hostedPrivateMeasured": false,
+    "phoneAccepted": false,
+    "entries": [
+      {
+        "id": "PREPARED-JSON-001",
+        "severity": "P2",
+        "cause": "Repeated JSON payload evaluation duplicates three aggregate subplans.",
+        "evidence": "Hosted nonexecuting PG17 plan and executed local PG18 three-way comparison: six to three aggregates, unchanged full payload and revision.",
+        "repair": "OFFSET 0 single-row payload subquery barrier; proposed SQL and rollback only, no registered/applied migration.",
+        "localLargeMedianMs": {
+          "before": 155.5781,
+          "after": 96.9211
+        },
+        "productionLatencyEffect": "unverified"
+      },
+      {
+        "id": "PREPARED-PAGING-002",
+        "severity": "P2",
+        "status": "conditional_risk_locally_reproduced_not_changed",
+        "cause": "scripts/lib/prepared-collection-valuation.mjs readPages treats a short page as completion; cap17 over1003 syntheticrows returns17.",
+        "productionOccurrence": "unverified; worker effective cap not measured",
+        "next": "Verify effective worker cap without running price jobs; preserve scope and add bounded pagination regression if repaired."
+      }
+    ],
+    "remaining": [
+      "QA file empty; authenticated cap/timings/coverage unverified",
+      "Actual Home optional sections, rendering, real edits, offline/account switching and phone acceptance",
+      "PG17 realistic I/O/concurrency qualification for selected SQL",
+      "CLI migration registration blocked by protected profile telemetry write; scoped new migration approval required",
+      "No new merge/deployment/native distribution approval applied"
+    ],
+    "sourceCommit": "df45ef50420cab9dae7e2fefb6e929cd1110363c",
+    "sourceTree": "053a5475c9f5136c85629717eace0e1b52fb0ed9",
+    "evidenceBranch": "codex/prepared-valuation-measurement-evidence-20261026",
+    "hostedCi": "three workflows passed; candidate-identical merge tree verified; separate release gate skipped",
+    "mockedHttpRoute": "hosted fixture pass; no authenticated production calls"
+  },
+  "infrastructureAssessment20261026": {
+    "observedAt": "2026-10-26T14:25:04.994Z",
+    "source": "df45ef50420cab9dae7e2fefb6e929cd1110363c",
+    "report": "docs/audits/20261026/infrastructure-assessment.md",
+    "status": "assessment_complete_no_repairs_applied",
+    "releaseHold": "INFRA-ACCOUNT-CACHE-001",
+    "findings": [
+      {
+        "id": "INFRA-ACCOUNT-CACHE-001",
+        "priority": "P1",
+        "evidence": "source-supported account-cache/edit-loader path; same key in main",
+        "installedPhoneReproduction": false,
+        "customerDataBreachObserved": false,
+        "writeBypassEstablished": false,
+        "releaseHold": true,
+        "trigger": "A opens a private binder edit form, then B signs in within the 30-second TTL in the same JS process and opens the same binder edit route"
+      },
+      {
+        "id": "INFRA-RECOVERY-PROOF-001",
+        "priority": "P1 assurance",
+        "evidence": "restore verifier excludes Auth/private/security-equivalence checks; existing prior restore drill preserved",
+        "insecureRestoreObserved": false
+      }
+    ],
+    "priorityOrder": [
+      "Account/session-scoped binder record cache and edit ownership",
+      "Authenticated and installed-phone retrieval evidence",
+      "Complete search continuation and measured retrieval/database costs",
+      "Recovery security verification and targeted Auth/RPC/patch review",
+      "Existing scheduler/monitor/release-lane qualification"
+    ],
+    "publicSearchSample": {
+      "observedAt": "2026-10-26T14:18:28.247Z",
+      "path": "/v1/search?q=Pikachu&language=en&limit=50",
+      "conditions": "Three sequential unauthenticated desktop public GETs; caches and network uncontrolled; no phone; no collection/price requests",
+      "samples": [
+        {
+          "sample": 1,
+          "status": 200,
+          "elapsedMs": 6034.3,
+          "decodedBodyBytes": 299949,
+          "results": 50,
+          "pagination": {
+            "limit": 50,
+            "nextCursor": null
+          },
+          "cfCacheStatus": "DYNAMIC",
+          "cacheControl": "public, max-age=30, stale-while-revalidate=120, stale-if-error=120",
+          "age": null,
+          "cloudflarePop": "LHR",
+          "imageOrigins": {
+            "assets.stackrtcg.com": 217,
+            "oakdbbzdqwurpjnoqhmu.supabase.co": 72
+          },
+          "errorCode": null
+        },
+        {
+          "sample": 2,
+          "status": 200,
+          "elapsedMs": 195.58,
+          "decodedBodyBytes": 299949,
+          "results": 50,
+          "pagination": {
+            "limit": 50,
+            "nextCursor": null
+          },
+          "cfCacheStatus": "HIT",
+          "cacheControl": "public, max-age=30, stale-while-revalidate=120, stale-if-error=120",
+          "age": "0",
+          "cloudflarePop": "LHR",
+          "imageOrigins": {
+            "assets.stackrtcg.com": 217,
+            "oakdbbzdqwurpjnoqhmu.supabase.co": 72
+          },
+          "errorCode": null
+        },
+        {
+          "sample": 3,
+          "status": 200,
+          "elapsedMs": 122.96,
+          "decodedBodyBytes": 299949,
+          "results": 50,
+          "pagination": {
+            "limit": 50,
+            "nextCursor": null
+          },
+          "cfCacheStatus": "HIT",
+          "cacheControl": "public, max-age=30, stale-while-revalidate=120, stale-if-error=120",
+          "age": "0",
+          "cloudflarePop": "LHR",
+          "imageOrigins": {
+            "assets.stackrtcg.com": 217,
+            "oakdbbzdqwurpjnoqhmu.supabase.co": 72
+          },
+          "errorCode": null
+        }
+      ]
+    },
+    "liveExploitationEstablished": false
+  },
+  "infrastructureBoundaries20261026": {
+    "baseline": "df45ef50420cab9dae7e2fefb6e929cd1110363c",
+    "report": "docs/releases/infrastructure-boundaries-handoff-20261026.md",
+    "status": "reviewed_checkpoint_published_all_applicable_hosted_CI_pass",
+    "binderFinding": "INFRA-ACCOUNT-CACHE-001",
+    "binderCandidateFixReviewed": true,
+    "productionStillUnchanged": true,
+    "restoreSecurityChecks": 44,
+    "securityNegativeChecks": 17,
+    "nativePg17": "isolated_CI_pass; synthetic_valuation_median_73.724464_to_48.741687_ms",
+    "authenticatedAcceptance": "blocked_designated_credentials_empty",
+    "phoneAcceptance": "not_run",
+    "searchContinuation": "implemented_local_backend_SQL_review_in_progress",
+    "migrationApplied": false,
+    "publishedCheckpoint": "dc1d9dbac708c3a6b039c9a8fd15193eff9bef7f"
+  },
+  "infrastructurePriorities20261026": {
+    "report": "docs/releases/infrastructure-priorities-handoff-20261026.md",
+    "base": "dc1d9dbac708c3a6b039c9a8fd15193eff9bef7f",
+    "mobileReview": "GO",
+    "gatewayRefreshReview": "GO",
+    "backendSqlReview": "GO",
+    "searchCompletenessFixture": {
+      "before": 50,
+      "after": 137,
+      "pages": 3
+    },
+    "largeFixtureVariants": 1202,
+    "searchIndexesAdded": 0,
+    "newSqlApplied": false,
+    "authenticatedAcceptance": "designated_QA_credentials_empty",
+    "phoneAcceptance": "not_available",
+    "monitorCadence": "14_sampled_runs_125.6_to_348.48_minute_intervals_for_declared10_minute_schedule",
+    "schedulerOwner": "not_attested",
+    "capacity": "snapshot_only_not_load_test",
+    "finalSource": "pending_source_commit_and_exact_head_CI"
   }
 }

@@ -1,0 +1,65 @@
+{
+  "classification": "local in-memory PGlite synthetic fixture",
+  "postgres": "PostgreSQL 18.3 (PGlite 0.5.8) on wasm32-unknown-emscripten, compiled by emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 3.1.74 (1092ec30a3fb1d46b1782ff1b4db5094d3d06ae5), 32-bit",
+  "proposalSha256": "d8f15108792dd828f4beb979245e66add90aba7b0bc1aaed7d0ce331eefd70b8",
+  "samplesPerVariant": 4,
+  "conditions": [
+    "No installed-device, HTTP, edge-cache or hosted latency measurement.",
+    "Existing columns, views and indexes are copied; the fixture omits foreign-key/check/default contracts.",
+    "Five thousand unrelated synthetic printings stress name selectivity; this is not production cardinality.",
+    "Legacy search is deliberately bounded and incomplete; its latency is not an equivalent complete-search latency.",
+    "Result JSON bytes are internal SQL responses, not mobile API payload sizes.",
+    "PGlite validates GUC/identity parity only; JIT latency conclusions require the isolated PostgreSQL17 job.",
+    "candidateBody wall timings include scoped setting setup/restoration; plan Execution Time excludes that wrapper."
+  ],
+  "cohorts": [
+    {
+      "name": "empty",
+      "matchingVariants": 0,
+      "oldHydrated": 0,
+      "newHydrated": 0,
+      "hasMore": false,
+      "exactParity": true,
+      "comparisonKeys": [
+        "jitComparison"
+      ]
+    },
+    {
+      "name": "small",
+      "matchingVariants": 48,
+      "oldHydrated": 48,
+      "newHydrated": 48,
+      "hasMore": false,
+      "exactParity": true,
+      "comparisonKeys": [
+        "jitComparison"
+      ]
+    },
+    {
+      "name": "large",
+      "matchingVariants": 1202,
+      "oldHydrated": 400,
+      "newHydrated": 50,
+      "hasMore": true,
+      "exactParity": true,
+      "comparisonKeys": [
+        "jitComparison"
+      ]
+    },
+    {
+      "name": "multilingual",
+      "matchingVariants": 500,
+      "oldHydrated": 400,
+      "newHydrated": 50,
+      "hasMore": true,
+      "exactParity": true,
+      "comparisonKeys": [
+        "jitComparison"
+      ]
+    }
+  ],
+  "newIndexes": [],
+  "localRollbackVerified": true,
+  "productionApplied": false,
+  "nativePg17": "pending_function_local_JIT_AB_exact_source_CI"
+}

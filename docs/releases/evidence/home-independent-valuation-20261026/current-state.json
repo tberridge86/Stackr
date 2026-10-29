@@ -1,0 +1,36 @@
+{
+  "observedAt": "2026-10-26T12:41:27.926Z",
+  "sourceBefore": "4dadab24a0152bf971fb38b104dc43be966d8aed",
+  "main": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+  "pullRequest": 446,
+  "draft": true,
+  "merged": false,
+  "baseCandidateCi": "both applicable workflows succeeded; release-candidate-gate skipped",
+  "gateway": {
+    "url": "https://api.stackrtcg.com/v1/health",
+    "status": 200,
+    "ms": 768,
+    "body": "{\"data\":{\"status\":\"ok\",\"service\":\"stackr-api-gateway\",\"apiVersion\":\"1\"},\"meta\":{\"requestId\":\"024fa1dc-8657-48d3-9190-7d080881a86e\",\"apiVersion\":\"1\",\"generatedAt\":\"2026-10-26T12:38:15.508Z\"}}"
+  },
+  "backend": {
+    "url": "https://pocketvault-production.up.railway.app/health",
+    "status": 200,
+    "ms": 92,
+    "body": "{\"ok\":true,\"service\":\"stackr-api\",\"time\":\"2026-10-26T12:38:14.838Z\",\"runtime\":{\"gitCommit\":\"7c1acd409680\",\"gitCommitSource\":\"bundled_workflow_sha\",\"deploymentId\":\"dfc23b30-9675-4ba0-ad2b-9f1875302747\",\"railwayEnvironment\":\"production\",\"supabaseProjectRef\":\"oakdbbzdqwurpjnoqhmu\"}}"
+  },
+  "qaAccess": {
+    "configuredCredentialKeys": 0,
+    "designatedLocalFileRouteSelected": true,
+    "authenticatedMeasurements": "pending credentials; no customer session or privileged substitute used"
+  },
+  "scope": {
+    "source": [
+      "features/home/HubScreen.tsx",
+      "scripts/test-home-startup-runtime.ts"
+    ],
+    "databaseChanges": false,
+    "R2Changes": false,
+    "deployments": false
+  },
+  "next": "Measure original versus independent prepared valuation path with the real Hub runtime harness; preserve all facts and pricing fallback. New source must receive required validation and independent review."
+}

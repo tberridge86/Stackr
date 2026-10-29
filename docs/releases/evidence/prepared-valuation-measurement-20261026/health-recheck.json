@@ -1,0 +1,34 @@
+[
+  {
+    "url": "https://api.stackrtcg.com/v1/health",
+    "status": 200,
+    "response": {
+      "data": {
+        "status": "ok",
+        "service": "stackr-api-gateway",
+        "apiVersion": "1"
+      },
+      "meta": {
+        "requestId": "88bd2315-ccfb-443c-b78c-4d587695c2ab",
+        "apiVersion": "1",
+        "generatedAt": "2026-10-26T13:33:26.410Z"
+      }
+    }
+  },
+  {
+    "url": "https://pocketvault-production.up.railway.app/health",
+    "status": 200,
+    "response": {
+      "ok": true,
+      "service": "stackr-api",
+      "time": "2026-10-26T13:33:26.097Z",
+      "runtime": {
+        "gitCommit": "7c1acd409680",
+        "gitCommitSource": "bundled_workflow_sha",
+        "deploymentId": "dfc23b30-9675-4ba0-ad2b-9f1875302747",
+        "railwayEnvironment": "production",
+        "supabaseProjectRef": "oakdbbzdqwurpjnoqhmu"
+      }
+    }
+  }
+]

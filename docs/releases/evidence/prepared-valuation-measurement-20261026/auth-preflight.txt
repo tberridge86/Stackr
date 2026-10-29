@@ -1,0 +1,16 @@
+{
+  "kind": "authenticated_home_service_dependency_comparison",
+  "startedAt": "2026-10-26T13:54:02.260Z",
+  "renderedScreen": false,
+  "networkPerformed": false,
+  "limitations": [
+    "Desktop HTTPS service harness, not actual Home rendering or phone acceptance.",
+    "Client-memory cold/warm only; origin/CDN/database cache state is not reset.",
+    "Serial/concurrent schedules use the same shipped readers; they are not two installed application builds.",
+    "Hub confirmation/auth sequence, partial/update price fallback, optional sections, images, local settings and persisted display are not measured.",
+    "No real holding/binder edits, offline navigation or account switching are performed.",
+    "The existing prepared GET may update/queue valuation generation metadata; no refresh POST is permitted."
+  ],
+  "state": "blocked",
+  "reason": "designated_credentials_missing"
+}

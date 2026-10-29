@@ -1,0 +1,25 @@
+{
+  "scope": "local actual backend service, deterministic published-name fixture; no network",
+  "matchingCanonicalVariants": 137,
+  "returned": 50,
+  "nextCursor": null,
+  "duplicateVariantCount": 0,
+  "reads": [
+    {
+      "table": "catalogue_external_identifiers",
+      "returnedRows": 0,
+      "askedLimit": 50
+    },
+    {
+      "table": "catalogue_card_names",
+      "returnedRows": 137,
+      "askedLimit": 200
+    },
+    {
+      "table": "catalogue_cards",
+      "returnedRows": 137,
+      "askedLimit": 548
+    }
+  ]
+}
+{"event":"optional_card_artwork_failed","code":null}

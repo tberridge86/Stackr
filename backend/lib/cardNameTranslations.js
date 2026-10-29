@@ -240,12 +240,5 @@ export function findNativeCardNamesForEnglishQuery(query, language = null) {
       if (normalizeCardEnglishSearchText(english).includes(needle)) matches.push({ language: 'ja', nativeName });
     }
   }
-  const counts = new Map();
-  return [...new Map(matches.map((match) => [`${match.language}\u0000${match.nativeName}`, match])).values()]
-    .filter((match) => {
-      const count = counts.get(match.language) ?? 0;
-      if (count >= 80) return false;
-      counts.set(match.language, count + 1);
-      return true;
-    });
+  return [...new Map(matches.map((match) => [`${match.language}\u0000${match.nativeName}`, match])).values()];
 }

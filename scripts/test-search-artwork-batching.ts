@@ -126,6 +126,33 @@ async function main() {
   const embedded = fixture(301); embedded.variants[0].image = image(embedded);
   const already = harness([embedded], async () => assert.fail('Usable embedded artwork needs no manifest'));
   assert.ok((await already.search())[0].images.small); assert.equal(already.calls.length, 0);
+  const normal = fixture(401), reverse = fixture(401);
+  reverse.defaultVariantId = uuid(9901);
+  reverse.variants = [{ ...normal.variants[0], variantId: reverse.defaultVariantId, variantCode: 'reverse_holo', finishCode: 'reverse_holo' }];
+  const identity = harness([normal, reverse], async () => page([]));
+  const requests: any[] = [];
+  const controller = new AbortController();
+  let metadata: any;
+  identity.client.search = async (...args: any[]) => {
+    requests.push(args);
+    return { data: { results: [normal, reverse].map(card => ({ type: 'card', variantId: card.defaultVariantId, card })) },
+      meta: { pagination: { nextCursor: 'next-identity', continuationAvailable: true } } } as any;
+  };
+  const exactRows = await identity.search({ cursor: 'identity-cursor', force: true, preserveVariantIdentity: true, signal: controller.signal,
+    onPagination: (value: any) => { metadata = value; } });
+  assert.equal(requests[0][0].cursor, 'identity-cursor');
+  assert.equal(requests[0][1].signal, controller.signal);
+  assert.equal(requests[0][1].headers['Cache-Control'], 'no-cache');
+  assert.equal(metadata.nextCursor, 'next-identity');
+  assert.equal(metadata.continuationAvailable, true);
+  assert.equal(exactRows[0].id, normal.defaultVariantId);
+  assert.equal(exactRows[1].id, reverse.defaultVariantId);
+  assert.equal(exactRows[0].raw_data.stackr.cardId, normal.cardId);
+  assert.equal(exactRows[1].raw_data.stackr.cardId, normal.cardId);
+  identity.client.search = async () => ({ data: { results: [{ type: 'card', variantId: uuid(9999), card: normal }] } } as any);
+  await assert.rejects(identity.search({ preserveVariantIdentity: true }), /inconsistent printing variant/);
+  controller.abort();
+  await assert.rejects(identity.search({ signal: controller.signal }));
   console.log('Search artwork batches at most50 identities, preserves facts and partial pages, bounds late work, and retains exact printing/edition rejection.');
 }
 void main().catch((error) => { console.error(error); process.exitCode = 1; });

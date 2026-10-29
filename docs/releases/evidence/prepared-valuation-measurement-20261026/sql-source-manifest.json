@@ -1,0 +1,22 @@
+[
+  {
+    "path": "scripts/measure-prepared-valuation-query-plans.mjs",
+    "sha256": "366b739c2882737763fff815c1166ab8d691a98b055de54b59d743d917aade65"
+  },
+  {
+    "path": "scripts/test-fixtures/prepared-valuation-db.mjs",
+    "sha256": "a6cc6b9da174b3d92c37803bc709be6a9d824a9b5f6f315d7f7b9f4b2b2a17d7"
+  },
+  {
+    "path": "scripts/test-fixtures/prepared-valuation-schema.json",
+    "sha256": "76ae9495eb07ed816f4ea014a7128463aed0b6a2e1d5b1f0d1f77f46b3d901e4"
+  },
+  {
+    "path": "docs/releases/evidence/prepared-valuation-measurement-20261026/proposed-function.sql",
+    "sha256": "82baae83c24b91c2cbcbaacfeba51a4bdee81505f14b616b3d080c31d441fa80"
+  },
+  {
+    "path": "docs/releases/evidence/prepared-valuation-measurement-20261026/rollback-function.sql",
+    "sha256": "2f868d282abc4969d539bba4c53c9d4a0cbfd12c06d77ddf4089423dfb97b795"
+  }
+]

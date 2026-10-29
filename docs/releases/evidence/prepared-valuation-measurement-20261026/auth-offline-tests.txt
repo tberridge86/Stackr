@@ -1,0 +1,1 @@
+Authenticated Home tooling passed: blank/preflight no IO, explicit QA/prepared opt-ins, privilege/target/method guards, actual SDK/readers/cache, lower caps17/50/100/500, complete exhaustion, private-data redaction, and prepared403 stop.

@@ -173,7 +173,10 @@ export async function cachedProxy({ request, route, env, ctx, cache, fetchFresh 
   const key = cacheRequest(request, version);
   // A failed cache read is not a failed catalogue read.
   const cached = await cache.match(key).catch(() => undefined);
-  if (cached) {
+  // Explicit Search retry must escape a first page whose cursor belongs to an old catalogue revision.
+  const forceSearchRefresh = route.id === 'search'
+    && /(?:^|,)\s*no-cache(?:\s|,|=|$)/i.test(request.headers.get('cache-control') ?? '');
+  if (cached && !forceSearchRefresh) {
     const storedAt = Number(cached.headers.get('X-Stackr-Cache-Stored-At') ?? 0);
     const ageSeconds = Number.isFinite(storedAt) && storedAt > 0
       ? Math.max(0, (Date.now() - storedAt) / 1000) : Infinity;

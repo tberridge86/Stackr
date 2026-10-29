@@ -634,16 +634,23 @@ paths:
           schema:
             type: string
             format: uuid
+        - $ref: "#/components/parameters/Cursor"
         - $ref: "#/components/parameters/Limit"
       responses:
         "200":
-          description: Search results with explicit match reasons.
+          description: Search results with explicit match reasons. Continue only when meta.pagination.continuationAvailable is true; a null nextCursor then means complete. Cursors bind query, language, set, limit and catalogue/algorithm revision.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/SearchResponse"
         "400":
           $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+          description: Catalogue revision changed; restart the query instead of mixing pages.
+        "503":
+          $ref: "#/components/responses/Error"
+          description: Search continuation is temporarily unavailable; retain loaded results and retry.
   /assets/manifest:
     get:
       tags: [Assets]
@@ -1600,6 +1607,12 @@ components:
           type: integer
         nextCursor:
           type: [string, "null"]
+        continuationAvailable:
+          type: boolean
+          description: Search only. False or absent does not establish completeness even when nextCursor is null.
+        unavailableReason:
+          type: string
+          enum: [search_pagination_unavailable]
     HealthResponse:
       allOf:
         - $ref: "#/components/schemas/Envelope"

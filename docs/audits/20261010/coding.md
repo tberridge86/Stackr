@@ -101,3 +101,20 @@ Independent review caught unequal cohorts in an initial timing loop; its latency
 The existing `scripts/test-r2-writer-workflows.mjs` guard now pins those ten paths and existing concurrency configuration. Negative controls reject a restored self-path, wildcard widening, missing path filter and changed cancellation/group settings. The added guard failed against the original workflow on the self-path and passed after its single-line removal. A fresh connector list of all 149 canonical PR paths has zero intersections with the remaining push filters across the seven registered R2 writer workflows (eight writer steps). This confirms that these PR paths do not start those writers or their push-cancellation path; it does not claim that all ordinary CI jobs are suppressed.
 
 Validation uses local YAML parsing, the narrow writer guard, scoped script lint and whitespace checks. No catalogue job, workflow dispatch, R2 transfer, schedule, production/staging data mutation or deployment was performed. The coordinator owns publication, fresh-head CI, independent release review and the eventual authorised merge; the earlier lack-of-release-authority hold is superseded by the user's current explicit release instruction.
+
+
+## Home independent valuation continuation - 26 October 2026
+
+Coordinated by stackr_coding; source baseline 4dadab24a0152bf971fb38b104dc43be966d8aed. Hub now starts one prepared request alongside complete collection facts and permits strictly validated complete-ready summaries to publish independently. Partial/updating coverage still reconciles complete identities. Separate loading/error notices preserve collector recovery. No new cache/schema/API/R2 changes.
+
+Four fake-clock cohorts preserve all rows and unchanged completed-load request/auth boundaries. Controlled readiness 300 to 100 ms (complete) and 300 to 200 ms (partial) is causal fixture evidence, not measured hosted or phone latency. Historical prepared-RPC statistics show448 calls averaging 1531.47 ms across mixed modes; no execution analysis or DB rewrite was performed.
+
+Typecheck, lint, scoped lint, actual-Hub runtime, Home release/pricing UI and matched measurements passed; independent reviewer found and resolved logout/stale-warning/cached-binder error visibility issues and independently reran the runtime suite. Unshipped; private QA credentials and device acceptance remain missing. See [full release evidence](../../releases/home-independent-valuation-handoff-20261026.md). Prior sections remain historical.
+
+### Home independent valuation qualification receipt
+
+PR #446 source b50547de15a49712d99c67829c38a0bb1d9428b6 passed all three applicable exact-head hosted workflows after an independently reviewed test-only account-denial guard correction. Eight normal Platform jobs passed; separate release gate skipped. Six local preflight steps passed at runtime-equivalent 086959bc; no native build, merge or deployment. Authenticated QA timings/cap/price coverage and phone acceptance remain blocked by access. See docs/releases/home-independent-valuation-release-state-20261026.json.
+
+## Prepared valuation measurement continuation — 26 October 2026
+
+From PR446 source b50547de and evidence f0e3c333. Authenticated QA access remains missing; no real Home latency claim. Added bounded ordinary-auth service measurement tooling and a local full-width PostgreSQL plan comparison. Hosted estimated plan and local executed plan confirm duplicate JSON aggregation (6 to 3); selected OFFSET 0 proposal preserves exact payload/hash and avoids the MATERIALIZED alternative extra temporary writes in the fixture. Large local six-sample median155.578 to96.921ms is not hosted/device evidence. No app/backend/gateway/worker or live schema change. Independent SQL review and local rerun pass; final tooling review/CI recorded separately. See docs/releases/prepared-valuation-measurement-handoff-20261026.md and its evidence directory.

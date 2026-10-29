@@ -4,6 +4,7 @@ import { runInNewContext } from 'node:vm';
 import React from 'react';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import ts from 'typescript';
+import * as upcomingPokemonSets from '../lib/upcomingPokemonSets';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -28,6 +29,7 @@ const native = {
   FlatList: ({ data, renderItem, ...props }: any) => React.createElement('FlatList', props, data.map((item: any, index: number) => React.createElement(React.Fragment, { key: String(index) }, renderItem({ item, index })))),
 };
 const dependencies: Record<string, any> = {
+  '../../lib/upcomingPokemonSets': upcomingPokemonSets,
   react: React, 'react-native': native, 'react-native-safe-area-context': { SafeAreaView: 'SafeAreaView' },
   'expo-router': { router: { push: (value: unknown) => pushes.push(value) }, useFocusEffect: (effect: () => void | (() => void)) => React.useEffect(effect, [effect]) },
   '@expo/vector-icons': { Ionicons: 'Ionicons' }, '../../components/StackrLoadingIndicator': { StackrLoadingIndicator: 'Loading' }, '../../components/Text': { Text: 'Text' },

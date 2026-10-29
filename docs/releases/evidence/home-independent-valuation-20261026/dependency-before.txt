@@ -1,0 +1,285 @@
+{
+  "revision": "4dadab24a0152bf971fb38b104dc43be966d8aed",
+  "measurements": [
+    {
+      "cohort": "empty",
+      "savedPlacements": 0,
+      "ownedRows": 0,
+      "languageCount": 1,
+      "preparedReadyFactsHeld": {
+        "savedBoundaryCalls": 1,
+        "preparedHttpBoundaryCalls": 0,
+        "total": null,
+        "ownedCount": 0,
+        "valueLoading": true,
+        "factsLoading": true
+      },
+      "complete": {
+        "savedBoundaryCalls": 1,
+        "preparedHttpBoundaryCalls": 1,
+        "total": null,
+        "ownedCount": 0,
+        "retainedSavedPlacements": 0,
+        "duplicateCount": 0,
+        "authSdkCallsIncludingPersistenceAndOptionalBinder": 5
+      },
+      "controlledTimings": [
+        {
+          "scenario": "complete-ready, slower facts",
+          "configuredFactsMs": 200,
+          "configuredPreparedMs": 100,
+          "firstValuationAt": 300,
+          "factsSettledAt": 200,
+          "authSdkCallsIncludingPersistenceAndOptionalBinder": 5,
+          "savedBoundaryCalls": 1,
+          "preparedHttpBoundaryCalls": 1,
+          "events": [
+            {
+              "source": "facts:start",
+              "at": 0
+            },
+            {
+              "source": "facts:complete",
+              "at": 200
+            },
+            {
+              "source": "prepared:start",
+              "at": 200
+            },
+            {
+              "source": "prepared:complete",
+              "at": 300
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cohort": "small",
+      "savedPlacements": 8,
+      "ownedRows": 6,
+      "languageCount": 1,
+      "preparedReadyFactsHeld": {
+        "savedBoundaryCalls": 1,
+        "preparedHttpBoundaryCalls": 0,
+        "total": null,
+        "ownedCount": 0,
+        "valueLoading": true,
+        "factsLoading": true
+      },
+      "complete": {
+        "savedBoundaryCalls": 1,
+        "preparedHttpBoundaryCalls": 1,
+        "total": 60,
+        "ownedCount": 6,
+        "retainedSavedPlacements": 8,
+        "duplicateCount": 0,
+        "authSdkCallsIncludingPersistenceAndOptionalBinder": 6
+      },
+      "controlledTimings": [
+        {
+          "scenario": "complete-ready, slower facts",
+          "configuredFactsMs": 200,
+          "configuredPreparedMs": 100,
+          "firstValuationAt": 300,
+          "factsSettledAt": 200,
+          "authSdkCallsIncludingPersistenceAndOptionalBinder": 6,
+          "savedBoundaryCalls": 1,
+          "preparedHttpBoundaryCalls": 1,
+          "events": [
+            {
+              "source": "facts:start",
+              "at": 0
+            },
+            {
+              "source": "facts:complete",
+              "at": 200
+            },
+            {
+              "source": "prepared:start",
+              "at": 200
+            },
+            {
+              "source": "prepared:complete",
+              "at": 300
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cohort": "large",
+      "savedPlacements": 1702,
+      "ownedRows": 1323,
+      "languageCount": 1,
+      "preparedReadyFactsHeld": {
+        "savedBoundaryCalls": 1,
+        "preparedHttpBoundaryCalls": 0,
+        "total": null,
+        "ownedCount": 0,
+        "valueLoading": true,
+        "factsLoading": true
+      },
+      "complete": {
+        "savedBoundaryCalls": 1,
+        "preparedHttpBoundaryCalls": 1,
+        "total": 13230,
+        "ownedCount": 1323,
+        "retainedSavedPlacements": 1702,
+        "duplicateCount": 0,
+        "authSdkCallsIncludingPersistenceAndOptionalBinder": 6
+      },
+      "controlledTimings": [
+        {
+          "scenario": "complete-ready, slower facts",
+          "configuredFactsMs": 200,
+          "configuredPreparedMs": 100,
+          "firstValuationAt": 300,
+          "factsSettledAt": 200,
+          "authSdkCallsIncludingPersistenceAndOptionalBinder": 6,
+          "savedBoundaryCalls": 1,
+          "preparedHttpBoundaryCalls": 1,
+          "events": [
+            {
+              "source": "facts:start",
+              "at": 0
+            },
+            {
+              "source": "facts:complete",
+              "at": 200
+            },
+            {
+              "source": "prepared:start",
+              "at": 200
+            },
+            {
+              "source": "prepared:complete",
+              "at": 300
+            }
+          ]
+        },
+        {
+          "scenario": "partial-ready, slower facts",
+          "configuredFactsMs": 200,
+          "configuredPreparedMs": 100,
+          "firstValuationAt": 300,
+          "factsSettledAt": 200,
+          "authSdkCallsIncludingPersistenceAndOptionalBinder": 6,
+          "savedBoundaryCalls": 1,
+          "preparedHttpBoundaryCalls": 1,
+          "events": [
+            {
+              "source": "facts:start",
+              "at": 0
+            },
+            {
+              "source": "facts:complete",
+              "at": 200
+            },
+            {
+              "source": "prepared:start",
+              "at": 200
+            },
+            {
+              "source": "prepared:complete",
+              "at": 300
+            }
+          ]
+        },
+        {
+          "scenario": "partial-ready, slower prepared",
+          "configuredFactsMs": 100,
+          "configuredPreparedMs": 200,
+          "firstValuationAt": 300,
+          "factsSettledAt": 100,
+          "authSdkCallsIncludingPersistenceAndOptionalBinder": 6,
+          "savedBoundaryCalls": 1,
+          "preparedHttpBoundaryCalls": 1,
+          "events": [
+            {
+              "source": "facts:start",
+              "at": 0
+            },
+            {
+              "source": "facts:complete",
+              "at": 100
+            },
+            {
+              "source": "prepared:start",
+              "at": 100
+            },
+            {
+              "source": "prepared:complete",
+              "at": 300
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cohort": "five-language same collector",
+      "savedPlacements": 5,
+      "ownedRows": 5,
+      "languageCount": 5,
+      "preparedReadyFactsHeld": {
+        "savedBoundaryCalls": 1,
+        "preparedHttpBoundaryCalls": 0,
+        "total": null,
+        "ownedCount": 0,
+        "valueLoading": true,
+        "factsLoading": true
+      },
+      "complete": {
+        "savedBoundaryCalls": 1,
+        "preparedHttpBoundaryCalls": 1,
+        "total": 50,
+        "ownedCount": 5,
+        "retainedSavedPlacements": 5,
+        "duplicateCount": 0,
+        "authSdkCallsIncludingPersistenceAndOptionalBinder": 6
+      },
+      "controlledTimings": [
+        {
+          "scenario": "complete-ready, slower facts",
+          "configuredFactsMs": 200,
+          "configuredPreparedMs": 100,
+          "firstValuationAt": 300,
+          "factsSettledAt": 200,
+          "authSdkCallsIncludingPersistenceAndOptionalBinder": 6,
+          "savedBoundaryCalls": 1,
+          "preparedHttpBoundaryCalls": 1,
+          "events": [
+            {
+              "source": "facts:start",
+              "at": 0
+            },
+            {
+              "source": "facts:complete",
+              "at": 200
+            },
+            {
+              "source": "prepared:start",
+              "at": 200
+            },
+            {
+              "source": "prepared:complete",
+              "at": 300
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "conditions": "Real Hub hooks/loaders; transport/native services mocked. Cold private cache. Fake clock advances in 50ms steps; configured facts/prepared delays, zero auth/network latency.",
+  "limitations": "Causal synthetic timing, not hosted or phone latency. Saved boundary aggregates complete facts; its underlying pages still run. SDK auth calls are not HTTP counts. No requests or bytes avoided."
+}
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer

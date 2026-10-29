@@ -1,0 +1,7 @@
+npm notice run Stackr-native@1.0.6 test:collection-pricing-ui
+npm notice run tsx scripts/test-collection-pricing-state.ts && tsx scripts/test-collection-pricing-api.ts && tsx scripts/test-value-tracker-chart-layout.ts && node --import tsx scripts/test-collection-snapshot-pricing.ts && node --import tsx scripts/test-issue304-pricing-history.ts
+Collection pricing state tests passed
+Collection pricing API tests passed
+value tracker chart layout checks passed
+Exact collection snapshot batching retains trusted variant, condition, scope and duplicate safeguards.
+Issue #304 pricing/history regressions passed: fair capacity math, denial classification, partial/stale history, holdings isolation and restored-session history.

@@ -1,0 +1,10 @@
+PASS actual backend + actual SDK + local SQL: legacy 50/no continuation -> 137 exact variants over 3 pages.
+PASS 1,202 unique multilingual/finish identities, printing-only + variant-only names, duplicate aliases, scoped collector and REST caps 17/50/100/500.
+PASS physical-name selector preserves printing/variant publication boundaries and timezone-independent revisions.
+PASS external card/set composite identities survive equal UUIDs within and across pages.
+PASS complete ordered set-code resolution across40 matching sets with server cap17.
+PASS verified translation/stored-name round-robin across odd pages, cross-stream dedup, optional deadline/denial and cursor retry.
+PASS query/algorithm/strategy/key binding, missing-function and denied-page retry, revision-change rejection.
+PASS malformed/foreign/duplicate identities fail closed; caller cancellation reaches actual SDK fetch.
+PASS function-local jit=off preserves invoker/stable/search_path, restores caller settings and invalidates old definition cursors.
+PASS service-only invoker grants; static candidate enumeration is not silently capped.

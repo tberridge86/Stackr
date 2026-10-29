@@ -233,7 +233,7 @@
     "test:pokedex-release": "node scripts/test-pokedex-species-index.mjs && node scripts/test-pokedex-route-repair.mjs && node --import tsx scripts/test-pokedex-loading.ts && node --import tsx scripts/test-pokedex-account-boundary.ts && node --import tsx scripts/test-pokedex-partial-results.ts && node --import tsx scripts/test-pokedex-ownership-bounds.ts",
     "test:catalogue-price-baseline": "node --import tsx scripts/test-catalogue-price-baseline.ts && node --import tsx scripts/test-catalogue-price-client.ts",
     "test:classified-price-read": "node scripts/test-classified-price-read.mjs && node --import tsx scripts/test-classified-price-overlay.ts",
-    "test:device-feedback": "node --import tsx scripts/test-corocoro-screen-runtime.ts && node --import tsx scripts/test-explore-discover-runtime.ts && node --import tsx scripts/test-preferred-set-logo-delivery.ts && node --import tsx scripts/test-artwork-loading-recovery.ts && node --import tsx scripts/test-uncached-card-facts-runtime.ts && node --import tsx scripts/test-pokedex-cache-handoff.ts",
+    "test:device-feedback": "node --import tsx scripts/test-corocoro-screen-runtime.ts && node --import tsx scripts/test-explore-discover-runtime.ts && node --import tsx scripts/test-upcoming-pokemon-sets.ts && node --import tsx scripts/test-preferred-set-logo-delivery.ts && node --import tsx scripts/test-artwork-loading-recovery.ts && node --import tsx scripts/test-uncached-card-facts-runtime.ts && node --import tsx scripts/test-pokedex-cache-handoff.ts",
     "test:mobile-recovery": "node --import tsx scripts/test-stackr-loading-indicator.ts && node --import tsx scripts/test-startup-reduce-motion.ts && node --import tsx scripts/test-corocoro-issue-archive.ts && node --import tsx scripts/test-corocoro-mobile-delivery.ts && node --import tsx scripts/test-set-price-window.ts && node --import tsx scripts/test-card-inspection-interactions.ts && node --import tsx scripts/test-settings-help.ts && node --import tsx scripts/test-issue304-cold-retrieval.ts && npm run test:device-feedback",
     "test:server-delivery": "node scripts/test-backend-approved-card-names.mjs && node scripts/test-backend-translation-search.mjs && node --import tsx scripts/test-server-name-delivery.mjs && node --import tsx scripts/test-foreign-card-presentation.ts && node --import tsx scripts/test-server-catalogue-price-baseline.ts && node scripts/test-published-mobile-delivery.mjs && node scripts/test-ios-release-build-workflow.mjs && node --import tsx scripts/test-stackr-preview-proxy.ts && node --import tsx scripts/test-stackr-api-cache-recovery.ts && node scripts/test-stackr-api-v1.mjs && node scripts/test-marnie-canonical-correction-preparation.mjs && node scripts/test-marnie-runtime-correction-preparation.mjs",
     "test:catalogue-quality-report": "node --import tsx scripts/test-catalogue-quality-report.mjs",
@@ -241,7 +241,12 @@
     "asset:migrate-r2": "node scripts/migrate-catalogue-to-r2.mjs",
     "test:collection-summary": "node scripts/test-collection-summary-sql.mjs && node scripts/test-collection-summary-client.mjs && node --import tsx scripts/test-collection-summary-performance.ts",
     "test:home-facts": "node --import tsx scripts/test-home-saved-collection.ts && node scripts/test-home-saved-cache.mjs",
-    "test:home-retrieval": "npm run test:home-facts && node --import tsx scripts/test-home-startup-runtime.ts"
+    "test:home-retrieval": "npm run test:home-facts && node --import tsx scripts/test-home-startup-runtime.ts",
+    "test:binder-account-cache": "node --import tsx scripts/test-binder-account-cache-runtime.ts",
+    "test:restore-security": "node scripts/test-postgres-restore-security.mjs",
+    "test:security-boundary-runtime": "node scripts/test-inspected-security-boundaries.mjs",
+    "test:database-fixture-safety": "node scripts/test-native-postgres-fixture.mjs",
+    "test:search-pagination": "node --import tsx scripts/test-search-pagination-runtime.ts && node --import tsx scripts/test-search-settlement-runtime.ts && node scripts/test-backend-search-pagination.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",

@@ -1,0 +1,23 @@
+{
+  "observedAt": "2026-10-26T13:42:19.057Z",
+  "status": "read",
+  "appId": "6772118450",
+  "appVersion": "1.0.6",
+  "buildNumber": "61",
+  "appleBuildId": "a0ddb40d-697b-4f6c-9f6d-b45fe05b6992",
+  "processingState": "VALID",
+  "internalState": "IN_BETA_TESTING",
+  "externalState": "READY_FOR_BETA_SUBMISSION",
+  "expired": false,
+  "groups": [
+    {
+      "id": "9ab9cbec-f5f1-4a9c-80bb-4afcce16960f",
+      "name": "Team (Expo)",
+      "internal": true,
+      "member": true,
+      "relationshipBuildCount": 38
+    }
+  ],
+  "review": null,
+  "availableToTeam": true
+}

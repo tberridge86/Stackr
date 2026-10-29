@@ -38,7 +38,15 @@ const dependencies: Record<string, unknown> = {
     assert.equal(table, 'binder_cards', 'Saved collection loading does not fetch catalogue or prices');
     let from = 0, to = 49;
     const query: any = {
-      select: () => query,
+      select: (columns: string) => {
+        assert.equal(columns.split(',').length, 20, 'Home transfers only the consumed non-price projection');
+        for (const required of ['notes', 'slot_order', 'created_at', 'api_card_id', 'api_set_id', 'grade_company', 'grade', 'language']) {
+          assert.ok(columns.split(',').includes(required), 'Preserve saved identity and full read-only preload fields');
+        }
+        assert.ok(!columns.includes('*') && !columns.includes('price') && !columns.includes('graded_value'));
+        return query;
+      },
+      returns: () => query,
       in: (column: string, ids: string[]) => { assert.equal(column, 'binder_id'); assert.ok(ids.length <= 50); return query; },
       order: (column: string, options: any) => { assert.equal(column, 'id'); assert.equal(options.ascending, true); return query; },
       range: (start: number, end: number) => { from = start; to = end; assert.equal(end - start, 499); return query; },

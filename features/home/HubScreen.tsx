@@ -1,6 +1,6 @@
 import { StackrFunctionalIcon } from '../../components/StackrFunctionalIcon';
 import { takeRotatingStringBatch } from '../../lib/homePriceRefreshCore';
-import { hasLowerPreparedPriceCoverage, isPreparedGeneralValuation, preferredPreparedValuation, preparedGeneralPricingSummary, preparedPricingSummary, preparedValuationTrend } from '../../lib/preparedCollectionValuation';
+import { hasLowerPreparedPriceCoverage, isPreparedGeneralValuation, preferredPreparedValuation, preparedGeneralPricingSummary, preparedPricingSummary, preparedValuationTrend, type PreparedValuationResponse } from '../../lib/preparedCollectionValuation';
 import { blocksIndependentPriceRead, mergeCollectionPriceRead, storedCollectionPriceResults, type StoredCollectionPrice } from '../../lib/stableCollectionPrices';
 import { StackrBottomSheet } from '../../components/StackrModalSystem';
 import { useTheme } from '../../components/theme-context';
@@ -1015,6 +1015,7 @@ export default function HubScreen() {
   const [collectionChangeAmount, setCollectionChangeAmount] = useState(0);
   const [collectionChangePercent, setCollectionChangePercent] = useState(0);
   const [collectionValueLoading, setCollectionValueLoading] = useState(true);
+  const [collectionFactsLoading, setCollectionFactsLoading] = useState(true);
   const [collectionValueError, setCollectionValueError] = useState<string | null>(null);
   const [homeDataError, setHomeDataError] = useState<string | null>(null);
   const [activeBinder, setActiveBinder] = useState<HomeBinderSummary | null>(null);
@@ -1609,9 +1610,40 @@ export default function HubScreen() {
       && getCollectionSummaryVersion() === preloadVersion
       && !controller.signal.aborted;
     let collectorDataLoaded = false;
+    let preparedHeadlinePublished = false;
+    let preparedPublicationOpen = true;
+    let preparedRead: Promise<{ response: PreparedValuationResponse | null; confirmed?: boolean; error?: unknown }> | null = null;
     let accountDenied = false;
     let preloadCandidates: BinderRecord[] = [];
     let preloadSavedCards: Map<string, BinderCardRecord[]> | undefined;
+    const revokeCollectionDisplay = () => {
+      accountDenied = true;
+      // A known server denial revokes the local preview; a transport failure
+      // only leaves an honestly labelled saved display.
+      homeSessionExpiresAtRef.current = 0;
+      cachedHomeSnapshotUserIdRef.current = null;
+      hasSuccessfulCollectionPricingRef.current = false;
+      hasLoadedCollectionValueRef.current = false;
+      collectionPriceEvidenceRef.current = [];
+      setOwnedCardCount(0);
+      setCollectionTotal(null);
+      setCollectionPricingSummary(EMPTY_COLLECTION_PRICING);
+      setCollectionPricingWarning(null);
+      setCollectionChangeAmount(0);
+      setCollectionChangePercent(0);
+      setChartData([]);
+      setTrendCoverageLabel(null);
+      setTrendProvenanceLabel(null);
+      setTrendIsSubset(false);
+      setActiveBinder(null);
+      setDuplicateSummary(EMPTY_DUPLICATE_SUMMARY);
+      setMissingCards([]);
+      setCollectionValueLoading(false);
+      setCollectionFactsLoading(false);
+      setCollectionValueError('We could not load stored market prices. Pull to refresh or try again.');
+      setHomeDataError('Could not refresh collector data. Pull to refresh or try again.');
+    };
+    setCollectionFactsLoading(true);
     setCollectionValueError(null);
     setCollectionPricingWarning(homeCollectionSourceChangedRef.current
       ? 'Your collection changed. Previous saved totals stay visible while current holdings refresh.' : null);
@@ -1640,7 +1672,7 @@ export default function HubScreen() {
       }
       manualPriceRefreshUserIdRef.current = trustedUserId;
       const isCurrentRequest = () => (
-        isCurrentSource() && homeSessionUserIdRef.current === trustedUserId
+        isCurrentSource() && !accountDenied && homeSessionUserIdRef.current === trustedUserId
       );
       const confirmCurrentRequest = async () => {
         if (!isCurrentRequest()) return false;
@@ -1663,6 +1695,103 @@ export default function HubScreen() {
         // hold up a fresh read. The restore's version guard protects live data.
         void applyCachedHomeCollection();
       }
+
+      let preparedSnapshot: Omit<HomeCollectionCacheSnapshot, 'cachedAt' | 'activeBinder' | 'duplicateSummary' | 'missingCards'> | null = null;
+      const publishPreparedHeadline = (response: PreparedValuationResponse) => {
+        const exactSummary = response.summary;
+        if (!exactSummary || !preparedPublicationOpen || !isCurrentRequest()) return;
+        const summary = preferredPreparedValuation(exactSummary);
+        const pricing = isPreparedGeneralValuation(summary) ? preparedGeneralPricingSummary(summary) : preparedPricingSummary(exactSummary);
+        if (!pricing) return;
+        homeLiveValuationGenerationRef.current = generation;
+        homeCollectionSourceChangedRef.current = response.state === 'updating';
+        setCollectionTotal(pricing.total);
+        setCollectionPricingSummary(pricing);
+        setOwnedCardCount(summary.totalUnits);
+        // Trend points use the exact stored-price subtotal, even when the headline
+        // uses a labelled general estimate. The server scope fixes holdings and
+        // priced identities, so partial coverage remains comparable without
+        // pretending unpriced cards were worth £0.
+        const exactPricing = preparedPricingSummary(exactSummary);
+        const serverTrend = preparedValuationTrend(exactSummary, chartRange === '7D' ? 7 : 30);
+        const currentExactRead: CollectionValueRead | null = exactPricing?.total != null && exactSummary.trend?.scope
+          ? { capturedAt: exactSummary.calculatedAt, total: exactPricing.total, totalUnits: exactPricing.totalUnits,
+              pricedUnits: exactPricing.pricedUnits, identitySignature: exactSummary.trend.scope }
+          : null;
+        const nextPreparedReads = currentExactRead
+          ? [...collectionValueReadsRef.current, currentExactRead].slice(-MAX_COLLECTION_VALUE_READS)
+          : collectionValueReadsRef.current;
+        const savedTrend = serverTrend.values.length >= 2 || !currentExactRead
+          ? []
+          : getComparableCollectionValueReads(nextPreparedReads, currentExactRead, chartRange === '7D' ? 7 : 30);
+        const trendValues = serverTrend.values.length >= 2 ? serverTrend.values : savedTrend;
+        const trendChange = trendValues.length >= 2 ? trendValues.at(-1)! - trendValues[0] : 0;
+        const trendPercent = trendValues.length >= 2 && trendValues[0] !== 0 ? trendChange / trendValues[0] * 100 : 0;
+        const trendSubset = Boolean(exactPricing && exactPricing.pricedUnits < exactPricing.totalUnits);
+        setChartData(trendValues);
+        setCollectionChangeAmount(trendChange);
+        setCollectionChangePercent(trendPercent);
+        setTrendCoverageLabel(trendValues.length >= 2
+          ? trendSubset
+            ? `Comparable history covers ${exactPricing?.pricedUnits ?? 0} of ${exactPricing?.totalUnits ?? 0} cards; unpriced cards are excluded, not £0.`
+            : `Comparable history covers all ${exactPricing?.totalUnits ?? 0} priced cards.`
+          : exactPricing?.pricedUnits
+            ? `One genuine valuation is recorded for ${exactPricing.pricedUnits} of ${exactPricing.totalUnits} cards. Another comparable valuation is needed for a graph.`
+            : 'No comparable collection valuation has been recorded yet.');
+        setTrendProvenanceLabel(trendValues.length >= 2
+          ? serverTrend.values.length >= 2 ? 'Recorded collection valuations' : 'Persisted collection reads'
+          : null);
+        setTrendIsSubset(trendSubset);
+        collectionValueReadsRef.current = nextPreparedReads;
+        const refreshReport = exactSummary.refresh && response.refreshRequest
+          ? `Refresh review: ${exactSummary.refresh.accepted} accepted, ${exactSummary.refresh.alreadyPending} already pending, ${exactSummary.refresh.unsupported} unsupported, ${exactSummary.refresh.unresolved} unresolved, ${exactSummary.refresh.blocked} blocked, ${exactSummary.refresh.remaining ?? 0} remaining.` : null;
+        setCollectionPricingWarning(response.state === 'updating'
+          ? 'Updating your collection. Showing the previous complete valuation and its quantities.' + (refreshReport ? ' ' + refreshReport : '')
+          : refreshReport ?? (exactSummary.cycle?.overdue ? 'The catalogue pricing cycle is overdue. Showing stored estimates and their recorded coverage.'
+          : pricing.state === 'partial' ? getCollectionPriceCoverageLabel(pricing) + '. Showing the known subtotal.'
+          : pricing.staleUnits ? 'Older stored estimates retained with their original source dates.' : null));
+        preparedHeadlinePublished = true;
+        setCollectionValueLoading(false);
+        setCollectionValueError(null);
+        hasSuccessfulCollectionPricingRef.current = pricing.total != null;
+        cachedHomeSnapshotUserIdRef.current = trustedUserId;
+        setMintyDataRefreshedAt(pricing.latestCalculatedAt);
+        preparedSnapshot = { pricingContractVersion: 4, preparedState: response.state,
+          mintyDataRefreshedAt: pricing.latestCalculatedAt, chartRange, chartData: trendValues, collectionValueReads: nextPreparedReads,
+          collectionTotal: pricing.total, collectionPricingSummary: pricing, collectionChangeAmount: trendChange,
+          collectionChangePercent: trendPercent, ownedCardCount: summary.totalUnits };
+        return preparedSnapshot;
+      };
+
+      // Request the existing prepared generation once, independently of the
+      // complete placement scan. Partial or previous generations still need
+      // the established current-identity and retained-price reconciliation.
+      preparedRead = (async () => {
+        try {
+          let response = (await withPersonalDataReadTimeout(() => stackrApiClient.collectionValuation())).data;
+          if (!preparedPublicationOpen || !await confirmCurrentRequest()) return { response: null, confirmed: false };
+          const exact = response.summary;
+          if (exact && response.requestedCollectionRevision && exact.collectionRevision
+            && response.requestedCollectionRevision !== exact.collectionRevision) {
+            response = { ...response, state: 'updating' };
+          }
+          const matchingRevision = typeof response.requestedCollectionRevision === 'string'
+            && response.requestedCollectionRevision.trim().length > 0
+            && response.requestedCollectionRevision === exact?.collectionRevision;
+          if (response.state === 'ready' && matchingRevision && exact) {
+            const selected = preferredPreparedValuation(exact);
+            const pricing = isPreparedGeneralValuation(selected) ? preparedGeneralPricingSummary(selected) : preparedPricingSummary(exact);
+            if (pricing && pricing.unpricedUnits === 0) {
+              preparedValuationAvailableRef.current = true;
+              publishPreparedHeadline(response);
+            }
+          }
+          return { response, confirmed: true };
+        } catch (error) {
+          if (isCurrentSource() && isKnownAuthDenial(error)) revokeCollectionDisplay();
+          return (error as { status?: number }).status === 404 ? { response: null } : { response: null, error };
+        }
+      })();
 
       const { binders, ownedRows, cardsByBinder } = await fetchHomeSavedCollection(trustedUserId, {
         signal: controller.signal, isCurrent: isCurrentRequest, forceRefresh: options.forceRefresh,
@@ -1741,6 +1870,7 @@ export default function HubScreen() {
       if (!await confirmCurrentRequest()) return;
       homeLiveMetadataGenerationRef.current = generation;
       collectorDataLoaded = true;
+      setCollectionFactsLoading(false);
       setActiveBinder((current) => current?.id === nextActiveBinder?.id && current && nextActiveBinder
         ? { ...nextActiveBinder, value: current.value, valueAvailable: current.valueAvailable, valueCoverageLabel: current.valueCoverageLabel }
         : nextActiveBinder);
@@ -1787,7 +1917,7 @@ export default function HubScreen() {
       const ownedUnitCount = ownedUnits.reduce((total, unit) => total + unit.quantity, 0);
       if (!await confirmCurrentRequest()) return;
       // Account and collection content can render while exact prices/history load.
-      setOwnedCardCount(ownedUnitCount);
+      if (!preparedHeadlinePublished) setOwnedCardCount(ownedUnitCount);
       setCollectionValueLoading(false);
       const priceInputs = ownedUnits.map(pricingInputForHomeUnit);
       const unavailablePriceResults = () => priceInputs.map((input) => unavailableCollectionPrice(input, {
@@ -1796,10 +1926,11 @@ export default function HubScreen() {
 
       // One private prepared generation replaces the phone-side price fan-out.
       // A 404 or lower-coverage partial summary uses exact stored-price reads.
-      let prepared = null;
-      try { prepared = (await withPersonalDataReadTimeout(() => stackrApiClient.collectionValuation())).data; }
-      catch (error) { if ((error as { status?: number }).status !== 404) throw error; }
-      if (!await confirmCurrentRequest()) return;
+      const preparedResult = await preparedRead;
+      if (preparedResult.error) throw preparedResult.error;
+      let prepared = preparedResult.response;
+      if (preparedResult.confirmed === false || !isCurrentRequest()) return;
+      if (!preparedResult.confirmed && !await confirmCurrentRequest()) return;
       if (prepared) {
         const summary = prepared.summary;
         if (!summary) {
@@ -1831,62 +1962,16 @@ export default function HubScreen() {
           valueCoverageLabel: getCollectionPriceCoverageLabel(isPreparedGeneralValuation(summary)
             ? preparedGeneralPricingSummary(coverage as import('../../lib/preparedCollectionValuation').GeneralPreparedCoverage) ?? preparedPricingSummary(coverage)
             : preparedPricingSummary(coverage)) } : nextActiveBinder;
-        homeLiveValuationGenerationRef.current = generation;
-        homeCollectionSourceChangedRef.current = prepared.state === 'updating';
-        setCollectionTotal(pricing.total);
-        setCollectionPricingSummary(pricing);
-        setOwnedCardCount(summary.totalUnits);
+        const completedPreparedSnapshot = preparedSnapshot ?? publishPreparedHeadline(prepared);
+        const changedDuringRead = summary.totalUnits !== ownedUnitCount;
+        if (changedDuringRead && prepared.state !== 'updating') {
+          homeCollectionSourceChangedRef.current = true;
+          setCollectionPricingWarning('Your collection details changed during this read. Showing the previous complete valuation and its quantities while updates are pending.');
+        }
         setActiveBinder(preparedBinder);
-        // Trend points use the exact stored-price subtotal, even when the headline
-        // uses a labelled general estimate. The server scope fixes holdings and
-        // priced identities, so partial coverage remains comparable without
-        // pretending unpriced cards were worth £0.
-        const exactPricing = preparedPricingSummary(exactSummary);
-        const serverTrend = preparedValuationTrend(exactSummary, chartRange === '7D' ? 7 : 30);
-        const currentExactRead: CollectionValueRead | null = exactPricing?.total != null && exactSummary.trend?.scope
-          ? { capturedAt: exactSummary.calculatedAt, total: exactPricing.total, totalUnits: exactPricing.totalUnits,
-              pricedUnits: exactPricing.pricedUnits, identitySignature: exactSummary.trend.scope }
-          : null;
-        const nextPreparedReads = currentExactRead
-          ? [...collectionValueReadsRef.current, currentExactRead].slice(-MAX_COLLECTION_VALUE_READS)
-          : collectionValueReadsRef.current;
-        const savedTrend = serverTrend.values.length >= 2 || !currentExactRead
-          ? []
-          : getComparableCollectionValueReads(nextPreparedReads, currentExactRead, chartRange === '7D' ? 7 : 30);
-        const trendValues = serverTrend.values.length >= 2 ? serverTrend.values : savedTrend;
-        const trendChange = trendValues.length >= 2 ? trendValues.at(-1)! - trendValues[0] : 0;
-        const trendPercent = trendValues.length >= 2 && trendValues[0] !== 0 ? trendChange / trendValues[0] * 100 : 0;
-        const trendSubset = Boolean(exactPricing && exactPricing.pricedUnits < exactPricing.totalUnits);
-        setChartData(trendValues);
-        setCollectionChangeAmount(trendChange);
-        setCollectionChangePercent(trendPercent);
-        setTrendCoverageLabel(trendValues.length >= 2
-          ? trendSubset
-            ? `Comparable history covers ${exactPricing?.pricedUnits ?? 0} of ${exactPricing?.totalUnits ?? 0} cards; unpriced cards are excluded, not £0.`
-            : `Comparable history covers all ${exactPricing?.totalUnits ?? 0} priced cards.`
-          : exactPricing?.pricedUnits
-            ? `One genuine valuation is recorded for ${exactPricing.pricedUnits} of ${exactPricing.totalUnits} cards. Another comparable valuation is needed for a graph.`
-            : 'No comparable collection valuation has been recorded yet.');
-        setTrendProvenanceLabel(trendValues.length >= 2
-          ? serverTrend.values.length >= 2 ? 'Recorded collection valuations' : 'Persisted collection reads'
-          : null);
-        setTrendIsSubset(trendSubset);
-        collectionValueReadsRef.current = nextPreparedReads;
-        const refreshReport = exactSummary.refresh && prepared.refreshRequest
-          ? `Refresh review: ${exactSummary.refresh.accepted} accepted, ${exactSummary.refresh.alreadyPending} already pending, ${exactSummary.refresh.unsupported} unsupported, ${exactSummary.refresh.unresolved} unresolved, ${exactSummary.refresh.blocked} blocked, ${exactSummary.refresh.remaining ?? 0} remaining.` : null;
-        setCollectionPricingWarning(prepared.state === 'updating'
-          ? 'Updating your collection. Showing the previous complete valuation and its quantities.' + (refreshReport ? ' ' + refreshReport : '')
-          : refreshReport ?? (exactSummary.cycle?.overdue ? 'The catalogue pricing cycle is overdue. Showing stored estimates and their recorded coverage.'
-          : pricing.state === 'partial' ? getCollectionPriceCoverageLabel(pricing) + '. Showing the known subtotal.'
-          : pricing.staleUnits ? 'Older stored estimates retained with their original source dates.' : null));
-        hasSuccessfulCollectionPricingRef.current = pricing.total != null;
-        cachedHomeSnapshotUserIdRef.current = trustedUserId;
-        setMintyDataRefreshedAt(pricing.latestCalculatedAt);
-        void saveHomeCollectionCache(trustedUserId, { pricingContractVersion: 4, preparedState: prepared.state,
-          mintyDataRefreshedAt: pricing.latestCalculatedAt, chartRange, chartData: trendValues, collectionValueReads: nextPreparedReads,
-          collectionTotal: pricing.total, collectionPricingSummary: pricing, collectionChangeAmount: trendChange,
-          collectionChangePercent: trendPercent, ownedCardCount: summary.totalUnits, activeBinder: preparedBinder,
-          duplicateSummary: nextDuplicateSummary, missingCards: nextMissingCards });
+        if (completedPreparedSnapshot) void saveHomeCollectionCache(trustedUserId, { ...completedPreparedSnapshot,
+          preparedState: changedDuringRead ? 'updating' : prepared.state,
+          activeBinder: preparedBinder, duplicateSummary: nextDuplicateSummary, missingCards: nextMissingCards });
         return;
       }
       setOwnedCardCount(ownedUnitCount);
@@ -2067,18 +2152,17 @@ export default function HubScreen() {
       return;
 
     } catch (error) {
+      // Detail failures paint immediately, independently of the bounded summary.
+      if (isCurrentSource()) {
+        if (isKnownAuthDenial(error)) revokeCollectionDisplay();
+        if (!collectorDataLoaded) setHomeDataError('Could not refresh collector data. Pull to refresh or try again.');
+        setCollectionFactsLoading(false);
+      }
+      // The summary may still publish useful coverage; its rejection is handled.
+      if (preparedRead) await preparedRead;
       console.log('Failed to calculate collection value', error);
       if (!isCurrentSource()) return;
-      if (accountDenied) {
-        // A known server denial revokes the local preview; a transport failure
-        // only leaves an honestly labelled saved display.
-        homeSessionExpiresAtRef.current = 0;
-        cachedHomeSnapshotUserIdRef.current = null;
-        hasSuccessfulCollectionPricingRef.current = false;
-        hasLoadedCollectionValueRef.current = false;
-        collectionPriceEvidenceRef.current = [];
-        setOwnedCardCount(0);
-      }
+      if (accountDenied) revokeCollectionDisplay();
       if (!hasSuccessfulCollectionPricingRef.current) {
         setCollectionTotal(null);
         setCollectionPricingSummary(EMPTY_COLLECTION_PRICING);
@@ -2095,7 +2179,10 @@ export default function HubScreen() {
           setMissingCards([]);
         }
       }
-      if (hasSuccessfulCollectionPricingRef.current) {
+      if (!collectorDataLoaded) setHomeDataError('Could not refresh collector data. Pull to refresh or try again.');
+      if (preparedHeadlinePublished && !accountDenied) {
+        setCollectionValueError(null);
+      } else if (hasSuccessfulCollectionPricingRef.current) {
         setCollectionPricingWarning(homeCollectionSourceChangedRef.current
           ? 'Your collection changed. Refresh failed; showing previous saved totals.'
           : 'Refresh failed. Showing your last successful stored-price read.');
@@ -2105,9 +2192,11 @@ export default function HubScreen() {
         if (!collectorDataLoaded) setHomeDataError('Could not refresh collector data. Pull to refresh or try again.');
       }
     } finally {
+      preparedPublicationOpen = false;
       if (isCurrentSource()) {
         hasLoadedCollectionValueRef.current = true;
         setCollectionValueLoading(false);
+        setCollectionFactsLoading(false);
       }
     }
   }, [applyCachedHomeCollection, chartRange, refreshMintyForMarketSignature, saveHomeCollectionCache]);
@@ -2721,6 +2810,7 @@ export default function HubScreen() {
       setMintyInsightError(null);
       setMintyInsightRefreshing(false);
       setCollectionValueLoading(Boolean(nextUserId));
+      setCollectionFactsLoading(Boolean(nextUserId));
       setChaseLoading(Boolean(nextUserId));
       setActivityLoading(Boolean(nextUserId));
 
@@ -3078,20 +3168,32 @@ export default function HubScreen() {
           </TouchableOpacity>
         </View>
 
-        {collectionValueLoading && !activeBinder && !homeDataError ? (
+        {collectionFactsLoading && !activeBinder && !homeDataError ? (
           <StackrLoadingScreen compact message="Loading your collection" />
         ) : null}
         <HomeCollectionHero
           binder={activeBinder}
           missingCards={missingCards}
           chaseCards={chaseCards}
-          isLoading={collectionValueLoading && !activeBinder && !homeDataError}
+          isLoading={collectionFactsLoading && !activeBinder && !homeDataError}
           error={homeDataError}
           onRetry={loadCollectionValue}
           onOpenBinder={(binderId) => router.push({ pathname: '/binder/[id]', params: { id: binderId } })}
           onCreateBinder={() => router.push('/binder/new')}
           onCardPress={openChaseCardDetail}
         />
+
+        {/* HOME STATUS NOTICES */}
+        {homeDataError && activeBinder ? (
+          <Text accessibilityRole="alert" style={{ marginBottom: 16, color: theme.colors.textSoft, fontSize: 13, lineHeight: 19 }}>
+            {homeDataError} Showing previously saved binder details.
+          </Text>
+        ) : null}
+        {ownedCardCount === 0 && !collectionValueLoading && collectionPricingWarning ? (
+          <Text accessibilityRole="alert" style={{ marginBottom: 16, color: theme.colors.textSoft, fontSize: 13, lineHeight: 19 }}>
+            {collectionPricingWarning}
+          </Text>
+        ) : null}
 
         {/* VALUE TRACKER */}
         {ownedCardCount > 0 || collectionValueLoading || collectionValueError ? (
@@ -3136,7 +3238,7 @@ export default function HubScreen() {
           chaseCount={chaseCards.length}
           hasCollectionMovement={hasHomeMovement}
           movementSummary={homeMovementSummary}
-          isLoading={(collectionValueLoading && duplicateSummary.count === 0 && !homeDataError) || chaseLoading}
+          isLoading={(collectionFactsLoading && duplicateSummary.count === 0 && !homeDataError) || chaseLoading}
           error={chaseError}
           onDuplicates={() => router.push('/duplicates' as any)}
           onChase={() => openChaseSheet()}

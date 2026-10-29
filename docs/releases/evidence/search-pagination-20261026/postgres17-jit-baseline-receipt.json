@@ -1,0 +1,37 @@
+{
+  "source": "7b04b1f20b215d859e8ae6a862e66b9439e6b4c4",
+  "sourceTree": "b2b6ee9a61429abe4a791dc994cb29f442081438",
+  "workflow": 40357474455,
+  "job": 121693682981,
+  "artifact": 12665274836,
+  "zipSha256": "7857e80f362d6fac1ad5c08b543a4349c0919e187b1d243711b359f419159667",
+  "proposalSha256": "a84c5dd7f6ee6e5fc1831b37b7ef5319554325e48efb40ed7d3be8baae5f1ed3",
+  "classification": "isolated CI PostgreSQL17.6 synthetic fixtures; not production API or phone",
+  "finding": "JIT accounts for 88-99% of observed first-page execution; hold SQL readiness pending function-local A/B",
+  "cohorts": [
+    {
+      "name": "empty",
+      "functionMedianMs": 95.20206899999994,
+      "executionMs": 84.346,
+      "jitMs": 83.491
+    },
+    {
+      "name": "small",
+      "functionMedianMs": 102.50970049999978,
+      "executionMs": 88.395,
+      "jitMs": 85.869
+    },
+    {
+      "name": "large",
+      "functionMedianMs": 113.1343925000001,
+      "executionMs": 105.949,
+      "jitMs": 93.713
+    },
+    {
+      "name": "multilingual",
+      "functionMedianMs": 117.86705750000056,
+      "executionMs": 97.184,
+      "jitMs": 90.146
+    }
+  ]
+}

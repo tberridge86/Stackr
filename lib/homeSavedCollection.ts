@@ -12,6 +12,61 @@ import {
 // Home needs the complete snapshot; larger bounded pages reduce cold round trips.
 const HOME_SAVED_FACTS_PAGE_SIZE = 500;
 
+// Match Home and the existing read-only binder-reopen snapshot contract.
+// Provider prices are read separately; slab/cert/export/lifecycle metadata is
+// not consumed by either view and must not expand this private display cache.
+const HOME_SAVED_CARD_COLUMNS = [
+  'id', 'binder_id', 'card_id', 'set_id', 'language', 'api_card_id', 'api_set_id',
+  'card_name', 'card_number', 'image_url', 'set_name', 'set_total', 'slot_order',
+  'owned', 'owned_quantity', 'condition', 'grade_company', 'grade', 'notes', 'created_at',
+] as const;
+type HomeSavedCardProjection = Pick<BinderCardRecord, typeof HOME_SAVED_CARD_COLUMNS[number]>;
+const OPTIONAL_HOME_SAVED_COLUMNS = new Set<string>(['language', 'grade_company', 'grade']);
+
+function missingOptionalHomeColumn(error: unknown, columns: readonly string[]): string | null {
+  const candidate = error as { code?: unknown; message?: unknown } | null;
+  if (typeof candidate?.message !== 'string') return null;
+  const message = candidate.message;
+  const match = candidate.code === '42703'
+    ? message.match(/^column\s+(?:(?:"?public"?\.)?"?binder_cards"?\.)?"?(language|grade_company|grade)"?\s+does not exist\b/i)
+    : candidate.code === 'PGRST204'
+      ? message.match(/^Could not find the ['"](language|grade_company|grade)['"] column of ['"]binder_cards['"] in the schema cache\b/i)
+      : null;
+  const column = match?.[1]?.toLowerCase();
+  return column && OPTIONAL_HOME_SAVED_COLUMNS.has(column) && columns.includes(column) ? column : null;
+}
+
+async function readHomeSavedCards(
+  binderIds: string[], signal: AbortSignal, assertCurrent: () => Promise<void>,
+): Promise<BinderCardRecord[]> {
+  let columns: readonly string[] = HOME_SAVED_CARD_COLUMNS;
+  for (let retries = 0; ; retries += 1) {
+    let queryCount = 0;
+    try {
+      const rows = await readUiCollectionChunks<HomeSavedCardProjection>(
+        binderIds,
+        (ids) => {
+          queryCount += 1;
+          return supabase.from('binder_cards').select(columns.join(',')).in('binder_id', ids)
+            .returns<HomeSavedCardProjection[]>();
+        },
+        (row, ids) => ids.includes(row.binder_id),
+        { signal, assertCurrent, pageSize: HOME_SAVED_FACTS_PAGE_SIZE },
+      );
+      return rows.map(row => ({
+        ...row, ebay_price: null, tcg_price: null, cardmarket_price: null, last_price_update: null,
+      }));
+    } catch (error) {
+      const missingColumn = missingOptionalHomeColumn(error, columns);
+      // Legacy schema errors must occur before any page succeeds. Never rescan
+      // a partially read collection or treat auth/network failures as schema drift.
+      if (queryCount !== 1 || retries >= OPTIONAL_HOME_SAVED_COLUMNS.size || !missingColumn) throw error;
+      await assertCurrent();
+      columns = columns.filter(column => column !== missingColumn);
+    }
+  }
+}
+
 type HomeSavedCollectionOptions = {
   onBindersReady?: (binders: BinderRecord[]) => void;
   isCurrent?: () => boolean;
@@ -45,11 +100,7 @@ async function readHomeSavedCollection(userId: string, options: HomeSavedCollect
         await assertCurrent();
         if (binders.some((binder) => binder.user_id !== userId)) throw new Error('The collection account changed. Please retry.');
         options.onBindersReady?.(binders);
-        const rows = await readUiCollectionChunks<BinderCardRecord>(
-          binders.map((binder) => binder.id),
-          (ids) => supabase.from('binder_cards').select('*').in('binder_id', ids),
-          (row, ids) => ids.includes(row.binder_id), { signal, assertCurrent, pageSize: HOME_SAVED_FACTS_PAGE_SIZE },
-        );
+        const rows = await readHomeSavedCards(binders.map(binder => binder.id), signal, assertCurrent);
         const cardsByBinder = new Map<string, BinderCardRecord[]>(binders.map((binder) => [binder.id, []]));
         for (const row of rows) cardsByBinder.get(row.binder_id)!.push(row);
         return { binders, cardsByBinder };

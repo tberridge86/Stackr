@@ -1,0 +1,651 @@
+{
+  "observedAt": "2026-10-26T13:35Z",
+  "source": "Read-only production information_schema.columns and pg_indexes; no customer data",
+  "columns": [
+    {
+      "udt": "uuid",
+      "type": "uuid",
+      "table": "binder_cards",
+      "column": "id",
+      "nullable": "NO",
+      "position": 1
+    },
+    {
+      "udt": "uuid",
+      "type": "uuid",
+      "table": "binder_cards",
+      "column": "binder_id",
+      "nullable": "NO",
+      "position": 2
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binder_cards",
+      "column": "card_id",
+      "nullable": "NO",
+      "position": 3
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binder_cards",
+      "column": "set_id",
+      "nullable": "NO",
+      "position": 4
+    },
+    {
+      "udt": "int4",
+      "type": "integer",
+      "table": "binder_cards",
+      "column": "slot_order",
+      "nullable": "NO",
+      "position": 5
+    },
+    {
+      "udt": "bool",
+      "type": "boolean",
+      "table": "binder_cards",
+      "column": "owned",
+      "nullable": "NO",
+      "position": 6
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binder_cards",
+      "column": "notes",
+      "nullable": "NO",
+      "position": 7
+    },
+    {
+      "udt": "timestamptz",
+      "type": "timestamp with time zone",
+      "table": "binder_cards",
+      "column": "created_at",
+      "nullable": "NO",
+      "position": 8
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binder_cards",
+      "column": "api_card_id",
+      "nullable": "YES",
+      "position": 9
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binder_cards",
+      "column": "card_name",
+      "nullable": "YES",
+      "position": 10
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binder_cards",
+      "column": "api_set_id",
+      "nullable": "YES",
+      "position": 11
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binder_cards",
+      "column": "card_number",
+      "nullable": "YES",
+      "position": 12
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binder_cards",
+      "column": "image_url",
+      "nullable": "YES",
+      "position": 13
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binder_cards",
+      "column": "set_name",
+      "nullable": "YES",
+      "position": 14
+    },
+    {
+      "udt": "int4",
+      "type": "integer",
+      "table": "binder_cards",
+      "column": "set_total",
+      "nullable": "YES",
+      "position": 15
+    },
+    {
+      "udt": "numeric",
+      "type": "numeric",
+      "table": "binder_cards",
+      "column": "ebay_price",
+      "nullable": "YES",
+      "position": 16
+    },
+    {
+      "udt": "numeric",
+      "type": "numeric",
+      "table": "binder_cards",
+      "column": "tcg_price",
+      "nullable": "YES",
+      "position": 17
+    },
+    {
+      "udt": "numeric",
+      "type": "numeric",
+      "table": "binder_cards",
+      "column": "cardmarket_price",
+      "nullable": "YES",
+      "position": 18
+    },
+    {
+      "udt": "timestamptz",
+      "type": "timestamp with time zone",
+      "table": "binder_cards",
+      "column": "last_price_update",
+      "nullable": "YES",
+      "position": 19
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binder_cards",
+      "column": "condition",
+      "nullable": "YES",
+      "position": 20
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binder_cards",
+      "column": "grade_company",
+      "nullable": "YES",
+      "position": 21
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binder_cards",
+      "column": "grade",
+      "nullable": "YES",
+      "position": 22
+    },
+    {
+      "udt": "int4",
+      "type": "integer",
+      "table": "binder_cards",
+      "column": "owned_quantity",
+      "nullable": "NO",
+      "position": 23
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binder_cards",
+      "column": "language",
+      "nullable": "NO",
+      "position": 24
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binder_cards",
+      "column": "cert_number",
+      "nullable": "YES",
+      "position": 25
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binder_cards",
+      "column": "slab_image_url",
+      "nullable": "YES",
+      "position": 26
+    },
+    {
+      "udt": "numeric",
+      "type": "numeric",
+      "table": "binder_cards",
+      "column": "graded_value",
+      "nullable": "YES",
+      "position": 27
+    },
+    {
+      "udt": "timestamptz",
+      "type": "timestamp with time zone",
+      "table": "binder_cards",
+      "column": "graded_at",
+      "nullable": "YES",
+      "position": 28
+    },
+    {
+      "udt": "uuid",
+      "type": "uuid",
+      "table": "binder_cards",
+      "column": "owned_card_variant_id",
+      "nullable": "YES",
+      "position": 29
+    },
+    {
+      "udt": "int8",
+      "type": "bigint",
+      "table": "binder_cards",
+      "column": "lifecycle_version",
+      "nullable": "NO",
+      "position": 30
+    },
+    {
+      "udt": "uuid",
+      "type": "uuid",
+      "table": "binders",
+      "column": "id",
+      "nullable": "NO",
+      "position": 1
+    },
+    {
+      "udt": "uuid",
+      "type": "uuid",
+      "table": "binders",
+      "column": "user_id",
+      "nullable": "NO",
+      "position": 2
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binders",
+      "column": "name",
+      "nullable": "NO",
+      "position": 3
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binders",
+      "column": "color",
+      "nullable": "NO",
+      "position": 4
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binders",
+      "column": "type",
+      "nullable": "NO",
+      "position": 5
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binders",
+      "column": "source_set_id",
+      "nullable": "YES",
+      "position": 6
+    },
+    {
+      "udt": "timestamptz",
+      "type": "timestamp with time zone",
+      "table": "binders",
+      "column": "created_at",
+      "nullable": "NO",
+      "position": 7
+    },
+    {
+      "udt": "bool",
+      "type": "boolean",
+      "table": "binders",
+      "column": "is_public",
+      "nullable": "YES",
+      "position": 8
+    },
+    {
+      "udt": "numeric",
+      "type": "numeric",
+      "table": "binders",
+      "column": "ebay_value",
+      "nullable": "YES",
+      "position": 9
+    },
+    {
+      "udt": "numeric",
+      "type": "numeric",
+      "table": "binders",
+      "column": "tcg_value",
+      "nullable": "YES",
+      "position": 10
+    },
+    {
+      "udt": "numeric",
+      "type": "numeric",
+      "table": "binders",
+      "column": "cardmarket_value",
+      "nullable": "YES",
+      "position": 11
+    },
+    {
+      "udt": "timestamptz",
+      "type": "timestamp with time zone",
+      "table": "binders",
+      "column": "last_value_update",
+      "nullable": "YES",
+      "position": 12
+    },
+    {
+      "udt": "int4",
+      "type": "integer",
+      "table": "binders",
+      "column": "sort_order",
+      "nullable": "YES",
+      "position": 13
+    },
+    {
+      "udt": "_text",
+      "type": "ARRAY",
+      "table": "binders",
+      "column": "gradient",
+      "nullable": "YES",
+      "position": 14
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binders",
+      "column": "cover_key",
+      "nullable": "YES",
+      "position": 15
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binders",
+      "column": "edition",
+      "nullable": "YES",
+      "position": 16
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binders",
+      "column": "default_condition",
+      "nullable": "NO",
+      "position": 17
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binders",
+      "column": "card_mode",
+      "nullable": "NO",
+      "position": 18
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binders",
+      "column": "default_grade_company",
+      "nullable": "YES",
+      "position": 19
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binders",
+      "column": "default_grade",
+      "nullable": "YES",
+      "position": 20
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binders",
+      "column": "language",
+      "nullable": "NO",
+      "position": 21
+    },
+    {
+      "udt": "bool",
+      "type": "boolean",
+      "table": "binders",
+      "column": "master_set_enabled",
+      "nullable": "NO",
+      "position": 22
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binders",
+      "column": "source_set_logo_url",
+      "nullable": "YES",
+      "position": 23
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binders",
+      "column": "source_set_symbol_url",
+      "nullable": "YES",
+      "position": 24
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binders",
+      "column": "source_set_cover_url",
+      "nullable": "YES",
+      "position": 25
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binders",
+      "column": "source_set_display_name",
+      "nullable": "YES",
+      "position": 26
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binders",
+      "column": "source_set_local_name",
+      "nullable": "YES",
+      "position": 27
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "binders",
+      "column": "source_set_english_display_name",
+      "nullable": "YES",
+      "position": 28
+    },
+    {
+      "udt": "int8",
+      "type": "bigint",
+      "table": "binders",
+      "column": "lifecycle_version",
+      "nullable": "NO",
+      "position": 29
+    },
+    {
+      "udt": "uuid",
+      "type": "uuid",
+      "table": "user_card_variants",
+      "column": "id",
+      "nullable": "NO",
+      "position": 1
+    },
+    {
+      "udt": "uuid",
+      "type": "uuid",
+      "table": "user_card_variants",
+      "column": "user_id",
+      "nullable": "NO",
+      "position": 2
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "user_card_variants",
+      "column": "card_id",
+      "nullable": "NO",
+      "position": 3
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "user_card_variants",
+      "column": "set_id",
+      "nullable": "NO",
+      "position": 4
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "user_card_variants",
+      "column": "variant",
+      "nullable": "NO",
+      "position": 5
+    },
+    {
+      "udt": "timestamptz",
+      "type": "timestamp with time zone",
+      "table": "user_card_variants",
+      "column": "created_at",
+      "nullable": "YES",
+      "position": 6
+    },
+    {
+      "udt": "int4",
+      "type": "integer",
+      "table": "user_card_variants",
+      "column": "quantity",
+      "nullable": "NO",
+      "position": 7
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "user_card_variants",
+      "column": "condition",
+      "nullable": "NO",
+      "position": 8
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "user_card_variants",
+      "column": "grade_company",
+      "nullable": "NO",
+      "position": 9
+    },
+    {
+      "udt": "text",
+      "type": "text",
+      "table": "user_card_variants",
+      "column": "grade",
+      "nullable": "NO",
+      "position": 10
+    },
+    {
+      "udt": "timestamptz",
+      "type": "timestamp with time zone",
+      "table": "user_card_variants",
+      "column": "updated_at",
+      "nullable": "NO",
+      "position": 11
+    },
+    {
+      "udt": "int8",
+      "type": "bigint",
+      "table": "user_card_variants",
+      "column": "lifecycle_version",
+      "nullable": "NO",
+      "position": 12
+    }
+  ],
+  "indexes": [
+    {
+      "name": "binder_cards_binder_id_card_id_unique",
+      "table": "binder_cards",
+      "definition": "CREATE UNIQUE INDEX binder_cards_binder_id_card_id_unique ON public.binder_cards USING btree (binder_id, card_id)"
+    },
+    {
+      "name": "binder_cards_binder_owned_idx",
+      "table": "binder_cards",
+      "definition": "CREATE INDEX binder_cards_binder_owned_idx ON public.binder_cards USING btree (binder_id, owned, card_id, set_id)"
+    },
+    {
+      "name": "binder_cards_owned_variant_idx",
+      "table": "binder_cards",
+      "definition": "CREATE INDEX binder_cards_owned_variant_idx ON public.binder_cards USING btree (owned_card_variant_id)"
+    },
+    {
+      "name": "binder_cards_pkey",
+      "table": "binder_cards",
+      "definition": "CREATE UNIQUE INDEX binder_cards_pkey ON public.binder_cards USING btree (id)"
+    },
+    {
+      "name": "idx_binder_cards_binder_id",
+      "table": "binder_cards",
+      "definition": "CREATE INDEX idx_binder_cards_binder_id ON public.binder_cards USING btree (binder_id)"
+    },
+    {
+      "name": "idx_binder_cards_binder_slot_order",
+      "table": "binder_cards",
+      "definition": "CREATE INDEX idx_binder_cards_binder_slot_order ON public.binder_cards USING btree (binder_id, slot_order)"
+    },
+    {
+      "name": "binders_pkey",
+      "table": "binders",
+      "definition": "CREATE UNIQUE INDEX binders_pkey ON public.binders USING btree (id)"
+    },
+    {
+      "name": "binders_user_language_idx",
+      "table": "binders",
+      "definition": "CREATE INDEX binders_user_language_idx ON public.binders USING btree (user_id, language)"
+    },
+    {
+      "name": "idx_binders_user_id",
+      "table": "binders",
+      "definition": "CREATE INDEX idx_binders_user_id ON public.binders USING btree (user_id)"
+    },
+    {
+      "name": "user_card_variants_id_uidx",
+      "table": "user_card_variants",
+      "definition": "CREATE UNIQUE INDEX user_card_variants_id_uidx ON public.user_card_variants USING btree (id)"
+    },
+    {
+      "name": "user_card_variants_owned_identity_uidx",
+      "table": "user_card_variants",
+      "definition": "CREATE UNIQUE INDEX user_card_variants_owned_identity_uidx ON public.user_card_variants USING btree (user_id, card_id, set_id, variant, condition, grade_company, grade)"
+    },
+    {
+      "name": "user_card_variants_pkey",
+      "table": "user_card_variants",
+      "definition": "CREATE UNIQUE INDEX user_card_variants_pkey ON public.user_card_variants USING btree (id)"
+    },
+    {
+      "name": "user_card_variants_user_card_idx",
+      "table": "user_card_variants",
+      "definition": "CREATE INDEX user_card_variants_user_card_idx ON public.user_card_variants USING btree (user_id, card_id, set_id)"
+    },
+    {
+      "name": "user_card_variants_user_quantity_idx",
+      "table": "user_card_variants",
+      "definition": "CREATE INDEX user_card_variants_user_quantity_idx ON public.user_card_variants USING btree (user_id, quantity) WHERE (quantity IS NOT NULL)"
+    },
+    {
+      "name": "user_card_variants_user_set_card_idx",
+      "table": "user_card_variants",
+      "definition": "CREATE INDEX user_card_variants_user_set_card_idx ON public.user_card_variants USING btree (user_id, set_id, card_id)"
+    }
+  ]
+}

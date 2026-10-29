@@ -1,0 +1,2 @@
+npm notice run Stackr-native@1.0.6 npx
+npm notice run eslint scripts/measure-home-authenticated.mjs scripts/lib/home-authenticated-measurement.mjs scripts/test-home-authenticated-measurement.mjs

@@ -1,0 +1,49 @@
+{
+  "recordedAt": "2026-10-26T09:14:52.064Z",
+  "runtimeBaseline": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+  "branch": "codex/home-cold-payload-20261026",
+  "sourceFiles": [
+    {
+      "path": "lib/homeSavedCollection.ts",
+      "gitBlob": "2f4e58e034ccea7d0b01548c1b8bb4c53b8c303a",
+      "sha256": "93eb34e6ec4a571c0a90a2bb90f2aa8e8e066f4ffa8970ad8714f98b1b1f6a30"
+    },
+    {
+      "path": "scripts/test-home-saved-cache.mjs",
+      "gitBlob": "876f7d4e9bfb1365ae7dd4aaec1683919c1e30bc",
+      "sha256": "a7a3513ed410d96bcfa64f7e442ccdd8ddb7be9d8d3b6292910fc5e4cf2246db"
+    },
+    {
+      "path": "scripts/test-home-saved-collection.ts",
+      "gitBlob": "e7fbc8b737dd337e82a5c5505e56a437c255df6d",
+      "sha256": "6c0dcedf6ebee6042d7eb49c778d1eecfc83d140e25553e768905a8b3bfcb754"
+    },
+    {
+      "path": "scripts/measure-home-payload-query-plans.mjs",
+      "gitBlob": "2dacc2f9dc0d5a2d3ab9994f872c5a9d4d7cd403",
+      "sha256": "3af8eb7424f2a620a470f8623d2cb7c00bf9a9b279ae9996dc756402e9b1e1ae"
+    }
+  ],
+  "sourceState": "reviewed local candidate; publication commit and exact-head hosted CI recorded in its PR",
+  "deployedApp": {
+    "version": "1.0.6",
+    "build": 61,
+    "source": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7"
+  },
+  "backend": {
+    "source": "7c1acd409680b38d5913d8cae76df560b5d91daa",
+    "healthAttestsPrefix": "7c1acd409680",
+    "deployment": "dfc23b30-9675-4ba0-ad2b-9f1875302747"
+  },
+  "gateway": {
+    "url": "https://api.stackrtcg.com",
+    "workerRevisionVerified": false
+  },
+  "database": {
+    "project": "oakdbbzdqwurpjnoqhmu",
+    "profileCanonicalVersion": "20261025154000",
+    "profileAppliedVersion": "20261026072532",
+    "newMigrations": []
+  },
+  "installedCandidatePhoneAcceptance": false
+}

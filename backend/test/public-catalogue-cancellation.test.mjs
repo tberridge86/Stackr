@@ -48,7 +48,7 @@ async function fixture(t, transport, routerOptions = {}) {
       // Like native fetch, an already-aborted request never reaches the network.
       init.signal?.throwIfAborted();
       if (closing) return json([]);
-      const call = { url: new URL(String(input)), signal: init.signal };
+      const call = { url: new URL(String(input)), method: init.method ?? 'GET', signal: init.signal };
       calls.push(call);
       const hold = (body = false) => {
         const promise = new Promise((resolve, reject) => {
@@ -112,7 +112,15 @@ async function fixture(t, transport, routerOptions = {}) {
   };
 }
 
-function normal({ url }) {
+function isSearchPageProbe({ url }) {
+  return url.pathname === '/rest/v1/rpc/catalogue_search_identity_page_v1';
+}
+
+function normal(call) {
+  const { url } = call;
+  if (isSearchPageProbe(call)) {
+    return json({ code: 'PGRST202', message: 'Could not find api.catalogue_search_identity_page_v1' }, 404);
+  }
   const table = url.pathname.split('/').at(-1);
   return json(table === 'catalogue_card_names' ? [name]
     : table === 'catalogue_cards' ? [card]
@@ -132,28 +140,38 @@ function assertFacts(result, withImage = true) {
   if (withImage) assert.equal(hit.card.variants[0].image.sourceAttribution, image.source_attribution);
 }
 
-for (const body of [false, true]) {
-  test(`public disconnect cancels essential SDK ${body ? 'body read' : 'request'} and prevents next strategy`, async (t) => {
-    const f = await fixture(t, (_call, hold) => hold(body));
-    const request = f.request();
-    await until(() => f.calls.length === 1, 'Essential lookup started');
-    request.req.destroy();
-    await until(() => f.calls[0].signal?.aborted, 'Disconnected SDK work was aborted');
-    await until(() => f.settled === 1, 'Service settled after SDK cancellation');
-    assert.equal(f.calls.length, 1, 'No fallback strategy is dispatched');
-    assert.equal(f.responses[0].writes, 0, 'Closed response is not written');
-  });
+for (const phase of ['RPC', 'legacy GET']) {
+  for (const body of [false, true]) {
+    test(`public disconnect cancels essential ${phase} ${body ? 'body read' : 'request'} and prevents next strategy`, async (t) => {
+      const f = await fixture(t, (call, hold) => phase === 'legacy GET' && isSearchPageProbe(call) ? undefined : hold(body));
+      const request = f.request();
+      await until(() => f.calls.length === (phase === 'RPC' ? 1 : 2), 'Essential lookup started');
+      const essential = f.calls.at(-1);
+      assert.equal(essential.method, phase === 'RPC' ? 'POST' : 'GET');
+      request.req.destroy();
+      await until(() => essential.signal?.aborted, 'Disconnected SDK work was aborted');
+      await until(() => f.settled === 1, 'Service settled after SDK cancellation');
+      assert.equal(f.calls.length, phase === 'RPC' ? 1 : 2, 'No fallback strategy is dispatched');
+      assert.equal(f.calls.filter(isSearchPageProbe).length, 1, 'The new RPC phase remains visible');
+      assert.equal(f.responses[0].writes, 0, 'Closed response is not written');
+    });
+  }
 }
 
-test('disconnect during SDK 503 backoff prevents another network attempt', async (t) => {
-  const f = await fixture(t, () => json({ message: 'fixture unavailable' }, 503, { 'Retry-After': '1' }));
+test('disconnect during SDK 503 GET backoff prevents another network attempt', async (t) => {
+  const f = await fixture(t, call => isSearchPageProbe(call) ? undefined
+    : json({ message: 'fixture unavailable' }, 503, { 'Retry-After': '1' }));
   const request = f.request();
-  await until(() => f.calls.length === 1, '503 lookup started');
-  // The real SDK has consumed the immediate response and entered retry sleep.
+  await until(() => f.calls.some(call => call.method === 'GET'), '503 GET lookup started after the missing-function probe');
+  const firstGet = f.calls.find(call => call.method === 'GET');
+  // The real SDK has consumed the immediate GET response and entered retry sleep.
   await new Promise(resolve => setTimeout(resolve, 30));
   request.req.destroy();
   await until(() => f.settled === 1, 'Abort interrupts SDK backoff', 350);
-  assert.equal(f.calls.length, 1);
+  assert.equal(f.calls.filter(isSearchPageProbe).length, 1);
+  assert.equal(f.calls.filter(call => call.method === 'GET').length, 1, 'No GET retry reaches the transport');
+  assert.equal(firstGet.signal.aborted, true);
+  assert.equal(f.calls.length, 2, 'Only the explicit missing-RPC probe and first GET were sent');
   assert.equal(f.responses[0].writes, 0);
 });
 
@@ -176,6 +194,9 @@ test('normal finish preserves cache contract and removes disconnect listeners', 
   const f = await fixture(t);
   const result = await f.request().result;
   assertFacts(result);
+  assert.equal(f.calls.filter(isSearchPageProbe).length, 1, 'The unavailable RPC is explicitly probed');
+  assert.equal(result.body.meta.pagination.continuationAvailable, false);
+  assert.equal(result.body.meta.pagination.unavailableReason, 'search_pagination_unavailable');
   assert.match(result.headers['cache-control'], /^public,/);
   assert.ok(result.headers.etag); assert.ok(result.headers['x-request-id']);
   assert.equal(f.contexts[0].catalogueReadSignal.aborted, false);

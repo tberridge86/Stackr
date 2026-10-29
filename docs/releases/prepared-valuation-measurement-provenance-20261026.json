@@ -1,0 +1,72 @@
+{
+  "recordedAt": "2026-10-26T14:08:37.184Z",
+  "baseline": "b50547de15a49712d99c67829c38a0bb1d9428b6",
+  "priorEvidence": "f0e3c333eafaf4dd6e32e634a5689e96affa2d92",
+  "main": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+  "pullRequest": 446,
+  "sourceFiles": [
+    {
+      "path": ".github/workflows/platform-ci.yml",
+      "gitBlob": "ec2782d66de01a1fc0e01c73cff225e1a2fe59bc",
+      "sha256": "0a7168b6db2cb28d24a071c65200dbf94fe7ba469837578eccfff7f5a7cff076"
+    },
+    {
+      "path": "scripts/measure-home-authenticated.mjs",
+      "gitBlob": "de8df29292725f2390f22328de1258995394d55c",
+      "sha256": "3f97f56f5dfb99395b7abc779d6a0fea65fcfc2e87aac6e6d2fd7b60481df73f"
+    },
+    {
+      "path": "scripts/lib/home-authenticated-measurement.mjs",
+      "gitBlob": "db3abceb67d461a2d0892dc023e1b5275d9102d9",
+      "sha256": "daf6babfb52d29107c3ff4666c05687f212b9d19cc0998807aa051b5ac58335f"
+    },
+    {
+      "path": "scripts/test-home-authenticated-measurement.mjs",
+      "gitBlob": "11860493f33a69bdbb046b3c87855d101660b81e",
+      "sha256": "0ee3a5383bb7ce539ffa102cd49d44023d039ce7b60d9f0891fdf353d64c0fab"
+    },
+    {
+      "path": "scripts/measure-prepared-valuation-query-plans.mjs",
+      "gitBlob": "2161afd2abaf3af58b94cb37505be8107c1bae52",
+      "sha256": "366b739c2882737763fff815c1166ab8d691a98b055de54b59d743d917aade65"
+    },
+    {
+      "path": "scripts/test-fixtures/prepared-valuation-db.mjs",
+      "gitBlob": "6233d3a573b1d67930692a2701e6a8c286d073ba",
+      "sha256": "a6cc6b9da174b3d92c37803bc709be6a9d824a9b5f6f315d7f7b9f4b2b2a17d7"
+    },
+    {
+      "path": "scripts/test-fixtures/prepared-valuation-schema.json",
+      "gitBlob": "829b052244a1589cc748ea8902e80340a86cf973",
+      "sha256": "76ae9495eb07ed816f4ea014a7128463aed0b6a2e1d5b1f0d1f77f46b3d901e4"
+    }
+  ],
+  "appRuntimeChanged": false,
+  "backendRuntimeChanged": false,
+  "newMigrationRegistered": false,
+  "sqlApplied": false,
+  "proposalSha256": "82baae83c24b91c2cbcbaacfeba51a4bdee81505f14b616b3d080c31d441fa80",
+  "rollbackSha256": "2f868d282abc4969d539bba4c53c9d4a0cbfd12c06d77ddf4089423dfb97b795",
+  "local": {
+    "sqlPlanAndInvariants": "pass; independently rerun",
+    "authenticatedOfflineTooling": "pass; independently rerun",
+    "scopedLint": "pass; initial missing Buffer import corrected",
+    "yamlParse": "pass",
+    "mockedHttpRoute": "blocked locally by EACCES127.0.0.1; now explicitly included in hosted CI"
+  },
+  "hostedPrivateHomeMeasured": false,
+  "installedPhoneVerified": false,
+  "review": "Final publication GO including portable fixture and CI wiring; independent local SQL and offline tool suites passed",
+  "exactHeadCi": {
+    "result": "three workflows passed; verified PR merge tree equals candidate; architecture job checks out head",
+    "receipt": "docs/releases/prepared-valuation-measurement-ci-20261026.json",
+    "releaseCandidateGate": "skipped"
+  },
+  "deployed": false,
+  "merged": false,
+  "candidateSource": "df45ef50420cab9dae7e2fefb6e929cd1110363c",
+  "candidateTree": "053a5475c9f5136c85629717eace0e1b52fb0ed9",
+  "evidenceBranch": "codex/prepared-valuation-measurement-evidence-20261026",
+  "evidenceIsAppSource": false,
+  "hostedMockedRoute": "pass; isolated HTTP fixture only, not hosted private API measurement"
+}

@@ -1,0 +1,1 @@
+Home owned pricing units retain canonical ownership, defaults and ambiguity safeguards.

@@ -1,0 +1,42 @@
+{
+  "observedAt": "2026-10-26T08:55:50.687Z",
+  "main": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+  "runtimeReads": [
+    {
+      "url": "https://pocketvault-production.up.railway.app/health",
+      "status": 200,
+      "body": {
+        "ok": true,
+        "service": "stackr-api",
+        "time": "2026-10-26T08:49:01.613Z",
+        "runtime": {
+          "gitCommit": "7c1acd409680",
+          "gitCommitSource": "bundled_workflow_sha",
+          "deploymentId": "dfc23b30-9675-4ba0-ad2b-9f1875302747",
+          "railwayEnvironment": "production",
+          "supabaseProjectRef": "oakdbbzdqwurpjnoqhmu"
+        }
+      }
+    },
+    {
+      "url": "https://api.stackrtcg.com/v1/health",
+      "status": 200,
+      "body": {
+        "data": {
+          "status": "ok",
+          "service": "stackr-api-gateway",
+          "apiVersion": "1"
+        },
+        "meta": {
+          "requestId": "4d567831-fc74-4d88-bccf-6a2d58e6d703",
+          "apiVersion": "1",
+          "generatedAt": "2026-10-26T08:49:02.042Z"
+        }
+      }
+    }
+  ],
+  "designatedCredentialNames": [],
+  "authenticatedHomeCapVerified": false,
+  "privateHomeLatencyVerified": false,
+  "phoneAcceptanceVerified": false
+}

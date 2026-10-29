@@ -1,0 +1,32 @@
+{
+  "source": "7b04b1f20b215d859e8ae6a862e66b9439e6b4c4",
+  "workflow": 40357474455,
+  "job": 121693683115,
+  "scope": "npm audit --omit=dev; report totals, not proven runtime exploitability",
+  "counts": {
+    "root": {
+      "critical": 0,
+      "high": 19,
+      "moderate": 10,
+      "low": 0
+    },
+    "backend": {
+      "critical": 0,
+      "high": 3,
+      "moderate": 4,
+      "low": 0
+    },
+    "gateway": {
+      "critical": 0,
+      "high": 0,
+      "moderate": 0,
+      "low": 0
+    }
+  },
+  "gate": {
+    "maxCritical": 0,
+    "maxHigh": "unbounded"
+  },
+  "finding": "Green dependency CI does not mean high-severity advisories were resolved; package-specific exposure and upgrade paths still require triage",
+  "changes": "none; lockfiles unchanged"
+}

@@ -1,0 +1,12 @@
+{"scenario":"actual A default/assets binder edit -> logout -> B same edit route","leakedPrivateName":true,"readsForB":0}
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+AssertionError [ERR_ASSERTION]: a new account must not receive the previous private binder from the real default/assets cache
+    at main (D:\workspace\Stackr-home-payload-20261026\scripts\test-binder-account-cache-runtime.ts:151:10) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 'Private A name',
+  expected: 'Private A name',
+  operator: 'notStrictEqual',
+  diff: 'simple'
+}

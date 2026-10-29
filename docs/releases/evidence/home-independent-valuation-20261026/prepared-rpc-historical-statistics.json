@@ -1,0 +1,25 @@
+{
+  "observedAt": "2026-10-26T12:48:13.635Z",
+  "project": "oakdbbzdqwurpjnoqhmu",
+  "source": "read-only extensions.pg_stat_statements and pg_stat_statements_info",
+  "statsReset": "2026-09-09 01:02:41.421084+00",
+  "dominantRpc": {
+    "queryid": "4518689398486247357",
+    "calls": 448,
+    "rows": 448,
+    "total_exec_time": 686100.734481999,
+    "mean_exec_time": 1531.47485375446,
+    "min_exec_time": 64.19389,
+    "max_exec_time": 7908.504088,
+    "shared_blks_hit": 360763,
+    "shared_blks_read": 184
+  },
+  "normalizedStatement": "WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT \"p_owner\", \"p_refresh\" FROM json_to_record(pgrst_payload.json_data) AS _(\"p_owner\" uuid, \"p_refresh\" boolean) LIMIT $4) pgrst_body , LATERAL (SELECT \"api\".\"request_collection_valuation\"(\"p_owner\" := pgrst_body.\"p_owner\", \"p_refresh\" := pgrst_body.\"p_refresh\") pgrst_scalar) pgrst_call) SELECT $5::bigint AS total_result_set, $6 AS page_total, coalesce(json_agg(_postgrest_t.pgrst_scalar)->$7, $8) AS body, nullif(current_setting($9, $10), $11) AS response_headers, nullif(current_setting($12, $13), $14) AS response_status, $15 AS response_inserted FROM (SELECT \"request_collection_valuation\".* FROM \"pgrst_source\" AS \"request_collection_valuation\"   LIMIT $2 OFFSET $3) _postgrest_t",
+  "limitations": [
+    "Historical aggregate, not matched before/after or per-account cold/warm.",
+    "p_refresh is a bind parameter, so GET(false) and explicit refresh(true) cannot be separated.",
+    "Includes SQL execution and waiting represented by pg_stat_statements; excludes client/network/render timing.",
+    "No valuation RPC, price refresh, EXPLAIN ANALYZE or application job executed by this inspection.",
+    "Function evaluates collection inputs and updates generation metadata; representative safe local plans are required before any DB rewrite/index proposal."
+  ]
+}

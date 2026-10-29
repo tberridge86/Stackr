@@ -1,0 +1,9 @@
+{
+  "exportSource": "086959bc9ea267b3a0d528890291286225c39b49",
+  "candidateSource": "b50547de15a49712d99c67829c38a0bb1d9428b6",
+  "candidateTree": "0abfa5b88a0d445b18e8ca4cb12a8217b96cdc8e",
+  "onlyChanges": "Documentation and scripts/test-gate0-dynamic-copy.ts",
+  "remainingTrackedTreeDiffExitCode": 0,
+  "appAndBuildInputsIdentical": true,
+  "exportRerunOnFinalHead": false
+}

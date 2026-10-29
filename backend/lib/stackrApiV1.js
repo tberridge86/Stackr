@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
+import { readCatalogueSearchPage } from './catalogueSearchPagination.js';
 import { Buffer } from 'node:buffer';
 import { getEnglishCardDisplaySupplement } from './cardDisplayNames.js';
 import { findNativeCardNamesForEnglishQuery, normalizeCardEnglishSearchText } from './cardNameTranslations.js';
@@ -880,31 +881,40 @@ async function fetchSetsByIds(supabase, setIds) {
 
 async function fetchSetIdsByCode(supabase, setCode, language) {
   if (!setCode) return [];
-  let query = table(supabase, 'api', 'catalogue_sets')
-    .select('set_id,set_code,language_code')
-    .ilike('set_code', setCode)
-    .limit(25);
-  query = applyLanguageFilter(query, language);
-  const rows = await queryRows(query);
-  const exactIds = rows
-    .filter((row) => normalizeSearchText(row.set_code) === normalizeSearchText(setCode))
-    .map((row) => row.set_id);
+  async function readCode(code, codeLanguage) {
+    const ids = [];
+    const seen = new Set();
+    let after = null;
+    for (let page = 0; page < 64; page++) {
+      let query = table(supabase, 'api', 'catalogue_sets')
+        .select('set_id,set_code,language_code').ilike('set_code', escapeLikePattern(code))
+        .order('set_id', { ascending: true }).limit(50);
+      query = applyLanguageFilter(query, codeLanguage);
+      if (after) query = query.gt('set_id', after);
+      const rows = await queryRows(query);
+      if (!Array.isArray(rows) || rows.length > 50) throw new ApiError(502, 'invalid_search_sets', 'Search set identities were incomplete.');
+      if (!rows.length) return ids;
+      for (const row of rows) {
+        if (!isUuid(row.set_id) || seen.has(row.set_id) || (after && row.set_id <= after)
+          || normalizeSearchText(row.set_code) !== normalizeSearchText(code)
+          || (codeLanguage && row.language_code !== codeLanguage)) {
+          throw new ApiError(502, 'invalid_search_sets', 'Search set identities were inconsistent.');
+        }
+        seen.add(row.set_id);
+        ids.push(row.set_id);
+        after = row.set_id;
+      }
+    }
+    throw new ApiError(503, 'search_set_page_budget_exceeded', 'Search could not establish all matching sets. Please retry.');
+  }
+  const exactIds = await readCode(setCode, language);
   if (exactIds.length || (language && language !== 'en')) return exactIds;
-
-  // Legacy English provider IDs omit the leading zero retained by the
-  // canonical Mega Evolution catalogue. Never apply these aliases abroad.
   const englishAliases = {
     me1: 'me01', me2: 'me02', me2pt5: 'me02.5',
     me3: 'me03', me4: 'me04', me5: 'me05',
   };
   const alias = englishAliases[String(setCode).toLowerCase()];
-  if (!alias) return [];
-  const aliasRows = await queryRows(table(supabase, 'api', 'catalogue_sets')
-    .select('set_id,set_code,language_code')
-    .eq('set_code', alias)
-    .eq('language_code', 'en')
-    .limit(25));
-  return aliasRows.map((row) => row.set_id);
+  return alias ? readCode(alias, 'en') : [];
 }
 
 async function searchProviderCardReference(supabase, parsed, limit, language, useIndexedCollectors = false) {
@@ -1782,6 +1792,101 @@ export function createCatalogueV1Service(options) {
         translatedNames,
       ];
 
+      const translationMatches = findNativeCardNamesForEnglishQuery(q, language);
+      const translationSelector = translationMatches.length ? {
+        kind: 'nativeTranslation', language, setIds: selectedSetId ? [selectedSetId] : [],
+        nativeNames: translationMatches,
+      } : null;
+      const common = { language, setIds: selectedSetId ? [selectedSetId] : [] };
+      const collectorSelector = (number, setIds = common.setIds) => {
+        const scopedIds = selectedSetId ? setIds.filter(id => id === selectedSetId) : setIds;
+        if (selectedSetId && !scopedIds.length) return null;
+        return { ...common, kind: 'collector', collectorNumber: normalizeCollectorNumber(number), setIds: scopedIds };
+      };
+      const setCollectorStrategy = { id: 'setCollector', reason: 'exact_set_code_collector_number',
+        extra: { matchedSetCode: parsed.setCode }, select: async () => {
+          if (!parsed.setCode || !parsed.setCollectorNumber) return null;
+          const ids = requestedSetIds ?? await fetchSetIdsByCode(searchSupabase, parsed.setCode, language);
+          return ids.length ? collectorSelector(parsed.setCollectorNumber, ids) : null;
+        } };
+      const nameSelector = (types) => ({ ...common, kind: 'name', normalized: parsed.normalized, nameTypes: [...types] });
+      const pagedStrategies = requestedSetIds?.length ? [setCollectorStrategy] : [
+        { id: 'canonical', reason: 'exact_canonical_id', select: async () => (
+          isCanonicalCatalogueKey(parsed.raw) || isUuid(parsed.raw)
+            ? { ...common, kind: 'canonical', reference: isUuid(parsed.raw) ? correctedCatalogueCardId(parsed.raw) : parsed.raw.toLowerCase() } : null
+        ) },
+        setCollectorStrategy,
+        { id: 'external', reason: 'exact_external_id', select: async () => ({ ...common, kind: 'external', reference: parsed.raw }) },
+        { id: 'providerReference', reason: 'exact_set_code_collector_number', select: async () => {
+          const match = parsed.raw.match(/^([a-z][a-z0-9._-]{1,19})-([a-z]{0,4}\d+[a-z]?(?:\/\d+)?)$/i);
+          if (!match) return null;
+          const ids = await fetchSetIdsByCode(searchSupabase, match[1], language);
+          const selector = ids.length ? collectorSelector(match[2], ids) : null;
+          return selector ? { ...selector, matchedSetCode: match[1] } : null;
+        } },
+        { id: 'nameInSet', reason: 'exact_name_in_set', includeTranslations: true, select: async () => {
+          if (parsed.compactTokens.length < 2) return null;
+          const clauses = [];
+          for (let index = 0; index < parsed.tokens.length; index++) {
+            const code = parsed.tokens[index];
+            if (!/[0-9]/.test(code) || code.length > 20) continue;
+            const normalized = normalizeSearchText(parsed.tokens.filter((_, i) => i !== index).join(' '));
+            if (!normalized) continue;
+            const ids = await fetchSetIdsByCode(searchSupabase, code, language);
+            if (ids.length) clauses.push({ normalized, setIds: ids, matchedSetCode: code });
+          }
+          return clauses.length ? { ...common, kind: 'name', nameTypes: [...EXACT_NAME_TYPES, ...ALIAS_NAME_TYPES], clauses } : null;
+        } },
+        { id: 'collector', reason: selectedSetId ? 'exact_collector_number_in_set' : 'exact_collector_number',
+          select: async () => parsed.collectorNumber ? collectorSelector(parsed.collectorNumber) : null },
+        { id: 'exactName', reason: 'exact_name', includeTranslations: true,
+          select: async () => parsed.normalized ? nameSelector(EXACT_NAME_TYPES) : null },
+        { id: 'aliasName', includeTranslations: true, select: async () => parsed.normalized ? nameSelector(ALIAS_NAME_TYPES) : null },
+        { id: 'fuzzyName', reason: 'fuzzy_name', includeTranslations: true, select: async () => {
+          if (!parsed.normalized || parsed.normalized.length < 2) return null;
+          const tokens = parsed.normalized.split(/\s+/).filter(Boolean);
+          const reorder = !parsed.collectorNumber && tokens.length >= 2 && tokens.length <= 6
+            && /^[\p{L}\p{M}\s-]+$/u.test(parsed.raw) && new Set(tokens).size === tokens.length
+            && tokens.some(token => token.length >= 3) && tokens.every(token => /^[\p{L}-]+$/u.test(token));
+          return { ...common, kind: 'fuzzyName', patterns: reorder
+            ? tokens.map(token => '%' + escapeLikePattern(token) + '%')
+            : ['%' + parsed.normalized.replace(/[%_]/g, ' ').replace(/\s+/g, '%') + '%'] };
+        } },
+        { id: 'translations', select: async () => translationSelector },
+      ];
+      const paged = await readCatalogueSearchPage({
+        client: searchSupabase,
+        input: { q, normalizedQuery: parsed.normalized, language, setId: selectedSetId, limit, cursor: input.cursor },
+        strategies: pagedStrategies, translationSelector,
+        toResult: (row, strategy, entry) => toSearchResult(row,
+          strategy.reason ?? (entry.matchedNameType === 'alias' ? 'exact_alias' : 'exact_translated_name'), {
+            ...(entry.matchedName ? { matchedName: entry.matchedName, matchedNameType: entry.matchedNameType } : {}),
+            ...strategy.extra,
+            ...((entry.matchedSetCode ?? strategy.selector.matchedSetCode)
+              ? { matchedSetCode: entry.matchedSetCode ?? strategy.selector.matchedSetCode } : {}),
+          }),
+        toSetResult: (row, strategy) => toSetSearchResult(row, strategy.reason),
+        verifyTranslation: (row) => {
+          const supplement = getEnglishCardDisplaySupplement({ id: row.printing_id, language: row.language_code,
+            localName: row.card_native_name, englishDisplayName: row.card_english_display_name,
+            englishDisplayProvenance: row.card_english_display_provenance });
+          const translated = normalizeCardEnglishSearchText(supplement?.value);
+          const needle = normalizeCardEnglishSearchText(q);
+          return translated && translated.includes(needle)
+            ? toSearchResult(row, translated === needle ? 'exact_translated_name' : 'fuzzy_name', {
+                matchedName: supplement.value, matchedNameType: 'published_english_translation',
+              }) : null;
+        },
+      });
+      if (paged) {
+        const cards = paged.results.filter(result => result.type === 'card' && result.card).map(result => result.card);
+        const hydratedCards = await enrichCardImagesOptionally(assetSupabase, cards, assetUrlOptions);
+        let index = 0;
+        return { query: q, normalizedQuery: parsed.normalized, ...paged,
+          results: paged.results.map(result => result.type === 'card' && result.card
+            ? { ...result, card: hydratedCards[index++] } : result) };
+      }
+
       for (const strategy of strategies) {
         let results = (await strategy()).filter((result) => (
           (!language || result.languageCode === language)
@@ -1828,7 +1933,7 @@ export function createCatalogueV1Service(options) {
               const card = hydratedCards[cardIndex++];
               return { ...result, card };
             }),
-            pagination: { limit, nextCursor: null },
+            pagination: { limit, nextCursor: null, continuationAvailable: false, unavailableReason: 'search_pagination_unavailable' },
           };
         }
       }
@@ -1837,7 +1942,7 @@ export function createCatalogueV1Service(options) {
         query: q,
         normalizedQuery: parsed.normalized,
         results: [],
-        pagination: { limit, nextCursor: null },
+        pagination: { limit, nextCursor: null, continuationAvailable: false, unavailableReason: 'search_pagination_unavailable' },
       };
     },
   };

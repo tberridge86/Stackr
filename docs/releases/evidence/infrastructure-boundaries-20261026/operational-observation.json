@@ -1,0 +1,191 @@
+{
+  "observedAt": "2026-10-26T14:54:00Z",
+  "mode": "read-only hosted metadata; no worker/job/migration invoked",
+  "backend": {
+    "gitCommit": "7c1acd409680",
+    "deploymentId": "dfc23b30-9675-4ba0-ad2b-9f1875302747",
+    "environment": "production",
+    "project": "oakdbbzdqwurpjnoqhmu",
+    "healthStatus": 200,
+    "observedAt": "2026-10-26T14:49:38Z"
+  },
+  "gateway": {
+    "route": "/v1/health",
+    "status": 200,
+    "activeWorkerRevision": "unattested",
+    "incorrectRouteProbe": {
+      "route": "/health",
+      "status": 400,
+      "expectedContract": "invalid_path"
+    }
+  },
+  "valuation": [
+    {
+      "observed_at": "2026-10-26 14:49:27.062003+00",
+      "prepared_owner_count": 1,
+      "active_leases": 0,
+      "expired_leases": 1,
+      "pending_explicit_refreshes": 0,
+      "oldest_explicit_refresh": null,
+      "latest_calculation": "2026-10-26 14:36:25.378355+00",
+      "latest_refresh_completion": "2026-10-12 19:39:39.70896+00"
+    }
+  ],
+  "bulk": [
+    {
+      "qualification": {
+        "groups": [
+          {
+            "groups": 350,
+            "status": "unmapped",
+            "oldest_retry": null,
+            "active_leases": 0,
+            "last_completion": "2026-10-25T22:43:53.145425+00:00",
+            "expired_running_leases": 0
+          },
+          {
+            "groups": 331,
+            "status": "complete",
+            "oldest_retry": null,
+            "active_leases": 0,
+            "last_completion": "2026-10-25T23:19:44.611342+00:00",
+            "expired_running_leases": 0
+          }
+        ],
+        "observedAt": "2026-10-26T14:53:38.567199+00:00",
+        "latestBulkRun": {
+          "id": "a53adabd-a308-4615-afb0-b3cbacaa9569",
+          "provider": "tcgcsv",
+          "dataset_at": "2026-10-25T20:05:50+00:00",
+          "started_at": "2026-10-25T20:18:23.856894+00:00"
+        },
+        "cardmarketFeeds": [
+          {
+            "kind": "products",
+            "retryAfter": null,
+            "activeLease": null,
+            "expiredLease": null,
+            "lastSucceeded": "2026-10-22T00:22:18.957477+00:00"
+          },
+          {
+            "kind": "price_guide",
+            "retryAfter": null,
+            "activeLease": null,
+            "expiredLease": null,
+            "lastSucceeded": "2026-10-22T02:19:00.249381+00:00"
+          }
+        ]
+      }
+    }
+  ],
+  "capacity": [
+    {
+      "capacity_snapshot": {
+        "workMem": "2184kB",
+        "database": "postgres",
+        "sessions": [
+          {
+            "count": 8,
+            "state": "background"
+          },
+          {
+            "count": 1,
+            "state": "active"
+          },
+          {
+            "count": 23,
+            "state": "idle"
+          }
+        ],
+        "observedAt": "2026-10-26T14:53:57.470842+00:00",
+        "maxConnections": "60",
+        "postgresVersion": "17.6",
+        "statementTimeout": "2min",
+        "reservedSuperuserConnections": "3"
+      }
+    }
+  ],
+  "recentWorkflows": [
+    {
+      "id": 40338142157,
+      "name": "Stackr Price Refresh",
+      "status": "pending",
+      "conclusion": null,
+      "event": "schedule",
+      "createdAt": "2026-10-26T14:16:38Z",
+      "sha": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7"
+    },
+    {
+      "id": 40334409745,
+      "name": "Stackr Price Refresh",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "event": "schedule",
+      "createdAt": "2026-10-26T13:52:21Z",
+      "sha": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7"
+    },
+    {
+      "id": 40332484095,
+      "name": "Stackr Price Refresh",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "event": "schedule",
+      "createdAt": "2026-10-26T13:39:21Z",
+      "sha": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7"
+    },
+    {
+      "id": 40330708816,
+      "name": "Stackr Price Refresh",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "event": "schedule",
+      "createdAt": "2026-10-26T13:27:21Z",
+      "sha": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7"
+    },
+    {
+      "id": 40329011594,
+      "name": "Stackr Price Refresh",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "event": "schedule",
+      "createdAt": "2026-10-26T13:15:27Z",
+      "sha": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7"
+    },
+    {
+      "id": 40327394505,
+      "name": "Owner Provider Price Refresh",
+      "status": "completed",
+      "conclusion": "skipped",
+      "event": "schedule",
+      "createdAt": "2026-10-26T13:03:48Z",
+      "sha": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7"
+    },
+    {
+      "id": 40323294355,
+      "name": "Stackr Price Refresh",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "event": "schedule",
+      "createdAt": "2026-10-26T12:32:17Z",
+      "sha": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7"
+    },
+    {
+      "id": 40309362033,
+      "name": "Production API Monitor",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "schedule",
+      "createdAt": "2026-10-26T10:41:26Z",
+      "sha": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7"
+    }
+  ],
+  "inProgressWorkflows": [],
+  "limits": [
+    "Empty catalogue_price_cycles is not absence of bulk feed work; different ledgers.",
+    "One 32-session snapshot (including8background) againstmax_connections60 is not a capacity/SLO test.",
+    "Last monitor success at10:41 does not prove10minute alert cadence.",
+    "Pending/cancelled GitHub events do not prove a provider execution failure.",
+    "350unmapped bulk groups remain unresolved; completed groups do not prove full pricing coverage.",
+    "QA credentials still unconfigured; no authenticated client/phone results."
+  ]
+}

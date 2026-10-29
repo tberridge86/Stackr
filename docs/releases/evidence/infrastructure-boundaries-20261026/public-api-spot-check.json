@@ -1,0 +1,146 @@
+{
+  "recordedAt": "2026-10-26T15:45:31.122Z",
+  "conditions": "Workspace Node fetch, no user authentication,3 back-to-back reads per endpoint, endpoints concurrent, no server-cache purge, first-observed and repeat public samples only. Not Home, phone or assured cold/warm origin measurements.",
+  "samples": [
+    {
+      "url": "https://api.stackrtcg.com/v1/catalog/manifest",
+      "samples": [
+        {
+          "sample": 1,
+          "status": 200,
+          "elapsedMs": 2080.448999999091,
+          "decodedUtf8Bytes": 2183,
+          "cacheStatus": "DYNAMIC",
+          "cacheControl": "public, max-age=60, stale-while-revalidate=300, stale-if-error=300",
+          "age": null,
+          "contentLength": null
+        },
+        {
+          "sample": 2,
+          "status": 200,
+          "elapsedMs": 674.9394000004977,
+          "decodedUtf8Bytes": 2183,
+          "cacheStatus": "DYNAMIC",
+          "cacheControl": "public, max-age=60, stale-while-revalidate=300, stale-if-error=300",
+          "age": null,
+          "contentLength": null
+        },
+        {
+          "sample": 3,
+          "status": 200,
+          "elapsedMs": 607.9253999982029,
+          "decodedUtf8Bytes": 2183,
+          "cacheStatus": "DYNAMIC",
+          "cacheControl": "public, max-age=60, stale-while-revalidate=300, stale-if-error=300",
+          "age": null,
+          "contentLength": null
+        }
+      ]
+    },
+    {
+      "url": "https://api.stackrtcg.com/v1/search?q=SV2a%20157&limit=1",
+      "samples": [
+        {
+          "sample": 1,
+          "status": 200,
+          "elapsedMs": 2876.6417000014335,
+          "decodedUtf8Bytes": 7270,
+          "cacheStatus": "DYNAMIC",
+          "cacheControl": "public, max-age=30, stale-while-revalidate=120, stale-if-error=120",
+          "age": null,
+          "contentLength": null
+        },
+        {
+          "sample": 2,
+          "status": 200,
+          "elapsedMs": 106.08840000070632,
+          "decodedUtf8Bytes": 7270,
+          "cacheStatus": "HIT",
+          "cacheControl": "public, max-age=30, stale-while-revalidate=120, stale-if-error=120",
+          "age": "0",
+          "contentLength": null
+        },
+        {
+          "sample": 3,
+          "status": 200,
+          "elapsedMs": 107.8422999996692,
+          "decodedUtf8Bytes": 7270,
+          "cacheStatus": "HIT",
+          "cacheControl": "public, max-age=30, stale-while-revalidate=120, stale-if-error=120",
+          "age": "0",
+          "contentLength": null
+        }
+      ]
+    },
+    {
+      "url": "https://api.stackrtcg.com/v1/assets/manifest?limit=1",
+      "samples": [
+        {
+          "sample": 1,
+          "status": 200,
+          "elapsedMs": 2197.67689999938,
+          "decodedUtf8Bytes": 5420,
+          "cacheStatus": "DYNAMIC",
+          "cacheControl": "public, max-age=60, stale-while-revalidate=300, stale-if-error=300",
+          "age": null,
+          "contentLength": null
+        },
+        {
+          "sample": 2,
+          "status": 200,
+          "elapsedMs": 296.60500000044703,
+          "decodedUtf8Bytes": 5420,
+          "cacheStatus": "HIT",
+          "cacheControl": "public, max-age=60, stale-while-revalidate=300, stale-if-error=300",
+          "age": "0",
+          "contentLength": null
+        },
+        {
+          "sample": 3,
+          "status": 200,
+          "elapsedMs": 281.04059999994934,
+          "decodedUtf8Bytes": 5420,
+          "cacheStatus": "HIT",
+          "cacheControl": "public, max-age=60, stale-while-revalidate=300, stale-if-error=300",
+          "age": "0",
+          "contentLength": null
+        }
+      ]
+    },
+    {
+      "url": "https://api.stackrtcg.com/v1/pokemon/pikachu/cards?limit=1",
+      "samples": [
+        {
+          "sample": 1,
+          "status": 200,
+          "elapsedMs": 2599.040400000289,
+          "decodedUtf8Bytes": 1605,
+          "cacheStatus": "DYNAMIC",
+          "cacheControl": "public, max-age=60, stale-while-revalidate=300, stale-if-error=300",
+          "age": null,
+          "contentLength": null
+        },
+        {
+          "sample": 2,
+          "status": 200,
+          "elapsedMs": 313.78890000097454,
+          "decodedUtf8Bytes": 1605,
+          "cacheStatus": "HIT",
+          "cacheControl": "public, max-age=60, stale-while-revalidate=300, stale-if-error=300",
+          "age": "0",
+          "contentLength": null
+        },
+        {
+          "sample": 3,
+          "status": 200,
+          "elapsedMs": 302.21260000020266,
+          "decodedUtf8Bytes": 1605,
+          "cacheStatus": "HIT",
+          "cacheControl": "public, max-age=60, stale-while-revalidate=300, stale-if-error=300",
+          "age": "0",
+          "contentLength": null
+        }
+      ]
+    }
+  ]
+}

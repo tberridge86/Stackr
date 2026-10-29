@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { invalidateBinderAccountCache, readBinderAccountCache } from './binderAccountCache';
 import { attachLiveTcgdexCardReferences, fetchCardsForSet, normalizePokemonCardLanguage, type PokemonCardLanguage } from './pokemonTcg';
 import { enrichSavedStackrCardArtwork, enrichStackrCardArtworkFromFacts } from './stackrDomainAdapter';
 import { readOptionalCatalogueEnrichment } from './optionalCatalogueEnrichment';
@@ -210,6 +211,7 @@ function getSnapshotPriceCacheKey(cardId: string, language?: string | null) {
 
 export function invalidateBinderCaches(binderId?: string) {
   invalidateRequestCache('binder:catalogue-sets');
+  invalidateBinderAccountCache(binderId);
   bumpCollectionSummaryVersion();
   invalidateRequestCache('binders:');
   if (binderId) {
@@ -574,17 +576,19 @@ export async function fetchBinderById(
   binderId: string,
   options: { includeAssets?: boolean } = {},
 ): Promise<BinderRecord | null> {
-  return getCachedOrFetch(`binder:${binderId}:record:${options.includeAssets === false ? 'facts' : 'assets'}`, BINDER_RECORD_CACHE_TTL_MS, async () => {
+  return readBinderAccountCache(binderId, `record:${options.includeAssets === false ? 'facts' : 'assets'}`, BINDER_RECORD_CACHE_TTL_MS, async (scope) => {
     const { data, error } = await supabase
       .from('binders')
       .select('*')
       .eq('id', binderId)
+      .abortSignal(scope.signal)
       .maybeSingle();
 
     if (error) throw error;
 
     const binder = (data as BinderRecord | null) ?? null;
-    if (!binder) return null;
+    if (binder && binder.id !== binderId) throw new Error('The binder response did not match the requested identity.');
+    if (!binder || (binder.user_id !== scope.userId && binder.is_public !== true)) return null;
 
     return (await attachSetBrandingToBinders([binder], options.includeAssets !== false))[0] ?? binder;
   });
@@ -599,11 +603,13 @@ export async function fetchBinderCards(
   options: { includePrices?: boolean; includeAssets?: boolean } = {},
 ): Promise<BinderCardRecord[]> {
   let catalogueComplete = true;
-  return getCachedOrFetch(
-    `binder:${binderId}:${options.includePrices === false ? 'unpriced-cards' : 'cards'}:${options.includeAssets === false ? 'facts' : 'assets'}`,
+  return readBinderAccountCache(
+    binderId,
+    `${options.includePrices === false ? 'unpriced-cards' : 'cards'}:${options.includeAssets === false ? 'facts' : 'assets'}`,
     BINDER_CARDS_CACHE_TTL_MS,
-    () => fetchBinderCardsUncached(binderId, {
+    (scope) => fetchBinderCardsUncached(binderId, {
       ...options,
+      signal: scope.signal,
       onCatalogueUnavailable: () => { catalogueComplete = false; },
     }),
     { shouldCache: () => catalogueComplete },
@@ -611,8 +617,11 @@ export async function fetchBinderCards(
 }
 
 /** The shared cache owns this budget; one caller leaving cannot cancel another. */
-async function readSavedBinderRows(binderId: string): Promise<BinderCardRecord[]> {
+async function readSavedBinderRows(binderId: string, externalSignal?: AbortSignal): Promise<BinderCardRecord[]> {
   const request = new AbortController();
+  const cancel = () => request.abort();
+  if (externalSignal?.aborted) cancel();
+  externalSignal?.addEventListener('abort', cancel, { once: true });
   let accountId: string | null | undefined;
   const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
     const nextAccountId = session?.user.id ?? null;
@@ -664,13 +673,14 @@ async function readSavedBinderRows(binderId: string): Promise<BinderCardRecord[]
     }, { signal: request.signal });
   } finally {
     subscription.unsubscribe();
+    externalSignal?.removeEventListener('abort', cancel);
     request.abort();
   }
 }
 
 async function fetchBinderCardsUncached(
   binderId: string,
-  options: { includePrices?: boolean; includeAssets?: boolean; onCatalogueUnavailable?: () => void } = {},
+  options: { includePrices?: boolean; includeAssets?: boolean; onCatalogueUnavailable?: () => void; signal?: AbortSignal } = {},
 ): Promise<BinderCardRecord[]> {
   // Identity and ownership reads must not wait for every set's visual manifest.
   const binder = await fetchBinderById(binderId, { includeAssets: false });
@@ -683,7 +693,7 @@ async function fetchBinderCardsUncached(
     || (binder.catalogue_identity_status === 'unresolved' && !binder.language);
   // Once the binder read has passed RLS, ownership and public facts are
   // independent. Start both now; no card rows render before ownership returns.
-  const savedRowsPromise = readSavedBinderRows(binderId);
+  const savedRowsPromise = readSavedBinderRows(binderId, options.signal);
   const setCardsPromise = officialCatalogue && !ambiguousCatalogue
     ? fetchCardsForSet(binder.catalogue_set_id ?? binder.source_set_id as string, {
         language: binderLanguage,

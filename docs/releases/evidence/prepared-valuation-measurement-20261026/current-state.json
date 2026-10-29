@@ -1,0 +1,33 @@
+{
+  "observedAt": "2026-10-26T13:48:48.456Z",
+  "candidateAtStart": "b50547de15a49712d99c67829c38a0bb1d9428b6",
+  "main": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
+  "pr": 446,
+  "prOpen": true,
+  "mergeable": true,
+  "qa": {
+    "credentialFileExists": true,
+    "emailPresent": false,
+    "passwordPresent": false,
+    "authenticatedCallsPerformed": 0
+  },
+  "operations": {
+    "remoteMetadataReads": true,
+    "remoteExplainOnly": true,
+    "remoteExplainAnalyze": false,
+    "valuationRpcInvoked": false,
+    "newMigrationApplied": false,
+    "priceJobTriggered": false
+  },
+  "hostedDatabase": {
+    "version": "17.6",
+    "workMem": "2184kB",
+    "profileCanonicalVersion": "20261025154000",
+    "profileLedgerVersion": "20261026072532"
+  },
+  "limitations": [
+    "Authenticated Home timing and actual Data API cap not verified",
+    "Installed phone acceptance not verified",
+    "Gateway active Worker revision not independently attested"
+  ]
+}

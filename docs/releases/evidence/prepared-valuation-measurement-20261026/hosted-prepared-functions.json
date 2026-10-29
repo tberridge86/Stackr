@@ -1,0 +1,16 @@
+[
+  {
+    "signature": "api.collection_valuation_inputs(uuid)",
+    "provolatile": "s",
+    "prosecdef": false,
+    "proacl": "{postgres=X/postgres,service_role=X/postgres}",
+    "definition": "CREATE OR REPLACE FUNCTION api.collection_valuation_inputs(p_owner uuid)\n RETURNS jsonb\n LANGUAGE sql\n STABLE\n SET search_path TO ''\nAS $function$\n with b as materialized (select * from public.binders where user_id=p_owner),\n o as materialized (select * from public.user_card_variants where user_id=p_owner and quantity>0),\n bc as materialized (select c.* from public.binder_cards c join b on b.id=c.binder_id),\n payload as (select jsonb_build_object(\n   'ownedRows',coalesce((select jsonb_agg(to_jsonb(o) order by id) from o),'[]'::jsonb),\n   'binders',coalesce((select jsonb_agg(to_jsonb(b) order by id) from b),'[]'::jsonb),\n   'binderCards',coalesce((select jsonb_agg(to_jsonb(bc) order by id) from bc),'[]'::jsonb)) body)\n select body || jsonb_build_object('collectionRevision',md5(body::text)) from payload;\n$function$\n"
+  },
+  {
+    "signature": "api.request_collection_valuation(uuid,boolean)",
+    "provolatile": "v",
+    "prosecdef": false,
+    "proacl": "{postgres=X/postgres,service_role=X/postgres}",
+    "definition": "CREATE OR REPLACE FUNCTION api.request_collection_valuation(p_owner uuid, p_refresh boolean DEFAULT false)\n RETURNS jsonb\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare current_revision text; result public.collection_valuation_generations;\nbegin\n select api.collection_valuation_inputs(p_owner)->>'collectionRevision' into current_revision;\n insert into public.collection_valuation_generations(owner_id,refresh_requested_at)\n values(p_owner,case when p_refresh then now() end)\n on conflict(owner_id) do update set\n   requested_at=case when collection_valuation_generations.collection_revision is distinct from current_revision\n      or collection_valuation_generations.calculated_at<now()-interval '3 minutes' then now() else collection_valuation_generations.requested_at end,\n   refresh_requested_at=case when p_refresh and (collection_valuation_generations.refresh_requested_at is null\n      or collection_valuation_generations.refresh_completed_at>=collection_valuation_generations.refresh_requested_at)\n      then now() else collection_valuation_generations.refresh_requested_at end\n returning * into result;\n return jsonb_build_object('state',case when result.summary is null then 'pending'\n   when result.collection_revision is distinct from current_revision or result.requested_at>result.calculated_at then 'updating' else 'ready' end,\n   'requestedCollectionRevision',current_revision,'summary',result.summary,\n   'refreshRequest',case when result.refresh_requested_at is null then null else jsonb_build_object('requestedAt',result.refresh_requested_at,\n     'completedAt',result.refresh_completed_at,'pending',result.refresh_completed_at is null or result.refresh_completed_at<result.refresh_requested_at) end);\nend $function$\n"
+  }
+]

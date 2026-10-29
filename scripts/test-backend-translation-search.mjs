@@ -91,8 +91,18 @@ assert.deepEqual(operations.at(-1).filters.find(([kind]) => kind === 'limit'), [
 const energyCandidates = findNativeCardNamesForEnglishQuery('Energy');
 for (const language of languages) {
   const local = energyCandidates.filter((candidate) => candidate.language === language);
-  assert.ok(local.length > 0 && local.length <= 80, `Broad queries retain bounded candidates for ${language}`);
+  assert.ok(local.length > 0, `Broad queries retain candidates for ${language}`);
+  assert.equal(new Set(local.map(candidate => candidate.nativeName)).size, local.length,
+    'native candidate identities remain deduplicated within a language');
+  assert.deepEqual(findNativeCardNamesForEnglishQuery('Energy', language), local,
+    'selecting one language must retain its complete candidate list');
+  const expected = records.filter(([code, , english]) => code === language
+    && normalizeCardEnglishSearchText(english).includes(normalizeCardEnglishSearchText('Energy')));
+  for (const [, native] of expected) assert.ok(local.some(candidate => candidate.nativeName === native),
+    'every matching approved native-name candidate remains available for exact-printing verification');
 }
+assert.ok(languages.some(language => energyCandidates.filter(candidate => candidate.language === language).length > 80),
+  'broad candidate enumeration must not silently truncate at the old eighty-name boundary');
 const chineseEnergy = energyCandidates.find((candidate) => candidate.language === 'zh-cn');
 const chineseRecord = records.find(([language, native]) => language === chineseEnergy.language && native === chineseEnergy.nativeName);
 const energyResult = await searchPublishedEnglishTranslations(mockClient({ catalogue_cards: [cardRow(chineseRecord, 1020)] }, []),

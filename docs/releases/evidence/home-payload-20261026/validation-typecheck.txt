@@ -1,0 +1,13 @@
+npm notice run Stackr-native@1.0.6 typecheck
+npm notice run tsc --noEmit
+lib/homeSavedCollection.ts(47,9): error TS2345: Argument of type '(ids: string[]) => PostgrestFilterBuilder<any, any, any, GenericStringError[], "binder_cards", unknown, "GET">' is not assignable to parameter of type '(chunk: string[]) => PageQuery<BinderCardRecord>'.
+  Call signature return types 'PostgrestFilterBuilder<any, any, any, GenericStringError[], "binder_cards", unknown, "GET">' and 'PageQuery<BinderCardRecord>' are incompatible.
+    The types of 'then' are incompatible between these types.
+      Type '<TResult1 = PostgrestSingleResponse<GenericStringError[]>, TResult2 = never>(onfulfilled?: ((value: PostgrestSingleResponse<GenericStringError[]>) => TResult1 | PromiseLike<...>) | null | undefined, onrejected?: ((reason: any) => TResult2 | PromiseLike<...>) | ... 1 more ... | undefined) => PromiseLike<...>' is not assignable to type '<TResult1 = { data: BinderCardRecord[] | null; error: unknown; }, TResult2 = never>(onfulfilled?: ((value: { data: BinderCardRecord[] | null; error: unknown; }) => TResult1 | PromiseLike<TResult1>) | null | undefined, onrejected?: ((reason: any) => TResult2 | PromiseLike<...>) | ... 1 more ... | undefined) => Promis...'.
+        Types of parameters 'onfulfilled' and 'onfulfilled' are incompatible.
+          Types of parameters 'value' and 'value' are incompatible.
+            Type 'PostgrestSingleResponse<GenericStringError[]>' is not assignable to type '{ data: BinderCardRecord[] | null; error: unknown; }'.
+              Type 'PostgrestResponseSuccess<GenericStringError[]>' is not assignable to type '{ data: BinderCardRecord[] | null; error: unknown; }'.
+                Types of property 'data' are incompatible.
+                  Type 'GenericStringError[]' is not assignable to type 'BinderCardRecord[]'.
+                    Type '{ error: true; } & String' is missing the following properties from type 'BinderCardRecord': id, binder_id, card_id, set_id, and 17 more.

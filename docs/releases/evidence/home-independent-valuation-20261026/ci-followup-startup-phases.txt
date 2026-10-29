@@ -1,0 +1,25 @@
+Failed to register push token: Error: synthetic token failure
+    at Object.getExpoPushTokenAsync (D:\workspace\Stackr-home-payload-20261026\scripts\test-startup-phases.ts:61:93)
+    at registerPushToken (evalmachine.<anonymous>:82:44)
+Failed to register push token: Error: synthetic profile failure
+    at Object.eq (D:\workspace\Stackr-home-payload-20261026\scripts\test-startup-phases.ts:58:133)
+    at registerPushToken (evalmachine.<anonymous>:99:14)
+Failed to register push token: Error: synthetic token failure
+    at Object.getExpoPushTokenAsync (D:\workspace\Stackr-home-payload-20261026\scripts\test-startup-phases.ts:61:93)
+    at registerPushToken (evalmachine.<anonymous>:82:44)
+Failed to register push token: Error: synthetic token failure
+    at Object.getExpoPushTokenAsync (D:\workspace\Stackr-home-payload-20261026\scripts\test-startup-phases.ts:61:93)
+    at registerPushToken (evalmachine.<anonymous>:82:44)
+Failed to register push token: Error: synthetic token failure
+    at Object.getExpoPushTokenAsync (D:\workspace\Stackr-home-payload-20261026\scripts\test-startup-phases.ts:61:93)
+    at registerPushToken (evalmachine.<anonymous>:82:44)
+Failed to register push token: Error: synthetic token failure
+    at Object.getExpoPushTokenAsync (D:\workspace\Stackr-home-payload-20261026\scripts\test-startup-phases.ts:61:93)
+    at registerPushToken (evalmachine.<anonymous>:82:44)
+Startup phases passed: route/layout handoff, recovery, cancellation, deferred SDK, deduplication and account-safe push registration.
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer
+react-test-renderer is deprecated. See https://react.dev/warnings/react-test-renderer

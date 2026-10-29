@@ -1,0 +1,50 @@
+{
+  "recordedAt": "2026-10-26T15:37:00.817Z",
+  "candidate": "dc1d9dbac708c3a6b039c9a8fd15193eff9bef7f",
+  "tree": "86f6093591e578fdadf88fed754e98c0775bc4bd",
+  "status": "all-applicable-hosted-workflows-pass",
+  "workflows": [
+    {
+      "id": 40348855770,
+      "name": "Stackr Platform CI",
+      "conclusion": "success",
+      "releaseCandidateGate": "skipped"
+    },
+    {
+      "id": 40348855788,
+      "name": "Owner Pricing Identity Tests",
+      "conclusion": "success"
+    },
+    {
+      "id": 40348855775,
+      "name": "Card-first UI validation",
+      "conclusion": "success"
+    },
+    {
+      "id": 40348855842,
+      "name": "Validate binder local-first retrieval",
+      "conclusion": "success"
+    }
+  ],
+  "previousFailedCheckpoint": {
+    "sha": "c9d245b2d2de6d78de62856023f90608a63d7fd4",
+    "workflow": 40347915383,
+    "reason": "retrieval-parallel VM fixture omitted real binder-account dependency",
+    "repair": "dc1d9db fixture-only independently reviewed; unchanged assertions;12casespass"
+  },
+  "postgres17Evidence": {
+    "source": "c9d245b2d2de6d78de62856023f90608a63d7fd4",
+    "workflow": 40347916602,
+    "job": 121659711884,
+    "artifact": 12662905937,
+    "zipSha256": "da3349902c1bbea69618c0266c26e1ec38dbb91448aa4cf24e0e431258d28d66",
+    "file": "prepared-postgres17.json",
+    "largeBeforeMedianMs": 73.724464,
+    "largeAfterMedianMs": 48.741687,
+    "classification": "isolated PostgreSQL17.6 CI synthetic fixtures; not production or device latency"
+  },
+  "merged": false,
+  "deployed": false,
+  "phoneVerified": false,
+  "newMigrationsApplied": false
+}

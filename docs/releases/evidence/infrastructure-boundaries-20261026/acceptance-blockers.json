@@ -1,0 +1,10 @@
+{
+  "checkedAt": "2026-10-26T16:27:47.523Z",
+  "configPath": "D:/workspace/stackr-qa.local.json",
+  "emailConfigured": false,
+  "passwordConfigured": false,
+  "credentialsExposed": false,
+  "authenticatedHomeMeasurement": "blocked",
+  "installedPhoneAcceptance": "unverified_no_device_interface",
+  "lastAttestedDistributedBuild": "1.0.6 (61); does not contain candidate fixes"
+}

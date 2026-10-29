@@ -3,6 +3,13 @@ import { getSimplifiedChineseSetLogoSourceForSet } from '../../lib/simplifiedChi
 import { StackrBrowseToolbar, StackrBrowseFilterSheet, StackrBrowseFilterGroup } from '../../components/StackrBrowseControls';
 import { STACKR_ICON_OUTLINE, StackrNavigationIcon } from '../../components/StackrNavigationIcon';
 import { groupDiscoverSets as groupSetsBySeries, isDiscoverDateGroup } from '../../lib/discoverSetGroups';
+import {
+  isFuturePokemonSetRelease,
+  normalizeDiscoverSetSearch as normalizeSetSearchText,
+  selectUpcomingPokemonSets,
+  upcomingPokemonSetStatus,
+  type UpcomingPokemonSet,
+} from '../../lib/upcomingPokemonSets';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   View,
@@ -87,17 +94,6 @@ function getLanguageHeaderCopy(language: Exclude<DiscoverSetLanguage, 'en'>) {
     subtitle: 'Expand for official Japanese binders',
     seriesPrefix: 'Japan',
   };
-}
-
-function normalizeSetSearchText(value?: string | null) {
-  return String(value ?? '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/pok\u00e9mon/g, 'pokemon')
-    .replace(/[^a-z0-9]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
 }
 
 function getEditDistanceWithin(left: string, right: string, maxDistance: number) {
@@ -321,6 +317,9 @@ function SetCard({
         <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 3 }}>
           {chineseSetDisplayCode ? chineseSetDisplayCode + ' · ' : ''}{getPokemonLanguageDescriptor(item.language)?.label ?? item.language ?? 'English'} · {item.total} cards · {item.releaseDate ?? ''}
         </Text>
+        {isFuturePokemonSetRelease(item.releaseDate) ? (
+          <Text style={{ color: theme.colors.primary, fontWeight: '800', fontSize: 12, marginTop: 5 }}>Coming soon</Text>
+        ) : null}
       </View>
 
       {/* CTA */}
@@ -378,6 +377,25 @@ function SetCard({
         <Ionicons name="chevron-forward" size={16} color={theme.colors.textSoft} />
       </View>
     </TouchableOpacity>
+  );
+}
+
+function UpcomingSetCard({ item }: { item: UpcomingPokemonSet }) {
+  const { theme } = useTheme();
+  const status = upcomingPokemonSetStatus(item.releaseDate);
+  return (
+    <View
+      accessibilityRole="text"
+      accessibilityLabel={`${item.name}. ${getPokemonLanguageDescriptor(item.language)?.label ?? item.language}. ${status}. Release date ${item.releaseDate}.`}
+      style={{ backgroundColor: theme.colors.card, borderRadius: 16, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: theme.colors.border }}
+    >
+      <Text style={{ color: theme.colors.primary, fontWeight: '800', fontSize: 12, marginBottom: 5 }}>{status}</Text>
+      <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 15 }}>{item.name}</Text>
+      <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 5 }}>
+        {getPokemonLanguageDescriptor(item.language)?.label ?? item.language} · {item.releaseDate}
+      </Text>
+      <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 5 }}>Cards will appear when the checklist is available.</Text>
+    </View>
   );
 }
 
@@ -528,6 +546,12 @@ export default function ExploreScreen() {
 
   const isSearching = search.trim().length > 0;
 
+  const upcomingSets = useMemo(() => selectUpcomingPokemonSets({
+    publishedSets: [...englishSets, ...japaneseSets, ...simplifiedChineseSets, ...traditionalChineseSets, ...koreanSets],
+    language: languageFilter,
+    query: search,
+  }), [englishSets, japaneseSets, simplifiedChineseSets, traditionalChineseSets, koreanSets, languageFilter, search]);
+
   const groupedEnglishSeries = useMemo(
     () => groupSetsBySeries(filteredEnglishSets),
     [filteredEnglishSets]
@@ -616,21 +640,21 @@ export default function ExploreScreen() {
   // ===============================
 
   type ListItem =
+    | { type: 'upcoming'; set: UpcomingPokemonSet }
     | { type: 'languageHeader'; language: Exclude<DiscoverSetLanguage, 'en'>; count: number; expanded: boolean }
     | { type: 'header'; language: DiscoverSetLanguage; series: string; count: number }
     | { type: 'set'; set: PokemonSet; series: string };
 
   const flatData = useMemo((): ListItem[] => {
+    const items: ListItem[] = upcomingSets.map((set) => ({ type: 'upcoming', set }));
     if (isSearching) {
       // No grouping during search — just flat list
-      return filteredSets.map((set) => ({
+      return [...items, ...filteredSets.map((set) => ({
         type: 'set' as const,
         set,
         series: set.series ?? 'Other',
-      }));
+      }))];
     }
-
-    const items: ListItem[] = [];
 
     if (languageFilter === 'all' || languageFilter === 'en') {
       for (const group of groupedEnglishSeries) {
@@ -715,6 +739,7 @@ export default function ExploreScreen() {
 
     return items;
   }, [
+    upcomingSets,
     expandedSeries,
     filteredJapaneseSets.length,
     filteredSimplifiedChineseSets.length,
@@ -819,7 +844,7 @@ export default function ExploreScreen() {
           placeholder="Search sets by name or series"
           onOpenFilters={() => setBrowseFiltersVisible(true)}
           activeFilterCount={Number(languageFilter !== 'all')}
-          resultLabel={`${filteredSets.length} sets · ${LANGUAGE_FILTERS.find((item) => item.key === languageFilter)?.label ?? 'All languages'}`}
+          resultLabel={`${filteredSets.length} sets${upcomingSets.length ? ` · ${upcomingSets.length} announcement${upcomingSets.length === 1 ? '' : 's'}` : ''} · ${LANGUAGE_FILTERS.find((item) => item.key === languageFilter)?.label ?? 'All languages'}`}
         />
         <StackrBrowseFilterSheet visible={browseFiltersVisible} onClose={() => setBrowseFiltersVisible(false)} onClear={() => selectLanguageFilter('all')}>
           <StackrBrowseFilterGroup title="Language" choices={[...LANGUAGE_FILTERS]} selected={languageFilter} onSelect={(key) => selectLanguageFilter(key as DiscoverLanguageFilter)} />
@@ -835,11 +860,13 @@ export default function ExploreScreen() {
         <FlatList
           data={flatData}
           keyExtractor={(item) =>
-            item.type === 'languageHeader'
-              ? `language-${item.language}`
-              : item.type === 'header'
-                ? `header-${item.language}-${item.series}`
-                : `set-${item.set.language ?? 'en'}-${item.set.id}`
+            item.type === 'upcoming'
+              ? `upcoming-${item.set.language}-${item.set.id}`
+              : item.type === 'languageHeader'
+                ? `language-${item.language}`
+                : item.type === 'header'
+                  ? `header-${item.language}-${item.series}`
+                  : `set-${item.set.language ?? 'en'}-${item.set.id}`
           }
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: stackrTabContentPadding.standard }}
@@ -851,6 +878,7 @@ export default function ExploreScreen() {
             />
           }
           renderItem={({ item }) => {
+            if (item.type === 'upcoming') return <UpcomingSetCard item={item.set} />;
             if (item.type === 'languageHeader') {
               const copy = getLanguageHeaderCopy(item.language);
               return (

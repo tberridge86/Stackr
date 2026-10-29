@@ -1,0 +1,3 @@
+npm notice run Stackr-native@1.0.6 typecheck
+npm notice run tsc --noEmit
+scripts/test-home-startup-runtime.ts(325,54): error TS2367: This comparison appears to be unintentional because the types 'ElementType' and '"Text"' have no overlap.

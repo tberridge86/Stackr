@@ -7,6 +7,7 @@ import ts from 'typescript';
 import * as identity from '../lib/binderCardIdentity.ts';
 import * as presentation from '../lib/binderCataloguePresentation.ts';
 import * as cache from '../lib/requestCache.ts';
+import * as collectionSummaryInvalidation from '../lib/collectionSummaryInvalidation.ts';
 import * as optionalCatalogueEnrichment from '../lib/optionalCatalogueEnrichment.ts';
 import { withPersonalDataReadTimeout } from '../lib/personalDataRead.ts';
 
@@ -24,7 +25,7 @@ function binderHarness(options = {}) {
   const ownership = deferred(); const cards = deferred(); const record = deferred();
   const calls = { record: 0, ownership: 0, catalogue: 0 };
   const selectedBinder = { ...binder, ...options.binder };
-  const supabase = { auth: { onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }) }, from(table) {
+  const supabase = { auth: { getSession: async () => ({ data: { session: { user: { id: 'owner' }, access_token: 'fixture-owner' } }, error: null }), onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }) }, from(table) {
     let offset = 0;
     const query = { select: () => query, eq: () => query, order: () => query,
       range: (from, to) => { assert.equal(to - from, 49); offset = from; return query; },
@@ -36,6 +37,7 @@ function binderHarness(options = {}) {
   } };
   const dependencies = {
     './supabase': { supabase }, './requestCache': cache,
+    './collectionSummaryInvalidation': collectionSummaryInvalidation,
     './personalDataRead': { withPersonalDataReadTimeout },
     './optionalCatalogueEnrichment': optionalCatalogueEnrichment,
     './pokemonTcg': { normalizePokemonCardLanguage: () => 'en', fetchCardsForSet: async (id, readOptions) => {
@@ -48,6 +50,11 @@ function binderHarness(options = {}) {
     './providerSetMarkRuntimePolicy': { enforceSetVisualRuntimePolicy: () => null },
     './pokemonDisplayNames': { getPreferredSetDisplayName: () => catalogueSet.name },
   };
+  const accountExports = {};
+  vm.runInNewContext(ts.transpileModule(fs.readFileSync('lib/binderAccountCache.ts', 'utf8'), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  }).outputText, { exports: accountExports, require: (name) => dependencies[name] ?? {}, console, AbortController });
+  dependencies['./binderAccountCache'] = accountExports;
   const source = fs.readFileSync('lib/binders.ts', 'utf8');
   const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const exports = {};
