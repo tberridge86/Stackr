@@ -26,12 +26,21 @@ async function setJit(value) {
   assert.ok(['on', 'off'].includes(value));
   await db.exec("set jit='" + value + "'");
 }
-async function withSessionJit(value, read) {
+async function setJitSettings(settings) {
+  await db.query(
+    "select set_config('jit',$1,false),set_config('jit_above_cost',$2,false),set_config('jit_inline_above_cost',$3,false),set_config('jit_optimize_above_cost',$4,false)",
+    [settings.jit, settings.jit_above_cost, settings.jit_inline_above_cost, settings.jit_optimize_above_cost],
+  );
+}
+async function withSessionJit(value, read, forcePlannerEvidence = false) {
   const before = await jitSettings();
   await setJit(value);
+  if (forcePlannerEvidence) {
+    await db.exec("set jit_above_cost=0; set jit_inline_above_cost=0; set jit_optimize_above_cost=0");
+  }
   try { return await read(); }
   finally {
-    await setJit(before.jit);
+    await setJitSettings(before);
     assert.deepEqual(await jitSettings(), before, 'temporary EXPLAIN setting must restore its caller');
   }
 }
@@ -53,6 +62,7 @@ async function compareJit(selector, reference) {
   const comparison = {
     condition: 'Same function body and caller jit=on; only function-local override differs',
     nativeJitTiming: nativeFixtureEnabled(), callerSettings: await jitSettings(),
+    explainJitThresholds: 'forced to zero for deterministic planner evidence only; timed samples use caller defaults',
     alternatingOrder: [['jitOn', 'jitOff'], ['jitOff', 'jitOn'], ['jitOn', 'jitOff'], ['jitOff', 'jitOn']],
     variants: {}, exactEntriesAndHasMoreEqual: true, revisionStablePerVariant: true,
     definitionSwitchInvalidatesOldRevision: true, outerSettingsRestored: true,
@@ -107,7 +117,7 @@ async function compareJit(selector, reference) {
     variant.firstMedianMs = median(variant.firstMs);
     variant.continuationMedianMs = variant.continuationMs.length ? median(variant.continuationMs) : null;
     const explain = async (parameters) => withSessionJit(label === 'jitOff' ? 'off' : 'on', async () =>
-      (await db.query('explain (analyze,buffers,format json) ' + parameterized, parameters)).rows[0]['QUERY PLAN'][0]);
+      (await db.query('explain (analyze,buffers,format json) ' + parameterized, parameters)).rows[0]['QUERY PLAN'][0], true);
     variant.firstPlan = await explain([JSON.stringify(selector), null, 50, null, null]);
     if (after) variant.continuationPlan = await explain([JSON.stringify(selector), JSON.stringify(after), 50, variant.revision, null]);
     variant.jitFirstTotalMs = variant.firstPlan.JIT?.Timing?.Total ?? 0;
