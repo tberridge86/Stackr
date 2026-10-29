@@ -1,0 +1,199 @@
+{
+  "schemaVersion": 1,
+  "kind": "stackr-scoped-production-backend-deployment",
+  "observedDate": "2026-10-29",
+  "repository": "tberridge86/Stackr",
+  "source": {
+    "pullRequest": 446,
+    "reviewedHead": "8f007c6a845f1342cb7482b558665874c397f343",
+    "mergedMain": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+    "reviewedHeadCi": [
+      {
+        "name": "Card-first UI validation",
+        "runId": 40937315045,
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Validate binder local-first retrieval",
+        "runId": 40937315114,
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Stackr Gateway CI",
+        "runId": 40937315162,
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Owner Pricing Identity Tests",
+        "runId": 40937315058,
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Stackr Platform CI",
+        "runId": 40937315049,
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "workflow": {
+    "runId": 40938719233,
+    "jobId": 123676069564,
+    "job": "backend_only",
+    "status": "completed",
+    "conclusion": "success",
+    "source": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+    "createdAt": "2026-10-29T19:17:20Z",
+    "updatedAt": "2026-10-29T19:22:23Z",
+    "releaseScope": "backend_only",
+    "applyMigrations": false,
+    "executedJobs": [
+      {
+        "id": 123676069564,
+        "name": "backend_only",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "otherJobs": "All other listed jobs skipped.",
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/40938719233"
+  },
+  "backend": {
+    "url": "https://pocketvault-production.up.railway.app",
+    "source": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+    "deploymentId": "c40b25c1-b1a3-49d1-aed2-df0fc0852228",
+    "status": "SUCCESS",
+    "deploymentRequestLoggedAt": "2026-10-29T19:20:02.6213324Z",
+    "statusProvenance": "Release-owner Railway observation; exact source/deployment bound by successful workflow smoke."
+  },
+  "rollback": {
+    "deploymentId": "dfc23b30-9675-4ba0-ad2b-9f1875302747",
+    "retained": true,
+    "rollbackExecuted": false,
+    "attestation": {
+      "startedAt": "2026-10-29T19:19:59.9110581Z",
+      "completedAt": "2026-10-29T19:19:59.9113433Z",
+      "receipt": {
+        "ok": true,
+        "projectId": "d205637b-5376-41aa-9169-1015ba88fec3",
+        "environmentId": "b4304736-cac8-4ca9-92a7-93f7f6499c2f",
+        "serviceId": "299d7ad4-5ed8-4301-b609-ef99274078d0",
+        "rollbackDeploymentId": "dfc23b30-9675-4ba0-ad2b-9f1875302747",
+        "healthGitCommit": "7c1acd409680",
+        "attestationSource": "railway_http_request_logs",
+        "railwayRequestIds": [
+          "nWvMt57kTl6z6Avl0-QtfA",
+          "p0eTSEZwQkGuYKEt5nX1uw"
+        ]
+      }
+    }
+  },
+  "smoke": {
+    "printedFrom": "2026-10-29T19:22:19.3641389Z",
+    "printedThrough": "2026-10-29T19:22:19.3657684Z",
+    "provenance": "Exact standalone JSON reconstructed from timestamp-prefixed successful job logs; full logs are not persisted.",
+    "receipt": {
+      "ok": true,
+      "expectedBackendCommit": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+      "expectedBackendDeploymentId": "c40b25c1-b1a3-49d1-aed2-df0fc0852228",
+      "variantId": "4d6b4549-6d6c-4ace-a4cc-72877ba29401",
+      "ownerPricingValidated": false,
+      "checks": [
+        {
+          "name": "direct_backend_runtime_health",
+          "status": 200,
+          "requestId": "21fe9298-a972-4626-af76-c9c2aa561126",
+          "durationMs": 271
+        },
+        {
+          "name": "direct_backend_health",
+          "status": 200,
+          "requestId": "53df092b-edbf-4e73-8d6c-a5e93ff2f3f3",
+          "durationMs": 211
+        },
+        {
+          "name": "direct_backend_anonymous_exact_price",
+          "status": 401,
+          "requestId": "6b3f4082-7e7c-4427-990b-2c1f4eb6c184",
+          "durationMs": 124
+        },
+        {
+          "name": "direct_backend_anonymous_price_history",
+          "status": 401,
+          "requestId": "4c35133d-90be-4b32-9be3-357d27f20ec4",
+          "durationMs": 179
+        },
+        {
+          "name": "direct_backend_anonymous_movers",
+          "status": 401,
+          "requestId": "83fd0aaa-ea4a-4b99-9216-687f8904de73",
+          "durationMs": 134
+        },
+        {
+          "name": "gateway_health",
+          "status": 200,
+          "requestId": "fb2f058e-5a19-4a5f-a34b-e828c436b63e",
+          "durationMs": 527
+        },
+        {
+          "name": "gateway_anonymous_exact_price",
+          "status": 401,
+          "requestId": "00dd09f3-2cbf-4d8f-a711-3a169fd21312",
+          "durationMs": 343
+        },
+        {
+          "name": "gateway_anonymous_price_history",
+          "status": 401,
+          "requestId": "06b0873a-eca5-4dc2-9a21-8ec85ac5059e",
+          "durationMs": 481
+        },
+        {
+          "name": "gateway_anonymous_movers",
+          "status": 401,
+          "requestId": "5ab26218-ab4c-40bf-8d1f-59bf9ba67642",
+          "durationMs": 117
+        }
+      ]
+    }
+  },
+  "artifact": [
+    {
+      "id": 12925883244,
+      "name": "stackr-production-backend-only-40938719233-1",
+      "sizeBytes": 1677,
+      "digest": "sha256:baa7969256db4e898087b288e146f5b2a3984dbcdd6c859642ec2f31138b8346",
+      "createdAt": "2026-10-29T19:22:20Z",
+      "expiresAt": "2027-01-27T19:17:21Z",
+      "expired": false
+    }
+  ],
+  "acceptance": {
+    "directRuntimeAndBackendHealth": "200",
+    "gatewayHealth": "200",
+    "anonymousPrivatePricingDenials": {
+      "count": 6,
+      "status": 401
+    },
+    "ownerPricingValidated": false,
+    "authenticatedNewBackendValidated": false,
+    "gatewayRelease": "pending",
+    "nativeBuildAndSubmission": "pending",
+    "installedPhoneAcceptance": "unverified"
+  },
+  "limits": [
+    "Successful backend release and anonymous privacy smoke do not prove authenticated owner pricing on this new backend.",
+    "Gateway health is not a new gateway deployment attestation.",
+    "This receipt does not establish a new native build, submission, tester availability or installed-phone acceptance.",
+    "No database migration, catalogue write, price refresh or other deployment job was part of this backend-only workflow. Existing separately authorized search SQL evidence remains separate."
+  ],
+  "provenance": {
+    "githubReads": "Workflow run, jobs, artifact metadata and sanitized printed smoke/rollback JSON were freshly read using the connected GitHub account.",
+    "railwayStatus": "Supplied by the release owner; no new Railway operation performed by this evidence writer.",
+    "credentialsPersisted": false,
+    "fullJobLogsPersisted": false
+  }
+}
