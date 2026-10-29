@@ -1,0 +1,46 @@
+{
+  "kind": "reviewed_search_function_installation",
+  "recordedAt": "2026-10-29T19:00:55.608088Z",
+  "project": "oakdbbzdqwurpjnoqhmu",
+  "proposalSha256": "d8f15108792dd828f4beb979245e66add90aba7b0bc1aaed7d0ce331eefd70b8",
+  "proposalPath": "docs/releases/evidence/search-pagination-20261026/search-identity-page-proposal.sql",
+  "proposalSource": "334cf9e80423130716b5c67860872124f1fc0386",
+  "migrationName": "catalogue_search_identity_page_v1_reviewed_20261029",
+  "before": {
+    "signatureAbsent": true,
+    "observedAt": "2026-10-29T18:52:42.984196Z",
+    "dependenciesPresent": 11,
+    "serviceSelectGrants": true
+  },
+  "result": "applied_and_verified",
+  "after": {
+    "securityDefiner": false,
+    "stable": true,
+    "searchPathEmpty": true,
+    "jitOff": true,
+    "anonExecute": false,
+    "authenticatedExecute": false,
+    "serviceRoleExecute": true,
+    "functionDefinitionMd5": "67e1f140df5cbecae9ab36f5c8596dc0",
+    "canonicalResultExact": true,
+    "canonicalVariant": "4d6b4549-6d6c-4ace-a4cc-72877ba29401",
+    "paginationSmoke": {
+      "firstCount": 1,
+      "nextCount": 0,
+      "matchingRevision": true,
+      "noDuplicate": true,
+      "staleRevisionEntries": 0,
+      "scope": "Single-identity exhaustion; not a production multi-page population benchmark"
+    }
+  },
+  "rollback": {
+    "firstInstallationAttested": true,
+    "path": "docs/releases/evidence/search-pagination-20261026/search-identity-page-rollback.sql",
+    "blob": "b24ccb89e5ce7f9c5bd7d451d4aca5ac9546d7c1",
+    "applied": false
+  },
+  "otherMigrationsApplied": false,
+  "backendDeployed": false,
+  "gatewayDeployed": false,
+  "nativeBuildStarted": false
+}
