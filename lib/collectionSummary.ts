@@ -44,6 +44,7 @@ export type CollectionSummary = {
 
 let cachedSummary: { userId: string; version: number; expiresAt: number; value: CollectionSummary } | null = null;
 let inflightSummary: { userId: string; version: number; promise: Promise<CollectionSummary> } | null = null;
+const persistedSummaryWrites = new Map<string, Promise<void>>();
 
 const toQuantity = (value: unknown) => Math.max(1, Math.floor(Number(value ?? 1) || 1));
 const ownedQuantity = (card: BinderCardRecord) => card.owned ? toQuantity(card.owned_quantity) : 0;
@@ -411,15 +412,23 @@ async function readPersistedSummary(userId: string, maxAgeMs = SUMMARY_PERSISTED
   }
 }
 
-async function writePersistedSummary(userId: string, value: CollectionSummary) {
-  try {
-    await AsyncStorage.setItem(
-      getSummaryCacheKey(userId),
-      JSON.stringify({ cachedAt: Date.now(), value, version: getCollectionSummaryVersion() })
-    );
-  } catch (error) {
+async function writePersistedSummary(userId: string, value: CollectionSummary, version: number) {
+  const previousWrite = persistedSummaryWrites.get(userId);
+  const write = (async () => {
+    await previousWrite;
+    if (version !== getCollectionSummaryVersion()) return;
+    const key = getSummaryCacheKey(userId);
+    await AsyncStorage.setItem(key, JSON.stringify({ cachedAt: Date.now(), value, version }));
+    // Keep each account's writes ordered. A mutation during storage must not
+    // resurrect an older snapshot on restart or overwrite the newer one.
+    if (version !== getCollectionSummaryVersion()) await AsyncStorage.removeItem(key);
+  })().catch((error) => {
     console.log('Collection summary persisted cache write failed:', error);
-  }
+  }).finally(() => {
+    if (persistedSummaryWrites.get(userId) === write) persistedSummaryWrites.delete(userId);
+  });
+  persistedSummaryWrites.set(userId, write);
+  await write;
 }
 
 function getSessionUserId() {
@@ -449,10 +458,12 @@ async function refreshCollectionSummary(userId: string, version: number) {
         if (changedAccount || signal.aborted || inflightSummary !== entry || version !== getCollectionSummaryVersion() || beforeWriteUserId !== userId) {
           throw new Error('Collection summary changed account or version before completion.');
         }
-        await writePersistedSummary(userId, value);
-        const afterWriteUserId = await getSessionUserId();
+        // Persistence is optional: a stalled storage write must not block live
+        // totals or a later refresh while the account's writes remain ordered.
+        void writePersistedSummary(userId, value, version);
+        const beforeReturnUserId = await getSessionUserId();
         if (changedAccount || signal.aborted || inflightSummary !== entry || version !== getCollectionSummaryVersion()
-          || afterWriteUserId !== userId) {
+          || beforeReturnUserId !== userId) {
           throw new Error('Collection summary changed account or version before completion.');
         }
         cachedSummary = { userId, version, expiresAt: Date.now() + SUMMARY_CACHE_TTL_MS, value };

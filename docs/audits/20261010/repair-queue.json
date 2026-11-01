@@ -1,5 +1,99 @@
 {
   "schemaVersion": 1,
+  "collectionLogoReconciliation20261101": {
+    "observedAt": "2026-11-01T19:09:09Z",
+    "owner": "stackr_coding",
+    "sourceRevision": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+    "status": "implemented_tested_independently_reviewed_draft_candidate",
+    "report": "docs/audits/20261101/collection-logo-reconciliation.md",
+    "entries": [
+      {
+        "id": "COLL-20261101-01",
+        "severity": "P2",
+        "owner": "stackr_performance",
+        "files": [
+          "lib/collectionSummary.ts",
+          "scripts/test-collection-summary-persistence-order.mjs"
+        ],
+        "summary": "Delayed optional cache writes can restore obsolete totals and hold up later valid refreshes.",
+        "repair": "Per-account ordered/version-aware persistence off live return path; retain identity and joined-read guards.",
+        "validation": [
+          "Six actual-module regression scenarios passed",
+          "Current-main collection performance fixture passed",
+          "Independent review passed"
+        ],
+        "delivery": {
+          "implemented": true,
+          "tested": true,
+          "independentlyReviewed": true,
+          "merged": false,
+          "deployed": false,
+          "phoneVerified": false
+        }
+      },
+      {
+        "id": "LOGO-20261101-01",
+        "severity": "P2",
+        "owner": "stackr_artwork",
+        "files": [
+          "lib/stackrDomainAdapter.ts",
+          "scripts/test-set-logo-rendition.mjs"
+        ],
+        "summary": "Shared adapter ignores approved declared logo display renditions.",
+        "repair": "Select declared detail-page URL with existing original fallback and exact-set mapping.",
+        "validation": [
+          "Actual-module direct/enriched mapping tests passed",
+          "Baseline fails expected rendition selection",
+          "Independent review passed",
+          "One live720x402 R2 sample decoded;58190 vs667122 bytes"
+        ],
+        "delivery": {
+          "implemented": true,
+          "tested": true,
+          "independentlyReviewed": true,
+          "merged": false,
+          "deployed": false,
+          "phoneVerified": false
+        }
+      }
+    ],
+    "reconciledExistingWork": [
+      {
+        "reference": "PR439",
+        "status": "merged_migration_applied_internal_build61_distributed",
+        "nextAction": "Installed-phone acceptance; do not replay summary migration"
+      },
+      {
+        "reference": "PR448 final closeout35c49c309637717fe968606f0e97adfbd17ff5cd",
+        "status": "62098_of62098_eligible_zero_remaining_20261027",
+        "nextAction": "Preserve final independent closeout; no migration restart or all-catalogue claim"
+      },
+      {
+        "reference": "PR203",
+        "status": "all_four_file_blobs_already_in_main",
+        "nextAction": "Do not duplicate crop repair; installed appearance remains a separate check"
+      },
+      {
+        "reference": "PR204",
+        "status": "preparation_not_complete_runtime_pack",
+        "nextAction": "Resolve identities/assets/runtime delivery before release claim"
+      },
+      {
+        "reference": "PR436",
+        "status": "overlaps_later_merged_collection_work",
+        "nextAction": "Reconcile remaining source deltas; keep unapplied history migration separately authorized"
+      }
+    ],
+    "acceptancePending": [
+      "Full current-main CI compilation",
+      "Installed-phone cold/warm/save/remove/quantity/account-switch collection journeys",
+      "Native set-logo appearance and exact source-crop cleanup",
+      "Authenticated permissions and private-upload flows"
+    ],
+    "productionMutations": false,
+    "permissionExpansion": false,
+    "note": "This dated section supersedes stale delivery interpretations only for the verified items listed. Historical queue entries are preserved; no blanket queue completion is claimed."
+  },
   "platformHealth20261027": {
     "owner": "stackr_coding / release coordination",
     "observedDate": "2026-10-27",
