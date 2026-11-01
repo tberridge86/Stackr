@@ -1,0 +1,12 @@
+name: Submit verified Stackr Build 63
+on:
+  workflow_dispatch: {}
+jobs:
+  submit_build_63:
+    name: Submit existing 1.0.6 (63) to TestFlight
+    type: submit
+    params:
+      build_id: 209a3ce1-5551-4b2a-b2d1-c1bd5b1ae3aa
+      profile: production
+      groups:
+        - Team (Expo)
