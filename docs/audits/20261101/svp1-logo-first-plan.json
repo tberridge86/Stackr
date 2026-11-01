@@ -1,0 +1,513 @@
+[
+  {
+    "QUERY PLAN": [
+      {
+        "Plan": {
+          "Node Type": "Result",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 5672.89,
+          "Total Cost": 5672.9,
+          "Plan Rows": 1,
+          "Plan Width": 32,
+          "Plans": [
+            {
+              "Node Type": "Seq Scan",
+              "Parent Relationship": "InitPlan",
+              "Subplan Name": "CTE active_versions",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "catalogue_versions",
+              "Alias": "catalogue_versions",
+              "Startup Cost": 0,
+              "Total Cost": 12.16,
+              "Plan Rows": 2,
+              "Plan Width": 16,
+              "Filter": "((deprecated_at IS NULL) AND (status = 'published'::text))"
+            },
+            {
+              "Node Type": "Append",
+              "Parent Relationship": "InitPlan",
+              "Subplan Name": "CTE candidate_pairs",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Startup Cost": 0.42,
+              "Total Cost": 5629.88,
+              "Plan Rows": 301,
+              "Plan Width": 32,
+              "Subplans Removed": 0,
+              "Plans": [
+                {
+                  "Node Type": "Nested Loop",
+                  "Parent Relationship": "Member",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Join Type": "Inner",
+                  "Startup Cost": 0.42,
+                  "Total Cost": 2003.17,
+                  "Plan Rows": 104,
+                  "Plan Width": 32,
+                  "Inner Unique": false,
+                  "Plans": [
+                    {
+                      "Node Type": "CTE Scan",
+                      "Parent Relationship": "Outer",
+                      "Parallel Aware": false,
+                      "Async Capable": false,
+                      "CTE Name": "active_versions",
+                      "Alias": "cv",
+                      "Startup Cost": 0,
+                      "Total Cost": 0.04,
+                      "Plan Rows": 2,
+                      "Plan Width": 16
+                    },
+                    {
+                      "Node Type": "Index Scan",
+                      "Parent Relationship": "Inner",
+                      "Parallel Aware": false,
+                      "Async Capable": false,
+                      "Scan Direction": "Forward",
+                      "Index Name": "catalogue_version_assets_pkey",
+                      "Relation Name": "catalogue_version_assets",
+                      "Alias": "cva",
+                      "Startup Cost": 0.42,
+                      "Total Cost": 1001.04,
+                      "Plan Rows": 52,
+                      "Plan Width": 32,
+                      "Index Cond": "(catalogue_version_id = cv.id)",
+                      "Filter": "(asset_type = 'set_logo'::text)"
+                    }
+                  ]
+                },
+                {
+                  "Node Type": "Nested Loop",
+                  "Parent Relationship": "Member",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Join Type": "Inner",
+                  "Startup Cost": 0.83,
+                  "Total Cost": 3625.21,
+                  "Plan Rows": 197,
+                  "Plan Width": 32,
+                  "Inner Unique": false,
+                  "Join Filter": "(cv_1.id = cva_1.catalogue_version_id)",
+                  "Plans": [
+                    {
+                      "Node Type": "CTE Scan",
+                      "Parent Relationship": "Outer",
+                      "Parallel Aware": false,
+                      "Async Capable": false,
+                      "CTE Name": "active_versions",
+                      "Alias": "cv_1",
+                      "Startup Cost": 0,
+                      "Total Cost": 0.04,
+                      "Plan Rows": 2,
+                      "Plan Width": 16
+                    },
+                    {
+                      "Node Type": "Materialize",
+                      "Parent Relationship": "Inner",
+                      "Parallel Aware": false,
+                      "Async Capable": false,
+                      "Startup Cost": 0.83,
+                      "Total Cost": 3595.44,
+                      "Plan Rows": 1081,
+                      "Plan Width": 32,
+                      "Plans": [
+                        {
+                          "Node Type": "Nested Loop",
+                          "Parent Relationship": "Outer",
+                          "Parallel Aware": false,
+                          "Async Capable": false,
+                          "Join Type": "Inner",
+                          "Startup Cost": 0.83,
+                          "Total Cost": 3590.03,
+                          "Plan Rows": 1081,
+                          "Plan Width": 32,
+                          "Inner Unique": false,
+                          "Plans": [
+                            {
+                              "Node Type": "Index Scan",
+                              "Parent Relationship": "Outer",
+                              "Parallel Aware": false,
+                              "Async Capable": false,
+                              "Scan Direction": "Forward",
+                              "Index Name": "assets_variant_public_idx",
+                              "Relation Name": "assets",
+                              "Alias": "a",
+                              "Startup Cost": 0.42,
+                              "Total Cost": 2319.72,
+                              "Plan Rows": 848,
+                              "Plan Width": 16,
+                              "Index Cond": "(asset_type = 'set_logo'::text)"
+                            },
+                            {
+                              "Node Type": "Index Only Scan",
+                              "Parent Relationship": "Inner",
+                              "Parallel Aware": false,
+                              "Async Capable": false,
+                              "Scan Direction": "Forward",
+                              "Index Name": "catalogue_version_assets_asset_lookup_idx",
+                              "Relation Name": "catalogue_version_assets",
+                              "Alias": "cva_1",
+                              "Startup Cost": 0.42,
+                              "Total Cost": 1.48,
+                              "Plan Rows": 2,
+                              "Plan Width": 32,
+                              "Index Cond": "(asset_id = a.id)",
+                              "Filter": "(asset_type IS DISTINCT FROM 'set_logo'::text)"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "Node Type": "Limit",
+              "Parent Relationship": "InitPlan",
+              "Subplan Name": "CTE links",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Startup Cost": 28.09,
+              "Total Cost": 28.1,
+              "Plan Rows": 1,
+              "Plan Width": 101,
+              "Plans": [
+                {
+                  "Node Type": "Sort",
+                  "Parent Relationship": "Outer",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Startup Cost": 28.09,
+                  "Total Cost": 28.1,
+                  "Plan Rows": 1,
+                  "Plan Width": 101,
+                  "Sort Key": [
+                    "cva_2.catalogue_version_id",
+                    "cva_2.asset_id"
+                  ],
+                  "Plans": [
+                    {
+                      "Node Type": "Nested Loop",
+                      "Parent Relationship": "Outer",
+                      "Parallel Aware": false,
+                      "Async Capable": false,
+                      "Join Type": "Left",
+                      "Startup Cost": 13.86,
+                      "Total Cost": 28.08,
+                      "Plan Rows": 1,
+                      "Plan Width": 101,
+                      "Inner Unique": true,
+                      "Filter": "(COALESCE(cva_2.set_id, linked.set_id, av.set_id, ap.set_id) = '34e5af6e-66d0-4fea-98ce-b1fa1ec1d1dd'::uuid)",
+                      "Plans": [
+                        {
+                          "Node Type": "Nested Loop",
+                          "Parent Relationship": "Outer",
+                          "Parallel Aware": false,
+                          "Async Capable": false,
+                          "Join Type": "Left",
+                          "Startup Cost": 13.44,
+                          "Total Cost": 27.6,
+                          "Plan Rows": 1,
+                          "Plan Width": 165,
+                          "Inner Unique": true,
+                          "Plans": [
+                            {
+                              "Node Type": "Nested Loop",
+                              "Parent Relationship": "Outer",
+                              "Parallel Aware": false,
+                              "Async Capable": false,
+                              "Join Type": "Left",
+                              "Startup Cost": 13.02,
+                              "Total Cost": 27.08,
+                              "Plan Rows": 1,
+                              "Plan Width": 149,
+                              "Inner Unique": true,
+                              "Filter": "((cva_2.asset_type = 'set_logo'::text) OR (linked.asset_type = 'set_logo'::text))",
+                              "Plans": [
+                                {
+                                  "Node Type": "Nested Loop",
+                                  "Parent Relationship": "Outer",
+                                  "Parallel Aware": false,
+                                  "Async Capable": false,
+                                  "Join Type": "Inner",
+                                  "Startup Cost": 12.61,
+                                  "Total Cost": 26.32,
+                                  "Plan Rows": 1,
+                                  "Plan Width": 101,
+                                  "Inner Unique": true,
+                                  "Plans": [
+                                    {
+                                      "Node Type": "Hash Join",
+                                      "Parent Relationship": "Outer",
+                                      "Parallel Aware": false,
+                                      "Async Capable": false,
+                                      "Join Type": "Inner",
+                                      "Startup Cost": 12.19,
+                                      "Total Cost": 19.02,
+                                      "Plan Rows": 3,
+                                      "Plan Width": 48,
+                                      "Inner Unique": true,
+                                      "Hash Cond": "(wanted.catalogue_version_id = cv_2.id)",
+                                      "Plans": [
+                                        {
+                                          "Node Type": "CTE Scan",
+                                          "Parent Relationship": "Outer",
+                                          "Parallel Aware": false,
+                                          "Async Capable": false,
+                                          "CTE Name": "candidate_pairs",
+                                          "Alias": "wanted",
+                                          "Startup Cost": 0,
+                                          "Total Cost": 6.02,
+                                          "Plan Rows": 301,
+                                          "Plan Width": 32
+                                        },
+                                        {
+                                          "Node Type": "Hash",
+                                          "Parent Relationship": "Inner",
+                                          "Parallel Aware": false,
+                                          "Async Capable": false,
+                                          "Startup Cost": 12.16,
+                                          "Total Cost": 12.16,
+                                          "Plan Rows": 2,
+                                          "Plan Width": 16,
+                                          "Plans": [
+                                            {
+                                              "Node Type": "Seq Scan",
+                                              "Parent Relationship": "Outer",
+                                              "Parallel Aware": false,
+                                              "Async Capable": false,
+                                              "Relation Name": "catalogue_versions",
+                                              "Alias": "cv_2",
+                                              "Startup Cost": 0,
+                                              "Total Cost": 12.16,
+                                              "Plan Rows": 2,
+                                              "Plan Width": 16,
+                                              "Filter": "((deprecated_at IS NULL) AND (status = 'published'::text))"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "Node Type": "Index Scan",
+                                      "Parent Relationship": "Inner",
+                                      "Parallel Aware": false,
+                                      "Async Capable": false,
+                                      "Scan Direction": "Forward",
+                                      "Index Name": "catalogue_version_assets_pkey",
+                                      "Relation Name": "catalogue_version_assets",
+                                      "Alias": "cva_2",
+                                      "Startup Cost": 0.42,
+                                      "Total Cost": 2.43,
+                                      "Plan Rows": 1,
+                                      "Plan Width": 101,
+                                      "Index Cond": "((catalogue_version_id = wanted.catalogue_version_id) AND (asset_id = wanted.asset_id))"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "Node Type": "Index Scan",
+                                  "Parent Relationship": "Inner",
+                                  "Parallel Aware": false,
+                                  "Async Capable": false,
+                                  "Scan Direction": "Forward",
+                                  "Index Name": "assets_pkey",
+                                  "Relation Name": "assets",
+                                  "Alias": "linked",
+                                  "Startup Cost": 0.42,
+                                  "Total Cost": 0.75,
+                                  "Plan Rows": 1,
+                                  "Plan Width": 74,
+                                  "Index Cond": "(id = cva_2.asset_id)"
+                                }
+                              ]
+                            },
+                            {
+                              "Node Type": "Index Scan",
+                              "Parent Relationship": "Inner",
+                              "Parallel Aware": false,
+                              "Async Capable": false,
+                              "Scan Direction": "Forward",
+                              "Index Name": "card_variants_pkey",
+                              "Relation Name": "card_variants",
+                              "Alias": "av",
+                              "Startup Cost": 0.42,
+                              "Total Cost": 0.52,
+                              "Plan Rows": 1,
+                              "Plan Width": 48,
+                              "Index Cond": "(id = COALESCE(cva_2.variant_id, linked.variant_id))"
+                            }
+                          ]
+                        },
+                        {
+                          "Node Type": "Index Only Scan",
+                          "Parent Relationship": "Inner",
+                          "Parallel Aware": false,
+                          "Async Capable": false,
+                          "Scan Direction": "Forward",
+                          "Index Name": "card_printings_id_game_code_language_code_set_id_collector__key",
+                          "Relation Name": "card_printings",
+                          "Alias": "ap",
+                          "Startup Cost": 0.41,
+                          "Total Cost": 0.47,
+                          "Plan Rows": 1,
+                          "Plan Width": 32,
+                          "Index Cond": "(id = COALESCE(cva_2.printing_id, linked.printing_id, av.printing_id))"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "Node Type": "Aggregate",
+              "Strategy": "Plain",
+              "Partial Mode": "Simple",
+              "Parent Relationship": "InitPlan",
+              "Subplan Name": "InitPlan 4",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Startup Cost": 0.03,
+              "Total Cost": 0.04,
+              "Plan Rows": 1,
+              "Plan Width": 32,
+              "Plans": [
+                {
+                  "Node Type": "CTE Scan",
+                  "Parent Relationship": "Outer",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "CTE Name": "links",
+                  "Alias": "l",
+                  "Startup Cost": 0,
+                  "Total Cost": 0.02,
+                  "Plan Rows": 1,
+                  "Plan Width": 88
+                }
+              ]
+            },
+            {
+              "Node Type": "Aggregate",
+              "Strategy": "Plain",
+              "Partial Mode": "Simple",
+              "Parent Relationship": "InitPlan",
+              "Subplan Name": "InitPlan 5",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Startup Cost": 2.7,
+              "Total Cost": 2.71,
+              "Plan Rows": 1,
+              "Plan Width": 32,
+              "Plans": [
+                {
+                  "Node Type": "Subquery Scan",
+                  "Parent Relationship": "Outer",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Alias": "a_1",
+                  "Startup Cost": 2.68,
+                  "Total Cost": 2.69,
+                  "Plan Rows": 1,
+                  "Plan Width": 1443,
+                  "Plans": [
+                    {
+                      "Node Type": "Limit",
+                      "Parent Relationship": "Subquery",
+                      "Parallel Aware": false,
+                      "Async Capable": false,
+                      "Startup Cost": 2.68,
+                      "Total Cost": 2.68,
+                      "Plan Rows": 1,
+                      "Plan Width": 1403,
+                      "Plans": [
+                        {
+                          "Node Type": "Sort",
+                          "Parent Relationship": "Outer",
+                          "Parallel Aware": false,
+                          "Async Capable": false,
+                          "Startup Cost": 2.68,
+                          "Total Cost": 2.68,
+                          "Plan Rows": 1,
+                          "Plan Width": 1403,
+                          "Sort Key": [
+                            "a_2.id"
+                          ],
+                          "Plans": [
+                            {
+                              "Node Type": "Nested Loop",
+                              "Parent Relationship": "Outer",
+                              "Parallel Aware": false,
+                              "Async Capable": false,
+                              "Join Type": "Inner",
+                              "Startup Cost": 0.44,
+                              "Total Cost": 2.67,
+                              "Plan Rows": 1,
+                              "Plan Width": 1403,
+                              "Inner Unique": true,
+                              "Plans": [
+                                {
+                                  "Node Type": "Aggregate",
+                                  "Strategy": "Hashed",
+                                  "Partial Mode": "Simple",
+                                  "Parent Relationship": "Outer",
+                                  "Parallel Aware": false,
+                                  "Async Capable": false,
+                                  "Startup Cost": 0.02,
+                                  "Total Cost": 0.03,
+                                  "Plan Rows": 1,
+                                  "Plan Width": 16,
+                                  "Group Key": [
+                                    "links.asset_id"
+                                  ],
+                                  "Planned Partitions": 0,
+                                  "Plans": [
+                                    {
+                                      "Node Type": "CTE Scan",
+                                      "Parent Relationship": "Outer",
+                                      "Parallel Aware": false,
+                                      "Async Capable": false,
+                                      "CTE Name": "links",
+                                      "Alias": "links",
+                                      "Startup Cost": 0,
+                                      "Total Cost": 0.02,
+                                      "Plan Rows": 1,
+                                      "Plan Width": 16
+                                    }
+                                  ]
+                                },
+                                {
+                                  "Node Type": "Index Scan",
+                                  "Parent Relationship": "Inner",
+                                  "Parallel Aware": false,
+                                  "Async Capable": false,
+                                  "Scan Direction": "Forward",
+                                  "Index Name": "assets_pkey",
+                                  "Relation Name": "assets",
+                                  "Alias": "a_2",
+                                  "Startup Cost": 0.42,
+                                  "Total Cost": 2.64,
+                                  "Plan Rows": 1,
+                                  "Plan Width": 1403,
+                                  "Index Cond": "(id = links.asset_id)"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+]
