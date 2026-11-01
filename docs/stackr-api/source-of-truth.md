@@ -22,8 +22,8 @@ The production capture only applies in the production runtime. Staging needs its
 
 | Consumer | Current exception | Remaining condition |
 | --- | --- | --- |
-| Binder and set presentation | Bundled reviewed marks, 36 custom covers, nine custom name designs and magazine covers can take precedence | Preserve known quality while publishing exact authoritative equivalents and verifying the intended screen. |
-| Pokemon artwork and optional detail metadata | GitHub sprites and PokeAPI detail requests | Exact species/form asset mapping and publication. The species index itself already uses the central API. |
+| Binder and set presentation | Shared presentation selection prefers current published logos to saved pointers and recovers with bundled marks on failure. Exact SoulSilver/Lost Link crop exceptions, custom covers/name designs and magazine covers retain their roles. | Publish the two repaired crops with exact supersession evidence before removing their quality exceptions; verify actual screen rendering. |
+| Pokemon artwork and optional detail metadata | GitHub sprites and PokeAPI detail requests | The October31 four-record archive is verified locally but unpublished; its implementation/source-rights evidence must be recovered. Exact species/form mapping and publication remain open. The species index already uses the central API. |
 | Missing foreign card artwork | Bounded TCGdex reference overlay after canonical fetch | Replace only with verified published assets for the exact language/identity. |
 | Product images and legacy pricing | Supabase product records and the legacy Railway pricing route | Canonical sealed-product identities and matching gateway/auth/error contracts before switching consumers. |
 | SVP1 native title | Completed on 1 November: exact original and three renditions published and selected by the configured API | Installed-phone appearance remains to check. Observed CDN cache is max-age=14400; the one-year policy is not claimed. |
@@ -32,6 +32,7 @@ These exceptions are explicit remaining work, not evidence that all app surfaces
 
 ## Release evidence
 
+- [Build63 feedback and release reconciliation](../audits/20261101/build63-reconciliation.md)
 - [Collection and rendition repairs](../audits/20261101/collection-logo-reconciliation.md)
 - [Published fallback reconciliation](../audits/20261101/published-set-assets-reconciliation.md)
 - [Known artwork batch reconciliation](../audits/20261101/artwork-approval-reconciliation.md)

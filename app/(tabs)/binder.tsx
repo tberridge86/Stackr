@@ -63,7 +63,7 @@ import {
   getPokemonSetLanguageFromPrefixedId,
   stripPokemonSetLanguagePrefix,
 } from '../../lib/pokemonSetIdentity';
-import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
+import { getLocalSetArtworkSourceForSet, getSetArtworkPresentation } from '../../lib/localSetArtwork';
 import { StackrHeroBackdrop } from '../../components/StackrBackdrop';
 import { StackrButtonPattern } from '../../components/StackrEmboss';
 import { StackrImage } from '../../components/StackrImage';
@@ -201,21 +201,22 @@ const SET_VARIANT_OVERRIDES: Record<string, Partial<Record<string, string[]>>> =
 // ===============================
 
 const getBinderLogoUrl = (item: BinderRecord): string | null => {
-  return enforceSetVisualRuntimePolicy(item.source_set_logo_url
-    ?? item.source_set_symbol_url
-    ?? getPokemonSetLogoUrl(item.source_set_id, item.language))
+  return enforceSetVisualRuntimePolicy(getPokemonSetLogoUrl(item.source_set_id, item.language))
+    ?? enforceSetVisualRuntimePolicy(item.source_set_logo_url)
+    ?? enforceSetVisualRuntimePolicy(item.source_set_symbol_url)
     ?? null;
 };
 
-const getBinderLogoSource = (item: BinderRecord): ImageSourcePropType | null => {
-  return getLocalSetArtworkSourceForSet({
+const getBinderArtworkInput = (item: BinderRecord) => ({
     id: item.source_set_id,
     language: item.language,
     name: item.source_set_display_name ?? item.name,
     localName: item.source_set_local_name,
     englishDisplayName: item.source_set_english_display_name,
-  });
-};
+});
+
+const getBinderLogoSource = (item: BinderRecord): ImageSourcePropType | null =>
+  getLocalSetArtworkSourceForSet(getBinderArtworkInput(item));
 
 const stripSetLanguagePrefix = (setId?: string | null) =>
   stripPokemonSetLanguagePrefix(setId);
@@ -528,6 +529,8 @@ function BinderOptionsSheet({
 function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirmDeleteBinder, readOnly = false, canOpenReadOnly, index, cardWidth, columns }: BinderCardProps) {
   const { theme } = useTheme();
   const [optionsOpen, setOptionsOpen] = useState(false);
+  const [failedLogoUrl, setFailedLogoUrl] = useState<string | null>(null);
+  const [failedLogoSource, setFailedLogoSource] = useState<ImageSourcePropType | null>(null);
   const progress = counts[item.id] ?? EMPTY_BINDER_COUNT;
   const isOfficial = item.type === 'official';
   const isMasterSet = masterSets[item.id] === true;
@@ -538,12 +541,18 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
   const percentage = isOfficial ? getBinderProgressPercent(progress) : 0;
   const innerWidth = Math.max(106, cardWidth - 16);
   const logoSource = isOfficial ? getBinderLogoSource(item) : null;
-  const logoUrl = isOfficial && !logoSource ? getBinderLogoUrl(item) : null;
+  const logoUrl = isOfficial ? getBinderLogoUrl(item) : null;
   const customNameArt = item.type === 'custom'
     ? getCustomBinderNameArt(customNameArtKey ?? getDefaultCustomBinderNameArtKey(`${item.id}:${item.name}`))
     : null;
-  const labelLogoSource = customNameArt ? null : logoSource;
-  const labelLogoUrl = customNameArt ? null : logoUrl;
+  const labelLogo = getSetArtworkPresentation(getBinderArtworkInput(item), {
+    publishedUrl: logoUrl,
+    fallbackSource: logoSource,
+    failedUrl: failedLogoUrl,
+    failedSource: failedLogoSource,
+  });
+  const labelLogoSource = isOfficial && !customNameArt ? labelLogo.source : null;
+  const labelLogoUrl = isOfficial && !customNameArt ? labelLogo.url : null;
   const hasBinderLabel = Boolean(customNameArt || labelLogoSource || labelLogoUrl);
   const shouldShowNameText = !labelLogoSource && !labelLogoUrl;
   const artWidth = Math.min(
@@ -743,12 +752,13 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
           </View>
         ) : labelLogoSource ? (
           <View style={{ minHeight: officialLogoFrameHeight, justifyContent: 'center', alignItems: 'center', marginBottom: 0, overflow: 'visible', paddingHorizontal: isJapanese ? 2 : 0 }}>
-            <Image source={labelLogoSource} style={{ width: officialLogoWidth, height: officialLogoHeight }} resizeMode="contain" />
+            <Image source={labelLogoSource} onError={() => setFailedLogoSource(labelLogoSource)} style={{ width: officialLogoWidth, height: officialLogoHeight }} resizeMode="contain" />
           </View>
         ) : labelLogoUrl ? (
           <View style={{ minHeight: officialLogoFrameHeight, justifyContent: 'center', alignItems: 'center', marginBottom: 0, overflow: 'visible', paddingHorizontal: isJapanese ? 2 : 0 }}>
             <StackrImage
               uri={labelLogoUrl}
+              onError={() => setFailedLogoUrl(labelLogoUrl)}
               style={{ width: officialLogoWidth, height: officialLogoHeight, backgroundColor: 'transparent' }}
               contentFit="contain"
               priority="low"
@@ -1875,3 +1885,4 @@ export default function BinderLibraryScreen() {
     </SafeAreaView>
   );
 }
+

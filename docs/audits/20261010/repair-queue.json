@@ -361,7 +361,7 @@
       }
     ]
   },
-  "updatedAt": "2026-10-18T19:33:01.184Z",
+  "updatedAt": "2026-11-01T20:22:21.796Z",
   "coordinator": "Tif / root",
   "workingDirectory": "D:/Stackr",
   "branch": "codex/stackr-repair-consolidation-20261018",
@@ -3251,58 +3251,27 @@
   ],
   "currentWork": {
     "owner": "Tif / root",
-    "status": "completion_audited_both_plans_incomplete_native_execution_held",
-    "workingDirectory": "D:/Stackr",
-    "branch": "codex/stackr-repair-consolidation-20261018",
-    "runtimeRevision": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
-    "pullRequest": "https://github.com/tberridge86/Stackr/pull/409",
-    "issueRegister": "docs/releases/video-repair-register-20261018.json",
-    "preservationSummary": "docs/releases/workspace-preservation-20261018.json",
-    "archivedCodingFolders": 25,
-    "closedVideoIssues": 0,
-    "liveSqlApproval": "Both approved diagnostic scripts completed. Exact supplied M6 artwork and gateway grant already executed. A separate native grant was subsequently received, then held for the owner completion audit. No arbitrary new SQL, price refresh, job restart, credential change or deletion authority.",
-    "liveDeployment": true,
-    "newNativeBuildCreated": false,
-    "deviceVerified": false,
-    "nextAction": "Both-plan completion audit confirms unmet work. Continue permitted card/binder retrieval and exact artwork/source repairs, then supported valuation/history; continue dependency-aware preservation and consolidation, with original primary last. Keep native execution held and retain the existing grant. Do not treat this audit as new SQL, price refresh, job, catalogue mutation or deletion authority.",
-    "productionDiagnostics": "docs/releases/production-diagnostics-20261018.json",
-    "additionalRuntimeRevision": "66156ca9893e8767a4e594173f63accae015354e",
-    "stormPublication": "docs/releases/storm-m6-publication-20261018.json",
-    "searchArtworkRepair": "docs/releases/search-artwork-batching-20261018.json",
-    "totalOriginalFoldersReversiblyRelocated": 37,
-    "gatewayRevision": "8b5ebc753ade3feaf574b21a8b6b01efa79ad582",
-    "mergedMainRevision": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
-    "gatewayDeliveryReceipt": "docs/releases/gateway-live-delivery-20261018.json",
-    "gatewayVersionId": "56f04b7f-0692-4d8f-a9ae-0963442e57b8",
-    "gatewayDeploymentId": "edc59e4a-b404-449d-a26a-e61784ceacfd",
-    "gatewayReleaseRun": "https://github.com/tberridge86/Stackr/actions/runs/39147311549",
-    "ownerReportedInstalledPhoneBuild": 59,
-    "currentSqlRegressionCoverage": {
-      "test": "scripts/test-asset-manifest-card-image-equivalence.mjs",
-      "sha256": "9326cce3d608d38426f79552cef41aedd2303d7cf0312d15e7c0556f28aa5dff",
-      "independentReview": "PASS",
-      "remoteDatabaseExecution": false,
-      "runtimeSqlChanged": false
+    "status": "reviewed_client_integration_for_authorized_build63",
+    "sourceBase": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+    "candidate": "https://github.com/tberridge86/Stackr/pull/451",
+    "report": "docs/audits/20261101/build63-reconciliation.md",
+    "authorization": "Owner requested reconciliation before next push, then TestFlight63; standard production profile and existing Team (Expo).",
+    "lastConfirmedNative": {
+      "version": "1.0.6",
+      "build": "62",
+      "source": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+      "easBuildId": "8f0c25f1-b287-4a3c-89f8-ae3569e7bb4c",
+      "easSubmissionId": "8e8b78e7-12b9-4226-b271-e15a11054554"
     },
-    "nativePreparation": {
-      "report": "docs/releases/native-release-candidate-20261018.json",
-      "reviewed": true,
-      "exactSource": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
-      "profile": "production",
-      "localIdentityVerified": true,
-      "promisedSignedAssets": 73,
-      "nativeApproval": "received_execution_held_for_later_owner_completion_review",
-      "realBuildStarted": false
+    "liveBackend": {
+      "source": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+      "observedPrefix": "0bf2e6022264",
+      "observedAt": "2026-11-01T20:18:35.761Z",
+      "deploymentId": "c40b25c1-b1a3-49d1-aed2-df0fc0852228",
+      "sourceMechanism": "bundled_workflow_sha"
     },
-    "completionAudit": "docs/releases/both-plans-completion-audit-20261018.md",
-    "bothPlansSatisfiedInFull": false,
-    "originalFolderCoverage": {
-      "total": 60,
-      "relocated": 37,
-      "retained": 21,
-      "organizationDestination": 1,
-      "unresolvedAbsent": 1
-    }
+    "nextAction": "Require exact-head CI, merge reviewed client changes, run existing native delivery verification, build standard production63, submit exact finished build and verify receipt.",
+    "phoneClosedIssues": 0
   },
   "completionGoal": {
     "threadId": "01a12a4c-4b1a-7823-b948-148c90d7cd8e",
@@ -3942,5 +3911,148 @@
     "schedulerOwner": "not_attested",
     "capacity": "snapshot_only_not_load_test",
     "finalSource": "pending_source_commit_and_exact_head_CI"
+  },
+  "currentWorkBeforeBuild63": {
+    "owner": "Tif / root",
+    "status": "completion_audited_both_plans_incomplete_native_execution_held",
+    "workingDirectory": "D:/Stackr",
+    "branch": "codex/stackr-repair-consolidation-20261018",
+    "runtimeRevision": "bb9f41030a63274f79004e787ab9bb2f5a2fc89d",
+    "pullRequest": "https://github.com/tberridge86/Stackr/pull/409",
+    "issueRegister": "docs/releases/video-repair-register-20261018.json",
+    "preservationSummary": "docs/releases/workspace-preservation-20261018.json",
+    "archivedCodingFolders": 25,
+    "closedVideoIssues": 0,
+    "liveSqlApproval": "Both approved diagnostic scripts completed. Exact supplied M6 artwork and gateway grant already executed. A separate native grant was subsequently received, then held for the owner completion audit. No arbitrary new SQL, price refresh, job restart, credential change or deletion authority.",
+    "liveDeployment": true,
+    "newNativeBuildCreated": false,
+    "deviceVerified": false,
+    "nextAction": "Both-plan completion audit confirms unmet work. Continue permitted card/binder retrieval and exact artwork/source repairs, then supported valuation/history; continue dependency-aware preservation and consolidation, with original primary last. Keep native execution held and retain the existing grant. Do not treat this audit as new SQL, price refresh, job, catalogue mutation or deletion authority.",
+    "productionDiagnostics": "docs/releases/production-diagnostics-20261018.json",
+    "additionalRuntimeRevision": "66156ca9893e8767a4e594173f63accae015354e",
+    "stormPublication": "docs/releases/storm-m6-publication-20261018.json",
+    "searchArtworkRepair": "docs/releases/search-artwork-batching-20261018.json",
+    "totalOriginalFoldersReversiblyRelocated": 37,
+    "gatewayRevision": "8b5ebc753ade3feaf574b21a8b6b01efa79ad582",
+    "mergedMainRevision": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
+    "gatewayDeliveryReceipt": "docs/releases/gateway-live-delivery-20261018.json",
+    "gatewayVersionId": "56f04b7f-0692-4d8f-a9ae-0963442e57b8",
+    "gatewayDeploymentId": "edc59e4a-b404-449d-a26a-e61784ceacfd",
+    "gatewayReleaseRun": "https://github.com/tberridge86/Stackr/actions/runs/39147311549",
+    "ownerReportedInstalledPhoneBuild": 59,
+    "currentSqlRegressionCoverage": {
+      "test": "scripts/test-asset-manifest-card-image-equivalence.mjs",
+      "sha256": "9326cce3d608d38426f79552cef41aedd2303d7cf0312d15e7c0556f28aa5dff",
+      "independentReview": "PASS",
+      "remoteDatabaseExecution": false,
+      "runtimeSqlChanged": false
+    },
+    "nativePreparation": {
+      "report": "docs/releases/native-release-candidate-20261018.json",
+      "reviewed": true,
+      "exactSource": "4e405d7b95dce08d71bdbd42ad5e4e6f3b829a07",
+      "profile": "production",
+      "localIdentityVerified": true,
+      "promisedSignedAssets": 73,
+      "nativeApproval": "received_execution_held_for_later_owner_completion_review",
+      "realBuildStarted": false
+    },
+    "completionAudit": "docs/releases/both-plans-completion-audit-20261018.md",
+    "bothPlansSatisfiedInFull": false,
+    "originalFolderCoverage": {
+      "total": 60,
+      "relocated": 37,
+      "retained": 21,
+      "organizationDestination": 1,
+      "unresolvedAbsent": 1
+    }
+  },
+  "build63FeedbackReconciliation20261101": {
+    "report": "docs/audits/20261101/build63-reconciliation.md",
+    "reports": [
+      "docs/audits/20261101/build63-feedback-performance.md",
+      "docs/audits/20261101/build63-feedback-artwork.md"
+    ],
+    "checkedHistory": [
+      "issue304",
+      "issue434",
+      "docs/releases/video-repair-register-20261018.json",
+      "docs/releases/build60-feedback-repairs-20261022.md",
+      "PR439",
+      "PR446",
+      "PR448",
+      "PR451"
+    ],
+    "historyAccessLimit": "Personal Context and app-thread retrieval unavailable; accessible repository/Library records and current conversation reconciled.",
+    "repairs": [
+      {
+        "id": "B63-BINDER-SOURCE-01",
+        "status": "implemented_focused_tests_passed_independent_review_passed",
+        "files": [
+          "lib/localSetArtwork.ts",
+          "components/BinderArtwork.tsx",
+          "app/(tabs)/binder.tsx"
+        ],
+        "behavior": "Shared current published mapping before saved pointers, bundled failure recovery, exact SoulSilver/LostLink crop exceptions and unchanged custom/magazine roles."
+      },
+      {
+        "id": "B63-PRODUCT-URL-01",
+        "status": "implemented_focused_tests_passed_independent_review_passed",
+        "files": [
+          "lib/productSearch.ts"
+        ],
+        "behavior": "Keep recorded image URL; no invented400w. Sealed provider remains intentionally inactive until canonical identity."
+      }
+    ],
+    "resolvedStaleHolds": [
+      "Latest verified Expo production build is62; old61 handoffs are historical.",
+      "Search identity pagination function exists with service-only execution; do not replay.",
+      "SVP1 exact original plus3renditions published and public API verified.",
+      "1272 prepared-original programme and62098eligible-scope R2closeout complete; do not repeat.",
+      "The22October56ordinary+14legacy+onequalitycase were published as71Japanese fronts on23OctoberPR433; no repeatpublication."
+    ],
+    "remaining": [
+      {
+        "id": "SPECIES-ARTWORK-FOUR-20261031",
+        "state": "prepared_not_published_blocked",
+        "archiveSha256": "10048be79d86b7776df2265fd2f885c273ba94989a013f085452762c785c0b7a",
+        "planSha256": "77ad053d31788d450c0f9c6202a9f27708f01d578675e2fea2cd8afde089619a",
+        "verifiedObjects": 12,
+        "identities": 4,
+        "reason": "Maintained implementation commit/modules absent from repository; local-artifact approval does not establish missing source-rights provenance. No operational reapproval is being requested."
+      },
+      {
+        "id": "BINDER-CROWN-46-PLAN",
+        "state": "separate_plan_preserved_not_in_species_archive",
+        "planSha256": "6143081c19d9592c27c20b1654a304acd04a7ee485faa3edb86c63ec49cb578e",
+        "reason": "Separate45binder+Crown plan not included; no publication claim."
+      },
+      {
+        "id": "PR203-CANONICAL-CROPS",
+        "state": "bundled_complete_api_publication_pending",
+        "reason": "Two reviewed sharper crops differ from API originals; exact quality exceptions preserve them."
+      },
+      {
+        "id": "DAILY-MARKET-HISTORY",
+        "state": "production_history_absent",
+        "observedAt": "2026-11-01T20:17:15Z",
+        "reason": "Separately reviewed installation and subsequent real consecutive provider dates required; no fabricated history or price job."
+      },
+      {
+        "id": "PHYSICAL-ACCEPTANCE",
+        "state": "unverified",
+        "reason": "23video criteria and signed-in account/private-image/cold-warm journeys remain phone acceptance."
+      },
+      {
+        "id": "JAPANESE-671-RESIDUAL",
+        "state": "71_subcohort_published_remaining_edition_metadata_quality_hold",
+        "cohortSha256": "6bc2f65a7826ba623c8e0e1f8a6d0ea46e4db3e24a4e7c582543b14d6c313dc7",
+        "reason": "Do not treat missing edition/identity or rejected quality as operational permission holds."
+      }
+    ],
+    "productionDatabaseMutations": 0,
+    "newPriceJobs": 0,
+    "permissionExpansion": false,
+    "nativeBuildCreated": false
   }
 }
