@@ -1,6 +1,6 @@
 # Stackr runtime source of truth
 
-Observed against main `0bf2e60222644682d600deb7cc0e94862fd2a71a` and production on 1 November 2026. Client changes described here are in PR #451 until merged and delivered; a passing PR is not an installed-phone result.
+Observed against main `0bf2e60222644682d600deb7cc0e94862fd2a71a` and production on 1 November 2026. PR #451 is merged as `d2c052ac2ae98470661f1ff283084257a4e4b408`; the final two published-logo mappings are in its bounded follow-up until merged and delivered. A passing PR is not an installed-phone result.
 
 | Responsibility | Authoritative source | Client contract |
 | --- | --- | --- |
@@ -12,7 +12,7 @@ Observed against main `0bf2e60222644682d600deb7cc0e94862fd2a71a` and production 
 
 ## Published logo and cover fallback snapshot
 
-`lib/publishedSetLogoFallbacks.ts` reads the generated registries as a local snapshot of the published mapping, not a separately maintained provider catalogue. The production snapshot now has 280 exact logo and 43 exact cover URLs from the same production asset view used by the API. Of the logos, 134 select a recorded detail-page rendition; 146 retain the recorded original. Explicit old-to-new receipts reconcile 145 already-published replacements, preserving former pointers and all set/language identities.
+`lib/publishedSetLogoFallbacks.ts` reads the generated registries as a local snapshot of the published mapping, not a separately maintained provider catalogue. The production snapshot now has 280 exact logo and 43 exact cover URLs from the same production asset view used by the API. Of the logos, 134 select a recorded detail-page rendition; 146 retain the recorded original. Explicit old-to-new receipts reconcile 147 already-published replacements, preserving former pointers and all set/language identities.
 
 `scripts/reconcile-published-set-assets.mjs` consumes captured evidence without network writes. Publication approval, exact set/type/hash, explicit supersession and unique delivery must agree. Unknown or ambiguous matches remain explicit. The generated evidence records that this pass used a database snapshot normalized through the unchanged API implementation, independently cross-checked against the public manifest; it does not mislabel the capture as a raw HTTP export.
 
@@ -22,7 +22,7 @@ The production capture only applies in the production runtime. Staging needs its
 
 | Consumer | Current exception | Remaining condition |
 | --- | --- | --- |
-| Binder and set presentation | Shared presentation selection prefers current published logos to saved pointers and recovers with bundled marks on failure. Exact SoulSilver/Lost Link crop exceptions, custom covers/name designs and magazine covers retain their roles. | Publish the two repaired crops with exact supersession evidence before removing their quality exceptions; verify actual screen rendering. |
+| Binder and set presentation | Shared presentation selection prefers current published logos to saved pointers and recovers with bundled marks on failure. Published SoulSilver/Lost Link replacements, custom covers/name designs and magazine covers retain their roles. | The two repaired crops and six renditions were published and API-verified on 1 November; the matching local snapshot uses those same recorded URLs. Verify actual screen rendering. |
 | Pokemon artwork and optional detail metadata | GitHub sprites and PokeAPI detail requests | The October31 four-record archive is verified locally but unpublished; its implementation/source-rights evidence must be recovered. Exact species/form mapping and publication remain open. The species index already uses the central API. |
 | Missing foreign card artwork | Bounded TCGdex reference overlay after canonical fetch | Replace only with verified published assets for the exact language/identity. |
 | Product images and legacy pricing | Supabase product records and the legacy Railway pricing route | Canonical sealed-product identities and matching gateway/auth/error contracts before switching consumers. |

@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "stackr-jp-crop-operational-approval-v1",
+  "recordedAt": "2026-11-01T20:38:39.520Z",
+  "projectRef": "oakdbbzdqwurpjnoqhmu",
+  "bucket": "stackr-catalogue-public",
+  "approved": true,
+  "scope": {
+    "batch": "OWNER-SUPPLIED-JP-CROP-PR203",
+    "setIds": [
+      "e8e16a23-fc7a-4ec8-abfe-b74448fa5f27",
+      "7dbeff79-cfb7-4ac8-8a4f-d7c73a523349"
+    ],
+    "originalSha256s": [
+      "7dcfb743b476c6cba7771d20a6ace737ba67201c1fa53b8b260d0079967c0383",
+      "f11661657260c1c19e1da24ceeeb5ef69fd59a16f436fedfa204a473da103add"
+    ],
+    "operations": [
+      "immutable-upload",
+      "catalogue-supersession",
+      "api-verification"
+    ],
+    "sourceWideAuthority": false,
+    "independentlyAuditedVendorLicence": false
+  },
+  "provenance": {
+    "ownerInstructions": [
+      "The user has given standing authorization to supersede lower-quality Stackr API artwork with verified, sharper originals from the sources they supply.",
+      "Carry artwork work through import, supersession, publication and verification of the actual API/app image response.",
+      "Preserve the previous immutable asset and a rollback receipt.",
+      "now can we reconcile any remaining work throuygh the history of my feedback and resolve before th next push - once done push tesrtflight version 63"
+    ],
+    "instructionSource": "User-provided AGENTS.md and current conversation, 2026-11-01",
+    "suppliedSource": "WhatsApp Image 2026-07-24 at 14.31.55 (4).jpeg",
+    "sourceSha256": "078ae1be1255300fc818cf7d2a3d18dc44852e91f830f9f8b71244c7943fbfb3",
+    "reviewedCommitEvidence": "PR203 exact reviewed SoulSilver L1b and Lost Link crops; current main bytes independently verified",
+    "limits": "Operational authority applies to these two exact supplied crops. It creates no source-wide grant, independent upstream licence attestation or broader identity approval."
+  }
+}

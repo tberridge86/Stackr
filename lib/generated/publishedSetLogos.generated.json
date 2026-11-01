@@ -1496,10 +1496,11 @@
       "language": "ja",
       "setCode": "L1b",
       "storageKey": "public/set_logo/f3/23/f3234f24da22abb5966af659f8a3db3203d3143ec9683dfcd2cc87b40d204794/original.png",
-      "assetId": "acquire:set_logo:e8e16a23-fc7a-4ec8-abfe-b74448fa5f27",
-      "contentSha256": "f3234f24da22abb5966af659f8a3db3203d3143ec9683dfcd2cc87b40d204794",
-      "deliveryUrl": "https://assets.stackrtcg.com/public/set_logo/cabf15f1-addc-47e0-9aef-09e2f57bf476/097e2cefe19c1d0e17e4adade052dd1d30bbff25ef7758c8eec4f459b8e3882c/f3234f24da22abb5966af659f8a3db3203d3143ec9683dfcd2cc87b40d204794/original.png",
-      "detailUrl": "https://assets.stackrtcg.com/public/set_logo/cabf15f1-addc-47e0-9aef-09e2f57bf476/097e2cefe19c1d0e17e4adade052dd1d30bbff25ef7758c8eec4f459b8e3882c/4c609568045e6870837f1c3a9200b6f6c2772c0ff636a116774a99e7037ea645/detail-page.webp"
+      "assetId": "reviewed:set-logo:e8e16a23-fc7a-4ec8-abfe-b74448fa5f27:7dcfb743b476c6cba7771d20a6ace737ba67201c1fa53b8b260d0079967c0383",
+      "contentSha256": "7dcfb743b476c6cba7771d20a6ace737ba67201c1fa53b8b260d0079967c0383",
+      "supersedesContentSha256": "f3234f24da22abb5966af659f8a3db3203d3143ec9683dfcd2cc87b40d204794",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/set_logo/7d/cf/7dcfb743b476c6cba7771d20a6ace737ba67201c1fa53b8b260d0079967c0383/original.png",
+      "detailUrl": "https://assets.stackrtcg.com/public/set_logo/dd/10/dd10d60fd15bf6179383f1f64dfc631b41f0636d5242a20a26431b039be01559/detail-page.webp"
     },
     {
       "setId": "5801c250-0aca-4282-bfce-28ecbe3b5ee0",
@@ -1526,10 +1527,11 @@
       "language": "ja",
       "setCode": "LL",
       "storageKey": "public/set_logo/9d/fd/9dfdcbec146a9ca771bd333ebfa0cfab991b96ce8270686a1707df9288af0532/original.png",
-      "assetId": "acquire:set_logo:7dbeff79-cfb7-4ac8-8a4f-d7c73a523349",
-      "contentSha256": "9dfdcbec146a9ca771bd333ebfa0cfab991b96ce8270686a1707df9288af0532",
-      "deliveryUrl": "https://assets.stackrtcg.com/public/set_logo/f7fc344c-9f7c-4298-af9d-1903b1bc8e5d/9460c863355cbd51b409780169123420e2ddd9a7a6d77ffbaaf23f16c022640f/9dfdcbec146a9ca771bd333ebfa0cfab991b96ce8270686a1707df9288af0532/original.png",
-      "detailUrl": "https://assets.stackrtcg.com/public/set_logo/f7fc344c-9f7c-4298-af9d-1903b1bc8e5d/9460c863355cbd51b409780169123420e2ddd9a7a6d77ffbaaf23f16c022640f/ecfcfcb26e0985972a9caef05ac929c8b9688e900e33a87ae4f78c8ad0846436/detail-page.webp"
+      "assetId": "reviewed:set-logo:7dbeff79-cfb7-4ac8-8a4f-d7c73a523349:f11661657260c1c19e1da24ceeeb5ef69fd59a16f436fedfa204a473da103add",
+      "contentSha256": "f11661657260c1c19e1da24ceeeb5ef69fd59a16f436fedfa204a473da103add",
+      "supersedesContentSha256": "9dfdcbec146a9ca771bd333ebfa0cfab991b96ce8270686a1707df9288af0532",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/set_logo/f1/16/f11661657260c1c19e1da24ceeeb5ef69fd59a16f436fedfa204a473da103add/original.png",
+      "detailUrl": "https://assets.stackrtcg.com/public/set_logo/79/08/7908d79c0a09b80cfd755bad1078b7803f0433a735a9a5ca8f086dec514e3b62/detail-page.webp"
     },
     {
       "setId": "f13ab591-e706-4f7c-b4c6-8fed5526ea87",
@@ -2811,6 +2813,18 @@
       "scope": "Published set_logo rows; public API independently returned460 rows with no next cursor",
       "requestId": "logo-readonly-db-snapshot-20261101",
       "generatedAt": "2026-11-01T19:22:16.322Z"
+    },
+    {
+      "source": "Actual production public GET /v1/assets/manifest captured in Chrome after exact two-crop supersession",
+      "scope": "Exact published set_logo for e8e16a23-fc7a-4ec8-abfe-b74448fa5f27",
+      "requestId": "36b4d97c-a2a5-473e-9a59-fe936958f653",
+      "generatedAt": "2026-11-01T21:17:13.911Z"
+    },
+    {
+      "source": "Actual production public GET /v1/assets/manifest captured in Chrome after exact two-crop supersession",
+      "scope": "Exact published set_logo for 7dbeff79-cfb7-4ac8-8a4f-d7c73a523349",
+      "requestId": "d97a732a-ad03-4716-8e71-89434df42259",
+      "generatedAt": "2026-11-01T21:17:26.264Z"
     }
   ]
 }

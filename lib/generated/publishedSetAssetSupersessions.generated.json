@@ -1,8 +1,8 @@
 {
-  "source": "Read-only production api.asset_manifest; normalized by unchanged current-main toCatalogueAsset and createPublicAssetStorageReaders",
+  "source": "Production asset manifest evidence: initial read-only database capture normalized by unchanged main backend, plus exact post-publication public API captures identified per supersession",
   "sourceRevision": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
   "sourceEnvironment": "production",
-  "scope": "Existing fallback identities reconciled to their unique already-published approved replacements. Previous storage pointers remain in the logo registry. No catalogue or permission change.",
+  "scope": "Published approved fallback identities reconciled to recorded replacements. Previous storage pointers remain in the logo registry; this reconciliation changes no catalogue rows or permissions.",
   "supersessions": [
     {
       "setId": "ab0614ce-3998-47d1-8f23-8b94291c0a01",
@@ -1743,6 +1743,38 @@
       "deliveryUrl": "https://assets.stackrtcg.com/public/set_logo/e04dfa37-3fa5-4920-9fba-f93679baeae6/7776ab03be87439e79627b1390f126d569aa47ffe92d6417038262f06b37b03c/17abf853d2aa6ecd68abc44cf8180accbc94e0ab77290897565a75bcfbb8b224/original.png",
       "captureRequestId": "logo-readonly-db-snapshot-20261101",
       "captureGeneratedAt": "2026-11-01T19:22:16.322Z"
+    },
+    {
+      "setId": "e8e16a23-fc7a-4ec8-abfe-b74448fa5f27",
+      "assetType": "set_logo",
+      "language": "ja",
+      "setCode": "L1b",
+      "previousContentSha256": "f3234f24da22abb5966af659f8a3db3203d3143ec9683dfcd2cc87b40d204794",
+      "previousAssetId": "acquire:set_logo:e8e16a23-fc7a-4ec8-abfe-b74448fa5f27",
+      "previousDeliveryUrl": "https://assets.stackrtcg.com/public/set_logo/cabf15f1-addc-47e0-9aef-09e2f57bf476/097e2cefe19c1d0e17e4adade052dd1d30bbff25ef7758c8eec4f459b8e3882c/f3234f24da22abb5966af659f8a3db3203d3143ec9683dfcd2cc87b40d204794/original.png",
+      "previousDetailUrl": "https://assets.stackrtcg.com/public/set_logo/cabf15f1-addc-47e0-9aef-09e2f57bf476/097e2cefe19c1d0e17e4adade052dd1d30bbff25ef7758c8eec4f459b8e3882c/4c609568045e6870837f1c3a9200b6f6c2772c0ff636a116774a99e7037ea645/detail-page.webp",
+      "assetId": "reviewed:set-logo:e8e16a23-fc7a-4ec8-abfe-b74448fa5f27:7dcfb743b476c6cba7771d20a6ace737ba67201c1fa53b8b260d0079967c0383",
+      "contentSha256": "7dcfb743b476c6cba7771d20a6ace737ba67201c1fa53b8b260d0079967c0383",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/set_logo/7d/cf/7dcfb743b476c6cba7771d20a6ace737ba67201c1fa53b8b260d0079967c0383/original.png",
+      "captureRequestId": "36b4d97c-a2a5-473e-9a59-fe936958f653",
+      "captureGeneratedAt": "2026-11-01T21:17:13.911Z",
+      "captureSource": "Actual production public GET /v1/assets/manifest captured in Chrome after exact two-crop supersession"
+    },
+    {
+      "setId": "7dbeff79-cfb7-4ac8-8a4f-d7c73a523349",
+      "assetType": "set_logo",
+      "language": "ja",
+      "setCode": "LL",
+      "previousContentSha256": "9dfdcbec146a9ca771bd333ebfa0cfab991b96ce8270686a1707df9288af0532",
+      "previousAssetId": "acquire:set_logo:7dbeff79-cfb7-4ac8-8a4f-d7c73a523349",
+      "previousDeliveryUrl": "https://assets.stackrtcg.com/public/set_logo/f7fc344c-9f7c-4298-af9d-1903b1bc8e5d/9460c863355cbd51b409780169123420e2ddd9a7a6d77ffbaaf23f16c022640f/9dfdcbec146a9ca771bd333ebfa0cfab991b96ce8270686a1707df9288af0532/original.png",
+      "previousDetailUrl": "https://assets.stackrtcg.com/public/set_logo/f7fc344c-9f7c-4298-af9d-1903b1bc8e5d/9460c863355cbd51b409780169123420e2ddd9a7a6d77ffbaaf23f16c022640f/ecfcfcb26e0985972a9caef05ac929c8b9688e900e33a87ae4f78c8ad0846436/detail-page.webp",
+      "assetId": "reviewed:set-logo:7dbeff79-cfb7-4ac8-8a4f-d7c73a523349:f11661657260c1c19e1da24ceeeb5ef69fd59a16f436fedfa204a473da103add",
+      "contentSha256": "f11661657260c1c19e1da24ceeeb5ef69fd59a16f436fedfa204a473da103add",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/set_logo/f1/16/f11661657260c1c19e1da24ceeeb5ef69fd59a16f436fedfa204a473da103add/original.png",
+      "captureRequestId": "d97a732a-ad03-4716-8e71-89434df42259",
+      "captureGeneratedAt": "2026-11-01T21:17:26.264Z",
+      "captureSource": "Actual production public GET /v1/assets/manifest captured in Chrome after exact two-crop supersession"
     }
   ]
 }

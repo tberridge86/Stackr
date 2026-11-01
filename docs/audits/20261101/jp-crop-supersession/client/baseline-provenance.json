@@ -1,0 +1,89 @@
+{
+  "ref": "43f1fdbd11c0048a979a27f89dd1505f6b7c01da",
+  "files": [
+    {
+      "path": "baseline/lib/localSetArtwork.ts",
+      "sha": "207509fdabf819da85b134d498355d6dd58cb049"
+    },
+    {
+      "path": "baseline/scripts/test-binder-artwork-source.mjs",
+      "sha": "9d8035f12c35f12bb5bd05405c3e821cedfc28b5"
+    },
+    {
+      "path": "baseline/lib/generated/publishedSetLogos.generated.json",
+      "sha": "76bac4de94d05cf18fd4d66a6f716737e3f7ce59"
+    },
+    {
+      "path": "baseline/lib/generated/publishedSetAssetSupersessions.generated.json",
+      "sha": "25169e09fae62f0f12a083d7100aa7de6141576f"
+    },
+    {
+      "path": "baseline/scripts/test-magazine-set-cover-surfaces.ts",
+      "sha": "a8388b06a853f291db35e0a08920a6a737176003"
+    },
+    {
+      "path": "baseline/scripts/reconcile-published-set-assets.mjs",
+      "sha": "447271a76bb9b5dbb5c169c6a6d6f2d64c41abdd"
+    },
+    {
+      "path": "baseline/scripts/test-published-set-asset-delivery.mjs",
+      "sha": "418295e18b6e9b7ae77111c222844c434dbc304e"
+    },
+    {
+      "path": "lib/japaneseSetLogos.ts",
+      "sha": "aa033b93fae1fb4370d548276e6afd6847f3e436"
+    },
+    {
+      "path": "lib/providerSetMarkRuntimePolicy.ts",
+      "sha": "0fe4ab98388826d81a9653dabed419467e741723"
+    },
+    {
+      "path": "components/BinderArtwork.tsx",
+      "sha": "0df1ccbe74a3bc54686007d9237dda69b4a26146"
+    },
+    {
+      "path": "lib/publishedSetLogoFallbacks.ts",
+      "sha": "9bf4ad534fc5f6c6e11f2d95e4c4202280aed0c8"
+    },
+    {
+      "path": "app/binder/new.tsx",
+      "sha": "d5d70e029a24bf5400223bec4424a60f6b3d1bd0"
+    },
+    {
+      "path": "app/(tabs)/binder.tsx",
+      "sha": "2e23adebd8bf100cf013a90929502692d901897a"
+    },
+    {
+      "path": "features/binder/BinderDetailScreen.tsx",
+      "sha": "acdfbf974e7b8637ae73d798dc045f28b09f48c9"
+    },
+    {
+      "path": "app/(tabs)/explore.tsx",
+      "sha": "6bfb4ab39b15c2a60ea5e7fa597f01a6df930faf"
+    },
+    {
+      "path": "app/card/[id].tsx",
+      "sha": "814682412e708988a97abdfd42162eef4d0b43bb"
+    },
+    {
+      "path": "app/set/[id].tsx",
+      "sha": "589488845ed5d6f2005737d5fee4b3f5dd500ada"
+    },
+    {
+      "path": "components/HomeCommandCenter.tsx",
+      "sha": "c61e631fa0350af604deb30f9a0650b657f29050"
+    },
+    {
+      "path": "components/search/SearchResults.tsx",
+      "sha": "ea7989d6b3b5d97ad9b505dd070e3993dbb7ebb6"
+    },
+    {
+      "path": "app/(tabs)/search.tsx",
+      "sha": "8599197c61c1869daee88734f16664e7ef6a8f19"
+    },
+    {
+      "path": "features/market/MarketTabScreen.tsx",
+      "sha": "72e32b3d59a2c81039d790bb0042963e2be45983"
+    }
+  ]
+}
