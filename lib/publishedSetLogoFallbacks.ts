@@ -15,6 +15,7 @@ function publishedDelivery(row: PublishedDelivery, environment?: string) {
   return `${STORAGE_ROOT}${row.storageKey}`;
 }
 const normalize = (value: unknown) => String(value ?? '').trim().toLowerCase();
+const CANONICAL_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const languageOf = (value: unknown) => {
   const language = normalize(value).replace(/_/g, '-');
   if (['ja', 'jp', 'jpn', 'japanese', 'japan'].includes(language) || language.startsWith('ja-')) return 'ja';
@@ -47,15 +48,18 @@ export function getPublishedSetLogoFallback(input?: SetIdentity | null): string 
   const language = languageOf(input.language || prefix?.[1]);
   if (prefix && input.language && languageOf(prefix[1]) !== language) return undefined;
   const id = rawId.replace(/^(en|ja|jp):/, '');
+  const canonicalIdentity = CANONICAL_UUID.test(id);
   let row = byId.get(id);
   if (row && language && row.language !== language) return undefined;
-  if (!row && language) row = byCode.get(`${language}:${normalize(input.setCode ?? id)}`);
+  // A canonical UUID is authoritative even when it is unknown. Do not let a
+  // stale display code redirect that set to another set's published artwork.
+  if (!row && language && !canonicalIdentity) row = byCode.get(`${language}:${normalize(input.setCode ?? id)}`);
   // The requested Crown Zenith parent supersedes a stale Gallery logo. Other
   // parent links remain fallback-only. Prefer the resolved row's identity over a
   // supplied code so conflicting metadata cannot redirect an unrelated known set.
-  const parent = parentSetIds[id] ?? parents[row
+  const parent = parentSetIds[id] ?? ((!canonicalIdentity || row) ? parents[row
     ? `${row.language}:${normalize(row.setCode)}`
-    : `${language}:${normalize(input.setCode ?? id)}`];
+    : `${language}:${normalize(input.setCode ?? id)}`] : undefined);
   const replacesChildLogo = parent === 'en:swsh12.5';
   if (parent && (!row || replacesChildLogo) && (!language || parent.startsWith(`${language}:`))) {
     row = byCode.get(parent) ?? row;
