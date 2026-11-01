@@ -1,0 +1,372 @@
+import sharp from 'sharp';
+import { createHash, randomUUID } from 'node:crypto';
+import { Buffer } from 'node:buffer';
+import {
+  contentExtension,
+  IMAGE_MIME_TYPES,
+  PRIVATE_SCAN_MIME_TYPES,
+  sha256,
+  validateImageBuffer,
+} from './assetValidation.js';
+import {
+  assertCatalogueWriteStorage,
+  createCatalogueObjectStorageAdapter,
+  IMMUTABLE_CACHE_CONTROL,
+} from './objectStorage.js';
+
+export const STACKR_ASSET_BUCKETS = {
+  publicCatalogue: 'stackr-catalogue-public',
+  scanTemp: 'stackr-scan-temp',
+  trainingFeedback: 'stackr-training-feedback',
+  modelPrivate: 'stackr-model-private',
+};
+
+export const CATALOGUE_DERIVATIVE_SPECS = [
+  { role: 'card-grid', width: 240, format: 'webp', quality: 82 },
+  { role: 'search-result', width: 96, format: 'webp', quality: 78 },
+  { role: 'detail-page', width: 720, format: 'webp', quality: 86 },
+];
+
+function assertAssetType(assetType) {
+  const allowed = new Set(['card_image', 'set_symbol', 'set_logo', 'series_logo', 'sealed_product_image', 'other']);
+  if (!allowed.has(assetType)) throw new Error(`Unsupported catalogue asset type: ${assetType}`);
+}
+
+export function contentHashStorageKey(input) {
+  const extension = input.extension.replace(/^\./, '');
+  return [
+    input.visibility,
+    input.assetType,
+    input.sha256.slice(0, 2),
+    input.sha256.slice(2, 4),
+    input.sha256,
+    `${input.role}.${extension}`,
+  ].join('/');
+}
+
+async function imageHash(buffer) {
+  const pixels = await sharp(buffer)
+    .rotate()
+    .resize(8, 8, { fit: 'fill' })
+    .greyscale()
+    .raw()
+    .toBuffer();
+  const average = pixels.reduce((sum, value) => sum + value, 0) / pixels.length;
+  let bits = '';
+  for (const value of pixels) bits += value >= average ? '1' : '0';
+  return BigInt(`0b${bits}`).toString(16).padStart(16, '0');
+}
+
+export async function perceptualHashForImage(buffer) {
+  return imageHash(buffer);
+}
+
+async function derivativeImage(buffer, spec) {
+  const output = await sharp(buffer)
+    .rotate()
+    .resize({ width: spec.width, withoutEnlargement: true })
+    .webp({ quality: spec.quality })
+    .toBuffer();
+  const metadata = await sharp(output).metadata();
+  return {
+    role: spec.role,
+    buffer: output,
+    mimeType: 'image/webp',
+    width: metadata.width,
+    height: metadata.height,
+    byteSize: output.length,
+    sha256: sha256(output),
+    extension: 'webp',
+  };
+}
+
+async function putContentAddressedObject(storage, input) {
+  try {
+    return await storage.putObject(input);
+  } catch (error) {
+    const message = String(error?.message ?? error);
+    const status = Number(error?.status ?? error?.statusCode ?? 0);
+    if (status === 409 || status === 412 || /already exists|duplicate/i.test(message)) {
+      if (typeof storage.getObject !== 'function') {
+        throw new Error('Cannot verify an existing immutable object without a bounded storage reader.');
+      }
+      const expected = Buffer.from(input.body);
+      const existing = await storage.getObject(input.bucket, input.key, { maxBytes: expected.length });
+      if (!Buffer.from(existing).equals(expected)) {
+        throw new Error('Existing immutable object contains different bytes.');
+      }
+      return {
+        provider: storage.id,
+        bucket: input.bucket,
+        key: input.key,
+        path: input.key,
+        cacheControl: input.cacheControl ?? null,
+        duplicate: true,
+      };
+    }
+    throw error;
+  }
+}
+
+export async function buildCatalogueAssetRepairFromStoredOriginal(input) {
+  assertAssetType(input.assetType);
+  if (input.permissionStatus !== 'approved' || input.rightsStatus !== 'approved') {
+    throw new Error('Stored catalogue asset repair requires approved permission and rights status.');
+  }
+  const storage = assertCatalogueWriteStorage(input.storage ?? createCatalogueObjectStorageAdapter());
+
+  const validation = validateImageBuffer(input.buffer, {
+    declaredMimeType: input.mimeType,
+    allowedMimeTypes: IMAGE_MIME_TYPES,
+    maxBytes: input.maxBytes ?? 12 * 1024 * 1024,
+  });
+  if (!validation.ok) {
+    const error = new Error('Stored catalogue asset image validation failed.');
+    error.details = validation.reasons;
+    throw error;
+  }
+
+  const requestedRoles = new Set(input.derivativeRoles ?? CATALOGUE_DERIVATIVE_SPECS.map((spec) => spec.role));
+  const supportedRoles = new Set(CATALOGUE_DERIVATIVE_SPECS.map((spec) => spec.role));
+  for (const role of requestedRoles) {
+    if (!supportedRoles.has(role)) throw new Error(`Unsupported catalogue derivative role: ${role}`);
+  }
+
+  const metadata = await sharp(input.buffer).metadata();
+  const displayMetadata = metadata.autoOrient ?? metadata;
+  const bucket = input.bucket ?? storage.catalogueBucket ?? STACKR_ASSET_BUCKETS.publicCatalogue;
+  const derivativeList = [];
+  for (const spec of CATALOGUE_DERIVATIVE_SPECS) {
+    if (!requestedRoles.has(spec.role)) continue;
+    const derivative = await derivativeImage(input.buffer, spec);
+    const key = contentHashStorageKey({
+      visibility: 'public',
+      assetType: input.assetType,
+      sha256: derivative.sha256,
+      role: spec.role,
+      extension: derivative.extension,
+    });
+    await putContentAddressedObject(storage, {
+      bucket,
+      key,
+      body: derivative.buffer,
+      contentType: derivative.mimeType,
+      cacheControl: IMMUTABLE_CACHE_CONTROL,
+      upsert: false,
+    });
+    derivativeList.push({
+      role: spec.role,
+      storageProvider: storage.id,
+      storageBucket: bucket,
+      storageKey: key,
+      mimeType: derivative.mimeType,
+      width: derivative.width,
+      height: derivative.height,
+      byteSize: derivative.byteSize,
+      contentSha256: derivative.sha256,
+      cacheControl: IMMUTABLE_CACHE_CONTROL,
+    });
+  }
+
+  const contentSha256 = sha256(input.buffer);
+  return {
+    sha256: contentSha256,
+    content_sha256: contentSha256,
+    perceptual_hash: await imageHash(input.buffer),
+    mime_type: validation.mimeType,
+    width: displayMetadata.width ?? validation.width,
+    height: displayMetadata.height ?? validation.height,
+    byte_size: input.buffer.length,
+    derivative_list: derivativeList,
+    last_verified_at: new Date().toISOString(),
+  };
+}
+
+export async function buildApprovedCatalogueAsset(input) {
+  assertAssetType(input.assetType);
+
+  const permissionStatus = input.permissionStatus ?? 'unknown';
+  const rightsStatus = input.rightsStatus ?? permissionStatus;
+  if (permissionStatus !== 'approved' || rightsStatus !== 'approved') {
+    const blocked = ['denied', 'restricted'].includes(permissionStatus)
+      || ['denied', 'restricted'].includes(rightsStatus);
+    return {
+      asset_id: input.assetId ?? randomUUID(),
+      asset_type: input.assetType,
+      storage_provider: blocked ? 'unavailable' : 'external_reference',
+      asset_visibility: 'public_catalogue',
+      url: input.sourceUrl ?? null,
+      original_source_url: input.sourceUrl ?? null,
+      original_source_identifier: input.sourceIdentifier ?? null,
+      source_attribution: input.sourceAttribution ?? null,
+      permission_status: permissionStatus,
+      rights_status: rightsStatus,
+      publicly_servable: false,
+      externally_referenced: !blocked,
+      unavailable_reason: 'mirroring_not_authorised',
+      derivative_list: [],
+      retention_status: 'unavailable',
+      last_verified_at: new Date().toISOString(),
+    };
+  }
+  const storage = assertCatalogueWriteStorage(input.storage ?? createCatalogueObjectStorageAdapter());
+
+  const validation = validateImageBuffer(input.buffer, {
+    declaredMimeType: input.mimeType,
+    allowedMimeTypes: IMAGE_MIME_TYPES,
+    maxBytes: input.maxBytes ?? 12 * 1024 * 1024,
+  });
+  if (!validation.ok) {
+    const error = new Error('Catalogue asset image validation failed.');
+    error.details = validation.reasons;
+    throw error;
+  }
+
+  // The immutable original is evidence as well as the full-detail rendition.
+  // Retain its exact bytes; rotation, resizing and compression belong only to derivatives.
+  const original = {
+    buffer: input.buffer,
+    mimeType: validation.mimeType,
+    extension: contentExtension(validation.mimeType),
+  };
+  const originalSha = sha256(original.buffer);
+  const sourceMetadata = await sharp(original.buffer).metadata();
+  const originalMetadata = sourceMetadata.autoOrient ?? sourceMetadata;
+  const perceptualHash = await imageHash(original.buffer);
+  const bucket = input.bucket ?? storage.catalogueBucket ?? STACKR_ASSET_BUCKETS.publicCatalogue;
+  const originalKey = contentHashStorageKey({
+    visibility: 'public',
+    assetType: input.assetType,
+    sha256: originalSha,
+    role: 'original',
+    extension: original.extension,
+  });
+
+  await putContentAddressedObject(storage, {
+    bucket,
+    key: originalKey,
+    body: original.buffer,
+    contentType: original.mimeType,
+    cacheControl: IMMUTABLE_CACHE_CONTROL,
+    upsert: false,
+  });
+
+  const derivativeList = [];
+  for (const spec of CATALOGUE_DERIVATIVE_SPECS) {
+    const derivative = await derivativeImage(original.buffer, spec);
+    const key = contentHashStorageKey({
+      visibility: 'public',
+      assetType: input.assetType,
+      sha256: derivative.sha256,
+      role: spec.role,
+      extension: derivative.extension,
+    });
+    await putContentAddressedObject(storage, {
+      bucket,
+      key,
+      body: derivative.buffer,
+      contentType: derivative.mimeType,
+      cacheControl: IMMUTABLE_CACHE_CONTROL,
+      upsert: false,
+    });
+    derivativeList.push({
+      role: spec.role,
+      storageProvider: storage.id,
+      storageBucket: bucket,
+      storageKey: key,
+      mimeType: derivative.mimeType,
+      width: derivative.width,
+      height: derivative.height,
+      byteSize: derivative.byteSize,
+      contentSha256: derivative.sha256,
+      cacheControl: IMMUTABLE_CACHE_CONTROL,
+    });
+  }
+
+  return {
+    asset_id: input.assetId ?? randomUUID(),
+    asset_type: input.assetType,
+    asset_visibility: 'public_catalogue',
+    storage_provider: storage.id,
+    storage_bucket: bucket,
+    storage_key: originalKey,
+    storage_path: originalKey,
+    url: input.sourceUrl ?? null,
+    original_source_url: input.sourceUrl ?? null,
+    original_source_identifier: input.sourceIdentifier ?? null,
+    source_attribution: input.sourceAttribution ?? null,
+    permission_status: 'approved',
+    rights_status: 'approved',
+    content_sha256: originalSha,
+    sha256: originalSha,
+    perceptual_hash: perceptualHash,
+    mime_type: original.mimeType,
+    width: originalMetadata.width,
+    height: originalMetadata.height,
+    byte_size: original.buffer.length,
+    derivative_list: derivativeList,
+    cache_control: IMMUTABLE_CACHE_CONTROL,
+    archival_storage_key: input.preserveArchivalOriginal === false ? null : originalKey,
+    publicly_servable: true,
+    externally_referenced: false,
+    retention_status: 'active',
+    last_verified_at: new Date().toISOString(),
+  };
+}
+
+export function validatePrivateScanUpload(buffer, contentType, options = {}) {
+  return validateImageBuffer(buffer, {
+    declaredMimeType: contentType,
+    allowedMimeTypes: PRIVATE_SCAN_MIME_TYPES,
+    maxBytes: options.maxBytes ?? 20 * 1024 * 1024,
+    maxWidth: options.maxWidth ?? 8000,
+    maxHeight: options.maxHeight ?? 8000,
+  });
+}
+
+export function privateScanStorageKey(input) {
+  const userSegment = createHash('sha256')
+    .update(String(input.userId ?? 'unknown-user'))
+    .digest('hex')
+    .slice(0, 24);
+  const uploadId = String(input.uploadId ?? randomUUID());
+  const extension = contentExtension(input.mimeType);
+  return `private/u/${userSegment}/scan-temp/${uploadId}.${extension}`;
+}
+
+export async function createPrivateScanSignedUpload(input) {
+  const mimeType = String(input.mimeType ?? '').split(';')[0].trim().toLowerCase();
+  if (!PRIVATE_SCAN_MIME_TYPES.has(mimeType)) {
+    const error = new Error('Unsupported scan upload MIME type.');
+    error.status = 415;
+    throw error;
+  }
+  const maxBytes = Number(input.maxBytes ?? 20 * 1024 * 1024);
+  if (Number(input.declaredByteSize ?? 0) > maxBytes) {
+    const error = new Error('Scan upload is too large.');
+    error.status = 413;
+    throw error;
+  }
+  const expiresInSeconds = Math.max(60, Math.min(Number(input.expiresInSeconds ?? 600), 3600));
+  const key = privateScanStorageKey({
+    userId: input.userId,
+    uploadId: input.uploadId,
+    mimeType,
+  });
+  const signed = await input.storage.createSignedUpload({
+    bucket: STACKR_ASSET_BUCKETS.scanTemp,
+    key,
+    contentType: mimeType,
+    expiresInSeconds,
+    upsert: false,
+  });
+  return {
+    ...signed,
+    storageBucket: STACKR_ASSET_BUCKETS.scanTemp,
+    storageKey: key,
+    maxBytes,
+    mimeType,
+    retentionStatus: 'temporary',
+    retentionUntil: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+  };
+}

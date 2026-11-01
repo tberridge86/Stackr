@@ -60,13 +60,25 @@ for (const [id, code, name] of [
 ]) {
   const expected = japanese.getJapaneseSetLogoMatchForSet({ id: code, language: 'ja' }).source;
   for (const identity of [{ id, language: 'ja' }, { id: `jp:${id}` }, { id: `ja:${code}` }, { id: code.toUpperCase(), language: 'Japanese' }, { name, language: 'ja' }]) {
-    assert.equal(select(identity, { publishedUrl: current }).source, expected, `reviewed crop retained for ${JSON.stringify(identity)}`);
-    assert.equal(select(identity, { publishedUrl: current }).url, null);
+    assert.equal(select(identity, { publishedUrl: current, savedUrl: saved }).url, current,
+      `published crop takes priority for ${JSON.stringify(identity)}`);
+    assert.equal(select(identity, { publishedUrl: current }).source, null);
+    assert.equal(select(identity).source, expected, 'exact reviewed crop remains available offline');
+    assert.equal(select(identity, { publishedUrl: current, failedUrl: current }).source, expected,
+      'failed published delivery recovers the exact reviewed crop');
   }
-  assert.equal(select({ id, language: 'en' }, { publishedUrl: current }).url, current, 'crop exception never borrows Japanese art for English');
+  assert.equal(select({ id, language: 'en' }, { publishedUrl: current }).url, current, 'Japanese fallback never overrides an English published logo');
   for (const unrelated of ['01234567-1234-4123-8123-0123456789ab', 'ja:01234567-1234-4123-8123-0123456789ab']) {
-    assert.equal(select({ id: unrelated, language: 'ja', name, setCode: code }, { publishedUrl: current }).url,
+    const contradictory = { id: unrelated, language: 'ja', name, setCode: code };
+    assert.equal(select(contradictory, { publishedUrl: current }).url,
       current, 'conflicting legacy name/code cannot override another exact canonical set');
+    assert.equal(select(contradictory).source, null, 'an absent URL cannot turn stale metadata into another set crop');
+    assert.equal(select(contradictory, { publishedUrl: current, failedUrl: current }).source, null,
+      'a failed URL cannot turn stale metadata into another set crop');
+    assert.equal(select(contradictory, { fallbackSource: expected }).source, null,
+      'caller-supplied local logo cannot bypass the same exact-identity guard');
+    assert.equal(select(contradictory, { fallbackSource: local }).source, local,
+      'a separate custom fallback is retained');
   }
 }
 
@@ -138,5 +150,9 @@ assert.equal(renderer().render({ ...props, coverKey: 'custom' })[0].source, 'cus
 assert.equal(renderer().render({ ...props, sourceSetId: 'magazine', sourceSetLanguage: 'ja' })[0].source, magazine);
 assert.equal(renderer().render({ fallbackArtSource: 'custom-name-design' })[0].source, 'custom-name-design');
 const crop = renderer().render({ sourceSetId: 'e8e16a23-fc7a-4ec8-abfe-b74448fa5f27', sourceSetLanguage: 'ja' });
-assert.match(crop[0].source, /l1b\.png$/);
-console.log('Binder source presentation passed: canonical/saved priority, exact reviewed crops, local failure recovery, late-error isolation, unchanged custom/magazine roles.');
+assert.equal(crop[0].uri, current, 'published reviewed crop is selected by the actual binder renderer');
+const recovery = renderer();
+const cropProps = { sourceSetId: 'e8e16a23-fc7a-4ec8-abfe-b74448fa5f27', sourceSetLanguage: 'ja' };
+recovery.render(cropProps)[0].onError();
+assert.match(recovery.render(cropProps)[0].source, /l1b\.png$/, 'exact bundled crop recovers a delivery failure');
+console.log('Binder source presentation passed: canonical/saved priority, published reviewed crops, exact local failure recovery, late-error isolation, unchanged custom/magazine roles.');

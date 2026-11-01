@@ -1,0 +1,210 @@
+{
+  "schemaVersion": "stackr-jp-crop-completion-receipt-v1",
+  "status": "published_api_and_bytes_verified",
+  "publishedAt": "2026-11-01T21:16:56.997592Z",
+  "projectRef": "oakdbbzdqwurpjnoqhmu",
+  "effects": {
+    "assetsInserted": 2,
+    "membershipsReplaced": 2,
+    "oldAssetsDeleted": 0,
+    "objectsDeleted": 0,
+    "sourceRightsGrants": 0
+  },
+  "actualObjects": 8,
+  "actualObjectBytes": 1158220,
+  "observedCacheControl": "max-age=14400",
+  "desiredImmutablePolicyObserved": false,
+  "api": [
+    {
+      "setId": "e8e16a23-fc7a-4ec8-abfe-b74448fa5f27",
+      "assetId": "reviewed:set-logo:e8e16a23-fc7a-4ec8-abfe-b74448fa5f27:7dcfb743b476c6cba7771d20a6ace737ba67201c1fa53b8b260d0079967c0383",
+      "sha256": "7dcfb743b476c6cba7771d20a6ace737ba67201c1fa53b8b260d0079967c0383",
+      "requestId": "36b4d97c-a2a5-473e-9a59-fe936958f653",
+      "generatedAt": "2026-11-01T21:17:13.911Z",
+      "returnedAssets": 1,
+      "declaredDerivatives": 3,
+      "nextCursor": null
+    },
+    {
+      "setId": "7dbeff79-cfb7-4ac8-8a4f-d7c73a523349",
+      "assetId": "reviewed:set-logo:7dbeff79-cfb7-4ac8-8a4f-d7c73a523349:f11661657260c1c19e1da24ceeeb5ef69fd59a16f436fedfa204a473da103add",
+      "sha256": "f11661657260c1c19e1da24ceeeb5ef69fd59a16f436fedfa204a473da103add",
+      "requestId": "d97a732a-ad03-4716-8e71-89434df42259",
+      "generatedAt": "2026-11-01T21:17:26.264Z",
+      "returnedAssets": 1,
+      "declaredDerivatives": 3,
+      "nextCursor": null
+    }
+  ],
+  "checks": {
+    "localFrozenActualPacketScenarios": 40,
+    "independentPublisherReview": "pass",
+    "independentFinalClientReview": "pass",
+    "unchangedOtherLogoRows": 278,
+    "preservedPriorSupersessions": 145,
+    "newSupersessions": 2,
+    "physicalDeviceVerified": false
+  },
+  "retainedPreviousAssets": [
+    "cabf15f1-addc-47e0-9aef-09e2f57bf476",
+    "f7fc344c-9f7c-4298-af9d-1903b1bc8e5d"
+  ],
+  "scope": "Exact already-reviewed owner-supplied crop replacements only; no source-wide permission, vendor licence or new identity asserted.",
+  "archive": {
+    "root": "docs/audits/20261101/jp-crop-supersession",
+    "files": [
+      {
+        "path": "README.md",
+        "bytes": 5332,
+        "sha256": "cc21e52d8f688c7ee23977d2d8c71afcdb263e579d37ed46a12f2f586df49904"
+      },
+      {
+        "path": "batch.mjs",
+        "bytes": 1307,
+        "sha256": "1ed6540753f3997ed26cea9c795879b293933cebc3e3dab97ddc7ea8bc8fca54"
+      },
+      {
+        "path": "build-publication.mjs",
+        "bytes": 15850,
+        "sha256": "5bd0e0d5da3f126779f944eeb3572e0253c50564ed6b325b3b6662dc88477a3b"
+      },
+      {
+        "path": "prepare-local-objects.mjs",
+        "bytes": 4016,
+        "sha256": "04c3a5099310f086ac5b5d78bc53a02565a5f6e9e8bc7434e0854ae3c8b7706e"
+      },
+      {
+        "path": "prepare-reads.mjs",
+        "bytes": 3748,
+        "sha256": "cc7c4a1a3e164e459cf20b5b4be70154d86006147e5f1132bb451b0bb12e5c05"
+      },
+      {
+        "path": "sharp-loader.mjs",
+        "bytes": 406,
+        "sha256": "7f31b161b61ce720b59a90060bef1a6d097dc52bfd9052923e11eae9126b088c"
+      },
+      {
+        "path": "test-publication.mjs",
+        "bytes": 11212,
+        "sha256": "0a147da0f27d6f49fdbf197f8df3381c157302013537a9e8e2cbdb57c17b0f66"
+      },
+      {
+        "path": "test-read-query-equivalence.mjs",
+        "bytes": 8079,
+        "sha256": "70cdb1111c27c3a62d245bf3790b615085b9d4b8082bd46a0b63b48fed9caa68"
+      },
+      {
+        "path": "complete-effective-links.sql",
+        "bytes": 2660,
+        "sha256": "25b3f5bd8cfb4b89371dffb99d2c6fb1d99c44d9ab8e544265f17f1687da4b6a"
+      },
+      {
+        "path": "read-query-optimized.sql",
+        "bytes": 2927,
+        "sha256": "434bbbc7837aeea3eb703b62d81bf98355421fabd5dab81af016add1545313ee"
+      },
+      {
+        "path": "publication-envelope.sql",
+        "bytes": 2778,
+        "sha256": "a9387648b844cac3ff4a1aa81b8e90ce6076461a5ffc5f55df5eba88bd5332c5"
+      },
+      {
+        "path": "authority.json",
+        "bytes": 1889,
+        "sha256": "49bb1421afb3947172b56362cc141e8e28d0b515054f8c32fa1ab53320fb7fed"
+      },
+      {
+        "path": "envelope.json",
+        "bytes": 1310,
+        "sha256": "a22695dfd0955d0fec0d62851ae0dcb05c9bc00d8e2cda5439fc574de0fdcea6"
+      },
+      {
+        "path": "prior.json",
+        "bytes": 13735,
+        "sha256": "078e3302f7d37338e7d86f878e6d08ef076000e5a6a07ad355a6db092c7b6130"
+      },
+      {
+        "path": "actual-verified-objects.json",
+        "bytes": 5535,
+        "sha256": "170b130f6b19bb946b6fd2bffb1909f7664cc7162fc6094f0b0a2bf2d4fdcdbc"
+      },
+      {
+        "path": "production-mutation-receipt.json",
+        "bytes": 40472,
+        "sha256": "99c0b755636249753384557ccb9dc20e72926cff099d55ac792ee2ad293ff455"
+      },
+      {
+        "path": "api-l1b.json",
+        "bytes": 3318,
+        "sha256": "427d02e57b1b8e4acbaaf499b7e7cc441da89495c47cf217965c9de5e8b07f75"
+      },
+      {
+        "path": "api-ll.json",
+        "bytes": 3318,
+        "sha256": "37ff12cdbe65a25a3bff13e8ec55ce8334ff95ecdfe0a28197be18f9f3b3bf85"
+      },
+      {
+        "path": "pipeline/assetPipeline.js",
+        "bytes": 12757,
+        "sha256": "1bee3ffafc11780a8ce87d282ca6514074d338ce4979296099a74c705ba514ea"
+      },
+      {
+        "path": "pipeline/assetValidation.js",
+        "bytes": 5007,
+        "sha256": "530cfe312f04860584c7dad7765ad5b58c3fcb22f13a64670390b235e12d5aab"
+      },
+      {
+        "path": "pipeline/objectStorage.js",
+        "bytes": 15950,
+        "sha256": "302dd62b0608687ce144dde49bff9e99d07a56acaa3e4c252d2d6768031d0a48"
+      },
+      {
+        "path": "pipeline/package.json",
+        "bytes": 18,
+        "sha256": "1239d4d885dcad42201a27ed9324f8f0f760b78700d8db9ced39a511cffe7eae"
+      },
+      {
+        "path": "publication/object-manifest.json",
+        "bytes": 17075,
+        "sha256": "06c4ce045037582bf623bfcccf97892b8050e57e3cfa59ef6e3041f2d6cd42af"
+      },
+      {
+        "path": "publication/frozen-verified/publication-plan.json",
+        "bytes": 63911,
+        "sha256": "4fe1eeb194c5fc9b0d1d48725865f5bc9fd8404dfcad0925ff51ffed7d174e49"
+      },
+      {
+        "path": "publication/frozen-verified/publish.sql",
+        "bytes": 103141,
+        "sha256": "4f6667d128211982afafa5c35c155e0939481acb2b1be1f7ea2f438fd1e21188"
+      },
+      {
+        "path": "publication/frozen-verified/rollback.sql",
+        "bytes": 62422,
+        "sha256": "a010cfe11d8549f7981638089fe7217f824b6346f640ca468bebbe55222c929b"
+      },
+      {
+        "path": "client/freeze.json",
+        "bytes": 1730,
+        "sha256": "faed8e944360bbc1e8cf953c54abf68cc2c1186eae9cc3637c55dd8c8b0d924a"
+      },
+      {
+        "path": "client/api-captures.json",
+        "bytes": 9670,
+        "sha256": "4e2138a890b012174ede34cfa1222d0ff6badec78e37102a14c6ea93b90ca3bf"
+      },
+      {
+        "path": "client/reconcile-two-crops.mjs",
+        "bytes": 5222,
+        "sha256": "8d054a287b493d165aa0ed87a6ca4bed6213d44e52db9b50ec1eef982987f899"
+      },
+      {
+        "path": "client/baseline-provenance.json",
+        "bytes": 2631,
+        "sha256": "e564a8ea46cc1c9fd67903ca18b397db6ede390f4e0c078e199859db22ffbe76"
+      }
+    ],
+    "imageBytesIncluded": false,
+    "imageRetention": "Exact originals remain committed in source control; verified originals and renditions are retained on R2. The unmodified manifest records all exact keys/hashes."
+  }
+}

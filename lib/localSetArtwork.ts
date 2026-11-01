@@ -47,10 +47,9 @@ export function getLocalSetLogoSourceForSet(
     ?? getTraditionalChineseSetLogoSourceForSet(input, fallbackLanguage);
 }
 
-/** Reviewed PR203 crops differ from the currently published logos. Keep their
- * exact presentation until publication carries those same reviewed originals.
- * See docs/audits/20261101/build63-feedback-performance.md. */
-const REVIEWED_JAPANESE_CROP_IDS: Record<string, string> = {
+/** Exact canonical aliases for the reviewed PR203 bundled crops. These remain
+ * absence/failure fallbacks; approved published delivery has primary priority. */
+const REVIEWED_JAPANESE_CROP_FALLBACK_IDS: Record<string, string> = {
   'e8e16a23-fc7a-4ec8-abfe-b74448fa5f27': 'l1b',
   '7dbeff79-cfb7-4ac8-8a4f-d7c73a523349': 'll',
 };
@@ -58,8 +57,8 @@ const REVIEWED_JAPANESE_CROP_IDS: Record<string, string> = {
 /** Shared binder presentation policy. Current exact-set published mapping wins
  * over a saved pointer; local artwork recovers absent/failed remote delivery.
  * Callers supply the existing environment-scoped canonical lookup, not a new
- * host or inferred URL. Magazine covers and reviewed crop exceptions keep their
- * distinct presentation. This never changes catalogue or saved metadata. */
+ * host or inferred URL. Magazine covers keep their distinct presentation.
+ * This never changes catalogue or saved metadata. */
 export function getSetArtworkPresentation(
   input: LocalSetArtworkLookupInput,
   options: {
@@ -72,21 +71,25 @@ export function getSetArtworkPresentation(
 ): { source: ImageSourcePropType | null; url: string | null } {
   const identity = String(input.id ?? input.setId ?? input.sourceId ?? '').trim().replace(/^(ja|jp):/i, '').toLowerCase();
   const canonicalIdentity = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(identity);
-  const cropCode = REVIEWED_JAPANESE_CROP_IDS[identity];
-  // A stale display name must never turn another canonical set into a crop exception.
-  const japanese = canonicalIdentity && !cropCode ? null : getJapaneseSetLogoMatchForSet(cropCode
+  const cropCode = REVIEWED_JAPANESE_CROP_FALLBACK_IDS[identity];
+  const japanese = getJapaneseSetLogoMatchForSet(cropCode
     ? { id: `ja:${cropCode}`, language: input.language }
     : input);
   const reviewedCrop = japanese && (japanese.key === 'l1b' || japanese.key === 'll') ? japanese.source : null;
+  // A stale display name/code must not reintroduce another canonical set's crop
+  // through either the generic local resolver or a caller-provided logo fallback.
+  const conflictingCrop = canonicalIdentity && !cropCode ? reviewedCrop : null;
+  const reviewedCropFallback = conflictingCrop ? null : reviewedCrop;
   const magazine = getMagazineSetCoverSourceForSet(input);
-  const source = magazine ?? reviewedCrop ?? options.fallbackSource ?? getLocalSetArtworkSourceForSet(input);
+  const fallbackSource = options.fallbackSource ?? getLocalSetArtworkSourceForSet(input);
+  const safeFallback = conflictingCrop && fallbackSource === conflictingCrop ? null : fallbackSource;
+  const source = magazine ?? reviewedCropFallback ?? safeFallback;
   const availableSource = source && source !== options.failedSource ? source : null;
   const url = enforceSetVisualRuntimePolicy(options.publishedUrl)
     ?? enforceSetVisualRuntimePolicy(options.savedUrl)
     ?? null;
-  if (magazine || reviewedCrop || !url || url === options.failedUrl) {
+  if (magazine || !url || url === options.failedUrl) {
     return { source: availableSource, url: null };
   }
   return { source: null, url };
 }
-

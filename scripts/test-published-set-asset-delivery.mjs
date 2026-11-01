@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
@@ -85,10 +86,10 @@ const sourcePath = process.argv[2] ?? fileURLToPath(new URL('../lib/publishedSet
 const compiled = ts.transpileModule(fs.readFileSync(sourcePath, 'utf8'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
 }).outputText;
-function load(environment) {
+function load(environment, logoSnapshot = result.snapshot) {
   const module = { exports: {} };
   const dependencies = {
-    './generated/publishedSetLogos.generated.json': result.snapshot,
+    './generated/publishedSetLogos.generated.json': logoSnapshot,
     './generated/publishedSimplifiedChineseCovers.generated.json': coverResult.snapshot,
     './mobileRuntimeConfig': { MOBILE_RUNTIME_CONFIG: { environment, supabaseUrl: 'https://staging.example' } },
   };
@@ -109,3 +110,88 @@ assert.equal(load('staging').getPublishedSetLogoFallback({ id: row.setId, langua
   `https://staging.example/storage/v1/object/public/stackr-catalogue-public/${row.storageKey}`,
   'a production capture cannot redirect staging to production artwork');
 console.log('Published asset delivery passed: exact hashes/identities, approved recorded URLs, continuation/ambiguity guards, immutable inputs, covers and runtime environment isolation.');
+
+const committed = JSON.parse(fs.readFileSync(path.join(path.dirname(sourcePath), 'generated/publishedSetLogos.generated.json'), 'utf8'));
+const recordedSupersessions = JSON.parse(fs.readFileSync(path.join(path.dirname(sourcePath), 'generated/publishedSetAssetSupersessions.generated.json'), 'utf8'));
+const currentProduction = load('production', committed);
+const unrelatedCanonicalId = '01234567-1234-4123-8123-0123456789ab';
+for (const id of [unrelatedCanonicalId, `jp:${unrelatedCanonicalId}`]) {
+  assert.equal(currentProduction.getPublishedSetLogoFallback({ id, language: 'ja', setCode: 'L1b' }), undefined,
+    'an unknown canonical UUID cannot borrow a published logo through a stale set code');
+}
+
+const adapterSource = fs.readFileSync(path.join(path.dirname(sourcePath), 'stackrDomainAdapter.ts'), 'utf8');
+const adapterCompiled = ts.transpileModule(adapterSource, {
+  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+const adapter = {};
+const adapterDependencies = {
+  './pokemonDisplayNames': {
+    getLocalSetName: (input) => input.localName ?? input.setCode,
+    getEnglishSetDisplayName: (input) => input.englishDisplayName ?? input.localName,
+    getPreferredSetDisplayName: (input) => input.englishDisplayName ?? input.localName,
+  },
+  './pokemonSetSeries': { getPokemonSetDisplaySeries: (input) => input.series },
+  './publishedSetLogoFallbacks': currentProduction,
+  './optionalCatalogueEnrichment': {
+    readOptionalCatalogueEnrichment: (read) => read(),
+    throwIfOptionalCatalogueReadAborted: () => {},
+  },
+};
+vm.runInNewContext(adapterCompiled, {
+  exports: adapter,
+  require: (name) => adapterDependencies[name] ?? {},
+  process, console, AbortController, setTimeout, clearTimeout,
+});
+const unrelatedSet = {
+  setId: unrelatedCanonicalId,
+  setCode: 'L1b',
+  languageCode: 'ja',
+  nativeName: 'Unrelated canonical set',
+  total: 1,
+};
+assert.equal(adapter.stackrSetToLegacySet(unrelatedSet).images.logo, undefined,
+  'the active set adapter cannot seed its image/cache path with another canonical set logo');
+for (const crop of [
+  {
+    setId: 'e8e16a23-fc7a-4ec8-abfe-b74448fa5f27', code: 'L1b',
+    previous: 'f3234f24da22abb5966af659f8a3db3203d3143ec9683dfcd2cc87b40d204794',
+    original: '7dcfb743b476c6cba7771d20a6ace737ba67201c1fa53b8b260d0079967c0383',
+    detail: 'dd10d60fd15bf6179383f1f64dfc631b41f0636d5242a20a26431b039be01559',
+  },
+  {
+    setId: '7dbeff79-cfb7-4ac8-8a4f-d7c73a523349', code: 'LL',
+    previous: '9dfdcbec146a9ca771bd333ebfa0cfab991b96ce8270686a1707df9288af0532',
+    original: 'f11661657260c1c19e1da24ceeeb5ef69fd59a16f436fedfa204a473da103add',
+    detail: '7908d79c0a09b80cfd755bad1078b7803f0433a735a9a5ca8f086dec514e3b62',
+  },
+]) {
+  const matches = committed.logos.filter((item) => item.setId === crop.setId);
+  assert.equal(matches.length, 1, 'exact Japanese crop has one canonical mapping');
+  const mapped = matches[0];
+  assert.equal(mapped.language, 'ja');
+  assert.equal(mapped.setCode, crop.code);
+  assert.equal(mapped.contentSha256, crop.original);
+  assert.equal(mapped.supersedesContentSha256, crop.previous);
+  assert.ok(mapped.storageKey.includes('/' + crop.previous + '/'), 'previous immutable pointer remains available');
+  assert.ok(mapped.deliveryUrl.includes('/' + crop.original + '/original.png'));
+  assert.ok(mapped.detailUrl.includes('/' + crop.detail + '/detail-page.webp'));
+  const receipt = recordedSupersessions.supersessions.filter((item) => item.setId === crop.setId);
+  assert.equal(receipt.length, 1);
+  assert.equal(receipt[0].previousContentSha256, crop.previous);
+  assert.equal(receipt[0].previousAssetId, 'acquire:set_logo:' + crop.setId);
+  assert.ok(receipt[0].previousDeliveryUrl.includes('/' + crop.previous + '/original.png'),
+    'previous recorded central delivery remains in the rollback receipt');
+  assert.equal(receipt[0].contentSha256, crop.original);
+  assert.equal(receipt[0].assetId, mapped.assetId);
+  assert.equal(receipt[0].deliveryUrl, mapped.deliveryUrl);
+  assert.ok(committed.deliveryEvidence.some((capture) => capture.requestId === receipt[0].captureRequestId
+    && capture.generatedAt === receipt[0].captureGeneratedAt), 'replacement retains its exact captured publication evidence');
+  for (const identity of [{ id: crop.setId, language: 'ja' }, { id: 'jp:' + crop.setId }, { id: 'ja:' + crop.code }]) {
+    assert.equal(currentProduction.getPublishedSetLogoFallback(identity), mapped.detailUrl);
+  }
+  assert.equal(currentProduction.getPublishedSetLogoFallback({ id: crop.setId, language: 'en' }), undefined);
+  assert.equal(load('staging', committed).getPublishedSetLogoFallback({ id: crop.setId, language: 'ja' }),
+    'https://staging.example/storage/v1/object/public/stackr-catalogue-public/' + mapped.storageKey);
+}
+console.log('Published Japanese crops passed: exact verified originals/renditions, canonical and legacy aliases, retained rollback and capture evidence, language/environment isolation.');

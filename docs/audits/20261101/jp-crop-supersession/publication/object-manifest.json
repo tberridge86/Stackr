@@ -1,0 +1,331 @@
+{
+  "schemaVersion": "stackr-jp-crop-local-objects-v1",
+  "preparedAt": "2026-11-01T20:38:07.335Z",
+  "projectRef": "oakdbbzdqwurpjnoqhmu",
+  "bucket": "stackr-catalogue-public",
+  "pipelineMainRevision": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+  "pipelineBlobs": {
+    "assetPipeline": "7c34fe02f4a1359f0c15bdf78ab9363744599389",
+    "objectStorage": "770ccab72ad2abea207b3bdcbff6814dcb83a229",
+    "assetValidation": "7452eea489339d8bca06a0bfacd3dec1e53eaaae"
+  },
+  "provenance": {
+    "sourceFile": "D:/Stackr/assets/rev2/11-japanese-set-logo/WhatsApp Image 2026-07-24 at 14.31.55 (4).jpeg",
+    "sourceSha256": "078ae1be1255300fc818cf7d2a3d18dc44852e91f830f9f8b71244c7943fbfb3",
+    "manifestGitBlob": "54c00529ca2ad3256aa96840fde417eaca2bf174",
+    "basis": "Exact existing committed crops, extracted from supplied JPEG and resized by the historic crop repair; no new image generation or claim of unaltered JPEG pixels.",
+    "standingApprovedReplacement": true,
+    "sourceWideAuthority": false,
+    "independentlyAuditedVendorLicence": false
+  },
+  "sharpVersions": {
+    "aom": "3.14.1",
+    "archive": "3.8.7",
+    "cairo": "1.18.4",
+    "cgif": "0.5.3",
+    "exif": "0.6.26",
+    "expat": "2.8.1",
+    "ffi": "3.5.2",
+    "fontconfig": "2.18.1",
+    "freetype": "2.14.3",
+    "fribidi": "1.0.16",
+    "glib": "2.89.0",
+    "harfbuzz": "14.2.1",
+    "heif": "1.23.0",
+    "highway": "1.4.0",
+    "imagequant": "2.4.1",
+    "lcms": "2.19.1",
+    "mozjpeg": "0826579",
+    "pango": "1.57.1",
+    "pixman": "0.46.4",
+    "png": "1.6.58",
+    "proxy-libintl": "0.5",
+    "rsvg": "2.62.3",
+    "tiff": "732665c",
+    "uhdr": "13a058f",
+    "vips": "8.18.3",
+    "webp": "1.6.0",
+    "xml2": "2.15.3",
+    "zlib-ng": "2.3.3",
+    "sharp": "0.35.3"
+  },
+  "assets": [
+    {
+      "target": {
+        "code": "l1b",
+        "setId": "e8e16a23-fc7a-4ec8-abfe-b74448fa5f27",
+        "rowId": "49c872a8-aff6-455e-9042-dad770b2bd09",
+        "name": "SoulSilver Collection",
+        "sha256": "7dcfb743b476c6cba7771d20a6ace737ba67201c1fa53b8b260d0079967c0383",
+        "bytes": 544426,
+        "width": 1000,
+        "height": 472,
+        "gitBlob": "028900364b897eae31db8e677fedfee33fe82b67",
+        "crop": {
+          "left": 190,
+          "top": 600,
+          "right": 660,
+          "bottom": 820
+        },
+        "exclusions": [
+          {
+            "left": 610,
+            "top": 795,
+            "right": 660,
+            "bottom": 820
+          }
+        ]
+      },
+      "inputPath": "D:/Stackr/assets/rev2/11-japanese-set-logo/logos/l1b.png",
+      "asset": {
+        "asset_id": "reviewed:set-logo:e8e16a23-fc7a-4ec8-abfe-b74448fa5f27:7dcfb743b476c6cba7771d20a6ace737ba67201c1fa53b8b260d0079967c0383",
+        "asset_type": "set_logo",
+        "asset_visibility": "public_catalogue",
+        "storage_provider": "s3_compatible",
+        "storage_bucket": "stackr-catalogue-public",
+        "storage_key": "public/set_logo/7d/cf/7dcfb743b476c6cba7771d20a6ace737ba67201c1fa53b8b260d0079967c0383/original.png",
+        "storage_path": "public/set_logo/7d/cf/7dcfb743b476c6cba7771d20a6ace737ba67201c1fa53b8b260d0079967c0383/original.png",
+        "url": "https://github.com/tberridge86/Stackr/blob/0bf2e60222644682d600deb7cc0e94862fd2a71a/assets/rev2/11-japanese-set-logo/logos/l1b.png",
+        "original_source_url": "https://github.com/tberridge86/Stackr/blob/0bf2e60222644682d600deb7cc0e94862fd2a71a/assets/rev2/11-japanese-set-logo/logos/l1b.png",
+        "original_source_identifier": "OWNER-SUPPLIED-JP-CROP-PR203:l1b:7dcfb743b476c6cba7771d20a6ace737ba67201c1fa53b8b260d0079967c0383",
+        "source_attribution": "Existing owner-supplied Japanese title crop reviewed in PR203; exact committed PNG retained unchanged. No new upstream acquisition or independently audited vendor licence is asserted.",
+        "permission_status": "approved",
+        "rights_status": "approved",
+        "content_sha256": "7dcfb743b476c6cba7771d20a6ace737ba67201c1fa53b8b260d0079967c0383",
+        "sha256": "7dcfb743b476c6cba7771d20a6ace737ba67201c1fa53b8b260d0079967c0383",
+        "perceptual_hash": "f8fd00fefe00fffe",
+        "mime_type": "image/png",
+        "width": 1000,
+        "height": 472,
+        "byte_size": 544426,
+        "derivative_list": [
+          {
+            "role": "card-grid",
+            "storageProvider": "s3_compatible",
+            "storageBucket": "stackr-catalogue-public",
+            "storageKey": "public/set_logo/11/5f/115f6ba353ae09b6bc57cf519391d4c54c34445e4cff4210eaacae379fc951e2/card-grid.webp",
+            "mimeType": "image/webp",
+            "width": 240,
+            "height": 113,
+            "byteSize": 16050,
+            "contentSha256": "115f6ba353ae09b6bc57cf519391d4c54c34445e4cff4210eaacae379fc951e2",
+            "cacheControl": "public, max-age=31536000, immutable"
+          },
+          {
+            "role": "search-result",
+            "storageProvider": "s3_compatible",
+            "storageBucket": "stackr-catalogue-public",
+            "storageKey": "public/set_logo/27/1d/271d798aae0b5d853aa6346614beec3e408d5254ec11182b1ae69cfb21c1a775/search-result.webp",
+            "mimeType": "image/webp",
+            "width": 96,
+            "height": 45,
+            "byteSize": 4718,
+            "contentSha256": "271d798aae0b5d853aa6346614beec3e408d5254ec11182b1ae69cfb21c1a775",
+            "cacheControl": "public, max-age=31536000, immutable"
+          },
+          {
+            "role": "detail-page",
+            "storageProvider": "s3_compatible",
+            "storageBucket": "stackr-catalogue-public",
+            "storageKey": "public/set_logo/dd/10/dd10d60fd15bf6179383f1f64dfc631b41f0636d5242a20a26431b039be01559/detail-page.webp",
+            "mimeType": "image/webp",
+            "width": 720,
+            "height": 340,
+            "byteSize": 75210,
+            "contentSha256": "dd10d60fd15bf6179383f1f64dfc631b41f0636d5242a20a26431b039be01559",
+            "cacheControl": "public, max-age=31536000, immutable"
+          }
+        ],
+        "cache_control": "public, max-age=31536000, immutable",
+        "archival_storage_key": "public/set_logo/7d/cf/7dcfb743b476c6cba7771d20a6ace737ba67201c1fa53b8b260d0079967c0383/original.png",
+        "publicly_servable": true,
+        "externally_referenced": false,
+        "retention_status": "active",
+        "last_verified_at": "2026-11-01T20:38:07.035Z"
+      }
+    },
+    {
+      "target": {
+        "code": "ll",
+        "setId": "7dbeff79-cfb7-4ac8-8a4f-d7c73a523349",
+        "rowId": "5bd25dc4-3c25-4822-ad4b-462387d1d08f",
+        "name": "Lost Link",
+        "sha256": "f11661657260c1c19e1da24ceeeb5ef69fd59a16f436fedfa204a473da103add",
+        "bytes": 437402,
+        "width": 1000,
+        "height": 541,
+        "gitBlob": "023f82404e8fb2cd67f105a66a0199dd9db83cf4",
+        "crop": {
+          "left": 800,
+          "top": 600,
+          "right": 1200,
+          "bottom": 815
+        },
+        "exclusions": []
+      },
+      "inputPath": "D:/Stackr/assets/rev2/11-japanese-set-logo/logos/ll.png",
+      "asset": {
+        "asset_id": "reviewed:set-logo:7dbeff79-cfb7-4ac8-8a4f-d7c73a523349:f11661657260c1c19e1da24ceeeb5ef69fd59a16f436fedfa204a473da103add",
+        "asset_type": "set_logo",
+        "asset_visibility": "public_catalogue",
+        "storage_provider": "s3_compatible",
+        "storage_bucket": "stackr-catalogue-public",
+        "storage_key": "public/set_logo/f1/16/f11661657260c1c19e1da24ceeeb5ef69fd59a16f436fedfa204a473da103add/original.png",
+        "storage_path": "public/set_logo/f1/16/f11661657260c1c19e1da24ceeeb5ef69fd59a16f436fedfa204a473da103add/original.png",
+        "url": "https://github.com/tberridge86/Stackr/blob/0bf2e60222644682d600deb7cc0e94862fd2a71a/assets/rev2/11-japanese-set-logo/logos/ll.png",
+        "original_source_url": "https://github.com/tberridge86/Stackr/blob/0bf2e60222644682d600deb7cc0e94862fd2a71a/assets/rev2/11-japanese-set-logo/logos/ll.png",
+        "original_source_identifier": "OWNER-SUPPLIED-JP-CROP-PR203:ll:f11661657260c1c19e1da24ceeeb5ef69fd59a16f436fedfa204a473da103add",
+        "source_attribution": "Existing owner-supplied Japanese title crop reviewed in PR203; exact committed PNG retained unchanged. No new upstream acquisition or independently audited vendor licence is asserted.",
+        "permission_status": "approved",
+        "rights_status": "approved",
+        "content_sha256": "f11661657260c1c19e1da24ceeeb5ef69fd59a16f436fedfa204a473da103add",
+        "sha256": "f11661657260c1c19e1da24ceeeb5ef69fd59a16f436fedfa204a473da103add",
+        "perceptual_hash": "d7f002fbff243dbd",
+        "mime_type": "image/png",
+        "width": 1000,
+        "height": 541,
+        "byte_size": 437402,
+        "derivative_list": [
+          {
+            "role": "card-grid",
+            "storageProvider": "s3_compatible",
+            "storageBucket": "stackr-catalogue-public",
+            "storageKey": "public/set_logo/91/d8/91d851bf1dc0e62672713eb7d57f13db5ba58858326d1c81499c432164b551a4/card-grid.webp",
+            "mimeType": "image/webp",
+            "width": 240,
+            "height": 130,
+            "byteSize": 13532,
+            "contentSha256": "91d851bf1dc0e62672713eb7d57f13db5ba58858326d1c81499c432164b551a4",
+            "cacheControl": "public, max-age=31536000, immutable"
+          },
+          {
+            "role": "search-result",
+            "storageProvider": "s3_compatible",
+            "storageBucket": "stackr-catalogue-public",
+            "storageKey": "public/set_logo/49/ae/49ae693cde7390fb7e02e571f0f4191e49534c050617e923c9fd3e56b00fb477/search-result.webp",
+            "mimeType": "image/webp",
+            "width": 96,
+            "height": 52,
+            "byteSize": 4264,
+            "contentSha256": "49ae693cde7390fb7e02e571f0f4191e49534c050617e923c9fd3e56b00fb477",
+            "cacheControl": "public, max-age=31536000, immutable"
+          },
+          {
+            "role": "detail-page",
+            "storageProvider": "s3_compatible",
+            "storageBucket": "stackr-catalogue-public",
+            "storageKey": "public/set_logo/79/08/7908d79c0a09b80cfd755bad1078b7803f0433a735a9a5ca8f086dec514e3b62/detail-page.webp",
+            "mimeType": "image/webp",
+            "width": 720,
+            "height": 390,
+            "byteSize": 62618,
+            "contentSha256": "7908d79c0a09b80cfd755bad1078b7803f0433a735a9a5ca8f086dec514e3b62",
+            "cacheControl": "public, max-age=31536000, immutable"
+          }
+        ],
+        "cache_control": "public, max-age=31536000, immutable",
+        "archival_storage_key": "public/set_logo/f1/16/f11661657260c1c19e1da24ceeeb5ef69fd59a16f436fedfa204a473da103add/original.png",
+        "publicly_servable": true,
+        "externally_referenced": false,
+        "retention_status": "active",
+        "last_verified_at": "2026-11-01T20:38:07.265Z"
+      }
+    }
+  ],
+  "objects": [
+    {
+      "key": "public/set_logo/7d/cf/7dcfb743b476c6cba7771d20a6ace737ba67201c1fa53b8b260d0079967c0383/original.png",
+      "localPath": "D:\\Stackr-1\\work\\reconcile-20261101\\jp-crop-supersession\\publication\\objects\\public\\set_logo\\7d\\cf\\7dcfb743b476c6cba7771d20a6ace737ba67201c1fa53b8b260d0079967c0383\\original.png",
+      "sha256": "7dcfb743b476c6cba7771d20a6ace737ba67201c1fa53b8b260d0079967c0383",
+      "bytes": 544426,
+      "mimeType": "image/png",
+      "desiredCacheControl": "public, max-age=31536000, immutable",
+      "plannedDeliveryUrl": "https://assets.stackrtcg.com/public/set_logo/7d/cf/7dcfb743b476c6cba7771d20a6ace737ba67201c1fa53b8b260d0079967c0383/original.png",
+      "width": 1000,
+      "height": 472
+    },
+    {
+      "key": "public/set_logo/11/5f/115f6ba353ae09b6bc57cf519391d4c54c34445e4cff4210eaacae379fc951e2/card-grid.webp",
+      "localPath": "D:\\Stackr-1\\work\\reconcile-20261101\\jp-crop-supersession\\publication\\objects\\public\\set_logo\\11\\5f\\115f6ba353ae09b6bc57cf519391d4c54c34445e4cff4210eaacae379fc951e2\\card-grid.webp",
+      "sha256": "115f6ba353ae09b6bc57cf519391d4c54c34445e4cff4210eaacae379fc951e2",
+      "bytes": 16050,
+      "mimeType": "image/webp",
+      "desiredCacheControl": "public, max-age=31536000, immutable",
+      "plannedDeliveryUrl": "https://assets.stackrtcg.com/public/set_logo/11/5f/115f6ba353ae09b6bc57cf519391d4c54c34445e4cff4210eaacae379fc951e2/card-grid.webp",
+      "width": 240,
+      "height": 113
+    },
+    {
+      "key": "public/set_logo/27/1d/271d798aae0b5d853aa6346614beec3e408d5254ec11182b1ae69cfb21c1a775/search-result.webp",
+      "localPath": "D:\\Stackr-1\\work\\reconcile-20261101\\jp-crop-supersession\\publication\\objects\\public\\set_logo\\27\\1d\\271d798aae0b5d853aa6346614beec3e408d5254ec11182b1ae69cfb21c1a775\\search-result.webp",
+      "sha256": "271d798aae0b5d853aa6346614beec3e408d5254ec11182b1ae69cfb21c1a775",
+      "bytes": 4718,
+      "mimeType": "image/webp",
+      "desiredCacheControl": "public, max-age=31536000, immutable",
+      "plannedDeliveryUrl": "https://assets.stackrtcg.com/public/set_logo/27/1d/271d798aae0b5d853aa6346614beec3e408d5254ec11182b1ae69cfb21c1a775/search-result.webp",
+      "width": 96,
+      "height": 45
+    },
+    {
+      "key": "public/set_logo/dd/10/dd10d60fd15bf6179383f1f64dfc631b41f0636d5242a20a26431b039be01559/detail-page.webp",
+      "localPath": "D:\\Stackr-1\\work\\reconcile-20261101\\jp-crop-supersession\\publication\\objects\\public\\set_logo\\dd\\10\\dd10d60fd15bf6179383f1f64dfc631b41f0636d5242a20a26431b039be01559\\detail-page.webp",
+      "sha256": "dd10d60fd15bf6179383f1f64dfc631b41f0636d5242a20a26431b039be01559",
+      "bytes": 75210,
+      "mimeType": "image/webp",
+      "desiredCacheControl": "public, max-age=31536000, immutable",
+      "plannedDeliveryUrl": "https://assets.stackrtcg.com/public/set_logo/dd/10/dd10d60fd15bf6179383f1f64dfc631b41f0636d5242a20a26431b039be01559/detail-page.webp",
+      "width": 720,
+      "height": 340
+    },
+    {
+      "key": "public/set_logo/f1/16/f11661657260c1c19e1da24ceeeb5ef69fd59a16f436fedfa204a473da103add/original.png",
+      "localPath": "D:\\Stackr-1\\work\\reconcile-20261101\\jp-crop-supersession\\publication\\objects\\public\\set_logo\\f1\\16\\f11661657260c1c19e1da24ceeeb5ef69fd59a16f436fedfa204a473da103add\\original.png",
+      "sha256": "f11661657260c1c19e1da24ceeeb5ef69fd59a16f436fedfa204a473da103add",
+      "bytes": 437402,
+      "mimeType": "image/png",
+      "desiredCacheControl": "public, max-age=31536000, immutable",
+      "plannedDeliveryUrl": "https://assets.stackrtcg.com/public/set_logo/f1/16/f11661657260c1c19e1da24ceeeb5ef69fd59a16f436fedfa204a473da103add/original.png",
+      "width": 1000,
+      "height": 541
+    },
+    {
+      "key": "public/set_logo/91/d8/91d851bf1dc0e62672713eb7d57f13db5ba58858326d1c81499c432164b551a4/card-grid.webp",
+      "localPath": "D:\\Stackr-1\\work\\reconcile-20261101\\jp-crop-supersession\\publication\\objects\\public\\set_logo\\91\\d8\\91d851bf1dc0e62672713eb7d57f13db5ba58858326d1c81499c432164b551a4\\card-grid.webp",
+      "sha256": "91d851bf1dc0e62672713eb7d57f13db5ba58858326d1c81499c432164b551a4",
+      "bytes": 13532,
+      "mimeType": "image/webp",
+      "desiredCacheControl": "public, max-age=31536000, immutable",
+      "plannedDeliveryUrl": "https://assets.stackrtcg.com/public/set_logo/91/d8/91d851bf1dc0e62672713eb7d57f13db5ba58858326d1c81499c432164b551a4/card-grid.webp",
+      "width": 240,
+      "height": 130
+    },
+    {
+      "key": "public/set_logo/49/ae/49ae693cde7390fb7e02e571f0f4191e49534c050617e923c9fd3e56b00fb477/search-result.webp",
+      "localPath": "D:\\Stackr-1\\work\\reconcile-20261101\\jp-crop-supersession\\publication\\objects\\public\\set_logo\\49\\ae\\49ae693cde7390fb7e02e571f0f4191e49534c050617e923c9fd3e56b00fb477\\search-result.webp",
+      "sha256": "49ae693cde7390fb7e02e571f0f4191e49534c050617e923c9fd3e56b00fb477",
+      "bytes": 4264,
+      "mimeType": "image/webp",
+      "desiredCacheControl": "public, max-age=31536000, immutable",
+      "plannedDeliveryUrl": "https://assets.stackrtcg.com/public/set_logo/49/ae/49ae693cde7390fb7e02e571f0f4191e49534c050617e923c9fd3e56b00fb477/search-result.webp",
+      "width": 96,
+      "height": 52
+    },
+    {
+      "key": "public/set_logo/79/08/7908d79c0a09b80cfd755bad1078b7803f0433a735a9a5ca8f086dec514e3b62/detail-page.webp",
+      "localPath": "D:\\Stackr-1\\work\\reconcile-20261101\\jp-crop-supersession\\publication\\objects\\public\\set_logo\\79\\08\\7908d79c0a09b80cfd755bad1078b7803f0433a735a9a5ca8f086dec514e3b62\\detail-page.webp",
+      "sha256": "7908d79c0a09b80cfd755bad1078b7803f0433a735a9a5ca8f086dec514e3b62",
+      "bytes": 62618,
+      "mimeType": "image/webp",
+      "desiredCacheControl": "public, max-age=31536000, immutable",
+      "plannedDeliveryUrl": "https://assets.stackrtcg.com/public/set_logo/79/08/7908d79c0a09b80cfd755bad1078b7803f0433a735a9a5ca8f086dec514e3b62/detail-page.webp",
+      "width": 720,
+      "height": 390
+    }
+  ],
+  "effects": {
+    "remoteStorageWrites": 0,
+    "databaseWrites": 0,
+    "newSourceRequests": 0,
+    "published": false
+  }
+}

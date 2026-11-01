@@ -1,0 +1,46 @@
+{
+  "sets": [
+    {
+      "id": "7dbeff79-cfb7-4ac8-8a4f-d7c73a523349",
+      "set_code": "LL",
+      "game_code": "pokemon",
+      "native_name": "ロストリンク",
+      "deprecated_at": null,
+      "language_code": "ja",
+      "provider_set_code": "LL",
+      "english_display_name": "Lost Link"
+    },
+    {
+      "id": "e8e16a23-fc7a-4ec8-abfe-b74448fa5f27",
+      "set_code": "L1b",
+      "game_code": "pokemon",
+      "native_name": "ソウルシルバーコレクション",
+      "deprecated_at": null,
+      "language_code": "ja",
+      "provider_set_code": "L1b",
+      "english_display_name": "SoulSilver Collection"
+    }
+  ],
+  "sources": [
+    {
+      "id": "a23954d2-49ca-4f2e-8cee-ed628e179006",
+      "code": "stackr_manual"
+    }
+  ],
+  "capturedAt": "2026-11-01T20:37:51.345591+00:00",
+  "schemaVersion": "stackr-jp-crop-publication-envelope-v1",
+  "candidateAssets": [],
+  "declaredProjectRef": "oakdbbzdqwurpjnoqhmu",
+  "publishedMemberships": [
+    {
+      "set_id": "7dbeff79-cfb7-4ac8-8a4f-d7c73a523349",
+      "language_code": "ja",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+    },
+    {
+      "set_id": "e8e16a23-fc7a-4ec8-abfe-b74448fa5f27",
+      "language_code": "ja",
+      "catalogue_version_id": "1a23b7a7-c50e-4601-9180-a25c950d27ea"
+    }
+  ]
+}

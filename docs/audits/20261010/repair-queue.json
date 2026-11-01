@@ -361,7 +361,7 @@
       }
     ]
   },
-  "updatedAt": "2026-11-01T20:22:21.796Z",
+  "updatedAt": "2026-11-01T21:18:41.236Z",
   "coordinator": "Tif / root",
   "workingDirectory": "D:/Stackr",
   "branch": "codex/stackr-repair-consolidation-20261018",
@@ -3251,9 +3251,9 @@
   ],
   "currentWork": {
     "owner": "Tif / root",
-    "status": "reviewed_client_integration_for_authorized_build63",
+    "status": "final_japanese_crop_client_followup_after_pr451_merge",
     "sourceBase": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
-    "candidate": "https://github.com/tberridge86/Stackr/pull/451",
+    "candidate": "fix/build63-published-japanese-crops-20261101",
     "report": "docs/audits/20261101/build63-reconciliation.md",
     "authorization": "Owner requested reconciliation before next push, then TestFlight63; standard production profile and existing Team (Expo).",
     "lastConfirmedNative": {
@@ -3270,8 +3270,14 @@
       "deploymentId": "c40b25c1-b1a3-49d1-aed2-df0fc0852228",
       "sourceMechanism": "bundled_workflow_sha"
     },
-    "nextAction": "Require exact-head CI, merge reviewed client changes, run existing native delivery verification, build standard production63, submit exact finished build and verify receipt.",
-    "phoneClosedIssues": 0
+    "nextAction": "Require final reviewed head CI, merge, native delivery verification, standard production build63 and exact build submission to Team (Expo).",
+    "phoneClosedIssues": 0,
+    "mergedReconciliation": {
+      "pullRequest": 451,
+      "sha": "d2c052ac2ae98470661f1ff283084257a4e4b408",
+      "at": "2026-11-01T20:54:11Z"
+    },
+    "finalClientBaseline": "d2c052ac2ae98470661f1ff283084257a4e4b408"
   },
   "completionGoal": {
     "threadId": "01a12a4c-4b1a-7823-b948-148c90d7cd8e",
@@ -3993,7 +3999,7 @@
           "components/BinderArtwork.tsx",
           "app/(tabs)/binder.tsx"
         ],
-        "behavior": "Shared current published mapping before saved pointers, bundled failure recovery, exact SoulSilver/LostLink crop exceptions and unchanged custom/magazine roles."
+        "behavior": "Shared published mapping before saved pointers, bundled failure recovery, exact UUID fallback guards and unchanged custom/magazine roles; two approved Japanese crops now published centrally."
       },
       {
         "id": "B63-PRODUCT-URL-01",
@@ -4009,7 +4015,8 @@
       "Search identity pagination function exists with service-only execution; do not replay.",
       "SVP1 exact original plus3renditions published and public API verified.",
       "1272 prepared-original programme and62098eligible-scope R2closeout complete; do not repeat.",
-      "The22October56ordinary+14legacy+onequalitycase were published as71Japanese fronts on23OctoberPR433; no repeatpublication."
+      "The22October56ordinary+14legacy+onequalitycase were published as71Japanese fronts on23OctoberPR433; no repeatpublication.",
+      "SoulSilver L1b and Lost Link exact supplied crops centrally published and configured API verified on 1November21:17Z; eight public objects verified and prior immutable assets retained."
     ],
     "remaining": [
       {
@@ -4026,11 +4033,6 @@
         "state": "separate_plan_preserved_not_in_species_archive",
         "planSha256": "6143081c19d9592c27c20b1654a304acd04a7ee485faa3edb86c63ec49cb578e",
         "reason": "Separate45binder+Crown plan not included; no publication claim."
-      },
-      {
-        "id": "PR203-CANONICAL-CROPS",
-        "state": "bundled_complete_api_publication_pending",
-        "reason": "Two reviewed sharper crops differ from API originals; exact quality exceptions preserve them."
       },
       {
         "id": "DAILY-MARKET-HISTORY",
@@ -4050,9 +4052,16 @@
         "reason": "Do not treat missing edition/identity or rejected quality as operational permission holds."
       }
     ],
-    "productionDatabaseMutations": 0,
+    "productionDatabaseMutations": 1,
     "newPriceJobs": 0,
     "permissionExpansion": false,
-    "nativeBuildCreated": false
+    "nativeBuildCreated": false,
+    "publicationEffects": {
+      "newAssets": 2,
+      "membershipsReplaced": 2,
+      "immutableAssetsDeleted": 0,
+      "schemaChanges": 0,
+      "permissionExpansion": false
+    }
   }
 }

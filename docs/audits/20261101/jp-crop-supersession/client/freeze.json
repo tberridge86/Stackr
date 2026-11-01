@@ -1,0 +1,49 @@
+{
+  "baseline": "43f1fdbd11c0048a979a27f89dd1505f6b7c01da",
+  "files": [
+    {
+      "path": "lib/localSetArtwork.ts",
+      "bytes": 4926,
+      "sha256": "9093eb463160a0e5af801bfd0d804c044932eafed9a8d65cb7ce228cc94099ed",
+      "gitBlob": "dfee5ef0b22fd93e98d6615d74007a4f5a55c065"
+    },
+    {
+      "path": "lib/generated/publishedSetLogos.generated.json",
+      "bytes": 242185,
+      "sha256": "6e40dfe3bc14a7453d061bcb18597b977b55148557f8d8aeb20a50d9c77d4c88",
+      "gitBlob": "ba1f2929eb7784dc9135b7009cebbbbb45afeb73"
+    },
+    {
+      "path": "lib/generated/publishedSetAssetSupersessions.generated.json",
+      "bytes": 126160,
+      "sha256": "351cc7581a3c16fac63ef78ddc2664b5db864676682c3adda4a130043cdb1d79",
+      "gitBlob": "196306fc3743977786e2c6a3a9997807d4b34764"
+    },
+    {
+      "path": "scripts/test-binder-artwork-source.mjs",
+      "bytes": 9552,
+      "sha256": "2a0180b57d2e6be3e7debe8ce80263c6347392533bb0fe88c6e90b7d975450a4",
+      "gitBlob": "a4cfdd086132c43e2b015d1adb4d0a98aa3a7e00"
+    },
+    {
+      "path": "scripts/test-published-set-asset-delivery.mjs",
+      "bytes": 10846,
+      "sha256": "0d326417fe24a8781552f6e56dc4837bcb3f5f30195cabd01ef484fb751a414e",
+      "gitBlob": "5cc90fa989782b8a5c75e39fef7a76c0aaa68ea7"
+    }
+  ],
+  "publication": "2026-11-01T21:16:56.997592Z",
+  "actualApiCaptures": [
+    "../api-l1b.json",
+    "../api-ll.json"
+  ],
+  "reproductionCommand": "node work/reconcile-20261101/jp-crop-supersession/client/reconcile-two-crops.mjs work/reconcile-20261101/jp-crop-supersession/client/api-captures.json",
+  "counts": {
+    "logos": 280,
+    "changed": 2,
+    "unchanged": 278,
+    "supersessions": 147,
+    "detailRenditions": 134,
+    "originalOnly": 146
+  }
+}

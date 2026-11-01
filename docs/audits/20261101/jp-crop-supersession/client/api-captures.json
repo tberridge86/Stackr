@@ -1,0 +1,178 @@
+[
+  {
+    "data": {
+      "assets": [
+        {
+          "assetId": "reviewed:set-logo:e8e16a23-fc7a-4ec8-abfe-b74448fa5f27:7dcfb743b476c6cba7771d20a6ace737ba67201c1fa53b8b260d0079967c0383",
+          "assetType": "set_logo",
+          "game": "pokemon",
+          "setId": "e8e16a23-fc7a-4ec8-abfe-b74448fa5f27",
+          "cardId": null,
+          "variantId": null,
+          "deliveryPath": "public/set_logo/7d/cf/7dcfb743b476c6cba7771d20a6ace737ba67201c1fa53b8b260d0079967c0383/original.png",
+          "deliveryUrl": "https://assets.stackrtcg.com/public/set_logo/7d/cf/7dcfb743b476c6cba7771d20a6ace737ba67201c1fa53b8b260d0079967c0383/original.png",
+          "sourceAttribution": "Existing owner-supplied Japanese title crop reviewed in PR203; exact committed PNG retained unchanged. No new upstream acquisition or independently audited vendor licence is asserted.",
+          "permissionStatus": "approved",
+          "contentSha256": "7dcfb743b476c6cba7771d20a6ace737ba67201c1fa53b8b260d0079967c0383",
+          "perceptualHash": "f8fd00fefe00fffe",
+          "mimeType": "image/png",
+          "width": 1000,
+          "height": 472,
+          "byteSize": 544426,
+          "derivatives": [
+            {
+              "role": "card-grid",
+              "width": 240,
+              "height": 113,
+              "byteSize": 16050,
+              "mimeType": "image/webp",
+              "storageKey": "public/set_logo/11/5f/115f6ba353ae09b6bc57cf519391d4c54c34445e4cff4210eaacae379fc951e2/card-grid.webp",
+              "cacheControl": "max-age=14400",
+              "contentSha256": "115f6ba353ae09b6bc57cf519391d4c54c34445e4cff4210eaacae379fc951e2",
+              "storageBucket": "stackr-catalogue-public",
+              "storageProvider": "s3_compatible",
+              "deliveryPath": "public/set_logo/11/5f/115f6ba353ae09b6bc57cf519391d4c54c34445e4cff4210eaacae379fc951e2/card-grid.webp",
+              "deliveryUrl": "https://assets.stackrtcg.com/public/set_logo/11/5f/115f6ba353ae09b6bc57cf519391d4c54c34445e4cff4210eaacae379fc951e2/card-grid.webp"
+            },
+            {
+              "role": "search-result",
+              "width": 96,
+              "height": 45,
+              "byteSize": 4718,
+              "mimeType": "image/webp",
+              "storageKey": "public/set_logo/27/1d/271d798aae0b5d853aa6346614beec3e408d5254ec11182b1ae69cfb21c1a775/search-result.webp",
+              "cacheControl": "max-age=14400",
+              "contentSha256": "271d798aae0b5d853aa6346614beec3e408d5254ec11182b1ae69cfb21c1a775",
+              "storageBucket": "stackr-catalogue-public",
+              "storageProvider": "s3_compatible",
+              "deliveryPath": "public/set_logo/27/1d/271d798aae0b5d853aa6346614beec3e408d5254ec11182b1ae69cfb21c1a775/search-result.webp",
+              "deliveryUrl": "https://assets.stackrtcg.com/public/set_logo/27/1d/271d798aae0b5d853aa6346614beec3e408d5254ec11182b1ae69cfb21c1a775/search-result.webp"
+            },
+            {
+              "role": "detail-page",
+              "width": 720,
+              "height": 340,
+              "byteSize": 75210,
+              "mimeType": "image/webp",
+              "storageKey": "public/set_logo/dd/10/dd10d60fd15bf6179383f1f64dfc631b41f0636d5242a20a26431b039be01559/detail-page.webp",
+              "cacheControl": "max-age=14400",
+              "contentSha256": "dd10d60fd15bf6179383f1f64dfc631b41f0636d5242a20a26431b039be01559",
+              "storageBucket": "stackr-catalogue-public",
+              "storageProvider": "s3_compatible",
+              "deliveryPath": "public/set_logo/dd/10/dd10d60fd15bf6179383f1f64dfc631b41f0636d5242a20a26431b039be01559/detail-page.webp",
+              "deliveryUrl": "https://assets.stackrtcg.com/public/set_logo/dd/10/dd10d60fd15bf6179383f1f64dfc631b41f0636d5242a20a26431b039be01559/detail-page.webp"
+            }
+          ],
+          "cacheControl": "max-age=14400",
+          "externallyReferenced": false,
+          "unavailableReason": null,
+          "lastVerifiedAt": "2026-11-01T20:55:19.553+00:00",
+          "updatedAt": "2026-11-01T21:16:56.997592+00:00"
+        }
+      ]
+    },
+    "meta": {
+      "requestId": "36b4d97c-a2a5-473e-9a59-fe936958f653",
+      "apiVersion": "1",
+      "generatedAt": "2026-11-01T21:17:13.911Z",
+      "pagination": {
+        "limit": 10,
+        "nextCursor": null
+      }
+    },
+    "sourceEnvironment": "production",
+    "source": "Actual production public GET /v1/assets/manifest captured in Chrome after exact two-crop supersession",
+    "scope": "Exact published set_logo for e8e16a23-fc7a-4ec8-abfe-b74448fa5f27",
+    "rawCapturePath": "../api-l1b.json",
+    "rawCaptureSha256": "427d02e57b1b8e4acbaaf499b7e7cc441da89495c47cf217965c9de5e8b07f75",
+    "capturedJsonSha256": "379bb14463cb47c65054bd61388bc743e74096de7768d27eb67920f476006e72"
+  },
+  {
+    "data": {
+      "assets": [
+        {
+          "assetId": "reviewed:set-logo:7dbeff79-cfb7-4ac8-8a4f-d7c73a523349:f11661657260c1c19e1da24ceeeb5ef69fd59a16f436fedfa204a473da103add",
+          "assetType": "set_logo",
+          "game": "pokemon",
+          "setId": "7dbeff79-cfb7-4ac8-8a4f-d7c73a523349",
+          "cardId": null,
+          "variantId": null,
+          "deliveryPath": "public/set_logo/f1/16/f11661657260c1c19e1da24ceeeb5ef69fd59a16f436fedfa204a473da103add/original.png",
+          "deliveryUrl": "https://assets.stackrtcg.com/public/set_logo/f1/16/f11661657260c1c19e1da24ceeeb5ef69fd59a16f436fedfa204a473da103add/original.png",
+          "sourceAttribution": "Existing owner-supplied Japanese title crop reviewed in PR203; exact committed PNG retained unchanged. No new upstream acquisition or independently audited vendor licence is asserted.",
+          "permissionStatus": "approved",
+          "contentSha256": "f11661657260c1c19e1da24ceeeb5ef69fd59a16f436fedfa204a473da103add",
+          "perceptualHash": "d7f002fbff243dbd",
+          "mimeType": "image/png",
+          "width": 1000,
+          "height": 541,
+          "byteSize": 437402,
+          "derivatives": [
+            {
+              "role": "card-grid",
+              "width": 240,
+              "height": 130,
+              "byteSize": 13532,
+              "mimeType": "image/webp",
+              "storageKey": "public/set_logo/91/d8/91d851bf1dc0e62672713eb7d57f13db5ba58858326d1c81499c432164b551a4/card-grid.webp",
+              "cacheControl": "max-age=14400",
+              "contentSha256": "91d851bf1dc0e62672713eb7d57f13db5ba58858326d1c81499c432164b551a4",
+              "storageBucket": "stackr-catalogue-public",
+              "storageProvider": "s3_compatible",
+              "deliveryPath": "public/set_logo/91/d8/91d851bf1dc0e62672713eb7d57f13db5ba58858326d1c81499c432164b551a4/card-grid.webp",
+              "deliveryUrl": "https://assets.stackrtcg.com/public/set_logo/91/d8/91d851bf1dc0e62672713eb7d57f13db5ba58858326d1c81499c432164b551a4/card-grid.webp"
+            },
+            {
+              "role": "search-result",
+              "width": 96,
+              "height": 52,
+              "byteSize": 4264,
+              "mimeType": "image/webp",
+              "storageKey": "public/set_logo/49/ae/49ae693cde7390fb7e02e571f0f4191e49534c050617e923c9fd3e56b00fb477/search-result.webp",
+              "cacheControl": "max-age=14400",
+              "contentSha256": "49ae693cde7390fb7e02e571f0f4191e49534c050617e923c9fd3e56b00fb477",
+              "storageBucket": "stackr-catalogue-public",
+              "storageProvider": "s3_compatible",
+              "deliveryPath": "public/set_logo/49/ae/49ae693cde7390fb7e02e571f0f4191e49534c050617e923c9fd3e56b00fb477/search-result.webp",
+              "deliveryUrl": "https://assets.stackrtcg.com/public/set_logo/49/ae/49ae693cde7390fb7e02e571f0f4191e49534c050617e923c9fd3e56b00fb477/search-result.webp"
+            },
+            {
+              "role": "detail-page",
+              "width": 720,
+              "height": 390,
+              "byteSize": 62618,
+              "mimeType": "image/webp",
+              "storageKey": "public/set_logo/79/08/7908d79c0a09b80cfd755bad1078b7803f0433a735a9a5ca8f086dec514e3b62/detail-page.webp",
+              "cacheControl": "max-age=14400",
+              "contentSha256": "7908d79c0a09b80cfd755bad1078b7803f0433a735a9a5ca8f086dec514e3b62",
+              "storageBucket": "stackr-catalogue-public",
+              "storageProvider": "s3_compatible",
+              "deliveryPath": "public/set_logo/79/08/7908d79c0a09b80cfd755bad1078b7803f0433a735a9a5ca8f086dec514e3b62/detail-page.webp",
+              "deliveryUrl": "https://assets.stackrtcg.com/public/set_logo/79/08/7908d79c0a09b80cfd755bad1078b7803f0433a735a9a5ca8f086dec514e3b62/detail-page.webp"
+            }
+          ],
+          "cacheControl": "max-age=14400",
+          "externallyReferenced": false,
+          "unavailableReason": null,
+          "lastVerifiedAt": "2026-11-01T20:55:19.553+00:00",
+          "updatedAt": "2026-11-01T21:16:56.997592+00:00"
+        }
+      ]
+    },
+    "meta": {
+      "requestId": "d97a732a-ad03-4716-8e71-89434df42259",
+      "apiVersion": "1",
+      "generatedAt": "2026-11-01T21:17:26.264Z",
+      "pagination": {
+        "limit": 10,
+        "nextCursor": null
+      }
+    },
+    "sourceEnvironment": "production",
+    "source": "Actual production public GET /v1/assets/manifest captured in Chrome after exact two-crop supersession",
+    "scope": "Exact published set_logo for 7dbeff79-cfb7-4ac8-8a4f-d7c73a523349",
+    "rawCapturePath": "../api-ll.json",
+    "rawCaptureSha256": "37ff12cdbe65a25a3bff13e8ec55ce8334ff95ecdfe0a28197be18f9f3b3bf85",
+    "capturedJsonSha256": "b2939156e8b3db75c7fc907c2145d22b47877a5b4163c9355a56ebfdabe684b1"
+  }
+]
