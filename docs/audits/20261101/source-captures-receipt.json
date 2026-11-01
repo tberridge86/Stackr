@@ -1,0 +1,36 @@
+{
+  "archive": "docs/audits/20261101/source-captures.json.gz",
+  "sha256": "e6cfd6282c1617345e5cc1fe8f689d55e5d0a234bcb236f3c3dd4100c0c8e834",
+  "bytes": 258068,
+  "files": [
+    {
+      "name": "current-main/logo-db-capture.json",
+      "sha256": "7369c80a93b5c23c8052dfb98d73b0137f13618a6fb04f529aa6ab33395f6805"
+    },
+    {
+      "name": "current-main/cover-db-capture.json",
+      "sha256": "0f7b3d62c74d2b6bdd77b66ddf575f8e4584fca2c400c1f647cac2ad9ad30b3a"
+    },
+    {
+      "name": "current-main/logo-manifest.normalized.json",
+      "sha256": "8b26b4eb100f679cc0d55515fc343e13b74bcbd910a7dbe73179c74a23db19cb"
+    },
+    {
+      "name": "current-main/cover-manifest.normalized.json",
+      "sha256": "1ccdc86ff0e60a59a440b8a32f7555d06187ee16a744a2d1772e23aa5218128a"
+    },
+    {
+      "name": "normalization/normalize-captures.mjs",
+      "sha256": "080da60fe6391010aeb6fb8587ac256166a5fe2d7291ebad627c14846a05bc3e"
+    },
+    {
+      "name": "normalization/stackrApiV1.js",
+      "sha256": "39390263c884085154fe6edb05e406e783491c2b482f653be5ff89bf85f329a7"
+    },
+    {
+      "name": "normalization/objectStorage.js",
+      "sha256": "5c79192326dff4e74c2d8369cf15203bf027e7a41189300580705175661f835f"
+    }
+  ],
+  "extraction": "JSON.parse(gunzipSync(bytes)); each files[name] is the exact captured UTF-8 text. Restore relative names under work/reconcile-20261101/ to reproduce the documented commands."
+}

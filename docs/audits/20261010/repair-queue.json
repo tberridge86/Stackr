@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "collectionLogoReconciliation20261101": {
-    "observedAt": "2026-11-01T19:09:09Z",
+    "observedAt": "2026-11-01T19:45:19.386Z",
     "owner": "stackr_coding",
     "sourceRevision": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
-    "status": "implemented_tested_independently_reviewed_draft_candidate",
+    "status": "source_reconciliation_reviewed_SVP1_published_api_verified",
     "report": "docs/audits/20261101/collection-logo-reconciliation.md",
     "entries": [
       {
@@ -55,6 +55,65 @@
           "deployed": false,
           "phoneVerified": false
         }
+      },
+      {
+        "id": "LOGO-20261101-02",
+        "owner": "stackr_performance",
+        "severity": "P2",
+        "summary": "280logo and43cover fallback URLs still reconstructed Supabase delivery and missed145approved supersessions.",
+        "repair": "Exact approved R2 records, explicit old/new receipts, recorded detail renditions and production runtime scope.",
+        "files": [
+          "lib/publishedSetLogoFallbacks.ts",
+          "lib/generated/publishedSetLogos.generated.json",
+          "lib/generated/publishedSimplifiedChineseCovers.generated.json",
+          "lib/generated/publishedSetAssetSupersessions.generated.json",
+          "scripts/reconcile-published-set-assets.mjs",
+          "scripts/test-published-set-asset-delivery.mjs",
+          "scripts/test-published-set-logo-fallbacks.ts",
+          "scripts/test-crown-zenith-logo-fallback.cjs"
+        ],
+        "validation": [
+          "All323 exact mappings reconciled; zero unresolved",
+          "145supersessions independently checked against published capture",
+          "Existing identity/alias chain and new actual-module generator/resolver regressions pass",
+          "Focused TypeScript diagnostics0; integratedCI pending"
+        ],
+        "delivery": {
+          "implemented": true,
+          "tested": true,
+          "independentlyReviewed": true,
+          "merged": false,
+          "deployed": false,
+          "phoneVerified": false
+        }
+      },
+      {
+        "id": "SVP1-NATIVE-SOURCE-20261019",
+        "owner": "stackr_artwork",
+        "severity": "P2",
+        "summary": "Approved native SVP1 crop was bundled but canonical publication stalled on a prior-link timeout and obsolete operational approval hold.",
+        "repair": "Bounded logo-first query recovered completeempty priorlinks; four exactobjects uploaded/GEThashed/decoded, then guarded addition of1asset and1publishedmembership.",
+        "approval": "docs/audits/20261101/owner-artwork-continuation-approval.json",
+        "validation": [
+          "All4actualR2GETs200 exactSHA256/bytes/dimensions/MIME",
+          "30frozen-packet PostgreSQL regressions and independentreview pass",
+          "ActualconfiguredAPI returns exactapprovedasset and3renditions"
+        ],
+        "delivery": {
+          "published": true,
+          "apiVerified": true,
+          "phoneVerified": false,
+          "objects": 4,
+          "assetRowsAdded": 1,
+          "membershipsAdded": 1,
+          "permissionExpansion": false
+        },
+        "receipts": [
+          "docs/audits/20261101/svp1-production-mutation-receipt.json",
+          "docs/audits/20261101/svp1-actual-verified-objects.json",
+          "docs/audits/20261101/svp1-public-api-verification.json"
+        ],
+        "remaining": "ActualCDNcache max-age14400 is accurately recorded; desiredyearimmutable policy andinstalledphone appearance remain unverified."
       }
     ],
     "reconciledExistingWork": [
@@ -75,8 +134,8 @@
       },
       {
         "reference": "PR204",
-        "status": "preparation_not_complete_runtime_pack",
-        "nextAction": "Resolve identities/assets/runtime delivery before release claim"
+        "status": "original_file_transfer_resolved_130_runtime_bindings",
+        "nextAction": "Preserve integrated pack; remaining Gym/energy identity and30thD source gaps are not approval holds."
       },
       {
         "reference": "PR436",
@@ -85,14 +144,16 @@
       }
     ],
     "acceptancePending": [
-      "Full current-main CI compilation",
+      "Full CI on integrated source-reconciliation head; preceding2bafdc5 headpassed11activechecks",
       "Installed-phone cold/warm/save/remove/quantity/account-switch collection journeys",
       "Native set-logo appearance and exact source-crop cleanup",
       "Authenticated permissions and private-upload flows"
     ],
-    "productionMutations": false,
+    "productionMutations": true,
     "permissionExpansion": false,
-    "note": "This dated section supersedes stale delivery interpretations only for the verified items listed. Historical queue entries are preserved; no blanket queue completion is claimed."
+    "note": "This dated section supersedes stale delivery interpretations only for the verified items listed. Historical queue entries are preserved; no blanket queue completion is claimed.",
+    "productionMutationScope": "SVP1exactapprovedbatch:4immutableR2objects,1asset,1publishedmembership. No schema/grant/source-wide rights/price/deployment changes.",
+    "sourceContract": "docs/stackr-api/source-of-truth.md"
   },
   "platformHealth20261027": {
     "owner": "stackr_coding / release coordination",
@@ -100,15 +161,54 @@
     "sourceRevision": "b5d643a997041db2a8c42b5b6cb0180e8ddf28e7",
     "report": "docs/audits/20261027/platform-health.md",
     "status": "bounded_live_audit_complete_concurrency_fix_tested_reviewed_not_merged",
-    "adjacentWorkPreserved": ["PR #448 R2 transfer", "PR #446 retrieval/account/search/restore", "PR #185 cleanup", "backend dependency security work"],
+    "adjacentWorkPreserved": [
+      "PR #448 R2 transfer",
+      "PR #446 retrieval/account/search/restore",
+      "PR #185 cleanup",
+      "backend dependency security work"
+    ],
     "productionMutations": false,
     "entries": [
-      {"id": "PH-REL-001", "owner": "stackr_release", "severity": "P2", "status": "implemented_tested_independently_reviewed", "summary": "Alternate backend release lanes had a separate concurrency group and could overlap standard production deployment.", "repair": "Use existing stackr-production-deployment group with cancellation disabled; focused regression wired into deployment-tooling suite.", "nextAction": "Normal PR checks and merge; no production deployment required for workflow-source fix."},
-      {"id": "PH-VALUATION-001", "owner": "stackr_performance / stackr_pricing", "severity": "P2", "status": "live_measured", "summary": "Valuation generation took 58.6s, including 23.7s catalogue members and 19.3s stored exact prices; earlier stored-price SQL timeout.", "nextAction": "Reduce measured round trips/query cost in existing worker; preserve identity and last-good valuation. Reuse existing performance work."},
-      {"id": "PH-AUTH-001", "owner": "stackr_backend", "severity": "P2", "status": "configuration_finding", "summary": "Leaked-password protection is disabled.", "nextAction": "Enable through authenticated Supabase Auth configuration and verify; connector does not expose configuration mutation."},
-      {"id": "PH-WORKER-001", "owner": "stackr_pricing / stackr_release", "severity": "P2", "status": "ownership_followup", "summary": "Cardmarket production service has cron configured but no active deployment; last listed deployments removed. Catalogue worker reports needs_mapping.", "nextAction": "Reconcile intended pause/scheduler ownership before restarting; reuse existing pricing lanes and mapping queue."}
+      {
+        "id": "PH-REL-001",
+        "owner": "stackr_release",
+        "severity": "P2",
+        "status": "implemented_tested_independently_reviewed",
+        "summary": "Alternate backend release lanes had a separate concurrency group and could overlap standard production deployment.",
+        "repair": "Use existing stackr-production-deployment group with cancellation disabled; focused regression wired into deployment-tooling suite.",
+        "nextAction": "Normal PR checks and merge; no production deployment required for workflow-source fix."
+      },
+      {
+        "id": "PH-VALUATION-001",
+        "owner": "stackr_performance / stackr_pricing",
+        "severity": "P2",
+        "status": "live_measured",
+        "summary": "Valuation generation took 58.6s, including 23.7s catalogue members and 19.3s stored exact prices; earlier stored-price SQL timeout.",
+        "nextAction": "Reduce measured round trips/query cost in existing worker; preserve identity and last-good valuation. Reuse existing performance work."
+      },
+      {
+        "id": "PH-AUTH-001",
+        "owner": "stackr_backend",
+        "severity": "P2",
+        "status": "configuration_finding",
+        "summary": "Leaked-password protection is disabled.",
+        "nextAction": "Enable through authenticated Supabase Auth configuration and verify; connector does not expose configuration mutation."
+      },
+      {
+        "id": "PH-WORKER-001",
+        "owner": "stackr_pricing / stackr_release",
+        "severity": "P2",
+        "status": "ownership_followup",
+        "summary": "Cardmarket production service has cron configured but no active deployment; last listed deployments removed. Catalogue worker reports needs_mapping.",
+        "nextAction": "Reconcile intended pause/scheduler ownership before restarting; reuse existing pricing lanes and mapping queue."
+      }
     ],
-    "existingFollowups": ["Migration ledger reconciliation; preserve known renamed versions", "Cloudflare hosting/DNS/billing sign-in", "Isolated database restore and D: backup sample", "Installed-phone account-switch and pagination acceptance"],
+    "existingFollowups": [
+      "Migration ledger reconciliation; preserve known renamed versions",
+      "Cloudflare hosting/DNS/billing sign-in",
+      "Isolated database restore and D: backup sample",
+      "Installed-phone account-switch and pagination acceptance"
+    ],
     "backgroundTaskCreated": false
   },
   "homeRetrieval20261025": {

@@ -5,217 +5,357 @@
     {
       "setId": "8e3da79a-1d8d-40ae-9f09-0150728cfbd6",
       "setCode": "151c",
-      "storageKey": "public/sealed_product_image/35/57/3557fcf89e41f569fbe0e01d792708939fe6ecfb7ba66f136f6b8744af4c7e52/original.jpg"
+      "storageKey": "public/sealed_product_image/35/57/3557fcf89e41f569fbe0e01d792708939fe6ecfb7ba66f136f6b8744af4c7e52/original.jpg",
+      "assetId": "fe5d46b5-6a3a-4c0e-9950-e8025ca8cbba",
+      "contentSha256": "3557fcf89e41f569fbe0e01d792708939fe6ecfb7ba66f136f6b8744af4c7e52",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/fe5d46b5-6a3a-4c0e-9950-e8025ca8cbba/cd5c553aa5e4a614ba7b70a76d44250833b42352e52970e0ca17c2fae98b18b0/3557fcf89e41f569fbe0e01d792708939fe6ecfb7ba66f136f6b8744af4c7e52/original.jpg"
     },
     {
       "setId": "6fddd811-836e-4304-8d28-f36caef0d044",
       "setCode": "cbb1c",
-      "storageKey": "public/sealed_product_image/c7/0a/c70a734245f8094258255b917c6ecd01bae2d42bdff55c86362371b4cb25d4e8/original.jpg"
+      "storageKey": "public/sealed_product_image/c7/0a/c70a734245f8094258255b917c6ecd01bae2d42bdff55c86362371b4cb25d4e8/original.jpg",
+      "assetId": "4a35cf47-d55e-465a-83f5-13c4de86a30e",
+      "contentSha256": "c70a734245f8094258255b917c6ecd01bae2d42bdff55c86362371b4cb25d4e8",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/4a35cf47-d55e-465a-83f5-13c4de86a30e/175dcd776529777f2f3bd3d98a350704dacf5ac92cf182222f2d5ffa22a72597/c70a734245f8094258255b917c6ecd01bae2d42bdff55c86362371b4cb25d4e8/original.jpg"
     },
     {
       "setId": "8a18b285-dbf1-4acb-8374-e693849d80e1",
       "setCode": "cbb2c",
-      "storageKey": "public/sealed_product_image/1f/02/1f0230295e7de245be0d3b0b97d0d522b88ce10224fce691a8e7bcaf1be081c0/original.jpg"
+      "storageKey": "public/sealed_product_image/1f/02/1f0230295e7de245be0d3b0b97d0d522b88ce10224fce691a8e7bcaf1be081c0/original.jpg",
+      "assetId": "ddbcdd70-11e2-4374-93bd-5f361b78a572",
+      "contentSha256": "1f0230295e7de245be0d3b0b97d0d522b88ce10224fce691a8e7bcaf1be081c0",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/ddbcdd70-11e2-4374-93bd-5f361b78a572/5184a1aa6865609931bf46d91157baeac01d8dada48403a75efcae39b174635f/1f0230295e7de245be0d3b0b97d0d522b88ce10224fce691a8e7bcaf1be081c0/original.jpg"
     },
     {
       "setId": "06ae8d84-49e1-4363-a97b-1f22ee392ed7",
       "setCode": "cbb3c",
-      "storageKey": "public/sealed_product_image/61/36/6136fa182df0774e5c191908c8b6ace87405653413ac58c324fc5a4284354d37/original.jpg"
+      "storageKey": "public/sealed_product_image/61/36/6136fa182df0774e5c191908c8b6ace87405653413ac58c324fc5a4284354d37/original.jpg",
+      "assetId": "05b8d860-b658-48d5-8f2d-c94da9c5e4e6",
+      "contentSha256": "6136fa182df0774e5c191908c8b6ace87405653413ac58c324fc5a4284354d37",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/05b8d860-b658-48d5-8f2d-c94da9c5e4e6/b8986628c81abe843c314fb50ccd0d4f9ed1446d0c4a67219b0059271c9fec9f/6136fa182df0774e5c191908c8b6ace87405653413ac58c324fc5a4284354d37/original.jpg"
     },
     {
       "setId": "ceddde89-0705-4372-95f2-88c20b89fddd",
       "setCode": "cbb4c",
-      "storageKey": "public/sealed_product_image/10/a9/10a9ba7c7e439aecbbfb97d3415709e14d2f98e099438ba54f4e6bed4c29962e/original.jpg"
+      "storageKey": "public/sealed_product_image/10/a9/10a9ba7c7e439aecbbfb97d3415709e14d2f98e099438ba54f4e6bed4c29962e/original.jpg",
+      "assetId": "33f9f993-f9b7-4eb5-8a2e-4c9f7a630463",
+      "contentSha256": "10a9ba7c7e439aecbbfb97d3415709e14d2f98e099438ba54f4e6bed4c29962e",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/33f9f993-f9b7-4eb5-8a2e-4c9f7a630463/8431678dacadb841c630806cd0768525b038bcd0bfafe03cae4d86b11224bfee/10a9ba7c7e439aecbbfb97d3415709e14d2f98e099438ba54f4e6bed4c29962e/original.jpg"
     },
     {
       "setId": "67ae722c-a017-4446-a14e-50d70df1f98d",
       "setCode": "cbb5c",
-      "storageKey": "public/sealed_product_image/cf/6c/cf6cbf1dc98d0e236d8d6927d5a2f8a23cf35bee613a603076fef0e23400b595/original.jpg"
+      "storageKey": "public/sealed_product_image/cf/6c/cf6cbf1dc98d0e236d8d6927d5a2f8a23cf35bee613a603076fef0e23400b595/original.jpg",
+      "assetId": "1202969f-589b-4880-b3d2-fb4282e3d0b6",
+      "contentSha256": "cf6cbf1dc98d0e236d8d6927d5a2f8a23cf35bee613a603076fef0e23400b595",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/1202969f-589b-4880-b3d2-fb4282e3d0b6/fc5d97f08e1ad3ed792aadac1eb88d63dca9d826e3ea3d8c22b145650bfb8e47/cf6cbf1dc98d0e236d8d6927d5a2f8a23cf35bee613a603076fef0e23400b595/original.jpg"
     },
     {
       "setId": "8fa6e9bb-57f0-41d9-a4dd-611af3e1daf8",
       "setCode": "cs1.5c",
-      "storageKey": "public/sealed_product_image/e8/19/e8191f2caa4851243ec25122b8d090a34c62eb373e07a70b048ee4f6dcdbeb4b/original.jpg"
+      "storageKey": "public/sealed_product_image/e8/19/e8191f2caa4851243ec25122b8d090a34c62eb373e07a70b048ee4f6dcdbeb4b/original.jpg",
+      "assetId": "3e22377e-f713-4120-9e14-181d3b5334f7",
+      "contentSha256": "e8191f2caa4851243ec25122b8d090a34c62eb373e07a70b048ee4f6dcdbeb4b",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/3e22377e-f713-4120-9e14-181d3b5334f7/22a941f63e4998dd24c7ec89446365346db772fbafb10b67a5228a3c04ef78b8/e8191f2caa4851243ec25122b8d090a34c62eb373e07a70b048ee4f6dcdbeb4b/original.jpg"
     },
     {
       "setId": "e98642e8-97ac-4a08-b013-c0b13b70a269",
       "setCode": "cs1ac",
-      "storageKey": "public/sealed_product_image/53/14/5314662fb775502d559ac8529ac0a3f7c136c4dfbf05e5daf09d4b72c9c18fa4/original.jpg"
+      "storageKey": "public/sealed_product_image/53/14/5314662fb775502d559ac8529ac0a3f7c136c4dfbf05e5daf09d4b72c9c18fa4/original.jpg",
+      "assetId": "802cf09b-c19a-4038-a39e-fa7a3cb883e9",
+      "contentSha256": "5314662fb775502d559ac8529ac0a3f7c136c4dfbf05e5daf09d4b72c9c18fa4",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/802cf09b-c19a-4038-a39e-fa7a3cb883e9/75871f1156b408cfeba87b4732aa85bd309808fa1bced1ddc298388b28d55aca/5314662fb775502d559ac8529ac0a3f7c136c4dfbf05e5daf09d4b72c9c18fa4/original.jpg"
     },
     {
       "setId": "01859240-c3d3-4074-832f-782f61c4fcb6",
       "setCode": "cs1bc",
-      "storageKey": "public/sealed_product_image/49/bb/49bb24d63720977de4ceba08fafc3ac4a2a13dd59a0dfb35f69be54d6a20378e/original.jpg"
+      "storageKey": "public/sealed_product_image/49/bb/49bb24d63720977de4ceba08fafc3ac4a2a13dd59a0dfb35f69be54d6a20378e/original.jpg",
+      "assetId": "50949a4c-dfe1-4290-86fb-abdba9feecfb",
+      "contentSha256": "49bb24d63720977de4ceba08fafc3ac4a2a13dd59a0dfb35f69be54d6a20378e",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/50949a4c-dfe1-4290-86fb-abdba9feecfb/26e09139d3fc403cb0fcef9a2207b8dc7538373e92fbc3ef6fdcc82333ad956f/49bb24d63720977de4ceba08fafc3ac4a2a13dd59a0dfb35f69be54d6a20378e/original.jpg"
     },
     {
       "setId": "ad94757c-4ad8-43a2-848b-3ac6dd4ca89d",
       "setCode": "cs2.5c",
-      "storageKey": "public/sealed_product_image/d3/42/d3428a78466412f46da5b9fc1561514e0c76e155b97686fb5779e346003afd78/original.jpg"
+      "storageKey": "public/sealed_product_image/d3/42/d3428a78466412f46da5b9fc1561514e0c76e155b97686fb5779e346003afd78/original.jpg",
+      "assetId": "ba262f61-16eb-4755-b44a-623140d61cf8",
+      "contentSha256": "d3428a78466412f46da5b9fc1561514e0c76e155b97686fb5779e346003afd78",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/ba262f61-16eb-4755-b44a-623140d61cf8/f1b9d3a2a4117eb52f99f2b43c705f4ef51f7e5f9c86ab128e744738447db082/d3428a78466412f46da5b9fc1561514e0c76e155b97686fb5779e346003afd78/original.jpg"
     },
     {
       "setId": "96cbe78b-6461-4875-a678-c2fc65b0d756",
       "setCode": "cs2ac",
-      "storageKey": "public/sealed_product_image/23/80/23805867683fe9f2ae128989ed87533e4898ac1db08d0f2f5f7d767f524aab66/original.jpg"
+      "storageKey": "public/sealed_product_image/23/80/23805867683fe9f2ae128989ed87533e4898ac1db08d0f2f5f7d767f524aab66/original.jpg",
+      "assetId": "6295ef77-0b3b-4858-9dbb-4c738922909f",
+      "contentSha256": "23805867683fe9f2ae128989ed87533e4898ac1db08d0f2f5f7d767f524aab66",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/6295ef77-0b3b-4858-9dbb-4c738922909f/82e3561134a88600a0f22cd0827334745be2d47564b036ecd3c12a272b597188/23805867683fe9f2ae128989ed87533e4898ac1db08d0f2f5f7d767f524aab66/original.jpg"
     },
     {
       "setId": "7e37b0c3-bae5-4591-89c8-815b6cb4b80d",
       "setCode": "cs2bc",
-      "storageKey": "public/sealed_product_image/ef/94/ef94b334a22f85541e7eb9b01f6e631bf1c2dbecab53b0459c149f9a1c5c70b3/original.jpg"
+      "storageKey": "public/sealed_product_image/ef/94/ef94b334a22f85541e7eb9b01f6e631bf1c2dbecab53b0459c149f9a1c5c70b3/original.jpg",
+      "assetId": "61dffa5f-b59e-4b1e-8ee7-ea5704b01cde",
+      "contentSha256": "ef94b334a22f85541e7eb9b01f6e631bf1c2dbecab53b0459c149f9a1c5c70b3",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/61dffa5f-b59e-4b1e-8ee7-ea5704b01cde/545540e1f46520eaa8506bd13e86726d27aee45382d74146734ee54ee7e442b2/ef94b334a22f85541e7eb9b01f6e631bf1c2dbecab53b0459c149f9a1c5c70b3/original.jpg"
     },
     {
       "setId": "c651409a-2274-445d-99b0-d1b8e325cbca",
       "setCode": "cs3.5c",
-      "storageKey": "public/sealed_product_image/87/3d/873dcc7301848498fdd3904d2ef1a584f01828c3452c9a31e9c34f2e1c3024bd/original.jpg"
+      "storageKey": "public/sealed_product_image/87/3d/873dcc7301848498fdd3904d2ef1a584f01828c3452c9a31e9c34f2e1c3024bd/original.jpg",
+      "assetId": "6409b9d3-d934-4004-a1aa-594557973ce8",
+      "contentSha256": "873dcc7301848498fdd3904d2ef1a584f01828c3452c9a31e9c34f2e1c3024bd",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/6409b9d3-d934-4004-a1aa-594557973ce8/45249682a360fb4dadcb250e36bc0a6bbb94c059112be4485ceb7b067ae042ae/873dcc7301848498fdd3904d2ef1a584f01828c3452c9a31e9c34f2e1c3024bd/original.jpg"
     },
     {
       "setId": "42e798dd-f171-4f0b-916e-2386fd2a353f",
       "setCode": "cs3ac",
-      "storageKey": "public/sealed_product_image/17/c5/17c55df33479ffc8e48bcf49535ab40dfbed93bd6c2cdc13e92cee0a822c417d/original.jpg"
+      "storageKey": "public/sealed_product_image/17/c5/17c55df33479ffc8e48bcf49535ab40dfbed93bd6c2cdc13e92cee0a822c417d/original.jpg",
+      "assetId": "57f3143a-1cb1-41a6-9c6e-84c1fe1a5028",
+      "contentSha256": "17c55df33479ffc8e48bcf49535ab40dfbed93bd6c2cdc13e92cee0a822c417d",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/57f3143a-1cb1-41a6-9c6e-84c1fe1a5028/61464c8ed4516cfc59a1e063d04e0f6ec43f2687528eef15710eda7158ae070b/17c55df33479ffc8e48bcf49535ab40dfbed93bd6c2cdc13e92cee0a822c417d/original.jpg"
     },
     {
       "setId": "f9223984-d0cf-445e-9d9f-7d447855a904",
       "setCode": "cs3bc",
-      "storageKey": "public/sealed_product_image/01/97/019768b473dfaeaa110346847a52abc5c588011ed63a8346c7234e7de1b99c39/original.jpg"
+      "storageKey": "public/sealed_product_image/01/97/019768b473dfaeaa110346847a52abc5c588011ed63a8346c7234e7de1b99c39/original.jpg",
+      "assetId": "3f87e6d2-9973-413e-9f86-f4c8321ab48a",
+      "contentSha256": "019768b473dfaeaa110346847a52abc5c588011ed63a8346c7234e7de1b99c39",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/3f87e6d2-9973-413e-9f86-f4c8321ab48a/5572de626faa5a39cc31dcb56005e150c1db448dbea428278a646d3d01dc34bb/019768b473dfaeaa110346847a52abc5c588011ed63a8346c7234e7de1b99c39/original.jpg"
     },
     {
       "setId": "cd9dbc9a-2f9b-46af-b94a-faaeeb026395",
       "setCode": "cs4.5c",
-      "storageKey": "public/sealed_product_image/4c/7a/4c7ab7fbb1d233adf344cd689c4abd98d6f070d40c7684091e4680794c588289/original.jpg"
+      "storageKey": "public/sealed_product_image/4c/7a/4c7ab7fbb1d233adf344cd689c4abd98d6f070d40c7684091e4680794c588289/original.jpg",
+      "assetId": "27a99d19-d841-4b92-bb21-03ebddb8db84",
+      "contentSha256": "4c7ab7fbb1d233adf344cd689c4abd98d6f070d40c7684091e4680794c588289",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/27a99d19-d841-4b92-bb21-03ebddb8db84/4fe4b2cb19f2506c58a317e350ee25a70ce36995c18fb184e23871521f6fa9a5/4c7ab7fbb1d233adf344cd689c4abd98d6f070d40c7684091e4680794c588289/original.jpg"
     },
     {
       "setId": "210bbf2d-5f63-4e1b-8af0-a2e093c53746",
       "setCode": "cs4ac",
-      "storageKey": "public/sealed_product_image/91/49/9149f4c880d5882e8e5895da422392f735511726090bb2ffd5aa8ece472688ce/original.jpg"
+      "storageKey": "public/sealed_product_image/91/49/9149f4c880d5882e8e5895da422392f735511726090bb2ffd5aa8ece472688ce/original.jpg",
+      "assetId": "5c927448-f0ae-45e7-b1a5-59ce49fc1269",
+      "contentSha256": "9149f4c880d5882e8e5895da422392f735511726090bb2ffd5aa8ece472688ce",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/5c927448-f0ae-45e7-b1a5-59ce49fc1269/762f06d32265337be55a54229501c138bc26a1cc977614d9026fce4609f0ed88/9149f4c880d5882e8e5895da422392f735511726090bb2ffd5aa8ece472688ce/original.jpg"
     },
     {
       "setId": "7846702c-18c4-4d74-9ac1-2932017fa467",
       "setCode": "cs4bc",
-      "storageKey": "public/sealed_product_image/e5/98/e5989469055b3ffc1c41bb245283708f256fe57a32a8fb63a01ce600160b2c3a/original.jpg"
+      "storageKey": "public/sealed_product_image/e5/98/e5989469055b3ffc1c41bb245283708f256fe57a32a8fb63a01ce600160b2c3a/original.jpg",
+      "assetId": "4facfba4-e370-493b-ab60-6db13cfd3da7",
+      "contentSha256": "e5989469055b3ffc1c41bb245283708f256fe57a32a8fb63a01ce600160b2c3a",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/4facfba4-e370-493b-ab60-6db13cfd3da7/e54c48a6c5c827e537d84d5916a4dadf92ff6b95fdf5c284de4d3126e1b78b0d/e5989469055b3ffc1c41bb245283708f256fe57a32a8fb63a01ce600160b2c3a/original.jpg"
     },
     {
       "setId": "92ffa013-edb7-4c49-8ed1-c50f0162d41d",
       "setCode": "cs5ac",
-      "storageKey": "public/sealed_product_image/bc/df/bcdf848e3f93c3c9878396991460ffc48ff6c6d71dafa5f85c93780fc204bbc1/original.jpg"
+      "storageKey": "public/sealed_product_image/bc/df/bcdf848e3f93c3c9878396991460ffc48ff6c6d71dafa5f85c93780fc204bbc1/original.jpg",
+      "assetId": "9ab68db8-21c5-41d5-8bf4-b68db9ec4fe3",
+      "contentSha256": "bcdf848e3f93c3c9878396991460ffc48ff6c6d71dafa5f85c93780fc204bbc1",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/9ab68db8-21c5-41d5-8bf4-b68db9ec4fe3/186d0bcf72782f05fdf3064ce07fa4ad40ffdeaffa271fc60c60faff9b345a2a/bcdf848e3f93c3c9878396991460ffc48ff6c6d71dafa5f85c93780fc204bbc1/original.jpg"
     },
     {
       "setId": "a952240f-194f-45a1-bd38-e8f5827c1200",
       "setCode": "cs5bc",
-      "storageKey": "public/sealed_product_image/9a/55/9a553e11c1ace22e2922d2fb7da1c410552d889a4f880690ff5d70fe8fffb144/original.jpg"
+      "storageKey": "public/sealed_product_image/9a/55/9a553e11c1ace22e2922d2fb7da1c410552d889a4f880690ff5d70fe8fffb144/original.jpg",
+      "assetId": "610adadf-431a-489c-ade4-93cb6a6a399d",
+      "contentSha256": "9a553e11c1ace22e2922d2fb7da1c410552d889a4f880690ff5d70fe8fffb144",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/610adadf-431a-489c-ade4-93cb6a6a399d/09e9bf491c6ff284876372500e32e9cdfefb603fba955284d14e20e27869b350/9a553e11c1ace22e2922d2fb7da1c410552d889a4f880690ff5d70fe8fffb144/original.jpg"
     },
     {
       "setId": "786678a0-e593-4205-b391-b392f1e71592",
       "setCode": "cs6ac",
-      "storageKey": "public/sealed_product_image/53/83/5383db884a1ec279355e35753a69b522fbe33661b8fc32cd9175c21d516dc034/original.jpg"
+      "storageKey": "public/sealed_product_image/53/83/5383db884a1ec279355e35753a69b522fbe33661b8fc32cd9175c21d516dc034/original.jpg",
+      "assetId": "d764c9e8-018b-47c9-9cd0-e2e65d5a404f",
+      "contentSha256": "5383db884a1ec279355e35753a69b522fbe33661b8fc32cd9175c21d516dc034",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/d764c9e8-018b-47c9-9cd0-e2e65d5a404f/4ac0afc8ab6ff86cf82e5fa4cfdf386b6f5a9a84008fef33388cadc0577bfef5/5383db884a1ec279355e35753a69b522fbe33661b8fc32cd9175c21d516dc034/original.jpg"
     },
     {
       "setId": "3c74abe8-5236-4c84-ae5b-5a5f367b63d4",
       "setCode": "cs6bc",
-      "storageKey": "public/sealed_product_image/37/7b/377be3b2f0bf99be0d986ee6aaf1597581f8718bbf2e7022d8acc4d03bd40d0e/original.jpg"
+      "storageKey": "public/sealed_product_image/37/7b/377be3b2f0bf99be0d986ee6aaf1597581f8718bbf2e7022d8acc4d03bd40d0e/original.jpg",
+      "assetId": "6be0e4b6-870d-4717-8d79-2097d7e82a34",
+      "contentSha256": "377be3b2f0bf99be0d986ee6aaf1597581f8718bbf2e7022d8acc4d03bd40d0e",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/6be0e4b6-870d-4717-8d79-2097d7e82a34/ba83b0b8a2bee5ea5dc967f7d33e26640ca9e69ea35f527f7421b1ea8898e2eb/377be3b2f0bf99be0d986ee6aaf1597581f8718bbf2e7022d8acc4d03bd40d0e/original.jpg"
     },
     {
       "setId": "7ef923a6-e6d5-41c0-9472-707d89937384",
       "setCode": "cshc",
-      "storageKey": "public/sealed_product_image/0d/c4/0dc43c55307f5d98376c2e4582d1dee0e0be6a799437559004652380199b8367/original.jpg"
+      "storageKey": "public/sealed_product_image/0d/c4/0dc43c55307f5d98376c2e4582d1dee0e0be6a799437559004652380199b8367/original.jpg",
+      "assetId": "8cf37828-a854-4ae5-a35b-821d61092680",
+      "contentSha256": "0dc43c55307f5d98376c2e4582d1dee0e0be6a799437559004652380199b8367",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/8cf37828-a854-4ae5-a35b-821d61092680/a6d7da550033df2717c8e97518017021bab0e7e3ab1c1a2d17cddec20c7550e3/0dc43c55307f5d98376c2e4582d1dee0e0be6a799437559004652380199b8367/original.jpg"
     },
     {
       "setId": "465f5ed6-b32e-4cf0-a890-c39bc812ca48",
       "setCode": "csm1ac",
-      "storageKey": "public/sealed_product_image/43/61/4361572936831f897828de7d4906ccb44a57a013f6a0f0c0592bea175e13104e/original.jpg"
+      "storageKey": "public/sealed_product_image/43/61/4361572936831f897828de7d4906ccb44a57a013f6a0f0c0592bea175e13104e/original.jpg",
+      "assetId": "ed9d1efc-f0be-41dd-a3d7-1c611dd29e66",
+      "contentSha256": "4361572936831f897828de7d4906ccb44a57a013f6a0f0c0592bea175e13104e",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/ed9d1efc-f0be-41dd-a3d7-1c611dd29e66/f7ec4a246420b707fa179ea5cea6dacd05dc18568a5ec5dd391a72d2a03fbfc5/4361572936831f897828de7d4906ccb44a57a013f6a0f0c0592bea175e13104e/original.jpg"
     },
     {
       "setId": "64e14d7e-e9f0-49d1-9e43-f79eafc02f53",
       "setCode": "csm1bc",
-      "storageKey": "public/sealed_product_image/85/39/8539e6c9415bd97dde27e428c3f7d5f6ef69300ae650c8ee6696b98e4428451a/original.jpg"
+      "storageKey": "public/sealed_product_image/85/39/8539e6c9415bd97dde27e428c3f7d5f6ef69300ae650c8ee6696b98e4428451a/original.jpg",
+      "assetId": "5c3d3230-1484-4b7b-a7d8-d4d718f860a2",
+      "contentSha256": "8539e6c9415bd97dde27e428c3f7d5f6ef69300ae650c8ee6696b98e4428451a",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/5c3d3230-1484-4b7b-a7d8-d4d718f860a2/45dc05ee5fc9874ee61770dad7c260d383b9cc48abcc01f2169b82a0b7317795/8539e6c9415bd97dde27e428c3f7d5f6ef69300ae650c8ee6696b98e4428451a/original.jpg"
     },
     {
       "setId": "195b9d09-dd64-4e41-9b7d-0c9fb7f2062c",
       "setCode": "csm1cc",
-      "storageKey": "public/sealed_product_image/26/30/2630f9deedb9a0830d4af22778b9a4a7e534cb6bff49cd3101a14db1dea29e50/original.jpg"
+      "storageKey": "public/sealed_product_image/26/30/2630f9deedb9a0830d4af22778b9a4a7e534cb6bff49cd3101a14db1dea29e50/original.jpg",
+      "assetId": "5f785c2b-c5df-43c5-842a-a67d17003c14",
+      "contentSha256": "2630f9deedb9a0830d4af22778b9a4a7e534cb6bff49cd3101a14db1dea29e50",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/5f785c2b-c5df-43c5-842a-a67d17003c14/4929fa8838b2de6e3d0a8a2389278b4dcd7e8dde9297a12af7bdd117875f12f3/2630f9deedb9a0830d4af22778b9a4a7e534cb6bff49cd3101a14db1dea29e50/original.jpg"
     },
     {
       "setId": "7b9800e5-fbfd-4842-b4a0-998e53981f5c",
       "setCode": "csm2.5c",
-      "storageKey": "public/sealed_product_image/f3/8e/f38ee5aed29c27064838c695c1086f61728bf748559a4afa1e45f76b71545c28/original.jpg"
+      "storageKey": "public/sealed_product_image/f3/8e/f38ee5aed29c27064838c695c1086f61728bf748559a4afa1e45f76b71545c28/original.jpg",
+      "assetId": "7de66eba-3b2d-47c3-ad83-05c3901bbbb8",
+      "contentSha256": "f38ee5aed29c27064838c695c1086f61728bf748559a4afa1e45f76b71545c28",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/7de66eba-3b2d-47c3-ad83-05c3901bbbb8/1ac6833ca67d30e0748c5fde5535b16b09f6a05b17548da5a79ea5dce214e578/f38ee5aed29c27064838c695c1086f61728bf748559a4afa1e45f76b71545c28/original.jpg"
     },
     {
       "setId": "1e70ad98-8533-4fd0-8d02-15dda333cce9",
       "setCode": "csm2ac",
-      "storageKey": "public/sealed_product_image/02/a8/02a894cb53fce688966971fa8e94ba97e7d595c4d2837d0c5fde947cd8d24a05/original.jpg"
+      "storageKey": "public/sealed_product_image/02/a8/02a894cb53fce688966971fa8e94ba97e7d595c4d2837d0c5fde947cd8d24a05/original.jpg",
+      "assetId": "3a720e8e-630b-4391-a0c0-331afd47a3d3",
+      "contentSha256": "02a894cb53fce688966971fa8e94ba97e7d595c4d2837d0c5fde947cd8d24a05",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/3a720e8e-630b-4391-a0c0-331afd47a3d3/d7b06fec37ce3c303747f2f0ae390a0a960fde7dd5bc55275458d2d5c1d4815c/02a894cb53fce688966971fa8e94ba97e7d595c4d2837d0c5fde947cd8d24a05/original.jpg"
     },
     {
       "setId": "1c9493a2-e579-4007-89f2-c72fdc66a2d9",
       "setCode": "csm2bc",
-      "storageKey": "public/sealed_product_image/cb/09/cb091317020e55b014f1232d51c30eb267ef8bcf3414b8d925c9ed2ef13f7499/original.jpg"
+      "storageKey": "public/sealed_product_image/cb/09/cb091317020e55b014f1232d51c30eb267ef8bcf3414b8d925c9ed2ef13f7499/original.jpg",
+      "assetId": "2dc7f647-8cf0-4608-905d-4a965af9e43b",
+      "contentSha256": "cb091317020e55b014f1232d51c30eb267ef8bcf3414b8d925c9ed2ef13f7499",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/2dc7f647-8cf0-4608-905d-4a965af9e43b/7e7b0b54bec160c36cfc63dd6d720594961fb78e6cfcd7b5d12a63217daa0a39/cb091317020e55b014f1232d51c30eb267ef8bcf3414b8d925c9ed2ef13f7499/original.jpg"
     },
     {
       "setId": "a31177e5-6f44-4236-8d84-b8afaecd825f",
       "setCode": "csm2cc",
-      "storageKey": "public/sealed_product_image/3b/b9/3bb90767d0cc7909e2fd693e463f665113629e1f52ec1da4e6bdede01f58070c/original.jpg"
+      "storageKey": "public/sealed_product_image/3b/b9/3bb90767d0cc7909e2fd693e463f665113629e1f52ec1da4e6bdede01f58070c/original.jpg",
+      "assetId": "881380c8-6582-4ded-9ddc-d13a1e23c96e",
+      "contentSha256": "3bb90767d0cc7909e2fd693e463f665113629e1f52ec1da4e6bdede01f58070c",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/881380c8-6582-4ded-9ddc-d13a1e23c96e/c8d762df619f7e9351cce0b97ad067e4c3b291ac5d3c47e4b1a2d10f922d6e4d/3bb90767d0cc7909e2fd693e463f665113629e1f52ec1da4e6bdede01f58070c/original.jpg"
     },
     {
       "setId": "8f5e256e-b756-4a9c-8aa4-80cb8fe6f5fe",
       "setCode": "csv10c",
-      "storageKey": "public/sealed_product_image/5c/95/5c95678f5bf0f6e2bf6ae5d5d2bd16716514aa68cf0680dae44030a69bf0895d/original.jpg"
+      "storageKey": "public/sealed_product_image/5c/95/5c95678f5bf0f6e2bf6ae5d5d2bd16716514aa68cf0680dae44030a69bf0895d/original.jpg",
+      "assetId": "fffb66ba-432a-4718-8194-2d48a56efbb6",
+      "contentSha256": "5c95678f5bf0f6e2bf6ae5d5d2bd16716514aa68cf0680dae44030a69bf0895d",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/fffb66ba-432a-4718-8194-2d48a56efbb6/2874c0a7e93644f5f8ea9b625cf8a9461d6bd2a18a6167c70f5f49a7a23e687a/5c95678f5bf0f6e2bf6ae5d5d2bd16716514aa68cf0680dae44030a69bf0895d/original.jpg"
     },
     {
       "setId": "31225f01-ead5-4e8d-83f8-c06978e706da",
       "setCode": "csv1c",
-      "storageKey": "public/sealed_product_image/6a/a7/6aa79da8692e78e05380d57607fcc386b1198a3e0eead2cbb752e446545368e3/original.jpg"
+      "storageKey": "public/sealed_product_image/6a/a7/6aa79da8692e78e05380d57607fcc386b1198a3e0eead2cbb752e446545368e3/original.jpg",
+      "assetId": "bb76738d-dd4f-4c93-bcd7-e4be039b8b54",
+      "contentSha256": "6aa79da8692e78e05380d57607fcc386b1198a3e0eead2cbb752e446545368e3",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/bb76738d-dd4f-4c93-bcd7-e4be039b8b54/1ed218ba0b2b140eea6666fb60271436d1a078f0b5d855924212e8c6429053e0/6aa79da8692e78e05380d57607fcc386b1198a3e0eead2cbb752e446545368e3/original.jpg"
     },
     {
       "setId": "dc879690-6576-4cde-99ed-1eb74096b96c",
       "setCode": "csv2c",
-      "storageKey": "public/sealed_product_image/8e/5b/8e5b38461818752c28f6b46f5850f7156eeaed21e61043f301e8c7d570054774/original.jpg"
+      "storageKey": "public/sealed_product_image/8e/5b/8e5b38461818752c28f6b46f5850f7156eeaed21e61043f301e8c7d570054774/original.jpg",
+      "assetId": "0fbd9e67-68fe-474f-8748-77d49f424144",
+      "contentSha256": "8e5b38461818752c28f6b46f5850f7156eeaed21e61043f301e8c7d570054774",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/0fbd9e67-68fe-474f-8748-77d49f424144/b335710b939026a59d6d02a88010c4f18cd6dc088e79898fcb883dfd76d987f5/8e5b38461818752c28f6b46f5850f7156eeaed21e61043f301e8c7d570054774/original.jpg"
     },
     {
       "setId": "1170881a-cba2-4979-acc8-e705d80b9894",
       "setCode": "csv3c",
-      "storageKey": "public/sealed_product_image/7b/26/7b26fe10cacbde1cef08bf3fcaf3c2632ef1fd291d2313583c80e9b27e249a47/original.jpg"
+      "storageKey": "public/sealed_product_image/7b/26/7b26fe10cacbde1cef08bf3fcaf3c2632ef1fd291d2313583c80e9b27e249a47/original.jpg",
+      "assetId": "ad33e9f7-93a7-46c7-98dd-f99a252b0c04",
+      "contentSha256": "7b26fe10cacbde1cef08bf3fcaf3c2632ef1fd291d2313583c80e9b27e249a47",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/ad33e9f7-93a7-46c7-98dd-f99a252b0c04/a1d574c72d76f5f4f31466945d0003df5394b89f859ba0b5e460c87fc955f4ab/7b26fe10cacbde1cef08bf3fcaf3c2632ef1fd291d2313583c80e9b27e249a47/original.jpg"
     },
     {
       "setId": "0a6e8d07-bd4b-4d06-abdc-a6f27e88eb1b",
       "setCode": "csv4c",
-      "storageKey": "public/sealed_product_image/81/a6/81a6c7a26cf69f5b6d58bd3ff43fd255726478a9c4e4c86aaa9eadd38973c23d/original.jpg"
+      "storageKey": "public/sealed_product_image/81/a6/81a6c7a26cf69f5b6d58bd3ff43fd255726478a9c4e4c86aaa9eadd38973c23d/original.jpg",
+      "assetId": "01fd6a12-705d-44f9-9d69-e1601e742f4b",
+      "contentSha256": "81a6c7a26cf69f5b6d58bd3ff43fd255726478a9c4e4c86aaa9eadd38973c23d",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/01fd6a12-705d-44f9-9d69-e1601e742f4b/c4e000395e296b70e806c2804698e42d518a07c4f531a7d741d78cd451873c28/81a6c7a26cf69f5b6d58bd3ff43fd255726478a9c4e4c86aaa9eadd38973c23d/original.jpg"
     },
     {
       "setId": "9cc48fa9-3a36-4069-b58a-3f29854cca74",
       "setCode": "csv5c",
-      "storageKey": "public/sealed_product_image/8c/94/8c949f94ef301f9c7be9fbe5fced501feb45b5ef9e11385a7fa88872e7f7317a/original.jpg"
+      "storageKey": "public/sealed_product_image/8c/94/8c949f94ef301f9c7be9fbe5fced501feb45b5ef9e11385a7fa88872e7f7317a/original.jpg",
+      "assetId": "ce9cb7da-e9a0-4436-92bd-e934e660bb7a",
+      "contentSha256": "8c949f94ef301f9c7be9fbe5fced501feb45b5ef9e11385a7fa88872e7f7317a",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/ce9cb7da-e9a0-4436-92bd-e934e660bb7a/9e856570d5bf0b3775518317a559512d3159fd9f8264b817c741db22e03c107d/8c949f94ef301f9c7be9fbe5fced501feb45b5ef9e11385a7fa88872e7f7317a/original.jpg"
     },
     {
       "setId": "b921de8d-c127-44c4-825b-bac5dd7e5661",
       "setCode": "csv6c",
-      "storageKey": "public/sealed_product_image/76/1d/761d0dcd19ae3e11be5d2afadd838ce7ccdc972c3cfdbe74e50bd7feaad36603/original.jpg"
+      "storageKey": "public/sealed_product_image/76/1d/761d0dcd19ae3e11be5d2afadd838ce7ccdc972c3cfdbe74e50bd7feaad36603/original.jpg",
+      "assetId": "12751d44-d1ce-4c08-8a43-32031161b29e",
+      "contentSha256": "761d0dcd19ae3e11be5d2afadd838ce7ccdc972c3cfdbe74e50bd7feaad36603",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/12751d44-d1ce-4c08-8a43-32031161b29e/2a3650bf1d4b9fc810c44e8b2c783de4ae697ccc3fa77397210b047f2a040431/761d0dcd19ae3e11be5d2afadd838ce7ccdc972c3cfdbe74e50bd7feaad36603/original.jpg"
     },
     {
       "setId": "1f37ca26-f79b-47b6-9ba8-87f6c14b03fa",
       "setCode": "csv7c",
-      "storageKey": "public/sealed_product_image/40/b3/40b3443ce95d4077ca9ad848ec1b07bca2f95345f7a3f1e03f2df70fb363dd3f/original.jpg"
+      "storageKey": "public/sealed_product_image/40/b3/40b3443ce95d4077ca9ad848ec1b07bca2f95345f7a3f1e03f2df70fb363dd3f/original.jpg",
+      "assetId": "a1de0712-d514-4f32-ab60-1c4bb339079d",
+      "contentSha256": "40b3443ce95d4077ca9ad848ec1b07bca2f95345f7a3f1e03f2df70fb363dd3f",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/a1de0712-d514-4f32-ab60-1c4bb339079d/eb2faac47d5a797b4f6c1ccef18cb549b829f31cbbf34ef78812798d70dee032/40b3443ce95d4077ca9ad848ec1b07bca2f95345f7a3f1e03f2df70fb363dd3f/original.jpg"
     },
     {
       "setId": "488ef846-c6f3-42e6-8fc1-7bf2928b2bcf",
       "setCode": "csv8c",
-      "storageKey": "public/sealed_product_image/19/33/193369ce74ef59c85ee6539a98047331c289153746302a1d20188103a5154e41/original.jpg"
+      "storageKey": "public/sealed_product_image/19/33/193369ce74ef59c85ee6539a98047331c289153746302a1d20188103a5154e41/original.jpg",
+      "assetId": "2561e2f0-5853-41bf-b48b-3f8bea17584f",
+      "contentSha256": "193369ce74ef59c85ee6539a98047331c289153746302a1d20188103a5154e41",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/2561e2f0-5853-41bf-b48b-3f8bea17584f/b94b8275355a0b5db38033258933c9ce03c891e4290d84e4126793929abf47d5/193369ce74ef59c85ee6539a98047331c289153746302a1d20188103a5154e41/original.jpg"
     },
     {
       "setId": "034890ae-726c-44ec-bae9-b3e7d1ffdf45",
       "setCode": "csv9.5c",
-      "storageKey": "public/sealed_product_image/b2/7e/b27e08bd678e98143762684a2e777301ee99f6fe1c48e505905c4c4b59dbf74b/original.jpg"
+      "storageKey": "public/sealed_product_image/b2/7e/b27e08bd678e98143762684a2e777301ee99f6fe1c48e505905c4c4b59dbf74b/original.jpg",
+      "assetId": "cd1ac16e-36e1-4c2d-90ac-eac5b91fa4ff",
+      "contentSha256": "b27e08bd678e98143762684a2e777301ee99f6fe1c48e505905c4c4b59dbf74b",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/cd1ac16e-36e1-4c2d-90ac-eac5b91fa4ff/e52db67383e9ebe5925d8e4f192908d80435cb857f93d7dd3e7429952bcd86ea/b27e08bd678e98143762684a2e777301ee99f6fe1c48e505905c4c4b59dbf74b/original.jpg"
     },
     {
       "setId": "2034da87-a87d-40e9-a8f2-85ca06fb8b5f",
       "setCode": "csv9c",
-      "storageKey": "public/sealed_product_image/a6/65/a665c92b661f37c713e1b768580a5095f50004f4d75fabea86340f6f75a41214/original.jpg"
+      "storageKey": "public/sealed_product_image/a6/65/a665c92b661f37c713e1b768580a5095f50004f4d75fabea86340f6f75a41214/original.jpg",
+      "assetId": "4613c96c-8b92-4e02-8c62-6fa332453fe4",
+      "contentSha256": "a665c92b661f37c713e1b768580a5095f50004f4d75fabea86340f6f75a41214",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/4613c96c-8b92-4e02-8c62-6fa332453fe4/ada30c7be64f3c0c096c25f1e80a3290f43e04f44d81a273d432f9e7ff5eaa91/a665c92b661f37c713e1b768580a5095f50004f4d75fabea86340f6f75a41214/original.jpg"
     },
     {
       "setId": "b6d885e6-40de-4e3d-808d-fc2294af8ad4",
       "setCode": "promo-30th-p",
-      "storageKey": "public/sealed_product_image/d1/5d/d15d586cfa8b3dab5c0952fd8497cabc1a7f9c7c8556814e6f7502b625130327/original.jpg"
+      "storageKey": "public/sealed_product_image/d1/5d/d15d586cfa8b3dab5c0952fd8497cabc1a7f9c7c8556814e6f7502b625130327/original.jpg",
+      "assetId": "53400660-872f-441c-88d7-42dfea6c776e",
+      "contentSha256": "d15d586cfa8b3dab5c0952fd8497cabc1a7f9c7c8556814e6f7502b625130327",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/53400660-872f-441c-88d7-42dfea6c776e/748aeb99828c2c9ddf4204955130aab45a3d520898e0bd0e9e532a444c89e61e/d15d586cfa8b3dab5c0952fd8497cabc1a7f9c7c8556814e6f7502b625130327/original.jpg"
     },
     {
       "setId": "3858072b-8d5d-42d3-9c5c-4557c8ec6ddb",
       "setCode": "promo-s-p",
-      "storageKey": "public/sealed_product_image/2c/03/2c03dcbb9c229dc4da43036b8fc5fdce062b5e89116b4b96727259f8c2a1518e/original.jpg"
+      "storageKey": "public/sealed_product_image/2c/03/2c03dcbb9c229dc4da43036b8fc5fdce062b5e89116b4b96727259f8c2a1518e/original.jpg",
+      "assetId": "13da2b35-3dfe-4956-837e-9bde36d70dbe",
+      "contentSha256": "2c03dcbb9c229dc4da43036b8fc5fdce062b5e89116b4b96727259f8c2a1518e",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/sealed_product_image/13da2b35-3dfe-4956-837e-9bde36d70dbe/4aa79097565b89ce014c056926bb3b101fac97a04928357804d64a30331192ef/2c03dcbb9c229dc4da43036b8fc5fdce062b5e89116b4b96727259f8c2a1518e/original.jpg"
+    }
+  ],
+  "deliveryEnvironment": "production",
+  "deliverySource": "Production api.asset_manifest; exact recorded delivery URLs",
+  "deliveryEvidence": [
+    {
+      "source": "Read-only production api.asset_manifest; normalized by unchanged current-main toCatalogueAsset and createPublicAssetStorageReaders",
+      "sourceRevision": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+      "scope": "Exact43 existing simplified-Chinese cover set IDs, sealed_product_image only",
+      "requestId": "cover-readonly-db-snapshot-20261101",
+      "generatedAt": "2026-11-01T19:22:16.332Z"
     }
   ]
 }

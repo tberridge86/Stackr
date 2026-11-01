@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "stackr-svp1-public-api-verification-v1",
+  "capture": "Selected fields observed in the actual public browser JSON response",
+  "requestUrl": "https://api.stackrtcg.com/v1/assets/manifest?assetType=set_logo&setId=34e5af6e-66d0-4fea-98ce-b1fa1ec1d1dd&limit=10",
+  "requestId": "cfdf3a66-fb54-4a5a-bacd-ce7a1d7d5a36",
+  "generatedAt": "2026-11-01T19:45:19.386Z",
+  "assetCount": 1,
+  "nextCursor": null,
+  "assetId": "reviewed:set-logo:34e5af6e-66d0-4fea-98ce-b1fa1ec1d1dd:2f2acbc19616479cc93d22b4923f33a45b05c9debc82c30d94dfa3b9e3f5045d",
+  "setId": "34e5af6e-66d0-4fea-98ce-b1fa1ec1d1dd",
+  "permissionStatus": "approved",
+  "unavailableReason": null,
+  "contentSha256": "2f2acbc19616479cc93d22b4923f33a45b05c9debc82c30d94dfa3b9e3f5045d",
+  "deliveryUrl": "https://assets.stackrtcg.com/public/set_logo/2f/2a/2f2acbc19616479cc93d22b4923f33a45b05c9debc82c30d94dfa3b9e3f5045d/original.png",
+  "cacheControl": "max-age=14400",
+  "derivatives": [
+    {
+      "role": "card-grid",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/set_logo/43/dc/43dca983c3351b5e410c64c801ef46b70b56be80fb097ffde01bd039815b713b/card-grid.webp",
+      "contentSha256": "43dca983c3351b5e410c64c801ef46b70b56be80fb097ffde01bd039815b713b",
+      "byteSize": 4340,
+      "width": 240,
+      "height": 45,
+      "mimeType": "image/webp",
+      "cacheControl": "max-age=14400"
+    },
+    {
+      "role": "search-result",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/set_logo/1a/7d/1a7daedfc66cb98abdd2fc55762562bc50a59759f1705ab129ffd0bf0918ea91/search-result.webp",
+      "contentSha256": "1a7daedfc66cb98abdd2fc55762562bc50a59759f1705ab129ffd0bf0918ea91",
+      "byteSize": 1056,
+      "width": 96,
+      "height": 18,
+      "mimeType": "image/webp",
+      "cacheControl": "max-age=14400"
+    },
+    {
+      "role": "detail-page",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/set_logo/4c/ed/4ced01b1e956b98da5b27beab4670d9b6bf5a7f2db438a13e0a30c7b1a9d9567/detail-page.webp",
+      "contentSha256": "4ced01b1e956b98da5b27beab4670d9b6bf5a7f2db438a13e0a30c7b1a9d9567",
+      "byteSize": 17452,
+      "width": 720,
+      "height": 135,
+      "mimeType": "image/webp",
+      "cacheControl": "max-age=14400"
+    }
+  ],
+  "publicationComplete": true,
+  "phoneVerified": false,
+  "rollbackSqlSha256": "2964eed79266fccf24676dd80ed362f1f31799027e26ce6a10eb808d1fe30599",
+  "publicationSqlSha256": "782342c449c703b5a41a71430631a9be430368f238d4db3ec1c6d5107e890c6f"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "stackr-operational-approval-reconciliation-v1",
+  "recordedOn": "2026-11-01",
+  "source": "Current user instructions in this conversation",
+  "ownerInstructions": [
+    "it was more making sure that things were pulling from one source not all over the place - and releasing any statements and images that are awaiting permissions as i have confirmed trheyre all donwe",
+    "continue"
+  ],
+  "standingInstruction": "Carry artwork work through import, supersession, publication and verification of the actual API/app image response. Preserve the previous immutable asset and a rollback receipt.",
+  "scope": {
+    "approvedKnownBatch": "SVP1-NATIVE-SOURCE-20261019",
+    "setId": "34e5af6e-66d0-4fea-98ce-b1fa1ec1d1dd",
+    "language": "zh-tw",
+    "originalSha256": "2f2acbc19616479cc93d22b4923f33a45b05c9debc82c30d94dfa3b9e3f5045d",
+    "sourcePermissionReceiptSha256": "7f07676cd46768956726c15619b74cc1c25d422f9d95ea52d04fddf3ee9a63d1",
+    "destination": {
+      "project": "oakdbbzdqwurpjnoqhmu",
+      "bucket": "stackr-catalogue-public",
+      "publicHost": "assets.stackrtcg.com"
+    },
+    "operations": [
+      "Complete bounded prior-link and identity reads",
+      "Upload the exact original and three declared deterministic renditions to their immutable R2 keys",
+      "Add the exact approved asset and target published membership only after object verification",
+      "Verify the actual configured API selection and public delivery",
+      "Preserve prior immutable assets and exact rollback receipt"
+    ]
+  },
+  "extraBatchApprovalRequired": false,
+  "approvalOnlyHoldCleared": true,
+  "notAuthorizedByThisReceipt": [
+    "Inventing missing source licences, card identities, editions or physical finishes",
+    "Broad permission or RLS expansion",
+    "Unrelated production deployments, migrations, price refreshes or catalogue jobs"
+  ],
+  "limitations": "Owner-attested source/use permission is retained from the exact existing receipt. This operational continuation receipt is not independent vendor certification or object-delivery evidence."
+}

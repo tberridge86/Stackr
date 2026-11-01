@@ -20,7 +20,7 @@ const source = fs.readFileSync(sourcePath, 'utf8');
 
 function load({ staleGallery = false, ownMeeLogo = false } = {}) {
   const logos = [
-    { setId: parentId, language: 'en', setCode: 'swsh12.5', storageKey: 'old-crown.webp' },
+    { setId: parentId, language: 'en', setCode: 'swsh12.5', storageKey: reviewedKey },
     { setId: unrelatedId, language: 'en', setCode: 'swsh10', storageKey: 'astral.webp' },
     { setId: 'japanese-id', language: 'ja', setCode: 'M5', storageKey: 'japanese.png' },
     { setId: 'mega-parent-id', language: 'en', setCode: 'me01', storageKey: 'mega-parent.png' },
@@ -32,7 +32,7 @@ function load({ staleGallery = false, ownMeeLogo = false } = {}) {
     './generated/publishedSimplifiedChineseCovers.generated.json': {
       covers: [{ setId: 'cover-id', storageKey: 'cover.png' }],
     },
-    './mobileRuntimeConfig': { MOBILE_RUNTIME_CONFIG: { supabaseUrl: 'https://catalogue.example.test' } },
+    './mobileRuntimeConfig': { MOBILE_RUNTIME_CONFIG: { environment: 'staging', supabaseUrl: 'https://catalogue.example.test' } },
   };
   const compiled = ts.transpileModule(source, {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, esModuleInterop: true },
