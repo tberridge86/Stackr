@@ -11,7 +11,6 @@ for (const path of [
   'app/binder/new.tsx',
   'app/(tabs)/binder.tsx',
   'features/binder/BinderDetailScreen.tsx',
-  'components/BinderArtwork.tsx',
   'app/(tabs)/explore.tsx',
   'app/card/[id].tsx',
   'app/set/[id].tsx',
@@ -23,6 +22,12 @@ for (const path of [
   assert.doesNotMatch(source, /getJapaneseSetLogoSourceForSet/,
     `${path} must not bypass magazine-first set-art resolution`);
 }
+
+const binderArtwork = readFileSync('components/BinderArtwork.tsx', 'utf8');
+assert.match(binderArtwork, /getSetArtworkPresentation/,
+  'shared binder artwork must use the set-art presentation policy');
+assert.doesNotMatch(binderArtwork, /getJapaneseSetLogoSourceForSet/,
+  'shared binder artwork must not bypass magazine-first set-art resolution');
 
 const searchRails = readFileSync('components/search/SearchResults.tsx', 'utf8');
 assert.match(searchRails, /setLogoSource\?: ImageSourcePropType \| null/,
