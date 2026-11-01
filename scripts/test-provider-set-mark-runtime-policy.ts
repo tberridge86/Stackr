@@ -143,8 +143,8 @@ assert.match(
 const binderListSource = readFileSync('app/(tabs)/binder.tsx', 'utf8');
 assert.match(
   binderListSource,
-  /enforceSetVisualRuntimePolicy\(\s*item\.source_set_logo_url\s*\?\? item\.source_set_symbol_url\s*\?\? getPokemonSetLogoUrl/s,
-  'binder-list artwork must gate both stored and provider logo candidates at runtime',
+  /enforceSetVisualRuntimePolicy\(getPokemonSetLogoUrl\(item\.source_set_id, item\.language\)\)\s*\?\? enforceSetVisualRuntimePolicy\(item\.source_set_logo_url\)\s*\?\? enforceSetVisualRuntimePolicy\(item\.source_set_symbol_url\)/s,
+  'binder-list artwork must gate the current mapping and each stored candidate independently',
 );
 
 const binderDetailSource = readFileSync('features/binder/BinderDetailScreen.tsx', 'utf8');
@@ -183,8 +183,15 @@ assert.match(
 const binderArtworkSource = readFileSync('components/BinderArtwork.tsx', 'utf8');
 assert.match(
   binderArtworkSource,
-  /resolvedLogoUrl\s*=\s*enforceSetVisualRuntimePolicy\(/,
-  'shared binder artwork must re-check provider set marks at the final render boundary',
+  /const logo = getSetArtworkPresentation\([\s\S]*?const resolvedLogoUrl = logo\.url/s,
+  'shared binder artwork must render the shared presentation policy result',
+);
+
+const localArtworkSource = readFileSync('lib/localSetArtwork.ts', 'utf8');
+assert.match(
+  localArtworkSource,
+  /enforceSetVisualRuntimePolicy\(options\.publishedUrl\)\s*\?\? enforceSetVisualRuntimePolicy\(options\.savedUrl\)/s,
+  'shared presentation must gate current and saved URLs before selecting either',
 );
 
 const searchResultsSource = readFileSync('components/search/SearchResults.tsx', 'utf8');

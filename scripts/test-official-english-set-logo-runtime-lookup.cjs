@@ -12,6 +12,8 @@ function compileModule(filePath, dependencies) {
   const moduleBox = { exports: {} };
   vm.runInNewContext(compiled, {
     module: moduleBox,
+    URL,
+    process: { env: {} },
     exports: moduleBox.exports,
     require: (request) => {
       if (/\.(png|webp)$/.test(request)) return `bundled:${request}`;
@@ -58,7 +60,6 @@ const traditionalChineseLogos = compileModule('lib/traditionalChineseSetLogos.ts
 const getEnglishSetLogoMatch = englishLogos.getEnglishSetLogoMatch;
 const getEnglishSetLogoMatchForSet = englishLogos.getEnglishSetLogoMatchForSet;
 const getEnglishSetLogoSourceForSet = englishLogos.getEnglishSetLogoSourceForSet;
-const getJapaneseSetLogoSourceForSet = japaneseLogos.getJapaneseSetLogoSourceForSet;
 
 for (const row of manifest) {
   const expectedSource = `bundled:../${row.image_file}`;
@@ -92,9 +93,10 @@ assert.equal(new Set(sharedPop).size, 1, 'The shared POP Series logo must be sto
 
 const localArtwork = compileModule('lib/localSetArtwork.ts', {
   './englishSetLogos': { getEnglishSetLogoSourceForSet },
-  './japaneseSetLogos': { getJapaneseSetLogoSourceForSet },
+  './japaneseSetLogos': japaneseLogos,
   './simplifiedChineseSetLogos': compileModule('lib/simplifiedChineseSetLogos.ts', {}),
   './traditionalChineseSetLogos': traditionalChineseLogos,
+  './providerSetMarkRuntimePolicy': compileModule('lib/providerSetMarkRuntimePolicy.ts', {}),
   './magazineSetCovers': {
     getMagazineSetCoverSourceForSet: (input) => input?.id === 'magazine:test' ? 'bundled:magazine' : null,
   },
