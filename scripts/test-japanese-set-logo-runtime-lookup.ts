@@ -36,6 +36,7 @@ const localArtwork = compileModule('lib/localSetArtwork.ts', {
   './simplifiedChineseSetLogos': simplifiedChineseLogos,
   './traditionalChineseSetLogos': traditionalChineseLogos,
   './magazineSetCovers': { getMagazineSetCoverSourceForSet: () => null },
+  './providerSetMarkRuntimePolicy': { enforceSetVisualRuntimePolicy: (value: unknown) => value ?? null },
 });
 const getLocalSetArtworkSourceForSet = localArtwork.getLocalSetArtworkSourceForSet as (input: Record<string, unknown>) => string | null;
 const getLocalSetLogoSourceForSet = localArtwork.getLocalSetLogoSourceForSet as (input: Record<string, unknown>) => string | null;
