@@ -114,6 +114,44 @@ console.log('Published asset delivery passed: exact hashes/identities, approved 
 const committed = JSON.parse(fs.readFileSync(path.join(path.dirname(sourcePath), 'generated/publishedSetLogos.generated.json'), 'utf8'));
 const recordedSupersessions = JSON.parse(fs.readFileSync(path.join(path.dirname(sourcePath), 'generated/publishedSetAssetSupersessions.generated.json'), 'utf8'));
 const currentProduction = load('production', committed);
+const unrelatedCanonicalId = '01234567-1234-4123-8123-0123456789ab';
+for (const id of [unrelatedCanonicalId, `jp:${unrelatedCanonicalId}`]) {
+  assert.equal(currentProduction.getPublishedSetLogoFallback({ id, language: 'ja', setCode: 'L1b' }), undefined,
+    'an unknown canonical UUID cannot borrow a published logo through a stale set code');
+}
+
+const adapterSource = fs.readFileSync(path.join(path.dirname(sourcePath), 'stackrDomainAdapter.ts'), 'utf8');
+const adapterCompiled = ts.transpileModule(adapterSource, {
+  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+const adapter = {};
+const adapterDependencies = {
+  './pokemonDisplayNames': {
+    getLocalSetName: (input) => input.localName ?? input.setCode,
+    getEnglishSetDisplayName: (input) => input.englishDisplayName ?? input.localName,
+    getPreferredSetDisplayName: (input) => input.englishDisplayName ?? input.localName,
+  },
+  './pokemonSetSeries': { getPokemonSetDisplaySeries: (input) => input.series },
+  './publishedSetLogoFallbacks': currentProduction,
+  './optionalCatalogueEnrichment': {
+    readOptionalCatalogueEnrichment: (read) => read(),
+    throwIfOptionalCatalogueReadAborted: () => {},
+  },
+};
+vm.runInNewContext(adapterCompiled, {
+  exports: adapter,
+  require: (name) => adapterDependencies[name] ?? {},
+  process, console, AbortController, setTimeout, clearTimeout,
+});
+const unrelatedSet = {
+  setId: unrelatedCanonicalId,
+  setCode: 'L1b',
+  languageCode: 'ja',
+  nativeName: 'Unrelated canonical set',
+  total: 1,
+};
+assert.equal(adapter.stackrSetToLegacySet(unrelatedSet).images.logo, undefined,
+  'the active set adapter cannot seed its image/cache path with another canonical set logo');
 for (const crop of [
   {
     setId: 'e8e16a23-fc7a-4ec8-abfe-b74448fa5f27', code: 'L1b',
