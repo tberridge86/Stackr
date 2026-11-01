@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, URL } from 'node:url';
 import { transformSync } from 'esbuild';
 import published from '../lib/generated/publishedSetLogos.generated.json';
 import simplified from '../lib/generated/publishedSimplifiedChineseCovers.generated.json';
