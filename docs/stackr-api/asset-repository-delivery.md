@@ -1,5 +1,7 @@
 # Stage 4: Asset Repository and Delivery Pipeline
 
+> Historical implementation baseline. For the current production gateway, R2 public artwork, generated fallback snapshots and remaining exceptions, see [Runtime source of truth](source-of-truth.md). The Supabase-first statement below describes Stage 4 and must not be used to restart the completed public R2 migration.
+
 ## Current Storage Baseline
 
 Stackr already used Supabase Storage before Stage 4:

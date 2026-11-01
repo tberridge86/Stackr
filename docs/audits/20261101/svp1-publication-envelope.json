@@ -1,0 +1,32 @@
+{
+  "sets": [
+    {
+      "id": "34e5af6e-66d0-4fea-98ce-b1fa1ec1d1dd",
+      "set_code": "SVP1",
+      "game_code": "pokemon",
+      "native_name": "ex特別組合",
+      "deprecated_at": null,
+      "language_code": "zh-tw",
+      "provider_set_code": "SVP1",
+      "english_display_name": "ex Special Set"
+    }
+  ],
+  "setId": "34e5af6e-66d0-4fea-98ce-b1fa1ec1d1dd",
+  "sources": [
+    {
+      "id": "a23954d2-49ca-4f2e-8cee-ed628e179006",
+      "code": "stackr_manual"
+    }
+  ],
+  "capturedAt": "2026-11-01T19:26:42.998136+00:00",
+  "schemaVersion": "stackr-svp1-r2-publication-envelope-v1",
+  "candidateAssets": [],
+  "declaredProjectRef": "oakdbbzdqwurpjnoqhmu",
+  "publishedMemberships": [
+    {
+      "set_id": "34e5af6e-66d0-4fea-98ce-b1fa1ec1d1dd",
+      "language_code": "zh-tw",
+      "catalogue_version_id": "f15e8ee8-c3ae-43e8-bc06-7cbd4adac70e"
+    }
+  ]
+}

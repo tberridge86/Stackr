@@ -12,11 +12,10 @@ import {
   ViewStyle,
 } from 'react-native';
 import { getBinderCover } from '../lib/binderCovers';
-import { getLocalSetArtworkSourceForSet } from '../lib/localSetArtwork';
+import { getSetArtworkPresentation } from '../lib/localSetArtwork';
 import { getMagazineSetCoverForSet } from '../lib/magazineSetCovers';
 import { getPokemonSetLogoUrl } from '../lib/pokemonTcg';
 import { getPublishedSetCoverFallback } from '../lib/publishedSetLogoFallbacks';
-import { enforceSetVisualRuntimePolicy } from '../lib/providerSetMarkRuntimePolicy';
 import { stackrFonts } from '../lib/typography';
 import { StackrImage } from './StackrImage';
 import { useTheme } from './theme-context';
@@ -71,7 +70,8 @@ export function BinderArtwork({
   style,
 }: BinderArtworkProps) {
   const { theme } = useTheme();
-  const [logoFailed, setLogoFailed] = useState(false);
+  const [failedLogoUrl, setFailedLogoUrl] = useState<string | null>(null);
+  const [failedLogoSource, setFailedLogoSource] = useState<ImageSourcePropType | null>(null);
   const cover = getBinderCover(coverKey);
   const magazineCover = cover || fallbackArtSource ? null : getMagazineSetCoverForSet({
     id: sourceSetId ?? coverKey,
@@ -79,16 +79,21 @@ export function BinderArtwork({
     name: setName,
     englishDisplayName: setName,
   });
-  const resolvedLogoSource = fallbackLogoSource
-    ?? (cover || magazineCover ? null : getLocalSetArtworkSourceForSet({
-      id: sourceSetId ?? coverKey,
-      language: sourceSetLanguage,
-      name: setName,
-      englishDisplayName: setName,
-    }));
-  const resolvedLogoUrl = enforceSetVisualRuntimePolicy(fallbackLogoUrl
-    ?? (cover || resolvedLogoSource ? undefined : getPokemonSetLogoUrl(sourceSetId ?? coverKey, sourceSetLanguage)));
-  const hasResolvedLogo = Boolean((resolvedLogoSource || resolvedLogoUrl) && !logoFailed);
+  const logo = getSetArtworkPresentation({
+    id: sourceSetId ?? coverKey,
+    language: sourceSetLanguage,
+    name: setName,
+    englishDisplayName: setName,
+  }, {
+    publishedUrl: cover || magazineCover ? null : getPokemonSetLogoUrl(sourceSetId ?? coverKey, sourceSetLanguage),
+    savedUrl: fallbackLogoUrl,
+    fallbackSource: fallbackLogoSource,
+    failedUrl: failedLogoUrl,
+    failedSource: failedLogoSource,
+  });
+  const resolvedLogoSource = logo.source;
+  const resolvedLogoUrl = logo.url;
+  const hasResolvedLogo = Boolean(resolvedLogoSource || resolvedLogoUrl);
   const publishedCoverUrl = cover || fallbackArtSource || resolvedLogoSource || resolvedLogoUrl
     ? undefined : getPublishedSetCoverFallback({ id: sourceSetId ?? coverKey, language: sourceSetLanguage });
   const shouldDockFallbackLogo = !cover?.image && !fallbackArtSource && !magazineCover && hasResolvedLogo;
@@ -127,10 +132,6 @@ export function BinderArtwork({
   );
   const fillWidth = useRef(new Animated.Value(targetFillWidth)).current;
   const shouldShowProgressText = showProgressBar && showProgressText && progressBarWidth >= 50;
-
-  useEffect(() => {
-    setLogoFailed(false);
-  }, [resolvedLogoSource, resolvedLogoUrl, publishedCoverUrl]);
 
   useEffect(() => {
     Animated.timing(fillWidth, {
@@ -237,30 +238,30 @@ export function BinderArtwork({
               style={styles.fallbackNameArt}
               resizeMode="contain"
             />
-          ) : publishedCoverUrl && !logoFailed ? (
+          ) : publishedCoverUrl && publishedCoverUrl !== failedLogoUrl ? (
             <StackrImage
               uri={publishedCoverUrl}
-              onError={() => setLogoFailed(true)}
+              onError={() => setFailedLogoUrl(publishedCoverUrl)}
               style={styles.fallbackNameArt}
               contentFit="contain"
               priority="low"
               showFallbackIcon={false}
               placeholderColor="transparent"
             />
-          ) : shouldDockFallbackLogo ? null : resolvedLogoSource && !logoFailed ? (
+          ) : shouldDockFallbackLogo ? null : resolvedLogoSource ? (
             <StackrImage
               source={resolvedLogoSource}
-              onError={() => setLogoFailed(true)}
+              onError={() => setFailedLogoSource(resolvedLogoSource)}
               style={styles.fallbackLogo}
               contentFit="contain"
               priority="low"
               showFallbackIcon={false}
               placeholderColor="transparent"
             />
-          ) : resolvedLogoUrl && !logoFailed ? (
+          ) : resolvedLogoUrl ? (
             <StackrImage
               uri={resolvedLogoUrl}
-              onError={() => setLogoFailed(true)}
+              onError={() => setFailedLogoUrl(resolvedLogoUrl)}
               style={styles.fallbackLogo}
               contentFit="contain"
               priority="low"
@@ -301,7 +302,7 @@ export function BinderArtwork({
             {resolvedLogoSource ? (
               <StackrImage
                 source={resolvedLogoSource}
-                onError={() => setLogoFailed(true)}
+                onError={() => setFailedLogoSource(resolvedLogoSource)}
                 style={styles.dockedFallbackLogo}
                 contentFit="contain"
                 priority="low"
@@ -311,7 +312,7 @@ export function BinderArtwork({
             ) : resolvedLogoUrl ? (
               <StackrImage
                 uri={resolvedLogoUrl}
-                onError={() => setLogoFailed(true)}
+                onError={() => setFailedLogoUrl(resolvedLogoUrl)}
                 style={styles.dockedFallbackLogo}
                 contentFit="contain"
                 priority="low"
@@ -508,3 +509,4 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 1 },
   },
 });
+

@@ -1,0 +1,105 @@
+{
+  "archive": "docs/audits/20261101/svp1-publication-evidence.json.gz",
+  "sha256": "546b63e8555f41e090820604eb4fe1a09a8bd9c00efced0461ef5cffb2e04f47",
+  "bytes": 38146,
+  "files": [
+    {
+      "name": "baseline.sql",
+      "sha256": "b27c966b1d552d7acaf1ffd77b30d54bcb379162007494e6501ff50f6e08fd6d"
+    },
+    {
+      "name": "build-publication.mjs",
+      "sha256": "d0193080654c5a9f5a564cd5157e09fb628c0da84fc9325a995e4604b52d3ef3"
+    },
+    {
+      "name": "complete-effective-logo-links.sql",
+      "sha256": "03104b5a627cdfbca8592df8b632e38336494d6216ecb0565e2b4da39ae67b48"
+    },
+    {
+      "name": "explain-effective-logo-links.sql",
+      "sha256": "879e97ba50b2f3bf38a4febbbb688d6cd84fca36470879d1fb11dadeba09ff44"
+    },
+    {
+      "name": "local-equivalence-result.json",
+      "sha256": "fbb07569e60d6bd2a1bd4ec6222117f627a26b0bbfc8e8d359d476433118196e"
+    },
+    {
+      "name": "logo-first-complete-effective-links.sql",
+      "sha256": "a4e84cc3192c6a3a9ac438f2de1b981c3880e7f0638a81cd969ae833d1a1d43f"
+    },
+    {
+      "name": "logo-first-equivalence-result.json",
+      "sha256": "dc012ede6093ed96303200088f7a5d226a6ce8f477af82d42c2464db1c033c0c"
+    },
+    {
+      "name": "logo-first-explain.sql",
+      "sha256": "5763aa15204fc5a9ba038b7d28f3416c23a5467389c15d7e89ee94902338a0ed"
+    },
+    {
+      "name": "pipeline/assetPipeline.js",
+      "sha256": "1bee3ffafc11780a8ce87d282ca6514074d338ce4979296099a74c705ba514ea"
+    },
+    {
+      "name": "pipeline/assetValidation.js",
+      "sha256": "530cfe312f04860584c7dad7765ad5b58c3fcb22f13a64670390b235e12d5aab"
+    },
+    {
+      "name": "pipeline/objectStorage.js",
+      "sha256": "302dd62b0608687ce144dde49bff9e99d07a56acaa3e4c252d2d6768031d0a48"
+    },
+    {
+      "name": "pipeline/package.json",
+      "sha256": "1239d4d885dcad42201a27ed9324f8f0f760b78700d8db9ced39a511cffe7eae"
+    },
+    {
+      "name": "prepare-local-objects.mjs",
+      "sha256": "444fd39a0ef129a7ddc199789d264747fd494676d4439a52afbdbe2a5c9ff288"
+    },
+    {
+      "name": "publication/frozen-verified/publication-plan.json",
+      "sha256": "c5f6f9f4c36979bd7708fabfb9348384a348f2fc8d806cd4d4f724136ed4677d"
+    },
+    {
+      "name": "publication/frozen-verified/publish-canonical-logo.sql",
+      "sha256": "782342c449c703b5a41a71430631a9be430368f238d4db3ec1c6d5107e890c6f"
+    },
+    {
+      "name": "publication/frozen-verified/rollback-canonical-logo.sql",
+      "sha256": "2964eed79266fccf24676dd80ed362f1f31799027e26ce6a10eb808d1fe30599"
+    },
+    {
+      "name": "publication/object-manifest.json",
+      "sha256": "96f9ad3de1816488b30d56e893fbfabe1d4dd4da48737d36f29da30a93e866f0"
+    },
+    {
+      "name": "publication/preparation-receipt.json",
+      "sha256": "ff1a4d82c95a012387a6091c8e07583ca630f3b581d90c21ccf885f0aefb569c"
+    },
+    {
+      "name": "PUBLICATION-HANDOFF.md",
+      "sha256": "7e2beb82af9c9924affb2e713d7b4206a5f2e25241b1a5a5dfd145889bc2577a"
+    },
+    {
+      "name": "refresh-publication-envelope.sql",
+      "sha256": "a0b3931423872d65ad046926fb5ed4a136a810b734f168884678781e8cd87570"
+    },
+    {
+      "name": "sharp-loader.mjs",
+      "sha256": "7f31b161b61ce720b59a90060bef1a6d097dc52bfd9052923e11eae9126b088c"
+    },
+    {
+      "name": "test-equivalence.cjs",
+      "sha256": "f5ac62ee65d893eae5219db7fb8651839ef208be66bdaa22c6f2f2560ac5c94c"
+    },
+    {
+      "name": "test-logo-first-equivalence.cjs",
+      "sha256": "2f989fbef18195f55a275131bc1e1e6196795fadb0ccbb80ef4c3629d3dcc56d"
+    },
+    {
+      "name": "test-publication.mjs",
+      "sha256": "a3362d69c26b68613ec24543e526d8d4f8c2f4bb530ada5c48fa5b7d05352bf7"
+    }
+  ],
+  "extraction": "JSON.parse(gunzipSync(bytes)); restore files[name] beneath work/reconcile-20261101/svp1/. Uploaded image bytes remain immutable in the four verified R2 keys; this archive preserves scripts, exact SQL, plans and metadata.",
+  "publicationComplete": true
+}

@@ -211,11 +211,6 @@ const PRODUCT_QUERY_STOPWORDS: Record<ProductLookupType, string[]> = {
   accessories: ['accessory', 'accessories'],
 };
 
-function getLargeTcgcsvImageUrl(imageUrl: string | null | undefined) {
-  if (!imageUrl) return null;
-  return imageUrl.replace(/_200w(\.[a-z]+)$/i, '_400w$1');
-}
-
 function toGbp(value: number | null | undefined) {
   return typeof value === 'number' ? Math.round(value * USD_TO_GBP * 100) / 100 : null;
 }
@@ -433,7 +428,7 @@ function mapTcgcsvProductToMarketProduct(
     language: languageLabel,
     release_year: releaseYear,
     image_url: product.imageUrl,
-    image_large_url: getLargeTcgcsvImageUrl(product.imageUrl),
+    image_large_url: product.imageUrl,
     aliases,
     search_text: buildSearchText(product.name, productType, aliases, set.name),
     source: 'tcgcsv',
@@ -524,7 +519,7 @@ async function enrichProductsWithTcgcsvMedia(
       enrichedById.set(product.id, {
         ...product,
         image_url: shouldUpdateImage ? best.candidate.imageUrl : product.image_url,
-        image_large_url: shouldUpdateImage ? getLargeTcgcsvImageUrl(best.candidate.imageUrl) : product.image_large_url,
+        image_large_url: shouldUpdateImage ? best.candidate.imageUrl : product.image_large_url,
         source: product.source === 'set_catalog' ? 'tcgcsv' : product.source,
         latest_price: shouldUpdatePrice ? tcgcsvPrice : product.latest_price,
       });
@@ -1190,3 +1185,4 @@ export function toInventoryProductSnapshot(
     product_price_source: price?.soldDataSource ?? null,
   };
 }
+

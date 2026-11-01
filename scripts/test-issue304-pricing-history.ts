@@ -38,7 +38,7 @@ const prepared: any = {
   total: 12, totalUnits: 2, pricedUnits: 1, unpricedUnits: 1, freshUnits: 0, olderPriceUnits: 1,
   trend: { scope: evidence.scope, evidence: 'e2', eligible: true, pricedUnits: 1, totalUnits: 2, staleUnits: 1, coverage: 'partial', points: [first, second] },
 };
-assert.deepEqual(preparedValuationTrend(prepared, 30).values, [10, 12], 'partial scoped history remains visible');
+assert.deepEqual(preparedValuationTrend(prepared, 30, now).values, [10, 12], 'partial scoped history remains visible');
 
 const reads = [
   { capturedAt: '2026-10-02T09:00:00Z', total: 10, totalUnits: 2, pricedUnits: 1, identitySignature: 'same' },

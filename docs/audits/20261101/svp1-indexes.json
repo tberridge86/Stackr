@@ -1,0 +1,128 @@
+[
+  {
+    "schemaname": "catalog",
+    "tablename": "assets",
+    "indexname": "assets_asset_id_key",
+    "indexdef": "CREATE UNIQUE INDEX assets_asset_id_key ON catalog.assets USING btree (asset_id)"
+  },
+  {
+    "schemaname": "catalog",
+    "tablename": "assets",
+    "indexname": "assets_content_sha256_idx",
+    "indexdef": "CREATE INDEX assets_content_sha256_idx ON catalog.assets USING btree (content_sha256) WHERE ((content_sha256 IS NOT NULL) AND (deleted_at IS NULL))"
+  },
+  {
+    "schemaname": "catalog",
+    "tablename": "assets",
+    "indexname": "assets_manifest_public_idx",
+    "indexdef": "CREATE INDEX assets_manifest_public_idx ON catalog.assets USING btree (asset_type, asset_visibility, publicly_servable, permission_status, updated_at DESC) WHERE (deleted_at IS NULL)"
+  },
+  {
+    "schemaname": "catalog",
+    "tablename": "assets",
+    "indexname": "assets_perceptual_hash_idx",
+    "indexdef": "CREATE INDEX assets_perceptual_hash_idx ON catalog.assets USING btree (perceptual_hash) WHERE ((perceptual_hash IS NOT NULL) AND (deleted_at IS NULL))"
+  },
+  {
+    "schemaname": "catalog",
+    "tablename": "assets",
+    "indexname": "assets_pkey",
+    "indexdef": "CREATE UNIQUE INDEX assets_pkey ON catalog.assets USING btree (id)"
+  },
+  {
+    "schemaname": "catalog",
+    "tablename": "assets",
+    "indexname": "assets_printing_identity_lookup_idx",
+    "indexdef": "CREATE INDEX assets_printing_identity_lookup_idx ON catalog.assets USING btree (printing_id) INCLUDE (id) WHERE (printing_id IS NOT NULL)"
+  },
+  {
+    "schemaname": "catalog",
+    "tablename": "assets",
+    "indexname": "assets_public_manifest_updated_lookup_idx",
+    "indexdef": "CREATE INDEX assets_public_manifest_updated_lookup_idx ON catalog.assets USING btree (updated_at DESC, id) WHERE ((asset_visibility = 'public_catalogue'::text) AND publicly_servable AND (permission_status = 'approved'::text) AND (rights_status = 'approved'::text) AND (retention_status = 'active'::text) AND (deleted_at IS NULL) AND (storage_provider <> 'unavailable'::text))"
+  },
+  {
+    "schemaname": "catalog",
+    "tablename": "assets",
+    "indexname": "assets_recognition_reference_eligible_idx",
+    "indexdef": "CREATE INDEX assets_recognition_reference_eligible_idx ON catalog.assets USING btree (variant_id, asset_type, updated_at DESC) WHERE (recognition_reference_eligible AND (asset_visibility = 'public_catalogue'::text) AND publicly_servable AND (rights_status = 'approved'::text) AND (permission_status = 'approved'::text) AND (retention_status = 'active'::text) AND (deleted_at IS NULL) AND (deprecated_at IS NULL))"
+  },
+  {
+    "schemaname": "catalog",
+    "tablename": "assets",
+    "indexname": "assets_retention_idx",
+    "indexdef": "CREATE INDEX assets_retention_idx ON catalog.assets USING btree (asset_visibility, retention_status, retention_until) WHERE (retention_status = ANY (ARRAY['temporary'::text, 'delete_scheduled'::text]))"
+  },
+  {
+    "schemaname": "catalog",
+    "tablename": "assets",
+    "indexname": "assets_storage_object_uidx",
+    "indexdef": "CREATE UNIQUE INDEX assets_storage_object_uidx ON catalog.assets USING btree (storage_provider, storage_bucket, storage_key) WHERE ((storage_key IS NOT NULL) AND (deleted_at IS NULL))"
+  },
+  {
+    "schemaname": "catalog",
+    "tablename": "assets",
+    "indexname": "assets_variant_public_idx",
+    "indexdef": "CREATE INDEX assets_variant_public_idx ON catalog.assets USING btree (variant_id, asset_type, publicly_servable, rights_status)"
+  },
+  {
+    "schemaname": "catalog",
+    "tablename": "assets",
+    "indexname": "catalog_assets_approved_external_source_queue_idx",
+    "indexdef": "CREATE INDEX catalog_assets_approved_external_source_queue_idx ON catalog.assets USING btree (source_id, id) WHERE ((rights_status = 'approved'::text) AND (permission_status = 'approved'::text) AND (storage_provider = 'external_reference'::text) AND (publicly_servable = true) AND (deprecated_at IS NULL))"
+  },
+  {
+    "schemaname": "catalog",
+    "tablename": "assets",
+    "indexname": "catalog_assets_reusable_source_url_idx",
+    "indexdef": "CREATE INDEX catalog_assets_reusable_source_url_idx ON catalog.assets USING btree (original_source_url, id) INCLUDE (variant_id, storage_provider, storage_bucket, storage_key, content_sha256, perceptual_hash, mime_type, width, height, byte_size, derivative_list, archival_storage_key, last_verified_at) WHERE ((asset_type = 'card_image'::text) AND (storage_provider = ANY (ARRAY['supabase_storage'::text, 's3_compatible'::text, 'local_dev'::text])) AND (rights_status = 'approved'::text) AND (permission_status = 'approved'::text) AND (publicly_servable = true) AND (deprecated_at IS NULL) AND (deleted_at IS NULL) AND (original_source_url IS NOT NULL))"
+  },
+  {
+    "schemaname": "catalog",
+    "tablename": "catalogue_version_assets",
+    "indexname": "catalogue_version_assets_asset_lookup_idx",
+    "indexdef": "CREATE INDEX catalogue_version_assets_asset_lookup_idx ON catalog.catalogue_version_assets USING btree (asset_id, catalogue_version_id) INCLUDE (language_code, set_id, printing_id, variant_id, asset_type)"
+  },
+  {
+    "schemaname": "catalog",
+    "tablename": "catalogue_version_assets",
+    "indexname": "catalogue_version_assets_lookup_idx",
+    "indexdef": "CREATE INDEX catalogue_version_assets_lookup_idx ON catalog.catalogue_version_assets USING btree (language_code, asset_type, set_id, printing_id, variant_id)"
+  },
+  {
+    "schemaname": "catalog",
+    "tablename": "catalogue_version_assets",
+    "indexname": "catalogue_version_assets_pkey",
+    "indexdef": "CREATE UNIQUE INDEX catalogue_version_assets_pkey ON catalog.catalogue_version_assets USING btree (catalogue_version_id, asset_id)"
+  },
+  {
+    "schemaname": "catalog",
+    "tablename": "catalogue_version_assets",
+    "indexname": "catalogue_version_assets_printing_identity_idx",
+    "indexdef": "CREATE INDEX catalogue_version_assets_printing_identity_idx ON catalog.catalogue_version_assets USING btree (printing_id) INCLUDE (catalogue_version_id, asset_id) WHERE (printing_id IS NOT NULL)"
+  },
+  {
+    "schemaname": "catalog",
+    "tablename": "catalogue_version_assets",
+    "indexname": "catalogue_version_assets_variant_identity_idx",
+    "indexdef": "CREATE INDEX catalogue_version_assets_variant_identity_idx ON catalog.catalogue_version_assets USING btree (variant_id) INCLUDE (catalogue_version_id, asset_id) WHERE (variant_id IS NOT NULL)"
+  },
+  {
+    "schemaname": "catalog",
+    "tablename": "catalogue_versions",
+    "indexname": "catalogue_versions_one_published_per_language_uidx",
+    "indexdef": "CREATE UNIQUE INDEX catalogue_versions_one_published_per_language_uidx ON catalog.catalogue_versions USING btree (language_code) WHERE ((status = 'published'::text) AND (deprecated_at IS NULL) AND (language_code IS NOT NULL))"
+  },
+  {
+    "schemaname": "catalog",
+    "tablename": "catalogue_versions",
+    "indexname": "catalogue_versions_pkey",
+    "indexdef": "CREATE UNIQUE INDEX catalogue_versions_pkey ON catalog.catalogue_versions USING btree (id)"
+  },
+  {
+    "schemaname": "catalog",
+    "tablename": "catalogue_versions",
+    "indexname": "catalogue_versions_version_key_key",
+    "indexdef": "CREATE UNIQUE INDEX catalogue_versions_version_key_key ON catalog.catalogue_versions USING btree (version_key)"
+  }
+]

@@ -470,7 +470,14 @@ export function toLegacyLanguage(value?: StackrApiLanguageCode | string | null):
 }
 
 function assetUrl(asset?: StackrCatalogueAsset | null) {
-  return clean(asset?.deliveryUrl) ?? clean(asset?.deliveryPath) ?? undefined;
+  const original = clean(asset?.deliveryUrl) ?? clean(asset?.deliveryPath) ?? undefined;
+  if (!original || asset?.assetType !== 'set_logo' || asset.permissionStatus !== 'approved') return original;
+  // Logos share one URL across browse/search/header layouts. The recorded
+  // detail rendition keeps enough pixels for those displays without loading
+  // the full original. Never invent a rendition path or change other art.
+  const detail = asset.derivatives?.find((derivative) => derivative.role === 'detail-page'
+    && (clean(derivative.deliveryUrl) || clean(derivative.deliveryPath)));
+  return clean(detail?.deliveryUrl) ?? clean(detail?.deliveryPath) ?? original;
 }
 
 function firstAsset(assets: StackrCatalogueAsset[], types: string[]) {

@@ -11,6 +11,8 @@ function compileModule(path: string, dependencies: Record<string, unknown>) {
   const moduleBox = { exports: {} as Record<string, unknown> };
   vm.runInNewContext(compiled, {
     module: moduleBox,
+    URL,
+    process: { env: {} },
     exports: moduleBox.exports,
     require: (request: string) => {
       if (/\.(png|webp)$/.test(request)) return `bundled:${request}`;
@@ -32,10 +34,11 @@ const getJapaneseSetLogoSourceForSet = japaneseLogos.getJapaneseSetLogoSourceFor
 const getJapaneseSetLogoSource = japaneseLogos.getJapaneseSetLogoSource as (setId?: string | null, language?: string | null) => string | null;
 const localArtwork = compileModule('lib/localSetArtwork.ts', {
   './englishSetLogos': { getEnglishSetLogoSourceForSet },
-  './japaneseSetLogos': { getJapaneseSetLogoSourceForSet },
+  './japaneseSetLogos': japaneseLogos,
   './simplifiedChineseSetLogos': simplifiedChineseLogos,
   './traditionalChineseSetLogos': traditionalChineseLogos,
   './magazineSetCovers': { getMagazineSetCoverSourceForSet: () => null },
+  './providerSetMarkRuntimePolicy': compileModule('lib/providerSetMarkRuntimePolicy.ts', {}),
 });
 const getLocalSetArtworkSourceForSet = localArtwork.getLocalSetArtworkSourceForSet as (input: Record<string, unknown>) => string | null;
 const getLocalSetLogoSourceForSet = localArtwork.getLocalSetLogoSourceForSet as (input: Record<string, unknown>) => string | null;
