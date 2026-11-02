@@ -136,6 +136,8 @@ async function screenContract() {
   };
   const theme = { colors: new Proxy({}, { get: () => '#123456' }) };
   const dependencies: Record<string, any> = {
+    '../../lib/appCapabilities': { CORE_COLLECTION_MODE: false },
+    '../../features/card/CoreCardDetailScreen': { default: 'CoreCardDetailScreen' },
     '../../components/StackrFunctionalIcon': { StackrFunctionalIcon: 'Image' },
     react: React, 'react-native': native,
     'react-native-safe-area-context': { useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) },
