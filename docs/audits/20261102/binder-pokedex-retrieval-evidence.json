@@ -128,7 +128,7 @@
       },
       "repeatServerMs": 2376
     },
-    "deploymentVerification": "performance_canary_verified_production_unchanged",
+    "deploymentVerification": "production_backend_released_bounded_journey_verified_native_pending",
     "coldExactContinuationSqlMs": 1581.37,
     "stagedSource": "a7bbec03d302d272737d83d0c5a85fc479e85ff5",
     "stagedPatchId": "6760f37e-07d2-4f20-b1d5-42d41ffee8b0",
@@ -145,9 +145,76 @@
     "approvalResult": "Cancelled — the user did not approve this action. No changes were made.",
     "finalLiveConsecutivePages": {
       "performanceCanary": "verified",
-      "production": "unverified_pending_standard_backend_release"
+      "production": "verified_bounded_japanese_pikachu_two_pages"
     },
     "production": {
+      "serviceId": "299d7ad4-5ed8-4301-b609-ef99274078d0",
+      "deploymentId": "92bcf761-8b24-4337-a537-5de165cee60d",
+      "lastAttestedSource": "67755c1a5574e26c4aeec0ade21053641331454b",
+      "observedAt": "2026-11-02T19:14:26Z",
+      "changed": true,
+      "journeyOnReviewedSource": "verified_bounded_public_client_journey",
+      "release": {
+        "workflow": ".github/workflows/deploy-production.yml",
+        "releaseScope": "backend_only",
+        "runId": 41505622670,
+        "url": "https://github.com/tberridge86/Stackr/actions/runs/41505622670",
+        "conclusion": "success"
+      },
+      "runtime": {
+        "environment": "production",
+        "supabaseProject": "oakdbbzdqwurpjnoqhmu",
+        "gitCommitPrefix": "67755c1a5574",
+        "gitCommitSource": "bundled_workflow_sha"
+      },
+      "journey": {
+        "observedAt": "2026-11-02T19:15:52Z",
+        "publicGateway": "https://api.stackrtcg.com",
+        "query": "Pikachu",
+        "language": "ja",
+        "pageSize": 17,
+        "pages": 2,
+        "results": 34,
+        "distinctVariantIds": 34,
+        "continuationOverlap": 0,
+        "continuationAfterPage1": true,
+        "continuationAfterPage2": true,
+        "correctJapaneseScope": 34,
+        "correctSelectedVariant": 34,
+        "englishDisplayLabels": 34,
+        "identityDenominator": 34,
+        "actualClientArtworkResolver": {
+          "resolved": 33,
+          "denominator": 34,
+          "exact": 18,
+          "approvedSharedReferences": 15,
+          "unresolved": 1
+        },
+        "pokedex": {
+          "pageSizes": [50, 50],
+          "canonicalIndexMatches": 100,
+          "distinctSpecies": 100,
+          "reportedTotalSpecies": 1025
+        },
+        "selectedImageSamples": {
+          "count": 3,
+          "http200": 3,
+          "validJpeg": 3,
+          "bytes": [515944, 193968, 144887],
+          "delivery": "official_provider_urls_not_r2",
+          "scope": "three_selected_urls_only_not_universal_or_phone_coverage"
+        },
+        "railwayServerDurationsMs": {
+          "searchPages": [870, 362],
+          "missingImageManifest": 95,
+          "pokedexPages": [11, 4]
+        },
+        "statisticalPercentiles": "unmeasured_individual_observations",
+        "cleanColdBenchmark": "unmeasured",
+        "phoneTiming": "unmeasured"
+      }
+    },
+    "historicalProductionBeforeRelease": {
       "serviceId": "299d7ad4-5ed8-4301-b609-ef99274078d0",
       "deploymentId": "c40b25c1-b1a3-49d1-aed2-df0fc0852228",
       "lastAttestedSource": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
@@ -326,7 +393,47 @@
         "sha256": "20a34cc447308d831fb542c9e9094825c7b6eb1034b3af9b138da37250f00e41"
       }
     ],
-    "nativeReleaseGate": "Run .github/workflows/deploy-production.yml with release_scope=backend_only from exact reviewed current main; verify production /health and the same bounded two-page identities; then resume the existing native lane with freshly read main and production backend identities."
+    "nativeReleaseGate": "Follow existing native run 41526961602 attempt 2 after the repository production approval. Verify the Expo credential preflight and exact frozen-source EAS receipt, then build completion, exact submission, Apple processing, tester availability and installed-phone journeys separately. Check for an existing exact-source EAS build before any retry after a build-request failure. Do not dispatch a duplicate merely because current main changes."
+  },
+  "nativeRelease": {
+    "observedAt": "2026-11-02T21:40:40Z",
+    "workflow": ".github/workflows/build-owner-ios-release.yml",
+    "runId": 41526961602,
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/41526961602",
+    "frozenSource": "aa52a81ff2f3ae6a792a32b306237146b99da191",
+    "expectedBackendSource": "67755c1a5574e26c4aeec0ade21053641331454b",
+    "profile": "production",
+    "verifyOnly": false,
+    "attempt1": {
+      "conclusion": "failure",
+      "cause": "EXPO_TOKEN_empty",
+      "failedBeforeEasBuildRequest": true
+    },
+    "attempt2": {
+      "status": "waiting_for_production_environment_approval",
+      "credentialFix": "repository_secret_saved_per_owner_not_yet_verified_by_preflight"
+    },
+    "automaticSubmissionConfiguredForProduction": true,
+    "newEasBuildId": null,
+    "newRemoteBuildNumber": null,
+    "newTestFlightAvailability": "unverified",
+    "installedPhoneAcceptance": "unverified",
+    "historicalBuild63": {
+      "source": "832eba78ad8bbdd8dea1d358b811f2c11bc3f013",
+      "predatesCurrentRepairs": true,
+      "receipt": "docs/audits/20261102/build63-observed-availability.json"
+    },
+    "releaseRepairPullRequests": [460, 461]
+  },
+  "remainingArtworkGap": {
+    "card": "Japanese PCG7/041 Pikachu delta",
+    "status": "scan_acquisition_required",
+    "suppliedPhotoIdentified": true,
+    "sourceBytesVerified": false,
+    "sourceContentHash": null,
+    "materializationError": "Library prepare_materialize is not available",
+    "replacementPublished": false,
+    "permissionHoldDemonstrated": false
   },
   "pullRequests": [
     "https://github.com/tberridge86/Stackr/pull/457",

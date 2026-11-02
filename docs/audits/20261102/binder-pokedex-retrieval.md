@@ -37,11 +37,35 @@ PR [#457](https://github.com/tberridge86/Stackr/pull/457) and [#458](https://git
 
 The exact merged source is deployed to the dedicated Railway performance canary, service `8baf4d98-4605-4832-9d7e-65880e2a6b29`, as deployment `bd05806e-9306-481b-9e43-e1a68b0dc98a`. At 16:54 UTC its runtime attested `3729e40a3b69`, production environment configuration and Supabase project `oakdbbzdqwurpjnoqhmu`. A bounded `Pikachu` journey fetched two consecutive 17-card pages: 34/34 distinct variant identities, 0/17 continuation overlap, 34/34 image URLs, and continuation remained available after each page. The results covered `en`, `ja`, `zh-cn` and `zh-tw`; 11/34 were Japanese `exact_translated_name` matches. Observed provenance labels included Pokémon Card Game Japan/official, TCGdex, Pikaqian, Pokémon Taiwan, Scrydex and Pokémon TCG API. Railway measured 4,371 ms for the cold page and 807 ms for the next page. These are two observations rather than p50/p95, and both remain above the prior API target.
 
-Production `pocketvault` is unchanged. Its last successful deployment remains `c40b25c1-b1a3-49d1-aed2-df0fc0852228`, with the last attested source `0bf2e60222644682d600deb7cc0e94862fd2a71a`. Railway patch `6760f37e-07d2-4f20-b1d5-42d41ffee8b0` is retained only as historical evidence of a cancelled direct source-pin attempt; it is not the production release lane and must not be accepted as a substitute. The pending action is the existing `.github/workflows/deploy-production.yml` backend-only workflow from the exact reviewed current `main`, followed by production health/source attestation and the same two-page identity check. Native release remains paused until that production evidence exists.
+At the historical 16:55 UTC observation, production `pocketvault` was unchanged at deployment `c40b25c1-b1a3-49d1-aed2-df0fc0852228`, with attested source `0bf2e60222644682d600deb7cc0e94862fd2a71a`. The production release below supersedes that identity. Railway patch `6760f37e-07d2-4f20-b1d5-42d41ffee8b0` is retained only as historical evidence of a cancelled direct source-pin attempt; it is not the production release lane and must not be accepted as a substitute.
 
 Three approved image samples separately returned HTTP 200 with valid JPEG bytes. This checks those image URLs, not on-phone rendering or full catalogue coverage.
 
 The app source is not an installed-phone result. No new native build or OTA is claimed in this follow-up. Historical Build 63 was separately observed in TestFlight; that receipt does not establish which binary/OTA is installed. Cold/warm phone timings and rendered image journeys still require the new app build.
+
+## Production release observation - 2 November 2026
+
+The protected [backend-only workflow run 41505622670](https://github.com/tberridge86/Stackr/actions/runs/41505622670) succeeded. Railway production service `299d7ad4-5ed8-4301-b609-ef99274078d0` runs deployment `92bcf761-8b24-4337-a537-5de165cee60d`. At 19:14:26 UTC its runtime attested bundled source `67755c1a5574e26c4aeec0ade21053641331454b`, environment `production` and Supabase project `oakdbbzdqwurpjnoqhmu`.
+
+The public gateway `https://api.stackrtcg.com` was checked at 19:15:52 UTC using the actual client mapping and artwork resolver:
+
+| Bounded journey | Observation |
+| --- | --- |
+| Japanese `Pikachu`, two 17-card pages | 34 distinct selected variants, zero overlap, continuation available after each page; 34/34 correct Japanese scope, selected variant and English display |
+| Actual client artwork resolution | 33/34 resolved: 18 exact images and 15 approved shared references |
+| First two species pages | 50 + 50 canonical matches, 100 distinct species, reported total 1,025 |
+| Three selected image URLs | HTTP 200, valid JPEG bytes: 515,944; 193,968; 144,887 |
+| Individual Railway server durations | Search 870/362 ms; missing-image manifest 95 ms; species pages 11/4 ms |
+
+These are individual observations, not p50/p95, a clean cold benchmark or installed-phone timings. The three JPEG samples remain official provider URLs; they do not establish that every asset is in R2. The one unresolved Japanese PCG7/041 Pikachu image remains a recorded acquisition gap. The supplied matching photo has been identified, but the required download helper reports `Library prepare_materialize is not available`; original bytes and content hash are unverified and no replacement has been published. This is not a newly demonstrated permission hold.
+
+## Native release observation - 2 November 2026, 21:40 UTC
+
+The [existing native workflow run 41526961602](https://github.com/tberridge86/Stackr/actions/runs/41526961602) uses frozen source `aa52a81ff2f3ae6a792a32b306237146b99da191`, expected backend `67755c1a5574e26c4aeec0ade21053641331454b`, production profile and `verify_only=false`. Attempt 1 failed before an EAS build request because `EXPO_TOKEN` was empty. The owner reports saving the repository secret. Attempt 2 is waiting for the repository's production approval; the credential fix has not yet run through preflight.
+
+PRs [#460](https://github.com/tberridge86/Stackr/pull/460) and [#461](https://github.com/tberridge86/Stackr/pull/461) repaired outer-whitespace handling in reviewed source inputs and the normal production submission path. Normal production requests EAS automatic submission after the build finishes; it no longer explicitly assigns Apple's automatically distributed `Team (Expo)` group. The owner profile retains its separate submission behavior. A queued request will not itself prove build completion or TestFlight availability.
+
+No new EAS build ID or remote build number is established at this observation. Historical Build 63 used source `832eba78ad8bbdd8dea1d358b811f2c11bc3f013` and predates these repairs. Native build, submission, Apple processing, tester availability and installed-phone acceptance remain separate pending milestones; the existing run should be followed rather than dispatching a duplicate build.
 
 All 49 existing issue objects in the shared repair queue are preserved. Earlier artwork/identity/translation holds are not silently closed by these retrieval changes. Sampled delivery does not establish universal image or translation coverage.
 
