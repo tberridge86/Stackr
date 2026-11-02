@@ -159,6 +159,7 @@ function renderRoot(fontsLoaded: boolean, fontError: unknown, animationCompletes
   let hapticHydrationCalls = 0;
   let animationStopCalls = 0;
   const root = rootFunction('RootLayout', {
+    CORE_COLLECTION_MODE: false,
     React: react, Suspense: 'Suspense', AuthProvider: 'AuthProvider', ProfileProvider: 'ProfileProvider',
     markStartupPhase: () => {},
     useFonts: () => [fontsLoaded, fontError],
