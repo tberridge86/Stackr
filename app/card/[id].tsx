@@ -1,3 +1,5 @@
+import { CORE_COLLECTION_MODE } from '../../lib/appCapabilities';
+import CoreCardDetailScreen from '../../features/card/CoreCardDetailScreen';
 import { StackrFunctionalIcon } from '../../components/StackrFunctionalIcon';
 import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import { getCorocoroIssuesForCard, formatCorocoroIssueGroup } from '../../lib/corocoroIssueArchive';
@@ -122,6 +124,10 @@ type LatestSnapshotPrice = {
 };
 
 export default function CardDetailScreen() {
+  return CORE_COLLECTION_MODE ? <CoreCardDetailScreen /> : <FullCardDetailScreen />;
+}
+
+function FullCardDetailScreen() {
   const { theme } = useTheme();
   const { inspectCard } = useCardInspection();
   const { user } = useAuth();
@@ -1590,3 +1596,4 @@ function makeStyles(theme: any) {
   },
 });
 }
+

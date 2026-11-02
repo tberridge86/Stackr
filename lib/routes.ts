@@ -55,7 +55,7 @@ export type SellerTabKey = 'dashboard' | 'inventory' | 'scan' | 'listings';
 
 export const COLLECTOR_TABS: Array<{ key: CollectorTabKey; label: string; route: Href }> = [
   { key: 'home', label: 'Home', route: ROUTES.home },
-  { key: 'collection', label: 'Collection', route: ROUTES.collection },
+  { key: 'collection', label: 'Binders', route: ROUTES.collection },
   { key: 'scan', label: 'Scan', route: ROUTES.scanWorkspace },
   { key: 'market', label: 'Market', route: ROUTES.market },
   { key: 'search', label: 'Search', route: ROUTES.search },

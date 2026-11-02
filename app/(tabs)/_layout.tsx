@@ -1,3 +1,4 @@
+import { CORE_COLLECTION_MODE, CORE_TAB_ROUTES } from '../../lib/appCapabilities';
 import { StackrFunctionalIcon } from '../../components/StackrFunctionalIcon';
 import { Tabs } from 'expo-router';
 import React from 'react';
@@ -41,17 +42,40 @@ export default function TabLayout() {
         },
       })}
     >
-      <Tabs.Screen name="index" options={{ title: 'Home' }} />
-      <Tabs.Screen name="binder" options={{ title: 'Collection' }} />
-      <Tabs.Screen name="scan-hub" options={{ title: 'Scan', href: null }} />
-      <Tabs.Screen name="market" options={{ title: 'Market' }} />
-      <Tabs.Screen name="search" options={{ title: 'Search' }} />
-      <Tabs.Screen name="community/index" options={{ title: 'Community', href: null }} />
-      <Tabs.Screen name="inventory" options={{ title: 'Inventory' }} />
-      <Tabs.Screen name="profile" options={{ href: null }} />
-      <Tabs.Screen name="trade" options={{ href: null }} />
-      <Tabs.Screen name="explore" options={{ href: null }} />
-      <Tabs.Screen name="pokedex" options={{ href: null }} />
+      <Tabs.Protected guard={!CORE_COLLECTION_MODE || CORE_TAB_ROUTES.includes("index")}>
+        <Tabs.Screen name="index" options={{ title: 'Home' }} />
+      </Tabs.Protected>
+      <Tabs.Protected guard={!CORE_COLLECTION_MODE || CORE_TAB_ROUTES.includes("binder")}>
+        <Tabs.Screen name="binder" options={{ title: 'Binders' }} />
+      </Tabs.Protected>
+      <Tabs.Protected guard={!CORE_COLLECTION_MODE || CORE_TAB_ROUTES.includes("scan-hub")}>
+        <Tabs.Screen name="scan-hub" options={{ title: 'Scan', href: null }} />
+      </Tabs.Protected>
+      <Tabs.Protected guard={!CORE_COLLECTION_MODE || CORE_TAB_ROUTES.includes("market")}>
+        <Tabs.Screen name="market" options={{ title: 'Market' }} />
+      </Tabs.Protected>
+      <Tabs.Protected guard={!CORE_COLLECTION_MODE || CORE_TAB_ROUTES.includes("search")}>
+        <Tabs.Screen name="search" options={{ title: 'Search' }} />
+      </Tabs.Protected>
+      <Tabs.Protected guard={!CORE_COLLECTION_MODE || CORE_TAB_ROUTES.includes("community/index")}>
+        <Tabs.Screen name="community/index" options={{ title: 'Community', href: null }} />
+      </Tabs.Protected>
+      <Tabs.Protected guard={!CORE_COLLECTION_MODE || CORE_TAB_ROUTES.includes("inventory")}>
+        <Tabs.Screen name="inventory" options={{ title: 'Inventory' }} />
+      </Tabs.Protected>
+      <Tabs.Protected guard={!CORE_COLLECTION_MODE || CORE_TAB_ROUTES.includes("profile")}>
+        <Tabs.Screen name="profile" options={{ href: null }} />
+      </Tabs.Protected>
+      <Tabs.Protected guard={!CORE_COLLECTION_MODE || CORE_TAB_ROUTES.includes("trade")}>
+        <Tabs.Screen name="trade" options={{ href: null }} />
+      </Tabs.Protected>
+      <Tabs.Protected guard={!CORE_COLLECTION_MODE || CORE_TAB_ROUTES.includes("explore")}>
+        <Tabs.Screen name="explore" options={{ href: null }} />
+      </Tabs.Protected>
+      <Tabs.Protected guard={!CORE_COLLECTION_MODE || CORE_TAB_ROUTES.includes("pokedex")}>
+        <Tabs.Screen name="pokedex" options={{ href: null }} />
+      </Tabs.Protected>
     </Tabs>
   );
 }
+

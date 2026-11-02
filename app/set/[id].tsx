@@ -1,3 +1,4 @@
+import { CORE_COLLECTION_MODE } from '../../lib/appCapabilities';
 import { StackrLoadingIndicator as ActivityIndicator } from '../../components/StackrLoadingIndicator';
 import { getCorocoroIssuesForSet, formatCorocoroIssueGroup } from '../../lib/corocoroIssueArchive';
 import { useTheme } from '../../components/theme-context';
@@ -1124,7 +1125,7 @@ export default function SetDetailScreen() {
     () => cataloguePriceReadWindow(filteredCards, visibleCardCount, cardGridWindow.pageSize),
     [filteredCards, visibleCardCount, cardGridWindow.pageSize]
   );
-  const pricedCards = useCataloguePriceOverlay(cards, { requestCards: storedPriceCards });
+  const pricedCards = useCataloguePriceOverlay(cards, { requestCards: storedPriceCards, enabled: !CORE_COLLECTION_MODE });
   const pricedCardsBySource = useMemo(
     () => new Map(cards.map((card, index) => [card, pricedCards[index] ?? card])),
     [cards, pricedCards]
@@ -1507,3 +1508,4 @@ export default function SetDetailScreen() {
     </SafeAreaView>
   );
 }
+

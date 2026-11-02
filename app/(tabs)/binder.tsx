@@ -2,6 +2,7 @@ import { StackrFunctionalIcon } from '../../components/StackrFunctionalIcon';
 import { STACKR_ICON_OUTLINE, StackrNavigationIcon } from '../../components/StackrNavigationIcon';
 import { StackrBinderButton, StackrBrowseFilterSheet, StackrBrowseFilterGroup } from '../../components/StackrBrowseControls';
 import { useTheme } from '../../components/theme-context';
+import { CORE_COLLECTION_MODE } from '../../lib/appCapabilities';
 import { stackrHaptics } from '../../lib/haptics';
 import { stackrListPerformance, startBinderRetrieval } from '../../lib/performance';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -41,10 +42,7 @@ import {
   deleteBinder,
   BinderRecord,
 } from '../../lib/binders';
-import {
-  loadCollectionPrices,
-  type CollectionPriceInput,
-} from '../../lib/collectionPricingApi';
+import type { CollectionPriceInput } from '../../lib/collectionPricingApi';
 import {
   getCollectionPriceCoverageLabel,
   summariseCollectionPricing,
@@ -785,14 +783,14 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
             {isOfficial ? getBinderOwnedLabel(progress) : `${progress.owned} cards owned`}
           </Text>
         ) : null}
-        <View style={{ marginTop: 5, backgroundColor: STACKR_BINDER_COLORS.softLavender, borderRadius: 12, borderWidth: 1, borderColor: STACKR_BINDER_COLORS.border, paddingHorizontal: 8, paddingVertical: 6, gap: 2 }}>
+        {!CORE_COLLECTION_MODE && (<View style={{ marginTop: 5, backgroundColor: STACKR_BINDER_COLORS.softLavender, borderRadius: 12, borderWidth: 1, borderColor: STACKR_BINDER_COLORS.border, paddingHorizontal: 8, paddingVertical: 6, gap: 2 }}>
           <Text numeric style={{ ...numericTextStyle, color: STACKR_BINDER_COLORS.primary, fontSize: 14, lineHeight: 19, fontWeight: '900', textAlign: 'center' }}>
             {valueLabel}
           </Text>
           <Text style={{ ...typeScale.caption, color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, fontWeight: '700', textAlign: 'center' }}>
             {valueCaption}{staleValue}
           </Text>
-        </View>
+        </View>)}
       </View>
       </TouchableOpacity>
       {!readOnly ? <BinderOptionsSheet
@@ -922,7 +920,8 @@ export default function BinderLibraryScreen() {
     && cachedReadSession.expiresAt * 1000 > Date.now()
     ? cachedReadSession.userId
     : null;
-  const activeAccountId = savedReadOnly ? savedSessionUserId : accountUser?.id ?? null;
+  const activeAccountId = savedReadOnly ? savedSessionUserId
+    : auth.loading || auth.error ? null : accountUser?.id ?? null;
   const savedAccessRef = useRef<{ userId: string; expiresAt: number; epoch: number } | null>(null);
   savedAccessRef.current = savedReadOnly && cachedReadSession && cachedReadSession.expiresAt * 1000 > Date.now()
     ? cachedReadSession
@@ -948,7 +947,7 @@ export default function BinderLibraryScreen() {
   const summaryRequestRef = useRef(0);
   const accountIdRef = useRef<string | null>(activeAccountId);
   accountIdRef.current = activeAccountId;
-  useStartedBinderPreload(binders, activeAccountId, !savedReadOnly && binderRowsOwnerId === activeAccountId);
+  useStartedBinderPreload(binders, activeAccountId, !CORE_COLLECTION_MODE && !savedReadOnly && binderRowsOwnerId === activeAccountId);
 
   useEffect(() => {
     loadRequestRef.current += 1;
@@ -961,6 +960,8 @@ export default function BinderLibraryScreen() {
     setBinderRowsOwnerId(null);
     setSavedReadOnlyMessage(null);
     setLibraryError(null);
+    setReorderMode(false);
+    setSortOpen(false);
     setLoading(Boolean(activeAccountId) || savedSessionPending);
   }, [activeAccountId, savedSessionEpoch, savedSessionPending]);
 
@@ -995,20 +996,14 @@ export default function BinderLibraryScreen() {
 
   const fetchBinderOverviewSnapshot = useCallback(async (): Promise<BinderLibraryOverviewSnapshot> => {
     const data = await fetchBinders({ enrich: false });
-    const customArtEntries = await Promise.all(
-      data
-        .filter((binder) => binder.type === 'custom')
-        .map(async (binder) => [
-          binder.id,
-          await getCustomBinderNameArtKeyForBinder(binder.id, binder.name),
-        ] as const)
-    );
-
+    const cached = stackrQueryClient.getQueryData<BinderLibraryOverviewSnapshot>(stackrQueryKeys.binderLibrary(activeAccountId));
+    const ids = new Set(data.map((binder) => binder.id));
     return {
       binders: data,
-      customNameArtKeys: Object.fromEntries(customArtEntries),
+      customNameArtKeys: activeAccountId && isBinderLibraryOverviewForUser(cached, activeAccountId)
+        ? Object.fromEntries(Object.entries(cached.customNameArtKeys).filter(([id]) => ids.has(id))) : {},
     };
-  }, []);
+  }, [activeAccountId]);
 
   const fetchBinderFactsSnapshot = useCallback(async (
     data: BinderRecord[],
@@ -1329,6 +1324,7 @@ export default function BinderLibraryScreen() {
     isCurrent: () => boolean = () => true,
   ): Promise<BinderValueMap> => {
     const nextValues: BinderValueMap = {};
+    const { loadCollectionPrices } = await import('../../lib/collectionPricingApi');
     const prices = await loadCollectionPrices(facts.priceInputs, { isCurrent });
     if (!isCurrent()) {
       throw Object.assign(new Error('Stored collection price read was cancelled.'), { name: 'AbortError' });
@@ -1392,6 +1388,11 @@ export default function BinderLibraryScreen() {
       // Ownership and quantities must render even when stored-price reads stall.
       setCounts(facts.counts);
       setMasterSets(facts.masterSets);
+      if (CORE_COLLECTION_MODE) {
+        setValues({});
+        setLibraryError(null);
+        return;
+      }
       const priceSignature = sha256Text(JSON.stringify([facts.priceInputs, facts.priceKeysByBinder]));
       const nextValues = await stackrQueryClient.fetchQuery({
         queryKey: [...queryKey, 'prices', priceSignature],
@@ -1518,11 +1519,38 @@ export default function BinderLibraryScreen() {
         console.log('Failed to load binder summaries', summaryError);
       });
 
+      // Custom-cover storage is optional and cannot delay the saved rows.
+      void readOptionalCatalogueEnrichment(async (signal) => {
+        const custom = snapshot.binders.filter((binder) => binder.type === 'custom');
+        const entries: [string, string][] = [];
+        let next = 0;
+        await Promise.all(Array.from({ length: Math.min(4, custom.length) }, async () => {
+          while (!signal?.aborted && isCurrent() && next < custom.length) {
+            const binder = custom[next++];
+            entries.push([binder.id, await getCustomBinderNameArtKeyForBinder(binder.id, binder.name)]);
+          }
+        }));
+        return Object.fromEntries(entries);
+      }).then((keys) => {
+        if (!isCurrent() || !keys) return;
+        const current = stackrQueryClient.getQueryData<BinderLibraryOverviewSnapshot>(queryKey);
+        if (!isBinderLibraryOverviewForUser(current, accountId)) return;
+        const ids = new Set(current.binders.map((binder) => binder.id));
+        const enriched = { ...current, customNameArtKeys: {
+          ...current.customNameArtKeys, ...Object.fromEntries(Object.entries(keys).filter(([id]) => ids.has(id))),
+        } };
+        stackrQueryClient.setQueryData(queryKey, enriched);
+        setCustomNameArtKeys(enriched.customNameArtKeys);
+        void writePersistedBinderOverview(accountId, enriched, { isCurrent, savedAt: Date.now() });
+      }).catch(() => undefined);
+
       // Saved names and covers are usable immediately; catalogue branding and
       // valuation must not hold the entire library behind a loading screen.
       void fetchBinders().then((enrichedBinders) => {
         if (!isCurrent()) return;
-        const enriched = { ...snapshot, binders: enrichedBinders };
+        const current = stackrQueryClient.getQueryData<BinderLibraryOverviewSnapshot>(queryKey);
+        const enriched = { ...snapshot, binders: enrichedBinders,
+          customNameArtKeys: isBinderLibraryOverviewForUser(current, accountId) ? current.customNameArtKeys : snapshot.customNameArtKeys };
         stackrQueryClient.setQueryData(queryKey, enriched);
         applyBinderOverviewSnapshot(enriched);
         void writePersistedBinderOverview(accountId, enriched, { isCurrent, savedAt: Date.now() });
@@ -1555,7 +1583,8 @@ export default function BinderLibraryScreen() {
   // ===============================
 
   const confirmDeleteBinder = useCallback((binder: BinderRecord) => {
-    const ownerUserId = accountUser?.id ?? null;
+    const ownerUserId = activeAccountId;
+    if (savedReadOnly || !ownerUserId) return;
     Alert.alert(
       'Delete binder?',
       `Are you sure you want to delete "${binder.name}"? This cannot be undone.`,
@@ -1565,6 +1594,7 @@ export default function BinderLibraryScreen() {
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
+            if (ownerUserId !== accountIdRef.current) return;
             try {
               await deleteBinder(binder.id);
               await stackrQueryClient.invalidateQueries({ queryKey: stackrQueryKeys.binderLibraryRoot });
@@ -1597,7 +1627,7 @@ export default function BinderLibraryScreen() {
         },
       ]
     );
-  }, [accountUser?.id]);
+  }, [activeAccountId, savedReadOnly]);
 
   // ===============================
   // SORT
@@ -1651,7 +1681,7 @@ export default function BinderLibraryScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg, overflow: 'hidden' }} edges={['top']}>
-      <FeatureTipGate
+      {!CORE_COLLECTION_MODE && (<FeatureTipGate
         tipKey="binder-library-screen-v1"
         title="Collection"
         subtitle="Binders, Discover Sets, Pokédex and duplicates now live under one collection destination."
@@ -1660,21 +1690,33 @@ export default function BinderLibraryScreen() {
           { icon: 'albums-outline', imageIcon: BINDER_MODE_BADGE_SOURCES.master, title: 'Master sets', body: 'Use Master Set mode inside a binder to track variants.' },
           { icon: 'camera-outline', imageIcon: stackrIcons.scanCard, title: 'Scan cards', body: 'Jump straight into the scanner from this screen.' },
         ]}
-      />
+      />)}
       <View style={{ flex: 1, paddingHorizontal: PADDING, paddingTop: 8 }}>
 
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
           <View style={{ flex: 1, minWidth: 0 }}>
             <StackrPageTitle title="Collection" accentText="ction" />
-            <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>{binders.length} binders</Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>{visibleBinders.length} binders</Text>
           </View>
-          {!savedReadOnly ? <TouchableOpacity onPress={() => router.push(ROUTES.profile)} accessibilityRole="button" accessibilityLabel="Open Profile" style={{ minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' }}>
+          {!CORE_COLLECTION_MODE && !savedReadOnly ? <TouchableOpacity onPress={() => router.push(ROUTES.profile)} accessibilityRole="button" accessibilityLabel="Open Profile" style={{ minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' }}>
             <StackrProfileAvatar avatarUrl={profile?.avatar_url} avatarPreset={profile?.avatar_preset} size={32} borderWidth={1} accessibilityLabel="Profile" />
           </TouchableOpacity> : null}
-          {!savedReadOnly ? <TouchableOpacity onPress={() => setReorderMode((prev) => !prev)} accessibilityRole="button" accessibilityLabel={reorderMode ? 'Finish reordering binders' : 'Reorder binders'} style={{ minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' }}>
+          {!savedReadOnly && activeAccountId ? <TouchableOpacity onPress={() => setReorderMode((prev) => !prev)} accessibilityRole="button" accessibilityLabel={reorderMode ? 'Finish reordering binders' : 'Reorder binders'} style={{ minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' }}>
             {reorderMode ? <Text style={{ color: theme.colors.primary, fontWeight: '700' }}>Done</Text> : <Ionicons name="grid-outline" size={22} color={theme.colors.primary} />}
           </TouchableOpacity> : null}
         </View>
+        {!savedReadOnly && !activeAccountId ? (
+          <View style={{ padding: 12, gap: 8 }}>
+            <Text accessibilityRole={auth.error ? 'alert' : undefined} style={{ color: theme.colors.textSoft }}>
+              {auth.loading ? 'Checking your sign-in before opening private binders.' : auth.error
+                ? 'Your sign-in could not be checked.' : 'Sign in to see your binders.'}
+            </Text>
+            {!auth.loading ? <TouchableOpacity accessibilityRole="button" style={{ minHeight: 44, justifyContent: 'center' }}
+              onPress={() => auth.error ? void auth.refreshAuth() : router.push('/(auth)/login')}>
+              <Text style={{ color: theme.colors.primary, fontWeight: '800' }}>{auth.error ? 'Retry sign-in check' : 'Sign in'}</Text>
+            </TouchableOpacity> : null}
+          </View>
+        ) : null}
         {savedReadOnlyMessage ? (
           <View style={{ borderWidth: 1, borderColor: theme.colors.border, backgroundColor: theme.colors.surface, borderRadius: 12, padding: 12, marginBottom: 10, gap: 8 }}>
             <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17 }}>{savedReadOnlyMessage}</Text>
@@ -1694,12 +1736,12 @@ export default function BinderLibraryScreen() {
             <Text style={{ color: theme.colors.primary, fontWeight: '800', marginTop: 4 }}>Try again</Text>
           </TouchableOpacity>
         ) : null}
-        {!reorderMode && !savedReadOnly ? (
+        {!reorderMode && !savedReadOnly && activeAccountId ? (
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8, alignItems: 'center', justifyContent: 'space-between' }}>
             <StackrBinderButton label="New binder" onPress={() => router.push('/binder/new')} />
-            <TouchableOpacity onPress={handleScanCard} accessibilityRole="button" accessibilityLabel="Scan cards" style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
+            {!CORE_COLLECTION_MODE && (<TouchableOpacity onPress={handleScanCard} accessibilityRole="button" accessibilityLabel="Scan cards" style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
               <StackrNavigationIcon name="scan" color={theme.dark ? theme.colors.text : STACKR_ICON_OUTLINE} accentColor={theme.colors.primary} size={22} />
-            </TouchableOpacity>
+            </TouchableOpacity>)}
             <TouchableOpacity onPress={() => setSortOpen(true)} accessibilityRole="button" accessibilityLabel={`Sort binders. ${currentSortLabel}`} style={{ minHeight: 44, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               <Ionicons name="swap-vertical-outline" size={20} color={theme.colors.primary} />
               <Text style={{ color: theme.colors.text, fontSize: 14 }}>{currentSortLabel}</Text>
@@ -1707,11 +1749,11 @@ export default function BinderLibraryScreen() {
           </View>
         ) : null}
         <StackrBrowseFilterSheet visible={sortOpen && !reorderMode} onClose={() => setSortOpen(false)}>
-          <StackrBrowseFilterGroup title="Sort binders" choices={SORT_OPTIONS} selected={sortBy} onSelect={(key) => { setSortBy(key as SortKey); setSortOpen(false); }} />
+          <StackrBrowseFilterGroup title="Sort binders" choices={CORE_COLLECTION_MODE ? SORT_OPTIONS.filter(option => !option.key.startsWith('value')) : SORT_OPTIONS} selected={sortBy} onSelect={(key) => { setSortBy(key as SortKey); setSortOpen(false); }} />
         </StackrBrowseFilterSheet>
 
         {/* Loading */}
-        {loading ? (
+        {loading || (!savedReadOnly && auth.loading) ? (
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <ActivityIndicator color={theme.colors.primary} size="large" />
             <Text style={{ color: theme.colors.textSoft, marginTop: 12 }}>
@@ -1737,6 +1779,7 @@ export default function BinderLibraryScreen() {
               data={visibleBinders}
               keyExtractor={(item) => item.id}
               onDragEnd={async ({ data }) => {
+                if (!activeAccountId || savedReadOnly || accountIdRef.current !== activeAccountId) return;
                 setBinders(data);
                 await Promise.all(
                   data.map((binder, index) =>
@@ -1832,7 +1875,7 @@ export default function BinderLibraryScreen() {
             testID="collection-binder-grid"
             ListHeaderComponent={
               <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
-                {!savedReadOnly && COLLECTION_VAULT_SHORTCUTS.map((item) => (
+                {!CORE_COLLECTION_MODE && !savedReadOnly && COLLECTION_VAULT_SHORTCUTS.map((item) => (
                   <CollectionVaultShortcutButton key={item.label} onPress={() => router.push(item.route)} label={item.label} imageIcon={item.imageIcon} />
                 ))}
               </View>
@@ -1868,21 +1911,22 @@ export default function BinderLibraryScreen() {
                 columns={COLUMNS}
               />
             )}
-            ListEmptyComponent={
+            ListEmptyComponent={activeAccountId ? (
               <View style={{ paddingTop: 34 }}>
                 <EmptyStateCard
                   navigationIcon="collection"
                   title="No binders yet"
-                  body={savedReadOnly ? 'Your saved binder library is empty on this phone.' : 'Create an official set binder or a custom vault, then scan cards straight into it.'}
+                  body={savedReadOnly ? 'Your saved binder library is empty on this phone.' : 'Create a set binder or a custom binder to start collecting.'}
                   actionLabel={savedReadOnly ? 'Back' : 'Create Binder'}
                   onAction={() => savedReadOnly ? router.replace('/') : router.push('/binder/new')}
                 />
               </View>
-            }
+            ) : null}
           />
         )}
       </View>
     </SafeAreaView>
   );
 }
+
 

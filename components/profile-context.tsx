@@ -45,7 +45,8 @@ const ProfileContext = createContext<ProfileContextType>({
   setChaseCard: async () => {},
 });
 
-export function ProfileProvider({ children }: { children: React.ReactNode }) {
+export function ProfileProvider({ children, enabled = true }: { children: React.ReactNode; enabled?: boolean }) {
+  const readsEnabled = useRef(enabled); readsEnabled.current = enabled;
   const { user, loading: authLoading } = useAuth();
   const accountId: string | null = user?.id ?? null;
   const currentAccountId = useRef(accountId);
@@ -55,12 +56,12 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     accountId: null, requestId: 0, profile: null, loading: true, error: null,
   });
   const belongsToAccount = state.accountId === accountId;
-  const profile = belongsToAccount && !authLoading ? state.profile : null;
-  const loading = authLoading || !belongsToAccount || state.loading;
-  const error = belongsToAccount && !authLoading ? state.error : null;
+  const profile = enabled && belongsToAccount && !authLoading ? state.profile : null;
+  const loading = enabled && (authLoading || !belongsToAccount || state.loading);
+  const error = enabled && belongsToAccount && !authLoading ? state.error : null;
 
   const refreshProfile = useCallback(async () => {
-    if (currentAccountId.current !== accountId) return;
+    if (!enabled || !readsEnabled.current || currentAccountId.current !== accountId) return;
     const requestId = ++requestSequence.current;
     setState((previous) => beginProfileLoad(previous, accountId, requestId));
     if (!accountId) return;
@@ -70,13 +71,16 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         .select('*')
         .eq('id', accountId)
         .maybeSingle());
+      if (!readsEnabled.current || currentAccountId.current !== accountId || requestSequence.current !== requestId) return;
       setState((previous) => finishProfileLoad(previous, { accountId, requestId, data: data as Profile | null, error: loadError }));
     } catch (loadError) {
+      if (!readsEnabled.current || currentAccountId.current !== accountId || requestSequence.current !== requestId) return;
       setState((previous) => finishProfileLoad(previous, { accountId, requestId, data: null, error: loadError }));
     }
-  }, [accountId]);
+  }, [accountId, enabled]);
 
   const updateProfile = useCallback(async (updates: Partial<Profile>) => {
+    if (!enabled || !readsEnabled.current) return { error: new Error('Profile editing is unavailable in this view.') };
     if (!user) return { error: 'No user' };
     if (currentAccountId.current !== user.id) return { error: new Error('Your account changed. Please reopen your profile before saving.') };
     if (loading || error) return { error: new Error('Load your profile successfully before making changes.') };
@@ -105,7 +109,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     }
 
     return { error: updateError };
-  }, [error, loading, refreshProfile, user]);
+  }, [enabled, error, loading, refreshProfile, user]);
 
   const setFavoriteCard = useCallback(async (cardId: string, setId: string) => {
     if (!user) return;
@@ -126,10 +130,10 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   }, [updateProfile, user]);
 
   useEffect(() => {
-    if (!authLoading) {
+    if (enabled && !authLoading) {
       refreshProfile();
     }
-  }, [authLoading, refreshProfile]);
+  }, [authLoading, enabled, refreshProfile]);
 
   return (
     <ProfileContext.Provider

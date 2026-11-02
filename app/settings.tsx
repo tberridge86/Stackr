@@ -1,3 +1,5 @@
+import { CORE_COLLECTION_MODE } from '../lib/appCapabilities';
+import CoreAccountScreen from '../features/settings/CoreAccountScreen';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, AppState, Linking, Platform, Switch, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -18,6 +20,10 @@ function describePermission(value: { status: string; accessPrivileges?: string }
 }
 
 export default function SettingsScreen() {
+  return CORE_COLLECTION_MODE ? <CoreAccountScreen /> : <FullSettingsScreen />;
+}
+
+function FullSettingsScreen() {
   const router = useRouter();
   const { user, loading } = useAuth();
   const { theme } = useTheme();

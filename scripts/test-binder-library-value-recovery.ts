@@ -36,6 +36,11 @@ function pricingHarness(read: (inputs: any[], options: any) => Promise<any[]>, s
   let values: any = { b: oldValue }; let error: string | null = null; let current = true;
   const removed: unknown[] = []; const published: any[] = []; let passedOptions: any;
   const context: any = { exports, Map, Set, console: { log() {} }, summariseCollectionPricing,
+    CORE_COLLECTION_MODE: false,
+    require: (name: string) => {
+      assert.equal(name, '../../lib/collectionPricingApi');
+      return { loadCollectionPrices: (inputs: any[], options: any) => context.loadCollectionPrices(inputs, options) };
+    },
     loadCollectionPrices: async (inputs: any[], options: any) => { passedOptions = options; return read(inputs, options); },
     summaryRequestRef: { current: 0 }, getBinderLibrarySignature: () => 'fixture',
     stackrQueryKeys: { binderLibrarySummaries: (owner: string, signature: string) => ['library', owner, signature] },

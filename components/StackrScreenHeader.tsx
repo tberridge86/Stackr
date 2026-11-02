@@ -1,3 +1,5 @@
+import { router } from 'expo-router';
+import { CORE_COLLECTION_MODE } from '../lib/appCapabilities';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Image, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
@@ -53,7 +55,8 @@ export function StackrScreenHeader({
             : rightIcon === 'storefront-outline'
               ? stackrIcons.marketplace
               : null;
-  const actionLabel = rightAccessibilityLabel ?? (
+  const accountAction = CORE_COLLECTION_MODE && ['notifications-outline', 'person-circle-outline', 'storefront-outline'].includes(rightIcon);
+  const actionLabel = accountAction ? 'Account settings' : rightAccessibilityLabel ?? (
     rightIcon === 'notifications-outline' ? 'Open notifications'
       : rightIcon === 'information-circle-outline' ? 'Open information'
         : rightIcon === 'person-circle-outline' ? 'Open profile'
@@ -85,7 +88,7 @@ export function StackrScreenHeader({
           </View>
         )}
         <Pressable
-          onPress={onRightPress}
+          onPress={accountAction ? () => router.push('/settings') : onRightPress}
           accessibilityRole="button"
           accessibilityLabel={actionLabel}
           style={{
@@ -98,7 +101,7 @@ export function StackrScreenHeader({
             justifyContent: 'center',
           }}
         >
-          {rightIcon === 'person-circle-outline' ? (
+          {accountAction ? <Ionicons name="settings-outline" size={24} color={theme.colors.text} /> : rightIcon === 'person-circle-outline' ? (
             <StackrProfileAvatar
               avatarUrl={profile?.avatar_url}
               avatarPreset={profile?.avatar_preset}
@@ -115,7 +118,7 @@ export function StackrScreenHeader({
           ) : (
             <Ionicons name={rightIcon} size={24} color={theme.colors.text} />
           )}
-          {rightIcon === 'notifications-outline' && (
+          {!CORE_COLLECTION_MODE && rightIcon === 'notifications-outline' && (
             <View style={{ position: 'absolute', right: 8, top: 8, width: 8, height: 8, borderRadius: 4, backgroundColor: theme.colors.primary }} />
           )}
         </Pressable>
@@ -139,3 +142,4 @@ export function StackrScreenHeader({
     </View>
   );
 }
+

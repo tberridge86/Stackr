@@ -246,7 +246,8 @@
     "test:restore-security": "node scripts/test-postgres-restore-security.mjs",
     "test:security-boundary-runtime": "node scripts/test-inspected-security-boundaries.mjs",
     "test:database-fixture-safety": "node scripts/test-native-postgres-fixture.mjs",
-    "test:search-pagination": "node --import tsx scripts/test-search-pagination-runtime.ts && node --import tsx scripts/test-search-settlement-runtime.ts && node scripts/test-backend-search-pagination.mjs"
+    "test:search-pagination": "node --import tsx scripts/test-search-pagination-runtime.ts && node --import tsx scripts/test-search-settlement-runtime.ts && node scripts/test-backend-search-pagination.mjs",
+    "test:core-collection": "node scripts/test-core-app-scope.mjs && node scripts/test-core-profile-gate.mjs && node scripts/test-core-home-data.mjs && node scripts/test-saved-card-display-alias.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",

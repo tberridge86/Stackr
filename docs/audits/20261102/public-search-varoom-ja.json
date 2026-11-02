@@ -1,0 +1,432 @@
+{
+  "sourceUrl": "https://api.stackrtcg.com/v1/search?q=Varoom&language=ja&limit=3",
+  "transport": "Firecrawl rawHtml public GET maxAge=0",
+  "statusCode": 200,
+  "scrapeId": "01a19c2f-f61f-73ce-b009-ff0bad74873f",
+  "response": {
+    "data": {
+      "query": "Varoom",
+      "normalizedQuery": "varoom",
+      "results": [
+        {
+          "type": "card",
+          "reason": "exact_name",
+          "cardId": "d82428b0-594f-4e9c-9b5a-ae2b0f7170cc",
+          "variantId": "0ab06d35-40e5-4ed7-83b1-76c51051534f",
+          "canonicalId": "pokemon:ja:cf6f4a09-69a3-4497-9c40-beb1221063ea:060:normal",
+          "setId": "cf6f4a09-69a3-4497-9c40-beb1221063ea",
+          "setCode": "SV1S",
+          "collectorNumber": "060",
+          "nativeName": "ブロロン",
+          "englishDisplayName": "Varoom",
+          "englishDisplaySource": "printing",
+          "languageCode": "ja",
+          "variantCode": "normal",
+          "matchedName": "Varoom",
+          "matchedNameType": "english_display",
+          "card": {
+            "cardId": "d82428b0-594f-4e9c-9b5a-ae2b0f7170cc",
+            "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+            "game": "pokemon",
+            "languageCode": "ja",
+            "language": {
+              "englishName": "Japanese",
+              "nativeName": "日本語"
+            },
+            "set": {
+              "setId": "cf6f4a09-69a3-4497-9c40-beb1221063ea",
+              "setCode": "SV1S",
+              "nativeName": "スカーレットex",
+              "englishDisplayName": "Scarlet ex"
+            },
+            "collectorNumber": {
+              "value": "060",
+              "prefix": null,
+              "sort": 60,
+              "suffix": null,
+              "sortKey": "000000000060"
+            },
+            "names": {
+              "native": "ブロロン",
+              "englishDisplay": "Varoom",
+              "englishDisplaySource": "printing",
+              "englishSupplement": {
+                "value": "Varoom",
+                "provenance": "published_stackr_exact_native_name",
+                "authoritative": false,
+                "sourceCardIds": [
+                  "10a96183-1cc5-4bf1-a189-ddde8e58b1d3",
+                  "18891479-42e2-44d1-b9dc-91da247c61c7",
+                  "1c7b9270-d1eb-4416-bd80-dea2f4384f81"
+                ]
+              }
+            },
+            "details": {
+              "supertype": "Pokémon",
+              "subtypes": [],
+              "artist": "nagimiso"
+            },
+            "rarity": {
+              "code": "common",
+              "label": "Common"
+            },
+            "defaultVariantId": "0ab06d35-40e5-4ed7-83b1-76c51051534f",
+            "variants": [
+              {
+                "variantId": "0ab06d35-40e5-4ed7-83b1-76c51051534f",
+                "canonicalId": "pokemon:ja:cf6f4a09-69a3-4497-9c40-beb1221063ea:060:normal",
+                "variantCode": "normal",
+                "variantLabel": "Normal",
+                "finishCode": "normal",
+                "finishLabel": "Normal",
+                "artworkKey": "tcgdex:https://assets.tcgdex.net/ja/SV/SV1S/060/high.webp",
+                "nativeImageStatus": "available",
+                "sameArtworkAsVariantId": null,
+                "imageVariantId": "0ab06d35-40e5-4ed7-83b1-76c51051534f",
+                "image": {
+                  "assetId": "b2c27158-a785-4786-ae0a-571d677a014d",
+                  "assetType": "card_image",
+                  "game": "pokemon",
+                  "setId": null,
+                  "cardId": null,
+                  "variantId": "0ab06d35-40e5-4ed7-83b1-76c51051534f",
+                  "deliveryPath": "public/card_image/b2c27158-a785-4786-ae0a-571d677a014d/d14c79694271200e8913da80e8c885a16f587c330f5ec6ba8fcf0f16932534f0/6f299708831b0fe7242da79733a044efc4246d291a6d02b6339c65bb7fa44239/original.jpg",
+                  "deliveryUrl": "https://assets.stackrtcg.com/public/card_image/b2c27158-a785-4786-ae0a-571d677a014d/d14c79694271200e8913da80e8c885a16f587c330f5ec6ba8fcf0f16932534f0/6f299708831b0fe7242da79733a044efc4246d291a6d02b6339c65bb7fa44239/original.jpg",
+                  "sourceAttribution": "tcgdex",
+                  "permissionStatus": "approved",
+                  "contentSha256": "6f299708831b0fe7242da79733a044efc4246d291a6d02b6339c65bb7fa44239",
+                  "perceptualHash": "f7700000fffffff9",
+                  "mimeType": "image/jpeg",
+                  "width": 600,
+                  "height": 825,
+                  "byteSize": 124109,
+                  "derivatives": [
+                    {
+                      "url": "https://assets.stackrtcg.com/public/card_image/b2c27158-a785-4786-ae0a-571d677a014d/d14c79694271200e8913da80e8c885a16f587c330f5ec6ba8fcf0f16932534f0/da561fbab22a8f0ed719104d927866f02ea98e773440083e211f29ad0fd02ad6/card-grid.webp",
+                      "role": "card-grid",
+                      "width": 240,
+                      "height": 330,
+                      "byteSize": 15964,
+                      "mimeType": "image/webp",
+                      "storageKey": "public/card_image/b2c27158-a785-4786-ae0a-571d677a014d/d14c79694271200e8913da80e8c885a16f587c330f5ec6ba8fcf0f16932534f0/da561fbab22a8f0ed719104d927866f02ea98e773440083e211f29ad0fd02ad6/card-grid.webp",
+                      "deliveryUrl": "https://assets.stackrtcg.com/public/card_image/b2c27158-a785-4786-ae0a-571d677a014d/d14c79694271200e8913da80e8c885a16f587c330f5ec6ba8fcf0f16932534f0/da561fbab22a8f0ed719104d927866f02ea98e773440083e211f29ad0fd02ad6/card-grid.webp",
+                      "cacheControl": "public, max-age=31536000, immutable",
+                      "contentSha256": "da561fbab22a8f0ed719104d927866f02ea98e773440083e211f29ad0fd02ad6",
+                      "storageBucket": "stackr-catalogue-public",
+                      "storageProvider": "s3_compatible",
+                      "deliveryPath": "public/card_image/b2c27158-a785-4786-ae0a-571d677a014d/d14c79694271200e8913da80e8c885a16f587c330f5ec6ba8fcf0f16932534f0/da561fbab22a8f0ed719104d927866f02ea98e773440083e211f29ad0fd02ad6/card-grid.webp"
+                    },
+                    {
+                      "url": "https://assets.stackrtcg.com/public/card_image/b2c27158-a785-4786-ae0a-571d677a014d/d14c79694271200e8913da80e8c885a16f587c330f5ec6ba8fcf0f16932534f0/feb63473be7b7bc79cd4b301133fb0857a0b57d95c6c5265682695a66d05d9a3/search-result.webp",
+                      "role": "search-result",
+                      "width": 96,
+                      "height": 132,
+                      "byteSize": 3064,
+                      "mimeType": "image/webp",
+                      "storageKey": "public/card_image/b2c27158-a785-4786-ae0a-571d677a014d/d14c79694271200e8913da80e8c885a16f587c330f5ec6ba8fcf0f16932534f0/feb63473be7b7bc79cd4b301133fb0857a0b57d95c6c5265682695a66d05d9a3/search-result.webp",
+                      "deliveryUrl": "https://assets.stackrtcg.com/public/card_image/b2c27158-a785-4786-ae0a-571d677a014d/d14c79694271200e8913da80e8c885a16f587c330f5ec6ba8fcf0f16932534f0/feb63473be7b7bc79cd4b301133fb0857a0b57d95c6c5265682695a66d05d9a3/search-result.webp",
+                      "cacheControl": "public, max-age=31536000, immutable",
+                      "contentSha256": "feb63473be7b7bc79cd4b301133fb0857a0b57d95c6c5265682695a66d05d9a3",
+                      "storageBucket": "stackr-catalogue-public",
+                      "storageProvider": "s3_compatible",
+                      "deliveryPath": "public/card_image/b2c27158-a785-4786-ae0a-571d677a014d/d14c79694271200e8913da80e8c885a16f587c330f5ec6ba8fcf0f16932534f0/feb63473be7b7bc79cd4b301133fb0857a0b57d95c6c5265682695a66d05d9a3/search-result.webp"
+                    },
+                    {
+                      "url": "https://assets.stackrtcg.com/public/card_image/b2c27158-a785-4786-ae0a-571d677a014d/d14c79694271200e8913da80e8c885a16f587c330f5ec6ba8fcf0f16932534f0/80478567901030b7c186a26edf58debe1971ddeacc3becd55390317d03200fe1/detail-page.webp",
+                      "role": "detail-page",
+                      "width": 600,
+                      "height": 825,
+                      "byteSize": 82428,
+                      "mimeType": "image/webp",
+                      "storageKey": "public/card_image/b2c27158-a785-4786-ae0a-571d677a014d/d14c79694271200e8913da80e8c885a16f587c330f5ec6ba8fcf0f16932534f0/80478567901030b7c186a26edf58debe1971ddeacc3becd55390317d03200fe1/detail-page.webp",
+                      "deliveryUrl": "https://assets.stackrtcg.com/public/card_image/b2c27158-a785-4786-ae0a-571d677a014d/d14c79694271200e8913da80e8c885a16f587c330f5ec6ba8fcf0f16932534f0/80478567901030b7c186a26edf58debe1971ddeacc3becd55390317d03200fe1/detail-page.webp",
+                      "cacheControl": "public, max-age=31536000, immutable",
+                      "contentSha256": "80478567901030b7c186a26edf58debe1971ddeacc3becd55390317d03200fe1",
+                      "storageBucket": "stackr-catalogue-public",
+                      "storageProvider": "s3_compatible",
+                      "deliveryPath": "public/card_image/b2c27158-a785-4786-ae0a-571d677a014d/d14c79694271200e8913da80e8c885a16f587c330f5ec6ba8fcf0f16932534f0/80478567901030b7c186a26edf58debe1971ddeacc3becd55390317d03200fe1/detail-page.webp"
+                    }
+                  ],
+                  "cacheControl": "public, max-age=31536000, immutable",
+                  "externallyReferenced": false,
+                  "unavailableReason": null,
+                  "lastVerifiedAt": "2026-08-09T13:32:39.764+00:00",
+                  "updatedAt": "2026-10-26T17:59:02.241488+00:00"
+                },
+                "updatedAt": "2026-10-06T18:47:39.312254+00:00"
+              }
+            ],
+            "updatedAt": "2026-10-06T18:47:39.312254+00:00"
+          }
+        },
+        {
+          "type": "card",
+          "reason": "exact_name",
+          "cardId": "3d36895d-2852-45d0-a497-43e31a6fa734",
+          "variantId": "1c4ef968-273c-4a60-a06e-0166d8ddde0d",
+          "canonicalId": "pokemon:ja:cf6f4a09-69a3-4497-9c40-beb1221063ea:059:normal",
+          "setId": "cf6f4a09-69a3-4497-9c40-beb1221063ea",
+          "setCode": "SV1S",
+          "collectorNumber": "059",
+          "nativeName": "ブロロン",
+          "englishDisplayName": "Varoom",
+          "englishDisplaySource": "printing",
+          "languageCode": "ja",
+          "variantCode": "normal",
+          "matchedName": "Varoom",
+          "matchedNameType": "english_display",
+          "card": {
+            "cardId": "3d36895d-2852-45d0-a497-43e31a6fa734",
+            "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+            "game": "pokemon",
+            "languageCode": "ja",
+            "language": {
+              "englishName": "Japanese",
+              "nativeName": "日本語"
+            },
+            "set": {
+              "setId": "cf6f4a09-69a3-4497-9c40-beb1221063ea",
+              "setCode": "SV1S",
+              "nativeName": "スカーレットex",
+              "englishDisplayName": "Scarlet ex"
+            },
+            "collectorNumber": {
+              "value": "059",
+              "prefix": null,
+              "sort": 59,
+              "suffix": null,
+              "sortKey": "000000000059"
+            },
+            "names": {
+              "native": "ブロロン",
+              "englishDisplay": "Varoom",
+              "englishDisplaySource": "printing",
+              "englishSupplement": {
+                "value": "Varoom",
+                "provenance": "published_stackr_exact_native_name",
+                "authoritative": false,
+                "sourceCardIds": [
+                  "10a96183-1cc5-4bf1-a189-ddde8e58b1d3",
+                  "18891479-42e2-44d1-b9dc-91da247c61c7",
+                  "1c7b9270-d1eb-4416-bd80-dea2f4384f81"
+                ]
+              }
+            },
+            "details": {
+              "supertype": "Pokémon",
+              "subtypes": [],
+              "artist": "Shin Nagasawa"
+            },
+            "rarity": {
+              "code": "common",
+              "label": "Common"
+            },
+            "defaultVariantId": "1c4ef968-273c-4a60-a06e-0166d8ddde0d",
+            "variants": [
+              {
+                "variantId": "1c4ef968-273c-4a60-a06e-0166d8ddde0d",
+                "canonicalId": "pokemon:ja:cf6f4a09-69a3-4497-9c40-beb1221063ea:059:normal",
+                "variantCode": "normal",
+                "variantLabel": "Normal",
+                "finishCode": "normal",
+                "finishLabel": "Normal",
+                "artworkKey": "tcgdex:https://assets.tcgdex.net/ja/SV/SV1S/059/high.webp",
+                "nativeImageStatus": "available",
+                "sameArtworkAsVariantId": null,
+                "imageVariantId": "1c4ef968-273c-4a60-a06e-0166d8ddde0d",
+                "image": {
+                  "assetId": "a4e93f2c-d473-4209-95ca-6755c6b877a0",
+                  "assetType": "card_image",
+                  "game": "pokemon",
+                  "setId": null,
+                  "cardId": null,
+                  "variantId": "1c4ef968-273c-4a60-a06e-0166d8ddde0d",
+                  "deliveryPath": "public/card_image/a4e93f2c-d473-4209-95ca-6755c6b877a0/3ec879daf7c597a2ebb898d94a720ee5a1101396cb28022614dbc7173df86fad/639f634de6bc5e96a5408ffb039f484424469e4215afc505138570b82431743d/original.jpg",
+                  "deliveryUrl": "https://assets.stackrtcg.com/public/card_image/a4e93f2c-d473-4209-95ca-6755c6b877a0/3ec879daf7c597a2ebb898d94a720ee5a1101396cb28022614dbc7173df86fad/639f634de6bc5e96a5408ffb039f484424469e4215afc505138570b82431743d/original.jpg",
+                  "sourceAttribution": "tcgdex",
+                  "permissionStatus": "approved",
+                  "contentSha256": "639f634de6bc5e96a5408ffb039f484424469e4215afc505138570b82431743d",
+                  "perceptualHash": "00080001fffffffb",
+                  "mimeType": "image/jpeg",
+                  "width": 600,
+                  "height": 825,
+                  "byteSize": 111766,
+                  "derivatives": [
+                    {
+                      "url": "https://assets.stackrtcg.com/public/card_image/a4e93f2c-d473-4209-95ca-6755c6b877a0/3ec879daf7c597a2ebb898d94a720ee5a1101396cb28022614dbc7173df86fad/24feb18718616181b017d66d31dd0a0a36ec4aa581faac9dd44295a67e440c78/card-grid.webp",
+                      "role": "card-grid",
+                      "width": 240,
+                      "height": 330,
+                      "byteSize": 13962,
+                      "mimeType": "image/webp",
+                      "storageKey": "public/card_image/a4e93f2c-d473-4209-95ca-6755c6b877a0/3ec879daf7c597a2ebb898d94a720ee5a1101396cb28022614dbc7173df86fad/24feb18718616181b017d66d31dd0a0a36ec4aa581faac9dd44295a67e440c78/card-grid.webp",
+                      "deliveryUrl": "https://assets.stackrtcg.com/public/card_image/a4e93f2c-d473-4209-95ca-6755c6b877a0/3ec879daf7c597a2ebb898d94a720ee5a1101396cb28022614dbc7173df86fad/24feb18718616181b017d66d31dd0a0a36ec4aa581faac9dd44295a67e440c78/card-grid.webp",
+                      "cacheControl": "public, max-age=31536000, immutable",
+                      "contentSha256": "24feb18718616181b017d66d31dd0a0a36ec4aa581faac9dd44295a67e440c78",
+                      "storageBucket": "stackr-catalogue-public",
+                      "storageProvider": "s3_compatible",
+                      "deliveryPath": "public/card_image/a4e93f2c-d473-4209-95ca-6755c6b877a0/3ec879daf7c597a2ebb898d94a720ee5a1101396cb28022614dbc7173df86fad/24feb18718616181b017d66d31dd0a0a36ec4aa581faac9dd44295a67e440c78/card-grid.webp"
+                    },
+                    {
+                      "url": "https://assets.stackrtcg.com/public/card_image/a4e93f2c-d473-4209-95ca-6755c6b877a0/3ec879daf7c597a2ebb898d94a720ee5a1101396cb28022614dbc7173df86fad/931d5cca8014de54ac960c0c46b486627935ef80812f39dc768959fe394d7248/search-result.webp",
+                      "role": "search-result",
+                      "width": 96,
+                      "height": 132,
+                      "byteSize": 2816,
+                      "mimeType": "image/webp",
+                      "storageKey": "public/card_image/a4e93f2c-d473-4209-95ca-6755c6b877a0/3ec879daf7c597a2ebb898d94a720ee5a1101396cb28022614dbc7173df86fad/931d5cca8014de54ac960c0c46b486627935ef80812f39dc768959fe394d7248/search-result.webp",
+                      "deliveryUrl": "https://assets.stackrtcg.com/public/card_image/a4e93f2c-d473-4209-95ca-6755c6b877a0/3ec879daf7c597a2ebb898d94a720ee5a1101396cb28022614dbc7173df86fad/931d5cca8014de54ac960c0c46b486627935ef80812f39dc768959fe394d7248/search-result.webp",
+                      "cacheControl": "public, max-age=31536000, immutable",
+                      "contentSha256": "931d5cca8014de54ac960c0c46b486627935ef80812f39dc768959fe394d7248",
+                      "storageBucket": "stackr-catalogue-public",
+                      "storageProvider": "s3_compatible",
+                      "deliveryPath": "public/card_image/a4e93f2c-d473-4209-95ca-6755c6b877a0/3ec879daf7c597a2ebb898d94a720ee5a1101396cb28022614dbc7173df86fad/931d5cca8014de54ac960c0c46b486627935ef80812f39dc768959fe394d7248/search-result.webp"
+                    },
+                    {
+                      "url": "https://assets.stackrtcg.com/public/card_image/a4e93f2c-d473-4209-95ca-6755c6b877a0/3ec879daf7c597a2ebb898d94a720ee5a1101396cb28022614dbc7173df86fad/1c9328538c9e5e09a7b7c6816da3883e7cd9d16365d72f772d64b4ad82c9f55d/detail-page.webp",
+                      "role": "detail-page",
+                      "width": 600,
+                      "height": 825,
+                      "byteSize": 74096,
+                      "mimeType": "image/webp",
+                      "storageKey": "public/card_image/a4e93f2c-d473-4209-95ca-6755c6b877a0/3ec879daf7c597a2ebb898d94a720ee5a1101396cb28022614dbc7173df86fad/1c9328538c9e5e09a7b7c6816da3883e7cd9d16365d72f772d64b4ad82c9f55d/detail-page.webp",
+                      "deliveryUrl": "https://assets.stackrtcg.com/public/card_image/a4e93f2c-d473-4209-95ca-6755c6b877a0/3ec879daf7c597a2ebb898d94a720ee5a1101396cb28022614dbc7173df86fad/1c9328538c9e5e09a7b7c6816da3883e7cd9d16365d72f772d64b4ad82c9f55d/detail-page.webp",
+                      "cacheControl": "public, max-age=31536000, immutable",
+                      "contentSha256": "1c9328538c9e5e09a7b7c6816da3883e7cd9d16365d72f772d64b4ad82c9f55d",
+                      "storageBucket": "stackr-catalogue-public",
+                      "storageProvider": "s3_compatible",
+                      "deliveryPath": "public/card_image/a4e93f2c-d473-4209-95ca-6755c6b877a0/3ec879daf7c597a2ebb898d94a720ee5a1101396cb28022614dbc7173df86fad/1c9328538c9e5e09a7b7c6816da3883e7cd9d16365d72f772d64b4ad82c9f55d/detail-page.webp"
+                    }
+                  ],
+                  "cacheControl": "public, max-age=31536000, immutable",
+                  "externallyReferenced": false,
+                  "unavailableReason": null,
+                  "lastVerifiedAt": "2026-08-09T13:25:13.854+00:00",
+                  "updatedAt": "2026-10-26T16:21:28.417069+00:00"
+                },
+                "updatedAt": "2026-10-06T18:47:39.312254+00:00"
+              }
+            ],
+            "updatedAt": "2026-10-06T18:47:39.312254+00:00"
+          }
+        },
+        {
+          "type": "card",
+          "reason": "exact_name",
+          "cardId": "10a96183-1cc5-4bf1-a189-ddde8e58b1d3",
+          "variantId": "345d1862-8de5-416e-8099-b850814935be",
+          "canonicalId": "pokemon:ja:40cb9e83-3e60-4966-8d2d-4edb02bf1ac7:531:normal",
+          "setId": "40cb9e83-3e60-4966-8d2d-4edb02bf1ac7",
+          "setCode": "MC",
+          "collectorNumber": "531",
+          "nativeName": "ブロロン",
+          "englishDisplayName": "Varoom",
+          "englishDisplaySource": "printing",
+          "languageCode": "ja",
+          "variantCode": "normal",
+          "matchedName": "Varoom",
+          "matchedNameType": "english_display",
+          "card": {
+            "cardId": "10a96183-1cc5-4bf1-a189-ddde8e58b1d3",
+            "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+            "game": "pokemon",
+            "languageCode": "ja",
+            "language": {
+              "englishName": "Japanese",
+              "nativeName": "日本語"
+            },
+            "set": {
+              "setId": "40cb9e83-3e60-4966-8d2d-4edb02bf1ac7",
+              "setCode": "MC",
+              "nativeName": "スタートデッキ100 バトルコレクション",
+              "englishDisplayName": "スタートデッキ100 バトルコレクション"
+            },
+            "collectorNumber": {
+              "value": "531",
+              "prefix": null,
+              "sort": 531,
+              "suffix": null,
+              "sortKey": "000000000531"
+            },
+            "names": {
+              "native": "ブロロン",
+              "englishDisplay": "Varoom",
+              "englishDisplaySource": "printing",
+              "englishSupplement": {
+                "value": "Varoom",
+                "provenance": "published_stackr_exact_native_name",
+                "authoritative": false,
+                "sourceCardIds": [
+                  "10a96183-1cc5-4bf1-a189-ddde8e58b1d3",
+                  "18891479-42e2-44d1-b9dc-91da247c61c7",
+                  "1c7b9270-d1eb-4416-bd80-dea2f4384f81"
+                ]
+              }
+            },
+            "details": {
+              "supertype": "Pokémon",
+              "subtypes": [],
+              "artist": "Shiburingaru"
+            },
+            "rarity": {
+              "code": null,
+              "label": null
+            },
+            "defaultVariantId": "345d1862-8de5-416e-8099-b850814935be",
+            "variants": [
+              {
+                "variantId": "345d1862-8de5-416e-8099-b850814935be",
+                "canonicalId": "pokemon:ja:40cb9e83-3e60-4966-8d2d-4edb02bf1ac7:531:normal",
+                "variantCode": "normal",
+                "variantLabel": "Normal",
+                "finishCode": "normal",
+                "finishLabel": "Normal",
+                "artworkKey": null,
+                "nativeImageStatus": "scan_acquisition_required",
+                "sameArtworkAsVariantId": null,
+                "imageVariantId": "345d1862-8de5-416e-8099-b850814935be",
+                "image": {
+                  "assetId": "bd20d91f-498e-40ea-b210-bf7a58873d5d",
+                  "assetType": "card_image",
+                  "game": "pokemon",
+                  "setId": "40cb9e83-3e60-4966-8d2d-4edb02bf1ac7",
+                  "cardId": "10a96183-1cc5-4bf1-a189-ddde8e58b1d3",
+                  "variantId": "345d1862-8de5-416e-8099-b850814935be",
+                  "deliveryPath": null,
+                  "deliveryUrl": "https://www.pokemon-card.com/assets/images/card_images/large/MC/049247_P_BURORON.jpg",
+                  "sourceAttribution": "pokemon_card_jp_official",
+                  "permissionStatus": "approved",
+                  "contentSha256": null,
+                  "perceptualHash": null,
+                  "mimeType": null,
+                  "width": null,
+                  "height": null,
+                  "byteSize": null,
+                  "derivatives": [],
+                  "cacheControl": null,
+                  "externallyReferenced": true,
+                  "unavailableReason": null,
+                  "lastVerifiedAt": null,
+                  "updatedAt": "2026-09-08T19:31:34.443172+00:00"
+                },
+                "updatedAt": "2026-10-06T18:45:14.356747+00:00"
+              }
+            ],
+            "updatedAt": "2026-10-06T18:45:14.356747+00:00"
+          }
+        }
+      ]
+    },
+    "meta": {
+      "requestId": "8c382780-e250-4d4e-a78b-ce9b1145605c",
+      "apiVersion": "1",
+      "generatedAt": "2026-11-02T12:15:53.833Z",
+      "pagination": {
+        "limit": 3,
+        "nextCursor": null,
+        "continuationAvailable": false,
+        "unavailableReason": "search_pagination_unavailable"
+      }
+    }
+  }
+}

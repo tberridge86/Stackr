@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
 import { snapshotBinderView, isCompleteBinderSnapshot } from '../lib/binderReopenSnapshot';
-import { createSetFactsReader, loadCompleteSetPages, mergeBinderArtwork } from '../lib/stackrSetRetrieval';
+import { createSetFactsReader, loadCompleteSetPages, mergeBinderArtwork, mergeCanonicalCardDisplayName } from '../lib/stackrSetRetrieval';
 import { copyPreferredSetArtworkReassignments, getPreferredSetArtworkReassignments, readPreferredSetArtwork, rememberPreferredSetArtworkObservation } from '../lib/stackrPreferredSetArtwork';
 import { readOptionalCatalogueEnrichment, throwIfOptionalCatalogueReadAborted } from '../lib/optionalCatalogueEnrichment';
 import { getBinderCatalogueInspectionImages } from '../lib/binderCataloguePresentation';
@@ -93,7 +93,7 @@ function harness(population = facts) {
     resolveCanonicalStackrSetId: async (reference: string) => reference,
     rememberedSet: () => rememberedMetadata, rememberSet: (_client: any, set: any) => { rememberedMetadata = set; },
     setFactsReader: () => reader, loadCompleteSetPages, normalizeCanonicalSetCards: (cards: any) => cards,
-    readOptionalCatalogueEnrichment, throwIfOptionalCatalogueReadAborted, readPreferredSetArtwork, mergeBinderArtwork,
+    readOptionalCatalogueEnrichment, throwIfOptionalCatalogueReadAborted, readPreferredSetArtwork, mergeBinderArtwork, mergeCanonicalCardDisplayName,
     stackrCardToLegacyCard: mapCard,
     enrichCanonicalSetCards: async ({ cards }: any) => cards.map(mapCard),
     hasTcgdexRuntimeImageOverlay: () => false, attachLiveTcgdexCardReferences: async (cards: any) => cards,
@@ -248,3 +248,4 @@ async function main() {
   console.log('Serialized saved binder artwork recovers through actual facts/enrichment/attacher; exact identity, quantities, private fields and cancellation preserved.');
 }
 main().catch((error) => { console.error(error); process.exitCode = 1; });
+

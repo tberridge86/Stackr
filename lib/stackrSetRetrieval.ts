@@ -1,5 +1,6 @@
 import type { StackrCard } from './stackrApiV1';
 import { copyPreferredSetArtworkReassignments, getPreferredSetArtworkReassignments } from './stackrPreferredSetArtwork';
+import { getEnglishCardDisplayName } from './pokemonDisplayNames';
 
 /** Public catalogue facts only. Private collection state must never enter this store. */
 export type SetFactsKey = { namespace: string; setId: string; language: string; expectedCount: number };
@@ -221,7 +222,44 @@ export function createSetFactsReader(options: {
   };
 }
 
-/** Image-only merge: current ownership, quantity, grading, ordering and pricing always win. */
+/** Fill a missing saved alias from current, exact canonical facts; never replace a reviewed title. */
+export function mergeCanonicalCardDisplayName(current: any, incoming: any): any {
+  const before = current?.raw_data?.stackr;
+  const after = incoming?.raw_data?.stackr;
+  const native = current?.localName ?? current?.raw_data?.local_name;
+  const nextNative = incoming?.localName ?? incoming?.raw_data?.local_name;
+  const language = current?.language ?? current?.raw_data?.language;
+  if (before?.canonical !== true || after?.canonical !== true
+    || !UUID.test(before.cardId ?? '') || current.id !== before.cardId || incoming?.id !== before.cardId
+    || after.cardId !== before.cardId || !UUID.test(before.defaultVariantId ?? '')
+    || after.defaultVariantId !== before.defaultVariantId
+    || !UUID.test(current?.set?.id ?? '') || incoming?.set?.id !== current.set.id
+    || !language || (incoming?.language ?? incoming?.raw_data?.language) !== language
+    || (current.raw_data.language && current.raw_data.language !== language)
+    || (incoming.raw_data.language && incoming.raw_data.language !== language)
+    || typeof native !== 'string' || !native.trim() || nextNative !== native) return current;
+  const selected = Array.isArray(before.variants) ? before.variants.find((variant: any) => variant?.variantId === before.defaultVariantId) : null;
+  const next = Array.isArray(after.variants) ? after.variants.find((variant: any) => variant?.variantId === after.defaultVariantId) : null;
+  if (!selected?.canonicalId || next?.canonicalId !== selected.canonicalId
+    || next.variantCode !== selected.variantCode || (next.finishCode ?? null) !== (selected.finishCode ?? null)) return current;
+  const english = (card: any) => getEnglishCardDisplayName({ language, localName: native,
+    englishDisplayName: card.englishDisplayName ?? card.raw_data.english_display_name, raw: card.raw_data });
+  const isPending = (value: string | null) => !value || /\btranslation\s+pending\b/i.test(value);
+  if (!isPending(english(current))) return current;
+  const name = english(incoming);
+  if (isPending(name)) return current;
+  const merged = { ...current, name, englishDisplayName: name, translationStatus: incoming.translationStatus,
+    raw_data: { ...current.raw_data, name, english_display_name: name,
+      english_display_source: incoming.raw_data.english_display_source ?? null,
+      english_display_supplement: incoming.raw_data.english_display_supplement ?? null,
+      english_display_provenance: incoming.raw_data.english_display_provenance ?? null,
+      translation_status: incoming.raw_data.translation_status ?? incoming.translationStatus ?? null } };
+  const imageDescriptor = Object.getOwnPropertyDescriptor(current, 'images');
+  if (imageDescriptor?.enumerable === false) Object.defineProperty(merged, 'images', imageDescriptor);
+  return merged;
+}
+
+/** Display-only merge: current ownership, quantity, grading, ordering and pricing always win. */
 export function mergeBinderArtwork<T extends { id: string; card_id: string; set_id: string; language?: string | null; card?: any; image_url?: string | null }>(current: T[], incoming: T[]): T[] {
   const identity = (row: T): string | null => {
     const card = row.card;
@@ -247,13 +285,14 @@ export function mergeBinderArtwork<T extends { id: string; card_id: string; set_
       (selected?.image?.assetId === evidence.assetId && selected.image.variantId === evidence.previousVariantId)
       || (priorArtwork?.assetId === evidence.assetId && priorArtwork.sourceVariantId === evidence.previousVariantId)
     ));
-    if (!small && !large && !invalidated) return row;
-    const card = { ...row.card, images: invalidated ? { small: small ?? large ?? null, large: large ?? small ?? null }
+    const displayCard = mergeCanonicalCardDisplayName(row.card, enriched.card);
+    if (!small && !large && !invalidated && displayCard === row.card) return row;
+    const card = { ...displayCard, images: invalidated ? { small: small ?? large ?? null, large: large ?? small ?? null }
       : { ...row.card?.images, small: small ?? row.card?.images?.small, large: large ?? row.card?.images?.large } };
     // Image provenance and fallback renditions travel with the new image, while
     // canonical finish facts and every private field remain the current values.
-    const artworkMetadata = enriched.card?.raw_data?.presentation?.artwork;
-    if (artworkMetadata) card.raw_data = { ...row.card?.raw_data, presentation: {
+    const artworkMetadata = small || large || invalidated ? enriched.card?.raw_data?.presentation?.artwork : undefined;
+    if (artworkMetadata) card.raw_data = { ...card.raw_data, presentation: {
       ...row.card?.raw_data?.presentation, artwork: artworkMetadata,
       selected_image_variant_id: artworkMetadata.sourceVariantId,
     } };
@@ -273,7 +312,8 @@ export function mergeBinderArtwork<T extends { id: string; card_id: string; set_
       copyPreferredSetArtworkReassignments(enriched.card.raw_data, card.raw_data);
     }
     // Preserve display-only provider overlays instead of making them serializable.
-    if (Object.getOwnPropertyDescriptor(enriched.card, 'images')?.enumerable === false) {
+    if (Object.getOwnPropertyDescriptor(enriched.card, 'images')?.enumerable === false
+      || (!small && !large && !invalidated && Object.getOwnPropertyDescriptor(row.card, 'images')?.enumerable === false)) {
       Object.defineProperty(card, 'images', { value: card.images, enumerable: false, configurable: true, writable: false });
     }
     const imageUrl = invalidated && reassignments.some(evidence => evidence.previousImageUrls.includes(row.image_url ?? ''))
@@ -281,3 +321,4 @@ export function mergeBinderArtwork<T extends { id: string; card_id: string; set_
     return { ...row, card, ...(imageUrl !== row.image_url ? { image_url: imageUrl } : {}) };
   });
 }
+
