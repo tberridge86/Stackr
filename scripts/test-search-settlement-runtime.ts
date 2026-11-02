@@ -144,6 +144,7 @@ function createHarness(timers: FakeTimers, options: {
     { SEARCH_FINAL_SETTLEMENT_TIMEOUT_MS: 5, setTimeout: timers.setTimeout, clearTimeout: timers.clearTimeout },
   );
   const scope = {
+    CORE_COLLECTION_MODE: false,
     beginRetrieval: (journey: Parameters<typeof beginRetrieval>[0], origin: Parameters<typeof beginRetrieval>[1]) => beginRetrieval(journey, origin, options.clock),
     searchTraceRef: { current: null }, pendingSearchTraceRef: { current: null }, searchCommitTraceRef: { current: null },
     fetchListingSearchWithMedia,
