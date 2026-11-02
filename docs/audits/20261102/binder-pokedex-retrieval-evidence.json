@@ -128,7 +128,7 @@
       },
       "repeatServerMs": 2376
     },
-    "deploymentVerification": "blocked_approval_declined_no_new_api_deployment",
+    "deploymentVerification": "performance_canary_verified_production_unchanged",
     "coldExactContinuationSqlMs": 1581.37,
     "stagedSource": "a7bbec03d302d272737d83d0c5a85fc479e85ff5",
     "stagedPatchId": "6760f37e-07d2-4f20-b1d5-42d41ffee8b0",
@@ -143,7 +143,75 @@
       }
     ],
     "approvalResult": "Cancelled — the user did not approve this action. No changes were made.",
-    "finalLiveConsecutivePages": "unverified_pending_staged_api_deployment"
+    "finalLiveConsecutivePages": {
+      "performanceCanary": "verified",
+      "production": "unverified_pending_standard_backend_release"
+    },
+    "production": {
+      "serviceId": "299d7ad4-5ed8-4301-b609-ef99274078d0",
+      "deploymentId": "c40b25c1-b1a3-49d1-aed2-df0fc0852228",
+      "lastAttestedSource": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+      "observedAt": "2026-11-02T16:55:00.000Z",
+      "changed": false,
+      "journeyOnReviewedSource": "unverified_pending_standard_backend_release"
+    },
+    "performanceCanary": {
+      "serviceId": "8baf4d98-4605-4832-9d7e-65880e2a6b29",
+      "deploymentId": "bd05806e-9306-481b-9e43-e1a68b0dc98a",
+      "source": "3729e40a3b6975b49c86fea3c4df5a083483c2ba",
+      "observedAt": "2026-11-02T16:54:32.775126091Z",
+      "runtime": {
+        "environment": "production",
+        "supabaseProject": "oakdbbzdqwurpjnoqhmu",
+        "healthStatus": 200,
+        "healthDurationMs": 18
+      },
+      "journey": {
+        "query": "Pikachu",
+        "pageSize": 17,
+        "pages": 2,
+        "results": 34,
+        "distinctVariantIds": 34,
+        "continuationOverlap": 0,
+        "secondPageDenominator": 17,
+        "imageUrls": 34,
+        "imageUrlDenominator": 34,
+        "languages": [
+          "en",
+          "ja",
+          "zh-cn",
+          "zh-tw"
+        ],
+        "japaneseExactTranslatedName": 11,
+        "continuationAfterPage1": true,
+        "continuationAfterPage2": true,
+        "httpStatuses": [
+          200,
+          200
+        ],
+        "railwayDurationsMs": {
+          "coldPage": 4371,
+          "nextPage": 807
+        },
+        "statisticalPercentiles": "unmeasured_two_observations",
+        "observedProvenance": [
+          "Pokémon Card Game Japan/official",
+          "TCGdex",
+          "Pikaqian",
+          "Pokémon Taiwan",
+          "Scrydex",
+          "Pokémon TCG API"
+        ]
+      },
+      "scope": "performance_canary_only_not_production_or_phone"
+    },
+    "historicalCancelledPatch": {
+      "patchId": "6760f37e-07d2-4f20-b1d5-42d41ffee8b0",
+      "source": "a7bbec03d302d272737d83d0c5a85fc479e85ff5",
+      "result": "Cancelled — the user did not approve this action. No changes were made.",
+      "use": "historical_evidence_only_not_release_lane"
+    },
+    "stagedPatchStatus": "cancelled_not_deployed_historical_only"
   },
   "validation": {
     "sqlMigration": "10 selectors; all five published languages; same first/continuation rows; access grants retained; caller planning mode restored",
@@ -258,7 +326,7 @@
         "sha256": "20a34cc447308d831fb542c9e9094825c7b6eb1034b3af9b138da37250f00e41"
       }
     ],
-    "nativeReleaseGate": "Wait for staged API deployment approval, source attestation and consecutive Japanese Search pages before another native release."
+    "nativeReleaseGate": "Run .github/workflows/deploy-production.yml with release_scope=backend_only from exact reviewed current main; verify production /health and the same bounded two-page identities; then resume the existing native lane with freshly read main and production backend identities."
   },
   "pullRequests": [
     "https://github.com/tberridge86/Stackr/pull/457",
