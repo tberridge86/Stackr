@@ -2,9 +2,9 @@
 
 ## Owner outcome and baseline
 
-The owner reported Build 63 as unsuccessful on the phone: loading remained poor, cards remained untranslated, and images were missing. The current requested scope is **Home, Search and Binders only**. Passing build63 CI and its TestFlight upload do not override that failed acceptance.
+The owner reported the installed app as unsuccessful on the phone: loading remained poor, cards remained untranslated, and images were missing. The exact installed build and OTA revision are unverified. The preceding iOS workflow was verify-only and produced no Build 63, so the phone report cannot be attributed to Build 63. The current requested scope is **Home, Search and Binders only**.
 
-This candidate starts from exact main `832eba78ad8bbdd8dea1d358b811f2c11bc3f013`, the source of standard-production 1.0.6 (63). It is prepared in an isolated source workspace, preserving the original checkout's unrelated edits.
+This candidate starts from exact main `832eba78ad8bbdd8dea1d358b811f2c11bc3f013`, whose package metadata is 1.0.6 (63). That source version is not evidence of an uploaded or installed Build 63. It is prepared in an isolated source workspace, preserving the original checkout's unrelated edits.
 
 ## Reduced running app
 
@@ -35,7 +35,7 @@ The six bounded live Japanese Pikachu/Varoom API samples already supplied verifi
 - TypeScript and lint have been run locally. Their final results and exact remote CI head belong in the PR/release receipt, not an assumed phone pass.
 - Independent specialists reviewed the runtime changes and actual-module tests. Their reports are [Home/Binder performance](core-home-performance.md) and [artwork/translation delivery](artwork-translation-delivery.md).
 - Live sampled search reports `search_pagination_unavailable`. The client retains an incomplete-results state. No production SQL/RLS change or fabricated complete-search claim is included.
-- Cold/warm phone timing, actual image rendering, gestures and installed-account journeys remain unverified for this candidate. Existing Build63 has not changed merely because source was repaired. No new native release or production mutation is claimed here.
+- Cold/warm phone timing, actual image rendering, gestures and installed-account journeys remain unverified for this candidate. The installed app has not changed merely because source was repaired. No new native release or production mutation is claimed here.
 
 The earlier species/binder artwork evidence packets, Japanese identity/quality holds and real daily-history prerequisites remain separately tracked in the shared queue. Disabled features are paused; their data is preserved.
 
