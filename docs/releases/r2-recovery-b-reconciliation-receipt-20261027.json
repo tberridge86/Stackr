@@ -1,0 +1,176 @@
+{
+  "deploymentId": "e0cd0b39-a5cd-4f74-a1b2-3c6938c30aee",
+  "commandSha256": "2fd3c365e5b2d507f887e7dcc9e9989e80761a849fbd1c636fb187fdf1716a51",
+  "at": "2026-10-27T13:53:19.057471185Z",
+  "message": "",
+  "event": "r2_reconciliation_complete",
+  "sourceHashes": {
+    "inspector": "399fa17d724724b3ed759d9c2d8d8335f337d53e262860b26092b8ea2e154bf6",
+    "reconciler": "2f2947ac2fa43d243f09954846fda8041de025767cc76e88a153ba496d6ed11c",
+    "parentInspector": "28245a96581910afa9c78f25d49e2d1baf19bf80886ba322d3764ce94a65e1cc"
+  },
+  "certificate": {
+    "schemaVersion": 1,
+    "kind": "stackr-r2-recovered-run-reconciliation",
+    "status": "reconciled",
+    "startedAt": "2026-10-27T13:45:04.078Z",
+    "finishedAt": "2026-10-27T13:53:09.083Z",
+    "sourceCommit": "6dfe188166df76b41d44801ab66970b0a3881ae5",
+    "projectRef": "oakdbbzdqwurpjnoqhmu",
+    "runs": [
+      {
+        "runId": "production-recovered-20261027a",
+        "evidenceSha256": "97f03b3fbaf5fd36c7ef3c209e8ef33d4919a7159b4d41c3e7781adaf79c8c8e",
+        "checkpointSha256": "6a1335924d03d03d3bcc181844370c9a2e7bc48d1ad7acfab52f93324e1b7251",
+        "completedBatches": 229,
+        "inventoryRows": 5750,
+        "journalPublishedAssets": 5733
+      }
+    ],
+    "rowCounts": {
+      "current": 5750,
+      "unique": 5750,
+      "inheritedBaseline": 53001,
+      "historicalSupersessions": 9
+    },
+    "parentAcceptance": {
+      "runId": "production-recovered-20261027a",
+      "receiptSha256": "45d5eb8d9e55cd014a0e43f49a4014581bd1936181c8cf44a09bb02b6c366d91",
+      "certificateSha256": "8c171b74bbde16a0645fd0aa0801139c36b3ed5f3277a6309425ebdef151386c",
+      "inheritedPushed": 53001,
+      "eligibleTotal": 62098,
+      "freshBaselineRowsCompared": false
+    },
+    "parentManifests": [
+      {
+        "runId": "production-optimised-20261026b",
+        "evidenceSha256": "d06e9a223cd8a7985ec2cc641d03eceea32f4c6eb7cffc7275e41927f94c0e71",
+        "checkpointSha256": "d1728f7eec12c65b31a5fe442c1ecb63362ba7bcb54812f8a28106b60d1f077f",
+        "unchanged": true
+      },
+      {
+        "runId": "production-resumed-20261026a",
+        "evidenceSha256": "83755a507c55824e96f5dee71085399891e4a1b5bbc329794dcc6a3acfc7c661",
+        "checkpointSha256": "b59da552b04a09fe066eb5036de3f624b9c294f058bce6d214f0039cdd0401b8",
+        "unchanged": true
+      }
+    ],
+    "historicalLinks": [
+      {
+        "rowId": "d5056127-65e8-4706-bda1-b2a456715c9d",
+        "beforeSnapshotSha256": "b345dd4e1891d93eb0352ea6df21b7eeff133af7d841dbf11c2317bb3296745f",
+        "afterSnapshotSha256": "108780db427adc9231854e4ebb329b655437b9cab737c7bc7a84230db973457d",
+        "sequence": 1,
+        "operationId": "45e607981dbab49c1c00de4e6f9e786dfcb3409f603f3d3cea84d47e5ef4e526",
+        "receiptSha256": "4ed76ad5c3263baec027088bd4e0e702bf71a87314e70b06a729be9eaa722494"
+      },
+      {
+        "rowId": "d5059ad3-69f2-49cb-b2de-884fab164f26",
+        "beforeSnapshotSha256": "179df69124897417dd583ec6623dc14cbac36d3a8159a445b18b36348a5dd14d",
+        "afterSnapshotSha256": "f1e905864471be238361f2331c46464f2325b79aa66aec5ebdc304644bbf2076",
+        "sequence": 1,
+        "operationId": "87110e5c3f993aec3aefff2bfc90e99690313c3fa1ea9a49851ed09052ccc41a",
+        "receiptSha256": "d3551f36c2b5df2ef52973ca90ed9f34fd882b2ae1578265e5b13461b7aaa73a"
+      },
+      {
+        "rowId": "d508764e-03b4-470b-a74f-5db5b1e76898",
+        "beforeSnapshotSha256": "42ae34712c934df0eb80e66e73d94c722098aa0a20107e34abe08ab62dd85510",
+        "afterSnapshotSha256": "16c7133d030ea4297345c4cda12eac448a1425cdce655602a0b38f8409b323bf",
+        "sequence": 1,
+        "operationId": "a290b8dd7e80fb75cf77f7f959a7ffb78558b99d16bbca069b543d7fa111d996",
+        "receiptSha256": "251a2a489d78c3bf8160f4a61b7ffcf49b47ec5181eecabed520c17ca8a93c73"
+      },
+      {
+        "rowId": "d509e99a-633e-4132-a88e-ce68cce56bb5",
+        "beforeSnapshotSha256": "3c6693d3e18808f99681d525af0f2f6731233d3f184573ab59d7c965e65538a3",
+        "afterSnapshotSha256": "93cc5cb7fdcd0304dfa64f85276a16e8f0e2896f6061c0b9690378a4bcac8409",
+        "sequence": 1,
+        "operationId": "5bd6f05c1137d94f2b224c3c614c363c3dc6ed4aa1aa36d59b139e98347d1e14",
+        "receiptSha256": "fd6fe8949777ca81cd6463a36f55bdad37ba52d79463ae6e9440074712c97698"
+      },
+      {
+        "rowId": "d50ac605-1212-4f81-aa2f-b89063026a8c",
+        "beforeSnapshotSha256": "cc4bee90554664768b58a60e11300b5d10c440b2715cc4ec070ba42bac4685e2",
+        "afterSnapshotSha256": "50462d69cffd1964751c2bbca5861eafd0a00f8e88f694bb46f85e6c59166125",
+        "sequence": 1,
+        "operationId": "d7ee2179cb8280e3d68aff5723027b0172a427044ee93c39db66294a32d8bc6f",
+        "receiptSha256": "3186990f2b48d4f3eb8860f4d59ffbd8dccb766f72ade15e6c30cb6261ff27f7"
+      },
+      {
+        "rowId": "d50b4c8c-d641-4ca4-9b5b-3dc20bc253c0",
+        "beforeSnapshotSha256": "c0a6ee6da48e33b9bb43da8876a6f66d0fd8dbda5be83be0c5b883f7bddd39ae",
+        "afterSnapshotSha256": "76ddca2fe9e29c7bd445c5b2d531ac657dba9227f31b4f07f4c1fed1e3b5b54d",
+        "sequence": 1,
+        "operationId": "675aeae207f36ec3435567bcc29369ac210aa2f0a634f90dcbc61fa0e61f02b9",
+        "receiptSha256": "9de661c27b500a72a74731435628bbebaa45041f92eb2b66aa2f4a569a0cd6e6"
+      },
+      {
+        "rowId": "d51028c1-645c-4a13-9c6b-34cfbee45f16",
+        "beforeSnapshotSha256": "588dfa0f6cf79c3a69790cffecd2ef1c0d111d48a24de11c0efdd223076bb525",
+        "afterSnapshotSha256": "732b9f2287a187e794f74979e2503d93f94fb4d02a0a7d86f67df3a056872715",
+        "sequence": 1,
+        "operationId": "23f3d7aa78a4a98625c304294dc032df87f495d334389cdc1bf1eac874d7c273",
+        "receiptSha256": "9b50ed5a2937752d6e7436e8defbe7ad01bb32a0cc3535a5235552a036944384"
+      },
+      {
+        "rowId": "d511b5c7-5c35-4aa8-bfba-b33c45c360da",
+        "beforeSnapshotSha256": "b39f46df4f7299a0336d721366aabe29b8d546bef49065677ebf18e1f3ca5e05",
+        "afterSnapshotSha256": "53ffdc7414f8eacee3714fa86adcdf863a36e15acae2b715a6dd920b0785b776",
+        "sequence": 1,
+        "operationId": "fa4d7a98feed215955b67f927f800dbba3a92cb9c2b61577701455218ff19173",
+        "receiptSha256": "31dffee0f76cc5b760d5b483a9b8cfafec5031c966e2a6d91d15436d94e4fade"
+      },
+      {
+        "rowId": "d512f6f9-5370-4f74-9564-b3bb818accb1",
+        "beforeSnapshotSha256": "0ec2357bb6ff5950f62cc7d60aca86e4ad9b47c3685ceb3ab90f401670c27550",
+        "afterSnapshotSha256": "472bcb2ce23cc3fd6f9d50026dda0514234803256809b7a81814e57d25d91616",
+        "sequence": 1,
+        "operationId": "71930a57d97824d55828b455fbc5d2d2acd370236a90925bc837000dee3b8f53",
+        "receiptSha256": "5e6c26fae5fce1e097347161e553bf40d9c74d43ad7b19b36d31acafa8468c74"
+      }
+    ],
+    "expectationSha256": "8d150e2c1c7b0501eef0aa54d90d2d5c375bc5499d3eb2646e0ac69956537e97",
+    "databaseChecks": [
+      {
+        "checkedAt": "2026-10-27 13:49:32.769684+00",
+        "matchedRows": 5750,
+        "pushed": 58734,
+        "remaining": 3364,
+        "totalEligible": 62098
+      },
+      {
+        "checkedAt": "2026-10-27 13:53:08.720234+00",
+        "matchedRows": 5750,
+        "pushed": 58734,
+        "remaining": 3364,
+        "totalEligible": 62098
+      }
+    ],
+    "publicVerification": {
+      "objectsVerified": 32,
+      "bytesVerified": 2691669,
+      "proofSha256": "e4ae8d6048fbc3abdddc3ec902a7bfabfa9d6c8cf69f8847428ba6cb72bc9a9a",
+      "bytesRead": 2691669,
+      "retries": 0
+    },
+    "sourceFailureRechecks": [
+      {
+        "rowId": "efa53563-2d1f-4eeb-8665-efa3a8ed5e4f",
+        "role": "search-result",
+        "status": 200,
+        "sha256": "7c83bcee90f015b28de1519aff90b589a3654150a5b438158d65a4a89c95c543",
+        "byteSize": 3480,
+        "verified": true
+      }
+    ],
+    "databaseReadOnly": true,
+    "transactionRolledBack": true,
+    "postcheckPassed": true,
+    "evidenceModified": false,
+    "resumeAuthorized": false,
+    "reconciliationPassed": true
+  },
+  "certificateSha256": "330ac01f1ccfb503fc334d2596d91021cb2355384e2fe7a139f9f50b9ab71199",
+  "runnerStarted": false,
+  "resumeAuthorized": false
+}

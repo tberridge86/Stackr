@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "runId": "production-recovered-20261027a",
+  "deploymentId": "cf2d03cf-4d91-42c4-9b30-a27bf225784c",
+  "startedAt": "2026-10-27T09:34:17.321907947Z",
+  "acceptedAt": "2026-10-27T09:41:20.329014088Z",
+  "certificateSha256": "8c171b74bbde16a0645fd0aa0801139c36b3ed5f3277a6309425ebdef151386c",
+  "acceptanceReceiptSha256": "45d5eb8d9e55cd014a0e43f49a4014581bd1936181c8cf44a09bb02b6c366d91",
+  "interruptedAt": "2026-10-27T12:16:40.545167035Z",
+  "executionResultValueSha256": "54a6980fe2c2b0a3b942404088cb0f4637765f20e4f7b7136c385c4361795754",
+  "status": "runner_execution_incomplete",
+  "latestDatabaseCheck": {
+    "checkedAt": "2026-10-27T13:23:54.670052Z",
+    "pushed": 58734,
+    "remaining": 3364,
+    "totalEligible": 62098
+  },
+  "restartRejectedAt": "2026-10-27T13:24:42.215365835Z",
+  "restartRejection": "recovery_successor_requires_own_reconciliation",
+  "underlyingFailure": "pending_volume_diagnostic",
+  "resumed": false,
+  "finalCompletionVerified": false
+}

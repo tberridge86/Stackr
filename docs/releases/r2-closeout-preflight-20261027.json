@@ -1,0 +1,216 @@
+{
+  "schemaVersion": 1,
+  "runId": "production-recovered-20261027b",
+  "uploadDeployment": "21e9065e-040e-407e-96f7-c3b88b859704",
+  "status": "uploads_and_pointer_checks_passed_final_durable_receipt_pending",
+  "count": {
+    "checked_at": "2026-10-27 16:21:36.450622+00",
+    "pushed": 62098,
+    "remaining": 0,
+    "total_eligible": 62098
+  },
+  "pointerChecks": {
+    "method": "four disjoint exhaustive UUID ranges; identical predicate semantics with materialized inspected CTE; read-only transactions rolled back",
+    "singleSnapshot": false,
+    "parts": [
+      {
+        "lower": "00000000-0000-0000-0000-000000000000",
+        "upper": "40000000-0000-0000-0000-000000000000",
+        "checked_at": "2026-10-27 16:17:52.322695+00",
+        "eligible_total": "17349",
+        "remaining_source": "0",
+        "migrated_total": "17349",
+        "malformed_original_rows": "0",
+        "malformed_derivative_rows": "0",
+        "malformed_migrated_rows": "0"
+      },
+      {
+        "lower": "40000000-0000-0000-0000-000000000000",
+        "upper": "80000000-0000-0000-0000-000000000000",
+        "checked_at": "2026-10-27 16:18:02.118651+00",
+        "eligible_total": "16000",
+        "remaining_source": "0",
+        "migrated_total": "16000",
+        "malformed_original_rows": "0",
+        "malformed_derivative_rows": "0",
+        "malformed_migrated_rows": "0"
+      },
+      {
+        "lower": "80000000-0000-0000-0000-000000000000",
+        "upper": "c0000000-0000-0000-0000-000000000000",
+        "checked_at": "2026-10-27 16:18:24.452842+00",
+        "eligible_total": "15052",
+        "remaining_source": "0",
+        "migrated_total": "15052",
+        "malformed_original_rows": "0",
+        "malformed_derivative_rows": "0",
+        "malformed_migrated_rows": "0"
+      },
+      {
+        "lower": "c0000000-0000-0000-0000-000000000000",
+        "upper": null,
+        "checked_at": "2026-10-27 16:18:31.912545+00",
+        "eligible_total": "13697",
+        "remaining_source": "0",
+        "migrated_total": "13697",
+        "malformed_original_rows": "0",
+        "malformed_derivative_rows": "0",
+        "malformed_migrated_rows": "0"
+      }
+    ],
+    "counts": {
+      "eligible_total": 62098,
+      "remaining_source": 0,
+      "migrated_total": 62098,
+      "malformed_original_rows": 0,
+      "malformed_derivative_rows": 0,
+      "malformed_migrated_rows": 0
+    },
+    "allCatalogueImagesCovered": false
+  },
+  "publicRetrieval": {
+    "samples": [
+      {
+        "id": "ffff8dda-19d2-4094-bc7c-ad7f9f12c148",
+        "role": "original",
+        "url": "https://assets.stackrtcg.com/public/card_image/ffff8dda-19d2-4094-bc7c-ad7f9f12c148/53bd437f6fe3f2f72f25b6e6392753907c2ec593723532fe6ee61beed58fbd2e/69b0ed457a5aec2b20e9ba35580ec1d8ae05058d70c39b824a93de8512152783/original.png",
+        "sha256": "69b0ed457a5aec2b20e9ba35580ec1d8ae05058d70c39b824a93de8512152783",
+        "bytes": 202460,
+        "mime": "image/png",
+        "checkedAt": "2026-10-27T16:15:21.298Z",
+        "status": 200,
+        "actualBytes": 202460,
+        "actualSha256": "69b0ed457a5aec2b20e9ba35580ec1d8ae05058d70c39b824a93de8512152783",
+        "actualMime": "image/png",
+        "passed": true
+      },
+      {
+        "id": "ffff8dda-19d2-4094-bc7c-ad7f9f12c148",
+        "role": "card-grid",
+        "url": "https://assets.stackrtcg.com/public/card_image/ffff8dda-19d2-4094-bc7c-ad7f9f12c148/53bd437f6fe3f2f72f25b6e6392753907c2ec593723532fe6ee61beed58fbd2e/0a1f7b83fbdb25a1e89c9c0ed41dc79f11f7fd255da508c3d76fdfd475153327/card-grid.webp",
+        "sha256": "0a1f7b83fbdb25a1e89c9c0ed41dc79f11f7fd255da508c3d76fdfd475153327",
+        "bytes": 15554,
+        "mime": "image/webp",
+        "checkedAt": "2026-10-27T16:15:27.417Z",
+        "status": 200,
+        "actualBytes": 15554,
+        "actualSha256": "0a1f7b83fbdb25a1e89c9c0ed41dc79f11f7fd255da508c3d76fdfd475153327",
+        "actualMime": "image/webp",
+        "passed": true
+      },
+      {
+        "id": "ffff8dda-19d2-4094-bc7c-ad7f9f12c148",
+        "role": "search-result",
+        "url": "https://assets.stackrtcg.com/public/card_image/ffff8dda-19d2-4094-bc7c-ad7f9f12c148/53bd437f6fe3f2f72f25b6e6392753907c2ec593723532fe6ee61beed58fbd2e/a6215ed6ca0299f5a2504d527693a3545e416a3313de8fce84ad5ec15c4f90a4/search-result.webp",
+        "sha256": "a6215ed6ca0299f5a2504d527693a3545e416a3313de8fce84ad5ec15c4f90a4",
+        "bytes": 3104,
+        "mime": "image/webp",
+        "checkedAt": "2026-10-27T16:15:33.604Z",
+        "status": 200,
+        "actualBytes": 3104,
+        "actualSha256": "a6215ed6ca0299f5a2504d527693a3545e416a3313de8fce84ad5ec15c4f90a4",
+        "actualMime": "image/webp",
+        "passed": true
+      },
+      {
+        "id": "ffff8dda-19d2-4094-bc7c-ad7f9f12c148",
+        "role": "detail-page",
+        "url": "https://assets.stackrtcg.com/public/card_image/ffff8dda-19d2-4094-bc7c-ad7f9f12c148/53bd437f6fe3f2f72f25b6e6392753907c2ec593723532fe6ee61beed58fbd2e/6ab52f543292d3bfeab48bdc27b02c15a5de8899913d01063b571c39392442e7/detail-page.webp",
+        "sha256": "6ab52f543292d3bfeab48bdc27b02c15a5de8899913d01063b571c39392442e7",
+        "bytes": 23498,
+        "mime": "image/webp",
+        "checkedAt": "2026-10-27T16:15:39.331Z",
+        "status": 200,
+        "actualBytes": 23498,
+        "actualSha256": "6ab52f543292d3bfeab48bdc27b02c15a5de8899913d01063b571c39392442e7",
+        "actualMime": "image/webp",
+        "passed": true
+      },
+      {
+        "id": "ffff7830-615d-4004-b19f-be2aa21d513a",
+        "role": "original",
+        "url": "https://assets.stackrtcg.com/public/set_logo/ffff7830-615d-4004-b19f-be2aa21d513a/4d8f64de2cd426db9273fee285e03afbccb1f169f9b61443a016c79f52880ff2/9419f4174d3264b848a66e1518786289062bd158d4fbe2d61021edc2498d804b/original.png",
+        "sha256": "9419f4174d3264b848a66e1518786289062bd158d4fbe2d61021edc2498d804b",
+        "bytes": 278562,
+        "mime": "image/png",
+        "checkedAt": "2026-10-27T16:15:45.992Z",
+        "status": 200,
+        "actualBytes": 278562,
+        "actualSha256": "9419f4174d3264b848a66e1518786289062bd158d4fbe2d61021edc2498d804b",
+        "actualMime": "image/png",
+        "passed": true
+      },
+      {
+        "id": "ffff3950-45d7-4fa9-9fd5-aa67776c089f",
+        "role": "original",
+        "url": "https://assets.stackrtcg.com/public/card_image/ffff3950-45d7-4fa9-9fd5-aa67776c089f/c333d02711c34e459456b4f0c28256d84928b3b80f5ec1274840aa368a406ffe/e7479d1ebfa8983147cfd4b5cbd398c219d61ce02883bfa813ed7becec109c9f/original.png",
+        "sha256": "e7479d1ebfa8983147cfd4b5cbd398c219d61ce02883bfa813ed7becec109c9f",
+        "bytes": 226294,
+        "mime": "image/png",
+        "checkedAt": "2026-10-27T16:15:51.887Z",
+        "status": 200,
+        "actualBytes": 226294,
+        "actualSha256": "e7479d1ebfa8983147cfd4b5cbd398c219d61ce02883bfa813ed7becec109c9f",
+        "actualMime": "image/png",
+        "passed": true
+      },
+      {
+        "id": "ffff3950-45d7-4fa9-9fd5-aa67776c089f",
+        "role": "card-grid",
+        "url": "https://assets.stackrtcg.com/public/card_image/ffff3950-45d7-4fa9-9fd5-aa67776c089f/c333d02711c34e459456b4f0c28256d84928b3b80f5ec1274840aa368a406ffe/b5b67e7f82eb2b1654431cf1e205ae63fe567ec717ead6299cbd57505d60430e/card-grid.webp",
+        "sha256": "b5b67e7f82eb2b1654431cf1e205ae63fe567ec717ead6299cbd57505d60430e",
+        "bytes": 16406,
+        "mime": "image/webp",
+        "checkedAt": "2026-10-27T16:15:57.653Z",
+        "status": 200,
+        "actualBytes": 16406,
+        "actualSha256": "b5b67e7f82eb2b1654431cf1e205ae63fe567ec717ead6299cbd57505d60430e",
+        "actualMime": "image/webp",
+        "passed": true
+      },
+      {
+        "id": "ffff3950-45d7-4fa9-9fd5-aa67776c089f",
+        "role": "search-result",
+        "url": "https://assets.stackrtcg.com/public/card_image/ffff3950-45d7-4fa9-9fd5-aa67776c089f/c333d02711c34e459456b4f0c28256d84928b3b80f5ec1274840aa368a406ffe/742b5826b01cf139195b694e542bce27a3be56de8c77b7feedb14b9297e8f890/search-result.webp",
+        "sha256": "742b5826b01cf139195b694e542bce27a3be56de8c77b7feedb14b9297e8f890",
+        "bytes": 3298,
+        "mime": "image/webp",
+        "checkedAt": "2026-10-27T16:16:03.326Z",
+        "status": 200,
+        "actualBytes": 3298,
+        "actualSha256": "742b5826b01cf139195b694e542bce27a3be56de8c77b7feedb14b9297e8f890",
+        "actualMime": "image/webp",
+        "passed": true
+      },
+      {
+        "id": "ffff3950-45d7-4fa9-9fd5-aa67776c089f",
+        "role": "detail-page",
+        "url": "https://assets.stackrtcg.com/public/card_image/ffff3950-45d7-4fa9-9fd5-aa67776c089f/c333d02711c34e459456b4f0c28256d84928b3b80f5ec1274840aa368a406ffe/4a2b39f0d2107b6a4e32c4147ff8fb8b8d4a92a3e7120fe4df9fedefc5a898b2/detail-page.webp",
+        "sha256": "4a2b39f0d2107b6a4e32c4147ff8fb8b8d4a92a3e7120fe4df9fedefc5a898b2",
+        "bytes": 26060,
+        "mime": "image/webp",
+        "checkedAt": "2026-10-27T16:16:09.238Z",
+        "status": 200,
+        "actualBytes": 26060,
+        "actualSha256": "4a2b39f0d2107b6a4e32c4147ff8fb8b8d4a92a3e7120fe4df9fedefc5a898b2",
+        "actualMime": "image/webp",
+        "passed": true
+      }
+    ],
+    "passed": 9,
+    "total": 9
+  },
+  "scope": "62,098 eligible approved public catalogue assets; not all catalogue images",
+  "collector": {
+    "sourceSha256": "21504549c91fda39d75abaac6564aea37dfd28b25f845dd787b5545283a1b8d4",
+    "commandSha256": "f0ad3846f06e67ff79a50d0681a5ade9ccedc70d26bd60d9b4df8fc4b0bc6410",
+    "tests": {
+      "collector": 8,
+      "command": 4,
+      "passed": 12
+    },
+    "deployed": false
+  },
+  "completionVerified": false,
+  "sourceDeletionPerformed": false
+}
