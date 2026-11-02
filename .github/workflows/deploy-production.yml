@@ -182,6 +182,7 @@ jobs:
           INDEX_VERSION_ID: ${{ inputs.index_version_id }}
         run: |
           set -euo pipefail
+          export STACKR_EXPECTED_MAIN_SHA="$(node -p 'String(process.env.STACKR_EXPECTED_MAIN_SHA ?? "").trim()')"
           test "$GITHUB_REF" = 'refs/heads/main'
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           git diff --exit-code
@@ -215,6 +216,7 @@ jobs:
               exit 1
             fi
           done
+          printf 'STACKR_EXPECTED_MAIN_SHA=%s\n' "$STACKR_EXPECTED_MAIN_SHA" >> "$GITHUB_ENV"
           mkdir -p "$RUNNER_TEMP/stackr-production-backend-only"
 
       - name: Install backend-only pinned dependencies

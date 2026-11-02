@@ -153,8 +153,7 @@
   "submit": {
     "production": {
       "ios": {
-        "ascAppId": "6772118450",
-        "groups": ["Team (Expo)"]
+        "ascAppId": "6772118450"
       }
     },
     "production-owner": {

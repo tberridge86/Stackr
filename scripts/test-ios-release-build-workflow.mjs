@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { runInNewContext } from 'node:vm';
 import { spawnSync } from 'node:child_process';
 
@@ -31,6 +33,78 @@ const profileShell = shellBlocks.find((script) => script.includes('scripts/verif
 assert.ok(profileShell?.includes('\nNODE\n'), 'The profile heredoc terminator must be at shell column zero.');
 const brokenProfileShell = profileShell.replace('\nNODE\n', '\n  NODE\n');
 assert.notEqual(checkBashSyntax(brokenProfileShell).status, 0, 'Reintroduced indented terminator must fail Bash parsing.');
+
+// Execute the actual release validation blocks with local Git/provider fixtures.
+// No release command or network request is reached by these attestation steps.
+function releaseValidationStep(source, name) {
+  const step = source.split(`      - name: ${name}\n`)[1]?.split('\n      - ')[0];
+  const block = step?.match(/^        run: \|\n((?:(?:          [^\n]*|)\n)+)/mu)?.[1];
+  assert.ok(block, `Find the actual ${name} shell step.`);
+  return block.split('\n').map((line) => line.slice(10)).join('\n');
+}
+const releaseSha = 'a'.repeat(40);
+const backendSha = 'b'.repeat(40);
+const productionWorkflow = readFileSync('.github/workflows/deploy-production.yml', 'utf8').replace(/\r\n/gu, '\n');
+const validations = [
+  { name: 'backend', key: 'STACKR_EXPECTED_MAIN_SHA', source: productionWorkflow,
+    step: 'Validate exact backend-only production release' },
+  { name: 'native', key: 'FROZEN_SOURCE_SHA', source: workflow,
+    step: 'Attest frozen source and approved profile' },
+];
+const fixtureRoot = mkdtempSync(path.join(tmpdir(), 'stackr-release-inputs-'));
+try {
+  let caseNumber = 0;
+  for (const validation of validations) {
+    const step = releaseValidationStep(validation.source, validation.step);
+    const cases = [
+      ['plain', releaseSha, true, {}],
+      ['outer whitespace', `\t ${releaseSha}\r\n`, true,
+        validation.name === 'native' ? { EXPECTED_BACKEND_SHA: ` \t${backendSha}\n` } : {}],
+      ['mismatched source', 'c'.repeat(40), false, {}],
+      ['embedded space', `${releaseSha.slice(0, 20)} ${releaseSha.slice(20)}`, false, {}],
+      ['embedded newline', `${releaseSha.slice(0, 20)}\n${releaseSha.slice(20)}`, false, {}],
+      ['wrong checkout', releaseSha, false, { TEST_HEAD_SHA: 'c'.repeat(40) }],
+      ...(validation.name === 'native'
+        ? [['invalid backend SHA', releaseSha, false, { EXPECTED_BACKEND_SHA: `${backendSha}\nINJECTED=1` }]]
+        : [['forbidden mobile flag', releaseSha, false, { PUBLISH_MOBILE_UPDATE: 'true' }]]),
+    ];
+    for (const [name, input, accepted, overrides] of cases) {
+      const githubEnv = path.join(fixtureRoot, `${caseNumber++}.env`);
+      writeFileSync(githubEnv, '');
+      const result = spawnSync(process.env.BASH || 'bash', ['--noprofile', '--norc', '-s'], {
+        input: `git() {\n  case "$*" in\n    'rev-parse HEAD') printf '%s\\n' "$TEST_HEAD_SHA" ;;\n    'diff --exit-code'|'status --porcelain') return 0 ;;\n    *) return 1 ;;\n  esac\n}\n${step}\nnode -e 'console.log(JSON.stringify({main:process.env.${validation.key},backend:process.env.EXPECTED_BACKEND_SHA}))'\n`,
+        encoding: 'utf8', timeout: 10_000,
+        env: {
+          ...process.env, BASH_ENV: '', GITHUB_ENV: githubEnv.replaceAll('\\', '/'),
+          RUNNER_TEMP: fixtureRoot.replaceAll('\\', '/'), GITHUB_REF: 'refs/heads/main',
+          GITHUB_SHA: releaseSha, TEST_HEAD_SHA: releaseSha, EXPECTED_BACKEND_SHA: backendSha,
+          RELEASE_BUILD_PROFILE: 'production', VERIFY_ONLY: 'false', EXPO_TOKEN: 'fixture',
+          STACKR_PRICING_SMOKE_VARIANT_ID: '4d6b4549-6d6c-4ace-a4cc-72877ba29401',
+          GATEWAY_BOOTSTRAP: 'false', APPLY_MIGRATIONS: 'false', PUBLISH_MOBILE_UPDATE: 'false', PROMOTE_GATEWAY: 'false',
+          PREVIOUS_GATEWAY_TAG: '', PREVIOUS_RECOGNITION_DEPLOYMENT_ID: '', PREVIOUS_CATALOGUE_VERSION_ID: '',
+          PREVIOUS_INDEX_VERSION_ID: '', CATALOGUE_VERSION_ID: '', CATALOGUE_RELEASE_LABEL: '', INDEX_VERSION_ID: '',
+          RAILWAY_API_TOKEN: 'fixture', RAILWAY_PROJECT_ID: 'fixture', RAILWAY_ENVIRONMENT_ID: 'fixture',
+          RAILWAY_BACKEND_SERVICE_ID: 'fixture', STACKR_BACKEND_URL: 'fixture', STACKR_GATEWAY_URL: 'fixture', BACKEND_ORIGIN_KEY: 'fixture',
+          [validation.key]: input, ...overrides,
+        },
+      });
+      assert.ifError(result.error);
+      const persisted = readFileSync(githubEnv, 'utf8').replace(/\r\n/gu, '\n');
+      if (accepted) {
+        assert.equal(result.status, 0, `${validation.name}: ${name}: ${result.stderr}`);
+        assert.equal(persisted, `${validation.key}=${releaseSha}\n${validation.name === 'native' ? `EXPECTED_BACKEND_SHA=${backendSha}\n` : ''}`);
+        assert.deepEqual(JSON.parse(result.stdout), { main: releaseSha, backend: backendSha });
+      } else {
+        assert.notEqual(result.status, 0, `${validation.name}: reject ${name}.`);
+        assert.equal(persisted, '', `${validation.name}: invalid inputs cannot enter GITHUB_ENV.`);
+      }
+    }
+  }
+} finally {
+  assert.equal(path.dirname(fixtureRoot), path.resolve(tmpdir()));
+  assert.ok(path.basename(fixtureRoot).startsWith('stackr-release-inputs-'));
+  rmSync(fixtureRoot, { recursive: true, force: true });
+}
 
 assert.match(workflow, /build_profile:\s*\n[\s\S]*?default: production-owner[\s\S]*?type: choice[\s\S]*?options:[\s\S]*?- production-owner[\s\S]*?- production/m);
 assert.match(workflow, /github\.ref == 'refs\/heads\/main' && github\.actor == github\.repository_owner/);
