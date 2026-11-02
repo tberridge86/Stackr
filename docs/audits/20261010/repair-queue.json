@@ -361,10 +361,10 @@
       }
     ]
   },
-  "updatedAt": "2026-11-02T14:18:00.000Z",
+  "updatedAt": "2026-11-02T16:55:03.623Z",
   "coordinator": "Tif / root",
   "workingDirectory": "D:/Stackr",
-  "branch": "codex/stackr-repair-consolidation-20261018",
+  "branch": "main",
   "auditedBaseRevision": "f9350f896375ffac84a22ca2f7a4ec7654538091",
   "protocol": ".codex/AUDIT_PROTOCOL.md",
   "auditStatus": {
@@ -3250,17 +3250,58 @@
     }
   ],
   "currentWork": {
-    "owner": "stackr_coding / root",
-    "status": "core_home_search_binders_source_merged_ci_passed",
-    "sourceBase": "832eba78ad8bbdd8dea1d358b811f2c11bc3f013",
-    "report": "docs/audits/20261102/core-collection-recovery.md",
-    "authorization": "Owner requested all features off except Home, Search and Binders after an unsuccessful installed-app phone experience; continue implementing that scope. Exact installed build/OTA is unverified.",
-    "phoneAcceptance": "unverified_for_new_candidate",
-    "nextAction": "Immediately before dispatch, read the exact current main SHA from GitHub and pass that same value as expected_main_sha to the existing Build Reviewed Stackr iOS Release workflow, together with reviewed backend 0bf2e60222644682d600deb7cc0e94862fd2a71a, verify_only=false and profile production; then retain the EAS receipt and verify TestFlight and the affected phone journeys separately.",
+    "owner": "root",
+    "status": "source_merged_database_live_api_staged_approval_declined",
+    "authorization": "Owner clarified that Pokédex is part of the Binder page and must remain intact; retrieval is the priority.",
+    "sourceBase": "072a6778d86d589c3a17bccae46aced5a3fe5316",
+    "sourceMergedCommit": "3729e40a3b6975b49c86fea3c4df5a083483c2ba",
+    "testedHead": "a7bbec03d302d272737d83d0c5a85fc479e85ff5",
+    "sourcePullRequests": [
+      457,
+      458
+    ],
+    "report": "docs/audits/20261102/binder-pokedex-retrieval.md",
+    "evidence": "docs/audits/20261102/binder-pokedex-retrieval-evidence.json",
+    "clientScope": {
+      "primaryTabs": [
+        "Home",
+        "Search",
+        "Binders"
+      ],
+      "binderPokedexRetained": true,
+      "pokemonDetailRetained": true,
+      "species": 1025
+    },
+    "ci": {
+      "applicableChecks": 10,
+      "passed": 10,
+      "intentionalSkips": 1,
+      "status": "passed"
+    },
+    "database": {
+      "project": "oakdbbzdqwurpjnoqhmu",
+      "migrationsApplied": [
+        "20261102160729",
+        "20261102161732"
+      ],
+      "reviewedSelectPreserved": true,
+      "serviceOnlyInvokerGrantsPreserved": true
+    },
+    "api": {
+      "projectId": "d205637b-5376-41aa-9169-1015ba88fec3",
+      "environmentId": "b4304736-cac8-4ca9-92a7-93f7f6499c2f",
+      "serviceId": "299d7ad4-5ed8-4301-b609-ef99274078d0",
+      "stagedPatchId": "6760f37e-07d2-4f20-b1d5-42d41ffee8b0",
+      "stagedSource": "a7bbec03d302d272737d83d0c5a85fc479e85ff5",
+      "lastSuccessfulDeployment": "c40b25c1-b1a3-49d1-aed2-df0fc0852228",
+      "lastAttestedLiveSource": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+      "deployed": false
+    },
+    "deliveryBlocker": "Railway accept-deploy returned: Cancelled — the user did not approve this action. No changes were made. The single production API source change remains staged.",
+    "nextAction": "After explicit deployment approval, apply only the reviewed Railway source patch, verify live source a7bbec03d302d272737d83d0c5a85fc479e85ff5 and consecutive Japanese Search pages without duplicate identities or 503s. Only then resume the existing native release lane with the exact current main SHA. Do not bypass the deployment approval.",
     "nativeBuildCreated": false,
-    "appSourceMergedCommit": "8f955ba37229632a5c0199d3549ff6011efdfd2e",
-    "testedHead": "25640b5bd2daaefa3fd30557d69aacb1a97745ed",
-    "deliveryBlocker": "GitHub source, workspace and executor access are healthy. The GitHub connector does not expose workflow dispatch, and the cloud browser available to the 2 November 2026 release-owner run is signed out."
+    "newOta": false,
+    "phoneAcceptance": "unverified_for_new_candidate"
   },
   "completionGoal": {
     "threadId": "01a12a4c-4b1a-7823-b948-148c90d7cd8e",
@@ -4212,7 +4253,7 @@
       "continuation": "sampled_api_unavailable",
       "reduced36CardBudgetRejected": true
     },
-    "deliveryBlocker": "GitHub source, workspace and executor access are healthy. The GitHub connector does not expose workflow dispatch, and the cloud browser available to the 2 November 2026 release-owner run is signed out.",
+    "deliveryBlocker": "Railway accept-deploy returned: Cancelled — the user did not approve this action. No changes were made. The single production API source change remains staged.",
     "nativeReleaseHandoff": {
       "workflow": "https://github.com/tberridge86/Stackr/actions/workflows/build-owner-ios-release.yml",
       "mainShaPolicy": "read_exact_current_main_immediately_before_dispatch_and_use_the_same_value_as_expected_main_sha",
@@ -4221,15 +4262,22 @@
       "fixedMainShaProhibited": true,
       "appMergedCommit": "8f955ba37229632a5c0199d3549ff6011efdfd2e",
       "appGitTree": "6e1a4969fc7139663fd13b40b66f1c480f12c547",
-      "expectedBackendSha": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+      "expectedBackendSha": "a7bbec03d302d272737d83d0c5a85fc479e85ff5",
       "verifyOnly": false,
       "buildProfile": "production",
-      "dispatchStatus": "blocked_no_authenticated_dispatch_surface",
+      "dispatchStatus": "blocked_pending_api_deployment_approval_and_live_continuation_verification",
       "nativeBuild": "not_started",
       "ota": "not_published",
       "installedPhone": "unverified",
-      "observedAt": "2026-11-02T14:05:54.000Z"
-    }
+      "observedAt": "2026-11-02T14:05:54.000Z",
+      "currentlyAttestedBackendSha": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+      "followupReport": "docs/audits/20261102/binder-pokedex-retrieval.md"
+    },
+    "retainedBinderFeatures": [
+      "Pokédex",
+      "Pokémon detail"
+    ],
+    "followupReport": "docs/audits/20261102/binder-pokedex-retrieval.md"
   },
   "build63Availability20261101": {
     "receipt": "docs/audits/20261102/build63-observed-availability.json",
@@ -4243,5 +4291,47 @@
     "phoneInstalledBuild": "unverified",
     "currentAvailabilityRechecked": false,
     "newCoreCandidateBuildCreated": false
+  },
+  "currentWorkBeforeBinderPokedexRetrieval20261102": {
+    "owner": "stackr_coding / root",
+    "status": "core_home_search_binders_source_merged_ci_passed",
+    "sourceBase": "832eba78ad8bbdd8dea1d358b811f2c11bc3f013",
+    "report": "docs/audits/20261102/core-collection-recovery.md",
+    "authorization": "Owner requested all features off except Home, Search and Binders after an unsuccessful installed-app phone experience; continue implementing that scope. Exact installed build/OTA is unverified.",
+    "phoneAcceptance": "unverified_for_new_candidate",
+    "nextAction": "Immediately before dispatch, read the exact current main SHA from GitHub and pass that same value as expected_main_sha to the existing Build Reviewed Stackr iOS Release workflow, together with reviewed backend 0bf2e60222644682d600deb7cc0e94862fd2a71a, verify_only=false and profile production; then retain the EAS receipt and verify TestFlight and the affected phone journeys separately.",
+    "nativeBuildCreated": false,
+    "appSourceMergedCommit": "8f955ba37229632a5c0199d3549ff6011efdfd2e",
+    "testedHead": "25640b5bd2daaefa3fd30557d69aacb1a97745ed",
+    "deliveryBlocker": "GitHub source, workspace and executor access are healthy. The GitHub connector does not expose workflow dispatch, and the cloud browser available to the 2 November 2026 release-owner run is signed out."
+  },
+  "binderPokedexRetrieval20261102": {
+    "report": "docs/audits/20261102/binder-pokedex-retrieval.md",
+    "evidence": "docs/audits/20261102/binder-pokedex-retrieval-evidence.json",
+    "clientSourceMerged": true,
+    "primaryTabs": [
+      "Home",
+      "Search",
+      "Binders"
+    ],
+    "retainedBinderFeatures": [
+      "Pokédex",
+      "Pokémon detail"
+    ],
+    "homeBinderScenarios": 46,
+    "pokedexFirstPageHttpRequests": {
+      "before": 4,
+      "after": 1
+    },
+    "pokedexCompleteSpecies": 1025,
+    "completeOnlyCache": true,
+    "migrationsApplied": [
+      "20261102160729",
+      "20261102161732"
+    ],
+    "apiDeployment": "staged_approval_declined",
+    "nativeBuildCreated": false,
+    "phoneVerified": false,
+    "existingIssueObjectsPreserved": 49
   }
 }
