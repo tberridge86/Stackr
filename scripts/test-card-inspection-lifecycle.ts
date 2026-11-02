@@ -153,6 +153,7 @@ async function main() {
     return React.createElement(inspectionNode, { onClose });
   }
   const dependencies = {
+    '../lib/appCapabilities': { CORE_COLLECTION_MODE: false },
     '../lib/performance': performance,
     'react-native': { AppState: openingAppState },
     'expo-router': { usePathname: () => pathname },
