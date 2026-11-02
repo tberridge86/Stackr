@@ -84,6 +84,7 @@ async function main() {
       readPersistedBinderOverview: cacheRead,
       isBinderLibraryOverviewForUser: (snapshot: unknown, userId: string) => (snapshot as { owner?: unknown } | null)?.owner === userId,
     },
+    '../lib/appCapabilities': { CORE_COLLECTION_MODE: false },
   });
   const Index = indexModule.default;
   const tree = () => React.createElement(authModule.AuthProvider, null, React.createElement(Index));
