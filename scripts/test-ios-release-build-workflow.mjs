@@ -121,7 +121,7 @@ assert.match(workflow, /scripts\/deploy\/verify-mobile-runtime-config\.mjs/);
 assert.match(workflow, /expected_backend_sha:[\s\S]*?required: true/);
 assert.match(workflow, /EXPECTED_BACKEND_SHA: \$\{\{ inputs\.expected_backend_sha \}\}/);
 const deliveryGatePosition = workflow.indexOf('node scripts/verify-ios-release-delivery.mjs');
-const nativeBuildPosition = workflow.indexOf('- name: Start iOS build without submission');
+const nativeBuildPosition = workflow.indexOf('- name: Queue iOS build and production auto-submission');
 assert.ok(deliveryGatePosition >= 0 && nativeBuildPosition > deliveryGatePosition);
 for (const command of ['npm run test:mobile-recovery', 'npm run test:server-delivery', 'npm run test:home-activity']) {
   const position = workflow.indexOf(command);
@@ -153,6 +153,96 @@ checkBuildGuard({ VERIFY_ONLY: 'unexpected', EXPO_TOKEN: 'fixture' }, /Verificat
 checkBuildGuard({ VERIFY_ONLY: 'false', EXPO_TOKEN: '' }, /EXPO_TOKEN is required/, false);
 checkBuildGuard({ VERIFY_ONLY: 'false', EXPO_TOKEN: '  ' }, /EXPO_TOKEN is required/, false);
 checkBuildGuard({ VERIFY_ONLY: 'false', EXPO_TOKEN: 'fixture' }, (error) => error === reachedBuildBody, true);
+
+// Execute the actual embedded build script. Provider/file fixtures capture the
+// outgoing EAS arguments and accepted receipt without requesting a real build.
+function runBuildRequest(profileName, { expectedSource = releaseSha, rowOverrides = {}, commandStatus = 0 } = {}) {
+  const calls = [];
+  const files = new Map();
+  const isOwner = profileName === 'production-owner';
+  const row = {
+    id: 'fixture-build', status: 'IN_QUEUE', gitCommitHash: releaseSha,
+    appVersion: config.version, appBuildVersion: 'fixture', buildProfile: profileName,
+    updateChannel: { name: eas.build[profileName]?.channel },
+    runtime: { version: isOwner ? `${config.version}-owner-recognition-v1` : config.version },
+    ...rowOverrides,
+  };
+  const fileSystem = {
+    openSync: () => 1,
+    closeSync: () => undefined,
+    mkdirSync: () => undefined,
+    readFileSync: (file) => file.endsWith('-ios-build.json') ? JSON.stringify([row])
+      : file.endsWith('mobile-delivery-receipt.json') ? JSON.stringify({ backendSource: backendSha }) : '',
+    writeFileSync: (file, value) => files.set(file, value),
+  };
+  let error;
+  try {
+    runInNewContext(buildScript, {
+      process: { env: {
+        VERIFY_ONLY: 'false', EXPO_TOKEN: 'fixture', FROZEN_SOURCE_SHA: expectedSource,
+        RELEASE_BUILD_PROFILE: profileName, RUNNER_TEMP: '/fixture',
+        STACKR_MOBILE_ENVIRONMENT: 'staging', STACKR_OWNER_RECOGNITION_BUILD: 'true',
+        EXPO_PUBLIC_OWNER_RECOGNITION_ENABLED: 'true',
+      } },
+      console: { log: () => undefined, error: () => undefined },
+      require: (module) => {
+        if (module === 'node:fs') return fileSystem;
+        if (module === './eas.json') return eas;
+        if (module === './app.json') return { expo: config };
+        if (module === 'node:child_process') return {
+          execFileSync: (command, args) => {
+            assert.equal(command, 'git');
+            assert.deepEqual(Array.from(args), ['rev-parse', 'HEAD']);
+            return releaseSha;
+          },
+          spawnSync: (command, args, options) => {
+            calls.push({ command, args: Array.from(args), env: options.env });
+            return { status: commandStatus };
+          },
+        };
+        throw new Error(`Unexpected build dependency: ${module}`);
+      },
+    });
+  } catch (caught) { error = caught; }
+  const receipt = files.get('outputs/releases/frozen-ios-build-receipt.json');
+  return { calls, receipt: receipt ? JSON.parse(receipt) : null, error };
+}
+for (const profile of ['production', 'production-owner']) {
+  const result = runBuildRequest(profile);
+  assert.ifError(result.error);
+  assert.equal(result.calls.length, 1);
+  const request = result.calls[0];
+  assert.equal(request.command, 'npx');
+  assert.ok(request.args.includes('eas-cli@23.2.0'));
+  assert.equal(request.args[request.args.indexOf('--profile') + 1], profile);
+  assert.ok(request.args.includes('--no-wait'));
+  assert.ok(!request.args.includes('--groups'));
+  const autoSubmit = request.args.indexOf('--auto-submit-with-profile');
+  assert.equal(autoSubmit >= 0, profile === 'production');
+  if (profile === 'production') {
+    assert.equal(request.args[autoSubmit + 1], 'production');
+    assert.equal(request.args.filter((argument) => argument.startsWith('--auto-submit')).length, 1);
+  } else {
+    assert.ok(!request.args.some((argument) => argument.startsWith('--auto-submit')));
+  }
+  assert.equal(request.env.STACKR_MOBILE_ENVIRONMENT, 'production');
+  assert.equal(request.env.STACKR_OWNER_RECOGNITION_BUILD, String(profile === 'production-owner'));
+  assert.equal(request.env.EXPO_PUBLIC_OWNER_RECOGNITION_ENABLED, String(profile === 'production-owner'));
+  assert.equal(result.receipt.autoSubmissionRequested, profile === 'production');
+  assert.equal(result.receipt.build.status, 'IN_QUEUE', 'Acceptance cannot claim build completion or upload.');
+}
+const wrongSource = runBuildRequest('production', { expectedSource: 'c'.repeat(40) });
+assert.match(wrongSource.error?.message ?? '', /does not match the frozen release revision/);
+assert.equal(wrongSource.calls.length, 0, 'Source mismatch cannot queue a build or submission.');
+assert.equal(wrongSource.receipt, null);
+const wrongReceipt = runBuildRequest('production', { rowOverrides: { gitCommitHash: 'c'.repeat(40) } });
+assert.match(wrongReceipt.error?.message ?? '', /receipt does not match the frozen release identity/);
+assert.equal(wrongReceipt.receipt, null, 'A different provider build cannot become the accepted release receipt.');
+const failedCommand = runBuildRequest('production', { commandStatus: 1 });
+assert.match(failedCommand.error?.message ?? '', /EAS did not complete the reviewed iOS release request/);
+assert.match(failedCommand.error.message, /Check for an existing frozen-source build before retrying/);
+assert.equal(failedCommand.calls.length, 1, 'An ambiguous provider failure cannot automatically queue another build.');
+assert.equal(failedCommand.receipt, null, 'A failed provider command cannot create an accepted release receipt.');
 const verificationUpload = workflow.slice(workflow.indexOf('- name: Upload verification-only receipt'));
 assert.match(verificationUpload, /if: \$\{\{ success\(\) && inputs\.verify_only \}\}/);
 assert.match(verificationUpload, /path: outputs\/releases\/mobile-delivery-receipt\.json/);
@@ -177,4 +267,4 @@ try {
   Object.assign(process.env, before);
 }
 
-console.log('The frozen iOS workflow keeps owner defaults and controls while attesting the separate normal production identity.');
+console.log('The frozen iOS workflow preserves owner controls and requests auto-submission only for normal production.');

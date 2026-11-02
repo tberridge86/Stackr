@@ -118,7 +118,7 @@ jobs:
           npm run test:home-activity
           node scripts/verify-ios-release-delivery.mjs
 
-      - name: Start iOS build without submission
+      - name: Queue iOS build and production auto-submission
         if: ${{ !inputs.verify_only }}
         shell: bash
         run: |
@@ -144,6 +144,7 @@ jobs:
           }
           const profile = eas.build[profileName];
           const isOwner = profileName === 'production-owner';
+          const autoSubmissionRequested = profileName === 'production';
           const expectedRuntime = isOwner ? `${app.version}-owner-recognition-v1` : app.version;
           if (!/^[0-9a-f]{40}$/u.test(expected ?? '') || source !== expected) {
             throw new Error('The checked-out source does not match the frozen release revision.');
@@ -161,10 +162,14 @@ jobs:
           const errorPath = `${process.env.RUNNER_TEMP}/eas-${profileName}-ios-build.stderr`;
           const raw = fs.openSync(rawPath, 'w');
           const error = fs.openSync(errorPath, 'w');
-          const result = spawnSync('npx', [
+          const buildArgs = [
             '--yes', 'eas-cli@23.2.0', 'build', '--platform', 'ios',
             '--profile', profileName, '--non-interactive', '--no-wait', '--json',
-          ], { env, stdio: ['ignore', raw, error] });
+          ];
+          if (autoSubmissionRequested) {
+            buildArgs.push('--auto-submit-with-profile', 'production');
+          }
+          const result = spawnSync('npx', buildArgs, { env, stdio: ['ignore', raw, error] });
           fs.closeSync(raw);
           fs.closeSync(error);
           if (result.status !== 0) {
@@ -175,7 +180,7 @@ jobs:
               .filter((line) => /\b(error|failed|failure|denied|unauthorized)\b/iu.test(line))
               .slice(-8).map(redact).join('\n');
             if (detail) console.error(detail);
-            throw new Error('EAS did not accept the frozen iOS build request.');
+            throw new Error('EAS did not complete the reviewed iOS release request. Check for an existing frozen-source build before retrying.');
           }
           const parsed = JSON.parse(fs.readFileSync(rawPath, 'utf8'));
           const rows = Array.isArray(parsed) ? parsed : [parsed];
@@ -192,6 +197,7 @@ jobs:
             channel: profile.channel,
             runtimeVersion: expectedRuntime,
             ownerRecognitionEnabled: isOwner,
+            autoSubmissionRequested,
             delivery: JSON.parse(fs.readFileSync('outputs/releases/mobile-delivery-receipt.json', 'utf8')),
             build: {
               id: row.id,
