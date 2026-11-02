@@ -2,9 +2,9 @@
 
 ## Owner outcome and baseline
 
-The owner reported the installed app as unsuccessful on the phone: loading remained poor, cards remained untranslated, and images were missing. The exact installed build and OTA revision are unverified. The preceding iOS workflow was verify-only and produced no Build 63, so the phone report cannot be attributed to Build 63. The current requested scope is **Home, Search and Binders only**.
+The owner reported the installed app as unsuccessful on the phone: loading remained poor, cards remained untranslated, and images were missing. The exact installed build and OTA revision are unverified. Build 63 was produced by a separate EAS production build, uploaded to Apple and observed as Testing in Team (Expo) on 1 November. The GitHub verify-only workflow was separate from that build. This confirms historical availability, not the exact binary/OTA installed on the owner's phone; see [the observed release receipt](build63-observed-availability.json). The current requested scope is **Home, Search and Binders only**.
 
-This candidate starts from exact main `832eba78ad8bbdd8dea1d358b811f2c11bc3f013`, whose package metadata is 1.0.6 (63). That source version is not evidence of an uploaded or installed Build 63. It is prepared in an isolated source workspace, preserving the original checkout's unrelated edits.
+This candidate starts from exact main `832eba78ad8bbdd8dea1d358b811f2c11bc3f013`, whose package metadata is 1.0.6 (63). The native release receipt separately identifies that source for Build 63; package metadata alone does not establish delivery or installation. It is prepared in an isolated source workspace, preserving the original checkout's unrelated edits.
 
 ## Reduced running app
 
@@ -32,7 +32,8 @@ The six bounded live Japanese Pikachu/Varoom API samples already supplied verifi
 - `npm run test:core-collection`: actual rendered root/shell/tabs, provider-request suppression, local sign-out, card races; seven actual ProfileProvider gate cases;42 Home/Binder cases; captured-API saved-alias regression.
 - Existing saved artwork, binder value recovery and renderer progress suites pass. The latter includes1,702-row pagination, optional deadline/retry and account isolation.
 - Existing standalone startup-loading, startup-phases and Home startup-runtime checks pass.
-- TypeScript and lint have been run locally. Their final results and exact remote CI head belong in the PR/release receipt, not an assumed phone pass.
+- `npm run typecheck` and `npm run lint -- --no-cache` pass locally (lint reports eight existing warnings). Exact remote CI results belong in the PR/release receipt, not an assumed phone pass.
+- The existing navigation and Search fixtures explicitly select the relevant mode. All 16 native/gender/number/accent/grade/UUID query cases execute in both legacy All and core Cards, preserving selected language and exact variant identity.
 - Independent specialists reviewed the runtime changes and actual-module tests. Their reports are [Home/Binder performance](core-home-performance.md) and [artwork/translation delivery](artwork-translation-delivery.md).
 - Live sampled search reports `search_pagination_unavailable`. The client retains an incomplete-results state. No production SQL/RLS change or fabricated complete-search claim is included.
 - Cold/warm phone timing, actual image rendering, gestures and installed-account journeys remain unverified for this candidate. The installed app has not changed merely because source was repaired. No new native release or production mutation is claimed here.

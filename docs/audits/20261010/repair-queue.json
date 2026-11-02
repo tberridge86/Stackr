@@ -361,7 +361,7 @@
       }
     ]
   },
-  "updatedAt": "2026-11-02T12:49:50.215Z",
+  "updatedAt": "2026-11-02T13:06:59.122Z",
   "coordinator": "Tif / root",
   "workingDirectory": "D:/Stackr",
   "branch": "codex/stackr-repair-consolidation-20261018",
@@ -3254,9 +3254,9 @@
     "status": "core_home_search_binders_candidate",
     "sourceBase": "832eba78ad8bbdd8dea1d358b811f2c11bc3f013",
     "report": "docs/audits/20261102/core-collection-recovery.md",
-    "authorization": "Owner requested all features off except Home, Search and Binders after unsuccessful Build63 phone experience; continue implementing that scope.",
+    "authorization": "Owner requested all features off except Home, Search and Binders after an unsuccessful installed-app phone experience; continue implementing that scope. Exact installed build/OTA is unverified.",
     "phoneAcceptance": "unverified_for_new_candidate",
-    "nextAction": "Complete exact-head CI and review; preserve failed Build63 phone acceptance and separate native delivery.",
+    "nextAction": "Complete exact-head CI and review; preserve the owner's failed installed-app acceptance and distinguish the verified historical Build63 release from this unbuilt core candidate.",
     "nativeBuildCreated": false
   },
   "completionGoal": {
@@ -4090,7 +4090,8 @@
       "Search",
       "Binders"
     ],
-    "note": "Build/upload/CI success did not establish installed-phone acceptance."
+    "note": "Build63 was produced, uploaded and observed Testing for Team (Expo) on 1 November. The owner's feedback concerns the installed app; its exact build/OTA is unverified. Release success did not establish phone acceptance.",
+    "feedbackScope": "installed_app_exact_build_and_ota_unverified"
   },
   "coreCollectionRecovery20261102": {
     "report": "docs/audits/20261102/core-collection-recovery.md",
@@ -4109,5 +4110,18 @@
     "productionMutations": 0,
     "nativeBuildCreated": false,
     "phoneVerified": false
+  },
+  "build63Availability20261101": {
+    "receipt": "docs/audits/20261102/build63-observed-availability.json",
+    "status": "historically_verified_testing",
+    "build": "1.0.6 (63)",
+    "easBuildId": "209a3ce1-5551-4b2a-b2d1-c1bd5b1ae3aa",
+    "source": "832eba78ad8bbdd8dea1d358b811f2c11bc3f013",
+    "appleBuildId": "cb7fcd8f-21fc-4cc0-afd0-62b23bf04aec",
+    "group": "Team (Expo)",
+    "observedDate": "2026-11-01",
+    "phoneInstalledBuild": "unverified",
+    "currentAvailabilityRechecked": false,
+    "newCoreCandidateBuildCreated": false
   }
 }
