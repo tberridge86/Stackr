@@ -211,7 +211,7 @@ try {
   assert.ok(translatedAll.results.some(r => r.reason === 'exact_translated_name'));
   assert.ok(translatedAll.results.every(r => r.reason === 'exact_name' || r.reason === 'exact_translated_name'));
   exactVariantCards(translatedAll.results);
-  const delayedTranslation = transport({ translationDelayMs: 650 });
+  const delayedTranslation = transport({ translationDelayMs: 1600 });
   const delayedFirst = await delayedTranslation.api.search({ q: 'Pikachu', limit: 17 });
   assert.equal(delayedFirst.pagination.continuationAvailable, true, 'A valid cold translation read must not disable pagination');
   assert.ok(delayedFirst.results.some(result => result.matchedNameType === 'published_english_translation'));
