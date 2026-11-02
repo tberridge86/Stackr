@@ -65,6 +65,24 @@ jobs:
       - run: npm run test:catalogue-price-baseline
       - run: npm run test:mobile-recovery
       - run: npm run test:server-delivery
+      - name: Verify production iOS recovery export
+        run: |
+          node <<'NODE'
+          const { spawnSync } = require('node:child_process');
+          const path = require('node:path');
+          const eas = require('./eas.json');
+          const env = { ...process.env, ...eas.build.production.env,
+            STACKR_OWNER_RECOGNITION_BUILD: 'false', EXPO_PUBLIC_OWNER_RECOGNITION_ENABLED: 'false',
+            EXPO_NO_DOTENV: '1', CI: '1' };
+          const output = path.join(process.env.RUNNER_TEMP, 'stackr-ios-recovery-ci');
+          for (const args of [
+            ['node_modules/expo/bin/cli', 'export', '--platform', 'ios', '--output-dir', output],
+            ['scripts/verify-mobile-recovery-bundle.mjs', output],
+          ]) {
+            const result = spawnSync(process.execPath, args, { env, stdio: 'inherit' });
+            if (result.status !== 0) process.exit(result.status ?? 1);
+          }
+          NODE
       - run: npm test --prefix backend
       - run: npm run test:live-pricing
       - run: npm run test:personal-pricing
