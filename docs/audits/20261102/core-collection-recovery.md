@@ -40,3 +40,18 @@ The six bounded live Japanese Pikachu/Varoom API samples already supplied verifi
 
 The earlier species/binder artwork evidence packets, Japanese identity/quality holds and real daily-history prerequisites remain separately tracked in the shared queue. Disabled features are paused; their data is preserved.
 
+## Release handoff refresh — 2 November 2026, 14:05 UTC
+
+PR #454 merged documentation-only commit `83339f09b04370bf37109a0220b7bf26dc1fb30a`; it changed no app code, migration or runtime configuration. GitHub's Git commit API reports the same tree `6e1a4969fc7139663fd13b40b66f1c480f12c547` for tested app head `25640b5bd2daaefa3fd30557d69aacb1a97745ed` and merged app commit `8f955ba37229632a5c0199d3549ff6011efdfd2e`.
+
+Workspace, executor, GitHub read/write, Railway read and Supabase read access are available. The remaining connection limit is narrower: the GitHub connector has no workflow-dispatch operation, and the cloud browser available to this release-owner run is signed out. No unauthenticated dispatch or competing release was attempted.
+
+The next existing-lane native action must use the actual current `main`, because `build-owner-ios-release.yml` requires the dispatched workflow SHA to equal `expected_main_sha`:
+
+- `expected_main_sha=83339f09b04370bf37109a0220b7bf26dc1fb30a`
+- `expected_backend_sha=0bf2e60222644682d600deb7cc0e94862fd2a71a`
+- `verify_only=false`
+- `build_profile=production`
+
+The last observed production API remains Railway deployment `c40b25c1-b1a3-49d1-aed2-df0fc0852228`, whose public health response attested backend source `0bf2e6022264`, environment `production` and Supabase project `oakdbbzdqwurpjnoqhmu`. Native build, OTA, TestFlight availability and installed-phone acceptance for this core candidate remain unverified.
+
