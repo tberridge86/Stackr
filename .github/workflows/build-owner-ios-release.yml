@@ -61,7 +61,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          export FROZEN_SOURCE_SHA="$(node -p 'String(process.env.FROZEN_SOURCE_SHA ?? "").trim()')"
+          export EXPECTED_BACKEND_SHA="$(node -p 'String(process.env.EXPECTED_BACKEND_SHA ?? "").trim()')"
           [[ "$FROZEN_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$EXPECTED_BACKEND_SHA" =~ ^[0-9a-f]{40}$ ]]
           case "$RELEASE_BUILD_PROFILE" in
             production-owner|production) ;;
             *) echo "Unsupported iOS release profile." >&2; exit 1 ;;
@@ -72,6 +75,8 @@ jobs:
           if [[ "$VERIFY_ONLY" != 'true' ]]; then
             test -n "$EXPO_TOKEN"
           fi
+          printf 'FROZEN_SOURCE_SHA=%s\n' "$FROZEN_SOURCE_SHA" >> "$GITHUB_ENV"
+          printf 'EXPECTED_BACKEND_SHA=%s\n' "$EXPECTED_BACKEND_SHA" >> "$GITHUB_ENV"
 
       - name: Install locked dependencies
         run: npm ci
