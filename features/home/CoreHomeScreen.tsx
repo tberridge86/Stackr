@@ -104,7 +104,12 @@ export default function CoreHomeScreen() {
     <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.bg }]}>
       <ScrollView contentContainerStyle={styles.content}
         refreshControl={<RefreshControl refreshing={visible.refreshing} onRefresh={() => load(true)} tintColor={colors.primary} />}>
-        <Text style={[styles.title, { color: colors.text }]}>Home</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text style={[styles.title, { color: colors.text }]}>Home</Text>
+          <Pressable accessibilityRole="button" accessibilityLabel="Account settings" onPress={() => router.push('/settings')} style={{ padding: 12 }}>
+            <Text style={{ color: colors.primary, fontWeight: '700' }}>Account</Text>
+          </Pressable>
+        </View>
         <Text style={[styles.subtitle, { color: colors.textSoft }]}>Your cards. Your binders.</Text>
         <Pressable accessibilityRole="button" accessibilityLabel="Search cards and sets"
           onPress={() => router.push('/(tabs)/search')} style={[styles.search, { backgroundColor: colors.primary }]}>
