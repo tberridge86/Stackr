@@ -165,7 +165,7 @@ for (const category of ['cards', 'sets']) {
     canonicalCards: null, retrievalTrace: { phase() {} }, mapCardResults: rows => rows,
     productTypeMatchesIntent: () => true, isRawCardCategory: value => value === 'cards',
     correctPokemonNameQuery: async () => null, readCachedCanonicalSearch: async () => null,
-    searchLocalPokemonCards: async (query, options) => { calls.cards++; assert.equal(options.limit, 36); return []; },
+    searchLocalPokemonCards: async (query, options) => { calls.cards++; assert.equal(options.limit, 120); return []; },
     searchSetsQuick: async () => { calls.sets++; return []; },
     searchMarketProducts: fail('products'), fetchListingSearchWithMedia: fail('listings'),
     supabase: { from: fail('profiles') }, Promise, Map,

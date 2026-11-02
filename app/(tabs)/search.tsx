@@ -1074,7 +1074,8 @@ export default function GlobalSearchScreen() {
       || category === 'sealed'
       || Boolean(catalogueProductTypeFilter)
       || productTypeMatchesIntent(trimmed));
-    const cardResultLimit = CORE_COLLECTION_MODE ? 36 : category === 'all' || isRawCardCategory(category) ? 120 : 48;
+    // Keep first-page coverage while the API may report continuation unavailable.
+    const cardResultLimit = CORE_COLLECTION_MODE || category === 'all' || isRawCardCategory(category) ? 120 : 48;
 
     const correctionPromise = correctPokemonNameQuery(trimmed, { allowIndex: false }).catch(() => null);
     let canonicalCards: SearchResults['cards'] | null = null;

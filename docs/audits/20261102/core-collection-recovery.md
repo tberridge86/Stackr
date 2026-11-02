@@ -21,7 +21,7 @@ Home uses existing shared query/cache infrastructure for a compact collection su
 
 Binder rows publish before optional custom-cover storage. Core library/detail loading does not start optional prepared valuation, per-card quote, showcase, achievement or started-binder prefetch work. Manual additions, quantity/ownership changes and removal remain.
 
-Search exposes Cards and Sets. A card search does not start set, product, profile, listing or listing-stat lookups; a set search does not start a card search. The initial card page is bounded to36. Price/grading controls are absent while those reads are off. Existing artwork batching, language and exact-variant identity rules remain.
+Search exposes Cards and Sets. A card search does not start set, product, profile, listing or listing-stat lookups; a set search does not start a card search. The initial card page retains up to120 cards: the sampled API cannot provide continuation pages, so reducing this page would hide results available in the previous release. Price/grading controls are absent while those reads are off. Existing artwork batching, language and exact-variant identity rules remain.
 
 A reproduced display defect is repaired: fresh Japanese Varoom maps to reviewed English, but the saved-binder merge previously refreshed its picture while retaining a stale translation-pending title. The merge now carries approved aliases for the exact same printing/variant/language/native identity, including name-only refresh when artwork is missing. Quantity, finish, private facts, existing reviewed English and nonserializable provider overlays are preserved.
 
@@ -32,7 +32,7 @@ The six bounded live Japanese Pikachu/Varoom API samples already supplied verifi
 - `npm run test:core-collection`: actual rendered root/shell/tabs, provider-request suppression, local sign-out, card races; seven actual ProfileProvider gate cases;42 Home/Binder cases; captured-API saved-alias regression.
 - Existing saved artwork, binder value recovery and renderer progress suites pass. The latter includes1,702-row pagination, optional deadline/retry and account isolation.
 - Existing standalone startup-loading, startup-phases and Home startup-runtime checks pass.
-- `npm run typecheck` and `npm run lint -- --no-cache` pass locally (lint reports eight existing warnings). Exact remote CI results belong in the PR/release receipt, not an assumed phone pass.
+- Local `npm run typecheck` and `npm run lint -- --no-cache` passed before the workspace disconnected (lint reported eight existing warnings). Later first-page coverage and fixture edits are verified by exact-head CI in the PR, not assumed local or phone passes.
 - The existing navigation and Search fixtures explicitly select the relevant mode. All 16 native/gender/number/accent/grade/UUID query cases execute in both legacy All and core Cards, preserving selected language and exact variant identity.
 - Independent specialists reviewed the runtime changes and actual-module tests. Their reports are [Home/Binder performance](core-home-performance.md) and [artwork/translation delivery](artwork-translation-delivery.md).
 - Live sampled search reports `search_pagination_unavailable`. The client retains an incomplete-results state. No production SQL/RLS change or fabricated complete-search claim is included.

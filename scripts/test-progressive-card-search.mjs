@@ -169,7 +169,7 @@ for (const coreCollectionMode of [false, true]) {
     const actual = requests.get(expected);
     assert.equal(actual.options.language, 'ja', 'The mounted query must preserve the selected catalogue language');
     assert.equal(actual.options.preserveVariantIdentity, true, 'The mounted query must preserve exact variant identity');
-    assert.equal(actual.options.limit, coreCollectionMode ? 36 : 120);
+    assert.equal(actual.options.limit, 120);
     actual.resolve([]);
     await request;
   }
