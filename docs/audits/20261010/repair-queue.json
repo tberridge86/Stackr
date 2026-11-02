@@ -361,7 +361,7 @@
       }
     ]
   },
-  "updatedAt": "2026-11-02T16:55:03.623Z",
+  "updatedAt": "2026-11-02T21:46:44Z",
   "coordinator": "Tif / root",
   "workingDirectory": "D:/Stackr",
   "branch": "main",
@@ -3251,7 +3251,7 @@
   ],
   "currentWork": {
     "owner": "root",
-    "status": "source_merged_database_live_canary_verified_production_pending",
+    "status": "backend_live_bounded_retrieval_verified_native_waiting_production_review",
     "authorization": "Owner clarified that Pokédex is part of the Binder page and must remain intact; retrieval is the priority.",
     "sourceBase": "072a6778d86d589c3a17bccae46aced5a3fe5316",
     "sourceMergedCommit": "3729e40a3b6975b49c86fea3c4df5a083483c2ba",
@@ -3292,11 +3292,72 @@
       "environmentId": "b4304736-cac8-4ca9-92a7-93f7f6499c2f",
       "production": {
         "serviceId": "299d7ad4-5ed8-4301-b609-ef99274078d0",
-        "deploymentId": "c40b25c1-b1a3-49d1-aed2-df0fc0852228",
-        "lastAttestedSource": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
-        "observedAt": "2026-11-02T16:55:00.000Z",
-        "changed": false,
-        "journeyOnReviewedSource": "unverified_pending_standard_backend_release"
+        "deploymentId": "92bcf761-8b24-4337-a537-5de165cee60d",
+        "lastAttestedSource": "67755c1a5574e26c4aeec0ade21053641331454b",
+        "gitCommitPrefix": "67755c1a5574",
+        "gitCommitSource": "bundled_workflow_sha",
+        "observedAt": "2026-11-02T19:14:26Z",
+        "environment": "production",
+        "supabaseProject": "oakdbbzdqwurpjnoqhmu",
+        "changed": true,
+        "workflowRun": "https://github.com/tberridge86/Stackr/actions/runs/41505622670",
+        "workflowConclusion": "success",
+        "journeyOnReviewedSource": "bounded_public_and_client_resolver_verified",
+        "journey": {
+          "observedAt": "2026-11-02T19:15:52Z",
+          "scope": "bounded_public_api_and_actual_client_artwork_resolver_not_installed_phone",
+          "query": "Pikachu",
+          "language": "ja",
+          "pageSize": 17,
+          "pages": 2,
+          "results": 34,
+          "distinctVariantIds": 34,
+          "continuationOverlap": 0,
+          "continuationAfterPage1": true,
+          "continuationAfterPage2": true,
+          "correctJapaneseScopeAndSelectedVariant": 34,
+          "englishDisplay": 34,
+          "clientArtwork": {
+            "resolved": 33,
+            "denominator": 34,
+            "exact": 18,
+            "approvedSharedReferences": 15,
+            "unresolvedCollectorNumber": "PCG7/041"
+          },
+          "pokedex": {
+            "pageSize": 50,
+            "pages": 2,
+            "distinctCanonicalSpecies": 100,
+            "reportedTotal": 1025
+          },
+          "sampledImages": {
+            "count": 3,
+            "httpStatuses": [
+              200,
+              200,
+              200
+            ],
+            "validJpeg": true,
+            "bytes": [
+              515944,
+              193968,
+              144887
+            ],
+            "origin": "official_pokemon_card_dot_com_not_R2"
+          },
+          "railwayDurationsMs": {
+            "searchPages": [
+              870,
+              362
+            ],
+            "missingImageManifest": 95,
+            "pokedexPages": [
+              11,
+              4
+            ]
+          },
+          "measurementLimit": "individual_server_observations_not_p50_p95_clean_cold_or_phone_latency"
+        }
       },
       "performanceCanary": {
         "serviceId": "8baf4d98-4605-4832-9d7e-65880e2a6b29",
@@ -3360,11 +3421,47 @@
         "sourcePolicy": "exact_reviewed_current_main"
       }
     },
-    "deliveryBlocker": "Production pocketvault remains on c40b25c1-b1a3-49d1-aed2-df0fc0852228 / 0bf2e60222644682d600deb7cc0e94862fd2a71a. The exact merged source is verified only on the performance canary; this connector has no workflow-dispatch operation for the standard protected backend lane.",
-    "nextAction": "Dispatch .github/workflows/deploy-production.yml with release_scope=backend_only and the exact reviewed current main SHA; verify production /health source plus two consecutive 17-card Pikachu pages with distinct identities, language, image URLs and provenance. Then resume the native lane using freshly read main and production backend identities.",
+    "deliveryBlocker": "The existing native workflow attempt2 is waiting for GitHub production-environment review by the repository owner. It has not yet tested the newly saved EXPO_TOKEN or created a new EAS build. Installed-phone acceptance remains unverified.",
+    "nextAction": "Approve the production deployment for existing run41526961602, then monitor its attestation, public export and EAS request; retain the exact frozen-source build and submission receipts and verify Apple TestFlight availability before phone acceptance. Do not redispatch or reuse historical Build63.",
     "nativeBuildCreated": false,
     "newOta": false,
-    "phoneAcceptance": "unverified_for_new_candidate"
+    "phoneAcceptance": "unverified_for_new_candidate",
+    "previousProductionObservation": {
+      "serviceId": "299d7ad4-5ed8-4301-b609-ef99274078d0",
+      "deploymentId": "c40b25c1-b1a3-49d1-aed2-df0fc0852228",
+      "lastAttestedSource": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+      "observedAt": "2026-11-02T16:55:00.000Z",
+      "changed": false,
+      "journeyOnReviewedSource": "unverified_pending_standard_backend_release"
+    },
+    "nativeRelease": {
+      "workflowRun": "https://github.com/tberridge86/Stackr/actions/runs/41526961602",
+      "attempt": 2,
+      "frozenSourceSha": "aa52a81ff2f3ae6a792a32b306237146b99da191",
+      "expectedBackendSha": "67755c1a5574e26c4aeec0ade21053641331454b",
+      "profile": "production",
+      "status": "waiting_for_github_production_environment_review",
+      "observedAt": "2026-11-02T21:46:44Z",
+      "buildCreated": false,
+      "newEasBuildId": null,
+      "newBuildNumber": null,
+      "autoSubmissionPolicy": "production_requests_auto_submission_after_build_completes",
+      "firstAttempt": "failed_at_attestation_with_empty_EXPO_TOKEN_before_EAS_request",
+      "tokenCorrection": "owner_reported_repository_secret_saved_rerun_not_yet_executed",
+      "phoneVerified": false
+    },
+    "releaseWorkflowRepairs": [
+      {
+        "pullRequest": 460,
+        "mergedCommit": "e217c8d0ef1102e467c9af8d4a00dd4816ce8f49",
+        "scope": "SHA outer-whitespace normalization, strict guards, normal-production group configuration"
+      },
+      {
+        "pullRequest": 461,
+        "mergedCommit": "aa52a81ff2f3ae6a792a32b306237146b99da191",
+        "scope": "normal-production automatic submission request and accurate queue/failure receipts"
+      }
+    ]
   },
   "completionGoal": {
     "threadId": "01a12a4c-4b1a-7823-b948-148c90d7cd8e",
@@ -4313,27 +4410,27 @@
     "searchCoverage": {
       "screenRequestBudget": 120,
       "sharedCanonicalRequestCap": 50,
-      "continuation": "performance_canary_two_pages_verified_production_unverified",
+      "continuation": "production_two_consecutive_17_card_japanese_pages_verified_20261102T191552Z",
       "reduced36CardBudgetRejected": true
     },
-    "deliveryBlocker": "Production pocketvault remains on c40b25c1-b1a3-49d1-aed2-df0fc0852228 / 0bf2e60222644682d600deb7cc0e94862fd2a71a. The exact merged source is verified only on the performance canary; this connector has no workflow-dispatch operation for the standard protected backend lane.",
+    "deliveryBlocker": "The existing native workflow attempt2 is waiting for GitHub production-environment review by the repository owner. It has not yet tested the newly saved EXPO_TOKEN or created a new EAS build. Installed-phone acceptance remains unverified.",
     "nativeReleaseHandoff": {
       "workflow": "https://github.com/tberridge86/Stackr/actions/workflows/build-owner-ios-release.yml",
       "mainShaPolicy": "read_exact_current_main_immediately_before_dispatch_and_use_the_same_value_as_expected_main_sha",
-      "lastObservedMain": "63d7b443f835e1cc0e3edbcd52cd510fefa3842e",
-      "lastObservedMainAt": "2026-11-02T14:15:05.000Z",
+      "lastObservedMain": "aa52a81ff2f3ae6a792a32b306237146b99da191",
+      "lastObservedMainAt": "2026-11-02T21:40:40Z",
       "fixedMainShaProhibited": true,
       "appMergedCommit": "8f955ba37229632a5c0199d3549ff6011efdfd2e",
       "appGitTree": "6e1a4969fc7139663fd13b40b66f1c480f12c547",
-      "expectedBackendSha": null,
+      "expectedBackendSha": "67755c1a5574e26c4aeec0ade21053641331454b",
       "verifyOnly": false,
       "buildProfile": "production",
-      "dispatchStatus": "blocked_pending_standard_backend_release_and_production_journey_verification",
-      "nativeBuild": "not_started",
+      "dispatchStatus": "waiting_for_github_production_environment_review",
+      "nativeBuild": "not_started_waiting_protected_environment_review",
       "ota": "not_published",
       "installedPhone": "unverified",
-      "observedAt": "2026-11-02T14:05:54.000Z",
-      "currentlyAttestedBackendSha": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+      "observedAt": "2026-11-02T21:46:44Z",
+      "currentlyAttestedBackendSha": "67755c1a5574e26c4aeec0ade21053641331454b",
       "followupReport": "docs/audits/20261102/binder-pokedex-retrieval.md",
       "expectedBackendShaPolicy": "read_full_source_sha_from_verified_production_health_after_standard_backend_release",
       "performanceCanarySource": "3729e40a3b6975b49c86fea3c4df5a083483c2ba",
@@ -4374,7 +4471,80 @@
           "Scrydex",
           "Pokémon TCG API"
         ]
-      }
+      },
+      "run": "https://github.com/tberridge86/Stackr/actions/runs/41526961602",
+      "attempt": 2,
+      "frozenSourceSha": "aa52a81ff2f3ae6a792a32b306237146b99da191",
+      "productionBackend": {
+        "serviceId": "299d7ad4-5ed8-4301-b609-ef99274078d0",
+        "deploymentId": "92bcf761-8b24-4337-a537-5de165cee60d",
+        "lastAttestedSource": "67755c1a5574e26c4aeec0ade21053641331454b",
+        "gitCommitPrefix": "67755c1a5574",
+        "gitCommitSource": "bundled_workflow_sha",
+        "observedAt": "2026-11-02T19:14:26Z",
+        "environment": "production",
+        "supabaseProject": "oakdbbzdqwurpjnoqhmu",
+        "changed": true,
+        "workflowRun": "https://github.com/tberridge86/Stackr/actions/runs/41505622670",
+        "workflowConclusion": "success",
+        "journeyOnReviewedSource": "bounded_public_and_client_resolver_verified",
+        "journey": {
+          "observedAt": "2026-11-02T19:15:52Z",
+          "scope": "bounded_public_api_and_actual_client_artwork_resolver_not_installed_phone",
+          "query": "Pikachu",
+          "language": "ja",
+          "pageSize": 17,
+          "pages": 2,
+          "results": 34,
+          "distinctVariantIds": 34,
+          "continuationOverlap": 0,
+          "continuationAfterPage1": true,
+          "continuationAfterPage2": true,
+          "correctJapaneseScopeAndSelectedVariant": 34,
+          "englishDisplay": 34,
+          "clientArtwork": {
+            "resolved": 33,
+            "denominator": 34,
+            "exact": 18,
+            "approvedSharedReferences": 15,
+            "unresolvedCollectorNumber": "PCG7/041"
+          },
+          "pokedex": {
+            "pageSize": 50,
+            "pages": 2,
+            "distinctCanonicalSpecies": 100,
+            "reportedTotal": 1025
+          },
+          "sampledImages": {
+            "count": 3,
+            "httpStatuses": [
+              200,
+              200,
+              200
+            ],
+            "validJpeg": true,
+            "bytes": [
+              515944,
+              193968,
+              144887
+            ],
+            "origin": "official_pokemon_card_dot_com_not_R2"
+          },
+          "railwayDurationsMs": {
+            "searchPages": [
+              870,
+              362
+            ],
+            "missingImageManifest": 95,
+            "pokedexPages": [
+              11,
+              4
+            ]
+          },
+          "measurementLimit": "individual_server_observations_not_p50_p95_clean_cold_or_phone_latency"
+        }
+      },
+      "productionObservationSupersedesPriorBlocker": true
     },
     "retainedBinderFeatures": [
       "Pokédex",
@@ -4432,7 +4602,7 @@
       "20261102160729",
       "20261102161732"
     ],
-    "apiDeployment": "performance_canary_verified_production_unchanged",
+    "apiDeployment": "production_backend_verified_native_delivery_pending",
     "nativeBuildCreated": false,
     "phoneVerified": false,
     "existingIssueObjectsPreserved": 49,
@@ -4488,11 +4658,108 @@
     },
     "production": {
       "serviceId": "299d7ad4-5ed8-4301-b609-ef99274078d0",
+      "deploymentId": "92bcf761-8b24-4337-a537-5de165cee60d",
+      "lastAttestedSource": "67755c1a5574e26c4aeec0ade21053641331454b",
+      "gitCommitPrefix": "67755c1a5574",
+      "gitCommitSource": "bundled_workflow_sha",
+      "observedAt": "2026-11-02T19:14:26Z",
+      "environment": "production",
+      "supabaseProject": "oakdbbzdqwurpjnoqhmu",
+      "changed": true,
+      "workflowRun": "https://github.com/tberridge86/Stackr/actions/runs/41505622670",
+      "workflowConclusion": "success",
+      "journeyOnReviewedSource": "bounded_public_and_client_resolver_verified",
+      "journey": {
+        "observedAt": "2026-11-02T19:15:52Z",
+        "scope": "bounded_public_api_and_actual_client_artwork_resolver_not_installed_phone",
+        "query": "Pikachu",
+        "language": "ja",
+        "pageSize": 17,
+        "pages": 2,
+        "results": 34,
+        "distinctVariantIds": 34,
+        "continuationOverlap": 0,
+        "continuationAfterPage1": true,
+        "continuationAfterPage2": true,
+        "correctJapaneseScopeAndSelectedVariant": 34,
+        "englishDisplay": 34,
+        "clientArtwork": {
+          "resolved": 33,
+          "denominator": 34,
+          "exact": 18,
+          "approvedSharedReferences": 15,
+          "unresolvedCollectorNumber": "PCG7/041"
+        },
+        "pokedex": {
+          "pageSize": 50,
+          "pages": 2,
+          "distinctCanonicalSpecies": 100,
+          "reportedTotal": 1025
+        },
+        "sampledImages": {
+          "count": 3,
+          "httpStatuses": [
+            200,
+            200,
+            200
+          ],
+          "validJpeg": true,
+          "bytes": [
+            515944,
+            193968,
+            144887
+          ],
+          "origin": "official_pokemon_card_dot_com_not_R2"
+        },
+        "railwayDurationsMs": {
+          "searchPages": [
+            870,
+            362
+          ],
+          "missingImageManifest": 95,
+          "pokedexPages": [
+            11,
+            4
+          ]
+        },
+        "measurementLimit": "individual_server_observations_not_p50_p95_clean_cold_or_phone_latency"
+      }
+    },
+    "previousProductionObservation": {
+      "serviceId": "299d7ad4-5ed8-4301-b609-ef99274078d0",
       "deploymentId": "c40b25c1-b1a3-49d1-aed2-df0fc0852228",
       "lastAttestedSource": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
       "observedAt": "2026-11-02T16:55:00.000Z",
       "changed": false,
       "journeyOnReviewedSource": "unverified_pending_standard_backend_release"
+    },
+    "nativeRelease": {
+      "workflowRun": "https://github.com/tberridge86/Stackr/actions/runs/41526961602",
+      "attempt": 2,
+      "frozenSourceSha": "aa52a81ff2f3ae6a792a32b306237146b99da191",
+      "expectedBackendSha": "67755c1a5574e26c4aeec0ade21053641331454b",
+      "profile": "production",
+      "status": "waiting_for_github_production_environment_review",
+      "observedAt": "2026-11-02T21:46:44Z",
+      "buildCreated": false,
+      "newEasBuildId": null,
+      "newBuildNumber": null,
+      "autoSubmissionPolicy": "production_requests_auto_submission_after_build_completes",
+      "firstAttempt": "failed_at_attestation_with_empty_EXPO_TOKEN_before_EAS_request",
+      "tokenCorrection": "owner_reported_repository_secret_saved_rerun_not_yet_executed",
+      "phoneVerified": false
     }
+  },
+  "pcg7_041_ownerPhoto20261102": {
+    "variantId": "a6f08401-8ab9-490d-aef7-3ffc67cf58d8",
+    "printingId": "df91f6b7-562e-41f7-82d4-928ed8b3b1fa",
+    "libraryFileId": "libfile_759c185185e88191af51e39b18018f68",
+    "originalFilename": "image(1).png",
+    "listedBytes": 181172,
+    "status": "owner_attachment_identified_not_downloaded_or_published",
+    "blocker": "Required Library download helper reports Library prepare_materialize is not available. Exact bytes and SHA256 remain unverified.",
+    "publicationPerformed": false,
+    "permissionHoldFound": false,
+    "recognitionReferenceEligible": false
   }
 }
