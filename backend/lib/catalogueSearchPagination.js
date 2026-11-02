@@ -10,7 +10,7 @@ const MAX_SELECTOR_READS = 64;
 // Includes the RPC round trip and a cold parameter-aware plan. A 450ms
 // deadline discarded valid foreign-language pages and failed continuation.
 // Request cancellation still stops these reads immediately.
-const OPTIONAL_TRANSLATION_MS = 1500;
+const OPTIONAL_TRANSLATION_MS = 2500;
 const unavailable = { continuationAvailable: false, unavailableReason: 'search_pagination_unavailable' };
 
 // Bind cursors to the actual deployed algorithm and verified name data. A map
