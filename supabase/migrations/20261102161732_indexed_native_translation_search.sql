@@ -205,4 +205,3 @@ select jsonb_build_object(
 end;
 $search_planned$;
 commit;
-
