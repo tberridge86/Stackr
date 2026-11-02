@@ -50,9 +50,14 @@ async function localMasterOverrides(signal: AbortSignal): Promise<string[]> {
 }
 
 /** A missing new RPC keeps the older database compatible; other failures remain errors. */
-export async function readCompactCollectionSummary(userId: string, signal?: AbortSignal): Promise<CollectionSummary | null> {
+export async function readCompactCollectionSummary(
+  userId: string,
+  signal?: AbortSignal,
+  options: { includeLocalMasterOverrides?: boolean } = {},
+): Promise<CollectionSummary | null> {
   return withPersonalDataReadTimeout(async (requestSignal) => {
-    const p_master_binder_ids = await localMasterOverrides(requestSignal);
+    const p_master_binder_ids = options.includeLocalMasterOverrides === false
+      ? [] : await localMasterOverrides(requestSignal);
     if (requestSignal.aborted) throw new Error('The collection summary was cancelled.');
     const { data, error } = await supabase.rpc('collection_summary_v1', { p_master_binder_ids }).abortSignal(requestSignal);
     if (requestSignal.aborted) throw new Error('The collection summary was cancelled.');

@@ -167,8 +167,8 @@ async function testKnownPokedexRouteColdPath() {
 
 function testPokedexTabStagedLoadingSource() {
   const pokedex = fs.readFileSync('app/(tabs)/pokedex.tsx', 'utf8');
-  assert.match(pokedex, /const POKEDEX_INITIAL_LIST_LIMIT = 151;/,
-    'the main Pokédex has a bounded first factual page');
+  assert.match(pokedex, /const POKEDEX_INITIAL_LIST_LIMIT = 50;/,
+    'the main Pokédex publishes one canonical transport page before continuation');
   assert.match(pokedex, /export async function loadPokedexRemote/,
     'the tab delegates its cold path to a runtime-testable staged loader');
   assert.match(pokedex, /Could not load the full Pokédex\. Showing the Pokémon loaded so far\./,
@@ -252,15 +252,23 @@ function testLegacyPokedexCacheRejection() {
 
 async function testPokedexTabColdPathRuntime() {
   const { loadPokedexRemote } = loadPokedexTabModule();
-  const firstPage = pokedexPage(1, 151);
-  const continuation = pokedexPage(152, 874);
+  const rows = pokedexPage(1, 1025);
+  const pageForUrl = (url: string) => {
+    const query = new URL(url, 'https://fixture.invalid').searchParams;
+    const offset = Number(query.get('offset'));
+    const limit = Number(query.get('limit'));
+    return rows.slice(offset, offset + limit);
+  };
+  const response = (url: string, indexVersion = 'fixture-species-v2', results = pageForUrl(url)) => ({
+    ok: true, status: 200, json: async () => ({ count: 1025, indexVersion, results }),
+  });
   const calls: string[] = [];
-  let resolveContinuation!: (response: any) => void;
-  const continuationPending = new Promise<any>((resolve) => { resolveContinuation = resolve; });
+  let resolveContinuation!: () => void;
+  const continuationPending = new Promise<void>((resolve) => { resolveContinuation = resolve; });
   const fetcher = async (url: string) => {
     calls.push(url);
-    if (calls.length === 1) return { ok: true, status: 200, json: async () => ({ count: 1025, indexVersion: 'fixture-species-v2', results: firstPage }) };
-    return continuationPending;
+    if (!url.includes('offset=0&')) await continuationPending;
+    return response(url);
   };
   let active = true;
   const partials: any[][] = [];
@@ -275,22 +283,24 @@ async function testPokedexTabColdPathRuntime() {
     setLoadingMore: () => {},
   });
   await tick();
-  assert.equal(partials.length, 1, 'the first 151 rows publish while the continuation is pending');
-  assert.equal(partials[0].length, 151);
+  assert.equal(partials.length, 1, 'the first transport page publishes while continuation pages are pending');
+  assert.equal(partials[0].length, 50);
   assert.equal(completes.length, 0, 'a partial page is not treated as complete');
   assert.equal(cached.length, 0, 'a partial page is never cached');
-  assert.match(calls[0], /offset=0&limit=151/);
-  assert.match(calls[1], /offset=151&limit=874/);
-  resolveContinuation({ ok: true, status: 200, json: async () => ({ count: 1025, indexVersion: 'fixture-species-v2', results: continuation }) });
+  assert.match(calls[0], /offset=0&limit=50/);
+  assert.match(calls[1], /offset=50&limit=50/);
+  assert.equal(calls.length, 4, 'continuation work is bounded to three concurrent transport pages');
+  resolveContinuation();
   assert.equal(await load, 'complete');
   assert.equal(completes[0].length, 1025, 'the completed continuation merges into the dated reviewed species list');
   assert.equal(cached[0].length, 1025, 'only the validated full species list reaches cache');
+  assert.equal(calls.length, 21);
 
   const savedComplete = completes[0];
   const failedWrites: any[][] = [];
   await assert.rejects(loadPokedexRemote(async (url: string) => (
-    url.includes('offset=0')
-      ? { ok: true, status: 200, json: async () => ({ count: 1025, indexVersion: 'fixture-species-v2', results: firstPage }) }
+    url.includes('offset=0&')
+      ? response(url)
       : { ok: false, status: 503, json: async () => ({}) }
   ), {
     hasCachedPokemon: true,
@@ -304,11 +314,7 @@ async function testPokedexTabColdPathRuntime() {
   assert.equal(savedComplete.length, 1025, 'the caller retains the previously saved complete data on failure');
 
   const retryWrites: any[][] = [];
-  const retryResult = await loadPokedexRemote(async (url: string) => (
-    url.includes('offset=0')
-      ? { ok: true, status: 200, json: async () => ({ count: 1025, indexVersion: 'fixture-species-v2', results: firstPage }) }
-      : { ok: true, status: 200, json: async () => ({ count: 1025, indexVersion: 'fixture-species-v2', results: continuation }) }
-  ), {
+  const retryResult = await loadPokedexRemote(async (url: string) => response(url), {
     hasCachedPokemon: false,
     isActive: () => true,
     publishPartial: () => {},
@@ -320,10 +326,8 @@ async function testPokedexTabColdPathRuntime() {
   assert.equal(retryWrites[0].length, 1025, 'the successful retry persists the merged species list');
 
   const truncatedWrites: any[][] = [];
-  await assert.rejects(loadPokedexRemote(async (url: string) => (
-    url.includes('offset=0')
-      ? { ok: true, status: 200, json: async () => ({ count: 1025, indexVersion: 'fixture-species-v2', results: firstPage }) }
-      : { ok: true, status: 200, json: async () => ({ count: 1025, indexVersion: 'fixture-species-v2', results: continuation.slice(0, 8) }) }
+  await assert.rejects(loadPokedexRemote(async (url: string) => response(url, 'fixture-species-v2',
+    url.includes('offset=0&') ? pageForUrl(url) : pageForUrl(url).slice(0, 8)
   ), {
     hasCachedPokemon: false,
     isActive: () => true,
@@ -334,26 +338,23 @@ async function testPokedexTabColdPathRuntime() {
   }), /truncated Pokémon continuation/);
   assert.equal(truncatedWrites.length, 0, 'malformed/truncated continuation data is never cached');
 
-  await assert.rejects(loadPokedexRemote(async (url: string) => ({
-    ok: true, status: 200, json: async () => url.includes('offset=0')
-      ? { count: 1025, indexVersion: 'fixture-species-v2', results: firstPage }
-      : { count: 1025, indexVersion: 'fixture-species-v3', results: continuation },
-  }), {
+  await assert.rejects(loadPokedexRemote(async (url: string) => response(url,
+    url.includes('offset=0&') ? 'fixture-species-v2' : 'fixture-species-v3'
+  ), {
     hasCachedPokemon: false, isActive: () => true, publishPartial: () => {},
     publishComplete: () => assert.fail('Mixed revisions cannot publish a complete index'),
     persistComplete: async () => assert.fail('Mixed revisions cannot reach cache'), setLoadingMore: () => {},
   }), /index changed during loading/);
 
-  let staleContinuation!: (response: any) => void;
-  const stalePending = new Promise<any>((resolve) => { staleContinuation = resolve; });
+  let staleContinuation!: () => void;
+  const stalePending = new Promise<void>((resolve) => { staleContinuation = resolve; });
   active = true;
   const staleComplete: any[][] = [];
   const staleCache: any[][] = [];
-  const staleLoad = loadPokedexRemote(async (url: string) => (
-    url.includes('offset=0')
-      ? { ok: true, status: 200, json: async () => ({ count: 1025, indexVersion: 'fixture-species-v2', results: firstPage }) }
-      : stalePending
-  ), {
+  const staleLoad = loadPokedexRemote(async (url: string) => {
+    if (!url.includes('offset=0&')) await stalePending;
+    return response(url);
+  }, {
     hasCachedPokemon: false,
     isActive: () => active,
     publishPartial: () => {},
@@ -363,12 +364,11 @@ async function testPokedexTabColdPathRuntime() {
   });
   await tick();
   active = false;
-  staleContinuation({ ok: true, status: 200, json: async () => ({ count: 1025, indexVersion: 'fixture-species-v2', results: continuation }) });
+  staleContinuation();
   assert.equal(await staleLoad, 'stale', 'an unmounted/superseded continuation reports stale');
   assert.equal(staleComplete.length, 0, 'an unmounted/superseded load does not publish a final list');
   assert.equal(staleCache.length, 0, 'an unmounted/superseded load does not write cache');
 }
-
 function testSearchSetFactsFirst() {
   const search = fs.readFileSync('app/(tabs)/search.tsx', 'utf8');
   assert.match(search, /fetchAllSets\(\{ language, includeAssets: false \}\)/,
@@ -415,3 +415,4 @@ async function main() {
 }
 
 void main();
+

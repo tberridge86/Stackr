@@ -148,10 +148,11 @@ const COLLECTION_VAULT_SHORTCUTS: {
   label: string;
   imageIcon: ImageSourcePropType;
   route: '/(tabs)/explore' | '/(tabs)/pokedex' | '/duplicates';
+  core: boolean;
 }[] = [
-  { label: 'Discover Sets', imageIcon: stackrIcons.setDiscovery, route: '/(tabs)/explore' as const },
-  { label: 'Pokédex', imageIcon: stackrIcons.pokedex, route: '/(tabs)/pokedex' as const },
-  { label: 'Duplicates', imageIcon: stackrIcons.duplicates, route: '/duplicates' as const },
+  { label: 'Discover Sets', imageIcon: stackrIcons.setDiscovery, route: '/(tabs)/explore' as const, core: false },
+  { label: 'Pokédex', imageIcon: stackrIcons.pokedex, route: '/(tabs)/pokedex' as const, core: true },
+  { label: 'Duplicates', imageIcon: stackrIcons.duplicates, route: '/duplicates' as const, core: false },
 ];
 
 const STACKR_BINDER_COLORS = {
@@ -1875,7 +1876,7 @@ export default function BinderLibraryScreen() {
             testID="collection-binder-grid"
             ListHeaderComponent={
               <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
-                {!CORE_COLLECTION_MODE && !savedReadOnly && COLLECTION_VAULT_SHORTCUTS.map((item) => (
+                {!savedReadOnly && COLLECTION_VAULT_SHORTCUTS.filter((item) => !CORE_COLLECTION_MODE || item.core).map((item) => (
                   <CollectionVaultShortcutButton key={item.label} onPress={() => router.push(item.route)} label={item.label} imageIcon={item.imageIcon} />
                 ))}
               </View>

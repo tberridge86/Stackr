@@ -76,7 +76,7 @@ const REGION_FILTERS: { key: RangeKey; label: string; source: ImageSourcePropTyp
 ];
 
 const POKEDEX_LIST_LIMIT = 1025;
-const POKEDEX_INITIAL_LIST_LIMIT = 151;
+const POKEDEX_INITIAL_LIST_LIMIT = 50;
 const POKEDEX_CACHE_READ_TIMEOUT_MS = 25;
 const getPokedexListUrl = (offset: number, limit: number) => (
   `/pokemon?offset=${offset}&limit=${limit}`
@@ -168,14 +168,21 @@ const readPokemonPage = async (fetchPage: PokedexPageFetcher, offset: number, li
 };
 
 /**
- * Fetch the capped catalogue in two bounded phases. The first callback is for
+ * Show one transport page first, then read the remaining pages with three workers.
+ * The first callback is for
  * display only; callers must cache only this function's fully validated return.
  */
 export async function fetchCompletePokedex(
   fetchPage: PokedexPageFetcher,
   onFirstPage: (entries: PokemonEntry[]) => void,
+  isActive: () => boolean = () => true,
 ): Promise<PokemonEntry[]> {
+  const assertActive = () => {
+    if (!isActive()) throw Object.assign(new Error('The Pokédex read was cancelled.'), { name: 'AbortError' });
+  };
+  assertActive();
   const first = await readPokemonPage(fetchPage, 0, POKEDEX_INITIAL_LIST_LIMIT);
+  assertActive();
   const reportedTotal = Number(first.count);
   if (!Number.isSafeInteger(reportedTotal) || reportedTotal < 1) {
     throw new Error('Pokédex API returned an invalid Pokémon count');
@@ -187,15 +194,41 @@ export async function fetchCompletePokedex(
     throw new Error('Pokédex API returned a truncated first Pokémon page');
   }
   onFirstPage(first.entries);
+  assertActive();
 
   const remainingLimit = cappedTotal - first.entries.length;
   if (!remainingLimit) return first.entries;
 
-  const remaining = await readPokemonPage(fetchPage, first.entries.length, remainingLimit);
-  if (remaining.indexVersion !== first.indexVersion || remaining.count !== first.count) {
-    throw new Error('The Pokédex index changed during loading. Please retry.');
-  }
-  const complete = mergePokemonResults(first.entries, remaining.entries);
+  const pageCount = Math.ceil(remainingLimit / POKEDEX_INITIAL_LIST_LIMIT);
+  const pages: PokemonEntry[][] = new Array(pageCount);
+  const species = new Set(first.entries.map((entry) => entry.speciesId));
+  let nextPage = 0;
+  let failed = false;
+  await Promise.all(Array.from({ length: Math.min(3, pageCount) }, async () => {
+    try {
+      while (!failed && isActive() && nextPage < pageCount) {
+        const position = nextPage++;
+        const offset = first.entries.length + position * POKEDEX_INITIAL_LIST_LIMIT;
+        const limit = Math.min(POKEDEX_INITIAL_LIST_LIMIT, cappedTotal - offset);
+        const page = await readPokemonPage(fetchPage, offset, limit);
+        if (failed || !isActive()) return;
+        if (page.indexVersion !== first.indexVersion || page.count !== first.count) {
+          throw new Error('The Pokédex index changed during loading. Please retry.');
+        }
+        if (page.entries.length !== limit) throw new Error('Pokédex API returned a truncated Pokémon continuation');
+        for (const entry of page.entries) {
+          if (species.has(entry.speciesId)) throw new Error('Pokédex API repeated a Pokémon species');
+          species.add(entry.speciesId);
+        }
+        pages[position] = page.entries;
+      }
+    } catch (error) {
+      failed = true;
+      throw error;
+    }
+  }));
+  assertActive();
+  const complete = mergePokemonResults(first.entries, ...pages);
   if (complete.length !== cappedTotal) {
     throw new Error('Pokédex API returned a truncated Pokémon continuation');
   }
@@ -216,16 +249,25 @@ export async function loadPokedexRemote(
   fetchPage: PokedexPageFetcher,
   options: PokedexRemoteLoadOptions,
 ): Promise<'complete' | 'stale'> {
-  const complete = await fetchCompletePokedex(fetchPage, (firstPage) => {
-    if (!options.isActive()) return;
-    if (!options.hasCachedPokemon) options.publishPartial(firstPage);
-    options.setLoadingMore(true);
-  });
+  let complete: PokemonEntry[];
+  try {
+    complete = await fetchCompletePokedex(fetchPage, (firstPage) => {
+      if (!options.isActive()) return;
+      if (!options.hasCachedPokemon) options.publishPartial(firstPage);
+      options.setLoadingMore(true);
+    }, options.isActive);
+  } catch (error) {
+    if (!options.isActive()) return 'stale';
+    throw error;
+  }
   if (!options.isActive()) return 'stale';
 
   options.publishComplete(complete);
   if (!options.isActive()) return 'stale';
-  await options.persistComplete(complete);
+  // A slow or unavailable device cache must not keep a successful live read busy.
+  void Promise.resolve().then(() => {
+    if (options.isActive()) return options.persistComplete(complete);
+  }).catch(() => undefined);
   return options.isActive() ? 'complete' : 'stale';
 }
 
@@ -333,7 +375,7 @@ export default function PokedexScreen() {
         await loadPokedexRemote(fetchPublishedPokedexPage, {
           hasCachedPokemon,
           isActive: () => active,
-          // A cold tab can become useful after Kanto has arrived. Do not replace
+          // A cold tab can become useful after its first page arrives. Do not replace
           // a complete cached list with this display-only partial page.
           publishPartial: (firstPage) => {
             publishedPartial = true;

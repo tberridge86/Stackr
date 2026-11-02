@@ -230,7 +230,7 @@
     "catalogue-prices:bulk": "node scripts/refresh-catalogue-bulk-prices.mjs",
     "catalogue-prices:guide": "node scripts/catalogue-price-guide.mjs",
     "test:next-beta-fixes": "node scripts/test-ui-standardisation.cjs && tsx scripts/test-card-finish-profiles.ts && tsx scripts/test-card-artwork-images.ts && tsx scripts/test-pricing-v2-client.ts && tsx scripts/test-catalogue-price-client.ts",
-    "test:pokedex-release": "node scripts/test-pokedex-species-index.mjs && node scripts/test-pokedex-route-repair.mjs && node --import tsx scripts/test-pokedex-loading.ts && node --import tsx scripts/test-pokedex-account-boundary.ts && node --import tsx scripts/test-pokedex-partial-results.ts && node --import tsx scripts/test-pokedex-ownership-bounds.ts",
+    "test:pokedex-release": "node scripts/test-pokedex-species-index.mjs && node scripts/test-pokedex-progressive-index.mjs && node scripts/test-pokedex-route-repair.mjs && node --import tsx scripts/test-pokedex-loading.ts && node --import tsx scripts/test-pokedex-account-boundary.ts && node --import tsx scripts/test-pokedex-partial-results.ts && node --import tsx scripts/test-pokedex-ownership-bounds.ts",
     "test:catalogue-price-baseline": "node --import tsx scripts/test-catalogue-price-baseline.ts && node --import tsx scripts/test-catalogue-price-client.ts",
     "test:classified-price-read": "node scripts/test-classified-price-read.mjs && node --import tsx scripts/test-classified-price-overlay.ts",
     "test:device-feedback": "node --import tsx scripts/test-corocoro-screen-runtime.ts && node --import tsx scripts/test-explore-discover-runtime.ts && node --import tsx scripts/test-upcoming-pokemon-sets.ts && node --import tsx scripts/test-preferred-set-logo-delivery.ts && node --import tsx scripts/test-artwork-loading-recovery.ts && node --import tsx scripts/test-uncached-card-facts-runtime.ts && node --import tsx scripts/test-pokedex-cache-handoff.ts",
@@ -246,7 +246,7 @@
     "test:restore-security": "node scripts/test-postgres-restore-security.mjs",
     "test:security-boundary-runtime": "node scripts/test-inspected-security-boundaries.mjs",
     "test:database-fixture-safety": "node scripts/test-native-postgres-fixture.mjs",
-    "test:search-pagination": "node --import tsx scripts/test-search-pagination-runtime.ts && node --import tsx scripts/test-search-settlement-runtime.ts && node scripts/test-backend-search-pagination.mjs",
+    "test:search-pagination": "node --import tsx scripts/test-search-pagination-runtime.ts && node --import tsx scripts/test-search-settlement-runtime.ts && node scripts/test-backend-search-pagination.mjs && node scripts/test-search-query-plans.mjs",
     "test:core-collection": "node scripts/test-core-app-scope.mjs && node scripts/test-core-profile-gate.mjs && node scripts/test-core-home-data.mjs && node scripts/test-saved-card-display-alias.mjs"
   },
   "dependencies": {
@@ -341,3 +341,4 @@
     }
   }
 }
+
