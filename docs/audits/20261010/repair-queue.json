@@ -361,7 +361,7 @@
       }
     ]
   },
-  "updatedAt": "2026-11-02T21:46:44Z",
+  "updatedAt": "2026-11-02T22:07:59Z",
   "coordinator": "Tif / root",
   "workingDirectory": "D:/Stackr",
   "branch": "main",
@@ -3251,7 +3251,7 @@
   ],
   "currentWork": {
     "owner": "root",
-    "status": "backend_live_bounded_retrieval_verified_native_waiting_production_review",
+    "status": "backend_live_native_content_gate_repair_pending_review_and_export_CI",
     "authorization": "Owner clarified that Pokédex is part of the Binder page and must remain intact; retrieval is the priority.",
     "sourceBase": "072a6778d86d589c3a17bccae46aced5a3fe5316",
     "sourceMergedCommit": "3729e40a3b6975b49c86fea3c4df5a083483c2ba",
@@ -3421,8 +3421,8 @@
         "sourcePolicy": "exact_reviewed_current_main"
       }
     },
-    "deliveryBlocker": "The existing native workflow attempt2 is waiting for GitHub production-environment review by the repository owner. It has not yet tested the newly saved EXPO_TOKEN or created a new EAS build. Installed-phone acceptance remains unverified.",
-    "nextAction": "Approve the production deployment for existing run41526961602, then monitor its attestation, public export and EAS request; retain the exact frozen-source build and submission receipts and verify Apple TestFlight availability before phone acceptance. Do not redispatch or reuse historical Build63.",
+    "deliveryBlocker": "Native run41526961602 attempt2 failed its content verifier before EAS because it required an unreachable legacy Home history marker. Corrected active-Home checks pass locally; actual iOS export CI and normal source review must pass before a new frozen release dispatch.",
+    "nextAction": "Review and merge the active-Home content gate repair after Platform CI verifies a real production iOS export and all74 asset bytes. Then dispatch the existing reviewed iOS workflow from freshly read exact main, expected_backend_sha=67755c1a5574e26c4aeec0ade21053641331454b, profile production and verify_only=false. Rerunning the old aa52 source cannot include the repair. Retain exact EAS, submission, TestFlight and phone evidence separately.",
     "nativeBuildCreated": false,
     "newOta": false,
     "phoneAcceptance": "unverified_for_new_candidate",
@@ -3440,14 +3440,19 @@
       "frozenSourceSha": "aa52a81ff2f3ae6a792a32b306237146b99da191",
       "expectedBackendSha": "67755c1a5574e26c4aeec0ade21053641331454b",
       "profile": "production",
-      "status": "waiting_for_github_production_environment_review",
-      "observedAt": "2026-11-02T21:46:44Z",
+      "status": "failed_before_EAS_request",
+      "observedAt": "2026-11-02T22:07:59Z",
+      "failedAt": "2026-11-02T22:02:29Z",
       "buildCreated": false,
       "newEasBuildId": null,
       "newBuildNumber": null,
+      "sourceAttestationPassed": true,
+      "tokenPresencePreflightPassed": true,
+      "expoAuthentication": "not_reached",
+      "iosBundleExported": true,
+      "bundleContentVerified": false,
+      "failure": "Gate required activity_read_identity_changed from unreachable legacy HubScreen; active Home entry exports CoreHomeScreen.",
       "autoSubmissionPolicy": "production_requests_auto_submission_after_build_completes",
-      "firstAttempt": "failed_at_attestation_with_empty_EXPO_TOKEN_before_EAS_request",
-      "tokenCorrection": "owner_reported_repository_secret_saved_rerun_not_yet_executed",
       "phoneVerified": false
     },
     "releaseWorkflowRepairs": [
@@ -4413,23 +4418,23 @@
       "continuation": "production_two_consecutive_17_card_japanese_pages_verified_20261102T191552Z",
       "reduced36CardBudgetRejected": true
     },
-    "deliveryBlocker": "The existing native workflow attempt2 is waiting for GitHub production-environment review by the repository owner. It has not yet tested the newly saved EXPO_TOKEN or created a new EAS build. Installed-phone acceptance remains unverified.",
+    "deliveryBlocker": "Native run41526961602 attempt2 failed its content verifier before EAS because it required an unreachable legacy Home history marker. Corrected active-Home checks pass locally; actual iOS export CI and normal source review must pass before a new frozen release dispatch.",
     "nativeReleaseHandoff": {
       "workflow": "https://github.com/tberridge86/Stackr/actions/workflows/build-owner-ios-release.yml",
       "mainShaPolicy": "read_exact_current_main_immediately_before_dispatch_and_use_the_same_value_as_expected_main_sha",
-      "lastObservedMain": "aa52a81ff2f3ae6a792a32b306237146b99da191",
-      "lastObservedMainAt": "2026-11-02T21:40:40Z",
+      "lastObservedMain": "f97a659fcda250c0fe992db898f6e95f90087f55",
+      "lastObservedMainAt": "2026-11-02T22:07:59Z",
       "fixedMainShaProhibited": true,
       "appMergedCommit": "8f955ba37229632a5c0199d3549ff6011efdfd2e",
       "appGitTree": "6e1a4969fc7139663fd13b40b66f1c480f12c547",
       "expectedBackendSha": "67755c1a5574e26c4aeec0ade21053641331454b",
       "verifyOnly": false,
       "buildProfile": "production",
-      "dispatchStatus": "waiting_for_github_production_environment_review",
-      "nativeBuild": "not_started_waiting_protected_environment_review",
+      "dispatchStatus": "failed_content_gate_new_reviewed_dispatch_required_after_repair",
+      "nativeBuild": "not_requested_failed_content_verification",
       "ota": "not_published",
       "installedPhone": "unverified",
-      "observedAt": "2026-11-02T21:46:44Z",
+      "observedAt": "2026-11-02T22:07:59Z",
       "currentlyAttestedBackendSha": "67755c1a5574e26c4aeec0ade21053641331454b",
       "followupReport": "docs/audits/20261102/binder-pokedex-retrieval.md",
       "expectedBackendShaPolicy": "read_full_source_sha_from_verified_production_health_after_standard_backend_release",
@@ -4544,7 +4549,28 @@
           "measurementLimit": "individual_server_observations_not_p50_p95_clean_cold_or_phone_latency"
         }
       },
-      "productionObservationSupersedesPriorBlocker": true
+      "productionObservationSupersedesPriorBlocker": true,
+      "attempt2Failure": {
+        "workflowRun": "https://github.com/tberridge86/Stackr/actions/runs/41526961602",
+        "attempt": 2,
+        "frozenSourceSha": "aa52a81ff2f3ae6a792a32b306237146b99da191",
+        "expectedBackendSha": "67755c1a5574e26c4aeec0ade21053641331454b",
+        "profile": "production",
+        "status": "failed_before_EAS_request",
+        "observedAt": "2026-11-02T22:07:59Z",
+        "failedAt": "2026-11-02T22:02:29Z",
+        "buildCreated": false,
+        "newEasBuildId": null,
+        "newBuildNumber": null,
+        "sourceAttestationPassed": true,
+        "tokenPresencePreflightPassed": true,
+        "expoAuthentication": "not_reached",
+        "iosBundleExported": true,
+        "bundleContentVerified": false,
+        "failure": "Gate required activity_read_identity_changed from unreachable legacy HubScreen; active Home entry exports CoreHomeScreen.",
+        "autoSubmissionPolicy": "production_requests_auto_submission_after_build_completes",
+        "phoneVerified": false
+      }
     },
     "retainedBinderFeatures": [
       "Pokédex",
@@ -4739,14 +4765,19 @@
       "frozenSourceSha": "aa52a81ff2f3ae6a792a32b306237146b99da191",
       "expectedBackendSha": "67755c1a5574e26c4aeec0ade21053641331454b",
       "profile": "production",
-      "status": "waiting_for_github_production_environment_review",
-      "observedAt": "2026-11-02T21:46:44Z",
+      "status": "failed_before_EAS_request",
+      "observedAt": "2026-11-02T22:07:59Z",
+      "failedAt": "2026-11-02T22:02:29Z",
       "buildCreated": false,
       "newEasBuildId": null,
       "newBuildNumber": null,
+      "sourceAttestationPassed": true,
+      "tokenPresencePreflightPassed": true,
+      "expoAuthentication": "not_reached",
+      "iosBundleExported": true,
+      "bundleContentVerified": false,
+      "failure": "Gate required activity_read_identity_changed from unreachable legacy HubScreen; active Home entry exports CoreHomeScreen.",
       "autoSubmissionPolicy": "production_requests_auto_submission_after_build_completes",
-      "firstAttempt": "failed_at_attestation_with_empty_EXPO_TOKEN_before_EAS_request",
-      "tokenCorrection": "owner_reported_repository_secret_saved_rerun_not_yet_executed",
       "phoneVerified": false
     }
   },
@@ -4761,5 +4792,16 @@
     "publicationPerformed": false,
     "permissionHoldFound": false,
     "recognitionReferenceEligible": false
+  },
+  "nativeContentGateRepair20261102": {
+    "sourceObservation": "app/(tabs)/index.tsx exports CoreHomeScreen; only unreachable HubScreen imports legacy Home history reader.",
+    "implemented": true,
+    "localRegression": "active_and_legacy_content_policies_plus_actual_74_asset_verifier_missing_and_tampered_exports_pass",
+    "actualHermesExportCI": "pending",
+    "review": "pending",
+    "productionMutation": false,
+    "nativeBuildCreated": false,
+    "phoneVerified": false,
+    "report": "docs/audits/20261102/binder-pokedex-retrieval-evidence.json"
   }
 }

@@ -191,7 +191,10 @@
           "unresolved": 1
         },
         "pokedex": {
-          "pageSizes": [50, 50],
+          "pageSizes": [
+            50,
+            50
+          ],
           "canonicalIndexMatches": 100,
           "distinctSpecies": 100,
           "reportedTotalSpecies": 1025
@@ -200,14 +203,24 @@
           "count": 3,
           "http200": 3,
           "validJpeg": 3,
-          "bytes": [515944, 193968, 144887],
+          "bytes": [
+            515944,
+            193968,
+            144887
+          ],
           "delivery": "official_provider_urls_not_r2",
           "scope": "three_selected_urls_only_not_universal_or_phone_coverage"
         },
         "railwayServerDurationsMs": {
-          "searchPages": [870, 362],
+          "searchPages": [
+            870,
+            362
+          ],
           "missingImageManifest": 95,
-          "pokedexPages": [11, 4]
+          "pokedexPages": [
+            11,
+            4
+          ]
         },
         "statisticalPercentiles": "unmeasured_individual_observations",
         "cleanColdBenchmark": "unmeasured",
@@ -393,10 +406,25 @@
         "sha256": "20a34cc447308d831fb542c9e9094825c7b6eb1034b3af9b138da37250f00e41"
       }
     ],
-    "nativeReleaseGate": "Follow existing native run 41526961602 attempt 2 after the repository production approval. Verify the Expo credential preflight and exact frozen-source EAS receipt, then build completion, exact submission, Apple processing, tester availability and installed-phone journeys separately. Check for an existing exact-source EAS build before any retry after a build-request failure. Do not dispatch a duplicate merely because current main changes."
+    "nativeReleaseGate": "Review and merge the active-Home content gate repair after Platform CI verifies a real production iOS export and all74 asset bytes. Then dispatch the existing reviewed iOS workflow from freshly read exact main, expected_backend_sha=67755c1a5574e26c4aeec0ade21053641331454b, profile production and verify_only=false. Rerunning the old aa52 source cannot include the repair. Retain exact EAS, submission, TestFlight and phone evidence separately.",
+    "productionDeliveryReadback": {
+      "recordedAt": "2026-11-02T22:07:59Z",
+      "method": "existing_verifyPublishedMobileDelivery_read_only_gate",
+      "backendSource": "67755c1a5574e26c4aeec0ade21053641331454b",
+      "pokedexIndexVersion": "pokeapi-species-2026-10-11-a8e69cbfe2b9",
+      "completeSpeciesContinuation": "passed",
+      "verifiedTranslationSamples": 4,
+      "activityHistory": {
+        "baseSchema": "verified",
+        "snapshotSchema": "legacy_compatible",
+        "rowLimit": 0
+      },
+      "phoneAcceptance": "pending",
+      "timingClaim": "none_client_network_observations_are_not_phone_latency"
+    }
   },
   "nativeRelease": {
-    "observedAt": "2026-11-02T21:40:40Z",
+    "observedAt": "2026-11-02T22:07:59Z",
     "workflow": ".github/workflows/build-owner-ios-release.yml",
     "runId": 41526961602,
     "url": "https://github.com/tberridge86/Stackr/actions/runs/41526961602",
@@ -410,8 +438,14 @@
       "failedBeforeEasBuildRequest": true
     },
     "attempt2": {
-      "status": "waiting_for_production_environment_approval",
-      "credentialFix": "repository_secret_saved_per_owner_not_yet_verified_by_preflight"
+      "status": "failed_before_EAS_request",
+      "conclusion": "failure",
+      "failedAt": "2026-11-02T22:02:29Z",
+      "step": "Prove native content and published API delivery",
+      "cause": "Unreachable legacy Home marker activity_read_identity_changed required by the bundle verifier.",
+      "credentialFix": "EXPO_TOKEN_presence_preflight_passed_Expo_authentication_not_reached",
+      "actualIosBundleExport": "success",
+      "easRequest": "skipped"
     },
     "automaticSubmissionConfiguredForProduction": true,
     "newEasBuildId": null,
@@ -423,7 +457,18 @@
       "predatesCurrentRepairs": true,
       "receipt": "docs/audits/20261102/build63-observed-availability.json"
     },
-    "releaseRepairPullRequests": [460, 461]
+    "releaseRepairPullRequests": [
+      460,
+      461
+    ],
+    "gateRepair": {
+      "status": "local_regressions_passed_review_and_actual_iOS_export_CI_pending",
+      "activeHome": "CoreHomeScreen",
+      "legacyHomeAssertion": "retained_for_HubScreen_entry",
+      "commonSaveHistoryAssertion": "retained",
+      "assetChecks": "all74_identity_membership_and_byte_checks_unchanged",
+      "environmentBypass": false
+    }
   },
   "remainingArtworkGap": {
     "card": "Japanese PCG7/041 Pikachu delta",
