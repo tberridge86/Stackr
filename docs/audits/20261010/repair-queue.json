@@ -361,7 +361,7 @@
       }
     ]
   },
-  "updatedAt": "2026-11-02T13:06:59.122Z",
+  "updatedAt": "2026-11-02T14:00:40.222Z",
   "coordinator": "Tif / root",
   "workingDirectory": "D:/Stackr",
   "branch": "codex/stackr-repair-consolidation-20261018",
@@ -3251,13 +3251,16 @@
   ],
   "currentWork": {
     "owner": "stackr_coding / root",
-    "status": "core_home_search_binders_candidate",
+    "status": "core_home_search_binders_source_merged_ci_passed",
     "sourceBase": "832eba78ad8bbdd8dea1d358b811f2c11bc3f013",
     "report": "docs/audits/20261102/core-collection-recovery.md",
     "authorization": "Owner requested all features off except Home, Search and Binders after an unsuccessful installed-app phone experience; continue implementing that scope. Exact installed build/OTA is unverified.",
     "phoneAcceptance": "unverified_for_new_candidate",
-    "nextAction": "Complete exact-head CI and review; preserve the owner's failed installed-app acceptance and distinguish the verified historical Build63 release from this unbuilt core candidate.",
-    "nativeBuildCreated": false
+    "nextAction": "Restore the unavailable workspace/browser release connection, freeze the reviewed current main source for the next native TestFlight build, then verify cold/warm Home, Search and Binder journeys and images on the phone. Build63 already exists; do not attempt to reuse its number.",
+    "nativeBuildCreated": false,
+    "appSourceMergedCommit": "8f955ba37229632a5c0199d3549ff6011efdfd2e",
+    "testedHead": "25640b5bd2daaefa3fd30557d69aacb1a97745ed",
+    "deliveryBlocker": "The connected workspace reports unavailable and the local executor returned exec-server transport disconnected. The authenticated browser release connection is also unavailable in this session."
   },
   "completionGoal": {
     "threadId": "01a12a4c-4b1a-7823-b948-148c90d7cd8e",
@@ -4109,7 +4112,98 @@
     },
     "productionMutations": 0,
     "nativeBuildCreated": false,
-    "phoneVerified": false
+    "phoneVerified": false,
+    "sourceMerged": {
+      "pr": "https://github.com/tberridge86/Stackr/pull/453",
+      "commit": "8f955ba37229632a5c0199d3549ff6011efdfd2e",
+      "testedHead": "25640b5bd2daaefa3fd30557d69aacb1a97745ed",
+      "exactTreeMatch": true
+    },
+    "validation": {
+      "status": "passed",
+      "applicableChecks": 12,
+      "intentionalSkips": 2,
+      "checkedHead": "25640b5bd2daaefa3fd30557d69aacb1a97745ed",
+      "checks": [
+        {
+          "name": "canary-api-evidence",
+          "conclusion": "skipped",
+          "url": "https://github.com/tberridge86/Stackr/actions/runs/41455678906/job/125311617543"
+        },
+        {
+          "name": "release-candidate-gate",
+          "conclusion": "skipped",
+          "url": "https://github.com/tberridge86/Stackr/actions/runs/41455678851/job/125311616799"
+        },
+        {
+          "name": "owner-pricing-identity-regression",
+          "conclusion": "success",
+          "url": "https://github.com/tberridge86/Stackr/actions/runs/41455678846/job/125311615598"
+        },
+        {
+          "name": "candidate-tests",
+          "conclusion": "success",
+          "url": "https://github.com/tberridge86/Stackr/actions/runs/41455678906/job/125311615450"
+        },
+        {
+          "name": "prepared-valuation-postgres17",
+          "conclusion": "success",
+          "url": "https://github.com/tberridge86/Stackr/actions/runs/41455678851/job/125311614886"
+        },
+        {
+          "name": "recognition-container",
+          "conclusion": "success",
+          "url": "https://github.com/tberridge86/Stackr/actions/runs/41455678851/job/125311614741"
+        },
+        {
+          "name": "database-migration-tests",
+          "conclusion": "success",
+          "url": "https://github.com/tberridge86/Stackr/actions/runs/41455678851/job/125311614699"
+        },
+        {
+          "name": "lint-type-unit",
+          "conclusion": "success",
+          "url": "https://github.com/tberridge86/Stackr/actions/runs/41455678851/job/125311614664"
+        },
+        {
+          "name": "openapi-and-generated-client",
+          "conclusion": "success",
+          "url": "https://github.com/tberridge86/Stackr/actions/runs/41455678851/job/125311614448"
+        },
+        {
+          "name": "benchmark-smoke-tests",
+          "conclusion": "success",
+          "url": "https://github.com/tberridge86/Stackr/actions/runs/41455678851/job/125311614445"
+        },
+        {
+          "name": "distributed-architecture",
+          "conclusion": "success",
+          "url": "https://github.com/tberridge86/Stackr/actions/runs/41455678851/job/125311614399"
+        },
+        {
+          "name": "integration-tests",
+          "conclusion": "success",
+          "url": "https://github.com/tberridge86/Stackr/actions/runs/41455678851/job/125311614359"
+        },
+        {
+          "name": "dependency-and-secret-scan",
+          "conclusion": "success",
+          "url": "https://github.com/tberridge86/Stackr/actions/runs/41455678851/job/125311613865"
+        },
+        {
+          "name": "validate",
+          "conclusion": "success",
+          "url": "https://github.com/tberridge86/Stackr/actions/runs/41455678768/job/125311612909"
+        }
+      ]
+    },
+    "searchCoverage": {
+      "screenRequestBudget": 120,
+      "sharedCanonicalRequestCap": 50,
+      "continuation": "sampled_api_unavailable",
+      "reduced36CardBudgetRejected": true
+    },
+    "deliveryBlocker": "The connected workspace reports unavailable and the local executor returned exec-server transport disconnected. The authenticated browser release connection is also unavailable in this session."
   },
   "build63Availability20261101": {
     "receipt": "docs/audits/20261102/build63-observed-availability.json",
