@@ -31,10 +31,14 @@ try {
 
   await db.exec('reset role');
   await db.exec(readFileSync('supabase/migrations/20261102160729_catalogue_search_custom_plans.sql', 'utf8'));
+  await db.exec(readFileSync('supabase/migrations/20261102161732_indexed_native_translation_search.sql', 'utf8'));
   const after = await metadata();
-  const { proconfig: oldConfig, ...oldContract } = before;
-  const { proconfig: newConfig, ...newContract } = after;
-  assert.deepEqual(newContract, oldContract, 'The function body, owner, invoker security, volatility and grants are preserved');
+  const { proconfig: oldConfig, prosrc: oldSelect, ...oldContract } = before;
+  const { proconfig: newConfig, prosrc: newWrapper, ...newContract } = after;
+  assert.equal(newWrapper.trim().replace(/^begin\s+return\s*\(\s*/, '').replace(/\s*\);\s*end;$/, ''), oldSelect.trim().replace(/;\s*$/, ''),
+    'Parameter-aware execution wraps the reviewed SELECT verbatim');
+  assert.deepEqual(newContract, oldContract, 'The function owner, invoker security, volatility and grants are preserved');
+  assert.equal((await db.query("select pg_get_indexdef('catalog.card_printings_native_name_identity_idx'::regclass) definition")).rows[0].definition.includes('(native_name) INCLUDE (id)'), true);
   assert.deepEqual([...newConfig].sort(), [...oldConfig, 'plan_cache_mode=force_custom_plan'].sort());
   assert.equal((await db.query("select current_setting('plan_cache_mode') mode")).rows[0].mode, 'auto', 'The migration does not change the session/database default');
   await db.exec("set role service_role; set plan_cache_mode='force_generic_plan'");
@@ -54,7 +58,7 @@ try {
     await assert.rejects(fixture.page(selectors[0]), /permission denied/);
     await db.exec('reset role');
   }
-  console.log('PASS Search planning migration: unchanged SQL/grants, 10 selectors, five languages and continuation pages, revision invalidation and caller-setting restoration');
+  console.log('PASS indexed Search planning migration: unchanged SELECT/grants, 10 selectors, five languages and continuation pages, revision invalidation and caller-setting restoration');
 } finally {
   await db.close();
 }

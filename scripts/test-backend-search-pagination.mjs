@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { Buffer } from 'node:buffer';
 import { EventEmitter } from 'node:events';
 import { createClient } from '@supabase/supabase-js';
@@ -10,9 +11,10 @@ import { createSearchDatabase, id, proposal } from './test-fixtures/search-pagin
 
 const fixture = await createSearchDatabase();
 const { db } = fixture;
-function transport({ cap = 500, missing = false, fail = false, corrupt = null, stall = false, translationFailure = false, translationStall = false } = {}) {
+await db.exec(readFileSync('supabase/migrations/20261102161732_indexed_native_translation_search.sql', 'utf8'));
+function transport({ cap = 500, missing = false, fail = false, corrupt = null, stall = false, translationFailure = false, translationStall = false, translationDelayMs = 0 } = {}) {
   const calls = [], pending = [];
-  const state = { missing, fail, corrupt, stall, translationFailure, translationStall };
+  const state = { missing, fail, corrupt, stall, translationFailure, translationStall, translationDelayMs };
   const client = createClient('https://fixture.invalid', 'fixture-public-key', {
     auth: { persistSession: false, autoRefreshToken: false },
     global: { fetch: async (input, init = {}) => {
@@ -31,6 +33,9 @@ function transport({ cap = 500, missing = false, fail = false, corrupt = null, s
           pending.push({ resolve, reject });
           init.signal?.addEventListener('abort', () => reject(Object.assign(new Error('Fixture abort'), { name: 'AbortError' })), { once: true });
         });
+        if (args.p_selector.kind === 'nativeTranslation' && state.translationDelayMs) {
+          await new Promise(resolve => setTimeout(resolve, state.translationDelayMs));
+        }
         const data = await fixture.page(args.p_selector, args.p_after, args.p_limit, args.p_expected_revision, args.p_exclude_selector);
         if (state.corrupt && data.entries.length) {
           if (state.corrupt === 'duplicate') data.entries.push(data.entries[0]);
@@ -206,6 +211,13 @@ try {
   assert.ok(translatedAll.results.some(r => r.reason === 'exact_translated_name'));
   assert.ok(translatedAll.results.every(r => r.reason === 'exact_name' || r.reason === 'exact_translated_name'));
   exactVariantCards(translatedAll.results);
+  const delayedTranslation = transport({ translationDelayMs: 650 });
+  const delayedFirst = await delayedTranslation.api.search({ q: 'Pikachu', limit: 17 });
+  assert.equal(delayedFirst.pagination.continuationAvailable, true, 'A valid cold translation read must not disable pagination');
+  assert.ok(delayedFirst.results.some(result => result.matchedNameType === 'published_english_translation'));
+  const delayedNext = await delayedTranslation.api.search({ q: 'Pikachu', limit: 17, cursor: delayedFirst.pagination.nextCursor });
+  assert.equal(delayedNext.pagination.continuationAvailable, true, 'Continuation tolerates the same valid RPC round trip');
+  assert.ok(delayedNext.results.every(result => !identities(delayedFirst.results).includes(result.variantId)));
   for (const failure of ['translationFailure', 'translationStall']) {
     const optional = transport({ [failure]: true });
     const usable = await optional.api.search({ q: 'Pikachu', limit: 17 });
@@ -293,3 +305,4 @@ try {
     'the verified static candidate map must not silently stop after 80 names');
   console.log('PASS service-only invoker grants; static candidate enumeration is not silently capped.');
 } finally { await db.close(); }
+

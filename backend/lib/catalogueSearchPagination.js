@@ -7,7 +7,10 @@ export const SEARCH_IDENTITY_RPC = 'catalogue_search_identity_page_v1';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const REVISION = /^[0-9a-f]{32}$/;
 const MAX_SELECTOR_READS = 64;
-const OPTIONAL_TRANSLATION_MS = 450;
+// Includes the RPC round trip and a cold parameter-aware plan. A 450ms
+// deadline discarded valid foreign-language pages and failed continuation.
+// Request cancellation still stops these reads immediately.
+const OPTIONAL_TRANSLATION_MS = 1500;
 const unavailable = { continuationAvailable: false, unavailableReason: 'search_pagination_unavailable' };
 
 // Bind cursors to the actual deployed algorithm and verified name data. A map
@@ -253,3 +256,4 @@ export async function readCatalogueSearchPage({
     translationController.abort();
   }
 }
+
