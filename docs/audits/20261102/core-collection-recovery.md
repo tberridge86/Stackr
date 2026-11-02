@@ -54,7 +54,7 @@ PR #454 merged documentation-only commit `83339f09b04370bf37109a0220b7bf26dc1fb3
 
 At this historical handoff, workspace, executor, GitHub read/write, Railway read and Supabase read access were available. The GitHub connector had no workflow-dispatch operation, and the cloud browser available to that release-owner run was signed out. No unauthenticated dispatch or competing release was attempted. The existing workflows were subsequently started through the owner-controlled release path, as recorded in the current observation above.
 
-The next existing-lane native action must read the exact current `main` SHA immediately before dispatch and use that same value as `expected_main_sha`, because `build-owner-ios-release.yml` requires the dispatched workflow SHA to equal the input. A fixed SHA in versioned release documentation is self-invalidating: merging the documentation changes `main`. PR #455's merge commit `63d7b443f835e1cc0e3edbcd52cd510fefa3842e` is retained as the last observation, not as a future dispatch input.
+For a future new native dispatch, read the exact current `main` SHA immediately beforehand and use that same value as `expected_main_sha`, because `build-owner-ios-release.yml` requires the dispatched workflow SHA to equal the input. The existing run recorded above is already frozen and should be followed; a documentation merge does not require redispatch. PR #455's merge commit `63d7b443f835e1cc0e3edbcd52cd510fefa3842e` is historical evidence, not a future dispatch input.
 
 - `expected_main_sha=<exact current main read from GitHub immediately before dispatch>`
 - `expected_backend_sha=<full source SHA attested by production /health after the standard backend-only release>`
