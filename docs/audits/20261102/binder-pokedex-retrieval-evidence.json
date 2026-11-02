@@ -1,0 +1,348 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-02",
+  "pullRequest": "https://github.com/tberridge86/Stackr/pull/457",
+  "ownerCorrection": "Pokédex remains part of the Binder page. Prioritize ongoing retrieval problems.",
+  "sourceBase": "072a6778d86d589c3a17bccae46aced5a3fe5316",
+  "client": {
+    "primaryTabs": [
+      "Home",
+      "Search",
+      "Binders"
+    ],
+    "binderChild": "Pokédex",
+    "pokemonDetailRetained": true,
+    "species": 1025,
+    "pokedex": {
+      "beforeFirstDisplayHttpCalls": 4,
+      "afterFirstDisplayHttpCalls": 1,
+      "wirePageSize": 50,
+      "beforeFullIndexHttpCalls": 22,
+      "afterFullIndexHttpCalls": 21,
+      "maxConcurrentContinuationCalls": 3,
+      "completeOnlyCache": true,
+      "optionalCacheWriteDoesNotGateLiveRead": true
+    },
+    "home": {
+      "beforeHungMasterSettingsRpcCalls": 0,
+      "afterHungMasterSettingsRpcCalls": 1,
+      "fullMasterCompletionCachePreserved": true,
+      "sharedQueryClient": true,
+      "homeBinderScenarios": 46
+    }
+  },
+  "database": {
+    "project": "oakdbbzdqwurpjnoqhmu",
+    "function": "api.catalogue_search_identity_page_v1(jsonb,jsonb,integer,text,jsonb)",
+    "migrations": [
+      {
+        "version": "20261102160729",
+        "statementMd5": "522288c7ece178a00c0d25d76ae3eb93"
+      },
+      {
+        "version": "20261102161732",
+        "statementMd5": "079ed9c00841afd04d48b3aa2b6df2e6"
+      }
+    ],
+    "metadata": {
+      "language": "plpgsql",
+      "owner": "postgres",
+      "security_definer": false,
+      "volatility": "s",
+      "config": [
+        "search_path=\"\"",
+        "jit=off",
+        "plan_cache_mode=force_custom_plan"
+      ],
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "body_hash": "b9a95ed0ebd902140f801779996e15a4",
+      "session_plan_cache_mode": "auto",
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "service_execute": true,
+      "reviewedSelectPreserved": true
+    },
+    "nativeTranslationSqlMs": {
+      "beforeIndexAndWrapper": 1908.77,
+      "firstAfter": 826.15,
+      "repeats": [
+        120.14,
+        68.15
+      ]
+    },
+    "resultParity": {
+      "revisionExcludedBecauseDefinitionChanged": true,
+      "en": [
+        {
+          "entries": 50,
+          "md5": "00ef675a96d2fac74eef814b9b7bb391"
+        },
+        {
+          "entries": 50,
+          "md5": "8ba085c7f834aaeac322215be29fc032"
+        }
+      ],
+      "ja": [
+        {
+          "entries": 50,
+          "md5": "4d3a73e03ace7982d5273fe65f51dcd5"
+        },
+        {
+          "entries": 17,
+          "md5": "9487fcc4b7651bc87f844cfeb4cf3aec"
+        }
+      ]
+    },
+    "advisors": [
+      {
+        "type": "security",
+        "before": 3,
+        "after": 3,
+        "same": true
+      },
+      {
+        "type": "performance",
+        "before": 6,
+        "after": 6,
+        "same": true
+      }
+    ]
+  },
+  "backend": {
+    "existingDeployment": "c40b25c1-b1a3-49d1-aed2-df0fc0852228",
+    "existingSource": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+    "changedRuntimeFiles": [
+      "backend/lib/catalogueSearchPagination.js"
+    ],
+    "translationBudgetBeforeMs": 450,
+    "translationBudgetAfterMs": 2500,
+    "reproducedBeforeDeployment": {
+      "http503DurationsMs": [
+        474,
+        469
+      ],
+      "japaneseFirstPageAfterDbRepair": {
+        "cards": 50,
+        "continuation": true,
+        "serverMs": 3131
+      },
+      "repeatServerMs": 2376
+    },
+    "deploymentVerification": "performance_canary_verified_production_unchanged",
+    "coldExactContinuationSqlMs": 1581.37,
+    "stagedSource": "a7bbec03d302d272737d83d0c5a85fc479e85ff5",
+    "stagedPatchId": "6760f37e-07d2-4f20-b1d5-42d41ffee8b0",
+    "stagedChanges": [
+      {
+        "path": "services.299d7ad4-5ed8-4301-b609-ef99274078d0.source.commitSha",
+        "displayName": "Commit Sha",
+        "type": "updated",
+        "from": "7dc63aab2bb7be9ca69e77e686ef7722db6927a7",
+        "to": "a7bbec03d302d272737d83d0c5a85fc479e85ff5",
+        "destructive": false
+      }
+    ],
+    "approvalResult": "Cancelled — the user did not approve this action. No changes were made.",
+    "finalLiveConsecutivePages": {
+      "performanceCanary": "verified",
+      "production": "unverified_pending_standard_backend_release"
+    },
+    "production": {
+      "serviceId": "299d7ad4-5ed8-4301-b609-ef99274078d0",
+      "deploymentId": "c40b25c1-b1a3-49d1-aed2-df0fc0852228",
+      "lastAttestedSource": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+      "observedAt": "2026-11-02T16:55:00.000Z",
+      "changed": false,
+      "journeyOnReviewedSource": "unverified_pending_standard_backend_release"
+    },
+    "performanceCanary": {
+      "serviceId": "8baf4d98-4605-4832-9d7e-65880e2a6b29",
+      "deploymentId": "bd05806e-9306-481b-9e43-e1a68b0dc98a",
+      "source": "3729e40a3b6975b49c86fea3c4df5a083483c2ba",
+      "observedAt": "2026-11-02T16:54:32.775126091Z",
+      "runtime": {
+        "environment": "production",
+        "supabaseProject": "oakdbbzdqwurpjnoqhmu",
+        "healthStatus": 200,
+        "healthDurationMs": 18
+      },
+      "journey": {
+        "query": "Pikachu",
+        "pageSize": 17,
+        "pages": 2,
+        "results": 34,
+        "distinctVariantIds": 34,
+        "continuationOverlap": 0,
+        "secondPageDenominator": 17,
+        "imageUrls": 34,
+        "imageUrlDenominator": 34,
+        "languages": [
+          "en",
+          "ja",
+          "zh-cn",
+          "zh-tw"
+        ],
+        "japaneseExactTranslatedName": 11,
+        "continuationAfterPage1": true,
+        "continuationAfterPage2": true,
+        "httpStatuses": [
+          200,
+          200
+        ],
+        "railwayDurationsMs": {
+          "coldPage": 4371,
+          "nextPage": 807
+        },
+        "statisticalPercentiles": "unmeasured_two_observations",
+        "observedProvenance": [
+          "Pokémon Card Game Japan/official",
+          "TCGdex",
+          "Pikaqian",
+          "Pokémon Taiwan",
+          "Scrydex",
+          "Pokémon TCG API"
+        ]
+      },
+      "scope": "performance_canary_only_not_production_or_phone"
+    },
+    "historicalCancelledPatch": {
+      "patchId": "6760f37e-07d2-4f20-b1d5-42d41ffee8b0",
+      "source": "a7bbec03d302d272737d83d0c5a85fc479e85ff5",
+      "result": "Cancelled — the user did not approve this action. No changes were made.",
+      "use": "historical_evidence_only_not_release_lane"
+    },
+    "stagedPatchStatus": "cancelled_not_deployed_historical_only"
+  },
+  "validation": {
+    "sqlMigration": "10 selectors; all five published languages; same first/continuation rows; access grants retained; caller planning mode restored",
+    "backend": "actual SDK + actual backend + local SQL; 137/1202-variant pagination; server caps; exact publication/finish/language; translation union; 1600ms delayed first/continuation; revision; denial; abort; malformed response guards passed",
+    "pokedex": "actual screen and canonical client; 1025 species, out-of-order pages, no partial cache, stale/unmount/version/truncation/duplicate, hung/rejected device cache passed",
+    "coreNavigation": "actual Binder shortcut, hidden Pokédex tab and Pokémon detail available; exactly three primary buttons passed",
+    "ci": {
+      "head": "a7bbec03d302d272737d83d0c5a85fc479e85ff5",
+      "checks": [
+        {
+          "name": "release-candidate-gate",
+          "status": "completed",
+          "conclusion": "skipped",
+          "url": "https://github.com/tberridge86/Stackr/actions/runs/41483674139/job/125408275929"
+        },
+        {
+          "name": "owner-pricing-identity-regression",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/tberridge86/Stackr/actions/runs/41483674097/job/125408274770"
+        },
+        {
+          "name": "dependency-and-secret-scan",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/tberridge86/Stackr/actions/runs/41483674139/job/125408274455"
+        },
+        {
+          "name": "benchmark-smoke-tests",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/tberridge86/Stackr/actions/runs/41483674139/job/125408274427"
+        },
+        {
+          "name": "prepared-valuation-postgres17",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/tberridge86/Stackr/actions/runs/41483674139/job/125408274397"
+        },
+        {
+          "name": "database-migration-tests",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/tberridge86/Stackr/actions/runs/41483674139/job/125408274342"
+        },
+        {
+          "name": "recognition-container",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/tberridge86/Stackr/actions/runs/41483674139/job/125408274306"
+        },
+        {
+          "name": "integration-tests",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/tberridge86/Stackr/actions/runs/41483674139/job/125408274303"
+        },
+        {
+          "name": "lint-type-unit",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/tberridge86/Stackr/actions/runs/41483674139/job/125408274298"
+        },
+        {
+          "name": "openapi-and-generated-client",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/tberridge86/Stackr/actions/runs/41483674139/job/125408274245"
+        },
+        {
+          "name": "distributed-architecture",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/tberridge86/Stackr/actions/runs/41483674139/job/125408273905"
+        }
+      ]
+    },
+    "phone": "unverified",
+    "newNativeBuild": false,
+    "newOta": false,
+    "historicalBuild63AvailabilityUnchanged": true,
+    "historicalRepairQueue": {
+      "issues": 49,
+      "preserved": true
+    },
+    "images": [
+      {
+        "assetId": "newsets279-official-front-20260927:a6da2147-423c-5a76-b9fd-db61b1c27850:158ef64b70d7ac946b3424067ee8609f2b48de80dc8a43489729bd1a9fca808c",
+        "status": "200",
+        "contentType": "image/jpeg",
+        "seconds": "7.068909",
+        "bytes": 515944,
+        "jpeg": true,
+        "sha256": "158ef64b70d7ac946b3424067ee8609f2b48de80dc8a43489729bd1a9fca808c"
+      },
+      {
+        "assetId": "b7e086de-433a-41af-aa04-ec433f90c655",
+        "status": "200",
+        "contentType": "image/jpeg",
+        "seconds": "6.538944",
+        "bytes": 193968,
+        "jpeg": true,
+        "sha256": "c5fb331d3b9aaf2138fecaf4250fab7a9680f3a6d594b8f3a780b5c96843c378"
+      },
+      {
+        "assetId": "5b83d41d-0df6-4f06-b361-c3983e8c8d05",
+        "status": "200",
+        "contentType": "image/jpeg",
+        "seconds": "6.785164",
+        "bytes": 144887,
+        "jpeg": true,
+        "sha256": "20a34cc447308d831fb542c9e9094825c7b6eb1034b3af9b138da37250f00e41"
+      }
+    ],
+    "nativeReleaseGate": "Run .github/workflows/deploy-production.yml with release_scope=backend_only from exact reviewed current main; verify production /health and the same bounded two-page identities; then resume the existing native lane with freshly read main and production backend identities."
+  },
+  "pullRequests": [
+    "https://github.com/tberridge86/Stackr/pull/457",
+    "https://github.com/tberridge86/Stackr/pull/458"
+  ],
+  "sourceMergedCommit": "3729e40a3b6975b49c86fea3c4df5a083483c2ba",
+  "testedHead": "a7bbec03d302d272737d83d0c5a85fc479e85ff5",
+  "sourceTrees": [
+    {
+      "sha": "a7bbec03d302d272737d83d0c5a85fc479e85ff5",
+      "tree": "b3b886611922f09df8ef90e08fe515f85e308299"
+    },
+    {
+      "sha": "3729e40a3b6975b49c86fea3c4df5a083483c2ba",
+      "tree": "b3b886611922f09df8ef90e08fe515f85e308299"
+    }
+  ],
+  "sourceTreeMatch": true
+}

@@ -361,10 +361,10 @@
       }
     ]
   },
-  "updatedAt": "2026-11-02T14:18:00.000Z",
+  "updatedAt": "2026-11-02T16:55:03.623Z",
   "coordinator": "Tif / root",
   "workingDirectory": "D:/Stackr",
-  "branch": "codex/stackr-repair-consolidation-20261018",
+  "branch": "main",
   "auditedBaseRevision": "f9350f896375ffac84a22ca2f7a4ec7654538091",
   "protocol": ".codex/AUDIT_PROTOCOL.md",
   "auditStatus": {
@@ -3250,17 +3250,121 @@
     }
   ],
   "currentWork": {
-    "owner": "stackr_coding / root",
-    "status": "core_home_search_binders_source_merged_ci_passed",
-    "sourceBase": "832eba78ad8bbdd8dea1d358b811f2c11bc3f013",
-    "report": "docs/audits/20261102/core-collection-recovery.md",
-    "authorization": "Owner requested all features off except Home, Search and Binders after an unsuccessful installed-app phone experience; continue implementing that scope. Exact installed build/OTA is unverified.",
-    "phoneAcceptance": "unverified_for_new_candidate",
-    "nextAction": "Immediately before dispatch, read the exact current main SHA from GitHub and pass that same value as expected_main_sha to the existing Build Reviewed Stackr iOS Release workflow, together with reviewed backend 0bf2e60222644682d600deb7cc0e94862fd2a71a, verify_only=false and profile production; then retain the EAS receipt and verify TestFlight and the affected phone journeys separately.",
+    "owner": "root",
+    "status": "source_merged_database_live_canary_verified_production_pending",
+    "authorization": "Owner clarified that Pokédex is part of the Binder page and must remain intact; retrieval is the priority.",
+    "sourceBase": "072a6778d86d589c3a17bccae46aced5a3fe5316",
+    "sourceMergedCommit": "3729e40a3b6975b49c86fea3c4df5a083483c2ba",
+    "testedHead": "a7bbec03d302d272737d83d0c5a85fc479e85ff5",
+    "sourcePullRequests": [
+      457,
+      458
+    ],
+    "report": "docs/audits/20261102/binder-pokedex-retrieval.md",
+    "evidence": "docs/audits/20261102/binder-pokedex-retrieval-evidence.json",
+    "clientScope": {
+      "primaryTabs": [
+        "Home",
+        "Search",
+        "Binders"
+      ],
+      "binderPokedexRetained": true,
+      "pokemonDetailRetained": true,
+      "species": 1025
+    },
+    "ci": {
+      "applicableChecks": 10,
+      "passed": 10,
+      "intentionalSkips": 1,
+      "status": "passed"
+    },
+    "database": {
+      "project": "oakdbbzdqwurpjnoqhmu",
+      "migrationsApplied": [
+        "20261102160729",
+        "20261102161732"
+      ],
+      "reviewedSelectPreserved": true,
+      "serviceOnlyInvokerGrantsPreserved": true
+    },
+    "api": {
+      "projectId": "d205637b-5376-41aa-9169-1015ba88fec3",
+      "environmentId": "b4304736-cac8-4ca9-92a7-93f7f6499c2f",
+      "production": {
+        "serviceId": "299d7ad4-5ed8-4301-b609-ef99274078d0",
+        "deploymentId": "c40b25c1-b1a3-49d1-aed2-df0fc0852228",
+        "lastAttestedSource": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+        "observedAt": "2026-11-02T16:55:00.000Z",
+        "changed": false,
+        "journeyOnReviewedSource": "unverified_pending_standard_backend_release"
+      },
+      "performanceCanary": {
+        "serviceId": "8baf4d98-4605-4832-9d7e-65880e2a6b29",
+        "deploymentId": "bd05806e-9306-481b-9e43-e1a68b0dc98a",
+        "source": "3729e40a3b6975b49c86fea3c4df5a083483c2ba",
+        "observedAt": "2026-11-02T16:54:32.775126091Z",
+        "runtime": {
+          "environment": "production",
+          "supabaseProject": "oakdbbzdqwurpjnoqhmu",
+          "healthStatus": 200,
+          "healthDurationMs": 18
+        },
+        "journey": {
+          "query": "Pikachu",
+          "pageSize": 17,
+          "pages": 2,
+          "results": 34,
+          "distinctVariantIds": 34,
+          "continuationOverlap": 0,
+          "secondPageDenominator": 17,
+          "imageUrls": 34,
+          "imageUrlDenominator": 34,
+          "languages": [
+            "en",
+            "ja",
+            "zh-cn",
+            "zh-tw"
+          ],
+          "japaneseExactTranslatedName": 11,
+          "continuationAfterPage1": true,
+          "continuationAfterPage2": true,
+          "httpStatuses": [
+            200,
+            200
+          ],
+          "railwayDurationsMs": {
+            "coldPage": 4371,
+            "nextPage": 807
+          },
+          "statisticalPercentiles": "unmeasured_two_observations",
+          "observedProvenance": [
+            "Pokémon Card Game Japan/official",
+            "TCGdex",
+            "Pikaqian",
+            "Pokémon Taiwan",
+            "Scrydex",
+            "Pokémon TCG API"
+          ]
+        },
+        "scope": "performance_canary_only_not_production_or_phone"
+      },
+      "historicalCancelledPatch": {
+        "patchId": "6760f37e-07d2-4f20-b1d5-42d41ffee8b0",
+        "source": "a7bbec03d302d272737d83d0c5a85fc479e85ff5",
+        "result": "Cancelled — the user did not approve this action. No changes were made.",
+        "use": "historical_evidence_only_not_release_lane"
+      },
+      "releaseLane": {
+        "workflow": ".github/workflows/deploy-production.yml",
+        "releaseScope": "backend_only",
+        "sourcePolicy": "exact_reviewed_current_main"
+      }
+    },
+    "deliveryBlocker": "Production pocketvault remains on c40b25c1-b1a3-49d1-aed2-df0fc0852228 / 0bf2e60222644682d600deb7cc0e94862fd2a71a. The exact merged source is verified only on the performance canary; this connector has no workflow-dispatch operation for the standard protected backend lane.",
+    "nextAction": "Dispatch .github/workflows/deploy-production.yml with release_scope=backend_only and the exact reviewed current main SHA; verify production /health source plus two consecutive 17-card Pikachu pages with distinct identities, language, image URLs and provenance. Then resume the native lane using freshly read main and production backend identities.",
     "nativeBuildCreated": false,
-    "appSourceMergedCommit": "8f955ba37229632a5c0199d3549ff6011efdfd2e",
-    "testedHead": "25640b5bd2daaefa3fd30557d69aacb1a97745ed",
-    "deliveryBlocker": "GitHub source, workspace and executor access are healthy. The GitHub connector does not expose workflow dispatch, and the cloud browser available to the 2 November 2026 release-owner run is signed out."
+    "newOta": false,
+    "phoneAcceptance": "unverified_for_new_candidate"
   },
   "completionGoal": {
     "threadId": "01a12a4c-4b1a-7823-b948-148c90d7cd8e",
@@ -4209,10 +4313,10 @@
     "searchCoverage": {
       "screenRequestBudget": 120,
       "sharedCanonicalRequestCap": 50,
-      "continuation": "sampled_api_unavailable",
+      "continuation": "performance_canary_two_pages_verified_production_unverified",
       "reduced36CardBudgetRejected": true
     },
-    "deliveryBlocker": "GitHub source, workspace and executor access are healthy. The GitHub connector does not expose workflow dispatch, and the cloud browser available to the 2 November 2026 release-owner run is signed out.",
+    "deliveryBlocker": "Production pocketvault remains on c40b25c1-b1a3-49d1-aed2-df0fc0852228 / 0bf2e60222644682d600deb7cc0e94862fd2a71a. The exact merged source is verified only on the performance canary; this connector has no workflow-dispatch operation for the standard protected backend lane.",
     "nativeReleaseHandoff": {
       "workflow": "https://github.com/tberridge86/Stackr/actions/workflows/build-owner-ios-release.yml",
       "mainShaPolicy": "read_exact_current_main_immediately_before_dispatch_and_use_the_same_value_as_expected_main_sha",
@@ -4221,15 +4325,62 @@
       "fixedMainShaProhibited": true,
       "appMergedCommit": "8f955ba37229632a5c0199d3549ff6011efdfd2e",
       "appGitTree": "6e1a4969fc7139663fd13b40b66f1c480f12c547",
-      "expectedBackendSha": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+      "expectedBackendSha": null,
       "verifyOnly": false,
       "buildProfile": "production",
-      "dispatchStatus": "blocked_no_authenticated_dispatch_surface",
+      "dispatchStatus": "blocked_pending_standard_backend_release_and_production_journey_verification",
       "nativeBuild": "not_started",
       "ota": "not_published",
       "installedPhone": "unverified",
-      "observedAt": "2026-11-02T14:05:54.000Z"
-    }
+      "observedAt": "2026-11-02T14:05:54.000Z",
+      "currentlyAttestedBackendSha": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+      "followupReport": "docs/audits/20261102/binder-pokedex-retrieval.md",
+      "expectedBackendShaPolicy": "read_full_source_sha_from_verified_production_health_after_standard_backend_release",
+      "performanceCanarySource": "3729e40a3b6975b49c86fea3c4df5a083483c2ba",
+      "performanceCanaryDeployment": "bd05806e-9306-481b-9e43-e1a68b0dc98a",
+      "performanceCanaryJourney": {
+        "query": "Pikachu",
+        "pageSize": 17,
+        "pages": 2,
+        "results": 34,
+        "distinctVariantIds": 34,
+        "continuationOverlap": 0,
+        "secondPageDenominator": 17,
+        "imageUrls": 34,
+        "imageUrlDenominator": 34,
+        "languages": [
+          "en",
+          "ja",
+          "zh-cn",
+          "zh-tw"
+        ],
+        "japaneseExactTranslatedName": 11,
+        "continuationAfterPage1": true,
+        "continuationAfterPage2": true,
+        "httpStatuses": [
+          200,
+          200
+        ],
+        "railwayDurationsMs": {
+          "coldPage": 4371,
+          "nextPage": 807
+        },
+        "statisticalPercentiles": "unmeasured_two_observations",
+        "observedProvenance": [
+          "Pokémon Card Game Japan/official",
+          "TCGdex",
+          "Pikaqian",
+          "Pokémon Taiwan",
+          "Scrydex",
+          "Pokémon TCG API"
+        ]
+      }
+    },
+    "retainedBinderFeatures": [
+      "Pokédex",
+      "Pokémon detail"
+    ],
+    "followupReport": "docs/audits/20261102/binder-pokedex-retrieval.md"
   },
   "build63Availability20261101": {
     "receipt": "docs/audits/20261102/build63-observed-availability.json",
@@ -4243,5 +4394,105 @@
     "phoneInstalledBuild": "unverified",
     "currentAvailabilityRechecked": false,
     "newCoreCandidateBuildCreated": false
+  },
+  "currentWorkBeforeBinderPokedexRetrieval20261102": {
+    "owner": "stackr_coding / root",
+    "status": "core_home_search_binders_source_merged_ci_passed",
+    "sourceBase": "832eba78ad8bbdd8dea1d358b811f2c11bc3f013",
+    "report": "docs/audits/20261102/core-collection-recovery.md",
+    "authorization": "Owner requested all features off except Home, Search and Binders after an unsuccessful installed-app phone experience; continue implementing that scope. Exact installed build/OTA is unverified.",
+    "phoneAcceptance": "unverified_for_new_candidate",
+    "nextAction": "Immediately before dispatch, read the exact current main SHA from GitHub and pass that same value as expected_main_sha to the existing Build Reviewed Stackr iOS Release workflow, together with reviewed backend 0bf2e60222644682d600deb7cc0e94862fd2a71a, verify_only=false and profile production; then retain the EAS receipt and verify TestFlight and the affected phone journeys separately.",
+    "nativeBuildCreated": false,
+    "appSourceMergedCommit": "8f955ba37229632a5c0199d3549ff6011efdfd2e",
+    "testedHead": "25640b5bd2daaefa3fd30557d69aacb1a97745ed",
+    "deliveryBlocker": "GitHub source, workspace and executor access are healthy. The GitHub connector does not expose workflow dispatch, and the cloud browser available to the 2 November 2026 release-owner run is signed out."
+  },
+  "binderPokedexRetrieval20261102": {
+    "report": "docs/audits/20261102/binder-pokedex-retrieval.md",
+    "evidence": "docs/audits/20261102/binder-pokedex-retrieval-evidence.json",
+    "clientSourceMerged": true,
+    "primaryTabs": [
+      "Home",
+      "Search",
+      "Binders"
+    ],
+    "retainedBinderFeatures": [
+      "Pokédex",
+      "Pokémon detail"
+    ],
+    "homeBinderScenarios": 46,
+    "pokedexFirstPageHttpRequests": {
+      "before": 4,
+      "after": 1
+    },
+    "pokedexCompleteSpecies": 1025,
+    "completeOnlyCache": true,
+    "migrationsApplied": [
+      "20261102160729",
+      "20261102161732"
+    ],
+    "apiDeployment": "performance_canary_verified_production_unchanged",
+    "nativeBuildCreated": false,
+    "phoneVerified": false,
+    "existingIssueObjectsPreserved": 49,
+    "performanceCanary": {
+      "serviceId": "8baf4d98-4605-4832-9d7e-65880e2a6b29",
+      "deploymentId": "bd05806e-9306-481b-9e43-e1a68b0dc98a",
+      "source": "3729e40a3b6975b49c86fea3c4df5a083483c2ba",
+      "observedAt": "2026-11-02T16:54:32.775126091Z",
+      "runtime": {
+        "environment": "production",
+        "supabaseProject": "oakdbbzdqwurpjnoqhmu",
+        "healthStatus": 200,
+        "healthDurationMs": 18
+      },
+      "journey": {
+        "query": "Pikachu",
+        "pageSize": 17,
+        "pages": 2,
+        "results": 34,
+        "distinctVariantIds": 34,
+        "continuationOverlap": 0,
+        "secondPageDenominator": 17,
+        "imageUrls": 34,
+        "imageUrlDenominator": 34,
+        "languages": [
+          "en",
+          "ja",
+          "zh-cn",
+          "zh-tw"
+        ],
+        "japaneseExactTranslatedName": 11,
+        "continuationAfterPage1": true,
+        "continuationAfterPage2": true,
+        "httpStatuses": [
+          200,
+          200
+        ],
+        "railwayDurationsMs": {
+          "coldPage": 4371,
+          "nextPage": 807
+        },
+        "statisticalPercentiles": "unmeasured_two_observations",
+        "observedProvenance": [
+          "Pokémon Card Game Japan/official",
+          "TCGdex",
+          "Pikaqian",
+          "Pokémon Taiwan",
+          "Scrydex",
+          "Pokémon TCG API"
+        ]
+      },
+      "scope": "performance_canary_only_not_production_or_phone"
+    },
+    "production": {
+      "serviceId": "299d7ad4-5ed8-4301-b609-ef99274078d0",
+      "deploymentId": "c40b25c1-b1a3-49d1-aed2-df0fc0852228",
+      "lastAttestedSource": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+      "observedAt": "2026-11-02T16:55:00.000Z",
+      "changed": false,
+      "journeyOnReviewedSource": "unverified_pending_standard_backend_release"
+    }
   }
 }
