@@ -65,6 +65,8 @@ async function main() {
     '../components/theme-context': { useTheme: () => ({ theme: { colors: { semantic: {}, card: '#fff', text: '#000' } } }) },
     '../components/auth-context': { useAuth: () => ({ user: account, loading: false }) },
     '../lib/supportHelp': support,
+    '../lib/appCapabilities': { CORE_COLLECTION_MODE: false },
+    '../features/settings/CoreAccountScreen': { default: 'CoreAccountScreen' },
     '../lib/haptics': { testStackrHaptics: async () => 'disabled' },
     '../lib/performance': performance,
   };
