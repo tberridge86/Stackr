@@ -361,7 +361,7 @@
       }
     ]
   },
-  "updatedAt": "2026-11-02T14:00:40.222Z",
+  "updatedAt": "2026-11-02T14:05:54.000Z",
   "coordinator": "Tif / root",
   "workingDirectory": "D:/Stackr",
   "branch": "codex/stackr-repair-consolidation-20261018",
@@ -3256,11 +3256,11 @@
     "report": "docs/audits/20261102/core-collection-recovery.md",
     "authorization": "Owner requested all features off except Home, Search and Binders after an unsuccessful installed-app phone experience; continue implementing that scope. Exact installed build/OTA is unverified.",
     "phoneAcceptance": "unverified_for_new_candidate",
-    "nextAction": "Restore the unavailable workspace/browser release connection, freeze the reviewed current main source for the next native TestFlight build, then verify cold/warm Home, Search and Binder journeys and images on the phone. Build63 already exists; do not attempt to reuse its number.",
+    "nextAction": "Dispatch the existing Build Reviewed Stackr iOS Release workflow from current main 83339f09b04370bf37109a0220b7bf26dc1fb30a using reviewed backend 0bf2e60222644682d600deb7cc0e94862fd2a71a, verify_only=false and profile production once an authenticated workflow-dispatch surface is available; then retain the EAS receipt and verify TestFlight and the affected phone journeys separately.",
     "nativeBuildCreated": false,
     "appSourceMergedCommit": "8f955ba37229632a5c0199d3549ff6011efdfd2e",
     "testedHead": "25640b5bd2daaefa3fd30557d69aacb1a97745ed",
-    "deliveryBlocker": "The connected workspace reports unavailable and the local executor returned exec-server transport disconnected. The authenticated browser release connection is also unavailable in this session."
+    "deliveryBlocker": "GitHub source, workspace and executor access are healthy. The GitHub connector does not expose workflow dispatch, and the cloud browser available to the 2 November 2026 release-owner run is signed out."
   },
   "completionGoal": {
     "threadId": "01a12a4c-4b1a-7823-b948-148c90d7cd8e",
@@ -4117,7 +4117,16 @@
       "pr": "https://github.com/tberridge86/Stackr/pull/453",
       "commit": "8f955ba37229632a5c0199d3549ff6011efdfd2e",
       "testedHead": "25640b5bd2daaefa3fd30557d69aacb1a97745ed",
-      "exactTreeMatch": true
+      "exactTreeMatch": true,
+      "gitTreeSha": "6e1a4969fc7139663fd13b40b66f1c480f12c547",
+      "treeVerification": {
+        "testedCommit": "25640b5bd2daaefa3fd30557d69aacb1a97745ed",
+        "mergedCommit": "8f955ba37229632a5c0199d3549ff6011efdfd2e",
+        "testedTree": "6e1a4969fc7139663fd13b40b66f1c480f12c547",
+        "mergedTree": "6e1a4969fc7139663fd13b40b66f1c480f12c547",
+        "observedAt": "2026-11-02T14:05:54.000Z",
+        "source": "GitHub Git commit API"
+      }
     },
     "validation": {
       "status": "passed",
@@ -4203,7 +4212,21 @@
       "continuation": "sampled_api_unavailable",
       "reduced36CardBudgetRejected": true
     },
-    "deliveryBlocker": "The connected workspace reports unavailable and the local executor returned exec-server transport disconnected. The authenticated browser release connection is also unavailable in this session."
+    "deliveryBlocker": "GitHub source, workspace and executor access are healthy. The GitHub connector does not expose workflow dispatch, and the cloud browser available to the 2 November 2026 release-owner run is signed out.",
+    "nativeReleaseHandoff": {
+      "workflow": "https://github.com/tberridge86/Stackr/actions/workflows/build-owner-ios-release.yml",
+      "currentMain": "83339f09b04370bf37109a0220b7bf26dc1fb30a",
+      "appMergedCommit": "8f955ba37229632a5c0199d3549ff6011efdfd2e",
+      "appGitTree": "6e1a4969fc7139663fd13b40b66f1c480f12c547",
+      "expectedBackendSha": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+      "verifyOnly": false,
+      "buildProfile": "production",
+      "dispatchStatus": "blocked_no_authenticated_dispatch_surface",
+      "nativeBuild": "not_started",
+      "ota": "not_published",
+      "installedPhone": "unverified",
+      "observedAt": "2026-11-02T14:05:54.000Z"
+    }
   },
   "build63Availability20261101": {
     "receipt": "docs/audits/20261102/build63-observed-availability.json",
