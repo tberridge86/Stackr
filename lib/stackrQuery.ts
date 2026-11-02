@@ -13,6 +13,8 @@ export const stackrQueryKeys = {
   collectionSummaryRoot: ['stackr', 'collection-summary'] as const,
   collectionSummary: (userId?: string | null) =>
     ['stackr', 'collection-summary', userId ?? 'anonymous'] as const,
+  coreHomeTotals: (userId?: string | null) =>
+    ['stackr', 'collection-summary', userId ?? 'anonymous', 'core-home-totals'] as const,
   profileStatsRoot: ['stackr', 'profile-stats'] as const,
   profileStats: (userId?: string | null) =>
     ['stackr', 'profile-stats', userId ?? 'anonymous'] as const,

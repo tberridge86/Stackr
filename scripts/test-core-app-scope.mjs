@@ -36,7 +36,7 @@ Stack.Protected = ({ guard, children }) => guard ? children : null;
 Stack.Screen = props => { activeScreens.push(props.name); return null; };
 const Tabs = ({ children }) => children;
 Tabs.Protected = Stack.Protected;
-Tabs.Screen = props => { activeTabs.push(props.name); return null; };
+Tabs.Screen = props => { activeTabs.push(props); return null; };
 const shell = load('components/StackrAppShell.tsx', {
   react: React,
   'react-native-gesture-handler': { GestureHandlerRootView: passthrough },
@@ -65,6 +65,7 @@ await act(async () => { app = Renderer.create(React.createElement(shell.default,
 assert.deepEqual([...new Set(activeScreens)].sort(), [...policy.CORE_STACK_ROUTES].sort());
 assert.equal(activeScreens.includes('scan'), false);
 assert.equal(activeScreens.includes('product/[id]'), false);
+assert.equal(activeScreens.includes('pokemon/[id]'), true, 'the binder Pokédex keeps its existing Pokémon detail route');
 assert.deepEqual(app.root.findAll(node => node.type === 'Button').map(node => node.props.accessibilityLabel).sort(), ['Binders', 'Home', 'Search']);
 assert.ok(navModes.length && navModes.every(mode => mode === 'collector'), 'persisted seller state cannot alter core navigation');
 await act(async () => app.unmount());
@@ -76,8 +77,46 @@ const tabs = load('app/(tabs)/_layout.tsx', {
   '../../lib/stackrSizing': { stackrTabBarSizes: {} },
 });
 await act(async () => { app = Renderer.create(React.createElement(tabs.default)); });
-assert.deepEqual(activeTabs.sort(), ['binder', 'index', 'search']);
+assert.deepEqual(activeTabs.map(tab => tab.name).sort(), ['binder', 'index', 'pokedex', 'search']);
+assert.equal(activeTabs.find(tab => tab.name === 'pokedex').options.href, null, 'Pokédex remains a Binder child rather than a primary tab');
 await act(async () => app.unmount());
+
+// Render the actual Binder header and press its actual shortcut. The route
+// remains reachable in core mode without adding another primary navigation item.
+const binderSource = fs.readFileSync('app/(tabs)/binder.tsx', 'utf8');
+const binderAst = ts.createSourceFile('binder.tsx', binderSource, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+let shortcutDeclaration, headerExpression;
+function findBinderHeader(node) {
+  if (ts.isVariableDeclaration(node) && node.name.getText(binderAst) === 'COLLECTION_VAULT_SHORTCUTS') {
+    shortcutDeclaration = 'const ' + node.getText(binderAst) + ';';
+  }
+  if (ts.isJsxSelfClosingElement(node) && node.tagName.getText(binderAst) === 'FlatList'
+    && node.attributes.properties.some(prop => prop.name?.getText(binderAst) === 'testID'
+      && prop.initializer?.text === 'collection-binder-grid')) {
+    headerExpression = node.attributes.properties.find(prop => prop.name?.getText(binderAst) === 'ListHeaderComponent')
+      ?.initializer?.expression?.getText(binderAst);
+  }
+  ts.forEachChild(node, findBinderHeader);
+}
+findBinderHeader(binderAst);
+assert.ok(shortcutDeclaration && headerExpression, 'test the mounted Binder header');
+for (const [core, readOnly, expected] of [[true, false, ['Pokédex']], [false, false, ['Discover Sets', 'Pokédex', 'Duplicates']], [true, true, []]]) {
+  const pushed = [];
+  const context = { React, View: passthrough, CORE_COLLECTION_MODE: core, savedReadOnly: readOnly, styles: {},
+    stackrIcons: new Proxy({}, { get: () => ({}) }),
+    CollectionVaultShortcutButton: props => React.createElement('Shortcut', props),
+    router: { push: route => pushed.push(route) }, require: () => ({}),
+  };
+  const header = vm.runInNewContext(compile(shortcutDeclaration + '\n(' + headerExpression + ')', 'binder-header.tsx'), context);
+  await act(async () => { app = Renderer.create(header); });
+  const shortcuts = app.root.findAllByType('Shortcut');
+  assert.deepEqual(shortcuts.map(shortcut => shortcut.props.label), expected);
+  if (core && !readOnly) {
+    await act(async () => shortcuts[0].props.onPress());
+    assert.deepEqual(pushed, ['/(tabs)/pokedex']);
+  }
+  await act(async () => app.unmount());
+}
 
 // Every filesystem stack route must have an explicit protected declaration.
 const shellSource = fs.readFileSync('components/StackrAppShell.tsx', 'utf8');

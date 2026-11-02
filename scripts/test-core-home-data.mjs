@@ -20,14 +20,14 @@ function fixture() {
   const state = { owner: 'A', sessionRead: null, summaryRead: null, binderRead: null, diskRead: null, masterRead: null, rpc: 0, binders: 0, listeners: [], calls: [] };
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
   const cache = new Map();
-  const storage = { getItem: () => state.diskRead?.() ?? Promise.resolve(null), getAllKeys: () => state.masterRead?.() ?? Promise.resolve([]), multiGet: async () => [] };
+  const storage = { getItem: () => state.diskRead?.() ?? Promise.resolve(null), getAllKeys: () => state.masterRead?.() ?? Promise.resolve([]), multiGet: async () => state.masterPairs ?? [] };
   const supabase = {
     auth: {
       onAuthStateChange: callback => { state.listeners.push(callback); return { data: { subscription: { unsubscribe() {} } } }; },
       getSession: () => state.sessionRead?.() ?? Promise.resolve({ data: { session: { user: { id: state.owner }, access_token: state.owner } }, error: null }),
     },
     rpc: (name, params) => {
-      assert.equal(name, 'collection_summary_v1'); assert.deepEqual(Array.from(params.p_master_binder_ids), []); state.rpc++;
+      assert.equal(name, 'collection_summary_v1'); assert.deepEqual(Array.from(params.p_master_binder_ids), state.expectedMasterIds ?? []); state.rpc++;
       return { abortSignal: () => state.summaryRead?.() ?? Promise.resolve({ data: summary(state.owner), error: null }) };
     },
     from: name => {
@@ -74,7 +74,7 @@ function fixture() {
       onError: (section, error) => events.push(['error', section, error]),
       onDone: () => events.push(['done']), ...overrides });
   }
-  return { state, queryClient, queries, invalidation, library, events, start,
+  return { state, queryClient, queries, invalidation, library, events, start, compact: load('lib/collectionSummaryRead.ts'),
     changeAccount(owner) { state.owner = owner; for (const callback of state.listeners) callback('SIGNED_IN', { user: { id: owner }, access_token: owner }); },
     stopView() { isCurrent = false; }, close() { queryClient.clear(); } };
 }
@@ -89,7 +89,8 @@ await test(async f => {
   assert.deepEqual(f.events.map(event => event[0]), ['summary', 'binders'], 'Memory paints synchronously');
   await request.done;
   assert.ok(f.events.some(event => event[0] === 'binders' && !event[2]), 'Live binders survive hung summary preferences');
-  assert.equal(f.state.rpc, 0);
+  assert.equal(f.state.rpc, 1, 'Home totals start their RPC even when local master preferences never resolve');
+  assert.ok(f.events.some(event => event[0] === 'summary' && !event[2]), 'Fresh Home totals are independent of optional local preferences');
   assert.equal(f.state.binders, 1);
 });
 await test(async f => {
@@ -122,7 +123,8 @@ await test(async f => {
   await Promise.all([one.done, two.done]);
   assert.equal(f.events.filter(event => event[0] === 'summary').length, 1);
   assert.equal(f.events.filter(event => event[0] === 'binders').length, 1);
-  assert.ok(f.queryClient.getQueryData(f.queries.stackrQueryKeys.collectionSummary('A')));
+  assert.ok(f.queryClient.getQueryData(f.queries.stackrQueryKeys.coreHomeTotals('A')));
+  assert.equal(f.queryClient.getQueryData(f.queries.stackrQueryKeys.collectionSummary('A')), undefined, 'A core snapshot never fills the full completion cache');
 });
 await test(async f => {
   const delayed = defer(); f.state.summaryRead = () => delayed.promise;
@@ -130,6 +132,7 @@ await test(async f => {
   delayed.resolve({ data: summary(), error: null }); await request.done;
   assert.ok(!f.events.some(event => event[0] === 'summary'));
   assert.equal(f.queryClient.getQueryData(f.queries.stackrQueryKeys.collectionSummary('A')), undefined);
+  assert.equal(f.queryClient.getQueryData(f.queries.stackrQueryKeys.coreHomeTotals('A')), undefined);
 });
 await test(async f => {
   const delayed = defer(); f.state.summaryRead = () => delayed.promise;
@@ -137,6 +140,7 @@ await test(async f => {
   delayed.resolve({ data: summary(), error: null }); await request.done;
   assert.ok(!f.events.some(event => event[0] === 'summary'));
   assert.equal(f.queryClient.getQueryData(f.queries.stackrQueryKeys.collectionSummary('A')), undefined);
+  assert.equal(f.queryClient.getQueryData(f.queries.stackrQueryKeys.coreHomeTotals('A')), undefined);
 });
 for (const mutation of ['account', 'collection']) await test(async f => {
   const delayed = defer(); f.state.sessionRead = () => delayed.promise;
@@ -169,6 +173,36 @@ await test(async f => {
   await f.start().done;
   assert.equal(f.events.filter(event => event[0] === 'error').length, 2);
   assert.equal(f.events.at(-1)[0], 'done', 'Hung dependencies settle into retry state');
+});
+await test(async f => {
+  const full = { ...summary(), completedSets: 1 };
+  f.queryClient.setQueryData(f.queries.stackrQueryKeys.collectionSummary('A'), full);
+  await f.start({ forceRefresh: true }).done;
+  assert.equal(f.queryClient.getQueryData(f.queries.stackrQueryKeys.collectionSummary('A')).completedSets, 1,
+    'Home never replaces completion coverage calculated with local master preferences');
+  assert.equal(f.queryClient.getQueryData(f.queries.stackrQueryKeys.coreHomeTotals('A')).completedSets, 0);
+});
+await test(async f => {
+  f.queryClient.setQueryData(f.queries.stackrQueryKeys.collectionSummary('A'), summary());
+  await f.start().done;
+  assert.equal(f.state.rpc, 0, 'Fresh shared totals can supply Home without a duplicate RPC');
+});
+await test(async f => {
+  f.queryClient.setQueryData(f.queries.stackrQueryKeys.collectionSummary('A'), summary(), { updatedAt: Date.now() - 120_000 });
+  await f.start().done;
+  assert.equal(f.state.rpc, 1, 'Projecting a stale shared snapshot must not renew its lifetime');
+});
+await test(async f => {
+  const settings = defer();
+  const id = '11111111-1111-4111-8111-111111111111';
+  const key = 'stackr:binder-master-set:' + id;
+  f.state.masterRead = () => settings.promise;
+  f.state.masterPairs = [[key, 'true']];
+  f.state.expectedMasterIds = [id];
+  const read = f.compact.readCompactCollectionSummary('A');
+  await tick(); assert.equal(f.state.rpc, 0, 'Full completion coverage still waits for its local master preferences');
+  settings.resolve([key]); await read;
+  assert.equal(f.state.rpc, 1);
 });
 console.log('PASS ' + scenarios + ' core Home account/cache/dedup/independent-read scenarios; actual modules, simulated transport');
 

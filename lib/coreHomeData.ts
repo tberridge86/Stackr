@@ -47,14 +47,25 @@ export function startCoreHomeRead(options: Options) {
   let binderAccessDenied = false;
   const revision = getCollectionSummaryVersion();
   const current = () => active && options.isCurrent() && revision === getCollectionSummaryVersion();
-  const summaryKey = stackrQueryKeys.collectionSummary(options.userId);
+  const completeSummaryKey = stackrQueryKeys.collectionSummary(options.userId);
+  // Home shows owned/unique/binder counts, which do not depend on local master
+  // preferences. Keep its RPC snapshot separate from full completion coverage.
+  const summaryKey = stackrQueryKeys.coreHomeTotals(options.userId);
   const overviewKey = stackrQueryKeys.binderLibrary(options.userId);
   // Never cache a six-row preview under the complete library's key.
   const previewKey = [...overviewKey, 'core-preview', CORE_HOME_BINDER_LIMIT];
 
   try {
-    const cached = stackrQueryClient.getQueryData(summaryKey);
-    if (cached && current()) options.onSummary(parseCollectionSummary(cached, options.userId), true);
+    const complete = stackrQueryClient.getQueryState<CollectionSummary>(completeSummaryKey);
+    const core = stackrQueryClient.getQueryState<CollectionSummary>(summaryKey);
+    const cached = complete?.data && (!core?.data || complete.dataUpdatedAt > core.dataUpdatedAt) ? complete : core;
+    if (cached?.data && current()) {
+      const value = parseCollectionSummary(cached.data, options.userId);
+      if (cached === complete) {
+        stackrQueryClient.setQueryData(summaryKey, value, { updatedAt: cached.dataUpdatedAt });
+      }
+      options.onSummary(value, true);
+    }
   } catch { /* An invalid persisted value is not a live result. */ }
   try {
     const complete = stackrQueryClient.getQueryData(overviewKey);
@@ -85,7 +96,7 @@ export function startCoreHomeRead(options: Options) {
               staleTime,
               retry: false,
               queryFn: () => withPersonalDataReadTimeout(async (signal) => {
-                const summary = await readCompactCollectionSummary(options.userId, signal);
+                const summary = await readCompactCollectionSummary(options.userId, signal, { includeLocalMasterOverrides: false });
                 if (!summary) throw new Error('Collection totals are unavailable. Your binders are still available below.');
                 await assertBinderAccountScope(scope);
                 return parseCollectionSummary(summary, options.userId);

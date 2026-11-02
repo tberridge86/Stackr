@@ -22,7 +22,7 @@ const rawEntries = (offset: number, length: number, prefix = 'pokemon') => Array
 const savedEntries = () => rawEntries(0, 1025, 'saved').map((row) => ({ ...row, id: row.speciesId }));
 
 function harness(cache: Promise<string | null>) {
-  const requests: { offset: number; limit: number; response: ReturnType<typeof deferred<any>> }[] = [];
+  const requests: { offset: number; limit: number; resolved: boolean; response: ReturnType<typeof deferred<any>> }[] = [];
   const writes: string[] = [];
   const timers = new Map<number, { callback: () => void; delay: number }>();
   let timerId = 0;
@@ -58,7 +58,7 @@ function harness(cache: Promise<string | null>) {
     'expo-router': { router: { push: () => undefined } }, 'react-native-safe-area-context': { useSafeAreaInsets: () => ({ bottom: 0 }) },
     '@expo/vector-icons': { Ionicons: 'Icon' },
     '../../lib/pokedexCollection': { fetchOwnedPokemonNameSet: () => { throw new Error('Private ownership must use its independent hook'); }, pokemonNameMatchesCardName: () => false },
-    '../../lib/stackrApiV1': { stackrApiClient: { pokemonIndex: (options: any) => { const response = deferred<any>(); requests.push({ ...options, response }); return response.promise; } } },
+    '../../lib/stackrApiV1': { stackrApiClient: { pokemonIndex: (options: any) => { const response = deferred<any>(); requests.push({ ...options, resolved: false, response }); return response.promise; } } },
     '../../components/StackrBackdrop': { StackrBackdrop: 'Backdrop' },
     '../../components/StackrScreen': { PokemonArtworkGlow: 'Glow', StackrScreen: 'Screen' },
     '../../lib/stackrIcons': { stackrIcons: { pokedex: 'pokedex-icon' } },
@@ -77,10 +77,26 @@ async function mount(host: ReturnType<typeof harness>) {
 function rows(renderer: ReactTestRenderer): any[] {
   return renderer.root.findAll((node) => String(node.type) === 'FlatList')[0]?.props.data ?? [];
 }
-async function respond(host: ReturnType<typeof harness>, offset: number, length: number) {
-  const request = host.requests.find((entry) => entry.offset === offset);
+async function respond(host: ReturnType<typeof harness>, offset: number) {
+  const request = host.requests.find((entry) => entry.offset === offset && !entry.resolved);
   assert.ok(request, `Expected public index request at offset ${offset}`);
+  request!.resolved = true;
+  const length = Math.min(request!.limit, 1025 - offset);
   await act(async () => { request!.response.resolve({ data: { count: 1025, indexVersion: 'fixture-v1', results: rawEntries(offset, length) } }); await tick(); });
+}
+
+async function drain(host: ReturnType<typeof harness>) {
+  for (let page = 0; page < 30; page += 1) {
+    const request = host.requests.find((entry) => !entry.resolved);
+    if (request) {
+      assert.ok(host.requests.filter((entry) => !entry.resolved).length <= 3, 'continuation transport stays within three workers');
+      await respond(host, request.offset);
+      continue;
+    }
+    await act(async () => { await tick(); });
+    if (host.requests.length === 21 && host.requests.every((entry) => entry.resolved)) return;
+  }
+  assert.fail('The progressive Pokédex read did not settle all 21 bounded pages');
 }
 
 async function run() {
@@ -92,14 +108,16 @@ async function run() {
   assert.ok(deadline, 'an unresolved disk cache must have a 25ms handoff instead of holding remote retrieval indefinitely');
   await act(async () => { deadline!.callback(); await tick(); });
   assert.equal(cold.requests.length, 1, 'remote facts start after the disk budget even if storage remains pending');
-  await respond(cold, 0, 151);
-  assert.equal(rows(coldScreen).length, 151, 'first useful facts render before the continuation');
+  await respond(cold, 0);
+  assert.equal(rows(coldScreen).length, 50, 'one canonical transport page renders before the continuation');
+  assert.equal(cold.requests.filter((entry) => !entry.resolved).length, 3, 'the full index uses three continuation workers');
   assert.equal(cold.writes.length, 0, 'partial catalogue rows must not be persisted as a complete cache');
   await act(async () => { stalled.resolve(JSON.stringify(savedEntries())); await tick(); });
-  assert.equal(rows(coldScreen).length, 151, 'a late disk result must not replace the current remote facts');
+  assert.equal(rows(coldScreen).length, 50, 'a late disk result must not replace the current remote facts');
   assert.equal(rows(coldScreen)[0].name, 'pokemon-1');
-  await respond(cold, 151, 874);
+  await drain(cold);
   assert.equal(rows(coldScreen).length, 1025);
+  assert.equal(cold.requests.length, 21, 'the 1,025-species denominator uses one first page and twenty continuation pages');
   assert.equal(cold.writes.length, 1, 'only the validated complete catalogue is persisted');
   await act(async () => { coldScreen.unmount(); });
 
@@ -107,10 +125,13 @@ async function run() {
   const warmScreen = await mount(warm);
   assert.equal(rows(warmScreen).length, 1025, 'a ready valid disk cache still renders its complete saved catalogue');
   assert.equal(warm.timers.size, 0, 'a fast cache clears the optional handoff timer');
-  await respond(warm, 0, 151);
+  await respond(warm, 0);
   assert.equal(rows(warmScreen)[0].name, 'saved-1', 'background partial facts cannot downgrade a complete saved catalogue');
+  const inFlight = warm.requests.filter((entry) => !entry.resolved);
+  assert.equal(inFlight.length, 3, 'the warm refresh also bounds continuation work to three pages');
   await act(async () => { warmScreen.unmount(); });
-  await respond(warm, 151, 874);
+  for (const request of inFlight) await respond(warm, request.offset);
+  assert.equal(warm.requests.length, 4, 'unmounting prevents the workers from scheduling later pages');
   assert.equal(warm.writes.length, 0, 'an unmounted refresh must not persist late results');
 
   const neverRead = deferred<string | null>();
