@@ -1,1 +1,1 @@
-export { default } from '../../features/home/HubScreen';
+export { default } from '../../features/home/CoreHomeScreen';

@@ -72,6 +72,8 @@ const artworkRequests: { signal?: AbortSignal; response: ReturnType<typeof defer
 const theme = { colors: new Proxy({}, { get: () => '#123456' }) };
 const native = { Pressable: 'Pressable', View: 'View', ScrollView: 'ScrollView', TouchableOpacity: 'TouchableOpacity', Image: 'Image', StyleSheet: { create: <T,>(value: T) => value }, Alert: { alert() {} }, useWindowDimensions: () => ({ width: 390, height: 844 }) };
 const dependencies: Record<string, any> = {
+  '../../lib/appCapabilities': { CORE_COLLECTION_MODE: false },
+  '../../features/card/CoreCardDetailScreen': { default: 'CoreCardDetailScreen' },
   '../../lib/cardInspection': cardInspection,
   '../../components/StackrFunctionalIcon': { StackrFunctionalIcon: 'Image' },
   react: React, 'react-native': native, 'react-native-safe-area-context': { useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) },

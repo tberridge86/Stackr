@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { CORE_COLLECTION_MODE } from '../lib/appCapabilities';
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import {
   canPublishPremiumSellerModeChange,
@@ -57,11 +58,11 @@ export function AppModeProvider({ children }: { children: React.ReactNode }) {
         setHydratedForUserId(null);
         return;
       }
-      if (!user?.id) {
+      if (CORE_COLLECTION_MODE || !user?.id) {
         if (cancelled) return;
         setModeState('collector');
-        setHasChosenMode(false);
-        setHydratedForUserId('signed-out');
+        setHasChosenMode(CORE_COLLECTION_MODE);
+        setHydratedForUserId(user?.id ?? 'signed-out');
         return;
       }
 
@@ -93,7 +94,7 @@ export function AppModeProvider({ children }: { children: React.ReactNode }) {
   }, [authLoading, premiumSellerAccess.allowed, user?.id]);
 
   const setMode = useCallback(async (nextMode: AppMode) => {
-    if (!user?.id) return false;
+    if (CORE_COLLECTION_MODE || !user?.id) return false;
     const expectedUserId = user.id;
     if (nextMode === 'seller' && !premiumSellerAccess.allowed) {
       setModeState('collector');

@@ -8,6 +8,7 @@ import { StackrLoadingScreen } from '../components/StackrLoadingScreen';
 import { Text } from '../components/Text';
 import { useTheme } from '../components/theme-context';
 import { isBinderLibraryOverviewForUser, readPersistedBinderOverview } from '../lib/binderLibraryCache';
+import { CORE_COLLECTION_MODE } from '../lib/appCapabilities';
 import { resolveStartupDestination } from '../lib/startup';
 
 export default function Index() {
@@ -23,10 +24,13 @@ export default function Index() {
   const currentSavedReadSessionRef = useRef(cachedReadSession);
   currentSavedReadSessionRef.current = cachedReadSession;
   const [savedBinderSessionKey, setSavedBinderSessionKey] = useState<string | null>(null);
-  const destination = resolveStartupDestination({
-    authLoading, authError, user, profileLoading, profileError, collectorName: profile?.collector_name,
+  const destination = CORE_COLLECTION_MODE ? '/(tabs)' : resolveStartupDestination({
+    authLoading, authError, user,
+    profileLoading: CORE_COLLECTION_MODE ? false : profileLoading,
+    profileError: CORE_COLLECTION_MODE ? null : profileError,
+    collectorName: CORE_COLLECTION_MODE ? 'collector' : profile?.collector_name,
   });
-  const error = authError || (!authLoading && user ? profileError : null);
+  const error = authError || (!CORE_COLLECTION_MODE && !authLoading && user ? profileError : null);
 
   useEffect(() => {
     if (!destination || navigatedRef.current) return;
@@ -117,3 +121,4 @@ export default function Index() {
     </View>
   );
 }
+

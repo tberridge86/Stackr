@@ -94,6 +94,7 @@ async function harness(options: { delayedMetadata?: boolean; delayedCards?: bool
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
   const generic: any = new Proxy(function () {}, { get: () => generic, apply: () => generic });
   const deps: Record<string, any> = {
+    '../../lib/appCapabilities': { CORE_COLLECTION_MODE: false },
     ...services, react: React, '../../lib/uiCollectionPages': uiCollectionPages,
     'expo-router': { router: {}, useLocalSearchParams: () => ({}), useFocusEffect: (effect: () => void) => React.useEffect(effect, [effect]) },
     'react-native': { useWindowDimensions: () => ({ width: 390 }) },

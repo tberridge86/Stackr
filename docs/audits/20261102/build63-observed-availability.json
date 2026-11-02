@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "status": "historically_verified_testing",
+  "observedDate": "2026-11-01",
+  "recordedDate": "2026-11-02",
+  "version": "1.0.6",
+  "build": "63",
+  "source": "832eba78ad8bbdd8dea1d358b811f2c11bc3f013",
+  "nativeBuild": {
+    "id": "209a3ce1-5551-4b2a-b2d1-c1bd5b1ae3aa",
+    "url": "https://expo.dev/accounts/tommo86/projects/Stackr/builds/209a3ce1-5551-4b2a-b2d1-c1bd5b1ae3aa",
+    "status": "succeeded",
+    "profile": "production",
+    "environment": "production",
+    "channel": "production",
+    "runtimeVersion": "1.0.6",
+    "fingerprint": "94710a983a882a8250e207662519bbd475045b6d",
+    "artifactUrl": "https://expo.dev/artifacts/eas/6Huxt2VzVCxVpP3E6RgZJ6DvqYdIJR_jSDRF0Vq3Rr4.ipa"
+  },
+  "verifyOnlyWorkflow": {
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/41352833344",
+    "verifyOnly": true,
+    "note": "This GitHub workflow verified the source/export. The separate EAS production build above produced the signed binary."
+  },
+  "submission": {
+    "workflowId": "01a1991c-65a9-78ad-b30a-4a7a64e7f115",
+    "url": "https://expo.dev/accounts/tommo86/projects/Stackr/workflows/01a1991c-65a9-78ad-b30a-4a7a64e7f115",
+    "buildId": "209a3ce1-5551-4b2a-b2d1-c1bd5b1ae3aa",
+    "bundleIdentifier": "com.tommo86.Stackr",
+    "appleAppId": "6772118450",
+    "uploadSucceededAt": "2026-11-01T21:59:01Z",
+    "appleProcessingCompletedAt": "2026-11-01T22:04:35Z",
+    "workflowFinalStatus": "failed_after_upload_and_processing",
+    "finalError": "Builds cannot be assigned to this internal group. Cannot add internal group to a build.",
+    "interpretation": "The final failure concerned an explicit internal-group assignment attempt after Apple processing; it did not mean the upload or processing failed."
+  },
+  "appleAvailability": {
+    "buildId": "cb7fcd8f-21fc-4cc0-afd0-62b23bf04aec",
+    "group": "Team (Expo)",
+    "groupId": "9ab9cbec-f5f1-4a9c-80bb-4afcce16960f",
+    "statusObserved": "Testing",
+    "url": "https://appstoreconnect.apple.com/teams/4ed08789-16ee-4a2e-b09e-8585b022d30a/apps/6772118450/testflight/ios/cb7fcd8f-21fc-4cc0-afd0-62b23bf04aec",
+    "groupUrl": "https://appstoreconnect.apple.com/teams/4ed08789-16ee-4a2e-b09e-8585b022d30a/apps/6772118450/testflight/groups/9ab9cbec-f5f1-4a9c-80bb-4afcce16960f",
+    "evidence": "Authenticated App Store Connect UI on 1 November: Team (Expo), Builds tab, version 1.0.6 (63), Testing. The overview also showed the existing Team (Expo) assignment.",
+    "evidenceLimit": "Observed during the previous interactive session; no durable screenshot was saved before that session was interrupted. Availability has not been rechecked on 2 November."
+  },
+  "installedPhone": {
+    "exactBuild": "unverified",
+    "otaRevision": "unverified",
+    "ownerFeedbackDate": "2026-11-02",
+    "ownerFeedback": "Loading, retrieval speed, untranslated cards and missing images remained unacceptable.",
+    "attribution": "Feedback concerns the installed app. It is not proof that the phone was running this exact binary or OTA revision."
+  },
+  "coreCandidate": {
+    "pr": "https://github.com/tberridge86/Stackr/pull/453",
+    "nativeBuildCreated": false,
+    "installedPhoneVerified": false
+  },
+  "supersedes": "Earlier processing-only handoffs and the inference that the verify-only workflow meant no Build63 existed."
+}

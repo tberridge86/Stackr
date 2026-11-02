@@ -151,5 +151,6 @@ test('real toolbar retains submit callbacks and busy state; Search wires recent-
   assert.equal(submitted, 1); assert.equal(walk(idle, 'StackrLoadingIndicator').length, 0);
   const search = read('app/(tabs)/search.tsx');
   assert.match(search, /onSubmitSearch=\{\(\) => \{ void rememberSearch\(\); \}\}/);
-  assert.match(search, /loading=\{loading\}/); assert.match(search, /placeholder=\{showcaseConfig\?\.placeholder/);
+  assert.match(search, /loading=\{loading\}/);
+  assert.match(search, /placeholder=\{CORE_COLLECTION_MODE \? 'Search cards or sets' : showcaseConfig\?\.placeholder/);
 });

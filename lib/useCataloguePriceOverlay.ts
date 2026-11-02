@@ -7,6 +7,8 @@ import { PROVISIONAL_CATALOGUE_PRICE_MODEL, provisionalCataloguePriceDisplay } f
 
 type DisplayCard = { id: string; language?: string | null; rarity?: string | null; productType?: string | null; set?: unknown; pricing?: { displayPrice?: number | null } | null; estimated_value?: number | null; price_source?: string | null; externalIds?: Record<string, unknown> | null; raw_data?: any; raw?: any; card?: any };
 type CataloguePriceOverlayOptions<T extends DisplayCard> = {
+  /** Suppress optional quote requests and synthetic decorations in the core app. */
+  enabled?: boolean;
   /** Cards whose saved quotes may be read now. Every display card still receives
    * an eligible modern bulk-card fallback immediately when a quote is unavailable. */
   requestCards?: T[];
@@ -103,6 +105,7 @@ export function useCataloguePriceOverlay<T extends DisplayCard>(cards: T[], opti
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [requestIdentityKey]);
   useEffect(() => {
+    if (options.enabled === false) return;
     if (!ownerId || (process.env.EXPO_PUBLIC_STACKR_API_ENABLED !== 'true' && process.env.EXPO_PUBLIC_STACKR_API_ENABLED !== '1')) return;
     let active = true; let accountScope: string | null = null;
     const observer = readObserver.current;
@@ -136,8 +139,10 @@ export function useCataloguePriceOverlay<T extends DisplayCard>(cards: T[], opti
         .then(() => { publish(); reportRead('complete'); }).catch(() => { reportRead('failed'); });
     }).catch(() => { reportRead('failed'); });
     return () => { active = false; unsubscribe(); };
-  }, [displayKeys, groups, ownerId]);
-  return useMemo(() => cards.map((card) => {
+  }, [displayKeys, groups, ownerId, options.enabled]);
+  return useMemo(() => {
+    if (options.enabled === false) return cards;
+    return cards.map((card) => {
     const language = languageFor(card); const reference = referenceFor(card);
     const row = saved.ownerId === ownerId && ownerId ? saved.rows.get(`${language}:${reference}`) : undefined;
     const stored = row ? cataloguePriceDisplay(row) : undefined;
@@ -153,5 +158,7 @@ export function useCataloguePriceOverlay<T extends DisplayCard>(cards: T[], opti
     const baseline = provisional ? { ...provisional, authoritativeUnavailable: false, classification: null, evidenceType: null } : undefined;
     const pricing = stored?.displayPrice != null && (!stored.provisional || baseline || publishedProvisional(row, reference, language)) ? stored : baseline;
     return pricing ? { ...card, runtimeCataloguePricing: pricing } : card;
-  }), [cards, ownerId, saved]);
+  });
+  }, [cards, ownerId, saved, options.enabled]);
 }
+

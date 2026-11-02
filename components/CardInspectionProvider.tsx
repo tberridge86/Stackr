@@ -1,5 +1,6 @@
+import { CORE_COLLECTION_MODE } from '../lib/appCapabilities';
 import React, { createContext, lazy, Suspense, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { usePathname } from 'expo-router';
+import { router, usePathname } from 'expo-router';
 import { AppState } from 'react-native';
 import { canInspectCatalogueCard, type CardInspectionRequest } from '../lib/cardInspection';
 import { stackrHaptics } from '../lib/haptics';
@@ -24,6 +25,10 @@ export function CardInspectionProvider({ children }: { children: React.ReactNode
   }
   const inspectCard = useCallback((next: CardInspectionRequest) => {
     if (!canInspectCatalogueCard(next)) return;
+    if (CORE_COLLECTION_MODE) {
+      router.push({ pathname: '/card/[id]', params: { id: next.selectedVariantId ?? next.card.id, language: next.card.language } });
+      return;
+    }
     const generation = ++inspectionGeneration.current;
     retrievalTrace.current?.cancel();
     retrievalTrace.current = beginRetrieval('inspection', 'inspection-request');
@@ -64,3 +69,4 @@ export function CardInspectionProvider({ children }: { children: React.ReactNode
       request={request} onClose={close} onDiagnostic={retrievalTrace.current?.image} /></Suspense> : null}
   </InspectionContext.Provider>;
 }
+

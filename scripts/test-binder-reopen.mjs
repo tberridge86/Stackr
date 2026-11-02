@@ -152,6 +152,7 @@ function screenHarness(options = {}) {
   const savedArgs = [];
   const never = () => new Promise(() => {});
   const runtime = { exports: {}, console, AbortController, binderId: binder.id, Date,
+    CORE_COLLECTION_MODE: false,
     visiblePriceReaderRef: { current: null }, visiblePriceIdsRef: { current: [] },
     createVisibleBinderPriceReader: () => ({ request: () => {}, dispose: () => {} }),
     mergeBinderArtwork,

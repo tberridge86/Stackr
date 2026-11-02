@@ -49,7 +49,7 @@ for (const [start, end, reset] of [
 const sessionReset = hub.slice(hub.indexOf('const bindHomeSession'), hub.indexOf('const { data: { subscription } }'));
 assert.ok(sessionReset.includes('setChaseCards([])') && sessionReset.includes('setRecentActivity([])'), 'Account changes must still clear private rows');
 assert.ok(!hub.includes('privatePricingPreview') && !hub.includes('homeCollectorPreview'), 'Native Home must not depend on preview fixtures');
-assert.equal(readFileSync('app/(tabs)/index.tsx', 'utf8').trim(), "export { default } from '../../features/home/HubScreen';");
+assert.equal(readFileSync('app/(tabs)/index.tsx', 'utf8').trim(), "export { default } from '../../features/home/CoreHomeScreen';");
 assert.ok(hub.includes('<StackrBackdrop variant="home" />'));
 for (const icon of ['stackrIcons.searchCard', 'stackrIcons.scanCard', 'stackrIcons.social']) assert.ok(render.includes(icon));
 console.log('Integrated Home ordering, English metadata, native route, original icons and pricing-interface guards passed.');

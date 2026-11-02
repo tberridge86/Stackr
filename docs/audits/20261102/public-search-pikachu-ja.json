@@ -1,0 +1,389 @@
+{
+  "sourceUrl": "https://api.stackrtcg.com/v1/search?q=Pikachu&language=ja&limit=3",
+  "transport": "Firecrawl rawHtml public GET maxAge=0",
+  "statusCode": 200,
+  "scrapeId": "01a19c2f-33dd-702f-b3fb-92fadaac6fed",
+  "response": {
+    "data": {
+      "query": "Pikachu",
+      "normalizedQuery": "pikachu",
+      "results": [
+        {
+          "type": "card",
+          "reason": "fuzzy_name",
+          "cardId": "a6da2147-423c-5a76-b9fd-db61b1c27850",
+          "variantId": "33167d7b-5cbb-5da0-8657-fc507df859a9",
+          "canonicalId": "pokemon:ja:88e351b5-8191-5ef4-854b-2978046cda53:160:holo",
+          "setId": "88e351b5-8191-5ef4-854b-2978046cda53",
+          "setCode": "M6a",
+          "collectorNumber": "160",
+          "nativeName": "ピカチュウ&ゼクロムGX",
+          "englishDisplayName": "Pikachu & Zekrom GX",
+          "englishDisplaySource": "printing",
+          "languageCode": "ja",
+          "variantCode": "holo",
+          "matchedName": "Pikachu & Zekrom GX",
+          "matchedNameType": "english_display",
+          "card": {
+            "cardId": "a6da2147-423c-5a76-b9fd-db61b1c27850",
+            "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+            "game": "pokemon",
+            "languageCode": "ja",
+            "language": {
+              "englishName": "Japanese",
+              "nativeName": "日本語"
+            },
+            "set": {
+              "setId": "88e351b5-8191-5ef4-854b-2978046cda53",
+              "setCode": "M6a",
+              "nativeName": "30th CELEBRATION",
+              "englishDisplayName": "30th Celebration"
+            },
+            "collectorNumber": {
+              "value": "160",
+              "prefix": null,
+              "sort": 160,
+              "suffix": null,
+              "sortKey": "000000000160"
+            },
+            "names": {
+              "native": "ピカチュウ&ゼクロムGX",
+              "englishDisplay": "Pikachu & Zekrom GX",
+              "englishDisplaySource": "printing",
+              "englishSupplement": {
+                "value": "Pikachu & Zekrom GX",
+                "provenance": "published_stackr_exact_native_name",
+                "authoritative": false,
+                "sourceCardIds": [
+                  "006e8aab-577d-47f0-b4d5-52374a19a3f7",
+                  "0a248bb5-10b5-43b8-9585-cb1d7ec3f9f1",
+                  "51127c7f-eba5-43f1-9e3e-ec30c695a89e"
+                ]
+              }
+            },
+            "details": {
+              "supertype": "Pokemon",
+              "subtypes": [
+                "Basic"
+              ],
+              "artist": "Mitsuhiro Arita"
+            },
+            "rarity": {
+              "code": "classic_collection",
+              "label": "Classic Collection"
+            },
+            "defaultVariantId": "33167d7b-5cbb-5da0-8657-fc507df859a9",
+            "variants": [
+              {
+                "variantId": "33167d7b-5cbb-5da0-8657-fc507df859a9",
+                "canonicalId": "pokemon:ja:88e351b5-8191-5ef4-854b-2978046cda53:160:holo",
+                "variantCode": "holo",
+                "variantLabel": "Holo",
+                "finishCode": "holo",
+                "finishLabel": "Holo",
+                "artworkKey": null,
+                "nativeImageStatus": "missing",
+                "sameArtworkAsVariantId": null,
+                "imageVariantId": "33167d7b-5cbb-5da0-8657-fc507df859a9",
+                "image": {
+                  "assetId": "newsets279-official-front-20260927:a6da2147-423c-5a76-b9fd-db61b1c27850:158ef64b70d7ac946b3424067ee8609f2b48de80dc8a43489729bd1a9fca808c",
+                  "assetType": "card_image",
+                  "game": "pokemon",
+                  "setId": "88e351b5-8191-5ef4-854b-2978046cda53",
+                  "cardId": "a6da2147-423c-5a76-b9fd-db61b1c27850",
+                  "variantId": null,
+                  "deliveryPath": null,
+                  "deliveryUrl": "https://www.pokemon-card.com/assets/images/card_images/large/M6a/050736_P_PIKACHIXYUUANDOZEKUROMUJIEKKUSU.jpg",
+                  "sourceAttribution": "Pokémon Card Game Japan",
+                  "permissionStatus": "approved",
+                  "contentSha256": "158ef64b70d7ac946b3424067ee8609f2b48de80dc8a43489729bd1a9fca808c",
+                  "perceptualHash": null,
+                  "mimeType": "image/jpeg",
+                  "width": 868,
+                  "height": 1212,
+                  "byteSize": 515944,
+                  "derivatives": [],
+                  "cacheControl": null,
+                  "externallyReferenced": true,
+                  "unavailableReason": null,
+                  "lastVerifiedAt": null,
+                  "updatedAt": "2026-09-27T15:41:18.12197+00:00"
+                },
+                "updatedAt": "2026-10-06T18:45:05.318952+00:00"
+              }
+            ],
+            "updatedAt": "2026-10-06T18:45:05.318952+00:00"
+          }
+        },
+        {
+          "type": "card",
+          "reason": "fuzzy_name",
+          "cardId": "f65cab1f-7be1-4a8c-9fa8-ac6d2cd6ce8a",
+          "variantId": "4e4e971e-dbb2-44da-a814-be19a2dd16c1",
+          "canonicalId": "pokemon:ja:c20234cb-c629-4383-b107-c49b38b682ae:260:normal",
+          "setId": "c20234cb-c629-4383-b107-c49b38b682ae",
+          "setCode": "SV-P",
+          "collectorNumber": "260",
+          "nativeName": "トウホクのピカチュウ",
+          "englishDisplayName": "Tohoku's Pikachu",
+          "englishDisplaySource": "printing",
+          "languageCode": "ja",
+          "variantCode": "normal",
+          "matchedName": "Tohoku's Pikachu",
+          "matchedNameType": "english_display",
+          "card": {
+            "cardId": "f65cab1f-7be1-4a8c-9fa8-ac6d2cd6ce8a",
+            "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+            "game": "pokemon",
+            "languageCode": "ja",
+            "language": {
+              "englishName": "Japanese",
+              "nativeName": "日本語"
+            },
+            "set": {
+              "setId": "c20234cb-c629-4383-b107-c49b38b682ae",
+              "setCode": "SV-P",
+              "nativeName": "SV-Pプロモカード",
+              "englishDisplayName": "SV-P Promotional cards"
+            },
+            "collectorNumber": {
+              "value": "260",
+              "prefix": null,
+              "sort": 260,
+              "suffix": null,
+              "sortKey": "000000000260"
+            },
+            "names": {
+              "native": "トウホクのピカチュウ",
+              "englishDisplay": "Tohoku's Pikachu",
+              "englishDisplaySource": "printing",
+              "englishSupplement": {
+                "value": "Tohoku's Pikachu",
+                "provenance": "published_stackr_exact_native_name",
+                "authoritative": false,
+                "sourceCardIds": [
+                  "f65cab1f-7be1-4a8c-9fa8-ac6d2cd6ce8a"
+                ]
+              }
+            },
+            "details": {
+              "supertype": "Pokémon",
+              "subtypes": [],
+              "artist": "Kouki Saitou"
+            },
+            "rarity": {
+              "code": "promo",
+              "label": "Promo"
+            },
+            "defaultVariantId": "4e4e971e-dbb2-44da-a814-be19a2dd16c1",
+            "variants": [
+              {
+                "variantId": "4e4e971e-dbb2-44da-a814-be19a2dd16c1",
+                "canonicalId": "pokemon:ja:c20234cb-c629-4383-b107-c49b38b682ae:260:normal",
+                "variantCode": "normal",
+                "variantLabel": "Normal",
+                "finishCode": "normal",
+                "finishLabel": "Normal",
+                "artworkKey": null,
+                "nativeImageStatus": "scan_acquisition_required",
+                "sameArtworkAsVariantId": null,
+                "imageVariantId": "4e4e971e-dbb2-44da-a814-be19a2dd16c1",
+                "image": {
+                  "assetId": "5b83d41d-0df6-4f06-b361-c3983e8c8d05",
+                  "assetType": "card_image",
+                  "game": "pokemon",
+                  "setId": "c20234cb-c629-4383-b107-c49b38b682ae",
+                  "cardId": "f65cab1f-7be1-4a8c-9fa8-ac6d2cd6ce8a",
+                  "variantId": "4e4e971e-dbb2-44da-a814-be19a2dd16c1",
+                  "deliveryPath": null,
+                  "deliveryUrl": "https://www.pokemon-card.com/assets/images/card_images/large/SV-P/049617_P_TOUHOKUNOPIKACHIXYUU.jpg",
+                  "sourceAttribution": "pokemon_card_jp_official",
+                  "permissionStatus": "approved",
+                  "contentSha256": null,
+                  "perceptualHash": null,
+                  "mimeType": null,
+                  "width": null,
+                  "height": null,
+                  "byteSize": null,
+                  "derivatives": [],
+                  "cacheControl": null,
+                  "externallyReferenced": true,
+                  "unavailableReason": null,
+                  "lastVerifiedAt": null,
+                  "updatedAt": "2026-09-08T19:30:41.020223+00:00"
+                },
+                "updatedAt": "2026-10-06T19:59:48.95565+00:00"
+              }
+            ],
+            "updatedAt": "2026-10-06T19:59:48.95565+00:00"
+          }
+        },
+        {
+          "type": "card",
+          "reason": "fuzzy_name",
+          "cardId": "81dc57de-31cb-493f-ac24-0f8516c576c1",
+          "variantId": "7898960b-6c89-4616-b26b-f47f326a42c5",
+          "canonicalId": "pokemon:ja:428cd43a-548e-4482-a81f-0d06b2869835:031:holo",
+          "setId": "428cd43a-548e-4482-a81f-0d06b2869835",
+          "setCode": "SM9",
+          "collectorNumber": "031",
+          "nativeName": "ピカチュウ&ゼクロムGX",
+          "englishDisplayName": "Pikachu & Zekrom GX",
+          "englishDisplaySource": "printing",
+          "languageCode": "ja",
+          "variantCode": "holo",
+          "matchedName": "Pikachu & Zekrom GX",
+          "matchedNameType": "english_display",
+          "card": {
+            "cardId": "81dc57de-31cb-493f-ac24-0f8516c576c1",
+            "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+            "game": "pokemon",
+            "languageCode": "ja",
+            "language": {
+              "englishName": "Japanese",
+              "nativeName": "日本語"
+            },
+            "set": {
+              "setId": "428cd43a-548e-4482-a81f-0d06b2869835",
+              "setCode": "SM9",
+              "nativeName": "タッグボルト",
+              "englishDisplayName": "Tag Bolt"
+            },
+            "collectorNumber": {
+              "value": "031",
+              "prefix": null,
+              "sort": 31,
+              "suffix": null,
+              "sortKey": "000000000031"
+            },
+            "names": {
+              "native": "ピカチュウ&ゼクロムGX",
+              "englishDisplay": "Pikachu & Zekrom GX",
+              "englishDisplaySource": "printing",
+              "englishSupplement": {
+                "value": "Pikachu & Zekrom GX",
+                "provenance": "published_stackr_exact_native_name",
+                "authoritative": false,
+                "sourceCardIds": [
+                  "006e8aab-577d-47f0-b4d5-52374a19a3f7",
+                  "0a248bb5-10b5-43b8-9585-cb1d7ec3f9f1",
+                  "51127c7f-eba5-43f1-9e3e-ec30c695a89e"
+                ]
+              }
+            },
+            "details": {
+              "supertype": "Pokémon",
+              "subtypes": [],
+              "artist": "Mitsuhiro Arita"
+            },
+            "rarity": {
+              "code": "double_rare",
+              "label": "Double Rare"
+            },
+            "defaultVariantId": "7898960b-6c89-4616-b26b-f47f326a42c5",
+            "variants": [
+              {
+                "variantId": "7898960b-6c89-4616-b26b-f47f326a42c5",
+                "canonicalId": "pokemon:ja:428cd43a-548e-4482-a81f-0d06b2869835:031:holo",
+                "variantCode": "holo",
+                "variantLabel": "Holo",
+                "finishCode": "holo",
+                "finishLabel": "Holo",
+                "artworkKey": null,
+                "nativeImageStatus": "scan_acquisition_required",
+                "sameArtworkAsVariantId": null,
+                "imageVariantId": "7898960b-6c89-4616-b26b-f47f326a42c5",
+                "image": {
+                  "assetId": "artwork-recovered-20260928:81dc57de-31cb-493f-ac24-0f8516c576c1:350d97177808b17f92cca51c0772c793d8edcc61ed2cb163e1c6792f1806b685",
+                  "assetType": "card_image",
+                  "game": "pokemon",
+                  "setId": "428cd43a-548e-4482-a81f-0d06b2869835",
+                  "cardId": "81dc57de-31cb-493f-ac24-0f8516c576c1",
+                  "variantId": null,
+                  "deliveryPath": "public/card_image/af714c73-f11b-41bc-8fed-71be45be3801/1d06ee98cc7f157c0d0f113f4f1661c5eb77a47a7ceb63bad21b856b01ef4477/350d97177808b17f92cca51c0772c793d8edcc61ed2cb163e1c6792f1806b685/original.jpg",
+                  "deliveryUrl": "https://assets.stackrtcg.com/public/card_image/af714c73-f11b-41bc-8fed-71be45be3801/1d06ee98cc7f157c0d0f113f4f1661c5eb77a47a7ceb63bad21b856b01ef4477/350d97177808b17f92cca51c0772c793d8edcc61ed2cb163e1c6792f1806b685/original.jpg",
+                  "sourceAttribution": "pokemon_card_jp_official",
+                  "permissionStatus": "approved",
+                  "contentSha256": "350d97177808b17f92cca51c0772c793d8edcc61ed2cb163e1c6792f1806b685",
+                  "perceptualHash": null,
+                  "mimeType": "image/jpeg",
+                  "width": 748,
+                  "height": 1044,
+                  "byteSize": 278278,
+                  "derivatives": [
+                    {
+                      "url": "https://assets.stackrtcg.com/public/card_image/af714c73-f11b-41bc-8fed-71be45be3801/1d06ee98cc7f157c0d0f113f4f1661c5eb77a47a7ceb63bad21b856b01ef4477/d6b398b21bd73b1e4336bf6f9bf7bb986ca29cbd6c966ec352aaf967ccf99c0c/card-grid.webp",
+                      "role": "card-grid",
+                      "width": 240,
+                      "height": 335,
+                      "sha256": "d6b398b21bd73b1e4336bf6f9bf7bb986ca29cbd6c966ec352aaf967ccf99c0c",
+                      "byteSize": 27772,
+                      "mimeType": "image/webp",
+                      "storageKey": "public/card_image/af714c73-f11b-41bc-8fed-71be45be3801/1d06ee98cc7f157c0d0f113f4f1661c5eb77a47a7ceb63bad21b856b01ef4477/d6b398b21bd73b1e4336bf6f9bf7bb986ca29cbd6c966ec352aaf967ccf99c0c/card-grid.webp",
+                      "deliveryUrl": "https://assets.stackrtcg.com/public/card_image/af714c73-f11b-41bc-8fed-71be45be3801/1d06ee98cc7f157c0d0f113f4f1661c5eb77a47a7ceb63bad21b856b01ef4477/d6b398b21bd73b1e4336bf6f9bf7bb986ca29cbd6c966ec352aaf967ccf99c0c/card-grid.webp",
+                      "cacheControl": "public, max-age=31536000, immutable",
+                      "contentSha256": "d6b398b21bd73b1e4336bf6f9bf7bb986ca29cbd6c966ec352aaf967ccf99c0c",
+                      "storageBucket": "stackr-catalogue-public",
+                      "storageProvider": "s3_compatible",
+                      "deliveryPath": "public/card_image/af714c73-f11b-41bc-8fed-71be45be3801/1d06ee98cc7f157c0d0f113f4f1661c5eb77a47a7ceb63bad21b856b01ef4477/d6b398b21bd73b1e4336bf6f9bf7bb986ca29cbd6c966ec352aaf967ccf99c0c/card-grid.webp"
+                    },
+                    {
+                      "url": "https://assets.stackrtcg.com/public/card_image/af714c73-f11b-41bc-8fed-71be45be3801/1d06ee98cc7f157c0d0f113f4f1661c5eb77a47a7ceb63bad21b856b01ef4477/7190d678e32358967e2d4f716ff6e69f30dc012f871ed3c5a395217a8eafe915/search-result.webp",
+                      "role": "search-result",
+                      "width": 96,
+                      "height": 134,
+                      "sha256": "7190d678e32358967e2d4f716ff6e69f30dc012f871ed3c5a395217a8eafe915",
+                      "byteSize": 5776,
+                      "mimeType": "image/webp",
+                      "storageKey": "public/card_image/af714c73-f11b-41bc-8fed-71be45be3801/1d06ee98cc7f157c0d0f113f4f1661c5eb77a47a7ceb63bad21b856b01ef4477/7190d678e32358967e2d4f716ff6e69f30dc012f871ed3c5a395217a8eafe915/search-result.webp",
+                      "deliveryUrl": "https://assets.stackrtcg.com/public/card_image/af714c73-f11b-41bc-8fed-71be45be3801/1d06ee98cc7f157c0d0f113f4f1661c5eb77a47a7ceb63bad21b856b01ef4477/7190d678e32358967e2d4f716ff6e69f30dc012f871ed3c5a395217a8eafe915/search-result.webp",
+                      "cacheControl": "public, max-age=31536000, immutable",
+                      "contentSha256": "7190d678e32358967e2d4f716ff6e69f30dc012f871ed3c5a395217a8eafe915",
+                      "storageBucket": "stackr-catalogue-public",
+                      "storageProvider": "s3_compatible",
+                      "deliveryPath": "public/card_image/af714c73-f11b-41bc-8fed-71be45be3801/1d06ee98cc7f157c0d0f113f4f1661c5eb77a47a7ceb63bad21b856b01ef4477/7190d678e32358967e2d4f716ff6e69f30dc012f871ed3c5a395217a8eafe915/search-result.webp"
+                    },
+                    {
+                      "url": "https://assets.stackrtcg.com/public/card_image/af714c73-f11b-41bc-8fed-71be45be3801/1d06ee98cc7f157c0d0f113f4f1661c5eb77a47a7ceb63bad21b856b01ef4477/9e243ecdf1e6da3641009b189d6fe7935d8d99e424ad96af06c4081ab8d9a891/detail-page.webp",
+                      "role": "detail-page",
+                      "width": 720,
+                      "height": 1005,
+                      "sha256": "9e243ecdf1e6da3641009b189d6fe7935d8d99e424ad96af06c4081ab8d9a891",
+                      "byteSize": 175896,
+                      "mimeType": "image/webp",
+                      "storageKey": "public/card_image/af714c73-f11b-41bc-8fed-71be45be3801/1d06ee98cc7f157c0d0f113f4f1661c5eb77a47a7ceb63bad21b856b01ef4477/9e243ecdf1e6da3641009b189d6fe7935d8d99e424ad96af06c4081ab8d9a891/detail-page.webp",
+                      "deliveryUrl": "https://assets.stackrtcg.com/public/card_image/af714c73-f11b-41bc-8fed-71be45be3801/1d06ee98cc7f157c0d0f113f4f1661c5eb77a47a7ceb63bad21b856b01ef4477/9e243ecdf1e6da3641009b189d6fe7935d8d99e424ad96af06c4081ab8d9a891/detail-page.webp",
+                      "cacheControl": "public, max-age=31536000, immutable",
+                      "contentSha256": "9e243ecdf1e6da3641009b189d6fe7935d8d99e424ad96af06c4081ab8d9a891",
+                      "storageBucket": "stackr-catalogue-public",
+                      "storageProvider": "s3_compatible",
+                      "deliveryPath": "public/card_image/af714c73-f11b-41bc-8fed-71be45be3801/1d06ee98cc7f157c0d0f113f4f1661c5eb77a47a7ceb63bad21b856b01ef4477/9e243ecdf1e6da3641009b189d6fe7935d8d99e424ad96af06c4081ab8d9a891/detail-page.webp"
+                    }
+                  ],
+                  "cacheControl": "public, max-age=31536000, immutable",
+                  "externallyReferenced": false,
+                  "unavailableReason": null,
+                  "lastVerifiedAt": null,
+                  "updatedAt": "2026-10-26T17:37:01.223552+00:00"
+                },
+                "updatedAt": "2026-10-06T18:47:33.144312+00:00"
+              }
+            ],
+            "updatedAt": "2026-10-06T18:47:33.144312+00:00"
+          }
+        }
+      ]
+    },
+    "meta": {
+      "requestId": "2652b792-47c8-4789-8881-b297798b9ca2",
+      "apiVersion": "1",
+      "generatedAt": "2026-11-02T12:15:09.027Z",
+      "pagination": {
+        "limit": 3,
+        "nextCursor": null,
+        "continuationAvailable": false,
+        "unavailableReason": "search_pagination_unavailable"
+      }
+    }
+  }
+}

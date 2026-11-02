@@ -4,7 +4,6 @@ import { getCollectionPriceCoverageLabel } from '../../lib/collectionPricingStat
 import { binderReopenCache, binderReopenScope, isBinderAccessDenied, readBinderReopenPreview, retainBinderPreviewDuringRefresh } from '../../lib/binderReopenRuntime';
 import { isCompleteBinderSnapshot, type BinderReopenSaveOptions, type BinderReopenSnapshot } from '../../lib/binderReopenSnapshot';
 import { mergeBinderArtwork } from '../../lib/stackrSetRetrieval';
-import { loadLatestSnapshotBinderPrices } from '../../lib/binderPricing';
 import { createVisibleBinderPriceReader, type VisibleBinderPriceReader } from '../../lib/binderVisiblePrices';
 import { readOptionalCatalogueEnrichment } from '../../lib/optionalCatalogueEnrichment';
 import { withPersonalDataReadTimeout } from '../../lib/personalDataRead';
@@ -13,6 +12,7 @@ import { attachBinderCatalogueArtwork, attachBinderSetArtwork } from '../../lib/
 import { StackrBrowseFilterGroup } from '../../components/StackrBrowseControls';
 import { binderCardRarity, binderRarityChoices } from '../../lib/binderRarityFilter';
 import { useTheme } from '../../components/theme-context';
+import { CORE_COLLECTION_MODE } from '../../lib/appCapabilities';
 import { getCatalogueVariantKeys, getCatalogueVariantIdForKey, catalogueVariantLabel } from '../../lib/catalogueVariantPresentation';
 import { getCanonicalMasterSetVariants } from '../../lib/masterSetProgress';
 import { enforceSetVisualRuntimePolicy } from '../../lib/providerSetMarkRuntimePolicy';
@@ -51,7 +51,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import EditionAwareCardImage from '../../components/EditionAwareCardImage';
 import { CardInspectionStage } from '../../components/CardInspectionStage';
 import { getLibraryCardFinishMetadata } from '../../lib/cardFinishProfiles';
-import PokeTraceMarketInsights from '../../components/PokeTraceMarketInsights';
 import { BinderArtwork } from '../../components/BinderArtwork';
 import { BinderModeIconBadge, BinderModePill } from '../../components/BinderModeBadge';
 import { getPokemonLanguageDescriptor, PokemonLanguageBadge } from '../../components/PokemonLanguageBadge';
@@ -86,11 +85,10 @@ import {
   getEstimatedValue,
 } from '../../lib/binders';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
-import { useTrade } from '../../components/trade-context';
+import { useOptionalTrade } from '../../components/trade-context';
 import { supabase } from '../../lib/supabase';
 import { fetchStackrCard, fetchStackrPrice } from '../../lib/stackrDomainAdapter';
 import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
-import { fetchTcgcsvUiCardPricesForSet } from '../../lib/pricing';
 import {
   getKnownPokemonSetTotal,
   getPokemonSetLogoUrl,
@@ -103,7 +101,6 @@ import {
 } from '../../lib/pokemonSetIdentity';
 import { getLocalSetArtworkSourceForSet } from '../../lib/localSetArtwork';
 import { searchLocalPokemonCards } from '../../lib/cardSearch';
-import { checkAchievements, recordAchievementEvent } from '../../lib/achievements';
 import {
   getCustomBinderNameArt,
   getCustomBinderNameArtKeyForBinder,
@@ -117,7 +114,7 @@ import {
 import { beginBinderRetrieval, getIncrementalListWindow, measureAsync, stackrListPerformance } from '../../lib/performance';
 import { stackrCardImageSizes, stackrTabContentPadding } from '../../lib/stackrSizing';
 import { stackrIcons } from '../../lib/stackrIcons';
-import { createActivityPost } from '../../lib/activity';
+import type { createActivityPost } from '../../lib/activity';
 import {
   createDirectCollectionHistoryIntent,
   recordDirectCollectionHistory,
@@ -129,6 +126,17 @@ import { CARD_INSPECTION_LONG_PRESS_MS } from '../../lib/cardInspection';
 import { useCataloguePriceOverlay } from '../../lib/useCataloguePriceOverlay';
 import type { CataloguePriceDisplay } from '../../lib/cataloguePrices';
 import type { ScanEditionHint } from '../../types/scan';
+
+// Loaded only by the optional market panel; core binders never import it.
+const checkAchievements: typeof import('../../lib/achievements').checkAchievements = (...args) =>
+  import('../../lib/achievements').then((api) => api.checkAchievements(...args));
+const recordAchievementEvent: typeof import('../../lib/achievements').recordAchievementEvent = (...args) =>
+  import('../../lib/achievements').then((api) => api.recordAchievementEvent(...args));
+
+function PokeTraceMarketInsights(props: React.ComponentProps<typeof import('../../components/PokeTraceMarketInsights').default>) {
+  const Component = require('../../components/PokeTraceMarketInsights').default;
+  return <Component {...props} />;
+}
 
 // ===============================
 // CONSTANTS
@@ -1005,7 +1013,8 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   const lastScale = useRef(1);
   const imageScale = Animated.multiply(baseScale, pinchScale);
 
-  const { isForTrade } = useTrade();
+  const trade = useOptionalTrade();
+  const isForTrade = trade?.isForTrade ?? (() => false);
 
   const sortOptions: { label: string; value: SortMode }[] = [
     { label: 'Number', value: 'number' },
@@ -1044,6 +1053,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   // ===============================
 
   const fetchModalEbayPrice = useCallback(async (card: BinderCardWithDetails) => {
+    if (CORE_COLLECTION_MODE) return;
     try {
       setModalEbayLoading(true);
       setModalEbayError(false);
@@ -1093,6 +1103,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   // ===============================
 
   const loadShowcase = useCallback(async (accountId: string) => {
+    if (CORE_COLLECTION_MODE) return;
     if (!binderId || activeAccountIdRef.current !== accountId || artworkRequestRef.current?.signal.aborted) return;
     const accountGeneration = accountGenerationRef.current;
     const loadRequest = loadRequestRef.current;
@@ -1351,9 +1362,11 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
             });
           });
       };
+      if (!CORE_COLLECTION_MODE) {
       const priceReader = createVisibleBinderPriceReader(binderCards, {
         loader: async (visibleRows) => {
           if (!isCurrentRequest() || artworkRequest.signal.aborted) return;
+          const { loadLatestSnapshotBinderPrices } = await import('../../lib/binderPricing');
           const priced = await loadLatestSnapshotBinderPrices(visibleRows, {
             language: binderData.language, cardMode: binderData.card_mode, edition: binderData.edition,
             defaultCondition: binderData.default_condition,
@@ -1372,6 +1385,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       });
       visiblePriceReaderRef.current = priceReader;
       priceReader.request(visiblePriceIdsRef.current.length ? visiblePriceIdsRef.current : binderCards.slice(0, 12).map((card) => card.id));
+      }
 
       if (!user) {
         setOwnedVariants(new Map());
@@ -1383,7 +1397,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
       // Showcase placement is optional presentation; it must not hold ownership
       // confirmation or editing when the essential private reads have finished.
-      void loadShowcase(user.id);
+      if (!CORE_COLLECTION_MODE) void loadShowcase(user.id);
 
       void (async () => {
         const ownershipRequest = new AbortController();
@@ -1685,7 +1699,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   // SORTED CARDS
   // ===============================
 
-  const cataloguePricedCards = useCataloguePriceOverlay(cards);
+  const cataloguePricedCards = useCataloguePriceOverlay(cards, { enabled: !CORE_COLLECTION_MODE });
   const displayCards = useMemo(() => {
     const language = normalizePokemonCardLanguage(binder?.language);
     if (binder?.type === 'official' && language === 'ja' && !masterSetEnabled) {
@@ -1824,7 +1838,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     : 0;
 
   useEffect(() => {
-    if (!binderId || !totalKnown || totalCount <= 0 || loading || !ownershipReady || catalogueReadIncomplete) return;
+    if (CORE_COLLECTION_MODE || !binderId || !totalKnown || totalCount <= 0 || loading || !ownershipReady || catalogueReadIncomplete) return;
 
     const lastProgress = achievementProgressRef.current[binderId] ?? -1;
     if (progressPercent <= lastProgress && progressPercent < 100) return;
@@ -1857,7 +1871,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   useEffect(() => { setPreparedBinderValue(null); }, [binderId, userId, isReadOnly]);
   useEffect(() => {
     let current = true;
-    if (!userId || !binderId || isReadOnly) return;
+    if (CORE_COLLECTION_MODE || !userId || !binderId || isReadOnly) return;
     let reading = false;
     const read = async () => {
       if (reading) return;
@@ -1950,7 +1964,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
       if (error) throw error;
 
-      if (newValue) {
+      if (!CORE_COLLECTION_MODE && newValue) {
         checkAchievements({ publicBinder: true }).catch((achievementError) => {
           console.log('Public binder achievement check failed:', achievementError);
         });
@@ -1970,7 +1984,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       setUpdatingMasterSet(true);
       setMasterSetEnabled(value);
       await AsyncStorage.setItem(getMasterSetStorageKey(binderId), value ? 'true' : 'false');
-      if (value) {
+      if (!CORE_COLLECTION_MODE && value) {
         recordAchievementEvent('master_set_enabled', { binderId }).catch((achievementError) => {
           console.log('Master set achievement check failed:', achievementError);
         });
@@ -3263,7 +3277,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     const imageEditionHint = getBinderEditionHint(binder?.edition);
     const cardName = getBinderCardDisplayName(item, item.card_id);
     const guide = item.runtimeCataloguePricing;
-    const forTrade = isForTrade(item.card_id, item.set_id);
+    const forTrade = !CORE_COLLECTION_MODE && isForTrade(item.card_id, item.set_id);
     const isGradedBinder = binder?.card_mode === 'graded';
 
     const variants = masterSetEnabled ? getVariants(item.card, item.set_id) : ['card'];
@@ -3537,7 +3551,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           {cardName}
         </Text>
 
-        {guide ? (
+        {!CORE_COLLECTION_MODE && guide ? (
           <View style={{ marginTop: 2 }}>
             <Text numberOfLines={1} style={{ color: theme.colors.primary, fontSize: 10, fontWeight: '900' }}>
               {guide.pricingStatus === 'unavailable' ? 'General price unavailable' : `${formatCurrency(guide.displayPrice)} general estimate`}
@@ -3591,6 +3605,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     let mounted = true;
 
     const loadModalTcgFallback = async () => {
+      if (CORE_COLLECTION_MODE) return;
       if (!selectedCard) {
         setModalTcgFallbackPrice(null);
         return;
@@ -3612,6 +3627,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       }
 
       try {
+        const { fetchTcgcsvUiCardPricesForSet } = await import('../../lib/pricing');
         const rows = await fetchTcgcsvUiCardPricesForSet(setName);
         if (!mounted) return;
 
@@ -3809,12 +3825,12 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   const quickActionSheetActions: StackrQuickAction[] = quickActionCard ? [
     {
       label: 'Details',
-      subtitle: 'Open card details and market value.',
+      subtitle: CORE_COLLECTION_MODE ? 'Open card details.' : 'Open card details and market value.',
       icon: 'information-circle-outline',
       onPress: () => openCardDetail(quickActionCard),
     },
     ...(!isReadOnly ? [
-      {
+      ...(!CORE_COLLECTION_MODE ? [{
         label: showcaseStatus === 'error' ? 'Retry Chase list' : showcaseStatus !== 'ready' ? 'Chase list pending'
           : isShowcased(quickActionCard, 'chase') ? 'Remove from Chase' : 'Add to Chase',
         subtitle: showcaseStatus !== 'ready' ? 'Load your saved Chase list before changing its cards.' : isShowcased(quickActionCard, 'chase')
@@ -3823,7 +3839,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         imageIcon: stackrIcons.chase,
         disabled: showcaseStatus === 'loading' || showcaseStatus === 'saving',
         onPress: () => showcaseStatus === 'error' && userId ? void loadShowcase(userId) : void toggleShowcase(quickActionCard, 'chase'),
-      },
+      }] : []),
       ...(binder?.type === 'custom' ? [
         {
           label: 'Remove from binder',
@@ -4009,10 +4025,10 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                 {heroCountLabel}
               </Text>
               <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 13, fontWeight: '800' }}>|</Text>
-              <Text style={{ color: theme.colors.text, fontSize: 10.5, lineHeight: 15, fontWeight: '800', textAlign: 'center', flexShrink: 1 }}>
+              {!CORE_COLLECTION_MODE && (<Text style={{ color: theme.colors.text, fontSize: 10.5, lineHeight: 15, fontWeight: '800', textAlign: 'center', flexShrink: 1 }}>
                 {'Owned: ' + preparedValueLabel(preparedBinderValue?.owned)}
                 {binder?.type === 'official' ? '\n' + (masterSetEnabled ? 'Master set: ' : 'Complete set: ') + preparedValueLabel(preparedSetValue) : ''}
-              </Text>
+              </Text>)}
               <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 13, fontWeight: '800' }}>|</Text>
               <Text style={{ color: theme.colors.primary, fontSize: 10.5, lineHeight: 13, fontWeight: '900' }} numberOfLines={1}>
                 {heroStatusLabel}
@@ -4078,7 +4094,8 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         />
         <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginBottom: 8 }}>
           {activeRarity !== 'all' ? `${sortedCards.length} cards shown · ` : ''}
-          Missing: {totalNeedsSync ? 'unknown' : missingCount} · Duplicates: {duplicateCount} · Chase: {chaseCount}
+          Missing: {totalNeedsSync ? 'unknown' : missingCount} | Duplicates: {duplicateCount}
+          {!CORE_COLLECTION_MODE ? ' | Chase: ' + chaseCount : ''}
         </Text>
         {rarityChoices.length > 2 ? (
           <View style={{ marginBottom: 8 }}>
@@ -4109,7 +4126,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
             {!isReadOnly ? (
               <View style={{ gap: 7, marginTop: 8 }}>
                 {binder.card_mode === 'graded' ? (
-                  <View style={{ flexDirection: 'row', gap: 8, alignItems: 'stretch' }}>
+                  (!CORE_COLLECTION_MODE && (<View style={{ flexDirection: 'row', gap: 8, alignItems: 'stretch' }}>
                     <StackrActionButton
                       title="Scan to Binder"
                       imageIcon={stackrIcons.scanCard}
@@ -4136,10 +4153,10 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                       trackColor={switchTrackColor}
                       thumbColor={getSwitchThumbColor(isPublic)}
                     />
-                  </View>
+                  </View>))
                 ) : (
                   <>
-                    <View style={{ flexDirection: 'row', gap: 8, alignItems: 'stretch' }}>
+                    {!CORE_COLLECTION_MODE && (<View style={{ flexDirection: 'row', gap: 8, alignItems: 'stretch' }}>
                       <StackrActionButton
                         title="Scan to Binder"
                         imageIcon={stackrIcons.scanCard}
@@ -4166,7 +4183,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                         trackColor={switchTrackColor}
                         thumbColor={getSwitchThumbColor(isPublic)}
                       />
-                    </View>
+                    </View>)}
 
                     {binder.type === 'official' ? (
                       <BinderHeroCompactSwitch
@@ -4204,7 +4221,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                 <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 12 }}>Add Manually</Text>
               </TouchableOpacity>
             ) : null}
-        {renderShowcaseStrip('chase', 'Chase Cards')}
+        {!CORE_COLLECTION_MODE && renderShowcaseStrip('chase', 'Chase Cards')}
       </StackrBottomSheet>
       <ScrollToEndButton
         visible={showBinderEndButton}
@@ -5242,7 +5259,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                     </View>
 
                     {/* Price sources */}
-                    <View style={boxStyle}>
+                    {!CORE_COLLECTION_MODE && (<View style={boxStyle}>
                       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                         <Text style={boxTitleStyle}>Price Sources</Text>
                         {binder.card_mode !== 'graded' && (
@@ -5382,7 +5399,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                           </Text>
                         </>
                       )}
-                    </View>
+                    </View>)}
                   </ScrollView>
                 )}
               </SafeAreaView>
@@ -5898,3 +5915,4 @@ function MasterVariantIcon({
     </View>
   );
 }
+

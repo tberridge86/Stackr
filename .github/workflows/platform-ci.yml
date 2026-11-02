@@ -58,6 +58,7 @@ jobs:
       - run: npm run test:next-beta-fixes
       - run: npm run lint
       - run: npm run typecheck
+      - run: npm run test:core-collection
       - run: npm run test:traditional-chinese-hires-logos
       - run: npm run typecheck:backend
       - run: npm run test:pokedex-release
@@ -465,3 +466,4 @@ jobs:
       - run: npm run build:web
       - name: Scan exported mobile/web bundle for secrets
         run: node scripts/deploy/secret-scan.mjs --directory=dist
+

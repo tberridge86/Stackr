@@ -1,3 +1,4 @@
+import { CORE_COLLECTION_MODE } from '../../lib/appCapabilities';
 import { catalogueVariantLabel } from '../../lib/catalogueVariantPresentation';
 import { SearchPagination, mergeSearchRows, searchCardLookupIds, searchOwnedQuantities, type SearchPageMetadata, type SearchPageState } from '../../lib/searchPagination';
 import { StackrBrowseToolbar } from '../../components/StackrBrowseControls';
@@ -91,6 +92,15 @@ import { useCataloguePriceOverlay } from '../../lib/useCataloguePriceOverlay';
 
 type SearchCategory = 'all' | 'cards' | 'sets' | 'sealed' | 'graded' | 'collectors' | ListingCategoryKey;
 type SearchSortKey = 'relevance' | 'priceAsc' | 'priceDesc' | 'rarity' | 'set' | 'gradeDesc' | 'newest';
+function getEnabledSearchFacetScope(category: SearchCategory) {
+  const scope = getSearchFacetScope(category);
+  return CORE_COLLECTION_MODE ? { ...scope, price: false, grading: false } : scope;
+}
+
+function isEnabledSearchSort(category: SearchCategory, sort: SearchSortKey) {
+  return isSearchSortSupported(category, sort) && (!CORE_COLLECTION_MODE || ['relevance', 'rarity', 'set'].includes(sort));
+}
+
 type SearchPriceBucket = 'all' | 'under10' | '10to50' | '50to100' | '100plus';
 type SearchLanguageFilter = 'all' | PokemonCatalogueLanguageCode;
 
@@ -182,7 +192,10 @@ const LISTING_CATEGORY_CHIPS: SearchCategoryConfig[] = getListingCategories().ma
   imageIcon: category.asset,
 }));
 
-const CATEGORIES: SearchCategoryConfig[] = [
+const CATEGORIES: SearchCategoryConfig[] = CORE_COLLECTION_MODE ? [
+  { key: 'cards', label: 'Cards', icon: searchIcons.cards },
+  { key: 'sets', label: 'Sets', icon: searchIcons.sets },
+] : [
   { key: 'all', label: 'All', icon: searchIcons.search, imageIcon: getListingCategoryConfig('collection_bundle').asset },
   { key: 'sets', label: 'Sets', icon: searchIcons.sets, imageIcon: getListingCategoryConfig('booster_box').asset },
   ...LISTING_CATEGORY_CHIPS,
@@ -306,6 +319,7 @@ function getParamValue(value: string | string[] | undefined) {
 }
 
 function isSearchCategory(value: unknown): value is SearchCategory {
+  if (CORE_COLLECTION_MODE) return value === 'cards' || value === 'sets';
   return value === 'all'
     || value === 'cards'
     || value === 'sets'
@@ -696,11 +710,11 @@ export default function GlobalSearchScreen() {
   const paramQuery = getParamValue(params.q);
   const paramCategory = getParamValue(params.category);
   const paramShowcaseSlot = getParamValue(params.profileShowcaseSlot);
-  const profileShowcaseSlot = isProfileShowcaseSlot(paramShowcaseSlot) ? paramShowcaseSlot : null;
+  const profileShowcaseSlot = !CORE_COLLECTION_MODE && isProfileShowcaseSlot(paramShowcaseSlot) ? paramShowcaseSlot : null;
   const showcaseConfig = profileShowcaseSlot ? getProfileShowcaseSearchConfig(profileShowcaseSlot) : null;
   const initialCategory = isSearchCategory(paramCategory)
     ? paramCategory
-    : showcaseConfig?.category ?? 'all';
+    : showcaseConfig?.category ?? (CORE_COLLECTION_MODE ? 'cards' : 'all');
   const [query, setQuery] = useState(paramQuery ?? '');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [category, setCategory] = useState<SearchCategory>(initialCategory);
@@ -713,16 +727,16 @@ export default function GlobalSearchScreen() {
   const [selectedGrader, setSelectedGrader] = useState<string | null>(null);
   const [selectedGrade, setSelectedGrade] = useState<string | null>(null);
   const [selectedPriceBucket, setSelectedPriceBucket] = useState<SearchPriceBucket>('all');
-  const facetScope = getSearchFacetScope(category);
+  const facetScope = getEnabledSearchFacetScope(category);
   // Changing result type clears facets that cannot apply to that type.
   useEffect(() => {
-    const scope = getSearchFacetScope(category);
+    const scope = getEnabledSearchFacetScope(category);
     if (!scope.rarity) setSelectedRarities([]);
     if (!scope.set) setSelectedSetFilter(null);
     if (!scope.language) setSelectedLanguage('all');
     if (!scope.price) setSelectedPriceBucket('all');
     if (!scope.grading) { setSelectedGrader(null); setSelectedGrade(null); }
-    setSearchSort((sort) => isSearchSortSupported(category, sort) ? sort : 'relevance');
+    setSearchSort((sort) => isEnabledSearchSort(category, sort) ? sort : 'relevance');
   }, [category]);
   const [results, setResults] = useState<SearchResults>(EMPTY_RESULTS);
   const [errors, setErrors] = useState<SearchErrorState>({});
@@ -1055,12 +1069,13 @@ export default function GlobalSearchScreen() {
     const normalisedTerms = expandedQueries.map(normaliseSearchText);
     const catalogueProductTypeFilter = getCatalogueProductTypeFilter(category);
     const listingProductTypeFilter = getListingProductTypeFilter(category);
-    const shouldSearchProducts =
+    const shouldSearchProducts = !CORE_COLLECTION_MODE && (
       category === 'all'
       || category === 'sealed'
       || Boolean(catalogueProductTypeFilter)
-      || productTypeMatchesIntent(trimmed);
-    const cardResultLimit = category === 'all' || isRawCardCategory(category) ? 120 : 48;
+      || productTypeMatchesIntent(trimmed));
+    // Keep first-page coverage while the API may report continuation unavailable.
+    const cardResultLimit = CORE_COLLECTION_MODE || category === 'all' || isRawCardCategory(category) ? 120 : 48;
 
     const correctionPromise = correctPokemonNameQuery(trimmed, { allowIndex: false }).catch(() => null);
     let canonicalCards: SearchResults['cards'] | null = null;
@@ -1077,7 +1092,7 @@ export default function GlobalSearchScreen() {
       setResults((current) => acceptingEarlyCards && requestId === requestRef.current
         ? { ...current, cards: mergeSearchRows(cards, continuationCardsRef.current) } : current);
     });
-    const cardsPromise = searchLocalPokemonCards<any>(primary, {
+    const cardsPromise = CORE_COLLECTION_MODE && category === 'sets' ? Promise.resolve([]) : searchLocalPokemonCards<any>(primary, {
       language: selectedLanguage,
       limit: cardResultLimit, force, signal: pageLease.signal, preserveVariantIdentity: true,
       onPagination: (metadata) => { firstPageMetadata = metadata; },
@@ -1103,16 +1118,16 @@ export default function GlobalSearchScreen() {
       if (acceptingEarlyCards && requestId === requestRef.current) retrievalTrace.phase('card-source-ready');
       return rows;
     });
-    const setsPromise = searchSetsQuick(primary, normalisedTerms, selectedLanguage);
+    const setsPromise = CORE_COLLECTION_MODE && category !== 'sets' ? Promise.resolve([]) : searchSetsQuick(primary, normalisedTerms, selectedLanguage);
     const productsPromise = shouldSearchProducts
       ? searchMarketProducts(trimmed, catalogueProductTypeFilter, catalogueProductTypeFilter || productTypeMatchesIntent(trimmed) ? 24 : 10, { throwOnError: true })
       : Promise.resolve([]);
-    const profilesPromise: Promise<any> = Promise.resolve(supabase
+    const profilesPromise: Promise<any> = CORE_COLLECTION_MODE ? Promise.resolve({ data: [], error: null }) : Promise.resolve(supabase
       .from('profile_public_directory')
       .select('id, collector_name, avatar_url')
       .ilike('collector_name', `%${primary}%`)
       .limit(8));
-    const listingsPromise: Promise<any> = fetchListingSearchWithMedia((select) => {
+    const listingsPromise: Promise<any> = CORE_COLLECTION_MODE ? Promise.resolve({ data: [], error: null }) : fetchListingSearchWithMedia((select) => {
       let listingsQuery = supabase
         .from('user_card_flags')
         .select(select)
@@ -1488,7 +1503,7 @@ export default function GlobalSearchScreen() {
   }, []);
 
   const clearSearchFilters = useCallback(() => {
-    setCategory('all');
+    setCategory(CORE_COLLECTION_MODE ? 'cards' : 'all');
     setSearchSort('relevance');
     setSelectedRarities([]);
     setSelectedSetFilter(null);
@@ -1604,7 +1619,7 @@ export default function GlobalSearchScreen() {
     return next;
   }, [results, searchSort, selectedGrade, selectedGrader, selectedLanguage, selectedPriceBucket, selectedRarities, selectedSetFilter]);
 
-  const pricedSearchCards = useCataloguePriceOverlay(visibleResults.cards);
+  const pricedSearchCards = useCataloguePriceOverlay(visibleResults.cards, { enabled: !CORE_COLLECTION_MODE });
   const cataloguePriceByCardId = useMemo(
     () => new Map(pricedSearchCards.map((card) => [card.id, card.runtimeCataloguePricing])),
     [pricedSearchCards],
@@ -1621,6 +1636,7 @@ export default function GlobalSearchScreen() {
     + Number(selectedPriceBucket !== 'all');
 
   const filteredGroups = useMemo(() => {
+    if (CORE_COLLECTION_MODE) return category === 'sets' ? ['sets'] as const : ['cards'] as const;
     if (isRawCardCategory(category)) return ['cards', 'listings'] as const;
     if (category === 'sets') return ['sets'] as const;
     if (category === 'sealed') return ['sealed', 'listings'] as const;
@@ -1684,7 +1700,7 @@ export default function GlobalSearchScreen() {
             icon={searchIcons.search}
             imageIcon={stackrIcons.searchCard}
             title="Search your collecting world"
-            body="Find cards, sets, sealed products and Market listings."
+            body={CORE_COLLECTION_MODE ? "Find cards and sets for your binders." : "Find cards, sets, sealed products and Market listings."}
           />
           {recentSearches.length > 0 ? (
             <View style={{ gap: 10 }}>
@@ -2030,7 +2046,7 @@ export default function GlobalSearchScreen() {
                 onSearchChange={value => { trackSearchAction('input', value); setQuery(value); }}
                 onSubmitSearch={() => { void rememberSearch(); }}
                 loading={loading}
-                placeholder={showcaseConfig?.placeholder ?? 'Search cards, sets or sealed products'}
+                placeholder={CORE_COLLECTION_MODE ? 'Search cards or sets' : showcaseConfig?.placeholder ?? 'Search cards, sets or sealed products'}
                 onOpenFilters={() => setFiltersOpen(true)}
                 activeFilterCount={activeSearchFilterCount}
                 resultLabel={hasQuery ? `${searchResultSummary} · ${currentSearchSortLabel}` : undefined}
@@ -2145,7 +2161,7 @@ export default function GlobalSearchScreen() {
 
         <SearchFilterGroup title="Sort">
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-            {SEARCH_SORT_OPTIONS.filter((option) => isSearchSortSupported(category, option.key)).map((option) => (
+            {SEARCH_SORT_OPTIONS.filter((option) => isEnabledSearchSort(category, option.key)).map((option) => (
               <SearchFilterOption
                 key={option.key}
                 label={option.label}
@@ -2252,12 +2268,13 @@ export default function GlobalSearchScreen() {
 }
 
 async function fetchCardListingStats(cardIds: string[]) {
+  if (CORE_COLLECTION_MODE) return emptyListingStatsMap();
   return fetchCachedCardListingStats(cardIds).catch(() => new Map<string, { count: number; lowest: number | null }>());
 }
 
 async function fetchProductListingStats(products: MarketProduct[]) {
   const map = new Map<string, { count: number; lowest: number | null }>();
-  if (!products.length) return map;
+  if (CORE_COLLECTION_MODE || !products.length) return map;
 
   const statsByName = await fetchCachedProductListingStatsByName(products.map((product) => product.name)).catch(() => null);
   if (!statsByName) return map;
@@ -2465,3 +2482,4 @@ function SearchFilterOption({
     </TouchableOpacity>
   );
 }
+

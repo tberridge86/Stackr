@@ -120,8 +120,10 @@ assert.ok(detail.found.some((element) => element.attributes.properties.some((pro
 
 const providerSource = ts.createSourceFile('components/CardInspectionProvider.tsx', readFileSync('components/CardInspectionProvider.tsx', 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
 const providerText = providerSource.getFullText();
-assert.ok(providerText.includes('setRequest(null)'), 'closing or leaving a surface dismisses inspection instead of navigating away');
-assert.ok(!providerText.includes('router.push') && !providerText.includes('router.replace'), 'inspection itself must not change the current route');
+assert.ok(providerText.includes('setRequest(null)'), 'legacy inspection still dismisses when its surface closes');
+assert.match(providerText, /if \(CORE_COLLECTION_MODE\)[\s\S]*router\.push\(\{ pathname: '\/card\/\[id\]'/,
+  'core inspection opens the small canonical card route instead of mounting the motion-heavy overlay');
+assert.ok(!providerText.includes('router.replace'), 'inspection must not replace the current navigation entry');
 const detailSurfaceSource = readFileSync('components/InteractiveCardInspectPressable.tsx', 'utf8');
 assert.match(detailSurfaceSource, /useCardMotionPreference/, 'the detail-card surface must read the saved card-motion preference');
 assert.match(

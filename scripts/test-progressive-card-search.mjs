@@ -106,12 +106,15 @@ assert.match(
 );
 const query = { select() { return this; }, ilike() { return this; }, eq() { return this; }, or() { return this; }, limit: async () => ({ data: [] }) };
 const noop = () => {};
-const run = extract('app/(tabs)/search.tsx', 'runSearch', {
+// The original all-source fixture remains explicit; core Cards exercises the
+// same mounted query identity boundary separately below.
+const createRun = (coreCollectionMode) => extract('app/(tabs)/search.tsx', 'runSearch', {
+  CORE_COLLECTION_MODE: coreCollectionMode,
   ...listingSearchMediaExports,
   beginRetrieval: performanceExports.beginRetrieval,
   searchTraceRef: { current: null }, pendingSearchTraceRef: { current: null }, searchCommitTraceRef: { current: null },
   searchFocusedRef: { current: true }, continuationCardsRef: { current: [] }, ...paginationExports, paginationRef: { current: new paginationExports.SearchPagination() },
-  requestRef, previousSearchRef, category: 'all', selectedLanguage: 'ja', searchIdentityEpoch: 0,
+  requestRef, previousSearchRef, category: coreCollectionMode ? 'cards' : 'all', selectedLanguage: 'ja', searchIdentityEpoch: 0,
   EMPTY_RESULTS, SEARCH_FIRST_PAINT_BUDGET_MS: 1,
   setResults: value => { state = typeof value === 'function' ? value(state) : value; },
   setLoading: noop, setRefreshing: noop, setErrors: value => { errors = value; }, setSuggestion: noop, setSetSuggestion: noop, setSearchError: noop,
@@ -134,10 +137,12 @@ const run = extract('app/(tabs)/search.tsx', 'runSearch', {
   console: { log: noop },
 });
 
+const run = createRun(false);
+
 // Protect the actual screen's primary-query boundary, rather than a mocked
 // normalizer: dropping native names can turn an exact query into a generic ex
 // or number search before the catalogue sees it.
-for (const [input, expected] of [
+const identityQueries = [
   ['リザードン ex', 'リザードン ex'],
   ['ピカチュウ 025', 'ピカチュウ 025'],
   ['皮卡丘 ex', '皮卡丘 ex'],
@@ -154,11 +159,20 @@ for (const [input, expected] of [
   ['ＳＶＡＭ　ＧＲＡ', 'svam gra'],
   ['PSA 10 Charizard', 'psa 10 charizard'],
   ['00000000-0000-4000-8000-000000000025', '00000000-0000-4000-8000-000000000025'],
-]) {
-  const request = run(input);
-  assert.equal([...requests.keys()].at(-1), expected, `The mounted screen must retain identity terms in ${input}`);
-  requests.get(expected).resolve([]);
-  await request;
+];
+for (const coreCollectionMode of [false, true]) {
+  const identityRun = coreCollectionMode ? createRun(true) : run;
+  for (const [input, expected] of identityQueries) {
+    requests.clear();
+    const request = identityRun(input);
+    assert.equal([...requests.keys()].at(-1), expected, `The mounted screen must retain identity terms in ${input}`);
+    const actual = requests.get(expected);
+    assert.equal(actual.options.language, 'ja', 'The mounted query must preserve the selected catalogue language');
+    assert.equal(actual.options.preserveVariantIdentity, true, 'The mounted query must preserve exact variant identity');
+    assert.equal(actual.options.limit, 120);
+    actual.resolve([]);
+    await request;
+  }
 }
 assert.deepEqual(Array.from(expandSearchQuery('Pokémon sv')), ['pokemon sv', 'pokemon scarlet violet']);
 assert.deepEqual(Array.from(expandSearchQuery('BGS Charizard')), ['bgs charizard', 'beckett charizard']);
@@ -226,3 +240,4 @@ await emptySearch;
 assert.deepEqual(state.cards, [], 'a successful empty factual response remains an honest no-match result');
 assert.equal(errors.cards, undefined, 'a successful empty factual response must not become a refresh error');
 console.log('Progressive search passed: native/gender/number queries, native/English set ranking, rows before artwork, optional failure, identity preservation, first/final renders and stale-query rejection.');
+

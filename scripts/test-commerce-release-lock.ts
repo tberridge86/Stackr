@@ -115,12 +115,12 @@ assert.equal(
 );
 
 const appLayout = fs.readFileSync('components/StackrAppShell.tsx', 'utf8');
-const stripeProviderBranch = appLayout.match(
-  /BETA_TRADE_DEMO_MODE\s*\?\s*\(\s*<AppNavigation\s+startupVisible=\{startupVisible\}\s+onReady=\{onReady\}\s*\/>\s*\)\s*:\s*\(\s*<StripeAppProvider>/s,
-);
-assert.ok(
-  stripeProviderBranch,
-  'StripeAppProvider must remain on the non-demo branch guarded by BETA_TRADE_DEMO_MODE',
+assert.ok(appLayout.includes('CORE_COLLECTION_MODE'), 'The reduced shell must remain explicitly capability-gated');
+assert.ok(!appLayout.includes('StripeAppProvider'), 'Core collection mode must not mount the Stripe provider');
+assert.match(
+  appLayout,
+  /<AppNavigation\s+startupVisible=\{startupVisible\}\s+onReady=\{onReady\}\s*\/>/s,
+  'The core shell must mount navigation without a dormant commerce provider',
 );
 
 const tradeOffers = fs.readFileSync('lib/tradeOffers.ts', 'utf8');

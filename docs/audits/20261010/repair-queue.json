@@ -361,7 +361,7 @@
       }
     ]
   },
-  "updatedAt": "2026-11-01T21:18:41.236Z",
+  "updatedAt": "2026-11-02T13:06:59.122Z",
   "coordinator": "Tif / root",
   "workingDirectory": "D:/Stackr",
   "branch": "codex/stackr-repair-consolidation-20261018",
@@ -3250,34 +3250,14 @@
     }
   ],
   "currentWork": {
-    "owner": "Tif / root",
-    "status": "final_japanese_crop_client_followup_after_pr451_merge",
-    "sourceBase": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
-    "candidate": "fix/build63-published-japanese-crops-20261101",
-    "report": "docs/audits/20261101/build63-reconciliation.md",
-    "authorization": "Owner requested reconciliation before next push, then TestFlight63; standard production profile and existing Team (Expo).",
-    "lastConfirmedNative": {
-      "version": "1.0.6",
-      "build": "62",
-      "source": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
-      "easBuildId": "8f0c25f1-b287-4a3c-89f8-ae3569e7bb4c",
-      "easSubmissionId": "8e8b78e7-12b9-4226-b271-e15a11054554"
-    },
-    "liveBackend": {
-      "source": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
-      "observedPrefix": "0bf2e6022264",
-      "observedAt": "2026-11-01T20:18:35.761Z",
-      "deploymentId": "c40b25c1-b1a3-49d1-aed2-df0fc0852228",
-      "sourceMechanism": "bundled_workflow_sha"
-    },
-    "nextAction": "Require final reviewed head CI, merge, native delivery verification, standard production build63 and exact build submission to Team (Expo).",
-    "phoneClosedIssues": 0,
-    "mergedReconciliation": {
-      "pullRequest": 451,
-      "sha": "d2c052ac2ae98470661f1ff283084257a4e4b408",
-      "at": "2026-11-01T20:54:11Z"
-    },
-    "finalClientBaseline": "d2c052ac2ae98470661f1ff283084257a4e4b408"
+    "owner": "stackr_coding / root",
+    "status": "core_home_search_binders_candidate",
+    "sourceBase": "832eba78ad8bbdd8dea1d358b811f2c11bc3f013",
+    "report": "docs/audits/20261102/core-collection-recovery.md",
+    "authorization": "Owner requested all features off except Home, Search and Binders after an unsuccessful installed-app phone experience; continue implementing that scope. Exact installed build/OTA is unverified.",
+    "phoneAcceptance": "unverified_for_new_candidate",
+    "nextAction": "Complete exact-head CI and review; preserve the owner's failed installed-app acceptance and distinguish the verified historical Build63 release from this unbuilt core candidate.",
+    "nativeBuildCreated": false
   },
   "completionGoal": {
     "threadId": "01a12a4c-4b1a-7823-b948-148c90d7cd8e",
@@ -4063,5 +4043,85 @@
       "schemaChanges": 0,
       "permissionExpansion": false
     }
+  },
+  "currentWorkBeforeCoreCollection": {
+    "owner": "Tif / root",
+    "status": "final_japanese_crop_client_followup_after_pr451_merge",
+    "sourceBase": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+    "candidate": "fix/build63-published-japanese-crops-20261101",
+    "report": "docs/audits/20261101/build63-reconciliation.md",
+    "authorization": "Owner requested reconciliation before next push, then TestFlight63; standard production profile and existing Team (Expo).",
+    "lastConfirmedNative": {
+      "version": "1.0.6",
+      "build": "62",
+      "source": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+      "easBuildId": "8f0c25f1-b287-4a3c-89f8-ae3569e7bb4c",
+      "easSubmissionId": "8e8b78e7-12b9-4226-b271-e15a11054554"
+    },
+    "liveBackend": {
+      "source": "0bf2e60222644682d600deb7cc0e94862fd2a71a",
+      "observedPrefix": "0bf2e6022264",
+      "observedAt": "2026-11-01T20:18:35.761Z",
+      "deploymentId": "c40b25c1-b1a3-49d1-aed2-df0fc0852228",
+      "sourceMechanism": "bundled_workflow_sha"
+    },
+    "nextAction": "Require final reviewed head CI, merge, native delivery verification, standard production build63 and exact build submission to Team (Expo).",
+    "phoneClosedIssues": 0,
+    "mergedReconciliation": {
+      "pullRequest": 451,
+      "sha": "d2c052ac2ae98470661f1ff283084257a4e4b408",
+      "at": "2026-11-01T20:54:11Z"
+    },
+    "finalClientBaseline": "d2c052ac2ae98470661f1ff283084257a4e4b408"
+  },
+  "build63OwnerAcceptance20261102": {
+    "build": "1.0.6 (63)",
+    "source": "832eba78ad8bbdd8dea1d358b811f2c11bc3f013",
+    "status": "failed_owner_reported",
+    "feedback": [
+      "same loading issues",
+      "awful retrieval speeds",
+      "untranslated cards",
+      "missing images",
+      "no perceived improvement"
+    ],
+    "newScope": [
+      "Home",
+      "Search",
+      "Binders"
+    ],
+    "note": "Build63 was produced, uploaded and observed Testing for Team (Expo) on 1 November. The owner's feedback concerns the installed app; its exact build/OTA is unverified. Release success did not establish phone acceptance.",
+    "feedbackScope": "installed_app_exact_build_and_ota_unverified"
+  },
+  "coreCollectionRecovery20261102": {
+    "report": "docs/audits/20261102/core-collection-recovery.md",
+    "scope": [
+      "Home",
+      "Search",
+      "Binders"
+    ],
+    "implemented": true,
+    "independentReview": "passed",
+    "tests": {
+      "homeBinderScenarios": 42,
+      "profileGateScenarios": 7,
+      "rootSearchAccountCard": "passed_actual_module_renderers"
+    },
+    "productionMutations": 0,
+    "nativeBuildCreated": false,
+    "phoneVerified": false
+  },
+  "build63Availability20261101": {
+    "receipt": "docs/audits/20261102/build63-observed-availability.json",
+    "status": "historically_verified_testing",
+    "build": "1.0.6 (63)",
+    "easBuildId": "209a3ce1-5551-4b2a-b2d1-c1bd5b1ae3aa",
+    "source": "832eba78ad8bbdd8dea1d358b811f2c11bc3f013",
+    "appleBuildId": "cb7fcd8f-21fc-4cc0-afd0-62b23bf04aec",
+    "group": "Team (Expo)",
+    "observedDate": "2026-11-01",
+    "phoneInstalledBuild": "unverified",
+    "currentAvailabilityRechecked": false,
+    "newCoreCandidateBuildCreated": false
   }
 }

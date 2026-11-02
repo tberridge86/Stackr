@@ -1,3 +1,4 @@
+import { CORE_COLLECTION_MODE } from '../lib/appCapabilities';
 import { usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Animated, Platform, Text as NativeText, TextInput as NativeTextInput, View } from 'react-native';
@@ -58,14 +59,14 @@ function configureNativeTypographyDefaults() {
 export default function RootLayout() {
   const pathname = usePathname();
   const [fontWaitExpired, setFontWaitExpired] = useState(false);
-  const [showStartupScreen, setShowStartupScreen] = useState(true);
+  const [showStartupScreen, setShowStartupScreen] = useState(!CORE_COLLECTION_MODE);
   const [startupVideoFinished, setStartupVideoFinished] = useState(false);
   const [startupSurfaceReady, setStartupSurfaceReady] = useState(false);
   const markSurfaceReady = useCallback(() => setStartupSurfaceReady(true), []);
   useEffect(() => { markStartupPhase('root-mounted'); }, []);
   const startupOpacity = useRef(new Animated.Value(1)).current;
   const startupDismissing = useRef(false);
-  const startupOverlayVisible = showStartupScreen && pathname !== '/splash-preview';
+  const startupOverlayVisible = !CORE_COLLECTION_MODE && showStartupScreen && pathname !== '/splash-preview';
   const [fontsLoaded, fontError] = useFonts({
     Inter_400Regular,
     Inter_500Medium,
@@ -109,6 +110,7 @@ export default function RootLayout() {
   }, [startupOpacity]);
 
   useEffect(() => {
+    if (CORE_COLLECTION_MODE) return;
     const timeout = setTimeout(forceFinishStartup, STARTUP_VIDEO_TIMEOUT_MS + 500);
     return () => {
       clearTimeout(timeout);
@@ -131,7 +133,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <ProfileProvider>
+        <ProfileProvider enabled={!CORE_COLLECTION_MODE || pathname.startsWith('/profile/setup')}>
           <View
             style={{ flex: 1, backgroundColor: lightTheme.colors.bg }}
             onLayout={() => { markStartupPhase('root-layout'); void SplashScreen.hideAsync().catch(() => {}); }}
@@ -146,7 +148,7 @@ export default function RootLayout() {
                 importantForAccessibility={startupOverlayVisible ? 'no-hide-descendants' : 'auto'}
               >
                 <StackrQueryProvider>
-                  {fontsReady ? (
+                  {CORE_COLLECTION_MODE || fontsReady ? (
                     <Suspense fallback={<StackrLoadingScreen message="Opening Stackr" />}>
                       <AppShell startupVisible={startupOverlayVisible || !startupSurfaceReady} onReady={markSurfaceReady} />
                     </Suspense>
@@ -181,3 +183,4 @@ export default function RootLayout() {
     </ThemeProvider>
   );
 }
+

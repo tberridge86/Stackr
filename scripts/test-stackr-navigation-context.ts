@@ -85,8 +85,9 @@ for (const name of ['(tabs)', 'index', 'scan', 'scan/result', 'scan/camera', 'bi
   assert.equal(canUseBrowsingBackGesture(name), false, `${name} retains its restriction`); checks++;
 }
 const shell = readFileSync('components/StackrAppShell.tsx', 'utf8');
-assert.match(shell, /resolveActiveStackrTab\(pathname, mode, navigationState\)/, 'the live tab bar uses the resolver and current root state');
+assert.match(shell, /resolveActiveStackrTab\(pathname, CORE_COLLECTION_MODE \? 'collector' : mode, navigationState\)/, 'the live tab bar uses collector mode in the core app and the current mode/root state otherwise');
 assert.match(shell, /gestureEnabled: canUseBrowsingBackGesture\(route.name\)/, 'native screen options use the browsing allowlist');
 assert.match(shell, /fullScreenGestureEnabled: false/, 'full-screen back gestures remain disabled');
 
 console.log(`Stackr navigation: ${checks + 3} checks passed for origins, deep links, back navigation, mode changes and edge-swipe scope.`);
+

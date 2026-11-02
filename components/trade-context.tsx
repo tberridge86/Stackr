@@ -1018,3 +1018,8 @@ export function useTrade() {
   if (!ctx) throw new Error('useTrade must be used inside TradeProvider');
   return ctx;
 }
+
+/** Core collection screens can render without starting the trade provider. */
+export function useOptionalTrade() {
+  return useContext(TradeContext);
+}

@@ -1,5 +1,5 @@
 import type { SearchPageMetadata } from './searchPagination';
-import { createSetFactsReader, loadCompleteSetPages } from './stackrSetRetrieval';
+import { createSetFactsReader, loadCompleteSetPages, mergeCanonicalCardDisplayName } from './stackrSetRetrieval';
 import { correctedChineseSetContext } from './chineseCatalogueCorrection';
 import { copyPreferredSetArtworkReassignments, getPreferredSetArtworkReassignments, readPreferredSetArtwork, rememberPreferredSetArtworkObservation } from './stackrPreferredSetArtwork';
 import { resolveCardArtwork } from './cardArtworkPresentation';
@@ -1711,8 +1711,8 @@ export async function fetchStackrPrice(
 }
 
 /** Recheck serialized, image-less rows through current preferred pages directly.
- * Current identity must match in full; only image presentation may cross a
- * catalogue-version boundary. Saved facts and selected finishes remain intact. */
+ * Exact identity must match. Approved artwork and missing English display
+ * aliases can refresh; native facts and selected finishes remain intact. */
 export async function enrichSavedStackrCardArtwork(
   cards: StackrLegacyCard[],
   signal?: AbortSignal,
@@ -1762,10 +1762,15 @@ export async function enrichSavedStackrCardArtwork(
             || (variant.imageVariantId ?? null) !== (selected.imageVariantId ?? null)
             || (variant.sameArtworkAsVariantId ?? null) !== (selected.sameArtworkAsVariantId ?? null)) continue;
           const artwork = { ...resolveCardArtwork(current, [], selected.variantId), catalogueVersionId: current.catalogueVersionId };
-          if (!artwork.small && !artwork.large) continue;
+          const display = mergeCanonicalCardDisplayName(card, stackrCardToLegacyCard({ ...current, defaultVariantId: selected.variantId }));
+          if (!artwork.small && !artwork.large && display === card) continue;
+          if (!artwork.small && !artwork.large) {
+            enriched.set(card, display);
+            continue;
+          }
           const images = { small: artwork.small, large: artwork.large };
           const previousPresentation = card.raw_data.presentation;
-          enriched.set(card, { ...card, images, raw_data: { ...card.raw_data, images,
+          enriched.set(card, { ...display, images, raw_data: { ...display.raw_data, images,
             presentation: { ...(previousPresentation && typeof previousPresentation === 'object' ? previousPresentation : {}),
               artwork, selected_image_variant_id: artwork.sourceVariantId } } });
         }
@@ -1884,3 +1889,4 @@ export async function enrichStackrCardArtworkFromFacts(
   }
   return enriched;
 }
+

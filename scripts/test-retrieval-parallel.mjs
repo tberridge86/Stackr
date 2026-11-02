@@ -165,6 +165,13 @@ function screenHarness() {
   const state = { loading: null, cards: [], ownershipReady: false };
   const never = () => new Promise(() => {});
   const context = { exports: {}, console, AbortController, binderId: 'binder',
+    CORE_COLLECTION_MODE: false,
+    require: (name) => name === '../../lib/binderPricing' ? {
+      loadLatestSnapshotBinderPrices: async (rows) => {
+        calls.prices++; calls.priceRows += rows.length;
+        return { rows, failure: null };
+      },
+    } : {},
     withPersonalDataReadTimeout,
     visiblePriceReaderRef: { current: null }, visiblePriceIdsRef: { current: [] },
     currentBinderIdRef: { current: 'binder' },
