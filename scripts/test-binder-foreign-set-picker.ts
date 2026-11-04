@@ -168,8 +168,8 @@ async function main() {
   const binderDetailSource = readFileSync('features/binder/BinderDetailScreen.tsx', 'utf8');
   assert.match(
     binderDetailSource,
-    /if \(forceRefresh\) \{\s*retainBinderPreviewDuringRefresh\(\(\) => \{\s*invalidateBinderCaches\(binderId\);\s*invalidatePokemonCatalogueCardCaches\(\);\s*\}\);\s*\}/,
-    'a forced refresh must invalidate binder and catalogue caches without clearing the retained preview',
+    /if \(forceRefresh\) \{\s*catalogueContinuationEpochRef\.current = '';\s*retainBinderPreviewDuringRefresh\(\(\) => \{\s*invalidateBinderCaches\(binderId\);\s*invalidatePokemonCatalogueCardCaches\(\);\s*\}\);\s*\}/,
+    'a forced refresh must reset catalogue continuation and invalidate both caches without clearing the retained preview',
   );
 
   const pickerSource = readFileSync('app/binder/new.tsx', 'utf8');

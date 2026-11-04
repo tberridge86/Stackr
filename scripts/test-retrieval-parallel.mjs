@@ -10,6 +10,8 @@ import * as cache from '../lib/requestCache.ts';
 import * as collectionSummaryInvalidation from '../lib/collectionSummaryInvalidation.ts';
 import * as optionalCatalogueEnrichment from '../lib/optionalCatalogueEnrichment.ts';
 import { withPersonalDataReadTimeout } from '../lib/personalDataRead.ts';
+import { continueBinderCatalogueRead } from '../lib/binderCatalogueContinuation.ts';
+import { getPokemonSetLanguageFromPrefixedId } from '../lib/pokemonSetIdentity.ts';
 
 const results = [];
 async function test(name, run) { await run(); results.push(name); console.log(`PASS ${name}`); }
@@ -161,8 +163,8 @@ visit(screenAst); assert(callback, 'actual binder screen loader must be testable
 const compiledCallback = ts.transpileModule(`export const load = ${callback};`, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
 function screenHarness() {
   const auth = deferred(); const record = deferred(); const cards = deferred();
-  const calls = { auth: 0, record: 0, cards: 0, artwork: 0, prices: 0, priceRows: 0, showcase: 0 };
-  const state = { loading: null, cards: [], ownershipReady: false };
+  const calls = { auth: 0, record: 0, cards: 0, continuation: 0, artwork: 0, prices: 0, priceRows: 0, showcase: 0 };
+  const state = { loading: null, cards: [], ownershipReady: false, error: null };
   const never = () => new Promise(() => {});
   const context = { exports: {}, console, AbortController, binderId: 'binder',
     CORE_COLLECTION_MODE: false,
@@ -180,6 +182,14 @@ function screenHarness() {
     setShowcaseStatus: () => {},
     loadShowcase: () => { calls.showcase++; return never(); },
     createVisibleBinderPriceReader,
+    continueBinderCatalogueRead, catalogueContinuationEpochRef: { current: '' },
+    normalizePokemonCardLanguage: language => language ?? 'en', getPokemonSetLanguageFromPrefixedId,
+    fetchStackrCardsForSet: (setId, language, _client, options) => {
+      calls.continuation++;
+      assert.equal(setId, binder.source_set_id); assert.equal(language, binder.language);
+      assert.equal(options.includeAssets, false); assert.equal(options.allowPageProgress, true);
+      return never();
+    },
     stackrApiClient: {},
     retrievalTraceRef: { current: null },
     beginBinderRetrieval: () => ({ cancel() {}, model() {}, phase() {}, fail() {}, settle() {} }),
@@ -205,7 +215,7 @@ function screenHarness() {
       return { rows, failure: null };
     },
     loadProgressiveBinderPrices: (rows) => { calls.prices++; calls.priceRows += rows.length; return never(); }, getVariantCardKey: (card, set) => `${set}:${card}`,
-    setLoading: (v) => { state.loading = v; }, setLoadError: () => {}, setOwnershipReady: (v) => { state.ownershipReady = v; }, setCards: (v) => { state.cards = typeof v === 'function' ? v(state.cards) : v; },
+    setLoading: (v) => { state.loading = v; }, setLoadError: v => { state.error = v; }, setOwnershipReady: (v) => { state.ownershipReady = v; }, setCards: (v) => { state.cards = typeof v === 'function' ? v(state.cards) : v; },
     setShowcaseRows: () => {}, setOwnedVariants: () => {}, setVariantManagedCards: () => {}, setUserId: () => {}, setBinder: () => {}, setCustomNameArtKey: () => {}, setIsPublic: () => {},
     invalidateBinderCaches: () => {}, invalidatePokemonCatalogueCardCaches: () => {}, Alert: { alert: () => {} },
   };
@@ -218,9 +228,12 @@ await test('actual screen overlaps authentication and binder lookup, then render
   await tick();
   assert.equal(h.calls.auth, 1); assert.equal(h.calls.record, 1, 'record lookup must not await auth network');
   h.record.resolve(binder); await tick(); assert.equal(h.calls.cards, 0, 'authentication must still complete before cards are loaded');
+  assert.equal(h.calls.continuation, 0, 'the background continuation also waits for verified binder access');
   h.auth.resolve({ data: { user: { id: 'owner' } } }); await tick(); assert.equal(h.calls.cards, 1);
+  assert.equal(h.calls.continuation, 1, 'the exact-set background read starts without blocking the normal facts lane');
   const rows = catalogue.map((card) => ({ ...card, card_id: card.id, set_id: 'sv08' })); h.cards.resolve(rows); await pending;
   assert.equal(h.state.cards.length, 252); assert.equal(h.state.loading, false);
+  assert.equal(h.state.error, null, 'missing callback dependencies cannot silently turn a successful fixture into a caught load failure');
   assert.equal(h.calls.artwork, 1); assert.equal(h.calls.prices, 1); assert.equal(h.state.ownershipReady, false, 'editing stays gated while detailed ownership is pending');
   assert.equal(h.calls.showcase, 1, 'optional placement starts without blocking useful card facts');
   assert.equal(h.calls.priceRows, 12, 'the actual screen must not price all 252 slots at startup');
@@ -232,12 +245,14 @@ await test('actual screen overlaps authentication and binder lookup, then render
 await test('actual screen retains private-binder denial after overlapping reads', async () => {
   const h = screenHarness(); const pending = h.load(); h.record.resolve(binder); h.auth.resolve({ data: { user: { id: 'other' } } }); await pending;
   assert.equal(h.calls.cards, 0); assert.equal(h.state.cards.length, 0);
+  assert.equal(h.calls.continuation, 0);
 });
 
 await test('actual screen discards an old account result before card loading', async () => {
   const h = screenHarness(); const pending = h.load(); h.context.accountGenerationRef.current++;
   h.record.resolve(binder); h.auth.resolve({ data: { user: { id: 'owner' } } }); await pending;
   assert.equal(h.calls.cards, 0); assert.equal(h.state.cards.length, 0);
+  assert.equal(h.calls.continuation, 0);
 });
 
 await test('actual screen discards a navigation result that arrives after cancellation', async () => {
