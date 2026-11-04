@@ -67,6 +67,35 @@ for (const row of simplified.covers) {
 console.log(`Exact Simplified Chinese cover checks passed for ${simplified.covers.length} existing assets without substituting logos or crossing languages.`);
 
 const production = loadForEnvironment('https://production-test.invalid', 'production');
+const anniversary = JSON.parse(readFileSync(new URL('../docs/releases/build64-anniversary-logo-read-20261104.json', import.meta.url), 'utf8')) as {
+  logos: { setId: string; language: string; setCode: string; deliveryUrl: string }[];
+};
+for (const row of anniversary.logos) {
+  for (const id of [row.setId, `${row.language}:${row.setId}`, row.setCode]) {
+    assert.equal(production.getPublishedSetLogoFallback({ id, language: row.language }), row.deliveryUrl);
+  }
+  assert.equal(production.getPublishedSetLogoFallback({ id: row.setId }), row.deliveryUrl);
+  assert.equal(production.getPublishedSetLogoFallback({ id: row.setCode }), undefined);
+  assert.equal(loadForEnvironment('https://staging-test.invalid').getPublishedSetLogoFallback({ id: row.setId, language: row.language }), undefined,
+    'Production-only evidence must not redirect a staging identity');
+  for (const language of ['en', 'ja', 'zh-cn', 'zh-tw', 'ko'].filter(value => value !== row.language)) {
+    assert.equal(production.getPublishedSetLogoFallback({ id: row.setId, language }), undefined);
+  }
+  assert.equal(production.getPublishedSetLogoFallback({ id: '11111111-1111-4111-8111-111111111111', language: row.language, setCode: row.setCode }), undefined);
+}
+assert.equal(production.getPublishedSetLogoFallback({ id: '07422e07-e2a2-5966-b0e1-008afc08d97c', language: 'en', setCode: '30C' }), undefined,
+  'The Classic edition must not inherit the anniversary main-set logo through stale metadata');
+assert.equal(production.getPublishedSetLogoFallback({ id: 'ja:258cb8e5-c769-540d-9e3c-40d4ed4dafdb', language: 'en' }), undefined);
+assert.equal(production.getPublishedSetLogoFallback({ id: 'zh-cn:88e351b5-8191-5ef4-854b-2978046cda53', language: 'ja', setCode: 'M6a' }), undefined);
+assert.equal(production.getPublishedSetLogoFallback({ id: 'ko:258cb8e5-c769-540d-9e3c-40d4ed4dafdb', language: 'en', setCode: '30C' }), undefined);
+for (const prefix of ['ko', 'kr', 'zh-cn', 'zh_cn', 'zhcn', 'zh-hans', 'zh_hans', 'zhhans', 'zh-sg', 'zh_sg', 'zhsg', 'zh-tw', 'zh_tw', 'zhtw', 'zh-hant', 'zh_hant', 'zhhant', 'zh']) {
+  assert.equal(production.getPublishedSetLogoFallback({ id: `${prefix}:88e351b5-8191-5ef4-854b-2978046cda53`, setCode: 'M6a' }), undefined);
+  for (const row of anniversary.logos) {
+    assert.equal(production.getPublishedSetLogoFallback({ id: `${prefix}:${row.setId}`, language: row.language, setCode: row.setCode }), undefined);
+  }
+}
+assert.equal(production.getPublishedSetLogoFallback({ id: 'en-us:258cb8e5-c769-540d-9e3c-40d4ed4dafdb', language: 'en' }), anniversary.logos[0].deliveryUrl);
+console.log('Exact approved anniversary fallbacks pass production/environment, language, prefix and distinct-edition controls.');
 const centralUrl = (row: { storageKey: string; deliveryUrl?: string; detailUrl?: string }) => row.detailUrl ?? row.deliveryUrl ?? storageRoot + row.storageKey;
 const supersessionsById = new Map(reviewedSupersessions.supersessions.map(row => [row.setId, row]));
 assert.equal(published.deliveryEnvironment, 'production');

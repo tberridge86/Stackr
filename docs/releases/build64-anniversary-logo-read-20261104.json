@@ -1,0 +1,45 @@
+{
+  "environment": "production",
+  "method": "GET",
+  "scope": "Two exact set_logo manifest requests, each limit 50; no mutations or broad asset download",
+  "observedBy": "stackr_coding",
+  "approvalObservation": "Each returned one approved published set_logo and a terminal null cursor",
+  "imageHashIndependentlyMeasured": false,
+  "browserVerification": {
+    "scope": "Root opened the exact English deliveryUrl in Chrome after the two manifest reads",
+    "result": "Image decoded at 738x402 and visibly displayed the gold 30th Celebration mark",
+    "japaneseImageIndependentlyOpened": false,
+    "samePixelsEvidence": "The two manifest records report the same contentSha256; no independent download hash was performed"
+  },
+  "logos": [
+    {
+      "setId": "258cb8e5-c769-540d-9e3c-40d4ed4dafdb",
+      "language": "en",
+      "setCode": "30C",
+      "endpoint": "/v1/assets/manifest?assetType=set_logo&setId=258cb8e5-c769-540d-9e3c-40d4ed4dafdb&limit=50",
+      "httpStatus": 200,
+      "generatedAt": "2026-11-04T08:10:22.877Z",
+      "elapsedMs": 18269,
+      "width": 738,
+      "height": 402,
+      "bytes": 317322,
+      "contentSha256": "4913f030d321f15da74b7a0275777c63aa06b0a2c0fa4f1be85e31ea8088be2e",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/set_logo/15dac49d-ba40-4516-bd76-b3acc2faf12d/5a16b09fb84c7fbd909d49e4f57c105caf49bfec6c832ca3f7df072cb33bf089/4913f030d321f15da74b7a0275777c63aa06b0a2c0fa4f1be85e31ea8088be2e/original.png"
+    },
+    {
+      "setId": "88e351b5-8191-5ef4-854b-2978046cda53",
+      "language": "ja",
+      "setCode": "M6a",
+      "endpoint": "/v1/assets/manifest?assetType=set_logo&setId=88e351b5-8191-5ef4-854b-2978046cda53&limit=50",
+      "httpStatus": 200,
+      "generatedAt": "2026-11-04T08:10:22.878Z",
+      "elapsedMs": 18260,
+      "width": 738,
+      "height": 402,
+      "bytes": 317322,
+      "contentSha256": "4913f030d321f15da74b7a0275777c63aa06b0a2c0fa4f1be85e31ea8088be2e",
+      "deliveryUrl": "https://assets.stackrtcg.com/public/set_logo/57d246c4-995a-4e4f-b31a-8a3717ca3322/849b77fce11f5151e03e2a19a2ef8db787df003827cf9f9157fa1450fe303152/4913f030d321f15da74b7a0275777c63aa06b0a2c0fa4f1be85e31ea8088be2e/original.png"
+    }
+  ],
+  "diagnosis": "The metadata-only sets response omits URLs by design. Both editions have published logos, but neither exact identity existed in the generated client fallback registry. Manifest reads exceeded the optional two-second asset-read budget. This is a client retrieval/fallback gap, not proof of missing published artwork."
+}

@@ -22,6 +22,19 @@ const languageOf = (value: unknown) => {
   if (['en', 'eng', 'english'].includes(language) || language.startsWith('en-')) return 'en';
   return language;
 };
+// Exact approved production manifest records read on 4 November 2026. These
+// immutable URLs are copied verbatim; no cross-environment URL is constructed.
+// Separate publication records preserve each edition even where pixels match.
+const ANNIVERSARY_LOGOS = [
+  {
+    setId: '258cb8e5-c769-540d-9e3c-40d4ed4dafdb', language: 'en', setCode: '30c',
+    url: 'https://assets.stackrtcg.com/public/set_logo/15dac49d-ba40-4516-bd76-b3acc2faf12d/5a16b09fb84c7fbd909d49e4f57c105caf49bfec6c832ca3f7df072cb33bf089/4913f030d321f15da74b7a0275777c63aa06b0a2c0fa4f1be85e31ea8088be2e/original.png',
+  },
+  {
+    setId: '88e351b5-8191-5ef4-854b-2978046cda53', language: 'ja', setCode: 'm6a',
+    url: 'https://assets.stackrtcg.com/public/set_logo/57d246c4-995a-4e4f-b31a-8a3717ca3322/849b77fce11f5151e03e2a19a2ef8db787df003827cf9f9157fa1450fe303152/4913f030d321f15da74b7a0275777c63aa06b0a2c0fa4f1be85e31ea8088be2e/original.png',
+  },
+] as const;
 // The registry includes Crown Zenith's existing reviewed replacement. Sharing
 // that logo with Gallery is presentation-only, never an identity/ownership merge.
 const byId = new Map(published.logos.map(row => [row.setId, row]));
@@ -44,11 +57,18 @@ const parentSetIds: Record<string, string> = {
 export function getPublishedSetLogoFallback(input?: SetIdentity | null): string | undefined {
   if (!input) return undefined;
   const rawId = normalize(input.id ?? input.setId);
-  const prefix = rawId.match(/^(en|ja|jp):/);
+  // Preserve every domain prefix accepted by pokemonSetIdentity, plus the
+  // existing English/Japanese regional language aliases used by this resolver.
+  const prefix = rawId.match(/^(en(?:[-_][a-z]+)?|ja(?:[-_][a-z]+)?|jp|jpn|ko|kr|zh-cn|zh_cn|zhcn|zh-hans|zh_hans|zhhans|zh-sg|zh_sg|zhsg|zh-tw|zh_tw|zhtw|zh-hant|zh_hant|zhhant|zh):/);
   const language = languageOf(input.language || prefix?.[1]);
   if (prefix && input.language && languageOf(prefix[1]) !== language) return undefined;
-  const id = rawId.replace(/^(en|ja|jp):/, '');
+  const id = prefix ? rawId.slice(prefix[0].length) : rawId;
   const canonicalIdentity = CANONICAL_UUID.test(id);
+  if (MOBILE_RUNTIME_CONFIG.environment === 'production') {
+    const anniversary = ANNIVERSARY_LOGOS.find((entry) => entry.setId === id
+      || (!canonicalIdentity && entry.language === language && entry.setCode === normalize(input.setCode ?? id)));
+    if (anniversary) return !language || anniversary.language === language ? anniversary.url : undefined;
+  }
   let row = byId.get(id);
   if (row && language && row.language !== language) return undefined;
   // A canonical UUID is authoritative even when it is unknown. Do not let a
