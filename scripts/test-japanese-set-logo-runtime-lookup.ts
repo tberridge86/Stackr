@@ -87,6 +87,14 @@ for (const language of ['en', 'zh-tw', 'zh-cn', 'ko']) {
 assert.equal(getJapaneseSetLogoSourceForSet({ id: storm.setId.slice(0, -1), language: 'ja' }), null);
 assert.match(getJapaneseSetLogoSourceForSet({ id: '88e351b5-8191-5ef4-854b-2978046cda53', language: 'ja', setCode: 'M6a' }) ?? '', /\/m6a\.png$/,
   'Japanese anniversary keeps its own existing logo.');
+assert.match(getLocalSetLogoSourceForSet({ id: '88e351b5-8191-5ef4-854b-2978046cda53', language: 'ja', name: 'My favourite binder' }) ?? '', /\/m6a\.png$/,
+  'A renamed anniversary binder resolves by canonical identity without loaded set metadata.');
+for (const language of ['en', 'zh-cn', 'zh-tw', 'ko']) {
+  assert.equal(getJapaneseSetLogoSourceForSet({ id: '88e351b5-8191-5ef4-854b-2978046cda53', language }), null,
+    'The exact Japanese anniversary fallback cannot cross languages.');
+}
+assert.equal(getJapaneseSetLogoSourceForSet({ id: '258cb8e5-c769-540d-9e3c-40d4ed4dafdb', language: 'en' }), null);
+assert.equal(getJapaneseSetLogoSourceForSet({ id: '88e351b5-8191-5ef4-854b-2978046cda54', language: 'ja' }), null);
 
 const japaneseSm6 = {
   id: '04fe9fe1-7206-4215-b9ab-ccea25916593',

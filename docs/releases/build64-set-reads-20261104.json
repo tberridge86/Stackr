@@ -1,0 +1,74 @@
+{
+  "schema": 1,
+  "observedDate": "2026-11-04",
+  "sourceRef": "665523719b1d637ec4c06fbcbfd209e565a4a01f",
+  "scope": "Bounded anonymous public GET catalogue reads; no catalogue, ownership, asset, price, deployment or job mutation.",
+  "apiBase": "https://api.stackrtcg.com/v1",
+  "catalogueVersionId": "1a23b7a7-c50e-4601-9180-a25c950d27ea",
+  "sets": [
+    {
+      "name": "Storm Emeralda",
+      "language": "ja",
+      "setId": "903d5baa-27c7-5690-b1d7-2395c770204a",
+      "setCode": "M6",
+      "printedTotal": 76,
+      "total": 113,
+      "metadataUrl": "https://api.stackrtcg.com/v1/sets?language=ja&setCode=M6&limit=50",
+      "metadataGeneratedAt": "2026-11-04T07:42:08.229Z",
+      "factsUrl": "https://api.stackrtcg.com/v1/sets/903d5baa-27c7-5690-b1d7-2395c770204a/cards?language=ja&limit=50&includeAssets=false",
+      "continuation": "Each subsequent request used the preceding response meta.pagination.nextCursor without modification.",
+      "pages": [
+        { "count": 50, "generatedAt": "2026-11-04T07:42:28.411Z", "nextCursor": "eyJ2YXJpYW50X2lkIjoiNzQzMzIzYjEtNjlmZS01Yjg4LThkN2YtOTQ3OGU5MTY0NWE0In0" },
+        { "count": 50, "generatedAt": "2026-11-04T07:43:09.298Z", "nextCursor": "eyJ2YXJpYW50X2lkIjoiZTE0ODljOGMtMmVkYS01MjBjLWJmNDktMjIwMDk3YTFjMmQ2In0" },
+        { "count": 13, "generatedAt": "2026-11-04T07:43:17.387Z", "nextCursor": null }
+      ],
+      "observed": { "rows": 113, "uniquePrintingIds": 113, "uniqueVariantIds": 113, "collectorNumbers": "001 through 113, contiguous", "languages": ["ja"], "catalogueVersions": 1, "terminalCursor": true, "matchesRecordedTotal": true },
+      "rarities": { "common": 38, "uncommon": 22, "rare": 8, "double_rare": 8, "mega_hyper_rare": 37 },
+      "abovePrintedTotal": { "count": 37, "collectorNumbers": "077 through 113", "observedRarity": "mega_hyper_rare", "observedRarityLabel": "Mega Hyper Rare" },
+      "elapsedMs": null
+    },
+    {
+      "name": "Abyss Eye",
+      "language": "ja",
+      "setId": "91be8fc7-b2ed-4169-b41e-0d374e4d466a",
+      "setCode": "M5",
+      "printedTotal": 81,
+      "total": 118,
+      "metadataUrl": "https://api.stackrtcg.com/v1/sets?language=ja&limit=50",
+      "metadataPage": 2,
+      "metadataGeneratedAt": "2026-11-04T07:43:30.857Z",
+      "factsUrl": "https://api.stackrtcg.com/v1/sets/91be8fc7-b2ed-4169-b41e-0d374e4d466a/cards?language=ja&limit=50&includeAssets=false",
+      "continuation": "Each subsequent request used the preceding response meta.pagination.nextCursor without modification.",
+      "pages": [
+        { "count": 50, "generatedAt": "2026-11-04T07:44:01.937Z", "elapsedMs": 6805, "nextCursor": "eyJ2YXJpYW50X2lkIjoiNzFmODFiOTctYTEwNy00YTM4LWE5OTgtMmU0ZDlkYmFiODc4In0" },
+        { "count": 50, "generatedAt": "2026-11-04T07:44:07.701Z", "elapsedMs": 5602, "nextCursor": "eyJ2YXJpYW50X2lkIjoiZTFiYWZhMDEtNDA2OS00NzAxLWI2ODUtMmVmOWRjNTBhMjRkIn0" },
+        { "count": 18, "generatedAt": "2026-11-04T07:44:12.841Z", "elapsedMs": 5133, "nextCursor": null }
+      ],
+      "observed": { "rows": 118, "uniquePrintingIds": 118, "uniqueVariantIds": 118, "collectorNumbers": "001 through 118, contiguous", "languages": ["ja"], "setIds": ["91be8fc7-b2ed-4169-b41e-0d374e4d466a"], "catalogueVersions": 1, "terminalCursor": true, "matchesRecordedTotal": true },
+      "rarities": { "common": 38, "uncommon": 27, "rare": 8, "double_rare": 8, "illustration_rare": 12, "ultra_rare": 18, "special_illustration_rare": 6, "mega_hyper_rare": 1 },
+      "abovePrintedTotal": [
+        { "collectorNumbers": "082 through 093", "rarity": "illustration_rare", "count": 12 },
+        { "collectorNumbers": "094 through 111", "rarity": "ultra_rare", "count": 18 },
+        { "collectorNumbers": "112 through 117", "rarity": "special_illustration_rare", "count": 6 },
+        { "collectorNumbers": "118", "rarity": "mega_hyper_rare", "count": 1 }
+      ],
+      "elapsedMs": 17559
+    }
+  ],
+  "anniversaryMetadata": [
+    { "url": "https://api.stackrtcg.com/v1/sets?setCode=M6a&limit=50", "generatedAt": "2026-11-04T07:50:36.343Z", "setId": "88e351b5-8191-5ef4-854b-2978046cda53", "language": "ja", "setCode": "M6a", "name": "30th Celebration", "releaseDate": "2026-09-16", "printedTotal": 103, "total": 176, "assetLogoImageOrUrlFieldsReturned": [] },
+    { "url": "https://api.stackrtcg.com/v1/sets?setCode=30C&limit=50", "generatedAt": "2026-11-04T07:50:54.292Z", "setId": "258cb8e5-c769-540d-9e3c-40d4ed4dafdb", "language": "en", "setCode": "30C", "name": "30th Celebration", "releaseDate": "2026-09-16", "printedTotal": 128, "total": 161, "assetLogoImageOrUrlFieldsReturned": [] }
+  ],
+  "anniversaryNegativeReads": [
+    { "url": "https://api.stackrtcg.com/v1/sets/cce4cfb8-6a87-567f-96a0-0884827a1396", "generatedAt": "2026-11-04T07:49:11.332Z", "status": 404, "code": "set_not_found" },
+    { "url": "https://api.stackrtcg.com/v1/sets?language=zh-cn&setCode=30thc&limit=50", "generatedAt": "2026-11-04T07:49:31.381Z", "status": 200, "count": 0, "nextCursor": null },
+    { "url": "https://api.stackrtcg.com/v1/sets?setCode=30th&limit=50", "generatedAt": "2026-11-04T07:49:38.333Z", "status": 200, "count": 0, "nextCursor": null }
+  ],
+  "limits": [
+    "Counts combine all observed facts pages and terminal cursors; HTTP success alone was not treated as catalogue completeness.",
+    "Elapsed observations are one local HTTP journey, without established cold-cache state, percentile statistics or phone rendering evidence.",
+    "The shipped standard Japanese binder filter hides numbers above the printed total. Restoring slots does not establish corrected Storm rarity labels.",
+    "No asset-manifest endpoint or image bytes were checked during the anniversary metadata lookup; metadata responses contain no image URL fields.",
+    "The absent Chinese UUID/code reads do not establish that the bundled legacy logo belongs to another language edition."
+  ]
+}

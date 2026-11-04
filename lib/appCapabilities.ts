@@ -1,4 +1,4 @@
-/** Home, Search and Binders, including the binder Pokédex. No public env toggle. */
+/** Home, Search and Collection, including Discover Sets and Pokédex. */
 export const CORE_COLLECTION_MODE = true;
 
 /** Detail, editing and account-support screens needed by the three enabled areas. */
@@ -31,7 +31,7 @@ export const CORE_STACK_ROUTES: readonly string[] = [
   "--/index"
 ];
 
-export const CORE_TAB_ROUTES: readonly string[] = ['index', 'search', 'binder', 'pokedex'];
+export const CORE_TAB_ROUTES: readonly string[] = ['index', 'search', 'binder', 'explore', 'pokedex'];
 export const CORE_SEARCH_CATEGORIES: readonly string[] = ['all', 'cards', 'sets'];
 
 export function isCoreStackRoute(name: string): boolean {

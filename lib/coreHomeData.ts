@@ -14,6 +14,12 @@ export type CoreHomeBinder = {
   name: string;
   type: 'official' | 'custom';
   created_at: string;
+  cover_key?: string | null;
+  color?: string | null;
+  source_set_id?: string | null;
+  language?: string | null;
+  source_set_logo_url?: string | null;
+  source_set_display_name?: string | null;
 };
 export type CoreHomeSection = 'summary' | 'binders';
 type Options = {
@@ -34,10 +40,17 @@ function binderPreview(value: unknown, userId: string): CoreHomeBinder[] {
     || new Set(value.map((row) => row.id)).size !== value.length) {
     throw new Error('The saved binders did not match your account. Please retry.');
   }
-  return value.slice(0, CORE_HOME_BINDER_LIMIT).map(({ id, user_id, name, type, created_at }) => ({ id, user_id, name, type, created_at }));
+  const optionalText = (field: unknown) => typeof field === 'string' && field.trim() ? field : null;
+  return value.slice(0, CORE_HOME_BINDER_LIMIT).map((row) => ({
+    id: row.id, user_id: row.user_id, name: row.name, type: row.type, created_at: row.created_at,
+    cover_key: optionalText(row.cover_key), color: optionalText(row.color),
+    source_set_id: optionalText(row.source_set_id), language: optionalText(row.language),
+    source_set_logo_url: optionalText(row.source_set_logo_url),
+    source_set_display_name: optionalText(row.source_set_display_name),
+  }));
 }
 
-/** Home reads only compact private totals and six saved binder names. Optional
+/** Home reads compact private totals and six saved binder previews. Optional
  * storage never gates either live read, and either section may settle first.
  * Shared query lifetimes belong to the query cache, not a screen subscriber. */
 export function startCoreHomeRead(options: Options) {
@@ -48,7 +61,7 @@ export function startCoreHomeRead(options: Options) {
   const revision = getCollectionSummaryVersion();
   const current = () => active && options.isCurrent() && revision === getCollectionSummaryVersion();
   const completeSummaryKey = stackrQueryKeys.collectionSummary(options.userId);
-  // Home shows owned/unique/binder counts, which do not depend on local master
+  // Home shows stored value and owned/unique/binder counts, independent of local master
   // preferences. Keep its RPC snapshot separate from full completion coverage.
   const summaryKey = stackrQueryKeys.coreHomeTotals(options.userId);
   const overviewKey = stackrQueryKeys.binderLibrary(options.userId);
@@ -116,7 +129,7 @@ export function startCoreHomeRead(options: Options) {
               retry: false,
               queryFn: () => withPersonalDataReadTimeout(async (signal) => {
                 const { data, error } = await supabase.from('binders')
-                  .select('id,user_id,name,type,created_at').eq('user_id', options.userId)
+                  .select('id,user_id,name,type,created_at,cover_key,color,source_set_id,language,source_set_logo_url,source_set_display_name').eq('user_id', options.userId)
                   .order('sort_order', { ascending: true }).order('created_at', { ascending: false })
                   .order('id', { ascending: true }).limit(CORE_HOME_BINDER_LIMIT).abortSignal(signal);
                 if (error) throw error;

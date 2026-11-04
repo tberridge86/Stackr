@@ -3,6 +3,8 @@ import { STACKR_ICON_OUTLINE, StackrNavigationIcon } from '../../components/Stac
 import { StackrBinderButton, StackrBrowseFilterSheet, StackrBrowseFilterGroup } from '../../components/StackrBrowseControls';
 import { useTheme } from '../../components/theme-context';
 import { CORE_COLLECTION_MODE } from '../../lib/appCapabilities';
+import { getOfficialBinderProgress } from '../../lib/binderProgress';
+import { fetchStackrCardsForSet } from '../../lib/stackrDomainAdapter';
 import { stackrHaptics } from '../../lib/haptics';
 import { stackrListPerformance, startBinderRetrieval } from '../../lib/performance';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -150,7 +152,7 @@ const COLLECTION_VAULT_SHORTCUTS: {
   route: '/(tabs)/explore' | '/(tabs)/pokedex' | '/duplicates';
   core: boolean;
 }[] = [
-  { label: 'Discover Sets', imageIcon: stackrIcons.setDiscovery, route: '/(tabs)/explore' as const, core: false },
+  { label: 'Discover Sets', imageIcon: stackrIcons.setDiscovery, route: '/(tabs)/explore' as const, core: true },
   { label: 'Pokédex', imageIcon: stackrIcons.pokedex, route: '/(tabs)/pokedex' as const, core: true },
   { label: 'Duplicates', imageIcon: stackrIcons.duplicates, route: '/duplicates' as const, core: false },
 ];
@@ -178,21 +180,6 @@ const lavenderShadow = {
   shadowRadius: 22,
   shadowOffset: { width: 0, height: 10 },
   elevation: 5,
-};
-
-const SET_VARIANT_OVERRIDES: Record<string, Partial<Record<string, string[]>>> = {
-  asc: {
-    Common: ['normal', 'reverseHoloEnergy', 'reverseHoloPokeball'],
-    Uncommon: ['normal', 'reverseHoloEnergy', 'reverseHoloPokeball'],
-  },
-  me2pt5: {
-    Common: ['normal', 'reverseHoloEnergy', 'reverseHoloPokeball'],
-    Uncommon: ['normal', 'reverseHoloEnergy', 'reverseHoloPokeball'],
-  },
-  me3: {
-    Common: ['normal', 'reverseHolofoil'],
-    Uncommon: ['normal', 'reverseHolofoil'],
-  },
 };
 
 // ===============================
@@ -653,7 +640,7 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
           artworkHeight={BINDER_GRID_ARTWORK.artworkHeight}
           progressWidth={BINDER_GRID_ARTWORK.progressWidth}
           progressHeight={BINDER_GRID_ARTWORK.progressHeight}
-          showProgressBar={isOfficial && !readOnly}
+          showProgressBar={isOfficial && !readOnly && progress.totalKnown}
           showProgressText={false}
         />
         {isOfficial ? (
@@ -818,6 +805,7 @@ type BinderSummaryRow = {
   card_id: string;
   api_card_id?: string | null;
   card_name?: string | null;
+  card_number?: string | null;
   set_id: string | null;
   language?: PokemonCardLanguage | null;
   owned: boolean | null;
@@ -828,25 +816,6 @@ type BinderSummaryRow = {
   owned_quantity?: number | null;
   grade_company?: string | null;
   grade?: string | null;
-};
-
-type BinderOfficialCardRow = {
-  id: string;
-  set_id: string | null;
-  language?: PokemonCardLanguage | null;
-  name?: string | null;
-  number?: string | null;
-  rarity?: string | null;
-  raw_data?: any;
-};
-
-type OwnedVariantRow = {
-  id: string;
-  user_id: string;
-  card_id: string;
-  set_id: string | null;
-  language?: PokemonCardLanguage | null;
-  variant: string | null;
 };
 
 type BinderLibrarySummarySnapshot = {
@@ -860,9 +829,10 @@ type BinderLibraryFactsSnapshot = {
   masterSets: BinderMasterSetMap;
   priceInputs: CollectionPriceInput[];
   priceKeysByBinder: Record<string, string[]>;
+  masterProgress: { binderId: string; reference: string; input: Parameters<typeof getOfficialBinderProgress>[0] }[];
 };
 
-const BINDER_SUMMARY_COUNT_VERSION = 'set-total-known-state-v4';
+const BINDER_SUMMARY_COUNT_VERSION = 'canonical-printing-progress-v5';
 const getMasterSetStorageKey = (binderId: string) => `stackr:binder-master-set:${binderId}`;
 
 const getBinderLibrarySignature = (data: BinderRecord[]) =>
@@ -878,33 +848,6 @@ const getBinderLibrarySignature = (data: BinderRecord[]) =>
       binder.catalogue_identity_status === 'resolved' ? binder.catalogue_set_printed_total ?? '' : '',
     ].join(':'))
     .join('|') || 'empty'].join('|');
-
-const getVariants = (card: any, explicitSetId?: string | null): string[] => {
-  const setId = String(explicitSetId ?? card?.set?.id ?? card?.set_id ?? '').toLowerCase();
-  const setName = String(card?.set?.name ?? card?.raw_data?.set?.name ?? '').toLowerCase();
-  let override = SET_VARIANT_OVERRIDES[setId] || SET_VARIANT_OVERRIDES[setId.toUpperCase()];
-
-  if (!override && setName.includes('ascended')) {
-    override = {
-      Common: ['normal', 'reverseHoloEnergy', 'reverseHoloPokeball'],
-      Uncommon: ['normal', 'reverseHoloEnergy', 'reverseHoloPokeball'],
-    };
-  }
-
-  if (override && card?.rarity) {
-    const rarity = String(card.rarity);
-    const variants =
-      override[rarity] ||
-      override[rarity.charAt(0).toUpperCase() + rarity.slice(1).toLowerCase()] ||
-      override[rarity.toLowerCase()];
-    if (variants) return variants;
-  }
-
-  const prices = card?.tcgplayer?.prices ?? card?.raw_data?.tcgplayer?.prices;
-  const keys = Object.keys(prices ?? {}).filter((key) => key !== 'unlimited');
-  if (keys.length > 1) return keys;
-  return keys.length > 0 ? [keys[0]] : ['normal'];
-};
 
 export default function BinderLibraryScreen() {
   const { theme } = useTheme();
@@ -1030,7 +973,7 @@ export default function BinderLibraryScreen() {
       const binderIds = data.map((binder) => binder.id);
 
       if (!binderIds.length) {
-        return { counts: {}, masterSets: {}, priceInputs: [], priceKeysByBinder: {} };
+        return { counts: {}, masterSets: {}, priceInputs: [], priceKeysByBinder: {}, masterProgress: [] };
       }
 
       const setIds = data.map((binder) => binder.source_set_id).filter(Boolean) as string[];
@@ -1042,24 +985,15 @@ export default function BinderLibraryScreen() {
         })
       );
       const nextMasterSets = Object.fromEntries(storedMasterEntries) as BinderMasterSetMap;
-      const masterSetIds = data
-        .filter((binder) => binder.source_set_id && nextMasterSets[binder.id])
-        .map((binder) => binder.source_set_id as string);
-      const masterSetIdCandidates = [...new Set(masterSetIds.flatMap(getSetLookupCandidates))];
-      const variantSetIds = [...new Set(masterSetIds)];
-
       const [
         cardRowsResult,
         setRowsResult,
         canonicalSetRowsResult,
-        officialCardsResult,
-        ownedVariantsResult,
-        canonicalOfficialCardsResult,
       ] = await Promise.all([
         (async () => ({ data: await readUiCollectionChunks<BinderSummaryRow>(
           binderIds,
           (ids) => supabase.from('binder_cards')
-            .select('id, binder_id, card_id, api_card_id, card_name, set_id, language, owned, owned_quantity, condition, grade_company, grade')
+            .select('id, binder_id, card_id, api_card_id, card_name, card_number, set_id, language, owned, owned_quantity, condition, grade_company, grade')
             .in('binder_id', ids),
           (row, ids) => ids.includes(row.binder_id), { signal, assertCurrent },
         ), error: null }))(),
@@ -1095,28 +1029,6 @@ export default function BinderLibraryScreen() {
           ]);
           return { data: results.flatMap((result) => result?.data ?? []), error: results.find((result) => result?.error)?.error ?? null };
         })(),
-        masterSetIdCandidates.length
-          ? readOptionalCatalogueEnrichment(async (childSignal) => ({ data: await readUiCollectionChunks<BinderOfficialCardRow>(
-            masterSetIdCandidates, (ids) => supabase.from('pokemon_cards')
-              .select('id, set_id, language, name, number, rarity, raw_data').in('set_id', ids),
-            (row, ids) => row.set_id != null && ids.includes(row.set_id), { signal: childSignal, assertCurrent },
-          ), error: null }), signal)
-          : Promise.resolve({ data: [], error: null }),
-        currentUserId && variantSetIds.length
-          ? readOptionalCatalogueEnrichment(async (childSignal) => ({ data: await readUiCollectionChunks<OwnedVariantRow>(
-            variantSetIds, (ids) => supabase.from('user_card_variants')
-              .select('id, user_id, card_id, set_id, variant').eq('user_id', currentUserId).in('set_id', ids),
-            (row, ids) => row.user_id === currentUserId && row.set_id != null && ids.includes(row.set_id),
-            { signal: childSignal, assertCurrent },
-          ), error: null }), signal)
-          : Promise.resolve({ data: [], error: null }),
-        masterSetIdCandidates.length
-          ? readOptionalCatalogueEnrichment(async (childSignal) => ({ data: await readUiCollectionChunks<any>(
-            masterSetIdCandidates, (ids) => supabase.from('tcg_cards')
-              .select('id, set_id, language, canonical_name, local_name, english_display_name, collector_number, rarity, raw_payload').in('set_id', ids),
-            (row, ids) => ids.includes(row.set_id), { signal: childSignal, assertCurrent },
-          ), error: null }), signal)
-          : Promise.resolve({ data: [], error: null }),
       ]);
       assertCurrent();
 
@@ -1129,18 +1041,6 @@ export default function BinderLibraryScreen() {
         : [];
       assertCurrent();
       if (canonicalOwnedRows.some((row) => row.user_id !== currentUserId)) throw new Error('The collection account changed. Please retry.');
-      const officialCards = [
-        ...((officialCardsResult?.data ?? []) as BinderOfficialCardRow[]),
-        ...((canonicalOfficialCardsResult?.data ?? []) as any[]).map((card): BinderOfficialCardRow => ({
-          id: card.id,
-          set_id: card.set_id ?? null,
-          language: normalizePokemonCardLanguage(card.language),
-          name: card.local_name ?? card.raw_payload?.local_name ?? card.canonical_name ?? card.english_display_name ?? null,
-          number: card.collector_number ?? card.raw_payload?.localId ?? null,
-          rarity: card.rarity ?? card.raw_payload?.rarity ?? null,
-          raw_data: card.raw_payload ?? null,
-        })),
-      ];
       const canonicalSets = (canonicalSetRowsResult?.data ?? []) as any[];
       const canonicalSourceIds = new Map<string, Set<string>>();
       for (const set of canonicalSets) {
@@ -1173,30 +1073,6 @@ export default function BinderLibraryScreen() {
           ...canonicalOwnedRows.map((row) => `${getLanguageSetKey(row.set_id, null)}:${row.card_id}`),
         ]
       );
-      const cardsBySet = new Map<string, BinderOfficialCardRow[]>();
-      const officialCardKeys = new Set<string>();
-      for (const card of officialCards) {
-        if (!card.set_id) continue;
-        const key = getLanguageSetKey(card.set_id, card.language);
-        const cardKey = `${key}:${card.id}`;
-        if (officialCardKeys.has(cardKey)) continue;
-        officialCardKeys.add(cardKey);
-        const current = cardsBySet.get(key) ?? [];
-        current.push(card);
-        cardsBySet.set(key, current);
-      }
-
-      const masterVariantsAvailable = ownedVariantsResult != null && !ownedVariantsResult.error;
-      const ownedVariantRows = (masterVariantsAvailable ? ownedVariantsResult.data ?? [] : []) as OwnedVariantRow[];
-
-      const ownedVariantsByCard = new Map<string, Set<string>>();
-      for (const row of ownedVariantRows) {
-        if (!row.card_id || !row.set_id || !row.variant) continue;
-        const key = `${getLanguageSetKey(row.set_id, row.language)}:${row.card_id}`;
-        if (!ownedVariantsByCard.has(key)) ownedVariantsByCard.set(key, new Set());
-        ownedVariantsByCard.get(key)!.add(row.variant);
-      }
-
       for (const row of rows) {
         const current = rowsByBinder.get(row.binder_id) ?? [];
         current.push(row);
@@ -1204,6 +1080,7 @@ export default function BinderLibraryScreen() {
       }
 
       const nextCounts: BinderCardCountMap = {};
+      const masterProgress: BinderLibraryFactsSnapshot['masterProgress'] = [];
       const ownedRowsByBinder = new Map<string, BinderSummaryRow[]>();
 
       for (const binder of data) {
@@ -1219,38 +1096,27 @@ export default function BinderLibraryScreen() {
         const resolvedTotal = binder.catalogue_identity_status === 'resolved' && binder.catalogue_set_id
           ? readStoredSetTotal({ total: binder.catalogue_set_total, printed_total: binder.catalogue_set_printed_total }) : null;
         const officialTotal = resolvedTotal ?? (storedOfficialTotal && storedOfficialTotal > 0 ? storedOfficialTotal : knownOfficialTotal);
-        const isMasterSet = nextMasterSets[binder.id] === true;
-        const masterCards = binder.source_set_id ? cardsBySet.get(binderSetKey) ?? [] : [];
-        const catalogueLooksComplete = binder.type === 'official' && officialTotal != null && masterCards.length >= officialTotal;
-        let total: number | null = binder.type === 'official'
-          ? officialTotal ?? (catalogueLooksComplete ? masterCards.length : null)
-          : binderRows.length;
-        let owned = ownedRows.length;
-
-        if (isMasterSet && binder.type === 'official' && binder.source_set_id && catalogueLooksComplete && masterVariantsAvailable) {
-          const ownedRowsByCard = new Map(ownedRows.map((row) => [`${getLanguageSetKey(row.set_id, row.language ?? binderLanguage)}:${row.card_id}`, row]));
-          total = 0;
-          owned = 0;
-
-          for (const card of masterCards) {
-            const variants = getVariants(card, binder.source_set_id);
-            const cardKey = `${binderSetKey}:${card.id}`;
-            const ownedVariantCount = variants.filter((variant) => ownedVariantsByCard.get(cardKey)?.has(variant)).length;
-            total += variants.length > 1 ? variants.length : 1;
-            owned += ownedVariantCount > 0 ? ownedVariantCount : ownedRowsByCard.has(cardKey) ? 1 : 0;
-          }
+        if (binder.type === 'official' && binder.source_set_id) {
+          const resolvedCanonicalIds = canonicalSourceIds.get(binderSetKey);
+          const setReferences = [binder.source_set_id,
+            ...(binder.catalogue_identity_status === 'resolved' ? binder.catalogue_set_references ?? [] : []),
+            ...(binder.catalogue_identity_status === 'resolved' && binder.catalogue_set_id ? [binder.catalogue_set_id] : []),
+            ...(resolvedCanonicalIds?.size === 1 ? [...resolvedCanonicalIds] : []),
+          ];
+          const progressInput: Parameters<typeof getOfficialBinderProgress>[0] = {
+            language: binderLanguage, setReferences,
+            savedRows: binderRows.map((row) => ({ ...row, owned: ownedRows.includes(row) })),
+            ownedRows: canonicalOwnedRows,
+            total: officialTotal,
+            masterSetEnabled: nextMasterSets[binder.id] === true,
+          };
+          nextCounts[binder.id] = getOfficialBinderProgress(progressInput);
+          if (progressInput.masterSetEnabled) masterProgress.push({
+            binderId: binder.id, reference: binder.catalogue_set_id ?? binder.source_set_id, input: progressInput,
+          });
+        } else {
+          nextCounts[binder.id] = { owned: ownedRows.length, total: binderRows.length, totalKnown: binderRows.length > 0 };
         }
-
-        if (isMasterSet && binder.type === 'official' && (!catalogueLooksComplete || !masterVariantsAvailable)) {
-          // A partial optional catalogue cannot establish a master-finish total.
-          total = null;
-        }
-
-        nextCounts[binder.id] = {
-          owned,
-          total,
-          totalKnown: typeof total === 'number' && total > 0,
-        };
       }
 
       const priceInputs: CollectionPriceInput[] = [];
@@ -1312,7 +1178,7 @@ export default function BinderLibraryScreen() {
       }
 
       assertCurrent();
-      return { counts: nextCounts, masterSets: nextMasterSets, priceInputs, priceKeysByBinder: Object.fromEntries(priceKeysByBinder) };
+      return { counts: nextCounts, masterSets: nextMasterSets, priceInputs, priceKeysByBinder: Object.fromEntries(priceKeysByBinder), masterProgress };
     } finally {
       finished = true;
       signal?.removeEventListener('abort', unsubscribe);
@@ -1387,8 +1253,36 @@ export default function BinderLibraryScreen() {
       });
       if (!isCurrentSummary()) return;
       // Ownership and quantities must render even when stored-price reads stall.
-      setCounts(facts.counts);
+      let summaryCounts = facts.counts;
+      setCounts(summaryCounts);
       setMasterSets(facts.masterSets);
+      // Canonical master finishes are optional to the saved ownership view.
+      // Hydrate each distinct public set once, with at most three active reads.
+      const requests = [...new Map(facts.masterProgress.map((entry) => [
+        getLanguageSetKey(entry.reference, entry.input.language), entry,
+      ])).values()];
+      let nextMaster = 0;
+      const hydrateMasterProgress = async () => {
+        while (nextMaster < requests.length && isCurrentSummary()) {
+          const request = requests[nextMaster++];
+          const cards = await readOptionalCatalogueEnrichment(
+            () => fetchStackrCardsForSet(request.reference, request.input.language, undefined, { includeAssets: false, allowPageProgress: true }),
+            undefined, 75_000,
+          );
+          if (!isCurrentSummary()) return;
+          if (!cards?.length) continue;
+          const updates: BinderCardCountMap = {};
+          for (const entry of facts.masterProgress) {
+            if (getLanguageSetKey(entry.reference, entry.input.language) !== getLanguageSetKey(request.reference, request.input.language)) continue;
+            updates[entry.binderId] = getOfficialBinderProgress({ ...entry.input, cards });
+          }
+          summaryCounts = { ...summaryCounts, ...updates };
+          setCounts(summaryCounts);
+          const savedSummary = stackrQueryClient.getQueryData<BinderLibrarySummarySnapshot>(queryKey);
+          if (savedSummary) stackrQueryClient.setQueryData(queryKey, { ...savedSummary, counts: summaryCounts });
+        }
+      };
+      void Promise.all(Array.from({ length: Math.min(3, requests.length) }, hydrateMasterProgress)).catch(() => undefined);
       if (CORE_COLLECTION_MODE) {
         setValues({});
         setLibraryError(null);
@@ -1405,7 +1299,7 @@ export default function BinderLibraryScreen() {
         staleTime: forceRefresh ? 0 : stackrQueryTiming.hotPathStaleMs,
       });
       if (!isCurrentSummary()) return;
-      const snapshot = { counts: facts.counts, masterSets: facts.masterSets, values: nextValues };
+      const snapshot = { counts: summaryCounts, masterSets: facts.masterSets, values: nextValues };
       stackrQueryClient.setQueryData(queryKey, snapshot);
       applyBinderSummarySnapshot(snapshot);
       setLibraryError(null);
@@ -1841,7 +1735,7 @@ export default function BinderLibraryScreen() {
                           artworkHeight={46}
                           progressWidth={44}
                           progressHeight={3}
-                          showProgressBar={item.type === 'official'}
+                          showProgressBar={item.type === 'official' && counts[item.id]?.totalKnown === true}
                           showFan={false}
                         />
 

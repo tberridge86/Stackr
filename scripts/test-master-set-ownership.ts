@@ -28,7 +28,7 @@ async function main() {
     notes: 'Do not lose me', ebay_price: 42, card: { raw_data: { stackr: { canonical: true, variants: [
       { variantId: 'base-id', variantCode: 'normal' }, { variantId: 'reverse-id', variantCode: 'reverse_holo' },
     ] } } } }];
-  const context: any = { Map, Set, Math, Number, console, userId: 'owner', binderId: 'binder', isReadOnly: false,
+  const context: any = { Map, Set, Math, Number, console, CORE_COLLECTION_MODE: false, userId: 'owner', binderId: 'binder', isReadOnly: false,
     cards, selectedCard: cards[0], ownedVariants: new Map(), variantManagedCards: new Set(), updatingMasterSet: false,
     masterSetEnabled: true, binder: { id: 'binder', master_set_enabled: true, language: 'en' },
     accountGenerationRef: { current: 1 }, loadRequestRef: { current: 1 }, activeAccountIdRef: { current: 'owner' },

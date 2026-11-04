@@ -4,6 +4,7 @@ import { getCollectionPriceCoverageLabel } from '../../lib/collectionPricingStat
 import { binderReopenCache, binderReopenScope, isBinderAccessDenied, readBinderReopenPreview, retainBinderPreviewDuringRefresh } from '../../lib/binderReopenRuntime';
 import { isCompleteBinderSnapshot, type BinderReopenSaveOptions, type BinderReopenSnapshot } from '../../lib/binderReopenSnapshot';
 import { mergeBinderArtwork } from '../../lib/stackrSetRetrieval';
+import { continueBinderCatalogueRead } from '../../lib/binderCatalogueContinuation';
 import { createVisibleBinderPriceReader, type VisibleBinderPriceReader } from '../../lib/binderVisiblePrices';
 import { readOptionalCatalogueEnrichment } from '../../lib/optionalCatalogueEnrichment';
 import { withPersonalDataReadTimeout } from '../../lib/personalDataRead';
@@ -14,9 +15,9 @@ import { binderCardRarity, binderRarityChoices } from '../../lib/binderRarityFil
 import { useTheme } from '../../components/theme-context';
 import { CORE_COLLECTION_MODE } from '../../lib/appCapabilities';
 import { getCatalogueVariantKeys, getCatalogueVariantIdForKey, catalogueVariantLabel } from '../../lib/catalogueVariantPresentation';
-import { getCanonicalMasterSetVariants } from '../../lib/masterSetProgress';
+import { countBinderProgressSlots } from '../../lib/masterSetProgress';
 import { enforceSetVisualRuntimePolicy } from '../../lib/providerSetMarkRuntimePolicy';
-import { getBinderCanonicalVariantId, getBinderCardImageUri, getBinderCatalogueInspectionImages, getBinderCatalogueTotal, getBinderSavedCardImageUri, isBinderCardBeyondPrintedTotal } from '../../lib/binderCataloguePresentation';
+import { getBinderCanonicalVariantId, getBinderCardImageUri, getBinderCatalogueInspectionImages, getBinderCatalogueTotal, getBinderSavedCardImageUri } from '../../lib/binderCataloguePresentation';
 import { isCurrentAccountRequest } from '../../lib/accountRequestGuard';
 import { invalidatePokemonCatalogueCardCaches } from '../../lib/pokemonTcg';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -87,7 +88,7 @@ import {
 import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { useOptionalTrade } from '../../components/trade-context';
 import { supabase } from '../../lib/supabase';
-import { fetchStackrCard, fetchStackrPrice } from '../../lib/stackrDomainAdapter';
+import { fetchStackrCard, fetchStackrPrice, fetchStackrCardsForSet } from '../../lib/stackrDomainAdapter';
 import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 import {
   getKnownPokemonSetTotal,
@@ -830,14 +831,6 @@ const getDefaultOwnedVariant = (variants: string[]): string | null => {
   return preferred.find((variant) => variants.includes(variant)) ?? variants[0] ?? null;
 };
 
-function isJapaneseSecretBinderCard(card: BinderCardWithDetails) {
-  const language = normalizePokemonCardLanguage(card.language ?? card.card?.language ?? card.card?.raw_data?.language);
-  if (language !== 'ja') return false;
-  const raw = card.card?.raw_data ?? {};
-  const rarity = String(card.card?.rarity ?? raw?.rarity ?? '').toLowerCase();
-  return raw?.secret === true || rarity.includes('secret');
-}
-
 // ===============================
 // MAIN COMPONENT
 // ===============================
@@ -949,6 +942,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   const activeAccountIdRef = useRef<string | null>(null);
   const accountGenerationRef = useRef(0);
   const loadRequestRef = useRef(0);
+  const catalogueContinuationEpochRef = useRef('');
   const artworkRequestRef = useRef<AbortController | null>(null);
   const isOwner = Boolean(userId && binder?.user_id === userId);
   const isReadOnly = routeReadOnly || reopenStatus !== null || (Boolean(binder) && (!isOwner || !ownershipReady));
@@ -1140,7 +1134,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     }
   }, [binderId]);
 
-  const load = useCallback(async (forceRefresh = false) => {
+  const load = useCallback(async (forceRefresh = false, retainCurrentView = false): Promise<void> => {
     if (!binderId) return;
     retrievalTraceRef.current?.cancel();
     const retrievalTrace = beginBinderRetrieval(undefined, binderId);
@@ -1149,6 +1143,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     const previewState = { snapshot: null as BinderReopenSnapshot | null };
     let previewAllowed = true;
     let refreshState: 'refreshing' | 'offline' | 'incomplete' = 'refreshing';
+    let catalogueContinuation: ReturnType<typeof continueBinderCatalogueRead> | null = null;
     const accountGeneration = accountGenerationRef.current;
     const requestId = ++loadRequestRef.current;
     showcaseReadRef.current += 1;
@@ -1174,6 +1169,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     };
 
     if (forceRefresh) {
+      catalogueContinuationEpochRef.current = '';
       retainBinderPreviewDuringRefresh(() => {
         invalidateBinderCaches(binderId);
         invalidatePokemonCatalogueCardCaches();
@@ -1181,12 +1177,14 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     }
 
     try {
-      setLoading(true);
+      if (!retainCurrentView) setLoading(true);
       setLoadError(null);
       setOwnershipReady(false);
-      setBinder(null);
-      setCards([]);
-      setReopenStatus(null);
+      if (!retainCurrentView) {
+        setBinder(null);
+        setCards([]);
+        setReopenStatus(null);
+      }
       // Do not await optional disk I/O, session refresh or snapshot parsing on the network path.
       let previewSource: 'memory' | 'persisted' | 'local-preview' = 'local-preview';
       void readBinderReopenPreview(binderId, source => { previewSource = source; }).then((saved) => {
@@ -1223,8 +1221,10 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         }).catch(() => undefined);
       }).catch(() => undefined);
       setShowcaseRows([]);
-      setOwnedVariants(new Map());
-      setVariantManagedCards(new Set());
+      if (!retainCurrentView) {
+        setOwnedVariants(new Map());
+        setVariantManagedCards(new Set());
+      }
 
       // Both requests retain their existing server checks. Overlap their
       // latency, but do not render or load cards until both have completed and
@@ -1271,6 +1271,22 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       if (!previewState.snapshot) setBinder(binderData);
       setIsPublic(Boolean(binderData?.is_public));
 
+      const continuationEpoch = `${accountGeneration}:${binderData.id}`;
+      const continuationLanguage = binderData.language ?? getPokemonSetLanguageFromPrefixedId(binderData.source_set_id);
+      catalogueContinuation = binderData.type === 'official' && binderData.source_set_id && continuationLanguage
+        && binderData.catalogue_identity_status !== 'ambiguous'
+        ? continueBinderCatalogueRead({
+          read: () => fetchStackrCardsForSet(binderData.catalogue_set_id ?? binderData.source_set_id!,
+            normalizePokemonCardLanguage(continuationLanguage), undefined, { includeAssets: false, allowPageProgress: true }),
+          isCurrent: isCurrentRequest,
+          claimReload: () => {
+            if (catalogueContinuationEpochRef.current === continuationEpoch) return false;
+            catalogueContinuationEpochRef.current = continuationEpoch;
+            return true;
+          },
+          reload: () => { void load(false, true); },
+        }) : null;
+
       const binderCards = await withPersonalDataReadTimeout(() => measureAsync(
           'binder.fetchBinderCards',
           () => fetchBinderCards(binderId, { includePrices: false, includeAssets: false }),
@@ -1286,6 +1302,10 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         ...snapshotScope, schema: 1, savedAt, binder: binderData, cards: binderCards, customSource: snapshotOptions.customSource,
       }, snapshotScope, binderId, savedAt);
       const expected = binderData.catalogue_set_total ?? binderData.catalogue_set_printed_total;
+      if (typeof expected === 'number' && expected > 0
+        && new Set(binderCards.filter((card) => card.catalogue_match_status === 'catalogue').map((card) => card.card?.id)).size < expected) {
+        catalogueContinuation?.markIncomplete();
+      }
       const incompleteRefresh = binderData.type === 'official' && ((binderData.user_id === user?.id && !completeOwnerView)
         || binderCards.some((card) => card.catalogue_incomplete)
         || (typeof expected === 'number' && expected > 0 && new Set(binderCards.filter((card) => card.catalogue_match_status === 'catalogue').map((card) => card.card?.id)).size < expected));
@@ -1553,6 +1573,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       });
     } catch (error) {
       if (isCurrentRequest()) {
+        if (!isBinderAccessDenied(error)) catalogueContinuation?.markIncomplete();
         setShowcaseStatus('error');
         retrievalTrace.fail(isBinderAccessDenied(error) ? 'access' : 'facts');
         refreshState = 'offline';
@@ -1566,7 +1587,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           setLoadError('We could not access this binder. Check your sign-in and try again.');
         } else if (previewState.snapshot) {
           setReopenStatus({ savedAt: previewState.snapshot.savedAt, state: 'offline' });
-        } else {
+        } else if (!retainCurrentView) {
           setBinder(null);
           setCards([]);
           setLoadError('We could not load this binder. Check your connection and try again.');
@@ -1700,14 +1721,8 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   // ===============================
 
   const cataloguePricedCards = useCataloguePriceOverlay(cards, { enabled: !CORE_COLLECTION_MODE });
-  const displayCards = useMemo(() => {
-    const language = normalizePokemonCardLanguage(binder?.language);
-    if (binder?.type === 'official' && language === 'ja' && !masterSetEnabled) {
-      return cataloguePricedCards.filter((card) => !isJapaneseSecretBinderCard(card)
-        && !isBinderCardBeyondPrintedTotal(card.card?.number ?? card.card_number, binder.catalogue_set_printed_total));
-    }
-    return cataloguePricedCards;
-  }, [binder?.language, binder?.type, binder?.catalogue_set_printed_total, cataloguePricedCards, masterSetEnabled]);
+  // Both modes include every printing. Master set expands its canonical finishes.
+  const displayCards = cataloguePricedCards;
 
   const rarityChoices = useMemo(() => binderRarityChoices(displayCards), [displayCards]);
   const activeRarity = rarityChoices.some((choice) => choice.key === rarityFilter) ? rarityFilter : 'all';
@@ -1782,35 +1797,24 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   );
   imageViewableRef.current = useCardImagePreload(preloadThumbnails, Math.max(6, numColumns * 3));
 
-  let ownedCount = 0;
-  let countedSlotTotal = 0;
-  for (const c of displayCards) {
+  const progressEntries = displayCards.filter((card) => binder?.type !== 'official'
+    || card.catalogue_match_status !== 'saved-only').map((c) => {
     const savedVariants = [...ownedVariants.keys()]
-      .filter((key) => key.startsWith(`${c.set_id}:${c.card_id}:`))
+      .filter((key) => key.startsWith(`${c.set_id}:${c.card_id}:`) && (ownedVariants.get(key) ?? 0) > 0)
       .map((key) => key.slice(`${c.set_id}:${c.card_id}:`.length));
-    const variants = masterSetEnabled ? (getCanonicalMasterSetVariants(c.card) ?? ['card']) : ['card'];
-    if (masterSetEnabled && variants.length > 1) {
-      countedSlotTotal += variants.length;
-      const variantManaged = variantManagedCards.has(getVariantCardKey(c.card_id, c.set_id));
-      const defaultVariant = c.owned && !variantManaged ? getDefaultOwnedVariant(variants) : null;
-      const ownedVariantCount = variants.filter((v) =>
-        getVariantQuantityFromMap(ownedVariants, c.card_id, c.set_id, v) > 0 || v === defaultVariant
-      ).length;
-      ownedCount += ownedVariantCount > 0 ? ownedVariantCount : !variantManaged && c.owned ? 1 : 0;
-    } else {
-      countedSlotTotal += 1;
-      if (c.owned || savedVariants.length > 0) ownedCount += 1;
-    }
-  }
+    return { card: c.card, owned: c.owned, ownedVariants: savedVariants,
+      variantManaged: variantManagedCards.has(getVariantCardKey(c.card_id, c.set_id)) };
+  });
+  const { owned: ownedCount, total: countedSlotTotal } = countBinderProgressSlots(progressEntries, masterSetEnabled);
   const knownOfficialTotal = binder?.type === 'official'
     ? getKnownPokemonSetTotal(binder.source_set_id, binder.language) ?? 0
     : 0;
   const cardSetTotals = cards
     .map((card) => Number(
-      card.card?.set?.printedTotal ??
       card.card?.set?.total ??
-      card.card?.raw_data?.set?.printedTotal ??
+      card.card?.set?.printedTotal ??
       card.card?.raw_data?.set?.total ??
+      card.card?.raw_data?.set?.printedTotal ??
       0
     ))
     .filter((value) => Number.isFinite(value) && value > 0);
@@ -1818,7 +1822,6 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     printedTotal: binder?.catalogue_set_printed_total,
     total: binder?.catalogue_set_total,
     masterSetEnabled,
-    regularCardsOnly: normalizePokemonCardLanguage(binder?.language) === 'ja',
   });
   const officialCatalogueTotal = resolvedCatalogueTotal ?? Math.max(knownOfficialTotal, ...cardSetTotals, 0);
   const catalogueReadIncomplete = binder?.type === 'official' && (
@@ -1827,7 +1830,8 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     || !cards.length
     || cards.some((card) => card.catalogue_match_status === 'saved-only' || card.catalogue_incomplete)
   );
-  const totalKnown = binder?.type !== 'official' || officialCatalogueTotal > 0;
+  const totalKnown = binder?.type !== 'official' || officialCatalogueTotal > 0 && (!masterSetEnabled
+    || !catalogueReadIncomplete && displayCards.every((card) => card.card?.raw_data?.stackr?.canonical === true));
   const totalCount = totalKnown
     ? binder?.type === 'official'
       ? Math.max(officialCatalogueTotal, masterSetEnabled ? countedSlotTotal : 0)
@@ -3945,7 +3949,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                   artworkHeight={44}
                   progressWidth={42}
                   progressHeight={4}
-                  showProgressBar={showsCompletion}
+                  showProgressBar={showsCompletion && totalKnown}
                   showProgressText={false}
                   showFan
                 />
@@ -4041,12 +4045,6 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
               </Text>
             ) : null}
             {inspectionLoading ? <Text accessibilityLiveRegion="polite" style={{ color: theme.colors.textSoft, marginTop: 6 }}>Opening card inspection…</Text> : null}
-            {binder.type === 'official' && normalizePokemonCardLanguage(binder.language) === 'ja' && !masterSetEnabled && cards.length > displayCards.length ? (
-              <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, marginTop: 6, textAlign: 'center' }}>
-                Standard set view · {cards.length - displayCards.length} additional cards hidden. Enable Master set in binder options to include them.
-              </Text>
-            ) : null}
-
           </View>
 
           {isReadOnly && (

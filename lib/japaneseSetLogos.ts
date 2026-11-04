@@ -1594,6 +1594,9 @@ const JAPANESE_SET_LOGOS_BY_KEY: Record<string, JapaneseSetLogoMatch> = {
 const JAPANESE_SET_LOGO_ALIASES: Record<string, string> = {
   // Exact production M6 identity: binders can resolve it before metadata loads.
   "903d5baa27c75690b1d72395c770204a": "m6",
+  // Exact Japanese M6a identity, verified against /v1/sets on 4 November 2026.
+  // A renamed binder may retain only this canonical ID and its language.
+  "88e351b581915ef4854b2978046cda53": "m6a",
   "bwp": "bwpromos",
   "bwpromo": "bwpromos",
   "dpp": "dppromos",

@@ -49,6 +49,7 @@ import {
   PokemonLanguageFlagIcon,
 } from '../../components/PokemonLanguageBadge';
 import { getPreferredSetDisplayName } from '../../lib/pokemonDisplayNames';
+import { compareBinderSetsNewestFirst } from '../../lib/binderSetOrder';
 import {
   CUSTOM_BINDER_NAME_ART,
   getCustomBinderNameArt,
@@ -551,7 +552,7 @@ export default function NewBinderScreen() {
   // ===============================
 
   const filteredSets = useMemo(() => {
-    const availableSets = dedupeSetList(sets);
+    const availableSets = dedupeSetList(sets).sort(compareBinderSetsNewestFirst);
     const search = setSearch.trim();
     if (!search) return availableSets;
     return availableSets.filter((set) => isLikelySetSearchMatch(set, search));

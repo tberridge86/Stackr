@@ -44,7 +44,7 @@ import { fetchCachedRawDetailPrice, fetchCataloguePrices, isUnavailableCatalogue
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const PREFERRED_CATALOGUE_READ_TIMEOUT_MS = 7000;
-type SetCardReadOptions = { includeAssets?: boolean; minimumCardCount?: number | null };
+type SetCardReadOptions = { includeAssets?: boolean; minimumCardCount?: number | null; allowPageProgress?: boolean };
 const setFactsReaders = new WeakMap<StackrApiClient, ReturnType<typeof createSetFactsReader>>();
 // Read-time enrichment handles are weakly held and never serialized into binder records.
 const canonicalArtworkFacts = new WeakMap<object, StackrCard>();
@@ -62,7 +62,7 @@ function rememberSet(client: StackrApiClient, set: StackrSet) {
 function setFactsReader(client: StackrApiClient) {
   let reader = setFactsReaders.get(client);
   if (!reader) {
-    reader = createSetFactsReader({ store: () => client.catalogueCacheNamespace
+    reader = createSetFactsReader({ networkMaxDurationMs: 60_000, store: () => client.catalogueCacheNamespace
       ? getPersistentStackrSetFactsStore() : Promise.resolve(null) });
     setFactsReaders.set(client, reader);
   }
@@ -1027,7 +1027,9 @@ async function fetchCanonicalSetCardFacts(
   options: SetCardReadOptions = {},
 ) {
   ({ reference, language } = correctedChineseSetContext(reference, language));
-  const setId = await resolveCanonicalStackrSetId(reference, language, client, signal);
+  const setId = options.allowPageProgress
+    ? await withCatalogueReadDeadline((metadataSignal) => resolveCanonicalStackrSetId(reference, language, client, metadataSignal), PREFERRED_CATALOGUE_READ_TIMEOUT_MS)
+    : await resolveCanonicalStackrSetId(reference, language, client, signal);
   if (!setId) return { setId: null, cards: [] as StackrCard[] };
   if (options.includeAssets === false) {
     const prefixLanguage = toStackrApiLanguage(getPokemonSetLanguageFromPrefixedId(reference));
@@ -1036,7 +1038,9 @@ async function fetchCanonicalSetCardFacts(
     let expectedCount = Number(options.minimumCardCount ?? 0);
     if (!apiLanguage || !Number.isSafeInteger(expectedCount) || expectedCount < 1) {
       const cachedSet = rememberedSet(client, setId);
-      const set = cachedSet ?? (await client.set(setId, { signal })).data.set;
+      const set = cachedSet ?? (options.allowPageProgress
+        ? await withCatalogueReadDeadline(async (metadataSignal) => (await client.set(setId, { signal: metadataSignal })).data.set, PREFERRED_CATALOGUE_READ_TIMEOUT_MS)
+        : (await client.set(setId, { signal })).data.set);
       if (apiLanguage && apiLanguage !== set.languageCode) throw new Error('Conflicting catalogue language');
       if (!cachedSet) rememberSet(client, set);
       apiLanguage = set.languageCode;
@@ -1050,10 +1054,10 @@ async function fetchCanonicalSetCardFacts(
       expectedCount = canonicalTotal;
     }
     const key = { namespace: client.catalogueCacheNamespace ?? 'ephemeral-client', setId, language: apiLanguage!, expectedCount };
-    return setFactsReader(client).read(key, (requestSignal) => loadCompleteSetPages(key, async (cursor, pageSignal) => {
+    return setFactsReader(client).read(key, (requestSignal, onProgress) => loadCompleteSetPages(key, async (cursor, pageSignal) => {
       const response = await client.setCards(setId, { language: apiLanguage!, cursor, limit: 50, includeAssets: false }, { signal: pageSignal });
       return { cards: response.data.cards, nextCursor: response.meta.pagination?.nextCursor ?? null };
-    }, normalizeCanonicalSetCards, requestSignal), signal);
+    }, normalizeCanonicalSetCards, requestSignal, onProgress), signal);
   }
   const responseCards = await allPages<StackrCard>(async (cursor, pageSignal) => {
     const response = await client.setCards(
@@ -1126,6 +1130,10 @@ export function fetchStackrCardsForSet(
   client: StackrApiClient = stackrApiClient,
   options: SetCardReadOptions = {},
 ) {
+  if (options.includeAssets === false && options.allowPageProgress) {
+    return fetchCanonicalSetCardFacts(reference, language, client, undefined, options)
+      .then((facts) => facts.cards.map((card) => stackrCardToLegacyCard(card)));
+  }
   if (options.includeAssets === false) return withCatalogueReadDeadline(async (signal) => {
     const facts = await fetchCanonicalSetCardFacts(reference, language, client, signal, options);
     throwIfOptionalCatalogueReadAborted(signal);
