@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, RefreshControl, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '../../components/Text';
@@ -9,6 +10,11 @@ import { startCoreHomeRead, type CoreHomeBinder, type CoreHomeSection } from '..
 import { subscribeCollectionSummaryInvalidation } from '../../lib/collectionSummaryInvalidation';
 import type { CollectionSummary } from '../../lib/collectionSummary';
 import { readPersistedBinderOverview } from '../../lib/binderLibraryCache';
+import { BinderArtwork } from '../../components/BinderArtwork';
+import { StackrNavigationIcon } from '../../components/StackrNavigationIcon';
+import { stackrBrand } from '../../lib/stackrBrand';
+import { stackrIcons } from '../../lib/stackrIcons';
+import { getCoreHomeValuePresentation } from '../../lib/coreHomePresentation';
 
 type HomeState = {
   accountId: string | null;
@@ -21,6 +27,10 @@ const emptyState = (accountId: string | null): HomeState => ({ accountId, summar
 
 export default function CoreHomeScreen() {
   const { theme } = useTheme();
+  const { width: viewportWidth } = useWindowDimensions();
+  // The logo shelf can be 18% wider than its artwork stage. Keep both inside
+  // the two-column card on small phones, including its padding and border.
+  const binderArtworkWidth = Math.min(126, Math.max(70, Math.floor(((Math.min(viewportWidth, 640) - 52) / 2 - 22) / 1.18)));
   const auth = useAuth();
   const accountId = auth.loading || auth.error ? null : auth.user?.id ?? null;
   const accountRef = useRef(accountId);
@@ -40,6 +50,7 @@ export default function CoreHomeScreen() {
   const [state, setState] = useState<HomeState>(() => emptyState(accountId));
   const visible = state.accountId === accountId ? state : emptyState(accountId);
   const colors = theme.colors;
+  const value = getCoreHomeValuePresentation(visible.summary);
 
   useEffect(() => {
     let cancelled = false;
@@ -104,18 +115,64 @@ export default function CoreHomeScreen() {
     <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.bg }]}>
       <ScrollView contentContainerStyle={styles.content}
         refreshControl={<RefreshControl refreshing={visible.refreshing} onRefresh={() => load(true)} tintColor={colors.primary} />}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Text style={[styles.title, { color: colors.text }]}>Home</Text>
-          <Pressable accessibilityRole="button" accessibilityLabel="Account settings" onPress={() => router.push('/settings')} style={{ padding: 12 }}>
-            <Text style={{ color: colors.primary, fontWeight: '700' }}>Account</Text>
+        <View style={styles.header}>
+          <View style={[styles.brandPlate, theme.dark && styles.darkBrandPlate]}>
+            <Image source={stackrBrand.wordmark} accessibilityLabel="Stackr" resizeMode="contain" style={styles.wordmark} />
+          </View>
+          <Pressable accessibilityRole="button" accessibilityLabel="Account settings" onPress={() => router.push('/settings')}
+            style={[styles.account, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <StackrNavigationIcon name="profile" size={24} color={colors.text} accentColor={colors.primary} />
           </Pressable>
         </View>
-        <Text style={[styles.subtitle, { color: colors.textSoft }]}>Your cards. Your binders.</Text>
+
+        <LinearGradient colors={['#321847', '#51216D', '#7444A4']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.valuePanel}>
+          <View pointerEvents="none" style={styles.valueGlow} />
+          <View style={styles.valueHeading}>
+            <Text style={styles.valueLabel}>COLLECTION VALUE</Text>
+            <StackrNavigationIcon name="collection" color="#E6D7F7" accentColor="#FFB272" size={28} />
+          </View>
+          <Text accessibilityLabel={'Collection value ' + value.amount} style={styles.valueAmount} adjustsFontSizeToFit numberOfLines={1}>{value.amount}</Text>
+          <Text style={styles.valueCoverage}>{accountId ? value.coverage : 'Your collection, in one place'}</Text>
+          {accountId && value.detail ? <Text style={styles.valueDetail}>{value.detail}</Text> : null}
+          {accountId && value.pricedPercent !== null ? <View accessibilityRole="progressbar" accessibilityLabel="Copies with a stored price"
+            accessibilityValue={{ min: 0, max: 100, now: Math.round(value.pricedPercent) }} style={styles.valueTrack}>
+            <View style={[styles.valueFill, { width: `${value.pricedPercent}%` }]} />
+          </View> : null}
+          <View style={styles.stats}>
+            {[
+              ['Cards', visible.summary?.totalCardsOwned],
+              ['Unique', visible.summary?.uniqueCards],
+              ['Binders', visible.summary?.binderCount],
+            ].map(([label, count]) => <View key={String(label)} style={styles.stat}>
+              <Text style={styles.count}>{typeof count === 'number' ? count.toLocaleString() : '—'}</Text>
+              <Text style={styles.statLabel}>{label}</Text>
+            </View>)}
+          </View>
+          {accountId && visible.errors.summary ? <Text accessibilityRole="alert" style={styles.valueCoverage}>{visible.errors.summary}</Text>
+            : accountId && !visible.summary ? <Text style={styles.valueDetail}>Loading your saved totals…</Text> : null}
+        </LinearGradient>
+
         <Pressable accessibilityRole="button" accessibilityLabel="Search cards and sets"
-          onPress={() => router.push('/(tabs)/search')} style={[styles.search, { backgroundColor: colors.primary }]}>
-          <Text style={styles.searchText}>Search cards and sets</Text>
-          <Text style={styles.searchArrow}>›</Text>
+          onPress={() => router.push('/(tabs)/search')} style={[styles.search, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <StackrNavigationIcon name="search" size={25} color={colors.primary} />
+          <Text style={[styles.searchText, { color: colors.textSoft }]}>Search cards and sets</Text>
+          <Text style={[styles.arrow, { color: colors.primary }]}>›</Text>
         </Pressable>
+
+        <View style={styles.shortcuts}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Discover sets" onPress={() => router.push('/(tabs)/explore')}
+            style={[styles.shortcut, { backgroundColor: theme.dark ? colors.card : '#EDE5F9', borderColor: theme.dark ? colors.border : '#DFD1EF' }]}>
+            <Image source={stackrIcons.setDiscovery} resizeMode="contain" style={styles.shortcutArt} accessible={false} />
+            <Text style={[styles.shortcutTitle, { color: colors.text }]}>Discover sets</Text>
+            <Text style={[styles.shortcutCaption, { color: colors.textSoft }]}>Browse every release</Text>
+          </Pressable>
+          <Pressable accessibilityRole="button" accessibilityLabel="Open collection Pokédex" onPress={() => router.push('/(tabs)/pokedex')}
+            style={[styles.shortcut, { backgroundColor: theme.dark ? colors.card : '#FFF0E2', borderColor: theme.dark ? colors.border : '#F4DCC5' }]}>
+            <Image source={stackrIcons.pokedex} resizeMode="contain" style={styles.shortcutArt} accessible={false} />
+            <Text style={[styles.shortcutTitle, { color: colors.text }]}>Pokédex</Text>
+            <Text style={[styles.shortcutCaption, { color: colors.textSoft }]}>Your Pokémon collection</Text>
+          </Pressable>
+        </View>
 
         {auth.loading ? <View style={styles.panel}>
           <ActivityIndicator accessibilityLabel="Checking your sign-in" color={colors.primary} />
@@ -137,41 +194,27 @@ export default function CoreHomeScreen() {
           </View>
         ) : (
           <>
-            <View style={[styles.panel, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <Text style={[styles.heading, { color: colors.text }]}>Your collection</Text>
-              <View style={styles.stats}>
-                {[
-                  ['Cards owned', visible.summary?.totalCardsOwned],
-                  ['Unique cards', visible.summary?.uniqueCards],
-                  ['Binders', visible.summary?.binderCount],
-                ].map(([label, value]) => (
-                  <View key={String(label)} style={styles.stat}>
-                    <Text style={[styles.count, { color: colors.text }]}>{typeof value === 'number' ? value.toLocaleString() : '—'}</Text>
-                    <Text style={[styles.statLabel, { color: colors.textSoft }]}>{label}</Text>
-                  </View>
-                ))}
-              </View>
-              {visible.errors.summary ? <Text style={{ color: colors.textSoft }}>{visible.errors.summary}</Text>
-                : !visible.summary ? <Text style={{ color: colors.textSoft }}>Loading collection totals…</Text> : null}
-            </View>
-
             <View style={styles.sectionHeading}>
               <Text style={[styles.heading, { color: colors.text }]}>Your binders</Text>
               <Pressable accessibilityRole="button" onPress={() => router.push('/(tabs)/binder')} style={styles.link}>
                 <Text style={[styles.linkText, { color: colors.primary }]}>View all</Text>
               </Pressable>
             </View>
-            {visible.binders?.map((binder) => (
+            <View style={styles.binderGrid}>{visible.binders?.map((binder) => (
               <Pressable key={binder.id} accessibilityRole="button" accessibilityLabel={'Open ' + binder.name}
                 onPress={() => router.push({ pathname: '/binder/[id]', params: { id: binder.id } })}
                 style={[styles.binder, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <BinderArtwork coverKey={binder.cover_key} sourceSetId={binder.source_set_id}
+                  setName={binder.source_set_display_name ?? binder.name} sourceSetLanguage={binder.language}
+                  fallbackLogoUrl={binder.source_set_logo_url} fallbackColor={binder.color}
+                  width={binderArtworkWidth} stageHeight={142} artworkWidth={102} artworkHeight={132}
+                  showFan={false} showProgressBar={false} showProgressText={false} />
                 <View style={styles.binderText}>
                   <Text numberOfLines={2} style={[styles.binderName, { color: colors.text }]}>{binder.name}</Text>
-                  <Text style={{ color: colors.textSoft }}>{binder.type === 'official' ? 'Set binder' : 'Custom binder'}</Text>
+                  <Text style={[styles.binderCaption, { color: colors.textSoft }]}>{binder.type === 'official' ? 'Set binder' : 'Custom binder'}</Text>
                 </View>
-                <Text style={[styles.arrow, { color: colors.primary }]}>›</Text>
               </Pressable>
-            ))}
+            ))}</View>
             {visible.errors.binders ? <Text style={{ color: colors.textSoft }}>{visible.errors.binders}</Text>
               : visible.binders === null ? <Text style={{ color: colors.textSoft }}>Loading your binders…</Text>
                 : visible.binders.length === 0 ? <Text style={{ color: colors.textSoft }}>Start a binder for the cards you collect.</Text> : null}
@@ -196,16 +239,33 @@ export default function CoreHomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1 }, content: { padding: 20, paddingBottom: 120, gap: 14 },
-  title: { fontSize: 30, fontWeight: '800' }, subtitle: { fontSize: 15, lineHeight: 22 },
-  search: { minHeight: 62, borderRadius: 16, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginVertical: 8 },
-  searchText: { color: '#fff', fontSize: 17, fontWeight: '700' }, searchArrow: { color: '#fff', fontSize: 30 },
+  screen: { flex: 1 }, content: { padding: 20, paddingBottom: 130, gap: 16, width: '100%', maxWidth: 640, alignSelf: 'center' },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 6 },
+  brandPlate: { paddingHorizontal: 8, borderRadius: 12 }, darkBrandPlate: { backgroundColor: '#FAF8FC' },
+  wordmark: { width: 150, height: 48 }, account: { width: 46, height: 46, borderRadius: 23, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  subtitle: { fontSize: 15, lineHeight: 22 },
+  valuePanel: { borderRadius: 24, padding: 22, gap: 8, overflow: 'hidden' },
+  valueGlow: { position: 'absolute', right: -36, top: -55, width: 180, height: 180, borderRadius: 90, backgroundColor: '#A97BCD', opacity: 0.18 },
+  valueHeading: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  valueLabel: { color: '#E7D7F2', fontSize: 12, fontWeight: '700', letterSpacing: 1.8 },
+  valueAmount: { color: '#FFFFFF', fontSize: 43, fontWeight: '800', lineHeight: 54 },
+  valueCoverage: { color: '#F3E9FA', fontSize: 14, lineHeight: 20 },
+  valueDetail: { color: '#D9C5E9', fontSize: 12, lineHeight: 18 },
+  valueTrack: { height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.18)', overflow: 'hidden', marginTop: 4 },
+  valueFill: { height: '100%', borderRadius: 2, backgroundColor: '#FFBE8F' },
+  search: { minHeight: 58, borderRadius: 16, borderWidth: 1, paddingHorizontal: 16, gap: 12, flexDirection: 'row', alignItems: 'center' },
+  searchText: { flex: 1, fontSize: 15, fontWeight: '600' },
+  shortcuts: { flexDirection: 'row', gap: 12 }, shortcut: { flex: 1, borderWidth: 1, borderRadius: 20, padding: 14, gap: 6 },
+  shortcutArt: { width: 58, height: 58, marginBottom: 3 }, shortcutTitle: { fontSize: 16, fontWeight: '800' },
+  shortcutCaption: { fontSize: 12, lineHeight: 18 },
   panel: { borderWidth: 1, borderRadius: 16, padding: 18, gap: 12 }, heading: { fontSize: 19, fontWeight: '700' },
-  stats: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 }, stat: { flex: 1, gap: 5 },
-  count: { fontSize: 25, fontWeight: '800' }, statLabel: { fontSize: 12 },
+  stats: { flexDirection: 'row', justifyContent: 'space-between', gap: 8, paddingTop: 16, marginTop: 6, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.18)' }, stat: { flex: 1, gap: 5 },
+  count: { fontSize: 23, fontWeight: '800', color: '#FFFFFF' }, statLabel: { fontSize: 12, color: '#E7D7F2' },
   sectionHeading: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   link: { minHeight: 44, justifyContent: 'center' }, linkText: { fontSize: 15, fontWeight: '700' },
-  binder: { borderWidth: 1, borderRadius: 14, minHeight: 78, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  binderText: { flex: 1, gap: 5 }, binderName: { fontSize: 16, fontWeight: '700' }, arrow: { fontSize: 28 },
+  binderGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  binder: { borderWidth: 1, borderRadius: 18, width: '46%', flexGrow: 1, maxWidth: '49%', padding: 10, alignItems: 'center', gap: 8 },
+  binderText: { width: '100%', gap: 5, paddingHorizontal: 2, paddingBottom: 6 }, binderName: { fontSize: 14, lineHeight: 19, fontWeight: '700' },
+  binderCaption: { fontSize: 12 }, arrow: { fontSize: 26 },
   create: { minHeight: 48, borderWidth: 1, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginTop: 8 },
 });

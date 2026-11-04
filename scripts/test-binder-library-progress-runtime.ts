@@ -8,6 +8,7 @@ import ts from 'typescript';
 import * as pricingState from '../lib/collectionPricingState';
 import * as collectionRequestHash from '../lib/collectionRequestHash';
 import * as uiCollectionPages from '../lib/uiCollectionPages';
+import { getOfficialBinderProgress } from '../lib/binderProgress';
 
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 const deferred = <T,>() => {
@@ -28,7 +29,7 @@ const screenCode = compile(`${source.slice(0, renderStart)}
 const deadlineCode = compile(readFileSync('lib/personalDataRead.ts', 'utf8'));
 const enrichmentCode = compile(readFileSync('lib/optionalCatalogueEnrichment.ts', 'utf8'));
 
-async function harness(options: { delayedMetadata?: boolean; delayedCards?: boolean; masterSet?: boolean; serverCap?: number } = {}) {
+async function harness(options: { delayedMetadata?: boolean; delayedCards?: boolean; masterSet?: boolean; serverCap?: number; collectionOwned?: boolean } = {}) {
   let owner = 'owner-a', now = 0, nextTimer = 0, quantity = 3;
   const timers = new Map<number, { due: number; action: () => void }>();
   const setTimer = (action: () => void, delay = 0) => {
@@ -105,7 +106,21 @@ async function harness(options: { delayedMetadata?: boolean; delayedCards?: bool
       isKnownAuthDenial: (error: { status?: number }) => error?.status === 401 || error?.status === 403 },
     '../../hooks/useStartedBinderPreload': { useStartedBinderPreload() {} },
     '../../lib/supabase': { supabase },
-    '../../lib/ownership': { fetchOwnedCardRows: async () => [] },
+    '../../lib/ownership': { fetchOwnedCardRows: async () => options.masterSet || options.collectionOwned ? [
+      { id: 'owned-base', user_id: owner, card_id: 'base1-1', set_id: 'base1', variant: 'normal', quantity: 3 },
+      ...(options.masterSet ? [{ id: 'owned-holo', user_id: owner, card_id: 'base1-1', set_id: 'base1', variant: 'holofoil', quantity: 2 }]
+        : [{ id: 'owned-extra', user_id: owner, card_id: 'base1-2', set_id: 'base1', variant: 'normal', quantity: 5 }]),
+    ] : [] },
+    '../../lib/binderProgress': { getOfficialBinderProgress },
+    '../../lib/stackrDomainAdapter': { fetchStackrCardsForSet: async (_reference: string, language: string, _client: unknown, read: { includeAssets: boolean }) => {
+      assert.equal(language, 'en'); assert.equal(read.includeAssets, false, 'master totals use canonical facts without optional artwork');
+      if (options.delayedMetadata) return never;
+      return Array.from({ length: 102 }, (_, index) => ({
+        id: `base1-${index + 1}`, number: String(index + 1), raw_data: { stackr: { canonical: true, variants: [
+          { variantId: `base-${index}`, variantCode: 'normal' }, { variantId: `holo-${index}`, variantCode: 'holo' },
+        ] } },
+      }));
+    } },
     '../../lib/binders': { fetchBinders: async (options?: { enrich?: boolean }) => {
       if (options?.enrich === false) return rows(owner);
       brandingReads++; return never;
@@ -193,9 +208,12 @@ async function main() {
 
   const master = await harness({ delayedMetadata: true, masterSet: true });
   await master.advance(2_000);
+  assert.equal(master.state().loading, false, 'pending canonical master facts never hold saved ownership in a loading screen');
   assert.equal(master.state().counts['owner-a-official'].owned, 1);
   assert.equal(master.state().counts['owner-a-official'].total, null, 'missing master-finish facts cannot become the regular set denominator');
   assert.equal(master.state().counts['owner-a-official'].totalKnown, false);
+  await master.advance(75_000);
+  assert.equal(master.state().counts['owner-a-official'].total, null, 'a timed-out master read remains unknown');
   await master.close();
 
   const completeMaster = await harness({ masterSet: true });
@@ -203,6 +221,12 @@ async function main() {
   assert.equal(completeMaster.state().counts['owner-a-official'].total, 204, 'canonical catalogue rows establish the full two-finish master denominator');
   assert.equal(completeMaster.state().counts['owner-a-official'].totalKnown, true);
   await completeMaster.close();
+
+  const collectionOwned = await harness({ collectionOwned: true });
+  assert.equal(collectionOwned.state().counts['owner-a-official'].owned, 2,
+    'collection ownership contributes without a saved binder row and does not double-count a saved printing');
+  assert.equal(collectionOwned.state().counts['owner-a-official'].total, 102);
+  await collectionOwned.close();
 
   const switched = await harness({ delayedCards: true });
   await switched.account('owner-b');

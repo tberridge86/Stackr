@@ -58,8 +58,10 @@ assert.equal(getBinderCanonicalVariantId({ card: {
   externalIds: {}, raw_data: { stackr: { defaultVariantId: 'catalogue-normal-variant' } },
 } }), 'catalogue-normal-variant', 'catalogue default remains the fallback when no saved finish exists');
 
-// The live TCGdex S12a set response distinguishes regular cards from extras.
-assert.equal(getBinderCatalogueTotal({ printedTotal: 172, total: 258, masterSetEnabled: false, regularCardsOnly: true }), 172);
+// Secret printings belong to the normal checklist as well as the master checklist.
+assert.equal(getBinderCatalogueTotal({ printedTotal: 172, total: 258, masterSetEnabled: false, regularCardsOnly: true }), 258);
+assert.equal(getBinderCatalogueTotal({ printedTotal: 76, total: 113, masterSetEnabled: false }), 113);
+assert.equal(getBinderCatalogueTotal({ printedTotal: 81, total: 118, masterSetEnabled: false }), 118);
 assert.equal(getBinderCatalogueTotal({ printedTotal: 172, total: 258, masterSetEnabled: false }), 258);
 assert.equal(getBinderCatalogueTotal({ printedTotal: 172, total: 258, masterSetEnabled: true }), 258);
 assert.equal(getBinderCatalogueTotal({ printedTotal: 0, total: 250, masterSetEnabled: false }), 250);

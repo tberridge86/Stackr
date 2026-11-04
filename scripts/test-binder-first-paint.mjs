@@ -134,6 +134,49 @@ await test('one cancelled caller does not cancel other consumers of shared work'
   wait.resolve(makeCards(124)); assert.equal((await alive).cards.length, 124); assert.equal(calls, 1);
 });
 
+await test('valid page progress keeps one shared set read alive beyond the initial screen budget', async () => {
+  const cards = makeCards(118), store = memoryStore();
+  const reader = createSetFactsReader({ store: async () => store, networkTimeoutMs: 120, networkMaxDurationMs: 1000 });
+  let calls = 0;
+  const load = (signal, progress) => loadCompleteSetPages(key(118), async (cursor) => {
+    calls++;
+    await new Promise(resolve => setTimeout(resolve, 70));
+    const start = Number(cursor ?? 0), end = Math.min(start + 50, cards.length);
+    return { cards: cards.slice(start, end), nextCursor: end < cards.length ? String(end) : null };
+  }, rows => rows, signal, progress);
+  const foreground = new AbortController();
+  const initial = reader.read(key(118), load, foreground.signal);
+  const background = reader.read(key(118), load);
+  foreground.abort(new Error('initial view budget elapsed'));
+  await assert.rejects(initial, /initial view budget/);
+  const result = await background;
+  assert.equal(result.cards.length, 118);
+  assert.equal(calls, 3, 'foreground and background share the same three cursor requests');
+  await reader.flush(); assert.equal(store.writes, 1);
+  assert.equal((await reader.read(key(118), load)).source, 'memory');
+  assert.equal(calls, 3, 'the continuation reload uses the validated complete cache');
+});
+
+await test('stalled pages and an absolute pagination ceiling cannot publish partial completion', async () => {
+  for (const stalled of [true, false]) {
+    const store = memoryStore();
+    const reader = createSetFactsReader({ store: async () => store, networkTimeoutMs: 100, networkMaxDurationMs: 180 });
+    const started = performance.now();
+    await assert.rejects(reader.read(key(), async (signal, progress) => {
+      progress();
+      if (stalled) return new Promise(() => {});
+      while (!signal.aborted) { await new Promise(resolve => setTimeout(resolve, 30)); if (!signal.aborted) progress(); }
+      throw signal.reason;
+    }), /deadline|stalled/);
+    assert(performance.now() - started < 1500, 'stalls/heartbeats cannot escape the hard bound');
+    await reader.flush(); assert.equal(store.writes, 0);
+  }
+  let progress = 0;
+  await assert.rejects(loadCompleteSetPages(key(1), async () => ({ cards: [{ ...makeCards(1)[0], languageCode: 'ja' }], nextCursor: null }),
+    rows => rows, undefined, () => progress++), /page identity/);
+  assert.equal(progress, 0, 'a mismatched page cannot extend the network budget');
+});
+
 await test('refresh discards late work and does not restore invalidated disk data', async () => {
   const store = memoryStore(); const reader = createSetFactsReader({ store: async () => store });
   const wait = deferred(); let started; const start = new Promise((resolve) => { started = resolve; });

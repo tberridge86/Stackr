@@ -16,7 +16,8 @@ const common = [
   'Results will appear as loading completes.', 'Your card is saved. Its history entry',
 ];
 const core = [
-  'Your cards. Your binders.', 'View saved binders', 'core-preview',
+  'COLLECTION VALUE', 'Copies with a stored price', 'Browse every release',
+  'Start a binder for the cards you collect.', 'View saved binders', 'core-preview',
   'The saved binders did not match your account. Please retry.',
   'Your sign-in changed. Please retry.',
   'The collection account changed. Please retry.',
@@ -41,7 +42,13 @@ const legacyBundle = bundle([...common, legacy]);
 assert.equal(verifyRecoveryUiContent(legacyBundle, legacyPolicy).homeSurface, 'HubScreen');
 assert.throws(() => verifyRecoveryUiContent(bundle(common), legacyPolicy),
   { message: `Recovery UI content is absent from the exported iOS code: ${legacy}` });
-assert.throws(() => verifyRecoveryUiContent(legacyBundle, current), /Your cards\. Your binders\./);
+assert.throws(() => verifyRecoveryUiContent(legacyBundle, current), /COLLECTION VALUE/);
+const previousCoreBundle = bundle([...common, ...core.filter(phrase => ![
+  'COLLECTION VALUE', 'Copies with a stored price', 'Browse every release',
+  'Start a binder for the cards you collect.',
+].includes(phrase)), 'Your cards. Your binders.']);
+assert.throws(() => verifyRecoveryUiContent(previousCoreBundle, current), /COLLECTION VALUE/,
+  'The previous minimal Home must not pass as the restored collection experience.');
 assert.throws(() => verifyRecoveryUiContent(activeBundle, legacyPolicy), /activity_read_identity_changed/);
 for (const home of ["export { default } from '../../features/home/UnknownScreen';", '', homeEntrySource + '\nexport const bypass = true;']) {
   assert.throws(() => verifyRecoveryUiContent(activeBundle, { ...current, homeEntrySource: home }), /explicitly export a supported Home screen/);

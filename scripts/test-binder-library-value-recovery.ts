@@ -8,6 +8,9 @@ import { summariseCollectionPricing } from '../lib/collectionPricingState';
 import { withPersonalDataReadTimeout } from '../lib/personalDataRead';
 import { readUiCollectionChunks } from '../lib/uiCollectionPages';
 import { readOptionalCatalogueEnrichment } from '../lib/optionalCatalogueEnrichment';
+import { getOfficialBinderProgress } from '../lib/binderProgress';
+import { loadCompleteSetPages } from '../lib/stackrSetRetrieval';
+import type { StackrCard } from '../lib/stackrApiV1';
 
 const source = process.env.BINDER_VALUE_BASELINE === '1'
   ? execFileSync('git', ['show', 'HEAD:app/(tabs)/binder.tsx'], { encoding: 'utf8' })
@@ -26,15 +29,16 @@ const tick = () => new Promise<void>((resolve) => setImmediate(resolve));
 const deferred = <T,>() => { let resolve!: (value: T) => void;
   return { promise: new Promise<T>((done) => { resolve = done; }), resolve: (value: T) => resolve(value) }; };
 const facts = { counts: { b: { owned: 1, total: 113, totalKnown: true } }, masterSets: {},
-  priceInputs: [{ key: 'owned-exact', references: ['exact-printing'], quantity: 3 }], priceKeysByBinder: { b: ['owned-exact'] } };
+  priceInputs: [{ key: 'owned-exact', references: ['exact-printing'], quantity: 3 }], priceKeysByBinder: { b: ['owned-exact'] }, masterProgress: [] };
 const quote = { key: 'owned-exact', quantity: 3, central: 7, status: 'market_estimate', freshness: 'fresh',
   calculatedAt: '2026-10-18T08:00:00Z', staleAfter: '2026-10-19T08:00:00Z', requestError: null };
 const oldValue = summariseCollectionPricing([{ quantity: 3, centralValue: 6, evidenceStatus: 'market_estimate', freshness: 'fresh' }]);
 
-function pricingHarness(read: (inputs: any[], options: any) => Promise<any[]>, sharedQueryClient?: QueryClient) {
+function pricingHarness(read: (inputs: any[], options: any) => Promise<any[]>, sharedQueryClient?: QueryClient,
+  options: { facts?: any; masterRead?: (reference: string, language: string) => Promise<any[]> } = {}) {
   const exports: any = {};
   let values: any = { b: oldValue }; let error: string | null = null; let current = true;
-  const removed: unknown[] = []; const published: any[] = []; let passedOptions: any;
+  const removed: unknown[] = []; const published: any[] = []; let passedOptions: any; let counts: any;
   const context: any = { exports, Map, Set, console: { log() {} }, summariseCollectionPricing,
     CORE_COLLECTION_MODE: false,
     require: (name: string) => {
@@ -49,16 +53,24 @@ function pricingHarness(read: (inputs: any[], options: any) => Promise<any[]>, s
       fetchQuery: (options: any) => sharedQueryClient ? sharedQueryClient.fetchQuery(options) : options.queryFn({ signal: new AbortController().signal }),
       setQueryData: (key: any, value: any) => { published.push(value); sharedQueryClient?.setQueryData(key, value); },
       removeQueries: (query: any) => { removed.push(query); sharedQueryClient?.removeQueries(query); } },
-    fetchBinderFactsSnapshot: async () => facts, setCounts() {}, setMasterSets() {},
+    fetchBinderFactsSnapshot: async () => options.facts ?? facts,
+    getLanguageSetKey: (id: string, language: string) => `${language}:${id}`,
+    getOfficialBinderProgress, readOptionalCatalogueEnrichment,
+    fetchStackrCardsForSet: (reference: string, language: string, _client: unknown, readOptions: any) => {
+      assert.equal(readOptions.includeAssets, false); assert.equal(readOptions.allowPageProgress, true);
+      assert.ok(options.masterRead, 'A master fixture must exercise the canonical background reader.');
+      return options.masterRead(reference, language);
+    },
+    setCounts: (value: any) => { counts = value; }, setMasterSets() {},
     setValues: (value: any) => { values = value; }, setLibraryError: (message: string | null) => { error = message; },
-    applyBinderSummarySnapshot: (snapshot: any) => { values = snapshot.values; },
+    applyBinderSummarySnapshot: (snapshot: any) => { values = snapshot.values; counts = snapshot.counts; },
     isKnownAuthDenial: (failure: any) => failure?.status === 401 || failure?.status === 403,
     withPersonalDataReadTimeout: (work: any, options: any = {}) => withPersonalDataReadTimeout(work, { ...options, timeoutMs: sharedQueryClient ? 2_000 : 20 }),
   };
   runInNewContext(compile(callback('fetchBinderValues', 'loadBinderSummaries')), context);
   context.fetchBinderValues = exports.fetchBinderValues;
   runInNewContext(compile(callback('loadBinderSummaries', 'load =')), context);
-  return { values: () => values, error: () => error, removed, published, options: () => passedOptions,
+  return { values: () => values, counts: () => counts, error: () => error, removed, published, options: () => passedOptions,
     supersede: () => { current = false; },
     load: () => exports.loadBinderSummaries([{ id: 'b' }], 'owner', true, () => current) };
 }
@@ -119,13 +131,15 @@ async function run() {
     { id: '33333333-3333-4333-8333-333333333333', source_id: 'same-code', language: 'zh-tw', actual_total: 60, printed_total: 50 },
   ];
   const queries: { field: string; language: string | null; values: string[] }[] = [];
-  let savedRows: any[] = [], catalogueRows: any[] = [], variantRows: any[] = [];
+  let savedRows: any[] = [], variantRows: any[] = [];
   let pageCap = 50, savedReads = 0, failSavedPage = -1, failCataloguePage = -1;
+  const ownedPages: number[] = [], cataloguePages: number[] = [];
   let repeatSaved = false, foreignSaved = false;
   let afterSavedPage: (() => void) | null = null;
   const accountIdRef = { current: 'owner' };
   const authListeners = new Set<(...args: any[]) => void>();
-  const supabase = { auth: { onAuthStateChange: (listener: (...args: any[]) => void) => {
+  const supabase = { auth: { getUser: async () => ({ data: { user: { id: 'owner' } }, error: null }),
+    onAuthStateChange: (listener: (...args: any[]) => void) => {
     authListeners.add(listener); return { data: { subscription: { unsubscribe: () => authListeners.delete(listener) } } };
   } }, from: (table: string) => {
     let field = '', language: string | null = null, owner: string | null = null;
@@ -139,9 +153,10 @@ async function run() {
       in: (column: string, ids: string[]) => { assert.ok(ids.length <= 50); field = column; values = ids; return q; },
       then: (resolve: (value: any) => unknown) => {
         if (table === 'tcg_sets') queries.push({ field, language, values });
+        assert.ok(!['pokemon_cards', 'tcg_cards'].includes(table), 'Master catalogue facts must use the versioned API instead of legacy card tables.');
         const fixture = table === 'tcg_sets' ? canonical : table === 'binder_cards' ? savedRows
-          : table === 'pokemon_cards' ? catalogueRows : table === 'user_card_variants' ? variantRows : [];
-        let page = fixture.filter((row: any) => values.includes(row[field]) && (!language || row.language === language) && (!owner || row.user_id === owner))
+          : table === 'user_card_variants' ? variantRows : [];
+        let page = fixture.filter((row: any) => (!field || values.includes(row[field])) && (!language || row.language === language) && (!owner || row.user_id === owner))
           .slice(from, Math.min(to + 1, from + pageCap));
         if (table === 'binder_cards') {
           savedReads++;
@@ -149,18 +164,29 @@ async function run() {
           if (foreignSaved) page = [{ ...savedRows[0], binder_id: 'foreign-binder' }];
           afterSavedPage?.();
         }
-        const failed = (table === 'binder_cards' && savedReads === failSavedPage)
-          || (table === 'pokemon_cards' && from >= failCataloguePage && failCataloguePage >= 0);
+        if (table === 'user_card_variants') ownedPages.push(from);
+        const failed = table === 'binder_cards' && savedReads === failSavedPage;
         return Promise.resolve({ data: page, error: failed ? new Error('later page failed') : null }).then(resolve);
       },
     }; return q;
-  } };  const exports: any = {};
+  } };
+  // Keep the production ownership paginator in this actual-callback harness.
+  const ownership: any = {};
+  runInNewContext(compile(readFileSync('lib/ownership.ts', 'utf8')), { exports: ownership,
+    require: (name: string) => {
+      if (name === './supabase') return { supabase };
+      if (name === './collectionSummaryInvalidation') return { bumpCollectionSummaryVersion() {} };
+      throw new Error(`Unexpected ownership dependency: ${name}`);
+    },
+  });
+  const exports: any = {};
   const strip = (id?: string | null) => String(id ?? '').replace(/^(ja|en|zh-cn|zh-tw):/i, '');
   runInNewContext(compile(callback('fetchBinderFactsSnapshot', 'fetchBinderValues')), { exports, Map, Set, console, supabase, accountIdRef, readUiCollectionChunks,
     AsyncStorage: { getItem: async () => null }, getMasterSetStorageKey: (id: string) => id,
     getSetLookupCandidates: (id: string) => [id, strip(id)],
     readOptionalCatalogueEnrichment,
-    withPersonalDataReadTimeout: (work: any) => work(new AbortController().signal), fetchOwnedCardRows: async () => [],
+    withPersonalDataReadTimeout: (work: any) => work(new AbortController().signal), fetchOwnedCardRows: ownership.fetchOwnedCardRows,
+    getOfficialBinderProgress,
     normalizePokemonCardLanguage: (language: string) => language, inferBinderLanguage: (language: string) => language,
     getLanguageSetKey: (id: string, language: string) => `${language ?? 'en'}:${strip(id)}`,
     getKnownPokemonSetTotal: () => null,
@@ -204,16 +230,90 @@ async function run() {
   assert.equal(authListeners.size, 0);
   await assert.rejects(exports.fetchBinderFactsSnapshot([{ ...bulkBinder[0], user_id: 'foreign' }], 'owner'), /account changed/);
   pageCap = 17; savedRows = [];
-  catalogueRows = Array.from({ length: 113 }, (_, index) => ({ id: `official-${index}`, set_id: 'base1', language: 'en', name: `Card ${index}` }));
-  variantRows = catalogueRows.map(row => ({ id: `variant-${row.id}`, user_id: 'owner', card_id: row.id, set_id: 'base1', variant: 'normal' }));
+  const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
+  const masterSetId = canonical[0].id;
+  const catalogueRows: StackrCard[] = Array.from({ length: 113 }, (_, index) => ({
+    cardId: uuid(1000 + index), catalogueVersionId: uuid(9000), game: 'pokemon', languageCode: 'en',
+    set: { setId: masterSetId }, collectorNumber: { value: String(index + 1) }, names: { native: `Card ${index}` },
+    defaultVariantId: uuid(2000 + index), variants: [
+      { variantId: uuid(2000 + index), canonicalId: `pokemon:en:${masterSetId}:${index + 1}:normal`, variantCode: 'normal' },
+      ...(index === 112 ? [{ variantId: uuid(3000), canonicalId: `pokemon:en:${masterSetId}:113:reverse_holo`, variantCode: 'reverse_holo' }] : []),
+    ], rarity: {}, details: {},
+  } as StackrCard));
+  variantRows = catalogueRows.map(row => ({ id: `variant-${row.cardId}`, user_id: 'owner', card_id: row.cardId,
+    set_id: 'base1', variant: 'normal', quantity: 1 }));
+  variantRows.push({ ...variantRows.at(-1), id: 'variant-last-reverse', variant: 'reverseHolofoil', quantity: 2 });
   const masterBinder = [{ id: 'master', user_id: 'owner', type: 'official', source_set_id: 'base1', language: 'en', master_set_enabled: true }];
+  ownedPages.length = 0;
   const master = await exports.fetchBinderFactsSnapshot(masterBinder, 'owner');
-  assert.equal(master.counts.master.total, 113, 'Every master-set card is read under smaller API caps');
-  assert.equal(master.counts.master.owned, 113, 'Every owned variant remains available beyond 50 rows');
-  failCataloguePage = 17;
+  assert.equal(master.counts.master.total, null, 'Initial ownership facts cannot assert an unhydrated master-finish total.');
+  assert.equal(master.counts.master.owned, 113, 'Every owned printing remains available beyond 50 rows before master hydration.');
+  assert.equal(master.counts.master.totalKnown, false);
+  assert.equal(master.masterProgress.length, 1);
+  assert.equal(master.masterProgress[0].input.ownedRows.length, 114, 'The normal and reverse quantities both survive ownership pagination.');
+  assert.equal(ownedPages.length, Math.ceil(variantRows.length / pageCap) + 1, 'A smaller ownership cap still reaches the definitive empty page.');
+  const readCanonicalMaster = async (reference: string, language: string) => {
+    assert.equal(reference, 'base1'); assert.equal(language, 'en');
+    const cards = await loadCompleteSetPages({ namespace: 'fixture', setId: masterSetId, language, expectedCount: 113 }, async (cursor) => {
+      const offset = Number(cursor ?? 0); cataloguePages.push(offset);
+      if (failCataloguePage >= 0 && offset >= failCataloguePage) throw new Error('later canonical page failed');
+      const page = catalogueRows.slice(offset, offset + Math.min(50, pageCap));
+      const nextOffset = offset + page.length;
+      return { cards: page, nextCursor: nextOffset < catalogueRows.length ? String(nextOffset) : null };
+    }, rows => rows);
+    return cards.map(card => ({ id: card.cardId, number: card.collectorNumber.value,
+      raw_data: { stackr: { canonical: true, variants: card.variants } } }));
+  };
+  const masterPrices = (inputs: any[]) => inputs.map(input => ({ ...quote, key: input.key, quantity: input.quantity }));
+  const canonicalPending = deferred<void>();
+  const completeMaster = pricingHarness(async inputs => masterPrices(inputs), undefined, { facts: master,
+    masterRead: async (...args) => { await canonicalPending.promise; return readCanonicalMaster(...args); } });
+  await completeMaster.load();
+  assert.equal(completeMaster.counts().master.total, null, 'Pending canonical pages cannot block saved ownership or pricing.');
+  assert.equal(completeMaster.counts().master.owned, 113);
+  const pricedBeforeMaster = completeMaster.values().master.total;
+  assert.ok(pricedBeforeMaster > 0, 'The actual price path completes independently of catalogue hydration.');
+  canonicalPending.resolve();
+  for (let turn = 0; turn < 12; turn++) await tick();
+  assert.equal(completeMaster.counts().master.total, 114, 'Every canonical printing and eligible finish establishes the master denominator.');
+  assert.equal(completeMaster.counts().master.owned, 114, 'Every owned finish remains available beyond 50 rows.');
+  assert.equal(completeMaster.counts().master.totalKnown, true);
+  assert.equal(completeMaster.values().master.total, pricedBeforeMaster, 'Late master counts preserve the independently loaded valuation.');
+  assert.equal(cataloguePages.length, Math.ceil(113 / pageCap), 'The complete canonical cursor terminates under the smaller API cap.');
+
   const incompleteMaster = await exports.fetchBinderFactsSnapshot(masterBinder, 'owner');
-  assert.equal(incompleteMaster.counts.master.total, null, 'A later optional catalogue failure cannot claim a complete master-set total');
-  assert.equal(incompleteMaster.counts.master.totalKnown, false);
+  failCataloguePage = 17; cataloguePages.length = 0;
+  const failedMaster = pricingHarness(async inputs => masterPrices(inputs), undefined,
+    { facts: incompleteMaster, masterRead: readCanonicalMaster });
+  await failedMaster.load(); for (let turn = 0; turn < 6; turn++) await tick();
+  assert.equal(cataloguePages.length, 2, 'The failure occurs after a successful first canonical page.');
+  assert.equal(failedMaster.counts().master.total, null, 'A later optional catalogue failure cannot claim a complete master-set total.');
+  assert.equal(failedMaster.counts().master.totalKnown, false);
+  assert.equal(failedMaster.counts().master.owned, 113, 'Failed optional facts preserve complete saved ownership.');
+  assert.equal(failedMaster.values().master.total, pricedBeforeMaster, 'A catalogue failure cannot erase independently loaded prices.');
+  failCataloguePage = -1;
+
+  const switchedMasterPage = deferred<void>();
+  const switchedMaster = pricingHarness(async inputs => masterPrices(inputs), undefined, { facts: master,
+    masterRead: async (...args) => { await switchedMasterPage.promise; return readCanonicalMaster(...args); } });
+  await switchedMaster.load(); switchedMaster.supersede(); switchedMasterPage.resolve();
+  for (let turn = 0; turn < 12; turn++) await tick();
+  assert.equal(switchedMaster.counts().master.total, null, 'Late canonical facts cannot publish after the account/request is superseded.');
+
+  const priceAfterMaster = deferred<void>();
+  const masterCache = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+  try {
+    const pricesLast = pricingHarness(async inputs => { await priceAfterMaster.promise; return masterPrices(inputs); }, masterCache,
+      { facts: master, masterRead: readCanonicalMaster });
+    const loadingPrices = pricesLast.load();
+    for (let turn = 0; turn < 12; turn++) await tick();
+    assert.equal(pricesLast.counts().master.total, 114, 'Canonical progress may finish while the pricing query remains pending.');
+    priceAfterMaster.resolve(); await loadingPrices;
+    assert.equal(pricesLast.counts().master.total, 114, 'A later price snapshot cannot overwrite completed master counts.');
+    assert.equal(pricesLast.values().master.total, pricedBeforeMaster);
+    const cached: any = masterCache.getQueryData(['library', 'owner', 'fixture']);
+    assert.equal(cached.counts.master.total, 114, 'The stored summary includes the completed canonical counts and prices.');
+  } finally { masterCache.clear(); }
   console.log('Binder library actual-function regressions passed: failure/denial/no-quote distinction, retained values, cancellation/deadline guards and canonical language-scoped totals.');
 }
 run().catch((error) => { console.error(error); process.exitCode = 1; });

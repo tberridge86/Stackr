@@ -10,7 +10,7 @@ import { copyPreferredSetArtworkReassignments, getPreferredSetArtworkReassignmen
 import { resolveCardArtwork } from '../lib/cardArtworkPresentation';
 import { buildForeignCardPresentation } from '../lib/foreignCardPresentation';
 import { readOptionalCatalogueEnrichment, throwIfOptionalCatalogueReadAborted } from '../lib/optionalCatalogueEnrichment';
-import { createSetFactsReader, loadCompleteSetPages, mergeBinderArtwork, publicSetCardFacts } from '../lib/stackrSetRetrieval';
+import { createSetFactsReader, loadCompleteSetPages, mergeBinderArtwork, mergeCanonicalCardDisplayName, publicSetCardFacts } from '../lib/stackrSetRetrieval';
 import { getBinderCardImageUri, getBinderCatalogueInspectionImages } from '../lib/binderCataloguePresentation';
 import { snapshotBinderView } from '../lib/binderReopenSnapshot';
 
@@ -57,7 +57,7 @@ function loadAdapter(preferred: StackrCard = after, failArtwork = false) {
   const tree = ts.createSourceFile('adapter.ts', source, ts.ScriptTarget.Latest, true);
   const names = new Set(['clean', 'toLegacyLanguage', 'embeddedCardImageAssets', 'primaryCardImageAsset',
     'stackrCardToLegacyCard', 'fetchStackrCard', 'fetchStackrAssetsForPrinting', 'allPages', 'readOptionalAssetPages',
-    'fetchCanonicalSetCardFacts', 'enrichCanonicalSetCards', 'enrichStackrCardArtworkFromFacts']);
+    'fetchCanonicalSetCardFacts', 'enrichCanonicalSetCards', 'enrichSavedStackrCardArtwork', 'enrichStackrCardArtworkFromFacts']);
   const functions = tree.statements.filter(node => ts.isFunctionDeclaration(node) && names.has(node.name?.text ?? ''));
   assert.equal(functions.length, names.size);
   let selected = before;
@@ -82,17 +82,18 @@ function loadAdapter(preferred: StackrCard = after, failArtwork = false) {
     resolveCanonicalStackrSetId: async (reference: string) => reference,
     toStackrApiLanguage: (language: string) => language, getPokemonSetLanguageFromPrefixedId: () => null,
     rememberedSet: () => null, rememberSet: () => {}, setFactsReader: () => reader,
-    loadCompleteSetPages, normalizeCanonicalSetCards: (cards: StackrCard[]) => cards, readPreferredSetArtwork,
+    loadCompleteSetPages, normalizeCanonicalSetCards: (cards: StackrCard[]) => cards, readPreferredSetArtwork, mergeCanonicalCardDisplayName,
     readOptionalCatalogueEnrichment, throwIfOptionalCatalogueReadAborted, stackrApiClient: client,
     shouldUseStackrApi: () => true, resolveCachedStackrCard: async (reference: string) => ({ card: selected, variantId: reference }),
   });
   return { map: module.exports.stackrCardToLegacyCard, enrich: module.exports.enrichStackrCardArtworkFromFacts,
+    enrichSaved: module.exports.enrichSavedStackrCardArtwork,
     async fetch(card: StackrCard, variantId: string, manifest: StackrCatalogueAsset[] = []) {
       selected = card; assets = manifest; return module.exports.fetchStackrCard(variantId, {}, client);
     } };
 }
 
-function loadAttacher(display: any, enrich?: any) {
+function loadAttacher(display: any, enrich?: any, enrichSaved?: any) {
   const tree = ts.createSourceFile('binders.ts', readFileSync('lib/binders.ts', 'utf8'), ts.ScriptTarget.Latest, true);
   const declaration = tree.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === 'attachBinderCatalogueArtwork');
   assert.ok(declaration);
@@ -101,6 +102,7 @@ function loadAttacher(display: any, enrich?: any) {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   }).outputText, { module, exports: module.exports, mergeBinderArtwork, getPreferredSetArtworkReassignments,
     readOptionalCatalogueEnrichment, attachLiveTcgdexCardReferences: async (cards: any[]) => cards,
+    enrichSavedStackrCardArtwork: enrichSaved ?? (async () => []),
     enrichStackrCardArtworkFromFacts: enrich ?? (async (_cards: any[], _signal: any, _client: any, progress: any) => {
       progress?.([display]); return [display];
     }),
@@ -172,7 +174,7 @@ async function main() {
     for (const source of ['json', 'snapshot'] as const) {
       const live = loadAdapter(incoming);
       const saved = persistRows([{ ...row, card: live.map(before) }], source);
-      const output = await loadAttacher(null, live.enrich)(saved);
+      const output = await loadAttacher(null, live.enrich, live.enrichSaved)(saved);
       assert.equal(getBinderCardImageUri(output[0]), null, `${source} saved rows must recover facts and clear only the proved stale binding`);
       assert.equal(getBinderCatalogueInspectionImages(output[0]), null);
       assert.equal(output[0].owned_quantity, saved[0].owned_quantity);
@@ -241,14 +243,14 @@ async function main() {
     for (const source of ['json', 'snapshot'] as const) {
       const live = loadAdapter(scenario.preferred, scenario.failure);
       const saved = persistRows([{ ...savedRow, card: live.map(before), tcg_price: 42, notes: 'Keep private saved fields' }], source);
-      const output = (await loadAttacher(null, live.enrich)(saved))[0];
+      const output = (await loadAttacher(null, live.enrich, live.enrichSaved)(saved))[0];
       assert.equal(getBinderCardImageUri(output), saved[0].card.images.small, `${source} ${scenario.name} fresh read cannot grant saved history clearing authority`);
       assert.equal(output.tcg_price, saved[0].tcg_price); assert.equal(output.owned_quantity, 3); assert.equal(output.notes, saved[0].notes);
     }
   }
   const liveCapture = loadAdapter(after);
   const savedCapture = JSON.parse(JSON.stringify({ ...savedRow, card: liveCapture.map(before), image_url: capture.image_url, tcg_price: 42 }));
-  const correctedCapture = (await loadAttacher(null, liveCapture.enrich)([savedCapture]))[0];
+  const correctedCapture = (await loadAttacher(null, liveCapture.enrich, liveCapture.enrichSaved)([savedCapture]))[0];
   assert.equal(correctedCapture.image_url, capture.image_url, 'actual serialized enrichment preserves a distinct private photo');
   assert.equal(getBinderCatalogueInspectionImages(correctedCapture), null);
   assert.equal(correctedCapture.tcg_price, 42); assert.equal(correctedCapture.owned_quantity, 3);

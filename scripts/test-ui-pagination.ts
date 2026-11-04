@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import ts from 'typescript';
-import { parseLimit } from '../backend/lib/stackrApiV1.js';
+import { groupCardRows, parseLimit } from '../backend/lib/stackrApiV1.js';
 import { readPublishedPokedexIndex } from '../backend/lib/pokedexIndex.js';
 import { loadCompleteSetPages } from '../lib/stackrSetRetrieval';
 import type { StackrCard } from '../lib/stackrApiV1';
@@ -75,14 +75,25 @@ async function main() {
 
   const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
   const setId = uuid(1), version = uuid(2);
-  const sourceRows: StackrCard[] = Array.from({ length: 16000 }, (_, n) => {
+  // The origin pages variant rows, then groups each page into printings. A
+  // printing split across pages gets a default from the variants on that page.
+  const sourceRows = Array.from({ length: 16000 }, (_, n) => {
     const card = Math.floor(n / 8), variantId = uuid(100000 + n);
-    return { cardId: uuid(100 + card), catalogueVersionId: version, game: 'pokemon', languageCode: 'en',
-      set: { setId }, collectorNumber: { value: String(card + 1) }, names: { native: `Card ${card}` },
-      defaultVariantId: uuid(100000 + card * 8), variants: [{ variantId, canonicalId: `pokemon:en:${card}:${n % 8}`, variantCode: String(n % 8) }],
-      rarity: {}, details: {},
-    } as StackrCard;
+    return { printing_id: uuid(100 + card), catalogue_version_id: version, game_code: 'pokemon', language_code: 'en',
+      set_id: setId, collector_number: String(card + 1), card_native_name: `Card ${card}`,
+      variant_id: variantId, canonical_key: `pokemon:en:${card}:${n % 8}`,
+      variant_code: n % 8 === 0 ? 'normal' : `finish-${n % 8}` };
   });
+  const requireGroupedCard = (card: ReturnType<typeof groupCardRows>[number] | undefined): StackrCard => {
+    assert.ok(card, 'The origin must produce a non-null summary for every grouped printing.');
+    const englishDisplaySource = card.names.englishDisplaySource;
+    assert.ok(englishDisplaySource === null || englishDisplaySource === 'printing' || englishDisplaySource === 'concept',
+      'The origin must emit a supported English-display provenance.');
+    const supplement = card.names.englishSupplement;
+    return { ...card, names: { ...card.names, englishDisplaySource,
+      englishSupplement: supplement ? { ...supplement,
+        sourceCardIds: supplement.sourceCardIds ? [...supplement.sourceCardIds] : undefined } : null } };
+  };
   let pages = 0;
   const normalize = (cards: StackrCard[]) => {
     const merged = new Map<string, StackrCard>();
@@ -95,11 +106,19 @@ async function main() {
   };
   const complete = await loadCompleteSetPages({ namespace: 'fixture', setId, language: 'en', expectedCount: 2000 }, async (cursor) => {
     const offset = Number(cursor ?? 0); pages += 1;
-    return { cards: sourceRows.slice(offset, offset + 50), nextCursor: offset + 50 < sourceRows.length ? String(offset + 50) : null };
+    const cards = groupCardRows(sourceRows.slice(offset, offset + 50)).map(requireGroupedCard);
+    assert.ok(cards.every((card: StackrCard) => card.variants.some(variant => variant.variantId === card.defaultVariantId)),
+      "Every raw HTTP printing has a default among that page's supplied variants.");
+    return { cards, nextCursor: offset + 50 < sourceRows.length ? String(offset + 50) : null };
   }, normalize);
   assert.equal(pages, 320);
   assert.equal(complete.length, 2000);
   assert.equal(complete.reduce((sum, card) => sum + card.variants.length, 0), 16000, 'Smaller pages retain the original complete-snapshot capacity.');
+  assert.ok(complete.every(card => card.variants.length === 8), 'Printings split across page boundaries retain every distinct finish.');
+  const validCard = requireGroupedCard(groupCardRows(sourceRows.slice(0, 8))[0]);
+  await assert.rejects(loadCompleteSetPages({ namespace: 'fixture', setId, language: 'en', expectedCount: 1 },
+    async () => ({ cards: [{ ...validCard, defaultVariantId: uuid(999999) }], nextCursor: null }),
+    () => [validCard]), /page identity/, 'Normalization cannot repair an invalid raw default and extend the page heartbeat.');
   console.log('UI pagination: bounded transport, staged origin limits, complete National Dex windows and 16,000-row set snapshots pass.');
 }
 

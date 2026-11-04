@@ -78,6 +78,7 @@ export async function loadCompleteSetPages(
   load: (cursor: string | null, signal?: AbortSignal) => Promise<SetFactsPage>,
   normalize: (cards: StackrCard[]) => StackrCard[],
   signal?: AbortSignal,
+  onPageProgress?: () => void,
 ): Promise<StackrCard[]> {
   const rows: StackrCard[] = [];
   const cursors = new Set<string>();
@@ -88,6 +89,12 @@ export async function loadCompleteSetPages(
     const result = await load(cursor, signal);
     check(signal);
     for (const card of result.cards) {
+      if (!UUID.test(card.cardId) || card.set?.setId !== key.setId || card.languageCode !== key.language
+        || !card.collectorNumber?.value || !card.names?.native || !Array.isArray(card.variants) || !card.variants.length
+        || !card.variants.some((variant) => variant.variantId === card.defaultVariantId)
+        || card.variants.some((variant) => !UUID.test(variant.variantId) || !variant.canonicalId || !variant.variantCode)) {
+        throw new Error('Invalid or mixed catalogue page identity');
+      }
       if (typeof card.catalogueVersionId !== 'string' || !UUID.test(card.catalogueVersionId)) {
         throw new Error('Catalogue version is missing or malformed during pagination');
       }
@@ -96,6 +103,7 @@ export async function loadCompleteSetPages(
     if (versions.size > 1) throw new Error('Catalogue version changed during pagination');
     rows.push(...result.cards);
     if (rows.length > MAX_SET_ROWS) throw new Error('Catalogue response exceeded bounded retrieval budget');
+    if (result.cards.length > 0) onPageProgress?.();
     cursor = result.nextCursor;
     if (!cursor) {
       const cards = normalize(rows);
@@ -133,6 +141,8 @@ export function createSetFactsReader(options: {
   ttlMs?: number;
   diskBudgetMs?: number;
   networkTimeoutMs?: number;
+  /** Optional absolute ceiling when a paginated loader reports valid progress. */
+  networkMaxDurationMs?: number;
 }) {
   const now = options.now ?? Date.now;
   const ttl = options.ttlMs ?? TTL_MS;
@@ -171,7 +181,7 @@ export function createSetFactsReader(options: {
     setId: snapshot.setId, cards: snapshot.cards.map(publicSetCardFacts), fetchedAt: snapshot.fetchedAt, source,
   });
   return {
-    read(key: SetFactsKey, load: (signal: AbortSignal) => Promise<StackrCard[]>, signal?: AbortSignal): Promise<SetFactsResult> {
+    read(key: SetFactsKey, load: (signal: AbortSignal, onProgress: () => void) => Promise<StackrCard[]>, signal?: AbortSignal): Promise<SetFactsResult> {
       check(signal);
       const id = keyOf(key);
       const cached = memory.get(id)?.snapshot;
@@ -192,10 +202,17 @@ export function createSetFactsReader(options: {
           const snapshot = acceptable(stored, key);
           if (snapshot) { remember(id, snapshot); return result(snapshot, 'disk'); }
         }
-        const deadline = setTimeout(() => controller.abort(new Error('Catalogue network deadline exceeded')), options.networkTimeoutMs ?? 8000);
+        const idleMs = options.networkTimeoutMs ?? 8000;
+        let deadline = setTimeout(() => controller.abort(new Error('Catalogue network deadline exceeded')), idleMs);
+        const maximum = setTimeout(() => controller.abort(new Error('Catalogue pagination deadline exceeded')), options.networkMaxDurationMs ?? idleMs);
+        const progress = () => {
+          current();
+          clearTimeout(deadline);
+          deadline = setTimeout(() => controller.abort(new Error('Catalogue page stalled')), idleMs);
+        };
         let cards: StackrCard[];
-        try { cards = await forCaller(Promise.resolve().then(() => load(controller.signal)), controller.signal); }
-        finally { clearTimeout(deadline); }
+        try { cards = await forCaller(Promise.resolve().then(() => load(controller.signal, progress)), controller.signal); }
+        finally { clearTimeout(deadline); clearTimeout(maximum); }
         current();
         validateCompleteSet(cards, key);
         const snapshot: SetFactsSnapshot = { ...key, schema: 1, fetchedAt: now(), cards: cards.map(publicSetCardFacts) };

@@ -87,9 +87,8 @@ export function getBinderCatalogueTotal(input: {
 }) {
   const printedTotal = positiveCatalogueCount(input.printedTotal);
   const total = positiveCatalogueCount(input.total);
-  return !input.masterSetEnabled && input.regularCardsOnly
-    ? printedTotal ?? total
-    : total ?? printedTotal;
+  // Printed totals omit secret printings; both binder modes include those cards.
+  return total ?? printedTotal;
 }
 
 /** Numeric secret-card slots can be identified even when rarity is absent. */

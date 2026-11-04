@@ -169,6 +169,17 @@ await test(async f => {
   assert.ok(f.state.calls.some(call => call[0] === 'eq' && call[1] === 'user_id' && call[2] === 'A'));
 });
 await test(async f => {
+  const saved = { ...binder(), cover_key: 'celebi', source_set_id: '88e351b5-8191-5ef4-854b-2978046cda53',
+    language: 'ja', source_set_display_name: '30th Celebration', source_set_logo_url: 'https://example.invalid/reviewed-logo.png' };
+  f.state.binderRead = async () => ({ data: [saved], error: null });
+  await f.start().done;
+  const preview = f.events.find(event => event[0] === 'binders')[1][0];
+  for (const key of ['cover_key', 'color', 'source_set_id', 'language', 'source_set_display_name', 'source_set_logo_url']) {
+    assert.equal(preview[key], saved[key], 'Home preserves the saved artwork identity: ' + key);
+    assert.ok(f.state.calls.some(call => call[0] === 'select' && call[1].split(',').includes(key)));
+  }
+});
+await test(async f => {
   f.state.diskRead = never; f.state.summaryRead = never; f.state.binderRead = never;
   await f.start().done;
   assert.equal(f.events.filter(event => event[0] === 'error').length, 2);
@@ -238,18 +249,28 @@ await test(async f => {
   assert.equal(result.binders, rows); assert.equal(artReads, 0, 'Optional cover storage never gates rows');
 });
 await test(async f => {
-  let facts = 0, prices = 0, counts;
+  let facts = 0, prices = 0, masterReads = 0, counts;
   const read = evaluate(initializer(binderSource, 'loadBinderSummaries'), {
     CORE_COLLECTION_MODE: true, summaryRequestRef: { current: 0 },
     getBinderLibrarySignature: () => 'one', stackrQueryKeys: f.queries.stackrQueryKeys, stackrQueryClient: f.queryClient,
     stackrQueryTiming: f.queries.stackrQueryTiming,
     withPersonalDataReadTimeout: read => read(new AbortController().signal),
-    fetchBinderFactsSnapshot: async () => { facts++; return { counts: { one: 2 }, masterSets: {} }; },
+    fetchBinderFactsSnapshot: async () => { facts++; return { counts: { one: 2 }, masterSets: {}, masterProgress: [
+      { binderId: 'one', reference: 'set-one', input: { language: 'ja' } },
+    ] }; },
+    getLanguageSetKey: (reference, language) => language + ':' + reference,
+    readOptionalCatalogueEnrichment: operation => operation(),
+    fetchStackrCardsForSet: (_reference, language, _client, options) => {
+      masterReads++; assert.equal(language, 'ja'); assert.equal(options.includeAssets, false); assert.equal(options.allowPageProgress, true);
+      return never();
+    },
+    isKnownAuthDenial: () => false,
     fetchBinderValues: () => { prices++; throw new Error('Disabled price read'); },
     setCounts: value => { counts = value; }, setMasterSets() {}, setValues() {}, setLibraryError() {},
   });
   await read([binder()], 'A');
   assert.equal(facts, 1); assert.equal(prices, 0); assert.equal(counts.one, 2, 'Owned counts remain available with pricing off');
+  assert.equal(masterReads, 1, 'A pending background master read cannot delay saved counts or the core view');
 });
 for (const name of ['fetchModalEbayPrice', 'loadShowcase', 'loadModalTcgFallback']) {
   // No stubs for providers, state setters or Supabase: touching any of them
@@ -357,6 +378,8 @@ for (const name of ['fetchModalEbayPrice', 'loadShowcase', 'loadModalTcgFallback
       withPersonalDataReadTimeout: read => read(),
       measureAsync: (_name, read) => read(), isCurrentRequest: () => true,
       retrievalTrace: { phase: noOp, fail: noOp }, previewState: { snapshot: null }, previewAllowed: true,
+      accountGeneration: 0, getPokemonSetLanguageFromPrefixedId: () => null,
+      catalogueContinuation: null, continueBinderCatalogueRead: () => null,
       activeAccountIdRef: { current: outcome === 'different-account' ? 'B' : null },
       binderReopenCache: { invalidate: noOp }, setUserId: noOp, setBinder: noOp, setIsPublic: noOp,
       setCards: noOp, setSelectedCard: noOp, setReopenStatus: noOp, setCustomNameArtKey: noOp, setShowcaseRows: noOp,
