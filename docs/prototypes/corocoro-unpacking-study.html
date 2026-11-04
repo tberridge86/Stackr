@@ -110,7 +110,7 @@ select {
 }
 .mat {
   position:relative;
-  height:430px;
+  height:480px;
   overflow:hidden;
   border-radius:28px;
   isolation:isolate;
@@ -118,6 +118,160 @@ select {
   background-image:radial-gradient(#bcb0ce40 .7px,transparent .7px);
   background-size:7px 7px;
   box-shadow:inset 0 0 0 1px #e6dfee,0 14px 36px #6b528b0b;
+}
+#stage {
+  position:absolute;
+  inset:0;
+  perspective:1300px;
+}
+.insert-view {
+  position:absolute;
+  inset:0;
+  transform-origin:50% 48%;
+}
+.insert-view[hidden],.magazine-shell[hidden],.delivery-view[hidden],.interior-view[hidden] {
+  display:none;
+}
+.magazine-shell {
+  position:absolute;
+  top:64px;
+  left:50%;
+  width:min(228px,calc(100% - 84px));
+  aspect-ratio:449 / 647;
+  transform:translateX(-50%) rotate(-2deg);
+  transform-origin:right center;
+  transform-style:preserve-3d;
+  perspective:1200px;
+  transition:transform 1s cubic-bezier(.4,0,.2,1);
+}
+#stage[data-journey='opening'] .magazine-shell {
+  transform:translateX(-100%) scale(.82);
+}
+.magazine-cover,.magazine-pages {
+  position:absolute;
+  inset:0;
+  border-radius:2px;
+}
+.magazine-cover {
+  z-index:2;
+  transform-origin:right center;
+  backface-visibility:hidden;
+  background:#fffaf0;
+  box-shadow:1px 2px 1px #927d6524,4px 10px 22px #4a31602b;
+  overflow:hidden;
+}
+.magazine-cover img {
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:contain;
+}
+.magazine-cover::after {
+  content:'';
+  position:absolute;
+  inset:0;
+  box-shadow:inset -5px 0 7px #38274220,inset 1px 0 1px #fff7;
+  pointer-events:none;
+}
+.magazine-cover-held {
+  display:grid;
+  place-content:center;
+  height:100%;
+  padding:30px;
+  color:var(--soft);
+  font-size:13px;
+  line-height:1.7;
+  text-align:center;
+}
+.magazine-pages {
+  display:none;
+}
+.interior-view {
+  position:absolute;
+  inset:0;
+  transform-origin:50% 45%;
+}
+.interior-photo {
+  position:absolute;
+  top:60px;
+  left:50%;
+  width:calc(100% - 48px);
+  max-width:320px;
+  aspect-ratio:1;
+  transform:translateX(-50%);
+}
+.interior-photo img {
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
+.interior-photo .rotate-clockwise {
+  transform:rotate(90deg);
+}
+.interior-caption {
+  position:absolute;
+  left:18px;
+  right:18px;
+  bottom:78px;
+  color:var(--soft);
+  font-size:10px;
+  text-align:center;
+}
+.interior-held {
+  position:absolute;
+  inset:110px 36px auto;
+  font-size:14px;
+  line-height:1.7;
+  text-align:center;
+}
+.delivery-view {
+  position:absolute;
+  inset:0;
+  transform-origin:50% 45%;
+}
+.delivery-book {
+  position:absolute;
+  top:88px;
+  left:50%;
+  width:calc(100% - 42px);
+  max-width:370px;
+  aspect-ratio:900 / 565;
+  transform:translateX(-50%) rotate(-2deg);
+  border-radius:2px;
+  perspective:1200px;
+}
+.delivery-pouch {
+  position:absolute;
+  left:12%;
+  top:14%;
+  width:38%;
+  aspect-ratio:833 / 979;
+  padding:0;
+  border:0;
+  background:transparent;
+  cursor:pointer;
+  transform-origin:right center;
+  transform-style:preserve-3d;
+}
+.delivery-face {
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  backface-visibility:hidden;
+  filter:drop-shadow(0 3px 2px #493c4933);
+}
+.delivery-face svg {
+  width:100%;
+  height:100%;
+  display:block;
+}
+.delivery-front {
+  clip-path:polygon(9.24% 0,91.48% .72%,99.64% 99.69%,.12% 97.55%);
+}
+.delivery-reverse {
+  transform:rotateY(180deg);
+  clip-path:polygon(9.88% 0,94.51% .51%,99.88% 99.28%,.49% 98.88%);
 }
 .mat::before {
   content:'';
@@ -142,6 +296,10 @@ select {
   inset:0;
   box-shadow:2px 5px 0 #d9cddd,0 13px 20px #59456822;
   background:#fffaf0;
+}
+.mount.is-peeling .sheet-photo {
+  box-shadow:2px 5px 0 #d9cddd,0 calc(13px + var(--backing-pull,0) * 5px)
+    calc(20px + var(--backing-pull,0) * 5px) #59456828;
 }
 .mount.single-sheet {
   top:64px;
@@ -231,7 +389,7 @@ select {
   overflow:visible;
 }
 .peel-underside {
-  fill:#fff8e9;
+  fill:#fffcf3;
   stroke:#d6c6a7;
   stroke-width:.4;
 }
@@ -461,7 +619,10 @@ details p {
     text-align:right;
   }
   .mat {
-    height:390px;
+    height:440px;
+  }
+  #stage[data-journey='opening'] .magazine-shell {
+    transform:translateX(-100%) scale(.66);
   }
   .mount {
     top:70px;
@@ -474,21 +635,36 @@ details p {
     padding:11px 9px;
   }
 }
+@media(max-width:460px) {
+  .magazine-shell {
+    width:min(192px,calc(100% - 84px));
+  }
+}
+@media(max-width:400px) {
+  .interior-caption {
+    bottom:90px;
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .magazine-shell {
+    transition:none;
+  }
+}
 </style>
 </head>
 <body>
 <main>
 <header><img src="/wordmark.png" alt="Stackr"><a href="/">Original Mew reveal ↗</a></header>
-<p class="eyebrow">CoroCoro opening study</p>
-<h1 id="title">Peel the paper. Then turn the card.</h1>
-<p class="intro" id="intro">The old Pocket Monsters backs stay facing up. Release the backing first, then flip each card to reveal its front.</p>
-<label class="selector">Choose an insert<select id="case"><option value="1996-sheet">November 1996 · Ivy Pikachu &amp; Jigglypuff</option><option value="2000-cleffa">February 2000 · Cleffa</option><option value="2000-wooper">January 2000 · Wooper · additional issue</option><option value="2022-packet">February 2022 · Pikachu VMAX</option><option value="2023-cetitan">June 2023 · Cetitan</option></select></label>
+<p class="eyebrow">CoroCoro magazines</p>
+<h1 id="title">Open CoroCoro. Find the two-card sheet.</h1>
+<p class="intro" id="intro">Open the November 1996 cover to its photographed two-card insert. Inspect the sheet, keep the old Pocket Monsters backs facing up while releasing the paper, then turn each loose card over.</p>
+<label class="selector">Choose a magazine<select id="case"><option value="1996-sheet">November 1996 · Ivy Pikachu &amp; Jigglypuff</option><option value="2000-cleffa">February 2000 · Cleffa</option><option value="2000-wooper">January 2000 · Wooper · additional issue</option><option value="2022-packet">February 2022 · Pikachu VMAX</option><option value="2023-cetitan">June 2023 · Cetitan</option></select></label>
 <div class="issue"><img id="cover" src="/covers/1996-11.png" alt="Supplied November 1996 CoroCoro Comic cover"><div><p id="issue-label">Monthly CoroCoro Comic · November 1996</p><strong id="card-label">Ivy Pikachu &amp; Jigglypuff</strong></div></div>
 <p class="detail" id="reference-note">Ivy Pikachu shows the original Ken Sugimori credit. Jigglypuff uses a small reference image; its pictured copy cannot distinguish the 1996 original from the identical 1998 reprint.</p>
-<section class="mat" id="mat" aria-label="CoroCoro card-opening reference preview"><span class="hint" id="hint">Backs facing up · then peel and flip</span><div id="stage"></div><p class="phase" id="phase" role="status">Loading the local reference images…</p></section>
+<section class="mat" id="mat" aria-label="CoroCoro magazine and card-opening preview"><span class="hint" id="hint">Cover · open magazine · inspect insert</span><div id="stage"></div><p class="phase" id="phase" role="status">Loading the local reference images…</p></section>
 <div class="controls"><button class="primary" id="play" type="button" disabled>Loading references…</button><button id="skip" type="button" disabled>Skip motion</button><button id="reset" type="button">Reset</button></div>
 <label class="option"><input id="reduce" type="checkbox"> Reduce motion</label>
-<p class="boundary" id="boundary">Private reference preview. The action order follows watched footage; the speed, curl and flip axis are design choices. Source images are held for production reuse review.</p>
+<p class="boundary" id="boundary">Private opening preview. Real inside-page photographs lead to each insert’s close-up and filmed release. Hidden attachment and seal steps remain unresolved.</p>
 <nav class="sources" id="sources" aria-label="Opening footage references"><a href="https://www.youtube.com/watch?v=8A5KDZAzDMs&t=1333s" target="_blank" rel="noopener noreferrer">Watch the original sheet opening · 22:13 ↗</a><a href="https://www.youtube.com/watch?v=8A5KDZAzDMs&t=1385s" target="_blank" rel="noopener noreferrer">Watch Jigglypuff being flipped · 23:05 ↗</a></nav>
 <details><summary>What the evidence shows</summary><div id="evidence"><p>The two original card backs are registered to their sheet. In the watched film the card stays supported while the backing curls away, then the card is turned to inspect its face.</p><p>Neither opening changes your collection. The original 2001 Mew reveal remains the visual benchmark.</p></div></details>
 <details>
@@ -503,7 +679,7 @@ details p {
 <a href="https://www.youtube.com/watch?v=8A5KDZAzDMs&amp;t=2285s" target="_blank" rel="noopener noreferrer">Farfetch’d · loose April-family carrier · 38:05 ↗</a>
 <a href="https://www.youtube.com/watch?v=eL7o-Atd7JU" target="_blank" rel="noopener noreferrer">Togepi · carrier peel and front reveal ↗</a>
 <p>Cleffa's February front and its own carrier are now matched. Wooper is an additional case outside the current issue list, and its footage is sped up. Both can be tried above. The Lilypad Mew carrier is loose or pre-production material. The Shining Mew video shows a collector's alternate opening; your original reveal stays unchanged.</p>
-<p>Cetitan's own pouch is now matched. Its animation begins after the film edit, with the card already partly out. Farfetch’d and Togepi have useful opening footage, but their own carrier photos are still needed before an animation is added.</p>
+<p>Cetitan opens to its photographed pouch over Kirby stickers, then follows the pouch turn and lift. Extraction resumes after the film edit, with the card already partly out. Farfetch’d and Togepi still need their own matched carrier references before an animation is added.</p>
 <p>The other inserts still need their own opening evidence before receiving an animation.</p>
 </details>
 </main>
