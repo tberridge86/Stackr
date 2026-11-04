@@ -11,7 +11,8 @@ const commonPhrases = [
   'Your card is saved. Its history entry',
 ];
 const corePhrases = [
-  'Your cards. Your binders.', 'View saved binders', 'core-preview',
+  'COLLECTION VALUE', 'Copies with a stored price', 'Browse every release',
+  'Start a binder for the cards you collect.', 'View saved binders', 'core-preview',
   'The saved binders did not match your account. Please retry.',
   'Your sign-in changed. Please retry.',
   'The collection account changed. Please retry.',

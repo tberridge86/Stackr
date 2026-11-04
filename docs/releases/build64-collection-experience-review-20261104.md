@@ -47,6 +47,31 @@ The following checks were run independently during the review and passed. The fi
 | Targeted in-memory compilation of `publishedSetLogoFallbacks.ts` | Final 97 identity/environment/prefix cases pass, including the reproduced compact/SG contradictions; no network or source mutation |
 | Scoped `git diff --check` | Passed; Git emitted its existing LF/CRLF working-copy notice |
 
+## CI fixture follow-up
+
+The final fixture corrections were independently reviewed against the actual origin, API adapter, ownership paginator and export verifier. No blocker or removed substantive failure assertion was found. These changes repair test fixtures and release-content expectations; they do not change production catalogue, ownership or pricing behavior.
+
+`scripts/test-ui-pagination.ts` now pages raw variant rows and calls the actual backend `groupCardRows` before handing each HTTP-shaped printing page to the complete reader. This matches `backend/lib/fastSetCards.js`: the origin slices raw variants before grouping, and a printing split across pages must have a default among that page's variants. The test retains all 320 pages, 2,000 printings and 16,000 finish identities, adds an eight-finishes-per-printing check, and rejects a malformed raw default even if normalization could repair it. Invalid limits and empty, mixed-version and duplicate species windows remain covered.
+
+`scripts/test-binder-library-value-recovery.ts` now executes the actual ownership paginator and validates canonical pages through `loadCompleteSetPages`, instead of supplying the removed legacy card-table master path. Its simulated database supports legitimate account-scoped ownership reads without an additional `in` filter. The existing 503/429, 401/403 precedence, genuine no-quote, shared-price-query, timeout, supersession, repeated/foreign-page and account-ABA assertions remain. New cases preserve all ownership beyond a 17-row server cap, require an unknown initial master denominator, fail a later canonical page explicitly, retain prices when optional catalogue hydration fails, reject late account/request results, and verify both price-before-master and master-before-price cache settlement.
+
+`scripts/test-set-artwork-identity-reassignment.ts` now loads and injects the actual `enrichSavedStackrCardArtwork` function and its display-name merge dependency into the serialized saved-view scenarios. This matches the existing `attachBinderCatalogueArtwork` runtime call. The assertions for approved exact reassignment, invalid identity/version/finish or denied artwork, optional-read failures, immutable source facts, quantities, notes, prices and distinct private captured photos remain intact.
+
+The export-content policy replaces the removed minimal Home headline with four strings present in the restored `CoreHomeScreen`: collection value, stored-price coverage, Discover caption and the empty-binder instruction. Common recovery/account guards, exact supported Home entry, boolean capability agreement, actual bundle-byte requirement and the 74-asset missing/tampered verification logic remain intact. The new negative fixture explicitly rejects the previous minimal Home bundle. This is an updated positive expectation with retained negative controls, not an export bypass.
+
+| Independently executed follow-up | Outcome |
+| --- | --- |
+| `node --import tsx scripts/test-ui-pagination.ts` | Passed |
+| `node --import tsx scripts/test-binder-library-value-recovery.ts` | Passed |
+| `node --import tsx scripts/test-set-artwork-identity-reassignment.ts` | Passed with the synthetic cohort |
+| Actual `verifyRecoveryUiContent` and the policy/phrase portion of `test-mobile-recovery-content.mjs`, executed in memory | Passed, including previous-minimal-Home rejection and all required-phrase negatives |
+
+The full local 74-asset phase was not executed by this reviewer. Root's earlier run reached missing source asset fixtures after the policy assertions; root subsequently reported all four Home release-suite tests passed after loading six exact existing loading/mascot assets, without image edits. The reviewer did not repeat that completed suite or perform bulk asset hydration. Actual CI export/asset-byte verification remains a separate release result.
+
+The final additional fixture review also passed. `scripts/test-binder-reopen.mjs` imports the actual continuation and progress helpers, supplies the continuation epoch ref and public-reader dependency, and checks the requested canonical set, language, facts-only and progressive-read options. Its existing ownership assertions now execute the screen's actual `progressEntries` selector with `countBinderProgressSlots`, replacing extraction of the removed loop. This prevents missing VM bindings from falsely aborting the fresh-load branch; no ownership, account, preview, temporal or SQLite assertion was removed. The coordinating coding agent reported the final binder-retrieval suite passed, including all 56 reopen/account/SQLite scenarios.
+
+The final `requireGroupedCard` fixture helper in `scripts/test-ui-pagination.ts` asserts non-null origin summaries and the allowed `null`/`printing`/`concept` English provenance at runtime. Copying the readonly supplement source-card IDs into an array preserves their values and satisfies the client DTO type without casting away a malformed shape. The raw-default rejection and complete 16,000-variant/2,000-printing assertions remain. Final focused pagination/typecheck results are owned by the coordinating agent; this reviewer re-read these final diffs and did not repeat completed checks. The review report is frozen after this follow-up, with no remaining implementation blocker identified.
+
 ## Remaining issues and limits
 
 - The bounded live GET receipt is `docs/releases/build64-set-reads-20261104.json`. Storm had all 113 printings and Abyss Eye all 118 through terminal cursors. This supports catalogue presence; it is not phone rendering or universal catalogue-coverage proof.

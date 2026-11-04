@@ -6,6 +6,9 @@ import { createBinderReopenCache, snapshotBinderView, isCompleteBinderSnapshot, 
 import { beginBinderRetrieval, getBinderRetrievalObservations } from '../lib/performance.ts';
 import * as requestCache from '../lib/requestCache.ts';
 import { mergeBinderArtwork } from '../lib/stackrSetRetrieval.ts';
+import { continueBinderCatalogueRead } from '../lib/binderCatalogueContinuation.ts';
+import { countBinderProgressSlots } from '../lib/masterSetProgress.ts';
+import { getPokemonSetLanguageFromPrefixedId } from '../lib/pokemonSetIdentity.ts';
 
 const uuid = (n) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const scope = { namespace: 'https://fixture.invalid/api', accountId: uuid(9001) };
@@ -123,7 +126,7 @@ await test('visible content and edit readiness are different measurements; stale
 
 // Execute actual screen load callback, with native viewability itself deliberately not simulated as a paint claim.
 const source = fs.readFileSync('features/binder/BinderDetailScreen.tsx', 'utf8');
-const ast = ts.createSourceFile('screen.tsx', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX); let callback, authEffect, readOnlyCopy, focusCleanup, ownedCountLoop;
+const ast = ts.createSourceFile('screen.tsx', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX); let callback, authEffect, readOnlyCopy, focusCleanup, progressEntries;
 const actualCallbacks = new Map();
 const callbackNames = ['getVariantKey', 'loadShowcase', 'load', 'isShowcaseScopeCurrent', 'beginShowcaseMutation', 'finishShowcaseMutation', 'toggleShowcase', 'reorderShowcase', 'handleRemoveCustomBinderCard'];
 function visit(n) {
@@ -136,7 +139,7 @@ function visit(n) {
   if (ts.isCallExpression(n) && n.expression.getText(ast) === 'useFocusEffect') {
     focusCleanup = n.arguments[0].arguments[0].body.statements.find(ts.isReturnStatement).expression.getText(ast);
   }
-  if (ts.isForOfStatement(n) && n.expression.getText(ast) === 'displayCards') ownedCountLoop = n.getText(ast);
+  if (ts.isVariableDeclaration(n) && n.name.getText(ast) === 'progressEntries') progressEntries = n.initializer.getText(ast);
   ts.forEachChild(n, visit);
 }
 visit(ast); assert(callback);
@@ -156,6 +159,13 @@ function screenHarness(options = {}) {
     visiblePriceReaderRef: { current: null }, visiblePriceIdsRef: { current: [] },
     createVisibleBinderPriceReader: () => ({ request: () => {}, dispose: () => {} }),
     mergeBinderArtwork,
+    continueBinderCatalogueRead, catalogueContinuationEpochRef: { current: '' },
+    normalizePokemonCardLanguage: language => language ?? 'en', getPokemonSetLanguageFromPrefixedId,
+    fetchStackrCardsForSet: (setId, language, _client, readOptions) => {
+      assert.equal(setId, binder.catalogue_set_id); assert.equal(language, binder.language);
+      assert.equal(readOptions.includeAssets, false); assert.equal(readOptions.allowPageProgress, true);
+      return options.readCanonical ? options.readCanonical() : never();
+    },
     accountGenerationRef: { current: 0 }, loadRequestRef: { current: 0 }, artworkRequestRef: { current: null }, activeAccountIdRef: { current: scope.accountId }, retrievalTraceRef: { current: null },
     showcaseRowsRef: { current: [] }, showcaseReadyRef: { current: false }, showcaseReadRef: { current: 0 }, showcaseAbortRef: { current: null }, showcaseMutationRef: { current: null }, currentBinderIdRef: { current: binder.id },
     beginBinderRetrieval, isCompleteBinderSnapshot, binderReopenScope: () => scope, readBinderReopenPreview: () => disk.promise,
@@ -624,10 +634,14 @@ async function openOwnership(fixture, facts = cards().map(row => ({ ...row, owne
   await pending; await tick(); await tick();
 }
 function standardOwnership(h) {
-  assert(ownedCountLoop);
+  assert(progressEntries);
   const context = { exports: {}, displayCards: h.state.cards, ownedVariants: h.state.ownedVariants,
-    masterSetEnabled: false };
-  vm.runInNewContext(`let ownedCount = 0, countedSlotTotal = 0; ${ownedCountLoop}\nexports.value = { ownedCount, countedSlotTotal };`, context);
+    binder: h.state.binder, variantManagedCards: h.state.variantManagedCards,
+    getVariantCardKey: h.runtime.getVariantCardKey, countBinderProgressSlots, masterSetEnabled: false };
+  const actual = ts.transpileModule(`const progressEntries = ${progressEntries};
+    const { owned: ownedCount, total: countedSlotTotal } = countBinderProgressSlots(progressEntries, masterSetEnabled);
+    exports.value = { ownedCount, countedSlotTotal };`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
+  vm.runInNewContext(actual, context);
   return context.exports.value;
 }
 function assertOwnershipFailure(fixture) {
