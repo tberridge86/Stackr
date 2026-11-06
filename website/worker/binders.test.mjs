@@ -78,6 +78,95 @@ test('set creation verifies canonical set, language and total; user-supplied tot
 test('exact printing variants persist separately; retries do not add copies twice',async()=>{
  const f=fixture();try{let {binder}=await f.create();const first=f.put(binder,2);binder=(await f.ok('/'+binder.id+'/items',first)).binder;assert.equal((await f.ok('/'+binder.id+'/items',first)).replayed,true);binder=(await f.ok('/'+binder.id+'/items',f.put(binder,3,{variantId:HOLO}))).binder;f.restart();const saved=await f.ok('/'+binder.id);assert.equal(saved.items.length,2);assert.equal(saved.summary.uniqueCards,1);assert.equal(saved.summary.totalQuantity,5);assert.equal(saved.items[0].imageUrl,'https://assets.stackrtcg.com/grid.webp');assert.equal(saved.items.find(i=>i.variantId===HOLO).finishCode,'holofoil');assert.equal(binder.revision,3);}finally{f.close();}
 });
+test('whole-card ownership uses the current canonical default for every binder type and replays without adding copies',async()=>{
+ for(const type of ['custom','set']){const f=fixture();try{
+  let {binder}=await f.create({type,...(type==='set'?{setId:SET}:{})});f.state.card.defaultVariantId=HOLO;
+  const intent={id:randomUUID(),expectedRevision:binder.revision,cardId:CARD,owned:true};binder=(await f.ok('/'+binder.id+'/ownership',intent)).binder;
+  assert.equal((await f.ok('/'+binder.id+'/ownership',intent)).replayed,true);
+  const state=await f.ok('/'+binder.id+'/ownership?cardIds='+CARD);assert.equal(state.ownershipTotal,1);assert.deepEqual(state.ownership,[{cardId:CARD,variantId:HOLO,quantity:1}]);
+  assert.equal((await f.ok('/'+binder.id)).items[0].finishCode,'holofoil');assert.equal(binder.revision,2);
+  const remove={id:randomUUID(),expectedRevision:binder.revision,cardId:CARD,owned:false};binder=(await f.ok('/'+binder.id+'/ownership',remove)).binder;
+  await f.ok('/'+binder.id+'/ownership',{id:randomUUID(),expectedRevision:binder.revision,cardId:CARD,owned:true});
+  assert.equal((await f.ok('/'+binder.id)).summary.totalQuantity,1);
+ }finally{f.close();}}
+});
+test('marking a whole card unowned clears all copies and finishes atomically without needing the catalogue',async()=>{
+ const f=fixture();try{
+  let {binder}=await f.create();binder=(await f.ok('/'+binder.id+'/items',f.put(binder,2))).binder;binder=(await f.ok('/'+binder.id+'/items',f.put(binder,3,{variantId:HOLO}))).binder;
+  f.state.fail=true;const before=f.calls.length,intent={id:randomUUID(),expectedRevision:binder.revision,cardId:CARD,owned:false};
+  const removed=await f.ok('/'+binder.id+'/ownership',intent);assert.equal(removed.binder.revision,binder.revision+1);assert.equal(f.calls.length,before);
+  assert.equal((await f.ok('/'+binder.id)).summary.totalQuantity,0);assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM web_binder_items WHERE quantity=0').get().n,2);
+  assert.equal((await f.ok('/'+binder.id+'/ownership',intent)).replayed,true);assert.equal((await f.ok('/'+binder.id)).binder.revision,removed.binder.revision);
+ }finally{f.close();}
+});
+test('an interrupted multi-finish removal rolls back every quantity, revision and action before retry',async()=>{
+ const f=fixture();try{
+  let {binder}=await f.create();binder=(await f.ok('/'+binder.id+'/items',f.put(binder,2))).binder;binder=(await f.ok('/'+binder.id+'/items',f.put(binder,3,{variantId:HOLO}))).binder;
+  const intent={id:randomUUID(),expectedRevision:binder.revision,cardId:CARD,owned:false};
+  f.sql.exec("CREATE TRIGGER fail_finish BEFORE UPDATE ON web_binder_items WHEN NEW.variant_id='"+HOLO+"' BEGIN SELECT RAISE(ABORT,'test_write_failure'); END;");
+  assert.equal((await f.call('/'+binder.id+'/ownership',intent)).status,503);const unchanged=await f.ok('/'+binder.id);assert.equal(unchanged.summary.totalQuantity,5);assert.equal(unchanged.binder.revision,binder.revision);assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM web_binder_actions WHERE id=?').get(intent.id).n,0);
+  f.sql.exec('DROP TRIGGER fail_finish');await f.ok('/'+binder.id+'/ownership',intent);assert.equal((await f.ok('/'+binder.id)).summary.totalQuantity,0);
+ }finally{f.close();}
+});
+test('replaying a removal after a later quantity edit cannot erase the newer saved copies',async()=>{
+ const f=fixture();try{
+  let {binder}=await f.create();binder=(await f.ok('/'+binder.id+'/items',f.put(binder,5))).binder;
+  const intent={id:randomUUID(),expectedRevision:binder.revision,cardId:CARD,owned:false};binder=(await f.ok('/'+binder.id+'/ownership',intent)).binder;
+  binder=(await f.ok('/'+binder.id+'/items',f.put(binder,3,{variantId:HOLO}))).binder;
+  const replayed=await f.ok('/'+binder.id+'/ownership',intent);assert.equal(replayed.replayed,true);assert.equal(replayed.binder.revision,binder.revision);assert.equal((await f.ok('/'+binder.id)).summary.totalQuantity,3);
+  assert.equal((await f.call('/'+binder.id+'/ownership',{...intent,owned:true})).status,409);
+ }finally{f.close();}
+});
+test('mark-owned preserves an existing higher quantity and never silently rewrites saved finishes',async()=>{
+ const f=fixture();try{
+  let {binder}=await f.create();binder=(await f.ok('/'+binder.id+'/items',f.put(binder,6,{variantId:HOLO}))).binder;
+  f.state.fail=true;await f.ok('/'+binder.id+'/ownership',{id:randomUUID(),expectedRevision:binder.revision,cardId:CARD,owned:true});
+  const state=await f.ok('/'+binder.id+'/ownership?cardIds='+CARD);assert.deepEqual(state.ownership,[{cardId:CARD,variantId:HOLO,quantity:6}]);assert.equal(state.ownershipTotal,1);
+ }finally{f.close();}
+});
+test('missing, stale or ambiguous default finishes cannot mark a card owned',async()=>{
+ const f=fixture();try{
+  const {binder}=await f.create();for(const change of [card=>delete card.defaultVariantId,card=>card.defaultVariantId=randomUUID(),card=>card.variants.push({...card.variants[0]}),card=>card.variants[0].canonicalId='',card=>card.variants[0].variantCode=null]){
+   f.state.card=printing();change(f.state.card);const r=await f.call('/'+binder.id+'/ownership',{id:randomUUID(),expectedRevision:binder.revision,cardId:CARD,owned:true});assert.equal(r.status,400);assert.match((await r.json()).error,/Edit quantity \/ finish/);
+  }
+  assert.equal((await f.ok('/'+binder.id)).summary.totalQuantity,0);assert.equal((await f.ok('/'+binder.id)).binder.revision,1);assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM web_binder_actions').get().n,1);
+ }finally{f.close();}
+});
+test('whole-card ownership enforces the canonical set, printed language, private owner, archive and same-origin boundaries',async()=>{
+ const f=fixture();try{
+  let {binder}=await f.create({type:'set',setId:SET});const intent=()=>({id:randomUUID(),expectedRevision:binder.revision,cardId:CARD,owned:true});
+  assert.equal((await f.call('/'+binder.id+'/ownership?cardIds='+CARD,undefined,null)).status,401);assert.equal((await f.call('/'+binder.id+'/ownership?cardIds='+CARD,undefined,'bob')).status,404);assert.equal((await f.call('/'+binder.id+'/ownership',intent(),'bob')).status,404);
+  assert.equal((await f.call('/'+binder.id+'/ownership',intent(),'alice',{Origin:'https://evil.test'})).status,403);
+  f.state.card.set.setId=OTHER_SET;assert.equal((await f.call('/'+binder.id+'/ownership',intent())).status,400);f.state.card=printing();f.state.card.languageCode='ja';assert.equal((await f.call('/'+binder.id+'/ownership',intent())).status,400);
+  f.state.card=printing();assert.equal((await f.call('/'+binder.id+'/ownership',{...intent(),variantId:HOLO})).status,400);
+  binder=(await f.ok('/'+binder.id,{id:randomUUID(),expectedRevision:binder.revision,archived:true})).binder;assert.equal((await f.call('/'+binder.id+'/ownership',intent())).status,409);assert.equal((await f.ok('/'+binder.id)).summary.totalQuantity,0);
+ }finally{f.close();}
+});
+test('whole-card reads bound selected printings, return exact finish counts privately and reject inconsistent revisions',async()=>{
+ const f=fixture();try{
+  let {binder}=await f.create();binder=(await f.ok('/'+binder.id+'/items',f.put(binder,2))).binder;binder=(await f.ok('/'+binder.id+'/items',f.put(binder,3,{variantId:HOLO}))).binder;
+  const r=await f.call('/'+binder.id+'/ownership?cardIds='+CARD+','+SECOND),state=await r.json();assert.equal(r.headers.get('Cache-Control'),'private, no-store');assert.deepEqual(state.cardIds,[CARD,SECOND]);assert.equal(state.ownership.reduce((sum,row)=>sum+row.quantity,0),5);assert.equal(state.ownership.length,2);assert.equal(state.meta.pagination.nextCursor,null);
+  for(const query of ['cardIds='+CARD+','+CARD,'cardIds='+Array.from({length:51},()=>randomUUID()).join(','),'cardIds='+CARD+'&user_id=bob','cardIds='+CARD+'&cardIds='+SECOND])assert.equal((await f.call('/'+binder.id+'/ownership?'+query)).status,400);
+  const prepare=f.DB.prepare;let changed=false;f.DB.prepare=function(query){const stmt=prepare(query),read=stmt.all;if(query.startsWith('SELECT i.card_id,i.variant_id,i.quantity'))stmt.all=async()=>{const value=await read.call(stmt);if(!changed){changed=true;f.sql.prepare('UPDATE web_binders SET revision=revision+1 WHERE id=?').run(binder.id);}return value;};return stmt;};
+  assert.equal((await f.call('/'+binder.id+'/ownership?cardIds='+CARD)).status,409);
+ }finally{f.close();}
+});
+test('simultaneous whole-card removal and quantity edit cannot commit against the same binder revision',async()=>{
+ const f=fixture();try{
+  let {binder}=await f.create();binder=(await f.ok('/'+binder.id+'/items',f.put(binder,5))).binder;
+  const results=await Promise.all([f.call('/'+binder.id+'/ownership',{id:randomUUID(),expectedRevision:binder.revision,cardId:CARD,owned:false}),f.call('/'+binder.id+'/items',f.put(binder,3))]);assert.deepEqual(results.map(r=>r.status).sort(),[200,409]);const state=await f.ok('/'+binder.id);assert.equal(state.binder.revision,binder.revision+1);assert.ok([0,3].includes(state.summary.totalQuantity));
+ }finally{f.close();}
+});
+test('ownership pages never return more than 50 saved variants and require a stable continuation revision',async()=>{
+ const f=fixture();try{
+  let {binder}=await f.create();binder=(await f.ok('/'+binder.id+'/items',f.put(binder,2))).binder;
+  const insert=f.sql.prepare('INSERT INTO web_binder_items SELECT binder_id,card_id,?,canonical_id,variant_code,finish_code,set_id,language,native_name,english_name,collector_number,image_url,quantity,created_at,updated_at FROM web_binder_items WHERE binder_id=? AND variant_id=?');for(let i=1;i<121;i++)insert.run(randomUUID(),binder.id,NORMAL);
+  const path='/'+binder.id+'/ownership?cardIds='+CARD,first=await f.ok(path);assert.equal(first.ownership.length,50);assert.equal(first.ownershipTotal,121);assert.equal(first.meta.pagination.nextCursor,'50');
+  assert.equal((await f.call(path+'&cursor=50')).status,400);assert.equal((await f.call(path+'&limit=51')).status,400);
+  const second=await f.ok(path+'&cursor=50&expectedRevision='+binder.revision),last=await f.ok(path+'&cursor=100&expectedRevision='+binder.revision);assert.equal(second.ownership.length,50);assert.equal(last.ownership.length,21);assert.equal(last.meta.pagination.nextCursor,null);assert.equal(new Set([...first.ownership,...second.ownership,...last.ownership].map(row=>row.variantId)).size,121);
+  await f.ok('/'+binder.id+'/items',f.put(binder,3));assert.equal((await f.call(path+'&cursor=50&expectedRevision='+binder.revision)).status,409);
+ }finally{f.close();}
+});
 test('invalid variant, wrong set and wrong printed language never create ownership',async()=>{
  const f=fixture();try{const {binder}=await f.create({type:'set',setId:SET});assert.equal((await f.call('/'+binder.id+'/items',f.put(binder,1,{variantId:randomUUID()}))).status,400);f.state.card.set.setId=OTHER_SET;assert.equal((await f.call('/'+binder.id+'/items',f.put(binder))).status,400);f.state.card=printing();f.state.card.languageCode='ja';assert.equal((await f.call('/'+binder.id+'/items',f.put(binder))).status,400);assert.equal((await f.ok('/'+binder.id)).summary.totalQuantity,0);assert.equal((await f.ok('/'+binder.id)).binder.revision,1);}finally{f.close();}
 });

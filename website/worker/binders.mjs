@@ -138,6 +138,16 @@ export function createBinderService({fetchImpl=fetch,now=Date.now,onUpstreamFail
  async function summary(db,user,binder){
   return await db.prepare('SELECT COUNT(DISTINCT i.card_id) uniqueCards,COUNT(*) totalVariants,COALESCE(SUM(i.quantity),0) totalQuantity FROM web_binder_items i JOIN web_binders b ON b.id=i.binder_id WHERE b.id=? AND b.user_id=? AND i.quantity>0').bind(binder.id,user).first();
  }
+ async function ownership(db,user,binder,cardIds,offset){
+  const where=' FROM web_binder_items i JOIN web_binders b ON b.id=i.binder_id WHERE b.id=? AND b.user_id=? AND i.quantity>0 AND i.card_id IN ('+cardIds.map(()=>'?').join(',')+')';
+  const [rows,count]=await Promise.all([all(db.prepare('SELECT i.card_id,i.variant_id,i.quantity'+where+' ORDER BY i.card_id,i.variant_id LIMIT 50 OFFSET ?').bind(binder.id,user,...cardIds,offset)),db.prepare('SELECT COUNT(*) total'+where).bind(binder.id,user,...cardIds).first()]);
+  if((await own(db,user,binder.id)).revision!==binder.revision)throw fault('This binder changed while reading ownership. Tap again to refresh it.',409);
+  if(!Number.isSafeInteger(count?.total)||count.total<0||count.total>10000||offset>count.total||rows.length!==Math.min(50,count.total-offset))throw fault('The saved ownership could not be read consistently. Tap again to refresh it.',409);
+  return {binder,cardIds,ownership:rows.map(row=>({cardId:row.card_id,variantId:row.variant_id,quantity:row.quantity})),ownershipTotal:count.total,meta:{pagination:{limit:50,offset,nextCursor:offset+rows.length<count.total?String(offset+rows.length):null}}};
+ }
+ function saveItem(db,user,binderId,cardId,variantId,card,quantity,time){
+  return db.prepare('INSERT INTO web_binder_items(binder_id,card_id,variant_id,canonical_id,variant_code,finish_code,set_id,language,native_name,english_name,collector_number,image_url,quantity,created_at,updated_at) SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,?,? FROM web_binders WHERE id=? AND user_id=? AND archived=0 ON CONFLICT(binder_id,card_id,variant_id) DO UPDATE SET canonical_id=excluded.canonical_id,variant_code=excluded.variant_code,finish_code=excluded.finish_code,set_id=excluded.set_id,language=excluded.language,native_name=excluded.native_name,english_name=excluded.english_name,collector_number=excluded.collector_number,image_url=excluded.image_url,quantity=excluded.quantity,updated_at=excluded.updated_at').bind(binderId,cardId,variantId,card.canonicalId,card.variantCode,card.finishCode,card.setId,card.language,card.nativeName,card.englishName,card.collectorNumber,card.imageUrl,quantity,time,time,binderId,user);
+ }
  async function setMetadata(id,lang,env,ctx){const bundle=await readyCataloguesService.get(id,lang,env,ctx);return bundle?{data:{set:bundle.set},meta:{apiVersion:'1',generatedAt:bundle.capturedAt,source:'public-catalogue-snapshot',stale:readyReference(bundle,now()).stale}}:upstream('/sets/'+id);}
  async function setInfo(id,lang,env,ctx){const r=await setMetadata(id,lang,env,ctx),s=r.data.set;if(!s||s.setId!==id||s.game!=='pokemon'||s.languageCode!==lang)throw fault('Select an exact set in the chosen language.');return {name:text(s.nativeName||s.englishDisplayName,300),total:Number.isSafeInteger(s.total)&&s.total>=0&&s.total<=10000?s.total:null,checkedAt:r.meta.generatedAt||stamp()};}
  async function handleRequest(request,env={},ctx){
@@ -168,7 +178,7 @@ export function createBinderService({fetchImpl=fetch,now=Date.now,onUpstreamFail
     if(request.headers.get('oai-authenticated-user-full-name-encoding')==='percent-encoded-utf-8'){try{name=decodeURIComponent(name);}catch{name='';}}
     return reply({account:{provider:'ChatGPT',displayName:clean(name)||'Your account',email},collection:{activeBinders:counts?.activeBinders||0,archivedBinders:counts?.archivedBinders||0}});
    }
-   const match=path.match(/^\/([0-9a-f-]+)(?:\/(items|checklist))?$/i);
+   const match=path.match(/^\/([0-9a-f-]+)(?:\/(items|checklist|ownership))?$/i);
    if(path!==''&&!match)throw fault('Route not found.',404);
    const binderId=match?uuid(match[1]):null,part=match?.[2]||null;
    if(request.method==='GET'){
@@ -181,6 +191,16 @@ export function createBinderService({fetchImpl=fetch,now=Date.now,onUpstreamFail
      return reply({binders:rows.slice(0,50).map(binderDto),hasMore:rows.length>50,nextOffset:offset+50});
     }
     const binder=await own(db,user,binderId);
+    if(part==='ownership'){
+     for(const key of url.searchParams.keys())if(!['cardIds','limit','cursor','expectedRevision'].includes(key)||url.searchParams.getAll(key).length!==1)throw fault('Unsupported ownership parameter.');
+     const cardIds=(url.searchParams.get('cardIds')||'').split(',');if(!cardIds.length||cardIds.length>50)throw fault('Read ownership for 1–50 cards at a time.');
+     const ids=cardIds.map(uuid);if(new Set(ids).size!==ids.length)throw fault('Each ownership card must be unique.');
+     if(url.searchParams.has('limit')&&url.searchParams.get('limit')!=='50')throw fault('Ownership pages contain at most 50 saved finishes.');
+     const cursor=url.searchParams.get('cursor');if(cursor!==null&&!/^(?:0|[1-9]\d{0,4})$/.test(cursor))throw fault('Invalid ownership cursor.');const offset=integer(Number(cursor||0),10000);
+     const revision=url.searchParams.has('expectedRevision')?integer(Number(url.searchParams.get('expectedRevision')),1000000000):null;
+     if(cursor!==null&&!revision)throw fault('Continue ownership with the exact binder revision.');if(revision!==null&&revision!==binder.revision)throw fault('This binder changed while reading ownership. Tap again to refresh it.',409);
+     return reply(await ownership(db,user,binder,ids,offset));
+    }
     if(part==='items'){
      for(const key of url.searchParams.keys())if(!['cardId','variantId'].includes(key)||url.searchParams.getAll(key).length!==1)throw fault('Unsupported item parameter.');
      const cardId=uuid(url.searchParams.get('cardId')),variantId=uuid(url.searchParams.get('variantId'));
@@ -249,6 +269,29 @@ export function createBinderService({fetchImpl=fetch,now=Date.now,onUpstreamFail
     const again=await apply(db,user,id,binderId,'edit',revision,payload,[db.prepare('UPDATE web_binders SET name=COALESCE(?,name),archived=COALESCE(?,archived) WHERE id=? AND user_id=?').bind(name,archived===null?null:Number(archived),binderId,user)]);
     return reply({ok:true,replayed:again,binder:await own(db,user,binderId)});
    }
+   if(part==='ownership'){
+    keys(data,['id','expectedRevision','cardId','owned']);const cardId=uuid(data.cardId);if(typeof data.owned!=='boolean')throw fault('Choose an owned or unowned state.');
+    const payload={operation:'ownership',binderId,expectedRevision:revision,cardId,owned:data.owned};
+    if(await replay(db,user,id,payload))return reply({ok:true,replayed:true,binder:await own(db,user,binderId)});
+    if(binder.revision!==revision||binder.archived)throw fault('This binder changed or is archived. Tap again to refresh it.',409);
+    const statements=[],time=stamp();
+    if(data.owned){
+     const existing=await db.prepare('SELECT 1 present FROM web_binder_items WHERE binder_id=? AND card_id=? AND quantity>0 LIMIT 1').bind(binderId,cardId).first();
+     // A stale mark-owned intent must never replace an existing quantity or finish.
+     if(!existing){
+      const raw=await upstream('/cards/'+cardId),current=raw.data.card,variantId=current?.defaultVariantId;
+      if(!UUID.test(variantId||'')||!Array.isArray(current?.variants)||current.variants.filter(variant=>variant.variantId===variantId).length!==1)throw fault('This card has no confirmed default finish. Use Edit quantity / finish to choose an exact finish.');
+      const variant=current.variants.find(row=>row.variantId===variantId);try{text(variant.canonicalId,400);text(variant.variantCode,100);if(variant.finishCode!==null&&variant.finishCode!==undefined)text(variant.finishCode,100);}catch{throw fault('This card has no confirmed default finish. Use Edit quantity / finish to choose an exact finish.');}
+      const card=canonicalCard(current,cardId,variantId,binder);statements.push(saveItem(db,user,binderId,cardId,variantId,card,1,time));
+     }
+    }else{
+     // The action guard, revision bump and every finish are one D1 transaction.
+     // Keep the canonical rows so a failed/replayed request cannot partially remove a card.
+     statements.push(db.prepare('UPDATE web_binder_items SET quantity=0,updated_at=? WHERE binder_id=? AND card_id=? AND quantity>0 AND EXISTS(SELECT 1 FROM web_binders WHERE id=? AND user_id=? AND archived=0)').bind(time,binderId,cardId,binderId,user));
+    }
+    const again=await apply(db,user,id,binderId,'item',revision,payload,statements);
+    return reply({ok:true,replayed:again,binder:await own(db,user,binderId)});
+   }
    if(part!=='items')throw fault('Route not found.',404);
    keys(data,['id','expectedRevision','cardId','variantId','quantity']);const cardId=uuid(data.cardId),variantId=uuid(data.variantId),quantity=integer(data.quantity,9999),payload={operation:'item',binderId,expectedRevision:revision,cardId,variantId,quantity};
    if(await replay(db,user,id,payload))return reply({ok:true,replayed:true,binder:await own(db,user,binderId)});
@@ -258,7 +301,7 @@ export function createBinderService({fetchImpl=fetch,now=Date.now,onUpstreamFail
    let card=existing?itemDto(existing):null;
    if(!existing||quantity>existing.quantity){const raw=await upstream('/cards/'+cardId);card=canonicalCard(raw.data.card,cardId,variantId,binder);}
    const time=stamp();
-   const again=await apply(db,user,id,binderId,'item',revision,payload,[db.prepare('INSERT INTO web_binder_items(binder_id,card_id,variant_id,canonical_id,variant_code,finish_code,set_id,language,native_name,english_name,collector_number,image_url,quantity,created_at,updated_at) SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,?,? FROM web_binders WHERE id=? AND user_id=? AND archived=0 ON CONFLICT(binder_id,card_id,variant_id) DO UPDATE SET canonical_id=excluded.canonical_id,variant_code=excluded.variant_code,finish_code=excluded.finish_code,set_id=excluded.set_id,language=excluded.language,native_name=excluded.native_name,english_name=excluded.english_name,collector_number=excluded.collector_number,image_url=excluded.image_url,quantity=excluded.quantity,updated_at=excluded.updated_at').bind(binderId,cardId,variantId,card.canonicalId,card.variantCode,card.finishCode,card.setId,card.language,card.nativeName,card.englishName,card.collectorNumber,card.imageUrl,quantity,time,time,binderId,user)]);
+   const again=await apply(db,user,id,binderId,'item',revision,payload,[saveItem(db,user,binderId,cardId,variantId,card,quantity,time)]);
    return reply({ok:true,replayed:again,binder:await own(db,user,binderId)});
   }catch(e){if(/binder_.*conflict|UNIQUE/.test(String(e.message)))return reply({error:'This binder changed or this action already exists. Refresh before retrying.'},409);if(/binder_item_limit/.test(String(e.message)))return reply({error:'This binder has reached its 10,000 variant limit.'},409);return reply({error:e.status?e.message:'Collection storage is temporarily unavailable. No change is confirmed.'},e.status||503);}
  }

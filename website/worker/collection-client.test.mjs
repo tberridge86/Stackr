@@ -12,9 +12,12 @@ function harness(fetch,logos=[],options={}){
  const navigation=['sets','library'].map(view=>{const button=node('nav-'+view);button.dataset.view=view;return button;});
  node('collection-main').dataset.view='loading';
  function cardNodes(){
-  const grid=node('binder-cards');if(renderedVersion!==grid.htmlWrites){renderedVersion=grid.htmlWrites;renderedCards=[...grid.innerHTML.matchAll(/<button\b([^>]*\bdata-card-key="([^"]+)"[^>]*)>/g)].map(match=>{const tile=element(),article=element();tile.dataset.cardKey=match[2];for(const attribute of match[1].matchAll(/(aria-[\w-]+)="([^"]*)"/g))tile.setAttribute(attribute[1],attribute[2]);tile.closest=()=>article;tile.article=article;return tile;});}return renderedCards;
+  const grid=node('binder-cards');if(renderedVersion!==grid.htmlWrites){renderedVersion=grid.htmlWrites;renderedCards=[...grid.innerHTML.matchAll(/<button\b([^>]*\bdata-card-key="([^"]+)"[^>]*)>/g)].map(match=>{
+   const tile=element(),article=element(),editor=element(),feedback=element();tile.dataset.cardKey=match[2];for(const attribute of match[1].matchAll(/(aria-[\w-]+)="([^"]*)"/g))tile.setAttribute(attribute[1],attribute[2]);tile.closest=()=>article;tile.article=article;editor.dataset.editCard=match[2];editor.closest=()=>article;article.parts={'.card-tile':tile,'.own-status':feedback};article.editor=editor;
+   const start=grid.innerHTML.lastIndexOf('<article',match.index),end=grid.innerHTML.indexOf('</article>',match.index)+10,original=grid.innerHTML.slice(start,end);Object.defineProperty(article,'outerHTML',{set(value){grid.innerHTML=grid.innerHTML.replace(original,value);}});return tile;
+  });}return renderedCards;
  }
- const document={getElementById:node,querySelectorAll(selector){if(selector==='[data-view]')return[node('collection-main'),...navigation];if(selector==='button[data-view]')return navigation;if(selector==='#delta-card-list [data-list-number]')return options.deltaCards||[];if(selector==='[data-card-key]'||selector==='#binder-cards [data-card-key]')return cardNodes();if(selector==='dialog')return [...nodes.values()].filter(n=>n.id.endsWith('dialog'));return[];},addEventListener(name,fn){documentEvents[name]=fn;}};
+ const document={getElementById:node,querySelectorAll(selector){if(selector==='[data-view]')return[node('collection-main'),...navigation];if(selector==='button[data-view]')return navigation;if(selector==='#delta-card-list [data-list-number]')return options.deltaCards||[];if(selector==='[data-card-key]'||selector==='#binder-cards [data-card-key]')return cardNodes();if(selector==='[data-edit-card]')return cardNodes().map(tile=>tile.article.editor);if(selector==='dialog')return [...nodes.values()].filter(n=>n.id.endsWith('dialog'));return[];},addEventListener(name,fn){documentEvents[name]=fn;}};
  node('collection-set-logos').textContent=JSON.stringify({logos});
  node('collection-set-links').textContent=JSON.stringify({matches:options.links||{}});
  node('collection-covers').textContent=JSON.stringify({covers:options.covers||[]});
@@ -28,6 +31,10 @@ function harness(fetch,logos=[],options={}){
 }
 const response=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json'}});
 const tick=()=>new Promise(r=>setImmediate(r));
+function cardOwnershipPage(binder,rows,url){
+ const params=new URL(url,'https://site.test').searchParams,cardIds=(params.get('cardIds')||'').split(','),offset=Number(params.get('cursor')||0),selected=rows.filter(row=>cardIds.includes(row.cardId)),ownership=selected.slice(offset,offset+50);
+ return {binder,cardIds,ownership,ownershipTotal:selected.length,meta:{pagination:{limit:50,offset,nextCursor:offset+ownership.length<selected.length?String(offset+ownership.length):null}}};
+}
 test('old Pokédex bookmarks return to the private binder library without species requests',async()=>{
  const calls=[],h=harness(url=>{calls.push(url);return Promise.resolve(response({binders:[],hasMore:false}));},[],{location:{hash:'#pokedex'}});await h.api.start();assert.equal(h.location.hash,'#library');assert.equal(calls.length,1);assert.ok(calls.every(u=>!u.includes('pokemon')));
 });
@@ -184,11 +191,14 @@ test('failed or mismatched set links cannot offer unchecked duplicate creation',
 test('late set-link reads do not open a dialog after the collector navigates away',async()=>{
  const pending=deferred(),h=harness(()=>pending.promise);const request=h.api.openSetCollection(linkSet);h.api.showView('library');pending.resolve(response({data:{set:linkSet}}));await request;assert.equal(h.node('create-dialog').open,false);assert.equal(h.node('start-linked-binder').hidden,true);
 });
-test('set selectors reject ambiguous parameters and sign-in retains the exact local destination',()=>{
- const search='?set='+LINK_SET+'&language=ja',h=harness(()=>assert.fail('No network'),[],{location:{search}});
+test('set selectors reject ambiguous parameters and sign-in leaves an embedded frame with the exact local destination',()=>{
+ const search='?set='+LINK_SET+'&language=ja',hash='#linked',h=harness(()=>assert.fail('No network'),[],{location:{search,hash}});
  assert.equal(h.api.setTargetFromQuery(search).setId,LINK_SET);
  for(const q of ['?set=invalid&language=ja',search+'&language=en','?set='+LINK_SET+'&language=xx','?set='+LINK_SET])assert.throws(()=>h.api.setTargetFromQuery(q));
- h.api.lock();assert.equal(new URL('https://site.test'+h.node('collection-sign-in').href).searchParams.get('return_to'),'/collection'+search);
+ assert.equal(h.node('account-link').target,undefined,'Ordinary Account navigation is not forced out of the page');
+ h.api.lock();assert.equal(new URL('https://site.test'+h.node('collection-sign-in').href).searchParams.get('return_to'),'/collection'+search+hash);
+ assert.equal(h.node('account-link').href,h.node('collection-sign-in').href,'The header and main sign-in action keep the same return route');
+ assert.equal(h.node('account-link').target,'_top','Hosted sign-in must navigate the top-level page');
 });
 test('the binder shop link uses the same canonical set and exact language',()=>{
  const h=harness(()=>assert.fail('No network'),[],{links:{'jp-test':{setId:LINK_SET,language:'ja'}}});assert.equal(h.api.shopHrefForBinder(matchingBinder),'/shop?set=jp-test');assert.equal(h.api.shopHrefForBinder({...matchingBinder,language:'en'}),'');assert.equal(h.api.shopHrefForBinder({...matchingBinder,type:'custom'}),'');
@@ -197,7 +207,7 @@ test('the binder shop link uses the same canonical set and exact language',()=>{
 const TRIAL_SET='258cb8e5-c769-540d-9e3c-40d4ed4dafdb';
 const trialCard=n=>({cardId:'trial-card-'+n,game:'pokemon',catalogueVersionId:'verified-trial-version',set:{setId:TRIAL_SET},languageCode:'en',collectorNumber:{value:String(n).padStart(3,'0'),sortKey:String(n).padStart(12,'0')},names:{native:'Trial card '+n,englishDisplay:'Trial card '+n},defaultVariantId:'variant-'+n,variants:[{variantId:'variant-'+n,canonicalId:'pokemon:en:'+TRIAL_SET+':'+n+':normal',variantCode:'normal',finishCode:'normal',image:{permissionStatus:'approved',deliveryUrl:'https://assets.stackrtcg.com/test-card.png'}}]});
 function trialFlow(options={}){
- const calls=[],writes=[],quantities=new Map();let revision=1,failPage=options.failPage,postAttempt=0,readAfterPost=false,failedRefresh=false;
+ const calls=[],writes=[],quantities=new Map(options.quantities||[]),actions=new Map();let revision=1,failPage=options.failPage,postAttempt=0,readAfterPost=false,failedRefresh=false;
  const binder=()=>({id:'trial-binder',name:'30th Celebration',type:'set',setId:TRIAL_SET,language:'en',archived:!!options.archived,revision});
  const catalogue=publicReady(TRIAL_SET,161);
  const h=harness(async(url,init)=>{
@@ -208,22 +218,24 @@ function trialFlow(options={}){
    const data=publicPage(catalogue,url);if(options.mixedVersion&&offset===100)data.cards[0]={...data.cards[0],catalogueVersionId:'different-version'};return response(data);
   }
   if(url.includes('/checklist'))return response(ownershipPage(catalogue,binder(),[...quantities].filter(([,quantity])=>quantity>0).map(([cardId,quantity])=>({cardId,variantId:'variant-'+cardId.split('-').at(-1),quantity})),url));
-  if(url.includes('/items')&&init.method==='POST'){
-   const payload=JSON.parse(init.body);writes.push(payload);postAttempt++;quantities.set(payload.cardId,1);revision++;readAfterPost=true;
+  if(url.includes('/ownership')&&init.method==='POST'){
+   const payload=JSON.parse(init.body);writes.push(payload);postAttempt++;
+   if(options.invalidDefault&&payload.owned)return response({error:'This card has no confirmed default finish. Use Edit quantity / finish to choose an exact finish.'},400);
+   if(!actions.has(payload.id)){actions.set(payload.id,payload);quantities.set(payload.cardId,payload.owned?1:0);revision++;}readAfterPost=true;
    if(options.uncertain&&postAttempt===1)throw new TypeError('Lost response');
    if(options.externalQuantity&&postAttempt>1)quantities.set(payload.cardId,options.externalQuantity);
    return response({ok:true,replayed:postAttempt>1,binder:binder()});
   }
-  if(url.includes('/items?')){
+  if(url.includes('/ownership?')){
    if(options.pendingRead&&!readAfterPost)return options.pendingRead.promise;
    if(options.failConfirmedRefresh&&readAfterPost&&!failedRefresh){failedRefresh=true;throw new TypeError('Read failed');}
-   const cardId=new URL(url,'https://site.test').searchParams.get('cardId');return response({binder:binder(),quantity:options.alreadyOwned||quantities.get(cardId)||0});
+   const ids=new URL(url,'https://site.test').searchParams.get('cardIds').split(','),rows=ids.map(cardId=>({cardId,variantId:'variant-'+cardId.split('-').at(-1),quantity:options.alreadyOwned||quantities.get(cardId)||0})).filter(row=>row.quantity>0);return response(cardOwnershipPage(binder(),rows,url));
   }
   return response({binder:binder(),summary:{uniqueCards:[...quantities.values()].filter(Boolean).length,totalVariants:[...quantities.values()].filter(Boolean).length,totalQuantity:[...quantities.values()].reduce((a,b)=>a+b,0)},items:[],hasMore:false,nextOffset:0,progress:{owned:[...quantities.values()].filter(Boolean).length,total:161,checkedAt:'2026-11-05'}});
  });return{...h,calls,writes,quantities};
 }
 test('30th Celebration automatically loads all 161 printings across four bounded pages without recording ownership',async()=>{
- const h=trialFlow();await h.api.openBinder('trial-binder');assert.equal(h.api.cardState().length,161);assert.equal(h.calls.filter(x=>x.url.includes('/catalogue/ready/')).length,4);assert.equal(h.calls.filter(x=>x.url.includes('/checklist')).length,1);assert.ok(h.calls.filter(x=>x.url.includes('/catalogue/ready/')||x.url.includes('/checklist')).every(x=>x.url.includes('paged=1')));assert.equal(h.writes.length,0);assert.match(h.node('cards-context').textContent,/Complete checklist loaded: 161/);assert.match(h.node('binder-cards').innerHTML,/Trial card 161/);assert.match(h.node('binder-cards').innerHTML,/data-own-card/);assert.match(h.node('collection-status').textContent,/All 161 cards loaded/);
+ const h=trialFlow();await h.api.openBinder('trial-binder');assert.equal(h.api.cardState().length,161);assert.equal(h.calls.filter(x=>x.url.includes('/catalogue/ready/')).length,4);assert.equal(h.calls.filter(x=>x.url.includes('/checklist')).length,1);assert.ok(h.calls.filter(x=>x.url.includes('/catalogue/ready/')||x.url.includes('/checklist')).every(x=>x.url.includes('paged=1')));assert.equal(h.writes.length,0);assert.match(h.node('cards-context').textContent,/Complete checklist loaded: 161/);assert.match(h.node('binder-cards').innerHTML,/Trial card 161/);assert.match(h.node('binder-cards').innerHTML,/data-edit-card/);assert.match(h.node('collection-status').textContent,/All 161 cards loaded/);
 });
 test('an interrupted public preload publishes no partial checklist and its retry action restarts bounded loading',async()=>{
  const h=trialFlow({failPage:100});await h.api.openBinder('trial-binder');assert.equal(h.api.cardState().length,0);assert.equal(h.node('more-cards').hidden,false);assert.equal(h.node('more-cards').textContent,'Retry loading cards');assert.equal(h.api.readyState().length,0);assert.doesNotMatch(h.node('binder-cards').innerHTML,/Trial card/);await h.node('more-cards').events.click({target:h.node('more-cards')});assert.equal(h.api.cardState().length,161);assert.match(h.node('cards-context').textContent,/Complete checklist loaded: 161/);
@@ -232,21 +244,21 @@ test('a mixed catalogue version cannot become a completed trial checklist',async
  const h=trialFlow({mixedVersion:true});await h.api.openBinder('trial-binder');assert.equal(h.api.cardState().length,0);assert.equal(h.api.readyState().length,0);assert.match(h.node('collection-status').textContent,/public checklist could not be confirmed/);assert.doesNotMatch(h.node('cards-context').textContent,/Complete/);
 });
 test('one-tap ownership saves one exact variant only once even if tapped twice quickly',async()=>{
- const h=trialFlow();await h.api.openBinder('trial-binder');const key='trial-card-1:catalogue';await Promise.all([h.api.markOwned(key),h.api.markOwned(key)]);assert.equal(h.writes.length,1);assert.equal(h.writes[0].quantity,1);assert.equal(h.writes[0].variantId,'variant-1');assert.equal(h.api.cardState()[0].ownedVariants[0].quantity,1);assert.equal(h.api.cardState().length,161);
+ const h=trialFlow();await h.api.openBinder('trial-binder');const key='trial-card-1:catalogue';await Promise.all([h.api.markOwned(key),h.api.markOwned(key)]);assert.equal(h.writes.length,1);assert.equal(h.writes[0].owned,true);assert.equal(h.writes[0].variantId,undefined);assert.equal(h.api.cardState()[0].ownedVariants[0].quantity,1);assert.equal(h.api.cardState().length,161);
 });
 test('tapping a checklist card selects one owned copy and keeps it unselected until confirmed',async()=>{
  const pending=deferred(),h=trialFlow({pendingRead:pending});await h.api.openBinder('trial-binder');
  assert.match(h.node('binder-cards').innerHTML,/aria-pressed="false" aria-label="Mark owned: Trial card 1"/);
  const selection=h.api.tapCard('trial-card-1:catalogue');await tick();assert.equal(h.writes.length,0);assert.equal(h.api.cardState()[0].ownedVariants.length,0);
  assert.equal(h.cardNode('trial-card-1:catalogue').attributes['aria-pressed'],'false');
- pending.resolve(response({binder:{id:'trial-binder',type:'set',setId:TRIAL_SET,language:'en',revision:1},quantity:0}));await selection;
- assert.equal(h.writes.length,1);assert.equal(h.writes[0].quantity,1);assert.equal(h.api.cardState()[0].ownedVariants[0].quantity,1);assert.equal(h.node('card-dialog').open,false);
+ pending.resolve(response(cardOwnershipPage({id:'trial-binder',type:'set',setId:TRIAL_SET,language:'en',revision:1},[],'https://site.test/?cardIds=trial-card-1')));await selection;
+ assert.equal(h.writes.length,1);assert.equal(h.writes[0].owned,true);assert.equal(h.api.cardState()[0].ownedVariants[0].quantity,1);assert.equal(h.node('card-dialog').open,false);
  assert.equal(h.cardNode('trial-card-1:catalogue').attributes['aria-pressed'],'true');
 });
-test('tapping an owned checklist card opens the quantity editor without removing its copies',async()=>{
+test('tapping an owned checklist card removes it without opening the quantity editor',async()=>{
  const h=trialFlow();await h.api.openBinder('trial-binder');await h.api.tapCard('trial-card-1:catalogue');
  h.node('card-form').elements.quantity={value:1};await h.api.tapCard('trial-card-1:catalogue');
- assert.equal(h.node('card-dialog').open,true);assert.equal(h.writes.length,1);assert.equal(h.quantities.get('trial-card-1'),1);
+ assert.equal(h.node('card-dialog').open,false);assert.equal(h.writes.length,2);assert.deepEqual(h.writes.map(write=>write.owned),[true,false]);assert.equal(h.quantities.get('trial-card-1'),0);assert.equal(h.api.cardState()[0].ownedVariants.length,0);assert.equal(h.cardNode('trial-card-1:catalogue').attributes['aria-pressed'],'false');
 });
 test('queued owned taps read fresh revisions and cannot race against each other',async()=>{
  const h=trialFlow();await h.api.openBinder('trial-binder');await Promise.all([h.api.markOwned('trial-card-1:catalogue'),h.api.markOwned('trial-card-2:catalogue')]);assert.equal(h.writes.length,2);assert.deepEqual(h.writes.map(p=>p.expectedRevision),[1,2]);assert.notEqual(h.writes[0].id,h.writes[1].id);assert.equal(h.api.cardState().filter(x=>x.ownedVariants.length).length,2);
@@ -261,48 +273,117 @@ test('a confirmed owned write with a failed refresh retries the read without wri
  const h=trialFlow({failConfirmedRefresh:true});await h.api.openBinder('trial-binder');await h.api.markOwned('trial-card-1:catalogue');assert.match(h.api.quickState()[0].error,/Saved/);await h.api.markOwned('trial-card-1:catalogue');assert.equal(h.writes.length,1);assert.equal(h.api.cardState()[0].ownedVariants[0].quantity,1);
 });
 test('leaving the binder while its saved-quantity read is pending cancels an undispatched owned change',async()=>{
- const pending=deferred(),h=trialFlow({pendingRead:pending});await h.api.openBinder('trial-binder');const request=h.api.markOwned('trial-card-1:catalogue');await tick();h.api.showView('library');pending.resolve(response({binder:{id:'trial-binder',type:'set',setId:TRIAL_SET,language:'en',revision:1},quantity:0}));await request;assert.equal(h.writes.length,0);
+ const pending=deferred(),h=trialFlow({pendingRead:pending});await h.api.openBinder('trial-binder');const request=h.api.markOwned('trial-card-1:catalogue');await tick();h.api.showView('library');pending.resolve(response(cardOwnershipPage({id:'trial-binder',type:'set',setId:TRIAL_SET,language:'en',revision:1},[],'https://site.test/?cardIds=trial-card-1')));await request;assert.equal(h.writes.length,0);
 });
 test('archived and signed-out trial collections cannot use the owned shortcut',async()=>{
  const h=trialFlow({archived:true});await h.api.openBinder('trial-binder');await h.api.markOwned('trial-card-1:catalogue');assert.equal(h.writes.length,0);h.api.lock();await h.api.markOwned('trial-card-1:catalogue');assert.equal(h.writes.length,0);assert.equal(h.api.quickState().length,0);
 });
+test('invalid current defaults leave the image unselected and show an actionable card-level edit message',async()=>{
+ const h=trialFlow({invalidDefault:true});await h.api.openBinder('trial-binder');await h.api.tapCard('trial-card-1:catalogue');
+ assert.equal(h.api.cardState()[0].ownedVariants.length,0);assert.equal(h.cardNode('trial-card-1:catalogue').attributes['aria-pressed'],'false');assert.match(h.cardNode('trial-card-1:catalogue').article.parts['.own-status'].textContent,/Edit quantity \/ finish/);assert.equal(h.node('card-dialog').open,false);
+});
+
+function customOwnershipFlow(options={}){
+ const calls=[],writes=[],actions=new Map(),saved=new Map(),control={};let revision=1;
+ const binder=()=>({id:'custom-binder',name:'My binder',type:options.type||'custom',setId:options.type==='set'?'other-set':null,language:'en',revision,archived:false});
+ const card=n=>({...trialCard(n),cardId:'custom-card-'+n,set:{setId:'other-set'},names:{native:'Custom card '+n,englishDisplay:'Custom card '+n}});
+ const item=(n,variant='variant-'+n,quantity=1)=>({cardId:'custom-card-'+n,variantId:variant,canonicalId:'canonical:'+n+':'+variant,variantCode:variant,finishCode:variant,setId:'other-set',language:'en',nativeName:'Custom card '+n,englishName:'Custom card '+n,collectorNumber:String(n),imageUrl:'https://assets.stackrtcg.com/card.png',quantity});
+ const put=row=>saved.set(row.cardId+':'+row.variantId,{...row});for(const row of options.items||[])put(item(...row));
+ const rows=()=>[...saved.values()].filter(row=>row.quantity>0),ownershipRows=()=>rows().map(({cardId,variantId,quantity})=>({cardId,variantId,quantity}));
+ const h=harness(async(url,init)=>{
+  calls.push({url,method:init.method});const params=new URL(url,'https://site.test').searchParams;
+  if(url.includes('/ownership')&&init.method==='POST'){
+   const intent=JSON.parse(init.body);writes.push(intent);
+   if(!actions.has(intent.id)){if(intent.expectedRevision!==revision)return response({error:'The binder changed'},409);actions.set(intent.id,intent);const n=Number(intent.cardId.split('-').at(-1));if(intent.owned)put(item(n));else for(const row of saved.values())if(row.cardId===intent.cardId)row.quantity=0;revision++;}
+   if(control.uncertain){control.uncertain=false;throw new TypeError('Lost response');}return response({ok:true,binder:binder()});
+  }
+  if(url.includes('/ownership?')){
+   if(control.pending&&(!control.pendingOffset||Number(params.get('cursor')||0)===control.pendingOffset))return control.pending.promise;
+   if(control.changeRevision){control.changeRevision=false;revision++;}
+   if(params.has('expectedRevision')&&Number(params.get('expectedRevision'))!==revision)return response({error:'The binder changed'},409);
+   return response(cardOwnershipPage(binder(),ownershipRows(),url));
+  }
+  if(url.includes('/checklist'))return response({cards:[1,2].map(n=>{const c=card(n),variants=ownershipRows().filter(row=>row.cardId===c.cardId).map(({variantId,quantity})=>({variantId,quantity}));return {card:c,ownedVariants:variants,ownedQuantity:variants.reduce((sum,row)=>sum+row.quantity,0)};}),meta:{pagination:{nextCursor:null}},progress:{owned:new Set(rows().map(row=>row.cardId)).size,total:2}});
+  if(url.includes('/catalogue/search')){const pages=options.searchPages||[[card(1),card(2)]],index=params.has('cursor')?1:0;return response({data:{results:pages[index].map(c=>({type:'card',card:c}))},meta:{pagination:{nextCursor:index+1<pages.length?'search-page-2':null}}});}
+  if(url.includes('/catalogue/cards/')){const n=Number(url.split('/').at(-1).split('-').at(-1)),c=card(n);return response({data:{card:c}});}
+  if(url.includes('/items?')){const row=saved.get(params.get('cardId')+':'+params.get('variantId'));return response({binder:binder(),quantity:row?.quantity||0});}
+  const all=rows(),offset=Number(params.get('offset')||0);return response({binder:binder(),items:all.slice(offset,offset+50),hasMore:offset+50<all.length,nextOffset:offset+50,summary:{uniqueCards:new Set(all.map(row=>row.cardId)).size,totalVariants:all.length,totalQuantity:all.reduce((sum,row)=>sum+row.quantity,0)}});
+ });return {...h,calls,writes,control,binder,rows,ownershipRows,card};
+}
+test('other set binders share the exact add/remove image behavior without a quantity dialog',async()=>{
+ const h=customOwnershipFlow({type:'set'});await h.api.openBinder('custom-binder');await h.api.tapCard('custom-card-1:catalogue');await h.api.tapCard('custom-card-1:catalogue');assert.deepEqual(h.writes.map(write=>write.owned),[true,false]);assert.equal(h.node('card-dialog').open,false);assert.equal(h.api.cardState()[0].ownedVariants.length,0);
+});
+test('custom search hydrates ownership before displaying images and removes every saved finish on a second owned-state tap',async()=>{
+ const h=customOwnershipFlow({items:[[1,'normal',2],[1,'holo',3]]});await h.api.openBinder('custom-binder');h.api.setMode('search');await h.api.loadCards(true);
+ const key='custom-card-1:catalogue';assert.equal(h.cardNode(key).attributes['aria-pressed'],'true');assert.match(h.cardNode(key).attributes['aria-label'],/Remove Custom card 1 from owned \(all copies and finishes\)/);assert.match(h.cardNode(key).article.editor.textContent,/5 copies · 2 finishes/);
+ await h.api.tapCard(key);assert.equal(h.writes[0].owned,false);assert.equal(h.rows().length,0);assert.equal(h.cardNode(key).attributes['aria-pressed'],'false');await h.api.tapCard(key);assert.equal(h.writes[1].owned,true);assert.equal(h.rows()[0].quantity,1);assert.equal(h.node('card-dialog').open,false);
+});
+test('custom Owned removes every loaded finish tile and keeps the next page offset aligned',async()=>{
+ const items=[[1,'normal',2],[1,'holo',3],...Array.from({length:53},(_,i)=>[i+2])],h=customOwnershipFlow({items});await h.api.openBinder('custom-binder');assert.equal(h.api.cardState().length,50);assert.match(h.cardNode('custom-card-1:normal').article.editor.textContent,/5 copies · 2 finishes/);
+ await h.api.tapCard('custom-card-1:normal');assert.equal(h.api.cardState().filter(entry=>entry.card.cardId==='custom-card-1').length,0);assert.equal(h.api.cardState().length,48);await h.api.loadCards(false);
+ assert.equal(h.calls.some(call=>call.url.endsWith('/custom-binder?offset=48')),true);assert.equal(h.api.cardState().length,53);assert.equal(new Set(h.api.cardState().map(entry=>entry.card.cardId)).size,53);assert.equal(h.node('more-cards').hidden,true);
+});
+test('custom search merges the same printing across result pages and retains every catalogue finish',async()=>{
+ const first={...trialCard(1),cardId:'custom-card-1',set:{setId:'other-set'}},second={...first,defaultVariantId:'holo',variants:[{...first.variants[0],variantId:'holo',canonicalId:'canonical-holo',variantCode:'holo',finishCode:'holo'}]},h=customOwnershipFlow({searchPages:[[first],[second]]});await h.api.openBinder('custom-binder');h.api.setMode('search');await h.api.loadCards(true);await h.api.loadCards(false);
+ assert.equal(h.visibleCards().length,1);assert.equal(h.api.cardState().length,1);assert.deepEqual(Array.from(h.api.cardState()[0].card.variants,v=>v.variantId),['variant-1','holo']);
+});
+test('uncertain whole-card removal keeps the original action and target after changing tabs',async()=>{
+ const h=customOwnershipFlow({items:[[1,'normal',2],[1,'holo',3]]});await h.api.openBinder('custom-binder');h.control.uncertain=true;await h.api.tapCard('custom-card-1:normal');assert.equal(h.api.cardState().length,2,'Unconfirmed removal keeps the original visible quantities');assert.match(h.api.quickState()[0].error,/not confirmed/);
+ h.api.setMode('search');await h.api.loadCards(true);await h.api.tapCard('custom-card-1:catalogue');assert.deepEqual(h.writes[1],h.writes[0]);assert.equal(h.writes[1].owned,false);assert.equal(h.rows().length,0);assert.equal(h.api.quickState().length,0);await h.api.tapCard('custom-card-1:catalogue');assert.equal(h.writes[2].owned,true);assert.equal(h.rows()[0].quantity,1);
+});
+test('private ownership hydration stages all bounded pages before rendering custom owned cards',async()=>{
+ const h=customOwnershipFlow({items:Array.from({length:121},(_,i)=>[1,'finish-'+i,1])});h.control.pending=deferred();h.control.pendingOffset=50;
+ const task=h.api.openBinder('custom-binder');await tick();assert.equal(h.api.cardState().length,0);assert.equal(h.visibleCards().length,0);
+ const pending=h.control.pending;h.control.pending=null;pending.resolve(response(cardOwnershipPage(h.binder(),h.ownershipRows(),'https://site.test/?cardIds=custom-card-1&cursor=50')));await task;
+ assert.equal(h.api.cardState().length,50);assert.equal(h.api.cardState()[0].ownedVariants.length,121);assert.match(h.cardNode('custom-card-1:finish-0').article.editor.textContent,/121 copies · 121 finishes/);const pages=h.calls.filter(call=>call.url.includes('/ownership?'));assert.equal(pages.length,3);assert.ok(pages.every(call=>call.url.includes('limit=50')&&call.url.includes('expectedRevision=1')));
+});
+test('a changed detail revision or invalid ownership continuation renders no mixed custom owned state',async()=>{
+ const h=customOwnershipFlow({items:[[1]]});h.control.changeRevision=true;await assert.rejects(h.api.openBinder('custom-binder'),/binder changed/);assert.equal(h.api.cardState().length,0);assert.equal(h.visibleCards().length,0);
+ const paged=customOwnershipFlow({items:Array.from({length:60},(_,i)=>[1,'finish-'+i,1])});paged.control.pending=deferred();paged.control.pendingOffset=50;const task=paged.api.openBinder('custom-binder');await tick();const second=cardOwnershipPage({...paged.binder(),revision:2},paged.ownershipRows(),'https://site.test/?cardIds=custom-card-1&cursor=50');paged.control.pending.resolve(response(second));await assert.rejects(task,/ownership pages could not be confirmed/);assert.equal(paged.api.cardState().length,0);assert.equal(paged.visibleCards().length,0);
+});
+test('leaving during custom ownership hydration cancels silently without altering the next view',async()=>{
+ const h=customOwnershipFlow({items:[[1]]});h.control.pending=deferred();const task=h.api.openBinder('custom-binder');await tick();h.api.showView('library');h.node('collection-status').textContent='Your saved binders';h.control.pending.resolve(response(cardOwnershipPage(h.binder(),h.ownershipRows(),'https://site.test/?cardIds=custom-card-1')));await task;assert.equal(h.node('collection-status').textContent,'Your saved binders');assert.equal(h.node('collection-main').dataset.view,'library');assert.equal(h.writes.length,0);
+});
 
 const PITCH_SET='d6d58c17-5923-496e-94ef-5819f34ae10c';
 function pitchFlow(setId=PITCH_SET,total=120){
- const binder={id:'pitch-binder',name:'Pitch Black',type:'set',setId,language:'en',revision:1,archived:false},calls=[];
+ const binder={id:'pitch-binder',name:'Pitch Black',type:'set',setId,language:'en',revision:1,archived:false},calls=[],writes=[],saved=new Map();
  const card=n=>{const c=trialCard(n);return {...c,cardId:'pitch-card-'+n,set:{setId},catalogueVersionId:'pitch-version',variants:c.variants.map(v=>({...v,canonicalId:'pokemon:en:'+setId+':'+n+':normal'}))};};
  const extra=(c,id,finish)=>({...c,defaultVariantId:id,variants:[{...c.variants[0],variantId:id,canonicalId:'pokemon:en:'+setId+':'+c.collectorNumber.value+':'+finish,variantCode:finish,finishCode:finish}]});
  const first=card(1),detail={...first,variants:[first.variants[0],extra(first,'current-holo','holo').variants[0],extra(first,'current-reverse','reverse_holo').variants[0]]};
  const cards=Array.from({length:total},(_,index)=>card(index+1));cards[0].variants.push(extra(first,'provider-holo-alias','holo').variants[0]);cards[1].variants.push(extra(card(2),'second-reverse','reverse_holo').variants[0]);const catalogue=readyCatalogue(cards,setId);
  const h=harness((url,init)=>{
-  calls.push({url,method:init.method});assert.equal(init.method,undefined,'No quantity is written before a finish is explicitly chosen');
+  calls.push({url,method:init.method});
+  if(url.includes('/ownership')&&init.method==='POST'){const intent=JSON.parse(init.body);writes.push(intent);saved.set(intent.cardId,intent.owned?1:0);binder.revision++;return Promise.resolve(response({ok:true,binder}));}
+  if(url.includes('/ownership?'))return Promise.resolve(response(cardOwnershipPage(binder,[...saved].filter(([,quantity])=>quantity>0).map(([cardId,quantity])=>({cardId,variantId:detail.defaultVariantId,quantity})),url)));
   if(url.includes('/catalogue/cards/'))return Promise.resolve(response({data:{card:detail}}));
   if(url.includes('/catalogue/ready/'))return Promise.resolve(response(publicPage(catalogue,url)));
   if(url.includes('/checklist'))return Promise.resolve(response(ownershipPage(catalogue,binder,[],url)));
   if(url.includes('/items'))return Promise.resolve(response({binder,quantity:0}));
-  return Promise.resolve(response({binder,items:[],summary:{uniqueCards:0,totalQuantity:0,totalVariants:0},hasMore:false,progress:{owned:0,total}}));
+  const count=[...saved.values()].filter(Boolean).length;return Promise.resolve(response({binder,items:[],summary:{uniqueCards:count,totalQuantity:count,totalVariants:count},hasMore:false,progress:{owned:count,total}}));
  });
- h.node('card-form').elements.quantity={value:1};return {...h,calls,binder};
+ h.node('card-form').elements.quantity={value:1};return {...h,calls,binder,writes};
 }
-test('Pitch Black loads 120 distinct cards across finish rows and refreshes current canonical finishes before ownership',async()=>{
+test('Pitch Black toggles its full checklist directly while the separate editor refreshes current canonical finishes',async()=>{
  const h=pitchFlow();await h.api.openBinder(h.binder.id);assert.equal(h.api.cardState().length,120);assert.match(h.node('cards-context').textContent,/Complete checklist loaded: 120 cards/);assert.equal(h.node('more-cards').hidden,true);assert.equal((h.node('binder-cards').innerHTML.match(/data-card-key=/g)||[]).length,120);assert.equal(h.api.cardState()[0].card.variants.length,2);
- await h.api.tapCard('pitch-card-1:catalogue');assert.equal(h.node('card-dialog').open,true);assert.match(h.node('card-variant').innerHTML,/current-holo/);assert.match(h.node('card-variant').innerHTML,/current-reverse/);assert.doesNotMatch(h.node('card-variant').innerHTML,/provider-holo-alias/);assert.ok(h.calls.some(c=>c.url.includes('/catalogue/cards/pitch-card-1')));assert.ok(h.calls.every(c=>c.method===undefined));
+ await h.api.tapCard('pitch-card-1:catalogue');assert.equal(h.node('card-dialog').open,false);assert.equal(h.writes[0].owned,true);assert.equal(h.api.cardState()[0].ownedVariants[0].variantId,'variant-1');
+ await h.api.openCard('pitch-card-1:catalogue');assert.equal(h.node('card-dialog').open,true);assert.match(h.node('card-variant').innerHTML,/current-holo/);assert.match(h.node('card-variant').innerHTML,/current-reverse/);assert.doesNotMatch(h.node('card-variant').innerHTML,/provider-holo-alias/);assert.ok(h.calls.some(c=>c.url.includes('/catalogue/cards/pitch-card-1')));assert.equal(h.writes.length,1,'Opening the editor does not change ownership');
 });
 test('a saved provider alias is never silently rewritten or replaced with a new finish',async()=>{
  const h=pitchFlow();await h.api.openBinder(h.binder.id);const entry=h.api.cardState()[0];entry.ownedVariants=[{variantId:'old-provider-alias',quantity:3}];await assert.rejects(h.api.openCard('pitch-card-1:catalogue'),/saved finish is not in the current catalogue/);assert.equal(h.node('card-dialog').open,false);assert.equal(entry.ownedVariants[0].quantity,3);assert.ok(h.calls.every(c=>c.method===undefined));
 });
 
-for(const [label,setId] of [['Chaos Rising','816ff627-a585-4953-99c4-a15c9b0b80e5'],['Journey Together','4f3046f3-9ab7-4068-a7df-dbe2b08c263c'],['Phantasmal Flames','977bf107-e10c-4d93-a7a4-3d7b775c5003']])test(label+' automatically loads the full checklist and asks for the current finish before ownership',async()=>{
+for(const [label,setId] of [['Chaos Rising','816ff627-a585-4953-99c4-a15c9b0b80e5'],['Journey Together','4f3046f3-9ab7-4068-a7df-dbe2b08c263c'],['Phantasmal Flames','977bf107-e10c-4d93-a7a4-3d7b775c5003'],['Delta Reign','a1bde625-6996-5451-bcda-fb80fe5b428b']])test(label+' uses the same direct owned/unowned image toggle',async()=>{
  const h=pitchFlow(setId,122);assert.equal(h.api.isTrialBinder(h.binder),true);await h.api.openBinder(h.binder.id);assert.equal(h.api.cardState().length,122);assert.match(h.node('cards-context').textContent,/Complete checklist loaded: 122 cards/);assert.equal(h.node('more-cards').hidden,true);
- await h.api.tapCard('pitch-card-1:catalogue');assert.equal(h.node('card-dialog').open,true);assert.match(h.node('card-variant').innerHTML,/current-reverse/);assert.ok(h.calls.some(c=>c.url.includes('/catalogue/cards/')));assert.ok(h.calls.every(c=>c.method===undefined));
+ await h.api.tapCard('pitch-card-1:catalogue');await h.api.tapCard('pitch-card-1:catalogue');assert.equal(h.node('card-dialog').open,false);assert.deepEqual(h.writes.map(write=>write.owned),[true,false]);assert.equal(h.api.cardState()[0].ownedVariants.length,0);
 });
 
 test('Delta Reign list bookmarks show the sourced read-only list without creating a binder or requesting a guessed set',async()=>{
  const calls=[],h=harness((url,options)=>{calls.push({url,method:options.method});return Promise.resolve(response({binders:[],hasMore:false}));},[],{location:{hash:'#delta-list'}});await h.api.start();assert.equal(h.location.hash,'#delta-list');assert.equal(calls.length,1);assert.equal(calls[0].method,undefined);assert.ok(!calls[0].url.includes('/catalogue/'));assert.equal(h.node('collection-status').textContent,'','The gallery explains its preview status once in its own heading area');assert.equal(h.scrolls.at(-1).top,0,'Opening the gallery starts at its title, not an old cover-grid scroll position');
 });
 
-test('Ascended Heroes loads its full 295-card checklist and refreshes the exact finish before ownership',async()=>{
- const h=pitchFlow('ddc668c0-316e-4dab-8c51-625167508fd6',295);assert.equal(h.api.isTrialBinder(h.binder),true);await h.api.openBinder(h.binder.id);assert.equal(h.api.cardState().length,295);assert.match(h.node('cards-context').textContent,/Complete checklist loaded: 295 cards/);assert.equal(h.node('more-cards').hidden,true);await h.api.tapCard('pitch-card-1:catalogue');assert.equal(h.node('card-dialog').open,true);assert.ok(h.calls.some(c=>c.url.includes('/catalogue/cards/')));assert.ok(h.calls.every(c=>c.method===undefined));
+test('Ascended Heroes loads its full 295-card checklist and uses the same direct ownership toggle',async()=>{
+ const h=pitchFlow('ddc668c0-316e-4dab-8c51-625167508fd6',295);assert.equal(h.api.isTrialBinder(h.binder),true);await h.api.openBinder(h.binder.id);assert.equal(h.api.cardState().length,295);assert.match(h.node('cards-context').textContent,/Complete checklist loaded: 295 cards/);assert.equal(h.node('more-cards').hidden,true);await h.api.tapCard('pitch-card-1:catalogue');assert.equal(h.node('card-dialog').open,false);assert.equal(h.writes[0].owned,true);await h.api.tapCard('pitch-card-1:catalogue');assert.equal(h.writes[1].owned,false);
 });
 
 test('opening a binder removes discovery chrome and restoring sets or sign-in restores the right context',async()=>{

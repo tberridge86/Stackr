@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "createdAt": "2026-11-06T15:16:12.011Z",
-  "sourceRevision": "a3ff2629d24769b95f06ffa8c4dd87ed2c5c034d",
-  "sourceState": "Current selected working-tree contents, identified by file checksums; may include uncommitted source changes.",
+  "createdAt": "2026-11-06T16:45:32Z",
+  "sourceRevision": "39849cae364221aa2830fb3ceb8f86a1011b1d1a",
+  "sourceState": "Selected source files copied from this immutable Sites revision, with previously verified standalone export packaging and public evidence redactions retained.",
   "exportAdjustments": [
     "Added media restoration commands, Node 24 pin and media check before build. Product source is copied without transformation."
   ],
@@ -108,6 +108,11 @@
       "sha256": "2605cb5090d58a25aae0860bf27ad6f6ee3950fa7f7985f3d818d7c89425fc9e"
     },
     {
+      "path": "README.md",
+      "bytes": 2486,
+      "sha256": "5bc1952ec8c56b609485f12173e7b88c96ac345277d6b41d19e0ab05d8e7bc14"
+    },
+    {
       "path": "build-site.mjs",
       "bytes": 37277,
       "sha256": "676cb0b6a3f12b935904b70073d3b705c8f79945f916b767afcad01e601f217c"
@@ -188,6 +193,11 @@
       "sha256": "4fc25c476e6edfe31916552a8f9bf79784c6a0edb8b4e019cdd24b2aeba6d03e"
     },
     {
+      "path": "docs/launch-ready-delivery-20261106.md",
+      "bytes": 5523,
+      "sha256": "3fe6afac9d24298fae1ee5d6bacbeb7a402a1cd409f43899e4fd7b896bc33f55"
+    },
+    {
       "path": "drizzle/0000_shop_stock_interest.sql",
       "bytes": 1350,
       "sha256": "0c9b92be1e604043f36cfaa596b7563855d854c0eb289376f217b3ea014c081d"
@@ -231,11 +241,6 @@
       "path": "package.json",
       "bytes": 1237,
       "sha256": "803b75f1e4d31ca87b9a7c6fb40caa85846b9fcdd281a71f89af3923ebe0ecd3"
-    },
-    {
-      "path": "README.md",
-      "bytes": 2486,
-      "sha256": "5bc1952ec8c56b609485f12173e7b88c96ac345277d6b41d19e0ab05d8e7bc14"
     },
     {
       "path": "scripts/restore-media.mjs",
@@ -359,18 +364,18 @@
     },
     {
       "path": "src/collection.css",
-      "bytes": 37401,
-      "sha256": "5588ec15fd179aace47afb4261209b018b7cb662f50e346b0696ca14df60d638"
+      "bytes": 37688,
+      "sha256": "558f0e9eeaca60d33eca3f9f14b1a659cd207a250f9e43b40f300cc830efc3eb"
     },
     {
       "path": "src/collection.html",
-      "bytes": 17095,
-      "sha256": "9a0540c51543bac232af9fdf6d9651526ea19b7ee600551f545ec0a4003a7278"
+      "bytes": 17147,
+      "sha256": "188890c6104b93280f636f4b360da4212335297902884b26498d53fe010d9f54"
     },
     {
       "path": "src/collection.js",
-      "bytes": 80503,
-      "sha256": "806dbb05063dc5c752bb30656db083cde3cc6769e2f3c71bfe8d435178026815"
+      "bytes": 85308,
+      "sha256": "5347b1c255256871fd962e4a3425c3563551b2c3de0a0622c54e3d118b9d75a1"
     },
     {
       "path": "src/collector.css",
@@ -704,13 +709,13 @@
     },
     {
       "path": "worker/binders.mjs",
-      "bytes": 33751,
-      "sha256": "e5d57d7068a3672360fad97a711d30c057584fde8f90847c2e388dfe902453a9"
+      "bytes": 38728,
+      "sha256": "07876884cd431e79edcce1cbd4ae6ef12d63b54d4bd78e490ae82f4cfead6600"
     },
     {
       "path": "worker/binders.test.mjs",
-      "bytes": 23234,
-      "sha256": "85e21db117b6e4ee6a1508e10ce0ccf6732bf9f9e3644a023a02cf21eabcbab0"
+      "bytes": 33697,
+      "sha256": "4eb0eada0c900f30db14ab0c409cafe9e6ebe4d502db7ebd3940c5d2601d8399"
     },
     {
       "path": "worker/browse-context.test.mjs",
@@ -754,8 +759,8 @@
     },
     {
       "path": "worker/collection-client.test.mjs",
-      "bytes": 78265,
-      "sha256": "1973f4eede056c51e31f68d208ac8178428b33cfb8082a6601f53075bab8fb8e"
+      "bytes": 91606,
+      "sha256": "bf62ca27227b836f25100ac7c800bbe1be098c96606d9ed3448a8ccaa7c575ed"
     },
     {
       "path": "worker/collector-artwork.test.mjs",
@@ -922,5 +927,22 @@
       "bytes": 10920,
       "sha256": "b07bf2f5472c9b25849b387f5ea012a7c1305565eb8bc7b1503c6f229e016f79"
     }
-  ]
+  ],
+  "nativeDeployment": {
+    "version": 70,
+    "sourceRevision": "39849cae364221aa2830fb3ceb8f86a1011b1d1a",
+    "status": "succeeded",
+    "deployedAt": "2026-11-06T16:44:40.160971+00:00",
+    "url": "https://stackr-private-exchange-concept.berridge14.chatgpt.site"
+  },
+  "validation": {
+    "sourceBuild": "passed",
+    "workerTests": {
+      "passed": 365,
+      "failed": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    "scope": "Immutable Site source; existing standalone export packaging and media pins are preserved."
+  }
 }
